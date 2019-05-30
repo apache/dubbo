@@ -46,8 +46,6 @@ import static com.alibaba.nacos.api.PropertyKeyConst.NAMESPACE;
 import static com.alibaba.nacos.api.PropertyKeyConst.SECRET_KEY;
 import static com.alibaba.nacos.api.PropertyKeyConst.SERVER_ADDR;
 import static com.alibaba.nacos.client.naming.utils.UtilAndComs.NACOS_NAMING_LOG_NAME;
-import static org.apache.dubbo.common.constants.CommonConstants.PROPERTIES_CHAR_SEPERATOR;
-import static org.apache.dubbo.configcenter.Constants.CONFIG_NAMESPACE_KEY;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 
 /**
@@ -62,11 +60,6 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     private static final long DEFAULT_TIMEOUT = 5000L;
 
     /**
-     * The final root path would be: /$NAME_SPACE/config
-     */
-    private String rootPath;
-
-    /**
      * The nacos configService
      */
 
@@ -78,7 +71,6 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     private final ConcurrentMap<String, NacosConfigListener> watchListenerMap;
 
     NacosDynamicConfiguration(URL url) {
-        rootPath = url.getParameter(CONFIG_NAMESPACE_KEY, DEFAULT_GROUP) + "-config";
         buildConfigService(url);
         watchListenerMap = new ConcurrentHashMap<>();
     }
@@ -157,11 +149,10 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
 
     @Override
     public void addListener(String key, String group, ConfigurationListener listener) {
-        String keyInNacos = rootPath + PROPERTIES_CHAR_SEPERATOR + key;
-        NacosConfigListener nacosConfigListener = watchListenerMap.computeIfAbsent(key, k -> createTargetListener(keyInNacos, group));
+        NacosConfigListener nacosConfigListener = watchListenerMap.computeIfAbsent(key, k -> createTargetListener(key, group));
         nacosConfigListener.addListener(listener);
         try {
-            configService.addListener(keyInNacos, group, nacosConfigListener);
+            configService.addListener(key, group, nacosConfigListener);
         } catch (NacosException e) {
             logger.error(e.getMessage());
         }
@@ -178,9 +169,8 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     @Override
     public String getConfig(String key, String group, long timeout) throws IllegalStateException {
         try {
-            String keyInNacos = rootPath + PROPERTIES_CHAR_SEPERATOR + key;
             long nacosTimeout = timeout < 0 ?  DEFAULT_TIMEOUT : timeout;
-            return configService.getConfig(keyInNacos, group, nacosTimeout);
+            return configService.getConfig(key, group, nacosTimeout);
         } catch (NacosException e) {
             logger.error(e.getMessage());
         }
