@@ -36,7 +36,7 @@ import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 
-import static org.apache.dubbo.common.constants.ConfigConstants.SHUTDOWN_WAIT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
 import static org.junit.jupiter.api.Assertions.fail;
 
 /**

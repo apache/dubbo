@@ -15,34 +15,22 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.common.constants;
+package org.apache.dubbo.remoting.utils;
 
-/**
- * ConfigConstants
- */
-public interface ConfigConstants {
-    String CLUSTER_KEY = "cluster";
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.Constants;
 
-    String USERNAME_KEY = "username";
+public class UrlUtils {
+    public static int getIdleTimeout(URL url) {
+        int heartBeat = getHeartbeat(url);
+        int idleTimeout = url.getParameter(Constants.HEARTBEAT_TIMEOUT_KEY, heartBeat * 3);
+        if (idleTimeout < heartBeat * 2) {
+            throw new IllegalStateException("idleTimeout < heartbeatInterval * 2");
+        }
+        return idleTimeout;
+    }
 
-    String PASSWORD_KEY = "password";
-
-    String HOST_KEY = "host";
-
-    String PORT_KEY = "port";
-
-    String DUBBO_IP_TO_BIND = "DUBBO_IP_TO_BIND";
-
-    @Deprecated
-    String SHUTDOWN_WAIT_SECONDS_KEY = "dubbo.service.shutdown.wait.seconds";
-
-    String SHUTDOWN_WAIT_KEY = "dubbo.service.shutdown.wait";
-
-    String DUBBO_PROTOCOL = "dubbo";
-
-    String QOS_ENABLE = "qos-enable";
-
-    String QOS_PORT = "qos-port";
-
-    String ACCEPT_FOREIGN_IP = "qos-accept-foreign-ip";
+    public static int getHeartbeat(URL url) {
+        return url.getParameter(Constants.HEARTBEAT_KEY, Constants.DEFAULT_HEARTBEAT);
+    }
 }

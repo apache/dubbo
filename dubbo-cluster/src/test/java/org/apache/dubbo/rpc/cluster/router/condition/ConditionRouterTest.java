@@ -98,6 +98,9 @@ public class ConditionRouterTest {
         invokers.add(invoker2);
         invokers.add(invoker3);
 
+        System.err.println("The localhost address: " + invoker2.getUrl().getAddress());
+        System.err.println(invoker3.getUrl().getAddress());
+
         Router router1 = new ConditionRouterFactory().getRouter(getRouteUrl(
                 "host = " + NetUtils.getLocalHost() + " => " + " host = 10.20.3.3").addParameter(FORCE_KEY,
                 String.valueOf(true)));
@@ -116,6 +119,8 @@ public class ConditionRouterTest {
         Router router6 = new ConditionRouterFactory().getRouter(getRouteUrl(
                 "host = " + NetUtils.getLocalHost() + " => " + " serialization = fastjson").addParameter(
                 FORCE_KEY, String.valueOf(true)));
+
+
 
         List<Invoker<String>> filteredInvokers1 = router1.route(invokers, URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), new RpcInvocation());
         List<Invoker<String>> filteredInvokers2 = router2.route(invokers, URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), new RpcInvocation());
