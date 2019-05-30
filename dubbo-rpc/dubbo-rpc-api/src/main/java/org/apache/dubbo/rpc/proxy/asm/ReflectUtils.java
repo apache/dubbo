@@ -232,7 +232,7 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 		for (MethodStatement methodStatement : methodStatementList) {
 			Class<?> clazz = doGetInvoke(methodStatement, invokerClassName);
 			map.put(methodStatement.getMethod(),
-					(MethodExecute<?>) (clazz.getConstructor(Object.class).newInstance(proxy)));
+					(MethodExecute<?>) (clazz.getConstructor(type).newInstance(proxy)));
 		}
 
 		return map;
@@ -242,7 +242,7 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 		ClassWriter cw = new ClassWriter(0);
 		MethodVisitor mv;
 		String invokerObjectName = methodStatement.getMethod() + "MethodExecute";
-		cw.visit(V1_8, ACC_PUBLIC + ACC_SUPER, invokerObjectName,
+		cw.visit(V1_8, ACC_PUBLIC, invokerObjectName,
 				"Lorg/apache/dubbo/rpc/proxy/asm/AbstractMethodExecute<L" + invokerClassName + ";>;",
 				"org/apache/dubbo/rpc/proxy/asm/AbstractMethodExecute", null);
 
@@ -261,10 +261,11 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 			mv = cw.visitMethod(ACC_PUBLIC, "execute", "([Ljava/lang/Object;)Ljava/lang/Object;",
 					"<T:Ljava/lang/Object;>([Ljava/lang/Object;)TT;", new String[] { "java/lang/Throwable" });
 			mv.visitVarInsn(ALOAD, 0);
-			mv.visitFieldInsn(GETFIELD, invokerObjectName, "object", "Ljava/lang/Object;");
+			//mv.visitFieldInsn(GETFIELD, invokerObjectName, "object", "Ljava/lang/Object;");
+			mv.visitMethodInsn(INVOKEVIRTUAL, invokerObjectName, "getObject", "()Ljava/lang/Object;", false);
 			mv.visitTypeInsn(CHECKCAST, invokerClassName);
-			List<ParameterSteaement> parameterList = methodStatement.getParameterTypes();
 			int maxStack = 1;
+			List<ParameterSteaement> parameterList = methodStatement.getParameterTypes();
 			if (parameterList != null && !parameterList.isEmpty()) {
 				maxStack = maxStack + 1 + parameterList.size();
 				for (int i = 0; i < parameterList.size(); i++) {
@@ -288,22 +289,21 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 				}
 			}
 
-			mv.visitMethodInsn(INVOKEINTERFACE, invokerClassName, methodStatement.getMethod(),
-					getMethodStatement(parameterList, methodStatement.getReturnType()), true);
+			mv.visitMethodInsn(INVOKEVIRTUAL, invokerClassName, methodStatement.getMethod(),
+					getMethodStatement(parameterList, methodStatement.getReturnType()), false);
 			if (void.class.equals(methodStatement.getReturnType())) {
-				mv.visitInsn(RETURN);
+				mv.visitInsn(ACONST_NULL);
 			} else {
 				Class<?> tpye = (Class<?>) methodStatement.getReturnType();
 				if (tpye.isPrimitive()) {
 					String[] amsStrArray = BEASE_TO_PACKAGING.get(tpye);
-					mv.visitTypeInsn(CHECKCAST, amsStrArray[0]);
-					mv.visitMethodInsn(INVOKEVIRTUAL, amsStrArray[0], amsStrArray[2], amsStrArray[3], false);
-					mv.visitInsn(TYPE_TO_RETURN.get(tpye));
-				} else {
-					mv.visitTypeInsn(CHECKCAST, getClassName(tpye));
-					mv.visitInsn(ARETURN);
+					mv.visitMethodInsn(INVOKESTATIC, amsStrArray[0], "valueOf", amsStrArray[1], false);
+					if (tpye.equals(long.class) || tpye.equals(double.class)) {
+						maxStack = maxStack + 1;
+					}
 				}
 			}
+			mv.visitInsn(ARETURN);
 			mv.visitMaxs(maxStack, 2);
 			mv.visitEnd();
 		}
@@ -314,7 +314,7 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 
 	public static List<MethodStatement> analysisMethod(Class<?> type) {
 		boolean boo = type.isInterface();
-		Method[] methods = type.getMethods();
+		Method[] methods = type.getDeclaredMethods();
 		List<MethodStatement> msList = new ArrayList<MethodStatement>();
 		for (Method method : methods) {
 			if (boo || method.getModifiers() == 1) {

@@ -1,6 +1,5 @@
 package org.apache.dubbo.rpc.proxy.asm;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.Invoker;
@@ -22,7 +21,7 @@ public abstract class AbstractAsmProxy {
 	@SuppressWarnings("unchecked")
 	public <T> T invoke(MethodStatement ms, Object[] args) {
 		try {
-			return (T) null;//invoker.invoke(createInvocation(ms, args)).recreate();
+			return (T) invoker.invoke(createInvocation(ms, args)).recreate();
 		} catch (Throwable e) {
 			throw new RuntimeException(e);
 		}

@@ -1,15 +1,18 @@
 package org.apache.dubbo.rpc.proxy.asm;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.proxy.asm.MethodExecuteTest.ReturnInt;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 public class ReflectUtilsTest {
 
@@ -42,12 +45,46 @@ public class ReflectUtilsTest {
 //		remote.execute(1, 2L,3);
 //		remote.execute(1, 2L, new Integer(3), new Long(4));
 //		remote.execute(1, 2L, new Integer(3), new Long(4), "123");
-		remote.execute(1, 3,3, 5L, "6", new ArrayList<>());
+//		remote.execute(1, 3,3, 5L, "6", new ArrayList<>());
 //		remote.execute(3, 5L, "6", new ArrayList<>(), new HashMap<>());
 //		remote.execute(new ArrayList<>());
 //		remote.execute(1, 2L, 3, 5L, "6", new ArrayList<>(), new HashMap<>());
 	}
 
+	@SuppressWarnings("unchecked")
+	@Test
+	public void methodExecute() throws Throwable {
+		
+		Invoker<String> mockInvoker = Mockito.mock(Invoker.class);
+		
+		Result mockResult = Mockito.mock(Result.class);
+		Mockito.when(mockInvoker.invoke(Mockito.any())).thenReturn(mockResult);
+		Mockito.when(mockResult.recreate())
+//		.thenReturn(null)
+//		.thenReturn(null)
+//		.thenReturn(1)
+//		.thenReturn(2L)
+		.thenReturn("test")
+		.thenReturn(new int[] {1})
+		.thenReturn(new long[] {2L});
+		
+		TestAsmProxy tap = new TestAsmProxy(mockInvoker);		
+		Map<String, MethodExecute<?>> mehtodMap = reflect.getInvoke(tap, tap.getClass());
+		
+		Iterator<Entry<String, MethodExecute<?>>> it = mehtodMap.entrySet().iterator();
+		
+		while(it.hasNext()) {
+			Object object = it.next().getValue().execute(null);
+			if(object == null) {
+				System.out.println("null");
+			}else {
+				System.out.println(object);
+			}
+			
+		}
+		
+	}
+	
 	Invoker<String> in = new Invoker<String>() {
 
 		@Override

@@ -7,4 +7,8 @@ public abstract class AbstractMethodExecute<S> implements MethodExecute<S> {
 	public AbstractMethodExecute(S object) {
 		this.object = object;
 	}
+	
+	protected S getObject(){
+		return object;
+	}
 }

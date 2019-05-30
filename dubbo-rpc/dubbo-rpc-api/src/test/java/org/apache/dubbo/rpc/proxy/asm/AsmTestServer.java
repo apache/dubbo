@@ -12,8 +12,8 @@ public interface AsmTestServer {
 //	int  returnInt();
 //	
 //	long returnLong();
-//	
-//	String returnObject();
+	
+	String returnObject();
 //	
 //	int[] returnIntArray();
 //	
@@ -48,7 +48,7 @@ public interface AsmTestServer {
 	
 //	String execute(int in , long lo, Integer integer, Long lon , String str );
 	
-	String execute(int in, long lo , Integer integer , Long lon , String str ,List<String> list);
+//	String execute(int in, long lo , Integer integer , Long lon , String str ,List<String> list);
 
 	
 //	String execute(List<String> list);
