@@ -134,9 +134,8 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
      * @return
      */
     private NacosConfigListener createTargetListener(String key, String group) {
-        String normalizedKey = normalizedKey(key);
         NacosConfigListener configListener = new NacosConfigListener();
-        configListener.fillContext(normalizedKey, group);
+        configListener.fillContext(key, group);
         return configListener;
     }
 
