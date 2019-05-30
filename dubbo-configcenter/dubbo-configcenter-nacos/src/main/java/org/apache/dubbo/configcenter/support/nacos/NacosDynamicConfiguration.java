@@ -88,14 +88,6 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
         return configService;
     }
 
-    public void publishNacosConfig(String key, String group, String value) {
-        try {
-            configService.publishConfig(key, group, value);
-        } catch (NacosException e) {
-            logger.error(e.getErrMsg());
-        }
-    }
-
     private Properties buildNacosProperties(URL url) {
         Properties properties = new Properties();
         setServerAddr(url, properties);
