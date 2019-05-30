@@ -89,12 +89,12 @@ public class NacosDynamicConfigurationTest {
     }
 
     private void put(String key, String value) {
-        put(key, "", value);
+        put(key, null, value);
     }
 
     private void put(String key, String group, String value) {
         try {
-            config.publishNacosConfig(key, "dubbo", value);
+            config.publishNacosConfig(key, group, value);
         } catch (Exception e) {
             System.out.println("Error put value to nacos.");
         }

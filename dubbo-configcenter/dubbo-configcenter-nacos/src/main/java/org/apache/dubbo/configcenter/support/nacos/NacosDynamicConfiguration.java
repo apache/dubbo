@@ -196,7 +196,7 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     @Override
     public Object getInternalProperty(String key) {
         try {
-            return configService.getConfig(key, null, 5000L);
+            return configService.getConfig(key, null, DEFAULT_TIMEOUT);
         } catch (NacosException e) {
             logger.error(e.getMessage());
         }
