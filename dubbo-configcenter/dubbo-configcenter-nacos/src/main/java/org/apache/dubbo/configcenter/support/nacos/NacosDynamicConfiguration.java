@@ -185,6 +185,14 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
         }
     }
 
+    /**
+     * FIXME the model of Zookeeper and Nacos is inconsistent, need to remove this function in next release.
+     */
+    @Override
+    public String getConfig(String key) {
+        return getConfig(key, DEFAULT_GROUP, -1L);
+    }
+
     @Override
     public String getConfig(String key, String group, long timeout) throws IllegalStateException {
         try {
