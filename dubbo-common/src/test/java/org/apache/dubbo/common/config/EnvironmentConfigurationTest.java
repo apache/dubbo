@@ -1,5 +1,6 @@
 package org.apache.dubbo.common.config;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -58,6 +59,14 @@ class EnvironmentConfigurationTest {
     public void testGetProperty(){
         Assertions.assertNull(environmentConfig.getProperty(MOCK_KEY));
         Assertions.assertEquals(MOCK_VALUE,environmentConfig.getProperty(MOCK_KEY,MOCK_VALUE));
+    }
+
+    /**
+     * Clean.
+     */
+    @AfterEach
+    public void clean(){
+
     }
 
 }

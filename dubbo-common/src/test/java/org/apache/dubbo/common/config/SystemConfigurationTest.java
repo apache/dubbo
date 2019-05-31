@@ -1,5 +1,6 @@
 package org.apache.dubbo.common.config;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,7 +45,6 @@ class SystemConfigurationTest {
         Assertions.assertEquals(MOCK_STRING_VALUE, sysConfig.getInternalProperty(MOCK_KEY));
         Assertions.assertEquals(MOCK_STRING_VALUE, sysConfig.getString(MOCK_KEY, MOCK_STRING_VALUE));
         Assertions.assertEquals(MOCK_STRING_VALUE, sysConfig.getProperty(MOCK_KEY, MOCK_STRING_VALUE));
-
     }
 
     /**
@@ -72,6 +72,16 @@ class SystemConfigurationTest {
         Assertions.assertEquals(MOCK_BYTE_VALUE, sysConfig.convert(Byte.class, MOCK_KEY, null));
         System.setProperty(MOCK_KEY, String.valueOf(ConfigMock.MockOne));
         Assertions.assertEquals(ConfigMock.MockOne, sysConfig.convert(ConfigMock.class, MOCK_KEY, null));
+    }
+
+    /**
+     * Clean.
+     */
+    @AfterEach
+    public void clean() {
+        if (null != System.getProperty(MOCK_KEY)) {
+            System.clearProperty(MOCK_KEY);
+        }
     }
 
     /**
