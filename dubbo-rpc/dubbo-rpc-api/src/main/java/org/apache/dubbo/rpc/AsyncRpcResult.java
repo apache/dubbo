@@ -136,6 +136,7 @@ public class AsyncRpcResult extends AbstractResult {
         return (new AppResponse()).recreate();
     }
 
+    @Override
     public Result thenApplyWithContext(Function<Result, Result> fn) {
         this.thenApply(fn.compose(beforeContext).andThen(afterContext));
         // You may need to return a new Result instance representing the next async stage,

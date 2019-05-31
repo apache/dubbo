@@ -32,7 +32,7 @@ import org.apache.dubbo.rpc.model.ConsumerModel;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import static org.apache.dubbo.common.constants.RpcConstants.$INVOKE;
+import static org.apache.dubbo.rpc.Constants.$INVOKE;
 
 /**
  * EventFilter
