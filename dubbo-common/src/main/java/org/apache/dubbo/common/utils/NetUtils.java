@@ -37,9 +37,9 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Pattern;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_IP_TO_BIND;
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_IP_TO_BIND;
 
 /**
  * IP and Port Helper for RPC
@@ -178,6 +178,17 @@ public class NetUtils {
             }
         }
         return address;
+    }
+
+    private static volatile String HOST_ADDRESS;
+
+    public static String getHostAddress () {
+        if (HOST_ADDRESS != null) {
+            return HOST_ADDRESS;
+        }
+
+        HOST_ADDRESS = getLocalHost();
+        return HOST_ADDRESS;
     }
 
     public static String getLocalHost() {
