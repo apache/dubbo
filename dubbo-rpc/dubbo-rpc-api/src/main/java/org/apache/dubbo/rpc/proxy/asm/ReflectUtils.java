@@ -1,5 +1,6 @@
 package org.apache.dubbo.rpc.proxy.asm;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
@@ -8,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -104,13 +106,27 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 		TYPE_TO_LOAD.put(float.class, Opcodes.FLOAD);
 		TYPE_TO_LOAD.put(double.class, Opcodes.DLOAD);
 	}
-
+	
+	private Map<String/*alias*/ , MethodStatement>  aliasAndMethodStatement = new HashMap<String, MethodStatement>();
+	
 	@SuppressWarnings("unchecked")
-	public <T> T getProxy(Class<?>[] types, Invoker<?> handler) throws Exception, SecurityException {
+	public <T> T getProxy(Class<?>[] types, Invoker<?> handler) throws Exception {
 		Class<?> clazz = getProxyClass(types);
-		return (T) clazz.getConstructor(Invoker.class).newInstance(handler);
+		Object object = clazz.getConstructor(Invoker.class).newInstance(handler);
+		setField(object);
+		return (T) object;
 	}
 
+	private void setField(Object object) throws IllegalArgumentException, IllegalAccessException {
+		Class<?> clazz = object.getClass();
+		Field[] fields = clazz.getDeclaredFields();
+		for(Field field : fields) {
+			field.setAccessible(true);
+			field.set(object, aliasAndMethodStatement.get(field.getName()));
+		}
+		
+	}
+	
 	public Class<?> getProxyClass(Class<?>[] types) {
 		String className = getProxyName(types);
 		ClassWriter cw = new ClassWriter(0);
@@ -130,17 +146,17 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 		for (Class<?> clazz : types) {
 			List<MethodStatement> msList = analysisMethod(clazz);
 			for (MethodStatement ms : msList) {
-				String alias = getMethodStatement(ms.getParameterTypes(), ms.getReturnType());
-				ms.setAlias(ms.getMethod() + "_" + alias);
+				String statement = getMethodStatement(ms.getParameterTypes(), ms.getReturnType());;
+				aliasAndMethodStatement.put(ms.getAlias(), ms);
 				{
 					cw.visitField(Opcodes.ACC_PRIVATE, ms.getAlias(),"Lorg/apache/dubbo/rpc/proxy/asm/MethodStatement;", null, null).visitEnd();
 				}
-				MethodVisitor mw = cw.visitMethod(Opcodes.ACC_PUBLIC, ms.getMethod(), alias, null,
+				MethodVisitor mw = cw.visitMethod(Opcodes.ACC_PUBLIC, ms.getMethod(), statement, null,
 						getClassName(ms.getAbnormalTypes()));
 				List<ParameterSteaement> parameter = ms.getParameterTypes();
 				mw.visitVarInsn(Opcodes.ALOAD, 0);
 				mw.visitVarInsn(Opcodes.ALOAD, 0);
-				mw.visitFieldInsn(Opcodes.GETFIELD, className, ms.getMethod() + "_statement",
+				mw.visitFieldInsn(Opcodes.GETFIELD, className, ms.getAlias(),
 						"Lorg/apache/dubbo/rpc/proxy/asm/MethodStatement;");
 				int maxStack = 2, maxLocals = 1, loadIndex = 1;
 				boolean is64Type = true;
@@ -152,22 +168,18 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 					if (parameter.size() < 6) {
 						mw.visitInsn(3 + parameter.size());
 					} else {
-						System.out.println("bipush : " + parameter.size());
 						mw.visitIincInsn(Opcodes.BIPUSH, parameter.size());
 					}
 					mw.visitTypeInsn(Opcodes.ANEWARRAY, "java/lang/Object");
 					for (int i = 0; i < parameter.size(); i++) {
 						mw.visitInsn(Opcodes.DUP);
 						if (i < 7) {
-							System.out.println("const : " + i);
 							mw.visitInsn(3 + i);
 						} else {
 							mw.visitIincInsn(Opcodes.BIPUSH, i);
 						}
 						Class<?> parameterClass = (Class<?>) parameter.get(i).getType();
 						if (parameterClass.isPrimitive()) {// 判断是基本类型
-							System.out.println(
-									"load : " + TYPE_TO_LOAD.get(parameterClass) + " loadIndex : " + loadIndex);
 							mw.visitVarInsn(TYPE_TO_LOAD.get(parameterClass), loadIndex++);
 							String[] amsStrArray = BEASE_TO_PACKAGING.get(parameterClass);
 							mw.visitMethodInsn(Opcodes.INVOKESTATIC, amsStrArray[0], "valueOf", amsStrArray[1], false);
@@ -180,7 +192,6 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 								maxStack = maxStack + 1;
 							}
 						} else {
-							System.out.println("load : ALOAD  loadIndex + " + loadIndex);
 							mw.visitVarInsn(Opcodes.ALOAD, loadIndex++);
 						}
 						mw.visitInsn(Opcodes.AASTORE);
@@ -213,7 +224,6 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 						mw.visitInsn(ARETURN);
 					}
 				}
-				System.out.println("maxStack :" + maxStack + " maxLocals : " + maxLocals);
 				mw.visitMaxs(maxStack, maxLocals);
 				mw.visitEnd();
 			}
@@ -231,7 +241,7 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 		String invokerClassName = getClassName(type);
 		for (MethodStatement methodStatement : methodStatementList) {
 			Class<?> clazz = doGetInvoke(methodStatement, invokerClassName);
-			map.put(methodStatement.getMethod(),
+			map.put(methodStatement.getAlias(),
 					(MethodExecute<?>) (clazz.getConstructor(type).newInstance(proxy)));
 		}
 
@@ -241,7 +251,7 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 	public Class<?> doGetInvoke(MethodStatement methodStatement, String invokerClassName) {
 		ClassWriter cw = new ClassWriter(0);
 		MethodVisitor mv;
-		String invokerObjectName = methodStatement.getMethod() + "MethodExecute";
+		String invokerObjectName = methodStatement.getAlias() + "MethodExecute";
 		cw.visit(V1_8, ACC_PUBLIC, invokerObjectName,
 				"Lorg/apache/dubbo/rpc/proxy/asm/AbstractMethodExecute<L" + invokerClassName + ";>;",
 				"org/apache/dubbo/rpc/proxy/asm/AbstractMethodExecute", null);
@@ -318,7 +328,9 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 		List<MethodStatement> msList = new ArrayList<MethodStatement>();
 		for (Method method : methods) {
 			if (boo || method.getModifiers() == 1) {
-				msList.add(analysisMethod(method));
+				MethodStatement ms = analysisMethod(method);
+				msList.add(ms);
+				ms.setAlias(ms.getMethod() + "_" + getAlias(ms.getParameterTypes()));
 			}
 		}
 		return msList;
@@ -329,6 +341,7 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 		ms.setMethod(method.getName());
 		ms.setAbnormalTypes(method.getExceptionTypes());
 		ms.setReturnType(method.getReturnType());
+		ms.setFutureReturnType(CompletableFuture.class.isAssignableFrom( method.getReturnType() ));
 		Type returnType = method.getGenericReturnType();// 获取返回值类型
 		if (returnType instanceof ParameterizedType) { // 判断获取的类型是否是参数类型
 			ms.setReturnGeneric(((ParameterizedType) returnType).getActualTypeArguments());
@@ -339,11 +352,13 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 
 	public static List<ParameterSteaement> analysisParameterized(Method method) {
 		Type[] types = method.getParameterTypes();// method.getGenericParameterTypes();// 获取参数，可能是多个，所以是数组
+		method.getGenericParameterTypes();
+		method.getParameters();
 		List<ParameterSteaement> psList = new ArrayList<>(types.length);
 		for (Type type2 : types) {
 			ParameterSteaement ps = new ParameterSteaement();
 			psList.add(ps);
-			ps.setType(type2);
+			ps.setType((Class<?>)type2);
 			if (type2 instanceof ParameterizedType) {// 判断获取的类型是否是参数类型
 				ps.setGenericTypes(((ParameterizedType) type2).getActualTypeArguments());
 			}
@@ -405,6 +420,16 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 			}
 		}
 		return typeName;
-
+	}
+	
+	public static String getAlias(List<ParameterSteaement> types) {
+		StringBuffer sb = new StringBuffer();
+		if (types != null && types.size() != 0) {
+			for (ParameterSteaement t : types) {
+				String className = ((Class<?>) t.getType()).getName();
+				sb.append(className.replace("[", "_").replace(';', '_').replace('.','_'));
+			}
+		}
+		return sb.toString();
 	}
 }

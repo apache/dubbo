@@ -2,9 +2,13 @@ package org.apache.dubbo.rpc.proxy.asm;
 
 import java.lang.reflect.Type;
 import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 
 public class MethodStatement {
 
+	private static final Class[] NOT_PRAMETER_CLASS = new Class[0];
+	
 	private String method;
 
 	private String alias;
@@ -15,6 +19,8 @@ public class MethodStatement {
 
 	// 如果有泛型怎么办?
 	private List<ParameterSteaement> parameterTypes;
+	
+	private Class[] parameterClass;
 
 	boolean futureReturnType;
 
@@ -58,6 +64,18 @@ public class MethodStatement {
 
 	public void setParameterTypes(List<ParameterSteaement> parameterTypes) {
 		this.parameterTypes = parameterTypes;
+		if( parameterTypes != null ) {
+			parameterClass = new Class[parameterTypes.size()];
+			int i = 0;
+			for(ParameterSteaement ps : parameterTypes) {
+				parameterClass[i++] = ps.getType();
+			}
+		}
+			
+	}
+	
+	public Class[] getParameterClass() {
+		return parameterClass;
 	}
 
 	public boolean isFutureReturnType() {
@@ -80,7 +98,7 @@ public class MethodStatement {
 
 		private String parameterName;
 
-		private Type clazz;
+		private Class<?> clazz;
 
 		private Type[] genericTypes;
 
@@ -92,11 +110,11 @@ public class MethodStatement {
 			this.parameterName = parameterName;
 		}
 
-		public Type getType() {
+		public Class<?> getType() {
 			return clazz;
 		}
 
-		public void setType(Type clazz) {
+		public void setType(Class<?> clazz) {
 			this.clazz = clazz;
 		}
 

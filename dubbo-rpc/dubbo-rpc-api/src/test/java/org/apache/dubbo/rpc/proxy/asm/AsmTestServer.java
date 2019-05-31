@@ -5,56 +5,50 @@ import java.util.Map;
 
 public interface AsmTestServer {
 
-//	void notReturn();
-//	
-//	void notThrowable() throws Throwable;
-//	
-//	int  returnInt();
-//	
-//	long returnLong();
+	void notReturn();
+	
+	void notThrowable() throws Throwable;
+	
+	int  returnInt();
+	
+	long returnLong();
 	
 	String returnObject();
-//	
-//	int[] returnIntArray();
-//	
-//	long[] returnLongArray();
-//	
-//	String[] returnObjectArray();
-//	
-//	void parameterInt(int i);
-//	
-//	void parameterLong(long l);
-//	
-//	void parameterIntArray(int[] intArray);
-//
-//	void parameterLongArray(long[] longArray);
-//	
-//	void parameterObject(String string);
-//	
-//	void parameterObjectArray(String[] stringArray);
 	
-//	String execte(int str , int list);
+	int[] returnIntArray();
 	
+	long[] returnLongArray();
 	
-//	String execte(long str , long list , long l);
+	String[] returnObjectArray();
 	
-//	String execte(String str , List<String> list);
+	void parameterInt(int i);
 	
-//	String execute(int in , long lo);
+	void parameterLong(long l);
 	
-//	String execute(int in , long lo, Integer integer);
-	
-//	String execute(int in , long lo, Integer integer, Long lon );
-	
-//	String execute(int in , long lo, Integer integer, Long lon , String str );
-	
-//	String execute(int in, long lo , Integer integer , Long lon , String str ,List<String> list);
+	void parameterIntArray(int[] intArray);
 
+	void parameterLongArray(long[] longArray);
 	
-//	String execute(List<String> list);
+	void parameterObject(String string);
 	
-//	String execute(int in , long lo , Integer integer , Long lon , String string,List<String> list , Map<String,String> map);
+	void parameterObjectArray(String[] stringArray);
+	
+	String execte(int str , int list);
 	
 	
+	String execte(long str , long list , long l);
 	
+	String execte(String str , List<String> list);
+	
+	String execte(int in , long lo);
+	
+	String execte(int in , long lo, Integer integer);
+	
+	String execte(int in , long lo, Integer integer, Long lon );
+	
+	String execte(int in , long lo, Integer integer, Long lon , String str );
+	
+	String execte(int in , long lo, String str , List<String> list , Map<String,String> map );
+	
+//	String execute(int in, long lo , Integer integer , Long lon , String str ,List<String> list);	
 }

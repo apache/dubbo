@@ -1,5 +1,6 @@
 package org.apache.dubbo.rpc.proxy.asm;
 
+import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.Invoker;
@@ -18,8 +19,12 @@ public abstract class AbstractAsmProxy {
 		return invoke(ms, null);
 	}
 
-	@SuppressWarnings("unchecked")
 	public <T> T invoke(MethodStatement ms, Object[] args) {
+		return doInvoke(ms, args);
+	}
+	
+	@SuppressWarnings("unchecked")
+	protected <T> T doInvoke(MethodStatement ms, Object[] args) {
 		try {
 			return (T) invoker.invoke(createInvocation(ms, args)).recreate();
 		} catch (Throwable e) {
@@ -28,11 +33,11 @@ public abstract class AbstractAsmProxy {
 	}
 
 	private RpcInvocation createInvocation(MethodStatement ms, Object[] args) {
-		RpcInvocation invocation = new RpcInvocation("1", null, args);
-		/*if (ms.isFutureReturnType()) {
+		RpcInvocation invocation = new RpcInvocation(ms.getMethod(), ms.getParameterClass(), args);
+		if (ms.isFutureReturnType()) {
 			invocation.setAttachment(Constants.FUTURE_RETURNTYPE_KEY, "true");
 			invocation.setAttachment(Constants.ASYNC_KEY, "true");
-		}*/
+		}
 		return invocation;
 	}
 }
