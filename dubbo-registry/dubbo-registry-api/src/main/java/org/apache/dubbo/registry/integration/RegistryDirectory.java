@@ -67,6 +67,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.APP_DYNAMIC_CONFIGURATORS_CATEGORY;
@@ -132,11 +133,11 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         if (serviceType == null) {
             throw new IllegalArgumentException("service type is null.");
         }
-        if (url.getServiceKey() == null || url.getServiceKey().length() == 0) {
+        if (url.getServiceKey(PATH_SEPARATOR) == null || url.getServiceKey(PATH_SEPARATOR).length() == 0) {
             throw new IllegalArgumentException("registry serviceKey is null.");
         }
         this.serviceType = serviceType;
-        this.serviceKey = url.getServiceKey();
+        this.serviceKey = url.getServiceKey(PATH_SEPARATOR);
         this.queryMap = StringUtils.parseQueryString(url.getParameterAndDecoded(REFER_KEY));
         this.overrideDirectoryUrl = this.directoryUrl = turnRegistryUrlToConsumerUrl(url);
         String group = directoryUrl.getParameter(GROUP_KEY, "");
@@ -563,7 +564,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         if (forbidden) {
             // 1. No service provider 2. Service providers are disabled
             throw new RpcException(RpcException.FORBIDDEN_EXCEPTION, "No provider available from registry " +
-                    getUrl().getAddress() + " for service " + getConsumerUrl().getServiceKey() + " on consumer " +
+                    getUrl().getAddress() + " for service " + getConsumerUrl().getServiceKey(PATH_SEPARATOR) + " on consumer " +
                     NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion() +
                     ", please check status of providers(disabled, not registered or in blacklist).");
         }
@@ -711,7 +712,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         ReferenceConfigurationListener(RegistryDirectory directory, URL url) {
             this.directory = directory;
             this.url = url;
-            this.initWith(url.getEncodedServiceKey() + CONFIGURATORS_SUFFIX);
+            this.initWith(url.getServiceKey("*") + CONFIGURATORS_SUFFIX);
         }
 
         @Override

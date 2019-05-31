@@ -48,10 +48,10 @@ import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHOD_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 
 /**
  * ConditionRouter
- *
  */
 public class ConditionRouter extends AbstractRouter {
     public static final String NAME = "condition";
@@ -182,7 +182,7 @@ public class ConditionRouter extends AbstractRouter {
             }
             List<Invoker<T>> result = new ArrayList<Invoker<T>>();
             if (thenCondition == null) {
-                logger.warn("The current consumer in the service blacklist. consumer: " + NetUtils.getLocalHost() + ", service: " + url.getServiceKey());
+                logger.warn("The current consumer in the service blacklist. consumer: " + NetUtils.getLocalHost() + ", service: " + url.getServiceKey(PATH_SEPARATOR));
                 return result;
             }
             for (Invoker<T> invoker : invokers) {
@@ -193,11 +193,15 @@ public class ConditionRouter extends AbstractRouter {
             if (!result.isEmpty()) {
                 return result;
             } else if (force) {
-                logger.warn("The route result is empty and force execute. consumer: " + NetUtils.getLocalHost() + ", service: " + url.getServiceKey() + ", router: " + url.getParameterAndDecoded(RULE_KEY));
+                logger.warn("The route result is empty and force execute. consumer: " + NetUtils.getLocalHost()
+                        + ", service: " + url.getServiceKey(PATH_SEPARATOR)
+                        + ", router: " + url.getParameterAndDecoded(RULE_KEY));
                 return result;
             }
         } catch (Throwable t) {
-            logger.error("Failed to execute condition router rule: " + getUrl() + ", invokers: " + invokers + ", cause: " + t.getMessage(), t);
+            logger.error("Failed to execute condition router rule: "
+                    + getUrl() + ", invokers: " + invokers
+                    + ", cause: " + t.getMessage(), t);
         }
         return invokers;
     }

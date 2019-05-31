@@ -59,6 +59,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGO
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.REGISTRY_FILESAVE_SYNC_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 
 /**
  * AbstractRegistry. (SPI, Prototype, ThreadSafe)
@@ -229,7 +230,7 @@ public abstract class AbstractRegistry implements Registry {
         for (Map.Entry<Object, Object> entry : properties.entrySet()) {
             String key = (String) entry.getKey();
             String value = (String) entry.getValue();
-            if (key != null && key.length() > 0 && key.equals(url.getServiceKey())
+            if (key != null && key.length() > 0 && key.equals(url.getServiceKey(PATH_SEPARATOR))
                     && (Character.isLetter(key.charAt(0)) || key.charAt(0) == '_')
                     && value != null && value.length() > 0) {
                 String[] arr = value.trim().split(URL_SPLIT);
@@ -440,7 +441,7 @@ public abstract class AbstractRegistry implements Registry {
                     }
                 }
             }
-            properties.setProperty(url.getServiceKey(), buf.toString());
+            properties.setProperty(url.getServiceKey(PATH_SEPARATOR), buf.toString());
             long version = lastCacheChanged.incrementAndGet();
             if (syncSaveFile) {
                 doSaveProperties(version);

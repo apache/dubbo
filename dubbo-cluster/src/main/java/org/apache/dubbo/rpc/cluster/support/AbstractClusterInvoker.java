@@ -45,6 +45,7 @@ import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_CLUSTER_AVAILABLE_C
 import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_CLUSTER_STICKY;
 import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_LOADBALANCE;
 import static org.apache.dubbo.rpc.cluster.Constants.LOADBALANCE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 
 /**
  * AbstractClusterInvoker
@@ -265,7 +266,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
         if (CollectionUtils.isEmpty(invokers)) {
             throw new RpcException(RpcException.NO_INVOKER_AVAILABLE_AFTER_FILTER, "Failed to invoke the method "
                     + invocation.getMethodName() + " in the service " + getInterface().getName()
-                    + ". No provider available for the service " + directory.getUrl().getServiceKey()
+                    + ". No provider available for the service " + directory.getUrl().getServiceKey(PATH_SEPARATOR)
                     + " from registry " + directory.getUrl().getAddress()
                     + " on the consumer " + NetUtils.getLocalHost()
                     + " using the dubbo version " + Version.getVersion()

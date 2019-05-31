@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 
 /**
  * If you want to provide a router implementation based on design of v2.7.0, please extend from this abstract class.
@@ -30,8 +31,8 @@ public abstract class CacheableRouterFactory implements RouterFactory {
 
     @Override
     public Router getRouter(URL url) {
-        routerMap.computeIfAbsent(url.getServiceKey(), k -> createRouter(url));
-        return routerMap.get(url.getServiceKey());
+        routerMap.computeIfAbsent(url.getServiceKey(PATH_SEPARATOR), k -> createRouter(url));
+        return routerMap.get(url.getServiceKey(PATH_SEPARATOR));
     }
 
     protected abstract Router createRouter(URL url);

@@ -43,6 +43,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PASSWORD_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PORT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.USERNAME_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
@@ -341,7 +342,7 @@ public class UrlUtils {
                 if (!serviceName.contains(":") && !serviceName.contains("/")) {
                     for (URL url : subscribed) {
                         if (serviceName.equals(url.getServiceInterface())) {
-                            newForbid.add(url.getServiceKey());
+                            newForbid.add(url.getServiceKey(PATH_SEPARATOR));
                             break;
                         }
                     }

@@ -41,6 +41,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 
 public class ImplicitCallBackTest {
 
@@ -112,7 +113,7 @@ public class ImplicitCallBackTest {
         asyncMethodInfo.setOnthrowInstance(notify);
         asyncMethodInfo.setOnthrowMethod(onThrowMethod);
         attitudes.put("get", asyncMethodInfo);
-        ApplicationModel.initConsumerModel(consumerUrl.getServiceKey(), new ConsumerModel(consumerUrl.getServiceKey(), IDemoService.class, demoProxy, IDemoService.class.getMethods(), attitudes));
+        ApplicationModel.initConsumerModel(consumerUrl.getServiceKey(PATH_SEPARATOR), new ConsumerModel(consumerUrl.getServiceKey(), IDemoService.class, demoProxy, IDemoService.class.getMethods(), attitudes));
     }
 
     //================================================================================================
@@ -123,7 +124,7 @@ public class ImplicitCallBackTest {
         asyncMethodInfo.setOnreturnInstance(notify);
         asyncMethodInfo.setOnreturnMethod(onReturnMethod);
         attitudes.put("get", asyncMethodInfo);
-        ApplicationModel.initConsumerModel(consumerUrl.getServiceKey(), new ConsumerModel(consumerUrl.getServiceKey(), IDemoService.class, demoProxy, IDemoService.class.getMethods(), attitudes));
+        ApplicationModel.initConsumerModel(consumerUrl.getServiceKey(PATH_SEPARATOR), new ConsumerModel(consumerUrl.getServiceKey(), IDemoService.class, demoProxy, IDemoService.class.getMethods(), attitudes));
     }
 
     public void initImplicitCallBackURL_onlyOninvoke() throws Exception {
@@ -132,7 +133,7 @@ public class ImplicitCallBackTest {
         asyncMethodInfo.setOninvokeInstance(notify);
         asyncMethodInfo.setOninvokeMethod(onInvokeMethod);
         attitudes.put("get", asyncMethodInfo);
-        ApplicationModel.initConsumerModel(consumerUrl.getServiceKey(), new ConsumerModel(consumerUrl.getServiceKey(), IDemoService.class, demoProxy, IDemoService.class.getMethods(), attitudes));
+        ApplicationModel.initConsumerModel(consumerUrl.getServiceKey(PATH_SEPARATOR), new ConsumerModel(consumerUrl.getServiceKey(), IDemoService.class, demoProxy, IDemoService.class.getMethods(), attitudes));
     }
 
     @Test

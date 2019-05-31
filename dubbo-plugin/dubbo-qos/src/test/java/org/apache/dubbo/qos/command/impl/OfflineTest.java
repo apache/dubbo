@@ -33,6 +33,7 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 
 public class OfflineTest {
     @Test
@@ -45,7 +46,7 @@ public class OfflineTest {
         URL registryUrl = mock(URL.class);
         when(registryUrl.toFullString()).thenReturn("test://localhost:8080");
         URL providerUrl = mock(URL.class);
-        when(providerUrl.getServiceKey()).thenReturn("org.apache.dubbo.BarService");
+        when(providerUrl.getServiceKey(PATH_SEPARATOR)).thenReturn("org.apache.dubbo.BarService");
         when(providerUrl.toFullString()).thenReturn("dubbo://localhost:8888/org.apache.dubbo.BarService");
         when(providerInvoker.getUrl()).thenReturn(providerUrl);
         ProviderConsumerRegTable.registerProvider(providerInvoker, registryUrl, providerUrl);

@@ -24,6 +24,8 @@ import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
+
 @Deprecated
 public class URL extends org.apache.dubbo.common.URL {
 
@@ -599,8 +601,8 @@ public class URL extends org.apache.dubbo.common.URL {
     }
 
     @Override
-    public String getServiceKey() {
-        return super.getServiceKey();
+    public String getServiceKey(String delimiter) {
+        return super.getServiceKey(PATH_SEPARATOR);
     }
 
     @Override

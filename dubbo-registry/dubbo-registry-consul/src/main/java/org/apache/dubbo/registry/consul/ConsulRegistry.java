@@ -51,6 +51,7 @@ import static java.util.concurrent.Executors.newCachedThreadPool;
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.PROVIDER_PROTOCOL;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 
 /**
  * registry center implementation for consul
@@ -138,7 +139,7 @@ public class ConsulRegistry extends FailbackRegistry {
             List<HealthService> services = getHealthServices(response.getValue());
             urls = convert(services);
         } else {
-            String service = url.getServiceKey();
+            String service = url.getServiceKey(PATH_SEPARATOR);
             Response<List<HealthService>> response = getHealthServices(service, -1, buildWatchTimeout(url));
             index = response.getConsulIndex();
             urls = convert(response.getValue());
@@ -170,7 +171,7 @@ public class ConsulRegistry extends FailbackRegistry {
             throw new IllegalArgumentException("lookup url == null");
         }
         try {
-            String service = url.getServiceKey();
+            String service = url.getServiceKey(PATH_SEPARATOR);
             Response<List<HealthService>> result = getHealthServices(service, -1, buildWatchTimeout(url));
             if (result == null || result.getValue() == null || result.getValue().isEmpty()) {
                 return new ArrayList<>();
@@ -312,7 +313,7 @@ public class ConsulRegistry extends FailbackRegistry {
         }
 
         private void processService() {
-            String service = url.getServiceKey();
+            String service = url.getServiceKey(PATH_SEPARATOR);
             Response<List<HealthService>> response = getHealthServices(service, consulIndex, buildWatchTimeout(url));
             Long currentIndex = response.getConsulIndex();
             if (currentIndex != null && currentIndex > consulIndex) {

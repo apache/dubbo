@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 
 /**
  * AbstractRegistryService
@@ -59,38 +60,38 @@ public abstract class AbstractRegistryService implements RegistryService {
     @Override
     public void register(URL url) {
         if (logger.isInfoEnabled()) {
-            logger.info("Register service: " + url.getServiceKey() + ",url:" + url);
+            logger.info("Register service: " + url.getServiceKey(PATH_SEPARATOR) + ",url:" + url);
         }
-        register(url.getServiceKey(), url);
+        register(url.getServiceKey(PATH_SEPARATOR), url);
     }
 
     @Override
     public void unregister(URL url) {
         if (logger.isInfoEnabled()) {
-            logger.info("Unregister service: " + url.getServiceKey() + ",url:" + url);
+            logger.info("Unregister service: " + url.getServiceKey(PATH_SEPARATOR) + ",url:" + url);
         }
-        unregister(url.getServiceKey(), url);
+        unregister(url.getServiceKey(PATH_SEPARATOR), url);
     }
 
     @Override
     public void subscribe(URL url, NotifyListener listener) {
         if (logger.isInfoEnabled()) {
-            logger.info("Subscribe service: " + url.getServiceKey() + ",url:" + url);
+            logger.info("Subscribe service: " + url.getServiceKey(PATH_SEPARATOR) + ",url:" + url);
         }
-        subscribe(url.getServiceKey(), url, listener);
+        subscribe(url.getServiceKey(PATH_SEPARATOR), url, listener);
     }
 
     @Override
     public void unsubscribe(URL url, NotifyListener listener) {
         if (logger.isInfoEnabled()) {
-            logger.info("Unsubscribe service: " + url.getServiceKey() + ",url:" + url);
+            logger.info("Unsubscribe service: " + url.getServiceKey(PATH_SEPARATOR) + ",url:" + url);
         }
-        unsubscribe(url.getServiceKey(), url, listener);
+        unsubscribe(url.getServiceKey(PATH_SEPARATOR), url, listener);
     }
 
     @Override
     public List<URL> lookup(URL url) {
-        return getRegistered(url.getServiceKey());
+        return getRegistered(url.getServiceKey(PATH_SEPARATOR));
     }
 
     public void register(String service, URL url) {
@@ -102,7 +103,7 @@ public abstract class AbstractRegistryService implements RegistryService {
         }
         List<URL> urls = registered.get(service);
         if (urls == null) {
-            registered.putIfAbsent(service, new CopyOnWriteArrayList<URL>());
+            registered.putIfAbsent(service, new CopyOnWriteArrayList<>());
             urls = registered.get(service);
         }
         if (!urls.contains(url)) {
@@ -166,7 +167,7 @@ public abstract class AbstractRegistryService implements RegistryService {
         }
         List<NotifyListener> listeners = notifyListeners.get(service);
         if (listeners == null) {
-            notifyListeners.putIfAbsent(service, new CopyOnWriteArrayList<NotifyListener>());
+            notifyListeners.putIfAbsent(service, new CopyOnWriteArrayList<>());
             listeners = notifyListeners.get(service);
         }
         if (listeners != null && !listeners.contains(listener)) {

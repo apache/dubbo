@@ -34,6 +34,7 @@ import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
 import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 
 /**
  * InjvmProtocol
@@ -59,8 +60,8 @@ public class InjvmProtocol extends AbstractProtocol implements Protocol {
     static Exporter<?> getExporter(Map<String, Exporter<?>> map, URL key) {
         Exporter<?> result = null;
 
-        if (!key.getServiceKey().contains("*")) {
-            result = map.get(key.getServiceKey());
+        if (!key.getServiceKey(PATH_SEPARATOR).contains("*")) {
+            result = map.get(key.getServiceKey(PATH_SEPARATOR));
         } else {
             if (CollectionUtils.isNotEmptyMap(map)) {
                 for (Exporter<?> exporter : map.values()) {
@@ -89,12 +90,12 @@ public class InjvmProtocol extends AbstractProtocol implements Protocol {
 
     @Override
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
-        return new InjvmExporter<T>(invoker, invoker.getUrl().getServiceKey(), exporterMap);
+        return new InjvmExporter<T>(invoker, invoker.getUrl().getServiceKey(PATH_SEPARATOR), exporterMap);
     }
 
     @Override
     public <T> Invoker<T> protocolBindingRefer(Class<T> serviceType, URL url) throws RpcException {
-        return new InjvmInvoker<T>(serviceType, url, url.getServiceKey(), exporterMap);
+        return new InjvmInvoker<T>(serviceType, url, url.getServiceKey(PATH_SEPARATOR), exporterMap);
     }
 
     public boolean isInjvmRefer(URL url) {

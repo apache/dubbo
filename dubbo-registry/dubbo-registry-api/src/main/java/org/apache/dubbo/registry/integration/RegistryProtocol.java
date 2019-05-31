@@ -69,6 +69,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT;
@@ -232,7 +233,7 @@ public class RegistryProtocol implements Protocol {
     private URL overrideUrlWithConfig(URL providerUrl, OverrideListener listener) {
         providerUrl = providerConfigurationListener.overrideUrl(providerUrl);
         ServiceConfigurationListener serviceConfigurationListener = new ServiceConfigurationListener(providerUrl, listener);
-        serviceConfigurationListeners.put(providerUrl.getServiceKey(), serviceConfigurationListener);
+        serviceConfigurationListeners.put(providerUrl.getServiceKey(PATH_SEPARATOR), serviceConfigurationListener);
         return serviceConfigurationListener.overrideUrl(providerUrl);
     }
 
@@ -558,7 +559,7 @@ public class RegistryProtocol implements Protocol {
             //Merged with this configuration
             URL newUrl = getConfigedInvokerUrl(configurators, originUrl);
             newUrl = getConfigedInvokerUrl(providerConfigurationListener.getConfigurators(), newUrl);
-            newUrl = getConfigedInvokerUrl(serviceConfigurationListeners.get(originUrl.getServiceKey())
+            newUrl = getConfigedInvokerUrl(serviceConfigurationListeners.get(originUrl.getServiceKey(PATH_SEPARATOR))
                     .getConfigurators(), newUrl);
             if (!currentUrl.equals(newUrl)) {
                 RegistryProtocol.this.reExport(originInvoker, newUrl);
@@ -592,7 +593,7 @@ public class RegistryProtocol implements Protocol {
         public ServiceConfigurationListener(URL providerUrl, OverrideListener notifyListener) {
             this.providerUrl = providerUrl;
             this.notifyListener = notifyListener;
-            this.initWith(providerUrl.getEncodedServiceKey() + CONFIGURATORS_SUFFIX);
+            this.initWith(providerUrl.getServiceKey("*") + CONFIGURATORS_SUFFIX);
         }
 
         private <T> URL overrideUrl(URL providerUrl) {
@@ -676,8 +677,8 @@ public class RegistryProtocol implements Protocol {
                 NotifyListener listener = RegistryProtocol.INSTANCE.overrideListeners.remove(subscribeUrl);
                 registry.unsubscribe(subscribeUrl, listener);
                 DynamicConfiguration.getDynamicConfiguration()
-                        .removeListener(subscribeUrl.getServiceKey() + CONFIGURATORS_SUFFIX,
-                                serviceConfigurationListeners.get(subscribeUrl.getServiceKey()));
+                        .removeListener(subscribeUrl.getServiceKey(PATH_SEPARATOR) + CONFIGURATORS_SUFFIX,
+                                serviceConfigurationListeners.get(subscribeUrl.getServiceKey(PATH_SEPARATOR)));
             } catch (Throwable t) {
                 logger.warn(t.getMessage(), t);
             }

@@ -30,6 +30,7 @@ import javax.cache.spi.CachingProvider;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.METHOD_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 
 /**
  * This class store the cache value per thread. If a service,method,consumer or provided is configured with key <b>cache</b>
@@ -47,7 +48,7 @@ public class JCache implements org.apache.dubbo.cache.Cache {
 
     public JCache(URL url) {
         String method = url.getParameter(METHOD_KEY, "");
-        String key = url.getAddress() + "." + url.getServiceKey() + "." + method;
+        String key = url.getAddress() + "." + url.getServiceKey(PATH_SEPARATOR) + "." + method;
         // jcache parameter is the full-qualified class name of SPI implementation
         String type = url.getParameter("jcache");
 

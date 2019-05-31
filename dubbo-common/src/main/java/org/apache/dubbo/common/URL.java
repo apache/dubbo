@@ -54,6 +54,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PASSWORD_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.USERNAME_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 
 /**
  * URL - Uniform Resource Locator (Immutable, ThreadSafe)
@@ -1285,7 +1286,7 @@ class URL implements Serializable {
         }
         String path;
         if (useService) {
-            path = getServiceKey();
+            path = getServiceKey(PATH_SEPARATOR);
         } else {
             path = getPath();
         }
@@ -1313,30 +1314,21 @@ class URL implements Serializable {
     }
 
     /**
-     * The format is '{group}*{interfaceName}:{version}'
+     * The format of return value is '{group}{delimiter}{interfaceName}:{version}'
      *
      * @return
      */
-    public String getEncodedServiceKey() {
-        String serviceKey = this.getServiceKey();
-        serviceKey = serviceKey.replaceFirst("/", "*");
-        return serviceKey;
-    }
-
-    /**
-     * The format of return value is '{group}/{interfaceName}:{version}'
-     * @return
-     */
-    public String getServiceKey() {
+    public String getServiceKey(String delimiter) {
         String inf = getServiceInterface();
         if (inf == null) {
             return null;
         }
-        return buildKey(inf, getParameter(GROUP_KEY), getParameter(VERSION_KEY));
+        return buildKey(inf, delimiter, getParameter(GROUP_KEY), getParameter(VERSION_KEY));
     }
 
     /**
      * The format of return value is '{group}/{path/interfaceName}:{version}'
+     *
      * @return
      */
     public String getPathKey() {
@@ -1344,13 +1336,13 @@ class URL implements Serializable {
         if (inf == null) {
             return null;
         }
-        return buildKey(inf, getParameter(GROUP_KEY), getParameter(VERSION_KEY));
+        return buildKey(inf, PATH_SEPARATOR, getParameter(GROUP_KEY), getParameter(VERSION_KEY));
     }
 
-    public static String buildKey(String path, String group, String version) {
+    public static String buildKey(String path, String delimiter, String group, String version) {
         StringBuilder buf = new StringBuilder();
         if (group != null && group.length() > 0) {
-            buf.append(group).append("/");
+            buf.append(group).append(delimiter);
         }
         buf.append(path);
         if (version != null && version.length() > 0) {

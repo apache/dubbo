@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 
 /**
  * @date 2017/11/23
@@ -38,7 +39,7 @@ public class ProviderConsumerRegTable {
 
     public static <T> ProviderInvokerWrapper<T> registerProvider(Invoker<T> invoker, URL registryUrl, URL providerUrl) {
         ProviderInvokerWrapper<T> wrapperInvoker = new ProviderInvokerWrapper<>(invoker, registryUrl, providerUrl);
-        String serviceUniqueName = providerUrl.getServiceKey();
+        String serviceUniqueName = providerUrl.getServiceKey(PATH_SEPARATOR);
         ConcurrentMap<Invoker, ProviderInvokerWrapper> invokers = providerInvokers.get(serviceUniqueName);
         if (invokers == null) {
             providerInvokers.putIfAbsent(serviceUniqueName, new ConcurrentHashMap<>());
@@ -66,7 +67,7 @@ public class ProviderConsumerRegTable {
     }
 
     public static <T> ProviderInvokerWrapper<T> getProviderWrapper(URL registeredProviderUrl, Invoker<T> invoker) {
-        String serviceUniqueName = registeredProviderUrl.getServiceKey();
+        String serviceUniqueName = registeredProviderUrl.getServiceKey(PATH_SEPARATOR);
         ConcurrentMap<Invoker, ProviderInvokerWrapper> invokers = providerInvokers.get(serviceUniqueName);
         if (invokers == null) {
             return null;
@@ -83,7 +84,7 @@ public class ProviderConsumerRegTable {
 
     public static void registerConsumer(Invoker invoker, URL registryUrl, URL consumerUrl, RegistryDirectory registryDirectory) {
         ConsumerInvokerWrapper wrapperInvoker = new ConsumerInvokerWrapper(invoker, registryUrl, consumerUrl, registryDirectory);
-        String serviceUniqueName = consumerUrl.getServiceKey();
+        String serviceUniqueName = consumerUrl.getServiceKey(PATH_SEPARATOR);
         Set<ConsumerInvokerWrapper> invokers = consumerInvokers.get(serviceUniqueName);
         if (invokers == null) {
             consumerInvokers.putIfAbsent(serviceUniqueName, new ConcurrentHashSet<ConsumerInvokerWrapper>());

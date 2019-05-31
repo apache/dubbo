@@ -33,6 +33,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import static org.apache.dubbo.rpc.Constants.$INVOKE;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 
 /**
  * EventFilter
@@ -66,7 +67,7 @@ public class FutureFilter extends ListenableFilter {
             return;
         }
         if (onInvokeMethod == null || onInvokeInst == null) {
-            throw new IllegalStateException("service:" + invoker.getUrl().getServiceKey() + " has a oninvoke callback config , but no such " + (onInvokeMethod == null ? "method" : "instance") + " found. url:" + invoker.getUrl());
+            throw new IllegalStateException("service:" + invoker.getUrl().getServiceKey(PATH_SEPARATOR) + " has a oninvoke callback config , but no such " + (onInvokeMethod == null ? "method" : "instance") + " found. url:" + invoker.getUrl());
         }
         if (!onInvokeMethod.isAccessible()) {
             onInvokeMethod.setAccessible(true);
@@ -97,7 +98,7 @@ public class FutureFilter extends ListenableFilter {
         }
 
         if (onReturnMethod == null || onReturnInst == null) {
-            throw new IllegalStateException("service:" + invoker.getUrl().getServiceKey() + " has a onreturn callback config , but no such " + (onReturnMethod == null ? "method" : "instance") + " found. url:" + invoker.getUrl());
+            throw new IllegalStateException("service:" + invoker.getUrl().getServiceKey(PATH_SEPARATOR) + " has a onreturn callback config , but no such " + (onReturnMethod == null ? "method" : "instance") + " found. url:" + invoker.getUrl());
         }
         if (!onReturnMethod.isAccessible()) {
             onReturnMethod.setAccessible(true);
@@ -142,7 +143,7 @@ public class FutureFilter extends ListenableFilter {
             return;
         }
         if (onthrowMethod == null || onthrowInst == null) {
-            throw new IllegalStateException("service:" + invoker.getUrl().getServiceKey() + " has a onthrow callback config , but no such " + (onthrowMethod == null ? "method" : "instance") + " found. url:" + invoker.getUrl());
+            throw new IllegalStateException("service:" + invoker.getUrl().getServiceKey(PATH_SEPARATOR) + " has a onthrow callback config , but no such " + (onthrowMethod == null ? "method" : "instance") + " found. url:" + invoker.getUrl());
         }
         if (!onthrowMethod.isAccessible()) {
             onthrowMethod.setAccessible(true);
@@ -176,7 +177,7 @@ public class FutureFilter extends ListenableFilter {
     }
 
     private ConsumerMethodModel.AsyncMethodInfo getAsyncMethodInfo(Invoker<?> invoker, Invocation invocation) {
-        final ConsumerModel consumerModel = ApplicationModel.getConsumerModel(invoker.getUrl().getServiceKey());
+        final ConsumerModel consumerModel = ApplicationModel.getConsumerModel(invoker.getUrl().getServiceKey(PATH_SEPARATOR));
         if (consumerModel == null) {
             return null;
         }
