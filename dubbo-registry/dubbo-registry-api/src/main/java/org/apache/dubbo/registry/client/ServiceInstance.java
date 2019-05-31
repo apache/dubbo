@@ -22,7 +22,7 @@ import java.util.Map;
  * The model class of an instance of a service, which is used for service registration and discovery.
  * <p>
  *
- * @since 2.7.2
+ * @since 2.7.3
  */
 public interface ServiceInstance {
 
@@ -50,9 +50,9 @@ public interface ServiceInstance {
     /**
      * The port of the registered service instance.
      *
-     * @return the positive integer
+     * @return the positive integer if present
      */
-    int getPort();
+    Integer getPort();
 
     /**
      * The enable status of the registered service instance.

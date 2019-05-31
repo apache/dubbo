@@ -17,7 +17,7 @@
 package org.apache.dubbo.registry.client;
 
 import org.apache.dubbo.event.EventDispatcher;
-import org.apache.dubbo.registry.client.event.ServiceDiscoveryChangeListener;
+import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -25,16 +25,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.apache.dubbo.event.EventDispatcher.getDefaultExtension;
-
 /**
  * In-Memory {@link ServiceDiscovery} implementation
  *
- * @since 2.7.2
+ * @since 2.7.3
  */
 public class InMemoryServiceDiscovery implements ServiceDiscovery {
 
-    private final EventDispatcher dispatcher = getDefaultExtension();
+    private final EventDispatcher dispatcher = EventDispatcher.getDefaultExtension();
 
     private Map<String, List<ServiceInstance>> repository = new HashMap<>();
 
@@ -48,22 +46,43 @@ public class InMemoryServiceDiscovery implements ServiceDiscovery {
         return repository.computeIfAbsent(serviceName, s -> new LinkedList<>());
     }
 
-    public InMemoryServiceDiscovery addServiceInstance(ServiceInstance serviceInstance) {
-        String serviceName = serviceInstance.getServiceName();
-        List<ServiceInstance> serviceInstances = repository.computeIfAbsent(serviceName, s -> new LinkedList<>());
-        if (!serviceInstances.contains(serviceInstance)) {
-            serviceInstances.add(serviceInstance);
-        }
-        return this;
-    }
-
     public String toString() {
         return "InMemoryServiceDiscovery";
     }
 
     @Override
-    public void addServiceDiscoveryChangeListener(String serviceName, ServiceDiscoveryChangeListener listener) throws NullPointerException, IllegalArgumentException {
-        dispatcher.addEventListener(listener);
+    public void register(ServiceInstance serviceInstance) throws RuntimeException {
+        String serviceName = serviceInstance.getServiceName();
+        List<ServiceInstance> serviceInstances = repository.computeIfAbsent(serviceName, s -> new LinkedList<>());
+        if (!serviceInstances.contains(serviceInstance)) {
+            serviceInstances.add(serviceInstance);
+        }
     }
 
+    @Override
+    public void update(ServiceInstance serviceInstance) throws RuntimeException {
+        unregister(serviceInstance);
+        register(serviceInstance);
+    }
+
+    @Override
+    public void unregister(ServiceInstance serviceInstance) throws RuntimeException {
+        String serviceName = serviceInstance.getServiceName();
+        List<ServiceInstance> serviceInstances = repository.computeIfAbsent(serviceName, s -> new LinkedList<>());
+        serviceInstances.remove(serviceInstance);
+    }
+
+    @Override
+    public void start() {
+
+    }
+
+    @Override
+    public void stop() {
+    }
+
+    @Override
+    public void addServiceInstancesChangedListener(String serviceName, ServiceInstancesChangedListener listener) throws NullPointerException, IllegalArgumentException {
+        dispatcher.addEventListener(listener);
+    }
 }

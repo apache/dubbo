@@ -18,6 +18,6 @@
  * * The inspiration of service registration and discovery comes from
  * <a href="https://spring.io/projects/spring-cloud-commons">Spring Cloud Commons</a>.
  *
- * @since 2.7.2
+ * @since 2.7.3
  */
 package org.apache.dubbo.registry.client;

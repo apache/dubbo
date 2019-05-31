@@ -16,45 +16,53 @@
  */
 package org.apache.dubbo.registry.client;
 
+import org.apache.dubbo.common.URL;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.apache.dubbo.common.URL.valueOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * {@link DefaultServiceInstance} Test
+ * {@link ServiceDiscoveryFactory} Test
  *
  * @since 2.7.3
  */
-public class DefaultServiceInstanceTest {
+public class ServiceDiscoveryFactoryTest {
 
-    public static DefaultServiceInstance INSTANCE =
-            new DefaultServiceInstance("A", "127.0.0.1", 8080);
+    private static final URL dubboURL = valueOf("dubbo://localhost:20880");
+
+    private static final URL inMemoryURL = valueOf("in-memory://localhost:12345");
+
+    private ServiceDiscoveryFactory serviceDiscoveryFactory;
 
     @BeforeEach
     public void init() {
-        INSTANCE = new DefaultServiceInstance("A", "127.0.0.1", 8080);
+        serviceDiscoveryFactory = ServiceDiscoveryFactory.getDefaultExtension();
     }
 
     @Test
-    public void testDefaultValues() {
-        assertTrue(INSTANCE.isEnabled());
-        assertTrue(INSTANCE.isHealthy());
-        assertTrue(INSTANCE.getMetadata().isEmpty());
+    public void testClass() {
+        assertEquals(DefaultServiceDiscoveryFactory.class, serviceDiscoveryFactory.getClass());
     }
 
     @Test
-    public void testSetAndGetValues() {
-        INSTANCE.setEnabled(false);
-        INSTANCE.setHealthy(false);
+    public void testSupports() {
+        assertFalse(serviceDiscoveryFactory.supports(dubboURL));
+        assertTrue(serviceDiscoveryFactory.supports(inMemoryURL));
+    }
 
-        assertEquals("A", INSTANCE.getServiceName());
-        assertEquals("127.0.0.1", INSTANCE.getHost());
-        assertEquals(8080, INSTANCE.getPort());
-        assertFalse(INSTANCE.isEnabled());
-        assertFalse(INSTANCE.isHealthy());
-        assertTrue(INSTANCE.getMetadata().isEmpty());
+    @Test
+    public void testCreate() {
+        ServiceDiscovery serviceDiscovery = serviceDiscoveryFactory.create(inMemoryURL);
+        assertEquals(EventPublishingServiceDiscovery.class, serviceDiscovery.getClass());
+    }
+
+    @Test
+    public void testPriority() {
+        assertEquals(Integer.MAX_VALUE, serviceDiscoveryFactory.getPriority());
     }
 }

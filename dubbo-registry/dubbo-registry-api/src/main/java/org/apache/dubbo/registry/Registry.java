@@ -18,6 +18,7 @@ package org.apache.dubbo.registry;
 
 import org.apache.dubbo.common.Node;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.registry.client.ServiceDiscovery;
 
 /**
  * Registry. (SPI, Prototype, ThreadSafe)
@@ -26,4 +27,11 @@ import org.apache.dubbo.common.URL;
  * @see org.apache.dubbo.registry.support.AbstractRegistry
  */
 public interface Registry extends Node, RegistryService {
+
+    /**
+     * The parameter name of {@link ServiceDiscovery}'s type
+     *
+     * @since 2.7.3
+     */
+    public static final String TYPE_PARAM_NAME = "registry-type";
 }

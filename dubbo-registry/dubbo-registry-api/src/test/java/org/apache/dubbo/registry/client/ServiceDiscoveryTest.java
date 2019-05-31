@@ -17,12 +17,8 @@
 package org.apache.dubbo.registry.client;
 
 import org.apache.dubbo.common.utils.Page;
-import org.apache.dubbo.event.EventDispatcher;
-import org.apache.dubbo.event.EventListener;
-import org.apache.dubbo.registry.client.event.ServiceInstanceEvent;
-import org.apache.dubbo.registry.client.event.ServiceInstancePreRegisteredEvent;
-import org.apache.dubbo.registry.client.event.ServiceInstanceRegisteredEvent;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -30,10 +26,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 
-import static java.lang.Integer.MAX_VALUE;
 import static java.util.Arrays.asList;
-import static org.apache.dubbo.registry.client.DefaultServiceInstanceTest.INSTANCE;
-import static org.apache.dubbo.registry.client.ServiceDiscoveryTest.handleEvent;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -41,38 +34,70 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * {@link ServiceDiscovery} Test case
  *
- * @since 2.7.2
+ * @since 2.7.3
  */
 public class ServiceDiscoveryTest {
 
-    private static InMemoryServiceDiscovery instance;
-
-    private EventDispatcher dispatcher = EventDispatcher.getDefaultExtension();
+    private ServiceDiscovery serviceDiscovery;
 
     @BeforeEach
     public void init() {
-        instance = new InMemoryServiceDiscovery();
-        dispatcher.addEventListener(new BeforeEventListener());
-        dispatcher.addEventListener(new AfterEventListener());
-        dispatcher.removeAllEventListeners();
+        if (serviceDiscovery == null) {
+            setServiceDiscovery(new InMemoryServiceDiscovery());
+        }
+        // test start()
+        serviceDiscovery.start();
+    }
+
+    @AfterEach
+    public void destroy() {
+        // test stop()
+        serviceDiscovery.stop();
     }
 
     @Test
     public void testToString() {
-        assertEquals("InMemoryServiceDiscovery", instance.toString());
+        assertEquals("InMemoryServiceDiscovery", serviceDiscovery.toString());
     }
 
     @Test
-    public void testGetPriority() {
-        assertEquals(MAX_VALUE, instance.getPriority());
+    public void testRegisterAndUpdateAndUnregister() {
+
+        // register
+        DefaultServiceInstance serviceInstance = new DefaultServiceInstance("A", "127.0.0.1", 8080);
+        serviceDiscovery.register(serviceInstance);
+
+        List<ServiceInstance> serviceInstances = serviceDiscovery.getInstances("A");
+
+        assertEquals(1, serviceInstances.size());
+        assertEquals(serviceInstances.get(0), serviceInstance);
+
+        serviceInstance.setEnabled(false);
+        serviceInstance.setHealthy(false);
+        serviceInstance.setPort(9090);
+
+        // update
+        serviceDiscovery.update(serviceInstance);
+
+        serviceInstances = serviceDiscovery.getInstances("A");
+
+        assertEquals(1, serviceInstances.size());
+        assertEquals(serviceInstances.get(0), serviceInstance);
+
+        // unregister
+        serviceDiscovery.unregister(serviceInstance);
+
+        serviceInstances = serviceDiscovery.getInstances("A");
+        assertTrue(serviceInstances.isEmpty());
     }
+
 
     @Test
     public void testGetServices() {
-        instance.addServiceInstance(new DefaultServiceInstance("A", "127.0.0.1", 8080));
-        instance.addServiceInstance(new DefaultServiceInstance("B", "127.0.0.1", 8080));
-        instance.addServiceInstance(new DefaultServiceInstance("C", "127.0.0.1", 8080));
-        assertEquals(new HashSet<>(asList("A", "B", "C")), instance.getServices());
+        serviceDiscovery.register(new DefaultServiceInstance("A", "127.0.0.1", 8080));
+        serviceDiscovery.register(new DefaultServiceInstance("B", "127.0.0.1", 8080));
+        serviceDiscovery.register(new DefaultServiceInstance("C", "127.0.0.1", 8080));
+        assertEquals(new HashSet<>(asList("A", "B", "C")), serviceDiscovery.getServices());
     }
 
     @Test
@@ -84,19 +109,19 @@ public class ServiceDiscoveryTest {
                 new DefaultServiceInstance("A", "127.0.0.1", 8082)
         );
 
-        instances.forEach(instance::addServiceInstance);
+        instances.forEach(serviceDiscovery::register);
 
         // Duplicated
-        instance.addServiceInstance(new DefaultServiceInstance("A", "127.0.0.1", 8080));
+        serviceDiscovery.register(new DefaultServiceInstance("A", "127.0.0.1", 8080));
         // Duplicated
-        instance.addServiceInstance(new DefaultServiceInstance("A", "127.0.0.1", 8081));
+        serviceDiscovery.register(new DefaultServiceInstance("A", "127.0.0.1", 8081));
 
         // offset starts 0
         int offset = 0;
         // requestSize > total elements
         int requestSize = 5;
 
-        Page<ServiceInstance> page = instance.getInstances("A", offset, requestSize);
+        Page<ServiceInstance> page = serviceDiscovery.getInstances("A", offset, requestSize);
         assertEquals(0, page.getRequestOffset());
         assertEquals(5, page.getRequestSize());
         assertEquals(3, page.getTotalSize());
@@ -110,7 +135,7 @@ public class ServiceDiscoveryTest {
         // requestSize < total elements
         requestSize = 2;
 
-        page = instance.getInstances("A", offset, requestSize);
+        page = serviceDiscovery.getInstances("A", offset, requestSize);
         assertEquals(0, page.getRequestOffset());
         assertEquals(2, page.getRequestSize());
         assertEquals(3, page.getTotalSize());
@@ -122,7 +147,7 @@ public class ServiceDiscoveryTest {
         }
 
         offset = 1;
-        page = instance.getInstances("A", offset, requestSize);
+        page = serviceDiscovery.getInstances("A", offset, requestSize);
         assertEquals(1, page.getRequestOffset());
         assertEquals(2, page.getRequestSize());
         assertEquals(3, page.getTotalSize());
@@ -134,7 +159,7 @@ public class ServiceDiscoveryTest {
         }
 
         offset = 2;
-        page = instance.getInstances("A", offset, requestSize);
+        page = serviceDiscovery.getInstances("A", offset, requestSize);
         assertEquals(2, page.getRequestOffset());
         assertEquals(2, page.getRequestSize());
         assertEquals(3, page.getTotalSize());
@@ -142,7 +167,7 @@ public class ServiceDiscoveryTest {
         assertTrue(page.hasData());
 
         offset = 3;
-        page = instance.getInstances("A", offset, requestSize);
+        page = serviceDiscovery.getInstances("A", offset, requestSize);
         assertEquals(3, page.getRequestOffset());
         assertEquals(2, page.getRequestSize());
         assertEquals(3, page.getTotalSize());
@@ -150,7 +175,7 @@ public class ServiceDiscoveryTest {
         assertFalse(page.hasData());
 
         offset = 5;
-        page = instance.getInstances("A", offset, requestSize);
+        page = serviceDiscovery.getInstances("A", offset, requestSize);
         assertEquals(5, page.getRequestOffset());
         assertEquals(2, page.getRequestSize());
         assertEquals(3, page.getTotalSize());
@@ -171,14 +196,14 @@ public class ServiceDiscoveryTest {
         serviceInstance.setHealthy(false);
         instances.add(serviceInstance);
 
-        instances.forEach(instance::addServiceInstance);
+        instances.forEach(serviceDiscovery::register);
 
         // offset starts 0
         int offset = 0;
         // requestSize > total elements
         int requestSize = 5;
 
-        Page<ServiceInstance> page = instance.getInstances("A", offset, requestSize, true);
+        Page<ServiceInstance> page = serviceDiscovery.getInstances("A", offset, requestSize, true);
         assertEquals(0, page.getRequestOffset());
         assertEquals(5, page.getRequestSize());
         assertEquals(3, page.getTotalSize());
@@ -193,7 +218,7 @@ public class ServiceDiscoveryTest {
         requestSize = 2;
 
         offset = 1;
-        page = instance.getInstances("A", offset, requestSize, true);
+        page = serviceDiscovery.getInstances("A", offset, requestSize, true);
         assertEquals(1, page.getRequestOffset());
         assertEquals(2, page.getRequestSize());
         assertEquals(3, page.getTotalSize());
@@ -205,7 +230,7 @@ public class ServiceDiscoveryTest {
         }
 
         offset = 2;
-        page = instance.getInstances("A", offset, requestSize, true);
+        page = serviceDiscovery.getInstances("A", offset, requestSize, true);
         assertEquals(2, page.getRequestOffset());
         assertEquals(2, page.getRequestSize());
         assertEquals(3, page.getTotalSize());
@@ -213,7 +238,7 @@ public class ServiceDiscoveryTest {
         assertFalse(page.hasData());
 
         offset = 3;
-        page = instance.getInstances("A", offset, requestSize, true);
+        page = serviceDiscovery.getInstances("A", offset, requestSize, true);
         assertEquals(3, page.getRequestOffset());
         assertEquals(2, page.getRequestSize());
         assertEquals(3, page.getTotalSize());
@@ -221,7 +246,7 @@ public class ServiceDiscoveryTest {
         assertFalse(page.hasData());
 
         offset = 5;
-        page = instance.getInstances("A", offset, requestSize, true);
+        page = serviceDiscovery.getInstances("A", offset, requestSize, true);
         assertEquals(5, page.getRequestOffset());
         assertEquals(2, page.getRequestSize());
         assertEquals(3, page.getTotalSize());
@@ -229,25 +254,11 @@ public class ServiceDiscoveryTest {
         assertFalse(page.hasData());
     }
 
-
-    static void handleEvent(ServiceInstanceEvent event) {
-        assertEquals(INSTANCE, event.getServiceInstance());
-        assertEquals(instance, event.getSource());
+    public void setServiceDiscovery(ServiceDiscovery serviceDiscovery) {
+        this.serviceDiscovery = serviceDiscovery;
     }
-}
 
-class BeforeEventListener implements EventListener<ServiceInstancePreRegisteredEvent> {
-
-    @Override
-    public void onEvent(ServiceInstancePreRegisteredEvent event) {
-        handleEvent(event);
-    }
-}
-
-class AfterEventListener implements EventListener<ServiceInstanceRegisteredEvent> {
-
-    @Override
-    public void onEvent(ServiceInstanceRegisteredEvent event) {
-        handleEvent(event);
+    public ServiceDiscovery getServiceDiscovery() {
+        return serviceDiscovery;
     }
 }

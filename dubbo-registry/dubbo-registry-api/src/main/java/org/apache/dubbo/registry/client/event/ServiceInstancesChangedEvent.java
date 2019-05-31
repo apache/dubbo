@@ -18,6 +18,7 @@ package org.apache.dubbo.registry.client.event;
 
 import org.apache.dubbo.event.Event;
 import org.apache.dubbo.registry.client.ServiceInstance;
+import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 
 import java.util.Collection;
 import java.util.EventObject;
@@ -25,29 +26,26 @@ import java.util.EventObject;
 import static java.util.Collections.unmodifiableCollection;
 
 /**
- * The Service Discovery Change {@link EventObject Event}
+ * The Service Instances Changed {@link EventObject Event} cause by service
  *
- * @see ServiceDiscoveryChangeListener
- * @since 2.7.2
+ * @see ServiceInstancesChangedListener
+ * @since 2.7.3
  */
-public class ServiceDiscoveryChangeEvent extends Event {
+public class ServiceInstancesChangedEvent extends Event {
 
     private final String serviceName;
 
     private final Collection<ServiceInstance> serviceInstances;
-
-    private final long timestamp;
 
     /**
      * @param serviceName      The name of service that was changed
      * @param serviceInstances all {@link ServiceInstance service instances}
      * @throws IllegalArgumentException if source is null.
      */
-    public ServiceDiscoveryChangeEvent(String serviceName, Collection<ServiceInstance> serviceInstances) {
+    public ServiceInstancesChangedEvent(String serviceName, Collection<ServiceInstance> serviceInstances) {
         super(serviceName);
         this.serviceName = serviceName;
         this.serviceInstances = unmodifiableCollection(serviceInstances);
-        this.timestamp = System.currentTimeMillis();
     }
 
     /**
@@ -64,10 +62,4 @@ public class ServiceDiscoveryChangeEvent extends Event {
         return serviceInstances;
     }
 
-    /**
-     * Return the system time in milliseconds when the event happened.
-     */
-    public long getTimestamp() {
-        return this.timestamp;
-    }
 }

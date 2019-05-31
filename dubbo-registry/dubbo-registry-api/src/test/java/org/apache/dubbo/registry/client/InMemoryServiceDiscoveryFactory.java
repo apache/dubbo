@@ -14,34 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.client.event;
+package org.apache.dubbo.registry.client;
 
-import org.apache.dubbo.event.Event;
-import org.apache.dubbo.registry.client.ServiceInstance;
+import org.apache.dubbo.common.URL;
 
 /**
- * The {@link Event Dubbo event} for {@link ServiceInstance an service instance}
+ * {@link InMemoryServiceDiscovery} Factory
  *
+ * @see InMemoryServiceDiscovery
  * @since 2.7.3
  */
-public abstract class ServiceInstanceEvent extends Event {
+public class InMemoryServiceDiscoveryFactory implements ServiceDiscoveryFactory {
 
-    private final ServiceInstance serviceInstance;
-
-    /**
-     * @param serviceInstance {@link ServiceInstance an service instance}
-     */
-    public ServiceInstanceEvent(Object source, ServiceInstance serviceInstance) {
-        super(source);
-        this.serviceInstance = serviceInstance;
+    @Override
+    public boolean supports(URL connectionURL) {
+        return "in-memory".equalsIgnoreCase(connectionURL.getProtocol());
     }
 
-    /**
-     * Get current {@link ServiceInstance service instance}
-     *
-     * @return current {@link ServiceInstance service instance}
-     */
-    public ServiceInstance getServiceInstance() {
-        return serviceInstance;
+    @Override
+    public ServiceDiscovery create(URL connectionURL) {
+        return new InMemoryServiceDiscovery();
     }
 }

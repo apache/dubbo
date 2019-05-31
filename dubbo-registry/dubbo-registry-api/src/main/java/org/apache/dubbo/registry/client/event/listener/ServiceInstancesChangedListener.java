@@ -14,22 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.client.event;
+package org.apache.dubbo.registry.client.event.listener;
 
 import org.apache.dubbo.event.EventListener;
+import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 
 /**
- * The Service Discovery Change {@link EventListener Event Listener}
+ * The Service Discovery Changed {@link EventListener Event Listener}
  *
- * @see ServiceDiscoveryChangeEvent
- * @since 2.7.2
+ * @see ServiceInstancesChangedEvent
+ * @since 2.7.3
  */
-public interface ServiceDiscoveryChangeListener extends EventListener<ServiceDiscoveryChangeEvent> {
+public interface ServiceInstancesChangedListener extends EventListener<ServiceInstancesChangedEvent> {
 
     /**
-     * On {@link ServiceDiscoveryChangeEvent the service change event}
+     * On {@link ServiceInstancesChangedEvent the service instances change event}
      *
-     * @param event {@link ServiceDiscoveryChangeEvent}
+     * @param event {@link ServiceInstancesChangedEvent}
      */
-    void onEvent(ServiceDiscoveryChangeEvent event);
+    void onEvent(ServiceInstancesChangedEvent event);
 }

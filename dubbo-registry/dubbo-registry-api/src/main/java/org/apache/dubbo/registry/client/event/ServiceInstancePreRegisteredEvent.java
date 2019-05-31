@@ -16,14 +16,14 @@
  */
 package org.apache.dubbo.registry.client.event;
 
+import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
-import org.apache.dubbo.registry.client.ServiceRegistry;
 
 
 /**
- * The before-{@link ServiceRegistry#register(ServiceInstance) register} event for {@link ServiceInstance}
+ * The before-{@link ServiceDiscovery#register(ServiceInstance) register} event for {@link ServiceInstance}
  *
- * @since 2.7.2
+ * @since 2.7.3
  */
 public class ServiceInstancePreRegisteredEvent extends ServiceInstanceEvent {
 

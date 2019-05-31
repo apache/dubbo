@@ -23,7 +23,7 @@ import java.util.Objects;
 /**
  * The default implementation of {@link ServiceInstance}.
  *
- * @since 2.7.2
+ * @since 2.7.3
  */
 public class DefaultServiceInstance implements ServiceInstance {
 
@@ -33,7 +33,7 @@ public class DefaultServiceInstance implements ServiceInstance {
 
     private final String host;
 
-    private final int port;
+    private Integer port;
 
     private boolean enabled;
 
@@ -41,7 +41,10 @@ public class DefaultServiceInstance implements ServiceInstance {
 
     private Map<String, String> metadata = new HashMap<>();
 
-    public DefaultServiceInstance(String id, String serviceName, String host, int port) {
+    public DefaultServiceInstance(String id, String serviceName, String host, Integer port) {
+        if (port != null && port.intValue() < 1) {
+            throw new IllegalArgumentException("The port must be greater than zero!");
+        }
         this.id = id;
         this.serviceName = serviceName;
         this.host = host;
@@ -50,7 +53,7 @@ public class DefaultServiceInstance implements ServiceInstance {
         this.healthy = true;
     }
 
-    public DefaultServiceInstance(String serviceName, String host, int port) {
+    public DefaultServiceInstance(String serviceName, String host, Integer port) {
         this(null, serviceName, host, port);
     }
 
@@ -69,8 +72,12 @@ public class DefaultServiceInstance implements ServiceInstance {
         return host;
     }
 
+    public void setPort(Integer port) {
+        this.port = port;
+    }
+
     @Override
-    public int getPort() {
+    public Integer getPort() {
         return port;
     }
 
@@ -106,16 +113,18 @@ public class DefaultServiceInstance implements ServiceInstance {
         if (this == o) return true;
         if (!(o instanceof DefaultServiceInstance)) return false;
         DefaultServiceInstance that = (DefaultServiceInstance) o;
-        return getPort() == that.getPort() &&
+        return isEnabled() == that.isEnabled() &&
+                isHealthy() == that.isHealthy() &&
                 Objects.equals(getId(), that.getId()) &&
                 Objects.equals(getServiceName(), that.getServiceName()) &&
                 Objects.equals(getHost(), that.getHost()) &&
+                Objects.equals(getPort(), that.getPort()) &&
                 Objects.equals(getMetadata(), that.getMetadata());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), getServiceName(), getHost(), getPort(), getMetadata());
+        return Objects.hash(getId(), getServiceName(), getHost(), getPort(), isEnabled(), isHealthy(), getMetadata());
     }
 
     @Override

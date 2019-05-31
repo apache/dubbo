@@ -14,34 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.client.event;
+package org.apache.dubbo.registry.client;
 
-import org.apache.dubbo.event.Event;
-import org.apache.dubbo.registry.client.ServiceInstance;
+import org.apache.dubbo.registry.client.event.ServiceInstancePreRegisteredEvent;
+import org.apache.dubbo.registry.client.event.listener.CustomizableServiceInstanceListener;
 
 /**
- * The {@link Event Dubbo event} for {@link ServiceInstance an service instance}
+ * The interface to customize {@link ServiceInstance the service instance} on {@link ServiceInstancePreRegisteredEvent}
  *
+ * @see CustomizableServiceInstanceListener
+ * @see ServiceInstancePreRegisteredEvent
+ * @see ServiceInstance#getMetadata()
  * @since 2.7.3
  */
-public abstract class ServiceInstanceEvent extends Event {
-
-    private final ServiceInstance serviceInstance;
+public interface ServiceInstanceCustomizer {
 
     /**
-     * @param serviceInstance {@link ServiceInstance an service instance}
-     */
-    public ServiceInstanceEvent(Object source, ServiceInstance serviceInstance) {
-        super(source);
-        this.serviceInstance = serviceInstance;
-    }
-
-    /**
-     * Get current {@link ServiceInstance service instance}
+     * Customizes {@link ServiceInstance the service instance}
      *
-     * @return current {@link ServiceInstance service instance}
+     * @param serviceInstance {@link ServiceInstance the service instance}
      */
-    public ServiceInstance getServiceInstance() {
-        return serviceInstance;
-    }
+    void customize(ServiceInstance serviceInstance);
 }

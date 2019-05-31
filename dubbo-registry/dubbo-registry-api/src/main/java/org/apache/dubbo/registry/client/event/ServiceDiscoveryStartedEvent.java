@@ -17,31 +17,36 @@
 package org.apache.dubbo.registry.client.event;
 
 import org.apache.dubbo.event.Event;
-import org.apache.dubbo.registry.client.ServiceInstance;
+import org.apache.dubbo.registry.client.ServiceDiscovery;
+
+import java.util.EventObject;
 
 /**
- * The {@link Event Dubbo event} for {@link ServiceInstance an service instance}
+ * The {@link ServiceDiscovery Service Discovery} Started {@link EventObject Event}
+ * after {@link ServiceDiscovery#start()} execution
  *
+ * @see ServiceDiscovery#start()
  * @since 2.7.3
  */
-public abstract class ServiceInstanceEvent extends Event {
-
-    private final ServiceInstance serviceInstance;
+public class ServiceDiscoveryStartedEvent extends Event {
 
     /**
-     * @param serviceInstance {@link ServiceInstance an service instance}
-     */
-    public ServiceInstanceEvent(Object source, ServiceInstance serviceInstance) {
-        super(source);
-        this.serviceInstance = serviceInstance;
-    }
-
-    /**
-     * Get current {@link ServiceInstance service instance}
+     * Constructs a prototypical Event.
      *
-     * @return current {@link ServiceInstance service instance}
+     * @param serviceDiscovery The instance of {@link ServiceDiscovery} as source
+     * @throws IllegalArgumentException if source is null.
      */
-    public ServiceInstance getServiceInstance() {
-        return serviceInstance;
+    public ServiceDiscoveryStartedEvent(ServiceDiscovery serviceDiscovery) {
+        super(serviceDiscovery);
     }
+
+    /**
+     * Get the instance of {@link ServiceDiscovery} as source
+     *
+     * @return the instance of {@link ServiceDiscovery} as source
+     */
+    public ServiceDiscovery getServiceDiscovery() {
+        return (ServiceDiscovery) getSource();
+    }
+
 }

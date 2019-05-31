@@ -16,9 +16,10 @@
  */
 package org.apache.dubbo.registry.client;
 
+import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.utils.DefaultPage;
 import org.apache.dubbo.common.utils.Page;
-import org.apache.dubbo.registry.client.event.ServiceDiscoveryChangeListener;
+import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -27,23 +28,60 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static java.lang.Integer.compare;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableMap;
 
 /**
  * The common operations of Service Discovery
  *
- * @since 2.7.2
+ * @since 2.7.3
  */
-public interface ServiceDiscovery extends Comparable<ServiceDiscovery> {
+@SPI("composite")
+public interface ServiceDiscovery {
+
+    // ==================================== Lifecycle ==================================== //
 
     /**
-     * A human-readable description of the implementation
-     *
-     * @return The description.
+     * Starts the ServiceRegistry. This is a lifecycle method.
      */
-    String toString();
+    void start();
+
+    /**
+     * Stops the ServiceRegistry. This is a lifecycle method.
+     */
+    void stop();
+
+    // ==================================================================================== //
+
+    // =================================== Registration =================================== //
+
+    /**
+     * Registers an instance of {@link ServiceInstance}.
+     *
+     * @param serviceInstance an instance of {@link ServiceInstance} to be registered
+     * @throws RuntimeException if failed
+     */
+    void register(ServiceInstance serviceInstance) throws RuntimeException;
+
+    /**
+     * Updates the registered {@link ServiceInstance}.
+     *
+     * @param serviceInstance the registered {@link ServiceInstance}
+     * @throws RuntimeException if failed
+     */
+    void update(ServiceInstance serviceInstance) throws RuntimeException;
+
+    /**
+     * Unregisters an instance of {@link ServiceInstance}.
+     *
+     * @param serviceInstance an instance of {@link ServiceInstance} to be deregistered
+     * @throws RuntimeException if failed
+     */
+    void unregister(ServiceInstance serviceInstance) throws RuntimeException;
+
+    // ==================================================================================== //
+
+    // ==================================== Discovery ===================================== //
 
     /**
      * Gets all service names
@@ -162,34 +200,22 @@ public interface ServiceDiscovery extends Comparable<ServiceDiscovery> {
     }
 
     /**
-     * The priority of current {@link ServiceDiscovery}
-     *
-     * @return The {@link Integer#MIN_VALUE minimum integer} indicates the highest priority, in contrast，
-     * the lowest priority is {@link Integer#MAX_VALUE the maximum integer}
-     */
-    default int getPriority() {
-        return Integer.MAX_VALUE;
-    }
-
-    /**
-     * Compares its priority
-     *
-     * @param that {@link ServiceDiscovery}
-     * @return
-     */
-    @Override
-    default int compareTo(ServiceDiscovery that) {
-        return compare(this.getPriority(), that.getPriority());
-    }
-
-    /**
-     * Add an instance of {@link ServiceDiscoveryChangeListener} for specified service
+     * Add an instance of {@link ServiceInstancesChangedListener} for specified service
      *
      * @param serviceName the service name
-     * @param listener    an instance of {@link ServiceDiscoveryChangeListener}
+     * @param listener    an instance of {@link ServiceInstancesChangedListener}
      * @throws NullPointerException
      * @throws IllegalArgumentException
      */
-    void addServiceDiscoveryChangeListener(String serviceName, ServiceDiscoveryChangeListener listener)
+    void addServiceInstancesChangedListener(String serviceName, ServiceInstancesChangedListener listener)
             throws NullPointerException, IllegalArgumentException;
+
+    // ==================================================================================== //
+
+    /**
+     * A human-readable description of the implementation
+     *
+     * @return The description.
+     */
+    String toString();
 }
