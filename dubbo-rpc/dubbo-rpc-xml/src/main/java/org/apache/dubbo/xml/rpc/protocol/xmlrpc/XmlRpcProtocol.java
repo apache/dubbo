@@ -151,7 +151,6 @@ public class XmlRpcProtocol extends AbstractProxyProtocol {
 
     @Override
     @SuppressWarnings("unchecked")
-    @Override
     protected <T> T doRefer(final Class<T> serviceType, URL url) throws RpcException {
         XmlRpcProxyFactoryBean xmlRpcProxyFactoryBean = new XmlRpcProxyFactoryBean();
         xmlRpcProxyFactoryBean.setServiceUrl(url.setProtocol("http").toIdentityString());
