@@ -590,6 +590,15 @@ public abstract class AbstractConfig implements Serializable {
                     if (MethodUtils.isGetter(method)) {
                         String name = method.getName();
                         String key = calculateAttributeFromGetter(name);
+                        /**
+                         * make sure attribute exists
+                         */
+                        try {
+                            getClass().getField(key);
+                        } catch (NoSuchFieldException e) {
+                            logger.warn(e.getMessage(), e);
+                            continue;
+                        }
                         Object value = method.invoke(this);
                         if (value != null) {
                             buf.append(" ");
