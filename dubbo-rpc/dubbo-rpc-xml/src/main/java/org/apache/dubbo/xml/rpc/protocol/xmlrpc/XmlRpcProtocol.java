@@ -61,6 +61,7 @@ public class XmlRpcProtocol extends AbstractProxyProtocol {
         this.httpBinder = httpBinder;
     }
 
+    @Override
     public int getDefaultPort() {
         return 80;
     }
@@ -73,6 +74,7 @@ public class XmlRpcProtocol extends AbstractProxyProtocol {
             this.cors = cors;
         }
 
+        @Override
         public void handle(HttpServletRequest request, HttpServletResponse response)
                 throws IOException, ServletException {
             String uri = request.getRequestURI();
@@ -99,6 +101,7 @@ public class XmlRpcProtocol extends AbstractProxyProtocol {
 
     }
 
+    @Override
     protected <T> Runnable doExport(T impl, Class<T> type, URL url) throws RpcException {
         final URL http_url = url.setProtocol("http");
         String addr = http_url.getIp() + ":" + http_url.getPort();
@@ -144,6 +147,7 @@ public class XmlRpcProtocol extends AbstractProxyProtocol {
     }
 
     @SuppressWarnings("unchecked")
+    @Override
     protected <T> T doRefer(final Class<T> serviceType, URL url) throws RpcException {
         XmlRpcProxyFactoryBean xmlRpcProxyFactoryBean = new XmlRpcProxyFactoryBean();
         xmlRpcProxyFactoryBean.setServiceUrl(url.setProtocol("http").toIdentityString());
@@ -152,6 +156,7 @@ public class XmlRpcProtocol extends AbstractProxyProtocol {
         return (T) xmlRpcProxyFactoryBean.getObject();
     }
 
+    @Override
     protected int getErrorCode(Throwable e) {
         if (e instanceof RemoteAccessException) {
             e = e.getCause();
@@ -169,6 +174,7 @@ public class XmlRpcProtocol extends AbstractProxyProtocol {
         return super.getErrorCode(e);
     }
 
+    @Override
     public void destroy() {
         super.destroy();
         for (String key : new ArrayList<>(serverMap.keySet())) {
