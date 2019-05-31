@@ -83,8 +83,28 @@ public class ApplicationModel {
         }
     }
 
-    public static ServiceModel initServiceModel (Class<?> interfaceClass) {
+    public static ServiceModel registerServiceModel(Class<?> interfaceClass) {
         return SERVICES.computeIfAbsent(interfaceClass.getName(), (k) -> new ServiceModel(interfaceClass));
+    }
+
+    /**
+     * See {@link #registerServiceModel(Class)}
+     *
+     * we assume:
+     * 1. services with different interface are not allowed to have the same path.
+     * 2. services with the same interface but different group/version can share the same path.
+     * 3. path's default value is the name of the interface.
+     * @param path
+     * @param interfaceClass
+     * @return
+     */
+    public static ServiceModel registerServiceModel(String path, Class<?> interfaceClass) {
+        ServiceModel serviceModel = registerServiceModel(interfaceClass);
+        // register path
+        if (!interfaceClass.getName().equals(path)) {
+            SERVICES.putIfAbsent(path, serviceModel);
+        }
+        return serviceModel;
     }
 
     public static Optional<ServiceModel> getServiceModel (String interfaceName) {

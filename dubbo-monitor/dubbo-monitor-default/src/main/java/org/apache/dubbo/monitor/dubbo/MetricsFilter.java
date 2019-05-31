@@ -89,7 +89,7 @@ public class MetricsFilter implements Filter {
             Invoker<MetricsService> metricsInvoker = initMetricsInvoker();
 
             try {
-                ApplicationModel.initServiceModel(MetricsService.class);
+                ApplicationModel.registerServiceModel(MetricsService.class);
                 protocol.export(metricsInvoker);
             } catch (RuntimeException e) {
                 logger.error("Metrics Service need to be configured" +

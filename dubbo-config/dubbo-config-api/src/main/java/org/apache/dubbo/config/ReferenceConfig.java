@@ -333,7 +333,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     }
 
     private ConsumerModel buildConsumerModel(String serviceKey, Map<String, Object> attributes) {
-        return new ConsumerModel(serviceKey, interfaceClass, ref, ApplicationModel.initServiceModel(interfaceClass), attributes);
+        return new ConsumerModel(serviceKey, interfaceClass, ref, ApplicationModel.registerServiceModel(interfaceClass), attributes);
     }
 
     @SuppressWarnings({"unchecked", "rawtypes", "deprecation"})

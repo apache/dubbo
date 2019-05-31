@@ -111,7 +111,7 @@ public class ImplicitCallBackTest {
         asyncMethodInfo.setOnthrowInstance(notify);
         asyncMethodInfo.setOnthrowMethod(onThrowMethod);
         attitudes.put("get", asyncMethodInfo);
-        ApplicationModel.initConsumerModel(consumerUrl.getServiceKey(), new ConsumerModel(consumerUrl.getServiceKey(), IDemoService.class, demoProxy, ApplicationModel.initServiceModel(IDemoService.class), attitudes));
+        ApplicationModel.initConsumerModel(consumerUrl.getServiceKey(), new ConsumerModel(consumerUrl.getServiceKey(), IDemoService.class, demoProxy, ApplicationModel.registerServiceModel(IDemoService.class), attitudes));
     }
 
     //================================================================================================
@@ -122,7 +122,7 @@ public class ImplicitCallBackTest {
         asyncMethodInfo.setOnreturnInstance(notify);
         asyncMethodInfo.setOnreturnMethod(onReturnMethod);
         attitudes.put("get", asyncMethodInfo);
-        ApplicationModel.initConsumerModel(consumerUrl.getServiceKey(), new ConsumerModel(consumerUrl.getServiceKey(), IDemoService.class, demoProxy, ApplicationModel.initServiceModel(IDemoService.class), attitudes));
+        ApplicationModel.initConsumerModel(consumerUrl.getServiceKey(), new ConsumerModel(consumerUrl.getServiceKey(), IDemoService.class, demoProxy, ApplicationModel.registerServiceModel(IDemoService.class), attitudes));
     }
 
     public void initImplicitCallBackURL_onlyOninvoke() throws Exception {
@@ -131,7 +131,7 @@ public class ImplicitCallBackTest {
         asyncMethodInfo.setOninvokeInstance(notify);
         asyncMethodInfo.setOninvokeMethod(onInvokeMethod);
         attitudes.put("get", asyncMethodInfo);
-        ApplicationModel.initConsumerModel(consumerUrl.getServiceKey(), new ConsumerModel(consumerUrl.getServiceKey(), IDemoService.class, demoProxy, ApplicationModel.initServiceModel(IDemoService.class), attitudes));
+        ApplicationModel.initConsumerModel(consumerUrl.getServiceKey(), new ConsumerModel(consumerUrl.getServiceKey(), IDemoService.class, demoProxy, ApplicationModel.registerServiceModel(IDemoService.class), attitudes));
     }
 
     @Test

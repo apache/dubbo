@@ -40,7 +40,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.remoting.Constants.DUBBO_VERSION_KEY;
@@ -101,7 +100,8 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
         request.setVersion(dubboVersion);
         setAttachment(DUBBO_VERSION_KEY, dubboVersion);
 
-        setAttachment(PATH_KEY, in.readUTF());
+        String path = in.readUTF();
+        setAttachment(PATH_KEY, path);
         setAttachment(VERSION_KEY, in.readUTF());
 
         setMethodName(in.readUTF());
@@ -110,21 +110,11 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
         setParameterTypesDesc(desc);
 
         try {
-            Map<String, String> map = (Map<String, String>) in.readObject(Map.class);
-            if (map != null && map.size() > 0) {
-                Map<String, String> attachment = getAttachments();
-                if (attachment == null) {
-                    attachment = new HashMap<String, String>();
-                }
-                attachment.putAll(map);
-                setAttachments(attachment);
-            }
-
             Object[] args = DubboCodec.EMPTY_OBJECT_ARRAY;
             Class<?>[] pts = DubboCodec.EMPTY_CLASS_ARRAY;
             if (desc.length() > 0) {
                 // TODO, lambda function requires variables to be final.
-                Optional<ServiceModel> serviceModel = ApplicationModel.getServiceModel(getAttachment(INTERFACE_KEY));
+                Optional<ServiceModel> serviceModel = ApplicationModel.getServiceModel(path);
                 if (serviceModel.isPresent()) {
                     Optional<MethodModel> methodOptional = serviceModel.get().getMethod(getMethodName(), desc);
                     if (methodOptional.isPresent()) {
@@ -145,6 +135,16 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
                 }
             }
             setParameterTypes(pts);
+
+            Map<String, String> map = (Map<String, String>) in.readObject(Map.class);
+            if (map != null && map.size() > 0) {
+                Map<String, String> attachment = getAttachments();
+                if (attachment == null) {
+                    attachment = new HashMap<String, String>();
+                }
+                attachment.putAll(map);
+                setAttachments(attachment);
+            }
 
             //decode argument ,may be callback
             for (int i = 0; i < args.length; i++) {

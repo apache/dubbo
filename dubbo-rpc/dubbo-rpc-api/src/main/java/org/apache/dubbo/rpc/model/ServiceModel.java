@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.model;
 import org.apache.dubbo.common.utils.CollectionUtils;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -31,7 +32,6 @@ public class ServiceModel {
     // to accelarate search
     private final Map<String, Set<MethodModel>> methods = new HashMap<>();
     private final Map<String, Map<String, MethodModel>> descToMethods = new HashMap<>();
-    private final Map<String, Map<Class<?>[], MethodModel>> typeToMethods = new HashMap<>();
 
     public ServiceModel (Class<?> interfaceClass) {
         this.serviceInterfaceClass = interfaceClass;
@@ -54,8 +54,8 @@ public class ServiceModel {
             Map<String, MethodModel> descMap = descToMethods.computeIfAbsent(methodName, k -> new HashMap<>());
             methodList.forEach(methodModel -> descMap.put(methodModel.getParamDesc(), methodModel));
 
-            Map<Class<?>[], MethodModel> typesMap = typeToMethods.computeIfAbsent(methodName, k -> new HashMap<>());
-            methodList.forEach(methodModel -> typesMap.put(methodModel.getParameterClasses(), methodModel));
+//            Map<Class<?>[], MethodModel> typesMap = typeToMethods.computeIfAbsent(methodName, k -> new HashMap<>());
+//            methodList.forEach(methodModel -> typesMap.put(methodModel.getParameterClasses(), methodModel));
         });
     }
 
@@ -82,9 +82,13 @@ public class ServiceModel {
     }
 
     public Optional<MethodModel> getMethod (String methodName, Class<?>[] paramTypes) {
-        Map<Class<?>[], MethodModel> methods = typeToMethods.get(methodName);
-        if (CollectionUtils.isNotEmptyMap(methods)) {
-            return Optional.ofNullable(methods.get(paramTypes));
+        Set<MethodModel> methodModels = methods.get(methodName);
+        if (CollectionUtils.isNotEmpty(methodModels)) {
+            for (MethodModel methodModel : methodModels) {
+                if (Arrays.equals(paramTypes, methodModel.getParameterClasses())) {
+                    return Optional.of(methodModel);
+                }
+            }
         }
         return Optional.empty();
     }
