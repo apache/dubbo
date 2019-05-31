@@ -92,6 +92,7 @@ public class AppResponse extends AbstractResult implements Serializable {
         return result;
     }
 
+    @Override
     public void setValue(Object value) {
         this.result = value;
     }
@@ -101,6 +102,7 @@ public class AppResponse extends AbstractResult implements Serializable {
         return exception;
     }
 
+    @Override
     public void setException(Throwable e) {
         this.exception = e;
     }
@@ -120,10 +122,12 @@ public class AppResponse extends AbstractResult implements Serializable {
      *
      * @param map contains all key-value pairs to append
      */
+    @Override
     public void setAttachments(Map<String, String> map) {
         this.attachments = map == null ? new HashMap<String, String>() : map;
     }
 
+    @Override
     public void addAttachments(Map<String, String> map) {
         if (map == null) {
             return;
@@ -148,6 +152,7 @@ public class AppResponse extends AbstractResult implements Serializable {
         return result;
     }
 
+    @Override
     public void setAttachment(String key, String value) {
         attachments.put(key, value);
     }
