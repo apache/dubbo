@@ -17,26 +17,32 @@
 package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 
 import java.util.Collection;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
+import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
 import static org.apache.dubbo.common.URL.buildKey;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
 
 /**
  * The {@link LocalMetadataService} implementation stores the metadata of Dubbo services in memory locally when they
  * exported.
  *
  * @see MetadataService
+ * @see LocalMetadataService
  * @since 2.7.3
  */
 public class InMemoryLocalMetadataService implements LocalMetadataService {
@@ -45,6 +51,10 @@ public class InMemoryLocalMetadataService implements LocalMetadataService {
      * The class name of {@link MetadataService}
      */
     static final String METADATA_SERVICE_CLASS_NAME = MetadataService.class.getName();
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+
+    private final Lock lock = new ReentrantLock();
 
     // =================================== Registration =================================== //
 
@@ -59,11 +69,6 @@ public class InMemoryLocalMetadataService implements LocalMetadataService {
     // =================================== Subscription =================================== //
 
     /**
-     * All subscribed service names
-     */
-    private Set<String> subscribedServices = new LinkedHashSet<>();
-
-    /**
      * The subscribed {@link URL urls} {@link Map} of {@link MetadataService},
      * whose key is the return value of {@link URL#getServiceKey()} method and value is the {@link List} of
      * the {@link URL URLs}
@@ -74,31 +79,16 @@ public class InMemoryLocalMetadataService implements LocalMetadataService {
 
     @Override
     public List<String> getSubscribedURLs() {
-        return getAllServiceURLs(subscribedServiceURLs);
+        return getAllUnmodifiableServiceURLs(subscribedServiceURLs);
     }
 
     @Override
     public List<String> getExportedURLs(String serviceInterface, String group, String version, String protocol) {
         if (ALL_SERVICE_INTERFACES.equals(serviceInterface)) {
-            return getAllServiceURLs(exportedServiceURLs);
+            return getAllUnmodifiableServiceURLs(exportedServiceURLs);
         }
         String serviceKey = buildKey(serviceInterface, group, version);
         return unmodifiableList(getServiceURLs(exportedServiceURLs, serviceKey, protocol));
-    }
-
-    protected List<String> getServiceURLs(ConcurrentMap<String, List<URL>> exportedServiceURLs, String serviceKey,
-                                          String protocol) {
-        List<URL> serviceURLs = getServiceURLs(exportedServiceURLs, serviceKey);
-        return serviceURLs.stream().filter(
-                url -> protocol == null || protocol.equals(url.getParameter(PROTOCOL_KEY)))
-                .map(URL::toFullString)
-                .collect(Collectors.toList());
-    }
-
-
-    private boolean isMetadataServiceURL(URL url) {
-        String serviceInterface = url.getServiceInterface();
-        return METADATA_SERVICE_CLASS_NAME.equals(serviceInterface);
     }
 
     @Override
@@ -127,31 +117,76 @@ public class InMemoryLocalMetadataService implements LocalMetadataService {
         return removeURL(subscribedServiceURLs, url);
     }
 
-    protected boolean addURL(Map<String, List<URL>> serviceURLs, URL url) {
-        String serviceKey = url.getServiceKey();
-        List<URL> urls = getServiceURLs(serviceURLs, serviceKey);
-        if (!urls.contains(url)) {
-            return urls.add(url);
+    private boolean addURL(Map<String, List<URL>> serviceURLs, URL url) {
+        return executeMutually(() -> {
+            List<URL> urls = serviceURLs.computeIfAbsent(url.getServiceKey(), s -> new LinkedList());
+            if (!urls.contains(url)) {
+                return urls.add(url);
+            }
+            return false;
+        });
+    }
+
+    private boolean removeURL(Map<String, List<URL>> serviceURLs, URL url) {
+        return executeMutually(() -> {
+            List<URL> urls = serviceURLs.get(url.getServiceKey());
+            if (isEmpty(urls)) {
+                return false;
+            }
+            return urls.remove(url);
+        });
+    }
+
+    private boolean executeMutually(Callable<Boolean> callable) {
+        boolean success = false;
+        try {
+            lock.lock();
+            try {
+                success = callable.call();
+            } catch (Exception e) {
+                if (logger.isErrorEnabled()) {
+                    logger.error(e);
+                }
+            }
+        } finally {
+            lock.unlock();
         }
-        return false;
+        return success;
     }
 
-    protected boolean removeURL(Map<String, List<URL>> serviceURLs, URL url) {
-        String serviceKey = url.getServiceKey();
-        List<URL> urls = getServiceURLs(serviceURLs, serviceKey);
-        return urls.remove(url);
-    }
+    private static List<String> getServiceURLs(Map<String, List<URL>> exportedServiceURLs, String serviceKey,
+                                               String protocol) {
+        List<URL> serviceURLs = exportedServiceURLs.get(serviceKey);
 
-    protected List<URL> getServiceURLs(Map<String, List<URL>> serviceURLs, String serviceKey) {
-        return serviceURLs.computeIfAbsent(serviceKey, s -> new LinkedList());
-    }
+        if (serviceKey == null) {
+            return emptyList();
+        }
 
-    protected List<String> getAllServiceURLs(Map<String, List<URL>> serviceURLs) {
         return serviceURLs
-                .values()
                 .stream()
-                .flatMap(Collection::stream)
+                .filter(url -> isAcceptableProtocol(protocol, url))
                 .map(URL::toFullString)
                 .collect(Collectors.toList());
+    }
+
+    private static boolean isAcceptableProtocol(String protocol, URL url) {
+        return protocol == null
+                || protocol.equals(url.getParameter(PROTOCOL_KEY))
+                || protocol.equals(url.getProtocol());
+    }
+
+    private static boolean isMetadataServiceURL(URL url) {
+        String serviceInterface = url.getServiceInterface();
+        return METADATA_SERVICE_CLASS_NAME.equals(serviceInterface);
+    }
+
+    private static List<String> getAllUnmodifiableServiceURLs(Map<String, List<URL>> serviceURLs) {
+        return unmodifiableList(
+                serviceURLs
+                        .values()
+                        .stream()
+                        .flatMap(Collection::stream)
+                        .map(URL::toFullString)
+                        .collect(Collectors.toList()));
     }
 }

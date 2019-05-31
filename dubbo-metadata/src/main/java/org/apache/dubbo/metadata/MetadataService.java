@@ -32,7 +32,7 @@ import static java.util.stream.StreamSupport.stream;
  * {@link #getExportedURLs()} and {@link #getSubscribedURLs()} respectively. What's more, {@link MetadataService}
  * also providers the fine-grain methods for the precise queries.
  *
- * @see InMemoryLocalMetadataService
+ * @see LocalMetadataService
  * @since 2.7.3
  */
 public interface MetadataService {
