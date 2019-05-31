@@ -20,7 +20,7 @@ package org.apache.dubbo.rpc.model;
 import java.lang.reflect.Method;
 import java.util.Map;
 
-import static org.apache.dubbo.common.constants.RpcConstants.$INVOKE;
+import static org.apache.dubbo.rpc.Constants.$INVOKE;
 
 public class ConsumerMethodModel {
     private final Method method;

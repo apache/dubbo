@@ -66,7 +66,7 @@ public class ZookeeperServiceDiscoveryTest {
 
         this.registryUrl = URL.valueOf("zookeeper://127.0.0.1:" + zkServerPort);
         this.discovery = buildZookeeperServiceDiscovery(registryUrl);
-        this.discovery.start(registryUrl);
+        this.discovery.start();
     }
 
     @AfterEach

@@ -4,8 +4,8 @@ about: If you would like to report a issue to Dubbo, please use this template.
 
 ---
 
-- [ ] I have searched the [issues](https://github.com/apache/incubator-dubbo/issues) of this repository and believe that this is not a duplicate.
-- [ ] I have checked the [FAQ](https://github.com/apache/incubator-dubbo/blob/master/FAQ.md) of this repository and believe that this is not a duplicate.
+- [ ] I have searched the [issues](https://github.com/apache/dubbo/issues) of this repository and believe that this is not a duplicate.
+- [ ] I have checked the [FAQ](https://github.com/apache/dubbo/blob/master/FAQ.md) of this repository and believe that this is not a duplicate.
 
 ### Environment
 

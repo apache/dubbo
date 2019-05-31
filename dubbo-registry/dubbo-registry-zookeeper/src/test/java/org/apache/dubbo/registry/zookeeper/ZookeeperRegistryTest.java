@@ -37,8 +37,8 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 
@@ -127,7 +127,7 @@ public class ZookeeperRegistryTest {
     @Test
     /*
       This UT is unstable, consider remove it later.
-      @see https://github.com/apache/incubator-dubbo/issues/1787
+      @see https://github.com/apache/dubbo/issues/1787
      */
     public void testStatusChecker() {
         RegistryStatusChecker registryStatusChecker = new RegistryStatusChecker();
