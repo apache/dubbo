@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.serialize.hessian;
 
 import com.caucho.hessian.io.Hessian2Input;
