@@ -44,7 +44,7 @@ import java.util.Map;
  * @see MetadataServiceExporter
  * @see ServiceConfig
  * @see ConfigManager
- * @since 2.7.2
+ * @since 2.7.3
  */
 public class ConfigurableMetadataServiceExporter implements MetadataServiceExporter {
 

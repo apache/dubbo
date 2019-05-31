@@ -71,18 +71,13 @@ import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SEMICOLON_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.ConfigConstants.CLUSTER_KEY;
-import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
-import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
-import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
-import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
-import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMER_PROTOCOL;
-import static org.apache.dubbo.common.constants.RegistryConstants.REFER_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
 import static org.apache.dubbo.common.utils.NetUtils.isInvalidLocalHost;
 import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
+import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
 import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
+import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 
 /**
  * ReferenceConfig
@@ -282,7 +277,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         invoker = null;
         ref = null;
 
-        // dispatch a ReferenceConfigDestroyedEvent since 2.7.2
+        // dispatch a ReferenceConfigDestroyedEvent since 2.7.3
         dispatch(new ReferenceConfigDestroyedEvent(this));
     }
 
@@ -349,7 +344,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         ApplicationModel.initConsumerModel(serviceKey, buildConsumerModel(serviceKey, attributes));
         initialized = true;
 
-        // dispatch a ReferenceConfigInitializedEvent since 2.7.2
+        // dispatch a ReferenceConfigInitializedEvent since 2.7.3
         dispatch(new ReferenceConfigInitializedEvent(this, invoker));
     }
 
@@ -685,7 +680,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
      * Dispatch an {@link Event event}
      *
      * @param event an {@link Event event}
-     * @since 2.7.2
+     * @since 2.7.3
      */
     protected void dispatch(Event event) {
         eventDispatcher.dispatch(event);

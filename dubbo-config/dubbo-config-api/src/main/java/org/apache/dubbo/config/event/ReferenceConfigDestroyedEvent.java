@@ -26,7 +26,7 @@ import org.apache.dubbo.event.Event;
  * @see Reference
  * @see ReferenceConfig#destroy()
  * @see Event
- * @since 2.7.2
+ * @since 2.7.3
  */
 public class ReferenceConfigDestroyedEvent extends Event {
 

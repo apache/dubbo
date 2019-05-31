@@ -1,0 +1,2 @@
+org.apache.dubbo.config.metadata.DubboProtocolsConfigMetadataCustomizer
+org.apache.dubbo.config.metadata.ServiceInstancePortCustomizer

@@ -78,7 +78,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.ConfigConstants.DUBBO_IP_TO_BIND;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.EXPORT_KEY;
 import static org.apache.dubbo.common.utils.NetUtils.getAvailablePort;
 import static org.apache.dubbo.common.utils.NetUtils.getLocalHost;
 import static org.apache.dubbo.common.utils.NetUtils.isInvalidLocalHost;
@@ -86,7 +85,6 @@ import static org.apache.dubbo.common.utils.NetUtils.isInvalidPort;
 import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
 import static org.apache.dubbo.config.Constants.DUBBO_PORT_TO_BIND;
 import static org.apache.dubbo.config.Constants.DUBBO_PORT_TO_REGISTRY;
-import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
 import static org.apache.dubbo.config.Constants.MULTICAST;
 import static org.apache.dubbo.config.Constants.PROTOCOLS_SUFFIX;
 import static org.apache.dubbo.config.Constants.SCOPE_NONE;
@@ -97,6 +95,7 @@ import static org.apache.dubbo.rpc.Constants.SCOPE_KEY;
 import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
 import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
 
 /**
  * ServiceConfig
@@ -421,7 +420,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
         doExportUrls();
 
-        // dispatch a ServiceConfigExportedEvent since 2.7.2
+        // dispatch a ServiceConfigExportedEvent since 2.7.3
         dispatch(new ServiceConfigExportedEvent(this));
     }
 
@@ -456,7 +455,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
         unexported = true;
 
-        // dispatch a ServiceConfigUnExportedEvent since 2.7.2
+        // dispatch a ServiceConfigUnExportedEvent since 2.7.3
         dispatch(new ServiceConfigUnexportedEvent(this));
     }
 
@@ -1069,7 +1068,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
      * Dispatch an {@link Event event}
      *
      * @param event an {@link Event event}
-     * @since 2.7.2
+     * @since 2.7.3
      */
     protected void dispatch(Event event) {
         eventDispatcher.dispatch(event);

@@ -27,7 +27,7 @@ import org.apache.dubbo.rpc.Invoker;
  * @see Reference
  * @see ReferenceConfig#get()
  * @see Event
- * @since 2.7.2
+ * @since 2.7.3
  */
 public class ReferenceConfigInitializedEvent extends Event {
 

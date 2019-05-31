@@ -22,7 +22,7 @@ import org.apache.dubbo.event.Event;
 /**
  * {@link ServiceConfig} event post-{@link ServiceConfig#export() export}
  *
- * @since 2.7.2
+ * @since 2.7.3
  */
 public class ServiceConfigExportedEvent extends Event {
 
