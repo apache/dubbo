@@ -158,7 +158,7 @@ public class InMemoryLocalMetadataService implements LocalMetadataService {
                                                String protocol) {
         List<URL> serviceURLs = exportedServiceURLs.get(serviceKey);
 
-        if (serviceKey == null) {
+        if (serviceURLs == null) {
             return emptyList();
         }
 
