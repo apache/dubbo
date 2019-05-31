@@ -20,13 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.monitor.MetricsService;
 import org.apache.dubbo.monitor.dubbo.service.DemoService;
-import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.Protocol;
-import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.RpcContext;
-import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.*;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
 import com.alibaba.metrics.FastCompass;
@@ -64,44 +58,26 @@ import static org.mockito.Mockito.mock;
 
 public class MetricsFilterTest {
 
-    Invoker<DemoService> serviceInvoker;
+    private Invoker<DemoService> serviceInvoker;
 
     @BeforeEach
     void setUp() {
         serviceInvoker = mock(Invoker.class);
-        URL url = URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":20880/org.apache.dubbo.monitor.dubbo.service.DemoService");
 
         given(serviceInvoker.isAvailable()).willReturn(false);
         given(serviceInvoker.getInterface()).willReturn(DemoService.class);
-        given(serviceInvoker.getUrl()).willReturn(url);
+        given(serviceInvoker.getUrl()).willReturn(getUrl());
         given(serviceInvoker.invoke(Mockito.any(Invocation.class))).willReturn(null);
         doNothing().when(serviceInvoker).destroy();
-
     }
 
-    /*private final Invoker<DemoService> serviceInvoker = new Invoker<DemoService>() {
-        @Override
-        public Class<DemoService> getInterface() {
-            return DemoService.class;
-        }
+    private URL getUrl() {
+        return URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":20880/org.apache.dubbo.monitor.dubbo.service.DemoService");
+    }
 
-        public URL getUrl() {
-            return URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":20880/org.apache.dubbo.monitor.dubbo.service.DemoService");
-        }
-
-        @Override
-        public boolean isAvailable() {
-            return false;
-        }
-
-        public Result invoke(Invocation invocation) throws RpcException {
-            return null;
-        }
-
-        @Override
-        public void destroy() {
-        }
-    };*/
+    private void onInvokeReturns(AppResponse response) {
+        given(serviceInvoker.invoke(Mockito.any(Invocation.class))).willReturn(response);
+    }
 
     private final Invoker<DemoService> timeoutInvoker = new Invoker<DemoService>() {
         @Override
@@ -248,6 +224,55 @@ public class MetricsFilterTest {
         Assertions.assertEquals(100.0, metricMap.get("bucket_count"));
         Assertions.assertEquals(100.0 / 5, metricMap.get("qps"));
         Assertions.assertEquals(50.0 / 100.0, metricMap.get("success_rate"));
+    }
+
+    @Test
+    public void testInvokeMetricsService_shouldStoreCpu() {
+        IMetricManager metricManager = MetricManager.getIMetricManager();
+        metricManager.clear();
+        MetricsFilter metricsFilter = new MetricsFilter();
+        Invocation invocation = new RpcInvocation("sayName", new Class<?>[0], new Object[0]);
+        AppResponse response = AppResponseBuilder.create()
+                .withAttachments(new HashMap<String, String>(4) {
+                    {
+                        put("cpu", "60");
+                    }
+                })
+                .build();
+
+        onInvokeReturns(response);
+        RpcContext.getContext().setRemoteAddress(NetUtils.getLocalHost(), 20880).setLocalAddress(NetUtils.getLocalHost(), 2345);
+        RpcContext.getContext().setUrl(serviceInvoker.getUrl().addParameter(SIDE_KEY, PROVIDER_SIDE)
+                .addParameter(TIMEOUT_KEY, 300));
+        for (int i = 0; i < 50; i++) {
+            try {
+                metricsFilter.invoke(serviceInvoker, invocation);
+                metricsFilter.invoke(timeoutInvoker, invocation);
+            } catch (RpcException e) {
+                //ignore
+            }
+        }
+        Protocol protocol = new DubboProtocol();
+        URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":20880/" + MetricsService.class.getName());
+        Invoker<MetricsService> invoker = protocol.refer(MetricsService.class, url);
+        invocation = new RpcInvocation("getMetricsByGroup", new Class<?>[]{String.class}, new Object[]{DUBBO_GROUP});
+        try {
+            Thread.sleep(5000);
+        } catch (Exception e) {
+            // ignore
+        }
+        String resStr = invoker.invoke(invocation).getValue().toString();
+        List<MetricObject> metricObjectList = new Gson().fromJson(resStr, new TypeToken<List<MetricObject>>() {
+        }.getType());
+        Map<String, Object> metricMap = new HashMap<>();
+        for (int i = 0; i < metricObjectList.size(); i++) {
+            MetricObject object = metricObjectList.get(i);
+            String metric = object.getMetric().substring(object.getMetric().lastIndexOf(".") + 1);
+            if ((double) object.getValue() > 0.0 && object.getMetricLevel().equals(MetricLevel.MAJOR))
+                metricMap.put(metric, object.getValue());
+        }
+
+        Assertions.assertEquals(60, metricMap.get("cpu"));
     }
 
     @Test
