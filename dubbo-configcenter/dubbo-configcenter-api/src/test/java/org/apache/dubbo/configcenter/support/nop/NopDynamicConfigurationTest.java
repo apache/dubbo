@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * {@link NopDynamicConfiguration} Test
  *
- * @since 2.7.2
+ * @since 2.7.3
  */
 public class NopDynamicConfigurationTest {
 

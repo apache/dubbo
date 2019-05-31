@@ -60,7 +60,7 @@ public class NopDynamicConfiguration implements DynamicConfiguration {
     }
 
     /**
-     * @since 2.7.2
+     * @since 2.7.3
      */
     @Override
     public boolean publishConfig(String key, String group, String content) {
@@ -68,7 +68,7 @@ public class NopDynamicConfiguration implements DynamicConfiguration {
     }
 
     /**
-     * @since 2.7.2
+     * @since 2.7.3
      */
     @Override
     public SortedSet<String> getConfigKeys(String group) {
