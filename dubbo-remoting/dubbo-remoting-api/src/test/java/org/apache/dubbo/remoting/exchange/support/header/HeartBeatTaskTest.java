@@ -21,6 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.exchange.Request;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,7 +30,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.dubbo.common.constants.RpcConstants.DUBBO_VERSION_KEY;
+import static org.apache.dubbo.remoting.Constants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.remoting.Constants.HEARTBEAT_CHECK_TICK;
 
 public class HeartBeatTaskTest {

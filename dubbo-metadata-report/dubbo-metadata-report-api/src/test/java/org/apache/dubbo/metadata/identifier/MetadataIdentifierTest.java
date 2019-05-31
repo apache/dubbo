@@ -21,7 +21,6 @@ import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
-import static org.apache.dubbo.metadata.identifier.MetadataIdentifier.META_DATA_STORE_TAG;
 
 /**
  * 2019/1/7
@@ -35,17 +34,15 @@ public class MetadataIdentifierTest {
         String group = null;
         String application = "vic.zk.md";
         MetadataIdentifier providerMetadataIdentifier = new MetadataIdentifier(interfaceName, version, group, PROVIDER_SIDE, application);
-        System.out.println(providerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.PATH));
         Assertions.assertEquals(providerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.PATH),
                 "metadata" + PATH_SEPARATOR + interfaceName + PATH_SEPARATOR +
                         (version == null ? "" : (version + PATH_SEPARATOR))
                 + (group == null ? "" : (group + PATH_SEPARATOR)) + PROVIDER_SIDE
-                        + PATH_SEPARATOR + application + PATH_SEPARATOR + "metadata");
-        System.out.println(providerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY));
+                        + PATH_SEPARATOR + application);
         Assertions.assertEquals(providerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY),
                 interfaceName + MetadataIdentifier.SEPARATOR +
                         (version == null ? "" : version + MetadataIdentifier.SEPARATOR)
                         + (group == null ? "" : group + MetadataIdentifier.SEPARATOR)
-                        + PROVIDER_SIDE + MetadataIdentifier.SEPARATOR + application + META_DATA_STORE_TAG);
+                        + PROVIDER_SIDE + MetadataIdentifier.SEPARATOR + application);
     }
 }

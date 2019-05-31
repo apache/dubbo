@@ -16,15 +16,16 @@
  */
 package org.apache.dubbo.remoting.transport.netty4;
 
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.utils.DubboAppender;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.Client;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.Server;
 import org.apache.dubbo.remoting.exchange.Exchangers;
 import org.apache.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -72,7 +73,7 @@ public class ClientReconnectTest {
 
 
     public Client startClient(int port, int heartbeat) throws RemotingException {
-        final String url = "exchange://127.0.0.1:" + port + "/client.reconnect.test?client=netty4&check=false&" + RemotingConstants.HEARTBEAT_KEY + "=" + heartbeat;
+        final String url = "exchange://127.0.0.1:" + port + "/client.reconnect.test?client=netty4&check=false&" + Constants.HEARTBEAT_KEY + "=" + heartbeat;
         return Exchangers.connect(url);
     }
 

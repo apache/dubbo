@@ -60,6 +60,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
@@ -70,7 +71,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SEMICOLON_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
 import static org.apache.dubbo.common.utils.NetUtils.isInvalidLocalHost;
 import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
@@ -120,11 +120,6 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
      * The url of the reference service
      */
     private final List<URL> urls = new ArrayList<URL>();
-
-    /**
-     * The {@link EventDispatcher}
-     */
-    private final EventDispatcher eventDispatcher = EventDispatcher.getDefaultExtension();
 
     /**
      * The interface name of the reference service
@@ -181,6 +176,13 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
      */
     private transient volatile boolean destroyed;
 
+    /**
+     * The {@link EventDispatcher}
+     *
+     * @since 2.7.3
+     */
+    private final EventDispatcher eventDispatcher = EventDispatcher.getDefaultExtension();
+
     @SuppressWarnings("unused")
     private final Object finalizerGuardian = new Object() {
         @Override
@@ -190,13 +192,13 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             if (!ReferenceConfig.this.destroyed) {
                 logger.warn("ReferenceConfig(" + url + ") is not DESTROYED when FINALIZE");
 
-                /* don't destroy for now
-                try {
-                    ReferenceConfig.this.destroy();
-                } catch (Throwable t) {
-                        logger.warn("Unexpected err when destroy invoker of ReferenceConfig(" + url + ") in finalize method!", t);
-                }
-                */
+        /* don't destroy for now
+        try {
+            ReferenceConfig.this.destroy();
+        } catch (Throwable t) {
+                logger.warn("Unexpected err when destroy invoker of ReferenceConfig(" + url + ") in finalize method!", t);
+        }
+        */
             }
         }
     };
@@ -371,6 +373,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 logger.info("Using injvm service " + interfaceClass.getName());
             }
         } else {
+            urls.clear(); // reference retry init will add url to urls, lead to OOM
             if (url != null && url.length() > 0) { // user specified URL, could be peer-to-peer address, or register center's address.
                 String[] us = SEMICOLON_SPLIT_PATTERN.split(url);
                 if (us != null && us.length > 0) {
