@@ -102,6 +102,7 @@ public class MetricsFilter implements Filter {
             Result result = invoker.invoke(invocation); // proceed invocation chain
             long duration = System.currentTimeMillis() - start;
             reportMetrics(invoker, invocation, duration, "success", isProvider);
+            reportLbMetrics(result, invoker, invocation, isProvider);
             return result;
         } catch (RpcException e) {
             long duration = System.currentTimeMillis() - start;
@@ -121,6 +122,17 @@ public class MetricsFilter implements Filter {
             reportMetrics(invoker, invocation, duration, result, isProvider);
             throw e;
         }
+    }
+
+    private void reportLbMetrics(Result result, Invoker<?> invoker, Invocation invocation, boolean isProvider) {
+        if(responseHasCpu(result)) {
+            long cpuValue = Long.parseLong(result.getAttachment("cpu"));
+            reportMetrics(invoker, invocation, cpuValue, "cpu", true);
+        }
+    }
+
+    private boolean responseHasCpu(Result result) {
+        return result.getAttachments() != null && result.getAttachment("cpu") != null;
     }
 
     private String buildMethodName(Invocation invocation) {
