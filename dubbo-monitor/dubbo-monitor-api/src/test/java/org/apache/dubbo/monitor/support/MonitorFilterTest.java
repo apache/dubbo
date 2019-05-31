@@ -133,7 +133,7 @@ public class MonitorFilterTest {
         Assertions.assertEquals("aaa", lastStatistics.getParameter(MonitorService.METHOD));
         Assertions.assertEquals(NetUtils.getLocalHost() + ":20880", lastStatistics.getParameter(MonitorService.PROVIDER));
         Assertions.assertEquals(NetUtils.getLocalHost(), lastStatistics.getAddress());
-        Assertions.assertEquals(null, lastStatistics.getParameter(MonitorService.CONSUMER));
+        Assertions.assertNull(lastStatistics.getParameter(MonitorService.CONSUMER));
         Assertions.assertEquals(1, lastStatistics.getParameter(MonitorService.SUCCESS, 0));
         Assertions.assertEquals(0, lastStatistics.getParameter(MonitorService.FAILURE, 0));
         Assertions.assertEquals(1, lastStatistics.getParameter(MonitorService.CONCURRENT, 0));
@@ -173,7 +173,7 @@ public class MonitorFilterTest {
         Assertions.assertEquals("xxx", lastStatistics.getParameter(MonitorService.METHOD));
         Assertions.assertEquals(NetUtils.getLocalHost() + ":20880", lastStatistics.getParameter(MonitorService.PROVIDER));
         Assertions.assertEquals(NetUtils.getLocalHost(), lastStatistics.getAddress());
-        Assertions.assertEquals(null, lastStatistics.getParameter(MonitorService.CONSUMER));
+        Assertions.assertNull(lastStatistics.getParameter(MonitorService.CONSUMER));
         Assertions.assertEquals(1, lastStatistics.getParameter(MonitorService.SUCCESS, 0));
         Assertions.assertEquals(0, lastStatistics.getParameter(MonitorService.FAILURE, 0));
         Assertions.assertEquals(1, lastStatistics.getParameter(MonitorService.CONCURRENT, 0));
