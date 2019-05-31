@@ -134,10 +134,12 @@ public abstract class AbstractRegistry implements Registry {
             return false;
         }
 
+        @Override
         public void notify(URL url, NotifyListener listener, List<URL> urls) {
             super.notify(url, listener, urls);
         }
 
+        @Override
         public void setUrl(URL url) {
             super.setUrl(url);
         }

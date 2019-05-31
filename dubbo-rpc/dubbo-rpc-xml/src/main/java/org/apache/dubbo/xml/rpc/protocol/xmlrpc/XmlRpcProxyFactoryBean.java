@@ -74,6 +74,7 @@ public class XmlRpcProxyFactoryBean extends UrlBasedRemoteAccessor
     /**
      * {@inheritDoc}
      */
+    @Override
     public Object invoke(MethodInvocation invocation)
             throws Throwable {
 
@@ -105,6 +106,7 @@ public class XmlRpcProxyFactoryBean extends UrlBasedRemoteAccessor
     /**
      * {@inheritDoc}
      */
+    @Override
     public Object getObject() {
         return proxyObject;
     }
@@ -112,6 +114,7 @@ public class XmlRpcProxyFactoryBean extends UrlBasedRemoteAccessor
     /**
      * {@inheritDoc}
      */
+    @Override
     public Class<?> getObjectType() {
         return getServiceInterface();
     }
@@ -119,6 +122,7 @@ public class XmlRpcProxyFactoryBean extends UrlBasedRemoteAccessor
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean isSingleton() {
         return true;
     }
@@ -126,6 +130,7 @@ public class XmlRpcProxyFactoryBean extends UrlBasedRemoteAccessor
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
     }
