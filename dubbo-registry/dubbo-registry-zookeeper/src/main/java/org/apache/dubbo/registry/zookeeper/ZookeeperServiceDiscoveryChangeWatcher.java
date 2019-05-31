@@ -19,7 +19,7 @@ package org.apache.dubbo.registry.zookeeper;
 import org.apache.dubbo.event.EventDispatcher;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
-import org.apache.dubbo.registry.client.event.ServiceDiscoveryChangeEvent;
+import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 
 import org.apache.curator.framework.api.CuratorWatcher;
 import org.apache.zookeeper.WatchedEvent;
@@ -33,9 +33,9 @@ import static org.apache.zookeeper.Watcher.Event.EventType.NodeDataChanged;
 /**
  * Zookeeper {@link ServiceDiscovery} Change {@link CuratorWatcher watcher} only interests in
  * {@link Watcher.Event.EventType#NodeChildrenChanged} and {@link Watcher.Event.EventType#NodeDataChanged} event types,
- * which will multicast a {@link ServiceDiscoveryChangeEvent} when the service node has been changed.
+ * which will multicast a {@link ServiceInstancesChangedEvent} when the service node has been changed.
  *
- * @since 2.7.2
+ * @since 2.7.3
  */
 public class ZookeeperServiceDiscoveryChangeWatcher implements CuratorWatcher {
 
@@ -58,7 +58,7 @@ public class ZookeeperServiceDiscoveryChangeWatcher implements CuratorWatcher {
         Watcher.Event.EventType eventType = event.getType();
 
         if (NodeChildrenChanged.equals(eventType) || NodeDataChanged.equals(eventType)) {
-            dispatcher.dispatch(new ServiceDiscoveryChangeEvent(serviceName, getServiceInstances(serviceName)));
+            dispatcher.dispatch(new ServiceInstancesChangedEvent(serviceName, getServiceInstances(serviceName)));
         }
     }
 

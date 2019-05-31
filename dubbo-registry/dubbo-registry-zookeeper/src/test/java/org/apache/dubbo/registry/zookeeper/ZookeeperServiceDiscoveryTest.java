@@ -44,7 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * {@link ZookeeperServiceDiscovery} Test
  *
- * @since 2.7.2
+ * @since 2.7.3
  */
 public class ZookeeperServiceDiscoveryTest {
 
@@ -66,7 +66,7 @@ public class ZookeeperServiceDiscoveryTest {
 
         this.registryUrl = URL.valueOf("zookeeper://127.0.0.1:" + zkServerPort);
         this.discovery = buildZookeeperServiceDiscovery(registryUrl);
-        this.discovery.start();
+        this.discovery.start(registryUrl);
     }
 
     @AfterEach
@@ -124,7 +124,7 @@ public class ZookeeperServiceDiscoveryTest {
         CountDownLatch latch = new CountDownLatch(1);
 
         // Add Listener
-        discovery.addServiceDiscoveryChangeListener(SERVICE_NAME, event -> {
+        discovery.addServiceInstancesChangedListener(SERVICE_NAME, event -> {
             serviceInstances.addAll(event.getServiceInstances());
             latch.countDown();
         });

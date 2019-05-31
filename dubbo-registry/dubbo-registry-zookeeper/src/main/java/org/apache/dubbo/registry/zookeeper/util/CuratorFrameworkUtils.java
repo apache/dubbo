@@ -45,12 +45,12 @@ import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkParams.MA
 /**
  * Curator Framework Utilities Class
  *
- * @since 2.7.2
+ * @since 2.7.3
  */
 public abstract class CuratorFrameworkUtils {
 
-    public static ZookeeperServiceDiscovery buildZookeeperServiceDiscovery(URL registerURL) throws Exception {
-        return new ZookeeperServiceDiscovery(registerURL);
+    public static ZookeeperServiceDiscovery buildZookeeperServiceDiscovery(URL connectionURL) throws Exception {
+        return new ZookeeperServiceDiscovery(connectionURL);
     }
 
     public static ServiceDiscovery<ZookeeperInstance> buildServiceDiscovery(CuratorFramework curatorFramework,
@@ -61,21 +61,21 @@ public abstract class CuratorFrameworkUtils {
                 .build();
     }
 
-    public static CuratorFramework buildCuratorFramework(URL registerURL) throws Exception {
+    public static CuratorFramework buildCuratorFramework(URL connectionURL) throws Exception {
         CuratorFramework curatorFramework = CuratorFrameworkFactory.builder()
-                .connectString(registerURL.getIp() + ":" + registerURL.getPort())
-                .retryPolicy(buildRetryPolicy(registerURL))
+                .connectString(connectionURL.getIp() + ":" + connectionURL.getPort())
+                .retryPolicy(buildRetryPolicy(connectionURL))
                 .build();
         curatorFramework.start();
-        curatorFramework.blockUntilConnected(BLOCK_UNTIL_CONNECTED_WAIT.getParameterValue(registerURL),
-                BLOCK_UNTIL_CONNECTED_UNIT.getParameterValue(registerURL));
+        curatorFramework.blockUntilConnected(BLOCK_UNTIL_CONNECTED_WAIT.getParameterValue(connectionURL),
+                BLOCK_UNTIL_CONNECTED_UNIT.getParameterValue(connectionURL));
         return curatorFramework;
     }
 
-    public static RetryPolicy buildRetryPolicy(URL registerURL) {
-        int baseSleepTimeMs = BASE_SLEEP_TIME.getParameterValue(registerURL);
-        int maxRetries = MAX_RETRIES.getParameterValue(registerURL);
-        int getMaxSleepMs = MAX_SLEEP.getParameterValue(registerURL);
+    public static RetryPolicy buildRetryPolicy(URL connectionURL) {
+        int baseSleepTimeMs = BASE_SLEEP_TIME.getParameterValue(connectionURL);
+        int maxRetries = MAX_RETRIES.getParameterValue(connectionURL);
+        int getMaxSleepMs = MAX_SLEEP.getParameterValue(connectionURL);
         return new ExponentialBackoffRetry(baseSleepTimeMs, maxRetries, getMaxSleepMs);
     }
 

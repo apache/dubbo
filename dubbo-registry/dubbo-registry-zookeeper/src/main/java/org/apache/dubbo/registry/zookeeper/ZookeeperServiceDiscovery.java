@@ -22,10 +22,9 @@ import org.apache.dubbo.common.function.ThrowableFunction;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.event.EventDispatcher;
-import org.apache.dubbo.registry.client.EventPublishingServiceRegistry;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
-import org.apache.dubbo.registry.client.event.ServiceDiscoveryChangeListener;
+import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.api.CuratorWatcher;
@@ -47,7 +46,7 @@ import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkUtils.bui
  * Zookeeper {@link ServiceDiscovery} implementation based on
  * <a href="https://curator.apache.org/curator-x-discovery/index.html">Apache Curator X Discovery</a>
  */
-public class ZookeeperServiceDiscovery extends EventPublishingServiceRegistry implements ServiceDiscovery {
+public class ZookeeperServiceDiscovery implements ServiceDiscovery {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -64,43 +63,38 @@ public class ZookeeperServiceDiscovery extends EventPublishingServiceRegistry im
      */
     private final Map<String, CuratorWatcher> watcherCaches = new ConcurrentHashMap<>();
 
-    public ZookeeperServiceDiscovery(URL registerURL) throws Exception {
-        this.curatorFramework = buildCuratorFramework(registerURL);
-        this.rootPath = ROOT_PATH.getParameterValue(registerURL);
+    public ZookeeperServiceDiscovery(URL connectionURL) throws Exception {
+        this.curatorFramework = buildCuratorFramework(connectionURL);
+        this.rootPath = ROOT_PATH.getParameterValue(connectionURL);
         this.serviceDiscovery = buildServiceDiscovery(curatorFramework, rootPath);
         this.dispatcher = EventDispatcher.getDefaultExtension();
     }
 
-    @Override
-    protected void doRegister(ServiceInstance serviceInstance) throws RuntimeException {
+    public void register(ServiceInstance serviceInstance) throws RuntimeException {
         doInServiceRegistry(serviceDiscovery -> {
             serviceDiscovery.registerService(build(serviceInstance));
         });
     }
 
-    @Override
-    protected void doUpdate(ServiceInstance serviceInstance) throws RuntimeException {
+    public void update(ServiceInstance serviceInstance) throws RuntimeException {
         doInServiceRegistry(serviceDiscovery -> {
             serviceDiscovery.updateService(build(serviceInstance));
         });
     }
 
-    @Override
-    protected void doUnregister(ServiceInstance serviceInstance) throws RuntimeException {
+    public void unregister(ServiceInstance serviceInstance) throws RuntimeException {
         doInServiceRegistry(serviceDiscovery -> {
             serviceDiscovery.unregisterService(build(serviceInstance));
         });
     }
 
-    @Override
-    protected void doStart() {
+    public void start() {
         doInServiceRegistry(serviceDiscovery -> {
             serviceDiscovery.start();
         });
     }
 
-    @Override
-    protected void doStop() {
+    public void stop() {
         doInServiceRegistry(serviceDiscovery -> {
             serviceDiscovery.close();
         });
@@ -117,7 +111,7 @@ public class ZookeeperServiceDiscovery extends EventPublishingServiceRegistry im
     }
 
     @Override
-    public void addServiceDiscoveryChangeListener(String serviceName, ServiceDiscoveryChangeListener listener)
+    public void addServiceInstancesChangedListener(String serviceName, ServiceInstancesChangedListener listener)
             throws NullPointerException, IllegalArgumentException {
         addServiceWatcherIfAbsent(serviceName);
         dispatcher.addEventListener(listener);
