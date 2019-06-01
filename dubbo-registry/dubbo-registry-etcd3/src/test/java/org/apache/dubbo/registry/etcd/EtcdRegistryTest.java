@@ -124,13 +124,13 @@ public class EtcdRegistryTest {
 
         registry.register(serviceUrl);
         Set<URL> registered = registry.getRegistered();
-        Assertions.assertTrue(registered.size() == 1);
+        Assertions.assertEquals(1, registered.size());
         Assertions.assertTrue(registered.contains(serviceUrl));
 
         registry.unregister(serviceUrl);
 
         registered = registry.getRegistered();
-        Assertions.assertTrue(registered.size() == 0);
+        Assertions.assertEquals(0, registered.size());
     }
 
     @Test
@@ -152,8 +152,8 @@ public class EtcdRegistryTest {
     @Test
     public void test_subscribe_when_register() throws InterruptedException {
 
-        Assertions.assertTrue(registry.getRegistered().size() == 0);
-        Assertions.assertTrue(registry.getSubscribed().size() == 0);
+        Assertions.assertEquals(0, registry.getRegistered().size());
+        Assertions.assertEquals(0, registry.getSubscribed().size());
 
         CountDownLatch notNotified = new CountDownLatch(2);
 
@@ -177,8 +177,8 @@ public class EtcdRegistryTest {
     @Test
     public void test_subscribe_when_register0() throws InterruptedException {
 
-        Assertions.assertTrue(registry.getRegistered().size() == 0);
-        Assertions.assertTrue(registry.getSubscribed().size() == 0);
+        Assertions.assertEquals(0, registry.getRegistered().size());
+        Assertions.assertEquals(0, registry.getSubscribed().size());
 
         CountDownLatch notNotified = new CountDownLatch(3);
         ConcurrentHashMap<URL, Boolean> notifiedUrls = new ConcurrentHashMap<>();
@@ -210,8 +210,8 @@ public class EtcdRegistryTest {
     @Test
     public void test_subscribe_when_register1() throws InterruptedException {
 
-        Assertions.assertTrue(registry.getRegistered().size() == 0);
-        Assertions.assertTrue(registry.getSubscribed().size() == 0);
+        Assertions.assertEquals(0, registry.getRegistered().size());
+        Assertions.assertEquals(0, registry.getSubscribed().size());
 
         CountDownLatch notNotified = new CountDownLatch(2);
 
@@ -237,8 +237,8 @@ public class EtcdRegistryTest {
     @Test
     public void test_subscribe_when_register2() throws InterruptedException {
 
-        Assertions.assertTrue(registry.getRegistered().size() == 0);
-        Assertions.assertTrue(registry.getSubscribed().size() == 0);
+        Assertions.assertEquals(0, registry.getRegistered().size());
+        Assertions.assertEquals(0, registry.getSubscribed().size());
 
         CountDownLatch notNotified = new CountDownLatch(3);
 
@@ -263,7 +263,7 @@ public class EtcdRegistryTest {
         registry.register(serviceUrl3);
 
         Assertions.assertTrue(notNotified.await(15, TimeUnit.SECONDS));
-        Assertions.assertTrue(notifiedUrls.size() == 3);
+        Assertions.assertEquals(3, notifiedUrls.size());
         Assertions.assertTrue(notifiedUrls.containsKey(serviceUrl));
         Assertions.assertTrue(notifiedUrls.containsKey(serviceUrl2));
         Assertions.assertTrue(notifiedUrls.containsKey(serviceUrl3));
@@ -272,8 +272,8 @@ public class EtcdRegistryTest {
     @Test
     public void test_unsubscribe() throws InterruptedException {
 
-        Assertions.assertTrue(registry.getRegistered().size() == 0);
-        Assertions.assertTrue(registry.getSubscribed().size() == 0);
+        Assertions.assertEquals(0, registry.getRegistered().size());
+        Assertions.assertEquals(0, registry.getSubscribed().size());
 
         CountDownLatch notNotified = new CountDownLatch(2);
 
@@ -299,13 +299,13 @@ public class EtcdRegistryTest {
 
         Assertions.assertFalse(notNotified.await(2, TimeUnit.SECONDS));
         // expect nothing happen
-        Assertions.assertTrue(notifiedUrl.get() == null);
+        Assertions.assertNull(notifiedUrl.get());
     }
 
     @BeforeEach
     public void setUp() {
         registry = (EtcdRegistry) registryFactory.getRegistry(registryUrl);
-        Assertions.assertTrue(registry != null);
+        Assertions.assertNotNull(registry);
         if (!registry.isAvailable()) {
             AbstractRegistryFactory.destroyAll();
             registry = (EtcdRegistry) registryFactory.getRegistry(registryUrl);

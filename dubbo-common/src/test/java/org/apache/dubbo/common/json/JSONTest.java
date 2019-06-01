@@ -28,6 +28,8 @@ import java.util.Locale;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Deprecated
 public class JSONTest {
@@ -121,7 +123,7 @@ public class JSONTest {
         assertEquals(jo.getString("name"), "qianlei");
         assertEquals(jo.getArray("array").length(), 5);
         assertEquals(jo.get("$2"), Boolean.FALSE);
-        assertEquals(jo.get("__3"), null);
+        assertNull(jo.get("__3"));
 
         for (int i = 0; i < 10000; i++)
             JSON.parse("{\"name\":\"qianlei\",\"array\":[1,2,3,4,98.123],\"displayName\":\"钱磊\"}");
@@ -150,7 +152,7 @@ public class JSONTest {
         assertEquals(bean.getDisplayName(), "钱磊");
         assertEquals(bean.array.length, 5);
         assertEquals(bean.$$, 214726);
-        assertEquals(bean.$b, true);
+        assertTrue(bean.$b);
 
         for (int i = 0; i < 10000; i++)
             JSON.parse("{name:'qianlei',array:[1,2,3,4,98.123],displayName:'钱磊'}", Bean1.class);

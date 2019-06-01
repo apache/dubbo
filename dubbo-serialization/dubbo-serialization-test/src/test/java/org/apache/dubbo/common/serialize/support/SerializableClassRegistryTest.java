@@ -20,7 +20,6 @@ import org.apache.dubbo.common.serialize.model.SerializablePerson;
 import org.apache.dubbo.common.serialize.model.person.Phone;
 import org.junit.jupiter.api.Test;
 
-import java.io.Serializable;
 import java.util.Map;
 
 import static org.hamcrest.Matchers.equalTo;

@@ -174,7 +174,7 @@ public class HttpProtocolTest {
             client.timeOut(6000);
             fail();
         } catch (RpcException expected) {
-            Assertions.assertEquals(true, expected.isTimeout());
+            Assertions.assertTrue(expected.isTimeout());
         } finally {
             invoker.destroy();
             exporter.unexport();

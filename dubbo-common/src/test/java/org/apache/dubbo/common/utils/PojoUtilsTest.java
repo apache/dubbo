@@ -560,9 +560,9 @@ public class PojoUtilsTest {
 
         Object obj = PojoUtils.generalize(data);
         Assertions.assertEquals(3, data.getChildren().size());
-        assertTrue(data.getChildren().get("first").getClass() == Child.class);
+        assertSame(data.getChildren().get("first").getClass(), Child.class);
         Assertions.assertEquals(1, data.getList().size());
-        assertTrue(data.getList().get(0).getClass() == Child.class);
+        assertSame(data.getList().get(0).getClass(), Child.class);
 
         TestData realizadData = (TestData) PojoUtils.realize(obj, TestData.class);
         Assertions.assertEquals(data.getChildren().size(), realizadData.getChildren().size());
@@ -620,7 +620,7 @@ public class PojoUtilsTest {
         assertTrue(realizeObject instanceof ListResult);
         ListResult listResult = (ListResult) realizeObject;
         List l = listResult.getResult();
-        assertTrue(l.size() == 1);
+        assertEquals(1, l.size());
         assertTrue(l.get(0) instanceof Parent);
         Parent realizeParent = (Parent) l.get(0);
         Assertions.assertEquals(parent.getName(), realizeParent.getName());
