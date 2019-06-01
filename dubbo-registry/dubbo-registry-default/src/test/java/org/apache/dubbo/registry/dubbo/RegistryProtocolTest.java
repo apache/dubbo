@@ -44,6 +44,9 @@ import java.util.List;
 import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
 import static org.apache.dubbo.registry.integration.RegistryProtocol.DEFAULT_REGISTER_PROVIDER_KEYS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * RegistryProtocolTest
@@ -112,7 +115,7 @@ public class RegistryProtocolTest {
         urls.add(URL.valueOf("override://0.0.0.0/" + service + "?x=y"));
         listener.notify(urls);
 
-        assertEquals(true, exporter.getInvoker().isAvailable());
+        assertTrue(exporter.getInvoker().isAvailable());
         assertEquals("100", exporter.getInvoker().getUrl().getParameter("timeout"));
         assertEquals("y", exporter.getInvoker().getUrl().getParameter("x"));
 
@@ -139,8 +142,8 @@ public class RegistryProtocolTest {
         List<URL> urls = new ArrayList<URL>();
         urls.add(URL.valueOf("override://0.0.0.0/org.apache.dubbo.registry.protocol.HackService?timeout=100"));
         listener.notify(urls);
-        assertEquals(true, exporter.getInvoker().isAvailable());
-        assertEquals(null, exporter.getInvoker().getUrl().getParameter("timeout"));
+        assertTrue(exporter.getInvoker().isAvailable());
+        assertNull(exporter.getInvoker().getUrl().getParameter("timeout"));
         exporter.unexport();
         destroyRegistryProtocol();
     }
@@ -159,7 +162,7 @@ public class RegistryProtocolTest {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        assertEquals(false, exporter.getInvoker().isAvailable());
+        assertFalse(exporter.getInvoker().isAvailable());
 
     }
 
