@@ -54,6 +54,8 @@ public class GenericImplFilter extends ListenableFilter {
 
     private static final Class<?>[] GENERIC_PARAMETER_TYPES = new Class<?>[]{String.class, String[].class, Object[].class};
 
+    private static final String GENERIC_PARAMETER_DESC = "Ljava/lang/String;[Ljava/lang/String;[Ljava/lang/Object;";
+
     public GenericImplFilter() {
         super.listener = new GenericImplListener();
     }
@@ -90,6 +92,7 @@ public class GenericImplFilter extends ListenableFilter {
                 invocation2.setMethodName($INVOKE);
             }
             invocation2.setParameterTypes(GENERIC_PARAMETER_TYPES);
+            invocation2.setParameterTypesDesc(GENERIC_PARAMETER_DESC);
             invocation2.setArguments(new Object[]{methodName, types, args});
             return invoker.invoke(invocation2);
         } else if ((invocation.getMethodName().equals($INVOKE) || invocation.getMethodName().equals($INVOKE_ASYNC))

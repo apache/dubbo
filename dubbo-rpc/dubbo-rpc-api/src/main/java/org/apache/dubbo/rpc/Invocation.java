@@ -35,6 +35,13 @@ public interface Invocation {
      */
     String getMethodName();
 
+
+    /**
+     * get the interface name
+     * @return
+     */
+    String getServiceName();
+
     /**
      * get parameter types.
      *

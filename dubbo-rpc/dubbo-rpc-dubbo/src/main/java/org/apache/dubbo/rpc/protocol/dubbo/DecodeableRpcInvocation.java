@@ -22,7 +22,6 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.Cleanable;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.utils.Assert;
-import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.Codec;
@@ -30,17 +29,21 @@ import org.apache.dubbo.remoting.Decodeable;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.transport.CodecSupport;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.MethodModel;
+import org.apache.dubbo.rpc.model.ServiceModel;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import static org.apache.dubbo.rpc.protocol.dubbo.CallbackServiceCodec.decodeInvocationArgument;
 import static org.apache.dubbo.remoting.Constants.DUBBO_VERSION_KEY;
+import static org.apache.dubbo.rpc.protocol.dubbo.CallbackServiceCodec.decodeInvocationArgument;
 
 public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Decodeable {
 
@@ -97,27 +100,37 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
         request.setVersion(dubboVersion);
         setAttachment(DUBBO_VERSION_KEY, dubboVersion);
 
-        setAttachment(PATH_KEY, in.readUTF());
+        String path = in.readUTF();
+        setAttachment(PATH_KEY, path);
         setAttachment(VERSION_KEY, in.readUTF());
 
         setMethodName(in.readUTF());
+
+        String desc = in.readUTF();
+        setParameterTypesDesc(desc);
+
         try {
-            Object[] args;
-            Class<?>[] pts;
-            String desc = in.readUTF();
-            if (desc.length() == 0) {
-                pts = DubboCodec.EMPTY_CLASS_ARRAY;
-                args = DubboCodec.EMPTY_OBJECT_ARRAY;
-            } else {
-                pts = ReflectUtils.desc2classArray(desc);
-                args = new Object[pts.length];
-                for (int i = 0; i < args.length; i++) {
-                    try {
-                        args[i] = in.readObject(pts[i]);
-                    } catch (Exception e) {
-                        if (log.isWarnEnabled()) {
-                            log.warn("Decode argument failed: " + e.getMessage(), e);
+            Object[] args = DubboCodec.EMPTY_OBJECT_ARRAY;
+            Class<?>[] pts = DubboCodec.EMPTY_CLASS_ARRAY;
+            if (desc.length() > 0) {
+                // TODO, lambda function requires variables to be final.
+                Optional<ServiceModel> serviceModel = ApplicationModel.getServiceModel(path);
+                if (serviceModel.isPresent()) {
+                    Optional<MethodModel> methodOptional = serviceModel.get().getMethod(getMethodName(), desc);
+                    if (methodOptional.isPresent()) {
+                        pts = methodOptional.get().getParameterClasses();
+                        args = new Object[pts.length];
+                        for (int i = 0; i < args.length; i++) {
+                            try {
+                                args[i] = in.readObject(pts[i]);
+                            } catch (Exception e) {
+                                if (log.isWarnEnabled()) {
+                                    log.warn("Decode argument failed: " + e.getMessage(), e);
+                                }
+                            }
                         }
+
+                        this.setReturnTypes(methodOptional.get().getReturnTypes());
                     }
                 }
             }
@@ -132,6 +145,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
                 attachment.putAll(map);
                 setAttachments(attachment);
             }
+
             //decode argument ,may be callback
             for (int i = 0; i < args.length; i++) {
                 args[i] = decodeInvocationArgument(channel, this, pts, i, args[i]);

@@ -38,6 +38,11 @@ public class MockInvocation implements Invocation {
         return "echo";
     }
 
+    @Override
+    public String getServiceName() {
+        return "DemoService";
+    }
+
     public Class<?>[] getParameterTypes() {
         return new Class[]{String.class};
     }

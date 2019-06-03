@@ -23,7 +23,6 @@ import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ConsumerMethodModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 
@@ -108,31 +107,31 @@ public class ImplicitCallBackTest {
 
     public void initImplicitCallBackURL_onlyOnthrow() throws Exception {
         Map<String, Object> attitudes = new HashMap<>();
-        ConsumerMethodModel.AsyncMethodInfo asyncMethodInfo = new ConsumerMethodModel.AsyncMethodInfo();
+        ConsumerModel.AsyncMethodInfo asyncMethodInfo = new ConsumerModel.AsyncMethodInfo();
         asyncMethodInfo.setOnthrowInstance(notify);
         asyncMethodInfo.setOnthrowMethod(onThrowMethod);
         attitudes.put("get", asyncMethodInfo);
-        ApplicationModel.initConsumerModel(consumerUrl.getServiceKey(), new ConsumerModel(consumerUrl.getServiceKey(), IDemoService.class, demoProxy, IDemoService.class.getMethods(), attitudes));
+        ApplicationModel.initConsumerModel(consumerUrl.getServiceKey(), new ConsumerModel(consumerUrl.getServiceKey(), IDemoService.class, demoProxy, ApplicationModel.registerServiceModel(IDemoService.class), attitudes));
     }
 
     //================================================================================================
 
     public void initImplicitCallBackURL_onlyOnreturn() throws Exception {
         Map<String, Object> attitudes = new HashMap<>();
-        ConsumerMethodModel.AsyncMethodInfo asyncMethodInfo = new ConsumerMethodModel.AsyncMethodInfo();
+        ConsumerModel.AsyncMethodInfo asyncMethodInfo = new ConsumerModel.AsyncMethodInfo();
         asyncMethodInfo.setOnreturnInstance(notify);
         asyncMethodInfo.setOnreturnMethod(onReturnMethod);
         attitudes.put("get", asyncMethodInfo);
-        ApplicationModel.initConsumerModel(consumerUrl.getServiceKey(), new ConsumerModel(consumerUrl.getServiceKey(), IDemoService.class, demoProxy, IDemoService.class.getMethods(), attitudes));
+        ApplicationModel.initConsumerModel(consumerUrl.getServiceKey(), new ConsumerModel(consumerUrl.getServiceKey(), IDemoService.class, demoProxy, ApplicationModel.registerServiceModel(IDemoService.class), attitudes));
     }
 
     public void initImplicitCallBackURL_onlyOninvoke() throws Exception {
         Map<String, Object> attitudes = new HashMap<>();
-        ConsumerMethodModel.AsyncMethodInfo asyncMethodInfo = new ConsumerMethodModel.AsyncMethodInfo();
+        ConsumerModel.AsyncMethodInfo asyncMethodInfo = new ConsumerModel.AsyncMethodInfo();
         asyncMethodInfo.setOninvokeInstance(notify);
         asyncMethodInfo.setOninvokeMethod(onInvokeMethod);
         attitudes.put("get", asyncMethodInfo);
-        ApplicationModel.initConsumerModel(consumerUrl.getServiceKey(), new ConsumerModel(consumerUrl.getServiceKey(), IDemoService.class, demoProxy, IDemoService.class.getMethods(), attitudes));
+        ApplicationModel.initConsumerModel(consumerUrl.getServiceKey(), new ConsumerModel(consumerUrl.getServiceKey(), IDemoService.class, demoProxy, ApplicationModel.registerServiceModel(IDemoService.class), attitudes));
     }
 
     @Test
@@ -173,7 +172,7 @@ public class ImplicitCallBackTest {
 
         int requestId = 2;
         Person ret = demoProxy.get(requestId);
-        Assertions.assertEquals(null, ret);
+        Assertions.assertNull(ret);
         for (int i = 0; i < 10; i++) {
             if (!notify.errors.containsKey(requestId)) {
                 Thread.sleep(200);
@@ -193,7 +192,7 @@ public class ImplicitCallBackTest {
 
         int requestId = 2;
         Person ret = demoProxy.get(requestId);
-        Assertions.assertEquals(null, ret);
+        Assertions.assertNull(ret);
         for (int i = 0; i < 10; i++) {
             if (!notify.inv.contains(requestId)) {
                 Thread.sleep(200);
@@ -213,7 +212,7 @@ public class ImplicitCallBackTest {
 
         int requestId = 2;
         Person ret = demoProxy.get(requestId);
-        Assertions.assertEquals(null, ret);
+        Assertions.assertNull(ret);
         for (int i = 0; i < 10; i++) {
             if (!notify.errors.containsKey(requestId)) {
                 Thread.sleep(200);
@@ -247,7 +246,7 @@ public class ImplicitCallBackTest {
 
         int requestId = 2;
         Person ret = demoProxy.get(requestId);
-        Assertions.assertEquals(null, ret);
+        Assertions.assertNull(ret);
         Future<Person> pFuture = RpcContext.getContext().getFuture();
         ret = pFuture.get(1000 * 1000, TimeUnit.MICROSECONDS);
         Assertions.assertEquals(requestId, ret.getId());
@@ -261,12 +260,12 @@ public class ImplicitCallBackTest {
 
         int requestId1 = 1;
         Person ret = demoProxy.get(requestId1);
-        Assertions.assertEquals(null, ret);
+        Assertions.assertNull(ret);
         Future<Person> p1Future = RpcContext.getContext().getFuture();
 
         int requestId2 = 1;
         Person ret2 = demoProxy.get(requestId2);
-        Assertions.assertEquals(null, ret2);
+        Assertions.assertNull(ret2);
         Future<Person> p2Future = RpcContext.getContext().getFuture();
 
         ret = p1Future.get(1000 * 1000, TimeUnit.MICROSECONDS);
@@ -285,7 +284,7 @@ public class ImplicitCallBackTest {
 
                 int requestId = 2;
                 Person ret = demoProxy.get(requestId);
-                Assertions.assertEquals(null, ret);
+                Assertions.assertNull(ret);
                 Future<Person> pFuture = RpcContext.getContext().getFuture();
                 ret = pFuture.get(1000 * 1000, TimeUnit.MICROSECONDS);
                 Assertions.assertEquals(requestId, ret.getId());

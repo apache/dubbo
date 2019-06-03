@@ -74,9 +74,9 @@ public class WrapperTest {
     @Test
     public void testWrapperObject() throws Exception {
         Wrapper w = Wrapper.getWrapper(Object.class);
-        Assertions.assertTrue(w.getMethodNames().length == 4);
-        Assertions.assertTrue(w.getPropertyNames().length == 0);
-        Assertions.assertEquals(null, w.getPropertyType(null));
+        Assertions.assertEquals(4, w.getMethodNames().length);
+        Assertions.assertEquals(0, w.getPropertyNames().length);
+        Assertions.assertNull(w.getPropertyType(null));
     }
 
     @Test
@@ -102,7 +102,7 @@ public class WrapperTest {
         Assertions.assertEquals(instance.getClass(), (Class<?>) w.invokeMethod(instance, "getClass", null, null));
         Assertions.assertEquals(instance.hashCode(), (int) w.invokeMethod(instance, "hashCode", null, null));
         Assertions.assertEquals(instance.toString(), (String) w.invokeMethod(instance, "toString", null, null));
-        Assertions.assertEquals(true, (boolean) w.invokeMethod(instance, "equals", null, new Object[]{instance}));
+        Assertions.assertTrue((boolean)w.invokeMethod(instance, "equals", null, new Object[] {instance}));
     }
 
     @Test

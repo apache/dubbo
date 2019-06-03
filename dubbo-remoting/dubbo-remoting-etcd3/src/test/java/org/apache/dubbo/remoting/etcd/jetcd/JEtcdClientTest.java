@@ -337,12 +337,12 @@ public class JEtcdClientTest {
             switch (notified.increaseAndGet()) {
                 case 1: {
                     notNotified.countDown();
-                    Assertions.assertTrue(children.size() == 1);
+                    Assertions.assertEquals(1, children.size());
                     Assertions.assertEquals(child.substring(child.lastIndexOf("/") + 1), children.get(0));
                     break;
                 }
                 case 2: {
-                    Assertions.assertTrue(children.size() == 0);
+                    Assertions.assertEquals(0, children.size());
                     Assertions.assertEquals(path, parent);
                     break;
                 }
