@@ -17,7 +17,7 @@
 
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.rpc.model.ConsumerModel;
+import org.apache.dubbo.common.model.ConsumerModel;
 import org.apache.dubbo.service.Person;
 
 import com.alibaba.dubbo.config.ArgumentConfig;
@@ -43,7 +43,6 @@ import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MethodConfigTest {
     @Test
