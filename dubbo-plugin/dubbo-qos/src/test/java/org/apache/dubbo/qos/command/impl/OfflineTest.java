@@ -24,13 +24,14 @@ import org.apache.dubbo.registry.support.ProviderInvokerWrapper;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
+
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import static org.apache.dubbo.registry.support.ProviderConsumerRegTable.getProviderInvoker;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.core.Is.is;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -38,7 +39,7 @@ public class OfflineTest {
     @Test
     public void testExecute() throws Exception {
         ProviderModel providerModel = mock(ProviderModel.class);
-        when(providerModel.getServiceName()).thenReturn("org.apache.dubbo.BarService");
+        when(providerModel.getServiceKey()).thenReturn("org.apache.dubbo.BarService");
         ApplicationModel.initProviderModel("org.apache.dubbo.BarService", providerModel);
 
         Invoker providerInvoker = mock(Invoker.class);

@@ -25,7 +25,7 @@ import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import org.apache.dubbo.remoting.telnet.support.Help;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ProviderMethodModel;
+import org.apache.dubbo.rpc.model.MethodModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
 
 import com.alibaba.fastjson.JSON;
@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.apache.dubbo.common.utils.PojoUtils.realize;
 
@@ -152,15 +153,15 @@ public class InvokeTelnetHandler implements TelnetHandler {
 
 
     private boolean isServiceMatch(String service, ProviderModel provider) {
-        return provider.getServiceName().equalsIgnoreCase(service)
+        return provider.getServiceKey().equalsIgnoreCase(service)
                 || provider.getServiceInterfaceClass().getSimpleName().equalsIgnoreCase(service)
                 || provider.getServiceInterfaceClass().getName().equalsIgnoreCase(service)
                 || StringUtils.isEmpty(service);
     }
 
-    private List<Method> findSameSignatureMethod(List<ProviderMethodModel> methods, String lookupMethodName, List<Object> args) {
+    private List<Method> findSameSignatureMethod(Set<MethodModel> methods, String lookupMethodName, List<Object> args) {
         List<Method> sameSignatureMethods = new ArrayList<>();
-        for (ProviderMethodModel model : methods) {
+        for (MethodModel model : methods) {
             Method method = model.getMethod();
             if (method.getName().equals(lookupMethodName) && method.getParameterTypes().length == args.size()) {
                 sameSignatureMethods.add(method);

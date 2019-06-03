@@ -23,7 +23,6 @@ import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ConsumerMethodModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 
@@ -108,31 +107,31 @@ public class ImplicitCallBackTest {
 
     public void initImplicitCallBackURL_onlyOnthrow() throws Exception {
         Map<String, Object> attitudes = new HashMap<>();
-        ConsumerMethodModel.AsyncMethodInfo asyncMethodInfo = new ConsumerMethodModel.AsyncMethodInfo();
+        ConsumerModel.AsyncMethodInfo asyncMethodInfo = new ConsumerModel.AsyncMethodInfo();
         asyncMethodInfo.setOnthrowInstance(notify);
         asyncMethodInfo.setOnthrowMethod(onThrowMethod);
         attitudes.put("get", asyncMethodInfo);
-        ApplicationModel.initConsumerModel(consumerUrl.getServiceKey(), new ConsumerModel(consumerUrl.getServiceKey(), IDemoService.class, demoProxy, IDemoService.class.getMethods(), attitudes));
+        ApplicationModel.initConsumerModel(consumerUrl.getServiceKey(), new ConsumerModel(consumerUrl.getServiceKey(), IDemoService.class, demoProxy, ApplicationModel.registerServiceModel(IDemoService.class), attitudes));
     }
 
     //================================================================================================
 
     public void initImplicitCallBackURL_onlyOnreturn() throws Exception {
         Map<String, Object> attitudes = new HashMap<>();
-        ConsumerMethodModel.AsyncMethodInfo asyncMethodInfo = new ConsumerMethodModel.AsyncMethodInfo();
+        ConsumerModel.AsyncMethodInfo asyncMethodInfo = new ConsumerModel.AsyncMethodInfo();
         asyncMethodInfo.setOnreturnInstance(notify);
         asyncMethodInfo.setOnreturnMethod(onReturnMethod);
         attitudes.put("get", asyncMethodInfo);
-        ApplicationModel.initConsumerModel(consumerUrl.getServiceKey(), new ConsumerModel(consumerUrl.getServiceKey(), IDemoService.class, demoProxy, IDemoService.class.getMethods(), attitudes));
+        ApplicationModel.initConsumerModel(consumerUrl.getServiceKey(), new ConsumerModel(consumerUrl.getServiceKey(), IDemoService.class, demoProxy, ApplicationModel.registerServiceModel(IDemoService.class), attitudes));
     }
 
     public void initImplicitCallBackURL_onlyOninvoke() throws Exception {
         Map<String, Object> attitudes = new HashMap<>();
-        ConsumerMethodModel.AsyncMethodInfo asyncMethodInfo = new ConsumerMethodModel.AsyncMethodInfo();
+        ConsumerModel.AsyncMethodInfo asyncMethodInfo = new ConsumerModel.AsyncMethodInfo();
         asyncMethodInfo.setOninvokeInstance(notify);
         asyncMethodInfo.setOninvokeMethod(onInvokeMethod);
         attitudes.put("get", asyncMethodInfo);
-        ApplicationModel.initConsumerModel(consumerUrl.getServiceKey(), new ConsumerModel(consumerUrl.getServiceKey(), IDemoService.class, demoProxy, IDemoService.class.getMethods(), attitudes));
+        ApplicationModel.initConsumerModel(consumerUrl.getServiceKey(), new ConsumerModel(consumerUrl.getServiceKey(), IDemoService.class, demoProxy, ApplicationModel.registerServiceModel(IDemoService.class), attitudes));
     }
 
     @Test

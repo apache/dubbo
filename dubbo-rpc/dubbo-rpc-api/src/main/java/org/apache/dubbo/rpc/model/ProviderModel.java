@@ -16,81 +16,43 @@
  */
 package org.apache.dubbo.rpc.model;
 
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 /**
  * ProviderModel which is about published services
  */
 public class ProviderModel {
-    private final String serviceName;
+    private final String serviceKey;
     private final Object serviceInstance;
-    private final Class<?> serviceInterfaceClass;
-    private final Map<String, List<ProviderMethodModel>> methods = new HashMap<String, List<ProviderMethodModel>>();
+    private final ServiceModel serviceModel;
 
-    public ProviderModel(String serviceName, Object serviceInstance, Class<?> serviceInterfaceClass) {
+    public ProviderModel(String serviceKey, Object serviceInstance, ServiceModel serviceModel) {
         if (null == serviceInstance) {
-            throw new IllegalArgumentException("Service[" + serviceName + "]Target is NULL.");
+            throw new IllegalArgumentException("Service[" + serviceKey + "]Target is NULL.");
         }
 
-        this.serviceName = serviceName;
+        this.serviceKey = serviceKey;
         this.serviceInstance = serviceInstance;
-        this.serviceInterfaceClass = serviceInterfaceClass;
-
-        initMethod();
+        this.serviceModel = serviceModel;
     }
 
-
-    public String getServiceName() {
-        return serviceName;
+    public String getServiceKey() {
+        return serviceKey;
     }
 
     public Class<?> getServiceInterfaceClass() {
-        return serviceInterfaceClass;
+        return serviceModel.getServiceInterfaceClass();
     }
 
     public Object getServiceInstance() {
         return serviceInstance;
     }
 
-    public List<ProviderMethodModel> getAllMethods() {
-        List<ProviderMethodModel> result = new ArrayList<ProviderMethodModel>();
-        for (List<ProviderMethodModel> models : methods.values()) {
-            result.addAll(models);
-        }
-        return result;
+    public Set<MethodModel> getAllMethods() {
+        return serviceModel.getAllMethods();
     }
 
-    public ProviderMethodModel getMethodModel(String methodName, String[] argTypes) {
-        List<ProviderMethodModel> methodModels = methods.get(methodName);
-        if (methodModels != null) {
-            for (ProviderMethodModel methodModel : methodModels) {
-                if (Arrays.equals(argTypes, methodModel.getMethodArgTypes())) {
-                    return methodModel;
-                }
-            }
-        }
-        return null;
+    public ServiceModel getServiceModel() {
+        return serviceModel;
     }
-
-    private void initMethod() {
-        Method[] methodsToExport = null;
-        methodsToExport = this.serviceInterfaceClass.getMethods();
-
-        for (Method method : methodsToExport) {
-            method.setAccessible(true);
-
-            List<ProviderMethodModel> methodModels = methods.get(method.getName());
-            if (methodModels == null) {
-                methodModels = new ArrayList<ProviderMethodModel>(1);
-                methods.put(method.getName(), methodModels);
-            }
-            methodModels.add(new ProviderMethodModel(method, serviceName));
-        }
-    }
-
 }
