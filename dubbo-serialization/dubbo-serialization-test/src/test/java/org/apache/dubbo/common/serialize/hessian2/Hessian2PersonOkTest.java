@@ -19,7 +19,6 @@ package org.apache.dubbo.common.serialize.hessian2;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.base.AbstractSerializationPersonOkTest;
-import org.apache.dubbo.common.serialize.java.JavaSerialization;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 

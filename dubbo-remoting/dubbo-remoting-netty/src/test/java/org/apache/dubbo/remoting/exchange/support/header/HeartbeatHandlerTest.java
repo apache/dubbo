@@ -18,7 +18,6 @@
 package org.apache.dubbo.remoting.exchange.support.header;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.Channel;
@@ -63,16 +62,16 @@ public class HeartbeatHandlerTest {
     @Test
     public void testServerHeartbeat() throws Exception {
         URL serverURL = URL.valueOf("header://localhost:55555?transporter=netty3");
-        serverURL = serverURL.addParameter(RemotingConstants.HEARTBEAT_KEY, 1000);
+        serverURL = serverURL.addParameter(Constants.HEARTBEAT_KEY, 1000);
         TestHeartbeatHandler handler = new TestHeartbeatHandler();
         server = Exchangers.bind(serverURL, handler);
         System.out.println("Server bind successfully");
 
         FakeChannelHandlers.setTestingChannelHandlers();
-        serverURL = serverURL.removeParameter(RemotingConstants.HEARTBEAT_KEY);
+        serverURL = serverURL.removeParameter(Constants.HEARTBEAT_KEY);
 
         // Let the client not reply to the heartbeat, and turn off automatic reconnect to simulate the client dropped.
-        serverURL = serverURL.addParameter(RemotingConstants.HEARTBEAT_KEY, 600 * 1000);
+        serverURL = serverURL.addParameter(Constants.HEARTBEAT_KEY, 600 * 1000);
         serverURL = serverURL.addParameter(Constants.RECONNECT_KEY, false);
 
         client = Exchangers.connect(serverURL);
@@ -84,7 +83,7 @@ public class HeartbeatHandlerTest {
     @Test
     public void testHeartbeat() throws Exception {
         URL serverURL = URL.valueOf("header://localhost:55555?transporter=netty3");
-        serverURL = serverURL.addParameter(RemotingConstants.HEARTBEAT_KEY, 1000);
+        serverURL = serverURL.addParameter(Constants.HEARTBEAT_KEY, 1000);
         TestHeartbeatHandler handler = new TestHeartbeatHandler();
         server = Exchangers.bind(serverURL, handler);
         System.out.println("Server bind successfully");
@@ -93,8 +92,8 @@ public class HeartbeatHandlerTest {
         Thread.sleep(10000);
         System.err.println("++++++++++++++ disconnect count " + handler.disconnectCount);
         System.err.println("++++++++++++++ connect count " + handler.connectCount);
-        Assertions.assertTrue(handler.disconnectCount == 0);
-        Assertions.assertTrue(handler.connectCount == 1);
+        Assertions.assertEquals(0, handler.disconnectCount);
+        Assertions.assertEquals(1, handler.connectCount);
     }
 
     @Test
@@ -106,7 +105,7 @@ public class HeartbeatHandlerTest {
         System.out.println("Server bind successfully");
 
         FakeChannelHandlers.resetChannelHandlers();
-        serverURL = serverURL.addParameter(RemotingConstants.HEARTBEAT_KEY, 1000);
+        serverURL = serverURL.addParameter(Constants.HEARTBEAT_KEY, 1000);
         client = Exchangers.connect(serverURL);
         Thread.sleep(10000);
         Assertions.assertTrue(handler.connectCount > 0);

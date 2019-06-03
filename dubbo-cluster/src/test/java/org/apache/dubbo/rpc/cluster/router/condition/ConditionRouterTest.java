@@ -58,31 +58,31 @@ public class ConditionRouterTest {
 
         Router router = new ConditionRouterFactory().getRouter(getRouteUrl(" => host = 1.2.3.4"));
         boolean matchWhen = ((ConditionRouter) router).matchWhen(URL.valueOf("consumer://1.1.1.1/com.foo.BarService"), invocation);
-        Assertions.assertEquals(true, matchWhen);
+        Assertions.assertTrue(matchWhen);
 
         router = new ConditionRouterFactory().getRouter(getRouteUrl("host = 2.2.2.2,1.1.1.1,3.3.3.3 => host = 1.2.3.4"));
         matchWhen = ((ConditionRouter) router).matchWhen(URL.valueOf("consumer://1.1.1.1/com.foo.BarService"), invocation);
-        Assertions.assertEquals(true, matchWhen);
+        Assertions.assertTrue(matchWhen);
 
         router = new ConditionRouterFactory().getRouter(getRouteUrl("host = 2.2.2.2,1.1.1.1,3.3.3.3 & host !=1.1.1.1 => host = 1.2.3.4"));
         matchWhen = ((ConditionRouter) router).matchWhen(URL.valueOf("consumer://1.1.1.1/com.foo.BarService"), invocation);
-        Assertions.assertEquals(false, matchWhen);
+        Assertions.assertFalse(matchWhen);
 
         router = new ConditionRouterFactory().getRouter(getRouteUrl("host !=4.4.4.4 & host = 2.2.2.2,1.1.1.1,3.3.3.3 => host = 1.2.3.4"));
         matchWhen = ((ConditionRouter) router).matchWhen(URL.valueOf("consumer://1.1.1.1/com.foo.BarService"), invocation);
-        Assertions.assertEquals(true, matchWhen);
+        Assertions.assertTrue(matchWhen);
 
         router = new ConditionRouterFactory().getRouter(getRouteUrl("host !=4.4.4.* & host = 2.2.2.2,1.1.1.1,3.3.3.3 => host = 1.2.3.4"));
         matchWhen = ((ConditionRouter) router).matchWhen(URL.valueOf("consumer://1.1.1.1/com.foo.BarService"), invocation);
-        Assertions.assertEquals(true, matchWhen);
+        Assertions.assertTrue(matchWhen);
 
         router = new ConditionRouterFactory().getRouter(getRouteUrl("host = 2.2.2.2,1.1.1.*,3.3.3.3 & host != 1.1.1.1 => host = 1.2.3.4"));
         matchWhen = ((ConditionRouter) router).matchWhen(URL.valueOf("consumer://1.1.1.1/com.foo.BarService"), invocation);
-        Assertions.assertEquals(false, matchWhen);
+        Assertions.assertFalse(matchWhen);
 
         router = new ConditionRouterFactory().getRouter(getRouteUrl("host = 2.2.2.2,1.1.1.*,3.3.3.3 & host != 1.1.1.2 => host = 1.2.3.4"));
         matchWhen = ((ConditionRouter) router).matchWhen(URL.valueOf("consumer://1.1.1.1/com.foo.BarService"), invocation);
-        Assertions.assertEquals(true, matchWhen);
+        Assertions.assertTrue(matchWhen);
     }
 
     @Test
@@ -97,6 +97,9 @@ public class ConditionRouterTest {
         invokers.add(invoker1);
         invokers.add(invoker2);
         invokers.add(invoker3);
+
+        System.err.println("The localhost address: " + invoker2.getUrl().getAddress());
+        System.err.println(invoker3.getUrl().getAddress());
 
         Router router1 = new ConditionRouterFactory().getRouter(getRouteUrl(
                 "host = " + NetUtils.getLocalHost() + " => " + " host = 10.20.3.3").addParameter(FORCE_KEY,
@@ -116,6 +119,8 @@ public class ConditionRouterTest {
         Router router6 = new ConditionRouterFactory().getRouter(getRouteUrl(
                 "host = " + NetUtils.getLocalHost() + " => " + " serialization = fastjson").addParameter(
                 FORCE_KEY, String.valueOf(true)));
+
+
 
         List<Invoker<String>> filteredInvokers1 = router1.route(invokers, URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), new RpcInvocation());
         List<Invoker<String>> filteredInvokers2 = router2.route(invokers, URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), new RpcInvocation());
@@ -138,23 +143,23 @@ public class ConditionRouterTest {
         Router router = new ConditionRouterFactory().getRouter(getRouteUrl("methods=getFoo => host = 1.2.3.4"));
         boolean matchWhen = ((ConditionRouter) router).matchWhen(
                 URL.valueOf("consumer://1.1.1.1/com.foo.BarService?methods=setFoo,getFoo,findFoo"), invocation);
-        Assertions.assertEquals(true, matchWhen);
+        Assertions.assertTrue(matchWhen);
         // Exactly one method, match
         matchWhen = ((ConditionRouter) router).matchWhen(
                 URL.valueOf("consumer://1.1.1.1/com.foo.BarService?methods=getFoo"), invocation);
-        Assertions.assertEquals(true, matchWhen);
+        Assertions.assertTrue(matchWhen);
         // Method routing and Other condition routing can work together
         Router router2 = new ConditionRouterFactory()
                 .getRouter(getRouteUrl("methods=getFoo & host!=1.1.1.1 => host = 1.2.3.4"));
         matchWhen = ((ConditionRouter) router2).matchWhen(
                 URL.valueOf("consumer://1.1.1.1/com.foo.BarService?methods=getFoo"), invocation);
-        Assertions.assertEquals(false, matchWhen);
+        Assertions.assertFalse(matchWhen);
 
         Router router3 = new ConditionRouterFactory()
                 .getRouter(getRouteUrl("methods=getFoo & host=1.1.1.1 => host = 1.2.3.4"));
         matchWhen = ((ConditionRouter) router3).matchWhen(
                 URL.valueOf("consumer://1.1.1.1/com.foo.BarService?methods=getFoo"), invocation);
-        Assertions.assertEquals(true, matchWhen);
+        Assertions.assertTrue(matchWhen);
         // Test filter condition
         List<Invoker<String>> invokers = new ArrayList<Invoker<String>>();
         Invoker<String> invoker1 = new MockInvoker<String>(URL.valueOf("dubbo://10.20.3.3:20880/com.foo.BarService"));

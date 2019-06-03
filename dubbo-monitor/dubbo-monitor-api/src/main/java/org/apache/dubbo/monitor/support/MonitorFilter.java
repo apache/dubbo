@@ -46,8 +46,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.monitor.Constants.COUNT_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.INPUT_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.OUTPUT_KEY;
+import static org.apache.dubbo.rpc.Constants.INPUT_KEY;
+import static org.apache.dubbo.rpc.Constants.OUTPUT_KEY;
 /**
  * MonitorFilter. (SPI, Singleton, ThreadSafe)
  */

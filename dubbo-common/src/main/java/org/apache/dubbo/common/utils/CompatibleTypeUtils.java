@@ -103,7 +103,7 @@ public class CompatibleTypeUtils {
             } else if (char[].class.equals(type)) {
                 // Process string to char array for generic invoke
                 // See
-                // - https://github.com/apache/incubator-dubbo/issues/2003
+                // - https://github.com/apache/dubbo/issues/2003
                 int len = string.length();
                 char[] chars = new char[len];
                 string.getChars(0, len, chars, 0);
