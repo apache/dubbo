@@ -23,7 +23,6 @@ import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
-import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -100,13 +99,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
                 ExecutorService executor = getCallbackExecutor(getUrl(), inv);
                 asyncRpcResult.setExecutor(executor);
                 CompletableFuture<Object> responseFuture = currentClient.request(inv, timeout, executor);
-                responseFuture.whenComplete((obj, t) -> {
-                    if (t != null) {
-                        asyncRpcResult.completeExceptionally(t);
-                    } else {
-                        asyncRpcResult.complete((AppResponse) obj);
-                    }
-                });
+                asyncRpcResult.subscribeTo(responseFuture);
                 return asyncRpcResult;
             }
         } catch (TimeoutException e) {

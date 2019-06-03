@@ -9,15 +9,15 @@ Before we accept a non-trivial patch or pull request we will need you to sign th
 
 #### Mailing list
 
-The mailing list is the recommended way for discussing almost anything that related to Dubbo. Please refer to this [guide](https://github.com/apache/incubator-dubbo/wiki/Mailing-list-subscription-guide) for detailed documentation on how to subscribe.
+The mailing list is the recommended way for discussing almost anything that related to Dubbo. Please refer to this [guide](https://github.com/apache/dubbo/wiki/Mailing-list-subscription-guide) for detailed documentation on how to subscribe.
 
-- [dev@dubbo.incubator.apache.org](mailto:dev-subscribe@dubbo.incubator.apache.org): the develop mailing list, you can ask question here if you have encountered any problem when using or developing Dubbo.
-- [commits@dubbo.incubator.apache.org](mailto:commits-subscribe@dubbo.incubator.apache.org): all the commits will be sent to this mailing list. You can subscribe to it if you are interested in Dubbo's development.
-- [notifications@dubbo.incubator.apache.org](mailto:notifications-subscribe@dubbo.incubator.apache.org): all the Github [issue](https://github.com/apache/incubator-dubbo/issues) updates and [pull request](https://github.com/apache/incubator-dubbo/pulls) updates will be sent to this mailing list.
+- [dev@dubbo.apache.org](mailto:dev-subscribe@dubbo.apache.org): the develop mailing list, you can ask question here if you have encountered any problem when using or developing Dubbo.
+- [commits@dubbo.apache.org](mailto:commits-subscribe@dubbo.apache.org): all the commits will be sent to this mailing list. You can subscribe to it if you are interested in Dubbo's development.
+- [notifications@dubbo.apache.org](mailto:notifications-subscribe@dubbo.apache.org): all the Github [issue](https://github.com/apache/dubbo/issues) updates and [pull request](https://github.com/apache/dubbo/pulls) updates will be sent to this mailing list.
 
 ### Reporting issue
 
-Please follow the [template](https://github.com/apache/incubator-dubbo/issues/new?template=dubbo-issue-report-template.md) for reporting any issues.
+Please follow the [template](https://github.com/apache/dubbo/issues/new?template=dubbo-issue-report-template.md) for reporting any issues.
 
 ### Code Conventions
 Our code style is almost in line with the standard java conventions (Popular IDE's default setting satisfy this), with the following additional restricts:  
@@ -46,23 +46,23 @@ This is a rough outline of what a contributor's workflow looks like:
 * Make commits of logical units.
 * Make sure commit messages are in the proper format (see below).
 * Push changes in a topic branch to your forked repository.
-* Follow the checklist in the [pull request template](https://github.com/apache/incubator-dubbo/blob/master/PULL_REQUEST_TEMPLATE.md)
+* Follow the checklist in the [pull request template](https://github.com/apache/dubbo/blob/master/PULL_REQUEST_TEMPLATE.md)
 * Before you sending out the pull request, please sync your forked repository with remote repository, this will make your pull request simple and clear. See guide below:
 ```
-git remote add upstream git@github.com:apache/incubator-dubbo.git
+git remote add upstream git@github.com:apache/dubbo.git
 git fetch upstream
 git rebase upstream/master
 git checkout -b your_awesome_patch
 ... add some work
 git push origin your_awesome_patch
 ```
-* Submit a pull request to apache/incubator-dubbo and wait for the reply.
+* Submit a pull request to apache/dubbo and wait for the reply.
 
 Thanks for contributing!
 
 ### Code style
 
-We provide a template file [dubbo_codestyle_for_idea.xml](https://github.com/apache/incubator-dubbo/tree/master/codestyle/dubbo_codestyle_for_idea.xml) for IntelliJ idea, you can import it to you IDE. 
+We provide a template file [dubbo_codestyle_for_idea.xml](https://github.com/apache/dubbo/tree/master/codestyle/dubbo_codestyle_for_idea.xml) for IntelliJ idea, you can import it to you IDE. 
 If you use Eclipse you can config manually by referencing the same file.
 
 **NOTICE**

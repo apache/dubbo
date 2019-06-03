@@ -36,10 +36,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
+import static org.apache.dubbo.rpc.protocol.rest.Constants.EXTENSION_KEY;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-
-import static org.apache.dubbo.rpc.protocol.rest.Constants.EXTENSION_KEY;
 
 public class RestProtocolTest {
     private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension("rest");
@@ -163,7 +162,7 @@ public class RestProtocolTest {
 
         Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, exportUrl));
 
-        RpcInvocation rpcInvocation = new RpcInvocation("hello", new Class[]{Integer.class, Integer.class}, new Integer[]{2, 3});
+        RpcInvocation rpcInvocation = new RpcInvocation("hello", DemoService.class.getName(), new Class[]{Integer.class, Integer.class}, new Integer[]{2, 3});
 
         Result result = exporter.getInvoker().invoke(rpcInvocation);
         assertThat(result.getValue(), CoreMatchers.<Object>is(5));

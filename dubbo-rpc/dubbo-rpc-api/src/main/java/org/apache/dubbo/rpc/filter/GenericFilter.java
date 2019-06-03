@@ -42,8 +42,8 @@ import org.apache.dubbo.rpc.support.ProtocolUtils;
 import java.io.IOException;
 import java.lang.reflect.Method;
 
-import static org.apache.dubbo.common.constants.RpcConstants.$INVOKE;
-import static org.apache.dubbo.common.constants.RpcConstants.$INVOKE_ASYNC;
+import static org.apache.dubbo.rpc.Constants.$INVOKE;
+import static org.apache.dubbo.rpc.Constants.$INVOKE_ASYNC;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_BEAN;
 import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_NATIVE_JAVA;
@@ -138,7 +138,7 @@ public class GenericFilter extends ListenableFilter {
                                         args[0].getClass().getName());
                     }
                 }
-                return invoker.invoke(new RpcInvocation(method, args, inv.getAttachments()));
+                return invoker.invoke(new RpcInvocation(method, invoker.getInterface().getName(), args, inv.getAttachments()));
             } catch (NoSuchMethodException e) {
                 throw new RpcException(e.getMessage(), e);
             } catch (ClassNotFoundException e) {

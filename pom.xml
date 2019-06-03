@@ -31,7 +31,7 @@
 
     <name>${project.artifactId}</name>
     <description>The parent project of dubbo</description>
-    <url>https://github.com/apache/incubator-dubbo</url>
+    <url>https://github.com/apache/dubbo</url>
     <inceptionYear>2011</inceptionYear>
     <licenses>
         <license>
@@ -42,9 +42,9 @@
     </licenses>
 
     <scm>
-        <url>https://github.com/apache/incubator-dubbo</url>
-        <connection>scm:git:https://github.com/apache/incubator-dubbo.git</connection>
-        <developerConnection>scm:git:https://github.com/apache/incubator-dubbo.git</developerConnection>
+        <url>https://github.com/apache/dubbo</url>
+        <connection>scm:git:https://github.com/apache/dubbo.git</connection>
+        <developerConnection>scm:git:https://github.com/apache/dubbo.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
     <mailingLists>
@@ -83,7 +83,7 @@
 
     <issueManagement>
         <system>Github Issues</system>
-        <url>https://github.com/apache/incubator-dubbo/issues</url>
+        <url>https://github.com/apache/dubbo/issues</url>
     </issueManagement>
 
     <properties>
@@ -120,6 +120,7 @@
         <maven_checkstyle_version>3.0.0</maven_checkstyle_version>
         <maven_jacoco_version>0.8.2</maven_jacoco_version>
         <maven_flatten_version>1.1.0</maven_flatten_version>
+        <maven_enforce_version>3.0.0-M2</maven_enforce_version>
         <apache-rat-plugin.version>0.12</apache-rat-plugin.version>
         <arguments />
         <checkstyle.skip>true</checkstyle.skip>
@@ -196,6 +197,35 @@
     </dependencies>
 
     <profiles>
+        <profile>
+            <id>snapshot-ci-deploy</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-enforcer-plugin</artifactId>
+                        <version>${maven_enforce_version}</version>
+                        <executions>
+                            <execution>
+                                <id>enforce-no-releases</id>
+                                <goals>
+                                    <goal>enforce</goal>
+                                </goals>
+                                <configuration>
+                                    <rules>
+                                        <requireSnapshotVersion>
+                                            <message>No Releases Allowed!</message>
+                                            <failWhenParentIsRelease>false</failWhenParentIsRelease>
+                                        </requireSnapshotVersion>
+                                    </rules>
+                                    <fail>true</fail>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
         <profile>
             <id>javadoc-lint</id>
             <activation>

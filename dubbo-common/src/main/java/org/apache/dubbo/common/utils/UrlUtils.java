@@ -38,11 +38,11 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOVE_VALUE_PREFIX;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.DUBBO_PROTOCOL;
-import static org.apache.dubbo.common.constants.ConfigConstants.HOST_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.PASSWORD_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.PORT_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.USERNAME_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
+import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PASSWORD_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PORT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.USERNAME_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
@@ -484,18 +484,6 @@ public class UrlUtils {
                 PROVIDERS_CATEGORY.equals(url.getParameter(CATEGORY_KEY, PROVIDERS_CATEGORY));
     }
 
-    public static int getHeartbeat(URL url) {
-        return url.getParameter(RemotingConstants.HEARTBEAT_KEY, RemotingConstants.DEFAULT_HEARTBEAT);
-    }
-
-    public static int getIdleTimeout(URL url) {
-        int heartBeat = getHeartbeat(url);
-        int idleTimeout = url.getParameter(RemotingConstants.HEARTBEAT_TIMEOUT_KEY, heartBeat * 3);
-        if (idleTimeout < heartBeat * 2) {
-            throw new IllegalStateException("idleTimeout < heartbeatInterval * 2");
-        }
-        return idleTimeout;
-    }
 
     /**
      * Check if the given value matches the given pattern. The pattern supports wildcard "*".
