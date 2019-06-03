@@ -107,9 +107,13 @@ class URL implements Serializable {
 
     private final Map<String, String> parameters;
 
+    private final Map<String, Map<String, String>> methodParameters;
+
     // ==== cache ====
 
     private volatile transient Map<String, Number> numbers;
+
+    private volatile transient Map<String, Map<String, String>> methodNumbers;
 
     private volatile transient Map<String, URL> urls;
 
@@ -131,6 +135,7 @@ class URL implements Serializable {
         this.port = 0;
         this.path = null;
         this.parameters = null;
+        this.methodParameters = null;
     }
 
     public URL(String protocol, String host, int port) {
@@ -165,7 +170,24 @@ class URL implements Serializable {
         this(protocol, username, password, host, port, path, CollectionUtils.toStringMap(pairs));
     }
 
-    public URL(String protocol, String username, String password, String host, int port, String path, Map<String, String> parameters) {
+    public URL(String protocol,
+               String username,
+               String password,
+               String host,
+               int port,
+               String path,
+               Map<String, String> parameters) {
+        this (protocol, username, password, host, port, path, parameters, toMethodParameters(parameters));
+    }
+
+    public URL(String protocol,
+               String username,
+               String password,
+               String host,
+               int port,
+               String path,
+               Map<String, String> parameters,
+               Map<String, Map<String, String>> methodParameters) {
         if (StringUtils.isEmpty(username)
                 && StringUtils.isNotEmpty(password)) {
             throw new IllegalArgumentException("Invalid url, password without username!");
@@ -186,6 +208,7 @@ class URL implements Serializable {
             parameters = new HashMap<>(parameters);
         }
         this.parameters = Collections.unmodifiableMap(parameters);
+        this.methodParameters = Collections.unmodifiableMap(methodParameters);
     }
 
     /**
@@ -272,6 +295,18 @@ class URL implements Serializable {
         if (url.length() > 0) {
             host = url;
         }
+
+        if (parameters != null) {
+            for (Map.Entry<String, String> entry : parameters.entrySet()) {
+                String key = entry.getKey();
+                int methodSeparator = key.indexOf(".");
+                if (methodSeparator > 0) {
+                    String method = key.substring(0, methodSeparator);
+
+                }
+            }
+        }
+
         return new URL(protocol, username, password, host, port, path, parameters);
     }
 
@@ -480,6 +515,10 @@ class URL implements Serializable {
 
     public Map<String, String> getParameters() {
         return parameters;
+    }
+
+    public Map<String, Map<String, String>> getMethodParameters() {
+        return methodParameters;
     }
 
     public String getParameterAndDecoded(String key) {
@@ -727,9 +766,13 @@ class URL implements Serializable {
     }
 
     public String getMethodParameter(String method, String key) {
-        String value = parameters.get(method + "." + key);
+        Map<String, String> keyMap = methodParameters.get(method);
+        String value = null;
+        if (keyMap != null) {
+            value =  keyMap.get(key);
+        }
         if (StringUtils.isEmpty(value)) {
-            return getParameter(key);
+            value = parameters.get(key);
         }
         return value;
     }
