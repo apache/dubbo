@@ -35,6 +35,7 @@ import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
@@ -95,9 +96,10 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
                 return AsyncRpcResult.newDefaultAsyncResult(invocation);
             } else {
                 AsyncRpcResult asyncRpcResult = new AsyncRpcResult(inv);
-                CompletableFuture<Object> responseFuture = currentClient.request(inv, timeout);
+                ExecutorService executor = getCallbackExecutor(getUrl(), inv);
+                asyncRpcResult.setExecutor(executor);
+                CompletableFuture<Object> responseFuture = currentClient.request(inv, timeout, executor);
                 asyncRpcResult.subscribeTo(responseFuture);
-                RpcContext.getContext().setFuture(new FutureAdapter(asyncRpcResult));
                 return asyncRpcResult;
             }
         } catch (TimeoutException e) {

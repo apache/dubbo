@@ -18,8 +18,6 @@
 package org.apache.dubbo.remoting;
 
 
-import java.util.concurrent.ExecutorService;
-
 public interface Constants {
 
     String BUFFER_KEY = "buffer";
@@ -116,8 +114,6 @@ public interface Constants {
     String CHANNEL_READONLYEVENT_SENT_KEY = "channel.readonly.sent";
 
     String CHANNEL_SEND_READONLYEVENT_KEY = "channel.readonly.send";
-
-    String EXECUTOR_SERVICE_COMPONENT_KEY = ExecutorService.class.getName();
 
     String RECONNECT_KEY = "reconnect";
 

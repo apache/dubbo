@@ -57,6 +57,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_PROTOCOL;
+import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY;
 import static org.apache.dubbo.monitor.Constants.DUBBO_CONSUMER;
 import static org.apache.dubbo.monitor.Constants.DUBBO_CONSUMER_METHOD;
 import static org.apache.dubbo.monitor.Constants.DUBBO_GROUP;
@@ -66,7 +67,6 @@ import static org.apache.dubbo.monitor.Constants.METHOD;
 import static org.apache.dubbo.monitor.Constants.METRICS_PORT;
 import static org.apache.dubbo.monitor.Constants.METRICS_PROTOCOL;
 import static org.apache.dubbo.monitor.Constants.SERVICE;
-import static org.apache.dubbo.remoting.Constants.EXECUTOR_SERVICE_COMPONENT_KEY;
 
 public class MetricsFilter implements Filter {
 

@@ -14,11 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.dubbo;
+package org.apache.dubbo.rpc;
 
-import org.apache.dubbo.rpc.AppResponse;
-import org.apache.dubbo.rpc.RpcException;
-
+import java.lang.ref.SoftReference;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
@@ -32,7 +30,10 @@ public class FutureAdapter<V> extends CompletableFuture<V> {
 
     private CompletableFuture<AppResponse> appResponseFuture;
 
-    public FutureAdapter(CompletableFuture<AppResponse> future) {
+    private SoftReference<Invocation> invocationSoftReference;
+
+    public FutureAdapter(CompletableFuture<AppResponse> future, Invocation invocation) {
+        this.invocationSoftReference = new SoftReference<>(invocation);
         this.appResponseFuture = future;
         future.whenComplete((appResponse, t) -> {
             if (t != null) {
@@ -53,6 +54,10 @@ public class FutureAdapter<V> extends CompletableFuture<V> {
     // TODO figure out the meaning of cancel in DefaultFuture.
     @Override
     public boolean cancel(boolean mayInterruptIfRunning) {
+//        Invocation invocation = invocationSoftReference.get();
+//        if (invocation != null) {
+//            invocation.getInvoker().invoke(cancel);
+//        }
         return appResponseFuture.cancel(mayInterruptIfRunning);
     }
 
