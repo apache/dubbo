@@ -155,6 +155,12 @@ public interface CommonConstants {
     String REVISION_KEY = "revision";
 
     /**
+     * generic call
+     */
+    String $INVOKE = "$invoke";
+    String $INVOKE_ASYNC = "$invokeAsync";
+
+    /**
      * package version in the manifest
      */
     String RELEASE_KEY = "release";

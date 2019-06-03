@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.model;
+package org.apache.dubbo.common.model;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -34,7 +34,6 @@ import java.util.concurrent.ConcurrentMap;
  * adjust project structure in order to fully utilize the methods introduced here.
  */
 public class ApplicationModel {
-
     protected static final Logger LOGGER = LoggerFactory.getLogger(ApplicationModel.class);
 
     /**

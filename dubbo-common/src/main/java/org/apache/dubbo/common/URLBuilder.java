@@ -41,6 +41,8 @@ public final class URLBuilder {
 
     private Map<String, String> parameters;
 
+    private Map<String, Map<String, String>> methodParameters;
+
     public URLBuilder() {
         protocol = null;
         username = null;
@@ -49,6 +51,7 @@ public final class URLBuilder {
         port = 0;
         path = null;
         parameters = new HashMap<>();
+        methodParameters = new HashMap<>();
     }
 
     public URLBuilder(String protocol, String host, int port) {
@@ -75,7 +78,22 @@ public final class URLBuilder {
         this(protocol, null, null, host, port, path, parameters);
     }
 
-    public URLBuilder(String protocol, String username, String password, String host, int port, String path, Map<String, String> parameters) {
+    public URLBuilder(String protocol,
+                      String username,
+                      String password,
+                      String host,
+                      int port,
+                      String path, Map<String, String> parameters) {
+        this(protocol, username, password, host, port, path, parameters, URL.toMethodParameters(parameters, path));
+    }
+
+    public URLBuilder(String protocol,
+                      String username,
+                      String password,
+                      String host,
+                      int port,
+                      String path, Map<String, String> parameters,
+                      Map<String, Map<String, String>> methodParameters) {
         this.protocol = protocol;
         this.username = username;
         this.password = password;
@@ -83,6 +101,7 @@ public final class URLBuilder {
         this.port = port;
         this.path = path;
         this.parameters = parameters != null ? parameters : new HashMap<>();
+        this.methodParameters = (methodParameters != null ? methodParameters : new HashMap<>());
     }
 
     public static URLBuilder from(URL url) {
@@ -120,7 +139,7 @@ public final class URLBuilder {
                 path = path.substring(firstNonSlash);
             }
         }
-        return new URL(protocol, username, password, host, port, path, parameters);
+        return new URL(protocol, username, password, host, port, path, parameters, methodParameters);
     }
 
 
@@ -242,6 +261,16 @@ public final class URLBuilder {
         return this;
     }
 
+    public URLBuilder addMethodParameter(String method, String key, String value) {
+        if (StringUtils.isEmpty(method) || StringUtils.isEmpty(key) || StringUtils.isEmpty(value)) {
+            return this;
+        }
+        Map<String, String> keyParameter = methodParameters.computeIfAbsent(method, m -> new HashMap<>());
+
+        keyParameter.put(key, value);
+        return this;
+    }
+
     public URLBuilder addParameterIfAbsent(String key, String value) {
         if (StringUtils.isEmpty(key) || StringUtils.isEmpty(value)) {
             return this;
@@ -273,6 +302,15 @@ public final class URLBuilder {
         }
 
         this.parameters.putAll(parameters);
+        return this;
+    }
+
+    public URLBuilder addMethodParameters(Map<String, Map<String, String>> methodParameters) {
+        if (CollectionUtils.isEmptyMap(methodParameters)) {
+            return this;
+        }
+
+        this.methodParameters.putAll(methodParameters);
         return this;
     }
 

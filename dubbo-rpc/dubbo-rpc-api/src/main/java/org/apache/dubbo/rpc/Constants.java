@@ -107,8 +107,6 @@ public interface Constants {
      * To decide whether to make connection when the client is created
      */
     String LAZY_CONNECT_KEY = "lazy";
-    String $INVOKE = "$invoke";
-    String $INVOKE_ASYNC = "$invokeAsync";
 
     String INPUT_KEY = "input";
     String OUTPUT_KEY = "output";
