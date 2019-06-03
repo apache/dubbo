@@ -47,7 +47,7 @@ public class ConsumerContextFilter extends ListenableFilter {
         RpcContext.getContext()
                 .setInvoker(invoker)
                 .setInvocation(invocation)
-                .setLocalAddress(NetUtils.getLocalHost(), 0)
+                .setLocalAddress(NetUtils.getHostAddress(), 0)
                 .setRemoteAddress(invoker.getUrl().getHost(),
                         invoker.getUrl().getPort());
         if (invocation instanceof RpcInvocation) {
