@@ -17,7 +17,6 @@
 package org.apache.dubbo.registry.client.metadata;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.ServiceInstance;
 
@@ -28,15 +27,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static java.lang.String.format;
-import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.RELEASE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static java.lang.String.valueOf;
+import static java.util.Collections.emptyMap;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
-import static org.apache.dubbo.remoting.Constants.BIND_IP_KEY;
-import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
-import static org.apache.dubbo.remoting.Constants.DUBBO_VERSION_KEY;
+import static org.apache.dubbo.registry.integration.RegistryProtocol.DEFAULT_REGISTER_PROVIDER_KEYS;
 
 /**
  * The Utilities class for the {@link ServiceInstance#getMetadata() metadata of the service instance}
@@ -49,76 +43,64 @@ import static org.apache.dubbo.remoting.Constants.DUBBO_VERSION_KEY;
 public class ServiceInstanceMetadataUtils {
 
     /**
-     * The prefix of protocols
+     * The key of metadata JSON of {@link MetadataService}'s {@link URL}
      */
-    public static final String PROTOCOL_PREFIX = "dubbo.protocols.";
+    public static String METADATA_SERVICE_URL_PARAMS_KEY = "dubbo.metadata-service.url-params";
 
     /**
-     * The name {@link String#format(String, Object...) format pattern} for the protocol port
+     * The key of The revision for all exported Dubbo services.
      */
-    public static String PROTOCOL_PORT_METADATA_KEY_PATTERN = PROTOCOL_PREFIX + "%s.port";
+    public static String EXPORTED_SERVICES_REVISION_KEY = "dubbo.exported-services.revision";
 
     /**
-     * The required {@link URL} parameter names of {@link MetadataService}
+     * The {@link URL url's} parameter name of Dubbo Provider host
      */
-    private static String[] METADATA_SERVICE_URL_PARAM_NAMES = {
-            APPLICATION_KEY,
-            BIND_IP_KEY,
-            BIND_PORT_KEY,
-            DUBBO_VERSION_KEY,
-            RELEASE_KEY,
-            SIDE_KEY,
-            VERSION_KEY
-    };
+    public static final String HOST_PARAM_NAME = "provider.host";
 
     /**
-     * Build the metadata key of the protocol port
+     * The {@link URL url's} parameter name of Dubbo Provider port
+     */
+    public static final String PORT_PARAM_NAME = "provider.port";
+
+    /**
+     * Get the multiple {@link URL urls'} parameters of {@link MetadataService MetadataService's} Metadata
      *
-     * @param protocol the name of protocol
-     * @return non-null
+     * @param serviceInstance the instance of {@link ServiceInstance}
+     * @return non-null {@link Map}, the key is {@link URL#getProtocol() the protocol of URL}, the value is
+     * {@link #getMetadataServiceURLParams(ServiceInstance, String)}
      */
-    public static String protocolPortMetadataKey(String protocol) {
-        return format(PROTOCOL_PORT_METADATA_KEY_PATTERN, protocol);
+    public static Map<String, Map<String, Object>> getMetadataServiceURLsParams(ServiceInstance serviceInstance) {
+        Map<String, String> metadata = serviceInstance.getMetadata();
+        String param = metadata.get(METADATA_SERVICE_URL_PARAMS_KEY);
+        return isBlank(param) ? emptyMap() : (Map) JSON.parse(param);
     }
 
     /**
-     * The protocol port from {@link ServiceInstance the specified service instance}
+     * Get the {@link URL url's} parameters of {@link MetadataService MetadataService's} Metadata
+     *
+     * @param serviceInstance the instance of {@link ServiceInstance}
+     * @return non-null {@link Map}
+     */
+    public static Map<String, Object> getMetadataServiceURLParams(ServiceInstance serviceInstance, String protocol) {
+        Map<String, Map<String, Object>> params = getMetadataServiceURLsParams(serviceInstance);
+        return params.getOrDefault(protocol, emptyMap());
+    }
+
+    /**
+     * The provider port from {@link ServiceInstance the specified service instance}
      *
      * @param serviceInstance {@link ServiceInstance the specified service instance}
      * @param protocol        the protocol name
      * @return The protocol port if found, or <code>null</code>
      */
-    public static Integer getProtocolPort(ServiceInstance serviceInstance, String protocol) {
-        Map<String, Integer> protocolPorts = getProtocolPorts(serviceInstance);
-        return protocolPorts.get(protocol);
+    public static Integer getProviderPort(ServiceInstance serviceInstance, String protocol) {
+        Map<String, Object> params = getMetadataServiceURLParams(serviceInstance, protocol);
+        return getProviderPort(params);
     }
 
-    /**
-     * Get a {@link Map} of the protocol ports from the metadata {@link Map}
-     *
-     * @param serviceInstance the {@link ServiceInstance service instance}
-     * @return the key is the name of protocol, and the value is the port of protocol
-     */
-    public static Map<String, Integer> getProtocolPorts(ServiceInstance serviceInstance) {
-        return getProtocolPorts(serviceInstance.getMetadata());
-    }
-
-    /**
-     * Get a {@link Map} of the protocol ports from the metadata {@link Map}
-     *
-     * @param metadata the metadata {@link Map}
-     * @return the key is the name of protocol, and the value is the port of protocol
-     */
-    public static Map<String, Integer> getProtocolPorts(Map<String, String> metadata) {
-        Map<String, Integer> protocolPorts = new LinkedHashMap<>();
-        metadata.forEach((key, value) -> {
-            if (key.startsWith(PROTOCOL_PREFIX)) {
-                String[] parts = StringUtils.split(key, '.');
-                String protocol = parts[2];
-                protocolPorts.put(protocol, Integer.valueOf(value));
-            }
-        });
-        return protocolPorts;
+    public static String getProviderHost(ServiceInstance serviceInstance, String protocol) {
+        Map<String, Object> params = getMetadataServiceURLParams(serviceInstance, protocol);
+        return getProviderHost(params);
     }
 
     public static String getMetadataServiceParameter(List<URL> urls) {
@@ -126,7 +108,7 @@ public class ServiceInstanceMetadataUtils {
 
         urls.forEach(url -> {
             String protocol = url.getProtocol();
-            params.put(protocol, getParams(url, METADATA_SERVICE_URL_PARAM_NAMES));
+            params.put(protocol, getParams(url));
         });
 
         if (params.isEmpty()) {
@@ -136,14 +118,55 @@ public class ServiceInstanceMetadataUtils {
         return JSON.toJSONString(params);
     }
 
-    private static Map<String, String> getParams(URL url, String... parameterNames) {
+    private static Map<String, String> getParams(URL providerURL) {
         Map<String, String> params = new LinkedHashMap<>();
-        for (String parameterName : parameterNames) {
-            String parameterValue = url.getParameter(parameterName);
-            if (!isBlank(parameterName)) {
+        setDefaultParams(params, providerURL);
+        // set provider host
+        setProviderHostParam(params, providerURL);
+        // set provider port
+        setProviderPortParam(params, providerURL);
+        return params;
+    }
+
+    public static String getProviderHost(Map<String, Object> params) {
+        return valueOf(params.get(HOST_PARAM_NAME));
+    }
+
+    public static Integer getProviderPort(Map<String, Object> params) {
+        return Integer.valueOf(valueOf(params.get(PORT_PARAM_NAME)));
+    }
+
+    /**
+     * The revision for all exported Dubbo services from the specified {@link ServiceInstance}.
+     *
+     * @param serviceInstance the specified {@link ServiceInstance}
+     * @return <code>null</code> if not exits
+     */
+    public static String getExportedServicesRevision(ServiceInstance serviceInstance) {
+        Map<String, String> metadata = serviceInstance.getMetadata();
+        return metadata.get(EXPORTED_SERVICES_REVISION_KEY);
+    }
+
+    private static void setProviderHostParam(Map<String, String> params, URL providerURL) {
+        params.put(HOST_PARAM_NAME, providerURL.getHost());
+    }
+
+    private static void setProviderPortParam(Map<String, String> params, URL providerURL) {
+        params.put(PORT_PARAM_NAME, valueOf(providerURL.getPort()));
+    }
+
+    /**
+     * Set the default parameters via the specified {@link URL providerURL}
+     *
+     * @param params      the parameters
+     * @param providerURL the provider's {@link URL}
+     */
+    private static void setDefaultParams(Map<String, String> params, URL providerURL) {
+        for (String parameterName : DEFAULT_REGISTER_PROVIDER_KEYS) {
+            String parameterValue = providerURL.getParameter(parameterName);
+            if (!isBlank(parameterValue)) {
                 params.put(parameterName, parameterValue);
             }
         }
-        return params;
     }
 }

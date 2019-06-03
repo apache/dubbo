@@ -30,9 +30,9 @@ import static java.util.Collections.emptyList;
 import static org.apache.dubbo.common.URL.valueOf;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
-import static org.apache.dubbo.registry.Registry.TYPE_PARAM_NAME;
-import static org.apache.dubbo.registry.support.ServiceOrientedRegistry.SUBSCRIBED_SERVICE_NAMES_PARAM_NAME;
-import static org.apache.dubbo.registry.support.ServiceOrientedRegistry.TYPE_PARAM_VALUE;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_TYPE;
+import static org.apache.dubbo.common.constants.RegistryConstants.SUBSCRIBED_SERVICE_NAMES_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -46,8 +46,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class ServiceOrientedRegistryTest {
 
     private static final URL registryURL = valueOf("in-memory://localhost:12345")
-            .addParameter(TYPE_PARAM_NAME, TYPE_PARAM_VALUE)
-            .addParameter(SUBSCRIBED_SERVICE_NAMES_PARAM_NAME, "a, b , c,d,e ,");
+            .addParameter(REGISTRY_TYPE_KEY, SERVICE_REGISTRY_TYPE)
+            .addParameter(SUBSCRIBED_SERVICE_NAMES_KEY, "a, b , c,d,e ,");
 
     private static final String SERVICE_INTERFACE = "org.apache.dubbo.metadata.MetadataService";
 

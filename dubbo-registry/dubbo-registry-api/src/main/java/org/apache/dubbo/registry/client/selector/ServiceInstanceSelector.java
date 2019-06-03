@@ -14,38 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.client.metadata;
+package org.apache.dubbo.registry.client.selector;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.ServiceInstance;
 
-import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
+import java.util.List;
 
 /**
- * A factory to create a {@link MetadataService} proxy
+ * The {@link ServiceInstance} Selector
  *
- * @see ServiceInstance
- * @see MetadataService
- * @since 2.7.3
+ * @since 2.7.2
  */
-@SPI("default")
-public interface MetadataServiceProxyFactory {
+@SPI("random")
+public interface ServiceInstanceSelector {
 
     /**
-     * Create a {@link MetadataService} proxy via the specified {@link ServiceInstance}
+     * Select an instance of {@link ServiceInstance} by the specified {@link ServiceInstance service instances}
      *
-     * @param serviceInstance the instance of {@link ServiceInstance}
-     * @return non-null
+     * @param registryURL      The {@link URL url} of registry
+     * @param serviceInstances the specified {@link ServiceInstance service instances}
+     * @return an instance of {@link ServiceInstance} if available, or <code>null</code>
      */
-    MetadataService createProxy(ServiceInstance serviceInstance);
-
-    /**
-     * Get the default extension of {@link MetadataServiceProxyFactory}
-     *
-     * @return non-null
-     */
-    static MetadataServiceProxyFactory getDefaultExtension() {
-        return getExtensionLoader(MetadataServiceProxyFactory.class).getDefaultExtension();
-    }
+    @Adaptive("service-instance-selector")
+    ServiceInstance select(URL registryURL, List<ServiceInstance> serviceInstances);
 }

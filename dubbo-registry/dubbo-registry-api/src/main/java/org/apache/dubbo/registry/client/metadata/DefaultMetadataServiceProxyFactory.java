@@ -14,27 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.api;
+package org.apache.dubbo.registry.client.metadata;
 
-import java.util.List;
+import org.apache.dubbo.metadata.MetadataService;
+import org.apache.dubbo.registry.client.ServiceInstance;
+import org.apache.dubbo.rpc.Protocol;
 
+import java.lang.reflect.Proxy;
 
 /**
- * DemoService
+ * The factory of {@link MetadataService}'s {@link Proxy}
+ *
+ * @since 2.7.3
  */
-public interface DemoService {
+public class DefaultMetadataServiceProxyFactory implements MetadataServiceProxyFactory {
 
-    String sayName(String name);
+    private Protocol protocol;
 
-    Box getBox();
+    public void setProtocol(Protocol protocol) {
+        this.protocol = protocol;
+    }
 
-    void throwDemoException() throws DemoException;
-
-    List<User> getUsers(List<User> users);
-
-    int echo(int i);
-
-    default String name() {
-        return getClass().getSimpleName();
+    @Override
+    public MetadataService createProxy(ServiceInstance serviceInstance) {
+        return new MetadataServiceProxy(serviceInstance, protocol);
     }
 }

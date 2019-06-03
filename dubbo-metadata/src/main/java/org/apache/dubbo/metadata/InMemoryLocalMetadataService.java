@@ -93,17 +93,17 @@ public class InMemoryLocalMetadataService implements LocalMetadataService {
 
     @Override
     public boolean exportURL(URL url) {
-        if (isMetadataServiceURL(url)) { // ignore MetadataService in the export phase
-            return true;
-        }
+//        if (isMetadataServiceURL(url)) { // ignore MetadataService in the export phase
+//            return true;
+//        }
         return addURL(exportedServiceURLs, url);
     }
 
     @Override
     public boolean unexportURL(URL url) {
-        if (isMetadataServiceURL(url)) { // ignore MetadataService in the export phase
-            return true;
-        }
+//        if (isMetadataServiceURL(url)) { // ignore MetadataService in the export phase
+//            return true;
+//        }
         return removeURL(exportedServiceURLs, url);
     }
 
@@ -175,10 +175,10 @@ public class InMemoryLocalMetadataService implements LocalMetadataService {
                 || protocol.equals(url.getProtocol());
     }
 
-    private static boolean isMetadataServiceURL(URL url) {
-        String serviceInterface = url.getServiceInterface();
-        return METADATA_SERVICE_CLASS_NAME.equals(serviceInterface);
-    }
+//    private static boolean isMetadataServiceURL(URL url) {
+//        String serviceInterface = url.getServiceInterface();
+//        return METADATA_SERVICE_CLASS_NAME.equals(serviceInterface);
+//    }
 
     private static List<String> getAllUnmodifiableServiceURLs(Map<String, List<URL>> serviceURLs) {
         return unmodifiableList(

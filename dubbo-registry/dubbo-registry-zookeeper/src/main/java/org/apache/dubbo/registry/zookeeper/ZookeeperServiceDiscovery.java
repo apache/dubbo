@@ -22,8 +22,10 @@ import org.apache.dubbo.common.function.ThrowableFunction;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.event.EventDispatcher;
+import org.apache.dubbo.event.EventListener;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
+import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 
 import org.apache.curator.framework.CuratorFramework;
@@ -46,7 +48,7 @@ import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkUtils.bui
  * Zookeeper {@link ServiceDiscovery} implementation based on
  * <a href="https://curator.apache.org/curator-x-discovery/index.html">Apache Curator X Discovery</a>
  */
-public class ZookeeperServiceDiscovery implements ServiceDiscovery {
+public class ZookeeperServiceDiscovery implements ServiceDiscovery, EventListener<ServiceInstancesChangedEvent> {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -68,6 +70,7 @@ public class ZookeeperServiceDiscovery implements ServiceDiscovery {
         this.rootPath = ROOT_PATH.getParameterValue(connectionURL);
         this.serviceDiscovery = buildServiceDiscovery(curatorFramework, rootPath);
         this.dispatcher = EventDispatcher.getDefaultExtension();
+        this.dispatcher.addEventListener(this);
     }
 
     public void register(ServiceInstance serviceInstance) throws RuntimeException {
@@ -113,7 +116,7 @@ public class ZookeeperServiceDiscovery implements ServiceDiscovery {
     @Override
     public void addServiceInstancesChangedListener(String serviceName, ServiceInstancesChangedListener listener)
             throws NullPointerException, IllegalArgumentException {
-        addServiceWatcherIfAbsent(serviceName);
+        registerServiceWatcher(serviceName);
         dispatcher.addEventListener(listener);
     }
 
@@ -127,28 +130,30 @@ public class ZookeeperServiceDiscovery implements ServiceDiscovery {
         return execute(serviceDiscovery, function);
     }
 
-    private void addWatcherIfAbsent(String path, CuratorWatcher watcher) {
-        if (!watcherCaches.containsKey(path)) {
-            try {
-                curatorFramework.getChildren().usingWatcher(watcher).forPath(path);
-                watcherCaches.put(path, watcher);
-            } catch (KeeperException.NoNodeException e) {
-                // ignored
-                if (logger.isErrorEnabled()) {
-                    logger.error(e.getMessage());
-                }
-            } catch (Exception e) {
-                throw new IllegalStateException(e.getMessage(), e);
-            }
-        }
-    }
-
-    private void addServiceWatcherIfAbsent(String serviceName) {
-        addWatcherIfAbsent(buildServicePath(serviceName),
+    protected void registerServiceWatcher(String serviceName) {
+        String path = buildServicePath(serviceName);
+        CuratorWatcher watcher = watcherCaches.computeIfAbsent(path, key ->
                 new ZookeeperServiceDiscoveryChangeWatcher(this, serviceName, dispatcher));
+        try {
+            curatorFramework.getChildren().usingWatcher(watcher).forPath(path);
+        } catch (KeeperException.NoNodeException e) {
+            // ignored
+            if (logger.isErrorEnabled()) {
+                logger.error(e.getMessage());
+            }
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 
     private String buildServicePath(String serviceName) {
         return rootPath + "/" + serviceName;
+    }
+
+    @Override
+    public void onEvent(ServiceInstancesChangedEvent event) {
+        String serviceName = event.getServiceName();
+        // re-register again
+        registerServiceWatcher(serviceName);
     }
 }

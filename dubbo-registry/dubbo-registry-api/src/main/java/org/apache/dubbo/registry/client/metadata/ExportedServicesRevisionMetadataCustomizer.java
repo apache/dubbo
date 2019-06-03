@@ -17,44 +17,48 @@
 package org.apache.dubbo.registry.client.metadata;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.compiler.support.ClassUtils;
 import org.apache.dubbo.metadata.LocalMetadataService;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstanceMetadataCustomizer;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
-import static org.apache.dubbo.metadata.MetadataService.toURLs;
-import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.METADATA_SERVICE_URL_PARAMS_KEY;
-import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getMetadataServiceParameter;
+import static java.lang.String.valueOf;
+import static java.util.Objects.hash;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.EXPORTED_SERVICES_REVISION_KEY;
 
 /**
- * An {@link ServiceInstanceMetadataCustomizer} to customize the {@link URL urls} of {@link MetadataService}
- * into {@link ServiceInstance#getMetadata() the service instances' metadata}
+ * The customizer to a add the metadata that the reversion of Dubbo exported services calculates.
  *
- * @see ServiceInstanceMetadataCustomizer
  * @since 2.7.3
  */
-public class MetadataServiceURLParamsMetadataCustomizer extends ServiceInstanceMetadataCustomizer {
+public class ExportedServicesRevisionMetadataCustomizer extends ServiceInstanceMetadataCustomizer {
 
     @Override
-    public String buildMetadataKey(ServiceInstance serviceInstance) {
-        return METADATA_SERVICE_URL_PARAMS_KEY;
+    protected String buildMetadataKey(ServiceInstance serviceInstance) {
+        return EXPORTED_SERVICES_REVISION_KEY;
     }
 
     @Override
-    public String buildMetadataValue(ServiceInstance serviceInstance) {
-
+    protected String buildMetadataValue(ServiceInstance serviceInstance) {
         LocalMetadataService localMetadataService = LocalMetadataService.getDefaultExtension();
+        List<String> exportedURLs = localMetadataService.getExportedURLs();
+        Object[] data = exportedURLs.stream()
+                .map(URL::valueOf)
+                .map(URL::getServiceInterface)
+                .filter(name -> !MetadataService.class.getName().equals(name))
+                .map(ClassUtils::forName)
+                .map(Class::getMethods)
+                .map(Arrays::asList)
+                .flatMap(Collection::stream)
+                .map(Object::toString)
+                .sorted()
+                .toArray();
 
-        String serviceInterface = MetadataService.class.getName();
-
-        String group = serviceInstance.getServiceName();
-
-        String version = MetadataService.VERSION;
-
-        List<String> urls = localMetadataService.getExportedURLs(serviceInterface, group, version);
-
-        return getMetadataServiceParameter(toURLs(urls));
+        return valueOf(hash(data));
     }
 }

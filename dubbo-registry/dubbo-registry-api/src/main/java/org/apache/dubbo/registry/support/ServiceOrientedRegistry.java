@@ -29,28 +29,42 @@ import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceDiscoveryFactory;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.metadata.MetadataServiceProxyFactory;
+import org.apache.dubbo.registry.client.selector.ServiceInstanceSelector;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.of;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_TYPE;
+import static org.apache.dubbo.common.constants.RegistryConstants.SUBSCRIBED_SERVICE_NAMES_KEY;
+import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
 import static org.apache.dubbo.common.utils.CollectionUtils.isNotEmpty;
+import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 import static org.apache.dubbo.common.utils.StringUtils.split;
-import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getProtocolPort;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getExportedServicesRevision;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getMetadataServiceURLsParams;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getProviderHost;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getProviderPort;
 
 /**
  * Service-Oriented {@link Registry} that is dislike the traditional {@link Registry} will not communicate to
@@ -65,16 +79,6 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
  */
 public class ServiceOrientedRegistry extends FailbackRegistry {
 
-    /**
-     * The parameter value of {@link ServiceDiscovery}'s type
-     */
-    public static final String TYPE_PARAM_VALUE = "service";
-
-    /**
-     * The parameter name of the subscribed service names
-     */
-    public static final String SUBSCRIBED_SERVICE_NAMES_PARAM_NAME = "subscribed-services";
-
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final ServiceDiscovery serviceDiscovery;
@@ -88,19 +92,19 @@ public class ServiceOrientedRegistry extends FailbackRegistry {
     private final MetadataServiceProxyFactory metadataServiceProxyFactory;
 
 
-    public ServiceOrientedRegistry(URL url) {
-        super(url);
-        this.serviceDiscovery = buildServiceDiscovery(url);
-        this.subscribedServices = buildSubscribedServices(url);
+    public ServiceOrientedRegistry(URL registryURL) {
+        super(registryURL);
+        this.serviceDiscovery = buildServiceDiscovery(registryURL);
+        this.subscribedServices = buildSubscribedServices(registryURL);
         this.serviceNameMapping = ServiceNameMapping.getDefaultExtension();
         this.localMetadataService = LocalMetadataService.getDefaultExtension();
-        this.metadataServiceProxyFactory = new MetadataServiceProxyFactory();
+        this.metadataServiceProxyFactory = MetadataServiceProxyFactory.getDefaultExtension();
     }
 
     private Set<String> buildSubscribedServices(URL url) {
-        String[] subscribedServices = split(url.getParameter(SUBSCRIBED_SERVICE_NAMES_PARAM_NAME), ',');
-        return unmodifiableSet(
-                of(subscribedServices)
+        String subscribedServiceNames = url.getParameter(SUBSCRIBED_SERVICE_NAMES_KEY);
+        return isBlank(subscribedServiceNames) ? emptySet() :
+                unmodifiableSet(of(split(subscribedServiceNames, ','))
                         .map(String::trim)
                         .filter(StringUtils::isNotEmpty)
                         .collect(toSet()));
@@ -113,23 +117,27 @@ public class ServiceOrientedRegistry extends FailbackRegistry {
         return serviceDiscovery;
     }
 
-    protected boolean shouldRegister(URL url) {
-        String side = url.getParameter(SIDE_KEY);
+    protected boolean shouldRegister(URL providerURL) {
+        String side = providerURL.getParameter(SIDE_KEY);
 
         boolean should = PROVIDER_SIDE.equals(side); // Only register the Provider.
 
         if (!should) {
             if (logger.isDebugEnabled()) {
-                logger.debug(String.format("The URL[%s] should not be registered.", url.toString()));
+                logger.debug(String.format("The URL[%s] should not be registered.", providerURL.toString()));
             }
         }
 
         return should;
     }
 
+    protected boolean shouldSubscribe(URL subscribedURL) {
+        return !shouldRegister(subscribedURL);
+    }
+
     @Override
     public void doRegister(URL url) {
-        if (!shouldRegister(url)) {
+        if (!shouldRegister(url)) { // Should Not Register
             return;
         }
         if (localMetadataService.exportURL(url)) {
@@ -161,6 +169,9 @@ public class ServiceOrientedRegistry extends FailbackRegistry {
 
     @Override
     public void doSubscribe(URL url, NotifyListener listener) {
+        if (!shouldSubscribe(url)) { // Should Not Subscribe
+            return;
+        }
         subscribeURLs(url, listener);
     }
 
@@ -202,7 +213,7 @@ public class ServiceOrientedRegistry extends FailbackRegistry {
         });
     }
 
-    protected void subscribeURLs(URL url, NotifyListener listener, String serviceName,
+    protected void subscribeURLs(URL subscribedURL, NotifyListener listener, String serviceName,
                                  Collection<ServiceInstance> serviceInstances) {
 
         if (isEmpty(serviceInstances)) {
@@ -210,79 +221,157 @@ public class ServiceOrientedRegistry extends FailbackRegistry {
             return;
         }
 
-        List<URL> subscribedURLs = getSubscribedURLs(url, serviceInstances);
+        List<URL> subscribedURLs = getSubscribedURLs(subscribedURL, serviceInstances);
 
         listener.notify(subscribedURLs);
     }
 
 
-    private List<URL> getSubscribedURLs(URL url, Collection<ServiceInstance> instances) {
+    private List<URL> getSubscribedURLs(URL subscribedURL, Collection<ServiceInstance> instances) {
 
         List<URL> subscribedURLs = new LinkedList<>();
 
+        // local service instances could be mutable
         List<ServiceInstance> serviceInstances = new ArrayList<>(instances);
 
-        Iterator<ServiceInstance> iterator = serviceInstances.iterator();
-
-        List<URL> templateURLs = null;
+        /**
+         * A caches all revisions of exported services in different {@link ServiceInstance}s
+         * associating with the {@link URL urls}
+         */
+        Map<String, List<URL>> revisionURLsCache = new HashMap<>();
 
         // try to get the exported URLs from every instance until it's successful.
-
-        while (iterator.hasNext()) {
-
-            ServiceInstance serviceInstance = iterator.next();
-
-            templateURLs = getSubscribedURLs(url, serviceInstance);
+        for (int i = 0; i < serviceInstances.size(); i++) {
+            // select a instance of {@link ServiceInstance}
+            ServiceInstance selectedInstance = selectServiceInstance(serviceInstances);
+            List<URL> templateURLs = getTemplateURLs(subscribedURL, selectedInstance, revisionURLsCache);
             if (isNotEmpty(templateURLs)) {
-                // templateURLs as  the first result should be added into subscribedURLs
+                // add templateURLs into subscribedURLs
                 subscribedURLs.addAll(templateURLs);
+                // remove the selected ServiceInstance in this time, it remains N - 1 elements.
+                serviceInstances.remove(selectedInstance);
                 break;
             }
         }
 
-        // If templateURLs is not empty, duplicate it multiple times with different hosts and ports
-
-        if (isNotEmpty(templateURLs)) {
-
-            templateURLs.forEach(templateURL -> {
-
-                String protocol = templateURL.getProtocol();
-
-                while (iterator.hasNext()) {
-                    ServiceInstance serviceInstance = iterator.next();
-
-                    String host = serviceInstance.getHost();
-                    Integer port = getProtocolPort(serviceInstance, protocol);
-
-                    if (port == null) {
-                        if (logger.isWarnEnabled()) {
-                            logger.warn(String.format("The protocol[%s] port of Dubbo  service instance[host : %s] " +
-                                    "can't be resolved", protocol, host));
-                        }
-                        continue;
-                    }
-
-                    URL subscribedURL = new URL(protocol, host, port, templateURL.getParameters());
-                    subscribedURLs.add(subscribedURL);
-                }
-            });
-        }
-
+        // Clone the subscribed URLs from the template URLs
+        List<URL> clonedURLs = cloneSubscribedURLs(subscribedURL, serviceInstances, revisionURLsCache);
+        // Add all cloned URLs into subscribedURLs
+        subscribedURLs.addAll(clonedURLs);
+        // clear all revisions
+        revisionURLsCache.clear();
+        // clear local service instances
+        serviceInstances.clear();
 
         return subscribedURLs;
     }
 
-    private List<URL> getSubscribedURLs(URL url, ServiceInstance serviceInstance) {
-        String serviceInterface = url.getServiceInterface();
-        String group = url.getParameter(GROUP_KEY);
-        String version = url.getParameter(VERSION_KEY);
-        // The subscribed protocol may be null
-        String protocol = url.getParameter(PROTOCOL_KEY);
+    private List<URL> cloneSubscribedURLs(URL subscribedURL, Collection<ServiceInstance> serviceInstances,
+                                          Map<String, List<URL>> revisionURLsCache) {
+
+        // If revisionURLsCache is not empty, clone the template URLs to be the subscribed URLs
+        if (!revisionURLsCache.isEmpty()) {
+
+            List<URL> clonedURLs = new LinkedList<>();
+
+            Iterator<ServiceInstance> iterator = serviceInstances.iterator();
+
+            while (iterator.hasNext()) {
+
+                ServiceInstance serviceInstance = iterator.next();
+
+                List<URL> templateURLs = getTemplateURLs(subscribedURL, serviceInstance, revisionURLsCache);
+                // The parameters of URLs that the MetadataService exported
+                Map<String, Map<String, Object>> serviceURLsParams = getMetadataServiceURLsParams(serviceInstance);
+
+                templateURLs.forEach(templateURL -> {
+
+                    String protocol = templateURL.getProtocol();
+
+                    Map<String, Object> serviceURLParams = serviceURLsParams.get(protocol);
+
+                    String host = getProviderHost(serviceURLParams);
+
+                    Integer port = getProviderPort(serviceURLParams);
+
+                    /**
+                     * clone the subscribed {@link URL urls} based on the template {@link URL url}
+                     */
+                    URL newSubscribedURL = new URL(protocol, host, port, templateURL.getParameters());
+                    clonedURLs.add(newSubscribedURL);
+                });
+            }
+
+            return clonedURLs;
+        }
+
+        return Collections.emptyList();
+    }
+
+
+    /**
+     * Select one {@link ServiceInstance} from the {@link List list}
+     *
+     * @param serviceInstances the {@link List list} of {@link ServiceInstance}
+     * @return <code>null</code> if <code>serviceInstances</code> is empty.
+     */
+    private ServiceInstance selectServiceInstance(List<ServiceInstance> serviceInstances) {
+        ServiceInstanceSelector selector = getExtensionLoader(ServiceInstanceSelector.class).getAdaptiveExtension();
+        return selector.select(getUrl(), serviceInstances);
+    }
+
+
+    /**
+     * Get the template {@link URL urls} from the specified {@link ServiceInstance}.
+     * <p>
+     * Typically, the revisions of all {@link ServiceInstance instances} in one service are same. However,
+     * if one service is upgrading one or more Dubbo service interfaces, one of them may have the multiple declarations
+     * is deploying in the different {@link ServiceInstance service instances}, thus, it has to compare the interface
+     * contract one by one, the "revision" that is the number is introduced to identify all Dubbo exported interfaces in
+     * one {@link ServiceInstance service instance}.
+     * <p>
+     * First, put the revision {@link ServiceInstance service instance}
+     * associating {@link #getProviderExportedURLs(URL, ServiceInstance) exported URLs} into cache.
+     * <p>
+     * And then compare a new {@link ServiceInstance service instances'} revision with cached one,If they are equal,
+     * return the cached template {@link URL urls} immediately, or to get template {@link URL urls} that the provider
+     * {@link ServiceInstance instance} exported via executing {@link #getProviderExportedURLs(URL, ServiceInstance)}
+     * method.
+     * <p>
+     * Eventually, the retrieving result will be cached and returned.
+     *
+     * @param subscribedURL     the subscribed {@link URL url}
+     * @param selectedInstance  the {@link ServiceInstance}
+     * @param revisionURLsCache A caches all revisions of exported services in different {@link ServiceInstance}s
+     *                          associating with the {@link URL urls}
+     * @return non-null {@link List} of {@link URL urls}
+     */
+    protected List<URL> getTemplateURLs(URL subscribedURL, ServiceInstance selectedInstance,
+                                        Map<String, List<URL>> revisionURLsCache) {
+        // get the revision from the specified {@link ServiceInstance}
+        String revision = getExportedServicesRevision(selectedInstance);
+        return revisionURLsCache.computeIfAbsent(revision, key -> getProviderExportedURLs(subscribedURL, selectedInstance));
+    }
+
+    /**
+     * Get the exported {@link URL urls} from the specified provider {@link ServiceInstance instance}
+     *
+     * @param subscribedURL    the subscribed {@link URL url}
+     * @param providerInstance the target provider {@link ServiceInstance instance}
+     * @return non-null {@link List} of {@link URL urls}
+     */
+    protected List<URL> getProviderExportedURLs(URL subscribedURL, ServiceInstance providerInstance) {
 
         List<URL> exportedURLs = emptyList();
 
+        String serviceInterface = subscribedURL.getServiceInterface();
+        String group = subscribedURL.getParameter(GROUP_KEY);
+        String version = subscribedURL.getParameter(VERSION_KEY);
+        // The subscribed protocol may be null
+        String protocol = subscribedURL.getParameter(PROTOCOL_KEY);
+
         try {
-            MetadataService metadataService = metadataServiceProxyFactory.createProxy(serviceInstance);
+            MetadataService metadataService = metadataServiceProxyFactory.createProxy(providerInstance);
             List<String> urls = metadataService.getExportedURLs(serviceInterface, group, version, protocol);
             exportedURLs = urls.stream().map(URL::valueOf).collect(Collectors.toList());
         } catch (Throwable e) {
@@ -322,7 +411,7 @@ public class ServiceOrientedRegistry extends FailbackRegistry {
         String serviceInterface = subscribedURL.getServiceInterface();
         String group = subscribedURL.getParameter(GROUP_KEY);
         String version = subscribedURL.getParameter(VERSION_KEY);
-        String protocol = subscribedURL.getProtocol();
+        String protocol = subscribedURL.getParameter(PROTOCOL_KEY, DUBBO_PROTOCOL);
         return serviceNameMapping.get(serviceInterface, group, version, protocol);
     }
 
@@ -343,6 +432,6 @@ public class ServiceOrientedRegistry extends FailbackRegistry {
      * @return if supported, return <code>true</code>, or <code>false</code>
      */
     public static boolean supports(URL registryURL) {
-        return TYPE_PARAM_VALUE.equalsIgnoreCase(registryURL.getParameter(TYPE_PARAM_NAME));
+        return SERVICE_REGISTRY_TYPE.equalsIgnoreCase(registryURL.getParameter(REGISTRY_TYPE_KEY));
     }
 }
