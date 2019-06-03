@@ -106,5 +106,6 @@ public class TagRouterTest {
         assert tagRouterRule.getTagnameToAddresses().get("tag2").size()==1;
         assert tagRouterRule.getTagnameToAddresses().get("tag3")==null;
         assert tagRouterRule.getTagnameToAddresses().get("tag4")==null;
+        assert tagRouterRule.getAddresses().size()==1;
     }
 }
