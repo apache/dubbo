@@ -19,7 +19,10 @@ package org.apache.dubbo.rpc.cluster.router.tag.model;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.cluster.router.AbstractRouterRule;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
