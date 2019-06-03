@@ -28,7 +28,7 @@ import java.util.Set;
 
 import static org.apache.dubbo.rpc.cluster.Constants.CONFIG_VERSION_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.OVERRIDE_PROVIDERS_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_IPV4_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
@@ -101,17 +101,18 @@ public abstract class AbstractConfigurator implements Configurator {
             if (url.getParameter(SIDE_KEY, PROVIDER).equals(CONSUMER)) {
                 return configureIfMatch(NetUtils.getLocalHost(), url);// NetUtils.getLocalHost is the ip address consumer registered to registry.
             } else if (url.getParameter(SIDE_KEY, CONSUMER).equals(PROVIDER)) {
-                return configureIfMatch(ANYHOST_VALUE, url);// take effect on all providers, so address must be 0.0.0.0, otherwise it won't flow to this if branch
+                return configureIfMatch(ANYHOST_IPV4_VALUE, url);// take effect on all providers, so address must be 0.0.0.0, otherwise it won't flow to this if branch
             }
         }
         return url;
     }
 
     private URL configureIfMatch(String host, URL url) {
-        if (ANYHOST_VALUE.equals(configuratorUrl.getHost()) || host.equals(configuratorUrl.getHost())) {
+        if (ANYHOST_IPV4_VALUE.equals(configuratorUrl.getHost()) || host.equals(configuratorUrl.getHost())) {
             // TODO, to support wildcards
             String providers = configuratorUrl.getParameter(OVERRIDE_PROVIDERS_KEY);
-            if (StringUtils.isEmpty(providers) || providers.contains(url.getAddress()) || providers.contains(ANYHOST_VALUE)) {
+            if (StringUtils.isEmpty(providers) || providers.contains(url.getAddress()) || providers.contains(
+                ANYHOST_IPV4_VALUE)) {
                 String configApplication = configuratorUrl.getParameter(APPLICATION_KEY,
                         configuratorUrl.getUsername());
                 String currentApplication = url.getParameter(APPLICATION_KEY, url.getUsername());

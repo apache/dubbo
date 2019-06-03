@@ -55,7 +55,7 @@ import static org.apache.dubbo.rpc.cluster.Constants.MOCK_PROTOCOL;
 import static org.apache.dubbo.rpc.cluster.Constants.ROUTER_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.RULE_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.TYPE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_IPV4_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.DISABLED_KEY;
@@ -203,7 +203,7 @@ public class RegistryDirectoryTest {
     private void testforbid(RegistryDirectory registryDirectory) {
         invocation = new RpcInvocation();
         List<URL> serviceUrls = new ArrayList<URL>();
-        serviceUrls.add(new URL(EMPTY_PROTOCOL, ANYHOST_VALUE, 0, service, CATEGORY_KEY, PROVIDERS_CATEGORY));
+        serviceUrls.add(new URL(EMPTY_PROTOCOL, ANYHOST_IPV4_VALUE, 0, service, CATEGORY_KEY, PROVIDERS_CATEGORY));
         registryDirectory.notify(serviceUrls);
         Assertions.assertFalse(registryDirectory.isAvailable(),
             "invokers size=0 ,then the registry directory is not available");

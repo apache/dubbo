@@ -121,11 +121,15 @@ public interface CommonConstants {
 
     String ANYHOST_KEY = "anyhost";
 
-    String ANYHOST_VALUE = "0.0.0.0";
+    String ANYHOST_IPV4_VALUE = "0.0.0.0";
+
+    String ANYHOST_IPV6_VALUE = "0:0:0:0:0:0:0:0";
 
     String LOCALHOST_KEY = "localhost";
 
-    String LOCALHOST_VALUE = "127.0.0.1";
+    String LOCALHOST_IPV4_VALUE = "127.0.0.1";
+
+    String LOCALHOST_IPV6_VALUE = "::1";
 
     String METHODS_KEY = "methods";
 

@@ -16,11 +16,6 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-
 import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
@@ -36,10 +31,17 @@ import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Pattern;
 
-import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
-import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+
+import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_IPV4_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_IPV6_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_IP_TO_BIND;
+import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_IPV4_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_IPV6_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_KEY;
 
 /**
  * IP and Port Helper for RPC
@@ -47,18 +49,24 @@ import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_IP_TO_BIND
 public class NetUtils {
     private static final Logger logger = LoggerFactory.getLogger(NetUtils.class);
 
-    // returned port range is [30000, 39999]
+    /**
+     * returned port range is [30000, 39999]
+     */
     private static final int RND_PORT_START = 30000;
     private static final int RND_PORT_RANGE = 10000;
 
-    // valid port range is (0, 65535]
+    /**
+     * valid port range is (0, 65535]
+     */
     private static final int MIN_PORT = 0;
     private static final int MAX_PORT = 65535;
 
-    private static final Pattern ADDRESS_PATTERN = Pattern.compile("^\\d{1,3}(\\.\\d{1,3}){3}\\:\\d{1,5}$");
-    private static final Pattern LOCAL_IP_PATTERN = Pattern.compile("127(\\.\\d{1,3}){3}$");
-    private static final Pattern IP_PATTERN = Pattern.compile("\\d{1,3}(\\.\\d{1,3}){3,5}$");
-
+    private static final Pattern ADDRESS_PATTERN = Pattern.compile("^([1-9]|[1-9]\\d|1\\d{2}|2[0-4]\\d|25[0-5])(\\."
+        + "(\\d|[1-9]\\d|1\\d{2}|2[0-4]\\d|25[0-5])){3}\\:\\d{1,5}$");
+    private static final Pattern LOCAL_IP_PATTERN = Pattern.compile("^127(\\.(\\d|[1-9]\\d|1\\d{2}|2[0-4]\\d|25[0-5])){3}$");
+    private static final Pattern IPV4_PATTERN = Pattern.compile("^([1-9]|[1-9]\\d|1\\d{2}|2[0-4]\\d|25[0-5])(\\.(\\d|[1-9]\\d|1\\d{2}|2[0-4]\\d|25[0-5])){3}$");
+    private static final Pattern IPV6_STD_PATTERN = Pattern.compile("^([\\da-fA-F]{1,4}:){7}[\\da-fA-F]{1,4}$");
+    private static final Pattern IPV6_COMPRESS_PATTERN = Pattern.compile("^((?:[0-9A-Fa-f]{1,4}(?::[0-9A-Fa-f]{1,4})*)?)::((?:[0-9A-Fa-f]{1,4}(?::[0-9A-Fa-f]{1,4})*)?)$");
     private static final Map<String, String> HOST_NAME_CACHE = new LRUCache<>(1000);
     private static volatile InetAddress LOCAL_ADDRESS = null;
 
@@ -107,14 +115,14 @@ public class NetUtils {
     }
 
     public static boolean isAnyHost(String host) {
-        return ANYHOST_VALUE.equals(host);
+        return ANYHOST_IPV4_VALUE.equals(host);
     }
 
     public static boolean isInvalidLocalHost(String host) {
         return host == null
                 || host.length() == 0
                 || host.equalsIgnoreCase(LOCALHOST_KEY)
-                || host.equals(ANYHOST_VALUE)
+                || host.equals(ANYHOST_IPV4_VALUE)
                 || (LOCAL_IP_PATTERN.matcher(host).matches());
     }
 
@@ -133,10 +141,26 @@ public class NetUtils {
         }
         String name = address.getHostAddress();
         boolean result = (name != null
-                && IP_PATTERN.matcher(name).matches()
-                && !ANYHOST_VALUE.equals(name)
-                && !LOCALHOST_VALUE.equals(name));
+                && IPV4_PATTERN.matcher(name).matches()
+                && !ANYHOST_IPV4_VALUE.equals(name)
+                && !LOCALHOST_IPV4_VALUE.equals(name));
         return result;
+    }
+
+    static boolean isValidV6Address(InetAddress address) {
+        if (address == null || address.isLoopbackAddress()) {
+            return false;
+        }
+        String name = address.getHostAddress();
+        boolean result = (name != null
+            && (IPV6_STD_PATTERN.matcher(name).matches() || IPV6_COMPRESS_PATTERN.matcher(name).matches())
+            && !ANYHOST_IPV6_VALUE.equals(name)
+            && !LOCALHOST_IPV6_VALUE.equals(name));
+        return result;
+    }
+
+    static boolean isValidAddress(InetAddress address) {
+        return isValidV4Address(address) || isValidV6Address(address);
     }
 
     /**
@@ -182,7 +206,7 @@ public class NetUtils {
 
     public static String getLocalHost() {
         InetAddress address = getLocalAddress();
-        return address == null ? LOCALHOST_VALUE : address.getHostAddress();
+        return address == null ? LOCALHOST_IPV4_VALUE : address.getHostAddress();
     }
 
     public static String filterLocalHost(String host) {
@@ -415,7 +439,7 @@ public class NetUtils {
         }
 
         InetAddress inetAddress = InetAddress.getByName(host);
-        boolean isIpv4 = isValidV4Address(inetAddress) ? true : false;
+        boolean isIpv4 = isValidV4Address(inetAddress);
         String[] hostAndPort = getPatternHostAndPort(pattern, isIpv4);
         if (hostAndPort[1] != null && !hostAndPort[1].equals(String.valueOf(port))) {
             return false;
@@ -423,7 +447,7 @@ public class NetUtils {
         pattern = hostAndPort[0];
 
         String splitCharacter = SPLIT_IPV4_CHARECTER;
-        if (!isIpv4) {
+        if ((!isIpv4) && isValidV6Address(inetAddress)) {
             splitCharacter = SPLIT_IPV6_CHARECTER;
         }
         String[] mask = pattern.split(splitCharacter);

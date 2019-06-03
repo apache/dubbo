@@ -26,7 +26,7 @@ import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 
 import java.util.Map;
 
-import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_IPV4_VALUE;
 
 /**
  * InjvmInvoker
@@ -59,7 +59,7 @@ class InjvmInvoker<T> extends AbstractInvoker<T> {
         if (exporter == null) {
             throw new RpcException("Service [" + key + "] not found.");
         }
-        RpcContext.getContext().setRemoteAddress(LOCALHOST_VALUE, 0);
+        RpcContext.getContext().setRemoteAddress(LOCALHOST_IPV4_VALUE, 0);
         return exporter.getInvoker().invoke(invocation);
     }
 }

@@ -26,7 +26,7 @@ import org.apache.dubbo.config.support.Parameter;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_IPV4_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.configcenter.Constants.CONFIG_CHECK_KEY;
@@ -92,7 +92,7 @@ public class ConfigCenterConfig extends AbstractConfig {
     public URL toUrl() {
         Map<String, String> map = this.getMetaData();
         if (StringUtils.isEmpty(address)) {
-            address = ANYHOST_VALUE;
+            address = ANYHOST_IPV4_VALUE;
         }
         map.put(PATH_KEY, ConfigCenterConfig.class.getSimpleName());
         // use 'zookeeper' as the default configcenter.

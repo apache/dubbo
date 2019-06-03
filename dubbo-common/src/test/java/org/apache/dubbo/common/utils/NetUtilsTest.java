@@ -16,14 +16,13 @@
  */
 package org.apache.dubbo.common.utils;
 
-
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -105,7 +104,7 @@ public class NetUtilsTest {
     }
 
     @Test
-    public void testIsValidAddress() throws Exception {
+    public void testIsValidV4Address() throws Exception {
         assertFalse(NetUtils.isValidV4Address((InetAddress) null));
         InetAddress address = mock(InetAddress.class);
         when(address.isLoopbackAddress()).thenReturn(true);
@@ -122,6 +121,15 @@ public class NetUtilsTest {
         address = mock(InetAddress.class);
         when(address.getHostAddress()).thenReturn("1.2.3.4");
         assertTrue(NetUtils.isValidV4Address(address));
+        address = mock(InetAddress.class);
+        when(address.getHostAddress()).thenReturn("256.0.3.4");
+        assertFalse(NetUtils.isValidV4Address(address));
+        address = mock(InetAddress.class);
+        when(address.getHostAddress()).thenReturn("255.256.3.4");
+        assertFalse(NetUtils.isValidV4Address(address));
+        address = mock(InetAddress.class);
+        when(address.getHostAddress()).thenReturn("0.255.3.4");
+        assertFalse(NetUtils.isValidV4Address(address));
     }
 
     @Test
@@ -194,6 +202,31 @@ public class NetUtilsTest {
             assertThat(NetUtils.isPreferIPV6Address(), equalTo(true));
         }
         System.setProperty("java.net.preferIPv6Addresses", saved);
+
+        address = mock(InetAddress.class);
+        when(address.getHostAddress()).thenReturn("localhost");
+        assertFalse(NetUtils.isValidV6Address(address));
+        address = mock(InetAddress.class);
+        when(address.getHostAddress()).thenReturn("0:0:0:0:0:0:0:0");
+        assertFalse(NetUtils.isValidV6Address(address));
+        address = mock(InetAddress.class);
+        when(address.getHostAddress()).thenReturn("::1");
+        assertFalse(NetUtils.isValidV6Address(address));
+        address = mock(InetAddress.class);
+        when(address.getHostAddress()).thenReturn("fe80:1234:7894:3abc:5abd:457d:ffff:abcd");
+        assertTrue(NetUtils.isValidV6Address(address));
+        address = mock(InetAddress.class);
+        when(address.getHostAddress()).thenReturn("fe80::7894:3abc:5abd:457d");
+        assertTrue(NetUtils.isValidV6Address(address));
+        address = mock(InetAddress.class);
+        when(address.getHostAddress()).thenReturn("ffff::1cab:f689:60d1:abcd");
+        assertTrue(NetUtils.isValidV6Address(address));
+        address = mock(InetAddress.class);
+        when(address.getHostAddress()).thenReturn("fe80::1cab:f689::abcd");
+        assertFalse(NetUtils.isValidV6Address(address));
+        address = mock(InetAddress.class);
+        when(address.getHostAddress()).thenReturn("192.168.168.168");
+        assertFalse(NetUtils.isValidV6Address(address));
     }
 
     /**

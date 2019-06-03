@@ -55,7 +55,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_IPV4_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
@@ -437,7 +437,7 @@ public class RedisRegistry extends FailbackRegistry {
             if (urls.isEmpty()) {
                 urls.add(URLBuilder.from(url)
                         .setProtocol(EMPTY_PROTOCOL)
-                        .setAddress(ANYHOST_VALUE)
+                        .setAddress(ANYHOST_IPV4_VALUE)
                         .setPath(toServiceName(key))
                         .addParameter(CATEGORY_KEY, category)
                         .build());
