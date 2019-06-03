@@ -83,6 +83,15 @@ public final class URLBuilder {
                       String password,
                       String host,
                       int port,
+                      String path, Map<String, String> parameters) {
+        this(protocol, username, password, host, port, path, parameters, URL.toMethodParameters(parameters, path));
+    }
+
+    public URLBuilder(String protocol,
+                      String username,
+                      String password,
+                      String host,
+                      int port,
                       String path, Map<String, String> parameters,
                       Map<String, Map<String, String>> methodParameters) {
         this.protocol = protocol;
@@ -103,7 +112,6 @@ public final class URLBuilder {
         int port = url.getPort();
         String path = url.getPath();
         Map<String, String> parameters = new HashMap<>(url.getParameters());
-        Map<String, Map<String, String>> methodParameters = new HashMap<>(url.getMethodParameters());
         return new URLBuilder(
                 protocol,
                 username,
@@ -111,8 +119,7 @@ public final class URLBuilder {
                 host,
                 port,
                 path,
-                parameters,
-                methodParameters);
+                parameters);
     }
 
     public URL build() {
@@ -254,6 +261,16 @@ public final class URLBuilder {
         return this;
     }
 
+    public URLBuilder addMethodParameter(String method, String key, String value) {
+        if (StringUtils.isEmpty(method) || StringUtils.isEmpty(key) || StringUtils.isEmpty(value)) {
+            return this;
+        }
+        Map<String, String> keyParameter = methodParameters.computeIfAbsent(method, m -> new HashMap<>());
+
+        keyParameter.put(key, value);
+        return this;
+    }
+
     public URLBuilder addParameterIfAbsent(String key, String value) {
         if (StringUtils.isEmpty(key) || StringUtils.isEmpty(value)) {
             return this;
@@ -285,6 +302,15 @@ public final class URLBuilder {
         }
 
         this.parameters.putAll(parameters);
+        return this;
+    }
+
+    public URLBuilder addMethodParameters(Map<String, Map<String, String>> methodParameters) {
+        if (CollectionUtils.isEmptyMap(methodParameters)) {
+            return this;
+        }
+
+        this.methodParameters.putAll(methodParameters);
         return this;
     }
 

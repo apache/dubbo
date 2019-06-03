@@ -19,6 +19,8 @@ package org.apache.dubbo.common;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.InmemoryConfiguration;
 import org.apache.dubbo.common.constants.RemotingConstants;
+import org.apache.dubbo.common.model.ApplicationModel;
+import org.apache.dubbo.common.model.MethodModel;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -37,6 +39,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -113,7 +116,7 @@ class URL implements Serializable {
 
     private volatile transient Map<String, Number> numbers;
 
-    private volatile transient Map<String, Map<String, String>> methodNumbers;
+    private volatile transient Map<String, Map<String, Number>> methodNumbers;
 
     private volatile transient Map<String, URL> urls;
 
@@ -177,7 +180,7 @@ class URL implements Serializable {
                int port,
                String path,
                Map<String, String> parameters) {
-        this (protocol, username, password, host, port, path, parameters, toMethodParameters(parameters));
+        this (protocol, username, password, host, port, path, parameters, toMethodParameters(parameters, path));
     }
 
     public URL(String protocol,
@@ -296,18 +299,29 @@ class URL implements Serializable {
             host = url;
         }
 
+        return new URL(protocol, username, password, host, port, path, parameters);
+    }
+
+    public static Map<String, Map<String, String>> toMethodParameters(Map<String, String> parameters, String path) {
+        Map<String, Map<String, String>> methodParameters = new HashMap<>();
         if (parameters != null) {
             for (Map.Entry<String, String> entry : parameters.entrySet()) {
                 String key = entry.getKey();
                 int methodSeparator = key.indexOf(".");
                 if (methodSeparator > 0) {
                     String method = key.substring(0, methodSeparator);
-
+                    String realKey = key.substring(methodSeparator + 1);
+                    ApplicationModel.getServiceModel(path).ifPresent(serviceModel -> {
+                        Set<MethodModel> methodModels = serviceModel.getMethods(method);
+                        if (CollectionUtils.isNotEmpty(methodModels)) {
+                            Map<String, String> subParameter = methodParameters.computeIfAbsent(method, k -> new HashMap<>());
+                            subParameter.put(realKey, entry.getValue());
+                        }
+                    });
                 }
             }
         }
-
-        return new URL(protocol, username, password, host, port, path, parameters);
+        return methodParameters;
     }
 
     public static URL valueOf(String url, String... reserveParams) {
@@ -565,6 +579,13 @@ class URL implements Serializable {
         return numbers;
     }
 
+    private Map<String, Map<String, Number>> getMethodNumbers() {
+        if (methodNumbers == null) { // concurrent initialization is tolerant
+            methodNumbers = new ConcurrentHashMap<>();
+        }
+        return methodNumbers;
+    }
+
     private Map<String, URL> getUrls() {
         if (urls == null) { // concurrent initialization is tolerant
             urls = new ConcurrentHashMap<>();
@@ -786,8 +807,7 @@ class URL implements Serializable {
     }
 
     public double getMethodParameter(String method, String key, double defaultValue) {
-        String methodKey = method + "." + key;
-        Number n = getNumbers().get(methodKey);
+        Number n = getCachedNumber(method, key);
         if (n != null) {
             return n.doubleValue();
         }
@@ -796,13 +816,12 @@ class URL implements Serializable {
             return defaultValue;
         }
         double d = Double.parseDouble(value);
-        getNumbers().put(methodKey, d);
+        updateCachedNumber(method, key, d);
         return d;
     }
 
     public float getMethodParameter(String method, String key, float defaultValue) {
-        String methodKey = method + "." + key;
-        Number n = getNumbers().get(methodKey);
+        Number n = getCachedNumber(method, key);
         if (n != null) {
             return n.floatValue();
         }
@@ -811,13 +830,12 @@ class URL implements Serializable {
             return defaultValue;
         }
         float f = Float.parseFloat(value);
-        getNumbers().put(methodKey, f);
+        updateCachedNumber(method, key, f);
         return f;
     }
 
     public long getMethodParameter(String method, String key, long defaultValue) {
-        String methodKey = method + "." + key;
-        Number n = getNumbers().get(methodKey);
+        Number n = getCachedNumber(method, key);
         if (n != null) {
             return n.longValue();
         }
@@ -826,13 +844,12 @@ class URL implements Serializable {
             return defaultValue;
         }
         long l = Long.parseLong(value);
-        getNumbers().put(methodKey, l);
+        updateCachedNumber(method, key, l);
         return l;
     }
 
     public int getMethodParameter(String method, String key, int defaultValue) {
-        String methodKey = method + "." + key;
-        Number n = getNumbers().get(methodKey);
+        Number n = getCachedNumber(method, key);
         if (n != null) {
             return n.intValue();
         }
@@ -841,13 +858,12 @@ class URL implements Serializable {
             return defaultValue;
         }
         int i = Integer.parseInt(value);
-        getNumbers().put(methodKey, i);
+        updateCachedNumber(method, key, i);
         return i;
     }
 
     public short getMethodParameter(String method, String key, short defaultValue) {
-        String methodKey = method + "." + key;
-        Number n = getNumbers().get(methodKey);
+        Number n = getCachedNumber(method, key);
         if (n != null) {
             return n.shortValue();
         }
@@ -856,13 +872,12 @@ class URL implements Serializable {
             return defaultValue;
         }
         short s = Short.parseShort(value);
-        getNumbers().put(methodKey, s);
+        updateCachedNumber(method, key, s);
         return s;
     }
 
     public byte getMethodParameter(String method, String key, byte defaultValue) {
-        String methodKey = method + "." + key;
-        Number n = getNumbers().get(methodKey);
+        Number n = getCachedNumber(method, key);
         if (n != null) {
             return n.byteValue();
         }
@@ -871,8 +886,21 @@ class URL implements Serializable {
             return defaultValue;
         }
         byte b = Byte.parseByte(value);
-        getNumbers().put(methodKey, b);
+        updateCachedNumber(method, key, b);
         return b;
+    }
+
+    private Number getCachedNumber(String method, String key) {
+        Map<String, Number> keyNumber = getMethodNumbers().get(method);
+        if (keyNumber != null) {
+            return keyNumber.get(key);
+        }
+        return null;
+    }
+
+    private void updateCachedNumber(String method, String key, Number n) {
+        Map<String, Number> keyNumber = getMethodNumbers().computeIfAbsent(method, m -> new HashMap<>());
+        keyNumber.put(key, n);
     }
 
     public double getMethodPositiveParameter(String method, String key, double defaultValue) {
