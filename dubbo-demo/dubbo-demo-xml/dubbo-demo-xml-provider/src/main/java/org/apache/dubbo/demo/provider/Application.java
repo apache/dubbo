@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.demo.provider;
 
-import org.apache.dubbo.common.utils.ReflectUtils;
-
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class Application {
@@ -27,7 +25,6 @@ public class Application {
      */
     public static void main(String[] args) throws Exception {
         ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("spring/dubbo-provider.xml");
-        System.err.println(ReflectUtils.getDesc(new Class<?>[]{String.class, String[].class, Object[].class}));
         context.start();
         System.in.read();
     }
