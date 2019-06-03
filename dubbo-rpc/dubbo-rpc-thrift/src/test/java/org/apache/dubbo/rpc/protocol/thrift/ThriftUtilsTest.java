@@ -18,7 +18,6 @@ package org.apache.dubbo.rpc.protocol.thrift;
 
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.rpc.gen.dubbo.$__DemoStub;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

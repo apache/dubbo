@@ -18,12 +18,13 @@ package org.apache.dubbo.cache.support;
 
 import org.apache.dubbo.cache.Cache;
 import org.apache.dubbo.cache.CacheFactory;
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
+import static org.apache.dubbo.common.constants.CommonConstants.METHOD_KEY;
 
 /**
  * AbstractCacheFactory is a default implementation of {@link CacheFactory}. It abstract out the key formation from URL along with
@@ -51,7 +52,7 @@ public abstract class AbstractCacheFactory implements CacheFactory {
      */
     @Override
     public Cache getCache(URL url, Invocation invocation) {
-        url = url.addParameter(Constants.METHOD_KEY, invocation.getMethodName());
+        url = url.addParameter(METHOD_KEY, invocation.getMethodName());
         String key = url.toFullString();
         Cache cache = caches.get(key);
         if (cache == null) {

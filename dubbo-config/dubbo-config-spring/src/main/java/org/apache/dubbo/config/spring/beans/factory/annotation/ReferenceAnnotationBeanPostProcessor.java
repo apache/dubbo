@@ -41,6 +41,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import static org.apache.dubbo.config.spring.beans.factory.annotation.ServiceBeanNameBuilder.create;
+
 /**
  * {@link org.springframework.beans.factory.config.BeanPostProcessor} implementation
  * that Consumer service {@link Reference} annotated fields
@@ -61,16 +63,16 @@ public class ReferenceAnnotationBeanPostProcessor extends AnnotationInjectedBean
     private static final int CACHE_SIZE = Integer.getInteger(BEAN_NAME + ".cache.size", 32);
 
     private final ConcurrentMap<String, ReferenceBean<?>> referenceBeanCache =
-            new ConcurrentHashMap<String, ReferenceBean<?>>(CACHE_SIZE);
+            new ConcurrentHashMap<>(CACHE_SIZE);
 
     private final ConcurrentHashMap<String, ReferenceBeanInvocationHandler> localReferenceBeanInvocationHandlerCache =
-            new ConcurrentHashMap<String, ReferenceBeanInvocationHandler>(CACHE_SIZE);
+            new ConcurrentHashMap<>(CACHE_SIZE);
 
     private final ConcurrentMap<InjectionMetadata.InjectedElement, ReferenceBean<?>> injectedFieldReferenceBeanCache =
-            new ConcurrentHashMap<InjectionMetadata.InjectedElement, ReferenceBean<?>>(CACHE_SIZE);
+            new ConcurrentHashMap<>(CACHE_SIZE);
 
     private final ConcurrentMap<InjectionMetadata.InjectedElement, ReferenceBean<?>> injectedMethodReferenceBeanCache =
-            new ConcurrentHashMap<InjectionMetadata.InjectedElement, ReferenceBean<?>>(CACHE_SIZE);
+            new ConcurrentHashMap<>(CACHE_SIZE);
 
     private ApplicationContext applicationContext;
 
@@ -114,15 +116,12 @@ public class ReferenceAnnotationBeanPostProcessor extends AnnotationInjectedBean
 
         cacheInjectedReferenceBean(referenceBean, injectedElement);
 
-        Object proxy = buildProxy(referencedBeanName, referenceBean, injectedType);
-
-        return proxy;
+        return buildProxy(referencedBeanName, referenceBean, injectedType);
     }
 
     private Object buildProxy(String referencedBeanName, ReferenceBean referenceBean, Class<?> injectedType) {
         InvocationHandler handler = buildInvocationHandler(referencedBeanName, referenceBean);
-        Object proxy = Proxy.newProxyInstance(getClassLoader(), new Class[]{injectedType}, handler);
-        return proxy;
+        return Proxy.newProxyInstance(getClassLoader(), new Class[]{injectedType}, handler);
     }
 
     private InvocationHandler buildInvocationHandler(String referencedBeanName, ReferenceBean referenceBean) {
@@ -156,10 +155,10 @@ public class ReferenceAnnotationBeanPostProcessor extends AnnotationInjectedBean
 
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-            Object result = null;
+            Object result;
             try {
                 if (bean == null) { // If the bean is not initialized, invoke init()
-                    // issue: https://github.com/apache/incubator-dubbo/issues/3429
+                    // issue: https://github.com/apache/dubbo/issues/3429
                     init();
                 }
                 result = method.invoke(bean, args);
@@ -179,20 +178,16 @@ public class ReferenceAnnotationBeanPostProcessor extends AnnotationInjectedBean
     protected String buildInjectedObjectCacheKey(Reference reference, Object bean, String beanName,
                                                  Class<?> injectedType, InjectionMetadata.InjectedElement injectedElement) {
 
-        String key = buildReferencedBeanName(reference, injectedType) +
+        return buildReferencedBeanName(reference, injectedType) +
                 "#source=" + (injectedElement.getMember()) +
-                "#attributes=" + AnnotationUtils.getAttributes(reference,getEnvironment(),true);
-
-        return key;
+                "#attributes=" + AnnotationUtils.getAttributes(reference, getEnvironment(), true);
     }
 
     private String buildReferencedBeanName(Reference reference, Class<?> injectedType) {
 
-        AnnotationBeanNameBuilder builder = AnnotationBeanNameBuilder.create(reference, injectedType);
+        ServiceBeanNameBuilder serviceBeanNameBuilder = create(reference, injectedType, getEnvironment());
 
-        builder.environment(getEnvironment());
-
-        return getEnvironment().resolvePlaceholders(builder.build());
+        return serviceBeanNameBuilder.build();
     }
 
     private ReferenceBean buildReferenceBeanIfAbsent(String referencedBeanName, Reference reference,

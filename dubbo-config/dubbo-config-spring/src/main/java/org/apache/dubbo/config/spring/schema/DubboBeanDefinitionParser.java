@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config.spring.schema;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ReflectUtils;
@@ -51,6 +50,8 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
+
+import static org.apache.dubbo.common.constants.CommonConstants.HIDE_KEY_PREFIX;
 
 /**
  * AbstractBeanDefinitionParser
@@ -125,7 +126,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
         } else if (ConsumerConfig.class.equals(beanClass)) {
             parseNested(element, parserContext, ReferenceBean.class, false, "reference", "consumer", id, beanDefinition);
         }
-        Set<String> props = new HashSet<String>();
+        Set<String> props = new HashSet<>();
         ManagedMap parameters = null;
         for (Method setter : beanClass.getMethods()) {
             String name = setter.getName();
@@ -136,6 +137,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                 String beanProperty = name.substring(3, 4).toLowerCase() + name.substring(4);
                 String property = StringUtils.camelToSplitName(beanProperty, "-");
                 props.add(property);
+                // check the setter/getter whether match
                 Method getter = null;
                 try {
                     getter = beanClass.getMethod("get" + name.substring(3), new Class<?>[0]);
@@ -143,6 +145,8 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                     try {
                         getter = beanClass.getMethod("is" + name.substring(3), new Class<?>[0]);
                     } catch (NoSuchMethodException e2) {
+                        // ignore, there is no need any log here since some class implement the interface: EnvironmentAware,
+                        // ApplicationAware, etc. They only have setter method, otherwise will cause the error log during application start up.
                     }
                 }
                 if (getter == null
@@ -313,7 +317,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                         String value = ((Element) node).getAttribute("value");
                         boolean hide = "true".equals(((Element) node).getAttribute("hide"));
                         if (hide) {
-                            key = Constants.HIDE_KEY_PREFIX + key;
+                            key = HIDE_KEY_PREFIX + key;
                         }
                         parameters.put(key, new TypedStringValue(value, String.class));
                     }

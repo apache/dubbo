@@ -16,19 +16,13 @@
  */
 package org.apache.dubbo.demo.service;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.QueryParam;
-
 /**
  * DemoService
  *
  * @since 2.6.5
  */
-@Path("/demo-service")
 public interface DemoService {
 
-    @GET
-    String sayName(@QueryParam("name") String name);
+    String sayName(String name);
 
 }

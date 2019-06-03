@@ -27,7 +27,7 @@ import java.util.concurrent.ConcurrentMap;
 
 public class MergerFactory {
 
-    private static final ConcurrentMap<Class<?>, Merger<?>> mergerCache =
+    private static final ConcurrentMap<Class<?>, Merger<?>> MERGER_CACHE =
             new ConcurrentHashMap<Class<?>, Merger<?>>();
 
     /**
@@ -46,19 +46,19 @@ public class MergerFactory {
         Merger result;
         if (returnType.isArray()) {
             Class type = returnType.getComponentType();
-            result = mergerCache.get(type);
+            result = MERGER_CACHE.get(type);
             if (result == null) {
                 loadMergers();
-                result = mergerCache.get(type);
+                result = MERGER_CACHE.get(type);
             }
             if (result == null && !type.isPrimitive()) {
                 result = ArrayMerger.INSTANCE;
             }
         } else {
-            result = mergerCache.get(returnType);
+            result = MERGER_CACHE.get(returnType);
             if (result == null) {
                 loadMergers();
-                result = mergerCache.get(returnType);
+                result = MERGER_CACHE.get(returnType);
             }
         }
         return result;
@@ -69,7 +69,7 @@ public class MergerFactory {
                 .getSupportedExtensions();
         for (String name : names) {
             Merger m = ExtensionLoader.getExtensionLoader(Merger.class).getExtension(name);
-            mergerCache.putIfAbsent(ReflectUtils.getGenericClass(m.getClass()), m);
+            MERGER_CACHE.putIfAbsent(ReflectUtils.getGenericClass(m.getClass()), m);
         }
     }
 

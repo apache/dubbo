@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.transport.netty;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -31,6 +30,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+
 /**
  * NettyChannel.
  */
@@ -38,7 +40,7 @@ final class NettyChannel extends AbstractChannel {
 
     private static final Logger logger = LoggerFactory.getLogger(NettyChannel.class);
 
-    private static final ConcurrentMap<org.jboss.netty.channel.Channel, NettyChannel> channelMap = new ConcurrentHashMap<org.jboss.netty.channel.Channel, NettyChannel>();
+    private static final ConcurrentMap<org.jboss.netty.channel.Channel, NettyChannel> CHANNEL_MAP = new ConcurrentHashMap<org.jboss.netty.channel.Channel, NettyChannel>();
 
     private final org.jboss.netty.channel.Channel channel;
 
@@ -56,11 +58,11 @@ final class NettyChannel extends AbstractChannel {
         if (ch == null) {
             return null;
         }
-        NettyChannel ret = channelMap.get(ch);
+        NettyChannel ret = CHANNEL_MAP.get(ch);
         if (ret == null) {
             NettyChannel nc = new NettyChannel(ch, url, handler);
             if (ch.isConnected()) {
-                ret = channelMap.putIfAbsent(ch, nc);
+                ret = CHANNEL_MAP.putIfAbsent(ch, nc);
             }
             if (ret == null) {
                 ret = nc;
@@ -71,7 +73,7 @@ final class NettyChannel extends AbstractChannel {
 
     static void removeChannelIfDisconnected(org.jboss.netty.channel.Channel ch) {
         if (ch != null && !ch.isConnected()) {
-            channelMap.remove(ch);
+            CHANNEL_MAP.remove(ch);
         }
     }
 
@@ -99,7 +101,7 @@ final class NettyChannel extends AbstractChannel {
         try {
             ChannelFuture future = channel.write(message);
             if (sent) {
-                timeout = getUrl().getPositiveParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
+                timeout = getUrl().getPositiveParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT);
                 success = future.await(timeout);
             }
             Throwable cause = future.getCause();

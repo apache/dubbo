@@ -20,7 +20,7 @@
     <parent>
         <artifactId>dubbo-registry</artifactId>
         <groupId>org.apache.dubbo</groupId>
-        <version>2.7.2-SNAPSHOT</version>
+        <version>${revision}</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -35,6 +35,11 @@
         <dependency>
             <groupId>com.ecwid.consul</groupId>
             <artifactId>consul-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.pszymczyk.consul</groupId>
+            <artifactId>embedded-consul</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
