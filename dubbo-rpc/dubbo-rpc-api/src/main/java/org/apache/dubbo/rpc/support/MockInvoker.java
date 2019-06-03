@@ -47,9 +47,9 @@ import static org.apache.dubbo.rpc.Constants.FORCE_PREFIX;
 import static org.apache.dubbo.rpc.Constants.RETURN_KEY;
 
 final public class MockInvoker<T> implements Invoker<T> {
-    private final static ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
-    private final static Map<String, Invoker<?>> mocks = new ConcurrentHashMap<String, Invoker<?>>();
-    private final static Map<String, Throwable> throwables = new ConcurrentHashMap<String, Throwable>();
+    private final static ProxyFactory PROXY_FACTORY = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+    private final static Map<String, Invoker<?>> MOCK_MAP = new ConcurrentHashMap<String, Invoker<?>>();
+    private final static Map<String, Throwable> THROWABLE_MAP = new ConcurrentHashMap<String, Throwable>();
 
     private final URL url;
     private final Class<T> type;
@@ -136,7 +136,7 @@ final public class MockInvoker<T> implements Invoker<T> {
     }
 
     public static Throwable getThrowable(String throwstr) {
-        Throwable throwable = throwables.get(throwstr);
+        Throwable throwable = THROWABLE_MAP.get(throwstr);
         if (throwable != null) {
             return throwable;
         }
@@ -147,8 +147,8 @@ final public class MockInvoker<T> implements Invoker<T> {
             Constructor<?> constructor;
             constructor = ReflectUtils.findConstructor(bizException, String.class);
             t = (Throwable) constructor.newInstance(new Object[]{"mocked exception for service degradation."});
-            if (throwables.size() < 1000) {
-                throwables.put(throwstr, t);
+            if (THROWABLE_MAP.size() < 1000) {
+                THROWABLE_MAP.put(throwstr, t);
             }
             return t;
         } catch (Exception e) {
@@ -158,16 +158,16 @@ final public class MockInvoker<T> implements Invoker<T> {
 
     @SuppressWarnings("unchecked")
     private Invoker<T> getInvoker(String mockService) {
-        Invoker<T> invoker = (Invoker<T>) mocks.get(mockService);
+        Invoker<T> invoker = (Invoker<T>) MOCK_MAP.get(mockService);
         if (invoker != null) {
             return invoker;
         }
 
         Class<T> serviceType = (Class<T>) ReflectUtils.forName(url.getServiceInterface());
         T mockObject = (T) getMockObject(mockService, serviceType);
-        invoker = proxyFactory.getInvoker(mockObject, serviceType, url);
-        if (mocks.size() < 10000) {
-            mocks.put(mockService, invoker);
+        invoker = PROXY_FACTORY.getInvoker(mockObject, serviceType, url);
+        if (MOCK_MAP.size() < 10000) {
+            MOCK_MAP.put(mockService, invoker);
         }
         return invoker;
     }

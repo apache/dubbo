@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config.annotation;
 
-import org.apache.dubbo.common.constants.RpcConstants;
 import org.apache.dubbo.rpc.ExporterListener;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.cluster.Constants;
@@ -146,9 +145,9 @@ public @interface Service {
     /**
      * The callback instance limit peer connection
      *
-     * @see RpcConstants#DEFAULT_CALLBACK_INSTANCES
+     * @see org.apache.dubbo.rpc.Constants#DEFAULT_CALLBACK_INSTANCES
      */
-    int callbacks() default RpcConstants.DEFAULT_CALLBACK_INSTANCES;
+    int callbacks() default org.apache.dubbo.rpc.Constants.DEFAULT_CALLBACK_INSTANCES;
 
     /**
      * Callback method name when connected, default value is empty string
