@@ -42,6 +42,14 @@ public class TestAsmProxy extends AbstractAsmProxy implements  AsmTestServer{
 	public String returnObject() {
 		return super.invoke(sayHello_statement);
 	}
+	
+	public boolean returnFloat(boolean boo) {
+		Boolean booo = super.invoke(sayHello_statement , new Object[] {boo});
+		if(booo!= null) {
+			return booo.booleanValue();
+		}
+		return false;
+	}
 
 //	
 //	public int[] returnIntArray() {

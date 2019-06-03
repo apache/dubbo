@@ -28,6 +28,8 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 
 	private final static AtomicInteger CLASS_NAME_ATOMIC = new AtomicInteger();
 
+	private final static Map<Class<?>, BasicTypesOpcodes> BASIC_TYPES_OPCODES_MAP = new ConcurrentHashMap<>();
+	
 	private final static Map<Class<?>, String[]> BEASE_TO_PACKAGING = new HashMap<>();
 
 	private final static Map<Type, String> TYPE_TO_ASM_TYPE = new ConcurrentHashMap<>();
@@ -40,22 +42,22 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 
 	static {
 		BEASE_TO_PACKAGING.put(boolean.class,
-				new String[] { "java/lang/Boolean", "(Z)Ljava/lang/Boolean;", "booleanValue", "()Z" });
+				new String[] { "java/lang/Boolean", "(Z)Ljava/lang/Boolean;", "booleanValue", "()Z" });	
 		BEASE_TO_PACKAGING.put(char.class,
-				new String[] { "java/lang/Character", "(C)Ljava/lang/Character;", "charValue", "()C" });
+				new String[] { "java/lang/Character", "(C)Ljava/lang/Character;", "charValue", "()C" });	
 		BEASE_TO_PACKAGING.put(byte.class,
 				new String[] { "java/lang/Byte", "(B)Ljava/lang/Byte;", "byteValue", "()B" });
 		BEASE_TO_PACKAGING.put(short.class,
-				new String[] { "java/lang/Short", "(S)Ljava/lang/Short;", "shortValue", "()S" });
+				new String[] { "java/lang/Short", "(S)Ljava/lang/Short;", "shortValue", "()S" });		
 		BEASE_TO_PACKAGING.put(int.class,
 				new String[] { "java/lang/Integer", "(I)Ljava/lang/Integer;", "intValue", "()I" });
 		BEASE_TO_PACKAGING.put(long.class,
-				new String[] { "java/lang/Long", "(J)Ljava/lang/Long;", "longValue", "()J" });
+				new String[] { "java/lang/Long", "(J)Ljava/lang/Long;", "longValue", "()J" });		
 		BEASE_TO_PACKAGING.put(float.class,
 				new String[] { "java/lang/Float", "(D)Ljava/lang/Float;", "floatValue", "()D" });
 		BEASE_TO_PACKAGING.put(double.class,
 				new String[] { "java/lang/Double", "(F)Ljava/lang/Double;", "dubbleValue", "()F" });
-
+		
 		TYPE_TO_ASM_TYPE.put(void.class, "V");
 		TYPE_TO_ASM_TYPE.put(boolean.class, "Z");
 		TYPE_TO_ASM_TYPE.put(char.class, "C");
@@ -63,8 +65,8 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 		TYPE_TO_ASM_TYPE.put(short.class, "S");
 		TYPE_TO_ASM_TYPE.put(int.class, "I");
 		TYPE_TO_ASM_TYPE.put(long.class, "J");
-		TYPE_TO_ASM_TYPE.put(float.class, "D");
-		TYPE_TO_ASM_TYPE.put(double.class, "F");
+		TYPE_TO_ASM_TYPE.put(float.class, "F");
+		TYPE_TO_ASM_TYPE.put(double.class, "D");
 
 		TYPE_TO_ASM_TYPE.put(Boolean.class, "Ljava/lang/Boolean;");
 		TYPE_TO_ASM_TYPE.put(Character.class, "Ljava/lang/Character;");
@@ -78,14 +80,14 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 		TYPE_TO_ASM_TYPE.put(List.class, "Ljava/util/List;");
 		TYPE_TO_ASM_TYPE.put(Map.class, "Ljava/util/Map;");
 
-		TYPE_TO_RETURN.put(void.class, Opcodes.RETURN);
+		TYPE_TO_RETURN.put(void.class,   Opcodes.RETURN);
 		TYPE_TO_RETURN.put(boolean.class, Opcodes.IRETURN);
-		TYPE_TO_RETURN.put(char.class, Opcodes.IRETURN);
-		TYPE_TO_RETURN.put(byte.class, Opcodes.IRETURN);
-		TYPE_TO_RETURN.put(short.class, Opcodes.IRETURN);
-		TYPE_TO_RETURN.put(int.class, Opcodes.IRETURN);
-		TYPE_TO_RETURN.put(long.class, Opcodes.LRETURN);
-		TYPE_TO_RETURN.put(float.class, Opcodes.FRETURN);
+		TYPE_TO_RETURN.put(char.class,   Opcodes.IRETURN);
+		TYPE_TO_RETURN.put(byte.class,   Opcodes.IRETURN);
+		TYPE_TO_RETURN.put(short.class,  Opcodes.IRETURN);
+		TYPE_TO_RETURN.put(int.class,    Opcodes.IRETURN);
+		TYPE_TO_RETURN.put(long.class,   Opcodes.LRETURN);
+		TYPE_TO_RETURN.put(float.class,  Opcodes.FRETURN);
 		TYPE_TO_RETURN.put(double.class, Opcodes.DRETURN);
 
 		TYPE_TO_CONST.put(boolean.class, Opcodes.ICONST_0);
@@ -105,9 +107,204 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 		TYPE_TO_LOAD.put(long.class, Opcodes.LLOAD);
 		TYPE_TO_LOAD.put(float.class, Opcodes.FLOAD);
 		TYPE_TO_LOAD.put(double.class, Opcodes.DLOAD);
+		
+		
+		BasicTypesOpcodes basicTypesOpcodes = new BasicTypesOpcodes();
+		basicTypesOpcodes.setBasieAsmTypeName("V");
+		basicTypesOpcodes.setReturnValue(Opcodes.RETURN);
+		BASIC_TYPES_OPCODES_MAP.put(void.class, basicTypesOpcodes);
+		
+		basicTypesOpcodes = new BasicTypesOpcodes();
+		basicTypesOpcodes.setPackingAsmTypeName("java/lang/Boolean");
+		basicTypesOpcodes.setBasieTurnName("(Z)Ljava/lang/Boolean;");
+		basicTypesOpcodes.setToBasieMethomName("booleanValue");
+		basicTypesOpcodes.setBasieStatement("()Z");
+		basicTypesOpcodes.setBasieAsmTypeName("Z");
+		basicTypesOpcodes.setReturnValue(Opcodes.IRETURN);
+		basicTypesOpcodes.setConstValue(Opcodes.ICONST_0);
+		basicTypesOpcodes.setLoadValue(Opcodes.ILOAD);
+		BASIC_TYPES_OPCODES_MAP.put(boolean.class, basicTypesOpcodes);
+		
+		basicTypesOpcodes = new BasicTypesOpcodes();
+		basicTypesOpcodes.setPackingAsmTypeName("java/lang/Character");
+		basicTypesOpcodes.setBasieTurnName("(C)Ljava/lang/Character;");
+		basicTypesOpcodes.setToBasieMethomName("charValue");
+		basicTypesOpcodes.setBasieStatement("()C");
+		basicTypesOpcodes.setBasieAsmTypeName("C");
+		basicTypesOpcodes.setReturnValue(Opcodes.IRETURN);
+		basicTypesOpcodes.setConstValue(Opcodes.ICONST_0);
+		basicTypesOpcodes.setLoadValue(Opcodes.ILOAD);
+		BASIC_TYPES_OPCODES_MAP.put(char.class, basicTypesOpcodes);
+		
+		basicTypesOpcodes = new BasicTypesOpcodes();
+		basicTypesOpcodes.setPackingAsmTypeName("java/lang/Byte");
+		basicTypesOpcodes.setBasieTurnName("(B)Ljava/lang/Byte;");
+		basicTypesOpcodes.setToBasieMethomName("byteValue");
+		basicTypesOpcodes.setBasieStatement("()B");
+		basicTypesOpcodes.setBasieAsmTypeName("B");
+		basicTypesOpcodes.setReturnValue(Opcodes.IRETURN);
+		basicTypesOpcodes.setConstValue(Opcodes.ICONST_0);
+		basicTypesOpcodes.setLoadValue(Opcodes.ILOAD);
+		BASIC_TYPES_OPCODES_MAP.put(byte.class, basicTypesOpcodes);
+		
+		basicTypesOpcodes = new BasicTypesOpcodes();
+		basicTypesOpcodes.setPackingAsmTypeName("java/lang/Short");
+		basicTypesOpcodes.setBasieTurnName("(S)Ljava/lang/Short;");
+		basicTypesOpcodes.setToBasieMethomName("shortValue");
+		basicTypesOpcodes.setBasieStatement("()S");
+		basicTypesOpcodes.setBasieAsmTypeName("S");
+		basicTypesOpcodes.setReturnValue(Opcodes.IRETURN);
+		basicTypesOpcodes.setConstValue(Opcodes.ICONST_0);
+		basicTypesOpcodes.setLoadValue(Opcodes.ILOAD);
+		BASIC_TYPES_OPCODES_MAP.put(short.class, basicTypesOpcodes);
+		
+		basicTypesOpcodes = new BasicTypesOpcodes();
+		basicTypesOpcodes.setPackingAsmTypeName("java/lang/Integer");
+		basicTypesOpcodes.setBasieTurnName("(I)Ljava/lang/Integer;");
+		basicTypesOpcodes.setToBasieMethomName("intValue");
+		basicTypesOpcodes.setBasieStatement("()I");
+		basicTypesOpcodes.setBasieAsmTypeName("I");
+		basicTypesOpcodes.setReturnValue(Opcodes.IRETURN);
+		basicTypesOpcodes.setConstValue(Opcodes.ICONST_0);
+		basicTypesOpcodes.setLoadValue(Opcodes.ILOAD);
+		BASIC_TYPES_OPCODES_MAP.put(int.class, basicTypesOpcodes);
+		
+		basicTypesOpcodes = new BasicTypesOpcodes();
+		basicTypesOpcodes.setPackingAsmTypeName("java/lang/Long");
+		basicTypesOpcodes.setBasieTurnName("(J)Ljava/lang/Long;");
+		basicTypesOpcodes.setToBasieMethomName("longValue");
+		basicTypesOpcodes.setBasieStatement("()J");
+		basicTypesOpcodes.setBasieAsmTypeName("J");
+		basicTypesOpcodes.setReturnValue(Opcodes.LRETURN);
+		basicTypesOpcodes.setConstValue(Opcodes.LCONST_0);
+		basicTypesOpcodes.setLoadValue(Opcodes.LLOAD);
+		BASIC_TYPES_OPCODES_MAP.put(long.class, basicTypesOpcodes);
+		
+		basicTypesOpcodes = new BasicTypesOpcodes();
+		basicTypesOpcodes.setPackingAsmTypeName("java/lang/Float");
+		basicTypesOpcodes.setBasieTurnName("(F)Ljava/lang/Float;");
+		basicTypesOpcodes.setToBasieMethomName("floatValue");
+		basicTypesOpcodes.setBasieStatement("()F");
+		basicTypesOpcodes.setBasieAsmTypeName("F");
+		basicTypesOpcodes.setReturnValue(Opcodes.FRETURN);
+		basicTypesOpcodes.setConstValue(Opcodes.FCONST_0);
+		basicTypesOpcodes.setLoadValue(Opcodes.FLOAD);
+		BASIC_TYPES_OPCODES_MAP.put(float.class, basicTypesOpcodes);
+		
+		basicTypesOpcodes = new BasicTypesOpcodes();
+		basicTypesOpcodes.setPackingAsmTypeName("java/lang/Double");
+		basicTypesOpcodes.setBasieTurnName("(D)Ljava/lang/Double;");
+		basicTypesOpcodes.setToBasieMethomName("doubleValue");
+		basicTypesOpcodes.setBasieStatement("()D");
+		basicTypesOpcodes.setBasieAsmTypeName("D");
+		basicTypesOpcodes.setReturnValue(Opcodes.DRETURN);
+		basicTypesOpcodes.setConstValue(Opcodes.DCONST_0);
+		basicTypesOpcodes.setLoadValue(Opcodes.DLOAD);
+		BASIC_TYPES_OPCODES_MAP.put(double.class, basicTypesOpcodes);
+	}
+	
+	static class BasicTypesOpcodes{
+		private String packingAsmTypeName;
+		
+		private String basieTurnName;
+		
+		private String toBasieMethomName;
+		
+		private String basieStatement;
+		
+		private String basieAsmTypeName;
+		
+		private String parameterTypeName;
+		
+		private Integer returnValue;
+		
+		private Integer constValue;
+		
+		private Integer loadValue;
+
+		public String getPackingAsmTypeName() {
+			return packingAsmTypeName;
+		}
+
+		public void setPackingAsmTypeName(String packingAsmTypeName) {
+			this.packingAsmTypeName = packingAsmTypeName;
+		}
+
+		public String getBasieTurnName() {
+			return basieTurnName;
+		}
+
+		public void setBasieTurnName(String basieTurnName) {
+			this.basieTurnName = basieTurnName;
+		}
+
+		public String getToBasieMethomName() {
+			return toBasieMethomName;
+		}
+
+		public void setToBasieMethomName(String toBasieMethomName) {
+			this.toBasieMethomName = toBasieMethomName;
+		}
+
+		public String getBasieStatement() {
+			return basieStatement;
+		}
+
+		public void setBasieStatement(String basieStatement) {
+			this.basieStatement = basieStatement;
+		}
+
+		public String getBasieAsmTypeName() {
+			return basieAsmTypeName;
+		}
+
+		public void setBasieAsmTypeName(String basieAsmTypeName) {
+			this.basieAsmTypeName = basieAsmTypeName;
+		}
+
+		public String getParameterTypeName() {
+			return parameterTypeName;
+		}
+
+		public void setParameterTypeName(String parameterTypeName) {
+			this.parameterTypeName = parameterTypeName;
+		}
+
+		public Integer getReturnValue() {
+			return returnValue;
+		}
+
+		public void setReturnValue(Integer returnValue) {
+			this.returnValue = returnValue;
+		}
+
+		public Integer getConstValue() {
+			return constValue;
+		}
+
+		public void setConstValue(Integer constValue) {
+			this.constValue = constValue;
+		}
+
+		public Integer getLoadValue() {
+			return loadValue;
+		}
+
+		public void setLoadValue(Integer loadValue) {
+			this.loadValue = loadValue;
+		}
+	}
+	
+	
+	static BasicTypesOpcodes getBasicTypesOpcodes(Class<?> clazz) {
+		return BASIC_TYPES_OPCODES_MAP.get(clazz);
 	}
 	
 	private Map<String/*alias*/ , MethodStatement>  aliasAndMethodStatement = new HashMap<String, MethodStatement>();
+	
+	public MethodStatement getMethodStatement(String alias) {
+		return aliasAndMethodStatement.get(alias);
+	}
 	
 	@SuppressWarnings("unchecked")
 	public <T> T getProxy(Class<?>[] types, Invoker<?> handler) throws Exception {
@@ -428,6 +625,17 @@ public class ReflectUtils extends ClassLoader implements Opcodes {
 			for (ParameterSteaement t : types) {
 				String className = ((Class<?>) t.getType()).getName();
 				sb.append(className.replace("[", "_").replace(';', '_').replace('.','_'));
+			}
+		}
+		return sb.toString();
+	}
+	
+	public static String getAlias(String methodName, Class<?>[] parameterTypes) {
+		StringBuffer sb = new StringBuffer();
+		sb.append(methodName).append('_');
+		if (parameterTypes != null && parameterTypes.length != 0) {
+			for (Class<?> clazz : parameterTypes) {
+				sb.append(clazz.getName().replace("[", "_").replace(';', '_').replace('.','_'));
 			}
 		}
 		return sb.toString();

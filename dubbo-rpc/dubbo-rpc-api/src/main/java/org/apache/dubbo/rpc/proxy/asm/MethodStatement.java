@@ -2,8 +2,6 @@ package org.apache.dubbo.rpc.proxy.asm;
 
 import java.lang.reflect.Type;
 import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
 
 public class MethodStatement {
 
