@@ -133,13 +133,13 @@ public class ReferenceConfigTest {
     public void testConstructWithReferenceAnnotation() throws NoSuchFieldException {
         Reference reference = getClass().getDeclaredField("innerTest").getAnnotation(Reference.class);
         ReferenceConfig referenceConfig = new ReferenceConfig(reference);
-        Assertions.assertTrue(referenceConfig.getMethods().size() == 1);
+        Assertions.assertEquals(1, referenceConfig.getMethods().size());
         Assertions.assertEquals(((MethodConfig) referenceConfig.getMethods().get(0)).getName(), "sayHello");
-        Assertions.assertTrue(((MethodConfig) referenceConfig.getMethods().get(0)).getTimeout() == 1300);
-        Assertions.assertTrue(((MethodConfig) referenceConfig.getMethods().get(0)).getRetries() == 4);
+        Assertions.assertEquals(1300, (int)((MethodConfig)referenceConfig.getMethods().get(0)).getTimeout());
+        Assertions.assertEquals(4, (int)((MethodConfig)referenceConfig.getMethods().get(0)).getRetries());
         Assertions.assertEquals(((MethodConfig) referenceConfig.getMethods().get(0)).getLoadbalance(), "random");
-        Assertions.assertTrue(((MethodConfig) referenceConfig.getMethods().get(0)).getActives() == 3);
-        Assertions.assertTrue(((MethodConfig) referenceConfig.getMethods().get(0)).getExecutes() == 5);
+        Assertions.assertEquals(3, (int)((MethodConfig)referenceConfig.getMethods().get(0)).getActives());
+        Assertions.assertEquals(5, (int)((MethodConfig)referenceConfig.getMethods().get(0)).getExecutes());
         Assertions.assertTrue(((MethodConfig) referenceConfig.getMethods().get(0)).isAsync());
         Assertions.assertEquals(((MethodConfig) referenceConfig.getMethods().get(0)).getOninvoke(), "i");
         Assertions.assertEquals(((MethodConfig) referenceConfig.getMethods().get(0)).getOnreturn(), "r");

@@ -123,7 +123,7 @@ public class ReferenceCountExchangeClientTest {
         Assertions.assertEquals(shareConnectionNum, demoReferenceClientList.size());
 
         // because helloServiceInvoker and demoServiceInvoker use share connect， so client list must be equal
-        Assertions.assertTrue(Objects.equals(helloReferenceClientList, demoReferenceClientList));
+        Assertions.assertEquals(helloReferenceClientList, demoReferenceClientList);
 
         Assertions.assertEquals(demoClient.getLocalAddress(), helloClient.getLocalAddress());
         Assertions.assertEquals(demoClient, helloClient);
@@ -186,7 +186,7 @@ public class ReferenceCountExchangeClientTest {
         DubboAppender.doStop();
 
         // status switch to available once invoke again
-        Assertions.assertEquals(true, helloServiceInvoker.isAvailable(), "client status available");
+        Assertions.assertTrue(helloServiceInvoker.isAvailable(), "client status available");
 
         /**
          * This is the third time to close the same client. Under normal circumstances,
@@ -201,8 +201,8 @@ public class ReferenceCountExchangeClientTest {
 
         // client has been replaced with lazy client. lazy client is fetched from referenceclientmap, and since it's
         // been invoked once, it's close status is false
-        Assertions.assertEquals(false, client.isClosed(), "client status close");
-        Assertions.assertEquals(false, helloServiceInvoker.isAvailable(), "client status close");
+        Assertions.assertFalse(client.isClosed(), "client status close");
+        Assertions.assertFalse(helloServiceInvoker.isAvailable(), "client status close");
         destoy();
     }
 

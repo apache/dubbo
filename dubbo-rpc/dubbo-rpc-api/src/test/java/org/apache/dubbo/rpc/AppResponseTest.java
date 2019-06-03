@@ -44,7 +44,7 @@ public class AppResponseTest {
 
         StackTraceElement[] stackTrace = appResponse.getException().getStackTrace();
         Assertions.assertNotNull(stackTrace);
-        Assertions.assertTrue(stackTrace.length == 0);
+        Assertions.assertEquals(0,stackTrace.length);
     }
 
     @Test
@@ -72,7 +72,7 @@ public class AppResponseTest {
 
         StackTraceElement[] stackTrace = appResponse.getException().getStackTrace();
         Assertions.assertNotNull(stackTrace);
-        Assertions.assertTrue(stackTrace.length == 0);
+        Assertions.assertEquals(0,stackTrace.length);
     }
 
     private Throwable buildEmptyStackTraceException() {
