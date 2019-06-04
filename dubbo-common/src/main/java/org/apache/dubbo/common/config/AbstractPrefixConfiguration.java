@@ -26,7 +26,6 @@ public abstract class AbstractPrefixConfiguration implements Configuration {
     protected String prefix;
 
     public AbstractPrefixConfiguration(String prefix, String id) {
-        super();
         if (StringUtils.isNotEmpty(prefix) && !prefix.endsWith(".")) {
             this.prefix = prefix + ".";
         } else {
