@@ -17,9 +17,9 @@
 package org.apache.dubbo.rpc.filter;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcStatus;
 import org.apache.dubbo.rpc.support.BlockMyInvoker;
@@ -35,13 +35,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * ActiveLimitFilterTest.java
  */
 public class ActiveLimitFilterTest {
 
-    Filter activeLimitFilter = new ActiveLimitFilter();
+    ActiveLimitFilter activeLimitFilter = new ActiveLimitFilter();
 
     @Test
     public void testInvokeNoActives() {
@@ -97,7 +98,7 @@ public class ActiveLimitFilterTest {
     }
 
     @Test
-    public void testInvokeTimeOut() {
+    public void testInvokeTimeOut() throws Exception {
         int totalThread = 100;
         int maxActives = 10;
         long timeout = 1;
@@ -120,9 +121,14 @@ public class ActiveLimitFilterTest {
                             e.printStackTrace();
                         }
                         try {
-                            activeLimitFilter.invoke(invoker, invocation);
+                            Result asyncResult = activeLimitFilter.invoke(invoker, invocation);
+                            Result result = asyncResult.get();
+                            activeLimitFilter.listener().onResponse(result, invoker, invocation);
                         } catch (RpcException expected) {
                             count.incrementAndGet();
+//                            activeLimitFilter.listener().onError(expected, invoker, invocation);
+                        } catch (Exception e) {
+                            fail();
                         }
                     } finally {
                         latchBlocking.countDown();
@@ -142,7 +148,7 @@ public class ActiveLimitFilterTest {
     }
 
     @Test
-    public void testInvokeNotTimeOut() {
+    public void testInvokeNotTimeOut() throws Exception {
         int totalThread = 100;
         int maxActives = 10;
         long timeout = 1000;
@@ -163,9 +169,14 @@ public class ActiveLimitFilterTest {
                             e.printStackTrace();
                         }
                         try {
-                            activeLimitFilter.invoke(invoker, invocation);
+                            Result asyncResult = activeLimitFilter.invoke(invoker, invocation);
+                            Result result = asyncResult.get();
+                            activeLimitFilter.listener().onResponse(result, invoker, invocation);
                         } catch (RpcException expected) {
                             count.incrementAndGet();
+                            activeLimitFilter.listener().onError(expected, invoker, invocation);
+                        } catch (Exception e) {
+                            fail();
                         }
                     } finally {
                         latchBlocking.countDown();
@@ -208,6 +219,7 @@ public class ActiveLimitFilterTest {
         try {
             activeLimitFilter.invoke(invoker, invocation);
         } catch (RuntimeException ex) {
+            activeLimitFilter.listener().onError(ex, invoker, invocation);
             int afterExceptionActiveCount = count.getActive();
             assertEquals(beforeExceptionActiveCount, afterExceptionActiveCount, "After exception active count should be same");
         }

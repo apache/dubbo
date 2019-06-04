@@ -70,7 +70,7 @@ public class HeaderExchangeHandlerTest {
                 Assertions.assertEquals(request.getVersion(), res.getVersion());
                 Assertions.assertEquals(Response.OK, res.getStatus());
                 Assertions.assertEquals(requestdata, res.getResult());
-                Assertions.assertEquals(null, res.getErrorMessage());
+                Assertions.assertNull(res.getErrorMessage());
                 count.incrementAndGet();
             }
         };
@@ -178,7 +178,7 @@ public class HeaderExchangeHandlerTest {
         HeaderExchangeHandler hexhandler = new HeaderExchangeHandler(new MockedExchangeHandler() {
 
             @Override
-            public CompletableFuture reply(ExchangeChannel channel, Object request) throws RemotingException {
+            public CompletableFuture<Object> reply(ExchangeChannel channel, Object request) throws RemotingException {
                 Assertions.fail();
                 throw new RemotingException(channel, "");
             }

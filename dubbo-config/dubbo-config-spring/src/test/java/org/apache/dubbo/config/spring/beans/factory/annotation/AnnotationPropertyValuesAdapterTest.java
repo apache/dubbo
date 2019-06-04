@@ -131,11 +131,11 @@ public class AnnotationPropertyValuesAdapterTest {
 
         Assert.assertEquals(data, referenceBean.getParameters());
         // Bean compare
-        Assert.assertEquals(null, referenceBean.getApplication());
-        Assert.assertEquals(null, referenceBean.getModule());
-        Assert.assertEquals(null, referenceBean.getConsumer());
-        Assert.assertEquals(null, referenceBean.getMonitor());
-        Assert.assertEquals(null, referenceBean.getRegistry());
+        Assert.assertNull(referenceBean.getApplication());
+        Assert.assertNull(referenceBean.getModule());
+        Assert.assertNull(referenceBean.getConsumer());
+        Assert.assertNull(referenceBean.getMonitor());
+        Assert.assertNull(referenceBean.getRegistry());
 
     }
 

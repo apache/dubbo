@@ -278,7 +278,14 @@ public class JEtcdClient extends AbstractEtcdClient<JEtcdClient.EtcdWatcher> {
             }
 
             try {
-                this.listener = null;
+                /**
+                 * issue : https://github.com/apache/dubbo/issues/4115
+                 *
+                 * When the network is reconnected, the listener is empty
+                 * and the data cannot be received.
+                 */
+                // this.listener = null;
+
                 if (watchRequest != null) {
                     WatchCancelRequest watchCancelRequest =
                             WatchCancelRequest.newBuilder().setWatchId(watchId).build();

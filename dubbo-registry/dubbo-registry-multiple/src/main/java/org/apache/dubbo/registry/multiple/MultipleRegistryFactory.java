@@ -14,34 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.registry.multiple;
 
-package org.apache.dubbo.common.constants;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.registry.Registry;
+import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 
 /**
- * RpcConstants
+ * MultipleRegistryFactory
  */
-public interface RpcConstants {
+public class MultipleRegistryFactory extends AbstractRegistryFactory {
 
-    String INPUT_KEY = "input";
-
-    String OUTPUT_KEY = "output";
-
-    /**
-     * The limit of callback service instances for one interface on every client
-     */
-    String CALLBACK_INSTANCES_LIMIT_KEY = "callbacks";
-
-    /**
-     * The default limit number for callback service instances
-     *
-     * @see #CALLBACK_INSTANCES_LIMIT_KEY
-     */
-    int DEFAULT_CALLBACK_INSTANCES = 1;
-
-    String DUBBO_VERSION_KEY = "dubbo";
-
-    String $INVOKE = "$invoke";
-
-    String CONNECTIONS_KEY = "connections";
+    @Override
+    protected Registry createRegistry(URL url) {
+        return new MultipleRegistry(url);
+    }
 
 }

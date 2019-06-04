@@ -53,7 +53,7 @@ public class RpcUtilsTest {
         long id1 = RpcUtils.getInvocationId(inv);
         RpcUtils.attachInvocationIdIfAsync(url, inv);
         long id2 = RpcUtils.getInvocationId(inv);
-        assertTrue(id1 == id2); // verify if it's idempotent
+        assertEquals(id1, id2); // verify if it's idempotent
         assertTrue(id1 >= 0);
         assertEquals("bb", attachments.get("aa"));
     }
@@ -139,8 +139,8 @@ public class RpcUtilsTest {
         Invocation inv4 = new RpcInvocation("testReturnType4", new Class<?>[]{String.class}, null, null, invoker);
         java.lang.reflect.Type[] types4 = RpcUtils.getReturnTypes(inv4);
         Assertions.assertEquals(2, types4.length);
-        Assertions.assertEquals(null, types4[0]);
-        Assertions.assertEquals(null, types4[1]);
+        Assertions.assertNull(types4[0]);
+        Assertions.assertNull(types4[1]);
 
         Invocation inv5 = new RpcInvocation("testReturnType5", new Class<?>[]{String.class}, null, null, invoker);
         java.lang.reflect.Type[] types5 = RpcUtils.getReturnTypes(inv5);
