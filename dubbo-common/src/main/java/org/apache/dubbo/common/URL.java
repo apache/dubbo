@@ -1015,6 +1015,13 @@ class URL implements Serializable {
         return value != null && value.length() > 0;
     }
 
+    public boolean hasMethodParameter(String method) {
+        if (method == null) {
+            return false;
+        }
+        return getMethodParameters().containsKey(method);
+    }
+
     public boolean isLocalHost() {
         return NetUtils.isLocalHost(host) || getParameter(LOCALHOST_KEY, false);
     }
