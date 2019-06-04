@@ -18,7 +18,6 @@ package org.apache.dubbo.monitor.dubbo;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
-import org.apache.dubbo.common.model.ApplicationModel;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.monitor.Monitor;
 import org.apache.dubbo.monitor.MonitorService;
@@ -26,6 +25,7 @@ import org.apache.dubbo.monitor.support.AbstractMonitorFactory;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
