@@ -84,7 +84,7 @@ public final class URLBuilder {
                       String host,
                       int port,
                       String path, Map<String, String> parameters) {
-        this(protocol, username, password, host, port, path, parameters, URL.toMethodParameters(parameters, path));
+        this(protocol, username, password, host, port, path, parameters, URL.toMethodParameters(parameters));
     }
 
     public URLBuilder(String protocol,
@@ -112,6 +112,7 @@ public final class URLBuilder {
         int port = url.getPort();
         String path = url.getPath();
         Map<String, String> parameters = new HashMap<>(url.getParameters());
+        Map<String, Map<String, String>> methodParameters = new HashMap<>(url.getMethodParameters());
         return new URLBuilder(
                 protocol,
                 username,
@@ -119,7 +120,8 @@ public final class URLBuilder {
                 host,
                 port,
                 path,
-                parameters);
+                parameters,
+                methodParameters);
     }
 
     public URL build() {
@@ -252,10 +254,6 @@ public final class URLBuilder {
         if (StringUtils.isEmpty(key) || StringUtils.isEmpty(value)) {
             return this;
         }
-        // if value doesn't change, return immediately
-        if (value.equals(parameters.get(key))) { // value != null
-            return this;
-        }
 
         parameters.put(key, value);
         return this;
@@ -265,9 +263,7 @@ public final class URLBuilder {
         if (StringUtils.isEmpty(method) || StringUtils.isEmpty(key) || StringUtils.isEmpty(value)) {
             return this;
         }
-        Map<String, String> keyParameter = methodParameters.computeIfAbsent(method, m -> new HashMap<>());
-
-        keyParameter.put(key, value);
+        URL.putMethodParameter(method, key, value, methodParameters);
         return this;
     }
 
@@ -279,6 +275,17 @@ public final class URLBuilder {
             return this;
         }
         parameters.put(key, value);
+        return this;
+    }
+
+    public URLBuilder addMethodParameterIfAbsent(String method, String key, String value) {
+        if (StringUtils.isEmpty(method) || StringUtils.isEmpty(key) || StringUtils.isEmpty(value)) {
+            return this;
+        }
+        if (hasMethodParameter(method, key)) {
+            return this;
+        }
+        URL.putMethodParameter(method, key, value, methodParameters);
         return this;
     }
 
@@ -378,7 +385,39 @@ public final class URLBuilder {
         return value != null && value.length() > 0;
     }
 
+    public boolean hasMethodParameter(String method, String key) {
+        if (method == null) {
+            String suffix = "." + key;
+            for (String fullKey : parameters.keySet()) {
+                if (fullKey.endsWith(suffix)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        if (key == null) {
+            String prefix = method + ".";
+            for (String fullKey : parameters.keySet()) {
+                if (fullKey.startsWith(prefix)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        String value = getMethodParameter(method, key);
+        return value != null && value.length() > 0;
+    }
+
     public String getParameter(String key) {
         return parameters.get(key);
+    }
+
+    public String getMethodParameter(String method, String key) {
+        Map<String, String> keyMap = methodParameters.get(method);
+        String value = null;
+        if (keyMap != null) {
+            value =  keyMap.get(key);
+        }
+        return value;
     }
 }
