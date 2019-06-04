@@ -14,9 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.model;
-
-import java.util.Set;
+package org.apache.dubbo.rpc.model;
 
 /**
  * ProviderModel which is about published services

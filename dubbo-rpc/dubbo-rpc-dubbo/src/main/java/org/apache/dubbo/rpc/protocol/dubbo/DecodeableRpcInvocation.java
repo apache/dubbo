@@ -19,9 +19,6 @@ package org.apache.dubbo.rpc.protocol.dubbo;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.model.ApplicationModel;
-import org.apache.dubbo.common.model.MethodModel;
-import org.apache.dubbo.common.model.ServiceModel;
 import org.apache.dubbo.common.serialize.Cleanable;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.utils.Assert;
@@ -32,6 +29,9 @@ import org.apache.dubbo.remoting.Decodeable;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.transport.CodecSupport;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.MethodModel;
+import org.apache.dubbo.rpc.model.ServiceModel;
 
 import java.io.IOException;
 import java.io.InputStream;

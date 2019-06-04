@@ -17,9 +17,6 @@
 package org.apache.dubbo.rpc.protocol.dubbo.telnet;
 
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.common.model.ApplicationModel;
-import org.apache.dubbo.common.model.MethodModel;
-import org.apache.dubbo.common.model.ProviderModel;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -27,6 +24,9 @@ import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import org.apache.dubbo.remoting.telnet.support.Help;
 import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.MethodModel;
+import org.apache.dubbo.rpc.model.ProviderModel;
 
 import com.alibaba.fastjson.JSON;
 

@@ -17,7 +17,7 @@
 
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.model.ConsumerModel;
+import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.service.Person;
 
 import com.alibaba.dubbo.config.ArgumentConfig;
