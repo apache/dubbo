@@ -121,13 +121,15 @@ public class RpcInvocation implements Invocation, Serializable {
         this.arguments = arguments == null ? new Object[0] : arguments;
         this.attachments = attachments == null ? new HashMap<String, String>() : attachments;
         this.invoker = invoker;
-        ApplicationModel.getServiceModel(serviceName).ifPresent(serviceModel ->
-             serviceModel.getMethod(methodName, parameterTypes)
-                    .ifPresent(methodModel -> {
-                        this.parameterTypesDesc = methodModel.getParamDesc();
-                        this.returnTypes = methodModel.getReturnTypes();
-                    })
-        );
+        if (StringUtils.isNotEmpty(serviceName)) {
+            ApplicationModel.getServiceModel(serviceName).ifPresent(serviceModel ->
+                    serviceModel.getMethod(methodName, parameterTypes)
+                            .ifPresent(methodModel -> {
+                                this.parameterTypesDesc = methodModel.getParamDesc();
+                                this.returnTypes = methodModel.getReturnTypes();
+                            })
+            );
+        }
     }
 
     @Override

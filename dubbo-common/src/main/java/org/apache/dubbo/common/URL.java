@@ -19,8 +19,6 @@ package org.apache.dubbo.common;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.InmemoryConfiguration;
 import org.apache.dubbo.common.constants.RemotingConstants;
-import org.apache.dubbo.common.model.ApplicationModel;
-import org.apache.dubbo.common.model.MethodModel;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -39,7 +37,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -50,6 +47,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PASSWORD_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PORT_KEY;
@@ -180,7 +178,7 @@ class URL implements Serializable {
                int port,
                String path,
                Map<String, String> parameters) {
-        this (protocol, username, password, host, port, path, parameters, toMethodParameters(parameters, path));
+        this (protocol, username, password, host, port, path, parameters, toMethodParameters(parameters));
     }
 
     public URL(String protocol,
@@ -302,22 +300,31 @@ class URL implements Serializable {
         return new URL(protocol, username, password, host, port, path, parameters);
     }
 
-    public static Map<String, Map<String, String>> toMethodParameters(Map<String, String> parameters, String path) {
+    public static Map<String, Map<String, String>> toMethodParameters(Map<String, String> parameters) {
         Map<String, Map<String, String>> methodParameters = new HashMap<>();
         if (parameters != null) {
-            for (Map.Entry<String, String> entry : parameters.entrySet()) {
-                String key = entry.getKey();
-                int methodSeparator = key.indexOf(".");
-                if (methodSeparator > 0) {
-                    String method = key.substring(0, methodSeparator);
-                    String realKey = key.substring(methodSeparator + 1);
-                    ApplicationModel.getServiceModel(path).ifPresent(serviceModel -> {
-                        Set<MethodModel> methodModels = serviceModel.getMethods(method);
-                        if (CollectionUtils.isNotEmpty(methodModels)) {
-                            Map<String, String> subParameter = methodParameters.computeIfAbsent(method, k -> new HashMap<>());
-                            subParameter.put(realKey, entry.getValue());
+            String methodsString = parameters.get(METHODS_KEY);
+            if (StringUtils.isNotEmpty(methodsString)) {
+                String[] methods = methodsString.split(",");
+                for (Map.Entry<String, String> entry : parameters.entrySet()) {
+                    String key = entry.getKey();
+                    for (String method : methods) {
+                        String methodPrefix = method + ".";
+                        if (key.startsWith(methodPrefix)) {
+                            String realKey = key.substring(methodPrefix.length());
+                            URL.putMethodParameter(method, realKey, entry.getValue(), methodParameters);
                         }
-                    });
+                    }
+                }
+            } else {
+                for (Map.Entry<String, String> entry : parameters.entrySet()) {
+                    String key = entry.getKey();
+                    int methodSeparator = key.indexOf(".");
+                    if (methodSeparator > 0) {
+                        String method = key.substring(0, methodSeparator);
+                        String realKey = key.substring(methodSeparator + 1);
+                        URL.putMethodParameter(method, realKey, entry.getValue(), methodParameters);
+                    }
                 }
             }
         }
@@ -1088,6 +1095,7 @@ class URL implements Serializable {
 
         Map<String, String> map = new HashMap<>(getParameters());
         map.put(key, value);
+
         return new URL(protocol, username, password, host, port, path, map);
     }
 
@@ -1101,7 +1109,41 @@ class URL implements Serializable {
         }
         Map<String, String> map = new HashMap<>(getParameters());
         map.put(key, value);
+
         return new URL(protocol, username, password, host, port, path, map);
+    }
+
+    public URL addMethodParameter(String method, String key, String value) {
+        if (StringUtils.isEmpty(method)
+                || StringUtils.isEmpty(key)
+                || StringUtils.isEmpty(value)) {
+            return this;
+        }
+
+        Map<String, String> map = new HashMap<>(getParameters());
+        map.put(method + "." + key, value);
+        Map<String, Map<String, String>> methodMap = toMethodParameters(map);
+        URL.putMethodParameter(method, key, value, methodMap);
+
+        return new URL(protocol, username, password, host, port, path, map, methodMap);
+    }
+
+    public URL addMethodParameterIfAbsent(String method, String key, String value) {
+        if (StringUtils.isEmpty(method)
+                || StringUtils.isEmpty(key)
+                || StringUtils.isEmpty(value)) {
+            return this;
+        }
+        if (hasMethodParameter(method, key)) {
+            return this;
+        }
+
+        Map<String, String> map = new HashMap<>(getParameters());
+        map.put(method + "." + key, value);
+        Map<String, Map<String, String>> methodMap = toMethodParameters(map);
+        URL.putMethodParameter(method, key, value, methodMap);
+
+        return new URL(protocol, username, password, host, port, path, map, methodMap);
     }
 
     /**
@@ -1614,6 +1656,11 @@ class URL implements Serializable {
             return false;
         }
         return true;
+    }
+
+    public static void putMethodParameter(String method, String key, String value, Map<String, Map<String, String>> methodParameters) {
+        Map<String, String> subParameter = methodParameters.computeIfAbsent(method, k -> new HashMap<>());
+        subParameter.put(key, value);
     }
 
 }
