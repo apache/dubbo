@@ -38,7 +38,7 @@ import static org.apache.dubbo.registry.client.metadata.MetadataServiceURLBuilde
  *
  * @see ServiceInstance
  * @see MetadataService
- * @since 2.7.2
+ * @since 2.7.3
  */
 class MetadataServiceProxy implements MetadataService {
 

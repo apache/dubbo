@@ -19,7 +19,6 @@ package org.apache.dubbo.config.event.listener;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.event.ServiceConfigExportedEvent;
-import org.apache.dubbo.configcenter.DynamicConfiguration;
 import org.apache.dubbo.event.EventListener;
 import org.apache.dubbo.metadata.ServiceNameMapping;
 
@@ -43,7 +42,6 @@ public class ServiceNameMappingListener implements EventListener<ServiceConfigEx
 
     @Override
     public void onEvent(ServiceConfigExportedEvent event) {
-        DynamicConfiguration dynamicConfiguration = DynamicConfiguration.getDynamicConfiguration();
         ServiceConfig serviceConfig = event.getServiceConfig();
         List<URL> exportedURLs = serviceConfig.getExportedUrls();
         exportedURLs.forEach(url -> {
