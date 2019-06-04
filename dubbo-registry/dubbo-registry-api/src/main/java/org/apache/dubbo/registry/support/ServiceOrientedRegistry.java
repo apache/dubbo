@@ -42,6 +42,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.unmodifiableSet;
@@ -142,11 +143,11 @@ public class ServiceOrientedRegistry extends FailbackRegistry {
         }
         if (localMetadataService.exportURL(url)) {
             if (logger.isInfoEnabled()) {
-                logger.info(String.format("The URL[%s] registered successfully.", url.toString()));
+                logger.info(format("The URL[%s] registered successfully.", url.toString()));
             }
         } else {
             if (logger.isWarnEnabled()) {
-                logger.info(String.format("The URL[%s] has been registered.", url.toString()));
+                logger.info(format("The URL[%s] has been registered.", url.toString()));
             }
         }
     }
@@ -158,11 +159,11 @@ public class ServiceOrientedRegistry extends FailbackRegistry {
         }
         if (localMetadataService.unexportURL(url)) {
             if (logger.isInfoEnabled()) {
-                logger.info(String.format("The URL[%s] deregistered successfully.", url.toString()));
+                logger.info(format("The URL[%s] deregistered successfully.", url.toString()));
             }
         } else {
             if (logger.isWarnEnabled()) {
-                logger.info(String.format("The URL[%s] has been deregistered.", url.toString()));
+                logger.info(format("The URL[%s] has been deregistered.", url.toString()));
             }
         }
     }
@@ -194,11 +195,12 @@ public class ServiceOrientedRegistry extends FailbackRegistry {
 
     protected void subscribeURLs(URL url, NotifyListener listener) {
 
+        localMetadataService.subscribeURL(url);
+
         Set<String> serviceNames = getServices(url);
 
         serviceNames.forEach(serviceName -> subscribeURLs(url, listener, serviceName));
 
-        localMetadataService.subscribeURL(url);
     }
 
     protected void subscribeURLs(URL url, NotifyListener listener, String serviceName) {
@@ -217,7 +219,7 @@ public class ServiceOrientedRegistry extends FailbackRegistry {
                                  Collection<ServiceInstance> serviceInstances) {
 
         if (isEmpty(serviceInstances)) {
-            logger.warn(String.format("There is no instance in service[name : %s]", serviceName));
+            logger.warn(format("There is no instance in service[name : %s]", serviceName));
             return;
         }
 
@@ -350,7 +352,30 @@ public class ServiceOrientedRegistry extends FailbackRegistry {
                                         Map<String, List<URL>> revisionURLsCache) {
         // get the revision from the specified {@link ServiceInstance}
         String revision = getExportedServicesRevision(selectedInstance);
-        return revisionURLsCache.computeIfAbsent(revision, key -> getProviderExportedURLs(subscribedURL, selectedInstance));
+        // try to get templateURLs from cache
+        List<URL> templateURLs = revisionURLsCache.get(revision);
+
+        if (isEmpty(templateURLs)) { // not exists or getting failed last time
+
+            if (!revisionURLsCache.isEmpty()) { // it's not first time
+                if (logger.isWarnEnabled()) {
+                    logger.warn(format("The ServiceInstance[id: %s, host : %s , port : %s] has different revision : %s" +
+                                    ", please make sure the service [name : %s] is changing or not.",
+                            selectedInstance.getId(),
+                            selectedInstance.getHost(),
+                            selectedInstance.getPort(),
+                            revision,
+                            selectedInstance.getServiceName()
+                    ));
+                }
+            }
+            // get or get again
+            templateURLs = getProviderExportedURLs(subscribedURL, selectedInstance);
+            // put into cache
+            revisionURLsCache.put(revision, templateURLs);
+        }
+
+        return templateURLs;
     }
 
     /**

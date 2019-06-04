@@ -33,6 +33,8 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
 
 /**
  * The customizer to a add the metadata that the reversion of Dubbo exported services calculates.
+ * <p>
+ * The reversion is calculated on the methods that all Dubbo exported interfaces declare
  *
  * @since 2.7.3
  */
@@ -48,17 +50,20 @@ public class ExportedServicesRevisionMetadataCustomizer extends ServiceInstanceM
         LocalMetadataService localMetadataService = LocalMetadataService.getDefaultExtension();
         List<String> exportedURLs = localMetadataService.getExportedURLs();
         Object[] data = exportedURLs.stream()
-                .map(URL::valueOf)
-                .map(URL::getServiceInterface)
-                .filter(name -> !MetadataService.class.getName().equals(name))
-                .map(ClassUtils::forName)
-                .map(Class::getMethods)
-                .map(Arrays::asList)
-                .flatMap(Collection::stream)
-                .map(Object::toString)
-                .sorted()
-                .toArray();
+                .map(URL::valueOf)                       // String to URL
+                .map(URL::getServiceInterface)           // get the service interface
+                .filter(this::isNotMetadataService)      // filter not MetadataService interface
+                .map(ClassUtils::forName)                // load business interface class
+                .map(Class::getMethods)                  // get all public methods from business interface
+                .map(Arrays::asList)                     // Array to List
+                .flatMap(Collection::stream)             // flat Stream<Stream> to be Stream
+                .map(Object::toString)                   // Method to String
+                .sorted()                                // sort methods marking sure the calculation of reversion is stable
+                .toArray();                              // Stream to Array
+        return valueOf(hash(data));                      // calculate the hash code as reversion
+    }
 
-        return valueOf(hash(data));
+    private boolean isNotMetadataService(String serviceInterface) {
+        return !MetadataService.class.getName().equals(serviceInterface);
     }
 }
