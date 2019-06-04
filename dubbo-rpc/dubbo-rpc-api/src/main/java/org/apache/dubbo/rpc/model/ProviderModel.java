@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.rpc.model;
 
+import java.util.Set;
+
 /**
  * ProviderModel which is about published services
  */
