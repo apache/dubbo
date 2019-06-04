@@ -44,10 +44,6 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
 
     protected static final Logger logger = LoggerFactory.getLogger(HeaderExchangeHandler.class);
 
-    public static final String KEY_READ_TIMESTAMP = HeartbeatHandler.KEY_READ_TIMESTAMP;
-
-    public static final String KEY_WRITE_TIMESTAMP = HeartbeatHandler.KEY_WRITE_TIMESTAMP;
-
     private final ExchangeHandler handler;
 
     public HeaderExchangeHandler(ExchangeHandler handler) {
@@ -125,8 +121,6 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
 
     @Override
     public void connected(Channel channel) throws RemotingException {
-        channel.setAttribute(KEY_READ_TIMESTAMP, System.currentTimeMillis());
-        channel.setAttribute(KEY_WRITE_TIMESTAMP, System.currentTimeMillis());
         ExchangeChannel exchangeChannel = HeaderExchangeChannel.getOrAddChannel(channel);
         try {
             handler.connected(exchangeChannel);
@@ -137,8 +131,6 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
 
     @Override
     public void disconnected(Channel channel) throws RemotingException {
-        channel.setAttribute(KEY_READ_TIMESTAMP, System.currentTimeMillis());
-        channel.setAttribute(KEY_WRITE_TIMESTAMP, System.currentTimeMillis());
         ExchangeChannel exchangeChannel = HeaderExchangeChannel.getOrAddChannel(channel);
         try {
             handler.disconnected(exchangeChannel);
@@ -152,7 +144,6 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
     public void sent(Channel channel, Object message) throws RemotingException {
         Throwable exception = null;
         try {
-            channel.setAttribute(KEY_WRITE_TIMESTAMP, System.currentTimeMillis());
             ExchangeChannel exchangeChannel = HeaderExchangeChannel.getOrAddChannel(channel);
             try {
                 handler.sent(exchangeChannel, message);
@@ -180,7 +171,6 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
 
     @Override
     public void received(Channel channel, Object message) throws RemotingException {
-        channel.setAttribute(KEY_READ_TIMESTAMP, System.currentTimeMillis());
         final ExchangeChannel exchangeChannel = HeaderExchangeChannel.getOrAddChannel(channel);
         try {
             if (message instanceof Request) {
