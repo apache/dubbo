@@ -92,6 +92,10 @@ class URL implements Serializable {
 
     private final Map<String, String> parameters;
 
+    private final Map<String, Map<String, String>> methodParameters;
+
+    private final Map<String, Map<String, Number>> methodNumbers = new ConcurrentHashMap<>();
+
     // ==== cache ====
 
     private volatile transient Map<String, Number> numbers;
@@ -110,7 +114,7 @@ class URL implements Serializable {
 
     private final transient String serviceKey;
     private final transient String serviceInterface;
-//    private final transient String serviceKeyForExporter;
+    //    private final transient String serviceKeyForExporter;
 
     protected URL() {
         this.protocol = null;
@@ -123,6 +127,7 @@ class URL implements Serializable {
         this.serviceKey = null;
         this.serviceInterface = null;
 //        this.serviceKeyForExporter = null;
+        this.methodParameters = null;
     }
 
     public URL(String protocol, String host, int port) {
@@ -185,6 +190,7 @@ class URL implements Serializable {
         } else {
             this.serviceKey = buildKey(serviceInterface, getParameter(Constants.GROUP_KEY), getParameter(Constants.VERSION_KEY));
         }
+        this.methodParameters = toMethodParameters(parameters);
 //        this.serviceKeyForExporter = serviceKeyForExporter(port, path, this.getParameter(Constants.VERSION_KEY), this.getParameter(Constants.GROUP_KEY));
 
     }
@@ -307,6 +313,42 @@ class URL implements Serializable {
             }
         }
         return result.clearParameters().addParameters(newMap);
+    }
+
+    private Map<String, Map<String, String>> toMethodParameters(Map<String, String> parameters) {
+        Map<String, Map<String, String>> methodParameters = new HashMap<>();
+        if (parameters != null) {
+            String methodsString = parameters.get(Constants.METHODS_KEY);
+            if (StringUtils.isNotEmpty(methodsString)) {
+                String[] methods = methodsString.split(",");
+                for (Map.Entry<String, String> entry : parameters.entrySet()) {
+                    String key = entry.getKey();
+                    for (String method : methods) {
+                        String methodPrefix = method + ".";
+                        if (key.startsWith(methodPrefix)) {
+                            String realKey = key.substring(methodPrefix.length());
+                            this.putMethodParameter(method, realKey, entry.getValue(), methodParameters);
+                        }
+                    }
+                }
+            } else {
+                for (Map.Entry<String, String> entry : parameters.entrySet()) {
+                    String key = entry.getKey();
+                    int methodSeparator = key.indexOf(".");
+                    if (methodSeparator > 0) {
+                        String method = key.substring(0, methodSeparator);
+                        String realKey = key.substring(methodSeparator + 1);
+                        this.putMethodParameter(method, realKey, entry.getValue(), methodParameters);
+                    }
+                }
+            }
+        }
+        return methodParameters;
+    }
+
+    private void putMethodParameter(String method, String key, String value, Map<String, Map<String, String>> methodParameters) {
+        Map<String, String> subParameter = methodParameters.computeIfAbsent(method, k -> new HashMap<>());
+        subParameter.put(key, value);
     }
 
     public static URL valueOf(URL url, String[] reserveParams, String[] reserveParamPrefixs) {
@@ -753,9 +795,13 @@ class URL implements Serializable {
     }
 
     public String getMethodParameter(String method, String key) {
-        String value = parameters.get(method + "." + key);
+        Map<String, String> keyMap = methodParameters.get(method);
+        String value = null;
+        if (keyMap != null) {
+            value = keyMap.get(key);
+        }
         if (StringUtils.isEmpty(value)) {
-            return getParameter(key);
+            value = parameters.get(key);
         }
         return value;
     }
@@ -769,8 +815,7 @@ class URL implements Serializable {
     }
 
     public double getMethodParameter(String method, String key, double defaultValue) {
-        String methodKey = method + "." + key;
-        Number n = getNumbers().get(methodKey);
+        Number n = getCachedNumber(method, key);
         if (n != null) {
             return n.doubleValue();
         }
@@ -779,13 +824,12 @@ class URL implements Serializable {
             return defaultValue;
         }
         double d = Double.parseDouble(value);
-        getNumbers().put(methodKey, d);
+        updateCachedNumber(method, key, d);
         return d;
     }
 
     public float getMethodParameter(String method, String key, float defaultValue) {
-        String methodKey = method + "." + key;
-        Number n = getNumbers().get(methodKey);
+        Number n = getCachedNumber(method, key);
         if (n != null) {
             return n.floatValue();
         }
@@ -794,13 +838,12 @@ class URL implements Serializable {
             return defaultValue;
         }
         float f = Float.parseFloat(value);
-        getNumbers().put(methodKey, f);
+        updateCachedNumber(method, key, f);
         return f;
     }
 
     public long getMethodParameter(String method, String key, long defaultValue) {
-        String methodKey = method + "." + key;
-        Number n = getNumbers().get(methodKey);
+        Number n = getCachedNumber(method, key);
         if (n != null) {
             return n.longValue();
         }
@@ -809,13 +852,12 @@ class URL implements Serializable {
             return defaultValue;
         }
         long l = Long.parseLong(value);
-        getNumbers().put(methodKey, l);
+        updateCachedNumber(method, key, l);
         return l;
     }
 
     public int getMethodParameter(String method, String key, int defaultValue) {
-        String methodKey = method + "." + key;
-        Number n = getNumbers().get(methodKey);
+        Number n = getCachedNumber(method, key);
         if (n != null) {
             return n.intValue();
         }
@@ -824,13 +866,12 @@ class URL implements Serializable {
             return defaultValue;
         }
         int i = Integer.parseInt(value);
-        getNumbers().put(methodKey, i);
+        updateCachedNumber(method, key, i);
         return i;
     }
 
     public short getMethodParameter(String method, String key, short defaultValue) {
-        String methodKey = method + "." + key;
-        Number n = getNumbers().get(methodKey);
+        Number n = getCachedNumber(method, key);
         if (n != null) {
             return n.shortValue();
         }
@@ -839,13 +880,12 @@ class URL implements Serializable {
             return defaultValue;
         }
         short s = Short.parseShort(value);
-        getNumbers().put(methodKey, s);
+        updateCachedNumber(method, key, s);
         return s;
     }
 
     public byte getMethodParameter(String method, String key, byte defaultValue) {
-        String methodKey = method + "." + key;
-        Number n = getNumbers().get(methodKey);
+        Number n = getCachedNumber(method, key);
         if (n != null) {
             return n.byteValue();
         }
@@ -854,8 +894,28 @@ class URL implements Serializable {
             return defaultValue;
         }
         byte b = Byte.parseByte(value);
-        getNumbers().put(methodKey, b);
+        updateCachedNumber(method, key, b);
         return b;
+    }
+
+    private Number getCachedNumber(String method, String key) {
+        Map<String, Number> keyNumber = methodNumbers.get(method);
+        if (keyNumber != null) {
+            return keyNumber.get(key);
+        }
+        return null;
+    }
+
+    private void updateCachedNumber(String method, String key, Number n) {
+        Map<String, Number> keyNumber = methodNumbers.computeIfAbsent(method, m -> new HashMap<>());
+        keyNumber.put(key, n);
+    }
+
+    public boolean hasMethodParameter(String method) {
+        if (method == null) {
+            return false;
+        }
+        return methodParameters.containsKey(method);
     }
 
     public double getMethodPositiveParameter(String method, String key, double defaultValue) {
