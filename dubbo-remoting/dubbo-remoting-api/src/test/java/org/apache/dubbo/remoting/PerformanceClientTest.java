@@ -28,6 +28,7 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -72,8 +73,9 @@ public class PerformanceClientTest  {
             exchangeClients[i] = Exchangers.connect(url);
         }
 
-        List<String> serverEnvironment = (List<String>) exchangeClients[0].request("environment").get();
-        List<String> serverScene = (List<String>) exchangeClients[0].request("scene").get();
+        CompletableFuture<Object> completableFuture = new CompletableFuture<>();
+        List<String> serverEnvironment = (List<String>) exchangeClients[0].request("environment", completableFuture).get();
+        List<String> serverScene = (List<String>) exchangeClients[0].request("scene", completableFuture).get();
 
         // Create some data for test
         StringBuilder buf = new StringBuilder(length);
@@ -101,7 +103,8 @@ public class PerformanceClientTest  {
                                 count.incrementAndGet();
                                 ExchangeClient client = exchangeClients[index.getAndIncrement() % connections];
                                 long start = System.currentTimeMillis();
-                                String result = (String) client.request(data).get();
+                                CompletableFuture<Object> completableFuture = new CompletableFuture<>();
+                                String result = (String) client.request(data, completableFuture).get();
                                 long end = System.currentTimeMillis();
                                 if (!data.equals(result)) {
                                     throw new IllegalStateException("Invalid result " + result);
