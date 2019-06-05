@@ -76,6 +76,12 @@ final class HeaderExchangeChannel implements ExchangeChannel {
         }
     }
 
+    static void removeChannel(Channel ch) {
+        if (ch != null) {
+            ch.removeAttribute(CHANNEL_KEY);
+        }
+    }
+
     @Override
     public void send(Object message) throws RemotingException {
         send(message, false);
