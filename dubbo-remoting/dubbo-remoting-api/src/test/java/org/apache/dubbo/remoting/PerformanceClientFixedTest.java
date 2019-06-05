@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.concurrent.CompletableFuture;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
@@ -120,7 +121,9 @@ public class PerformanceClientFixedTest  {
                 int index = rd.nextInt(connectionCount);
                 ExchangeClient client = arrays.get(index);
                 // ExchangeClient client = arrays.get(0);
-                String output = (String) client.request(messageBlock).get();
+                CompletableFuture cf = new CompletableFuture();
+                client.request(messageBlock, cf);
+                String output = (String) cf.get();
 
                 if (output.lastIndexOf(messageBlock) < 0) {
                     System.out.println("send messageBlock;get " + output);

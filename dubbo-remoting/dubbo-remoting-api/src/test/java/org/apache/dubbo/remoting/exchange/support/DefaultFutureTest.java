@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class DefaultFutureTest {
@@ -95,7 +96,8 @@ public class DefaultFutureTest {
         // timeout after 5 seconds.
         Channel channel = new MockedChannel();
         Request request = new Request(10);
-        DefaultFuture f = DefaultFuture.newFuture(channel, request, 5000, null);
+        CompletableFuture cf = new CompletableFuture();
+        DefaultFuture f = DefaultFuture.newFuture(channel, request, 5000, null, cf);
         //mark the future is sent
         DefaultFuture.sent(channel, request);
         while (!f.isDone()) {
@@ -106,7 +108,7 @@ public class DefaultFutureTest {
 
         // get operate will throw a timeout exception, because the future is timeout.
         try {
-            f.get();
+            cf.get();
         } catch (Exception e) {
             Assertions.assertTrue(e.getCause() instanceof TimeoutException, "catch exception is not timeout exception!");
             System.out.println(e.getMessage());
@@ -119,7 +121,8 @@ public class DefaultFutureTest {
     private DefaultFuture defaultFuture(int timeout) {
         Channel channel = new MockedChannel();
         Request request = new Request(index.getAndIncrement());
-        return DefaultFuture.newFuture(channel, request, timeout, null);
+        CompletableFuture<Object> completableFuture = new CompletableFuture<>();
+        return DefaultFuture.newFuture(channel, request, timeout, null, completableFuture);
     }
 
 }
