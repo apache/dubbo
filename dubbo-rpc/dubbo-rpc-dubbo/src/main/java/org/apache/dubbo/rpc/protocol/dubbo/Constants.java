@@ -32,7 +32,7 @@ public interface Constants {
 
     String DECODE_IN_IO_THREAD_KEY = "decode.in.io";
 
-    boolean DEFAULT_DECODE_IN_IO_THREAD = true;
+    boolean DEFAULT_DECODE_IN_IO_THREAD = false;
 
     /**
      * callback inst id
