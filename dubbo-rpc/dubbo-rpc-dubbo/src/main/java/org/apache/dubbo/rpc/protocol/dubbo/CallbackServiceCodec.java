@@ -54,7 +54,7 @@ class CallbackServiceCodec {
     private static byte isCallBack(URL url, String methodName, int argIndex) {
         // parameter callback rule: method-name.parameter-index(starting from 0).callback
         byte isCallback = CALLBACK_NONE;
-        if (url != null) {
+        if (url != null && url.hasMethodParameter(methodName)) {
             String callback = url.getParameter(methodName + "." + argIndex + ".callback");
             if (callback != null) {
                 if (callback.equalsIgnoreCase("true")) {
@@ -66,6 +66,8 @@ class CallbackServiceCodec {
         }
         return isCallback;
     }
+
+
 
     /**
      * export or unexport callback service on client side
@@ -297,3 +299,6 @@ class CallbackServiceCodec {
         }
     }
 }
+
+
+
