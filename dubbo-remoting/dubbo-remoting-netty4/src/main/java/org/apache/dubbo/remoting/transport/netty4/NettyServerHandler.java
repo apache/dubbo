@@ -66,14 +66,10 @@ public class NettyServerHandler extends ChannelDuplexHandler {
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
-        try {
-            if (channel != null) {
-                channels.put(NetUtils.toAddressString((InetSocketAddress) ctx.channel().remoteAddress()), channel);
-            }
-            handler.connected(channel);
-        } finally {
-            NettyChannel.removeChannelIfDisconnected(ctx.channel());
+        if (channel != null) {
+            channels.put(NetUtils.toAddressString((InetSocketAddress) ctx.channel().remoteAddress()), channel);
         }
+        handler.connected(channel);
     }
 
     @Override
@@ -83,18 +79,14 @@ public class NettyServerHandler extends ChannelDuplexHandler {
             channels.remove(NetUtils.toAddressString((InetSocketAddress) ctx.channel().remoteAddress()));
             handler.disconnected(channel);
         } finally {
-            NettyChannel.removeChannelIfDisconnected(ctx.channel());
+            NettyChannel.removeChannel(ctx.channel());
         }
     }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
-        try {
-            handler.received(channel, msg);
-        } finally {
-            NettyChannel.removeChannelIfDisconnected(ctx.channel());
-        }
+        handler.received(channel, msg);
     }
 
 
@@ -102,11 +94,7 @@ public class NettyServerHandler extends ChannelDuplexHandler {
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         super.write(ctx, msg, promise);
         NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
-        try {
-            handler.sent(channel, msg);
-        } finally {
-            NettyChannel.removeChannelIfDisconnected(ctx.channel());
-        }
+        handler.sent(channel, msg);
     }
 
     @Override

@@ -108,8 +108,6 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
                     channel.send(res);
                 } catch (RemotingException e) {
                     logger.warn("Send result to consumer failed, channel is " + channel + ", msg is " + e);
-                } finally {
-                    // HeaderExchangeChannel.removeChannelIfDisconnected(channel);
                 }
             });
         } catch (Throwable e) {
@@ -122,11 +120,7 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
     @Override
     public void connected(Channel channel) throws RemotingException {
         ExchangeChannel exchangeChannel = HeaderExchangeChannel.getOrAddChannel(channel);
-        try {
-            handler.connected(exchangeChannel);
-        } finally {
-            HeaderExchangeChannel.removeChannelIfDisconnected(channel);
-        }
+        handler.connected(exchangeChannel);
     }
 
     @Override
@@ -136,7 +130,7 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
             handler.disconnected(exchangeChannel);
         } finally {
             DefaultFuture.closeChannel(channel);
-            HeaderExchangeChannel.removeChannelIfDisconnected(channel);
+            HeaderExchangeChannel.removeChannel(channel);
         }
     }
 
@@ -145,13 +139,10 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
         Throwable exception = null;
         try {
             ExchangeChannel exchangeChannel = HeaderExchangeChannel.getOrAddChannel(channel);
-            try {
-                handler.sent(exchangeChannel, message);
-            } finally {
-                HeaderExchangeChannel.removeChannelIfDisconnected(channel);
-            }
+            handler.sent(exchangeChannel, message);
         } catch (Throwable t) {
             exception = t;
+            HeaderExchangeChannel.removeChannelIfDisconnected(channel);
         }
         if (message instanceof Request) {
             Request request = (Request) message;
@@ -172,36 +163,32 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
     @Override
     public void received(Channel channel, Object message) throws RemotingException {
         final ExchangeChannel exchangeChannel = HeaderExchangeChannel.getOrAddChannel(channel);
-        try {
-            if (message instanceof Request) {
-                // handle request.
-                Request request = (Request) message;
-                if (request.isEvent()) {
-                    handlerEvent(channel, request);
-                } else {
-                    if (request.isTwoWay()) {
-                        handleRequest(exchangeChannel, request);
-                    } else {
-                        handler.received(exchangeChannel, request.getData());
-                    }
-                }
-            } else if (message instanceof Response) {
-                handleResponse(channel, (Response) message);
-            } else if (message instanceof String) {
-                if (isClientSide(channel)) {
-                    Exception e = new Exception("Dubbo client can not supported string message: " + message + " in channel: " + channel + ", url: " + channel.getUrl());
-                    logger.error(e.getMessage(), e);
-                } else {
-                    String echo = handler.telnet(channel, (String) message);
-                    if (echo != null && echo.length() > 0) {
-                        channel.send(echo);
-                    }
-                }
+        if (message instanceof Request) {
+            // handle request.
+            Request request = (Request) message;
+            if (request.isEvent()) {
+                handlerEvent(channel, request);
             } else {
-                handler.received(exchangeChannel, message);
+                if (request.isTwoWay()) {
+                    handleRequest(exchangeChannel, request);
+                } else {
+                    handler.received(exchangeChannel, request.getData());
+                }
             }
-        } finally {
-            HeaderExchangeChannel.removeChannelIfDisconnected(channel);
+        } else if (message instanceof Response) {
+            handleResponse(channel, (Response) message);
+        } else if (message instanceof String) {
+            if (isClientSide(channel)) {
+                Exception e = new Exception("Dubbo client can not supported string message: " + message + " in channel: " + channel + ", url: " + channel.getUrl());
+                logger.error(e.getMessage(), e);
+            } else {
+                String echo = handler.telnet(channel, (String) message);
+                if (echo != null && echo.length() > 0) {
+                    channel.send(echo);
+                }
+            }
+        } else {
+            handler.received(exchangeChannel, message);
         }
     }
 
