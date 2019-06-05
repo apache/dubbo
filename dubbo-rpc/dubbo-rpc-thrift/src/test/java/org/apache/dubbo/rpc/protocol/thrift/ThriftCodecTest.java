@@ -133,7 +133,7 @@ public class ThriftCodecTest {
 
         Request request = createRequest();
 
-        DefaultFuture future = DefaultFuture.newFuture(channel, request, 10);
+        DefaultFuture future = DefaultFuture.newFuture(channel, request, 10, null);
 
         TMessage message = new TMessage("echoString", TMessageType.REPLY, ThriftCodec.getSeqId());
 
@@ -210,7 +210,7 @@ public class ThriftCodecTest {
 
         Request request = createRequest();
 
-        DefaultFuture future = DefaultFuture.newFuture(channel, request, 10);
+        DefaultFuture future = DefaultFuture.newFuture(channel, request, 10, null);
 
         TMessage message = new TMessage("echoString", TMessageType.EXCEPTION, ThriftCodec.getSeqId());
 
