@@ -17,6 +17,9 @@
 package org.apache.dubbo.monitor.dubbo;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.json.JSON;
+import org.apache.dubbo.common.serialize.ObjectOutput;
+import org.apache.dubbo.common.serialize.gson.GsonJsonObjectOutput;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.monitor.MetricsService;
 import org.apache.dubbo.monitor.dubbo.service.DemoService;
@@ -25,20 +28,32 @@ import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
 import com.alibaba.metrics.FastCompass;
 import com.alibaba.metrics.IMetricManager;
+import com.alibaba.metrics.ManualClock;
 import com.alibaba.metrics.MetricLevel;
 import com.alibaba.metrics.MetricManager;
 import com.alibaba.metrics.MetricName;
 import com.alibaba.metrics.common.MetricObject;
+import com.alibaba.metrics.os.linux.CpuUsageGaugeSet;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.io.ByteArrayOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
@@ -227,31 +242,36 @@ public class MetricsFilterTest {
     }
 
     @Test
-    public void testInvokeMetricsService_shouldStoreCpu() {
+    public void testInvokeMetricsService_shouldStoreCpu() throws IOException {
         IMetricManager metricManager = MetricManager.getIMetricManager();
         metricManager.clear();
         MetricsFilter metricsFilter = new MetricsFilter();
         Invocation invocation = new RpcInvocation("sayName", new Class<?>[0], new Object[0]);
+        String file;
+        try (Stream<String> lines = Files.lines(Paths.get("src/test/resources/proc_stat"))) {
+            file = lines.filter(l -> !l.isEmpty())
+                    .collect(Collectors.joining(","));
+        }
+
         AppResponse response = AppResponseBuilder.create()
                 .withAttachments(new HashMap<String, String>(4) {
                     {
-                        put("cpu", "60");
+                        put("cpu", file);
                     }
                 })
                 .build();
-
         onInvokeReturns(response);
+
         RpcContext.getContext().setRemoteAddress(NetUtils.getLocalHost(), 20880).setLocalAddress(NetUtils.getLocalHost(), 2345);
-        RpcContext.getContext().setUrl(serviceInvoker.getUrl().addParameter(SIDE_KEY, PROVIDER_SIDE)
-                .addParameter(TIMEOUT_KEY, 300));
+        RpcContext.getContext().setUrl(serviceInvoker.getUrl().addParameter(SIDE_KEY, PROVIDER_SIDE).addParameter(TIMEOUT_KEY, 300));
         for (int i = 0; i < 50; i++) {
             try {
                 metricsFilter.invoke(serviceInvoker, invocation);
-                metricsFilter.invoke(timeoutInvoker, invocation);
             } catch (RpcException e) {
                 //ignore
             }
         }
+
         Protocol protocol = new DubboProtocol();
         URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":20880/" + MetricsService.class.getName());
         Invoker<MetricsService> invoker = protocol.refer(MetricsService.class, url);
@@ -272,7 +292,7 @@ public class MetricsFilterTest {
                 metricMap.put(metric, object.getValue());
         }
 
-        Assertions.assertEquals(60, metricMap.get("cpu"));
+        Assertions.assertTrue(metricMap.get("cpu.user") != null);
     }
 
     @Test
