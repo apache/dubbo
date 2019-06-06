@@ -23,14 +23,18 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
+import static java.util.Arrays.asList;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 
 /**
  * The {@link ServiceNameMapping} implementation based on {@link DynamicConfiguration}
  */
 public class DynamicConfigurationServiceNameMapping implements ServiceNameMapping {
+
+    private static final List<String> IGNORED_SERVICE_INTERFACES = asList(MetadataService.class.getName());
 
     private static final String SEPARATOR = ":";
 
@@ -40,6 +44,10 @@ public class DynamicConfigurationServiceNameMapping implements ServiceNameMappin
 
     @Override
     public void map(String serviceInterface, String group, String version, String protocol) {
+
+        if (IGNORED_SERVICE_INTERFACES.contains(serviceInterface)) {
+            return;
+        }
 
         DynamicConfiguration dynamicConfiguration = DynamicConfiguration.getDynamicConfiguration();
 

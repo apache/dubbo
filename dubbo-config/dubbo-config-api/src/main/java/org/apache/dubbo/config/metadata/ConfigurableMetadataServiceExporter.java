@@ -29,9 +29,11 @@ import org.apache.dubbo.metadata.LocalMetadataService;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.MetadataServiceExporter;
 
-import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
+
+import static java.util.Collections.unmodifiableList;
 
 /**
  * {@link MetadataServiceExporter} implementation based on {@link AbstractConfig Dubbo configurations}, the clients
@@ -50,12 +52,27 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    /**
-     * {@link ConfigManager} stores {@link AbstractConfig the Dubbo *Config instances}
-     */
-    private final ConfigManager configManager = ConfigManager.getInstance();
-
     private volatile ServiceConfig<MetadataService> serviceConfig;
+
+    private ApplicationConfig applicationConfig;
+
+    private List<RegistryConfig> registries = new LinkedList<>();
+
+    private List<ProtocolConfig> protocols = new LinkedList<>();
+
+    public void setApplicationConfig(ApplicationConfig applicationConfig) {
+        this.applicationConfig = applicationConfig;
+    }
+
+    public void setRegistries(Collection<RegistryConfig> registries) {
+        this.registries.clear();
+        this.registries.addAll(registries);
+    }
+
+    public void setProtocols(Collection<ProtocolConfig> protocols) {
+        this.protocols.clear();
+        this.protocols.addAll(protocols);
+    }
 
     @Override
     public List<URL> export() {
@@ -65,9 +82,9 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
             LocalMetadataService metadataService = LocalMetadataService.getDefaultExtension();
 
             ServiceConfig<MetadataService> serviceConfig = new ServiceConfig<>();
-            serviceConfig.setApplication(getApplicationConfig());
-            serviceConfig.setRegistries(getRegistries());
-            serviceConfig.setProtocols(getProtocols());
+            serviceConfig.setApplication(applicationConfig);
+            serviceConfig.setRegistries(registries);
+            serviceConfig.setProtocols(protocols);
             serviceConfig.setInterface(MetadataService.class);
             serviceConfig.setRef(metadataService);
             serviceConfig.setGroup(getApplicationConfig().getName());
@@ -96,20 +113,16 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
         }
     }
 
-    private <T> List<T> list(Map<?, T> map) {
-        return new ArrayList<>(map.values());
+    private List<ProtocolConfig> getProtocols() {
+        return unmodifiableList(protocols);
     }
 
-    private List<? extends ProtocolConfig> getProtocols() {
-        return list(configManager.getProtocols());
-    }
-
-    private List<? extends RegistryConfig> getRegistries() {
-        return list(configManager.getRegistries());
+    private List<RegistryConfig> getRegistries() {
+        return unmodifiableList(registries);
     }
 
     private ApplicationConfig getApplicationConfig() {
-        return configManager.getApplication().get();
+        return applicationConfig;
     }
 
     private boolean isExported() {

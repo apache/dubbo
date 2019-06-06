@@ -31,7 +31,7 @@ public class ServiceInstancePortCustomizer implements ServiceInstanceCustomizer 
     @Override
     public void customize(ServiceInstance serviceInstance) {
 
-        if (serviceInstance.getPort() == null
+        if (serviceInstance.getPort() != null
                 || serviceInstance.getPort().intValue() < 1) {
             return;
         }
@@ -44,7 +44,9 @@ public class ServiceInstancePortCustomizer implements ServiceInstanceCustomizer 
                 .ifPresent(protocolConfig -> {
                     if (serviceInstance instanceof DefaultServiceInstance) {
                         DefaultServiceInstance instance = (DefaultServiceInstance) serviceInstance;
-                        instance.setPort(protocolConfig.getPort());
+                        if (protocolConfig.getPort() != null) {
+                            instance.setPort(protocolConfig.getPort());
+                        }
                     }
                 });
     }
