@@ -127,7 +127,7 @@ public class MetadataIdentifier {
         this.application = application;
     }
 
-    enum KeyTypeEnum {
+    public enum KeyTypeEnum {
         PATH, UNIQUE_KEY
     }
 }
