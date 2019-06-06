@@ -132,7 +132,7 @@ public class RmiProtocolTest {
         exporter.unexport();
     }
 
-    public static interface NonStdRmiInterface {
+    public interface NonStdRmiInterface {
         void bark();
     }
 

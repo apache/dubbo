@@ -24,6 +24,7 @@ import org.apache.dubbo.common.serialize.ObjectOutput;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 public class AvroObjectOutput implements ObjectOutput {
@@ -76,13 +77,13 @@ public class AvroObjectOutput implements ObjectOutput {
 
     @Override
     public void writeBytes(byte[] v) throws IOException {
-        encoder.writeString(new String(v, "utf8"));
+        encoder.writeString(new String(v, StandardCharsets.UTF_8));
     }
 
     @Override
     public void writeBytes(byte[] v, int off, int len) throws IOException {
         byte[] v2 = Arrays.copyOfRange(v, off, off + len);
-        encoder.writeString(new String(v2, "utf8"));
+        encoder.writeString(new String(v2, StandardCharsets.UTF_8));
     }
 
     @Override
