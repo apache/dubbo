@@ -29,10 +29,10 @@ import io.etcd.jetcd.Client;
 import io.etcd.jetcd.kv.GetResponse;
 import io.etcd.jetcd.launcher.EtcdCluster;
 import io.etcd.jetcd.launcher.EtcdClusterFactory;
-import org.junit.Ignore;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
@@ -74,7 +74,7 @@ public class EtcdMetadataReportTest {
     }
 
     @Test
-    @Ignore("Ignore because https://github.com/apache/dubbo/issues/4185")
+    @Disabled("Disabled because https://github.com/apache/dubbo/issues/4185")
     public void testStoreProvider() throws Exception {
         String version = "1.0.0";
         String group = null;
