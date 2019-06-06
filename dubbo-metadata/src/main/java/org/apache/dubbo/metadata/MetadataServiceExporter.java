@@ -17,7 +17,6 @@
 package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.SPI;
 
 import java.util.List;
 
@@ -29,7 +28,6 @@ import java.util.List;
  * @see #unexport()
  * @since 2.7.3
  */
-@SPI
 public interface MetadataServiceExporter {
 
     /**
