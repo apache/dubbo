@@ -1,5 +1,94 @@
 # Release Notes
 
+## 2.7.2
+
+### New Features
+
+- nacos config center / metadata center support. [#3846](https://github.com/apache/dubbo/issues/3846)
+- Etcd support as config center and metadata center [#3653](https://github.com/apache/dubbo/issues/3653)
+- Support Redis cluster in Metadata Report. [#3817](https://github.com/apache/dubbo/issues/3817)
+- add new module for Dubbo Event. [#4096](https://github.com/apache/dubbo/issues/4096)
+- Support multiple registry that including some effective registry, such as zk, redis [#3599](https://github.com/apache/dubbo/issues/3599)
+- support nacos metadata [#4025](https://github.com/apache/dubbo/issues/4025)
+- Dubbo support Google Protobuf generic reference [#3829](https://github.com/apache/dubbo/issues/3829)
+- Merge serialization-native-hessian-for-apache-dubbo into incubator-dubbo [#3961](https://github.com/apache/dubbo/issues/3961)
+- Merge rpc-native-thrift-for-apache-dubbo into incubator-dubbo [#3960](https://github.com/apache/dubbo/issues/3960)
+- add socks5 proxy support [#3624](https://github.com/apache/dubbo/issues/3624)
+- Integrate with SOFARegistry [#3874](https://github.com/apache/dubbo/issues/3874)
+- Introduce CompletableFuture $invokeAsync for GenericService, now, for generic call, you can use:  
+  $invoke for sync method call with normal return type.
+  $invokeAsync for async method call with CompletableFuture<T> signature. [#3163](https://github.com/apache/dubbo/issues/3163)
+
+### Enhancement
+
+- Performance tuning for TimeoutTask in DefaultFuture. [#4129](https://github.com/apache/dubbo/issues/4129)
+- Add a script to check dependencies license. [#3840](https://github.com/apache/dubbo/issues/3840)
+- Change DynamicConfiguration definition to better adapt to Apollo's namespace storage model.[#3266](https://github.com/apache/dubbo/issues/3266)
+- use equal explicit class to replace anonymous class [#4027](https://github.com/apache/dubbo/issues/4027)
+- Seperate Constants.java into some SubConstants Class [#3137](https://github.com/apache/dubbo/issues/3137)
+- Need to enhance DecodeableRpcResult error message [#3994](https://github.com/apache/dubbo/issues/3994)
+- Provide more meaningful binary releases. [#2491](https://github.com/apache/dubbo/issues/2491)
+- remove useless module-dubbo-test-integration [#3573](https://github.com/apache/dubbo/issues/3573)
+- complete lookup method of consul registry and add integration test [#3890](https://github.com/apache/dubbo/issues/3890)
+- Metrics Service [#3702](https://github.com/apache/dubbo/issues/3702)
+- Update nacos-client to 1.0.0 [#3804](https://github.com/apache/dubbo/issues/3804)
+- Fluent style builder API support [#3431](https://github.com/apache/dubbo/issues/3431)
+- Update readme to remove the incubator prefix [#4159](https://github.com/apache/dubbo/issues/4159)
+- update erlang link [#4100](https://github.com/apache/dubbo/issues/4100)
+- optimize array code style [#4031](https://github.com/apache/dubbo/issues/4031)
+- optimize some code style [#4006](https://github.com/apache/dubbo/issues/4006)
+- remove useless module-dubbo-test-integration [#3989](https://github.com/apache/dubbo/issues/3989)
+- optimize constant naming style [#3970](https://github.com/apache/dubbo/issues/3970)
+- Use maven CI friendly versions: revision. [#3851](https://github.com/apache/dubbo/issues/3851)
+- remove-parse-error-log [#3862](https://github.com/apache/dubbo/issues/3862)
+- Complete xsd definition for ConfigCenterConfig. [#3854](https://github.com/apache/dubbo/issues/3854)
+- add remoteApplicationName field in RpcContext [#3816](https://github.com/apache/dubbo/issues/3816)
+
+### Bugfixes
+
+- @Reference can't match the local @Service beans. [#4071](https://github.com/apache/dubbo/issues/4071)
+- remove some illegal licence: jcip-annotations, jsr173_api. [#3790](https://github.com/apache/dubbo/issues/3790)
+- Qos port can't be disabled by externalized property. [#3958](https://github.com/apache/dubbo/issues/3958)
+- Fix consumer will generate wrong stackTrace. [#4137](https://github.com/apache/dubbo/issues/4137)
+- nacos registry serviceName may conflict. [#4111](https://github.com/apache/dubbo/issues/4111)
+- The client loses the listener when the network is reconnected. [#4115](https://github.com/apache/dubbo/issues/4115)
+- fix registery urls increase forever when recreate reference proxy. [#4109](https://github.com/apache/dubbo/issues/4109)
+- In dubbo 2.7.1，the watcher processor of zookeeper client throw Nullpointexception. [#3866](https://github.com/apache/dubbo/issues/3866)
+- ReferenceConfig initialized not changed to false once subscribe throws exception [#4068](https://github.com/apache/dubbo/issues/4068)
+- dubbo registry extension compatibility with dubbo 2.6.x. [#3882](https://github.com/apache/dubbo/issues/3882)
+- Annotation mode cannot set service parameters in 2.7.0. [#3778](https://github.com/apache/dubbo/issues/3778)
+- compatibility with Zipkin. [#3728](https://github.com/apache/dubbo/issues/3728)
+- do local export before register any listener. [#3669](https://github.com/apache/dubbo/issues/3669)
+- Cannot recognize 2.6.x compatible rules from dubbo-admin. [#4059](https://github.com/apache/dubbo/issues/4059)
+- In Dubbo 2.7.0, the provider can't be configured to async [#3650](https://github.com/apache/dubbo/issues/3650)
+- dubbox compatibility [#3991](https://github.com/apache/dubbo/issues/3991)
+- dubbo-2.7.1 providers repeat register [#3785](https://github.com/apache/dubbo/issues/3785)
+- consul registry: NullPointerException [#3923](https://github.com/apache/dubbo/issues/3923)
+- cannot publish local ip address when local ip and public ip exist at the same time [#3802](https://github.com/apache/dubbo/issues/3802)
+- roll back change made by 3520. [#3935](https://github.com/apache/dubbo/issues/3935)
+- dubbo-registry-nacos module is not bundled into Apache Dubbo 2.7.1 [#3797](https://github.com/apache/dubbo/issues/3797)
+- switch from CopyOnWriteArrayList to regular list in order to avoid potential UnsupportedOperationException [#3242](https://github.com/apache/dubbo/issues/3242)
+- Serialization ContentTypeId conflict between avro protocol and protocoluff protocol [#3926](https://github.com/apache/dubbo/issues/3926)
+- delay export function doesn't work. [#3952](https://github.com/apache/dubbo/issues/3952)
+- org.apache.dubbo.rpc.support.MockInvoker#getInterface should not return null [#3713](https://github.com/apache/dubbo/issues/3713)
+- dubbo TagRouter does not work with dubbo:parameter [#3875](https://github.com/apache/dubbo/issues/3875)
+- make protocols a mutable list (a concrete ArrayList) [#3841](https://github.com/apache/dubbo/issues/3841)
+- javadoc lint issue [#3646](https://github.com/apache/dubbo/issues/3646)
+- The etcd3 lease should be recycled correctly [#3684](https://github.com/apache/dubbo/issues/3684)
+- telnet can't work when parameter has no nullary constructor and some fields is primitive [#4007](https://github.com/apache/dubbo/issues/4007)
+- Sort added router list before set the 'routers' field of the RouterChain [#3969](https://github.com/apache/dubbo/issues/3969)
+- fix injvm and local call [#3638](https://github.com/apache/dubbo/issues/3638)
+- spelling error in org.apache.dubbo.common.extension.AdaptiveClassCodeGenerator#generateReturnAndInovation [#3933](https://github.com/apache/dubbo/issues/3933)
+- metadata report doesn't support redis with password [#3826](https://github.com/apache/dubbo/issues/3826)
+- The dubbo protostuff protocol serializes the bug of java.sql.Timestamp [#3914](https://github.com/apache/dubbo/issues/3914)
+- do not filter thread pool by port [#3919](https://github.com/apache/dubbo/issues/3919)
+- 'dubbo-serialization-gson' maven package error [#3903](https://github.com/apache/dubbo/issues/3903)
+- AbstractRegistry will be endless loop, when doSaveProperties method have no permission to save the file [#3746](https://github.com/apache/dubbo/issues/3746)
+- fix fastjson serialization with generic return type [#3771](https://github.com/apache/dubbo/issues/3771)
+- The dubbo-serialization -api modules should not dependency on third-party jar packages [#3762](https://github.com/apache/dubbo/issues/3762)
+- when using protostuff to serialize, there is not to check whether the data is null [#3727](https://github.com/apache/dubbo/issues/3727)
+- bugfix and enhancement for async [#3287](https://github.com/apache/dubbo/issues/3287)
+
 ## 2.7.1
 
 ### Notice
