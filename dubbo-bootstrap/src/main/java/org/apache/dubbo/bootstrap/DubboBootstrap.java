@@ -23,7 +23,6 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.AbstractInterfaceConfig;
 import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.config.DubboShutdownHook;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
@@ -452,9 +451,9 @@ public class DubboBootstrap {
         }).addEventListener(new EventListener<DubboServiceDestroyedEvent>() {
             @Override
             public void onEvent(DubboServiceDestroyedEvent event) {
-                release();
+                stop();
                 if (logger.isInfoEnabled()) {
-                    logger.info(NAME + " has been shutdown.");
+                    logger.info(NAME + " has been destroyed.");
                 }
             }
         });
@@ -610,7 +609,6 @@ public class DubboBootstrap {
 
         destroyReferenceConfigs();
 
-        DubboShutdownHook.getDubboShutdownHook().doDestroy();
     }
 
     private void destroyProtocolConfigs() {
