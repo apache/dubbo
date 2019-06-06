@@ -174,7 +174,6 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
         nacosConfigListener.addListener(listener);
         try {
             configService.addListener(keyInNacos, group, nacosConfigListener);
-            System.out.println("1");
         } catch (NacosException e) {
             logger.error(e.getMessage());
         }
