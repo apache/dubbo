@@ -12,7 +12,7 @@ pipeline {
     }
 
     environment {
-        JAVA_HOME="${tool 'JDK 1.8 (latest)'}"
+        JAVA_HOME = "${tool 'JDK 1.8 (latest)'}"
     }
 
     tools {
@@ -43,7 +43,7 @@ pipeline {
                     def commitId = sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
                     env.COMMIT_ID = commitId
 
-                    if (commitId == deployedCommitId){
+                    if (commitId == deployedCommitId) {
                         env.STATUS_CHECK = "false"
                         println "Latest deployed commit id is $deployedCommitId, Skip deployment this time"
                     } else {
@@ -53,7 +53,7 @@ pipeline {
                 }
             }
         }
-        
+
         stage('Commit status check') {
             when {
                 expression {
@@ -65,7 +65,7 @@ pipeline {
                     def commitId = env.COMMIT_ID
                     println "Current commit id: $commitId"
 
-                    def commitStatusJson = sh(script: "curl --silent https://api.github.com/repos/apache/dubbo/commits/$commitId/status", returnStdout:true).trim()
+                    def commitStatusJson = sh(script: "curl --silent https://api.github.com/repos/apache/dubbo/commits/$commitId/status", returnStdout: true).trim()
                     println "Commit status: \r\n$commitStatusJson"
 
                     def jsonSlurper = new JsonSlurper()
@@ -95,7 +95,7 @@ pipeline {
             steps {
                 sh 'env'
                 sh 'java -version'
-                sh './mvnw clean validate -Psnapshot-ci-deploy -pl "dubbo-all"'
+                sh './mvnw clean install -pl "dubbo-dependencies-bom" && ./mvnw clean install -DskipTests=true && ./mvnw clean validate -Psnapshot-ci-deploy -pl "dubbo-all"'
             }
         }
 
@@ -108,7 +108,7 @@ pipeline {
             steps {
                 timeout(35) {
                     sh './mvnw --version'
-                    sh './mvnw clean package deploy -f dubbo-dependencies-bom && ./mvnw clean package deploy -DskipTests=true'
+                    sh './mvnw clean package deploy -pl dubbo-dependencies-bom && ./mvnw clean package deploy -DskipTests=true'
                 }
             }
         }
@@ -116,7 +116,7 @@ pipeline {
         stage('Save deployed commit id') {
             steps {
                 script {
-                    if (env.STATUS_CHECK != "true"){
+                    if (env.STATUS_CHECK != "true") {
                         println "Not pass status check"
                         env.COMMIT_ID = env.DEPLOYED_COMMIT_ID
                     }
