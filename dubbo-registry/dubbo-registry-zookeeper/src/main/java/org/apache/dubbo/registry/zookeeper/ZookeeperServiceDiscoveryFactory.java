@@ -29,11 +29,6 @@ import org.apache.dubbo.registry.client.ServiceDiscoveryFactory;
 public class ZookeeperServiceDiscoveryFactory implements ServiceDiscoveryFactory {
 
     @Override
-    public boolean supports(URL connectionURL) {
-        return "zookeeper".equalsIgnoreCase(connectionURL.getProtocol());
-    }
-
-    @Override
     public ServiceDiscovery create(URL connectionURL) {
         try {
             return new ZookeeperServiceDiscovery(connectionURL);

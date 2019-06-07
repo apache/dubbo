@@ -1,1 +1,1 @@
-org.apache.dubbo.registry.client.InMemoryServiceDiscoveryFactory
+in-memory=org.apache.dubbo.registry.client.InMemoryServiceDiscoveryFactory

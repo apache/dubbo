@@ -27,11 +27,6 @@ import org.apache.dubbo.common.URL;
 public class InMemoryServiceDiscoveryFactory implements ServiceDiscoveryFactory {
 
     @Override
-    public boolean supports(URL connectionURL) {
-        return "in-memory".equalsIgnoreCase(connectionURL.getProtocol());
-    }
-
-    @Override
     public ServiceDiscovery create(URL connectionURL) {
         return new InMemoryServiceDiscovery();
     }

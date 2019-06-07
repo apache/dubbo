@@ -23,8 +23,6 @@ import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.URL.valueOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * {@link ServiceDiscoveryFactory} Test
@@ -46,23 +44,12 @@ public class ServiceDiscoveryFactoryTest {
 
     @Test
     public void testClass() {
-        assertEquals(DefaultServiceDiscoveryFactory.class, serviceDiscoveryFactory.getClass());
-    }
-
-    @Test
-    public void testSupports() {
-        assertFalse(serviceDiscoveryFactory.supports(dubboURL));
-        assertTrue(serviceDiscoveryFactory.supports(inMemoryURL));
+        assertEquals(EventPublishingServiceDiscoveryFactory.class, serviceDiscoveryFactory.getClass());
     }
 
     @Test
     public void testCreate() {
         ServiceDiscovery serviceDiscovery = serviceDiscoveryFactory.create(inMemoryURL);
         assertEquals(EventPublishingServiceDiscovery.class, serviceDiscovery.getClass());
-    }
-
-    @Test
-    public void testPriority() {
-        assertEquals(Integer.MAX_VALUE, serviceDiscoveryFactory.getPriority());
     }
 }
