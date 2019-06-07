@@ -27,7 +27,7 @@ import java.io.IOException;
  */
 public class DubboConsumerBootstrap {
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
 
         ApplicationConfig application = new ApplicationConfig();
         application.setName("dubbo-consumer-demo");
@@ -47,11 +47,15 @@ public class DubboConsumerBootstrap {
         reference.setInterface(DemoService.class);
         reference.setVersion("1.0.0");
         reference.setProtocol("dubbo");
+        reference.setCheck(false);
 
         // 和本地bean一样使用xxxService
         DemoService demoService1 = reference.get();
 
-        System.out.println(demoService1.sayName("Hello,World"));
+        for (int i = 0; i < 1000; i++) {
+            System.out.println(demoService1.sayName("Hello,World"));
+            Thread.sleep(1000);
+        }
 
         System.in.read();
     }
