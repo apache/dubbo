@@ -1,4 +1,4 @@
-/*
+package org.apache.dubbo.registry.nacos;/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,29 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.nacos;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.registry.Registry;
-import org.apache.dubbo.registry.RegistryFactory;
-import org.apache.dubbo.registry.support.AbstractRegistryFactory;
+import org.apache.dubbo.registry.client.ServiceDiscovery;
+import org.apache.dubbo.registry.client.ServiceDiscoveryFactory;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.alibaba.nacos.api.naming.NamingService;
 
 import static org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils.createNamingService;
 
 /**
- * Nacos {@link RegistryFactory}
+ * Nacos {@link ServiceDiscoveryFactory}
  *
- * @since 2.6.5
+ * @see ServiceDiscoveryFactory
+ * @see ServiceDiscovery
+ * @since 2.7.3
  */
-public class NacosRegistryFactory extends AbstractRegistryFactory {
-
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+public class NacosServiceDiscoveryFactory implements ServiceDiscoveryFactory {
 
     @Override
-    protected Registry createRegistry(URL url) {
-        return new NacosRegistry(url, createNamingService(url));
+    public ServiceDiscovery create(URL connectionURL) {
+        return new NacosServiceDiscovery(connectionURL);
     }
 }

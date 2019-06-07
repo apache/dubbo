@@ -72,6 +72,18 @@ public interface RegistryConstants {
      *
      * @since 2.7.3
      */
-    public static final String SUBSCRIBED_SERVICE_NAMES_KEY = "subscribed-services";
+    String SUBSCRIBED_SERVICE_NAMES_KEY = "subscribed-services";
 
+
+    /**
+     * The request size of service instances
+     *
+     * @since 2.7.3
+     */
+    String INSTANCES_REQUEST_SIZE_KEY = "instances-request-size";
+
+    /**
+     * The default request size of service instances
+     */
+    int DEFAULT_INSTANCES_REQUEST_SIZE = 100;
 }
