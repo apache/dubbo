@@ -17,10 +17,10 @@
 package org.apache.dubbo.rpc.filter;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.support.BlockMyInvoker;
 
 import org.junit.jupiter.api.Assertions;
@@ -39,7 +39,7 @@ public class TimeoutFilterTest {
         int timeout = 3000;
 
         Invoker invoker = Mockito.mock(Invoker.class);
-        when(invoker.invoke(any(Invocation.class))).thenReturn(new RpcResult("result"));
+        when(invoker.invoke(any(Invocation.class))).thenReturn(new AppResponse("result"));
         when(invoker.getUrl()).thenReturn(URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&timeout=" + timeout));
 
         Invocation invocation = Mockito.mock(Invocation.class);
@@ -60,7 +60,7 @@ public class TimeoutFilterTest {
         when(invocation.getMethodName()).thenReturn("testInvokeWithTimeout");
 
         Result result = timeoutFilter.invoke(invoker, invocation);
-        Assertions.assertEquals("alibaba", result.getValue());
+        Assertions.assertEquals("Dubbo", result.getValue());
 
     }
 }

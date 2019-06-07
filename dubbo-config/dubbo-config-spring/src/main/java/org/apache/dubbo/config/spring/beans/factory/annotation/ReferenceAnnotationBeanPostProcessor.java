@@ -41,6 +41,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import static org.apache.dubbo.config.spring.beans.factory.annotation.ServiceBeanNameBuilder.create;
+
 /**
  * {@link org.springframework.beans.factory.config.BeanPostProcessor} implementation
  * that Consumer service {@link Reference} annotated fields
@@ -156,7 +158,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AnnotationInjectedBean
             Object result;
             try {
                 if (bean == null) { // If the bean is not initialized, invoke init()
-                    // issue: https://github.com/apache/incubator-dubbo/issues/3429
+                    // issue: https://github.com/apache/dubbo/issues/3429
                     init();
                 }
                 result = method.invoke(bean, args);
@@ -178,16 +180,14 @@ public class ReferenceAnnotationBeanPostProcessor extends AnnotationInjectedBean
 
         return buildReferencedBeanName(reference, injectedType) +
                 "#source=" + (injectedElement.getMember()) +
-                "#attributes=" + AnnotationUtils.getAttributes(reference,getEnvironment(),true);
+                "#attributes=" + AnnotationUtils.getAttributes(reference, getEnvironment(), true);
     }
 
     private String buildReferencedBeanName(Reference reference, Class<?> injectedType) {
 
-        AnnotationBeanNameBuilder builder = AnnotationBeanNameBuilder.create(reference, injectedType);
+        ServiceBeanNameBuilder serviceBeanNameBuilder = create(reference, injectedType, getEnvironment());
 
-        builder.environment(getEnvironment());
-
-        return getEnvironment().resolvePlaceholders(builder.build());
+        return serviceBeanNameBuilder.build();
     }
 
     private ReferenceBean buildReferenceBeanIfAbsent(String referencedBeanName, Reference reference,

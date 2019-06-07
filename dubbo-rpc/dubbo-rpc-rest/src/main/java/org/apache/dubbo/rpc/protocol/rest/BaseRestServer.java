@@ -16,11 +16,13 @@
  */
 package org.apache.dubbo.rpc.protocol.rest;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
 
 import org.jboss.resteasy.spi.ResteasyDeployment;
+
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
+import static org.apache.dubbo.rpc.protocol.rest.Constants.EXTENSION_KEY;
 
 public abstract class BaseRestServer implements RestServer {
 
@@ -33,7 +35,7 @@ public abstract class BaseRestServer implements RestServer {
         // TODO users can override this mapper, but we just rely on the current priority strategy of resteasy
         getDeployment().getProviderClasses().add(RpcExceptionMapper.class.getName());
 
-        loadProviders(url.getParameter(Constants.EXTENSION_KEY, ""));
+        loadProviders(url.getParameter(EXTENSION_KEY, ""));
 
         doStart(url);
     }
@@ -53,7 +55,7 @@ public abstract class BaseRestServer implements RestServer {
     }
 
     protected void loadProviders(String value) {
-        for (String clazz : Constants.COMMA_SPLIT_PATTERN.split(value)) {
+        for (String clazz : COMMA_SPLIT_PATTERN.split(value)) {
             if (!StringUtils.isEmpty(clazz)) {
                 getDeployment().getProviderClasses().add(clazz.trim());
             }

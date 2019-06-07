@@ -16,6 +16,14 @@
  */
 package org.apache.dubbo.registry.sofa;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ConfigUtils;
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.registry.NotifyListener;
+import org.apache.dubbo.registry.support.FailbackRegistry;
+
 import com.alipay.sofa.registry.client.api.RegistryClient;
 import com.alipay.sofa.registry.client.api.RegistryClientConfig;
 import com.alipay.sofa.registry.client.api.Subscriber;
@@ -26,14 +34,6 @@ import com.alipay.sofa.registry.client.api.registration.SubscriberRegistration;
 import com.alipay.sofa.registry.client.provider.DefaultRegistryClient;
 import com.alipay.sofa.registry.client.provider.DefaultRegistryClientConfigBuilder;
 import com.alipay.sofa.registry.core.model.ScopeEnum;
-import org.apache.dubbo.common.Constants;
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.ConfigUtils;
-import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.registry.NotifyListener;
-import org.apache.dubbo.registry.support.FailbackRegistry;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +42,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
+import static org.apache.dubbo.registry.Constants.PROVIDER_PROTOCOL;
+import static org.apache.dubbo.registry.Constants.REGISTER_KEY;
+import static org.apache.dubbo.registry.Constants.SUBSCRIBE_KEY;
 import static org.apache.dubbo.registry.sofa.SofaRegistryConstants.ADDRESS_WAIT_TIME_KEY;
 import static org.apache.dubbo.registry.sofa.SofaRegistryConstants.DEFAULT_GROUP;
 import static org.apache.dubbo.registry.sofa.SofaRegistryConstants.LOCAL_DATA_CENTER;
@@ -109,8 +117,8 @@ public class SofaRegistry extends FailbackRegistry {
 
     @Override
     public void doRegister(URL url) {
-        if (!url.getParameter(Constants.REGISTER_KEY, true)
-                || Constants.CONSUMER_PROTOCOL.equals(url.getProtocol())) {
+        if (!url.getParameter(REGISTER_KEY, true)
+                || CONSUMER_PROTOCOL.equals(url.getProtocol())) {
             return;
         }
 
@@ -134,8 +142,8 @@ public class SofaRegistry extends FailbackRegistry {
 
     @Override
     public void doUnregister(URL url) {
-        if (!url.getParameter(Constants.REGISTER_KEY, true)
-                || Constants.CONSUMER_PROTOCOL.equals(url.getProtocol())) {
+        if (!url.getParameter(REGISTER_KEY, true)
+                || CONSUMER_PROTOCOL.equals(url.getProtocol())) {
             return;
         }
         String serviceName = buildServiceName(url);
@@ -144,8 +152,8 @@ public class SofaRegistry extends FailbackRegistry {
 
     @Override
     public void doSubscribe(URL url, final NotifyListener listener) {
-        if (!url.getParameter(Constants.SUBSCRIBE_KEY, true)
-                || Constants.PROVIDER_PROTOCOL.equals(url.getProtocol())) {
+        if (!url.getParameter(SUBSCRIBE_KEY, true)
+                || PROVIDER_PROTOCOL.equals(url.getProtocol())) {
             return;
         }
 
@@ -190,8 +198,8 @@ public class SofaRegistry extends FailbackRegistry {
 
     @Override
     public void doUnsubscribe(URL url, NotifyListener listener) {
-        if (!url.getParameter(Constants.SUBSCRIBE_KEY, true)
-                || Constants.PROVIDER_PROTOCOL.equals(url.getProtocol())) {
+        if (!url.getParameter(SUBSCRIBE_KEY, true)
+                || PROVIDER_PROTOCOL.equals(url.getProtocol())) {
             return;
         }
         String serviceName = buildServiceName(url);
@@ -208,7 +216,7 @@ public class SofaRegistry extends FailbackRegistry {
                 List<String> datas = flatUserData(data);
                 for (String serviceUrl : datas) {
                     URL url = URL.valueOf(serviceUrl);
-                    String serverApplication = url.getParameter(Constants.APPLICATION_KEY);
+                    String serverApplication = url.getParameter(APPLICATION_KEY);
                     if (StringUtils.isNotEmpty(serverApplication)) {
                         url = url.addParameter("dstApp", serverApplication);
                     }
@@ -225,15 +233,15 @@ public class SofaRegistry extends FailbackRegistry {
         // return url.getServiceKey();
         StringBuilder buf = new StringBuilder();
         buf.append(url.getServiceInterface());
-        String version = url.getParameter(Constants.VERSION_KEY);
+        String version = url.getParameter(VERSION_KEY);
         if (StringUtils.isNotEmpty(version)) {
             buf.append(":").append(version);
         }
-        String group = url.getParameter(Constants.GROUP_KEY);
+        String group = url.getParameter(GROUP_KEY);
         if (StringUtils.isNotEmpty(group)) {
             buf.append(":").append(group);
         }
-        buf.append("@").append(Constants.DUBBO);
+        buf.append("@").append(DUBBO);
         return buf.toString();
     }
 

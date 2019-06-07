@@ -16,15 +16,16 @@
  */
 package org.apache.dubbo.config.builders;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.RegistryConfig;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import static org.apache.dubbo.config.Constants.PRODUCTION_ENVIRONMENT;
 
 /**
  * This is a builder for build {@link ApplicationConfig}.
@@ -36,7 +37,7 @@ public class ApplicationBuilder extends AbstractBuilder<ApplicationConfig, Appli
     private String owner;
     private String organization;
     private String architecture;
-    private String environment = Constants.PRODUCTION_ENVIRONMENT;
+    private String environment = PRODUCTION_ENVIRONMENT;
     private String compiler;
     private String logger;
     private List<RegistryConfig> registries;

@@ -17,7 +17,6 @@
 
 package org.apache.dubbo.remoting.etcd.jetcd;
 
-import io.etcd.jetcd.kv.PutResponse;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -26,7 +25,6 @@ import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.etcd.RetryPolicy;
 import org.apache.dubbo.remoting.etcd.StateListener;
-import org.apache.dubbo.remoting.etcd.option.Constants;
 
 import io.etcd.jetcd.ByteSequence;
 import io.etcd.jetcd.Client;
@@ -37,6 +35,7 @@ import io.etcd.jetcd.Observers;
 import io.etcd.jetcd.common.exception.ErrorCode;
 import io.etcd.jetcd.common.exception.EtcdException;
 import io.etcd.jetcd.kv.GetResponse;
+import io.etcd.jetcd.kv.PutResponse;
 import io.etcd.jetcd.lease.LeaseKeepAliveResponse;
 import io.etcd.jetcd.options.GetOption;
 import io.etcd.jetcd.options.PutOption;
@@ -66,6 +65,15 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import static java.util.stream.Collectors.toList;
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
+import static org.apache.dubbo.remoting.etcd.Constants.DEFAULT_KEEPALIVE_TIMEOUT;
+import static org.apache.dubbo.remoting.etcd.Constants.DEFAULT_RECONNECT_PERIOD;
+import static org.apache.dubbo.remoting.etcd.Constants.DEFAULT_RETRY_PERIOD;
+import static org.apache.dubbo.remoting.etcd.Constants.HTTP_KEY;
+import static org.apache.dubbo.remoting.etcd.Constants.HTTP_SUBFIX_KEY;
+import static org.apache.dubbo.remoting.etcd.Constants.RETRY_PERIOD_KEY;
+import static org.apache.dubbo.remoting.etcd.Constants.SESSION_TIMEOUT_KEY;
 
 public class JEtcdClientWrapper {
 
@@ -109,9 +117,9 @@ public class JEtcdClientWrapper {
 
     public JEtcdClientWrapper(URL url) {
         this.url = url;
-        this.expirePeriod = url.getParameter(Constants.SESSION_TIMEOUT_KEY, Constants.DEFAULT_KEEPALIVE_TIMEOUT) / 1000;
+        this.expirePeriod = url.getParameter(SESSION_TIMEOUT_KEY, DEFAULT_KEEPALIVE_TIMEOUT) / 1000;
         if (expirePeriod <= 0) {
-            this.expirePeriod = Constants.DEFAULT_KEEPALIVE_TIMEOUT / 1000;
+            this.expirePeriod = DEFAULT_KEEPALIVE_TIMEOUT / 1000;
         }
         this.channel = new AtomicReference<>();
         this.completableFuture = CompletableFuture.supplyAsync(() -> prepareClient(url));
@@ -120,7 +128,7 @@ public class JEtcdClientWrapper {
         this.retryPolicy = new RetryNTimes(1, 1000, TimeUnit.MILLISECONDS);
 
         this.failed = new IllegalStateException("Etcd3 registry is not connected yet, url:" + url);
-        int retryPeriod = url.getParameter(Constants.REGISTRY_RETRY_PERIOD_KEY, Constants.DEFAULT_REGISTRY_RETRY_PERIOD);
+        int retryPeriod = url.getParameter(RETRY_PERIOD_KEY, DEFAULT_RETRY_PERIOD);
 
         this.retryFuture = retryExecutor.scheduleWithFixedDelay(() -> {
             try {
@@ -185,8 +193,10 @@ public class JEtcdClientWrapper {
                                     String key = pair.getKey().toString(UTF_8);
                                     int index = len, count = 0;
                                     if (key.length() > len) {
-                                        for (; (index = key.indexOf(Constants.PATH_SEPARATOR, index)) != -1; ++index) {
-                                            if (count++ > 1) break;
+                                        for (; (index = key.indexOf(PATH_SEPARATOR, index)) != -1; ++index) {
+                                            if (count++ > 1) {
+                                                break;
+                                            }
                                         }
                                     }
                                     return count == 1;
@@ -477,11 +487,11 @@ public class JEtcdClientWrapper {
     }
 
     public String[] endPoints(String backupAddress) {
-        String[] endpoints = backupAddress.split(Constants.COMMA_SEPARATOR);
+        String[] endpoints = backupAddress.split(COMMA_SEPARATOR);
         List<String> addresses = Arrays.stream(endpoints)
-                .map(address -> address.contains(Constants.HTTP_SUBFIX_KEY)
+                .map(address -> address.contains(HTTP_SUBFIX_KEY)
                         ? address
-                        : Constants.HTTP_KEY + address)
+                        : HTTP_KEY + address)
                 .collect(toList());
         Collections.shuffle(addresses);
         return addresses.toArray(new String[0]);
@@ -527,7 +537,7 @@ public class JEtcdClientWrapper {
                         }
                         connectState = connected;
                     }
-                }, Constants.DEFAULT_REGISTRY_RECONNECT_PERIOD, Constants.DEFAULT_REGISTRY_RECONNECT_PERIOD, TimeUnit.MILLISECONDS);
+                }, DEFAULT_RECONNECT_PERIOD, DEFAULT_RECONNECT_PERIOD, TimeUnit.MILLISECONDS);
             } catch (Throwable t) {
                 logger.error("monitor reconnect status failed.", t);
             }

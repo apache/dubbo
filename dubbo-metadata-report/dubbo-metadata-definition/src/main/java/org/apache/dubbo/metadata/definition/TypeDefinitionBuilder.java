@@ -16,17 +16,13 @@
  */
 package org.apache.dubbo.metadata.definition;
 
-import org.apache.dubbo.metadata.definition.builder.ArrayTypeBuilder;
-import org.apache.dubbo.metadata.definition.builder.CollectionTypeBuilder;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.metadata.definition.builder.DefaultTypeBuilder;
-import org.apache.dubbo.metadata.definition.builder.EnumTypeBuilder;
-import org.apache.dubbo.metadata.definition.builder.MapTypeBuilder;
 import org.apache.dubbo.metadata.definition.builder.TypeBuilder;
 import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,13 +31,16 @@ import java.util.Map;
  * 2015/1/27.
  */
 public class TypeDefinitionBuilder {
+    private static final List<TypeBuilder> BUILDERS;
 
-    private static final TypeBuilder ARRAY_BUILDER = new ArrayTypeBuilder();
-    private static final TypeBuilder COLLECTION_BUILDER = new CollectionTypeBuilder();
-    private static final TypeBuilder MAP_BUILDER = new MapTypeBuilder();
-    private static final TypeBuilder ENUM_BUILDER = new EnumTypeBuilder();
-
-    private static final List<TypeBuilder> BUILDERS = Arrays.asList(ARRAY_BUILDER, COLLECTION_BUILDER, MAP_BUILDER, ENUM_BUILDER);
+    static{
+        List<TypeBuilder> builders = new ArrayList<>();
+        ExtensionLoader<TypeBuilder> extensionLoader = ExtensionLoader.getExtensionLoader(TypeBuilder.class);
+        for(String extensionName : extensionLoader.getSupportedExtensions()){
+            builders.add(extensionLoader.getExtension(extensionName));
+        }
+        BUILDERS = builders;
+    }
 
     public static TypeDefinition build(Type type, Class<?> clazz, Map<Class<?>, TypeDefinition> typeCache) {
         TypeBuilder builder = getGenericTypeBuilder(type, clazz);

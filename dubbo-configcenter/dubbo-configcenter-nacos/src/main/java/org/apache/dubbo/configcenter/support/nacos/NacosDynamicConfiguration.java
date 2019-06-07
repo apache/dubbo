@@ -17,10 +17,6 @@
 
 package org.apache.dubbo.configcenter.support.nacos;
 
-import com.alibaba.nacos.api.NacosFactory;
-import com.alibaba.nacos.api.config.ConfigService;
-import com.alibaba.nacos.api.config.listener.AbstractSharedListener;
-import com.alibaba.nacos.api.exception.NacosException;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -30,24 +26,27 @@ import org.apache.dubbo.configcenter.ConfigChangeType;
 import org.apache.dubbo.configcenter.ConfigurationListener;
 import org.apache.dubbo.configcenter.DynamicConfiguration;
 
+import com.alibaba.nacos.api.NacosFactory;
+import com.alibaba.nacos.api.config.ConfigService;
+import com.alibaba.nacos.api.config.listener.AbstractSharedListener;
+import com.alibaba.nacos.api.exception.NacosException;
+
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.Executor;
+
 import static com.alibaba.nacos.api.PropertyKeyConst.ACCESS_KEY;
 import static com.alibaba.nacos.api.PropertyKeyConst.CLUSTER_NAME;
 import static com.alibaba.nacos.api.PropertyKeyConst.ENDPOINT;
+import static com.alibaba.nacos.api.PropertyKeyConst.NAMESPACE;
 import static com.alibaba.nacos.api.PropertyKeyConst.SECRET_KEY;
 import static com.alibaba.nacos.api.PropertyKeyConst.SERVER_ADDR;
-import static com.alibaba.nacos.api.PropertyKeyConst.NAMESPACE;
 import static com.alibaba.nacos.client.naming.utils.UtilAndComs.NACOS_NAMING_LOG_NAME;
-import static org.apache.dubbo.common.Constants.BACKUP_KEY;
-import static org.apache.dubbo.common.Constants.CONFIG_NAMESPACE_KEY;
-import static org.apache.dubbo.common.Constants.GROUP_CHAR_SEPERATOR;
-import static org.apache.dubbo.common.Constants.PROPERTIES_CHAR_SEPERATOR;
+import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 
 /**
  * The nacos implementation of {@link DynamicConfiguration}
@@ -55,11 +54,10 @@ import static org.apache.dubbo.common.Constants.PROPERTIES_CHAR_SEPERATOR;
 public class NacosDynamicConfiguration implements DynamicConfiguration {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
-
     /**
-     * The final root path would be: /$NAME_SPACE/config
+     * the default timeout in millis to get config from nacos
      */
-    private String rootPath;
+    private static final long DEFAULT_TIMEOUT = 5000L;
 
     /**
      * The nacos configService
@@ -73,7 +71,6 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     private final ConcurrentMap<String, NacosConfigListener> watchListenerMap;
 
     NacosDynamicConfiguration(URL url) {
-        rootPath = url.getParameter(CONFIG_NAMESPACE_KEY, DEFAULT_GROUP) + "-config";
         buildConfigService(url);
         watchListenerMap = new ConcurrentHashMap<>();
     }
@@ -89,24 +86,6 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
             throw new IllegalStateException(e);
         }
         return configService;
-    }
-
-    public void publishNacosConfig(String key, String value) {
-        try {
-            String[] keyAndGroup = getKeyAndGroup(key);
-            configService.publishConfig(keyAndGroup[0], keyAndGroup[1], value);
-        } catch (NacosException e) {
-            logger.error(e.getErrMsg());
-        }
-    }
-
-    private String[] getKeyAndGroup(String key) {
-        int i = key.lastIndexOf(GROUP_CHAR_SEPERATOR);
-        if (i < 0) {
-            return new String[]{key, null};
-        } else {
-            return new String[]{key.substring(0, i), key.substring(i+1)};
-        }
     }
 
     private Properties buildNacosProperties(URL url) {
@@ -160,50 +139,82 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
         return configListener;
     }
 
+
+    /**
+     * FIXME: 2019-05-30 to remove this function
+     * Nacos server does not support * as valid character of data-id.
+     * If a Dubbo service specifies group. For example:
+     *
+     *  <dubbo:service interface="org.apache.dubbo.demo.DemoService" ref="demoService"
+     *      version="1.0.0.test" group="test"/>
+     *
+     * The key passed to NacosDynamicConfiguration will be sth. like:
+     *   test*org.apache.dubbo.demo.DemoService:1.0.0.test.configurators
+     *
+     * See logic in org.apache.dubbo.common.URL#getEncodedServiceKey()
+     *
+     * The purpose of this function is to convert the * into :, to keep align with
+     * the implementation in NacosRegistry.
+     *
+     * In the future this logic should be removed if Dubbo core can handle this.
+     * @param key
+     * @return
+     */
+    private String normalizedKey(String key) {
+        return key.replaceFirst("\\*", ":");
+    }
+
     @Override
     public void addListener(String key, String group, ConfigurationListener listener) {
-        String[] keyAndGroup = getKeyAndGroup(key);
-        if (keyAndGroup[1] != null) {
-            group = keyAndGroup[1];
-        }
-        String finalGroup = group;
-        NacosConfigListener nacosConfigListener = watchListenerMap.computeIfAbsent(generateKey(key, group), k -> createTargetListener(key, finalGroup));
-        String keyInNacos = rootPath + PROPERTIES_CHAR_SEPERATOR + key;
+        String normalizedKey = normalizedKey(key);
+        NacosConfigListener nacosConfigListener = watchListenerMap.computeIfAbsent(normalizedKey, k -> createTargetListener(normalizedKey, group));
         nacosConfigListener.addListener(listener);
         try {
-            configService.addListener(keyInNacos, group, nacosConfigListener);
-            System.out.println("1");
+            configService.addListener(normalizedKey, group, nacosConfigListener);
         } catch (NacosException e) {
             logger.error(e.getMessage());
         }
     }
 
-    private String generateKey(String key, String group) {
-        if (StringUtils.isNotEmpty(group)) {
-            key = key + GROUP_CHAR_SEPERATOR + group;
-        }
-        return key;
-    }
-
     @Override
     public void removeListener(String key, String group, ConfigurationListener listener) {
-        NacosConfigListener eventListener = watchListenerMap.get(generateKey(key, group));
+        String normalizedKey = normalizedKey(key);
+        NacosConfigListener eventListener = watchListenerMap.get(normalizedKey);
         if (eventListener != null) {
             eventListener.removeListener(listener);
         }
     }
 
+    /**
+     * FIXME the model of Zookeeper and Nacos is inconsistent, need to remove this function in next release.
+     */
+    @Override
+    public String getConfig(String key) {
+        return getConfig(key, DEFAULT_GROUP, -1L);
+    }
+
     @Override
     public String getConfig(String key, String group, long timeout) throws IllegalStateException {
-        key = generateKey(key, group);
-        return (String) getInternalProperty(rootPath + PROPERTIES_CHAR_SEPERATOR + key);
+        try {
+            String normalizedKey = normalizedKey(key);
+            long nacosTimeout = timeout < 0 ?  DEFAULT_TIMEOUT : timeout;
+            return configService.getConfig(normalizedKey, group, nacosTimeout);
+        } catch (NacosException e) {
+            logger.error(e.getMessage());
+        }
+        return null;
+    }
+
+    @Override
+    public String getConfigs(String key, String group, long timeout) throws IllegalStateException {
+        return getConfig(key, group, timeout);
     }
 
     @Override
     public Object getInternalProperty(String key) {
         try {
-            String[] keyAndGroup = getKeyAndGroup(key);
-            return configService.getConfig(keyAndGroup[0], keyAndGroup[1], 5000L);
+            String normalizedKey = normalizedKey(key);
+            return configService.getConfig(normalizedKey, DEFAULT_GROUP, DEFAULT_TIMEOUT);
         } catch (NacosException e) {
             logger.error(e.getMessage());
         }

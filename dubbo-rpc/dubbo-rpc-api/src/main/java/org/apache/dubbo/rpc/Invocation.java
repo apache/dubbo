@@ -59,6 +59,10 @@ public interface Invocation {
      */
     Map<String, String> getAttachments();
 
+    void setAttachment(String key, String value);
+
+    void setAttachmentIfAbsent(String key, String value);
+
     /**
      * get attachment by key.
      *

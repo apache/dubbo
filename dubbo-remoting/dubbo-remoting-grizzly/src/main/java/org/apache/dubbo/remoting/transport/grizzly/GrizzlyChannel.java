@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.transport.grizzly;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -32,6 +31,9 @@ import org.glassfish.grizzly.attributes.Attribute;
 import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 
 /**
  * GrizzlyChannel
@@ -105,7 +107,7 @@ final class GrizzlyChannel extends AbstractChannel {
         try {
             GrizzlyFuture future = connection.write(message);
             if (sent) {
-                timeout = getUrl().getPositiveParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
+                timeout = getUrl().getPositiveParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT);
                 future.get(timeout, TimeUnit.MILLISECONDS);
             }
         } catch (TimeoutException e) {

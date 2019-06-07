@@ -16,12 +16,13 @@
  */
 package org.apache.dubbo.common.threadpool;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.SPI;
 
 import java.util.concurrent.Executor;
+
+import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 
 /**
  * ThreadPool
@@ -35,7 +36,7 @@ public interface ThreadPool {
      * @param url URL contains thread parameter
      * @return thread pool
      */
-    @Adaptive({Constants.THREADPOOL_KEY})
+    @Adaptive({THREADPOOL_KEY})
     Executor getExecutor(URL url);
 
 }

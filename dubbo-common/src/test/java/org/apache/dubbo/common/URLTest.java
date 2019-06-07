@@ -72,7 +72,7 @@ public class URLTest {
         assertNull(url.getPassword());
         assertEquals("10.20.130.230", url.getHost());
         assertEquals(0, url.getPort());
-        assertEquals(null, url.getPath());
+        assertNull(url.getPath());
         assertEquals(0, url.getParameters().size());
 
         url = URL.valueOf("10.20.130.230:20880");
@@ -81,7 +81,7 @@ public class URLTest {
         assertNull(url.getPassword());
         assertEquals("10.20.130.230", url.getHost());
         assertEquals(20880, url.getPort());
-        assertEquals(null, url.getPath());
+        assertNull(url.getPath());
         assertEquals(0, url.getParameters().size());
 
         url = URL.valueOf("10.20.130.230/context/path");
@@ -190,7 +190,7 @@ public class URLTest {
         assertNull(url.getPassword());
         assertEquals("10.20.130.230", url.getHost());
         assertEquals(0, url.getPort());
-        assertEquals(null, url.getPath());
+        assertNull(url.getPath());
         assertEquals(0, url.getParameters().size());
 
         url = URL.valueOf("dubbo://10.20.130.230:20880/context/path");
@@ -208,7 +208,7 @@ public class URLTest {
         assertEquals("hello1234", url.getPassword());
         assertEquals("10.20.130.230", url.getHost());
         assertEquals(20880, url.getPort());
-        assertEquals(null, url.getPath());
+        assertNull(url.getPath());
         assertEquals(0, url.getParameters().size());
 
         url = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880?version=1.0.0");
@@ -217,7 +217,7 @@ public class URLTest {
         assertEquals("hello1234", url.getPassword());
         assertEquals("10.20.130.230", url.getHost());
         assertEquals(20880, url.getPort());
-        assertEquals(null, url.getPath());
+        assertNull(url.getPath());
         assertEquals(1, url.getParameters().size());
         assertEquals("1.0.0", url.getParameter("version"));
 
@@ -282,7 +282,7 @@ public class URLTest {
     @Test
     public void test_getAbsolutePath() throws Exception {
         URL url = new URL("p1", "1.2.2.2", 33);
-        assertEquals(null, url.getAbsolutePath());
+        assertNull(url.getAbsolutePath());
 
         url = new URL("file", null, 90, "/home/user1/route.js");
         assertEquals("/home/user1/route.js", url.getAbsolutePath());
