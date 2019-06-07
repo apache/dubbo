@@ -23,12 +23,12 @@ import javax.jms.*;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 import org.apache.dubbo.rpc.protocol.jms.implementor.JmsImplementor;
 
@@ -74,11 +74,11 @@ public class JmsRpcInvoker<T> extends AbstractInvoker<T> {
             QueueSender sender = session.createSender(queue);
             sender.send(message);
 
-            return new RpcResult();
+            return new AppResponse();
         } catch (RpcException e) {
             throw setRpcExceptionCode(e.getCause(), e);
         } catch (Throwable e) {
-            return new RpcResult(e);
+            return new AppResponse(e);
         }
     }
 

@@ -38,7 +38,7 @@ public class JmsProtocol extends AbstractProtocol {
         return new JmsRpcExporter<T>(invoker);
     }
 
-    public <T> Invoker<T> refer(Class<T> serviceType, URL url) throws RpcException {
+    public <T> Invoker<T> protocolBindingRefer(Class<T> serviceType, URL url) throws RpcException {
         Invoker<T> invoker = new JmsRpcInvoker<T>(serviceType, url, proxyFactory);
         invokers.add(invoker);
         return invoker;
