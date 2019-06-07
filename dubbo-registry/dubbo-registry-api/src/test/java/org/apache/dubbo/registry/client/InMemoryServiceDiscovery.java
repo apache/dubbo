@@ -16,14 +16,20 @@
  */
 package org.apache.dubbo.registry.client;
 
+import org.apache.dubbo.common.utils.DefaultPage;
+import org.apache.dubbo.common.utils.Page;
 import org.apache.dubbo.event.EventDispatcher;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static java.util.Collections.emptyList;
 
 /**
  * In-Memory {@link ServiceDiscovery} implementation
@@ -42,8 +48,24 @@ public class InMemoryServiceDiscovery implements ServiceDiscovery {
     }
 
     @Override
-    public List<ServiceInstance> getInstances(String serviceName) throws NullPointerException {
-        return repository.computeIfAbsent(serviceName, s -> new LinkedList<>());
+    public Page<ServiceInstance> getInstances(String serviceName, int offset, int pageSize, boolean healthyOnly) {
+        List<ServiceInstance> instances = new ArrayList<>(repository.computeIfAbsent(serviceName, s -> new LinkedList<>()));
+        int totalSize = instances.size();
+        List<ServiceInstance> data = emptyList();
+        if (offset < totalSize) {
+            int toIndex = offset + pageSize > totalSize - 1 ? totalSize : offset + pageSize;
+            data = instances.subList(offset, toIndex);
+        }
+        if (healthyOnly) {
+            Iterator<ServiceInstance> iterator = data.iterator();
+            while (iterator.hasNext()) {
+                ServiceInstance instance = iterator.next();
+                if (!instance.isHealthy()) {
+                    iterator.remove();
+                }
+            }
+        }
+        return new DefaultPage<>(offset, pageSize, data, totalSize);
     }
 
     public String toString() {

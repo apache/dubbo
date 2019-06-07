@@ -30,25 +30,34 @@ public class DefaultPage<T> implements Page<T>, Serializable {
 
     private final int requestOffset;
 
-    private final int requestSize;
+    private final int pageSize;
 
-    private int totalSize;
+    private final int totalSize;
 
-    private List<T> data;
+    private final List<T> data;
 
-    public DefaultPage(int requestOffset, int requestSize) {
+    private final int totalPages;
+
+    private final boolean hasNext;
+
+    public DefaultPage(int requestOffset, int pageSize, List<T> data, int totalSize) {
         this.requestOffset = requestOffset;
-        this.requestSize = requestSize;
+        this.pageSize = pageSize;
+        this.data = data;
+        this.totalSize = totalSize;
+        int remain = totalSize % pageSize;
+        this.totalPages = remain > 0 ? (totalSize / pageSize) + 1 : totalSize / pageSize;
+        this.hasNext = totalSize - requestOffset - pageSize > 0;
     }
 
     @Override
-    public int getRequestOffset() {
+    public int getOffset() {
         return requestOffset;
     }
 
     @Override
-    public int getRequestSize() {
-        return requestSize;
+    public int getPageSize() {
+        return pageSize;
     }
 
     @Override
@@ -56,8 +65,9 @@ public class DefaultPage<T> implements Page<T>, Serializable {
         return totalSize;
     }
 
-    public void setTotalSize(int totalSize) {
-        this.totalSize = totalSize;
+    @Override
+    public int getTotalPages() {
+        return totalPages;
     }
 
     @Override
@@ -65,7 +75,8 @@ public class DefaultPage<T> implements Page<T>, Serializable {
         return data;
     }
 
-    public void setData(List<T> data) {
-        this.data = data;
+    @Override
+    public boolean hasNext() {
+        return hasNext;
     }
 }
