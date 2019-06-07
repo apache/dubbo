@@ -21,17 +21,20 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
+import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
+import org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils;
 
 import com.alibaba.nacos.api.naming.NamingService;
+import com.alibaba.nacos.api.naming.listener.NamingEvent;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.api.naming.pojo.ListView;
 
-import java.util.Collections;
-import java.util.HashSet;
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.function.ThrowableConsumer.execute;
 import static org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils.createNamingService;
@@ -48,23 +51,25 @@ public class NacosServiceDiscovery implements ServiceDiscovery {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final NamingService namingService;
+    private final URL connectionURL;
 
     private final String group;
 
+    private NamingService namingService;
+
     public NacosServiceDiscovery(URL connectionURL) {
-        this.namingService = createNamingService(connectionURL);
+        this.connectionURL = connectionURL;
         this.group = getGroup(connectionURL);
     }
 
     @Override
     public void start() {
-        // DO NOTHING
+        this.namingService = createNamingService(connectionURL);
     }
 
     @Override
     public void stop() {
-        // DO NOTHING
+        this.namingService = null;
     }
 
     @Override
@@ -99,13 +104,33 @@ public class NacosServiceDiscovery implements ServiceDiscovery {
     }
 
     @Override
-    public List<ServiceInstance>  getInstances(String serviceName) throws NullPointerException {
-        return Collections.emptyList();
+    public List<ServiceInstance> getInstances(String serviceName) throws NullPointerException {
+        return ThrowableFunction.execute(namingService, service ->
+                service.selectInstances(serviceName, true)
+                        .stream().map(NacosNamingServiceUtils::toServiceInstance)
+                        .collect(Collectors.toList())
+        );
     }
 
     @Override
     public void addServiceInstancesChangedListener(String serviceName, ServiceInstancesChangedListener listener)
             throws NullPointerException, IllegalArgumentException {
+        execute(namingService, service -> {
+            service.subscribe(serviceName, e -> { // Register Nacos EventListener
+                if (e instanceof NamingEvent) {
+                    NamingEvent event = (NamingEvent) e;
+                    handleEvent(event, listener);
+                }
+            });
+        });
+    }
 
+    private void handleEvent(NamingEvent event, ServiceInstancesChangedListener listener) {
+        String serviceName = event.getServiceName();
+        Collection<ServiceInstance> serviceInstances = event.getInstances()
+                .stream()
+                .map(NacosNamingServiceUtils::toServiceInstance)
+                .collect(Collectors.toList());
+        listener.onEvent(new ServiceInstancesChangedEvent(serviceName, serviceInstances));
     }
 }

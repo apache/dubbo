@@ -18,6 +18,7 @@ package org.apache.dubbo.registry.nacos.util;/*
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
 
 import com.alibaba.nacos.api.NacosFactory;
@@ -63,6 +64,22 @@ public class NacosNamingServiceUtils {
         instance.setEnabled(serviceInstance.isEnabled());
         instance.setHealthy(serviceInstance.isHealthy());
         return instance;
+    }
+
+    /**
+     * Convert the {@link Instance} to {@link ServiceInstance}
+     *
+     * @param instance {@link Instance}
+     * @return non-null
+     * @since 2.7.3
+     */
+    public static ServiceInstance toServiceInstance(Instance instance) {
+        DefaultServiceInstance serviceInstance = new DefaultServiceInstance(instance.getInstanceId(),
+                instance.getServiceName(), instance.getIp(), instance.getPort());
+        serviceInstance.setMetadata(instance.getMetadata());
+        serviceInstance.setEnabled(instance.isEnabled());
+        serviceInstance.setHealthy(instance.isHealthy());
+        return serviceInstance;
     }
 
     /**

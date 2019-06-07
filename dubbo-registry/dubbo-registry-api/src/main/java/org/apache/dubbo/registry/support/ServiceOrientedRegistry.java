@@ -61,7 +61,6 @@ import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoad
 import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
 import static org.apache.dubbo.common.utils.CollectionUtils.isNotEmpty;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
-import static org.apache.dubbo.common.utils.StringUtils.split;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getExportedServicesRevision;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getMetadataServiceURLsParams;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getProviderHost;
@@ -105,7 +104,7 @@ public class ServiceOrientedRegistry extends FailbackRegistry {
     private Set<String> buildSubscribedServices(URL url) {
         String subscribedServiceNames = url.getParameter(SUBSCRIBED_SERVICE_NAMES_KEY);
         return isBlank(subscribedServiceNames) ? emptySet() :
-                unmodifiableSet(of(split(subscribedServiceNames, ','))
+                unmodifiableSet(of(subscribedServiceNames.split(","))
                         .map(String::trim)
                         .filter(StringUtils::isNotEmpty)
                         .collect(toSet()));
@@ -228,13 +227,15 @@ public class ServiceOrientedRegistry extends FailbackRegistry {
         listener.notify(subscribedURLs);
     }
 
-
     private List<URL> getSubscribedURLs(URL subscribedURL, Collection<ServiceInstance> instances) {
 
         List<URL> subscribedURLs = new LinkedList<>();
 
         // local service instances could be mutable
-        List<ServiceInstance> serviceInstances = new ArrayList<>(instances);
+        List<ServiceInstance> serviceInstances = instances.stream()
+                .filter(ServiceInstance::isEnabled)
+                .filter(ServiceInstance::isHealthy)
+                .collect(Collectors.toList());
 
         /**
          * A caches all revisions of exported services in different {@link ServiceInstance}s
