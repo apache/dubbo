@@ -142,8 +142,8 @@ public class ZookeeperServiceDiscoveryTest {
         int requestSize = 5;
 
         Page<ServiceInstance> page = discovery.getInstances(SERVICE_NAME, offset, requestSize);
-        assertEquals(0, page.getRequestOffset());
-        assertEquals(5, page.getRequestSize());
+        assertEquals(0, page.getOffset());
+        assertEquals(5, page.getPageSize());
         assertEquals(3, page.getTotalSize());
         assertEquals(3, page.getData().size());
         assertTrue(page.hasData());
@@ -156,8 +156,8 @@ public class ZookeeperServiceDiscoveryTest {
         requestSize = 2;
 
         page = discovery.getInstances(SERVICE_NAME, offset, requestSize);
-        assertEquals(0, page.getRequestOffset());
-        assertEquals(2, page.getRequestSize());
+        assertEquals(0, page.getOffset());
+        assertEquals(2, page.getPageSize());
         assertEquals(3, page.getTotalSize());
         assertEquals(2, page.getData().size());
         assertTrue(page.hasData());
@@ -168,8 +168,8 @@ public class ZookeeperServiceDiscoveryTest {
 
         offset = 1;
         page = discovery.getInstances(SERVICE_NAME, offset, requestSize);
-        assertEquals(1, page.getRequestOffset());
-        assertEquals(2, page.getRequestSize());
+        assertEquals(1, page.getOffset());
+        assertEquals(2, page.getPageSize());
         assertEquals(3, page.getTotalSize());
         assertEquals(2, page.getData().size());
         assertTrue(page.hasData());
@@ -180,24 +180,24 @@ public class ZookeeperServiceDiscoveryTest {
 
         offset = 2;
         page = discovery.getInstances(SERVICE_NAME, offset, requestSize);
-        assertEquals(2, page.getRequestOffset());
-        assertEquals(2, page.getRequestSize());
+        assertEquals(2, page.getOffset());
+        assertEquals(2, page.getPageSize());
         assertEquals(3, page.getTotalSize());
         assertEquals(1, page.getData().size());
         assertTrue(page.hasData());
 
         offset = 3;
         page = discovery.getInstances(SERVICE_NAME, offset, requestSize);
-        assertEquals(3, page.getRequestOffset());
-        assertEquals(2, page.getRequestSize());
+        assertEquals(3, page.getOffset());
+        assertEquals(2, page.getPageSize());
         assertEquals(3, page.getTotalSize());
         assertEquals(0, page.getData().size());
         assertFalse(page.hasData());
 
         offset = 5;
         page = discovery.getInstances(SERVICE_NAME, offset, requestSize);
-        assertEquals(5, page.getRequestOffset());
-        assertEquals(2, page.getRequestSize());
+        assertEquals(5, page.getOffset());
+        assertEquals(2, page.getPageSize());
         assertEquals(3, page.getTotalSize());
         assertEquals(0, page.getData().size());
         assertFalse(page.hasData());

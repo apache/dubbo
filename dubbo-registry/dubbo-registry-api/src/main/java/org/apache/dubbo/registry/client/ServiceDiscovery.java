@@ -16,19 +16,16 @@
  */
 package org.apache.dubbo.registry.client;
 
-import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.common.utils.DefaultPage;
 import org.apache.dubbo.common.utils.Page;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static java.util.Collections.emptyList;
+import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableMap;
 
 /**
@@ -36,7 +33,6 @@ import static java.util.Collections.unmodifiableMap;
  *
  * @since 2.7.3
  */
-@SPI("composite")
 public interface ServiceDiscovery {
 
     // ==================================== Lifecycle ==================================== //
@@ -84,6 +80,15 @@ public interface ServiceDiscovery {
     // ==================================== Discovery ===================================== //
 
     /**
+     * Get the default size of pagination query
+     *
+     * @return the default value is 100
+     */
+    default int getDefaultPageSize() {
+        return 100;
+    }
+
+    /**
      * Gets all service names
      *
      * @return non-null read-only {@link Set}
@@ -97,17 +102,25 @@ public interface ServiceDiscovery {
      * @return non-null {@link List}
      * @throws NullPointerException if <code>serviceName</code> is <code>null</code> is <code>null</code>
      */
-    List<ServiceInstance> getInstances(String serviceName) throws NullPointerException;
+    default List<ServiceInstance> getInstances(String serviceName) throws NullPointerException {
 
-    /**
-     * Gets the total size of {@link #getInstances(String)} instances}
-     *
-     * @param serviceName the service name
-     * @return
-     * @throws NullPointerException if <code>serviceName</code> is <code>null</code> is <code>null</code>
-     */
-    default int getTotalSizeInstances(String serviceName) throws NullPointerException {
-        return getInstances(serviceName).size();
+        List<ServiceInstance> allInstances = new LinkedList<>();
+
+        int offset = 0;
+
+        int pageSize = getDefaultPageSize();
+
+        Page<ServiceInstance> page = getInstances(serviceName, offset, pageSize);
+
+        allInstances.addAll(page.getData());
+
+        while (page.hasNext()) {
+            offset += page.getDataSize();
+            page = getInstances(serviceName, offset, pageSize);
+            allInstances.addAll(page.getData());
+        }
+
+        return unmodifiableList(allInstances);
     }
 
     /**
@@ -116,14 +129,15 @@ public interface ServiceDiscovery {
      *
      * @param serviceName the service name
      * @param offset      the offset of request , the number "0" indicates first page
-     * @param requestSize the number of request, the {@link Integer#MAX_VALUE max value} indicates the range is unlimited
+     * @param pageSize    the number of request, the {@link Integer#MAX_VALUE max value} indicates the range is unlimited
      * @return non-null {@link Page} object
-     * @throws NullPointerException     if <code>serviceName</code> is <code>null</code> is <code>null</code>
-     * @throws IllegalArgumentException if <code>offset</code> or <code>requestSize</code> is negative number
+     * @throws NullPointerException          if <code>serviceName</code> is <code>null</code> is <code>null</code>
+     * @throws IllegalArgumentException      if <code>offset</code> or <code>pageSize</code> is negative number
+     * @throws UnsupportedOperationException if not supported
      */
-    default Page<ServiceInstance> getInstances(String serviceName, int offset, int requestSize) throws NullPointerException,
+    default Page<ServiceInstance> getInstances(String serviceName, int offset, int pageSize) throws NullPointerException,
             IllegalArgumentException {
-        return getInstances(serviceName, offset, requestSize, false);
+        return getInstances(serviceName, offset, pageSize, false);
     }
 
     /**
@@ -132,51 +146,16 @@ public interface ServiceDiscovery {
      *
      * @param serviceName the service name
      * @param offset      the offset of request , the number "0" indicates first page
-     * @param requestSize the number of request, the {@link Integer#MAX_VALUE max value} indicates the range is unlimited
+     * @param pageSize    the number of request, the {@link Integer#MAX_VALUE max value} indicates the range is unlimited
      * @param healthyOnly if <code>true</code> , filter healthy instances only
      * @return non-null {@link Page} object
-     * @throws NullPointerException     if <code>serviceName</code> is <code>null</code> is <code>null</code>
-     * @throws IllegalArgumentException if <code>offset</code> or <code>requestSize</code> is negative number
+     * @throws NullPointerException          if <code>serviceName</code> is <code>null</code> is <code>null</code>
+     * @throws IllegalArgumentException      if <code>offset</code> or <code>pageSize</code> is negative number
+     * @throws UnsupportedOperationException if not supported
      */
-    default Page<ServiceInstance> getInstances(String serviceName, int offset, int requestSize, boolean healthyOnly) throws
-            NullPointerException, IllegalArgumentException {
-
-        List<ServiceInstance> serviceInstances = getInstances(serviceName);
-
-        DefaultPage<ServiceInstance> page = new DefaultPage(offset, requestSize);
-
-        int totalElements = getTotalSizeInstances(serviceName);
-
-        boolean hasMore = totalElements > offset + requestSize;
-
-        int fromIndex = offset < totalElements ? offset : -1;
-
-        int endIndex = hasMore ? offset + requestSize : totalElements;
-
-        List<ServiceInstance> data = fromIndex < 0 ? emptyList() :
-                new ArrayList<>(serviceInstances.subList(fromIndex, endIndex));
-
-        Iterator<ServiceInstance> iterator = data.iterator();
-
-        while (iterator.hasNext()) {
-            ServiceInstance serviceInstance = iterator.next();
-            if (!serviceInstance.isEnabled()) { // remove disabled instance
-                iterator.remove();
-                continue;
-            }
-
-            if (healthyOnly) {
-                if (!serviceInstance.isHealthy()) {  // remove unhealthy instance
-                    iterator.remove();
-                    continue;
-                }
-            }
-        }
-
-        page.setData(data);
-        page.setTotalSize(totalElements);
-
-        return page;
+    default Page<ServiceInstance> getInstances(String serviceName, int offset, int pageSize, boolean healthyOnly) throws
+            NullPointerException, IllegalArgumentException, UnsupportedOperationException {
+        throw new UnsupportedOperationException("Current implementation does not support pagination query method.");
     }
 
     /**
@@ -187,8 +166,9 @@ public interface ServiceDiscovery {
      * @param requestSize  the number of request, the {@link Integer#MAX_VALUE max value} indicates the range is unlimited
      * @return non-null read-only {@link Map} whose key is the service name and value is
      * the {@link Page pagination} of {@link ServiceInstance service instances}
-     * @throws NullPointerException     if <code>serviceName</code> is <code>null</code> is <code>null</code>
-     * @throws IllegalArgumentException if <code>offset</code> or <code>requestSize</code> is negative number
+     * @throws NullPointerException          if <code>serviceName</code> is <code>null</code> is <code>null</code>
+     * @throws IllegalArgumentException      if <code>offset</code> or <code>requestSize</code> is negative number
+     * @throws UnsupportedOperationException if not supported
      */
     default Map<String, Page<ServiceInstance>> getInstances(Iterable<String> serviceNames, int offset, int requestSize) throws
             NullPointerException, IllegalArgumentException {

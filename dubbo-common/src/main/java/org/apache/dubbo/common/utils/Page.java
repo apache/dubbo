@@ -30,21 +30,28 @@ public interface Page<T> {
      *
      * @return positive integer
      */
-    int getRequestOffset();
+    int getOffset();
 
     /**
-     * Gets the size of request for query
+     * Gets the size of request for pagination query
      *
      * @return positive integer
      */
-    int getRequestSize();
+    int getPageSize();
 
     /**
-     * Returns the total amount of elements.
+     * Gets the total amount of elements.
      *
      * @return the total amount of elements
      */
     int getTotalSize();
+
+    /**
+     * Get the number of total pages.
+     *
+     * @return the number of total pages.
+     */
+    int getTotalPages();
 
     /**
      * The data of current page
@@ -61,6 +68,13 @@ public interface Page<T> {
     default int getDataSize() {
         return getData().size();
     }
+
+    /**
+     * It indicates has next page or not
+     *
+     * @return if has , return <code>true</code>, or <code>false</code>
+     */
+    boolean hasNext();
 
     /**
      * Returns whether the page has data at all.

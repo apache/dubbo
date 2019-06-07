@@ -193,18 +193,13 @@ class EventPublishingServiceDiscovery implements ServiceDiscovery {
     }
 
     @Override
-    public int getTotalSizeInstances(String serviceName) throws NullPointerException {
-        return serviceDiscovery.getTotalSizeInstances(serviceName);
+    public Page<ServiceInstance> getInstances(String serviceName, int offset, int pageSize) throws NullPointerException, IllegalArgumentException {
+        return serviceDiscovery.getInstances(serviceName, offset, pageSize);
     }
 
     @Override
-    public Page<ServiceInstance> getInstances(String serviceName, int offset, int requestSize) throws NullPointerException, IllegalArgumentException {
-        return serviceDiscovery.getInstances(serviceName, offset, requestSize);
-    }
-
-    @Override
-    public Page<ServiceInstance> getInstances(String serviceName, int offset, int requestSize, boolean healthyOnly) throws NullPointerException, IllegalArgumentException {
-        return serviceDiscovery.getInstances(serviceName, offset, requestSize, healthyOnly);
+    public Page<ServiceInstance> getInstances(String serviceName, int offset, int pageSize, boolean healthyOnly) throws NullPointerException, IllegalArgumentException {
+        return serviceDiscovery.getInstances(serviceName, offset, pageSize, healthyOnly);
     }
 
     @Override

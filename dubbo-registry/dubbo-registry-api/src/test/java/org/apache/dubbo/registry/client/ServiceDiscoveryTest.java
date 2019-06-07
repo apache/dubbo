@@ -118,12 +118,12 @@ public class ServiceDiscoveryTest {
 
         // offset starts 0
         int offset = 0;
-        // requestSize > total elements
-        int requestSize = 5;
+        // pageSize > total elements
+        int pageSize = 5;
 
-        Page<ServiceInstance> page = serviceDiscovery.getInstances("A", offset, requestSize);
-        assertEquals(0, page.getRequestOffset());
-        assertEquals(5, page.getRequestSize());
+        Page<ServiceInstance> page = serviceDiscovery.getInstances("A", offset, pageSize);
+        assertEquals(0, page.getOffset());
+        assertEquals(5, page.getPageSize());
         assertEquals(3, page.getTotalSize());
         assertEquals(3, page.getData().size());
         assertTrue(page.hasData());
@@ -132,12 +132,12 @@ public class ServiceDiscoveryTest {
             assertTrue(instances.contains(instance));
         }
 
-        // requestSize < total elements
-        requestSize = 2;
+        // pageSize < total elements
+        pageSize = 2;
 
-        page = serviceDiscovery.getInstances("A", offset, requestSize);
-        assertEquals(0, page.getRequestOffset());
-        assertEquals(2, page.getRequestSize());
+        page = serviceDiscovery.getInstances("A", offset, pageSize);
+        assertEquals(0, page.getOffset());
+        assertEquals(2, page.getPageSize());
         assertEquals(3, page.getTotalSize());
         assertEquals(2, page.getData().size());
         assertTrue(page.hasData());
@@ -147,9 +147,9 @@ public class ServiceDiscoveryTest {
         }
 
         offset = 1;
-        page = serviceDiscovery.getInstances("A", offset, requestSize);
-        assertEquals(1, page.getRequestOffset());
-        assertEquals(2, page.getRequestSize());
+        page = serviceDiscovery.getInstances("A", offset, pageSize);
+        assertEquals(1, page.getOffset());
+        assertEquals(2, page.getPageSize());
         assertEquals(3, page.getTotalSize());
         assertEquals(2, page.getData().size());
         assertTrue(page.hasData());
@@ -159,25 +159,25 @@ public class ServiceDiscoveryTest {
         }
 
         offset = 2;
-        page = serviceDiscovery.getInstances("A", offset, requestSize);
-        assertEquals(2, page.getRequestOffset());
-        assertEquals(2, page.getRequestSize());
+        page = serviceDiscovery.getInstances("A", offset, pageSize);
+        assertEquals(2, page.getOffset());
+        assertEquals(2, page.getPageSize());
         assertEquals(3, page.getTotalSize());
         assertEquals(1, page.getData().size());
         assertTrue(page.hasData());
 
         offset = 3;
-        page = serviceDiscovery.getInstances("A", offset, requestSize);
-        assertEquals(3, page.getRequestOffset());
-        assertEquals(2, page.getRequestSize());
+        page = serviceDiscovery.getInstances("A", offset, pageSize);
+        assertEquals(3, page.getOffset());
+        assertEquals(2, page.getPageSize());
         assertEquals(3, page.getTotalSize());
         assertEquals(0, page.getData().size());
         assertFalse(page.hasData());
 
         offset = 5;
-        page = serviceDiscovery.getInstances("A", offset, requestSize);
-        assertEquals(5, page.getRequestOffset());
-        assertEquals(2, page.getRequestSize());
+        page = serviceDiscovery.getInstances("A", offset, pageSize);
+        assertEquals(5, page.getOffset());
+        assertEquals(2, page.getPageSize());
         assertEquals(3, page.getTotalSize());
         assertEquals(0, page.getData().size());
         assertFalse(page.hasData());
@@ -204,8 +204,8 @@ public class ServiceDiscoveryTest {
         int requestSize = 5;
 
         Page<ServiceInstance> page = serviceDiscovery.getInstances("A", offset, requestSize, true);
-        assertEquals(0, page.getRequestOffset());
-        assertEquals(5, page.getRequestSize());
+        assertEquals(0, page.getOffset());
+        assertEquals(5, page.getPageSize());
         assertEquals(3, page.getTotalSize());
         assertEquals(2, page.getData().size());
         assertTrue(page.hasData());
@@ -219,8 +219,8 @@ public class ServiceDiscoveryTest {
 
         offset = 1;
         page = serviceDiscovery.getInstances("A", offset, requestSize, true);
-        assertEquals(1, page.getRequestOffset());
-        assertEquals(2, page.getRequestSize());
+        assertEquals(1, page.getOffset());
+        assertEquals(2, page.getPageSize());
         assertEquals(3, page.getTotalSize());
         assertEquals(1, page.getData().size());
         assertTrue(page.hasData());
@@ -231,24 +231,24 @@ public class ServiceDiscoveryTest {
 
         offset = 2;
         page = serviceDiscovery.getInstances("A", offset, requestSize, true);
-        assertEquals(2, page.getRequestOffset());
-        assertEquals(2, page.getRequestSize());
+        assertEquals(2, page.getOffset());
+        assertEquals(2, page.getPageSize());
         assertEquals(3, page.getTotalSize());
         assertEquals(0, page.getData().size());
         assertFalse(page.hasData());
 
         offset = 3;
         page = serviceDiscovery.getInstances("A", offset, requestSize, true);
-        assertEquals(3, page.getRequestOffset());
-        assertEquals(2, page.getRequestSize());
+        assertEquals(3, page.getOffset());
+        assertEquals(2, page.getPageSize());
         assertEquals(3, page.getTotalSize());
         assertEquals(0, page.getData().size());
         assertFalse(page.hasData());
 
         offset = 5;
         page = serviceDiscovery.getInstances("A", offset, requestSize, true);
-        assertEquals(5, page.getRequestOffset());
-        assertEquals(2, page.getRequestSize());
+        assertEquals(5, page.getOffset());
+        assertEquals(2, page.getPageSize());
         assertEquals(3, page.getTotalSize());
         assertEquals(0, page.getData().size());
         assertFalse(page.hasData());
