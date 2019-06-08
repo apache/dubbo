@@ -19,8 +19,6 @@ package org.apache.dubbo.rpc.protocol.jms;
 import java.io.Serializable;
 import java.net.SocketTimeoutException;
 
-import javax.jms.*;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.rpc.AppResponse;
@@ -31,6 +29,15 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 import org.apache.dubbo.rpc.protocol.jms.implementor.JmsImplementor;
+
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.Queue;
+import javax.jms.QueueConnection;
+import javax.jms.QueueConnectionFactory;
+import javax.jms.QueueSender;
+import javax.jms.QueueSession;
+import javax.jms.Session;
 
 /**
  * @author Kimmking
