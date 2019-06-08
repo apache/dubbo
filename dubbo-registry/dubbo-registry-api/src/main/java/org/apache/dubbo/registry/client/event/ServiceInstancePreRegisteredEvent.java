@@ -21,7 +21,8 @@ import org.apache.dubbo.registry.client.ServiceInstance;
 
 
 /**
- * The before-{@link ServiceDiscovery#register(ServiceInstance) register} event for {@link ServiceInstance}
+ * An event raised before a {@link ServiceInstance service instance}
+ * {@link ServiceDiscovery#register(ServiceInstance) registered}
  *
  * @since 2.7.3
  */

@@ -21,12 +21,11 @@ import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 
 import java.util.Collection;
-import java.util.EventObject;
 
 import static java.util.Collections.unmodifiableCollection;
 
 /**
- * The Service Instances Changed {@link EventObject Event} cause by service
+ * An event raised after the {@link ServiceInstance instances} of one service has been changed.
  *
  * @see ServiceInstancesChangedListener
  * @since 2.7.3

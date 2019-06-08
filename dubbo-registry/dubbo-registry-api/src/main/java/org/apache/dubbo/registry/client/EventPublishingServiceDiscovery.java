@@ -26,7 +26,9 @@ import org.apache.dubbo.registry.client.event.ServiceDiscoveryStartingEvent;
 import org.apache.dubbo.registry.client.event.ServiceDiscoveryStoppedEvent;
 import org.apache.dubbo.registry.client.event.ServiceDiscoveryStoppingEvent;
 import org.apache.dubbo.registry.client.event.ServiceInstancePreRegisteredEvent;
+import org.apache.dubbo.registry.client.event.ServiceInstancePreUnregisteredEvent;
 import org.apache.dubbo.registry.client.event.ServiceInstanceRegisteredEvent;
+import org.apache.dubbo.registry.client.event.ServiceInstanceUnregisteredEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 
 import java.util.List;
@@ -176,9 +178,9 @@ class EventPublishingServiceDiscovery implements ServiceDiscovery {
         requireNotStopped(UNREGISTER_ACTION);
 
         executeWithEvents(
-                empty(),
+                of(new ServiceInstancePreUnregisteredEvent(this, serviceInstance)),
                 () -> serviceDiscovery.unregister(serviceInstance),
-                empty()
+                of(new ServiceInstanceUnregisteredEvent(this, serviceInstance))
         );
     }
 

@@ -19,11 +19,8 @@ package org.apache.dubbo.registry.client.event;
 import org.apache.dubbo.event.Event;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 
-import java.util.EventObject;
-
 /**
- * The {@link ServiceDiscovery Service Discovery} Stopping {@link EventObject Event}
- * before {@link ServiceDiscovery#stop()} execution
+ * An event raised when the {@link ServiceDiscovery Service Discovery} is stopping.
  *
  * @see ServiceDiscovery#stop()
  * @since 2.7.3

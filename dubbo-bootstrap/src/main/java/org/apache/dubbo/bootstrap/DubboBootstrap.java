@@ -34,8 +34,6 @@ import org.apache.dubbo.config.builders.ReferenceBuilder;
 import org.apache.dubbo.config.builders.RegistryBuilder;
 import org.apache.dubbo.config.builders.ServiceBuilder;
 import org.apache.dubbo.config.context.ConfigManager;
-import org.apache.dubbo.config.event.DubboServiceDestroyedEvent;
-import org.apache.dubbo.config.event.ServiceConfigExportedEvent;
 import org.apache.dubbo.config.metadata.ConfigurableMetadataServiceExporter;
 import org.apache.dubbo.event.EventDispatcher;
 import org.apache.dubbo.event.EventListener;
@@ -43,9 +41,6 @@ import org.apache.dubbo.metadata.MetadataServiceExporter;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
-import org.apache.dubbo.registry.client.event.ServiceDiscoveryStartedEvent;
-import org.apache.dubbo.registry.client.event.ServiceDiscoveryStoppedEvent;
-import org.apache.dubbo.registry.client.event.ServiceInstanceRegisteredEvent;
 import org.apache.dubbo.registry.support.ServiceOrientedRegistry;
 
 import java.util.HashMap;
@@ -234,8 +229,6 @@ public class DubboBootstrap {
 
         initReferenceConfigs();
 
-        initEventListeners();
-
         clearBuilders();
 
         initialized = true;
@@ -416,48 +409,6 @@ public class DubboBootstrap {
     private void initReferenceConfigs() {
         this.referenceConfigs = buildReferenceConfigs();
         this.referenceConfigs.values().forEach(this::initReferenceConfig);
-    }
-
-    private void initEventListeners() {
-        addEventListener(new EventListener<ServiceInstanceRegisteredEvent>() {
-            @Override
-            public void onEvent(ServiceInstanceRegisteredEvent event) {
-                if (logger.isInfoEnabled()) {
-                    logger.info(event.getServiceInstance() + " has been registered.");
-                }
-
-            }
-        }).addEventListener(new EventListener<ServiceDiscoveryStartedEvent>() {
-            @Override
-            public void onEvent(ServiceDiscoveryStartedEvent event) {
-                if (logger.isInfoEnabled()) {
-                    logger.info(event.getServiceDiscovery() + " has been started.");
-                }
-            }
-        }).addEventListener(new EventListener<ServiceConfigExportedEvent>() {
-            @Override
-            public void onEvent(ServiceConfigExportedEvent event) {
-                if (logger.isInfoEnabled()) {
-                    logger.info(event.getServiceConfig().toString() + " has been exported.");
-                }
-            }
-        }).addEventListener(new EventListener<ServiceDiscoveryStoppedEvent>() {
-            @Override
-            public void onEvent(ServiceDiscoveryStoppedEvent event) {
-                if (logger.isInfoEnabled()) {
-                    logger.info(event.getServiceDiscovery() + " has been stopped.");
-                }
-            }
-        }).addEventListener(new EventListener<DubboServiceDestroyedEvent>() {
-            @Override
-            public void onEvent(DubboServiceDestroyedEvent event) {
-                stop();
-                if (logger.isInfoEnabled()) {
-                    logger.info(NAME + " has been destroyed.");
-                }
-            }
-        });
-
     }
 
     /**

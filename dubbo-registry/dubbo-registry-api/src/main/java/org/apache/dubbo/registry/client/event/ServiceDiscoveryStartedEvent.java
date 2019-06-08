@@ -19,11 +19,8 @@ package org.apache.dubbo.registry.client.event;
 import org.apache.dubbo.event.Event;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 
-import java.util.EventObject;
-
 /**
- * The {@link ServiceDiscovery Service Discovery} Started {@link EventObject Event}
- * after {@link ServiceDiscovery#start()} execution
+ * An event raised after the {@link ServiceDiscovery Service Discovery} started
  *
  * @see ServiceDiscovery#start()
  * @since 2.7.3

@@ -22,13 +22,14 @@ import org.apache.dubbo.registry.client.ServiceInstance;
 
 /**
  * An event raised after a {@link ServiceInstance service instance}
- * {@link ServiceDiscovery#register(ServiceInstance) registered}
+ * {@link ServiceDiscovery#unregister(ServiceInstance) unregistered}
  *
+ * @see ServiceInstanceEvent
  * @since 2.7.3
  */
-public class ServiceInstanceRegisteredEvent extends ServiceInstanceEvent {
+public class ServiceInstanceUnregisteredEvent extends ServiceInstanceEvent {
 
-    public ServiceInstanceRegisteredEvent(Object source, ServiceInstance serviceInstance) {
+    public ServiceInstanceUnregisteredEvent(Object source, ServiceInstance serviceInstance) {
         super(source, serviceInstance);
     }
 }
