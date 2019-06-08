@@ -23,6 +23,7 @@ import org.apache.dubbo.remoting.Constants;
 public class UrlUtils {
     public static int getIdleTimeout(URL url) {
         int heartBeat = getHeartbeat(url);
+        // idleTimeout should be at least more than twice heartBeat because possible retries of client.
         int idleTimeout = url.getParameter(Constants.HEARTBEAT_TIMEOUT_KEY, heartBeat * 3);
         if (idleTimeout < heartBeat * 2) {
             throw new IllegalStateException("idleTimeout < heartbeatInterval * 2");

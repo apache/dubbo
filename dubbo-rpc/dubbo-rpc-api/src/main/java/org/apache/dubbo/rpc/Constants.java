@@ -84,10 +84,6 @@ public interface Constants {
 
     String ASYNC_KEY = "async";
 
-    String FUTURE_GENERATED_KEY = "future_generated";
-
-    String FUTURE_RETURNTYPE_KEY = "future_returntype";
-
     String RETURN_KEY = "return";
 
     String TOKEN_KEY = "token";

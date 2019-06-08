@@ -33,13 +33,16 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * NettyServerHandler
+ * NettyServerHandler.
  */
 @io.netty.channel.ChannelHandler.Sharable
 public class NettyServerHandler extends ChannelDuplexHandler {
     private static final Logger logger = LoggerFactory.getLogger(NettyServerHandler.class);
-
-    private final Map<String, Channel> channels = new ConcurrentHashMap<String, Channel>(); // <ip:port, channel>
+    /**
+     * the cache for alive worker channel.
+     * <ip:port, dubbo channel>
+     */
+    private final Map<String, Channel> channels = new ConcurrentHashMap<String, Channel>();
 
     private final URL url;
 
@@ -108,6 +111,7 @@ public class NettyServerHandler extends ChannelDuplexHandler {
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        // server will close channel when server don't receive any heartbeat from client util timeout.
         if (evt instanceof IdleStateEvent) {
             NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
             try {

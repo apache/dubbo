@@ -45,24 +45,24 @@ public class ClientReconnectTest {
         {
             int port = NetUtils.getAvailablePort();
             Client client = startClient(port, 200);
-            Assertions.assertEquals(false, client.isConnected());
+            Assertions.assertFalse(client.isConnected());
             Server server = startServer(port);
             for (int i = 0; i < 100 && !client.isConnected(); i++) {
                 Thread.sleep(10);
             }
-            Assertions.assertEquals(true, client.isConnected());
+            Assertions.assertTrue(client.isConnected());
             client.close(2000);
             server.close(2000);
         }
         {
             int port = NetUtils.getAvailablePort();
             Client client = startClient(port, 20000);
-            Assertions.assertEquals(false, client.isConnected());
+            Assertions.assertFalse(client.isConnected());
             Server server = startServer(port);
             for (int i = 0; i < 5; i++) {
                 Thread.sleep(200);
             }
-            Assertions.assertEquals(false, client.isConnected());
+            Assertions.assertFalse(client.isConnected());
             client.close(2000);
             server.close(2000);
         }

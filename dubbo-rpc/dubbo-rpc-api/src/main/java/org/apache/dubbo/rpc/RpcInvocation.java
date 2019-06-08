@@ -93,7 +93,7 @@ public class RpcInvocation implements Invocation, Serializable {
     }
 
     public RpcInvocation(Method method, Object[] arguments) {
-        this(method.getName(), method.getParameterTypes(), arguments, null, null);
+        this(method, arguments, null);
     }
 
     public RpcInvocation(Method method, Object[] arguments, Map<String, String> attachment) {
@@ -162,6 +162,7 @@ public class RpcInvocation implements Invocation, Serializable {
         this.attachments = attachments == null ? new HashMap<String, String>() : attachments;
     }
 
+    @Override
     public void setAttachment(String key, String value) {
         if (attachments == null) {
             attachments = new HashMap<String, String>();
@@ -169,6 +170,7 @@ public class RpcInvocation implements Invocation, Serializable {
         attachments.put(key, value);
     }
 
+    @Override
     public void setAttachmentIfAbsent(String key, String value) {
         if (attachments == null) {
             attachments = new HashMap<String, String>();
