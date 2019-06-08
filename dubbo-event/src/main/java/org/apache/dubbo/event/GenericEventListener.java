@@ -30,7 +30,17 @@ import static java.util.stream.Stream.of;
 import static org.apache.dubbo.common.function.ThrowableFunction.execute;
 
 /**
- * An abstract class of {@link EventListener} for Generic events
+ * An abstract class of {@link EventListener} for Generic events, the sub class could add more {@link Event event}
+ * handle methods, rather than only binds the {@link EventListener#onEvent(Event)} method that is declared to be
+ * <code>final</code> the implementation can't override. It's notable that all {@link Event event} handle methods must
+ * meet following conditions:
+ * <ul>
+ * <li>not {@link #onEvent(Event)} method</li>
+ * <li><code>public</code> accessibility</li>
+ * <li><code>void</code> return type</li>
+ * <li>no {@link Exception exception} declaration</li>
+ * <li>only one {@link Event} type argument</li>
+ * </ul>
  *
  * @see Event
  * @see EventListener
@@ -54,7 +64,6 @@ public abstract class GenericEventListener implements EventListener<Event> {
     private Map<Class<?>, Set<Method>> findHandleEventMethods() {
         // Event class for key, the eventMethods' Set as value
         Map<Class<?>, Set<Method>> eventMethods = new HashMap<>();
-
         of(getClass().getMethods())
                 .filter(this::isHandleEventMethod)
                 .forEach(method -> {
@@ -75,7 +84,7 @@ public abstract class GenericEventListener implements EventListener<Event> {
     }
 
     /**
-     * Method must meet these conditions:
+     * The {@link Event event} handle methods must meet following conditions:
      * <ul>
      * <li>not {@link #onEvent(Event)} method</li>
      * <li><code>public</code> accessibility</li>
