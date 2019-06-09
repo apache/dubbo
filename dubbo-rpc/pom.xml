@@ -43,7 +43,7 @@
         <module>dubbo-rpc-redis</module>
         <module>dubbo-rpc-rest</module>
         <module>dubbo-rpc-jms</module>
-        <module>dubbo-rpc-jms-implementor-activemq</module>
+        <module>dubbo-rpc-jms-activemq</module>
         <module>dubbo-rpc-xml</module>
     </modules>
 </project>

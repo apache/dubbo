@@ -228,7 +228,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-rpc-jms-implementor-activemq</artifactId>
+            <artifactId>dubbo-rpc-jms-activemq</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
             <optional>true</optional>

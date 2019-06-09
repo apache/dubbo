@@ -21,7 +21,7 @@
 		<artifactId>dubbo-rpc</artifactId>
 		<version>${revision}</version>
 	</parent>
-	<artifactId>dubbo-rpc-jms-implementor-activemq</artifactId>
+	<artifactId>dubbo-rpc-jms-activemq</artifactId>
 	<packaging>jar</packaging>
 	<name>${project.artifactId}</name>
 	<description>The jms ActiveMQ implementor module of dubbo project</description>
