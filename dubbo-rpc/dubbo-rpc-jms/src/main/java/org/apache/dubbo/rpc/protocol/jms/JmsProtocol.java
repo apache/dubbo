@@ -23,9 +23,6 @@ import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.AbstractProtocol;
 
-/**
- * @author Kimmking
- */
 public class JmsProtocol extends AbstractProtocol {
 
     private ProxyFactory proxyFactory;

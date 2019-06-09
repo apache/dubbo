@@ -27,9 +27,6 @@ import org.apache.dubbo.rpc.protocol.jms.JmsServiceImpl.MyException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-/**
- * @author Kimmking
- */
 public class JmsProtocolTest {
     
     @Test

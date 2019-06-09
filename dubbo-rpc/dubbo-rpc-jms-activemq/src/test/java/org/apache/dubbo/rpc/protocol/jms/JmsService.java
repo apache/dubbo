@@ -17,9 +17,6 @@
 package org.apache.dubbo.rpc.protocol.jms;
 
 
-/**
- * @author Kimmking
- */
 public interface JmsService {
     
     String sayHello(String name);

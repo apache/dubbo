@@ -38,10 +38,6 @@ import javax.jms.QueueConnectionFactory;
 import javax.jms.QueueSession;
 import javax.jms.Session;
 
-/**
- * @author Kimmking
- * @author ding.lid
- */
 public class JmsRpcExporter<T> extends AbstractExporter<T> {
 
     private static final Logger logger = LoggerFactory.getLogger(JmsRpcExporter.class);

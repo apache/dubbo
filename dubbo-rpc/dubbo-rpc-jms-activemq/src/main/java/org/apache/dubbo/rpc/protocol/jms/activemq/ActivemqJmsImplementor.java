@@ -22,9 +22,6 @@ import org.apache.activemq.ActiveMQConnectionFactory;
 
 import javax.jms.QueueConnectionFactory;
 
-/**
- * @author ding.lid
- */
 public class ActivemqJmsImplementor implements JmsImplementor {
     public QueueConnectionFactory getQueueConnectionFactory(URL url) {
         return new ActiveMQConnectionFactory("tcp://" + url.getIp() + ":" + url.getPort());

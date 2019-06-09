@@ -39,9 +39,6 @@ import javax.jms.QueueSender;
 import javax.jms.QueueSession;
 import javax.jms.Session;
 
-/**
- * @author Kimmking
- */
 public class JmsRpcInvoker<T> extends AbstractInvoker<T> {
 
     protected static final String JMS_EXCEPTION_PREFIX = JMSException.class.getPackage().getName() + ".";

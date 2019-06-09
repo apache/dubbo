@@ -16,9 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.jms;
 
-/**
- * @author Kimmking
- */
 public class JmsServiceImpl implements JmsService {
     
     private boolean called;

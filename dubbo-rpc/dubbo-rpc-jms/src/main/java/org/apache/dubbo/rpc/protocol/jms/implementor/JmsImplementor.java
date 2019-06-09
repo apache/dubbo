@@ -21,9 +21,6 @@ import org.apache.dubbo.common.extension.SPI;
 
 import javax.jms.QueueConnectionFactory;
 
-/**
- * @author ding.lid
- */
 @SPI("activemq")
 public interface JmsImplementor {
     QueueConnectionFactory getQueueConnectionFactory(URL url);
