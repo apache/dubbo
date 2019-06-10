@@ -19,6 +19,7 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.remoting.Constants;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
@@ -53,6 +54,9 @@ public class AbstractReferenceConfigTest {
     @Test
     public void testGeneric() throws Exception {
         ReferenceConfig referenceConfig = new ReferenceConfig();
+        Map<String, String> metaData = referenceConfig.getMetaData();
+        Assertions.assertEquals(null, metaData.get("generic"));
+
         referenceConfig.setGeneric(true);
         assertThat(referenceConfig.isGeneric(), is(true));
         Map<String, String> parameters = new HashMap<String, String>();
