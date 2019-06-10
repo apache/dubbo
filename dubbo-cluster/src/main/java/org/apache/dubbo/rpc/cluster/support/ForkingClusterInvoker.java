@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.support;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.threadlocal.NamedInternalThreadFactory;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -35,7 +34,14 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_FORKS;
+import static org.apache.dubbo.rpc.cluster.Constants.FORKS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+
 /**
+ * NOTICE! This implementation does not work well with async call.
+ *
  * Invoke a specific number of invokers concurrently, usually used for demanding real-time operations, but need to waste more service resources.
  *
  * <a href="http://en.wikipedia.org/wiki/Fork_(topology)">Fork</a>
@@ -59,14 +65,13 @@ public class ForkingClusterInvoker<T> extends AbstractClusterInvoker<T> {
         try {
             checkInvokers(invokers, invocation);
             final List<Invoker<T>> selected;
-            final int forks = getUrl().getParameter(Constants.FORKS_KEY, Constants.DEFAULT_FORKS);
-            final int timeout = getUrl().getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
+            final int forks = getUrl().getParameter(FORKS_KEY, DEFAULT_FORKS);
+            final int timeout = getUrl().getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT);
             if (forks <= 0 || forks >= invokers.size()) {
                 selected = invokers;
             } else {
                 selected = new ArrayList<>();
                 for (int i = 0; i < forks; i++) {
-                    // TODO. Add some comment here, refer chinese version for more details.
                     Invoker<T> invoker = select(loadbalance, invocation, invokers, selected);
                     if (!selected.contains(invoker)) {
                         //Avoid add the same invoker several times.

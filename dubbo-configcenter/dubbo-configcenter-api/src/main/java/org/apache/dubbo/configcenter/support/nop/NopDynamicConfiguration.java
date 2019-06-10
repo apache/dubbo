@@ -50,4 +50,9 @@ public class NopDynamicConfiguration implements DynamicConfiguration {
     public String getConfig(String key, String group, long timeout) throws IllegalStateException {
         return null;
     }
+
+    @Override
+    public String getConfigs(String key, String group, long timeout) throws IllegalStateException {
+        return null;
+    }
 }

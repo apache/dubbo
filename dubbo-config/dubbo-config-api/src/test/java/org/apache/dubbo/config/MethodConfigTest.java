@@ -17,24 +17,81 @@
 
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.config.annotation.Argument;
+import org.apache.dubbo.config.annotation.Method;
+import org.apache.dubbo.config.annotation.Reference;
 
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import static org.apache.dubbo.config.Constants.ON_INVOKE_INSTANCE_KEY;
+import static org.apache.dubbo.config.Constants.ON_RETURN_INSTANCE_KEY;
+import static org.apache.dubbo.config.Constants.ON_RETURN_METHOD_KEY;
+import static org.apache.dubbo.config.Constants.ON_THROW_INSTANCE_KEY;
+import static org.apache.dubbo.config.Constants.ON_THROW_METHOD_KEY;
+import static org.apache.dubbo.config.Constants.ON_INVOKE_METHOD_KEY;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 public class MethodConfigTest {
+    private static final String METHOD_NAME = "sayHello";
+    private static final int TIMEOUT = 1300;
+    private static final int RETRIES = 4;
+    private static final String LOADBALANCE = "random";
+    private static final boolean ASYNC = true;
+    private static final int ACTIVES = 3;
+    private static final int EXECUTES = 5;
+    private static final boolean DEPERECATED = true;
+    private static final boolean STICKY = true;
+    private static final String ONINVOKE = "i";
+    private static final String ONTHROW = "t";
+    private static final String ONRETURN = "r";
+    private static final String CACHE = "c";
+    private static final String VALIDATION = "v";
+    private static final int ARGUMENTS_INDEX = 24;
+    private static final boolean ARGUMENTS_CALLBACK = true;
+    private static final String ARGUMENTS_TYPE = "sss";
+
+    @Reference(methods = {@Method(name = METHOD_NAME, timeout = TIMEOUT, retries = RETRIES, loadbalance = LOADBALANCE, async = ASYNC,
+            actives = ACTIVES, executes = EXECUTES, deprecated = DEPERECATED, sticky = STICKY, oninvoke = ONINVOKE, onthrow = ONTHROW, onreturn = ONRETURN, cache = CACHE, validation = VALIDATION,
+            arguments = {@Argument(index = ARGUMENTS_INDEX, callback = ARGUMENTS_CALLBACK, type = ARGUMENTS_TYPE)})})
+    private String testField;
+
+    @Test
+    public void testStaticConstructor() throws NoSuchFieldException {
+        Method[] methods = this.getClass().getDeclaredField("testField").getAnnotation(Reference.class).methods();
+        List<MethodConfig> methodConfigs = MethodConfig.constructMethodConfig(methods);
+        MethodConfig methodConfig = methodConfigs.get(0);
+
+        assertThat(METHOD_NAME, equalTo(methodConfig.getName()));
+        assertThat(TIMEOUT, equalTo(methodConfig.getTimeout().intValue()));
+        assertThat(RETRIES, equalTo(methodConfig.getRetries().intValue()));
+        assertThat(LOADBALANCE, equalTo(methodConfig.getLoadbalance()));
+        assertThat(ASYNC, equalTo(methodConfig.isAsync()));
+        assertThat(ACTIVES, equalTo(methodConfig.getActives().intValue()));
+        assertThat(EXECUTES, equalTo(methodConfig.getExecutes().intValue()));
+        assertThat(DEPERECATED, equalTo(methodConfig.getDeprecated()));
+        assertThat(STICKY, equalTo(methodConfig.getSticky()));
+        assertThat(ONINVOKE, equalTo(methodConfig.getOninvoke()));
+        assertThat(ONTHROW, equalTo(methodConfig.getOnthrow()));
+        assertThat(ONRETURN, equalTo(methodConfig.getOnreturn()));
+        assertThat(CACHE, equalTo(methodConfig.getCache()));
+        assertThat(VALIDATION, equalTo(methodConfig.getValidation()));
+        assertThat(ARGUMENTS_INDEX, equalTo(methodConfig.getArguments().get(0).getIndex().intValue()));
+        assertThat(ARGUMENTS_CALLBACK, equalTo(methodConfig.getArguments().get(0).isCallback()));
+        assertThat(ARGUMENTS_TYPE, equalTo(methodConfig.getArguments().get(0).getType()));
+    }
+
     @Test
     public void testName() throws Exception {
         MethodConfig method = new MethodConfig();
@@ -103,7 +160,7 @@ public class MethodConfigTest {
         assertThat(method.getOnreturn(), equalTo((Object) "on-return-object"));
         Map<String, Object> attribute = new HashMap<String, Object>();
         MethodConfig.appendAttributes(attribute, method);
-        assertThat(attribute, hasEntry((Object) Constants.ON_RETURN_INSTANCE_KEY, (Object) "on-return-object"));
+        assertThat(attribute, hasEntry((Object) ON_RETURN_INSTANCE_KEY, (Object) "on-return-object"));
         Map<String, String> parameters = new HashMap<String, String>();
         MethodConfig.appendParameters(parameters, method);
         assertThat(parameters.size(), is(0));
@@ -116,7 +173,7 @@ public class MethodConfigTest {
         assertThat(method.getOnreturnMethod(), equalTo("on-return-method"));
         Map<String, Object> attribute = new HashMap<String, Object>();
         MethodConfig.appendAttributes(attribute, method);
-        assertThat(attribute, hasEntry((Object) Constants.ON_RETURN_METHOD_KEY, (Object) "on-return-method"));
+        assertThat(attribute, hasEntry((Object) ON_RETURN_METHOD_KEY, (Object) "on-return-method"));
         Map<String, String> parameters = new HashMap<String, String>();
         MethodConfig.appendParameters(parameters, method);
         assertThat(parameters.size(), is(0));
@@ -129,7 +186,7 @@ public class MethodConfigTest {
         assertThat(method.getOnthrow(), equalTo((Object) "on-throw-object"));
         Map<String, Object> attribute = new HashMap<String, Object>();
         MethodConfig.appendAttributes(attribute, method);
-        assertThat(attribute, hasEntry((Object) Constants.ON_THROW_INSTANCE_KEY, (Object) "on-throw-object"));
+        assertThat(attribute, hasEntry((Object) ON_THROW_INSTANCE_KEY, (Object) "on-throw-object"));
         Map<String, String> parameters = new HashMap<String, String>();
         MethodConfig.appendParameters(parameters, method);
         assertThat(parameters.size(), is(0));
@@ -142,7 +199,7 @@ public class MethodConfigTest {
         assertThat(method.getOnthrowMethod(), equalTo("on-throw-method"));
         Map<String, Object> attribute = new HashMap<String, Object>();
         MethodConfig.appendAttributes(attribute, method);
-        assertThat(attribute, hasEntry((Object) Constants.ON_THROW_METHOD_KEY, (Object) "on-throw-method"));
+        assertThat(attribute, hasEntry((Object) ON_THROW_METHOD_KEY, (Object) "on-throw-method"));
         Map<String, String> parameters = new HashMap<String, String>();
         MethodConfig.appendParameters(parameters, method);
         assertThat(parameters.size(), is(0));
@@ -155,7 +212,7 @@ public class MethodConfigTest {
         assertThat(method.getOninvoke(), equalTo((Object) "on-invoke-object"));
         Map<String, Object> attribute = new HashMap<String, Object>();
         MethodConfig.appendAttributes(attribute, method);
-        assertThat(attribute, hasEntry((Object) Constants.ON_INVOKE_INSTANCE_KEY, (Object) "on-invoke-object"));
+        assertThat(attribute, hasEntry((Object) ON_INVOKE_INSTANCE_KEY, (Object) "on-invoke-object"));
         Map<String, String> parameters = new HashMap<String, String>();
         MethodConfig.appendParameters(parameters, method);
         assertThat(parameters.size(), is(0));
@@ -168,7 +225,7 @@ public class MethodConfigTest {
         assertThat(method.getOninvokeMethod(), equalTo("on-invoke-method"));
         Map<String, Object> attribute = new HashMap<String, Object>();
         MethodConfig.appendAttributes(attribute, method);
-        assertThat(attribute, hasEntry((Object) Constants.ON_INVOKE_METHOD_KEY, (Object) "on-invoke-method"));
+        assertThat(attribute, hasEntry((Object) ON_INVOKE_METHOD_KEY, (Object) "on-invoke-method"));
         Map<String, String> parameters = new HashMap<String, String>();
         MethodConfig.appendParameters(parameters, method);
         assertThat(parameters.size(), is(0));

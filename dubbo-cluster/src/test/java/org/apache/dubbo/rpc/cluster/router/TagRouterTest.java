@@ -19,6 +19,8 @@ package org.apache.dubbo.rpc.cluster.router;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
+import org.apache.dubbo.rpc.cluster.router.tag.model.TagRouterRule;
+import org.apache.dubbo.rpc.cluster.router.tag.model.TagRuleParser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -62,5 +64,48 @@ public class TagRouterTest {
 
     private void setData(String path, String data) throws Exception {
         client.setData().forPath(path, data.getBytes());
+    }
+
+    /**
+     * TagRouterRule parse test when the tags addresses is null
+     *
+     * <pre>
+     *     ~ -> null
+     *     null -> null
+     * </pre>
+     */
+    @Test
+    public void tagRouterRuleParseTest(){
+        String tagRouterRuleConfig = "---\n" +
+                "force: false\n" +
+                "runtime: true\n" +
+                "enabled: false\n" +
+                "priority: 1\n" +
+                "key: demo-provider\n" +
+                "tags:\n" +
+                "  - name: tag1\n" +
+                "    addresses: null\n" +
+                "  - name: tag2\n" +
+                "    addresses: [\"30.5.120.37:20880\"]\n" +
+                "  - name: tag3\n" +
+                "    addresses: []\n" +
+                "  - name: tag4\n" +
+                "    addresses: ~\n" +
+                "...";
+
+        TagRouterRule tagRouterRule = TagRuleParser.parse(tagRouterRuleConfig);
+
+        // assert tags
+        assert tagRouterRule.getTagNames().contains("tag1");
+        assert tagRouterRule.getTagNames().contains("tag2");
+        assert tagRouterRule.getTagNames().contains("tag3");
+        assert tagRouterRule.getTagNames().contains("tag4");
+        // assert addresses
+        assert tagRouterRule.getAddresses().contains("30.5.120.37:20880");
+        assert tagRouterRule.getTagnameToAddresses().get("tag1")==null;
+        assert tagRouterRule.getTagnameToAddresses().get("tag2").size()==1;
+        assert tagRouterRule.getTagnameToAddresses().get("tag3")==null;
+        assert tagRouterRule.getTagnameToAddresses().get("tag4")==null;
+        assert tagRouterRule.getAddresses().size()==1;
     }
 }

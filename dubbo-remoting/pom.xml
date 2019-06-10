@@ -20,7 +20,7 @@
     <parent>
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-parent</artifactId>
-        <version>2.7.1-SNAPSHOT</version>
+        <version>${revision}</version>
     </parent>
     <artifactId>dubbo-remoting</artifactId>
     <packaging>pom</packaging>
@@ -38,5 +38,6 @@
         <module>dubbo-remoting-http</module>
         <module>dubbo-remoting-zookeeper</module>
         <module>dubbo-remoting-netty4</module>
+        <module>dubbo-remoting-etcd3</module>
     </modules>
 </project>

@@ -16,13 +16,16 @@
  */
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.apache.dubbo.config.Constants.NAME;
+import static org.apache.dubbo.config.Constants.ORGANIZATION;
+import static org.apache.dubbo.config.Constants.OWNER;
 
 /**
  * The module info
@@ -81,7 +84,7 @@ public class ModuleConfig extends AbstractConfig {
     }
 
     public void setName(String name) {
-        checkName(Constants.NAME, name);
+        checkName(NAME, name);
         this.name = name;
         if (StringUtils.isEmpty(id)) {
             id = name;
@@ -102,7 +105,7 @@ public class ModuleConfig extends AbstractConfig {
     }
 
     public void setOwner(String owner) {
-        checkName(Constants.OWNER, owner);
+        checkName(OWNER, owner);
         this.owner = owner;
     }
 
@@ -111,7 +114,7 @@ public class ModuleConfig extends AbstractConfig {
     }
 
     public void setOrganization(String organization) {
-        checkName(Constants.ORGANIZATION, organization);
+        checkName(ORGANIZATION, organization);
         this.organization = organization;
     }
 

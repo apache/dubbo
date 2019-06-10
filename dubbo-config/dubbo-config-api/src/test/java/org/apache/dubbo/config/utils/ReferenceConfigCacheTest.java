@@ -27,7 +27,7 @@ public class ReferenceConfigCacheTest {
     @BeforeEach
     public void setUp() throws Exception {
         MockReferenceConfig.setCounter(0);
-        ReferenceConfigCache.cacheHolder.clear();
+        ReferenceConfigCache.CACHE_HOLDER.clear();
     }
 
     @Test
@@ -56,6 +56,14 @@ public class ReferenceConfigCacheTest {
         value = cache.get(configCopy);
         assertTrue(configCopy.isGetMethodRun());
         assertEquals("1", value);
+    }
+
+    @Test
+    public void testGetCacheWithKey() throws Exception {
+        ReferenceConfigCache cache = ReferenceConfigCache.getCache();
+        MockReferenceConfig config = buildMockReferenceConfig("FooService", "group1", "1.0.0");
+        String value = cache.get(config);
+        assertEquals(value, cache.get("group1/FooService:1.0.0", String.class));
     }
 
     @Test

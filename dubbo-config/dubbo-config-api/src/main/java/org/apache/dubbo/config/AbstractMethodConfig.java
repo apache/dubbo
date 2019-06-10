@@ -16,11 +16,17 @@
  */
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 
 import java.util.Map;
+
+import static org.apache.dubbo.rpc.cluster.Constants.LOADBALANCE_KEY;
+import static org.apache.dubbo.rpc.Constants.FAIL_PREFIX;
+import static org.apache.dubbo.rpc.Constants.FORCE_PREFIX;
+import static org.apache.dubbo.rpc.Constants.MOCK_KEY;
+import static org.apache.dubbo.rpc.Constants.RETURN_PREFIX;
+import static org.apache.dubbo.rpc.Constants.THROW_PREFIX;
 
 /**
  * AbstractMethodConfig
@@ -126,7 +132,7 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
     }
 
     public void setLoadbalance(String loadbalance) {
-        checkExtension(LoadBalance.class, Constants.LOADBALANCE_KEY, loadbalance);
+        checkExtension(LoadBalance.class, LOADBALANCE_KEY, loadbalance);
         this.loadbalance = loadbalance;
     }
 
@@ -164,12 +170,12 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
             return;
         }
 
-        if (mock.startsWith(Constants.RETURN_PREFIX) || mock.startsWith(Constants.THROW_PREFIX + " ")) {
-            checkLength(Constants.MOCK_KEY, mock);
-        } else if (mock.startsWith(Constants.FAIL_PREFIX) || mock.startsWith(Constants.FORCE_PREFIX)) {
-            checkNameHasSymbol(Constants.MOCK_KEY, mock);
+        if (mock.startsWith(RETURN_PREFIX) || mock.startsWith(THROW_PREFIX + " ")) {
+            checkLength(MOCK_KEY, mock);
+        } else if (mock.startsWith(FAIL_PREFIX) || mock.startsWith(FORCE_PREFIX)) {
+            checkNameHasSymbol(MOCK_KEY, mock);
         } else {
-            checkName(Constants.MOCK_KEY, mock);
+            checkName(MOCK_KEY, mock);
         }
         this.mock = mock;
     }
@@ -178,7 +184,7 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
         if (mock == null) {
             setMock((String) null);
         } else {
-            setMock(String.valueOf(mock));
+            setMock(mock.toString());
         }
     }
 

@@ -16,11 +16,11 @@
  */
 package org.apache.dubbo.rpc.protocol.rest;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.Exporter;
+import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.Result;
@@ -35,14 +35,17 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+
+import static org.apache.dubbo.rpc.protocol.rest.Constants.EXTENSION_KEY;
 
 public class RestProtocolTest {
     private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension("rest");
     private ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
     private final int availablePort = NetUtils.getAvailablePort();
-    private final URL exportUrl = URL.valueOf("rest://127.0.0.1:" + availablePort + "/rest");
+    private final URL exportUrl = URL.valueOf("rest://127.0.0.1:" + availablePort + "/rest?interface=org.apache.dubbo.rpc.protocol.rest.DemoService");
 
     @AfterEach
     public void tearDown() {
@@ -50,15 +53,54 @@ public class RestProtocolTest {
     }
 
     @Test
+    public void testRestProtocol() {
+        URL url = URL.valueOf("rest://127.0.0.1:5342/rest/say?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.DemoService");
+        DemoServiceImpl server = new DemoServiceImpl();
+        ProviderModel providerModel = new ProviderModel(url.getPathKey(), server, DemoService.class);
+        ApplicationModel.initProviderModel(url.getPathKey(), providerModel);
+
+        Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, url));
+        Invoker<DemoService> invoker = protocol.refer(DemoService.class, url);
+        Assertions.assertFalse(server.isCalled());
+
+        DemoService client = proxy.getProxy(invoker);
+        String result = client.sayHello("haha");
+        Assertions.assertTrue(server.isCalled());
+        Assertions.assertEquals("Hello, haha", result);
+        invoker.destroy();
+        exporter.unexport();
+    }
+
+    @Test
+    public void testRestProtocolWithContextPath() {
+        DemoServiceImpl server = new DemoServiceImpl();
+        Assertions.assertFalse(server.isCalled());
+        URL url = URL.valueOf("rest://127.0.0.1:5341/a/b/c?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.DemoService");
+        ProviderModel providerModel = new ProviderModel(url.getPathKey(), server, DemoService.class);
+        ApplicationModel.initProviderModel(url.getPathKey(), providerModel);
+
+        Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, url));
+
+        url = URL.valueOf("rest://127.0.0.1:5341/a/b/c/?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.DemoService");
+        Invoker<DemoService> invoker = protocol.refer(DemoService.class, url);
+        DemoService client = proxy.getProxy(invoker);
+        String result = client.sayHello("haha");
+        Assertions.assertTrue(server.isCalled());
+        Assertions.assertEquals("Hello, haha", result);
+        invoker.destroy();
+        exporter.unexport();
+    }
+
+    @Test
     public void testExport() {
-        IDemoService server = new DemoService();
-        ProviderModel providerModel = new ProviderModel(exportUrl.getServiceKey(), server, IDemoService.class);
+        DemoService server = new DemoServiceImpl();
+        ProviderModel providerModel = new ProviderModel(exportUrl.getServiceKey(), server, DemoService.class);
         ApplicationModel.initProviderModel(exportUrl.getServiceKey(), providerModel);
 
         RpcContext.getContext().setAttachment("timeout", "200");
-        Exporter<IDemoService> exporter = protocol.export(proxy.getInvoker(server, IDemoService.class, exportUrl));
+        Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, exportUrl));
 
-        IDemoService demoService = this.proxy.getProxy(protocol.refer(IDemoService.class, exportUrl));
+        DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, exportUrl));
 
         Integer echoString = demoService.hello(1, 2);
         assertThat(echoString, is(3));
@@ -68,14 +110,14 @@ public class RestProtocolTest {
 
     @Test
     public void testNettyServer() {
-        IDemoService server = new DemoService();
-        ProviderModel providerModel = new ProviderModel(exportUrl.getServiceKey(), server, IDemoService.class);
+        DemoService server = new DemoServiceImpl();
+        ProviderModel providerModel = new ProviderModel(exportUrl.getServiceKey(), server, DemoService.class);
         ApplicationModel.initProviderModel(exportUrl.getServiceKey(), providerModel);
 
-        URL nettyUrl = exportUrl.addParameter(Constants.SERVER_KEY, "netty");
-        Exporter<IDemoService> exporter = protocol.export(proxy.getInvoker(new DemoService(), IDemoService.class, nettyUrl));
+        URL nettyUrl = exportUrl.addParameter(SERVER_KEY, "netty");
+        Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(new DemoServiceImpl(), DemoService.class, nettyUrl));
 
-        IDemoService demoService = this.proxy.getProxy(protocol.refer(IDemoService.class, nettyUrl));
+        DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));
 
         Integer echoString = demoService.hello(10, 10);
         assertThat(echoString, is(20));
@@ -86,27 +128,27 @@ public class RestProtocolTest {
     @Test
     public void testServletWithoutWebConfig() {
         Assertions.assertThrows(RpcException.class, () -> {
-            IDemoService server = new DemoService();
-            ProviderModel providerModel = new ProviderModel(exportUrl.getServiceKey(), server, IDemoService.class);
-            ApplicationModel.initProviderModel(exportUrl.getServiceKey(), providerModel);
+            DemoService server = new DemoServiceImpl();
+            ProviderModel providerModel = new ProviderModel(exportUrl.getServiceKey(), server, DemoService.class);
+            ApplicationModel.initProviderModel(exportUrl.getPathKey(), providerModel);
 
-            URL servletUrl = exportUrl.addParameter(Constants.SERVER_KEY, "servlet");
+            URL servletUrl = exportUrl.addParameter(SERVER_KEY, "servlet");
 
-            protocol.export(proxy.getInvoker(server, IDemoService.class, servletUrl));
+            protocol.export(proxy.getInvoker(server, DemoService.class, servletUrl));
         });
     }
 
     @Test
     public void testErrorHandler() {
         Assertions.assertThrows(RpcException.class, () -> {
-            IDemoService server = new DemoService();
-            ProviderModel providerModel = new ProviderModel(exportUrl.getServiceKey(), server, IDemoService.class);
+            DemoService server = new DemoServiceImpl();
+            ProviderModel providerModel = new ProviderModel(exportUrl.getServiceKey(), server, DemoService.class);
             ApplicationModel.initProviderModel(exportUrl.getServiceKey(), providerModel);
 
-            URL nettyUrl = exportUrl.addParameter(Constants.SERVER_KEY, "netty");
-            Exporter<IDemoService> exporter = protocol.export(proxy.getInvoker(server, IDemoService.class, nettyUrl));
+            URL nettyUrl = exportUrl.addParameter(SERVER_KEY, "netty");
+            Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
 
-            IDemoService demoService = this.proxy.getProxy(protocol.refer(IDemoService.class, nettyUrl));
+            DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));
 
             demoService.error();
         });
@@ -114,12 +156,12 @@ public class RestProtocolTest {
 
     @Test
     public void testInvoke() {
-        IDemoService server = new DemoService();
-        ProviderModel providerModel = new ProviderModel(exportUrl.getServiceKey(), server, IDemoService.class);
+        DemoService server = new DemoServiceImpl();
+        ProviderModel providerModel = new ProviderModel(exportUrl.getServiceKey(), server, DemoService.class);
         ApplicationModel.initProviderModel(exportUrl.getServiceKey(), providerModel);
 
 
-        Exporter<IDemoService> exporter = protocol.export(proxy.getInvoker(server, IDemoService.class, exportUrl));
+        Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, exportUrl));
 
         RpcInvocation rpcInvocation = new RpcInvocation("hello", new Class[]{Integer.class, Integer.class}, new Integer[]{2, 3});
 
@@ -129,15 +171,15 @@ public class RestProtocolTest {
 
     @Test
     public void testFilter() {
-        IDemoService server = new DemoService();
-        ProviderModel providerModel = new ProviderModel(exportUrl.getServiceKey(), server, IDemoService.class);
+        DemoService server = new DemoServiceImpl();
+        ProviderModel providerModel = new ProviderModel(exportUrl.getServiceKey(), server, DemoService.class);
         ApplicationModel.initProviderModel(exportUrl.getServiceKey(), providerModel);
 
-        URL nettyUrl = exportUrl.addParameter(Constants.SERVER_KEY, "netty")
-                .addParameter(Constants.EXTENSION_KEY, "org.apache.dubbo.rpc.protocol.rest.support.LoggingFilter");
-        Exporter<IDemoService> exporter = protocol.export(proxy.getInvoker(server, IDemoService.class, nettyUrl));
+        URL nettyUrl = exportUrl.addParameter(SERVER_KEY, "netty")
+                .addParameter(EXTENSION_KEY, "org.apache.dubbo.rpc.protocol.rest.support.LoggingFilter");
+        Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
 
-        IDemoService demoService = this.proxy.getProxy(protocol.refer(IDemoService.class, nettyUrl));
+        DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));
 
         Integer result = demoService.hello(1, 2);
 
@@ -148,16 +190,16 @@ public class RestProtocolTest {
 
     @Test
     public void testRpcContextFilter() {
-        IDemoService server = new DemoService();
-        ProviderModel providerModel = new ProviderModel(exportUrl.getServiceKey(), server, IDemoService.class);
+        DemoService server = new DemoServiceImpl();
+        ProviderModel providerModel = new ProviderModel(exportUrl.getServiceKey(), server, DemoService.class);
         ApplicationModel.initProviderModel(exportUrl.getServiceKey(), providerModel);
 
         // use RpcContextFilter
-        URL nettyUrl = exportUrl.addParameter(Constants.SERVER_KEY, "netty")
-                .addParameter(Constants.EXTENSION_KEY, "org.apache.dubbo.rpc.protocol.rest.RpcContextFilter");
-        Exporter<IDemoService> exporter = protocol.export(proxy.getInvoker(server, IDemoService.class, nettyUrl));
+        URL nettyUrl = exportUrl.addParameter(SERVER_KEY, "netty")
+                .addParameter(EXTENSION_KEY, "org.apache.dubbo.rpc.protocol.rest.RpcContextFilter");
+        Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
 
-        IDemoService demoService = this.proxy.getProxy(protocol.refer(IDemoService.class, nettyUrl));
+        DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));
 
         String value = null;
         // put a null value into attachment.
@@ -172,12 +214,12 @@ public class RestProtocolTest {
     @Test
     public void testRegFail() {
         Assertions.assertThrows(RuntimeException.class, () -> {
-            IDemoService server = new DemoService();
-            ProviderModel providerModel = new ProviderModel(exportUrl.getServiceKey(), server, IDemoService.class);
+            DemoService server = new DemoServiceImpl();
+            ProviderModel providerModel = new ProviderModel(exportUrl.getServiceKey(), server, DemoService.class);
             ApplicationModel.initProviderModel(exportUrl.getServiceKey(), providerModel);
 
-            URL nettyUrl = exportUrl.addParameter(Constants.EXTENSION_KEY, "com.not.existing.Filter");
-            protocol.export(proxy.getInvoker(server, IDemoService.class, nettyUrl));
+            URL nettyUrl = exportUrl.addParameter(EXTENSION_KEY, "com.not.existing.Filter");
+            protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
         });
     }
 

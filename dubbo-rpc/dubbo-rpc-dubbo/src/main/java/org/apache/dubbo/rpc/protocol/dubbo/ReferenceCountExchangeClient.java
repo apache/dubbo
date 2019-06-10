@@ -16,17 +16,22 @@
  */
 package org.apache.dubbo.rpc.protocol.dubbo;
 
-import org.apache.dubbo.common.Constants;
+
 import org.apache.dubbo.common.Parameters;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.remoting.exchange.ExchangeHandler;
-import org.apache.dubbo.remoting.exchange.ResponseFuture;
 
 import java.net.InetSocketAddress;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.apache.dubbo.remoting.Constants.RECONNECT_KEY;
+import static org.apache.dubbo.remoting.Constants.SEND_RECONNECT_KEY;
+import static org.apache.dubbo.rpc.protocol.dubbo.Constants.LAZY_CONNECT_INITIAL_STATE_KEY;
 
 /**
  * dubbo protocol support class.
@@ -51,7 +56,7 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
     }
 
     @Override
-    public ResponseFuture request(Object request) throws RemotingException {
+    public CompletableFuture<Object> request(Object request) throws RemotingException {
         return client.request(request);
     }
 
@@ -71,7 +76,7 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
     }
 
     @Override
-    public ResponseFuture request(Object request, int timeout) throws RemotingException {
+    public CompletableFuture<Object> request(Object request, int timeout) throws RemotingException {
         return client.request(request, timeout);
     }
 
@@ -165,12 +170,14 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
      */
     private void replaceWithLazyClient() {
         // this is a defensive operation to avoid client is closed by accident, the initial state of the client is false
-        URL lazyUrl = url.addParameter(Constants.LAZY_CONNECT_INITIAL_STATE_KEY, Boolean.FALSE)
-                .addParameter(Constants.RECONNECT_KEY, Boolean.FALSE)
-                .addParameter(Constants.SEND_RECONNECT_KEY, Boolean.TRUE.toString())
+        URL lazyUrl = URLBuilder.from(url)
+                .addParameter(LAZY_CONNECT_INITIAL_STATE_KEY, Boolean.FALSE)
+                .addParameter(RECONNECT_KEY, Boolean.FALSE)
+                .addParameter(SEND_RECONNECT_KEY, Boolean.TRUE.toString())
                 .addParameter("warning", Boolean.TRUE.toString())
                 .addParameter(LazyConnectExchangeClient.REQUEST_WITH_WARNING_KEY, true)
-                .addParameter("_client_memo", "referencecounthandler.replacewithlazyclient");
+                .addParameter("_client_memo", "referencecounthandler.replacewithlazyclient")
+                .build();
 
         /**
          * the order of judgment in the if statement cannot be changed.

@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.apache.dubbo.common.Constants.BACKUP_KEY;
+import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 

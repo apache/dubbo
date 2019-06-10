@@ -16,16 +16,22 @@
  */
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.status.StatusChecker;
 import org.apache.dubbo.common.threadpool.ThreadPool;
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.Dispatcher;
 import org.apache.dubbo.remoting.Transporter;
 import org.apache.dubbo.remoting.exchange.Exchanger;
 import org.apache.dubbo.remoting.telnet.TelnetHandler;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+
+import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
+import static org.apache.dubbo.config.Constants.CONTEXTPATH_KEY;
+import static org.apache.dubbo.config.Constants.STATUS_KEY;
+import static org.apache.dubbo.remoting.Constants.TELNET;
 
 /**
  * The service provider default configuration
@@ -157,7 +163,7 @@ public class ProviderConfig extends AbstractServiceConfig {
 
     @Deprecated
     public void setProtocol(String protocol) {
-        this.protocols = Arrays.asList(new ProtocolConfig[]{new ProtocolConfig(protocol)});
+        this.protocols = new ArrayList<>(Arrays.asList(new ProtocolConfig(protocol)));
     }
 
     @Parameter(excluded = true)
@@ -206,7 +212,7 @@ public class ProviderConfig extends AbstractServiceConfig {
     }
 
     public void setContextpath(String contextpath) {
-        checkPathName("contextpath", contextpath);
+        checkPathName(CONTEXTPATH_KEY, contextpath);
         this.contextpath = contextpath;
     }
 
@@ -215,7 +221,7 @@ public class ProviderConfig extends AbstractServiceConfig {
     }
 
     public void setThreadpool(String threadpool) {
-        checkExtension(ThreadPool.class, Constants.THREADPOOL_KEY, threadpool);
+        checkExtension(ThreadPool.class, THREADPOOL_KEY, threadpool);
         this.threadpool = threadpool;
     }
 
@@ -304,7 +310,7 @@ public class ProviderConfig extends AbstractServiceConfig {
     }
 
     public void setTelnet(String telnet) {
-        checkMultiExtension(TelnetHandler.class, Constants.TELNET, telnet);
+        checkMultiExtension(TelnetHandler.class, TELNET, telnet);
         this.telnet = telnet;
     }
 
@@ -322,7 +328,7 @@ public class ProviderConfig extends AbstractServiceConfig {
     }
 
     public void setStatus(String status) {
-        checkMultiExtension(StatusChecker.class, "status", status);
+        checkMultiExtension(StatusChecker.class, STATUS_KEY, status);
         this.status = status;
     }
 
@@ -405,8 +411,8 @@ public class ProviderConfig extends AbstractServiceConfig {
     }
 
     public void setDispatcher(String dispatcher) {
-        checkExtension(Dispatcher.class, Constants.DISPATCHER_KEY, exchanger);
-        checkExtension(Dispatcher.class, "dispather", exchanger);
+        checkExtension(Dispatcher.class, Constants.DISPATCHER_KEY, dispatcher);
+        checkExtension(Dispatcher.class, "dispather", dispatcher);
         this.dispatcher = dispatcher;
     }
 

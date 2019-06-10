@@ -19,7 +19,7 @@
 	<parent>
 		<groupId>org.apache.dubbo</groupId>
 		<artifactId>dubbo-rpc</artifactId>
-        <version>2.7.1-SNAPSHOT</version>
+        <version>${revision}</version>
 	</parent>
 	<artifactId>dubbo-rpc-rest</artifactId>
 	<packaging>jar</packaging>
@@ -91,22 +91,22 @@
         <dependency>
             <groupId>io.swagger</groupId>
             <artifactId>swagger-annotations</artifactId>
-            <exclusions> 
-                <exclusion> 
-                	<groupId>javax.ws.rs</groupId> 
-                    <artifactId>jsr311-api</artifactId> 
-                </exclusion> 
-            </exclusions> 
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.ws.rs</groupId>
+                    <artifactId>jsr311-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>io.swagger</groupId>
             <artifactId>swagger-jaxrs</artifactId>
-            <exclusions> 
-                <exclusion> 
-                    <groupId>javax.ws.rs</groupId> 
-                    <artifactId>jsr311-api</artifactId> 
-                </exclusion> 
-            </exclusions> 
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.ws.rs</groupId>
+                    <artifactId>jsr311-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>

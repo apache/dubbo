@@ -49,4 +49,12 @@ public class ConfigChangeEvent {
         return changeType;
     }
 
+    @Override
+    public String toString() {
+        return "ConfigChangeEvent{" +
+                "key='" + key + '\'' +
+                ", value='" + value + '\'' +
+                ", changeType=" + changeType +
+                '}';
+    }
 }
