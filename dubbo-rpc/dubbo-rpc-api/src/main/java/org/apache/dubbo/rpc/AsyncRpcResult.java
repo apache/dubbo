@@ -24,8 +24,6 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 
 /**
@@ -131,10 +129,10 @@ public class AsyncRpcResult extends AbstractResult {
         return super.get();
     }
 
-    @Override
-    public Result get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-        return this.get();
-    }
+//    @Override
+//    public Result get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+//        return this.get();
+//    }
 
     @Override
     public Object recreate() throws Throwable {
