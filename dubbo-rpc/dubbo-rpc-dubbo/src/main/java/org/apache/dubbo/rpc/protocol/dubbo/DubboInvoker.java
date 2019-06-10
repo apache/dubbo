@@ -95,7 +95,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
                 return AsyncRpcResult.newDefaultAsyncResult(invocation);
             } else {
                 AsyncRpcResult asyncRpcResult = new AsyncRpcResult(inv);
-                ExecutorService executor = null;
+                ExecutorService executor = getCallbackExecutor(getUrl(), inv);
                 asyncRpcResult.setExecutor(executor);
                 currentClient.request(inv, timeout, executor, asyncRpcResult);
                 return asyncRpcResult;
