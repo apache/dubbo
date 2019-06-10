@@ -102,7 +102,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
         this.init = init;
     }
 
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, excludedMetadata = true)
     public Boolean isGeneric() {
         return ProtocolUtils.isGeneric(generic);
     }

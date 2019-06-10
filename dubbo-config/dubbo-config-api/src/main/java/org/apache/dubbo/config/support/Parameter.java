@@ -42,6 +42,8 @@ public @interface Parameter {
 
     boolean append() default false;
 
+    boolean excludedMetadata() default false;
+
     /**
      * if {@link #key()} is specified, it will be used as the key for the annotated property when generating url.
      * by default, this key will also be used to retrieve the config value:

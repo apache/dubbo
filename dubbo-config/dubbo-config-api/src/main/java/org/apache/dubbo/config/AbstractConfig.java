@@ -491,13 +491,24 @@ public abstract class AbstractConfig implements Serializable {
                 String name = method.getName();
                 if (isMetaMethod(method)) {
                     String prop = calculateAttributeFromGetter(name);
-                    String key;
+                    String key = null;
                     Parameter parameter = method.getAnnotation(Parameter.class);
-                    if (parameter != null && parameter.key().length() > 0 && parameter.useKeyAsProperty()) {
-                        key = parameter.key();
-                    } else {
-                        key = prop;
+                    if (parameter != null ) {
+                        // exist multi get or is function to get same member param
+                        // ex: AbstractReferenceConfig isGeneric and getGeneric, if getmethods isGeneric after getGeneric, the default value is change from null to false, it will be wrong
+                        // centos compile isGeneric after getGeneric, so it default value is false(wrong)
+                        // windows compile isGeneric before getGeneric, so it default value is null(correct)
+                        // this function is to get res member param value
+                        // i think the best way is add Parameter Annotation atti(excludeMetadata), but the more atti the different to understand
+                        // invisible rules future maybe have bugs
+                        if(parameter.excludedMetadata())
+                            continue;
+                        if(parameter.key().length() > 0 && parameter.useKeyAsProperty())
+                            key = parameter.key();
                     }
+                    if(key == null)
+                        key = prop;
+
                     // treat url and configuration differently, the value should always present in configuration though it may not need to present in url.
                     //if (method.getReturnType() == Object.class || parameter != null && parameter.excluded()) {
                     if (method.getReturnType() == Object.class) {
