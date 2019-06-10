@@ -456,13 +456,19 @@ public class AbstractConfigTest {
         overrideConfig.setAddress("override-config://127.0.0.1:2181");
         overrideConfig.setProtocol("override-config");
         overrideConfig.setEscape("override-config://");
+        overrideConfig.setExcludeMetaData("override-config-metadata");
+        Map<String, String> metaData = overrideConfig.getMetaData();
+        Assertions.assertEquals(null, metaData.get("exclude"));
+        Assertions.assertEquals(null, metaData.get("excludeMetaData"));
+
         overrideConfig.setExclude("override-config");
 
-        Map<String, String> metaData = overrideConfig.getMetaData();
+        metaData = overrideConfig.getMetaData();
         Assertions.assertEquals("override-config://127.0.0.1:2181", metaData.get("address"));
         Assertions.assertEquals("override-config", metaData.get("protocol"));
         Assertions.assertEquals("override-config://", metaData.get("escape"));
         Assertions.assertEquals("override-config", metaData.get("exclude"));
+        Assertions.assertEquals(null, metaData.get("excludeMetaData"));
         Assertions.assertNull(metaData.get("key"));
         Assertions.assertNull(metaData.get("key2"));
     }
@@ -518,6 +524,7 @@ public class AbstractConfigTest {
         public String key;
         public String useKeyAsProperty;
         public String escape;
+        public String excludeMetaData;
 
         public String getAddress() {
             return address;
@@ -569,6 +576,15 @@ public class AbstractConfigTest {
 
         public void setEscape(String escape) {
             this.escape = escape;
+        }
+
+        @Parameter(excludedMetadata = true)
+        public String getExcludeMetaData() {
+            return excludeMetaData;
+        }
+
+        public void setExcludeMetaData(String excludeMetaData) {
+            this.excludeMetaData = excludeMetaData;
         }
     }
 
