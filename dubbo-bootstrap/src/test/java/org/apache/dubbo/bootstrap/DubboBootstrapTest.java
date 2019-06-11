@@ -16,6 +16,11 @@
  */
 package org.apache.dubbo.bootstrap;
 
+import org.apache.dubbo.common.utils.NetUtils;
+
+import org.apache.curator.test.TestingServer;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -27,14 +32,30 @@ import java.io.IOException;
  */
 public class DubboBootstrapTest {
 
+    private static int zkServerPort = NetUtils.getAvailablePort();
+
+    private static TestingServer zkServer;
+
+
+    @BeforeAll
+    public static void init() throws Exception {
+        zkServer = new TestingServer(zkServerPort, true);
+    }
+
+    @AfterAll
+    public static void destroy() throws IOException {
+        zkServer.stop();
+        zkServer.close();
+    }
+
     @Test
-    public void test() throws IOException {
+    public void testProviderInFluentAPI() {
 
         new DubboBootstrap()
                 .application("dubbo-provider-demo")
                 .next()
                 .registry()
-                .address("zookeeper://127.0.0.1:2181?registry-type=service")
+                .address("zookeeper://127.0.0.1:" + zkServerPort + "?registry-type=service")
                 .next()
                 .protocol()
                 .name("dubbo")
@@ -49,5 +70,27 @@ public class DubboBootstrapTest {
                 .start()
                 .stop();
 
+    }
+
+    @Test
+    public void testProviderInLambda() {
+        new DubboBootstrap()
+                .application("dubbo-provider-demo", builder -> {
+                })
+                .registry("default", builder ->
+                        builder.address("zookeeper://127.0.0.1:" + zkServerPort + "?registry-type=service")
+                )
+                .protocol("defalt", builder ->
+                        builder.name("dubbo")
+                                .port(-1)
+                )
+                .service("test", builder ->
+                        builder.interfaceClass(EchoService.class)
+                                .ref(new EchoServiceImpl())
+                                .group("DEFAULT")
+                                .version("1.0.0")
+                )
+                .start()
+                .stop();
     }
 }
