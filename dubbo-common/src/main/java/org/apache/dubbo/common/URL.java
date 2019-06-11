@@ -1168,7 +1168,7 @@ class URL implements Serializable {
             map.put(USERNAME_KEY, username);
         }
         if (password != null) {
-            map.put(USERNAME_KEY, password);
+            map.put(PASSWORD_KEY, password);
         }
         if (host != null) {
             map.put(HOST_KEY, host);
