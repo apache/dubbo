@@ -113,7 +113,6 @@ public class RpcStatus {
         RpcStatus appStatus = getStatus(url);
         RpcStatus methodStatus = getStatus(url, methodName);
         if (methodStatus.active.incrementAndGet() > max) {
-            methodStatus.active.decrementAndGet();
             return false;
         } else {
             appStatus.active.incrementAndGet();
