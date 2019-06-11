@@ -40,8 +40,8 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.apache.dubbo.common.constants.ConfigConstants.HOST_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.PORT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PORT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
@@ -52,8 +52,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.PASSWORD_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.USERNAME_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PASSWORD_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.USERNAME_KEY;
 
 /**
  * URL - Uniform Resource Locator (Immutable, ThreadSafe)
@@ -1168,7 +1168,7 @@ class URL implements Serializable {
             map.put(USERNAME_KEY, username);
         }
         if (password != null) {
-            map.put(USERNAME_KEY, password);
+            map.put(PASSWORD_KEY, password);
         }
         if (host != null) {
             map.put(HOST_KEY, host);

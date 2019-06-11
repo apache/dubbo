@@ -23,7 +23,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.store.DataStore;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.monitor.MetricsService;
-import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -31,7 +31,6 @@ import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
 import com.alibaba.fastjson.JSON;
@@ -66,6 +65,7 @@ import static org.apache.dubbo.monitor.Constants.METHOD;
 import static org.apache.dubbo.monitor.Constants.METRICS_PORT;
 import static org.apache.dubbo.monitor.Constants.METRICS_PROTOCOL;
 import static org.apache.dubbo.monitor.Constants.SERVICE;
+import static org.apache.dubbo.remoting.Constants.EXECUTOR_SERVICE_COMPONENT_KEY;
 
 public class MetricsFilter implements Filter {
 
@@ -178,7 +178,7 @@ public class MetricsFilter implements Filter {
 
     private List<MetricObject> getThreadPoolMessage() {
         DataStore dataStore = ExtensionLoader.getExtensionLoader(DataStore.class).getDefaultExtension();
-        Map<String, Object> executors = dataStore.get(Constants.EXECUTOR_SERVICE_COMPONENT_KEY);
+        Map<String, Object> executors = dataStore.get(EXECUTOR_SERVICE_COMPONENT_KEY);
 
         List<MetricObject> threadPoolMtricList = new ArrayList<>();
         for (Map.Entry<String, Object> entry : executors.entrySet()) {
@@ -235,12 +235,9 @@ public class MetricsFilter implements Filter {
                     collector.collect(entry.getKey(), entry.getValue(), timestamp);
                 }
 
-                RpcResult result = new RpcResult();
-
                 List res = collector.build();
                 res.addAll(getThreadPoolMessage());
-                result.setValue(JSON.toJSONString(res));
-                return result;
+                return AsyncRpcResult.newDefaultAsyncResult(JSON.toJSONString(res), invocation);
             }
 
             @Override

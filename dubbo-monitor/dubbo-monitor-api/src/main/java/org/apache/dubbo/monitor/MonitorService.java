@@ -21,8 +21,8 @@ import org.apache.dubbo.common.URL;
 
 import java.util.List;
 
-import static org.apache.dubbo.common.constants.RpcConstants.INPUT_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.OUTPUT_KEY;
+import static org.apache.dubbo.rpc.Constants.INPUT_KEY;
+import static org.apache.dubbo.rpc.Constants.OUTPUT_KEY;
 /**
  * MonitorService. (SPI, Prototype, ThreadSafe)
  */
@@ -87,5 +87,6 @@ public interface MonitorService {
      * @return statistics
      */
     List<URL> lookup(URL query);
+
 
 }

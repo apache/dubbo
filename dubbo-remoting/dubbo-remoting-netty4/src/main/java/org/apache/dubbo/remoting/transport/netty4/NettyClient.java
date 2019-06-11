@@ -22,11 +22,11 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.transport.AbstractClient;
+import org.apache.dubbo.remoting.utils.UrlUtils;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -50,7 +50,9 @@ import java.net.InetSocketAddress;
 public class NettyClient extends AbstractClient {
 
     private static final Logger logger = LoggerFactory.getLogger(NettyClient.class);
-
+    /**
+     * netty client bootstrap
+     */
     private static final NioEventLoopGroup nioEventLoopGroup = new NioEventLoopGroup(Constants.DEFAULT_IO_THREADS, new DefaultThreadFactory("NettyClientWorker", true));
 
     private static final String SOCKS_PROXY_HOST = "socksProxyHost";
@@ -61,12 +63,28 @@ public class NettyClient extends AbstractClient {
 
     private Bootstrap bootstrap;
 
-    private volatile Channel channel; // volatile, please copy reference to use
+    /**
+     * current channel. Each successful invocation of {@link NettyClient#doConnect()} will
+     * replace this with new channel and close old channel.
+     * <b>volatile, please copy reference to use.</b>
+     */
+    private volatile Channel channel;
 
+    /**
+     * The constructor of NettyClient.
+     * It wil init and start netty.
+     */
     public NettyClient(final URL url, final ChannelHandler handler) throws RemotingException {
-        super(url, wrapChannelHandler(url, handler));
+    	// you can customize name and type of client thread pool by THREAD_NAME_KEY and THREADPOOL_KEY in CommonConstants.
+    	// the handler will be warped: MultiMessageHandler->HeartbeatHandler->handler
+    	super(url, wrapChannelHandler(url, handler));
     }
 
+    /**
+     * Init bootstrap
+     *
+     * @throws Throwable
+     */
     @Override
     protected void doOpen() throws Throwable {
         final NettyClientHandler nettyClientHandler = new NettyClientHandler(getUrl(), this);
@@ -116,7 +134,8 @@ public class NettyClient extends AbstractClient {
                 Channel newChannel = future.channel();
                 try {
                     // Close old channel
-                    Channel oldChannel = NettyClient.this.channel; // copy reference
+                    // copy reference
+                    Channel oldChannel = NettyClient.this.channel;
                     if (oldChannel != null) {
                         try {
                             if (logger.isInfoEnabled()) {
@@ -152,6 +171,7 @@ public class NettyClient extends AbstractClient {
                         + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion());
             }
         } finally {
+            // just add new valid channel to NettyChannel's cache
             if (!isConnected()) {
                 //future.cancel(true);
             }
@@ -169,8 +189,9 @@ public class NettyClient extends AbstractClient {
 
     @Override
     protected void doClose() throws Throwable {
-        //can't shutdown nioEventLoopGroup
-        //nioEventLoopGroup.shutdownGracefully();
+        // can't shutdown nioEventLoopGroup because the method will be invoked when closing one channel but not a client,
+        // but when and how to close the nioEventLoopGroup ?
+        // nioEventLoopGroup.shutdownGracefully();
     }
 
     @Override

@@ -14,19 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.etcd.option;
+package org.apache.dubbo.registry.multiple;
 
-import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_SESSION_TIMEOUT;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.registry.Registry;
+import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 
 /**
- * Etcd registry constants.
+ * MultipleRegistryFactory
  */
-public interface Constants {
+public class MultipleRegistryFactory extends AbstractRegistryFactory {
 
-    String HTTP_SUBFIX_KEY = "://";
-
-    String HTTP_KEY = "http://";
-
-    int DEFAULT_KEEPALIVE_TIMEOUT = DEFAULT_SESSION_TIMEOUT / 2;
+    @Override
+    protected Registry createRegistry(URL url) {
+        return new MultipleRegistry(url);
+    }
 
 }

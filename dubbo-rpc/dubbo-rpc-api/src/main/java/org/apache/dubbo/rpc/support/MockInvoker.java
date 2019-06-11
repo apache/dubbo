@@ -18,18 +18,18 @@ package org.apache.dubbo.rpc.support;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.PojoUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.common.utils.ArrayUtils;
+import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.RpcResult;
 
 import com.alibaba.fastjson.JSON;
 
@@ -47,9 +47,9 @@ import static org.apache.dubbo.rpc.Constants.FORCE_PREFIX;
 import static org.apache.dubbo.rpc.Constants.RETURN_KEY;
 
 final public class MockInvoker<T> implements Invoker<T> {
-    private final static ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
-    private final static Map<String, Invoker<?>> mocks = new ConcurrentHashMap<String, Invoker<?>>();
-    private final static Map<String, Throwable> throwables = new ConcurrentHashMap<String, Throwable>();
+    private final static ProxyFactory PROXY_FACTORY = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+    private final static Map<String, Invoker<?>> MOCK_MAP = new ConcurrentHashMap<String, Invoker<?>>();
+    private final static Map<String, Throwable> THROWABLE_MAP = new ConcurrentHashMap<String, Throwable>();
 
     private final URL url;
     private final Class<T> type;
@@ -112,7 +112,7 @@ final public class MockInvoker<T> implements Invoker<T> {
             try {
                 Type[] returnTypes = RpcUtils.getReturnTypes(invocation);
                 Object value = parseMockValue(mock, returnTypes);
-                return new RpcResult(value);
+                return AsyncRpcResult.newDefaultAsyncResult(value, invocation);
             } catch (Exception ew) {
                 throw new RpcException("mock return invoke error. method :" + invocation.getMethodName()
                         + ", mock:" + mock + ", url: " + url, ew);
@@ -136,7 +136,7 @@ final public class MockInvoker<T> implements Invoker<T> {
     }
 
     public static Throwable getThrowable(String throwstr) {
-        Throwable throwable = throwables.get(throwstr);
+        Throwable throwable = THROWABLE_MAP.get(throwstr);
         if (throwable != null) {
             return throwable;
         }
@@ -147,8 +147,8 @@ final public class MockInvoker<T> implements Invoker<T> {
             Constructor<?> constructor;
             constructor = ReflectUtils.findConstructor(bizException, String.class);
             t = (Throwable) constructor.newInstance(new Object[]{"mocked exception for service degradation."});
-            if (throwables.size() < 1000) {
-                throwables.put(throwstr, t);
+            if (THROWABLE_MAP.size() < 1000) {
+                THROWABLE_MAP.put(throwstr, t);
             }
             return t;
         } catch (Exception e) {
@@ -158,16 +158,16 @@ final public class MockInvoker<T> implements Invoker<T> {
 
     @SuppressWarnings("unchecked")
     private Invoker<T> getInvoker(String mockService) {
-        Invoker<T> invoker = (Invoker<T>) mocks.get(mockService);
+        Invoker<T> invoker = (Invoker<T>) MOCK_MAP.get(mockService);
         if (invoker != null) {
             return invoker;
         }
 
         Class<T> serviceType = (Class<T>) ReflectUtils.forName(url.getServiceInterface());
         T mockObject = (T) getMockObject(mockService, serviceType);
-        invoker = proxyFactory.getInvoker(mockObject, serviceType, url);
-        if (mocks.size() < 10000) {
-            mocks.put(mockService, invoker);
+        invoker = PROXY_FACTORY.getInvoker(mockObject, serviceType, url);
+        if (MOCK_MAP.size() < 10000) {
+            MOCK_MAP.put(mockService, invoker);
         }
         return invoker;
     }

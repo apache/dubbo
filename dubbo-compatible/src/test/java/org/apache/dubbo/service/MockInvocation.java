@@ -26,7 +26,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.DUBBO_VERSION_KEY;
+import static org.apache.dubbo.remoting.Constants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 
 /**
@@ -61,6 +61,16 @@ public class MockInvocation implements Invocation {
         attachments.put(TOKEN_KEY, "sfag");
         attachments.put(TIMEOUT_KEY, "1000");
         return attachments;
+    }
+
+    @Override
+    public void setAttachment(String key, String value) {
+
+    }
+
+    @Override
+    public void setAttachmentIfAbsent(String key, String value) {
+
     }
 
     public Invoker<?> getInvoker() {

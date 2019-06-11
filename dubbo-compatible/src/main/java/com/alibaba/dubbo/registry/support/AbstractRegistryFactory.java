@@ -28,6 +28,7 @@ public abstract class AbstractRegistryFactory extends org.apache.dubbo.registry.
 
     protected abstract com.alibaba.dubbo.registry.Registry createRegistry(com.alibaba.dubbo.common.URL url);
 
+    @Override
     protected Registry createRegistry(URL url) {
         return createRegistry(new com.alibaba.dubbo.common.URL(url));
     }

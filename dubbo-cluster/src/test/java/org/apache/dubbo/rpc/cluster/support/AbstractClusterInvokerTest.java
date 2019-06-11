@@ -49,7 +49,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import static org.apache.dubbo.rpc.cluster.Constants.CLUSTER_AVAILABLE_CHECK_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.INVOCATION_NEED_MOCK;
-import static org.apache.dubbo.common.constants.RegistryConstants.REFER_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -174,13 +174,13 @@ public class AbstractClusterInvokerTest {
         Assertions.assertNotNull(l,"cluster.initLoadBalance returns null!");
         {
             Invoker invoker = cluster.select(l, null, null, null);
-            Assertions.assertEquals(null, invoker);
+            Assertions.assertNull(invoker);
         }
         {
             invokers.clear();
             selectedInvokers.clear();
             Invoker invoker = cluster.select(l, null, invokers, null);
-            Assertions.assertEquals(null, invoker);
+            Assertions.assertNull(invoker);
         }
     }
 
@@ -231,7 +231,7 @@ public class AbstractClusterInvokerTest {
         initlistsize5();
 
         Invoker sinvoker = cluster_nocheck.select(lb, invocation, invokers, selectedInvokers);
-        Assertions.assertEquals(false, sinvoker.isAvailable());
+        Assertions.assertFalse(sinvoker.isAvailable());
         Assertions.assertEquals(invoker1, sinvoker);
 
     }
@@ -308,7 +308,7 @@ public class AbstractClusterInvokerTest {
             selectedInvokers.add(invoker3);
             selectedInvokers.add(invoker5);
             Invoker sinvoker = cluster.select(lb, invocation, invokers, selectedInvokers);
-            Assertions.assertTrue(sinvoker == invoker4);
+            Assertions.assertSame(sinvoker, invoker4);
         }
         {
             //Boundary condition test .
@@ -365,7 +365,7 @@ public class AbstractClusterInvokerTest {
         initlistsize5();
         for (int i = 0; i < runs; i++) {
             Invoker sinvoker = cluster.select(lb, invocation, invokers, selectedInvokers);
-            Assertions.assertEquals(true, sinvoker.isAvailable());
+            Assertions.assertTrue(sinvoker.isAvailable());
 
             Mockito.clearInvocations(invoker1, invoker2, invoker3, invoker4, invoker5);
         }
@@ -373,7 +373,7 @@ public class AbstractClusterInvokerTest {
             selectedInvokers.clear();
             selectedInvokers.add(invoker1);
             Invoker sinvoker = cluster.select(lb, invocation, invokers, selectedInvokers);
-            Assertions.assertEquals(true, sinvoker.isAvailable());
+            Assertions.assertTrue(sinvoker.isAvailable());
 
             Mockito.clearInvocations(invoker1, invoker2, invoker3, invoker4, invoker5);
         }
@@ -381,7 +381,7 @@ public class AbstractClusterInvokerTest {
             selectedInvokers.clear();
             selectedInvokers.add(invoker2);
             Invoker sinvoker = cluster.select(lb, invocation, invokers, selectedInvokers);
-            Assertions.assertEquals(true, sinvoker.isAvailable());
+            Assertions.assertTrue(sinvoker.isAvailable());
 
             Mockito.clearInvocations(invoker1, invoker2, invoker3, invoker4, invoker5);
         }
@@ -390,7 +390,7 @@ public class AbstractClusterInvokerTest {
             selectedInvokers.add(invoker2);
             selectedInvokers.add(invoker4);
             Invoker sinvoker = cluster.select(lb, invocation, invokers, selectedInvokers);
-            Assertions.assertEquals(true, sinvoker.isAvailable());
+            Assertions.assertTrue(sinvoker.isAvailable());
 
             Mockito.clearInvocations(invoker1, invoker2, invoker3, invoker4, invoker5);
         }
@@ -400,7 +400,7 @@ public class AbstractClusterInvokerTest {
             selectedInvokers.add(invoker3);
             selectedInvokers.add(invoker5);
             Invoker sinvoker = cluster.select(lb, invocation, invokers, selectedInvokers);
-            Assertions.assertEquals(true, sinvoker.isAvailable());
+            Assertions.assertTrue(sinvoker.isAvailable());
 
             Mockito.clearInvocations(invoker1, invoker2, invoker3, invoker4, invoker5);
         }
@@ -411,7 +411,7 @@ public class AbstractClusterInvokerTest {
             selectedInvokers.add(invoker2);
             selectedInvokers.add(invoker3);
             Invoker sinvoker = cluster.select(lb, invocation, invokers, selectedInvokers);
-            Assertions.assertEquals(true, sinvoker.isAvailable());
+            Assertions.assertTrue(sinvoker.isAvailable());
 
             Mockito.clearInvocations(invoker1, invoker2, invoker3, invoker4, invoker5);
         }

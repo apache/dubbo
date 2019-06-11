@@ -15,33 +15,23 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.common.constants;
+package org.apache.dubbo.remoting.utils;
 
-/**
- * RpcConstants
- */
-public interface RpcConstants {
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.Constants;
 
-    String INPUT_KEY = "input";
+public class UrlUtils {
+    public static int getIdleTimeout(URL url) {
+        int heartBeat = getHeartbeat(url);
+        // idleTimeout should be at least more than twice heartBeat because possible retries of client.
+        int idleTimeout = url.getParameter(Constants.HEARTBEAT_TIMEOUT_KEY, heartBeat * 3);
+        if (idleTimeout < heartBeat * 2) {
+            throw new IllegalStateException("idleTimeout < heartbeatInterval * 2");
+        }
+        return idleTimeout;
+    }
 
-    String OUTPUT_KEY = "output";
-
-    /**
-     * The limit of callback service instances for one interface on every client
-     */
-    String CALLBACK_INSTANCES_LIMIT_KEY = "callbacks";
-
-    /**
-     * The default limit number for callback service instances
-     *
-     * @see #CALLBACK_INSTANCES_LIMIT_KEY
-     */
-    int DEFAULT_CALLBACK_INSTANCES = 1;
-
-    String DUBBO_VERSION_KEY = "dubbo";
-
-    String $INVOKE = "$invoke";
-
-    String CONNECTIONS_KEY = "connections";
-
+    public static int getHeartbeat(URL url) {
+        return url.getParameter(Constants.HEARTBEAT_KEY, Constants.DEFAULT_HEARTBEAT);
+    }
 }

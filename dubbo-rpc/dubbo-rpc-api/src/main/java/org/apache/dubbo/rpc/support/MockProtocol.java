@@ -38,7 +38,7 @@ final public class MockProtocol extends AbstractProtocol {
     }
 
     @Override
-    public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
+    public <T> Invoker<T> protocolBindingRefer(Class<T> type, URL url) throws RpcException {
         return new MockInvoker<>(url, type);
     }
 }

@@ -35,20 +35,22 @@ import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
-import static org.apache.dubbo.common.constants.RegistryConstants.SESSION_TIMEOUT_KEY;
 
 //FIXME: waiting for embedded Nacos suport, then we can open the switch.
 @Disabled("https://github.com/alibaba/nacos/issues/1188")
 public class NacosMetadataReportTest {
+    private static final String SESSION_TIMEOUT_KEY = "session";
     private static final String TEST_SERVICE = "org.apache.dubbo.metadata.store.nacos.NacosMetadata4TstService";
     private NacosMetadataReport nacosMetadataReport;
     private NacosMetadataReportFactory nacosMetadataReportFactory;
     private ConfigService configService;
 
+    private static final String NACOS_GROUP = "zzz";
+
     @BeforeEach
     public void setUp() {
         // timeout in 15 seconds.
-        URL url = URL.valueOf("nacos://127.0.0.1:8848")
+        URL url = URL.valueOf("nacos://127.0.0.1:8848?group=" + NACOS_GROUP)
                 .addParameter(SESSION_TIMEOUT_KEY, 15000);
         nacosMetadataReportFactory = new NacosMetadataReportFactory();
         this.nacosMetadataReport = (NacosMetadataReport) nacosMetadataReportFactory.createMetadataReport(url);
@@ -66,7 +68,7 @@ public class NacosMetadataReportTest {
         String application = "nacos-metdata-report-test";
         MetadataIdentifier providerIdentifier =
                 storeProvider(nacosMetadataReport, TEST_SERVICE, version, group, application);
-        String serverContent = configService.getConfig(providerIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY), group, 5000L);
+        String serverContent = configService.getConfig(providerIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY), NACOS_GROUP, 5000L);
         Assertions.assertNotNull(serverContent);
 
         Gson gson = new Gson();
@@ -81,7 +83,7 @@ public class NacosMetadataReportTest {
         String application = "nacos-metadata-report-consumer-test";
         MetadataIdentifier consumerIdentifier = storeConsumer(nacosMetadataReport, TEST_SERVICE, version, group, application);
 
-        String serverContent = configService.getConfig(consumerIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY), group, 5000L);
+        String serverContent = configService.getConfig(consumerIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY), NACOS_GROUP, 5000L);
         Assertions.assertNotNull(serverContent);
         Assertions.assertEquals(serverContent, "{\"paramConsumerTest\":\"nacosConsumer\"}");
     }

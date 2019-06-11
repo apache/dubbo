@@ -16,11 +16,11 @@
  */
 package org.apache.dubbo.remoting.transport.netty4;
 
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.utils.DubboAppender;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.Client;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.Server;
 import org.apache.dubbo.remoting.exchange.Exchangers;
@@ -47,24 +47,24 @@ public class ClientReconnectTest {
         {
             int port = NetUtils.getAvailablePort();
             Client client = startClient(port, 200);
-            Assertions.assertEquals(false, client.isConnected());
+            Assertions.assertFalse(client.isConnected());
             Server server = startServer(port);
             for (int i = 0; i < 100 && !client.isConnected(); i++) {
                 Thread.sleep(10);
             }
-            Assertions.assertEquals(true, client.isConnected());
+            Assertions.assertTrue(client.isConnected());
             client.close(2000);
             server.close(2000);
         }
         {
             int port = NetUtils.getAvailablePort();
             Client client = startClient(port, 20000);
-            Assertions.assertEquals(false, client.isConnected());
+            Assertions.assertFalse(client.isConnected());
             Server server = startServer(port);
             for (int i = 0; i < 5; i++) {
                 Thread.sleep(200);
             }
-            Assertions.assertEquals(false, client.isConnected());
+            Assertions.assertFalse(client.isConnected());
             client.close(2000);
             server.close(2000);
         }
@@ -72,7 +72,7 @@ public class ClientReconnectTest {
 
 
     public Client startClient(int port, int heartbeat) throws RemotingException {
-        final String url = "exchange://127.0.0.1:" + port + "/client.reconnect.test?client=netty4&check=false&" + RemotingConstants.HEARTBEAT_KEY + "=" + heartbeat;
+        final String url = "exchange://127.0.0.1:" + port + "/client.reconnect.test?client=netty4&check=false&" + Constants.HEARTBEAT_KEY + "=" + heartbeat;
         return Exchangers.connect(url);
     }
 

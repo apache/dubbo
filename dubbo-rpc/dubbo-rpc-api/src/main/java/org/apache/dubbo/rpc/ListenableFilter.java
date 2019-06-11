@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package com.alibaba.dubbo.rpc.protocol.dubbo;
-
-import org.apache.dubbo.remoting.exchange.ResponseFuture;
+package org.apache.dubbo.rpc;
 
 /**
- * 2019-04-18
+ *
  */
-public class FutureAdapter<V> extends org.apache.dubbo.rpc.protocol.dubbo.FutureAdapter<V> {
-    public FutureAdapter(ResponseFuture future) {
-        super(future);
+public abstract class ListenableFilter implements Filter {
+
+    protected Listener listener = null;
+
+    public Listener listener() {
+        return listener;
     }
 }
