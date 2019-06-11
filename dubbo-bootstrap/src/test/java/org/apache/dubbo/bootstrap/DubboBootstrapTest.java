@@ -30,7 +30,7 @@ public class DubboBootstrapTest {
     @Test
     public void test() throws IOException {
 
-        DubboBootstrap bootstrap = new DubboBootstrap()
+        new DubboBootstrap()
                 .application("dubbo-provider-demo")
                 .next()
                 .registry()
@@ -45,10 +45,9 @@ public class DubboBootstrapTest {
                 .ref(new EchoServiceImpl())
                 .group("DEFAULT")
                 .version("1.0.0")
-                .next();
+                .next()
+                .start()
+                .stop();
 
-        bootstrap.start();
-
-        System.in.read();
     }
 }
