@@ -37,6 +37,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -659,7 +660,7 @@ public abstract class AbstractConfig implements Serializable {
                     Method method2 = obj.getClass().getMethod(method1.getName(), method1.getParameterTypes());
                     Object value1 = method1.invoke(this, new Object[]{});
                     Object value2 = method2.invoke(obj, new Object[]{});
-                    if ((value1 != null && value2 != null) && !value1.equals(value2)) {
+                    if (!Objects.equals(value1, value2)) {
                         return false;
                     }
                 } catch (Exception e) {
