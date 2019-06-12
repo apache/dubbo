@@ -16,57 +16,29 @@
  */
 package org.apache.dubbo.monitor.dubbo;
 
+import com.alibaba.metrics.*;
+import com.alibaba.metrics.common.MetricObject;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.json.JSON;
-import org.apache.dubbo.common.serialize.ObjectOutput;
-import org.apache.dubbo.common.serialize.gson.GsonJsonObjectOutput;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.monitor.MetricsService;
 import org.apache.dubbo.monitor.dubbo.service.DemoService;
 import org.apache.dubbo.rpc.*;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
-
-import com.alibaba.metrics.FastCompass;
-import com.alibaba.metrics.IMetricManager;
-import com.alibaba.metrics.ManualClock;
-import com.alibaba.metrics.MetricLevel;
-import com.alibaba.metrics.MetricManager;
-import com.alibaba.metrics.MetricName;
-import com.alibaba.metrics.common.MetricObject;
-import com.alibaba.metrics.os.linux.CpuUsageGaugeSet;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import java.io.ByteArrayOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.Reader;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.SortedMap;
 
-import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
-import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
-import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
-import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
-import static org.apache.dubbo.monitor.Constants.DUBBO_CONSUMER;
-import static org.apache.dubbo.monitor.Constants.DUBBO_CONSUMER_METHOD;
-import static org.apache.dubbo.monitor.Constants.DUBBO_GROUP;
-import static org.apache.dubbo.monitor.Constants.DUBBO_PROVIDER;
-import static org.apache.dubbo.monitor.Constants.DUBBO_PROVIDER_METHOD;
-import static org.apache.dubbo.monitor.Constants.METHOD;
-import static org.apache.dubbo.monitor.Constants.SERVICE;
+import static org.apache.dubbo.common.constants.CommonConstants.*;
+import static org.apache.dubbo.monitor.Constants.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
@@ -247,16 +219,10 @@ public class MetricsFilterTest {
         metricManager.clear();
         MetricsFilter metricsFilter = new MetricsFilter();
         Invocation invocation = new RpcInvocation("sayName", new Class<?>[0], new Object[0]);
-        String file;
-        try (Stream<String> lines = Files.lines(Paths.get("src/test/resources/proc_stat"))) {
-            file = lines.filter(l -> !l.isEmpty())
-                    .collect(Collectors.joining(","));
-        }
-
         AppResponse response = AppResponseBuilder.create()
                 .withAttachments(new HashMap<String, String>(4) {
                     {
-                        put("cpu", file);
+                        put("cpu.user", "60.5");
                     }
                 })
                 .build();
@@ -272,27 +238,8 @@ public class MetricsFilterTest {
             }
         }
 
-        Protocol protocol = new DubboProtocol();
-        URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":20880/" + MetricsService.class.getName());
-        Invoker<MetricsService> invoker = protocol.refer(MetricsService.class, url);
-        invocation = new RpcInvocation("getMetricsByGroup", new Class<?>[]{String.class}, new Object[]{DUBBO_GROUP});
-        try {
-            Thread.sleep(5000);
-        } catch (Exception e) {
-            // ignore
-        }
-        String resStr = invoker.invoke(invocation).getValue().toString();
-        List<MetricObject> metricObjectList = new Gson().fromJson(resStr, new TypeToken<List<MetricObject>>() {
-        }.getType());
-        Map<String, Object> metricMap = new HashMap<>();
-        for (int i = 0; i < metricObjectList.size(); i++) {
-            MetricObject object = metricObjectList.get(i);
-            String metric = object.getMetric().substring(object.getMetric().lastIndexOf(".") + 1);
-            if ((double) object.getValue() > 0.0 && object.getMetricLevel().equals(MetricLevel.MAJOR))
-                metricMap.put(metric, object.getValue());
-        }
-
-        Assertions.assertTrue(metricMap.get("cpu.user") != null);
+        SortedMap<MetricName, Gauge> gauges = MetricManager.getIMetricManager().getGauges(DUBBO_GROUP, MetricFilter.ALL);
+        Assertions.assertNotNull( gauges.get(new MetricName("dubbo.cpu", MetricLevel.MAJOR)));
     }
 
     @Test

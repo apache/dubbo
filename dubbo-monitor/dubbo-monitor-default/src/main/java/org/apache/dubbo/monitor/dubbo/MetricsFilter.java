@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.monitor.dubbo;
 
+import com.alibaba.metrics.*;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
@@ -34,11 +35,6 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.metrics.FastCompass;
-import com.alibaba.metrics.MetricLevel;
-import com.alibaba.metrics.MetricManager;
-import com.alibaba.metrics.MetricName;
-import com.alibaba.metrics.MetricRegistry;
 import com.alibaba.metrics.common.CollectLevel;
 import com.alibaba.metrics.common.MetricObject;
 import com.alibaba.metrics.common.MetricsCollector;
@@ -54,6 +50,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_PROTOCOL;
 import static org.apache.dubbo.monitor.Constants.DUBBO_CONSUMER;
@@ -126,13 +123,26 @@ public class MetricsFilter implements Filter {
 
     private void reportLbMetrics(Result result, Invoker<?> invoker, Invocation invocation, boolean isProvider) {
         if(responseHasCpu(result)) {
-            long cpuValue = Long.parseLong(result.getAttachment("cpu"));
-            reportMetrics(invoker, invocation, cpuValue, "cpu", true);
+            AtomicLong cpuValue = new AtomicLong((long) Double.parseDouble(result.getAttachment("cpu.user")));
+            Gauge<Long> gauge = new CachedGauge<Long>(100, TimeUnit.HOURS) {
+                @Override
+                protected Long loadValue() {
+                    return cpuValue.get();
+                }
+            };
+
+            SortedMap<MetricName, Gauge> gauges = MetricManager.getIMetricManager().getGauges(DUBBO_GROUP, MetricFilter.ALL);
+            Gauge contains = gauges.get(new MetricName("dubbo.cpu", MetricLevel.MAJOR));
+            if (contains == null) {
+                MetricName metricName = new MetricName("dubbo.cpu", MetricLevel.MAJOR);
+                MetricManager.register(DUBBO_GROUP, metricName, gauge);
+            }
+
         }
     }
 
     private boolean responseHasCpu(Result result) {
-        return result.getAttachments() != null && result.getAttachment("cpu") != null;
+        return result.getAttachments() != null && result.getAttachment("cpu.user") != null;
     }
 
     private String buildMethodName(Invocation invocation) {
