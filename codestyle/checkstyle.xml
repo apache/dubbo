@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC
+        "-//Puppy Crawl//DTD Check Configuration 1.3//EN"
+        "http://checkstyle.sourceforge.net/dtds/configuration_1_3.dtd">
+
+<module name="Checker">
+    <property name="charset" value="UTF-8"/>
+    <property name="fileExtensions" value="java"/>
+
+    <!-- TreeWalker Checks -->
+    <module name="TreeWalker">
+        <module name="SuppressWarningsHolder"/>
+
+        <module name="AvoidStarImport"/>
+        <module name="AvoidEscapedUnicodeCharacters">
+            <property name="allowEscapesForControlCharacters" value="true"/>
+            <property name="allowByTailComment" value="true"/>
+            <property name="allowNonPrintableEscapes" value="true"/>
+        </module>
+        <module name="NoLineWrap"/>
+        <module name="OuterTypeFilename"/>
+        <module name="UnusedImports"/>
+        <module name="RedundantImport"/>
+
+        <!--<module name="CustomImportOrder">-->
+        <!--<property name="specialImportsRegExp" value="org.apache.dubbo.*"/>-->
+        <!--<property name="sortImportsInGroupAlphabetically" value="false"/>-->
+        <!--<property name="customImportOrderRules" value="SPECIAL_IMPORTS###THIRD_PARTY_PACKAGE###STANDARD_JAVA_PACKAGE###STATIC"/>-->
+        <!--</module>-->
+    </module>
+</module>

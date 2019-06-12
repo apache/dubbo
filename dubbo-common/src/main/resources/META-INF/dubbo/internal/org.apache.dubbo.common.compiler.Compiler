@@ -1,0 +1,3 @@
+adaptive=org.apache.dubbo.common.compiler.support.AdaptiveCompiler
+jdk=org.apache.dubbo.common.compiler.support.JdkCompiler
+javassist=org.apache.dubbo.common.compiler.support.JavassistCompiler
