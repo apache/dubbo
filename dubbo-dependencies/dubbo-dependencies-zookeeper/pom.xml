@@ -32,7 +32,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <revision>2.7.2-SNAPSHOT</revision>
+        <revision>2.7.3-SNAPSHOT</revision>
         <maven_flatten_version>1.1.0</maven_flatten_version>
     </properties>
 

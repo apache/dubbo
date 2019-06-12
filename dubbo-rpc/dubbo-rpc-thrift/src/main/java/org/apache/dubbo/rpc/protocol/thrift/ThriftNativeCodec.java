@@ -24,7 +24,6 @@ import org.apache.dubbo.remoting.buffer.ChannelBufferOutputStream;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.rpc.Invocation;
-
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TMessage;

@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.hessian;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.http.HttpBinder;
 import org.apache.dubbo.remoting.http.HttpHandler;
@@ -43,6 +42,17 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
+import static org.apache.dubbo.remoting.Constants.DEFAULT_EXCHANGER;
+import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
+import static org.apache.dubbo.rpc.protocol.hessian.Constants.HESSIAN2_REQUEST_KEY;
+import static org.apache.dubbo.rpc.protocol.hessian.Constants.DEFAULT_HESSIAN2_REQUEST;
+import static org.apache.dubbo.rpc.protocol.hessian.Constants.HESSIAN_OVERLOAD_METHOD_KEY;
+import static org.apache.dubbo.rpc.protocol.hessian.Constants.DEFAULT_HESSIAN_OVERLOAD_METHOD;
+import static org.apache.dubbo.rpc.protocol.hessian.Constants.DEFAULT_HTTP_CLIENT;
 
 /**
  * http rpc support.
@@ -80,7 +90,7 @@ public class HessianProtocol extends AbstractProxyProtocol {
         final HessianSkeleton skeleton = new HessianSkeleton(impl, type);
         skeletonMap.put(path, skeleton);
 
-        final String genericPath = path + "/" + Constants.GENERIC_KEY;
+        final String genericPath = path + "/" + GENERIC_KEY;
         skeletonMap.put(genericPath, new HessianSkeleton(impl, GenericService.class));
 
         return new Runnable() {
@@ -95,31 +105,31 @@ public class HessianProtocol extends AbstractProxyProtocol {
     @Override
     @SuppressWarnings("unchecked")
     protected <T> T doRefer(Class<T> serviceType, URL url) throws RpcException {
-        String generic = url.getParameter(Constants.GENERIC_KEY);
+        String generic = url.getParameter(GENERIC_KEY);
         boolean isGeneric = ProtocolUtils.isGeneric(generic) || serviceType.equals(GenericService.class);
         if (isGeneric) {
-            RpcContext.getContext().setAttachment(Constants.GENERIC_KEY, generic);
-            url = url.setPath(url.getPath() + "/" + Constants.GENERIC_KEY);
+            RpcContext.getContext().setAttachment(GENERIC_KEY, generic);
+            url = url.setPath(url.getPath() + "/" + GENERIC_KEY);
         }
 
         HessianProxyFactory hessianProxyFactory = new HessianProxyFactory();
-        boolean isHessian2Request = url.getParameter(Constants.HESSIAN2_REQUEST_KEY, Constants.DEFAULT_HESSIAN2_REQUEST);
+        boolean isHessian2Request = url.getParameter(HESSIAN2_REQUEST_KEY, DEFAULT_HESSIAN2_REQUEST);
         hessianProxyFactory.setHessian2Request(isHessian2Request);
-        boolean isOverloadEnabled = url.getParameter(Constants.HESSIAN_OVERLOAD_METHOD_KEY, Constants.DEFAULT_HESSIAN_OVERLOAD_METHOD);
+        boolean isOverloadEnabled = url.getParameter(HESSIAN_OVERLOAD_METHOD_KEY, DEFAULT_HESSIAN_OVERLOAD_METHOD);
         hessianProxyFactory.setOverloadEnabled(isOverloadEnabled);
-        String client = url.getParameter(Constants.CLIENT_KEY, Constants.DEFAULT_HTTP_CLIENT);
+        String client = url.getParameter(CLIENT_KEY, DEFAULT_HTTP_CLIENT);
         if ("httpclient".equals(client)) {
             HessianConnectionFactory factory = new HttpClientConnectionFactory();
             factory.setHessianProxyFactory(hessianProxyFactory);
             hessianProxyFactory.setConnectionFactory(factory);
-        } else if (client != null && client.length() > 0 && !Constants.DEFAULT_HTTP_CLIENT.equals(client)) {
+        } else if (client != null && client.length() > 0 && !DEFAULT_HTTP_CLIENT.equals(client)) {
             throw new IllegalStateException("Unsupported http protocol client=\"" + client + "\"!");
         } else {
             HessianConnectionFactory factory = new DubboHessianURLConnectionFactory();
             factory.setHessianProxyFactory(hessianProxyFactory);
             hessianProxyFactory.setConnectionFactory(factory);
         }
-        int timeout = url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
+        int timeout = url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT);
         hessianProxyFactory.setConnectTimeout(timeout);
         hessianProxyFactory.setReadTimeout(timeout);
         return (T) hessianProxyFactory.create(serviceType, url.setProtocol("http").toJavaURL(), Thread.currentThread().getContextClassLoader());
@@ -174,8 +184,8 @@ public class HessianProtocol extends AbstractProxyProtocol {
                 Enumeration<String> enumeration = request.getHeaderNames();
                 while (enumeration.hasMoreElements()) {
                     String key = enumeration.nextElement();
-                    if (key.startsWith(Constants.DEFAULT_EXCHANGER)) {
-                        RpcContext.getContext().setAttachment(key.substring(Constants.DEFAULT_EXCHANGER.length()),
+                    if (key.startsWith(DEFAULT_EXCHANGER)) {
+                        RpcContext.getContext().setAttachment(key.substring(DEFAULT_EXCHANGER.length()),
                                 request.getHeader(key));
                     }
                 }

@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.compiler.support;
 
-import org.apache.dubbo.common.utils.ClassHelper;
 
 import javax.tools.DiagnosticCollector;
 import javax.tools.FileObject;
@@ -261,7 +260,7 @@ public class JdkCompiler extends AbstractCompiler {
                 return defineClass(qualifiedClassName, bytes, 0, bytes.length);
             }
             try {
-                return ClassHelper.forNameWithCallerClassLoader(qualifiedClassName, getClass());
+                return org.apache.dubbo.common.utils.ClassUtils.forNameWithCallerClassLoader(qualifiedClassName, getClass());
             } catch (ClassNotFoundException nf) {
                 return super.findClass(qualifiedClassName);
             }

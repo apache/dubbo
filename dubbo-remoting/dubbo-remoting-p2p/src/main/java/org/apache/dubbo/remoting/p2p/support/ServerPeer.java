@@ -16,12 +16,12 @@
  */
 package org.apache.dubbo.remoting.p2p.support;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.Client;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.Server;
 import org.apache.dubbo.remoting.p2p.Group;

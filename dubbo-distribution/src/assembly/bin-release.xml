@@ -31,20 +31,23 @@
                 <include>LICENSE</include>
             </includes>
         </fileSet>
+        <fileSet>
+            <directory>../dubbo-demo</directory>
+            <includes>
+                <include>README.md</include>
+            </includes>
+        </fileSet>
     </fileSets>
 
     <dependencySets>
         <dependencySet>
             <useProjectArtifact>true</useProjectArtifact>
             <unpack>false</unpack>
-            <outputDirectory>/libs</outputDirectory>
+            <outputDirectory>/dubbo-demo</outputDirectory>
             <scope>runtime</scope>
             <includes>
-                <include>org.apache.dubbo:*</include>
+                <include>org.apache.dubbo:dubbo-demo-api*</include>
             </includes>
-            <excludes>
-                <exclude>com.alibaba:fastjson</exclude>
-            </excludes>
         </dependencySet>
     </dependencySets>
 </assembly>
