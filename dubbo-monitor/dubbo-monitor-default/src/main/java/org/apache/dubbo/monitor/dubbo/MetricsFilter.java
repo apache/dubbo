@@ -100,7 +100,7 @@ public class MetricsFilter implements Filter {
             Result result = invoker.invoke(invocation); // proceed invocation chain
             long duration = System.currentTimeMillis() - start;
             reportMetrics(invoker, invocation, duration, "success", isProvider);
-            reportLbMetrics(result, invoker, invocation, isProvider);
+            reportLbMetrics(result, invoker, isProvider);
             return result;
         } catch (RpcException e) {
             long duration = System.currentTimeMillis() - start;
@@ -122,8 +122,8 @@ public class MetricsFilter implements Filter {
         }
     }
 
-    private void reportLbMetrics(Result result, Invoker<?> invoker, Invocation invocation, boolean isProvider) {
-        if (responseHasCpu(result)) {
+    private void reportLbMetrics(Result result, Invoker<?> invoker, boolean isProvider) {
+        if (responseHasCpu(result) && isProvider) {
             AtomicLong cpuValue = new AtomicLong((long) Double.parseDouble(result.getAttachment("cpu.user")));
             SortedMap<MetricName, Gauge> gauges = MetricManager.getIMetricManager().getGauges(DUBBO_GROUP, MetricFilter.ALL);
             CpuUsageGauge cpuUsageGauge = (CpuUsageGauge) gauges.get(new MetricName("dubbo.cpu." + invoker.getUrl().getHost(), MetricLevel.MAJOR));
