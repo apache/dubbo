@@ -1064,6 +1064,11 @@ public final class ReflectUtils {
                 && !field.isSynthetic();
     }
 
+    public static boolean isSpecialInstanceField(Field field) {
+        return !Modifier.isStatic(field.getModifiers())
+                && !Modifier.isFinal(field.getModifiers())
+                && !field.isSynthetic();
+    }
     public static Map<String, Field> getBeanPropertyFields(Class cl) {
         Map<String, Field> properties = new HashMap<String, Field>();
         for (; cl != null; cl = cl.getSuperclass()) {
