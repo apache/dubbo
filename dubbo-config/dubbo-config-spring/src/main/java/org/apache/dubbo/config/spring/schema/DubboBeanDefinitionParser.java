@@ -161,65 +161,63 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                 } else if ("arguments".equals(property)) {
                     parseArguments(id, element.getChildNodes(), beanDefinition, parserContext);
                 } else {
-                    String value = element.getAttribute(property);
-                    if (value != null) {
-                        value = value.trim();
-                        if (value.length() > 0) {
-                            if ("registry".equals(property) && RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(value)) {
-                                RegistryConfig registryConfig = new RegistryConfig();
-                                registryConfig.setAddress(RegistryConfig.NO_AVAILABLE);
-                                beanDefinition.getPropertyValues().addPropertyValue(beanProperty, registryConfig);
-                            } else if ("provider".equals(property) || "registry".equals(property) || ("protocol".equals(property) && ServiceBean.class.equals(beanClass))) {
-                                /**
-                                 * For 'provider' 'protocol' 'registry', keep literal value (should be id/name) and set the value to 'registryIds' 'providerIds' protocolIds'
-                                 * The following process should make sure each id refers to the corresponding instance, here's how to find the instance for different use cases:
-                                 * 1. Spring, check existing bean by id, see{@link ServiceBean#afterPropertiesSet()}; then try to use id to find configs defined in remote Config Center
-                                 * 2. API, directly use id to find configs defined in remote Config Center; if all config instances are defined locally, please use {@link org.apache.dubbo.config.ServiceConfig#setRegistries(List)}
-                                 */
-                                beanDefinition.getPropertyValues().addPropertyValue(beanProperty + "Ids", value);
-                            } else {
-                                Object reference;
-                                if (isPrimitive(type)) {
-                                    if ("async".equals(property) && "false".equals(value)
-                                            || "timeout".equals(property) && "0".equals(value)
-                                            || "delay".equals(property) && "0".equals(value)
-                                            || "version".equals(property) && "0.0.0".equals(value)
-                                            || "stat".equals(property) && "-1".equals(value)
-                                            || "reliable".equals(property) && "false".equals(value)) {
-                                        // backward compatibility for the default value in old version's xsd
-                                        value = null;
-                                    }
-                                    reference = value;
-                                } else if ("onreturn".equals(property)) {
-                                    int index = value.lastIndexOf(".");
-                                    String returnRef = value.substring(0, index);
-                                    String returnMethod = value.substring(index + 1);
-                                    reference = new RuntimeBeanReference(returnRef);
-                                    beanDefinition.getPropertyValues().addPropertyValue("onreturnMethod", returnMethod);
-                                } else if ("onthrow".equals(property)) {
-                                    int index = value.lastIndexOf(".");
-                                    String throwRef = value.substring(0, index);
-                                    String throwMethod = value.substring(index + 1);
-                                    reference = new RuntimeBeanReference(throwRef);
-                                    beanDefinition.getPropertyValues().addPropertyValue("onthrowMethod", throwMethod);
-                                } else if ("oninvoke".equals(property)) {
-                                    int index = value.lastIndexOf(".");
-                                    String invokeRef = value.substring(0, index);
-                                    String invokeRefMethod = value.substring(index + 1);
-                                    reference = new RuntimeBeanReference(invokeRef);
-                                    beanDefinition.getPropertyValues().addPropertyValue("oninvokeMethod", invokeRefMethod);
-                                } else {
-                                    if ("ref".equals(property) && parserContext.getRegistry().containsBeanDefinition(value)) {
-                                        BeanDefinition refBean = parserContext.getRegistry().getBeanDefinition(value);
-                                        if (!refBean.isSingleton()) {
-                                            throw new IllegalStateException("The exported service ref " + value + " must be singleton! Please set the " + value + " bean scope to singleton, eg: <bean id=\"" + value + "\" scope=\"singleton\" ...>");
-                                        }
-                                    }
-                                    reference = new RuntimeBeanReference(value);
-                                }
-                                beanDefinition.getPropertyValues().addPropertyValue(beanProperty, reference);
+                    String value = StringUtils.trim(element.getAttribute(property));
+                    if (StringUtils.isEmpty(value)) {
+                        continue;
+                    }
+                    if ("registry".equals(property) && RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(value)) {
+                        RegistryConfig registryConfig = new RegistryConfig();
+                        registryConfig.setAddress(RegistryConfig.NO_AVAILABLE);
+                        beanDefinition.getPropertyValues().addPropertyValue(beanProperty, registryConfig);
+                    } else if ("provider".equals(property) || "registry".equals(property) || ("protocol".equals(property) && ServiceBean.class.equals(beanClass))) {
+                        /**
+                         * For 'provider' 'protocol' 'registry', keep literal value (should be id/name) and set the value to 'registryIds' 'providerIds' protocolIds'
+                         * The following process should make sure each id refers to the corresponding instance, here's how to find the instance for different use cases:
+                         * 1. Spring, check existing bean by id, see{@link ServiceBean#afterPropertiesSet()}; then try to use id to find configs defined in remote Config Center
+                         * 2. API, directly use id to find configs defined in remote Config Center; if all config instances are defined locally, please use {@link org.apache.dubbo.config.ServiceConfig#setRegistries(List)}
+                         */
+                        beanDefinition.getPropertyValues().addPropertyValue(beanProperty + "Ids", value);
+                    } else {
+                        Object reference;
+                        if (isPrimitive(type)) {
+                            if ("async".equals(property) && "false".equals(value)
+                                    || "timeout".equals(property) && "0".equals(value)
+                                    || "delay".equals(property) && "0".equals(value)
+                                    || "version".equals(property) && "0.0.0".equals(value)
+                                    || "stat".equals(property) && "-1".equals(value)
+                                    || "reliable".equals(property) && "false".equals(value)) {
+                                // backward compatibility for the default value in old version's xsd
+                                value = null;
                             }
+                            reference = value;
+                        } else if ("onreturn".equals(property)) {
+                            int index = value.lastIndexOf(".");
+                            String returnRef = value.substring(0, index);
+                            String returnMethod = value.substring(index + 1);
+                            reference = new RuntimeBeanReference(returnRef);
+                            beanDefinition.getPropertyValues().addPropertyValue("onreturnMethod", returnMethod);
+                        } else if ("onthrow".equals(property)) {
+                            int index = value.lastIndexOf(".");
+                            String throwRef = value.substring(0, index);
+                            String throwMethod = value.substring(index + 1);
+                            reference = new RuntimeBeanReference(throwRef);
+                            beanDefinition.getPropertyValues().addPropertyValue("onthrowMethod", throwMethod);
+                        } else if ("oninvoke".equals(property)) {
+                            int index = value.lastIndexOf(".");
+                            String invokeRef = value.substring(0, index);
+                            String invokeRefMethod = value.substring(index + 1);
+                            reference = new RuntimeBeanReference(invokeRef);
+                            beanDefinition.getPropertyValues().addPropertyValue("oninvokeMethod", invokeRefMethod);
+                        } else {
+                            if ("ref".equals(property) && parserContext.getRegistry().containsBeanDefinition(value)) {
+                                BeanDefinition refBean = parserContext.getRegistry().getBeanDefinition(value);
+                                if (!refBean.isSingleton()) {
+                                    throw new IllegalStateException("The exported service ref " + value + " must be singleton! Please set the " + value + " bean scope to singleton, eg: <bean id=\"" + value + "\" scope=\"singleton\" ...>");
+                                }
+                            }
+                            reference = new RuntimeBeanReference(value);
                         }
+                        beanDefinition.getPropertyValues().addPropertyValue(beanProperty, reference);
                     }
                 }
             }
