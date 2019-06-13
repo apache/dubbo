@@ -19,7 +19,4 @@ package org.apache.dubbo.common.extension.ext10.impl;
 import org.apache.dubbo.common.extension.ext10.Ext10MultiNames;
 
 public class Ext10MultiNamesImpl implements Ext10MultiNames {
-    @Override
-    public void names() {
-    }
 }
