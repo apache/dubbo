@@ -67,10 +67,10 @@ public class GenericFilter extends ListenableFilter {
                 if (args == null) {
                     args = new Object[params.length];
                 }
-                String generic = inv.getAttachment(Constants.GENERIC_KEY);
+                String generic = (String) inv.getAttachment(Constants.GENERIC_KEY);
 
                 if (StringUtils.isBlank(generic)) {
-                    generic = RpcContext.getContext().getAttachment(Constants.GENERIC_KEY);
+                    generic = (String) RpcContext.getContext().getAttachment(Constants.GENERIC_KEY);
                 }
 
                 if (StringUtils.isEmpty(generic)
@@ -131,9 +131,9 @@ public class GenericFilter extends ListenableFilter {
                     && inv.getArguments().length == 3
                     && !GenericService.class.isAssignableFrom(invoker.getInterface())) {
 
-                String generic = inv.getAttachment(Constants.GENERIC_KEY);
+                String generic = (String) inv.getAttachment(Constants.GENERIC_KEY);
                 if (StringUtils.isBlank(generic)) {
-                    generic = RpcContext.getContext().getAttachment(Constants.GENERIC_KEY);
+                    generic = (String) RpcContext.getContext().getAttachment(Constants.GENERIC_KEY);
                 }
 
                 if (appResponse.hasException() && !(appResponse.getException() instanceof GenericException)) {

@@ -218,7 +218,7 @@ public class DubboProtocol extends AbstractProtocol {
         boolean isCallBackServiceInvoke = false;
         boolean isStubServiceInvoke = false;
         int port = channel.getLocalAddress().getPort();
-        String path = inv.getAttachments().get(Constants.PATH_KEY);
+        String path = (String) inv.getAttachments().get(Constants.PATH_KEY);
 
         // if it's callback service on client side
         isStubServiceInvoke = Boolean.TRUE.toString().equals(inv.getAttachments().get(Constants.STUB_EVENT_KEY));
@@ -233,7 +233,7 @@ public class DubboProtocol extends AbstractProtocol {
             inv.getAttachments().put(IS_CALLBACK_SERVICE_INVOKE, Boolean.TRUE.toString());
         }
 
-        String serviceKey = serviceKey(port, path, inv.getAttachments().get(Constants.VERSION_KEY), inv.getAttachments().get(Constants.GROUP_KEY));
+        String serviceKey = serviceKey(port, path, (String) inv.getAttachments().get(Constants.VERSION_KEY), (String) inv.getAttachments().get(Constants.GROUP_KEY));
         DubboExporter<?> exporter = (DubboExporter<?>) exporterMap.get(serviceKey);
 
         if (exporter == null) {

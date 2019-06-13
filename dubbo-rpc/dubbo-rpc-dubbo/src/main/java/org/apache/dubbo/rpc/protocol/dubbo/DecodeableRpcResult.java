@@ -154,7 +154,7 @@ public class DecodeableRpcResult extends AppResponse implements Codec, Decodeabl
 
     private void handleAttachment(ObjectInput in) throws IOException {
         try {
-            setAttachments((Map<String, String>) in.readObject(Map.class));
+            setAttachments((Map<String, Object>) in.readObject(Map.class));
         } catch (ClassNotFoundException e) {
             rethrow(e);
         }

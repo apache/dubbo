@@ -44,7 +44,7 @@ public class ContextFilter extends ListenableFilter {
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        Map<String, String> attachments = invocation.getAttachments();
+        Map<String, Object> attachments = invocation.getAttachments();
         if (attachments != null) {
             attachments = new HashMap<>(attachments);
             attachments.remove(Constants.PATH_KEY);

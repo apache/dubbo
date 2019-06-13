@@ -65,17 +65,17 @@ public class CacheTest {
         }
 
         @Override
-        public Map<String, String> getAttachments() {
+        public Map<String, Object> getAttachments() {
             return null;
         }
 
         @Override
-        public String getAttachment(String key) {
+        public Object getAttachment(String key) {
             return null;
         }
 
         @Override
-        public String getAttachment(String key, String defaultValue) {
+        public Object getAttachment(String key, Object defaultValue) {
             return null;
         }
 

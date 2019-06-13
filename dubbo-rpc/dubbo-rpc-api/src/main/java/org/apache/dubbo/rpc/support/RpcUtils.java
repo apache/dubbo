@@ -88,7 +88,7 @@ public class RpcUtils {
     }
 
     public static Long getInvocationId(Invocation inv) {
-        String id = inv.getAttachment(Constants.ID_KEY);
+        String id = (String) inv.getAttachment(Constants.ID_KEY);
         return id == null ? null : new Long(id);
     }
 
@@ -193,8 +193,8 @@ public class RpcUtils {
         return isOneway;
     }
 
-    public static Map<String, String> getNecessaryAttachments(Invocation inv) {
-        Map<String, String> attachments = new HashMap<>(inv.getAttachments());
+    public static Map<String, Object> getNecessaryAttachments(Invocation inv) {
+        Map<String, Object> attachments = new HashMap<>(inv.getAttachments());
         attachments.remove(Constants.ASYNC_KEY);
         attachments.remove(Constants.FUTURE_GENERATED_KEY);
         return attachments;

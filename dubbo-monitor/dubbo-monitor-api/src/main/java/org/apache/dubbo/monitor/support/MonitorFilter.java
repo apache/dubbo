@@ -97,7 +97,7 @@ public class MonitorFilter extends ListenableFilter {
         @Override
         public void onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
             if (invoker.getUrl().hasParameter(Constants.MONITOR_KEY)) {
-                collect(invoker, invocation, result, RpcContext.getContext().getRemoteHost(), Long.valueOf(invocation.getAttachment(MONITOR_FILTER_START_TIME)), false);
+                collect(invoker, invocation, result, RpcContext.getContext().getRemoteHost(), Long.valueOf((String) invocation.getAttachment(MONITOR_FILTER_START_TIME)), false);
                 getConcurrent(invoker, invocation).decrementAndGet(); // count down
             }
         }
@@ -105,7 +105,7 @@ public class MonitorFilter extends ListenableFilter {
         @Override
         public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
             if (invoker.getUrl().hasParameter(Constants.MONITOR_KEY)) {
-                collect(invoker, invocation, null, RpcContext.getContext().getRemoteHost(), Long.valueOf(invocation.getAttachment(MONITOR_FILTER_START_TIME)), true);
+                collect(invoker, invocation, null, RpcContext.getContext().getRemoteHost(), Long.valueOf((String) invocation.getAttachment(MONITOR_FILTER_START_TIME)), true);
                 getConcurrent(invoker, invocation).decrementAndGet(); // count down
             }
         }
@@ -170,10 +170,10 @@ public class MonitorFilter extends ListenableFilter {
             }
             String input = "", output = "";
             if (invocation.getAttachment(Constants.INPUT_KEY) != null) {
-                input = invocation.getAttachment(Constants.INPUT_KEY);
+                input = (String) invocation.getAttachment(Constants.INPUT_KEY);
             }
             if (result != null && result.getAttachment(Constants.OUTPUT_KEY) != null) {
-                output = result.getAttachment(Constants.OUTPUT_KEY);
+                output = (String) result.getAttachment(Constants.OUTPUT_KEY);
             }
 
             return new URL(Constants.COUNT_PROTOCOL, NetUtils.getLocalHost(), localPort, service + Constants.PATH_SEPARATOR + method, MonitorService.APPLICATION, application, MonitorService.INTERFACE, service, MonitorService.METHOD, method, remoteKey, remoteValue, error ? MonitorService.FAILURE : MonitorService.SUCCESS, "1", MonitorService.ELAPSED, String.valueOf(elapsed), MonitorService.CONCURRENT, String.valueOf(concurrent), Constants.INPUT_KEY, input, Constants.OUTPUT_KEY, output, Constants.GROUP_KEY, group, Constants.VERSION_KEY, version);

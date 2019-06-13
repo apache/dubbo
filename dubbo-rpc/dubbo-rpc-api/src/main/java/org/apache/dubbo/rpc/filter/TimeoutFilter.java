@@ -52,7 +52,7 @@ public class TimeoutFilter extends ListenableFilter {
 
         @Override
         public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
-            String startAttach = invocation.getAttachment(TIMEOUT_FILTER_START_TIME);
+            String startAttach = (String) invocation.getAttachment(TIMEOUT_FILTER_START_TIME);
             if (startAttach != null) {
                 long elapsed = System.currentTimeMillis() - Long.valueOf(startAttach);
                 if (invoker.getUrl() != null && elapsed > invoker.getUrl().getMethodParameter(invocation.getMethodName(), "timeout", Integer.MAX_VALUE)) {
