@@ -17,6 +17,7 @@
 package org.apache.dubbo.monitor.dubbo;
 
 import com.alibaba.metrics.*;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
@@ -75,12 +76,12 @@ public class MetricsFilter implements Filter {
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         if (exported.compareAndSet(false, true)) {
             this.protocolName = invoker.getUrl().getParameter(METRICS_PROTOCOL) == null ?
-                    DEFAULT_PROTOCOL : invoker.getUrl().getParameter(METRICS_PROTOCOL);
+                DEFAULT_PROTOCOL : invoker.getUrl().getParameter(METRICS_PROTOCOL);
 
             Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(protocolName);
 
             this.port = invoker.getUrl().getParameter(METRICS_PORT) == null ?
-                    protocol.getDefaultPort() : Integer.valueOf(invoker.getUrl().getParameter(METRICS_PORT));
+                protocol.getDefaultPort() : Integer.valueOf(invoker.getUrl().getParameter(METRICS_PORT));
 
             Invoker<MetricsService> metricsInvoker = initMetricsInvoker();
 
@@ -88,7 +89,7 @@ public class MetricsFilter implements Filter {
                 protocol.export(metricsInvoker);
             } catch (RuntimeException e) {
                 logger.error("Metrics Service need to be configured" +
-                        " when multiple processes are running on a host" + e.getMessage());
+                    " when multiple processes are running on a host" + e.getMessage());
             }
         }
 
@@ -122,20 +123,16 @@ public class MetricsFilter implements Filter {
     }
 
     private void reportLbMetrics(Result result, Invoker<?> invoker, Invocation invocation, boolean isProvider) {
-        if(responseHasCpu(result)) {
+        if (responseHasCpu(result)) {
             AtomicLong cpuValue = new AtomicLong((long) Double.parseDouble(result.getAttachment("cpu.user")));
-            Gauge<Long> gauge = new CachedGauge<Long>(100, TimeUnit.HOURS) {
-                @Override
-                protected Long loadValue() {
-                    return cpuValue.get();
-                }
-            };
-
             SortedMap<MetricName, Gauge> gauges = MetricManager.getIMetricManager().getGauges(DUBBO_GROUP, MetricFilter.ALL);
-            Gauge contains = gauges.get(new MetricName("dubbo.cpu", MetricLevel.MAJOR));
-            if (contains == null) {
-                MetricName metricName = new MetricName("dubbo.cpu", MetricLevel.MAJOR);
+            CpuUsageGauge cpuUsageGauge = (CpuUsageGauge) gauges.get(new MetricName("dubbo.cpu." + invoker.getUrl().getHost(), MetricLevel.MAJOR));
+            if (cpuUsageGauge == null) {
+                CpuUsageGauge gauge = new CpuUsageGauge(1, TimeUnit.HOURS, cpuValue);
+                MetricName metricName = new MetricName("dubbo.cpu." + invoker.getUrl().getHost(), MetricLevel.MAJOR);
                 MetricManager.register(DUBBO_GROUP, metricName, gauge);
+            } else {
+                cpuUsageGauge.setCpuValue(cpuValue);
             }
 
         }
@@ -158,7 +155,7 @@ public class MetricsFilter implements Filter {
         method.append(")");
         Class<?> returnType = RpcUtils.getReturnType(invocation);
         String typeName = null;
-        if(returnType != null) {
+        if (returnType != null) {
             typeName = returnType.getTypeName();
             typeName = typeName.substring(typeName.lastIndexOf(".") + 1);
         }
@@ -225,10 +222,10 @@ public class MetricsFilter implements Filter {
         }
 
         return new MetricObject
-                .Builder(metric)
-                .withValue(value)
-                .withLevel(level)
-                .build();
+            .Builder(metric)
+            .withValue(value)
+            .withLevel(level)
+            .build();
     }
 
     private Invoker<MetricsService> initMetricsInvoker() {
@@ -251,7 +248,7 @@ public class MetricsFilter implements Filter {
 
 
                 MetricsCollector collector = MetricsCollectorFactory.createNew(
-                        CollectLevel.NORMAL, Collections.EMPTY_MAP, rateFactor, durationFactor, null);
+                    CollectLevel.NORMAL, Collections.EMPTY_MAP, rateFactor, durationFactor, null);
 
                 for (Map.Entry<MetricName, FastCompass> entry : fastCompasses.entrySet()) {
                     collector.collect(entry.getKey(), entry.getValue(), timestamp);

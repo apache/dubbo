@@ -20,12 +20,14 @@ import com.alibaba.metrics.*;
 import com.alibaba.metrics.common.MetricObject;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.monitor.MetricsService;
 import org.apache.dubbo.monitor.dubbo.service.DemoService;
 import org.apache.dubbo.rpc.*;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,6 +38,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static org.apache.dubbo.common.constants.CommonConstants.*;
 import static org.apache.dubbo.monitor.Constants.*;
@@ -123,7 +126,7 @@ public class MetricsFilterTest {
         Invocation invocation = new RpcInvocation("timeoutException", null, null);
         RpcContext.getContext().setRemoteAddress(NetUtils.getLocalHost(), 20880).setLocalAddress(NetUtils.getLocalHost(), 2345);
         RpcContext.getContext().setUrl(timeoutInvoker.getUrl().addParameter(SIDE_KEY, CONSUMER_SIDE)
-                .addParameter(TIMEOUT_KEY, 300));
+            .addParameter(TIMEOUT_KEY, 300));
         for (int i = 0; i < 10; i++) {
             try {
                 metricsFilter.invoke(timeoutInvoker, invocation);
@@ -177,7 +180,7 @@ public class MetricsFilterTest {
         Invocation invocation = new RpcInvocation("sayName", new Class<?>[0], new Object[0]);
         RpcContext.getContext().setRemoteAddress(NetUtils.getLocalHost(), 20880).setLocalAddress(NetUtils.getLocalHost(), 2345);
         RpcContext.getContext().setUrl(serviceInvoker.getUrl().addParameter(SIDE_KEY, PROVIDER_SIDE)
-                .addParameter(TIMEOUT_KEY, 300));
+            .addParameter(TIMEOUT_KEY, 300));
         for (int i = 0; i < 50; i++) {
             try {
                 metricsFilter.invoke(serviceInvoker, invocation);
@@ -220,12 +223,12 @@ public class MetricsFilterTest {
         MetricsFilter metricsFilter = new MetricsFilter();
         Invocation invocation = new RpcInvocation("sayName", new Class<?>[0], new Object[0]);
         AppResponse response = AppResponseBuilder.create()
-                .withAttachments(new HashMap<String, String>(4) {
-                    {
-                        put("cpu.user", "60.5");
-                    }
-                })
-                .build();
+            .withAttachments(new HashMap<String, String>(4) {
+                {
+                    put("cpu.user", "60.5");
+                }
+            })
+            .build();
         onInvokeReturns(response);
 
         RpcContext.getContext().setRemoteAddress(NetUtils.getLocalHost(), 20880).setLocalAddress(NetUtils.getLocalHost(), 2345);
@@ -239,7 +242,29 @@ public class MetricsFilterTest {
         }
 
         SortedMap<MetricName, Gauge> gauges = MetricManager.getIMetricManager().getGauges(DUBBO_GROUP, MetricFilter.ALL);
-        Assertions.assertNotNull( gauges.get(new MetricName("dubbo.cpu", MetricLevel.MAJOR)));
+        Assertions.assertNotNull(gauges.get(new MetricName("dubbo.cpu." + serviceInvoker.getUrl().getHost(), MetricLevel.MAJOR)));
+
+        AppResponse response2 = AppResponseBuilder.create()
+            .withAttachments(new HashMap<String, String>(4) {
+                {
+                    put("cpu.user", "55");
+                }
+            })
+            .build();
+        onInvokeReturns(response2);
+
+        for (int i = 0; i < 50; i++) {
+            try {
+                metricsFilter.invoke(serviceInvoker, invocation);
+            } catch (RpcException e) {
+                //ignore
+            }
+        }
+        ;
+
+        SortedMap<MetricName, Gauge> gauges2 = MetricManager.getIMetricManager().getGauges(DUBBO_GROUP, MetricFilter.ALL);
+        Gauge gauge = gauges2.get(new MetricName("dubbo.cpu." + serviceInvoker.getUrl().getHost(), MetricLevel.MAJOR));
+        Assertions.assertEquals(55L, ((AtomicLong) gauge.getValue()).get());
     }
 
     @Test
@@ -251,7 +276,7 @@ public class MetricsFilterTest {
         Invocation echoInvocation = new RpcInvocation("echo", new Class<?>[]{Integer.class}, new Integer[]{1});
         RpcContext.getContext().setRemoteAddress(NetUtils.getLocalHost(), 20880).setLocalAddress(NetUtils.getLocalHost(), 2345);
         RpcContext.getContext().setUrl(serviceInvoker.getUrl().addParameter(SIDE_KEY, PROVIDER_SIDE)
-                .addParameter(TIMEOUT_KEY, 300));
+            .addParameter(TIMEOUT_KEY, 300));
         for (int i = 0; i < 50; i++) {
             metricsFilter.invoke(serviceInvoker, sayNameInvocation);
             metricsFilter.invoke(serviceInvoker, echoInvocation);
@@ -294,23 +319,23 @@ public class MetricsFilterTest {
         }
 
         Assertions.assertEquals(50.0,
-                methodMetricMap.get("org.apache.dubbo.monitor.dubbo.service.DemoService.void sayName()").get("success_bucket_count"));
+            methodMetricMap.get("org.apache.dubbo.monitor.dubbo.service.DemoService.void sayName()").get("success_bucket_count"));
         Assertions.assertEquals(50.0,
-                methodMetricMap.get("org.apache.dubbo.monitor.dubbo.service.DemoService.void echo(Integer)").get("success_bucket_count"));
+            methodMetricMap.get("org.apache.dubbo.monitor.dubbo.service.DemoService.void echo(Integer)").get("success_bucket_count"));
 
         Assertions.assertEquals(50.0,
-                methodMetricMap.get("org.apache.dubbo.monitor.dubbo.service.DemoService.void sayName()").get("timeoutError_bucket_count"));
+            methodMetricMap.get("org.apache.dubbo.monitor.dubbo.service.DemoService.void sayName()").get("timeoutError_bucket_count"));
         Assertions.assertEquals(50.0,
-                methodMetricMap.get("org.apache.dubbo.monitor.dubbo.service.DemoService.void echo(Integer)").get("timeoutError_bucket_count"));
+            methodMetricMap.get("org.apache.dubbo.monitor.dubbo.service.DemoService.void echo(Integer)").get("timeoutError_bucket_count"));
 
         Assertions.assertEquals(100.0 / 15,
-                methodMetricMap.get("org.apache.dubbo.monitor.dubbo.service.DemoService.void sayName()").get("qps"));
+            methodMetricMap.get("org.apache.dubbo.monitor.dubbo.service.DemoService.void sayName()").get("qps"));
         Assertions.assertEquals(100.0 / 15,
-                methodMetricMap.get("org.apache.dubbo.monitor.dubbo.service.DemoService.void echo(Integer)").get("qps"));
+            methodMetricMap.get("org.apache.dubbo.monitor.dubbo.service.DemoService.void echo(Integer)").get("qps"));
 
         Assertions.assertEquals(50.0 / 100.0,
-                methodMetricMap.get("org.apache.dubbo.monitor.dubbo.service.DemoService.void sayName()").get("success_rate"));
+            methodMetricMap.get("org.apache.dubbo.monitor.dubbo.service.DemoService.void sayName()").get("success_rate"));
         Assertions.assertEquals(50.0 / 100.0,
-                methodMetricMap.get("org.apache.dubbo.monitor.dubbo.service.DemoService.void echo(Integer)").get("success_rate"));
+            methodMetricMap.get("org.apache.dubbo.monitor.dubbo.service.DemoService.void echo(Integer)").get("success_rate"));
     }
 }
