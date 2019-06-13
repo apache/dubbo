@@ -539,12 +539,6 @@
                 <version>${metrics_version}</version>
             </dependency>
 
-            <dependency>
-                <groupId>com.alibaba.middleware</groupId>
-                <artifactId>metrics-os</artifactId>
-                <version>${metrics_version}</version>
-            </dependency>
-
             <!-- for dubbo-registry-sofa -->
             <dependency>
                 <groupId>com.alipay.sofa</groupId>
