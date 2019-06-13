@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.common.utils;
 
+import java.util.Set;
+import org.apache.dubbo.common.annotations.GenericAlias;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
@@ -165,10 +167,41 @@ public class PojoUtils {
         Map<String, Object> map = new HashMap<String, Object>();
         history.put(pojo, map);
         map.put("class", pojo.getClass().getName());
+        Set<String> annoFieldSet = new HashSet<>();
+        for (Field field : pojo.getClass().getDeclaredFields()) {
+            GenericAlias genericAlias = field.getAnnotation(GenericAlias.class);
+            if (ReflectUtils.isSpecialInstanceField(field) &&  genericAlias != null) {
+                String fieldAlaisName = genericAlias.value();
+                try {
+                    Object fieldValue = forceGetFieldValue(field,pojo);
+                    if (history.containsKey(pojo)) {
+                        Object pojoGeneralizedValue = history.get(pojo);
+                        if (pojoGeneralizedValue instanceof Map
+                                && ((Map) pojoGeneralizedValue).containsKey(fieldAlaisName)) {
+                            continue;
+                        }
+                    }
+                    if (fieldValue != null) {
+                        annoFieldSet.add(field.getName());
+                        annoFieldSet.add(fieldAlaisName);
+                        map.put(fieldAlaisName, generalize(fieldValue, history));
+                    }
+                } catch (Exception e) {
+                    throw new RuntimeException(e.getMessage(), e);
+                }
+            }
+        }
+        Set<String> methodNameSet = new HashSet<>();
         for (Method method : pojo.getClass().getMethods()) {
             if (ReflectUtils.isBeanPropertyReadMethod(method)) {
                 try {
-                    map.put(ReflectUtils.getPropertyNameFromBeanReadMethod(method), generalize(method.invoke(pojo), history));
+                    String methodAlias = getGenericNameFromMethod(method);
+                    String propertyName = ReflectUtils.getPropertyNameFromBeanReadMethod(method);
+                    String uniqName = methodAlias == null?propertyName : methodAlias;
+                    if(!annoFieldSet.contains(propertyName) && (methodAlias == null || !annoFieldSet.contains(methodAlias))) {
+                        map.put(uniqName, generalize(method.invoke(pojo), history));
+                        methodNameSet.add(propertyName);
+                    }
                 } catch (Exception e) {
                     throw new RuntimeException(e.getMessage(), e);
                 }
@@ -177,6 +210,9 @@ public class PojoUtils {
         // public field
         for (Field field : pojo.getClass().getFields()) {
             if (ReflectUtils.isPublicInstanceField(field)) {
+                if(methodNameSet.contains(field.getName()) || annoFieldSet.contains(field.getName())) {
+                    continue;
+                }
                 try {
                     Object fieldValue = field.get(pojo);
                     if (history.containsKey(pojo)) {
@@ -195,6 +231,26 @@ public class PojoUtils {
             }
         }
         return map;
+    }
+    private static Object forceGetFieldValue(Field field,Object pojo) throws IllegalAccessException {
+        boolean isPublic = Modifier.isPublic(field.getModifiers());
+        if(!isPublic) {
+            field.setAccessible(true);
+        }
+        try{
+            return field.get(pojo);
+        } finally {
+            if(!isPublic) {
+                field.setAccessible(false);
+            }
+        }
+    }
+    private static String getGenericNameFromMethod(Method method ) {
+        GenericAlias genericAlias = method.getAnnotation(GenericAlias.class);
+        if(genericAlias == null) {
+            return null;
+        }
+        return genericAlias.value();
     }
 
     public static Object realize(Object pojo, Class<?> type) {
@@ -470,7 +526,7 @@ public class PojoUtils {
                             } else if (field != null) {
                                 value = realize0(value, field.getType(), field.getGenericType(), history);
                                 try {
-                                    field.set(dest, value);
+                                    forceSetFieldValue(field,dest,value);
                                 } catch (IllegalAccessException e) {
                                     throw new RuntimeException("Failed to set field " + name + " of pojo " + dest.getClass().getName() + " : " + e.getMessage(), e);
                                 }
@@ -495,6 +551,19 @@ public class PojoUtils {
             }
         }
         return pojo;
+    }
+    private static void forceSetFieldValue(Field field,Object dest,Object value) throws IllegalAccessException {
+        boolean isNotPublic = Modifier.isPublic(field.getModifiers());
+        if(!isNotPublic) {
+            field.setAccessible(true);
+        }
+        try{
+            field.set(dest,value);
+        } finally {
+            if(!isNotPublic) {
+                field.setAccessible(false);
+            }
+        }
     }
 
     /**
@@ -574,13 +643,14 @@ public class PojoUtils {
         String name = "set" + property.substring(0, 1).toUpperCase() + property.substring(1);
         Method method = NAME_METHODS_CACHE.get(cls.getName() + "." + name + "(" + valueCls.getName() + ")");
         if (method == null) {
-            try {
-                method = cls.getMethod(name, valueCls);
-            } catch (NoSuchMethodException e) {
                 for (Method m : cls.getMethods()) {
-                    if (ReflectUtils.isBeanPropertyWriteMethod(m) && m.getName().equals(name)) {
+                GenericAlias genericAlias = m.getAnnotation(GenericAlias.class);
+                if(genericAlias != null && genericAlias.value().equals(name)) {
                         method = m;
+                    break;
                     }
+                if (ReflectUtils.isBeanPropertyWriteMethod(m) && m.getName().equals(name)) {
+                    method = m;
                 }
             }
             if (method != null) {
@@ -595,15 +665,15 @@ public class PojoUtils {
         if (CLASS_FIELD_CACHE.containsKey(cls) && CLASS_FIELD_CACHE.get(cls).containsKey(fieldName)) {
             return CLASS_FIELD_CACHE.get(cls).get(fieldName);
         }
-        try {
-            result = cls.getDeclaredField(fieldName);
-            result.setAccessible(true);
-        } catch (NoSuchFieldException e) {
-            for (Field field : cls.getFields()) {
-                if (fieldName.equals(field.getName()) && ReflectUtils.isPublicInstanceField(field)) {
+        for (Field field : cls.getDeclaredFields()) {
+            GenericAlias genericAlias = field.getAnnotation(GenericAlias.class);
+            if(genericAlias != null && genericAlias.value().equals(fieldName)) {
                     result = field;
                     break;
                 }
+            if (fieldName.equals(field.getName())) {
+                result = field;
+                break;
             }
         }
         if (result != null) {
