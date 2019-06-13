@@ -16,7 +16,13 @@
  */
 package org.apache.dubbo.monitor.dubbo;
 
-import com.alibaba.metrics.*;
+import com.alibaba.metrics.FastCompass;
+import com.alibaba.metrics.Gauge;
+import com.alibaba.metrics.IMetricManager;
+import com.alibaba.metrics.MetricFilter;
+import com.alibaba.metrics.MetricLevel;
+import com.alibaba.metrics.MetricManager;
+import com.alibaba.metrics.MetricName;
 import com.alibaba.metrics.common.MetricObject;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -101,6 +107,9 @@ public class MetricsFilterTest {
         Invocation invocation = new RpcInvocation("sayName", new Class<?>[]{Integer.class}, new Object[0]);
         RpcContext.getContext().setRemoteAddress(NetUtils.getLocalHost(), 20880).setLocalAddress(NetUtils.getLocalHost(), 2345);
         RpcContext.getContext().setUrl(serviceInvoker.getUrl().addParameter(SIDE_KEY, CONSUMER_SIDE));
+        AppResponse response = AppResponseBuilder.create()
+            .build();
+        onInvokeReturns(response);
         for (int i = 0; i < 100; i++) {
             metricsFilter.invoke(serviceInvoker, invocation);
         }
@@ -127,6 +136,9 @@ public class MetricsFilterTest {
         RpcContext.getContext().setRemoteAddress(NetUtils.getLocalHost(), 20880).setLocalAddress(NetUtils.getLocalHost(), 2345);
         RpcContext.getContext().setUrl(timeoutInvoker.getUrl().addParameter(SIDE_KEY, CONSUMER_SIDE)
             .addParameter(TIMEOUT_KEY, 300));
+        AppResponse response = AppResponseBuilder.create()
+            .build();
+        onInvokeReturns(response);
         for (int i = 0; i < 10; i++) {
             try {
                 metricsFilter.invoke(timeoutInvoker, invocation);
@@ -156,6 +168,9 @@ public class MetricsFilterTest {
         Invocation invocation = new RpcInvocation("sayName", new Class<?>[0], new Object[0]);
         RpcContext.getContext().setRemoteAddress(NetUtils.getLocalHost(), 20880).setLocalAddress(NetUtils.getLocalHost(), 2345);
         RpcContext.getContext().setUrl(serviceInvoker.getUrl().addParameter(SIDE_KEY, PROVIDER));
+        AppResponse response = AppResponseBuilder.create()
+            .build();
+        onInvokeReturns(response);
         for (int i = 0; i < 100; i++) {
             metricsFilter.invoke(serviceInvoker, invocation);
         }
@@ -181,6 +196,9 @@ public class MetricsFilterTest {
         RpcContext.getContext().setRemoteAddress(NetUtils.getLocalHost(), 20880).setLocalAddress(NetUtils.getLocalHost(), 2345);
         RpcContext.getContext().setUrl(serviceInvoker.getUrl().addParameter(SIDE_KEY, PROVIDER_SIDE)
             .addParameter(TIMEOUT_KEY, 300));
+        AppResponse response = AppResponseBuilder.create()
+            .build();
+        onInvokeReturns(response);
         for (int i = 0; i < 50; i++) {
             try {
                 metricsFilter.invoke(serviceInvoker, invocation);
@@ -210,7 +228,7 @@ public class MetricsFilterTest {
         }
 
         Assertions.assertEquals(50.0, metricMap.get("success_bucket_count"));
-        //Assertions.assertEquals(50.0, metricMap.get("timeoutError_bucket_count"));
+        Assertions.assertEquals(50.0, metricMap.get("timeoutError_bucket_count"));
         Assertions.assertEquals(100.0, metricMap.get("bucket_count"));
         Assertions.assertEquals(100.0 / 5, metricMap.get("qps"));
         Assertions.assertEquals(50.0 / 100.0, metricMap.get("success_rate"));
@@ -277,6 +295,9 @@ public class MetricsFilterTest {
         RpcContext.getContext().setRemoteAddress(NetUtils.getLocalHost(), 20880).setLocalAddress(NetUtils.getLocalHost(), 2345);
         RpcContext.getContext().setUrl(serviceInvoker.getUrl().addParameter(SIDE_KEY, PROVIDER_SIDE)
             .addParameter(TIMEOUT_KEY, 300));
+        AppResponse response = AppResponseBuilder.create()
+            .build();
+        onInvokeReturns(response);
         for (int i = 0; i < 50; i++) {
             metricsFilter.invoke(serviceInvoker, sayNameInvocation);
             metricsFilter.invoke(serviceInvoker, echoInvocation);
