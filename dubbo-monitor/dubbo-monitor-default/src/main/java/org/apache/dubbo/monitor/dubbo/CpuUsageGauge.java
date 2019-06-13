@@ -1,7 +1,6 @@
 package org.apache.dubbo.monitor.dubbo;
 
 import com.alibaba.metrics.CachedGauge;
-import com.alibaba.metrics.Clock;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
