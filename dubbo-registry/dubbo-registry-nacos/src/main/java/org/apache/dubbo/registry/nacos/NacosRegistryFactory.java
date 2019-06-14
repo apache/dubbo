@@ -100,7 +100,7 @@ public class NacosRegistryFactory extends AbstractRegistryFactory {
 
     private void putPropertyIfAbsent(URL url, Properties properties, String propertyName) {
         String propertyValue = url.getParameter(propertyName);
-        if (propertyValue != null && propertyValue.length() != 0) {
+        if (propertyValue != null && propertyValue.trim().length() != 0) {
             properties.setProperty(propertyName, propertyValue);
         }
     }
