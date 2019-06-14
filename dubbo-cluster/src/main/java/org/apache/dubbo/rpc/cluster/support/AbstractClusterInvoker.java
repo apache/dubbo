@@ -94,6 +94,10 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
         return directory.isAvailable();
     }
 
+    public Directory<T> getDirectory() {
+        return directory;
+    }
+
     @Override
     public void destroy() {
         if (destroyed.compareAndSet(false, true)) {

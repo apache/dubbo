@@ -22,15 +22,13 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import org.apache.dubbo.remoting.telnet.support.Help;
+import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.MethodModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
 
 import java.lang.reflect.Method;
-
-import static org.apache.dubbo.registry.support.ProviderConsumerRegTable.getConsumerAddressNum;
-import static org.apache.dubbo.registry.support.ProviderConsumerRegTable.isRegistered;
 
 /**
  * ListTelnetHandler handler list services and its methods details.
@@ -90,7 +88,7 @@ public class ListTelnetHandler implements TelnetHandler {
             if (detail) {
                 buf.append(" -> ");
                 buf.append(" published: ");
-                buf.append(isRegistered(provider.getServiceKey()) ? "Y" : "N");
+                buf.append(ApplicationModel.isRegistered(provider.getServiceKey()) ? "Y" : "N");
             }
             buf.append("\r\n");
         }
@@ -106,7 +104,7 @@ public class ListTelnetHandler implements TelnetHandler {
             if (detail) {
                 buf.append(" -> ");
                 buf.append(" addresses: ");
-                buf.append(getConsumerAddressNum(consumer.getServiceKey()));
+                buf.append(((AbstractClusterInvoker) consumer.getInvoker()).getDirectory().getAllInvokers().size());
             }
         }
     }

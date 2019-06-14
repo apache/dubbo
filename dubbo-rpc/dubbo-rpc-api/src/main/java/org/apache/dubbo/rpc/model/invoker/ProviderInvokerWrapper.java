@@ -14,10 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.support;
+package org.apache.dubbo.rpc.model.invoker;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.registry.integration.RegistryDirectory;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
@@ -26,19 +25,18 @@ import org.apache.dubbo.rpc.RpcException;
 /**
  * @date 2017/11/23
  */
-public class ConsumerInvokerWrapper<T> implements Invoker {
+public class ProviderInvokerWrapper<T> implements Invoker {
     private Invoker<T> invoker;
     private URL originUrl;
     private URL registryUrl;
-    private URL consumerUrl;
-    private RegistryDirectory registryDirectory;
+    private URL providerUrl;
+    private volatile boolean isReg;
 
-    public ConsumerInvokerWrapper(Invoker<T> invoker, URL registryUrl, URL consumerUrl, RegistryDirectory registryDirectory) {
+    public ProviderInvokerWrapper(Invoker<T> invoker, URL registryUrl, URL providerUrl) {
         this.invoker = invoker;
         this.originUrl = URL.valueOf(invoker.getUrl().toFullString());
         this.registryUrl = URL.valueOf(registryUrl.toFullString());
-        this.consumerUrl = consumerUrl;
-        this.registryDirectory = registryDirectory;
+        this.providerUrl = providerUrl;
     }
 
     @Override
@@ -74,15 +72,28 @@ public class ConsumerInvokerWrapper<T> implements Invoker {
         return registryUrl;
     }
 
+    public URL getProviderUrl() {
+        return providerUrl;
+    }
+
     public Invoker<T> getInvoker() {
         return invoker;
     }
 
-    public URL getConsumerUrl() {
-        return consumerUrl;
+    public boolean isReg() {
+        return isReg;
     }
 
-    public RegistryDirectory getRegistryDirectory() {
-        return registryDirectory;
+    public void setReg(boolean reg) {
+        isReg = reg;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || !(o instanceof ProviderInvokerWrapper)) {
+            return false;
+        }
+        ProviderInvokerWrapper other = (ProviderInvokerWrapper) o;
+        return other.getInvoker().equals(this.getInvoker());
     }
 }

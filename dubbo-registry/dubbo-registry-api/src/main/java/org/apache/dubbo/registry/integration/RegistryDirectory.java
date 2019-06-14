@@ -605,6 +605,11 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     }
 
     @Override
+    public List<Invoker<T>> getAllInvokers() {
+        return invokers;
+    }
+
+    @Override
     public URL getUrl() {
         return this.overrideDirectoryUrl;
     }

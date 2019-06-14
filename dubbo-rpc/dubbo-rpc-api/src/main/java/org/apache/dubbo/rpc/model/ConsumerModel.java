@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.rpc.Invoker;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -32,6 +33,8 @@ public class ConsumerModel {
     private final Object proxyObject;
     private final ServiceModel serviceModel;
     private final Map<String, AsyncMethodInfo> methodConfigs = new HashMap<>();
+
+    private Invoker<?> invoker;
 
     /**
      *  This constructor create an instance of ConsumerModel and passed objects should not be null.
@@ -94,6 +97,14 @@ public class ConsumerModel {
 
     public ServiceModel getServiceModel() {
         return serviceModel;
+    }
+
+    public Invoker<?> getInvoker() {
+        return invoker;
+    }
+
+    public void setInvoker(Invoker<?> invoker) {
+        this.invoker = invoker;
     }
 
     public static class AsyncMethodInfo {

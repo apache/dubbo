@@ -16,6 +16,11 @@
  */
 package org.apache.dubbo.rpc.model;
 
+import org.apache.dubbo.rpc.model.invoker.ProviderInvokerWrapper;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -25,6 +30,7 @@ public class ProviderModel {
     private final String serviceKey;
     private final Object serviceInstance;
     private final ServiceModel serviceModel;
+    private Map<String, ProviderInvokerWrapper> protocolInvokers;
 
     public ProviderModel(String serviceKey, Object serviceInstance, ServiceModel serviceModel) {
         if (null == serviceInstance) {
@@ -54,5 +60,17 @@ public class ProviderModel {
 
     public ServiceModel getServiceModel() {
         return serviceModel;
+    }
+
+    public void addInvoker(ProviderInvokerWrapper invoker) {
+        protocolInvokers.put(invoker.getUrl().getProtocol(), invoker);
+    }
+
+    public ProviderInvokerWrapper getInvoker(String protocol) {
+        return protocolInvokers.get(protocol);
+    }
+
+    public Collection<ProviderInvokerWrapper> getInvokers() {
+        return Collections.unmodifiableCollection(protocolInvokers.values());
     }
 }
