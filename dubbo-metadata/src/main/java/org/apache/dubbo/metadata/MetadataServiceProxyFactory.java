@@ -14,10 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.client.metadata;
+package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.ServiceInstance;
 
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;

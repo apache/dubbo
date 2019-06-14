@@ -34,7 +34,7 @@ public class DubboServiceConsumerBootstrap {
                 .application("dubbo-consumer-demo")
                 .next()
                 .registry()
-                .address("nacos://127.0.0.1:8848?registry-type=service&subscribed-services=dubbo-provider-demo")
+                .address("zookeeper://127.0.0.1:2181?registry-type=service&subscribed-services=dubbo-provider-demo")
                 .next()
                 .reference("ref")
                 .interfaceClass(EchoService.class)

@@ -91,7 +91,6 @@ public class ServiceOrientedRegistry extends FailbackRegistry {
 
     private final MetadataServiceProxyFactory metadataServiceProxyFactory;
 
-
     public ServiceOrientedRegistry(URL registryURL) {
         super(registryURL);
         this.serviceDiscovery = buildServiceDiscovery(registryURL);
@@ -397,7 +396,7 @@ public class ServiceOrientedRegistry extends FailbackRegistry {
         String protocol = subscribedURL.getParameter(PROTOCOL_KEY);
 
         try {
-            MetadataService metadataService = metadataServiceProxyFactory.createProxy(providerInstance);
+            MetadataService metadataService = metadataServiceProxyFactory.getProxy(providerInstance);
             List<String> urls = metadataService.getExportedURLs(serviceInterface, group, version, protocol);
             exportedURLs = urls.stream().map(URL::valueOf).collect(Collectors.toList());
         } catch (Throwable e) {
