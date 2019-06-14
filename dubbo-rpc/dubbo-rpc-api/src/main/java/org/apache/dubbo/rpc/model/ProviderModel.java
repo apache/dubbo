@@ -44,7 +44,6 @@ public class ProviderModel {
         initMethod();
     }
 
-
     public String getServiceName() {
         return serviceName;
     }

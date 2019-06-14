@@ -312,5 +312,4 @@ public class RpcStatus {
         return getTotal();
     }
 
-
 }

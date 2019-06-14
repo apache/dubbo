@@ -20,6 +20,7 @@ import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.support.MockInvocation;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -59,7 +60,6 @@ public class DefaultTPSLimiterTest {
             }
         }
     }
-
 
     @Test
     public void testConfigChange() throws Exception {

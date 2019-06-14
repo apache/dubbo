@@ -20,17 +20,17 @@ import java.util.concurrent.CompletableFuture;
 
 /**
  * A sub class used for normal async invoke.
- *
+ * <p>
  * <b>NOTICE!!</b>
- *
+ * <p>
  * <p>
  * You should never rely on this class directly when using or extending Dubbo, the implementation of {@link SimpleAsyncRpcResult}
  * is only a workaround for compatibility purpose. It may be changed or even get removed from the next major version.
  * Please only use {@link Result} or {@link RpcResult}.
  * </p>
- *
+ * <p>
  * Check {@link AsyncRpcResult} for more details.
- *
+ * <p>
  * TODO AsyncRpcResult, AsyncNormalRpcResult should not be a parent-child hierarchy.
  */
 public class SimpleAsyncRpcResult extends AsyncRpcResult {
@@ -38,7 +38,8 @@ public class SimpleAsyncRpcResult extends AsyncRpcResult {
         super(future, registerCallback);
     }
 
-    public SimpleAsyncRpcResult(CompletableFuture<Object> future, CompletableFuture<Result> rFuture, boolean registerCallback) {
+    public SimpleAsyncRpcResult(CompletableFuture<Object> future, CompletableFuture<Result> rFuture,
+                                boolean registerCallback) {
         super(future, rFuture, registerCallback);
     }
 

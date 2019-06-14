@@ -32,7 +32,7 @@ import java.util.Map;
  * AccessLogData is a container for log event data. In internally uses map and store each filed of log as value. It
  * does not generate any dynamic value e.g. time stamp, local jmv machine host address etc. It does not allow any null
  * or empty key.
- *
+ * <p>
  * Note: since its date formatter is a singleton, make sure to run it in single thread only.
  */
 public final class AccessLogData {
@@ -77,7 +77,6 @@ public final class AccessLogData {
     public static AccessLogData newLogData() {
         return new AccessLogData();
     }
-
 
     /**
      * Add version information.
@@ -187,7 +186,6 @@ public final class AccessLogData {
         return get(SERVICE).toString();
     }
 
-
     public String getLogMessage() {
         StringBuilder sn = new StringBuilder();
 
@@ -231,7 +229,6 @@ public final class AccessLogData {
         }
         sn.append(") ");
 
-
         Object[] args = get(ARGUMENTS) != null ? (Object[]) get(ARGUMENTS) : null;
         if (args != null && args.length > 0) {
             sn.append(JSON.toJSONString(args));
@@ -241,8 +238,9 @@ public final class AccessLogData {
     }
 
     private Date getInvocationTime() {
-        return (Date)get(INVOCATION_TIME);
+        return (Date) get(INVOCATION_TIME);
     }
+
     /**
      * Return value of key
      *

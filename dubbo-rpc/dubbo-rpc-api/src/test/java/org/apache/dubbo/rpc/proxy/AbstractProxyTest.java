@@ -30,7 +30,6 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 
-
 public abstract class AbstractProxyTest {
 
     public static ProxyFactory factory;

@@ -24,7 +24,6 @@ public class ProviderMethodModel {
     private final String[] methodArgTypes;
     private final String serviceName;
 
-
     public ProviderMethodModel(Method method, String serviceName) {
         this.method = method;
         this.serviceName = serviceName;

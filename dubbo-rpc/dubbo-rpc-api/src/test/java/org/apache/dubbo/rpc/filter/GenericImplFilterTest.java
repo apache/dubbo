@@ -49,7 +49,6 @@ public class GenericImplFilterTest {
         RpcInvocation invocation = new RpcInvocation("getPerson",
                 new Class[]{Person.class}, new Object[]{new Person("dubbo", 10)});
 
-
         URL url = URL.valueOf("test://test:11/org.apache.dubbo.rpc.support.DemoService?" +
                 "accesslog=true&group=dubbo&version=1.1&generic=true");
         Invoker invoker = Mockito.mock(Invoker.class);

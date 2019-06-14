@@ -57,7 +57,6 @@ public class ExceptionFilterTest {
         given(invoker.getInterface()).willReturn(DemoService.class);
         given(invoker.invoke(eq(invocation))).willThrow(exception);
 
-
         try {
             exceptionFilter.invoke(invoker, invocation);
         } catch (RpcException e) {

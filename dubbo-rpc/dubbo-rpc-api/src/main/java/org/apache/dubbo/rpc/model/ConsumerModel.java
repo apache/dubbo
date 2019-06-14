@@ -36,14 +36,15 @@ public class ConsumerModel {
     private final Map<Method, ConsumerMethodModel> methodModels = new IdentityHashMap<Method, ConsumerMethodModel>();
 
     /**
-     *  This constructor create an instance of ConsumerModel and passed objects should not be null.
-     *  If service name, service instance, proxy object,methods should not be null. If these are null
-     *  then this constructor will throw {@link IllegalArgumentException}
-     * @param serviceName Name of the service.
+     * This constructor create an instance of ConsumerModel and passed objects should not be null.
+     * If service name, service instance, proxy object,methods should not be null. If these are null
+     * then this constructor will throw {@link IllegalArgumentException}
+     *
+     * @param serviceName           Name of the service.
      * @param serviceInterfaceClass Service interface class.
-     * @param proxyObject  Proxy object.
-     * @param methods Methods of service class
-     * @param attributes Attributes of methods.
+     * @param proxyObject           Proxy object.
+     * @param methods               Methods of service class
+     * @param attributes            Attributes of methods.
      */
     public ConsumerModel(String serviceName
             , Class<?> serviceInterfaceClass
@@ -66,6 +67,7 @@ public class ConsumerModel {
 
     /**
      * Return the proxy object used by called while creating instance of ConsumerModel
+     *
      * @return
      */
     public Object getProxyObject() {

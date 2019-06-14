@@ -20,8 +20,6 @@ import java.lang.reflect.Field;
 
 /**
  * RPC Result.
- *
- * @serial Don't change the class name and properties.
  */
 public class RpcResult extends AbstractResult {
 

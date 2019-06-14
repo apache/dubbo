@@ -149,7 +149,7 @@ public class RpcContextTest {
         Assertions.assertTrue(rpcContext.isAsyncStarted());
 
         asyncContext.write(new Object());
-        Assertions.assertTrue(((AsyncContextImpl)asyncContext).getInternalFuture().isDone());
+        Assertions.assertTrue(((AsyncContextImpl) asyncContext).getInternalFuture().isDone());
 
         rpcContext.stopAsync();
         Assertions.assertTrue(rpcContext.isAsyncStarted());

@@ -33,7 +33,6 @@ public class ConsumerMethodModel {
 
     private final AsyncMethodInfo asyncInfo;
 
-
     public ConsumerMethodModel(Method method, Map<String, Object> attributes) {
         this.method = method;
         this.parameterClasses = method.getParameterTypes();
@@ -80,7 +79,6 @@ public class ConsumerMethodModel {
         return paramSig;
     }
 
-
     public boolean isGeneric() {
         return generic;
     }
@@ -88,7 +86,6 @@ public class ConsumerMethodModel {
     public Class<?>[] getParameterClasses() {
         return parameterClasses;
     }
-
 
     public static class AsyncMethodInfo {
         // callback instance when async-call is invoked

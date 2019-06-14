@@ -60,11 +60,9 @@ class StatItem {
         return interval;
     }
 
-
     public int getRate() {
         return rate;
     }
-
 
     long getLastResetTime() {
         return lastResetTime;

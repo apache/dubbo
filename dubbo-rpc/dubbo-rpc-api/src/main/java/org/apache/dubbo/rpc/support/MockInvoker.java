@@ -185,10 +185,9 @@ final public class MockInvoker<T> implements Invoker<T> {
         }
     }
 
-
     /**
      * Normalize mock string:
-     *
+     * <p>
      * <ol>
      * <li>return => return null</li>
      * <li>fail => default</li>

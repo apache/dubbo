@@ -18,7 +18,6 @@ package org.apache.dubbo.rpc.service;
 
 /**
  * Echo service.
- * @export
  */
 public interface EchoService {
 

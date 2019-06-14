@@ -26,12 +26,12 @@ import java.util.function.Function;
 
 /**
  * <b>NOTICE!!</b>
- *
+ * <p>
  * <p>
  * You should never rely on this class directly when using or extending Dubbo, the implementation of {@link AsyncRpcResult}
  * is only a workaround for compatibility purpose. It may be changed or even get removed from the next major version.
  * Please only use {@link Result} or {@link RpcResult}.
- *
+ * <p>
  * Extending the {@link Filter} is one typical use case:
  * <pre>
  * {@code
@@ -82,7 +82,8 @@ public class AsyncRpcResult extends AbstractResult {
      * @param rFuture
      * @param registerCallback
      */
-    public AsyncRpcResult(CompletableFuture<Object> future, final CompletableFuture<Result> rFuture, boolean registerCallback) {
+    public AsyncRpcResult(CompletableFuture<Object> future, final CompletableFuture<Result> rFuture,
+                          boolean registerCallback) {
         if (rFuture == null) {
             throw new IllegalArgumentException();
         }

@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.proxy;
 
 import org.apache.dubbo.rpc.Invoker;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

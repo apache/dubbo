@@ -20,8 +20,6 @@ import org.apache.dubbo.common.utils.StringUtils;
 
 /**
  * GenericException
- *
- * @export
  */
 public class GenericException extends RuntimeException {
 

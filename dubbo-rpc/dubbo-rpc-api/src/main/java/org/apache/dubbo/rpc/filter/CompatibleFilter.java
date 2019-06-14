@@ -43,7 +43,6 @@ import java.lang.reflect.Type;
  * </pre>
  *
  * @see Filter
- *
  */
 public class CompatibleFilter implements Filter {
 

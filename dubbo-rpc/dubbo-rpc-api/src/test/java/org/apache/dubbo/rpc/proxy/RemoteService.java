@@ -22,6 +22,6 @@ import java.rmi.RemoteException;
 public interface RemoteService extends Remote {
     String sayHello(String name) throws RemoteException;
 
-	public String getThreadName() throws RemoteException ;
-    
+    public String getThreadName() throws RemoteException;
+
 }

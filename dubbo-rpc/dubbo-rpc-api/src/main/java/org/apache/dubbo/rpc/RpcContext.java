@@ -36,7 +36,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-
 /**
  * Thread local context. (API, ThreadLocal, ThreadSafe)
  * <p>
@@ -44,7 +43,6 @@ import java.util.concurrent.TimeoutException;
  * For example: A invokes B, then B invokes C. On service B, RpcContext saves invocation info from A to B before B
  * starts invoking C, and saves invocation info from B to C after B invokes C.
  *
- * @export
  * @see org.apache.dubbo.rpc.filter.ContextFilter
  */
 public class RpcContext {
@@ -139,7 +137,6 @@ public class RpcContext {
         LOCAL.set(oldContext);
     }
 
-
     public RpcContext copyOf() {
         RpcContext copy = new RpcContext();
         copy.attachments.putAll(this.attachments);
@@ -163,7 +160,6 @@ public class RpcContext {
 
         return copy;
     }
-
 
     /**
      * remove context.
@@ -300,8 +296,6 @@ public class RpcContext {
 
     /**
      * get parameter types.
-     *
-     * @serial
      */
     public Class<?>[] getParameterTypes() {
         return parameterTypes;
