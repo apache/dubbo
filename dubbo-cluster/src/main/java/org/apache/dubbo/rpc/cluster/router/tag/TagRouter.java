@@ -17,16 +17,16 @@
 package org.apache.dubbo.rpc.cluster.router.tag;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.configcenter.ConfigChangeEvent;
+import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
+import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
+import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.configcenter.ConfigChangeEvent;
-import org.apache.dubbo.configcenter.ConfigChangeType;
-import org.apache.dubbo.configcenter.ConfigurationListener;
-import org.apache.dubbo.configcenter.DynamicConfiguration;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
@@ -40,8 +40,8 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import static org.apache.dubbo.rpc.cluster.Constants.TAG_KEY;
 import static org.apache.dubbo.rpc.Constants.FORCE_USE_TAG;
+import static org.apache.dubbo.rpc.cluster.Constants.TAG_KEY;
 
 /**
  * TagRouter, "application.tag-router"

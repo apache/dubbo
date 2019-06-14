@@ -18,8 +18,8 @@
 package org.apache.dubbo.configcenter.support.etcd;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.configcenter.ConfigChangeEvent;
-import org.apache.dubbo.configcenter.ConfigurationListener;
+import org.apache.dubbo.common.config.configcenter.ConfigChangeEvent;
+import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 
 import io.etcd.jetcd.ByteSequence;
 import io.etcd.jetcd.Client;

@@ -19,20 +19,19 @@ package org.apache.dubbo.qos.command.impl;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.registry.integration.RegistryDirectory;
-import org.apache.dubbo.registry.support.ProviderConsumerRegTable;
-import org.apache.dubbo.registry.support.ProviderInvokerWrapper;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
+import org.apache.dubbo.rpc.model.invoker.ProviderInvokerWrapper;
+
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.util.Map;
 
-import static org.apache.dubbo.registry.support.ProviderConsumerRegTable.getProviderInvoker;
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -40,9 +39,9 @@ public class LsTest {
     @Test
     public void testExecute() throws Exception {
         ConsumerModel consumerModel = mock(ConsumerModel.class);
-        when(consumerModel.getServiceName()).thenReturn("org.apache.dubbo.FooService");
+        when(consumerModel.getServiceKey()).thenReturn("org.apache.dubbo.FooService");
         ProviderModel providerModel = mock(ProviderModel.class);
-        when(providerModel.getServiceName()).thenReturn("org.apache.dubbo.BarService");
+        when(providerModel.getServiceKey()).thenReturn("org.apache.dubbo.BarService");
         ApplicationModel.initConsumerModel("org.apache.dubbo.FooService", consumerModel);
         ApplicationModel.initProviderModel("org.apache.dubbo.BarService", providerModel);
 
@@ -53,8 +52,8 @@ public class LsTest {
         when(providerUrl.getServiceKey()).thenReturn("org.apache.dubbo.BarService");
         when(providerUrl.toFullString()).thenReturn("dubbo://localhost:8888/org.apache.dubbo.BarService");
         when(providerInvoker.getUrl()).thenReturn(providerUrl);
-        ProviderConsumerRegTable.registerProvider(providerInvoker, registryUrl, providerUrl);
-        for (ProviderInvokerWrapper wrapper : getProviderInvoker("org.apache.dubbo.BarService")) {
+        ApplicationModel.registerProviderInvoker(providerInvoker, registryUrl, providerUrl);
+        for (ProviderInvokerWrapper wrapper : ApplicationModel.getProviderInvokers("org.apache.dubbo.BarService")) {
             wrapper.setReg(true);
         }
 
@@ -67,7 +66,7 @@ public class LsTest {
         Map invokers = Mockito.mock(Map.class);
         when(invokers.size()).thenReturn(100);
         when(directory.getUrlInvokerMap()).thenReturn(invokers);
-        ProviderConsumerRegTable.registerConsumer(consumerInvoker, registryUrl, consumerUrl, directory);
+        ApplicationModel.registerConsumerInvoker(consumerInvoker, consumerUrl.getServiceKey());
 
         Ls ls = new Ls();
         String output = ls.execute(mock(CommandContext.class), null);

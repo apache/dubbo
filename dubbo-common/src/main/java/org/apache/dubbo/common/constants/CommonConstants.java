@@ -153,6 +153,10 @@ public interface CommonConstants {
 
     String METADATA_REVISION = "metadata.revision";
 
+    String METADATA_KEY = "metadata";
+
+    String METADATA_DEFAULT = "local";
+
     /**
      * package version in the manifest
      */

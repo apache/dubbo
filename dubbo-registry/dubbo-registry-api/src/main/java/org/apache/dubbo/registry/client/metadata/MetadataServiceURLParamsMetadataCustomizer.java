@@ -17,8 +17,8 @@
 package org.apache.dubbo.registry.client.metadata;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.metadata.LocalMetadataService;
 import org.apache.dubbo.metadata.MetadataService;
+import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstanceMetadataCustomizer;
 
@@ -45,7 +45,7 @@ public class MetadataServiceURLParamsMetadataCustomizer extends ServiceInstanceM
     @Override
     public String buildMetadataValue(ServiceInstance serviceInstance) {
 
-        LocalMetadataService localMetadataService = LocalMetadataService.getDefaultExtension();
+        WritableMetadataService writableMetadataService = WritableMetadataService.getDefaultExtension();
 
         String serviceInterface = MetadataService.class.getName();
 
@@ -53,7 +53,7 @@ public class MetadataServiceURLParamsMetadataCustomizer extends ServiceInstanceM
 
         String version = MetadataService.VERSION;
 
-        List<String> urls = localMetadataService.getExportedURLs(serviceInterface, group, version);
+        List<String> urls = writableMetadataService.getExportedURLs(serviceInterface, group, version);
 
         return getMetadataServiceParameter(toURLs(urls));
     }

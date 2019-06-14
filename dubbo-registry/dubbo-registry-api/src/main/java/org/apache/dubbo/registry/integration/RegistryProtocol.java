@@ -19,6 +19,7 @@ package org.apache.dubbo.registry.integration;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -26,13 +27,10 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
-import org.apache.dubbo.configcenter.DynamicConfiguration;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.registry.RegistryService;
-import org.apache.dubbo.registry.support.ProviderConsumerRegTable;
-import org.apache.dubbo.registry.support.ProviderInvokerWrapper;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -41,6 +39,7 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.Configurator;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.invoker.ProviderInvokerWrapper;
 import org.apache.dubbo.rpc.protocol.InvokerWrapper;
 
 import java.util.ArrayList;
@@ -211,7 +210,7 @@ public class RegistryProtocol implements Protocol {
         // url to registry
         final Registry registry = getRegistry(originInvoker);
         final URL registeredProviderUrl = getRegisteredProviderUrl(providerUrl, registryUrl);
-        ProviderInvokerWrapper<T> providerInvokerWrapper = ProviderConsumerRegTable.registerProvider(originInvoker,
+        ProviderInvokerWrapper<T> providerInvokerWrapper = ApplicationModel.registerProviderInvoker(originInvoker,
                 registryUrl, registeredProviderUrl);
         //to judge if we need to delay publish
         boolean register = registeredProviderUrl.getParameter("register", true);
@@ -254,8 +253,8 @@ public class RegistryProtocol implements Protocol {
         final URL registeredProviderUrl = getRegisteredProviderUrl(newInvokerUrl, registryUrl);
 
         //decide if we need to re-publish
-        ProviderInvokerWrapper<T> providerInvokerWrapper = ProviderConsumerRegTable.getProviderWrapper(registeredProviderUrl, originInvoker);
-        ProviderInvokerWrapper<T> newProviderInvokerWrapper = ProviderConsumerRegTable.registerProvider(originInvoker, registryUrl, registeredProviderUrl);
+        ProviderInvokerWrapper<T> providerInvokerWrapper = ApplicationModel.getProviderInvoker(registeredProviderUrl.getServiceKey(), originInvoker);
+        ProviderInvokerWrapper<T> newProviderInvokerWrapper = ApplicationModel.registerProviderInvoker(originInvoker, registryUrl, registeredProviderUrl);
         /**
          * Only if the new url going to Registry is different with the previous one should we do unregister and register.
          */
@@ -412,7 +411,7 @@ public class RegistryProtocol implements Protocol {
                 PROVIDERS_CATEGORY + "," + CONFIGURATORS_CATEGORY + "," + ROUTERS_CATEGORY));
 
         Invoker invoker = cluster.join(directory);
-        ProviderConsumerRegTable.registerConsumer(invoker, url, subscribeUrl, directory);
+        ApplicationModel.registerConsumerInvoker(invoker, subscribeUrl.getServiceKey());
         return invoker;
     }
 

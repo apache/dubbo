@@ -66,12 +66,6 @@
             <version>${project.parent.version}</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-metadata</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-
         <!-- FIXME, we shouldn't rely on these modules, even in test scope -->
         <dependency>
             <groupId>org.apache.dubbo</groupId>

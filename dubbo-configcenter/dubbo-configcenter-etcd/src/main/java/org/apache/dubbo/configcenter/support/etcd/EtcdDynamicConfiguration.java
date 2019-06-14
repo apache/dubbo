@@ -18,11 +18,11 @@
 package org.apache.dubbo.configcenter.support.etcd;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.configcenter.ConfigChangeEvent;
+import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
+import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
+import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.configcenter.ConfigChangeEvent;
-import org.apache.dubbo.configcenter.ConfigChangeType;
-import org.apache.dubbo.configcenter.ConfigurationListener;
-import org.apache.dubbo.configcenter.DynamicConfiguration;
 import org.apache.dubbo.remoting.etcd.StateListener;
 import org.apache.dubbo.remoting.etcd.jetcd.JEtcdClient;
 
@@ -40,8 +40,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.dubbo.common.config.configcenter.Constants.CONFIG_NAMESPACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
-import static org.apache.dubbo.configcenter.Constants.CONFIG_NAMESPACE_KEY;
 
 /**
  * The etcd implementation of {@link DynamicConfiguration}

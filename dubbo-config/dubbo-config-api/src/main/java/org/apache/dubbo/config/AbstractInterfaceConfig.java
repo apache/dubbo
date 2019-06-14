@@ -19,8 +19,6 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.Version;
-import org.apache.dubbo.common.config.Environment;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
@@ -30,9 +28,6 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.support.Parameter;
-import org.apache.dubbo.configcenter.DynamicConfiguration;
-import org.apache.dubbo.configcenter.DynamicConfigurationFactory;
-import org.apache.dubbo.metadata.integration.MetadataReportService;
 import org.apache.dubbo.monitor.MonitorFactory;
 import org.apache.dubbo.monitor.MonitorService;
 import org.apache.dubbo.registry.RegistryService;
@@ -43,19 +38,14 @@ import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.support.MockInvoker;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import static org.apache.dubbo.common.config.ConfigurationUtils.parseProperties;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.FILE_KEY;
@@ -73,7 +63,6 @@ import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoad
 import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
 import static org.apache.dubbo.config.Constants.LAYER_KEY;
 import static org.apache.dubbo.config.Constants.LISTENER_KEY;
-import static org.apache.dubbo.config.Constants.REGISTRIES_SUFFIX;
 import static org.apache.dubbo.monitor.Constants.LOGSTAT_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
 import static org.apache.dubbo.registry.Constants.REGISTER_KEY;
@@ -203,8 +192,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                         "The registry config is: " + registryConfig);
             }
         }
-
-        useRegistryForConfigIfNecessary();
     }
 
     @SuppressWarnings("deprecation")
@@ -265,55 +252,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             logger.warn("There's no valid metadata config found, if you are using the simplified mode of registry url, " +
                     "please make sure you have a metadata address configured properly.");
         }
-    }
-
-
-    void startConfigCenter() {
-        if (configCenter == null) {
-            ConfigManager.getInstance().getConfigCenter().ifPresent(cc -> this.configCenter = cc);
-        }
-
-        if (this.configCenter != null) {
-            // TODO there may have duplicate refresh
-            this.configCenter.refresh();
-            prepareEnvironment();
-        }
-        ConfigManager.getInstance().refreshAll();
-    }
-
-    private void prepareEnvironment() {
-        if (configCenter.isValid()) {
-            if (!configCenter.checkOrUpdateInited()) {
-                return;
-            }
-            DynamicConfiguration dynamicConfiguration = getDynamicConfiguration(configCenter.toUrl());
-            String configContent = dynamicConfiguration.getConfigs(configCenter.getConfigFile(), configCenter.getGroup());
-
-            String appGroup = application != null ? application.getName() : null;
-            String appConfigContent = null;
-            if (StringUtils.isNotEmpty(appGroup)) {
-                appConfigContent = dynamicConfiguration.getConfigs
-                        (StringUtils.isNotEmpty(configCenter.getAppConfigFile()) ? configCenter.getAppConfigFile() : configCenter.getConfigFile(),
-                         appGroup
-                        );
-            }
-            try {
-                Environment.getInstance().setConfigCenterFirst(configCenter.isHighestPriority());
-                Environment.getInstance().updateExternalConfigurationMap(parseProperties(configContent));
-                Environment.getInstance().updateAppExternalConfigurationMap(parseProperties(appConfigContent));
-            } catch (IOException e) {
-                throw new IllegalStateException("Failed to parse configurations from Config Center.", e);
-            }
-        }
-    }
-
-    private DynamicConfiguration getDynamicConfiguration(URL url) {
-        DynamicConfigurationFactory factories = ExtensionLoader
-                .getExtensionLoader(DynamicConfigurationFactory.class)
-                .getExtension(url.getProtocol());
-        DynamicConfiguration configuration = factories.getDynamicConfiguration(url);
-        Environment.getInstance().setDynamicConfiguration(configuration);
-        return configuration;
     }
 
     /**
@@ -413,24 +351,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         if (ConfigUtils.getPid() > 0) {
             map.put(PID_KEY, String.valueOf(ConfigUtils.getPid()));
         }
-    }
-
-    private URL loadMetadataReporterURL() {
-        String address = metadataReportConfig.getAddress();
-        if (StringUtils.isEmpty(address)) {
-            return null;
-        }
-        Map<String, String> map = new HashMap<String, String>();
-        appendParameters(map, metadataReportConfig);
-        return UrlUtils.parseURL(address, map);
-    }
-
-    protected MetadataReportService getMetadataReportService() {
-
-        if (metadataReportConfig == null || !metadataReportConfig.isValid()) {
-            return null;
-        }
-        return MetadataReportService.instance(this::loadMetadataReporterURL);
     }
 
     /**
@@ -544,16 +464,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     private void convertRegistryIdsToRegistries() {
-        if (StringUtils.isEmpty(registryIds) && CollectionUtils.isEmpty(registries)) {
-            Set<String> configedRegistries = new HashSet<>();
-            configedRegistries.addAll(getSubProperties(Environment.getInstance().getExternalConfigurationMap(),
-                    REGISTRIES_SUFFIX));
-            configedRegistries.addAll(getSubProperties(Environment.getInstance().getAppExternalConfigurationMap(),
-                    REGISTRIES_SUFFIX));
-
-            registryIds = String.join(COMMA_SEPARATOR, configedRegistries);
-        }
-
         if (StringUtils.isEmpty(registryIds)) {
             if (CollectionUtils.isEmpty(registries)) {
                 setRegistries(
@@ -571,12 +481,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             List<RegistryConfig> tmpRegistries = CollectionUtils.isNotEmpty(registries) ? registries : new ArrayList<>();
             Arrays.stream(ids).forEach(id -> {
                 if (tmpRegistries.stream().noneMatch(reg -> reg.getId().equals(id))) {
-                    tmpRegistries.add(ConfigManager.getInstance().getRegistry(id).orElseGet(() -> {
-                        RegistryConfig registryConfig = new RegistryConfig();
-                        registryConfig.setId(id);
-                        registryConfig.refresh();
-                        return registryConfig;
-                    }));
+                    ConfigManager.getInstance().getRegistry(id).ifPresent(tmpRegistries::add);
                 }
             });
 
@@ -607,26 +512,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 setRegistries(tmpRegistries);
             }
         }
-    }
-
-    /**
-     * For compatibility purpose, use registry as the default config center if the registry protocol is zookeeper and
-     * there's no config center specified explicitly.
-     */
-    private void useRegistryForConfigIfNecessary() {
-        registries.stream().filter(RegistryConfig::isZookeeperProtocol).findFirst().ifPresent(rc -> {
-            // we use the loading status of DynamicConfiguration to decide whether ConfigCenter has been initiated.
-            Environment.getInstance().getDynamicConfiguration().orElseGet(() -> {
-                ConfigManager configManager = ConfigManager.getInstance();
-                ConfigCenterConfig cc = configManager.getConfigCenter().orElse(new ConfigCenterConfig());
-                cc.setProtocol(rc.getProtocol());
-                cc.setAddress(rc.getAddress());
-                cc.setHighestPriority(false);
-                setConfigCenter(cc);
-                startConfigCenter();
-                return null;
-            });
-        });
     }
 
     /**
@@ -783,7 +668,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     @SuppressWarnings({"unchecked"})
     public void setRegistries(List<? extends RegistryConfig> registries) {
-        ConfigManager.getInstance().addRegistries((List<RegistryConfig>) registries);
+        ConfigManager.getInstance().addRegistries((List<RegistryConfig>) registries, false);
         this.registries = (List<RegistryConfig>) registries;
     }
 
@@ -823,7 +708,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public void setConfigCenter(ConfigCenterConfig configCenter) {
-        ConfigManager.getInstance().setConfigCenter(configCenter);
+        ConfigManager.getInstance().addConfigCenter(configCenter);
         this.configCenter = configCenter;
     }
 

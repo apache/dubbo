@@ -32,7 +32,7 @@ import org.apache.dubbo.config.event.ReferenceConfigInitializedEvent;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.event.Event;
 import org.apache.dubbo.event.EventDispatcher;
-import org.apache.dubbo.metadata.integration.MetadataReportService;
+import org.apache.dubbo.metadata.integration.RemoteWritableMetadataService;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -228,7 +228,6 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             throw new IllegalStateException("<dubbo:reference interface=\"\" /> interface not allow null!");
         }
         completeCompoundConfigs();
-        startConfigCenter();
         // get consumer's global configuration
         checkDefault();
         this.refresh();
@@ -340,10 +339,11 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         }
         map.put(REGISTER_IP_KEY, hostToRegistry);
 
-        ref = createProxy(map);
-
         String serviceKey = URL.buildKey(interfaceName, group, version);
         ApplicationModel.initConsumerModel(serviceKey, buildConsumerModel(serviceKey, attributes));
+        ref = createProxy(map);
+        ApplicationModel.getConsumerModel(serviceKey).setProxyObject(ref);
+
         initialized = true;
 
         // dispatch a ReferenceConfigInitializedEvent since 2.7.3
@@ -441,8 +441,8 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
          * @since 2.7.0
          * ServiceData Store
          */
-        MetadataReportService metadataReportService = null;
-        if ((metadataReportService = getMetadataReportService()) != null) {
+        RemoteWritableMetadataService metadataReportService = RemoteWritableMetadataService.instance();
+        if (metadataReportService != null) {
             URL consumerURL = new URL(CONSUMER_PROTOCOL, map.remove(REGISTER_IP_KEY), 0, map.get(INTERFACE_KEY), map);
             metadataReportService.publishConsumer(consumerURL);
         }

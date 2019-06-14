@@ -16,9 +16,12 @@
  */
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.support.Parameter;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
@@ -81,6 +84,16 @@ public class MetadataReportConfig extends AbstractConfig {
 
     public MetadataReportConfig(String address) {
         setAddress(address);
+    }
+
+    public URL toUrl() {
+        String address = this.getAddress();
+        if (StringUtils.isEmpty(address)) {
+            return null;
+        }
+        Map<String, String> map = new HashMap<String, String>();
+        appendParameters(map, this);
+        return UrlUtils.parseURL(address, map);
     }
 
     @Parameter(excluded = true)

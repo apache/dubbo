@@ -16,26 +16,36 @@
  */
 package org.apache.dubbo.config.context;
 
+import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.config.ConsumerConfig;
+import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
+import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.ServiceConfig;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
+import static org.apache.dubbo.config.Constants.PROTOCOLS_SUFFIX;
+import static org.apache.dubbo.config.Constants.REGISTRIES_SUFFIX;
 
 /**
  * TODO
@@ -78,12 +88,22 @@ public class ConfigManager {
     private ApplicationConfig application;
     private MonitorConfig monitor;
     private ModuleConfig module;
-    private ConfigCenterConfig configCenter;
 
     private Map<String, ProtocolConfig> protocols = new ConcurrentHashMap<>();
     private Map<String, RegistryConfig> registries = new ConcurrentHashMap<>();
     private Map<String, ProviderConfig> providers = new ConcurrentHashMap<>();
     private Map<String, ConsumerConfig> consumers = new ConcurrentHashMap<>();
+
+    private List<ProtocolConfig> defaultProtocols = new ArrayList<>();
+    private List<RegistryConfig> defaultRegistries = new ArrayList<>();
+
+    private Set<ConfigCenterConfig> configCenters = new HashSet<>();
+    private Set<MetadataReportConfig> metadataConfigs = new HashSet<>();
+    private Set<String> registryIds = new HashSet<>();
+    private Set<String> protocolIds = new HashSet<>();
+
+    private List<ServiceConfig<?>> serviceConfigs = new ArrayList<>();
+    private List<ReferenceConfig<?>> referenceConfigs = new ArrayList<>();
 
     public static ConfigManager getInstance() {
         return CONFIG_MANAGER;
@@ -126,14 +146,35 @@ public class ConfigManager {
         }
     }
 
-    public Optional<ConfigCenterConfig> getConfigCenter() {
-        return Optional.ofNullable(configCenter);
+    public Set<ConfigCenterConfig> getConfigCenters() {
+        return configCenters;
     }
 
-    public void setConfigCenter(ConfigCenterConfig configCenter) {
-        if (configCenter != null) {
-            checkDuplicate(this.configCenter, configCenter);
-            this.configCenter = configCenter;
+    public void addConfigCenter(ConfigCenterConfig configCenter) {
+        if (configCenter != null && !configCenters.contains(configCenter)) {
+            this.configCenters.add(configCenter);
+        }
+    }
+
+    public void addConfigCenter(List<ConfigCenterConfig> configCenters) {
+        if (CollectionUtils.isNotEmpty(configCenters)) {
+            this.configCenters.addAll(configCenters);
+        }
+    }
+
+    public Set<MetadataReportConfig> getMetadataConfigs() {
+        return metadataConfigs;
+    }
+
+    public void addMetadataReport(MetadataReportConfig metadataReportConfig) {
+        if (metadataReportConfig != null && !metadataConfigs.contains(metadataReportConfig)) {
+            this.metadataConfigs.add(metadataReportConfig);
+        }
+    }
+
+    public void addMetadataReport(List<MetadataReportConfig> metadataReportConfigs) {
+        if (CollectionUtils.isNotEmpty(metadataReportConfigs)) {
+            this.metadataConfigs.addAll(metadataReportConfigs);
         }
     }
 
@@ -200,31 +241,28 @@ public class ConfigManager {
     }
 
     public Optional<List<ProtocolConfig>> getDefaultProtocols() {
-        List<ProtocolConfig> defaults = new ArrayList<>();
-        protocols.forEach((k, v) -> {
-            if (DEFAULT_KEY.equalsIgnoreCase(k)) {
-                defaults.add(v);
-            } else if (v.isDefault() == null || v.isDefault()) {
-                defaults.add(v);
-            }
-        });
-        return Optional.of(defaults);
+        return Optional.of(defaultProtocols);
     }
 
-    public void addProtocols(List<ProtocolConfig> protocolConfigs) {
+    public void addProtocols(List<ProtocolConfig> protocolConfigs, boolean canBeDefault) {
         if (protocolConfigs != null) {
-            protocolConfigs.forEach(this::addProtocol);
+            protocolConfigs.forEach(pc -> this.addProtocol(pc, canBeDefault));
         }
     }
 
-    public void addProtocol(ProtocolConfig protocolConfig) {
+    public void addProtocol(ProtocolConfig protocolConfig, boolean canBeDefault) {
         if (protocolConfig == null) {
             return;
         }
 
+        // if isDefault is not false and a ProtocolConfig is not specified being false.
+        if (canBeDefault && (protocolConfig.isDefault() == null || protocolConfig.isDefault())) {
+            this.defaultProtocols.add(protocolConfig);
+        }
+
         String key = StringUtils.isNotEmpty(protocolConfig.getId())
                 ? protocolConfig.getId()
-                : (protocolConfig.isDefault() == null || protocolConfig.isDefault()) ? DEFAULT_KEY : null;
+                : DEFAULT_KEY;
 
         if (StringUtils.isEmpty(key)) {
             throw new IllegalStateException("A ProtocolConfig should either has an id or it's the default one, " + protocolConfig);
@@ -243,31 +281,26 @@ public class ConfigManager {
     }
 
     public Optional<List<RegistryConfig>> getDefaultRegistries() {
-        List<RegistryConfig> defaults = new ArrayList<>();
-        registries.forEach((k, v) -> {
-            if (DEFAULT_KEY.equalsIgnoreCase(k)) {
-                defaults.add(v);
-            } else if (v.isDefault() == null || v.isDefault()) {
-                defaults.add(v);
-            }
-        });
-        return Optional.of(defaults);
+        return Optional.of(defaultRegistries);
     }
 
-    public void addRegistries(List<RegistryConfig> registryConfigs) {
+    public void addRegistries(List<RegistryConfig> registryConfigs, boolean canBeDefault) {
         if (registryConfigs != null) {
-            registryConfigs.forEach(this::addRegistry);
+            registryConfigs.forEach(rc -> this.addRegistry(rc, canBeDefault));
         }
     }
 
-    public void addRegistry(RegistryConfig registryConfig) {
+    public void addRegistry(RegistryConfig registryConfig, boolean canBeDefault) {
         if (registryConfig == null) {
             return;
         }
 
+        if (canBeDefault && (registryConfig.isDefault() == null || registryConfig.isDefault())) {
+            this.defaultRegistries.add(registryConfig);
+        }
         String key = StringUtils.isNotEmpty(registryConfig.getId())
                 ? registryConfig.getId()
-                : (registryConfig.isDefault() == null || registryConfig.isDefault()) ? DEFAULT_KEY : null;
+                : DEFAULT_KEY;
 
         if (StringUtils.isEmpty(key)) {
             throw new IllegalStateException("A RegistryConfig should either has an id or it's the default one, " + registryConfig);
@@ -279,6 +312,51 @@ public class ConfigManager {
         } else {
             registries.put(key, registryConfig);
         }
+    }
+
+    public void addProtocolIds(List<String> protocolIds) {
+        this.protocolIds.addAll(protocolIds);
+    }
+
+    public void addRegistryIds(List<String> registryIds) {
+        this.registryIds.addAll(registryIds);
+    }
+
+    public void addService(ServiceConfig<?> serviceConfig) {
+        this.serviceConfigs.add(serviceConfig);
+    }
+
+    public void addReference(ReferenceConfig<?> referenceConfig) {
+        this.referenceConfigs.add(referenceConfig);
+    }
+
+    public Set<String> getRegistryIds() {
+        Set<String> configedRegistries = new HashSet<>();
+        configedRegistries.addAll(getSubProperties(Environment.getInstance().getExternalConfigurationMap(),
+                REGISTRIES_SUFFIX));
+        configedRegistries.addAll(getSubProperties(Environment.getInstance().getAppExternalConfigurationMap(),
+                REGISTRIES_SUFFIX));
+
+        configedRegistries.addAll(registryIds);
+        return configedRegistries;
+    }
+
+    public Set<String> getProtocolIds() {
+        Set<String> configedProtocols = new HashSet<>();
+        configedProtocols.addAll(getSubProperties(Environment.getInstance()
+                .getExternalConfigurationMap(), PROTOCOLS_SUFFIX));
+        configedProtocols.addAll(getSubProperties(Environment.getInstance()
+                .getAppExternalConfigurationMap(), PROTOCOLS_SUFFIX));
+
+        configedProtocols.addAll(protocolIds);
+        return configedProtocols;
+    }
+
+    protected static Set<String> getSubProperties(Map<String, String> properties, String prefix) {
+        return properties.keySet().stream().filter(k -> k.contains(prefix)).map(k -> {
+            k = k.substring(prefix.length());
+            return k.substring(0, k.indexOf("."));
+        }).collect(Collectors.toSet());
     }
 
     public Map<String, ProtocolConfig> getProtocols() {
@@ -295,6 +373,14 @@ public class ConfigManager {
 
     public Map<String, ConsumerConfig> getConsumers() {
         return consumers;
+    }
+
+    public List<ServiceConfig<?>> getServiceConfigs() {
+        return serviceConfigs;
+    }
+
+    public List<ReferenceConfig<?>> getReferenceConfigs() {
+        return referenceConfigs;
     }
 
     public void refreshAll() {
@@ -319,13 +405,16 @@ public class ConfigManager {
     // For test purpose
     public void clear() {
         this.application = null;
-        this.configCenter = null;
         this.monitor = null;
         this.module = null;
         this.registries.clear();
         this.protocols.clear();
         this.providers.clear();
         this.consumers.clear();
+        this.configCenters.clear();
+        this.metadataConfigs.clear();
+        this.registryIds.clear();
+        this.protocolIds.clear();
     }
 
 }

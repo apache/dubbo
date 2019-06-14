@@ -16,9 +16,13 @@
  */
 package org.apache.dubbo.rpc.model;
 
+import org.apache.dubbo.rpc.model.invoker.ProviderInvokerWrapper;
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,17 +31,20 @@ import java.util.Map;
  * ProviderModel which is about published services
  */
 public class ProviderModel {
-    private final String serviceName;
+    private final String serviceKey;
     private final Object serviceInstance;
     private final Class<?> serviceInterfaceClass;
     private final Map<String, List<ProviderMethodModel>> methods = new HashMap<String, List<ProviderMethodModel>>();
 
-    public ProviderModel(String serviceName, Object serviceInstance, Class<?> serviceInterfaceClass) {
+    private Map<String, ProviderInvokerWrapper> protocolInvokers = new HashMap<>();
+
+
+    public ProviderModel(String serviceKey, Object serviceInstance, Class<?> serviceInterfaceClass) {
         if (null == serviceInstance) {
-            throw new IllegalArgumentException("Service[" + serviceName + "]Target is NULL.");
+            throw new IllegalArgumentException("Service[" + serviceKey + "]Target is NULL.");
         }
 
-        this.serviceName = serviceName;
+        this.serviceKey = serviceKey;
         this.serviceInstance = serviceInstance;
         this.serviceInterfaceClass = serviceInterfaceClass;
 
@@ -45,8 +52,8 @@ public class ProviderModel {
     }
 
 
-    public String getServiceName() {
-        return serviceName;
+    public String getServiceKey() {
+        return serviceKey;
     }
 
     public Class<?> getServiceInterfaceClass() {
@@ -89,8 +96,20 @@ public class ProviderModel {
                 methodModels = new ArrayList<ProviderMethodModel>(1);
                 methods.put(method.getName(), methodModels);
             }
-            methodModels.add(new ProviderMethodModel(method, serviceName));
+            methodModels.add(new ProviderMethodModel(method, serviceKey));
         }
     }
 
+
+    public void addInvoker(ProviderInvokerWrapper invoker) {
+        protocolInvokers.put(invoker.getUrl().getProtocol(), invoker);
+    }
+
+    public ProviderInvokerWrapper getInvoker(String protocol) {
+        return protocolInvokers.get(protocol);
+    }
+
+    public Collection<ProviderInvokerWrapper> getInvokers() {
+        return Collections.unmodifiableCollection(protocolInvokers.values());
+    }
 }

@@ -17,7 +17,7 @@
 package org.apache.dubbo.rpc.cluster.router.condition.config;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.configcenter.DynamicConfiguration;
+import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 
 /**
  * Service level router, "server-unique-name.condition-router"

@@ -152,7 +152,7 @@ public class InvokeTelnetHandler implements TelnetHandler {
 
 
     private boolean isServiceMatch(String service, ProviderModel provider) {
-        return provider.getServiceName().equalsIgnoreCase(service)
+        return provider.getServiceKey().equalsIgnoreCase(service)
                 || provider.getServiceInterfaceClass().getSimpleName().equalsIgnoreCase(service)
                 || provider.getServiceInterfaceClass().getName().equalsIgnoreCase(service)
                 || StringUtils.isEmpty(service);

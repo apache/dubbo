@@ -51,6 +51,10 @@ public class ApplicationBuilder extends AbstractBuilder<ApplicationConfig, Appli
     private Map<String, String> parameters;
     private String shutwait;
 
+    public static ApplicationBuilder newBuilder() {
+        return new ApplicationBuilder();
+    }
+
     public ApplicationBuilder name(String name) {
         this.name = name;
         return getThis();

@@ -498,4 +498,25 @@ public class UrlUtils {
             return "*".equals(pattern) || pattern.equals(value);
         }
     }
+
+    /**
+     * @param serviceKey, {group}/{interfaceName}:{version}
+     * @return  [group, interfaceName, version]
+     */
+    public static String[] parseServiceKey(String serviceKey) {
+        String[] arr = new String[3];
+        int i = serviceKey.indexOf("/");
+        if (i > 0) {
+            arr[0] = serviceKey.substring(0, i);
+            serviceKey = serviceKey.substring(i + 1);
+        }
+
+        int j = serviceKey.indexOf(":");
+        if (j > 0) {
+            arr[2] = serviceKey.substring(j + 1);
+            serviceKey = serviceKey.substring(0, j);
+        }
+        arr[1] = serviceKey;
+        return arr;
+    }
 }

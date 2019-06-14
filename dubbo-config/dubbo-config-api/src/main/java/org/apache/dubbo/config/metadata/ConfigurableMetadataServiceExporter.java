@@ -25,9 +25,9 @@ import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.context.ConfigManager;
-import org.apache.dubbo.metadata.LocalMetadataService;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.MetadataServiceExporter;
+import org.apache.dubbo.metadata.WritableMetadataService;
 
 import java.util.Collection;
 import java.util.LinkedList;
@@ -79,7 +79,7 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
 
         if (!isExported()) {
 
-            LocalMetadataService metadataService = LocalMetadataService.getDefaultExtension();
+            WritableMetadataService metadataService = WritableMetadataService.getDefaultExtension();
 
             ServiceConfig<MetadataService> serviceConfig = new ServiceConfig<>();
             serviceConfig.setApplication(applicationConfig);

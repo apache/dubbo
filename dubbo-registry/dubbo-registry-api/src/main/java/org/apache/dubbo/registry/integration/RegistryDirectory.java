@@ -19,6 +19,7 @@ package org.apache.dubbo.registry.integration;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -27,7 +28,6 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
-import org.apache.dubbo.configcenter.DynamicConfiguration;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.remoting.Constants;
@@ -602,6 +602,11 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     @Override
     public Class<T> getInterface() {
         return serviceType;
+    }
+
+    @Override
+    public List<Invoker<T>> getAllInvokers() {
+        return invokers;
     }
 
     @Override

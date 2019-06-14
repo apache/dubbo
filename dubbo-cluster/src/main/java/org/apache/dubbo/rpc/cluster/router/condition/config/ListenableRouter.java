@@ -17,14 +17,14 @@
 package org.apache.dubbo.rpc.cluster.router.condition.config;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.configcenter.ConfigChangeEvent;
+import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
+import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
+import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.configcenter.ConfigChangeEvent;
-import org.apache.dubbo.configcenter.ConfigChangeType;
-import org.apache.dubbo.configcenter.ConfigurationListener;
-import org.apache.dubbo.configcenter.DynamicConfiguration;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;

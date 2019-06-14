@@ -18,13 +18,13 @@
 package org.apache.dubbo.configcenter.support.nacos;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.configcenter.ConfigChangeEvent;
+import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
+import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
+import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.configcenter.ConfigChangeEvent;
-import org.apache.dubbo.configcenter.ConfigChangeType;
-import org.apache.dubbo.configcenter.ConfigurationListener;
-import org.apache.dubbo.configcenter.DynamicConfiguration;
 
 import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.config.ConfigService;
@@ -46,9 +46,9 @@ import static com.alibaba.nacos.api.PropertyKeyConst.NAMESPACE;
 import static com.alibaba.nacos.api.PropertyKeyConst.SECRET_KEY;
 import static com.alibaba.nacos.api.PropertyKeyConst.SERVER_ADDR;
 import static com.alibaba.nacos.client.naming.utils.UtilAndComs.NACOS_NAMING_LOG_NAME;
+import static org.apache.dubbo.common.config.configcenter.Constants.CONFIG_NAMESPACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_CHAR_SEPERATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.PROPERTIES_CHAR_SEPERATOR;
-import static org.apache.dubbo.configcenter.Constants.CONFIG_NAMESPACE_KEY;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 
 /**

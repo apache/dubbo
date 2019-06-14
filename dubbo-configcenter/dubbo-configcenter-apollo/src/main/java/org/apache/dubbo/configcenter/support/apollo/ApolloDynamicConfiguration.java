@@ -17,13 +17,13 @@
 package org.apache.dubbo.configcenter.support.apollo;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.configcenter.ConfigChangeEvent;
+import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
+import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
+import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.configcenter.ConfigChangeEvent;
-import org.apache.dubbo.configcenter.ConfigChangeType;
-import org.apache.dubbo.configcenter.ConfigurationListener;
-import org.apache.dubbo.configcenter.DynamicConfiguration;
 
 import com.ctrip.framework.apollo.Config;
 import com.ctrip.framework.apollo.ConfigChangeListener;
@@ -42,12 +42,12 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.stream.Collectors;
 
+import static org.apache.dubbo.common.config.configcenter.Constants.CONFIG_CHECK_KEY;
+import static org.apache.dubbo.common.config.configcenter.Constants.CONFIG_CLUSTER_KEY;
+import static org.apache.dubbo.common.config.configcenter.Constants.CONFIG_NAMESPACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
-import static org.apache.dubbo.configcenter.Constants.CONFIG_CHECK_KEY;
-import static org.apache.dubbo.configcenter.Constants.CONFIG_CLUSTER_KEY;
-import static org.apache.dubbo.configcenter.Constants.CONFIG_NAMESPACE_KEY;
 
 /**
  * Apollo implementation, https://github.com/ctripcorp/apollo

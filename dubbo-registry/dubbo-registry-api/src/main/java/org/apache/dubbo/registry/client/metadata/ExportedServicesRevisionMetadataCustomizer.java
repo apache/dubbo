@@ -18,8 +18,8 @@ package org.apache.dubbo.registry.client.metadata;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.compiler.support.ClassUtils;
-import org.apache.dubbo.metadata.LocalMetadataService;
 import org.apache.dubbo.metadata.MetadataService;
+import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstanceMetadataCustomizer;
 
@@ -47,8 +47,8 @@ public class ExportedServicesRevisionMetadataCustomizer extends ServiceInstanceM
 
     @Override
     protected String buildMetadataValue(ServiceInstance serviceInstance) {
-        LocalMetadataService localMetadataService = LocalMetadataService.getDefaultExtension();
-        List<String> exportedURLs = localMetadataService.getExportedURLs();
+        WritableMetadataService writableMetadataService = WritableMetadataService.getDefaultExtension();
+        List<String> exportedURLs = writableMetadataService.getExportedURLs();
         Object[] data = exportedURLs.stream()
                 .map(URL::valueOf)                       // String to URL
                 .map(URL::getServiceInterface)           // get the service interface

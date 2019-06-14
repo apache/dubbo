@@ -27,8 +27,8 @@ import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import static org.apache.dubbo.rpc.Constants.SERVICE_FILTER_KEY;
 import static org.apache.dubbo.rpc.Constants.EXPORTER_LISTENER_KEY;
+import static org.apache.dubbo.rpc.Constants.SERVICE_FILTER_KEY;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 
 /**
@@ -206,7 +206,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
 
     @SuppressWarnings({"unchecked"})
     public void setProtocols(List<? extends ProtocolConfig> protocols) {
-        ConfigManager.getInstance().addProtocols((List<ProtocolConfig>) protocols);
+        ConfigManager.getInstance().addProtocols((List<ProtocolConfig>) protocols, false);
         this.protocols = (List<ProtocolConfig>) protocols;
     }
 

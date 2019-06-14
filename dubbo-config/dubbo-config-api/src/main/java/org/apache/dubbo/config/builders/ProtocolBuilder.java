@@ -185,6 +185,10 @@ public class ProtocolBuilder extends AbstractBuilder<ProtocolConfig, ProtocolBui
      */
     private Boolean isDefault;
 
+    public static ProtocolBuilder newBuilder() {
+        return new ProtocolBuilder();
+    }
+
     public ProtocolBuilder id(String id) {
         return super.id(id);
     }
