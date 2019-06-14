@@ -1,44 +1,12 @@
 package org.apache.dubbo.rpc.proxy.asm;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.util.Random;
 import java.util.UUID;
 
-public class TestInvocationHandler implements InvocationHandler{
+public class TestUtils {
 
 	static Random random = new Random();
-	
-    @SuppressWarnings("unchecked")
-	public  static <T> T getProxy(Class<?>[] interfaces , InvocationHandler handler) {
-        return (T) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(), interfaces ,handler);
-    }
-	
-	private Object returnValue;
-	
-	private Object[] object;
-	
-	public void setObject(Object[] object) {
-		this.object = object;
-	}
-	
-	public void setReturnValue(Object value) {
-		this.returnValue = value;
-	}
-	
-	@Override
-	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-		assertEquals(object, args);
-		this.object = null;
-		Object returnValue = this.returnValue;
-		this.returnValue = null;
-		return returnValue;
-	}
-	
 	
 	public static Object getValue(Class<?> clazz) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
 		if(void.class.equals(clazz)){

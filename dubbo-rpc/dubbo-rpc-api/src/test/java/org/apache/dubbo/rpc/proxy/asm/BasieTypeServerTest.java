@@ -43,8 +43,8 @@ public class BasieTypeServerTest {
 		while(it.hasNext()) {
 			Entry<String, MethodExecute<?>> entry = it.next();
 			MethodStatement methodStatement = reflect.getMethodStatement(entry.getKey());
-			Object[] objcet = TestInvocationHandler.getParmameter(methodStatement.getParameterClass());
-			Object value = TestInvocationHandler.getValue((Class<?>)methodStatement.getReturnType());
+			Object[] objcet = TestUtils.getParmameter(methodStatement.getParameterClass());
+			Object value = TestUtils.getValue((Class<?>)methodStatement.getReturnType());
 			Mockito.doAnswer(new Answer<Object>() {
 				@Override
 				public Object answer(InvocationOnMock invocation) throws Throwable {
