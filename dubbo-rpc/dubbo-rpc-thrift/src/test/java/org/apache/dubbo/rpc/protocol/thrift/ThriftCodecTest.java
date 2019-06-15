@@ -183,7 +183,7 @@ public class ThriftCodecTest {
 
         Assertions.assertNotNull(obj);
 
-        Assertions.assertEquals(true, obj instanceof Response);
+        Assertions.assertTrue(obj instanceof Response);
 
         Response response = (Response) obj;
 

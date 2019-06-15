@@ -113,6 +113,7 @@ public class NettyClientHandler extends ChannelDuplexHandler {
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+    	// send heartbeat when read idle.
         if (evt instanceof IdleStateEvent) {
             try {
                 NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);

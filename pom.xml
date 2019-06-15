@@ -125,7 +125,7 @@
         <arguments />
         <checkstyle.skip>true</checkstyle.skip>
         <rat.skip>true</rat.skip>
-        <revision>2.7.2-SNAPSHOT</revision>
+        <revision>2.7.3-SNAPSHOT</revision>
     </properties>
 
     <modules>
@@ -514,6 +514,7 @@
                                 <exclude>PULL_REQUEST_TEMPLATE.md</exclude>
                                 <exclude>CONTRIBUTING.md</exclude>
                                 <exclude>README.md</exclude>
+                                <exclude>Jenkinsfile</exclude>
                                 <exclude>**/codestyle/*</exclude>
                                 <exclude>**/resources/META-INF/**</exclude>
                                 <!-- exclude the internal threadlocal files -->

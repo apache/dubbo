@@ -131,7 +131,7 @@ public class CacheFilterTest {
         cacheFilter.invoke(invoker4, invocation);
         Result result1 = cacheFilter.invoke(invoker1, invocation);
         Result result2 = cacheFilter.invoke(invoker2, invocation);
-        Assertions.assertEquals(result1.getValue(), null);
-        Assertions.assertEquals(result2.getValue(), null);
+        Assertions.assertNull(result1.getValue());
+        Assertions.assertNull(result2.getValue());
     }
 }

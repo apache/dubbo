@@ -32,7 +32,7 @@ public class MethodUtilsTest {
             }
         }
         Assertions.assertNotNull(getMethod);
-        Assertions.assertTrue(getMethod.getName().equals("getValue"));
+        Assertions.assertEquals("getValue", getMethod.getName());
     }
 
     @Test
@@ -44,7 +44,7 @@ public class MethodUtilsTest {
             }
         }
         Assertions.assertNotNull(setMethod);
-        Assertions.assertTrue(setMethod.getName().equals("setValue"));
+        Assertions.assertEquals("setValue", setMethod.getName());
     }
 
     public class MethodTestClazz {
