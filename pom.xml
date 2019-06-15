@@ -517,9 +517,15 @@
                                 <exclude>Jenkinsfile</exclude>
                                 <exclude>**/codestyle/*</exclude>
                                 <exclude>**/resources/META-INF/**</exclude>
-                                <!-- exclude the internal threadlocal files -->
+                                <!-- exclude the netty files -->
                                 <exclude>**/org/apache/dubbo/common/threadlocal/InternalThreadLocal.java</exclude>
                                 <exclude>**/org/apache/dubbo/common/threadlocal/InternalThreadLocalMap.java</exclude>
+                                <exclude>**/org/apache/dubbo/common/timer/TimerTask.java</exclude>
+                                <exclude>**/org/apache/dubbo/common/timer/Timer.java</exclude>
+                                <exclude>**/org/apache/dubbo/common/timer/Timeout.java</exclude>
+                                <exclude>**/org/apache/dubbo/common/timer/HashedWheelTimer.java</exclude>
+                                <!-- exclude the edazdarevic files -->
+                                <exclude>**/org/apache/dubbo/common/utils/CIDRUtils.java</exclude>
                             </excludes>
                         </configuration>
                     </execution>
