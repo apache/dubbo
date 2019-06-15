@@ -165,7 +165,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                     if (StringUtils.isEmpty(value)) {
                         continue;
                     }
-                    if ("registry".equals(property) && RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(value)) {
+                    if (RegistryConstants.REGISTRY_KEY.equals(property) && RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(value)) {
                         RegistryConfig registryConfig = new RegistryConfig();
                         registryConfig.setAddress(RegistryConfig.NO_AVAILABLE);
                         beanDefinition.getPropertyValues().addPropertyValue(beanProperty, registryConfig);
