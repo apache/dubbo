@@ -582,6 +582,15 @@
                         <include>**/src/main/java/**</include>
                         <include>**/src/test/java/**</include>
                     </includes>
+                    <excludes>
+                        <exclude>**/org/apache/dubbo/common/threadlocal/InternalThreadLocal.java</exclude>
+                        <exclude>**/org/apache/dubbo/common/threadlocal/InternalThreadLocalMap.java</exclude>
+                        <exclude>**/org/apache/dubbo/common/utils/CIDRUtils.java</exclude>
+                        <exclude>**/org/apache/dubbo/common/timer/TimerTask.java</exclude>
+                        <exclude>**/org/apache/dubbo/common/timer/Timer.java</exclude>
+                        <exclude>**/org/apache/dubbo/common/timer/Timeout.java</exclude>
+                        <exclude>**/org/apache/dubbo/common/timer/HashedWheelTimer.java</exclude>
+                    </excludes>
                     <strictCheck>true</strictCheck>
                     <mapping>
                         <java>SLASHSTAR_STYLE</java>
