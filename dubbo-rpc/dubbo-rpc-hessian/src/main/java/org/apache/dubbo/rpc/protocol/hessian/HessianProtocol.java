@@ -93,12 +93,9 @@ public class HessianProtocol extends AbstractProxyProtocol {
         final String genericPath = path + "/" + GENERIC_KEY;
         skeletonMap.put(genericPath, new HessianSkeleton(impl, GenericService.class));
 
-        return new Runnable() {
-            @Override
-            public void run() {
-                skeletonMap.remove(path);
-                skeletonMap.remove(genericPath);
-            }
+        return () -> {
+            skeletonMap.remove(path);
+            skeletonMap.remove(genericPath);
         };
     }
 

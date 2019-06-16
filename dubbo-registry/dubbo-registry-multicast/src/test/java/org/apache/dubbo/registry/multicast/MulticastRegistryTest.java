@@ -132,14 +132,11 @@ public class MulticastRegistryTest {
     @Test
     public void testSubscribe() {
         // verify listener
-        registry.subscribe(consumerUrl, new NotifyListener() {
-            @Override
-            public void notify(List<URL> urls) {
-                assertEquals(serviceUrl.toFullString(), urls.get(0).toFullString());
+        registry.subscribe(consumerUrl, urls -> {
+            assertEquals(serviceUrl.toFullString(), urls.get(0).toFullString());
 
-                Map<URL, Set<NotifyListener>> subscribed = registry.getSubscribed();
-                assertEquals(consumerUrl, subscribed.keySet().iterator().next());
-            }
+            Map<URL, Set<NotifyListener>> subscribed = registry.getSubscribed();
+            assertEquals(consumerUrl, subscribed.keySet().iterator().next());
         });
     }
 
@@ -149,24 +146,18 @@ public class MulticastRegistryTest {
     @Test
     public void testUnsubscribe() {
         // subscribe first
-        registry.subscribe(consumerUrl, new NotifyListener() {
-            @Override
-            public void notify(List<URL> urls) {
-                // do nothing
-            }
+        registry.subscribe(consumerUrl, urls -> {
+            // do nothing
         });
 
         // then unsubscribe
-        registry.unsubscribe(consumerUrl, new NotifyListener() {
-            @Override
-            public void notify(List<URL> urls) {
-                Map<URL, Set<NotifyListener>> subscribed = registry.getSubscribed();
-                Set<NotifyListener> listeners = subscribed.get(consumerUrl);
-                assertTrue(listeners.isEmpty());
+        registry.unsubscribe(consumerUrl, urls -> {
+            Map<URL, Set<NotifyListener>> subscribed = registry.getSubscribed();
+            Set<NotifyListener> listeners = subscribed.get(consumerUrl);
+            assertTrue(listeners.isEmpty());
 
-                Map<URL, Set<URL>> received = registry.getReceived();
-                assertTrue(received.get(consumerUrl).isEmpty());
-            }
+            Map<URL, Set<URL>> received = registry.getReceived();
+            assertTrue(received.get(consumerUrl).isEmpty());
         });
     }
 

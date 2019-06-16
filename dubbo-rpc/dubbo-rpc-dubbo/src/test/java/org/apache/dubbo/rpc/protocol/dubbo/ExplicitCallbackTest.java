@@ -107,12 +107,10 @@ public class ExplicitCallbackTest {
         initOrResetService();
         final AtomicInteger count = new AtomicInteger(0);
 
-        demoProxy.xxx(new IDemoCallback() {
-            public String yyy(String msg) {
-                System.out.println("Recived callback: " + msg);
-                count.incrementAndGet();
-                return "ok";
-            }
+        demoProxy.xxx(msg -> {
+            System.out.println("Recived callback: " + msg);
+            count.incrementAndGet();
+            return "ok";
         }, "other custom args", 10, 100);
         System.out.println("Async...");
 //        Thread.sleep(10000000);
@@ -126,18 +124,14 @@ public class ExplicitCallbackTest {
     public void TestCallbackMultiInstans() throws Exception {
         initOrResetUrl(2, 3000);
         initOrResetService();
-        IDemoCallback callback = new IDemoCallback() {
-            public String yyy(String msg) {
-                System.out.println("callback1:" + msg);
-                return "callback1 onChanged ," + msg;
-            }
+        IDemoCallback callback = msg -> {
+            System.out.println("callback1:" + msg);
+            return "callback1 onChanged ," + msg;
         };
 
-        IDemoCallback callback2 = new IDemoCallback() {
-            public String yyy(String msg) {
-                System.out.println("callback2:" + msg);
-                return "callback2 onChanged ," + msg;
-            }
+        IDemoCallback callback2 = msg -> {
+            System.out.println("callback2:" + msg);
+            return "callback2 onChanged ," + msg;
         };
         {
             demoProxy.xxx2(callback);
@@ -179,20 +173,16 @@ public class ExplicitCallbackTest {
             // it needs manually specified.
             initOrResetService();
             final AtomicInteger count = new AtomicInteger(0);
-            demoProxy.xxx(new IDemoCallback() {
-                public String yyy(String msg) {
-                    System.out.println("Recived callback: " + msg);
-                    count.incrementAndGet();
-                    return "ok";
-                }
+            demoProxy.xxx(msg -> {
+                System.out.println("Recived callback: " + msg);
+                count.incrementAndGet();
+                return "ok";
             }, "other custom args", 10, 100);
 
-            demoProxy.xxx(new IDemoCallback() {
-                public String yyy(String msg) {
-                    System.out.println("Recived callback: " + msg);
-                    count.incrementAndGet();
-                    return "ok";
-                }
+            demoProxy.xxx(msg -> {
+                System.out.println("Recived callback: " + msg);
+                count.incrementAndGet();
+                return "ok";
             }, "other custom args", 10, 100);
             destroyService();
         });
@@ -207,20 +197,16 @@ public class ExplicitCallbackTest {
             serviceURL = serviceURL.addParameter(CALLBACK_INSTANCES_LIMIT_KEY, 1 + "");
             initOrResetService();
             final AtomicInteger count = new AtomicInteger(0);
-            demoProxy.xxx(new IDemoCallback() {
-                public String yyy(String msg) {
-                    System.out.println("Recived callback: " + msg);
-                    count.incrementAndGet();
-                    return "ok";
-                }
+            demoProxy.xxx(msg -> {
+                System.out.println("Recived callback: " + msg);
+                count.incrementAndGet();
+                return "ok";
             }, "other custom args", 10, 100);
 
-            demoProxy.xxx(new IDemoCallback() {
-                public String yyy(String msg) {
-                    System.out.println("Recived callback: " + msg);
-                    count.incrementAndGet();
-                    return "ok";
-                }
+            demoProxy.xxx(msg -> {
+                System.out.println("Recived callback: " + msg);
+                count.incrementAndGet();
+                return "ok";
             }, "other custom args", 10, 100);
             destroyService();
         });
@@ -286,16 +272,14 @@ public class ExplicitCallbackTest {
 
         public void xxx(final IDemoCallback callback, String arg1, final int runs, final int sleep) {
             callback.yyy("Sync callback msg .This is callback data. arg1:" + arg1);
-            Thread t = new Thread(new Runnable() {
-                public void run() {
-                    for (int i = 0; i < runs; i++) {
-                        String ret = callback.yyy("server invoke callback : arg:" + System.currentTimeMillis());
-                        System.out.println("callback result is :" + ret);
-                        try {
-                            Thread.sleep(sleep);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
+            Thread t = new Thread(() -> {
+                for (int i = 0; i < runs; i++) {
+                    String ret = callback.yyy("server invoke callback : arg:" + System.currentTimeMillis());
+                    System.out.println("callback result is :" + ret);
+                    try {
+                        Thread.sleep(sleep);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
                 }
             });
@@ -319,23 +303,21 @@ public class ExplicitCallbackTest {
             if (t == null || callbacks.size() == 0) {
                 try {
                     lock.lock();
-                    t = new Thread(new Runnable() {
-                        public void run() {
-                            while (callbacks.size() > 0) {
-                                try {
-                                    List<IDemoCallback> callbacksCopy = new ArrayList<IDemoCallback>(callbacks);
-                                    for (IDemoCallback callback : callbacksCopy) {
-                                        try {
-                                            callback.yyy("this is callback msg,current time is :" + System.currentTimeMillis());
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                            callbacks.remove(callback);
-                                        }
+                    t = new Thread(() -> {
+                        while (callbacks.size() > 0) {
+                            try {
+                                List<IDemoCallback> callbacksCopy = new ArrayList<IDemoCallback>(callbacks);
+                                for (IDemoCallback callback : callbacksCopy) {
+                                    try {
+                                        callback.yyy("this is callback msg,current time is :" + System.currentTimeMillis());
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                        callbacks.remove(callback);
                                     }
-                                    Thread.sleep(100);
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
                                 }
+                                Thread.sleep(100);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
                             }
                         }
                     });

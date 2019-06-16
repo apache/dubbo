@@ -111,9 +111,8 @@ public class MergeableClusterInvokerTest {
                 ;
         given(invocation.getInvoker()).willReturn(firstInvoker);
 
-        firstInvoker = (Invoker) Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[]{Invoker.class}, new InvocationHandler() {
-
-            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        firstInvoker = (Invoker) Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[]{Invoker.class},
+            (proxy, method, args) -> {
                 if ("getUrl".equals(method.getName())) {
                     return url.addParameter(GROUP_KEY, "first");
                 }
@@ -124,12 +123,10 @@ public class MergeableClusterInvokerTest {
                     return AsyncRpcResult.newDefaultAsyncResult(firstMenu, invocation);
                 }
                 return null;
-            }
-        });
+            });
 
-        secondInvoker = (Invoker) Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[]{Invoker.class}, new InvocationHandler() {
-
-            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        secondInvoker = (Invoker) Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[]{Invoker.class},
+            (proxy, method, args) -> {
                 if ("getUrl".equals(method.getName())) {
                     return url.addParameter(GROUP_KEY, "second");
                 }
@@ -140,8 +137,7 @@ public class MergeableClusterInvokerTest {
                     return AsyncRpcResult.newDefaultAsyncResult(secondMenu, invocation);
                 }
                 return null;
-            }
-        });
+            });
 
         given(directory.list(invocation)).willReturn(new ArrayList() {
 

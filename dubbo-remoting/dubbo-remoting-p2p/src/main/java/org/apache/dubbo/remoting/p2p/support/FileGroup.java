@@ -51,15 +51,12 @@ public class FileGroup extends AbstractGroup {
         super(url);
         String path = url.getAbsolutePath();
         file = new File(path);
-        checkModifiedFuture = scheduledExecutorService.scheduleWithFixedDelay(new Runnable() {
-            @Override
-            public void run() {
-                // Check the file change
-                try {
-                    check();
-                } catch (Throwable t) { // Defensive fault tolerance
-                    logger.error("Unexpected error occur at reconnect, cause: " + t.getMessage(), t);
-                }
+        checkModifiedFuture = scheduledExecutorService.scheduleWithFixedDelay(() -> {
+            // Check the file change
+            try {
+                check();
+            } catch (Throwable t) { // Defensive fault tolerance
+                logger.error("Unexpected error occur at reconnect, cause: " + t.getMessage(), t);
             }
         }, 2000, 2000, TimeUnit.MILLISECONDS);
     }

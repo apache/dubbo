@@ -84,28 +84,25 @@ public class CountTelnetHandler implements TelnetHandler {
                 final String mtd = method;
                 final Invoker<?> inv = invoker;
                 final String prompt = channel.getUrl().getParameter("prompt", "telnet");
-                Thread thread = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        for (int i = 0; i < t; i++) {
-                            String result = count(inv, mtd);
-                            try {
-                                channel.send("\r\n" + result);
-                            } catch (RemotingException e1) {
-                                return;
-                            }
-                            if (i < t - 1) {
-                                try {
-                                    Thread.sleep(1000);
-                                } catch (InterruptedException e) {
-                                }
-                            }
-                        }
+                Thread thread = new Thread(() -> {
+                    for (int i = 0; i < t; i++) {
+                        String result = count(inv, mtd);
                         try {
-                            channel.send("\r\n" + prompt + "> ");
+                            channel.send("\r\n" + result);
                         } catch (RemotingException e1) {
                             return;
                         }
+                        if (i < t - 1) {
+                            try {
+                                Thread.sleep(1000);
+                            } catch (InterruptedException e) {
+                            }
+                        }
+                    }
+                    try {
+                        channel.send("\r\n" + prompt + "> ");
+                    } catch (RemotingException e1) {
+                        return;
                     }
                 }, "TelnetCount");
                 thread.setDaemon(true);

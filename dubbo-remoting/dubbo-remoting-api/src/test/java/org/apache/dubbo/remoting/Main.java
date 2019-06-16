@@ -42,13 +42,11 @@ public class Main {
     private static void startServer(int port) throws Exception {
         ReplierDispatcher dispatcher = new ReplierDispatcher();
         dispatcher.addReplier(RpcMessage.class, new RpcMessageHandler());
-        dispatcher.addReplier(Object.class, new Replier<Object>() {
-            public Object reply(ExchangeChannel channel, Object msg) {
-                for (int i = 0; i < 10000; i++)
-                    System.currentTimeMillis();
-                System.out.println("handle:" + msg + ";thread:" + Thread.currentThread().getName());
-                return new StringMessage("hello world");
-            }
+        dispatcher.addReplier(Object.class, (channel, msg) -> {
+            for (int i = 0; i < 10000; i++)
+                System.currentTimeMillis();
+            System.out.println("handle:" + msg + ";thread:" + Thread.currentThread().getName());
+            return new StringMessage("hello world");
         });
         Exchangers.bind(URL.valueOf("dubbo://localhost:" + port), dispatcher);
     }
@@ -70,13 +68,11 @@ public class Main {
     static void mutliThreadTest(int tc, final int port) throws Exception {
         Executor exec = Executors.newFixedThreadPool(tc);
         for (int i = 0; i < tc; i++)
-            exec.execute(new Runnable() {
-                public void run() {
-                    try {
-                        test(port);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+            exec.execute(() -> {
+                try {
+                    test(port);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             });
     }

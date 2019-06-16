@@ -30,11 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ProtocolTest {
 
-    IEcho echo = new IEcho() {
-        public String echo(String e) {
-            return e;
-        }
-    };
+    IEcho echo = e -> e;
 
     static {
         InjvmProtocol injvm = InjvmProtocol.getInjvmProtocol();

@@ -68,20 +68,17 @@ public class ActiveLimitFilterTest {
         final Invocation invocation = new MockInvocation();
         final CountDownLatch latch = new CountDownLatch(1);
         for (int i = 0; i < 100; i++) {
-            Thread thread = new Thread(new Runnable() {
-
-                public void run() {
+            Thread thread = new Thread(() -> {
+                try {
+                    latch.await();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                for (int i1 = 0; i1 < 100; i1++) {
                     try {
-                        latch.await();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    for (int i = 0; i < 100; i++) {
-                        try {
-                            activeLimitFilter.invoke(invoker, invocation);
-                        } catch (RpcException expected) {
-                            count.incrementAndGet();
-                        }
+                        activeLimitFilter.invoke(invoker, invocation);
+                    } catch (RpcException expected) {
+                        count.incrementAndGet();
                     }
                 }
             });
@@ -112,27 +109,25 @@ public class ActiveLimitFilterTest {
         RpcStatus.removeStatus(url);
         RpcStatus.removeStatus(url, invocation.getMethodName());
         for (int i = 0; i < totalThread; i++) {
-            Thread thread = new Thread(new Runnable() {
-                public void run() {
+            Thread thread = new Thread(() -> {
+                try {
                     try {
-                        try {
-                            latch.await();
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        try {
-                            Result asyncResult = activeLimitFilter.invoke(invoker, invocation);
-                            Result result = asyncResult.get();
-                            activeLimitFilter.listener().onResponse(result, invoker, invocation);
-                        } catch (RpcException expected) {
-                            count.incrementAndGet();
-//                            activeLimitFilter.listener().onError(expected, invoker, invocation);
-                        } catch (Exception e) {
-                            fail();
-                        }
-                    } finally {
-                        latchBlocking.countDown();
+                        latch.await();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
+                    try {
+                        Result asyncResult = activeLimitFilter.invoke(invoker, invocation);
+                        Result result = asyncResult.get();
+                        activeLimitFilter.listener().onResponse(result, invoker, invocation);
+                    } catch (RpcException expected) {
+                        count.incrementAndGet();
+//                            activeLimitFilter.listener().onError(expected, invoker, invocation);
+                    } catch (Exception e) {
+                        fail();
+                    }
+                } finally {
+                    latchBlocking.countDown();
                 }
             });
             thread.start();
@@ -160,27 +155,25 @@ public class ActiveLimitFilterTest {
         final Invoker<ActiveLimitFilterTest> invoker = new BlockMyInvoker<ActiveLimitFilterTest>(url, blockTime);
         final Invocation invocation = new MockInvocation();
         for (int i = 0; i < totalThread; i++) {
-            Thread thread = new Thread(new Runnable() {
-                public void run() {
+            Thread thread = new Thread(() -> {
+                try {
                     try {
-                        try {
-                            latch.await();
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        try {
-                            Result asyncResult = activeLimitFilter.invoke(invoker, invocation);
-                            Result result = asyncResult.get();
-                            activeLimitFilter.listener().onResponse(result, invoker, invocation);
-                        } catch (RpcException expected) {
-                            count.incrementAndGet();
-                            activeLimitFilter.listener().onError(expected, invoker, invocation);
-                        } catch (Exception e) {
-                            fail();
-                        }
-                    } finally {
-                        latchBlocking.countDown();
+                        latch.await();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
+                    try {
+                        Result asyncResult = activeLimitFilter.invoke(invoker, invocation);
+                        Result result = asyncResult.get();
+                        activeLimitFilter.listener().onResponse(result, invoker, invocation);
+                    } catch (RpcException expected) {
+                        count.incrementAndGet();
+                        activeLimitFilter.listener().onError(expected, invoker, invocation);
+                    } catch (Exception e) {
+                        fail();
+                    }
+                } finally {
+                    latchBlocking.countDown();
                 }
             });
             thread.start();

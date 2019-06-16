@@ -28,17 +28,15 @@ import java.lang.reflect.InvocationTargetException;
  */
 
 public class RpcMessageHandler implements Replier<RpcMessage> {
-    private final static ServiceProvider DEFAULT_PROVIDER = new ServiceProvider() {
-        public Object getImplementation(String service) {
-            String impl = service + "Impl";
-            try {
-                Class<?> cl = Thread.currentThread().getContextClassLoader().loadClass(impl);
-                return cl.newInstance();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return null;
+    private final static ServiceProvider DEFAULT_PROVIDER = service -> {
+        String impl = service + "Impl";
+        try {
+            Class<?> cl = Thread.currentThread().getContextClassLoader().loadClass(impl);
+            return cl.newInstance();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        return null;
     };
     private ServiceProvider mProvider;
 

@@ -41,21 +41,11 @@ public class GenericJSONConverter implements JSONConverter {
 
     static {
         // init encoder map.
-        Encoder e = new Encoder() {
-            @Override
-            public void encode(Object obj, JSONWriter jb) throws IOException {
-                jb.valueBoolean((Boolean) obj);
-            }
-        };
+        Encoder e = (obj, jb) -> jb.valueBoolean((Boolean) obj);
         GlobalEncoderMap.put(boolean.class, e);
         GlobalEncoderMap.put(Boolean.class, e);
 
-        e = new Encoder() {
-            @Override
-            public void encode(Object obj, JSONWriter jb) throws IOException {
-                jb.valueInt(((Number) obj).intValue());
-            }
-        };
+        e = (obj, jb) -> jb.valueInt(((Number) obj).intValue());
         GlobalEncoderMap.put(int.class, e);
         GlobalEncoderMap.put(Integer.class, e);
         GlobalEncoderMap.put(short.class, e);
@@ -64,355 +54,241 @@ public class GenericJSONConverter implements JSONConverter {
         GlobalEncoderMap.put(Byte.class, e);
         GlobalEncoderMap.put(AtomicInteger.class, e);
 
-        e = new Encoder() {
-            @Override
-            public void encode(Object obj, JSONWriter jb) throws IOException {
-                jb.valueString(Character.toString((Character) obj));
-            }
-        };
+        e = (obj, jb) -> jb.valueString(Character.toString((Character) obj));
         GlobalEncoderMap.put(char.class, e);
         GlobalEncoderMap.put(Character.class, e);
 
-        e = new Encoder() {
-            @Override
-            public void encode(Object obj, JSONWriter jb) throws IOException {
-                jb.valueLong(((Number) obj).longValue());
-            }
-        };
+        e = (obj, jb) -> jb.valueLong(((Number) obj).longValue());
         GlobalEncoderMap.put(long.class, e);
         GlobalEncoderMap.put(Long.class, e);
         GlobalEncoderMap.put(AtomicLong.class, e);
         GlobalEncoderMap.put(BigInteger.class, e);
 
-        e = new Encoder() {
-            @Override
-            public void encode(Object obj, JSONWriter jb) throws IOException {
-                jb.valueFloat(((Number) obj).floatValue());
-            }
-        };
+        e = (obj, jb) -> jb.valueFloat(((Number) obj).floatValue());
         GlobalEncoderMap.put(float.class, e);
         GlobalEncoderMap.put(Float.class, e);
 
-        e = new Encoder() {
-            @Override
-            public void encode(Object obj, JSONWriter jb) throws IOException {
-                jb.valueDouble(((Number) obj).doubleValue());
-            }
-        };
+        e = (obj, jb) -> jb.valueDouble(((Number) obj).doubleValue());
         GlobalEncoderMap.put(double.class, e);
         GlobalEncoderMap.put(Double.class, e);
         GlobalEncoderMap.put(BigDecimal.class, e);
 
-        e = new Encoder() {
-            @Override
-            public void encode(Object obj, JSONWriter jb) throws IOException {
-                jb.valueString(obj.toString());
-            }
-        };
+        e = (obj, jb) -> jb.valueString(obj.toString());
         GlobalEncoderMap.put(String.class, e);
         GlobalEncoderMap.put(StringBuilder.class, e);
         GlobalEncoderMap.put(StringBuffer.class, e);
 
-        e = new Encoder() {
-            @Override
-            public void encode(Object obj, JSONWriter jb) throws IOException {
-                jb.valueString(Bytes.bytes2base64((byte[]) obj));
-            }
-        };
+        e = (obj, jb) -> jb.valueString(Bytes.bytes2base64((byte[]) obj));
         GlobalEncoderMap.put(byte[].class, e);
 
-        e = new Encoder() {
-            @Override
-            public void encode(Object obj, JSONWriter jb) throws IOException {
-                jb.valueString(new SimpleDateFormat(DATE_FORMAT).format((Date) obj));
-            }
-        };
+        e = (obj, jb) -> jb.valueString(new SimpleDateFormat(DATE_FORMAT).format((Date) obj));
         GlobalEncoderMap.put(Date.class, e);
 
         // init decoder map.
         Decoder d = Object::toString;
         GlobalDecoderMap.put(String.class, d);
 
-        d = new Decoder() {
-            @Override
-            public Object decode(Object jv) {
-                if (jv instanceof Boolean) {
-                    return ((Boolean) jv).booleanValue();
-                }
-                return false;
+        d = jv -> {
+            if (jv instanceof Boolean) {
+                return ((Boolean) jv).booleanValue();
             }
+            return false;
         };
         GlobalDecoderMap.put(boolean.class, d);
 
-        d = new Decoder() {
-            @Override
-            public Object decode(Object jv) {
-                if (jv instanceof Boolean) {
-                    return (Boolean) jv;
-                }
-                return (Boolean) null;
+        d = jv -> {
+            if (jv instanceof Boolean) {
+                return (Boolean) jv;
             }
+            return (Boolean) null;
         };
         GlobalDecoderMap.put(Boolean.class, d);
 
-        d = new Decoder() {
-            @Override
-            public Object decode(Object jv) {
-                if (jv instanceof String && ((String) jv).length() > 0) {
-                    return ((String) jv).charAt(0);
-                }
-                return (char) 0;
+        d = jv -> {
+            if (jv instanceof String && ((String) jv).length() > 0) {
+                return ((String) jv).charAt(0);
             }
+            return (char) 0;
         };
         GlobalDecoderMap.put(char.class, d);
 
-        d = new Decoder() {
-            @Override
-            public Object decode(Object jv) {
-                if (jv instanceof String && ((String) jv).length() > 0) {
-                    return ((String) jv).charAt(0);
-                }
-                return (Character) null;
+        d = jv -> {
+            if (jv instanceof String && ((String) jv).length() > 0) {
+                return ((String) jv).charAt(0);
             }
+            return (Character) null;
         };
         GlobalDecoderMap.put(Character.class, d);
 
-        d = new Decoder() {
-            @Override
-            public Object decode(Object jv) {
-                if (jv instanceof Number) {
-                    return ((Number) jv).intValue();
-                }
-                return 0;
+        d = jv -> {
+            if (jv instanceof Number) {
+                return ((Number) jv).intValue();
             }
+            return 0;
         };
         GlobalDecoderMap.put(int.class, d);
 
-        d = new Decoder() {
-            @Override
-            public Object decode(Object jv) {
-                if (jv instanceof Number) {
-                    return Integer.valueOf(((Number) jv).intValue());
-                }
-                return (Integer) null;
+        d = jv -> {
+            if (jv instanceof Number) {
+                return Integer.valueOf(((Number) jv).intValue());
             }
+            return (Integer) null;
         };
         GlobalDecoderMap.put(Integer.class, d);
 
-        d = new Decoder() {
-            @Override
-            public Object decode(Object jv) {
-                if (jv instanceof Number) {
-                    return ((Number) jv).shortValue();
-                }
-                return (short) 0;
+        d = jv -> {
+            if (jv instanceof Number) {
+                return ((Number) jv).shortValue();
             }
+            return (short) 0;
         };
         GlobalDecoderMap.put(short.class, d);
 
-        d = new Decoder() {
-            @Override
-            public Object decode(Object jv) {
-                if (jv instanceof Number) {
-                    return Short.valueOf(((Number) jv).shortValue());
-                }
-                return (Short) null;
+        d = jv -> {
+            if (jv instanceof Number) {
+                return Short.valueOf(((Number) jv).shortValue());
             }
+            return (Short) null;
         };
         GlobalDecoderMap.put(Short.class, d);
 
-        d = new Decoder() {
-            @Override
-            public Object decode(Object jv) {
-                if (jv instanceof Number) {
-                    return ((Number) jv).longValue();
-                }
-                return (long) 0;
+        d = jv -> {
+            if (jv instanceof Number) {
+                return ((Number) jv).longValue();
             }
+            return (long) 0;
         };
         GlobalDecoderMap.put(long.class, d);
 
-        d = new Decoder() {
-            @Override
-            public Object decode(Object jv) {
-                if (jv instanceof Number) {
-                    return Long.valueOf(((Number) jv).longValue());
-                }
-                return (Long) null;
+        d = jv -> {
+            if (jv instanceof Number) {
+                return Long.valueOf(((Number) jv).longValue());
             }
+            return (Long) null;
         };
         GlobalDecoderMap.put(Long.class, d);
 
-        d = new Decoder() {
-            @Override
-            public Object decode(Object jv) {
-                if (jv instanceof Number) {
-                    return ((Number) jv).floatValue();
-                }
-                return (float) 0;
+        d = jv -> {
+            if (jv instanceof Number) {
+                return ((Number) jv).floatValue();
             }
+            return (float) 0;
         };
         GlobalDecoderMap.put(float.class, d);
 
-        d = new Decoder() {
-            @Override
-            public Object decode(Object jv) {
-                if (jv instanceof Number) {
-                    return new Float(((Number) jv).floatValue());
-                }
-                return (Float) null;
+        d = jv -> {
+            if (jv instanceof Number) {
+                return new Float(((Number) jv).floatValue());
             }
+            return (Float) null;
         };
         GlobalDecoderMap.put(Float.class, d);
 
-        d = new Decoder() {
-            @Override
-            public Object decode(Object jv) {
-                if (jv instanceof Number) {
-                    return ((Number) jv).doubleValue();
-                }
-                return (double) 0;
+        d = jv -> {
+            if (jv instanceof Number) {
+                return ((Number) jv).doubleValue();
             }
+            return (double) 0;
         };
         GlobalDecoderMap.put(double.class, d);
 
-        d = new Decoder() {
-            @Override
-            public Object decode(Object jv) {
-                if (jv instanceof Number) {
-                    return new Double(((Number) jv).doubleValue());
-                }
-                return (Double) null;
+        d = jv -> {
+            if (jv instanceof Number) {
+                return new Double(((Number) jv).doubleValue());
             }
+            return (Double) null;
         };
         GlobalDecoderMap.put(Double.class, d);
 
-        d = new Decoder() {
-            @Override
-            public Object decode(Object jv) {
-                if (jv instanceof Number) {
-                    return ((Number) jv).byteValue();
-                }
-                return (byte) 0;
+        d = jv -> {
+            if (jv instanceof Number) {
+                return ((Number) jv).byteValue();
             }
+            return (byte) 0;
         };
         GlobalDecoderMap.put(byte.class, d);
 
-        d = new Decoder() {
-            @Override
-            public Object decode(Object jv) {
-                if (jv instanceof Number) {
-                    return Byte.valueOf(((Number) jv).byteValue());
-                }
-                return (Byte) null;
+        d = jv -> {
+            if (jv instanceof Number) {
+                return Byte.valueOf(((Number) jv).byteValue());
             }
+            return (Byte) null;
         };
         GlobalDecoderMap.put(Byte.class, d);
 
-        d = new Decoder() {
-            @Override
-            public Object decode(Object jv) throws IOException {
-                if (jv instanceof String) {
-                    return Bytes.base642bytes((String) jv);
-                }
-                return (byte[]) null;
+        d = jv -> {
+            if (jv instanceof String) {
+                return Bytes.base642bytes((String) jv);
             }
+            return (byte[]) null;
         };
         GlobalDecoderMap.put(byte[].class, d);
 
-        d = new Decoder() {
-            @Override
-            public Object decode(Object jv) throws IOException {
-                return new StringBuilder(jv.toString());
-            }
-        };
+        d = jv -> new StringBuilder(jv.toString());
         GlobalDecoderMap.put(StringBuilder.class, d);
 
-        d = new Decoder() {
-            @Override
-            public Object decode(Object jv) throws IOException {
-                return new StringBuffer(jv.toString());
-            }
-        };
+        d = jv -> new StringBuffer(jv.toString());
         GlobalDecoderMap.put(StringBuffer.class, d);
 
-        d = new Decoder() {
-            @Override
-            public Object decode(Object jv) throws IOException {
-                if (jv instanceof Number) {
-                    return BigInteger.valueOf(((Number) jv).longValue());
-                }
-                return (BigInteger) null;
+        d = jv -> {
+            if (jv instanceof Number) {
+                return BigInteger.valueOf(((Number) jv).longValue());
             }
+            return (BigInteger) null;
         };
         GlobalDecoderMap.put(BigInteger.class, d);
 
-        d = new Decoder() {
-            @Override
-            public Object decode(Object jv) throws IOException {
-                if (jv instanceof Number) {
-                    return BigDecimal.valueOf(((Number) jv).doubleValue());
-                }
-                return (BigDecimal) null;
+        d = jv -> {
+            if (jv instanceof Number) {
+                return BigDecimal.valueOf(((Number) jv).doubleValue());
             }
+            return (BigDecimal) null;
         };
         GlobalDecoderMap.put(BigDecimal.class, d);
 
-        d = new Decoder() {
-            @Override
-            public Object decode(Object jv) throws IOException {
-                if (jv instanceof Number) {
-                    return new AtomicInteger(((Number) jv).intValue());
-                }
-                return (AtomicInteger) null;
+        d = jv -> {
+            if (jv instanceof Number) {
+                return new AtomicInteger(((Number) jv).intValue());
             }
+            return (AtomicInteger) null;
         };
         GlobalDecoderMap.put(AtomicInteger.class, d);
 
-        d = new Decoder() {
-            @Override
-            public Object decode(Object jv) throws IOException {
-                if (jv instanceof Number) {
-                    return new AtomicLong(((Number) jv).longValue());
-                }
-                return (AtomicLong) null;
+        d = jv -> {
+            if (jv instanceof Number) {
+                return new AtomicLong(((Number) jv).longValue());
             }
+            return (AtomicLong) null;
         };
         GlobalDecoderMap.put(AtomicLong.class, d);
 
-        d = new Decoder() {
-            @Override
-            public Object decode(Object jv) throws IOException {
-                if (jv instanceof String) {
-                    try {
-                        return new SimpleDateFormat(DATE_FORMAT).parse((String) jv);
-                    } catch (ParseException e) {
-                        throw new IllegalArgumentException(e.getMessage(), e);
-                    }
+        d = jv -> {
+            if (jv instanceof String) {
+                try {
+                    return new SimpleDateFormat(DATE_FORMAT).parse((String) jv);
+                } catch (ParseException e1) {
+                    throw new IllegalArgumentException(e1.getMessage(), e1);
                 }
-                if (jv instanceof Number) {
-                    return new Date(((Number) jv).longValue());
-                }
-                return (Date) null;
             }
+            if (jv instanceof Number) {
+                return new Date(((Number) jv).longValue());
+            }
+            return (Date) null;
         };
         GlobalDecoderMap.put(Date.class, d);
 
-        d = new Decoder() {
-            @Override
-            public Object decode(Object jv) throws IOException {
-                if (jv instanceof String) {
-                    String[] items = ((String)jv).split("_");
-                    if(items.length == 1){
-                        return new Locale(items[0]);
-                    }
-                    if(items.length == 2){
-                        return new Locale(items[0], items[1]);
-                    }
-                    return new Locale(items[0], items[1], items[2]);
+        d = jv -> {
+            if (jv instanceof String) {
+                String[] items = ((String)jv).split("_");
+                if(items.length == 1){
+                    return new Locale(items[0]);
                 }
-                return (Locale)null;
+                if(items.length == 2){
+                    return new Locale(items[0], items[1]);
+                }
+                return new Locale(items[0], items[1], items[2]);
             }
+            return (Locale)null;
         };
         GlobalDecoderMap.put(Locale.class, d);
     }

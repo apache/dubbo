@@ -78,20 +78,17 @@ public class NettyServer extends AbstractServer implements Server {
         // https://issues.jboss.org/browse/NETTY-379
         // final Timer timer = new HashedWheelTimer(new NamedThreadFactory("NettyIdleTimer", true));
         bootstrap.setOption("child.tcpNoDelay", true);
-        bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
-            @Override
-            public ChannelPipeline getPipeline() {
-                NettyCodecAdapter adapter = new NettyCodecAdapter(getCodec(), getUrl(), NettyServer.this);
-                ChannelPipeline pipeline = Channels.pipeline();
-                /*int idleTimeout = getIdleTimeout();
-                if (idleTimeout > 10000) {
-                    pipeline.addLast("timer", new IdleStateHandler(timer, idleTimeout / 1000, 0, 0));
-                }*/
-                pipeline.addLast("decoder", adapter.getDecoder());
-                pipeline.addLast("encoder", adapter.getEncoder());
-                pipeline.addLast("handler", nettyHandler);
-                return pipeline;
-            }
+        bootstrap.setPipelineFactory(() -> {
+            NettyCodecAdapter adapter = new NettyCodecAdapter(getCodec(), getUrl(), NettyServer.this);
+            ChannelPipeline pipeline = Channels.pipeline();
+            /*int idleTimeout = getIdleTimeout();
+            if (idleTimeout > 10000) {
+                pipeline.addLast("timer", new IdleStateHandler(timer, idleTimeout / 1000, 0, 0));
+            }*/
+            pipeline.addLast("decoder", adapter.getDecoder());
+            pipeline.addLast("encoder", adapter.getEncoder());
+            pipeline.addLast("handler", nettyHandler);
+            return pipeline;
         });
         // bind
         channel = bootstrap.bind(getBindAddress());

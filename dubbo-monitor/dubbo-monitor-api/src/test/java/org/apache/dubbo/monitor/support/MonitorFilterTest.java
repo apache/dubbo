@@ -86,31 +86,26 @@ public class MonitorFilterTest {
         }
     };
 
-    private MonitorFactory monitorFactory = new MonitorFactory() {
+    private MonitorFactory monitorFactory = url -> new Monitor() {
+        public URL getUrl() {
+            return url;
+        }
+
         @Override
-        public Monitor getMonitor(final URL url) {
-            return new Monitor() {
-                public URL getUrl() {
-                    return url;
-                }
+        public boolean isAvailable() {
+            return true;
+        }
 
-                @Override
-                public boolean isAvailable() {
-                    return true;
-                }
+        @Override
+        public void destroy() {
+        }
 
-                @Override
-                public void destroy() {
-                }
+        public void collect(URL statistics) {
+            MonitorFilterTest.this.lastStatistics = statistics;
+        }
 
-                public void collect(URL statistics) {
-                    MonitorFilterTest.this.lastStatistics = statistics;
-                }
-
-                public List<URL> lookup(URL query) {
-                    return Arrays.asList(MonitorFilterTest.this.lastStatistics);
-                }
-            };
+        public List<URL> lookup(URL query) {
+            return Arrays.asList(MonitorFilterTest.this.lastStatistics);
         }
     };
 

@@ -92,46 +92,43 @@ public class MinaClient extends AbstractClient {
         long start = System.currentTimeMillis();
         final AtomicReference<Throwable> exception = new AtomicReference<Throwable>();
         final CountDownLatch finish = new CountDownLatch(1); // resolve future.awaitUninterruptibly() dead lock
-        future.addListener(new IoFutureListener() {
-            @Override
-            public void operationComplete(IoFuture future) {
-                try {
-                    if (future.isReady()) {
-                        IoSession newSession = future.getSession();
-                        try {
-                            // Close old channel
-                            IoSession oldSession = MinaClient.this.session; // copy reference
-                            if (oldSession != null) {
-                                try {
-                                    if (logger.isInfoEnabled()) {
-                                        logger.info("Close old mina channel " + oldSession + " on create new mina channel " + newSession);
-                                    }
-                                    oldSession.close();
-                                } finally {
-                                    MinaChannel.removeChannelIfDisconnected(oldSession);
+        future.addListener(future1 -> {
+            try {
+                if (future1.isReady()) {
+                    IoSession newSession = future1.getSession();
+                    try {
+                        // Close old channel
+                        IoSession oldSession = MinaClient.this.session; // copy reference
+                        if (oldSession != null) {
+                            try {
+                                if (logger.isInfoEnabled()) {
+                                    logger.info("Close old mina channel " + oldSession + " on create new mina channel " + newSession);
                                 }
-                            }
-                        } finally {
-                            if (MinaClient.this.isClosed()) {
-                                try {
-                                    if (logger.isInfoEnabled()) {
-                                        logger.info("Close new mina channel " + newSession + ", because the client closed.");
-                                    }
-                                    newSession.close();
-                                } finally {
-                                    MinaClient.this.session = null;
-                                    MinaChannel.removeChannelIfDisconnected(newSession);
-                                }
-                            } else {
-                                MinaClient.this.session = newSession;
+                                oldSession.close();
+                            } finally {
+                                MinaChannel.removeChannelIfDisconnected(oldSession);
                             }
                         }
+                    } finally {
+                        if (MinaClient.this.isClosed()) {
+                            try {
+                                if (logger.isInfoEnabled()) {
+                                    logger.info("Close new mina channel " + newSession + ", because the client closed.");
+                                }
+                                newSession.close();
+                            } finally {
+                                MinaClient.this.session = null;
+                                MinaChannel.removeChannelIfDisconnected(newSession);
+                            }
+                        } else {
+                            MinaClient.this.session = newSession;
+                        }
                     }
-                } catch (Exception e) {
-                    exception.set(e);
-                } finally {
-                    finish.countDown();
                 }
+            } catch (Exception e) {
+                exception.set(e);
+            } finally {
+                finish.countDown();
             }
         });
         try {

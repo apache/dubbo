@@ -101,21 +101,18 @@ public class ExecuteLimitFilterTest {
 
         final CountDownLatch latch = new CountDownLatch(1);
         for (int i = 0; i < totalExecute; i++) {
-            Thread thread = new Thread(new Runnable() {
-
-                public void run() {
-                    try {
-                        latch.await();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    try {
-                        executeLimitFilter.invoke(invoker, invocation);
-                    } catch (RpcException expected) {
-                        failed.incrementAndGet();
-                    }
-
+            Thread thread = new Thread(() -> {
+                try {
+                    latch.await();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
+                try {
+                    executeLimitFilter.invoke(invoker, invocation);
+                } catch (RpcException expected) {
+                    failed.incrementAndGet();
+                }
+
             });
             thread.start();
         }

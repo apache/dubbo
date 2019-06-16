@@ -143,13 +143,10 @@ public class MultipleRegistry2S2RTest {
         Assertions.assertNotNull(MultipleRegistryTestUtil.getRedisHashContent(redisServerPort, path, serviceUrl.toFullString()));
 
         final List<URL> list = new ArrayList<URL>();
-        multipleRegistry.subscribe(serviceUrl, new NotifyListener() {
-            @Override
-            public void notify(List<URL> urls) {
-                System.out.println("invoke notify: " + urls);
-                list.clear();
-                list.addAll(urls);
-            }
+        multipleRegistry.subscribe(serviceUrl, urls -> {
+            System.out.println("invoke notify: " + urls);
+            list.clear();
+            list.addAll(urls);
         });
         Thread.sleep(1500);
         Assertions.assertEquals(2, list.size());
@@ -176,13 +173,10 @@ public class MultipleRegistry2S2RTest {
         Assertions.assertNotNull(MultipleRegistryTestUtil.getRedisHashContent(redisServerPort, path, serviceUrl.toFullString()));
 
         final List<URL> list = new ArrayList<URL>();
-        multipleRegistry.subscribe(serviceUrl, new NotifyListener() {
-            @Override
-            public void notify(List<URL> urls) {
-                System.out.println("invoke notify: " + urls);
-                list.clear();
-                list.addAll(urls);
-            }
+        multipleRegistry.subscribe(serviceUrl, urls -> {
+            System.out.println("invoke notify: " + urls);
+            list.clear();
+            list.addAll(urls);
         });
         Thread.sleep(1500);
         Assertions.assertEquals(2, list.size());

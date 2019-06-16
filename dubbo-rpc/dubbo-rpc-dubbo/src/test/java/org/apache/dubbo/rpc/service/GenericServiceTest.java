@@ -58,21 +58,17 @@ public class GenericServiceTest {
         service.setRegistry(new RegistryConfig("N/A"));
         service.setProtocol(new ProtocolConfig("dubbo", 29581));
         service.setInterface(DemoService.class.getName());
-        service.setRef(new GenericService() {
-
-            public Object $invoke(String method, String[] parameterTypes, Object[] args)
-                    throws GenericException {
-                if ("sayName".equals(method)) {
-                    return "Generic " + args[0];
-                }
-                if ("throwDemoException".equals(method)) {
-                    throw new GenericException(DemoException.class.getName(), "Generic");
-                }
-                if ("getUsers".equals(method)) {
-                    return args[0];
-                }
-                return null;
+        service.setRef((method, parameterTypes, args) -> {
+            if ("sayName".equals(method)) {
+                return "Generic " + args[0];
             }
+            if ("throwDemoException".equals(method)) {
+                throw new GenericException(DemoException.class.getName(), "Generic");
+            }
+            if ("getUsers".equals(method)) {
+                return args[0];
+            }
+            return null;
         });
         service.export();
         try {
@@ -252,22 +248,19 @@ public class GenericServiceTest {
         service.setRegistry(new RegistryConfig("N/A"));
         service.setProtocol(new ProtocolConfig("dubbo", 29581));
         service.setInterface(DemoService.class.getName());
-        service.setRef(new GenericService() {
-
-            public Object $invoke(String method, String[] parameterTypes, Object[] args) throws GenericException {
-                if ("getUsers".equals(method)) {
-                    GenericParameter arg = new GenericParameter();
-                    arg.method = method;
-                    arg.parameterTypes = parameterTypes;
-                    arg.arguments = args;
-                    reference.set(arg);
-                    return args[0];
-                }
-                if ("sayName".equals(method)) {
-                    return null;
-                }
-                return args;
+        service.setRef((method, parameterTypes, args) -> {
+            if ("getUsers".equals(method)) {
+                GenericParameter arg = new GenericParameter();
+                arg.method = method;
+                arg.parameterTypes = parameterTypes;
+                arg.arguments = args;
+                reference.set(arg);
+                return args[0];
             }
+            if ("sayName".equals(method)) {
+                return null;
+            }
+            return args;
         });
         service.export();
         ReferenceConfig<DemoService> ref = null;

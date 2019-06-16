@@ -49,12 +49,9 @@ public class ZKTools {
                 new ExponentialBackoffRetry(1000, 3));
         client.start();
 
-        client.getCuratorListenable().addListener(new CuratorListener() {
-            @Override
-            public void eventReceived(CuratorFramework client, CuratorEvent event) throws Exception {
-                System.out.println("event notification: " + event.getPath());
-                System.out.println(event);
-            }
+        client.getCuratorListenable().addListener((client, event) -> {
+            System.out.println("event notification: " + event.getPath());
+            System.out.println(event);
         }, executor);
 
         tesConditionRule();
@@ -218,44 +215,41 @@ public class ZKTools {
 
         TreeCache treeCache = TreeCache.newBuilder(client, "/dubbo/config").setCacheData(true).build();
         treeCache.start();
-        treeCache.getListenable().addListener(new TreeCacheListener() {
-            @Override
-            public void childEvent(CuratorFramework client, TreeCacheEvent event) throws Exception {
+        treeCache.getListenable().addListener((client1, event) -> {
 
-                TreeCacheEvent.Type type = event.getType();
-                ChildData data = event.getData();
+            TreeCacheEvent.Type type = event.getType();
+            ChildData data = event.getData();
 
-                if (type == TreeCacheEvent.Type.INITIALIZED) {
-                    latch.countDown();
-                }
+            if (type == TreeCacheEvent.Type.INITIALIZED) {
+                latch.countDown();
+            }
 
-                System.out.println(data.getPath() + "\n");
+            System.out.println(data.getPath() + "\n");
 
-                if (data.getPath().split("/").length == 5) {
-                    byte[] value = data.getData();
-                    String stringValue = new String(value, "utf-8");
+            if (data.getPath().split("/").length == 5) {
+                byte[] value = data.getData();
+                String stringValue = new String(value, "utf-8");
 
-                    // fire event to all listeners
-                    Map<String, Object> added = null;
-                    Map<String, Object> changed = null;
-                    Map<String, Object> deleted = null;
+                // fire event to all listeners
+                Map<String, Object> added = null;
+                Map<String, Object> changed = null;
+                Map<String, Object> deleted = null;
 
-                    switch (type) {
-                        case NODE_ADDED:
-                            added = new HashMap<>(1);
-                            added.put(pathToKey(data.getPath()), stringValue);
-                            added.forEach((k, v) -> System.out.println(k + "  " + v));
-                            break;
-                        case NODE_REMOVED:
-                            deleted = new HashMap<>(1);
-                            deleted.put(pathToKey(data.getPath()), stringValue);
-                            deleted.forEach((k, v) -> System.out.println(k + "  " + v));
-                            break;
-                        case NODE_UPDATED:
-                            changed = new HashMap<>(1);
-                            changed.put(pathToKey(data.getPath()), stringValue);
-                            changed.forEach((k, v) -> System.out.println(k + "  " + v));
-                    }
+                switch (type) {
+                    case NODE_ADDED:
+                        added = new HashMap<>(1);
+                        added.put(pathToKey(data.getPath()), stringValue);
+                        added.forEach((k, v) -> System.out.println(k + "  " + v));
+                        break;
+                    case NODE_REMOVED:
+                        deleted = new HashMap<>(1);
+                        deleted.put(pathToKey(data.getPath()), stringValue);
+                        deleted.forEach((k, v) -> System.out.println(k + "  " + v));
+                        break;
+                    case NODE_UPDATED:
+                        changed = new HashMap<>(1);
+                        changed.put(pathToKey(data.getPath()), stringValue);
+                        changed.forEach((k, v) -> System.out.println(k + "  " + v));
                 }
             }
         });

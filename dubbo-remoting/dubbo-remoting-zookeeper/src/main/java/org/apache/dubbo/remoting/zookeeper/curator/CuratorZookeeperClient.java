@@ -71,16 +71,13 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
                 builder = builder.authorization("digest", authority.getBytes());
             }
             client = builder.build();
-            client.getConnectionStateListenable().addListener(new ConnectionStateListener() {
-                @Override
-                public void stateChanged(CuratorFramework client, ConnectionState state) {
-                    if (state == ConnectionState.LOST) {
-                        CuratorZookeeperClient.this.stateChanged(StateListener.DISCONNECTED);
-                    } else if (state == ConnectionState.CONNECTED) {
-                        CuratorZookeeperClient.this.stateChanged(StateListener.CONNECTED);
-                    } else if (state == ConnectionState.RECONNECTED) {
-                        CuratorZookeeperClient.this.stateChanged(StateListener.RECONNECTED);
-                    }
+            client.getConnectionStateListenable().addListener((client, state) -> {
+                if (state == ConnectionState.LOST) {
+                    CuratorZookeeperClient.this.stateChanged(StateListener.DISCONNECTED);
+                } else if (state == ConnectionState.CONNECTED) {
+                    CuratorZookeeperClient.this.stateChanged(StateListener.CONNECTED);
+                } else if (state == ConnectionState.RECONNECTED) {
+                    CuratorZookeeperClient.this.stateChanged(StateListener.RECONNECTED);
                 }
             });
             client.start();

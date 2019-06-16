@@ -90,11 +90,7 @@ public final class GooglePB {
     }
     private static final com.google.protobuf.Internal.EnumLiteMap<
         PhoneType> internalValueMap =
-          new com.google.protobuf.Internal.EnumLiteMap<PhoneType>() {
-            public PhoneType findValueByNumber(int number) {
-              return PhoneType.forNumber(number);
-            }
-          };
+        number -> PhoneType.forNumber(number);
 
     public final com.google.protobuf.Descriptors.EnumValueDescriptor
         getValueDescriptor() {

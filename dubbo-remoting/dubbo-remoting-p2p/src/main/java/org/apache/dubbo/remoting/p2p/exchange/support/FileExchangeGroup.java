@@ -54,15 +54,12 @@ public class FileExchangeGroup extends AbstractExchangeGroup {
         if (!file.exists()) {
             throw new IllegalStateException("The group file not exists. file: " + path);
         }
-        checkModifiedFuture = scheduledExecutorService.scheduleWithFixedDelay(new Runnable() {
-            @Override
-            public void run() {
-                // check the file change
-                try {
-                    check();
-                } catch (Throwable t) { // Defensive fault tolerance
-                    logger.error("Unexpected error occur at reconnect, cause: " + t.getMessage(), t);
-                }
+        checkModifiedFuture = scheduledExecutorService.scheduleWithFixedDelay(() -> {
+            // check the file change
+            try {
+                check();
+            } catch (Throwable t) { // Defensive fault tolerance
+                logger.error("Unexpected error occur at reconnect, cause: " + t.getMessage(), t);
             }
         }, 2000, 2000, TimeUnit.MILLISECONDS);
     }

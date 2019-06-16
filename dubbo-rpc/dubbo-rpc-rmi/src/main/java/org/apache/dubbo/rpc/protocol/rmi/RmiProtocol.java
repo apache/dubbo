@@ -57,15 +57,12 @@ public class RmiProtocol extends AbstractProxyProtocol {
     protected <T> Runnable doExport(final T impl, Class<T> type, URL url) throws RpcException {
         RmiServiceExporter rmiServiceExporter = createExporter(impl, type, url, false);
         RmiServiceExporter genericServiceExporter = createExporter(impl, GenericService.class, url, true);
-        return new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    rmiServiceExporter.destroy();
-                    genericServiceExporter.destroy();
-                } catch (Throwable e) {
-                    logger.warn(e.getMessage(), e);
-                }
+        return () -> {
+            try {
+                rmiServiceExporter.destroy();
+                genericServiceExporter.destroy();
+            } catch (Throwable e) {
+                logger.warn(e.getMessage(), e);
             }
         };
     }

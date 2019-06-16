@@ -57,44 +57,39 @@ public class TTree implements TComponent {
     public String rendering() {
 
         final StringBuilder treeSB = new StringBuilder();
-        recursive(0, true, "", root, new Callback() {
+        recursive(0, true, "", root, (deep, isLast, prefix, node) -> {
 
-            @Override
-            public void callback(int deep, boolean isLast, String prefix, Node node) {
+            final boolean hasChild = !node.children.isEmpty();
+            final String stepString = isLast ? STEP_FIRST_CHAR : STEP_NORMAL_CHAR;
+            final int stepStringLength = length(stepString);
+            treeSB.append(prefix).append(stepString);
 
-                final boolean hasChild = !node.children.isEmpty();
-                final String stepString = isLast ? STEP_FIRST_CHAR : STEP_NORMAL_CHAR;
-                final int stepStringLength = length(stepString);
-                treeSB.append(prefix).append(stepString);
+            int costPrefixLength = 0;
+            if (hasChild) {
+                treeSB.append("+");
+            }
+            if (isPrintCost
+                    && !node.isRoot()) {
+                final String costPrefix = String.format("[%s,%sms]", (node.endTimestamp - root.beginTimestamp), (node.endTimestamp - node.beginTimestamp));
+                costPrefixLength = length(costPrefix);
+                treeSB.append(costPrefix);
+            }
 
-                int costPrefixLength = 0;
-                if (hasChild) {
-                    treeSB.append("+");
-                }
-                if (isPrintCost
-                        && !node.isRoot()) {
-                    final String costPrefix = String.format("[%s,%sms]", (node.endTimestamp - root.beginTimestamp), (node.endTimestamp - node.beginTimestamp));
-                    costPrefixLength = length(costPrefix);
-                    treeSB.append(costPrefix);
-                }
-
-                try (Scanner scanner = new Scanner(new StringReader(node.data.toString()))) {
-                    boolean isFirst = true;
-                    while (scanner.hasNextLine()) {
-                        if (isFirst) {
-                            treeSB.append(scanner.nextLine()).append("\n");
-                            isFirst = false;
-                        } else {
-                            treeSB.append(prefix)
-                                    .append(repeat(' ', stepStringLength))
-                                    .append(hasChild ? "|" : EMPTY)
-                                    .append(repeat(' ', costPrefixLength))
-                                    .append(scanner.nextLine())
-                                    .append(System.lineSeparator());
-                        }
+            try (Scanner scanner = new Scanner(new StringReader(node.data.toString()))) {
+                boolean isFirst = true;
+                while (scanner.hasNextLine()) {
+                    if (isFirst) {
+                        treeSB.append(scanner.nextLine()).append("\n");
+                        isFirst = false;
+                    } else {
+                        treeSB.append(prefix)
+                                .append(repeat(' ', stepStringLength))
+                                .append(hasChild ? "|" : EMPTY)
+                                .append(repeat(' ', costPrefixLength))
+                                .append(scanner.nextLine())
+                                .append(System.lineSeparator());
                     }
                 }
-
             }
 
         });

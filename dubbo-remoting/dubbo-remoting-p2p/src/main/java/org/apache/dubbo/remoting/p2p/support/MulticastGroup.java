@@ -51,18 +51,15 @@ public class MulticastGroup extends AbstractGroup {
             mutilcastSocket = new MulticastSocket(url.getPort());
             mutilcastSocket.setLoopbackMode(false);
             mutilcastSocket.joinGroup(mutilcastAddress);
-            Thread thread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    byte[] buf = new byte[1024];
-                    DatagramPacket recv = new DatagramPacket(buf, buf.length);
-                    while (true) {
-                        try {
-                            mutilcastSocket.receive(recv);
-                            MulticastGroup.this.receive(new String(recv.getData()).trim(), (InetSocketAddress) recv.getSocketAddress());
-                        } catch (Exception e) {
-                            logger.error(e.getMessage(), e);
-                        }
+            Thread thread = new Thread(() -> {
+                byte[] buf = new byte[1024];
+                DatagramPacket recv = new DatagramPacket(buf, buf.length);
+                while (true) {
+                    try {
+                        mutilcastSocket.receive(recv);
+                        MulticastGroup.this.receive(new String(recv.getData()).trim(), (InetSocketAddress) recv.getSocketAddress());
+                    } catch (Exception e) {
+                        logger.error(e.getMessage(), e);
                     }
                 }
             }, "MulticastGroupReceiver");

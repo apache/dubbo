@@ -123,24 +123,18 @@ public class InternalThreadLocalTest {
         final Integer testVal2 = 20;
         final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<Integer>();
         final CountDownLatch countDownLatch = new CountDownLatch(2);
-        Thread t1 = new Thread(new Runnable() {
-            @Override
-            public void run() {
+        Thread t1 = new Thread(() -> {
 
-                internalThreadLocal.set(testVal1);
-                Assertions.assertEquals(testVal1, internalThreadLocal.get(), "set is not equals get");
-                countDownLatch.countDown();
-            }
+            internalThreadLocal.set(testVal1);
+            Assertions.assertEquals(testVal1, internalThreadLocal.get(), "set is not equals get");
+            countDownLatch.countDown();
         });
         t1.start();
 
-        Thread t2 = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                internalThreadLocal.set(testVal2);
-                Assertions.assertEquals(testVal2, internalThreadLocal.get(), "set is not equals get");
-                countDownLatch.countDown();
-            }
+        Thread t2 = new Thread(() -> {
+            internalThreadLocal.set(testVal2);
+            Assertions.assertEquals(testVal2, internalThreadLocal.get(), "set is not equals get");
+            countDownLatch.countDown();
         });
         t2.start();
         countDownLatch.await();
@@ -159,23 +153,20 @@ public class InternalThreadLocalTest {
         for (int i = 0; i < PERFORMANCE_THREAD_COUNT; i++) {
             caches1[i] = new ThreadLocal<String>();
         }
-        Thread t1 = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                for (int i = 0; i < PERFORMANCE_THREAD_COUNT; i++) {
-                    caches1[i].set("float.lu");
-                }
-                long start = System.nanoTime();
-                for (int i = 0; i < PERFORMANCE_THREAD_COUNT; i++) {
-                    for (int j = 0; j < GET_COUNT; j++) {
-                        caches1[i].get();
-                    }
-                }
-                long end = System.nanoTime();
-                System.out.println("take[" + TimeUnit.NANOSECONDS.toMillis(end - start) +
-                        "]ms");
-                LockSupport.unpark(mainThread);
+        Thread t1 = new Thread(() -> {
+            for (int i = 0; i < PERFORMANCE_THREAD_COUNT; i++) {
+                caches1[i].set("float.lu");
             }
+            long start = System.nanoTime();
+            for (int i = 0; i < PERFORMANCE_THREAD_COUNT; i++) {
+                for (int j = 0; j < GET_COUNT; j++) {
+                    caches1[i].get();
+                }
+            }
+            long end = System.nanoTime();
+            System.out.println("take[" + TimeUnit.NANOSECONDS.toMillis(end - start) +
+                    "]ms");
+            LockSupport.unpark(mainThread);
         });
         t1.start();
         LockSupport.park(mainThread);
@@ -194,23 +185,20 @@ public class InternalThreadLocalTest {
         for (int i = 0; i < PERFORMANCE_THREAD_COUNT; i++) {
             caches[i] = new InternalThreadLocal<String>();
         }
-        Thread t = new InternalThread(new Runnable() {
-            @Override
-            public void run() {
-                for (int i = 0; i < PERFORMANCE_THREAD_COUNT; i++) {
-                    caches[i].set("float.lu");
-                }
-                long start = System.nanoTime();
-                for (int i = 0; i < PERFORMANCE_THREAD_COUNT; i++) {
-                    for (int j = 0; j < GET_COUNT; j++) {
-                        caches[i].get();
-                    }
-                }
-                long end = System.nanoTime();
-                System.out.println("take[" + TimeUnit.NANOSECONDS.toMillis(end - start) +
-                        "]ms");
-                LockSupport.unpark(mainThread);
+        Thread t = new InternalThread(() -> {
+            for (int i = 0; i < PERFORMANCE_THREAD_COUNT; i++) {
+                caches[i].set("float.lu");
             }
+            long start = System.nanoTime();
+            for (int i = 0; i < PERFORMANCE_THREAD_COUNT; i++) {
+                for (int j = 0; j < GET_COUNT; j++) {
+                    caches[i].get();
+                }
+            }
+            long end = System.nanoTime();
+            System.out.println("take[" + TimeUnit.NANOSECONDS.toMillis(end - start) +
+                    "]ms");
+            LockSupport.unpark(mainThread);
         });
         t.start();
         LockSupport.park(mainThread);

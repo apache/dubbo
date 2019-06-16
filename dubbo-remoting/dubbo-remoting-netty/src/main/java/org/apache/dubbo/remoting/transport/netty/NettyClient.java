@@ -69,16 +69,13 @@ public class NettyClient extends AbstractClient {
         bootstrap.setOption("tcpNoDelay", true);
         bootstrap.setOption("connectTimeoutMillis", getConnectTimeout());
         final NettyHandler nettyHandler = new NettyHandler(getUrl(), this);
-        bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
-            @Override
-            public ChannelPipeline getPipeline() {
-                NettyCodecAdapter adapter = new NettyCodecAdapter(getCodec(), getUrl(), NettyClient.this);
-                ChannelPipeline pipeline = Channels.pipeline();
-                pipeline.addLast("decoder", adapter.getDecoder());
-                pipeline.addLast("encoder", adapter.getEncoder());
-                pipeline.addLast("handler", nettyHandler);
-                return pipeline;
-            }
+        bootstrap.setPipelineFactory(() -> {
+            NettyCodecAdapter adapter = new NettyCodecAdapter(getCodec(), getUrl(), NettyClient.this);
+            ChannelPipeline pipeline = Channels.pipeline();
+            pipeline.addLast("decoder", adapter.getDecoder());
+            pipeline.addLast("encoder", adapter.getEncoder());
+            pipeline.addLast("handler", nettyHandler);
+            return pipeline;
         });
     }
 

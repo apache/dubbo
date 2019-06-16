@@ -85,12 +85,8 @@ public class JdkCompiler extends AbstractCompiler {
                 throw new IllegalStateException(e.getMessage(), e);
             }
         }
-        classLoader = AccessController.doPrivileged(new PrivilegedAction<ClassLoaderImpl>() {
-            @Override
-            public ClassLoaderImpl run() {
-                return new ClassLoaderImpl(loader);
-            }
-        });
+        classLoader = AccessController.doPrivileged(
+            (PrivilegedAction<ClassLoaderImpl>)() -> new ClassLoaderImpl(loader));
         javaFileManager = new JavaFileManagerImpl(manager, classLoader);
     }
 

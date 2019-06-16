@@ -44,12 +44,7 @@ public class MetadataReportServiceTest {
     @Test
     public void testInstance() {
 
-        MetadataReportService metadataReportService2 = MetadataReportService.instance(new Supplier<URL>() {
-            @Override
-            public URL get() {
-                return url;
-            }
-        });
+        MetadataReportService metadataReportService2 = MetadataReportService.instance(() -> url);
         Assertions.assertSame(metadataReportService1, metadataReportService2);
         Assertions.assertEquals(metadataReportService1.metadataReportUrl, url);
     }

@@ -93,12 +93,9 @@ public class HttpProtocol extends AbstractProxyProtocol {
         final String genericPath = path + "/" + GENERIC_KEY;
 
         skeletonMap.put(genericPath, createExporter(impl, GenericService.class));
-        return new Runnable() {
-            @Override
-            public void run() {
-                skeletonMap.remove(path);
-                skeletonMap.remove(genericPath);
-            }
+        return () -> {
+            skeletonMap.remove(path);
+            skeletonMap.remove(genericPath);
         };
     }
 
@@ -121,35 +118,32 @@ public class HttpProtocol extends AbstractProxyProtocol {
         final boolean isGeneric = ProtocolUtils.isGeneric(generic) || serviceType.equals(GenericService.class);
 
         final HttpInvokerProxyFactoryBean httpProxyFactoryBean = new HttpInvokerProxyFactoryBean();
-        httpProxyFactoryBean.setRemoteInvocationFactory(new RemoteInvocationFactory() {
-            @Override
-            public RemoteInvocation createRemoteInvocation(MethodInvocation methodInvocation) {
-                RemoteInvocation invocation;
+        httpProxyFactoryBean.setRemoteInvocationFactory(methodInvocation -> {
+            RemoteInvocation invocation;
+            /*
+              package was renamed to 'org.apache.dubbo' in v2.7.0, so only provider versions after v2.7.0 can
+              recognize org.apache.xxx.HttpRemoteInvocation'.
+             */
+            if (Version.isRelease270OrHigher(url.getParameter(RELEASE_KEY))) {
+                invocation = new HttpRemoteInvocation(methodInvocation);
+            } else {
                 /*
-                  package was renamed to 'org.apache.dubbo' in v2.7.0, so only provider versions after v2.7.0 can
-                  recognize org.apache.xxx.HttpRemoteInvocation'.
+                  The customized 'com.alibaba.dubbo.rpc.protocol.http.HttpRemoteInvocation' was firstly introduced
+                  in v2.6.3. The main purpose is to support transformation of attachments in HttpProtocol, see
+                  https://github.com/apache/dubbo/pull/1827. To guarantee interoperability with lower
+                  versions, we need to check if the provider is v2.6.3 or higher before sending customized
+                  HttpRemoteInvocation.
                  */
-                if (Version.isRelease270OrHigher(url.getParameter(RELEASE_KEY))) {
-                    invocation = new HttpRemoteInvocation(methodInvocation);
+                if (Version.isRelease263OrHigher(url.getParameter(DUBBO_VERSION_KEY))) {
+                    invocation = new com.alibaba.dubbo.rpc.protocol.http.HttpRemoteInvocation(methodInvocation);
                 } else {
-                    /*
-                      The customized 'com.alibaba.dubbo.rpc.protocol.http.HttpRemoteInvocation' was firstly introduced
-                      in v2.6.3. The main purpose is to support transformation of attachments in HttpProtocol, see
-                      https://github.com/apache/dubbo/pull/1827. To guarantee interoperability with lower
-                      versions, we need to check if the provider is v2.6.3 or higher before sending customized
-                      HttpRemoteInvocation.
-                     */
-                    if (Version.isRelease263OrHigher(url.getParameter(DUBBO_VERSION_KEY))) {
-                        invocation = new com.alibaba.dubbo.rpc.protocol.http.HttpRemoteInvocation(methodInvocation);
-                    } else {
-                        invocation = new RemoteInvocation(methodInvocation);
-                    }
+                    invocation = new RemoteInvocation(methodInvocation);
                 }
-                if (isGeneric) {
-                    invocation.addAttribute(GENERIC_KEY, generic);
-                }
-                return invocation;
             }
+            if (isGeneric) {
+                invocation.addAttribute(GENERIC_KEY, generic);
+            }
+            return invocation;
         });
 
         String key = url.toIdentityString();

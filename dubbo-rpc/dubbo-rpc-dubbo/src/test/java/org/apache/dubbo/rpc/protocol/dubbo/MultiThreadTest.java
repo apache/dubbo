@@ -59,12 +59,10 @@ public class MultiThreadTest {
         ExecutorService exec = Executors.newFixedThreadPool(10);
         for (int i = 0; i < 10; i++) {
             final int fi = i;
-            exec.execute(new Runnable() {
-                public void run() {
-                    for (int i = 0; i < 30; i++) {
-                        System.out.println(fi + ":" + counter.getAndIncrement());
-                        Assertions.assertEquals(service.echo(sb.toString()), sb.toString());
-                    }
+            exec.execute(() -> {
+                for (int i1 = 0; i1 < 30; i1++) {
+                    System.out.println(fi + ":" + counter.getAndIncrement());
+                    Assertions.assertEquals(service.echo(sb.toString()), sb.toString());
                 }
             });
         }

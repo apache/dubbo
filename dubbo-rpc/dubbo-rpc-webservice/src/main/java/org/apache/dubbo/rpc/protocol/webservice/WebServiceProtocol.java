@@ -95,15 +95,12 @@ public class WebServiceProtocol extends AbstractProxyProtocol {
         serverFactoryBean.setBus(bus);
         serverFactoryBean.setDestinationFactory(transportFactory);
         serverFactoryBean.create();
-        return new Runnable() {
-            @Override
-            public void run() {
-                if(serverFactoryBean.getServer()!= null) {
-                    serverFactoryBean.getServer().destroy();
-                }
-                if(serverFactoryBean.getBus()!=null) {
-                    serverFactoryBean.getBus().shutdown(true);
-                }
+        return () -> {
+            if(serverFactoryBean.getServer()!= null) {
+                serverFactoryBean.getServer().destroy();
+            }
+            if(serverFactoryBean.getBus()!=null) {
+                serverFactoryBean.getBus().shutdown(true);
             }
         };
     }

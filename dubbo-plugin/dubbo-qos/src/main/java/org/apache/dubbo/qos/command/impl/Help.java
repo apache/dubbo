@@ -85,15 +85,10 @@ public class Help implements BaseCommand {
 
         final List<Class<?>> classes = CommandHelper.getAllCommandClass();
 
-        Collections.sort(classes, new Comparator<Class<?>>() {
-
-            @Override
-            public int compare(Class<?> o1, Class<?> o2) {
-                final Integer o1s = o1.getAnnotation(Cmd.class).sort();
-                final Integer o2s = o2.getAnnotation(Cmd.class).sort();
-                return o1s.compareTo(o2s);
-            }
-
+        Collections.sort(classes, (o1, o2) -> {
+            final Integer o1s = o1.getAnnotation(Cmd.class).sort();
+            final Integer o2s = o2.getAnnotation(Cmd.class).sort();
+            return o1s.compareTo(o2s);
         });
         for (Class<?> clazz : classes) {
 

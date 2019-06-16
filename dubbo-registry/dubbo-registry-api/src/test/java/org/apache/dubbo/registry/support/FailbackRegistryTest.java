@@ -66,12 +66,7 @@ public class FailbackRegistryTest {
         // the latest latch just for 3. Because retry method has been removed.
         final CountDownLatch latch = new CountDownLatch(2);
 
-        NotifyListener listner = new NotifyListener() {
-            @Override
-            public void notify(List<URL> urls) {
-                notified.set(Boolean.TRUE);
-            }
-        };
+        NotifyListener listner = urls -> notified.set(Boolean.TRUE);
         registry = new MockRegistry(registryUrl, latch);
         registry.setBad(true);
         registry.register(serviceUrl);
@@ -124,12 +119,7 @@ public class FailbackRegistryTest {
         final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
         final CountDownLatch latch = new CountDownLatch(1);//All of them are called 4 times. A successful attempt to lose 1. subscribe will not be done
 
-        NotifyListener listner = new NotifyListener() {
-            @Override
-            public void notify(List<URL> urls) {
-                notified.set(Boolean.TRUE);
-            }
-        };
+        NotifyListener listner = urls -> notified.set(Boolean.TRUE);
         registry = new MockRegistry(registryUrl, latch);
         registry.setBad(true);
         registry.subscribe(serviceUrl.setProtocol(CONSUMER_PROTOCOL).addParameters(CollectionUtils.toStringMap("check", "false")), listner);
@@ -159,14 +149,11 @@ public class FailbackRegistryTest {
         //Initial value 0
         final AtomicInteger count = new AtomicInteger(0);
 
-        NotifyListener listner = new NotifyListener() {
-            @Override
-            public void notify(List<URL> urls) {
-                count.incrementAndGet();
-                //The exception is thrown for the first time to see if the back will be called again to incrementAndGet
-                if (count.get() == 1l) {
-                    throw new RuntimeException("test exception please ignore");
-                }
+        NotifyListener listner = urls -> {
+            count.incrementAndGet();
+            //The exception is thrown for the first time to see if the back will be called again to incrementAndGet
+            if (count.get() == 1l) {
+                throw new RuntimeException("test exception please ignore");
             }
         };
         registry = new MockRegistry(registryUrl, new CountDownLatch(0));
@@ -187,12 +174,7 @@ public class FailbackRegistryTest {
     public void testRecover() throws Exception {
         CountDownLatch countDownLatch = new CountDownLatch(4);
         final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
-        NotifyListener listener = new NotifyListener() {
-            @Override
-            public void notify(List<URL> urls) {
-                notified.set(Boolean.TRUE);
-            }
-        };
+        NotifyListener listener = urls -> notified.set(Boolean.TRUE);
 
         MockRegistry mockRegistry = new MockRegistry(registryUrl, countDownLatch);
         mockRegistry.register(serviceUrl);

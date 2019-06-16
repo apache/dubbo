@@ -112,25 +112,22 @@ public class CompatibleReferenceAnnotationBeanPostProcessor extends Instantiatio
 
         final List<ReferenceFieldElement> elements = new LinkedList<ReferenceFieldElement>();
 
-        ReflectionUtils.doWithFields(beanClass, new ReflectionUtils.FieldCallback() {
-            @Override
-            public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
+        ReflectionUtils.doWithFields(beanClass, field -> {
 
-                Reference reference = getAnnotation(field, Reference.class);
+            Reference reference = getAnnotation(field, Reference.class);
 
-                if (reference != null) {
+            if (reference != null) {
 
-                    if (Modifier.isStatic(field.getModifiers())) {
-                        if (logger.isWarnEnabled()) {
-                            logger.warn("@Reference annotation is not supported on static fields: " + field);
-                        }
-                        return;
+                if (Modifier.isStatic(field.getModifiers())) {
+                    if (logger.isWarnEnabled()) {
+                        logger.warn("@Reference annotation is not supported on static fields: " + field);
                     }
-
-                    elements.add(new ReferenceFieldElement(field, reference));
+                    return;
                 }
 
+                elements.add(new ReferenceFieldElement(field, reference));
             }
+
         });
 
         return elements;
@@ -147,34 +144,31 @@ public class CompatibleReferenceAnnotationBeanPostProcessor extends Instantiatio
 
         final List<ReferenceMethodElement> elements = new LinkedList<ReferenceMethodElement>();
 
-        ReflectionUtils.doWithMethods(beanClass, new ReflectionUtils.MethodCallback() {
-            @Override
-            public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
+        ReflectionUtils.doWithMethods(beanClass, method -> {
 
-                Method bridgedMethod = findBridgedMethod(method);
+            Method bridgedMethod = findBridgedMethod(method);
 
-                if (!isVisibilityBridgeMethodPair(method, bridgedMethod)) {
+            if (!isVisibilityBridgeMethodPair(method, bridgedMethod)) {
+                return;
+            }
+
+            Reference reference = findAnnotation(bridgedMethod, Reference.class);
+
+            if (reference != null && method.equals(ClassUtils.getMostSpecificMethod(method, beanClass))) {
+                if (Modifier.isStatic(method.getModifiers())) {
+                    if (logger.isWarnEnabled()) {
+                        logger.warn("@Reference annotation is not supported on static methods: " + method);
+                    }
                     return;
                 }
-
-                Reference reference = findAnnotation(bridgedMethod, Reference.class);
-
-                if (reference != null && method.equals(ClassUtils.getMostSpecificMethod(method, beanClass))) {
-                    if (Modifier.isStatic(method.getModifiers())) {
-                        if (logger.isWarnEnabled()) {
-                            logger.warn("@Reference annotation is not supported on static methods: " + method);
-                        }
-                        return;
+                if (method.getParameterTypes().length == 0) {
+                    if (logger.isWarnEnabled()) {
+                        logger.warn("@Reference  annotation should only be used on methods with parameters: " +
+                                method);
                     }
-                    if (method.getParameterTypes().length == 0) {
-                        if (logger.isWarnEnabled()) {
-                            logger.warn("@Reference  annotation should only be used on methods with parameters: " +
-                                    method);
-                        }
-                    }
-                    PropertyDescriptor pd = BeanUtils.findPropertyForMethod(bridgedMethod, beanClass);
-                    elements.add(new ReferenceMethodElement(method, pd, reference));
                 }
+                PropertyDescriptor pd = BeanUtils.findPropertyForMethod(bridgedMethod, beanClass);
+                elements.add(new ReferenceMethodElement(method, pd, reference));
             }
         });
 

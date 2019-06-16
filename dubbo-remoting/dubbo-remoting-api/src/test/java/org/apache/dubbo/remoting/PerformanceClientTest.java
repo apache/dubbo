@@ -91,66 +91,62 @@ public class PerformanceClientTest  {
         // Start multiple threads
         final CountDownLatch latch = new CountDownLatch(concurrent);
         for (int i = 0; i < concurrent; i++) {
-            new Thread(new Runnable() {
-                public void run() {
-                    try {
-                        AtomicInteger index = new AtomicInteger();
-                        long init = System.currentTimeMillis();
-                        for (int i = 0; i < runs; i++) {
-                            try {
-                                count.incrementAndGet();
-                                ExchangeClient client = exchangeClients[index.getAndIncrement() % connections];
-                                long start = System.currentTimeMillis();
-                                String result = (String) client.request(data).get();
-                                long end = System.currentTimeMillis();
-                                if (!data.equals(result)) {
-                                    throw new IllegalStateException("Invalid result " + result);
-                                }
-                                time.addAndGet(end - start);
-                            } catch (Exception e) {
-                                error.incrementAndGet();
-                                e.printStackTrace();
-                                if ("exit".equals(onerror)) {
-                                    System.exit(-1);
-                                } else if ("break".equals(onerror)) {
-                                    break;
-                                } else if ("sleep".equals(onerror)) {
-                                    try {
-                                        Thread.sleep(30000);
-                                    } catch (InterruptedException e1) {
-                                    }
+            new Thread(() -> {
+                try {
+                    AtomicInteger index = new AtomicInteger();
+                    long init = System.currentTimeMillis();
+                    for (int i1 = 0; i1 < runs; i1++) {
+                        try {
+                            count.incrementAndGet();
+                            ExchangeClient client = exchangeClients[index.getAndIncrement() % connections];
+                            long start = System.currentTimeMillis();
+                            String result = (String) client.request(data).get();
+                            long end = System.currentTimeMillis();
+                            if (!data.equals(result)) {
+                                throw new IllegalStateException("Invalid result " + result);
+                            }
+                            time.addAndGet(end - start);
+                        } catch (Exception e) {
+                            error.incrementAndGet();
+                            e.printStackTrace();
+                            if ("exit".equals(onerror)) {
+                                System.exit(-1);
+                            } else if ("break".equals(onerror)) {
+                                break;
+                            } else if ("sleep".equals(onerror)) {
+                                try {
+                                    Thread.sleep(30000);
+                                } catch (InterruptedException e1) {
                                 }
                             }
                         }
-                        all.addAndGet(System.currentTimeMillis() - init);
-                    } finally {
-                        latch.countDown();
                     }
+                    all.addAndGet(System.currentTimeMillis() - init);
+                } finally {
+                    latch.countDown();
                 }
             }).start();
         }
 
         // Output, tps is not for accuracy, but it reflects the situation to a certain extent.
-        new Thread(new Runnable() {
-            public void run() {
-                try {
-                    SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
-                    long lastCount = count.get();
-                    long sleepTime = 2000;
-                    long elapsd = sleepTime / 1000;
-                    boolean bfirst = true;
-                    while (latch.getCount() > 0) {
-                        long c = count.get() - lastCount;
-                        if (!bfirst)// The first time is inaccurate.
-                            System.out.println("[" + dateFormat.format(new Date()) + "] count: " + count.get() + ", error: " + error.get() + ",tps:" + (c / elapsd));
+        new Thread(() -> {
+            try {
+                SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+                long lastCount = count.get();
+                long sleepTime = 2000;
+                long elapsd = sleepTime / 1000;
+                boolean bfirst = true;
+                while (latch.getCount() > 0) {
+                    long c = count.get() - lastCount;
+                    if (!bfirst)// The first time is inaccurate.
+                        System.out.println("[" + dateFormat.format(new Date()) + "] count: " + count.get() + ", error: " + error.get() + ",tps:" + (c / elapsd));
 
-                        bfirst = false;
-                        lastCount = count.get();
-                        Thread.sleep(sleepTime);
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
+                    bfirst = false;
+                    lastCount = count.get();
+                    Thread.sleep(sleepTime);
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }).start();
 
