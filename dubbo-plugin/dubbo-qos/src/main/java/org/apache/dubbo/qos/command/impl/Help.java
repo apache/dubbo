@@ -23,7 +23,6 @@ import org.apache.dubbo.qos.command.util.CommandHelper;
 import org.apache.dubbo.qos.textui.TTable;
 
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 @Cmd(name = "help", summary = "help command", example = {
