@@ -26,7 +26,7 @@ class StatItem {
 
     private String name;
 
-    private long lastResetTime;
+    private volatile long lastResetTime;
 
     private long interval;
 
