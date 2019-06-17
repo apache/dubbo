@@ -40,8 +40,8 @@ public class MockDirInvocation implements Invocation {
         return new Object[]{"aa"};
     }
 
-    public Map<String, String> getAttachments() {
-        Map<String, String> attachments = new HashMap<String, String>();
+    public Map<String, Object> getAttachments() {
+        Map<String, Object> attachments = new HashMap<String, Object>();
         attachments.put(Constants.PATH_KEY, "dubbo");
         attachments.put(Constants.GROUP_KEY, "dubbo");
         attachments.put(Constants.VERSION_KEY, "1.0.0");
@@ -52,12 +52,12 @@ public class MockDirInvocation implements Invocation {
     }
 
     @Override
-    public void setAttachment(String key, String value) {
+    public void setAttachment(String key, Object value) {
 
     }
 
     @Override
-    public void setAttachmentIfAbsent(String key, String value) {
+    public void setAttachmentIfAbsent(String key, Object value) {
 
     }
 
@@ -80,11 +80,11 @@ public class MockDirInvocation implements Invocation {
         return null;
     }
 
-    public String getAttachment(String key) {
+    public Object getAttachment(String key) {
         return getAttachments().get(key);
     }
 
-    public String getAttachment(String key, String defaultValue) {
+    public Object getAttachment(String key, Object defaultValue) {
         return getAttachments().get(key);
     }
 

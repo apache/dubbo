@@ -16,6 +16,16 @@
  */
 package org.apache.dubbo.rpc.protocol.rsocket;
 
+import io.rsocket.AbstractRSocket;
+import io.rsocket.ConnectionSetupPayload;
+import io.rsocket.Payload;
+import io.rsocket.RSocket;
+import io.rsocket.RSocketFactory;
+import io.rsocket.SocketAcceptor;
+import io.rsocket.transport.netty.client.TcpClientTransport;
+import io.rsocket.transport.netty.server.CloseableChannel;
+import io.rsocket.transport.netty.server.TcpServerTransport;
+import io.rsocket.util.DefaultPayload;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
@@ -37,17 +47,6 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.AbstractProtocol;
 import org.apache.dubbo.rpc.support.RpcUtils;
-
-import io.rsocket.AbstractRSocket;
-import io.rsocket.ConnectionSetupPayload;
-import io.rsocket.Payload;
-import io.rsocket.RSocket;
-import io.rsocket.RSocketFactory;
-import io.rsocket.SocketAcceptor;
-import io.rsocket.transport.netty.client.TcpClientTransport;
-import io.rsocket.transport.netty.server.CloseableChannel;
-import io.rsocket.transport.netty.server.TcpServerTransport;
-import io.rsocket.util.DefaultPayload;
 import org.reactivestreams.Publisher;
 import reactor.core.Exceptions;
 import reactor.core.publisher.Flux;
@@ -237,7 +236,7 @@ public class RSocketProtocol extends AbstractProtocol {
                                         ByteBuffer metadataBuffer = payload.getMetadata();
                                         byte[] metadataBytes = new byte[metadataBuffer.remaining()];
                                         metadataBuffer.get(metadataBytes, metadataBuffer.position(), metadataBuffer.remaining());
-                                        Map<String,Object> metadataMap = MetadataCodec.decodeMetadata(metadataBytes);
+                                        Map<String, Object> metadataMap = MetadataCodec.decodeMetadata(metadataBytes);
                                         Byte serializeId = ((Integer) metadataMap.get(RSocketConstants.SERIALIZE_TYPE_KEY)).byteValue();
 
 
@@ -285,7 +284,7 @@ public class RSocketProtocol extends AbstractProtocol {
                                             }
                                         });
 
-                                    }catch (Throwable t){
+                                    } catch (Throwable t) {
                                         throw new RuntimeException(t);
                                     }
                                 }
@@ -296,7 +295,7 @@ public class RSocketProtocol extends AbstractProtocol {
                                         ByteBuffer metadataBuffer = payload.getMetadata();
                                         byte[] metadataBytes = new byte[metadataBuffer.remaining()];
                                         metadataBuffer.get(metadataBytes, metadataBuffer.position(), metadataBuffer.remaining());
-                                        Map<String,Object> metadataMap = MetadataCodec.decodeMetadata(metadataBytes);
+                                        Map<String, Object> metadataMap = MetadataCodec.decodeMetadata(metadataBytes);
                                         Byte serializeId = ((Integer) metadataMap.get(RSocketConstants.SERIALIZE_TYPE_KEY)).byteValue();
 
 
@@ -328,7 +327,7 @@ public class RSocketProtocol extends AbstractProtocol {
                                                 }
                                             }
                                         });
-                                    }catch (Throwable t){
+                                    } catch (Throwable t) {
                                         throw new RuntimeException(t);
                                     }
                                 }
@@ -648,7 +647,7 @@ public class RSocketProtocol extends AbstractProtocol {
 
                             inv.setParameterTypes(pts);
                             inv.setArguments(args);
-                            Map<String, String> map = (Map<String, String>) in.readObject(Map.class);
+                            Map<String, Object> map = (Map<String, Object>) in.readObject(Map.class);
                             if (map != null && map.size() > 0) {
                                 inv.addAttachments(map);
                             }

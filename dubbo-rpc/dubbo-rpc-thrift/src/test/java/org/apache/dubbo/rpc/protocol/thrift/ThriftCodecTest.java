@@ -29,7 +29,6 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.gen.thrift.Demo;
 import org.apache.dubbo.rpc.protocol.thrift.io.RandomAccessByteArrayOutputStream;
-
 import org.apache.thrift.TApplicationException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TMessage;
@@ -131,7 +130,7 @@ public class ThriftCodecTest {
 
         Request request = createRequest();
 
-        DefaultFuture future = DefaultFuture.newFuture(channel, request, 10);
+        DefaultFuture future = DefaultFuture.newFuture(channel, request, 10, null);
 
         TMessage message = new TMessage("echoString", TMessageType.REPLY, ThriftCodec.getSeqId());
 
@@ -208,7 +207,7 @@ public class ThriftCodecTest {
 
         Request request = createRequest();
 
-        DefaultFuture future = DefaultFuture.newFuture(channel, request, 10);
+        DefaultFuture future = DefaultFuture.newFuture(channel, request, 10, null);
 
         TMessage message = new TMessage("echoString", TMessageType.EXCEPTION, ThriftCodec.getSeqId());
 
@@ -400,10 +399,10 @@ public class ThriftCodecTest {
         protocol.writeI16(Short.MAX_VALUE);
         protocol.writeByte(ThriftCodec.VERSION);
         protocol.writeString(
-                ((RpcInvocation) request.getData())
+                (String) ((RpcInvocation) request.getData())
                         .getAttachment(Constants.INTERFACE_KEY));
         protocol.writeString(
-                ((RpcInvocation) request.getData())
+                (String) ((RpcInvocation) request.getData())
                         .getAttachment(Constants.PATH_KEY));
         protocol.writeI64(request.getId());
         protocol.getTransport().flush();

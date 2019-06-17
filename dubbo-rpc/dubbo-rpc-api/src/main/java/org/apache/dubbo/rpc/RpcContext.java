@@ -68,7 +68,7 @@ public class RpcContext {
         }
     };
 
-    private final Map<String, String> attachments = new HashMap<String, String>();
+    private final Map<String, Object> attachments = new HashMap<String, Object>();
     private final Map<String, Object> values = new HashMap<String, Object>();
 
     private List<URL> urls;
@@ -449,7 +449,7 @@ public class RpcContext {
      * @param key
      * @return attachment
      */
-    public String getAttachment(String key) {
+    public Object getAttachment(String key) {
         return attachments.get(key);
     }
 
@@ -460,7 +460,7 @@ public class RpcContext {
      * @param value
      * @return context
      */
-    public RpcContext setAttachment(String key, String value) {
+    public RpcContext setAttachment(String key, Object value) {
         if (value == null) {
             attachments.remove(key);
         } else {
@@ -485,7 +485,7 @@ public class RpcContext {
      *
      * @return attachments
      */
-    public Map<String, String> getAttachments() {
+    public Map<String, Object> getAttachments() {
         return attachments;
     }
 
@@ -495,7 +495,7 @@ public class RpcContext {
      * @param attachment
      * @return context
      */
-    public RpcContext setAttachments(Map<String, String> attachment) {
+    public RpcContext setAttachments(Map<String, Object> attachment) {
         this.attachments.clear();
         if (attachment != null && attachment.size() > 0) {
             this.attachments.putAll(attachment);

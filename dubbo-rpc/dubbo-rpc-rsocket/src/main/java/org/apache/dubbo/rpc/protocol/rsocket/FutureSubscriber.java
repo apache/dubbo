@@ -74,7 +74,7 @@ public class FutureSubscriber extends CompletableFuture<AppResponse> implements 
             }
 
             if ((flag & RSocketConstants.FLAG_HAS_ATTACHMENT) != 0) {
-                Map<String, String> attachment = in.readObject(Map.class);
+                Map<String, Object> attachment = in.readObject(Map.class);
                 appResponse.setAttachments(attachment);
 
             }

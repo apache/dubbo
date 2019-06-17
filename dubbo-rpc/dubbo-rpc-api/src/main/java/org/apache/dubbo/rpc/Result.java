@@ -86,37 +86,37 @@ public interface Result extends CompletionStage<Result>, Future<Result>, Seriali
      *
      * @return attachments.
      */
-    Map<String, String> getAttachments();
+    Map<String, Object> getAttachments();
 
     /**
      * Add the specified map to existing attachments in this instance.
      *
      * @param map
      */
-    void addAttachments(Map<String, String> map);
+    void addAttachments(Map<String, Object> map);
 
     /**
      * Replace the existing attachments with the specified param.
      *
      * @param map
      */
-    void setAttachments(Map<String, String> map);
+    void setAttachments(Map<String, Object> map);
 
     /**
      * get attachment by key.
      *
      * @return attachment value.
      */
-    String getAttachment(String key);
+    Object getAttachment(String key);
 
     /**
      * get attachment by key with default value.
      *
      * @return attachment value.
      */
-    String getAttachment(String key, String defaultValue);
+    Object getAttachment(String key, Object defaultValue);
 
-    void setAttachment(String key, String value);
+    void setAttachment(String key, Object value);
 
     /**
      * Returns the specified {@code valueIfAbsent} when not complete, or

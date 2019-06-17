@@ -402,7 +402,7 @@ public class ThriftCodec implements Codec2 {
 
         int seqId = nextSeqId();
 
-        String serviceName = inv.getAttachment(Constants.INTERFACE_KEY);
+        String serviceName = (String) inv.getAttachment(Constants.INTERFACE_KEY);
 
         if (StringUtils.isEmpty(serviceName)) {
             throw new IllegalArgumentException("Could not find service name in attachment with key "
@@ -500,7 +500,7 @@ public class ThriftCodec implements Codec2 {
             // service name
             protocol.writeString(serviceName);
             // path
-            protocol.writeString(inv.getAttachment(Constants.PATH_KEY));
+            protocol.writeString((String) inv.getAttachment(Constants.PATH_KEY));
             // dubbo request id
             protocol.writeI64(request.getId());
             protocol.getTransport().flush();

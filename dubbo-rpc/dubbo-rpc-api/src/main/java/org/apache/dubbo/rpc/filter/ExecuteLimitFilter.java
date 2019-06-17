@@ -28,11 +28,9 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcStatus;
 
 /**
- *
  * The maximum parallel execution request count per method per service for the provider.If the max configured
  * <b>executes</b> is set to 10 and if invoke request where it is already 10 then it will throws exception. It
  * continue the same behaviour un till it is <10.
- *
  */
 @Activate(group = Constants.PROVIDER, value = Constants.EXECUTES_KEY)
 public class ExecuteLimitFilter extends ListenableFilter {
@@ -78,7 +76,7 @@ public class ExecuteLimitFilter extends ListenableFilter {
         }
 
         private long getElapsed(Invocation invocation) {
-            String beginTime = invocation.getAttachment(EXECUTELIMIT_FILTER_START_TIME);
+            String beginTime = (String) invocation.getAttachment(EXECUTELIMIT_FILTER_START_TIME);
             return StringUtils.isNotEmpty(beginTime) ? System.currentTimeMillis() - Long.parseLong(beginTime) : 0;
         }
     }

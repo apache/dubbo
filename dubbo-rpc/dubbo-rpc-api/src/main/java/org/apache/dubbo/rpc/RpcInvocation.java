@@ -18,7 +18,6 @@ package org.apache.dubbo.rpc;
 
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.utils.StringUtils;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -41,7 +40,7 @@ public class RpcInvocation implements Invocation, Serializable {
 
     private Object[] arguments;
 
-    private Map<String, String> attachments;
+    private Map<String, Object> attachments;
 
     private Map<Object, Object> attributes = new HashMap<Object, Object>();
 
@@ -56,7 +55,7 @@ public class RpcInvocation implements Invocation, Serializable {
 
     public RpcInvocation(Invocation invocation, Invoker<?> invoker) {
         this(invocation.getMethodName(), invocation.getParameterTypes(),
-                invocation.getArguments(), new HashMap<String, String>(invocation.getAttachments()),
+                invocation.getArguments(), new HashMap<String, Object>(invocation.getAttachments()),
                 invocation.getInvoker());
         if (invoker != null) {
             URL url = invoker.getUrl();
@@ -91,7 +90,7 @@ public class RpcInvocation implements Invocation, Serializable {
         this(method.getName(), method.getParameterTypes(), arguments, null, null);
     }
 
-    public RpcInvocation(Method method, Object[] arguments, Map<String, String> attachment, Map<Object, Object> attributes) {
+    public RpcInvocation(Method method, Object[] arguments, Map<String, Object> attachment, Map<Object, Object> attributes) {
         this(method.getName(), method.getParameterTypes(), arguments, attachment, null);
         this.returnType = method.getReturnType();
         this.attributes = attributes == null ? new HashMap<>() : attributes;
@@ -101,15 +100,15 @@ public class RpcInvocation implements Invocation, Serializable {
         this(methodName, parameterTypes, arguments, null, null);
     }
 
-    public RpcInvocation(String methodName, Class<?>[] parameterTypes, Object[] arguments, Map<String, String> attachments) {
+    public RpcInvocation(String methodName, Class<?>[] parameterTypes, Object[] arguments, Map<String, Object> attachments) {
         this(methodName, parameterTypes, arguments, attachments, null);
     }
 
-    public RpcInvocation(String methodName, Class<?>[] parameterTypes, Object[] arguments, Map<String, String> attachments, Invoker<?> invoker) {
+    public RpcInvocation(String methodName, Class<?>[] parameterTypes, Object[] arguments, Map<String, Object> attachments, Invoker<?> invoker) {
         this.methodName = methodName;
         this.parameterTypes = parameterTypes == null ? new Class<?>[0] : parameterTypes;
         this.arguments = arguments == null ? new Object[0] : arguments;
-        this.attachments = attachments == null ? new HashMap<String, String>() : attachments;
+        this.attachments = attachments == null ? new HashMap<String, Object>() : attachments;
         this.invoker = invoker;
     }
 
@@ -163,51 +162,51 @@ public class RpcInvocation implements Invocation, Serializable {
     }
 
     @Override
-    public Map<String, String> getAttachments() {
+    public Map<String, Object> getAttachments() {
         return attachments;
     }
 
-    public void setAttachments(Map<String, String> attachments) {
-        this.attachments = attachments == null ? new HashMap<String, String>() : attachments;
+    public void setAttachments(Map<String, Object> attachments) {
+        this.attachments = attachments == null ? new HashMap<String, Object>() : attachments;
     }
 
-    public void setAttachment(String key, String value) {
+    public void setAttachment(String key, Object value) {
         if (attachments == null) {
-            attachments = new HashMap<String, String>();
+            attachments = new HashMap<String, Object>();
         }
         attachments.put(key, value);
     }
 
-    public void setAttachmentIfAbsent(String key, String value) {
+    public void setAttachmentIfAbsent(String key, Object value) {
         if (attachments == null) {
-            attachments = new HashMap<String, String>();
+            attachments = new HashMap<String, Object>();
         }
         if (!attachments.containsKey(key)) {
             attachments.put(key, value);
         }
     }
 
-    public void addAttachments(Map<String, String> attachments) {
+    public void addAttachments(Map<String, Object> attachments) {
         if (attachments == null) {
             return;
         }
         if (this.attachments == null) {
-            this.attachments = new HashMap<String, String>();
+            this.attachments = new HashMap<String, Object>();
         }
         this.attachments.putAll(attachments);
     }
 
-    public void addAttachmentsIfAbsent(Map<String, String> attachments) {
+    public void addAttachmentsIfAbsent(Map<String, Object> attachments) {
         if (attachments == null) {
             return;
         }
-        for (Map.Entry<String, String> entry : attachments.entrySet()) {
+        for (Map.Entry<String, Object> entry : attachments.entrySet()) {
             setAttachmentIfAbsent(entry.getKey(), entry.getValue());
         }
     }
 
     @Override
-    public String getAttachment(String key) {
+    public Object getAttachment(String key) {
         if (attachments == null) {
             return null;
         }
@@ -215,12 +214,12 @@ public class RpcInvocation implements Invocation, Serializable {
     }
 
     @Override
-    public String getAttachment(String key, String defaultValue) {
+    public Object getAttachment(String key, Object defaultValue) {
         if (attachments == null) {
             return defaultValue;
         }
-        String value = attachments.get(key);
-        if (StringUtils.isEmpty(value)) {
+        Object value = attachments.get(key);
+        if (null == value) {
             return defaultValue;
         }
         return value;

@@ -29,7 +29,6 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcStatus;
 
 /**
- *
  * ActiveLimitFilter restrict the concurrent client invocation for a service or service's method from client side.
  * To use active limit filter, configured url with <b>actives</b> and provide valid >0 integer value.
  * <pre>
@@ -103,7 +102,7 @@ public class ActiveLimitFilter extends ListenableFilter {
         }
 
         private long getElapsed(Invocation invocation) {
-            String beginTime = invocation.getAttachment(ACTIVELIMIT_FILTER_START_TIME);
+            String beginTime = (String) invocation.getAttachment(ACTIVELIMIT_FILTER_START_TIME);
             return StringUtils.isNotEmpty(beginTime) ? System.currentTimeMillis() - Long.parseLong(beginTime) : 0;
         }
 
