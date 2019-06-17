@@ -220,10 +220,10 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
          * 3.x added for extend URL address
          */
         ExtensionLoader<AddressListener> addressListenerExtensionLoader = ExtensionLoader.getExtensionLoader(AddressListener.class);
-        Set<String> surpportedListeners = addressListenerExtensionLoader.getSupportedExtensions();
-        if (surpportedListeners != null && !surpportedListeners.isEmpty()) {
-            for (String addressListenerName : surpportedListeners) {
-                providerURLs = addressListenerExtensionLoader.getExtension(addressListenerName).notify(providerURLs);
+        List<AddressListener> supportedListeners = addressListenerExtensionLoader.getActivateExtension(getUrl(), (String[]) null);
+        if (supportedListeners != null && !supportedListeners.isEmpty()) {
+            for (AddressListener addressListener : supportedListeners) {
+                providerURLs = addressListener.notify(providerURLs, getUrl());
             }
         }
         refreshOverrideAndInvoker(providerURLs);
