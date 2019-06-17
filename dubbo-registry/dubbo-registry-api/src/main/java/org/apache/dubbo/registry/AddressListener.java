@@ -27,8 +27,9 @@ public interface AddressListener {
     /**
      * processing when receiving the address list
      *
-     * @param addresses
+     * @param addresses            provider address list
+     * @param registryDirectoryUrl
      */
-    List<URL> notify(List<URL> addresses);
+    List<URL> notify(List<URL> addresses, URL registryDirectoryUrl);
 
 }
