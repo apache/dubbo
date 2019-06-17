@@ -38,16 +38,16 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY_PREFIX;
+import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METHOD_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.ADDRESS_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.FORCE_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.PRIORITY_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.RULE_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.RUNTIME_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY_PREFIX;
-import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.METHOD_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
 
 /**
  * ConditionRouter

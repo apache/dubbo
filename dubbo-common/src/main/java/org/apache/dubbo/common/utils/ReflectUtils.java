@@ -33,16 +33,24 @@ import java.net.URL;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import static java.util.Arrays.asList;
+import static java.util.Collections.unmodifiableSet;
 
 /**
  * ReflectUtils
@@ -1118,5 +1126,62 @@ public final class ReflectUtils {
             }
         }
         return new Type[]{returnType, genericReturnType};
+    }
+  
+    /**
+     * Find the {@link Set} of {@link ParameterizedType}
+     *
+     * @param sourceClass the source {@link Class class}
+     * @return non-null read-only {@link Set}
+     * @since 2.7.3
+     */
+    public static Set<ParameterizedType> findParameterizedTypes(Class<?> sourceClass) {
+        // Add Generic Interfaces
+        List<Type> genericTypes = new LinkedList<>(asList(sourceClass.getGenericInterfaces()));
+        // Add Generic Super Class
+        genericTypes.add(sourceClass.getGenericSuperclass());
+
+        Set<ParameterizedType> parameterizedTypes = genericTypes.stream()
+                .filter(type -> type instanceof ParameterizedType)// filter ParameterizedType
+                .map(type -> ParameterizedType.class.cast(type))  // cast to ParameterizedType
+                .collect(Collectors.toSet());
+
+        if (parameterizedTypes.isEmpty()) { // If not found, try to search super types recursively
+            genericTypes.stream()
+                    .filter(type -> type instanceof Class)
+                    .map(type -> Class.class.cast(type))
+                    .forEach(superClass -> {
+                        parameterizedTypes.addAll(findParameterizedTypes(superClass));
+                    });
+        }
+
+        return unmodifiableSet(parameterizedTypes);                     // build as a Set
+
+    }
+
+    /**
+     * Find the hierarchical types form the source {@link Class class} by specified {@link Class type}.
+     *
+     * @param sourceClass the source {@link Class class}
+     * @param matchType   the type to match
+     * @param <T>         the type to match
+     * @return non-null read-only {@link Set}
+     * @since 2.7.3
+     */
+    public static <T> Set<Class<T>> findHierarchicalTypes(Class<?> sourceClass, Class<T> matchType) {
+        if (sourceClass == null) {
+            return Collections.emptySet();
+        }
+
+        Set<Class<T>> hierarchicalTypes = new LinkedHashSet<>();
+
+        if (matchType.isAssignableFrom(sourceClass)) {
+            hierarchicalTypes.add((Class<T>) sourceClass);
+        }
+
+        // Find all super classes
+        hierarchicalTypes.addAll(findHierarchicalTypes(sourceClass.getSuperclass(), matchType));
+
+        return unmodifiableSet(hierarchicalTypes);
     }
 }

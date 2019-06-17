@@ -1,0 +1,2 @@
+org.apache.dubbo.registry.client.event.listener.CustomizableServiceInstanceListener
+org.apache.dubbo.registry.client.event.listener.LoggingEventListener

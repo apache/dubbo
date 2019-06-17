@@ -52,4 +52,38 @@ public interface RegistryConstants {
     String OVERRIDE_PROTOCOL = "override";
 
     String COMPATIBLE_CONFIG_KEY = "compatible_config";
+
+    /**
+     * The parameter key of Dubbo Registry type
+     *
+     * @since 2.7.3
+     */
+    String REGISTRY_TYPE_KEY = "registry-type";
+
+    /**
+     * The parameter value of Service-Oriented Registry type
+     *
+     * @since 2.7.3
+     */
+    String SERVICE_REGISTRY_TYPE = "service";
+
+    /**
+     * The parameter key of the subscribed service names for Service-Oriented Registry
+     *
+     * @since 2.7.3
+     */
+    String SUBSCRIBED_SERVICE_NAMES_KEY = "subscribed-services";
+
+
+    /**
+     * The request size of service instances
+     *
+     * @since 2.7.3
+     */
+    String INSTANCES_REQUEST_SIZE_KEY = "instances-request-size";
+
+    /**
+     * The default request size of service instances
+     */
+    int DEFAULT_INSTANCES_REQUEST_SIZE = 100;
 }

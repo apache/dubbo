@@ -16,12 +16,12 @@
  */
 package org.apache.dubbo.config.builders;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.ServiceConfig;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This is a builder for build {@link ServiceConfig}.
@@ -67,6 +67,10 @@ public class ServiceBuilder<U> extends AbstractServiceBuilder<ServiceConfig, Ser
      * whether it is a GenericService
      */
     private String generic;
+
+    public ServiceBuilder id(String id) {
+        return super.id(id);
+    }
 
     public ServiceBuilder<U> interfaceName(String interfaceName) {
         this.interfaceName = interfaceName;

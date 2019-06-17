@@ -23,7 +23,6 @@ import org.apache.dubbo.remoting.Constants;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.apache.dubbo.rpc.cluster.Constants.TAG_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ALIVE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CORE_THREADS_KEY;
@@ -41,6 +40,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.remoting.Constants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.rpc.Constants.INVOKER_LISTENER_KEY;
 import static org.apache.dubbo.rpc.Constants.REFERENCE_FILTER_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.TAG_KEY;
 
 /**
  * ClusterUtils

@@ -1,0 +1,1 @@
+event-publishing=org.apache.dubbo.registry.client.EventPublishingServiceDiscoveryFactory

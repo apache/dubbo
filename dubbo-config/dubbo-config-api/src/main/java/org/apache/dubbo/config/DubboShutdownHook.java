@@ -19,6 +19,8 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.config.event.DubboServiceDestroyedEvent;
+import org.apache.dubbo.event.EventDispatcher;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 import org.apache.dubbo.rpc.Protocol;
 
@@ -42,7 +44,9 @@ public class DubboShutdownHook extends Thread {
     /**
      * Has it already been destroyed or not?
      */
-    private final AtomicBoolean destroyed= new AtomicBoolean(false);
+    private final AtomicBoolean destroyed = new AtomicBoolean(false);
+
+    private final EventDispatcher eventDispatcher = EventDispatcher.getDefaultExtension();
 
     private DubboShutdownHook(String name) {
         super(name);
@@ -89,6 +93,8 @@ public class DubboShutdownHook extends Thread {
         AbstractRegistryFactory.destroyAll();
         // destroy all the protocols
         destroyProtocols();
+        // dispatch the DubboDestroyedEvent @since 2.7.3
+        eventDispatcher.dispatch(new DubboServiceDestroyedEvent(this));
     }
 
     /**

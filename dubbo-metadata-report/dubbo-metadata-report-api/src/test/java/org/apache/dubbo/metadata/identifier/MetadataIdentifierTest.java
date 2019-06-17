@@ -21,7 +21,6 @@ import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
-import static org.apache.dubbo.metadata.identifier.MetadataIdentifier.META_DATA_STORE_TAG;
 
 /**
  * 2019/1/7

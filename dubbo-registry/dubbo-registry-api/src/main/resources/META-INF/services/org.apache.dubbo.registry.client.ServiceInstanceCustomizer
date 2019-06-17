@@ -1,0 +1,2 @@
+org.apache.dubbo.registry.client.metadata.MetadataServiceURLParamsMetadataCustomizer
+org.apache.dubbo.registry.client.metadata.ExportedServicesRevisionMetadataCustomizer

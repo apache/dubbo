@@ -36,11 +36,10 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.when;
-
 import static org.apache.dubbo.rpc.Constants.$INVOKE;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.when;
 
 public class GenericImplFilterTest {
 

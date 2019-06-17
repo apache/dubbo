@@ -40,9 +40,9 @@ import io.netty.handler.proxy.Socks5ProxyHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.DefaultThreadFactory;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-
 import java.net.InetSocketAddress;
+
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 /**
  * NettyClient.

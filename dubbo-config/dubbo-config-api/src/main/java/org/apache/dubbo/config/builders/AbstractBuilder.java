@@ -25,9 +25,11 @@ import java.util.Map;
 /**
  * AbstractBuilder
  *
+ * @param <C> The type of {@link AbstractConfig Config}
+ * @param <B> The type of {@link AbstractBuilder Builder}
  * @since 2.7
  */
-public abstract class AbstractBuilder<T extends AbstractConfig, B extends AbstractBuilder> {
+public abstract class AbstractBuilder<C extends AbstractConfig, B extends AbstractBuilder> {
     /**
      * The config id
      */
@@ -62,7 +64,7 @@ public abstract class AbstractBuilder<T extends AbstractConfig, B extends Abstra
         return parameters;
     }
 
-    protected void build(T instance) {
+    protected void build(C instance) {
         if (!StringUtils.isEmpty(id)) {
             instance.setId(id);
         }
@@ -70,4 +72,11 @@ public abstract class AbstractBuilder<T extends AbstractConfig, B extends Abstra
             instance.setPrefix(prefix);
         }
     }
+
+    /**
+     * Build an instance of {@link AbstractConfig config}
+     *
+     * @return an instance of {@link AbstractConfig config}
+     */
+    public abstract C build();
 }

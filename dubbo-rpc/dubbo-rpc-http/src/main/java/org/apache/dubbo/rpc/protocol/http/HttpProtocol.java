@@ -17,8 +17,8 @@
 package org.apache.dubbo.rpc.protocol.http;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.http.HttpBinder;
 import org.apache.dubbo.remoting.http.HttpHandler;

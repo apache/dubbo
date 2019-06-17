@@ -34,9 +34,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.metadata.identifier.MetadataIdentifier.META_DATA_STORE_TAG;
 
 /**

@@ -35,8 +35,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import static org.apache.dubbo.rpc.Constants.ASYNC_KEY;
 import static org.apache.dubbo.remoting.Constants.DUBBO_VERSION_KEY;
+import static org.apache.dubbo.rpc.Constants.ASYNC_KEY;
 import static org.apache.dubbo.rpc.Constants.FORCE_USE_TAG;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 

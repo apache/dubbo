@@ -16,20 +16,27 @@
  */
 package org.apache.dubbo.config.provider.impl;
 
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.api.Box;
 import org.apache.dubbo.config.api.DemoException;
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.api.User;
+import org.apache.dubbo.rpc.RpcContext;
 
 import java.util.List;
+
+import static java.lang.String.format;
 
 /**
  * DemoServiceImpl
  */
 public class DemoServiceImpl implements DemoService {
 
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+
     public String sayName(String name) {
-        return "say:" + name;
+        return log("say:" + name);
     }
 
     public Box getBox() {
@@ -48,4 +55,12 @@ public class DemoServiceImpl implements DemoService {
         return i;
     }
 
+    private <T> T log(T object) {
+        RpcContext rpcContext = RpcContext.getContext();
+        logger.info(format("RPC Invocation [ client - %s:%s , provider - %s:%s] : %s",
+                rpcContext.getRemoteHost(), rpcContext.getRemotePort(),
+                rpcContext.getLocalHost(), rpcContext.getLocalPort(),
+                object));
+        return object;
+    }
 }

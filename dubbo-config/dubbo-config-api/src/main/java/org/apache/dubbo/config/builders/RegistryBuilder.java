@@ -16,9 +16,9 @@
  */
 package org.apache.dubbo.config.builders;
 
-import java.util.Map;
-
 import org.apache.dubbo.config.RegistryConfig;
+
+import java.util.Map;
 
 /**
  * This is a builder for build {@link RegistryConfig}.
@@ -133,6 +133,10 @@ public class RegistryBuilder extends AbstractBuilder<RegistryConfig, RegistryBui
      * @since 2.7.0
      */
     private String extraKeys;
+
+    public RegistryBuilder id(String id) {
+        return super.id(id);
+    }
 
     public RegistryBuilder address(String address) {
         this.address = address;

@@ -20,6 +20,10 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.configcenter.ConfigurationListener;
 import org.apache.dubbo.configcenter.DynamicConfiguration;
 
+import java.util.SortedSet;
+
+import static java.util.Collections.emptySortedSet;
+
 /**
  * The default extension of {@link DynamicConfiguration}. If user does not specify a config centre, or specifies one
  * that is not a valid extension, it will default to this one.
@@ -29,7 +33,6 @@ public class NopDynamicConfiguration implements DynamicConfiguration {
     public NopDynamicConfiguration(URL url) {
         // no-op
     }
-
 
     @Override
     public Object getInternalProperty(String key) {
@@ -54,5 +57,21 @@ public class NopDynamicConfiguration implements DynamicConfiguration {
     @Override
     public String getConfigs(String key, String group, long timeout) throws IllegalStateException {
         return null;
+    }
+
+    /**
+     * @since 2.7.3
+     */
+    @Override
+    public boolean publishConfig(String key, String group, String content) {
+        return true;
+    }
+
+    /**
+     * @since 2.7.3
+     */
+    @Override
+    public SortedSet<String> getConfigKeys(String group) {
+        return emptySortedSet();
     }
 }

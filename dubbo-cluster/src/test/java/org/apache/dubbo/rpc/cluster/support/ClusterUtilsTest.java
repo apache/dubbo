@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import static org.apache.dubbo.common.constants.CommonConstants.ALIVE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CORE_THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY_PREFIX;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PID_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.QUEUES_KEY;
@@ -32,7 +33,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.remoting.Constants.DUBBO_VERSION_KEY;
 
 public class ClusterUtilsTest {

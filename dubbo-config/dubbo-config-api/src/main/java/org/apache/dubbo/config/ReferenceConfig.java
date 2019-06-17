@@ -27,7 +27,11 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.context.ConfigManager;
+import org.apache.dubbo.config.event.ReferenceConfigDestroyedEvent;
+import org.apache.dubbo.config.event.ReferenceConfigInitializedEvent;
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.event.Event;
+import org.apache.dubbo.event.EventDispatcher;
 import org.apache.dubbo.metadata.integration.MetadataReportService;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.Invoker;
@@ -56,24 +60,24 @@ import java.util.Map;
 import java.util.Properties;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SEMICOLON_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
-import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
-import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
-import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
-import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
-import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 import static org.apache.dubbo.common.utils.NetUtils.isInvalidLocalHost;
+import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
+import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
+import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
+import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
+import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 
 /**
  * ReferenceConfig
@@ -172,6 +176,13 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
      */
     private transient volatile boolean destroyed;
 
+    /**
+     * The {@link EventDispatcher}
+     *
+     * @since 2.7.3
+     */
+    private final EventDispatcher eventDispatcher = EventDispatcher.getDefaultExtension();
+
     @SuppressWarnings("unused")
     private final Object finalizerGuardian = new Object() {
         @Override
@@ -181,13 +192,13 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             if (!ReferenceConfig.this.destroyed) {
                 logger.warn("ReferenceConfig(" + url + ") is not DESTROYED when FINALIZE");
 
-                /* don't destroy for now
-                try {
-                    ReferenceConfig.this.destroy();
-                } catch (Throwable t) {
-                        logger.warn("Unexpected err when destroy invoker of ReferenceConfig(" + url + ") in finalize method!", t);
-                }
-                */
+        /* don't destroy for now
+        try {
+            ReferenceConfig.this.destroy();
+        } catch (Throwable t) {
+                logger.warn("Unexpected err when destroy invoker of ReferenceConfig(" + url + ") in finalize method!", t);
+        }
+        */
             }
         }
     };
@@ -267,6 +278,9 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         }
         invoker = null;
         ref = null;
+
+        // dispatch a ReferenceConfigDestroyedEvent since 2.7.3
+        dispatch(new ReferenceConfigDestroyedEvent(this));
     }
 
     private void init() {
@@ -331,6 +345,9 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         String serviceKey = URL.buildKey(interfaceName, group, version);
         ApplicationModel.initConsumerModel(serviceKey, buildConsumerModel(serviceKey, attributes));
         initialized = true;
+
+        // dispatch a ReferenceConfigInitializedEvent since 2.7.3
+        dispatch(new ReferenceConfigInitializedEvent(this, invoker));
     }
 
     private ConsumerModel buildConsumerModel(String serviceKey, Map<String, Object> attributes) {
@@ -374,7 +391,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 }
             } else { // assemble URL from register center's configuration
                 // if protocols not injvm checkRegistry
-                if (!LOCAL_PROTOCOL.equalsIgnoreCase(getProtocol())){
+                if (!LOCAL_PROTOCOL.equalsIgnoreCase(getProtocol())) {
                     checkRegistry();
                     List<URL> us = loadRegistries(false);
                     if (CollectionUtils.isNotEmpty(us)) {
@@ -660,5 +677,15 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 }
             }
         }
+    }
+
+    /**
+     * Dispatch an {@link Event event}
+     *
+     * @param event an {@link Event event}
+     * @since 2.7.3
+     */
+    protected void dispatch(Event event) {
+        eventDispatcher.dispatch(event);
     }
 }

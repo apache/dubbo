@@ -36,11 +36,11 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.apache.dubbo.rpc.Constants.$INVOKE;
+import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
+import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_NATIVE_JAVA;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-import static org.apache.dubbo.rpc.Constants.$INVOKE;
-import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_NATIVE_JAVA;
-import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 
 public class GenericFilterTest {
     GenericFilter genericFilter = new GenericFilter();

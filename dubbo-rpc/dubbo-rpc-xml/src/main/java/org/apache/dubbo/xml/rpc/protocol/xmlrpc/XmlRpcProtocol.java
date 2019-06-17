@@ -42,7 +42,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class XmlRpcProtocol extends AbstractProxyProtocol {
-    
+
     public static final String ACCESS_CONTROL_ALLOW_ORIGIN_HEADER = "Access-Control-Allow-Origin";
     public static final String ACCESS_CONTROL_ALLOW_METHODS_HEADER = "Access-Control-Allow-Methods";
     public static final String ACCESS_CONTROL_ALLOW_HEADERS_HEADER = "Access-Control-Allow-Headers";
@@ -67,7 +67,7 @@ public class XmlRpcProtocol extends AbstractProxyProtocol {
     }
 
     private class InternalHandler implements HttpHandler {
-    	
+
         private boolean cors;
 
         public InternalHandler(boolean cors) {
@@ -90,7 +90,7 @@ public class XmlRpcProtocol extends AbstractProxyProtocol {
 
                 RpcContext.getContext().setRemoteAddress(request.getRemoteAddr(), request.getRemotePort());
                 try {
-                    xmlrpc.execute (request,response);
+                    xmlrpc.execute(request, response);
                 } catch (Throwable e) {
                     throw new ServletException(e);
                 }
@@ -117,19 +117,19 @@ public class XmlRpcProtocol extends AbstractProxyProtocol {
         PropertyHandlerMapping propertyHandlerMapping = new PropertyHandlerMapping();
         try {
 
-            propertyHandlerMapping.setRequestProcessorFactoryFactory(new RequestProcessorFactoryFactory(){
+            propertyHandlerMapping.setRequestProcessorFactoryFactory(new RequestProcessorFactoryFactory() {
                 @Override
-                public RequestProcessorFactory getRequestProcessorFactory(Class pClass) throws XmlRpcException{
-                    return new RequestProcessorFactory(){
+                public RequestProcessorFactory getRequestProcessorFactory(Class pClass) throws XmlRpcException {
+                    return new RequestProcessorFactory() {
                         @Override
-                        public Object getRequestProcessor(XmlRpcRequest pRequest) throws XmlRpcException{
+                        public Object getRequestProcessor(XmlRpcRequest pRequest) throws XmlRpcException {
                             return impl;
                         }
                     };
                 }
             });
 
-            propertyHandlerMapping.addHandler(XmlRpcProxyFactoryBean.replace(type.getName()),type);
+            propertyHandlerMapping.addHandler(XmlRpcProxyFactoryBean.replace(type.getName()), type);
 
         } catch (Exception e) {
             throw new RpcException(e);
@@ -149,8 +149,6 @@ public class XmlRpcProtocol extends AbstractProxyProtocol {
         };
     }
 
-    @Override
-    @SuppressWarnings("unchecked")
     @Override
     protected <T> T doRefer(final Class<T> serviceType, URL url) throws RpcException {
         XmlRpcProxyFactoryBean xmlRpcProxyFactoryBean = new XmlRpcProxyFactoryBean();
