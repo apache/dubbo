@@ -37,14 +37,10 @@ public class DemoServiceConsumerBootstrap {
     @Reference(version = "${demo.service.version}")
     private DemoService demoService;
 
-    @Reference(version = "${demo.service.version}", protocol = "rest")
-    private DemoService restDemoService;
-
     @PostConstruct
     public void init() throws InterruptedException {
         for (int j = 0; j < 10; j++) {
             System.out.println(demoService.sayName("小马哥（mercyblitz）"));
-            System.out.println(restDemoService.sayName("小马哥（mercyblitz）"));
         }
         Thread.sleep(TimeUnit.SECONDS.toMillis(5));
     }

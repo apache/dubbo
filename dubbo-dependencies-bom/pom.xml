@@ -32,7 +32,7 @@
 
     <name>dubbo-dependencies-bom</name>
     <description>Dubbo dependencies BOM</description>
-    <url>https://github.com/apache/incubator-dubbo</url>
+    <url>https://github.com/apache/dubbo</url>
     <inceptionYear>2011</inceptionYear>
     <licenses>
         <license>
@@ -43,9 +43,9 @@
     </licenses>
 
     <scm>
-        <url>https://github.com/apache/incubator-dubbo</url>
-        <connection>scm:git:https://github.com/apache/incubator-dubbo.git</connection>
-        <developerConnection>scm:git:https://github.com/apache/incubator-dubbo.git</developerConnection>
+        <url>https://github.com/apache/dubbo</url>
+        <connection>scm:git:https://github.com/apache/dubbo.git</connection>
+        <developerConnection>scm:git:https://github.com/apache/dubbo.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
     <mailingLists>
@@ -84,7 +84,7 @@
 
     <issueManagement>
         <system>Github Issues</system>
-        <url>https://github.com/apache/incubator-dubbo/issues</url>
+        <url>https://github.com/apache/dubbo/issues</url>
     </issueManagement>
 
     <properties>
@@ -103,10 +103,12 @@
         <curator_test_version>2.12.0</curator_test_version>
         <jedis_version>2.9.0</jedis_version>
         <consul_version>1.4.2</consul_version>
+        <consul_process_version>2.0.0</consul_process_version>
         <xmemcached_version>1.3.6</xmemcached_version>
         <cxf_version>3.1.15</cxf_version>
-        <thrift_version>0.8.0</thrift_version>
+        <thrift_version>0.12.0</thrift_version>
         <hessian_version>4.0.38</hessian_version>
+        <protobuf-java_version>3.6.0</protobuf-java_version>
         <servlet_version>3.1.0</servlet_version>
         <jetty_version>9.4.11.v20180605</jetty_version>
         <validation_version>1.1.0.Final</validation_version>
@@ -126,6 +128,7 @@
         <resteasy_version>3.0.19.Final</resteasy_version>
         <tomcat_embed_version>8.5.31</tomcat_embed_version>
         <jetcd_version>0.3.0</jetcd_version>
+        <nacos_version>1.0.0</nacos_version>
         <!-- Log libs -->
         <slf4j_version>1.7.25</slf4j_version>
         <jcl_version>1.2</jcl_version>
@@ -137,16 +140,20 @@
 
         <jaxb_version>2.2.7</jaxb_version>
         <activation_version>1.2.0</activation_version>
+        <test_container_version>1.11.2</test_container_version>
+        <etcd_launcher_version>0.3.0</etcd_launcher_version>
         <hessian_lite_version>3.2.5</hessian_lite_version>
         <swagger_version>1.5.19</swagger_version>
         <spring_test_version>4.3.16.RELEASE</spring_test_version>
 
         <metrics_version>2.0.1</metrics_version>
+        <sofa_registry_version>5.2.0</sofa_registry_version>
         <gson_version>2.8.5</gson_version>
         <jsonrpc_version>1.2.0</jsonrpc_version>
+        <mortbay_jetty_version>6.1.26</mortbay_jetty_version>
         <portlet_version>2.0</portlet_version>
         <maven_flatten_version>1.1.0</maven_flatten_version>
-        <revision>2.7.2-SNAPSHOT</revision>
+        <revision>2.7.3-SNAPSHOT</revision>
     </properties>
 
     <dependencyManagement>
@@ -232,6 +239,11 @@
                 <version>${consul_version}</version>
             </dependency>
             <dependency>
+                <groupId>com.pszymczyk.consul</groupId>
+                <artifactId>embedded-consul</artifactId>
+                <version>${consul_process_version}</version>
+            </dependency>
+            <dependency>
                 <groupId>com.googlecode.xmemcached</groupId>
                 <artifactId>xmemcached</artifactId>
                 <version>${xmemcached_version}</version>
@@ -262,6 +274,16 @@
                 <version>${hessian_lite_version}</version>
             </dependency>
             <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java</artifactId>
+                <version>${protobuf-java_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java-util</artifactId>
+                <version>${protobuf-java_version}</version>
+            </dependency>
+            <dependency>
                 <groupId>javax.servlet</groupId>
                 <artifactId>javax.servlet-api</artifactId>
                 <version>${servlet_version}</version>
@@ -275,6 +297,12 @@
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-servlet</artifactId>
                 <version>${jetty_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mortbay.jetty</groupId>
+                <artifactId>jetty</artifactId>
+                <version>${mortbay_jetty_version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>javax.validation</groupId>
@@ -450,7 +478,6 @@
                 <version>${commons_lang3_version}</version>
             </dependency>
 
-
             <!-- for dubbo-rpc-webservice -->
             <dependency>
                 <groupId>javax.xml.bind</groupId>
@@ -512,6 +539,19 @@
                 <version>${metrics_version}</version>
             </dependency>
 
+            <!-- for dubbo-registry-sofa -->
+            <dependency>
+                <groupId>com.alipay.sofa</groupId>
+                <artifactId>registry-client-all</artifactId>
+                <version>${sofa_registry_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alipay.sofa</groupId>
+                <artifactId>registry-test</artifactId>
+                <version>${sofa_registry_version}</version>
+                <scope>test</scope>
+            </dependency>
+
             <!-- Test lib -->
             <dependency>
                 <groupId>org.apache.curator</groupId>
@@ -551,6 +591,28 @@
                 <groupId>javax.portlet</groupId>
                 <artifactId>portlet-api</artifactId>
                 <version>${portlet_version}</version>
+            </dependency>
+            <!-- for dubbo-configcenter-etcd -->
+            <dependency>
+                <groupId>io.etcd</groupId>
+                <artifactId>jetcd-launcher</artifactId>
+                <version>${etcd_launcher_version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.github.spotbugs</groupId>
+                        <artifactId>spotbugs-annotations</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>testcontainers</artifactId>
+                <version>${test_container_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.nacos</groupId>
+                <artifactId>nacos-client</artifactId>
+                <version>${nacos_version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

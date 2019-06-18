@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import static org.apache.dubbo.common.serialize.Constants.JAVA_SERIALIZATION_ID;
+
 /**
  * Java serialization implementation
  *
@@ -36,7 +38,7 @@ public class JavaSerialization implements Serialization {
 
     @Override
     public byte getContentTypeId() {
-        return 3;
+        return JAVA_SERIALIZATION_ID;
     }
 
     @Override

@@ -88,8 +88,7 @@ public abstract class AbstractServiceBuilder<T extends AbstractServiceConfig, B 
      */
     protected List<ProtocolConfig> protocols;
     protected String protocolIds;
-    // provider tag
-    protected String tag;
+
     // max allowed execute times
     private Integer executes;
 
@@ -197,11 +196,6 @@ public abstract class AbstractServiceBuilder<T extends AbstractServiceConfig, B 
         return getThis();
     }
 
-    public B tag(String tag) {
-        this.tag = tag;
-        return getThis();
-    }
-
     public B executes(Integer executes) {
         this.executes = executes;
         return getThis();
@@ -261,9 +255,6 @@ public abstract class AbstractServiceBuilder<T extends AbstractServiceConfig, B 
         }
         if (!StringUtils.isEmpty(protocolIds)) {
             instance.setProtocolIds(protocolIds);
-        }
-        if (tag != null) {
-            instance.setTag(tag);
         }
         if (executes != null) {
             instance.setExecutes(executes);

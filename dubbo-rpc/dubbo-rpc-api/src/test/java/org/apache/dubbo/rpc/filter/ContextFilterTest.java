@@ -17,12 +17,12 @@
 package org.apache.dubbo.rpc.filter;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
-import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.support.DemoService;
 import org.apache.dubbo.rpc.support.MockInvocation;
 import org.apache.dubbo.rpc.support.MyInvoker;
@@ -55,7 +55,7 @@ public class ContextFilterTest {
         invoker = mock(Invoker.class);
         given(invoker.isAvailable()).willReturn(true);
         given(invoker.getInterface()).willReturn(DemoService.class);
-        RpcResult result = new RpcResult();
+        AppResponse result = new AppResponse();
         result.setValue("High");
         given(invoker.invoke(invocation)).willReturn(result);
         URL url = URL.valueOf("test://test:11/test?group=dubbo&version=1.1");

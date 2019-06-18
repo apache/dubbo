@@ -16,13 +16,13 @@
  */
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 
 import java.util.Map;
 
-import static org.apache.dubbo.common.Constants.PROPERTIES_CHAR_SEPERATOR;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
+import static org.apache.dubbo.common.constants.CommonConstants.PROPERTIES_CHAR_SEPERATOR;
 
 /**
  * MetadataReportConfig
@@ -70,6 +70,11 @@ public class MetadataReportConfig extends AbstractConfig {
      * Sync report, default async
      */
     private Boolean syncReport;
+
+    /**
+     * cluster
+     */
+    private Boolean cluster;
 
     public MetadataReportConfig() {
     }
@@ -158,7 +163,7 @@ public class MetadataReportConfig extends AbstractConfig {
     @Override
     @Parameter(excluded = true)
     public String getPrefix() {
-        return StringUtils.isNotEmpty(prefix) ? prefix : (Constants.DUBBO + "." + PREFIX_TAG);
+        return StringUtils.isNotEmpty(prefix) ? prefix : (DUBBO + "." + PREFIX_TAG);
     }
 
     @Override
@@ -173,5 +178,13 @@ public class MetadataReportConfig extends AbstractConfig {
 
     public void setGroup(String group) {
         this.group = group;
+    }
+
+    public Boolean getCluster() {
+        return cluster;
+    }
+
+    public void setCluster(Boolean cluster) {
+        this.cluster = cluster;
     }
 }

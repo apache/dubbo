@@ -19,7 +19,7 @@ package org.apache.dubbo.remoting;
 import java.io.Serializable;
 
 /**
- * RpcResult.
+ * AppResponse.
  */
 
 public class MockResult implements Serializable {

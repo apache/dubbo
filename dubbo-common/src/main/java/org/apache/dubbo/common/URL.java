@@ -18,6 +18,7 @@ package org.apache.dubbo.common;
 
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.InmemoryConfiguration;
+import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -38,6 +39,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PORT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY_PREFIX;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PASSWORD_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.USERNAME_KEY;
 
 /**
  * URL - Uniform Resource Locator (Immutable, ThreadSafe)
@@ -414,7 +430,7 @@ class URL implements Serializable {
 
     public String getBackupAddress(int defaultPort) {
         StringBuilder address = new StringBuilder(appendDefaultPort(getAddress(), defaultPort));
-        String[] backups = getParameter(Constants.BACKUP_KEY, new String[0]);
+        String[] backups = getParameter(RemotingConstants.BACKUP_KEY, new String[0]);
         if (ArrayUtils.isNotEmpty(backups)) {
             for (String backup : backups) {
                 address.append(",");
@@ -427,7 +443,7 @@ class URL implements Serializable {
     public List<URL> getBackupUrls() {
         List<URL> urls = new ArrayList<>();
         urls.add(this);
-        String[] backups = getParameter(Constants.BACKUP_KEY, new String[0]);
+        String[] backups = getParameter(RemotingConstants.BACKUP_KEY, new String[0]);
         if (backups != null && backups.length > 0) {
             for (String backup : backups) {
                 urls.add(this.setAddress(backup));
@@ -477,26 +493,17 @@ class URL implements Serializable {
 
     public String getParameter(String key) {
         String value = parameters.get(key);
-        if (StringUtils.isEmpty(value)) {
-            value = parameters.get(Constants.DEFAULT_KEY_PREFIX + key);
-        }
-        return value;
+        return StringUtils.isEmpty(value) ? parameters.get(DEFAULT_KEY_PREFIX + key) : value;
     }
 
     public String getParameter(String key, String defaultValue) {
         String value = getParameter(key);
-        if (StringUtils.isEmpty(value)) {
-            return defaultValue;
-        }
-        return value;
+        return StringUtils.isEmpty(value) ? defaultValue : value;
     }
 
     public String[] getParameter(String key, String[] defaultValue) {
         String value = getParameter(key);
-        if (StringUtils.isEmpty(value)) {
-            return defaultValue;
-        }
-        return Constants.COMMA_SPLIT_PATTERN.split(value);
+        return StringUtils.isEmpty(value) ? defaultValue : COMMA_SPLIT_PATTERN.split(value);
     }
 
     public List<String> getParameter(String key, List<String> defaultValue) {
@@ -504,22 +511,18 @@ class URL implements Serializable {
         if (value == null || value.length() == 0) {
             return defaultValue;
         }
-        String[] strArray = Constants.COMMA_SPLIT_PATTERN.split(value);
+        String[] strArray = COMMA_SPLIT_PATTERN.split(value);
         return Arrays.asList(strArray);
     }
 
     private Map<String, Number> getNumbers() {
-        if (numbers == null) { // concurrent initialization is tolerant
-            numbers = new ConcurrentHashMap<>();
-        }
-        return numbers;
+        // concurrent initialization is tolerant
+        return numbers == null ? new ConcurrentHashMap<>() : numbers;
     }
 
     private Map<String, URL> getUrls() {
-        if (urls == null) { // concurrent initialization is tolerant
-            urls = new ConcurrentHashMap<>();
-        }
-        return urls;
+        // concurrent initialization is tolerant
+        return urls == null ? new ConcurrentHashMap<>() : urls;
     }
 
     public URL getUrlParameter(String key) {
@@ -625,10 +628,7 @@ class URL implements Serializable {
             throw new IllegalArgumentException("defaultValue <= 0");
         }
         float value = getParameter(key, defaultValue);
-        if (value <= 0) {
-            return defaultValue;
-        }
-        return value;
+        return value <= 0 ? defaultValue : value;
     }
 
     public double getPositiveParameter(String key, double defaultValue) {
@@ -636,10 +636,7 @@ class URL implements Serializable {
             throw new IllegalArgumentException("defaultValue <= 0");
         }
         double value = getParameter(key, defaultValue);
-        if (value <= 0) {
-            return defaultValue;
-        }
-        return value;
+        return value <= 0 ? defaultValue : value;
     }
 
     public long getPositiveParameter(String key, long defaultValue) {
@@ -647,10 +644,7 @@ class URL implements Serializable {
             throw new IllegalArgumentException("defaultValue <= 0");
         }
         long value = getParameter(key, defaultValue);
-        if (value <= 0) {
-            return defaultValue;
-        }
-        return value;
+        return value <= 0 ? defaultValue : value;
     }
 
     public int getPositiveParameter(String key, int defaultValue) {
@@ -658,10 +652,7 @@ class URL implements Serializable {
             throw new IllegalArgumentException("defaultValue <= 0");
         }
         int value = getParameter(key, defaultValue);
-        if (value <= 0) {
-            return defaultValue;
-        }
-        return value;
+        return value <= 0 ? defaultValue : value;
     }
 
     public short getPositiveParameter(String key, short defaultValue) {
@@ -669,10 +660,7 @@ class URL implements Serializable {
             throw new IllegalArgumentException("defaultValue <= 0");
         }
         short value = getParameter(key, defaultValue);
-        if (value <= 0) {
-            return defaultValue;
-        }
-        return value;
+        return value <= 0 ? defaultValue : value;
     }
 
     public byte getPositiveParameter(String key, byte defaultValue) {
@@ -680,26 +668,17 @@ class URL implements Serializable {
             throw new IllegalArgumentException("defaultValue <= 0");
         }
         byte value = getParameter(key, defaultValue);
-        if (value <= 0) {
-            return defaultValue;
-        }
-        return value;
+        return value <= 0 ? defaultValue : value;
     }
 
     public char getParameter(String key, char defaultValue) {
         String value = getParameter(key);
-        if (StringUtils.isEmpty(value)) {
-            return defaultValue;
-        }
-        return value.charAt(0);
+        return StringUtils.isEmpty(value) ? defaultValue : value.charAt(0);
     }
 
     public boolean getParameter(String key, boolean defaultValue) {
         String value = getParameter(key);
-        if (StringUtils.isEmpty(value)) {
-            return defaultValue;
-        }
-        return Boolean.parseBoolean(value);
+        return StringUtils.isEmpty(value) ? defaultValue : Boolean.parseBoolean(value);
     }
 
     public boolean hasParameter(String key) {
@@ -717,18 +696,12 @@ class URL implements Serializable {
 
     public String getMethodParameter(String method, String key) {
         String value = parameters.get(method + "." + key);
-        if (StringUtils.isEmpty(value)) {
-            return getParameter(key);
-        }
-        return value;
+        return StringUtils.isEmpty(value) ? getParameter(key) : value;
     }
 
     public String getMethodParameter(String method, String key, String defaultValue) {
         String value = getMethodParameter(method, key);
-        if (StringUtils.isEmpty(value)) {
-            return defaultValue;
-        }
-        return value;
+        return StringUtils.isEmpty(value) ? defaultValue : value;
     }
 
     public double getMethodParameter(String method, String key, double defaultValue) {
@@ -826,10 +799,7 @@ class URL implements Serializable {
             throw new IllegalArgumentException("defaultValue <= 0");
         }
         double value = getMethodParameter(method, key, defaultValue);
-        if (value <= 0) {
-            return defaultValue;
-        }
-        return value;
+        return value <= 0 ? defaultValue : value;
     }
 
     public float getMethodPositiveParameter(String method, String key, float defaultValue) {
@@ -837,10 +807,7 @@ class URL implements Serializable {
             throw new IllegalArgumentException("defaultValue <= 0");
         }
         float value = getMethodParameter(method, key, defaultValue);
-        if (value <= 0) {
-            return defaultValue;
-        }
-        return value;
+        return value <= 0 ? defaultValue : value;
     }
 
     public long getMethodPositiveParameter(String method, String key, long defaultValue) {
@@ -848,10 +815,7 @@ class URL implements Serializable {
             throw new IllegalArgumentException("defaultValue <= 0");
         }
         long value = getMethodParameter(method, key, defaultValue);
-        if (value <= 0) {
-            return defaultValue;
-        }
-        return value;
+        return value <= 0 ? defaultValue : value;
     }
 
     public int getMethodPositiveParameter(String method, String key, int defaultValue) {
@@ -859,10 +823,7 @@ class URL implements Serializable {
             throw new IllegalArgumentException("defaultValue <= 0");
         }
         int value = getMethodParameter(method, key, defaultValue);
-        if (value <= 0) {
-            return defaultValue;
-        }
-        return value;
+        return value <= 0 ? defaultValue : value;
     }
 
     public short getMethodPositiveParameter(String method, String key, short defaultValue) {
@@ -870,10 +831,7 @@ class URL implements Serializable {
             throw new IllegalArgumentException("defaultValue <= 0");
         }
         short value = getMethodParameter(method, key, defaultValue);
-        if (value <= 0) {
-            return defaultValue;
-        }
-        return value;
+        return value <= 0 ? defaultValue : value;
     }
 
     public byte getMethodPositiveParameter(String method, String key, byte defaultValue) {
@@ -881,26 +839,17 @@ class URL implements Serializable {
             throw new IllegalArgumentException("defaultValue <= 0");
         }
         byte value = getMethodParameter(method, key, defaultValue);
-        if (value <= 0) {
-            return defaultValue;
-        }
-        return value;
+        return value <= 0 ? defaultValue : value;
     }
 
     public char getMethodParameter(String method, String key, char defaultValue) {
         String value = getMethodParameter(method, key);
-        if (StringUtils.isEmpty(value)) {
-            return defaultValue;
-        }
-        return value.charAt(0);
+        return StringUtils.isEmpty(value) ? defaultValue : value.charAt(0);
     }
 
     public boolean getMethodParameter(String method, String key, boolean defaultValue) {
         String value = getMethodParameter(method, key);
-        if (StringUtils.isEmpty(value)) {
-            return defaultValue;
-        }
-        return Boolean.parseBoolean(value);
+        return StringUtils.isEmpty(value) ? defaultValue : Boolean.parseBoolean(value);
     }
 
     public boolean hasMethodParameter(String method, String key) {
@@ -927,11 +876,11 @@ class URL implements Serializable {
     }
 
     public boolean isLocalHost() {
-        return NetUtils.isLocalHost(host) || getParameter(Constants.LOCALHOST_KEY, false);
+        return NetUtils.isLocalHost(host) || getParameter(LOCALHOST_KEY, false);
     }
 
     public boolean isAnyHost() {
-        return Constants.ANYHOST_VALUE.equals(host) || getParameter(Constants.ANYHOST_KEY, false);
+        return ANYHOST_VALUE.equals(host) || getParameter(ANYHOST_KEY, false);
     }
 
     public URL addParameterAndEncoded(String key, String value) {
@@ -1122,22 +1071,22 @@ class URL implements Serializable {
     }
 
     public String getRawParameter(String key) {
-        if (Constants.PROTOCOL_KEY.equals(key)) {
+        if (PROTOCOL_KEY.equals(key)) {
             return protocol;
         }
-        if (Constants.USERNAME_KEY.equals(key)) {
+        if (USERNAME_KEY.equals(key)) {
             return username;
         }
-        if (Constants.PASSWORD_KEY.equals(key)) {
+        if (PASSWORD_KEY.equals(key)) {
             return password;
         }
-        if (Constants.HOST_KEY.equals(key)) {
+        if (HOST_KEY.equals(key)) {
             return host;
         }
-        if (Constants.PORT_KEY.equals(key)) {
+        if (PORT_KEY.equals(key)) {
             return String.valueOf(port);
         }
-        if (Constants.PATH_KEY.equals(key)) {
+        if (PATH_KEY.equals(key)) {
             return path;
         }
         return getParameter(key);
@@ -1146,22 +1095,22 @@ class URL implements Serializable {
     public Map<String, String> toMap() {
         Map<String, String> map = new HashMap<>(parameters);
         if (protocol != null) {
-            map.put(Constants.PROTOCOL_KEY, protocol);
+            map.put(PROTOCOL_KEY, protocol);
         }
         if (username != null) {
-            map.put(Constants.USERNAME_KEY, username);
+            map.put(USERNAME_KEY, username);
         }
         if (password != null) {
-            map.put(Constants.USERNAME_KEY, password);
+            map.put(PASSWORD_KEY, password);
         }
         if (host != null) {
-            map.put(Constants.HOST_KEY, host);
+            map.put(HOST_KEY, host);
         }
         if (port > 0) {
-            map.put(Constants.PORT_KEY, String.valueOf(port));
+            map.put(PORT_KEY, String.valueOf(port));
         }
         if (path != null) {
-            map.put(Constants.PATH_KEY, path);
+            map.put(PATH_KEY, path);
         }
         return map;
     }
@@ -1316,7 +1265,7 @@ class URL implements Serializable {
         if (inf == null) {
             return null;
         }
-        return buildKey(inf, getParameter(Constants.GROUP_KEY), getParameter(Constants.VERSION_KEY));
+        return buildKey(inf, getParameter(GROUP_KEY), getParameter(VERSION_KEY));
     }
 
     /**
@@ -1328,7 +1277,7 @@ class URL implements Serializable {
         if (inf == null) {
             return null;
         }
-        return buildKey(inf, getParameter(Constants.GROUP_KEY), getParameter(Constants.VERSION_KEY));
+        return buildKey(inf, getParameter(GROUP_KEY), getParameter(VERSION_KEY));
     }
 
     public static String buildKey(String path, String group, String version) {
@@ -1357,11 +1306,11 @@ class URL implements Serializable {
     }
 
     public String getServiceInterface() {
-        return getParameter(Constants.INTERFACE_KEY, path);
+        return getParameter(INTERFACE_KEY, path);
     }
 
     public URL setServiceInterface(String service) {
-        return addParameter(Constants.INTERFACE_KEY, service);
+        return addParameter(INTERFACE_KEY, service);
     }
 
     /**
