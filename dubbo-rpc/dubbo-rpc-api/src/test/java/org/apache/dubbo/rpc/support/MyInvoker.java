@@ -17,11 +17,12 @@
 package org.apache.dubbo.rpc.support;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.RpcResult;
 
 /**
  * MockInvoker.java
@@ -58,15 +59,14 @@ public class MyInvoker<T> implements Invoker<T> {
     }
 
     public Result invoke(Invocation invocation) throws RpcException {
-        RpcResult result = new RpcResult();
+        AppResponse result = new AppResponse();
         if (hasException == false) {
             result.setValue("alibaba");
-            return result;
         } else {
             result.setException(new RuntimeException("mocked exception"));
-            return result;
         }
 
+        return AsyncRpcResult.newDefaultAsyncResult(result, invocation);
     }
 
     @Override

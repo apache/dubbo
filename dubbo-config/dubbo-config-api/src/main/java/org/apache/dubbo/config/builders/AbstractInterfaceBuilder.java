@@ -121,6 +121,8 @@ public abstract class AbstractInterfaceBuilder<T extends AbstractInterfaceConfig
     // the scope for referring/exporting a service, if it's local, it means searching in current JVM only.
     private String scope;
 
+    private String tag;
+
     /**
      * @param local
      * @see org.apache.dubbo.config.builders.AbstractInterfaceBuilder#stub(String)
@@ -267,6 +269,11 @@ public abstract class AbstractInterfaceBuilder<T extends AbstractInterfaceConfig
         return getThis();
     }
 
+    public B tag(String tag) {
+        this.tag = tag;
+        return getThis();
+    }
+
     @Override
     public void build(T instance) {
         super.build(instance);
@@ -330,6 +337,9 @@ public abstract class AbstractInterfaceBuilder<T extends AbstractInterfaceConfig
         }
         if (!StringUtils.isEmpty(scope)) {
             instance.setScope(scope);
+        }
+        if (StringUtils.isNotEmpty(tag)) {
+            instance.setTag(tag);
         }
     }
 }

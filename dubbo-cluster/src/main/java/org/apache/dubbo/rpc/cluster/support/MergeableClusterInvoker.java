@@ -16,19 +16,18 @@
  */
 package org.apache.dubbo.rpc.cluster.support;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
+import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 import org.apache.dubbo.rpc.cluster.Merger;
@@ -41,12 +40,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.rpc.Constants.ASYNC_KEY;
+import static org.apache.dubbo.rpc.Constants.MERGER_KEY;
+
+/**
+ * @param <T>
+ */
 @SuppressWarnings("unchecked")
 public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
@@ -60,7 +63,7 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
     @Override
     protected Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
         checkInvokers(invokers, invocation);
-        String merger = getUrl().getMethodParameter(invocation.getMethodName(), Constants.MERGER_KEY);
+        String merger = getUrl().getMethodParameter(invocation.getMethodName(), MERGER_KEY);
         if (ConfigUtils.isEmpty(merger)) { // If a method doesn't have a merger, only invoke one Group
             for (final Invoker<T> invoker : invokers) {
                 if (invoker.isAvailable()) {
@@ -68,7 +71,7 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
                         return invoker.invoke(invocation);
                     } catch (RpcException e) {
                         if (e.isNoInvokerAvailableAfterFilter()) {
-                            log.debug("No available provider for service" + directory.getUrl().getServiceKey() + " on group " + invoker.getUrl().getParameter(Constants.GROUP_KEY) + ", will continue to try another group.");
+                            log.debug("No available provider for service" + directory.getUrl().getServiceKey() + " on group " + invoker.getUrl().getParameter(GROUP_KEY) + ", will continue to try another group.");
                         } else {
                             throw e;
                         }
@@ -86,26 +89,21 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
             returnType = null;
         }
 
-        Map<String, Future<Result>> results = new HashMap<String, Future<Result>>();
+        Map<String, Result> results = new HashMap<>();
         for (final Invoker<T> invoker : invokers) {
-            Future<Result> future = executor.submit(new Callable<Result>() {
-                @Override
-                public Result call() throws Exception {
-                    return invoker.invoke(new RpcInvocation(invocation, invoker));
-                }
-            });
-            results.put(invoker.getUrl().getServiceKey(), future);
+            RpcInvocation subInvocation = new RpcInvocation(invocation, invoker);
+            subInvocation.setAttachment(ASYNC_KEY, "true");
+            results.put(invoker.getUrl().getServiceKey(), invoker.invoke(subInvocation));
         }
 
         Object result = null;
 
         List<Result> resultList = new ArrayList<Result>(results.size());
 
-        int timeout = getUrl().getMethodParameter(invocation.getMethodName(), Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
-        for (Map.Entry<String, Future<Result>> entry : results.entrySet()) {
-            Future<Result> future = entry.getValue();
+        for (Map.Entry<String, Result> entry : results.entrySet()) {
+            Result asyncResult = entry.getValue();
             try {
-                Result r = future.get(timeout, TimeUnit.MILLISECONDS);
+                Result r = asyncResult.get();
                 if (r.hasException()) {
                     log.error("Invoke " + getGroupDescFromServiceKey(entry.getKey()) +
                                     " failed: " + r.getException().getMessage(),
@@ -119,13 +117,13 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
         }
 
         if (resultList.isEmpty()) {
-            return new RpcResult((Object) null);
+            return AsyncRpcResult.newDefaultAsyncResult(invocation);
         } else if (resultList.size() == 1) {
             return resultList.iterator().next();
         }
 
         if (returnType == void.class) {
-            return new RpcResult((Object) null);
+            return AsyncRpcResult.newDefaultAsyncResult(invocation);
         }
 
         if (merger.startsWith(".")) {
@@ -173,7 +171,7 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
                 throw new RpcException("There is no merger to merge result.");
             }
         }
-        return new RpcResult(result);
+        return AsyncRpcResult.newDefaultAsyncResult(result, invocation);
     }
 
 

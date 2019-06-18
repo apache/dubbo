@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.telnet.codec;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -33,6 +32,9 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+
+import static org.apache.dubbo.remoting.Constants.CHARSET_KEY;
+import static org.apache.dubbo.remoting.Constants.DEFAULT_CHARSET;
 
 /**
  * TelnetCodec
@@ -60,7 +62,7 @@ public class TelnetCodec extends TransportCodec {
 
     private static Charset getCharset(Channel channel) {
         if (channel != null) {
-            Object attribute = channel.getAttribute(Constants.CHARSET_KEY);
+            Object attribute = channel.getAttribute(CHARSET_KEY);
             if (attribute instanceof String) {
                 try {
                     return Charset.forName((String) attribute);
@@ -72,7 +74,7 @@ public class TelnetCodec extends TransportCodec {
             }
             URL url = channel.getUrl();
             if (url != null) {
-                String parameter = url.getParameter(Constants.CHARSET_KEY);
+                String parameter = url.getParameter(CHARSET_KEY);
                 if (StringUtils.isNotEmpty(parameter)) {
                     try {
                         return Charset.forName(parameter);
@@ -83,7 +85,7 @@ public class TelnetCodec extends TransportCodec {
             }
         }
         try {
-            return Charset.forName(Constants.DEFAULT_CHARSET);
+            return Charset.forName(DEFAULT_CHARSET);
         } catch (Throwable t) {
             logger.warn(t.getMessage(), t);
         }

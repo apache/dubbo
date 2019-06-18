@@ -26,12 +26,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import static org.apache.dubbo.common.serialize.Constants.GSON_SERIALIZATION_ID;
+
 public class GsonSerialization implements Serialization {
 
 
     @Override
     public byte getContentTypeId() {
-        return 16;
+        return GSON_SERIALIZATION_ID;
     }
 
     @Override

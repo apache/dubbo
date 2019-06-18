@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.transport;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.Resetable;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
@@ -25,7 +24,11 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Codec;
 import org.apache.dubbo.remoting.Codec2;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.transport.codec.CodecAdapter;
+
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 
 /**
  * AbstractEndpoint
@@ -43,7 +46,7 @@ public abstract class AbstractEndpoint extends AbstractPeer implements Resetable
     public AbstractEndpoint(URL url, ChannelHandler handler) {
         super(url, handler);
         this.codec = getChannelCodec(url);
-        this.timeout = url.getPositiveParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
+        this.timeout = url.getPositiveParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT);
         this.connectTimeout = url.getPositiveParameter(Constants.CONNECT_TIMEOUT_KEY, Constants.DEFAULT_CONNECT_TIMEOUT);
     }
 
@@ -64,8 +67,8 @@ public abstract class AbstractEndpoint extends AbstractPeer implements Resetable
                     + url + ", cause: Channel closed. channel: " + getLocalAddress());
         }
         try {
-            if (url.hasParameter(Constants.TIMEOUT_KEY)) {
-                int t = url.getParameter(Constants.TIMEOUT_KEY, 0);
+            if (url.hasParameter(TIMEOUT_KEY)) {
+                int t = url.getParameter(TIMEOUT_KEY, 0);
                 if (t > 0) {
                     this.timeout = t;
                 }

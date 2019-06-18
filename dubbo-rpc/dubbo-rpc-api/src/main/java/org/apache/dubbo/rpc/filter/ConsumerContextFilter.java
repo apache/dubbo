@@ -16,16 +16,17 @@
  */
 package org.apache.dubbo.rpc.filter;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.ListenableFilter;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
+
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 
 /**
  * ConsumerContextFilter set current RpcContext with invoker,invocation, local host, remote host and port
@@ -34,8 +35,12 @@ import org.apache.dubbo.rpc.RpcInvocation;
  * @see org.apache.dubbo.rpc.Filter
  * @see RpcContext
  */
-@Activate(group = Constants.CONSUMER, order = -10000)
-public class ConsumerContextFilter implements Filter {
+@Activate(group = CONSUMER, order = -10000)
+public class ConsumerContextFilter extends ListenableFilter {
+
+    public ConsumerContextFilter() {
+        super.listener = new ConsumerContextListener();
+    }
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
@@ -49,18 +54,22 @@ public class ConsumerContextFilter implements Filter {
             ((RpcInvocation) invocation).setInvoker(invoker);
         }
         try {
-            // TODO should we clear server context?
             RpcContext.removeServerContext();
             return invoker.invoke(invocation);
         } finally {
-            // TODO removeContext? but we need to save future for RpcContext.getFuture() API. If clear attachments here, attachments will not available when postProcessResult is invoked.
-            RpcContext.getContext().clearAttachments();
+            RpcContext.removeContext();
         }
     }
 
-    @Override
-    public Result onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
-        RpcContext.getServerContext().setAttachments(result.getAttachments());
-        return result;
+    static class ConsumerContextListener implements Listener {
+        @Override
+        public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
+            RpcContext.getServerContext().setAttachments(appResponse.getAttachments());
+        }
+
+        @Override
+        public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
+
+        }
     }
 }

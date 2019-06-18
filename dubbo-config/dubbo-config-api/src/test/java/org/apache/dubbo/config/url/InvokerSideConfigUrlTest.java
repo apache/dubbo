@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config.url;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.ConsumerConfig;
@@ -28,12 +27,14 @@ import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.mock.MockRegistry;
 
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+
+import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
 
 
 public class InvokerSideConfigUrlTest extends UrlTestBase {
@@ -41,7 +42,7 @@ public class InvokerSideConfigUrlTest extends UrlTestBase {
 
     // ======================================================
     //   invoker related data preparing
-    // ======================================================  
+    // ======================================================
     private RegistryConfig regConfForConsumer;
     private RegistryConfig regConfForReference;
     private MethodConfig methodConfForReference;
@@ -57,10 +58,10 @@ public class InvokerSideConfigUrlTest extends UrlTestBase {
     };
 
     private Object regConfForConsumerTable[][] = {
-//            {"timeout", "registry.timeout", "int", 5000, 9000, "", "", "", "", ""}, 
-//            {"file", "registry.file", "string", "", "regConfForServiceTable.log", "", "", "", "", ""}, 
-//            {"wait", "registry.wait", "int", 0, 9000, "", "", "", "", ""}, 
-//            {"transport", "registry.transporter", "string", "netty", "mina", "", "", "", "", ""}, 
+//            {"timeout", "registry.timeout", "int", 5000, 9000, "", "", "", "", ""},
+//            {"file", "registry.file", "string", "", "regConfForServiceTable.log", "", "", "", "", ""},
+//            {"wait", "registry.wait", "int", 0, 9000, "", "", "", "", ""},
+//            {"transport", "registry.transporter", "string", "netty", "mina", "", "", "", "", ""},
             {"subscribe", "subscribe", "boolean", true, false, "", "", "", "", ""},
             {"dynamic", "dynamic", "boolean", true, false, "", "", "", "", ""},
     };
@@ -83,21 +84,21 @@ public class InvokerSideConfigUrlTest extends UrlTestBase {
     };
 
     private Object refConfTable[][] = {
-//            {"version", "version", "string", "0.0.0", "1.2.3", "", "", "", "", ""}, 
-//            {"group", "group", "string", "", "HaominTest", "", "", "", "", ""}, 
+//            {"version", "version", "string", "0.0.0", "1.2.3", "", "", "", "", ""},
+//            {"group", "group", "string", "", "HaominTest", "", "", "", "", ""},
 
-//            {"delay", "delay", "int", 0, 5, "", "", "", "", ""}, // not boolean 
+//            {"delay", "delay", "int", 0, 5, "", "", "", "", ""}, // not boolean
             {"timeout", "timeout", "int", 5000, 3000, "", "", "", "", ""},
             {"retries", "retries", "int", 2, 5, "", "", "", "", ""},
             {"connections", "connections", "boolean", 100, 20, "", "", "", "", ""},
             {"loadbalance", "loadbalance", "string", "random", "roundrobin", "leastactive", "", "", ""},
             {"async", "async", "boolean", false, true, "", "", "", "", ""},
             //excluded = true
-//            {"generic", "generic", "boolean", false, true, "", "", "", "", ""},  
+//            {"generic", "generic", "boolean", false, true, "", "", "", "", ""},
             {"check", "check", "boolean", false, true, "", "", "", "", ""},
-            //{"local", "local", "string", "false", "HelloServiceLocal", "true", "", "", "", ""}, 
-            //{"local", "local", "string", "false", "true", "", "", "", "", ""}, 
-            //{"mock", "mock", "string", "false", "dubbo.test.HelloServiceMock", "true", "", "", "", ""}, 
+            //{"local", "local", "string", "false", "HelloServiceLocal", "true", "", "", "", ""},
+            //{"local", "local", "string", "false", "true", "", "", "", "", ""},
+            //{"mock", "mock", "string", "false", "dubbo.test.HelloServiceMock", "true", "", "", "", ""},
             {"mock", "mock", "string", "false", "false", "", "", "", "", ""},
             {"proxy", "proxy", "boolean", "javassist", "jdk", "", "", "", "", ""},
             {"client", "client", "string", "netty", "mina", "", "", "", "", ""},
@@ -106,32 +107,25 @@ public class InvokerSideConfigUrlTest extends UrlTestBase {
             {"actives", "actives", "int", 0, 30, "", "", "", "", ""},
             {"cluster", "cluster", "string", "failover", "failfast", "failsafe", "failback", "forking", "", ""},
             //excluded = true
-//            {"filter", "service.filter", "string", "default", "-generic", "", "", "", "", ""}, 
+//            {"filter", "service.filter", "string", "default", "-generic", "", "", "", "", ""},
             //excluded = true
-//            {"listener", "exporter.listener", "string", "default", "-deprecated", "", "", "", "", ""}, 
-            //{"", "", "", "", "", "", "", "", "", ""}, 
+//            {"listener", "exporter.listener", "string", "default", "-deprecated", "", "", "", "", ""},
+            //{"", "", "", "", "", "", "", "", "", ""},
     };
 
-    private Object consumerConfTable[][] = {
-            {"timeout", "default.timeout", "int", 5000, 8000, "", "", "", "", ""},
-            {"retries", "default.retries", "int", 2, 5, "", "", "", "", ""},
-            {"loadbalance", "default.loadbalance", "string", "random", "leastactive", "", "", "", "", ""},
-            {"async", "default.async", "boolean", false, true, "", "", "", "", ""},
-            {"connections", "default.connections", "int", 100, 5, "", "", "", "", ""},
-//            {"generic", "generic", "boolean", false, false, "", "", "", "", ""}, 
+    private Object consumerConfTable[][] = {{"timeout", "timeout", "int", 5000, 8000, "", "", "", "", ""}, {"retries", "retries", "int", 2, 5, "", "", "", "", ""}, {"loadbalance", "loadbalance", "string", "random", "leastactive", "", "", "", "", ""}, {"async", "async", "boolean", false, true, "", "", "", "", ""}, {"connections", "connections", "int", 100, 5, "", "", "", "", ""},
+//            {"generic", "generic", "boolean", false, false, "", "", "", "", ""},
             {"check", "check", "boolean", true, false, "", "", "", "", ""},
             {"proxy", "proxy", "string", "javassist", "jdk", "javassist", "", "", "", ""},
-            {"owner", "owner", "string", "", "haomin", "", "", "", "", ""},
-            {"actives", "default.actives", "int", 0, 5, "", "", "", "", ""},
-            {"cluster", "default.cluster", "string", "failover", "forking", "", "", "", "", ""},
+            {"owner", "owner", "string", "", "haomin", "", "", "", "", ""}, {"actives", "actives", "int", 0, 5, "", "", "", "", ""}, {"cluster", "cluster", "string", "failover", "forking", "", "", "", "", ""},
             {"filter", "", "string", "", "", "", "", "", "", ""},
             {"listener", "", "string", "", "", "", "", "", "", ""},
-//            {"", "", "", "", "", "", "", "", "", ""}, 
+//            {"", "", "", "", "", "", "", "", "", ""},
     };
 
     // ======================================================
     //   test Start
-    // ====================================================== 
+    // ======================================================
 
     @BeforeAll
     public static void start() {
@@ -171,7 +165,7 @@ public class InvokerSideConfigUrlTest extends UrlTestBase {
 
     // ======================================================
     //   private helper
-    // ====================================================== 
+    // ======================================================
     private void initRefConf() {
         regConfForConsumer = new RegistryConfig();
         regConfForReference = new RegistryConfig();
@@ -195,7 +189,7 @@ public class InvokerSideConfigUrlTest extends UrlTestBase {
 
         refConf.setMethods(Arrays.asList(new MethodConfig[]{methodConfForReference}));
 
-        refConf.setScope(Constants.SCOPE_REMOTE);
+        refConf.setScope(SCOPE_REMOTE);
     }
 
     private <T> void verifyInvokerUrlGeneration(T config, Object[][] dataTable) {
