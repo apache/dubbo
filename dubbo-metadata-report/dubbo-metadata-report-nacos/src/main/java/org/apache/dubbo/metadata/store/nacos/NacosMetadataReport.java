@@ -37,18 +37,28 @@ import static com.alibaba.nacos.api.PropertyKeyConst.ENDPOINT;
 import static com.alibaba.nacos.api.PropertyKeyConst.NAMESPACE;
 import static com.alibaba.nacos.api.PropertyKeyConst.CLUSTER_NAME;
 import static com.alibaba.nacos.client.naming.utils.UtilAndComs.NACOS_NAMING_LOG_NAME;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 
 /**
  * metadata report impl for nacos
  */
 public class NacosMetadataReport extends AbstractMetadataReport {
+
     private static final Logger logger = LoggerFactory.getLogger(NacosMetadataReport.class);
+
     private ConfigService configService;
+
+    /**
+     * The group used to store metadata in Nacos
+     */
+    private String group;
+
 
     public NacosMetadataReport(URL url) {
         super(url);
         this.configService = buildConfigService(url);
+        group = url.getParameter(GROUP_KEY, DEFAULT_ROOT);
     }
 
     public ConfigService buildConfigService(URL url) {
@@ -113,7 +123,7 @@ public class NacosMetadataReport extends AbstractMetadataReport {
 
     private void storeMetadata(MetadataIdentifier identifier, String value) {
         try {
-            boolean publishResult = configService.publishConfig(identifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY), identifier.getGroup(), value);
+            boolean publishResult = configService.publishConfig(identifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY), group, value);
             if (!publishResult) {
                 throw new RuntimeException("publish nacos metadata failed");
             }
