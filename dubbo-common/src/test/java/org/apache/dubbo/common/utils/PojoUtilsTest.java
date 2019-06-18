@@ -682,6 +682,20 @@ public class PojoUtilsTest {
         assertEquals(dateTimeStr, new SimpleDateFormat(dateFormat[0]).format(timestamp));
     }
 
+    @Test
+    public void testIntToBoolean() throws Exception {
+        Map<String, Object> map = new HashMap<>();
+        map.put("name", "myname");
+        map.put("male", 1);
+        map.put("female", 0);
+
+        PersonInfo personInfo = (PersonInfo) PojoUtils.realize(map, PersonInfo.class);
+
+        assertEquals("myname", personInfo.getName());
+        assertTrue(personInfo.isMale());
+        assertFalse(personInfo.isFemale());
+    }
+
     public enum Day {
         SUNDAY, MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY
     }

@@ -129,6 +129,8 @@ public class CompatibleTypeUtils {
                 return BigDecimal.valueOf(number.doubleValue());
             } else if (type == Date.class) {
                 return new Date(number.longValue());
+            } else if (type == boolean.class || type == Boolean.class) {
+                return 1 == number.intValue() ? Boolean.TRUE : Boolean.FALSE;
             }
         } else if (value instanceof Collection) {
             Collection collection = (Collection) value;
