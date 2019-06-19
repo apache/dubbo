@@ -42,7 +42,7 @@ There's a [README](https://github.com/apache/dubbo-samples/tree/master/dubbo-sam
 
 ```xml
 <properties>
-    <dubbo.version>2.7.1</dubbo.version>
+    <dubbo.version>2.7.2</dubbo.version>
 </properties>
     
 <dependencies>
@@ -220,7 +220,7 @@ Please report security vulnerability to [us](mailto:security@dubbo.apache.org) p
 #### Language
 
 * [Node.js](https://github.com/apache/dubbo-js)
-* [Python](https://github.com/apache/dubbo-client-py)
+* [Python](https://github.com/dubbo/py-client-for-apache-dubbo)
 * [PHP](https://github.com/apache/dubbo-php-framework)
 * [Go](https://github.com/dubbo/dubbo-go)
 * [Erlang](https://github.com/apache/dubbo-erlang)

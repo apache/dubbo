@@ -203,7 +203,7 @@ public class FailbackRegistryTest {
         countDownLatch.await();
         Assertions.assertEquals(0, mockRegistry.getFailedRegistered().size());
         FailbackRegistry.Holder h = new FailbackRegistry.Holder(registryUrl, listener);
-        Assertions.assertEquals(null, mockRegistry.getFailedSubscribed().get(h));
+        Assertions.assertNull(mockRegistry.getFailedSubscribed().get(h));
         Assertions.assertEquals(countDownLatch.getCount(), 0);
     }
 
