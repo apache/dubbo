@@ -47,7 +47,7 @@ public class JSONObject implements JSONNode {
      */
     public boolean getBoolean(String key, boolean def) {
         Object tmp = mMap.get(key);
-        return tmp != null && tmp instanceof Boolean ? (Boolean) tmp : def;
+        return tmp instanceof Boolean ? (Boolean) tmp : def;
     }
 
     /**
@@ -59,7 +59,7 @@ public class JSONObject implements JSONNode {
      */
     public int getInt(String key, int def) {
         Object tmp = mMap.get(key);
-        return tmp != null && tmp instanceof Number ? ((Number) tmp).intValue() : def;
+        return tmp instanceof Number ? ((Number) tmp).intValue() : def;
     }
 
     /**
@@ -71,7 +71,7 @@ public class JSONObject implements JSONNode {
      */
     public long getLong(String key, long def) {
         Object tmp = mMap.get(key);
-        return tmp != null && tmp instanceof Number ? ((Number) tmp).longValue() : def;
+        return tmp instanceof Number ? ((Number) tmp).longValue() : def;
     }
 
     /**
@@ -83,7 +83,7 @@ public class JSONObject implements JSONNode {
      */
     public float getFloat(String key, float def) {
         Object tmp = mMap.get(key);
-        return tmp != null && tmp instanceof Number ? ((Number) tmp).floatValue() : def;
+        return tmp instanceof Number ? ((Number) tmp).floatValue() : def;
     }
 
     /**
@@ -95,7 +95,7 @@ public class JSONObject implements JSONNode {
      */
     public double getDouble(String key, double def) {
         Object tmp = mMap.get(key);
-        return tmp != null && tmp instanceof Number ? ((Number) tmp).doubleValue() : def;
+        return tmp instanceof Number ? ((Number) tmp).doubleValue() : def;
     }
 
     /**
