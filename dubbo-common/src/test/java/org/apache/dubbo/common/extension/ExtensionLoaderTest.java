@@ -22,7 +22,7 @@ import org.apache.dubbo.common.extension.activate.impl.*;
 import org.apache.dubbo.common.extension.ext1.SimpleExt;
 import org.apache.dubbo.common.extension.ext1.impl.SimpleExtImpl1;
 import org.apache.dubbo.common.extension.ext1.impl.SimpleExtImpl2;
-import org.apache.dubbo.common.extension.ext10.Ext10MultiNames;
+import org.apache.dubbo.common.extension.ext10_multi_names.Ext10MultiNames;
 import org.apache.dubbo.common.extension.ext2.Ext2;
 import org.apache.dubbo.common.extension.ext6_wrap.WrappedExt;
 import org.apache.dubbo.common.extension.ext6_wrap.impl.Ext5Wrapper1;
@@ -422,6 +422,8 @@ public class ExtensionLoaderTest {
     @Test
     void testMultiNames() {
         Ext10MultiNames ext10MultiNames = ExtensionLoader.getExtensionLoader(Ext10MultiNames.class).getExtension("impl");
+        Assertions.assertNotNull(ext10MultiNames);
+        ext10MultiNames = ExtensionLoader.getExtensionLoader(Ext10MultiNames.class).getExtension("implMultiName");
         Assertions.assertNotNull(ext10MultiNames);
     }
 }
