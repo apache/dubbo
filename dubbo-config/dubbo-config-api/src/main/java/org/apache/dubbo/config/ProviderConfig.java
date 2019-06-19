@@ -166,7 +166,7 @@ public class ProviderConfig extends AbstractServiceConfig {
         this.protocols = new ArrayList<>(Arrays.asList(new ProtocolConfig(protocol)));
     }
 
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, notEquals = true)
     public Boolean isDefault() {
         return isDefault;
     }
@@ -176,7 +176,7 @@ public class ProviderConfig extends AbstractServiceConfig {
         this.isDefault = isDefault;
     }
 
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, notEquals = true)
     public String getHost() {
         return host;
     }
@@ -185,7 +185,7 @@ public class ProviderConfig extends AbstractServiceConfig {
         this.host = host;
     }
 
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, notEquals = true)
     public Integer getPort() {
         return port;
     }
@@ -196,7 +196,7 @@ public class ProviderConfig extends AbstractServiceConfig {
     }
 
     @Deprecated
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, notEquals = true)
     public String getPath() {
         return getContextpath();
     }
@@ -206,7 +206,7 @@ public class ProviderConfig extends AbstractServiceConfig {
         setContextpath(path);
     }
 
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, notEquals = true)
     public String getContextpath() {
         return contextpath;
     }
@@ -314,7 +314,7 @@ public class ProviderConfig extends AbstractServiceConfig {
         this.telnet = telnet;
     }
 
-    @Parameter(escaped = true)
+    @Parameter(escaped = true, notEquals = true)
     public String getPrompt() {
         return prompt;
     }

@@ -74,7 +74,7 @@ public class MonitorConfig extends AbstractConfig {
         this.address = address;
     }
 
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, notEquals = true)
     public String getAddress() {
         return address;
     }
@@ -152,7 +152,7 @@ public class MonitorConfig extends AbstractConfig {
     }
 
     @Override
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, notEquals = true)
     public boolean isValid() {
         return StringUtils.isNotEmpty(address);
     }

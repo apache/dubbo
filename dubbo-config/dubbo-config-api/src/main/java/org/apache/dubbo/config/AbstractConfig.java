@@ -421,7 +421,7 @@ public abstract class AbstractConfig implements Serializable {
         return getter.substring(i, i + 1).toLowerCase() + getter.substring(i + 1);
     }
 
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, notEquals = true)
     public String getId() {
         return id;
     }

@@ -65,33 +65,33 @@ import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_IP_TO_BIND;
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_IP_TO_BIND;
-import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
-import static org.apache.dubbo.config.Constants.DUBBO_PORT_TO_BIND;
-import static org.apache.dubbo.config.Constants.DUBBO_PORT_TO_REGISTRY;
-import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
-import static org.apache.dubbo.config.Constants.MULTICAST;
-import static org.apache.dubbo.config.Constants.PROTOCOLS_SUFFIX;
-import static org.apache.dubbo.rpc.Constants.SCOPE_KEY;
-import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
-import static org.apache.dubbo.config.Constants.SCOPE_NONE;
-import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
-import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
-import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
-import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
-import static org.apache.dubbo.rpc.Constants.PROXY_KEY;
-import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 import static org.apache.dubbo.common.utils.NetUtils.getAvailablePort;
 import static org.apache.dubbo.common.utils.NetUtils.getLocalHost;
 import static org.apache.dubbo.common.utils.NetUtils.isInvalidLocalHost;
 import static org.apache.dubbo.common.utils.NetUtils.isInvalidPort;
+import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
+import static org.apache.dubbo.config.Constants.DUBBO_PORT_TO_BIND;
+import static org.apache.dubbo.config.Constants.DUBBO_PORT_TO_REGISTRY;
+import static org.apache.dubbo.config.Constants.MULTICAST;
+import static org.apache.dubbo.config.Constants.PROTOCOLS_SUFFIX;
+import static org.apache.dubbo.config.Constants.SCOPE_NONE;
+import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
+import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
+import static org.apache.dubbo.rpc.Constants.PROXY_KEY;
+import static org.apache.dubbo.rpc.Constants.SCOPE_KEY;
+import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
+import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
+import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
 
 /**
  * ServiceConfig
@@ -279,12 +279,12 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         return urls;
     }
 
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, notEquals = true)
     public boolean isExported() {
         return exported;
     }
 
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, notEquals = true)
     public boolean isUnexported() {
         return unexported;
     }
@@ -962,7 +962,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         this.ref = ref;
     }
 
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, notEquals = true)
     public String getPath() {
         return path;
     }
@@ -992,7 +992,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         this.provider = provider;
     }
 
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, notEquals = true)
     public String getProviderIds() {
         return providerIds;
     }
@@ -1047,7 +1047,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     @Override
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, notEquals = true)
     public String getPrefix() {
         return DUBBO + ".service." + interfaceName;
     }

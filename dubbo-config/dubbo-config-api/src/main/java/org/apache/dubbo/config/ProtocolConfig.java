@@ -32,12 +32,12 @@ import org.apache.dubbo.rpc.Protocol;
 
 import java.util.Map;
 
-import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 import static org.apache.dubbo.config.Constants.PROTOCOLS_SUFFIX;
-import static org.apache.dubbo.remoting.Constants.TELNET;
 import static org.apache.dubbo.remoting.Constants.DUBBO_VERSION_KEY;
+import static org.apache.dubbo.remoting.Constants.TELNET;
 
 /**
  * ProtocolConfig
@@ -230,7 +230,7 @@ public class ProtocolConfig extends AbstractConfig {
         this.updateIdIfAbsent(name);
     }
 
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, notEquals = true)
     public String getHost() {
         return host;
     }

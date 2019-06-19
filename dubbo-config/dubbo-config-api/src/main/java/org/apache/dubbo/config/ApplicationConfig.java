@@ -234,7 +234,7 @@ public class ApplicationConfig extends AbstractConfig {
         this.registries = (List<RegistryConfig>) registries;
     }
 
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, notEquals = true)
     public String getRegistryIds() {
         return registryIds;
     }
@@ -318,7 +318,7 @@ public class ApplicationConfig extends AbstractConfig {
     }
 
     @Deprecated
-    @Parameter(key = "qos.enable", excluded = true)
+    @Parameter(key = "qos.enable", excluded = true, notEquals = true)
     public Boolean getQosEnableDeprecated() {
         return getQosEnable();
     }
@@ -329,7 +329,7 @@ public class ApplicationConfig extends AbstractConfig {
     }
 
     @Deprecated
-    @Parameter(key = "qos.port", excluded = true)
+    @Parameter(key = "qos.port", excluded = true, notEquals = true)
     public Integer getQosPortDeprecated() {
         return getQosPort();
     }
@@ -340,7 +340,7 @@ public class ApplicationConfig extends AbstractConfig {
     }
 
     @Deprecated
-    @Parameter(key = "qos.accept.foreign.ip", excluded = true)
+    @Parameter(key = "qos.accept.foreign.ip", excluded = true, notEquals = true)
     public Boolean getQosAcceptForeignIpDeprecated() {
         return this.getQosAcceptForeignIp();
     }
@@ -369,7 +369,7 @@ public class ApplicationConfig extends AbstractConfig {
     }
 
     @Override
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, notEquals = true)
     public boolean isValid() {
         return !StringUtils.isEmpty(name);
     }
