@@ -18,16 +18,11 @@ package org.apache.dubbo.common.extension;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.activate.ActivateExt1;
-import org.apache.dubbo.common.extension.activate.impl.ActivateExt1Impl1;
-import org.apache.dubbo.common.extension.activate.impl.GroupActivateExtImpl;
-import org.apache.dubbo.common.extension.activate.impl.OldActivateExt1Impl2;
-import org.apache.dubbo.common.extension.activate.impl.OldActivateExt1Impl3;
-import org.apache.dubbo.common.extension.activate.impl.OrderActivateExtImpl1;
-import org.apache.dubbo.common.extension.activate.impl.OrderActivateExtImpl2;
-import org.apache.dubbo.common.extension.activate.impl.ValueActivateExtImpl;
+import org.apache.dubbo.common.extension.activate.impl.*;
 import org.apache.dubbo.common.extension.ext1.SimpleExt;
 import org.apache.dubbo.common.extension.ext1.impl.SimpleExtImpl1;
 import org.apache.dubbo.common.extension.ext1.impl.SimpleExtImpl2;
+import org.apache.dubbo.common.extension.ext10.Ext10MultiNames;
 import org.apache.dubbo.common.extension.ext2.Ext2;
 import org.apache.dubbo.common.extension.ext6_wrap.WrappedExt;
 import org.apache.dubbo.common.extension.ext6_wrap.impl.Ext5Wrapper1;
@@ -37,18 +32,11 @@ import org.apache.dubbo.common.extension.ext8_add.AddExt1;
 import org.apache.dubbo.common.extension.ext8_add.AddExt2;
 import org.apache.dubbo.common.extension.ext8_add.AddExt3;
 import org.apache.dubbo.common.extension.ext8_add.AddExt4;
-import org.apache.dubbo.common.extension.ext8_add.impl.AddExt1Impl1;
-import org.apache.dubbo.common.extension.ext8_add.impl.AddExt1_ManualAdaptive;
-import org.apache.dubbo.common.extension.ext8_add.impl.AddExt1_ManualAdd1;
-import org.apache.dubbo.common.extension.ext8_add.impl.AddExt1_ManualAdd2;
-import org.apache.dubbo.common.extension.ext8_add.impl.AddExt2_ManualAdaptive;
-import org.apache.dubbo.common.extension.ext8_add.impl.AddExt3_ManualAdaptive;
-import org.apache.dubbo.common.extension.ext8_add.impl.AddExt4_ManualAdaptive;
+import org.apache.dubbo.common.extension.ext8_add.impl.*;
 import org.apache.dubbo.common.extension.ext9_empty.Ext9Empty;
 import org.apache.dubbo.common.extension.ext9_empty.impl.Ext9EmptyImpl;
 import org.apache.dubbo.common.extension.injection.InjectExt;
 import org.apache.dubbo.common.extension.injection.impl.InjectExtImpl;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -57,16 +45,10 @@ import java.util.List;
 import java.util.Set;
 
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
-import static org.hamcrest.CoreMatchers.allOf;
-import static org.hamcrest.CoreMatchers.anyOf;
-import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ExtensionLoaderTest {
     @Test
@@ -437,4 +419,9 @@ public class ExtensionLoaderTest {
         Assertions.assertNull(injectExtImpl.getGenericType());
     }
 
+    @Test
+    void testMultiNames() {
+        Ext10MultiNames ext10MultiNames = ExtensionLoader.getExtensionLoader(Ext10MultiNames.class).getExtension("impl");
+        Assertions.assertNotNull(ext10MultiNames);
+    }
 }
