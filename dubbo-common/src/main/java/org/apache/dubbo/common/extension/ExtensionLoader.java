@@ -101,6 +101,8 @@ public class ExtensionLoader<T> {
 
     private Map<String, IllegalStateException> exceptions = new ConcurrentHashMap<>();
 
+    private StringBuilder duplicateExceptionMsg = new StringBuilder();
+
     private ExtensionLoader(Class<?> type) {
         this.type = type;
         objectFactory = (type == ExtensionFactory.class ? null : ExtensionLoader.getExtensionLoader(ExtensionFactory.class).getAdaptiveExtension());
@@ -639,6 +641,9 @@ public class ExtensionLoader<T> {
         loadDirectory(extensionClasses, DUBBO_DIRECTORY, type.getName().replace("org.apache", "com.alibaba"));
         loadDirectory(extensionClasses, SERVICES_DIRECTORY, type.getName());
         loadDirectory(extensionClasses, SERVICES_DIRECTORY, type.getName().replace("org.apache", "com.alibaba"));
+        if (StringUtils.isNotEmpty(duplicateExceptionMsg.toString())) {
+            throw new IllegalStateException(duplicateExceptionMsg.toString());
+        }
         return extensionClasses;
     }
 
@@ -765,7 +770,15 @@ public class ExtensionLoader<T> {
         if (c == null) {
             extensionClasses.put(name, clazz);
         } else if (c != clazz) {
-            throw new IllegalStateException("Duplicate extension " + type.getName() + " name " + name + " on " + c.getName() + " and " + clazz.getName());
+            duplicateExceptionMsg.append("Duplicate extension ")
+                    .append(type.getName())
+                    .append(" name ")
+                    .append(name)
+                    .append(" on ")
+                    .append(c.getName())
+                    .append(" and ")
+                    .append(clazz.getName())
+                    .append("\r\n");
         }
     }
 

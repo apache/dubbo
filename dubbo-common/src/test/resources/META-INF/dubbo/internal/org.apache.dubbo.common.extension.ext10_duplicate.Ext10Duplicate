@@ -1,0 +1,2 @@
+duplicate=org.apache.dubbo.common.extension.ext10_duplicate.impl.Ext10DuplicateImpl1
+duplicate=org.apache.dubbo.common.extension.ext10_duplicate.impl.Ext10DuplicateImpl2

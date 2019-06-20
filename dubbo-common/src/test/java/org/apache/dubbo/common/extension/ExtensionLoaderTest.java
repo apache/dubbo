@@ -28,6 +28,7 @@ import org.apache.dubbo.common.extension.activate.impl.ValueActivateExtImpl;
 import org.apache.dubbo.common.extension.ext1.SimpleExt;
 import org.apache.dubbo.common.extension.ext1.impl.SimpleExtImpl1;
 import org.apache.dubbo.common.extension.ext1.impl.SimpleExtImpl2;
+import org.apache.dubbo.common.extension.ext10_duplicate.Ext10Duplicate;
 import org.apache.dubbo.common.extension.ext2.Ext2;
 import org.apache.dubbo.common.extension.ext6_wrap.WrappedExt;
 import org.apache.dubbo.common.extension.ext6_wrap.impl.Ext5Wrapper1;
@@ -253,6 +254,16 @@ public class ExtensionLoaderTest {
 
         assertThat(ext, instanceOf(Ext9Empty.class));
         assertEquals("ext9", ExtensionLoader.getExtensionLoader(Ext9Empty.class).getExtensionName(Ext9EmptyImpl.class));
+    }
+
+    @Test
+    public void test_AddExtension_Duplicate() throws Exception {
+        try {
+            ExtensionLoader.getExtensionLoader(Ext10Duplicate.class).getExtension("duplicate");
+            fail();
+        } catch (IllegalStateException expected) {
+            assertThat(expected.getMessage(), containsString("Duplicate extension org.apache.dubbo.common.extension.ext10_duplicate.Ext10Duplicate name duplicate"));
+        }
     }
 
     @Test
