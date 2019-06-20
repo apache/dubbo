@@ -60,6 +60,10 @@ public class MetadataReportBuilder extends AbstractBuilder<MetadataReportConfig,
      */
     private Boolean syncReport;
 
+    public static MetadataReportBuilder newBuilder() {
+        return new MetadataReportBuilder();
+    }
+
     public MetadataReportBuilder address(String address) {
         this.address = address;
         return getThis();

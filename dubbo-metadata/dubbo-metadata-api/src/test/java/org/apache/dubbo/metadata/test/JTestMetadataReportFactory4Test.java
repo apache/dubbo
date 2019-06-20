@@ -14,12 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.integration;
+package org.apache.dubbo.metadata.test;
+
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.metadata.report.MetadataReport;
+import org.apache.dubbo.metadata.report.support.AbstractMetadataReportFactory;
 
 /**
- * 2018/9/19
+ * ZookeeperRegistryFactory.
  */
-public interface InterfaceNameTestService {
+public class JTestMetadataReportFactory4Test extends AbstractMetadataReportFactory {
 
-    public void test();
+    @Override
+    public MetadataReport createMetadataReport(URL url) {
+        return new JTestMetadataReport4Test(url);
+    }
+
 }

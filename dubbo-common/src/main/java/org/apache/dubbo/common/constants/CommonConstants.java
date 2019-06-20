@@ -157,6 +157,8 @@ public interface CommonConstants {
 
     String METADATA_DEFAULT = "local";
 
+    String METADATA_REMOTE = "remote";
+
     /**
      * package version in the manifest
      */

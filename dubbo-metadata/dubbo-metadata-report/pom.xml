@@ -25,7 +25,6 @@
     <artifactId>dubbo-metadata-report</artifactId>
     <packaging>pom</packaging>
     <modules>
-        <module>dubbo-metadata-report-api</module>
         <module>dubbo-metadata-report-zookeeper</module>
         <module>dubbo-metadata-report-redis</module>
         <module>dubbo-metadata-report-consul</module>

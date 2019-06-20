@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.integration;
+package org.apache.dubbo.metadata.store;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
@@ -27,15 +27,14 @@ import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
-import org.apache.dubbo.metadata.identifier.MetadataIdentifier;
-import org.apache.dubbo.metadata.store.MetadataReport;
-import org.apache.dubbo.metadata.store.MetadataReportFactory;
+import org.apache.dubbo.metadata.report.MetadataReport;
+import org.apache.dubbo.metadata.report.MetadataReportFactory;
+import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.RpcException;
 
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
@@ -46,7 +45,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.PID_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import static org.apache.dubbo.metadata.support.Constants.METADATA_REPORT_KEY;
+import static org.apache.dubbo.metadata.report.support.Constants.METADATA_REPORT_KEY;
 
 /**
  * @since 2.7.0
@@ -55,17 +54,12 @@ public class RemoteWritableMetadataService implements WritableMetadataService {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private static volatile RemoteWritableMetadataService metadataReportService;
-    private static Object lock = new Object();
+    private MetadataReportFactory metadataReportFactory = ExtensionLoader.getExtensionLoader(MetadataReportFactory.class).getAdaptiveExtension();
+    private MetadataReport metadataReport;
 
-    private static MetadataReportFactory metadataReportFactory = ExtensionLoader.getExtensionLoader(MetadataReportFactory.class).getAdaptiveExtension();
-    private static MetadataReport metadataReport;
+    public RemoteWritableMetadataService() {}
 
-    RemoteWritableMetadataService() {
-        this.metadataReport = ;
-    }
-
-    RemoteWritableMetadataService(URL metadataReportURL) {
+    public void initMetadataReport(URL metadataReportURL) {
         if (METADATA_REPORT_KEY.equals(metadataReportURL.getProtocol())) {
             String protocol = metadataReportURL.getParameter(METADATA_REPORT_KEY, DEFAULT_DIRECTORY);
             metadataReportURL = URLBuilder.from(metadataReportURL)
@@ -76,23 +70,8 @@ public class RemoteWritableMetadataService implements WritableMetadataService {
         metadataReport = metadataReportFactory.getMetadataReport(metadataReportURL);
     }
 
-    public static RemoteWritableMetadataService instance() {
-        return metadataReportService;
-    }
-
-    public static RemoteWritableMetadataService instance(Supplier<URL> metadataReportUrl) {
-        if (metadataReportService == null) {
-            synchronized (lock) {
-                if (metadataReportService == null) {
-                    URL metadataReportURLTmp = metadataReportUrl.get();
-                    if (metadataReportURLTmp == null) {
-                        return null;
-                    }
-                    metadataReportService = new RemoteWritableMetadataService(metadataReportURLTmp);
-                }
-            }
-        }
-        return metadataReportService;
+    public MetadataReport getMetadataReport() {
+        return metadataReport;
     }
 
     @Override

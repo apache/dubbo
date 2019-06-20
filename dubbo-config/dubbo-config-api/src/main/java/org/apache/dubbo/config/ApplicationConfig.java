@@ -137,6 +137,11 @@ public class ApplicationConfig extends AbstractConfig {
      */
     private String shutwait;
 
+    /**
+     * Metadata type, local or remote, if choose remote, you need to further specify metadata center.
+     */
+    private String metadata;
+
     public ApplicationConfig() {
     }
 
@@ -374,4 +379,11 @@ public class ApplicationConfig extends AbstractConfig {
         return !StringUtils.isEmpty(name);
     }
 
+    public String getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(String metadata) {
+        this.metadata = metadata;
+    }
 }

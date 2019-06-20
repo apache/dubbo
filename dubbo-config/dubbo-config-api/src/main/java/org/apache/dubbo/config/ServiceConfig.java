@@ -35,7 +35,7 @@ import org.apache.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.event.Event;
 import org.apache.dubbo.event.EventDispatcher;
-import org.apache.dubbo.metadata.integration.RemoteWritableMetadataService;
+import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
@@ -71,6 +71,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATT
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_IP_TO_BIND;
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.METADATA_DEFAULT;
+import static org.apache.dubbo.common.constants.CommonConstants.METADATA_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
@@ -631,9 +633,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                  * @since 2.7.0
                  * ServiceData Store
                  */
-                RemoteWritableMetadataService metadataReportService = RemoteWritableMetadataService.instance();
-                if (metadataReportService != null) {
-                    metadataReportService.publishProvider(url);
+                WritableMetadataService metadataService = WritableMetadataService.getExtension(url.getParameter(METADATA_KEY, METADATA_DEFAULT));
+                if (metadataService != null) {
+                    metadataService.publishServiceDefinition(url);
                 }
             }
         }

@@ -16,15 +16,10 @@
  */
 package org.apache.dubbo.metadata.store;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Adaptive;
-import org.apache.dubbo.common.extension.SPI;
-
 /**
+ * 2018/9/19
  */
-@SPI("redis")
-public interface MetadataReportFactory {
+public interface InterfaceNameTestService {
 
-    @Adaptive({"protocol"})
-    MetadataReport getMetadataReport(URL url);
+    public void test();
 }

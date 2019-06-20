@@ -21,6 +21,7 @@ import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
 import org.apache.dubbo.common.config.configcenter.wrapper.CompositeDynamicConfiguration;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -49,7 +50,8 @@ import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.metadata.ConfigurableMetadataServiceExporter;
 import org.apache.dubbo.event.EventDispatcher;
 import org.apache.dubbo.event.EventListener;
-import org.apache.dubbo.metadata.integration.RemoteWritableMetadataService;
+import org.apache.dubbo.metadata.WritableMetadataService;
+import org.apache.dubbo.metadata.store.RemoteWritableMetadataService;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
@@ -489,9 +491,14 @@ public class DubboBootstrap {
     /* serve for builder apis, end */
 
     private void startMetadataReport() {
+        ApplicationConfig applicationConfig = ConfigManager.getInstance().getApplication().orElseThrow(() -> new IllegalStateException("There's no ApplicationConfig specified."));
+
         // FIXME, multiple metadata config support.
         Set<MetadataReportConfig> metadataReportConfigs = ConfigManager.getInstance().getMetadataConfigs();
         if (CollectionUtils.isEmpty(metadataReportConfigs)) {
+            if (CommonConstants.METADATA_REMOTE.equals(applicationConfig.getMetadata())) {
+                throw new IllegalStateException("No MetadataConfig found, you must specify the remote Metadata Center address when set 'metadata=remote'.");
+            }
             return;
         }
         MetadataReportConfig metadataReportConfig = metadataReportConfigs.iterator().next();
@@ -499,7 +506,9 @@ public class DubboBootstrap {
             return;
         }
 
-        RemoteWritableMetadataService.instance(metadataReportConfig::toUrl);
+        RemoteWritableMetadataService remoteMetadataService =
+                (RemoteWritableMetadataService) WritableMetadataService.getExtension(applicationConfig.getMetadata());
+        remoteMetadataService.initMetadataReport(metadataReportConfig.toUrl());
     }
 
     private void startConfigCenter() {

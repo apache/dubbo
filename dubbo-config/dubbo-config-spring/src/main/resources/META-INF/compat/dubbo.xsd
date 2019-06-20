@@ -397,6 +397,11 @@
                 <xsd:documentation><![CDATA[ Is default. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="metadata" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The metadta type: local or remote. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
 
     </xsd:complexType>
 
@@ -573,11 +578,6 @@
         <xsd:attribute name="extra-keys" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ Extra Parameter Keys. ]]></xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="metadata" type="xsd:string">
-            <xsd:annotation>
-                <xsd:documentation><![CDATA[ The metadta type: local or remote. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
     </xsd:complexType>

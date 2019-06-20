@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metadata.support;
+package org.apache.dubbo.metadata.report.support;
 
 public interface Constants {
     String METADATA_REPORT_KEY = "metadata";

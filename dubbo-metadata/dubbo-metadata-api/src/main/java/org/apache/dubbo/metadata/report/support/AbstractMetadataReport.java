@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.support;
+package org.apache.dubbo.metadata.report.support;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
@@ -22,8 +22,9 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
-import org.apache.dubbo.metadata.identifier.MetadataIdentifier;
-import org.apache.dubbo.metadata.store.MetadataReport;
+import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
+import org.apache.dubbo.metadata.report.MetadataReport;
+import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 
 import com.google.gson.Gson;
 
@@ -56,13 +57,13 @@ import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.FILE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
-import static org.apache.dubbo.metadata.support.Constants.CYCLE_REPORT_KEY;
-import static org.apache.dubbo.metadata.support.Constants.DEFAULT_METADATA_REPORT_CYCLE_REPORT;
-import static org.apache.dubbo.metadata.support.Constants.DEFAULT_METADATA_REPORT_RETRY_PERIOD;
-import static org.apache.dubbo.metadata.support.Constants.DEFAULT_METADATA_REPORT_RETRY_TIMES;
-import static org.apache.dubbo.metadata.support.Constants.RETRY_PERIOD_KEY;
-import static org.apache.dubbo.metadata.support.Constants.RETRY_TIMES_KEY;
-import static org.apache.dubbo.metadata.support.Constants.SYNC_REPORT_KEY;
+import static org.apache.dubbo.metadata.report.support.Constants.CYCLE_REPORT_KEY;
+import static org.apache.dubbo.metadata.report.support.Constants.DEFAULT_METADATA_REPORT_CYCLE_REPORT;
+import static org.apache.dubbo.metadata.report.support.Constants.DEFAULT_METADATA_REPORT_RETRY_PERIOD;
+import static org.apache.dubbo.metadata.report.support.Constants.DEFAULT_METADATA_REPORT_RETRY_TIMES;
+import static org.apache.dubbo.metadata.report.support.Constants.RETRY_PERIOD_KEY;
+import static org.apache.dubbo.metadata.report.support.Constants.RETRY_TIMES_KEY;
+import static org.apache.dubbo.metadata.report.support.Constants.SYNC_REPORT_KEY;
 
 /**
  *
@@ -234,7 +235,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         }
     }
 
-    private void storeProviderMetadataTask(MetadataIdentifier providerMetadataIdentifier, FullServiceDefinition serviceDefinition) {
+    private void storeProviderMetadataTask(MetadataIdentifier providerMetadataIdentifier, ServiceDefinition serviceDefinition) {
         try {
             if (logger.isInfoEnabled()) {
                 logger.info("store provider metadata. Identifier : " + providerMetadataIdentifier + "; definition: " + serviceDefinition);

@@ -19,8 +19,8 @@ package org.apache.dubbo.metadata.store.zookeeper;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.metadata.identifier.MetadataIdentifier;
-import org.apache.dubbo.metadata.support.AbstractMetadataReport;
+import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
+import org.apache.dubbo.metadata.report.support.AbstractMetadataReport;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 
@@ -88,6 +88,11 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
     @Override
     protected List<String> doGetSubscribedURLs() {
         return null;
+    }
+
+    @Override
+    public String getServiceDefinition(MetadataIdentifier consumerMetadataIdentifier) {
+        throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
     }
 
     private void storeMetadata(MetadataIdentifier metadataIdentifier, String v) {

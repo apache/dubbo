@@ -19,8 +19,8 @@ package org.apache.dubbo.metadata.store.redis;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.metadata.identifier.MetadataIdentifier;
-import org.apache.dubbo.metadata.support.AbstractMetadataReport;
+import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
+import org.apache.dubbo.metadata.report.support.AbstractMetadataReport;
 import org.apache.dubbo.rpc.RpcException;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
@@ -37,7 +37,7 @@ import java.util.Set;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
-import static org.apache.dubbo.metadata.identifier.MetadataIdentifier.META_DATA_STORE_TAG;
+import static org.apache.dubbo.metadata.report.identifier.MetadataIdentifier.META_DATA_STORE_TAG;
 
 /**
  * RedisMetadataReport
@@ -94,6 +94,11 @@ public class RedisMetadataReport extends AbstractMetadataReport {
     @Override
     protected List<String> doGetSubscribedURLs() {
         return null;
+    }
+
+    @Override
+    public String getServiceDefinition(MetadataIdentifier consumerMetadataIdentifier) {
+        throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
     }
 
     private void storeMetadata(MetadataIdentifier metadataIdentifier, String v) {

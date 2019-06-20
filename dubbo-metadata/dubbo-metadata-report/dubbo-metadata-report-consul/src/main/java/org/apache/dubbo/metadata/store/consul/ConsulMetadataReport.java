@@ -20,8 +20,8 @@ package org.apache.dubbo.metadata.store.consul;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.metadata.identifier.MetadataIdentifier;
-import org.apache.dubbo.metadata.support.AbstractMetadataReport;
+import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
+import org.apache.dubbo.metadata.report.support.AbstractMetadataReport;
 import org.apache.dubbo.rpc.RpcException;
 
 import com.ecwid.consul.v1.ConsulClient;
@@ -82,5 +82,10 @@ public class ConsulMetadataReport extends AbstractMetadataReport {
             logger.error("Failed to put " + identifier + " to consul " + v + ", cause: " + t.getMessage(), t);
             throw new RpcException("Failed to put " + identifier + " to consul " + v + ", cause: " + t.getMessage(), t);
         }
+    }
+
+    @Override
+    public String getServiceDefinition(MetadataIdentifier consumerMetadataIdentifier) {
+        throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
     }
 }

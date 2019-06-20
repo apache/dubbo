@@ -14,9 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.identifier;
+package org.apache.dubbo.metadata.report.identifier;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.StringUtils;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
@@ -67,11 +68,11 @@ public class MetadataIdentifier {
     }
 
     public String getIdentifierKey() {
-        return serviceInterface + SEPARATOR
-                + (version == null ? "" : version + SEPARATOR)
-                + (group == null ? "" : group + SEPARATOR)
-                + (side == null ? "" : side) + SEPARATOR
-                + (getApplication() == null ? "" : getApplication());
+        return serviceInterface
+                + (version == null ? "" : (SEPARATOR + version))
+                + (group == null ? "" : (SEPARATOR + version))
+                + (side == null ? "" : (SEPARATOR + side))
+                + (getApplication() == null ? "" : (SEPARATOR + getApplication()));
     }
 
     private String getFilePathKey() {
@@ -79,12 +80,12 @@ public class MetadataIdentifier {
     }
 
     private String getFilePathKey(String pathTag) {
-        return pathTag + PATH_SEPARATOR
-                + toServicePath() + PATH_SEPARATOR
-                + (version == null ? "" : (version + PATH_SEPARATOR))
-                + (group == null ? "" : (group + PATH_SEPARATOR))
-                + (side == null ? "" : side) + PATH_SEPARATOR
-                + (getApplication() == null ? "" : getApplication());
+        return pathTag
+                + (StringUtils.isEmpty(toServicePath()) ? "" : (PATH_SEPARATOR + toServicePath()))
+                + (version == null ? "" : (PATH_SEPARATOR + version))
+                + (group == null ? "" : (PATH_SEPARATOR + group))
+                + (side == null ? "" : (PATH_SEPARATOR + side))
+                + (getApplication() == null ? "" : (PATH_SEPARATOR + getApplication()));
     }
 
     private String toServicePath() {

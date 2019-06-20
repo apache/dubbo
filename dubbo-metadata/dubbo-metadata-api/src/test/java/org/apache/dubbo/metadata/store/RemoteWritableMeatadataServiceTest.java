@@ -14,12 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.integration;
+package org.apache.dubbo.metadata.store;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
-import org.apache.dubbo.metadata.store.test.JTestMetadataReport4Test;
+import org.apache.dubbo.metadata.test.JTestMetadataReport4Test;
 
 import com.google.gson.Gson;
 import org.junit.jupiter.api.Assertions;
@@ -27,31 +28,27 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
-import java.util.function.Supplier;
+
+import static org.apache.dubbo.common.constants.CommonConstants.METADATA_REMOTE;
 
 /**
  * 2018/9/14
  */
-public class MetadataReportServiceTest {
+public class RemoteWritableMeatadataServiceTest {
     URL url = URL.valueOf("JTest://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic");
     RemoteWritableMetadataService metadataReportService1;
 
     @BeforeEach
     public void before() {
-        metadataReportService1 = RemoteWritableMetadataService.instance(() -> url);
+        metadataReportService1 = (RemoteWritableMetadataService) WritableMetadataService.getExtension(METADATA_REMOTE);
+        metadataReportService1.initMetadataReport(url);
     }
 
     @Test
     public void testInstance() {
 
-        RemoteWritableMetadataService metadataReportService2 = RemoteWritableMetadataService.instance(new Supplier<URL>() {
-            @Override
-            public URL get() {
-                return url;
-            }
-        });
+        RemoteWritableMetadataService metadataReportService2 = (RemoteWritableMetadataService) WritableMetadataService.getExtension(METADATA_REMOTE);
         Assertions.assertSame(metadataReportService1, metadataReportService2);
-        Assertions.assertEquals(metadataReportService1.metadataReportUrl, url);
     }
 
     @Test
@@ -61,9 +58,9 @@ public class MetadataReportServiceTest {
         URL publishUrl = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vicpubprovder&side=provider");
         metadataReportService1.publishProvider(publishUrl);
 
-        Assertions.assertTrue(metadataReportService1.metadataReport instanceof JTestMetadataReport4Test);
+        Assertions.assertTrue(metadataReportService1.getMetadataReport() instanceof JTestMetadataReport4Test);
 
-        JTestMetadataReport4Test jTestMetadataReport4Test = (JTestMetadataReport4Test) metadataReportService1.metadataReport;
+        JTestMetadataReport4Test jTestMetadataReport4Test = (JTestMetadataReport4Test) metadataReportService1.getMetadataReport();
         Assertions.assertTrue(!jTestMetadataReport4Test.store.containsKey(JTestMetadataReport4Test.getProviderKey(publishUrl)));
 
     }
@@ -74,9 +71,9 @@ public class MetadataReportServiceTest {
         URL publishUrl = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vicpu&interface=ccc&side=provider");
         metadataReportService1.publishProvider(publishUrl);
 
-        Assertions.assertTrue(metadataReportService1.metadataReport instanceof JTestMetadataReport4Test);
+        Assertions.assertTrue(metadataReportService1.getMetadataReport() instanceof JTestMetadataReport4Test);
 
-        JTestMetadataReport4Test jTestMetadataReport4Test = (JTestMetadataReport4Test) metadataReportService1.metadataReport;
+        JTestMetadataReport4Test jTestMetadataReport4Test = (JTestMetadataReport4Test) metadataReportService1.getMetadataReport();
         Assertions.assertTrue(!jTestMetadataReport4Test.store.containsKey(JTestMetadataReport4Test.getProviderKey(publishUrl)));
 
     }
@@ -88,9 +85,9 @@ public class MetadataReportServiceTest {
         metadataReportService1.publishProvider(publishUrl);
         Thread.sleep(300);
 
-        Assertions.assertTrue(metadataReportService1.metadataReport instanceof JTestMetadataReport4Test);
+        Assertions.assertTrue(metadataReportService1.getMetadataReport() instanceof JTestMetadataReport4Test);
 
-        JTestMetadataReport4Test jTestMetadataReport4Test = (JTestMetadataReport4Test) metadataReportService1.metadataReport;
+        JTestMetadataReport4Test jTestMetadataReport4Test = (JTestMetadataReport4Test) metadataReportService1.getMetadataReport();
         Assertions.assertTrue(jTestMetadataReport4Test.store.containsKey(JTestMetadataReport4Test.getProviderKey(publishUrl)));
 
         String value = jTestMetadataReport4Test.store.get(JTestMetadataReport4Test.getProviderKey(publishUrl));
@@ -108,9 +105,9 @@ public class MetadataReportServiceTest {
         metadataReportService1.publishConsumer(publishUrl);
         Thread.sleep(300);
 
-        Assertions.assertTrue(metadataReportService1.metadataReport instanceof JTestMetadataReport4Test);
+        Assertions.assertTrue(metadataReportService1.getMetadataReport() instanceof JTestMetadataReport4Test);
 
-        JTestMetadataReport4Test jTestMetadataReport4Test = (JTestMetadataReport4Test) metadataReportService1.metadataReport;
+        JTestMetadataReport4Test jTestMetadataReport4Test = (JTestMetadataReport4Test) metadataReportService1.getMetadataReport();
         Assertions.assertTrue(jTestMetadataReport4Test.store.containsKey(JTestMetadataReport4Test.getConsumerKey(publishUrl)));
 
         String value = jTestMetadataReport4Test.store.get(JTestMetadataReport4Test.getConsumerKey(publishUrl));

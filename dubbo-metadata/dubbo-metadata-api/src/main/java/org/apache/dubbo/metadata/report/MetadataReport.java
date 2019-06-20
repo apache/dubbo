@@ -14,13 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.store;
+package org.apache.dubbo.metadata.report;
 
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
-import org.apache.dubbo.metadata.identifier.MetadataIdentifier;
+import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 
 import java.util.List;
 import java.util.Map;
@@ -42,9 +41,4 @@ public interface MetadataReport {
     List<String> getSubscribedURLs();
 
     String getServiceDefinition(MetadataIdentifier consumerMetadataIdentifier);
-
-    static MetadataReport getMetadataReport() {
-        ExtensionLoader.getExtensionLoader(MetadataReport.class).get
-    }
-
 }

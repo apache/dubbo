@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.support;
+package org.apache.dubbo.metadata.report.support;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.metadata.store.MetadataReport;
-import org.apache.dubbo.metadata.store.MetadataReportFactory;
+import org.apache.dubbo.metadata.report.MetadataReport;
+import org.apache.dubbo.metadata.report.MetadataReportFactory;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

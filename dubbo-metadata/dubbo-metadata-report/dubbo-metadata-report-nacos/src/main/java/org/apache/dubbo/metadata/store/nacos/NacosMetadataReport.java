@@ -21,8 +21,8 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.metadata.identifier.MetadataIdentifier;
-import org.apache.dubbo.metadata.support.AbstractMetadataReport;
+import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
+import org.apache.dubbo.metadata.report.support.AbstractMetadataReport;
 import org.apache.dubbo.rpc.RpcException;
 
 import com.alibaba.nacos.api.NacosFactory;
@@ -130,6 +130,11 @@ public class NacosMetadataReport extends AbstractMetadataReport {
 
     @Override
     protected List<String> doGetSubscribedURLs() {
+        throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
+    }
+
+    @Override
+    public String getServiceDefinition(MetadataIdentifier consumerMetadataIdentifier) {
         throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
     }
 

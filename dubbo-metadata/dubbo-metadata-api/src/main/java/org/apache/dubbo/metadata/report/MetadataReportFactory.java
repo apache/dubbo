@@ -14,12 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.integration;
+package org.apache.dubbo.metadata.report;
+
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.Adaptive;
+import org.apache.dubbo.common.extension.SPI;
 
 /**
- * 2018/9/19
  */
-public interface InterfaceNameTestService2 {
+@SPI("redis")
+public interface MetadataReportFactory {
 
-    public void test2();
+    @Adaptive({"protocol"})
+    MetadataReport getMetadataReport(URL url);
 }

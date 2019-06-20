@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.store.test;
+package org.apache.dubbo.metadata.test;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.metadata.identifier.MetadataIdentifier;
-import org.apache.dubbo.metadata.support.AbstractMetadataReport;
+import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
+import org.apache.dubbo.metadata.report.support.AbstractMetadataReport;
 
 import java.util.List;
 import java.util.Map;
@@ -87,4 +87,8 @@ public class JTestMetadataReport4Test extends AbstractMetadataReport {
         return new MetadataIdentifier(url).getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY);
     }
 
+    @Override
+    public String getServiceDefinition(MetadataIdentifier consumerMetadataIdentifier) {
+        return null;
+    }
 }

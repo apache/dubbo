@@ -149,11 +149,6 @@ public class RegistryConfig extends AbstractConfig {
      */
     private String extraKeys;
 
-    /**
-     * Metadata type, local or remote, if choose remote, you need to further specify metadata center.
-     */
-    private String metadata;
-
     public RegistryConfig() {
     }
 
@@ -410,14 +405,6 @@ public class RegistryConfig extends AbstractConfig {
 
     public void setExtraKeys(String extraKeys) {
         this.extraKeys = extraKeys;
-    }
-
-    public String getMetadata() {
-        return metadata;
-    }
-
-    public void setMetadata(String metadata) {
-        this.metadata = metadata;
     }
 
     @Parameter(excluded = true)

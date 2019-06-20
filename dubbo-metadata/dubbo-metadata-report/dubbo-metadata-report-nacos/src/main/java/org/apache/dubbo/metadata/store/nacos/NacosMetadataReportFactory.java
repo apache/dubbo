@@ -18,8 +18,8 @@
 package org.apache.dubbo.metadata.store.nacos;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.metadata.store.MetadataReport;
-import org.apache.dubbo.metadata.support.AbstractMetadataReportFactory;
+import org.apache.dubbo.metadata.report.MetadataReport;
+import org.apache.dubbo.metadata.report.support.AbstractMetadataReportFactory;
 
 /**
  * metadata report factory impl for nacos

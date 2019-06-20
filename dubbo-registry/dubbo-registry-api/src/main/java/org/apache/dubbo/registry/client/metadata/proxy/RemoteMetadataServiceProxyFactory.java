@@ -17,8 +17,10 @@
 package org.apache.dubbo.registry.client.metadata.proxy;
 
 import org.apache.dubbo.metadata.MetadataService;
-import org.apache.dubbo.metadata.integration.RemoteWritableMetadataService;
+import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.client.ServiceInstance;
+
+import static org.apache.dubbo.common.constants.CommonConstants.METADATA_REMOTE;
 
 /**
  *
@@ -27,7 +29,7 @@ public class RemoteMetadataServiceProxyFactory implements MetadataServiceProxyFa
 
     @Override
     public MetadataService getProxy(ServiceInstance serviceInstance) {
-        return RemoteWritableMetadataService.instance();
+        return WritableMetadataService.getExtension(METADATA_REMOTE);
     }
 
 }

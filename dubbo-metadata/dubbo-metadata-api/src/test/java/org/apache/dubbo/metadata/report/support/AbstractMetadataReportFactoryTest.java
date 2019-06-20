@@ -14,12 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.support;
+package org.apache.dubbo.metadata.report.support;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.metadata.identifier.MetadataIdentifier;
-import org.apache.dubbo.metadata.store.MetadataReport;
+import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
+import org.apache.dubbo.metadata.report.MetadataReport;
+import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 
 import com.alibaba.fastjson.JSON;
 import org.junit.jupiter.api.Assertions;
@@ -61,6 +62,11 @@ public class AbstractMetadataReportFactoryTest {
 
                 @Override
                 public List<String> getSubscribedURLs() {
+                    return null;
+                }
+
+                @Override
+                public String getServiceDefinition(MetadataIdentifier consumerMetadataIdentifier) {
                     return null;
                 }
 

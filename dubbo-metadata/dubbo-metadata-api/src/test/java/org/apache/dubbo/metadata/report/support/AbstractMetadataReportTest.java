@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.support;
+package org.apache.dubbo.metadata.report.support;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
-import org.apache.dubbo.metadata.identifier.MetadataIdentifier;
+import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 
 import com.google.gson.Gson;
 import org.junit.jupiter.api.Assertions;
@@ -308,6 +308,11 @@ public class AbstractMetadataReportTest {
         protected List<String> doGetSubscribedURLs() {
             throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
         }
+
+        @Override
+        public String getServiceDefinition(MetadataIdentifier consumerMetadataIdentifier) {
+            throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
+        }
     }
 
     private static class RetryMetadataReport extends AbstractMetadataReport {
@@ -357,6 +362,11 @@ public class AbstractMetadataReportTest {
 
         @Override
         protected List<String> doGetSubscribedURLs() {
+            throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
+        }
+
+        @Override
+        public String getServiceDefinition(MetadataIdentifier consumerMetadataIdentifier) {
             throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
         }
 
