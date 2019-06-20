@@ -24,6 +24,10 @@ import java.util.SortedSet;
 
 import static java.util.Collections.emptySortedSet;
 
+import java.util.SortedSet;
+
+import static java.util.Collections.emptySortedSet;
+
 /**
  * The default extension of {@link DynamicConfiguration}. If user does not specify a config centre, or specifies one
  * that is not a valid extension, it will default to this one.
