@@ -257,7 +257,7 @@ public class ExtensionLoaderTest {
     }
 
     @Test
-    public void test_AddExtension_Duplicate() throws Exception {
+    public void test_LoadExtension_Duplicate() throws Exception {
         try {
             ExtensionLoader.getExtensionLoader(Ext10Duplicate.class).getExtension("duplicate");
             fail();
