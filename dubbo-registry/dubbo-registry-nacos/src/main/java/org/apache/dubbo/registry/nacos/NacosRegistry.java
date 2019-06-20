@@ -333,7 +333,7 @@ public class NacosRegistry extends FailbackRegistry {
         return serviceNames;
     }
 
-    private List<URL> buildURLs(URL consumerURL,String serviceName, Collection<Instance> instances) {
+    private List<URL> buildURLs(URL consumerURL, String serviceName, Collection<Instance> instances) {
         if (instances.isEmpty()) {
             return emptyURL(consumerURL, serviceName);
         }
