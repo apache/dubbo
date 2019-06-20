@@ -165,7 +165,12 @@ public class RpcUtils {
     }
 
     public static boolean isReturnTypeFuture(Invocation inv) {
-        Class<?> clazz = getReturnType(inv);
+        Class<?> clazz = null;
+        if(inv instanceof  RpcInvocation){
+            clazz = ((RpcInvocation) inv).getReturnType();
+        }else{
+            clazz = getReturnType(inv);
+        }
         return (clazz != null && CompletableFuture.class.isAssignableFrom(clazz)) || isGenericAsync(inv);
     }
 

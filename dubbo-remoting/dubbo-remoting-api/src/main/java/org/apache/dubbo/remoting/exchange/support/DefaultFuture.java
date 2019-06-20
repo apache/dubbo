@@ -63,9 +63,6 @@ public class DefaultFuture {
     private final Channel channel;
     private final Request request;
     private final int timeout;
-    private final long start = System.currentTimeMillis();
-    private volatile long sent;
-    private Timeout timeoutCheckTask;
 
     private final ExecutorService executor;
 
@@ -110,13 +107,6 @@ public class DefaultFuture {
         return CHANNELS.containsValue(channel);
     }
 
-//    public static void sent(Request request) {
-//        DefaultFuture future = FUTURES.get(request.getId());
-//        if (future != null) {
-//            future.doSent();
-//        }
-//    }
-
     /**
      * close a channel when a channel is inactive
      * directly return the unfinished requests.
@@ -148,11 +138,6 @@ public class DefaultFuture {
         try {
             DefaultFuture future = FUTURES.remove(response.getId());
             if (future != null) {
-                Timeout t = future.timeoutCheckTask;
-                if (!timeout) {
-                    // decrease Time
-                    t.cancel();
-                }
                 future.doReceived(response);
             } else {
                 logger.warn("The timeout response finally returned at "
@@ -193,14 +178,6 @@ public class DefaultFuture {
             this.completableFuture.completeExceptionally(new RemotingException(channel, res.getErrorMessage()));
         }
 
-        // the result is returning, but the caller thread may still waiting
-        // to avoid endless waiting for whatever reason, notify caller thread to return.
-//        if (executor != null && executor instanceof ThreadlessExecutor) {
-//            ThreadlessExecutor threadlessExecutor = (ThreadlessExecutor) executor;
-//            if (threadlessExecutor.isWaiting()) {
-//                threadlessExecutor.notifyReturn();
-//            }
-//        }
     }
 
     private long getId() {
@@ -232,7 +209,6 @@ public class DefaultFuture {
 //        sent = System.currentTimeMillis();
 //    }
 
-
     /**
      * check time out of the future
      */
@@ -241,19 +217,6 @@ public class DefaultFuture {
         TIME_OUT_TIMER.newTimeout(task, future.getTimeout(), TimeUnit.MILLISECONDS);
     }
 
-
-    private String getTimeoutMessage(boolean scan) {
-        long nowTimestamp = System.currentTimeMillis();
-        return (sent > 0 ? "Waiting server-side response timeout" : "Sending request timeout in client-side")
-                + (scan ? " by scan timer" : "") + ". start time: "
-                + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(start))) + ", end time: "
-                + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date())) + ","
-                + (sent > 0 ? " client elapsed: " + (sent - start)
-                + " ms, server elapsed: " + (nowTimestamp - sent)
-                : " elapsed: " + (nowTimestamp - start)) + " ms, timeout: "
-                + timeout + " ms, request: " + request + ", channel: " + channel.getLocalAddress()
-                + " -> " + channel.getRemoteAddress();
-    }
 
     public Object get() throws ExecutionException, InterruptedException {
         return this.completableFuture.get();
