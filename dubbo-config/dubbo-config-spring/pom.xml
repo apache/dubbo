@@ -31,6 +31,11 @@
     <dependencies>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-compatible</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-config-api</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
@@ -128,5 +133,6 @@
             <artifactId>tomcat-embed-core</artifactId>
             <scope>test</scope>
         </dependency>
+
     </dependencies>
 </project>
