@@ -35,6 +35,8 @@ import org.apache.dubbo.rpc.support.RpcUtils;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.metrics.FastCompass;
+import com.alibaba.metrics.Gauge;
+import com.alibaba.metrics.MetricFilter;
 import com.alibaba.metrics.MetricLevel;
 import com.alibaba.metrics.MetricManager;
 import com.alibaba.metrics.MetricName;
@@ -158,6 +160,15 @@ public class MetricsFilter implements Filter {
                 }
             }, MetricLevel.NORMAL);
         } else {
+            CpuUsageService cpuUsageService = new CpuUsageServiceImpl(100L, 500L);
+            cpuUsageService.addListener("foo.bar", cpu -> {
+                SortedMap<MetricName, Gauge> gauges = MetricManager.getIMetricManager().getGauges(DUBBO_GROUP, MetricFilter.ALL);
+                Gauge<Float> cpuUser = gauges.get(new MetricName("dubbo.cpu." + invoker.getUrl().getHost(), MetricLevel.MAJOR));
+                if (cpuUser == null) {
+                    MetricName metricName = new MetricName("dubbo.cpu." + invoker.getUrl().getHost(), MetricLevel.MAJOR);
+                    MetricManager.register(DUBBO_GROUP, metricName, cpu);
+                }
+            });
             global = new MetricName(DUBBO_CONSUMER, MetricLevel.MAJOR);
             method = new MetricName(DUBBO_CONSUMER_METHOD, new HashMap<String, String>(4) {
                 {

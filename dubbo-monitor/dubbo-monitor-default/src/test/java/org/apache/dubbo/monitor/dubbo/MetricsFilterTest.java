@@ -241,19 +241,19 @@ public class MetricsFilterTest {
         MetricsFilter metricsFilter = new MetricsFilter();
         Invocation invocation = new RpcInvocation("sayName", new Class<?>[0], new Object[0]);
         AppResponse response = AppResponseBuilder.create()
-            .withAttachments(new HashMap<String, String>(4) {
-                {
-                    put("cpu.user", "60.5");
-                }
-            })
             .build();
         onInvokeReturns(response);
 
         RpcContext.getContext().setRemoteAddress(NetUtils.getLocalHost(), 20880).setLocalAddress(NetUtils.getLocalHost(), 2345);
-        RpcContext.getContext().setUrl(serviceInvoker.getUrl().addParameter(SIDE_KEY, PROVIDER_SIDE).addParameter(TIMEOUT_KEY, 300));
-        for (int i = 0; i < 50; i++) {
+        RpcContext.getContext().setUrl(serviceInvoker.getUrl().addParameter(SIDE_KEY, CONSUMER_SIDE).addParameter(TIMEOUT_KEY, 300));
+        for (int i = 0; i < 2; i++) {
             try {
                 metricsFilter.invoke(serviceInvoker, invocation);
+                try {
+                    Thread.sleep(15000);
+                } catch (Exception e) {
+                    // ignore
+                }
             } catch (RpcException e) {
                 //ignore
             }
@@ -261,28 +261,6 @@ public class MetricsFilterTest {
 
         SortedMap<MetricName, Gauge> gauges = MetricManager.getIMetricManager().getGauges(DUBBO_GROUP, MetricFilter.ALL);
         Assertions.assertNotNull(gauges.get(new MetricName("dubbo.cpu." + serviceInvoker.getUrl().getHost(), MetricLevel.MAJOR)));
-
-        AppResponse response2 = AppResponseBuilder.create()
-            .withAttachments(new HashMap<String, String>(4) {
-                {
-                    put("cpu.user", "55");
-                }
-            })
-            .build();
-        onInvokeReturns(response2);
-
-        for (int i = 0; i < 50; i++) {
-            try {
-                metricsFilter.invoke(serviceInvoker, invocation);
-            } catch (RpcException e) {
-                //ignore
-            }
-        }
-        ;
-
-        SortedMap<MetricName, Gauge> gauges2 = MetricManager.getIMetricManager().getGauges(DUBBO_GROUP, MetricFilter.ALL);
-        Gauge gauge = gauges2.get(new MetricName("dubbo.cpu." + serviceInvoker.getUrl().getHost(), MetricLevel.MAJOR));
-        Assertions.assertEquals(55L, ((AtomicLong) gauge.getValue()).get());
     }
 
     @Test

@@ -13,16 +13,16 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+
 public class CpuUsageServiceImpl implements CpuUsageService {
     private final Map<String, CpuUsageListener> listeners = new ConcurrentHashMap<>();
-    private final ScheduledExecutorService executor;
-    private static final int THIRTY_MINUTES_IN_MILL = 3 * 60 * 1000;
-    CpuUsageGaugeSet cpuUsage;
+    private CpuUsageGaugeSet cpuUsage;
+    private static final String PATH = "/proc/stat";
 
-    public CpuUsageServiceImpl(String path, Long dataTimeToLive) {
-        cpuUsage = new CpuUsageGaugeSet(dataTimeToLive, TimeUnit.MINUTES, path, new ManualClock());
-        this.executor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory(this.getClass().getSimpleName(), true));
-        executor.scheduleAtFixedRate(this::collectCpuUsage, THIRTY_MINUTES_IN_MILL, THIRTY_MINUTES_IN_MILL, TimeUnit.MILLISECONDS);
+    public CpuUsageServiceImpl(Long dataTimeToLive, Long collectCpuUsageInMill) {
+        cpuUsage = new CpuUsageGaugeSet(dataTimeToLive, TimeUnit.MILLISECONDS, PATH, new ManualClock());
+        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory(this.getClass().getSimpleName(), true));
+        executor.scheduleAtFixedRate(this::collectCpuUsage, collectCpuUsageInMill, collectCpuUsageInMill, TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -37,6 +37,6 @@ public class CpuUsageServiceImpl implements CpuUsageService {
 
     private void collectCpuUsage() {
         Gauge<Float> user = (Gauge) cpuUsage.getMetrics().get(MetricName.build("cpu.user"));
-        listeners.forEach((key, value) -> value.cpuChanged(user.getValue()));
+        listeners.forEach((key, value) -> value.cpuChanged(user));
     }
 }
