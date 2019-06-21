@@ -532,7 +532,11 @@
                 <artifactId>metrics-common</artifactId>
                 <version>${metrics_version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>com.alibaba.middleware</groupId>
+                <artifactId>metrics-os</artifactId>
+                <version>${metrics_version}</version>
+            </dependency>
             <dependency>
                 <groupId>com.alibaba.middleware</groupId>
                 <artifactId>metrics-rest</artifactId>
