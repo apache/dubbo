@@ -452,7 +452,7 @@ public class DubboTelnetDecodeTest {
     }
 
     private static boolean checkTelnetDecoded(Object msg) {
-        if (msg != null && msg instanceof String && !msg.toString().contains("Unsupported command:")) {
+        if (msg instanceof String && !msg.toString().contains("Unsupported command:")) {
             return true;
         }
         return false;
