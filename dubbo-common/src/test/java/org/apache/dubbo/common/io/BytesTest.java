@@ -91,6 +91,11 @@ public class BytesTest {
     }
 
     @Test
+    public void testBase642bytes0Off0Len() {
+        assertThat(Bytes.base642bytes("dubbo", 0, 0).length, is(0));
+    }
+
+    @Test
     public void testHex() {
         String str = Bytes.bytes2hex(b1);
         assertThat(b1, is(Bytes.hex2bytes(str)));

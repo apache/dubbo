@@ -633,6 +633,10 @@ public class Bytes {
             throw new IllegalArgumentException("base642bytes: base64 string length % 4 == 1.");
         }
 
+        if (off == 0 && len == 0) {
+            return new byte[0];
+        }
+
         int num = len / 4, size = num * 3;
         if (code.length() > 64) {
             if (rem != 0) {
@@ -719,6 +723,10 @@ public class Bytes {
         int rem = len % 4;
         if (rem == 1) {
             throw new IllegalArgumentException("base642bytes: base64 string length % 4 == 1.");
+        }
+
+        if (off == 0 && len == 0) {
+            return new byte[0];
         }
 
         int num = len / 4, size = num * 3;
