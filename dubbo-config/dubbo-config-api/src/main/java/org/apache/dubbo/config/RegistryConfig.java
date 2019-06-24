@@ -438,7 +438,7 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     protected void updatePortIfAbsent(Integer value) {
-        if (value != null && port == null) {
+        if (value != null && value > 0 && port == null) {
             this.port = value;
         }
     }
