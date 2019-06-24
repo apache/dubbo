@@ -47,8 +47,6 @@ import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
-import org.springframework.util.Assert;
-import org.springframework.util.ClassUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -63,6 +61,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.apache.dubbo.config.spring.beans.factory.annotation.ServiceBeanNameBuilder.create;
+import static org.apache.dubbo.config.spring.util.AnnotationUtils.resolveServiceInterfaceClass;
 import static org.apache.dubbo.config.spring.util.ObjectUtils.of;
 import static org.springframework.beans.factory.support.BeanDefinitionBuilder.rootBeanDefinition;
 import static org.springframework.context.annotation.AnnotationConfigUtils.CONFIGURATION_BEAN_NAME_GENERATOR;
@@ -268,7 +267,7 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
          */
         AnnotationAttributes serviceAnnotationAttributes = getAnnotationAttributes(service, false, false);
 
-        Class<?> interfaceClass = resolveServiceInterfaceClass(beanClass, serviceAnnotationAttributes);
+        Class<?> interfaceClass = resolveServiceInterfaceClass(serviceAnnotationAttributes, beanClass);
 
         String annotatedServiceBeanName = beanDefinitionHolder.getBeanName();
 
@@ -323,54 +322,10 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
      * @since 2.7.3
      */
     private String generateServiceBeanName(AnnotationAttributes serviceAnnotationAttributes, Class<?> interfaceClass) {
-        ServiceBeanNameBuilder builder = create(interfaceClass, environment);
-        builder.group(serviceAnnotationAttributes.getString("group"));
-        builder.version(serviceAnnotationAttributes.getString("version"));
+        ServiceBeanNameBuilder builder = create(interfaceClass, environment)
+                .group(serviceAnnotationAttributes.getString("group"))
+                .version(serviceAnnotationAttributes.getString("version"));
         return builder.build();
-    }
-
-    /**
-     * @param annotatedServiceBeanClass
-     * @param serviceAnnotationAttributes
-     * @return
-     * @since 2.7.3
-     */
-    private Class<?> resolveServiceInterfaceClass(Class<?> annotatedServiceBeanClass, AnnotationAttributes serviceAnnotationAttributes) {
-
-        Class<?> interfaceClass = serviceAnnotationAttributes.getClass("interfaceClass");
-
-        if (void.class.equals(interfaceClass)) {
-
-            interfaceClass = null;
-
-            String interfaceClassName = serviceAnnotationAttributes.getString("interfaceName");
-
-            if (StringUtils.hasText(interfaceClassName)) {
-                if (ClassUtils.isPresent(interfaceClassName, classLoader)) {
-                    interfaceClass = resolveClassName(interfaceClassName, classLoader);
-                }
-            }
-
-        }
-
-        if (interfaceClass == null) {
-            // Find all interfaces from the annotated class
-            // To resolve an issue : https://github.com/apache/dubbo/issues/3251
-            Class<?>[] allInterfaces = ClassUtils.getAllInterfacesForClass(annotatedServiceBeanClass);
-
-            if (allInterfaces.length > 0) {
-                interfaceClass = allInterfaces[0];
-            }
-
-        }
-
-        Assert.notNull(interfaceClass,
-                "@Service interfaceClass() or interfaceName() or interface class must be present!");
-
-        Assert.isTrue(interfaceClass.isInterface(),
-                "The type that was annotated @Service is not an interface!");
-
-        return interfaceClass;
     }
 
     private Class<?> resolveClass(BeanDefinitionHolder beanDefinitionHolder) {
