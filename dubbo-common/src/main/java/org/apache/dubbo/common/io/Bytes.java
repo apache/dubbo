@@ -633,7 +633,7 @@ public class Bytes {
             throw new IllegalArgumentException("base642bytes: base64 string length % 4 == 1.");
         }
 
-        if (off == 0 && len == 0) {
+        if (len == 0) {
             return new byte[0];
         }
 
@@ -725,7 +725,7 @@ public class Bytes {
             throw new IllegalArgumentException("base642bytes: base64 string length % 4 == 1.");
         }
 
-        if (off == 0 && len == 0) {
+        if (len == 0) {
             return new byte[0];
         }
 
