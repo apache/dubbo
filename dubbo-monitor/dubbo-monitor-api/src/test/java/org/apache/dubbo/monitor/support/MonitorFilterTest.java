@@ -40,8 +40,8 @@ import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
-import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -121,9 +121,12 @@ public class MonitorFilterTest {
         Invocation invocation = new RpcInvocation("aaa", new Class<?>[0], new Object[0]);
         RpcContext.getContext().setRemoteAddress(NetUtils.getLocalHost(), 20880).setLocalAddress(NetUtils.getLocalHost(), 2345);
         Result result = monitorFilter.invoke(serviceInvoker, invocation);
-        result.thenApplyWithContext((r) -> {
-            monitorFilter.listener().onResponse(r, serviceInvoker, invocation);
-            return r;
+        result.whenCompleteWithContext((r, t) -> {
+            if (t == null) {
+                monitorFilter.listener().onResponse(r, serviceInvoker, invocation);
+            } else {
+                monitorFilter.listener().onError(t, serviceInvoker, invocation);
+            }
         });
         while (lastStatistics == null) {
             Thread.sleep(10);
@@ -161,9 +164,12 @@ public class MonitorFilterTest {
         Invocation invocation = new RpcInvocation("$invoke", new Class<?>[]{String.class, String[].class, Object[].class}, new Object[]{"xxx", new String[]{}, new Object[]{}});
         RpcContext.getContext().setRemoteAddress(NetUtils.getLocalHost(), 20880).setLocalAddress(NetUtils.getLocalHost(), 2345);
         Result result = monitorFilter.invoke(serviceInvoker, invocation);
-        result.thenApplyWithContext((r) -> {
-            monitorFilter.listener().onResponse(r, serviceInvoker, invocation);
-            return r;
+        result.whenCompleteWithContext((r, t) -> {
+            if (t == null) {
+                monitorFilter.listener().onResponse(r, serviceInvoker, invocation);
+            } else {
+                monitorFilter.listener().onError(t, serviceInvoker, invocation);
+            }
         });
         while (lastStatistics == null) {
             Thread.sleep(10);
