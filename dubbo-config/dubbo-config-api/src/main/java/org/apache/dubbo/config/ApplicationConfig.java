@@ -30,8 +30,11 @@ import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUMP_DIRECTORY;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
+import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP_COMPATIBLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
+import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE_COMPATIBLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT;
+import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT_COMPATIBLE;
 import static org.apache.dubbo.config.Constants.ARCHITECTURE;
 import static org.apache.dubbo.config.Constants.DEVELOPMENT_ENVIRONMENT;
 import static org.apache.dubbo.config.Constants.ENVIRONMENT;
@@ -317,36 +320,34 @@ public class ApplicationConfig extends AbstractConfig {
         this.qosAcceptForeignIp = qosAcceptForeignIp;
     }
 
-    @Deprecated
-    @Parameter(key = "qos.enable", excluded = true)
-    public Boolean getQosEnableDeprecated() {
+    /**
+     * The format is the same as the springboot, including: getQosEnableCompatible(), getQosPortCompatible(), getQosAcceptForeignIpCompatible().
+     * @return
+     */
+    @Parameter(key = QOS_ENABLE_COMPATIBLE, excluded = true)
+    public Boolean getQosEnableCompatible() {
         return getQosEnable();
     }
 
-    @Deprecated
-    public void setQosEnableDeprecated(Boolean qosEnable) {
+    public void setQosEnableCompatible(Boolean qosEnable) {
         setQosEnable(qosEnable);
     }
 
-    @Deprecated
-    @Parameter(key = "qos.port", excluded = true)
-    public Integer getQosPortDeprecated() {
+    @Parameter(key = QOS_PORT_COMPATIBLE, excluded = true)
+    public Integer getQosPortCompatible() {
         return getQosPort();
     }
 
-    @Deprecated
-    public void setQosPortDeprecated(Integer qosPort) {
+    public void setQosPortCompatible(Integer qosPort) {
         this.setQosPort(qosPort);
     }
 
-    @Deprecated
-    @Parameter(key = "qos.accept.foreign.ip", excluded = true)
-    public Boolean getQosAcceptForeignIpDeprecated() {
+    @Parameter(key = ACCEPT_FOREIGN_IP_COMPATIBLE, excluded = true)
+    public Boolean getQosAcceptForeignIpCompatible() {
         return this.getQosAcceptForeignIp();
     }
 
-    @Deprecated
-    public void setQosAcceptForeignIpDeprecated(Boolean qosAcceptForeignIp) {
+    public void setQosAcceptForeignIpCompatible(Boolean qosAcceptForeignIp) {
         this.setQosAcceptForeignIp(qosAcceptForeignIp);
     }
 
