@@ -23,7 +23,6 @@ import com.alibaba.dubbo.config.annotation.Method;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.dubbo.config.spring.ServiceBean;
 import com.alibaba.dubbo.config.spring.context.annotation.DubboClassPathBeanDefinitionScanner;
-
 import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.BeanClassLoaderAware;
@@ -291,9 +290,7 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
      */
     private String generateServiceBeanName(Service service, Class<?> interfaceClass, String annotatedServiceBeanName) {
 
-        AnnotationBeanNameBuilder builder = AnnotationBeanNameBuilder.create(service, interfaceClass);
-
-        builder.environment(environment);
+        ServiceBeanNameBuilder builder = ServiceBeanNameBuilder.create(service, interfaceClass, environment);
 
         return builder.build();
     }
@@ -439,7 +436,7 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
 
         Method[] methods = service.methods();
         List<MethodConfig> methodConfigs = MethodConfig.constructMethodConfig(methods);
-        if(!methodConfigs.isEmpty()){
+        if (!methodConfigs.isEmpty()) {
             builder.addPropertyValue("methods", methodConfigs);
         }
 
