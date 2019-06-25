@@ -383,7 +383,7 @@ public class NacosRegistry extends FailbackRegistry {
      */
     private String[] getCategories(URL url) {
         return ANY_VALUE.equals(url.getServiceInterface()) ?
-                ALL_SUPPORTED_CATEGORIES : of(DEFAULT_CATEGORY);
+                ALL_SUPPORTED_CATEGORIES : url.getParameter(CATEGORY_KEY,new String[]{DEFAULT_CATEGORY});
     }
 
     private URL buildURL(Instance instance) {

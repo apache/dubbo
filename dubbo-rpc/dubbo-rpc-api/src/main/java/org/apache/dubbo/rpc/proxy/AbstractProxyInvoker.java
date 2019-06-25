@@ -27,7 +27,6 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.CompletableFuture;
@@ -112,10 +111,7 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
     private CompletableFuture<Object> wrapWithFuture (Object value, Invocation invocation) {
         if (RpcContext.getContext().isAsyncStarted()) {
             return ((AsyncContextImpl)(RpcContext.getContext().getAsyncContext())).getInternalFuture();
-        } else if (RpcUtils.isReturnTypeFuture(invocation)) {
-            if (value == null) {
-                return CompletableFuture.completedFuture(null);
-            }
+        } else if (value instanceof CompletableFuture) {
             return (CompletableFuture<Object>) value;
         }
         return CompletableFuture.completedFuture(value);
