@@ -72,11 +72,30 @@ public class AsyncRpcResult extends AbstractResult {
         return getAppResponse().getValue();
     }
 
+    /**
+     * CompletableFuture can only be completed once, so try to update the result of one completed CompletableFuture will
+     * has no effect. To avoid this problem, we check the complete status of this future before update it's value.
+     *
+     * But notice that trying to give an uncompleted CompletableFuture a new specified value may face a race condition,
+     * because the background thread watching the real result will also change the status of this CompletableFuture.
+     * The result is you may lose the value you expected to set.
+     *
+     * @param value
+     */
     @Override
     public void setValue(Object value) {
-        AppResponse appResponse = new AppResponse();
-        appResponse.setValue(value);
-        this.complete(appResponse);
+        try {
+            if (this.isDone()) {
+                this.get().setValue(value);
+            } else {
+                AppResponse appResponse = new AppResponse();
+                appResponse.setValue(value);
+                this.complete(appResponse);
+            }
+        } catch (Exception e) {
+            // This should never happen;
+            logger.error("Got exception when trying to change the value of the underlying result from AsyncRpcResult.", e);
+        }
     }
 
     @Override
@@ -86,9 +105,18 @@ public class AsyncRpcResult extends AbstractResult {
 
     @Override
     public void setException(Throwable t) {
-        AppResponse appResponse = new AppResponse();
-        appResponse.setException(t);
-        this.complete(appResponse);
+        try {
+            if (this.isDone()) {
+                this.get().setException(t);
+            } else {
+                AppResponse appResponse = new AppResponse();
+                appResponse.setException(t);
+                this.complete(appResponse);
+            }
+        } catch (Exception e) {
+            // This should never happen;
+            logger.error("Got exception when trying to change the value of the underlying result from AsyncRpcResult.", e);
+        }
     }
 
     @Override
