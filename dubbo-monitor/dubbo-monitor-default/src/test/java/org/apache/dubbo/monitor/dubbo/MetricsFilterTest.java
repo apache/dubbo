@@ -16,38 +16,49 @@
  */
 package org.apache.dubbo.monitor.dubbo;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.monitor.MetricsService;
+import org.apache.dubbo.monitor.dubbo.service.DemoService;
+import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.Protocol;
+import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.RpcContext;
+import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
+
 import com.alibaba.metrics.FastCompass;
-import com.alibaba.metrics.Gauge;
 import com.alibaba.metrics.IMetricManager;
-import com.alibaba.metrics.MetricFilter;
 import com.alibaba.metrics.MetricLevel;
 import com.alibaba.metrics.MetricManager;
 import com.alibaba.metrics.MetricName;
 import com.alibaba.metrics.common.MetricObject;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.monitor.MetricsService;
-import org.apache.dubbo.monitor.dubbo.service.DemoService;
-import org.apache.dubbo.rpc.*;
-import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
-import java.util.concurrent.atomic.AtomicLong;
 
-import static org.apache.dubbo.common.constants.CommonConstants.*;
-import static org.apache.dubbo.monitor.Constants.*;
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
+import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.monitor.Constants.DUBBO_CONSUMER;
+import static org.apache.dubbo.monitor.Constants.DUBBO_CONSUMER_METHOD;
+import static org.apache.dubbo.monitor.Constants.DUBBO_GROUP;
+import static org.apache.dubbo.monitor.Constants.DUBBO_PROVIDER;
+import static org.apache.dubbo.monitor.Constants.DUBBO_PROVIDER_METHOD;
+import static org.apache.dubbo.monitor.Constants.METHOD;
+import static org.apache.dubbo.monitor.Constants.SERVICE;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
@@ -232,35 +243,6 @@ public class MetricsFilterTest {
         Assertions.assertEquals(100.0, metricMap.get("bucket_count"));
         Assertions.assertEquals(100.0 / 5, metricMap.get("qps"));
         Assertions.assertEquals(50.0 / 100.0, metricMap.get("success_rate"));
-    }
-
-    @Test
-    public void testInvokeMetricsService_shouldStoreCpu() throws IOException {
-        IMetricManager metricManager = MetricManager.getIMetricManager();
-        metricManager.clear();
-        MetricsFilter metricsFilter = new MetricsFilter();
-        Invocation invocation = new RpcInvocation("sayName", new Class<?>[0], new Object[0]);
-        AppResponse response = AppResponseBuilder.create()
-            .build();
-        onInvokeReturns(response);
-
-        RpcContext.getContext().setRemoteAddress(NetUtils.getLocalHost(), 20880).setLocalAddress(NetUtils.getLocalHost(), 2345);
-        RpcContext.getContext().setUrl(serviceInvoker.getUrl().addParameter(SIDE_KEY, CONSUMER_SIDE).addParameter(TIMEOUT_KEY, 300));
-        for (int i = 0; i < 2; i++) {
-            try {
-                metricsFilter.invoke(serviceInvoker, invocation);
-                try {
-                    Thread.sleep(15000);
-                } catch (Exception e) {
-                    // ignore
-                }
-            } catch (RpcException e) {
-                //ignore
-            }
-        }
-
-        SortedMap<MetricName, Gauge> gauges = MetricManager.getIMetricManager().getGauges(DUBBO_GROUP, MetricFilter.ALL);
-        Assertions.assertNotNull(gauges.get(new MetricName("dubbo.cpu." + serviceInvoker.getUrl().getHost(), MetricLevel.MAJOR)));
     }
 
     @Test
