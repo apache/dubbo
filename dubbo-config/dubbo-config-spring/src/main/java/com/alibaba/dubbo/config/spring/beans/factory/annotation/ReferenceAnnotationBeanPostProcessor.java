@@ -21,7 +21,6 @@ import com.alibaba.dubbo.config.spring.ReferenceBean;
 import com.alibaba.dubbo.config.spring.ServiceBean;
 import com.alibaba.dubbo.config.spring.context.event.ServiceBeanExportedEvent;
 import com.alibaba.dubbo.config.spring.util.AnnotationUtils;
-
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.InjectionMetadata;
 import org.springframework.context.ApplicationContext;
@@ -105,7 +104,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AnnotationInjectedBean
     }
 
     @Override
-                            protected Object doGetInjectedBean(Reference reference, Object bean, String beanName, Class<?> injectedType,
+    protected Object doGetInjectedBean(Reference reference, Object bean, String beanName, Class<?> injectedType,
                                        InjectionMetadata.InjectedElement injectedElement) throws Exception {
 
         String referencedBeanName = buildReferencedBeanName(reference, injectedType);
@@ -188,9 +187,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AnnotationInjectedBean
 
     private String buildReferencedBeanName(Reference reference, Class<?> injectedType) {
 
-        AnnotationBeanNameBuilder builder = AnnotationBeanNameBuilder.create(reference, injectedType);
-
-        builder.environment(getEnvironment());
+        ServiceBeanNameBuilder builder = ServiceBeanNameBuilder.create(reference, injectedType, getEnvironment());
 
         return getEnvironment().resolvePlaceholders(builder.build());
     }
