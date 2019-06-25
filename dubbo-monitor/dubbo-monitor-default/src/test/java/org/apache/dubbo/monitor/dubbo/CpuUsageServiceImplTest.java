@@ -22,7 +22,7 @@ class CpuUsageServiceImplTest {
             latch.countDown();
         });
 
-        latch.await(15, TimeUnit.SECONDS);
+        latch.await(4, TimeUnit.SECONDS);
         Assertions.assertFalse(results.isEmpty());
     }
 }
