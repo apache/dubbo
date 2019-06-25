@@ -18,10 +18,9 @@ import java.util.concurrent.TimeUnit;
 public class CpuUsageServiceImpl implements CpuUsageService {
     private final Map<String, CpuUsageListener> listeners = new ConcurrentHashMap<>();
     private CpuUsageGaugeSet cpuUsage;
-    private static final String PATH = "/proc/stat";
 
     public CpuUsageServiceImpl(Long dataTimeToLive, Long collectCpuUsageInMill) {
-        cpuUsage = new CpuUsageGaugeSet(dataTimeToLive, TimeUnit.MILLISECONDS, PATH, new ManualClock());
+        cpuUsage = new CpuUsageGaugeSet(dataTimeToLive, TimeUnit.MILLISECONDS);
         ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory(this.getClass().getSimpleName(), true));
         executor.scheduleAtFixedRate(this::collectCpuUsage, collectCpuUsageInMill, collectCpuUsageInMill, TimeUnit.MILLISECONDS);
     }
