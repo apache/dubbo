@@ -1,6 +1,7 @@
 package org.apache.dubbo.monitor.dubbo;
 
 import org.apache.dubbo.common.utils.NamedThreadFactory;
+import org.apache.dubbo.rpc.RpcContext;
 
 import com.alibaba.metrics.Gauge;
 import com.alibaba.metrics.ManualClock;
@@ -37,6 +38,6 @@ public class CpuUsageServiceImpl implements CpuUsageService {
 
     private void collectCpuUsage() {
         Gauge<Float> user = (Gauge) cpuUsage.getMetrics().get(MetricName.build("cpu.user"));
-        listeners.forEach((key, value) -> value.cpuChanged(user));
+        listeners.forEach((key, value) -> value.cpuChanged(RpcContext.getServerContext().getRemoteHost(), user.getValue()));
     }
 }
