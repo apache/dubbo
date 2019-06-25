@@ -17,14 +17,14 @@
 
 package org.apache.dubbo.configcenter.support.nacos;
 
-import com.alibaba.nacos.api.NacosFactory;
-import com.alibaba.nacos.api.config.ConfigService;
-import com.alibaba.nacos.api.exception.NacosException;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.configcenter.ConfigChangeEvent;
 import org.apache.dubbo.configcenter.ConfigurationListener;
-
 import org.apache.dubbo.configcenter.DynamicConfiguration;
+
+import com.alibaba.nacos.api.NacosFactory;
+import com.alibaba.nacos.api.config.ConfigService;
+import com.alibaba.nacos.api.exception.NacosException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -59,9 +59,9 @@ public class NacosDynamicConfigurationTest {
         Thread.sleep(200);
         put("xxxx:org.apache.dubbo.demo.DemoService:1.0.0.test.configurators", "helloworld");
         Thread.sleep(200);
-        Assertions.assertEquals("hello", config.getConfig("org.apache.dubbo.nacos.testService.configurators"));
-        Assertions.assertEquals("aaa=bbb", config.getConfig("dubbo.properties", "test"));
-        Assertions.assertEquals("helloworld", config.getConfig("xxxx*org.apache.dubbo.demo.DemoService:1.0.0.test.configurators"));
+        Assertions.assertEquals("hello", config.getRule("org.apache.dubbo.nacos.testService.configurators", DynamicConfiguration.DEFAULT_GROUP));
+        Assertions.assertEquals("aaa=bbb", config.getRule("dubbo.properties", "test"));
+        Assertions.assertEquals("helloworld", config.getRule("xxxx*org.apache.dubbo.demo.DemoService:1.0.0.test.configurators", DynamicConfiguration.DEFAULT_GROUP));
     }
 
     @Test
