@@ -1,5 +1,7 @@
-package org.apache.dubbo.monitor.dubbo;
+package org.apache.dubbo.rpc.cluster.loadbalance.statistics;
 
+
+import org.apache.dubbo.rpc.cluster.loadbalance.statistics.CpuUsageServiceImpl;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

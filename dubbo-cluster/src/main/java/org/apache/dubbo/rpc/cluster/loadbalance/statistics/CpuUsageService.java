@@ -1,4 +1,4 @@
-package org.apache.dubbo.monitor.dubbo;
+package org.apache.dubbo.rpc.cluster.loadbalance.statistics;
 
 public interface CpuUsageService {
     void addListener(String key, CpuUsageListener cpuListener);

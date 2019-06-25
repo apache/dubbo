@@ -1,4 +1,4 @@
-package org.apache.dubbo.monitor.dubbo;
+package org.apache.dubbo.rpc.cluster.loadbalance.statistics;
 
 import com.alibaba.metrics.Gauge;
 

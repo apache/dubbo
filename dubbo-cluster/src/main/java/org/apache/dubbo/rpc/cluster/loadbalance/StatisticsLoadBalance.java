@@ -1,8 +1,8 @@
 package org.apache.dubbo.rpc.cluster.loadbalance;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.monitor.dubbo.CpuUsageService;
-import org.apache.dubbo.monitor.dubbo.CpuUsageServiceImpl;
+import org.apache.dubbo.rpc.cluster.loadbalance.statistics.CpuUsageService;
+import org.apache.dubbo.rpc.cluster.loadbalance.statistics.CpuUsageServiceImpl;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 
