@@ -35,8 +35,6 @@ import org.apache.dubbo.rpc.support.RpcUtils;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.metrics.FastCompass;
-import com.alibaba.metrics.Gauge;
-import com.alibaba.metrics.MetricFilter;
 import com.alibaba.metrics.MetricLevel;
 import com.alibaba.metrics.MetricManager;
 import com.alibaba.metrics.MetricName;
@@ -80,12 +78,12 @@ public class MetricsFilter implements Filter {
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         if (exported.compareAndSet(false, true)) {
             this.protocolName = invoker.getUrl().getParameter(METRICS_PROTOCOL) == null ?
-                DEFAULT_PROTOCOL : invoker.getUrl().getParameter(METRICS_PROTOCOL);
+                    DEFAULT_PROTOCOL : invoker.getUrl().getParameter(METRICS_PROTOCOL);
 
             Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(protocolName);
 
             this.port = invoker.getUrl().getParameter(METRICS_PORT) == null ?
-                protocol.getDefaultPort() : Integer.valueOf(invoker.getUrl().getParameter(METRICS_PORT));
+                    protocol.getDefaultPort() : Integer.valueOf(invoker.getUrl().getParameter(METRICS_PORT));
 
             Invoker<MetricsService> metricsInvoker = initMetricsInvoker();
 
@@ -93,7 +91,7 @@ public class MetricsFilter implements Filter {
                 protocol.export(metricsInvoker);
             } catch (RuntimeException e) {
                 logger.error("Metrics Service need to be configured" +
-                    " when multiple processes are running on a host" + e.getMessage());
+                        " when multiple processes are running on a host" + e.getMessage());
             }
         }
 
@@ -138,7 +136,7 @@ public class MetricsFilter implements Filter {
         method.append(")");
         Class<?> returnType = RpcUtils.getReturnType(invocation);
         String typeName = null;
-        if (returnType != null) {
+        if(returnType != null) {
             typeName = returnType.getTypeName();
             typeName = typeName.substring(typeName.lastIndexOf(".") + 1);
         }
@@ -160,15 +158,6 @@ public class MetricsFilter implements Filter {
                 }
             }, MetricLevel.NORMAL);
         } else {
-            CpuUsageService cpuUsageService = new CpuUsageServiceImpl(100L, 500L);
-            cpuUsageService.addListener("foo.bar", cpu -> {
-                SortedMap<MetricName, Gauge> gauges = MetricManager.getIMetricManager().getGauges(DUBBO_GROUP, MetricFilter.ALL);
-                Gauge<Float> cpuUser = gauges.get(new MetricName("dubbo.cpu." + invoker.getUrl().getHost(), MetricLevel.MAJOR));
-                if (cpuUser == null) {
-                    MetricName metricName = new MetricName("dubbo.cpu." + invoker.getUrl().getHost(), MetricLevel.MAJOR);
-                    MetricManager.register(DUBBO_GROUP, metricName, cpu);
-                }
-            });
             global = new MetricName(DUBBO_CONSUMER, MetricLevel.MAJOR);
             method = new MetricName(DUBBO_CONSUMER_METHOD, new HashMap<String, String>(4) {
                 {
@@ -214,10 +203,10 @@ public class MetricsFilter implements Filter {
         }
 
         return new MetricObject
-            .Builder(metric)
-            .withValue(value)
-            .withLevel(level)
-            .build();
+                .Builder(metric)
+                .withValue(value)
+                .withLevel(level)
+                .build();
     }
 
     private Invoker<MetricsService> initMetricsInvoker() {
@@ -240,7 +229,7 @@ public class MetricsFilter implements Filter {
 
 
                 MetricsCollector collector = MetricsCollectorFactory.createNew(
-                    CollectLevel.NORMAL, Collections.EMPTY_MAP, rateFactor, durationFactor, null);
+                        CollectLevel.NORMAL, Collections.EMPTY_MAP, rateFactor, durationFactor, null);
 
                 for (Map.Entry<MetricName, FastCompass> entry : fastCompasses.entrySet()) {
                     collector.collect(entry.getKey(), entry.getValue(), timestamp);
