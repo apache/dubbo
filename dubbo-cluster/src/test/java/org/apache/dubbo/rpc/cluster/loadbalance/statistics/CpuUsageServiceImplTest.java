@@ -1,5 +1,7 @@
 package org.apache.dubbo.rpc.cluster.loadbalance.statistics;
 
+import org.apache.dubbo.common.config.ConfigurationUtils;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -15,7 +17,9 @@ class CpuUsageServiceImplTest {
     public void testCallBack() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
         List<Float> results = new ArrayList<>();
-        CpuUsageServiceImpl service = new CpuUsageServiceImpl(1000L, 3000L);
+        long timeToLive = Long.parseLong(ConfigurationUtils.getProperty("time.to.live"));
+        long collectCpuUsageInMill = Long.parseLong(ConfigurationUtils.getProperty("mill.to.collect.cpu.usage"));
+        CpuUsageServiceImpl service = new CpuUsageServiceImpl(timeToLive, collectCpuUsageInMill);
         service.addListener("foo.bar", (ip, cpu) -> {
             results.add(cpu);
             latch.countDown();
