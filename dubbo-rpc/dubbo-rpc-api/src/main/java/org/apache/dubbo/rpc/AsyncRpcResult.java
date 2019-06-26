@@ -64,12 +64,6 @@ public class AsyncRpcResult extends AbstractResult {
         this.storedServerContext = RpcContext.getServerContext();
     }
 
-    public AsyncRpcResult(AsyncRpcResult asyncRpcResult) {
-        this.invocation = asyncRpcResult.getInvocation();
-        this.storedContext = asyncRpcResult.getStoredContext();
-        this.storedServerContext = asyncRpcResult.getStoredServerContext();
-    }
-
     /**
      * Notice the return type of {@link #getValue} is the actual type of the RPC method, not {@link AppResponse}
      *
@@ -144,7 +138,7 @@ public class AsyncRpcResult extends AbstractResult {
 
     @Override
     public Result get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-        return this.get();
+        return responseFuture.get(timeout, unit);
     }
 
     @Override
@@ -194,18 +188,6 @@ public class AsyncRpcResult extends AbstractResult {
     @Override
     public void setAttachment(String key, String value) {
         getAppResponse().setAttachment(key, value);
-    }
-
-    public RpcContext getStoredContext() {
-        return storedContext;
-    }
-
-    public RpcContext getStoredServerContext() {
-        return storedServerContext;
-    }
-
-    public Invocation getInvocation() {
-        return invocation;
     }
 
     public Executor getExecutor() {
