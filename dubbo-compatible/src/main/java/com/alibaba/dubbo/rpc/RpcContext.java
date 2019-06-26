@@ -17,6 +17,13 @@
 
 package com.alibaba.dubbo.rpc;
 
+import org.apache.dubbo.rpc.FutureContext;
+
+import com.alibaba.dubbo.rpc.protocol.dubbo.FutureAdapter;
+
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
+
 @Deprecated
 public class RpcContext extends org.apache.dubbo.rpc.RpcContext {
 
@@ -47,5 +54,13 @@ public class RpcContext extends org.apache.dubbo.rpc.RpcContext {
         copy.setAsyncContext(rpcContext.getAsyncContext());
 
         return copy;
+    }
+
+    public <T> Future<T> getFuture() {
+        CompletableFuture completableFuture = FutureContext.getCompletableFuture();
+        if (completableFuture == null) {
+            return null;
+        }
+        return new FutureAdapter(completableFuture);
     }
 }
