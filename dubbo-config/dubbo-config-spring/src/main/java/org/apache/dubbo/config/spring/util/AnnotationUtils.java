@@ -19,9 +19,11 @@ package org.apache.dubbo.config.spring.util;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.annotation.Service;
 
+import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.PropertyResolver;
-import org.springframework.util.StringUtils;
+import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
@@ -41,8 +43,11 @@ import static java.lang.String.valueOf;
 import static org.springframework.core.annotation.AnnotationUtils.findAnnotation;
 import static org.springframework.core.annotation.AnnotationUtils.getAnnotationAttributes;
 import static org.springframework.core.annotation.AnnotationUtils.getDefaultValue;
+import static org.springframework.util.ClassUtils.getAllInterfacesForClass;
+import static org.springframework.util.ClassUtils.resolveClassName;
 import static org.springframework.util.CollectionUtils.arrayToList;
 import static org.springframework.util.ObjectUtils.nullSafeEquals;
+import static org.springframework.util.StringUtils.hasText;
 import static org.springframework.util.StringUtils.trimWhitespace;
 
 /**
@@ -53,11 +58,13 @@ import static org.springframework.util.StringUtils.trimWhitespace;
  */
 public class AnnotationUtils {
 
+
+    @Deprecated
     public static String resolveInterfaceName(Service service, Class<?> defaultInterfaceClass)
             throws IllegalStateException {
 
         String interfaceName;
-        if (StringUtils.hasText(service.interfaceName())) {
+        if (hasText(service.interfaceName())) {
             interfaceName = service.interfaceName();
         } else if (!void.class.equals(service.interfaceClass())) {
             interfaceName = service.interfaceClass().getName();
@@ -73,6 +80,85 @@ public class AnnotationUtils {
 
     }
 
+    /**
+     * Resolve the interface name from {@link AnnotationAttributes}
+     *
+     * @param attributes            {@link AnnotationAttributes} instance, may be {@link Service @Service} or {@link Reference @Reference}
+     * @param defaultInterfaceClass the default {@link Class class} of interface
+     * @return the interface name if found
+     * @throws IllegalStateException if interface name was not found
+     */
+    public static String resolveInterfaceName(AnnotationAttributes attributes, Class<?> defaultInterfaceClass) {
+
+        String interfaceName = null;
+
+        Class<?> interfaceClass = attributes.getClass("interfaceClass");
+        if (interfaceClass != null && !void.class.equals(interfaceClass)) {
+            interfaceName = interfaceClass.getName();
+        } else if ((!hasText(interfaceName = attributes.getString("interfaceName")))) {
+            interfaceName = defaultInterfaceClass.isInterface() ? defaultInterfaceClass.getName() : null;
+        }
+
+        if (!hasText(interfaceName)) {
+            throw new IllegalStateException(
+                    "The @Service undefined interfaceClass or interfaceName, and the type "
+                            + defaultInterfaceClass.getName() + " is not a interface.");
+        }
+
+        return interfaceName;
+    }
+
+    /**
+     * Resolve the {@link Class class} of Dubbo Service interface from the specified
+     * {@link AnnotationAttributes annotation attributes} and annotated {@link Class class}.
+     *
+     * @param attributes     {@link AnnotationAttributes annotation attributes}
+     * @param annotatedClass the annotated {@link Class class}.
+     * @return the {@link Class class} of Dubbo Service interface
+     * @throws IllegalArgumentException if can't resolved
+     */
+    public static Class<?> resolveServiceInterfaceClass(AnnotationAttributes attributes, Class<?> annotatedClass)
+            throws IllegalArgumentException {
+
+        ClassLoader classLoader = annotatedClass.getClassLoader();
+
+        Class<?> interfaceClass = attributes.getClass("interfaceClass");
+
+        if (void.class.equals(interfaceClass)) { // default or set void.class for purpose.
+
+            interfaceClass = null;
+
+            String interfaceClassName = attributes.getString("interfaceName");
+
+            if (hasText(interfaceClassName)) {
+                if (ClassUtils.isPresent(interfaceClassName, classLoader)) {
+                    interfaceClass = resolveClassName(interfaceClassName, classLoader);
+                }
+            }
+
+        }
+
+        if (interfaceClass == null) {
+            // Find all interfaces from the annotated class
+            // To resolve an issue : https://github.com/apache/dubbo/issues/3251
+            Class<?>[] allInterfaces = getAllInterfacesForClass(annotatedClass);
+
+            if (allInterfaces.length > 0) {
+                interfaceClass = allInterfaces[0];
+            }
+
+        }
+
+        Assert.notNull(interfaceClass,
+                "@Service interfaceClass() or interfaceName() or interface class must be present!");
+
+        Assert.isTrue(interfaceClass.isInterface(),
+                "The type that was annotated @Service is not an interface!");
+
+        return interfaceClass;
+    }
+
+    @Deprecated
     public static String resolveInterfaceName(Reference reference, Class<?> defaultInterfaceClass)
             throws IllegalStateException {
 
@@ -262,10 +348,10 @@ public class AnnotationUtils {
              * @since 2.7.1
              * ignore annotation member
              */
-            if (attributeValue.getClass().isAnnotation()){
+            if (attributeValue.getClass().isAnnotation()) {
                 continue;
             }
-            if (attributeValue.getClass().isArray() && attributeValue.getClass().getComponentType().isAnnotation()){
+            if (attributeValue.getClass().isArray() && attributeValue.getClass().getComponentType().isAnnotation()) {
                 continue;
             }
 
