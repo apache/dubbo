@@ -86,21 +86,21 @@ public class MockChannel implements ExchangeChannel {
         return null;
     }
 
-    public CompletableFuture<Object> request(Object request, CompletableFuture completableFuture) throws RemotingException {
+    public CompletableFuture<Object> request(Object request) throws RemotingException {
         return null;
     }
 
-    public CompletableFuture<Object> request(Object request, int timeout, CompletableFuture completableFuture) throws RemotingException {
-        return null;
-    }
-
-    @Override
-    public CompletableFuture<Object> request(Object request, ExecutorService executor, CompletableFuture completableFuture) throws RemotingException {
+    public CompletableFuture<Object> request(Object request, int timeout) throws RemotingException {
         return null;
     }
 
     @Override
-    public CompletableFuture<Object> request(Object request, int timeout, ExecutorService executor, CompletableFuture completableFuture) throws RemotingException {
+    public CompletableFuture<Object> request(Object request, ExecutorService executor) throws RemotingException {
+        return null;
+    }
+
+    @Override
+    public CompletableFuture<Object> request(Object request, int timeout, ExecutorService executor) throws RemotingException {
         return null;
     }
 

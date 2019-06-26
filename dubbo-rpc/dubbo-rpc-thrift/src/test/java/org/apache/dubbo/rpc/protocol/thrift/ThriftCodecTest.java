@@ -40,7 +40,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
-import java.util.concurrent.CompletableFuture;
 
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
@@ -134,7 +133,7 @@ public class ThriftCodecTest {
 
         Request request = createRequest();
 
-        DefaultFuture future = DefaultFuture.newFuture(channel, request, 10, null, new CompletableFuture());
+        DefaultFuture future = DefaultFuture.newFuture(channel, request, 10, null);
 
         TMessage message = new TMessage("echoString", TMessageType.REPLY, ThriftCodec.getSeqId());
 
@@ -211,7 +210,7 @@ public class ThriftCodecTest {
 
         Request request = createRequest();
 
-        DefaultFuture future = DefaultFuture.newFuture(channel, request, 10, null, new CompletableFuture());
+        DefaultFuture future = DefaultFuture.newFuture(channel, request, 10, null);
 
         TMessage message = new TMessage("echoString", TMessageType.EXCEPTION, ThriftCodec.getSeqId());
 

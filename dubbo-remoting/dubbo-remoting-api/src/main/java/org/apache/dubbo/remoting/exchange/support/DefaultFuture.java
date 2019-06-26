@@ -35,7 +35,6 @@ import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -45,16 +44,13 @@ import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 /**
  * DefaultFuture.
  */
-public class DefaultFuture {
+public class DefaultFuture extends CompletableFuture<Object> {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultFuture.class);
 
     private static final Map<Long, Channel> CHANNELS = new ConcurrentHashMap<>();
 
     private static final Map<Long, DefaultFuture> FUTURES = new ConcurrentHashMap<>();
-
-    //    private static final Map<Long, Timeout> PENDING_TASKS = new ConcurrentHashMap<>();
-    private final CompletableFuture completableFuture;
 
     public static final Timer TIME_OUT_TIMER = new HashedWheelTimer(
             new NamedThreadFactory("dubbo-future-timeout", true),
@@ -70,18 +66,20 @@ public class DefaultFuture {
     private volatile long sent;
     private Timeout timeoutCheckTask;
 
-    private final ExecutorService executor;
+    private ExecutorService executor;
 
     public ExecutorService getExecutor() {
         return executor;
     }
 
-    private DefaultFuture(Channel channel, Request request, int timeout, ExecutorService executor, CompletableFuture completableFuture) {
+    public void setExecutor(ExecutorService executor) {
+        this.executor = executor;
+    }
+
+    private DefaultFuture(Channel channel, Request request, int timeout) {
         this.channel = channel;
         this.request = request;
         this.id = request.getId();
-        this.executor = executor;
-        this.completableFuture = completableFuture;
         this.timeout = timeout > 0 ? timeout : channel.getUrl().getPositiveParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT);
         // put into waiting map.
         FUTURES.put(id, this);
@@ -106,8 +104,9 @@ public class DefaultFuture {
      * @param timeout timeout
      * @return a new DefaultFuture
      */
-    public static DefaultFuture newFuture(Channel channel, Request request, int timeout, ExecutorService executor, CompletableFuture completableFuture) {
-        final DefaultFuture future = new DefaultFuture(channel, request, timeout, executor, completableFuture);
+    public static DefaultFuture newFuture(Channel channel, Request request, int timeout, ExecutorService executor) {
+        final DefaultFuture future = new DefaultFuture(channel, request, timeout);
+        future.setExecutor(executor);
         // timeout check
         timeoutCheck(future);
         return future;
@@ -177,6 +176,7 @@ public class DefaultFuture {
         }
     }
 
+    @Override
     public boolean cancel(boolean mayInterruptIfRunning) {
         Response errorResult = new Response(id);
         errorResult.setStatus(Response.CLIENT_ERROR);
@@ -185,14 +185,6 @@ public class DefaultFuture {
         FUTURES.remove(id);
         CHANNELS.remove(id);
         return true;
-    }
-
-    public boolean isDone() {
-        return this.completableFuture.isDone();
-    }
-
-    public Object get() throws ExecutionException, InterruptedException {
-        return this.completableFuture.get();
     }
 
     public void cancel() {
@@ -204,11 +196,11 @@ public class DefaultFuture {
             throw new IllegalStateException("response cannot be null");
         }
         if (res.getStatus() == Response.OK) {
-            this.completableFuture.complete(res.getResult());
+            this.complete(res.getResult());
         } else if (res.getStatus() == Response.CLIENT_TIMEOUT || res.getStatus() == Response.SERVER_TIMEOUT) {
-            this.completableFuture.completeExceptionally(new TimeoutException(res.getStatus() == Response.SERVER_TIMEOUT, channel, res.getErrorMessage()));
+            this.completeExceptionally(new TimeoutException(res.getStatus() == Response.SERVER_TIMEOUT, channel, res.getErrorMessage()));
         } else {
-            this.completableFuture.completeExceptionally(new RemotingException(channel, res.getErrorMessage()));
+            this.completeExceptionally(new RemotingException(channel, res.getErrorMessage()));
         }
 
         // the result is returning, but the caller thread may still waiting

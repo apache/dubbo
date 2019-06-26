@@ -81,21 +81,21 @@ public class MockedClient implements ExchangeClient {
         this.sent = msg;
     }
 
-    public CompletableFuture<Object> request(Object msg, CompletableFuture completableFuture) throws RemotingException {
-        return request(msg, null, completableFuture);
+    public CompletableFuture<Object> request(Object msg) throws RemotingException {
+        return request(msg, null);
     }
 
-    public CompletableFuture<Object> request(Object msg, int timeout, CompletableFuture completableFuture) throws RemotingException {
-        return this.request(msg, timeout, null, completableFuture);
-    }
-
-    @Override
-    public CompletableFuture<Object> request(Object msg, ExecutorService executor, CompletableFuture completableFuture) throws RemotingException {
-        return this.request(msg, 0, executor, completableFuture);
+    public CompletableFuture<Object> request(Object msg, int timeout) throws RemotingException {
+        return this.request(msg, timeout, null);
     }
 
     @Override
-    public CompletableFuture<Object> request(Object msg, int timeout, ExecutorService executor, CompletableFuture completableFuture) throws RemotingException {
+    public CompletableFuture<Object> request(Object msg, ExecutorService executor) throws RemotingException {
+        return this.request(msg, 0, executor);
+    }
+
+    @Override
+    public CompletableFuture<Object> request(Object msg, int timeout, ExecutorService executor) throws RemotingException {
         this.invoked = msg;
         return new CompletableFuture<Object>() {
             public Object get() throws InterruptedException, ExecutionException {

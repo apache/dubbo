@@ -57,8 +57,8 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
     }
 
     @Override
-    public CompletableFuture<Object> request(Object request, CompletableFuture completableFuture) throws RemotingException {
-        return client.request(request, completableFuture);
+    public CompletableFuture<Object> request(Object request) throws RemotingException {
+        return client.request(request);
     }
 
     @Override
@@ -77,18 +77,18 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
     }
 
     @Override
-    public CompletableFuture<Object> request(Object request, int timeout, CompletableFuture completableFuture) throws RemotingException {
-        return client.request(request, timeout, completableFuture);
+    public CompletableFuture<Object> request(Object request, int timeout) throws RemotingException {
+        return client.request(request, timeout);
     }
 
     @Override
-    public CompletableFuture<Object> request(Object request, ExecutorService executor, CompletableFuture completableFuture) throws RemotingException {
-        return client.request(request, executor, completableFuture);
+    public CompletableFuture<Object> request(Object request, ExecutorService executor) throws RemotingException {
+        return client.request(request, executor);
     }
 
     @Override
-    public CompletableFuture<Object> request(Object request, int timeout, ExecutorService executor, CompletableFuture completableFuture) throws RemotingException {
-        return client.request(request, timeout, executor, completableFuture);
+    public CompletableFuture<Object> request(Object request, int timeout, ExecutorService executor) throws RemotingException {
+        return client.request(request, timeout, executor);
     }
 
     @Override

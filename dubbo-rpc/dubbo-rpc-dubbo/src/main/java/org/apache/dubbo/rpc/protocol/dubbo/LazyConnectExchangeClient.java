@@ -35,8 +35,8 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static org.apache.dubbo.remoting.Constants.SEND_RECONNECT_KEY;
-import static org.apache.dubbo.rpc.protocol.dubbo.Constants.DEFAULT_LAZY_CONNECT_INITIAL_STATE;
 import static org.apache.dubbo.rpc.protocol.dubbo.Constants.LAZY_CONNECT_INITIAL_STATE_KEY;
+import static org.apache.dubbo.rpc.protocol.dubbo.Constants.DEFAULT_LAZY_CONNECT_INITIAL_STATE;
 
 /**
  * dubbo protocol support class.
@@ -88,10 +88,10 @@ final class LazyConnectExchangeClient implements ExchangeClient {
     }
 
     @Override
-    public CompletableFuture<Object> request(Object request, CompletableFuture completableFuture) throws RemotingException {
+    public CompletableFuture<Object> request(Object request) throws RemotingException {
         warning();
         initClient();
-        return client.request(request, completableFuture);
+        return client.request(request);
     }
 
     @Override
@@ -109,24 +109,24 @@ final class LazyConnectExchangeClient implements ExchangeClient {
     }
 
     @Override
-    public CompletableFuture<Object> request(Object request, int timeout, CompletableFuture completableFuture) throws RemotingException {
+    public CompletableFuture<Object> request(Object request, int timeout) throws RemotingException {
         warning();
         initClient();
-        return client.request(request, timeout, completableFuture);
+        return client.request(request, timeout);
     }
 
     @Override
-    public CompletableFuture<Object> request(Object request, ExecutorService executor, CompletableFuture completableFuture) throws RemotingException {
+    public CompletableFuture<Object> request(Object request, ExecutorService executor) throws RemotingException {
         warning();
         initClient();
-        return client.request(request, executor, completableFuture);
+        return client.request(request, executor);
     }
 
     @Override
-    public CompletableFuture<Object> request(Object request, int timeout, ExecutorService executor, CompletableFuture completableFuture) throws RemotingException {
+    public CompletableFuture<Object> request(Object request, int timeout, ExecutorService executor) throws RemotingException {
         warning();
         initClient();
-        return client.request(request, timeout, executor, completableFuture);
+        return client.request(request, timeout, executor);
     }
 
     /**

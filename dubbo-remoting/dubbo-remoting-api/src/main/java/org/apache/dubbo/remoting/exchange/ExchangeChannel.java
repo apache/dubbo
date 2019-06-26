@@ -35,7 +35,7 @@ public interface ExchangeChannel extends Channel {
      * @throws RemotingException
      */
     @Deprecated
-    CompletableFuture<Object> request(Object request, CompletableFuture completableFuture) throws RemotingException;
+    CompletableFuture<Object> request(Object request) throws RemotingException;
 
     /**
      * send request.
@@ -46,7 +46,7 @@ public interface ExchangeChannel extends Channel {
      * @throws RemotingException
      */
     @Deprecated
-    CompletableFuture<Object> request(Object request, int timeout, CompletableFuture completableFuture) throws RemotingException;
+    CompletableFuture<Object> request(Object request, int timeout) throws RemotingException;
 
     /**
      * send request.
@@ -55,7 +55,7 @@ public interface ExchangeChannel extends Channel {
      * @return response future
      * @throws RemotingException
      */
-    CompletableFuture<Object> request(Object request, ExecutorService executor, CompletableFuture completableFuture) throws RemotingException;
+    CompletableFuture<Object> request(Object request, ExecutorService executor) throws RemotingException;
 
     /**
      * send request.
@@ -65,7 +65,7 @@ public interface ExchangeChannel extends Channel {
      * @return response future
      * @throws RemotingException
      */
-    CompletableFuture<Object> request(Object request, int timeout, ExecutorService executor, CompletableFuture completableFuture) throws RemotingException;
+    CompletableFuture<Object> request(Object request, int timeout, ExecutorService executor) throws RemotingException;
 
     /**
      * get message handler.

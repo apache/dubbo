@@ -29,7 +29,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -144,7 +143,7 @@ public class HeaderExchangeChannelTest {
         Assertions.assertThrows(RemotingException.class, () -> {
             header.close(1000);
             Object requestob = new Object();
-            header.request(requestob, CompletableFuture.completedFuture(0));
+            header.request(requestob);
         });
     }
 
@@ -154,7 +153,7 @@ public class HeaderExchangeChannelTest {
         header = new HeaderExchangeChannel(channel);
         when(channel.getUrl()).thenReturn(url);
         Object requestob = new Object();
-        header.request(requestob, CompletableFuture.completedFuture(0));
+        header.request(requestob);
         ArgumentCaptor<Request> argumentCaptor = ArgumentCaptor.forClass(Request.class);
         verify(channel, times(1)).send(argumentCaptor.capture());
         Assertions.assertEquals(argumentCaptor.getValue().getData(), requestob);
@@ -171,7 +170,7 @@ public class HeaderExchangeChannelTest {
             };
             header = new HeaderExchangeChannel(channel);
             Object requestob = new Object();
-            header.request(requestob, 1000, CompletableFuture.completedFuture(0));
+            header.request(requestob, 1000);
         });
     }
 
@@ -192,7 +191,7 @@ public class HeaderExchangeChannelTest {
     public void closeWithTimeoutTest02() {
         Assertions.assertFalse(channel.isClosed());
         Request request = new Request();
-        DefaultFuture.newFuture(channel, request, 100, null, CompletableFuture.completedFuture(0));
+        DefaultFuture.newFuture(channel, request, 100, null);
         header.close(100);
         //return directly
         header.close(1000);

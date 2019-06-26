@@ -31,6 +31,7 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
@@ -92,7 +93,8 @@ public class ThriftInvoker<T> extends AbstractInvoker<T> {
             int timeout = getUrl().getMethodParameter(methodName, TIMEOUT_KEY, DEFAULT_TIMEOUT);
 
             AsyncRpcResult asyncRpcResult = new AsyncRpcResult(invocation);
-            currentClient.request(inv, timeout, asyncRpcResult);
+            CompletableFuture<Object> responseFuture = currentClient.request(inv, timeout);
+            asyncRpcResult.subscribeTo(responseFuture);
             return asyncRpcResult;
         } catch (TimeoutException e) {
             throw new RpcException(RpcException.TIMEOUT_EXCEPTION, e.getMessage(), e);
