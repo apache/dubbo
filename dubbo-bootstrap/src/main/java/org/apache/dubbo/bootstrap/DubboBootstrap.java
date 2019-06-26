@@ -17,19 +17,32 @@
 package org.apache.dubbo.bootstrap;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.Environment;
+import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
+import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
+import org.apache.dubbo.common.config.configcenter.wrapper.CompositeDynamicConfiguration;
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.AbstractConfig;
-import org.apache.dubbo.config.AbstractInterfaceConfig;
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.ConfigCenterConfig;
+import org.apache.dubbo.config.ConsumerConfig;
+import org.apache.dubbo.config.DubboShutdownHook;
+import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.ProtocolConfig;
+import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.builders.AbstractBuilder;
 import org.apache.dubbo.config.builders.ApplicationBuilder;
+import org.apache.dubbo.config.builders.ConsumerBuilder;
 import org.apache.dubbo.config.builders.ProtocolBuilder;
+import org.apache.dubbo.config.builders.ProviderBuilder;
 import org.apache.dubbo.config.builders.ReferenceBuilder;
 import org.apache.dubbo.config.builders.RegistryBuilder;
 import org.apache.dubbo.config.builders.ServiceBuilder;
@@ -37,16 +50,19 @@ import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.metadata.ConfigurableMetadataServiceExporter;
 import org.apache.dubbo.event.EventDispatcher;
 import org.apache.dubbo.event.EventListener;
-import org.apache.dubbo.metadata.MetadataServiceExporter;
+import org.apache.dubbo.metadata.WritableMetadataService;
+import org.apache.dubbo.metadata.store.RemoteWritableMetadataService;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.support.ServiceOrientedRegistry;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
@@ -55,12 +71,9 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import static java.util.Collections.emptyMap;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
+import static org.apache.dubbo.common.config.ConfigurationUtils.parseProperties;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
-import static org.apache.dubbo.common.utils.StringUtils.isBlank;
-import static org.apache.dubbo.common.utils.StringUtils.split;
-import static org.apache.dubbo.common.utils.StringUtils.trim;
 import static org.apache.dubbo.registry.support.AbstractRegistryFactory.getRegistries;
 
 /**
@@ -81,8 +94,6 @@ public class DubboBootstrap {
     private static final String NAME = DubboBootstrap.class.getSimpleName();
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
-
-    private final MetadataServiceExporter metadataServiceExporter = new ConfigurableMetadataServiceExporter();
 
     private final AtomicBoolean awaited = new AtomicBoolean(false);
 
@@ -112,6 +123,10 @@ public class DubboBootstrap {
 
     private ApplicationBuilder applicationBuilder;
 
+    private ConsumerBuilder consumerBuilder;
+
+    private ProviderBuilder providerBuilder;
+
     private Map<String, RegistryBuilder> registryBuilders = new HashMap<>();
 
     private Map<String, ProtocolBuilder> protocolBuilders = new HashMap<>();
@@ -120,57 +135,8 @@ public class DubboBootstrap {
 
     private Map<String, ReferenceBuilder<?>> referenceBuilders = new HashMap<>();
 
-    /**
-     * The global {@link ApplicationConfig}
-     */
-    private ApplicationConfig applicationConfig;
-
-    /**
-     * the global {@link RegistryConfig registries}
-     */
-    private Map<String, RegistryConfig> registryConfigs = emptyMap();
-
-    /**
-     * the global {@link RegistryConfig registries}
-     */
-    private Map<String, ProtocolConfig> protocolConfigs = emptyMap();
-
-    /**
-     * the global {@link ServiceConfig services}
-     */
-    private Map<String, ServiceConfig<?>> serviceConfigs = emptyMap();
-
-    /**
-     * the global {@link ReferenceConfig references}
-     */
-    private Map<String, ReferenceConfig<?>> referenceConfigs = new HashMap<>();
-
-    public ApplicationSettings application(String name) {
-        return new ApplicationSettings(initApplicationBuilder(name), this);
-    }
-
-    public RegistrySettings registry() {
-        return registry(DEFAULT_REGISTRY_ID);
-    }
-
-    public RegistrySettings registry(String id) {
-        return new RegistrySettings(initRegistryBuilder(id), this);
-    }
-
-    public ProtocolSettings protocol() {
-        return protocol(DEFAULT_PROTOCOL_ID);
-    }
-
-    public ProtocolSettings protocol(String id) {
-        return new ProtocolSettings(initProtocolBuilder(id), this);
-    }
-
-    public <S> ServiceSettings<S> service(String id) {
-        return new ServiceSettings(initServiceBuilder(id), this);
-    }
-
-    public <S> ReferenceSettings<S> reference(String id) {
-        return new ReferenceSettings<>(initReferenceBuilder(id), this);
+    public DubboBootstrap() {
+        DubboShutdownHook.getDubboShutdownHook().register();
     }
 
     /**
@@ -184,6 +150,73 @@ public class DubboBootstrap {
         return this;
     }
 
+    /* accept Config instance */
+    public DubboBootstrap application(ApplicationConfig applicationConfig) {
+        ConfigManager.getInstance().setApplication(applicationConfig);
+        return this;
+    }
+
+    public DubboBootstrap configCenter(ConfigCenterConfig configCenterConfig) {
+        ConfigManager.getInstance().addConfigCenter(configCenterConfig);
+        return this;
+    }
+
+    public DubboBootstrap configCenter(List<ConfigCenterConfig> configCenterConfigs) {
+        ConfigManager.getInstance().addConfigCenter(configCenterConfigs);
+        return this;
+    }
+
+    public DubboBootstrap metadataReport(MetadataReportConfig metadataReportConfig) {
+        ConfigManager.getInstance().addMetadataReport(metadataReportConfig);
+        return this;
+    }
+
+    public DubboBootstrap metadataReport(List<MetadataReportConfig> metadataReportConfigs) {
+        ConfigManager.getInstance().addMetadataReport(metadataReportConfigs);
+        return this;
+    }
+
+    public DubboBootstrap registry(RegistryConfig registryConfig) {
+        ConfigManager.getInstance().addRegistry(registryConfig, true);
+        return this;
+    }
+
+    public DubboBootstrap registry(List<RegistryConfig> registryConfigs) {
+        ConfigManager.getInstance().addRegistries(registryConfigs, true);
+        return this;
+    }
+
+    public DubboBootstrap protocol(ProtocolConfig protocolConfig) {
+        ConfigManager.getInstance().addProtocol(protocolConfig, true);
+        return this;
+    }
+
+    public DubboBootstrap protocols(List<ProtocolConfig> protocolConfigs) {
+        ConfigManager.getInstance().addProtocols(protocolConfigs, true);
+        return this;
+    }
+
+    public DubboBootstrap consumer(ConsumerConfig consumerConfig) {
+        ConfigManager.getInstance().addConsumer(consumerConfig);
+        return this;
+    }
+
+    public DubboBootstrap provider(ProviderConfig providerConfig) {
+        ConfigManager.getInstance().addProvider(providerConfig);
+        return this;
+    }
+
+    public DubboBootstrap service(ServiceConfig<?> serviceConfig) {
+        ConfigManager.getInstance().addService(serviceConfig);
+        return this;
+    }
+
+    public DubboBootstrap reference(ReferenceConfig<?> referenceConfig) {
+        ConfigManager.getInstance().addReference(referenceConfig);
+        return this;
+    }
+
+    /* accept builder functional interface */
     public DubboBootstrap application(String name, Consumer<ApplicationBuilder> builder) {
         initApplicationBuilder(name);
         builder.accept(applicationBuilder);
@@ -219,17 +252,30 @@ public class DubboBootstrap {
             return;
         }
 
-        initApplicationConfig();
+        buildApplicationConfig();
 
-        initRegistryConfigs();
+        buildRegistryConfigs();
 
-        initProtocolConfigs();
+        buildProtocolConfigs();
 
-        initServiceConfigs();
+        buildServiceConfigs();
 
-        initReferenceConfigs();
+        buildReferenceConfigs();
 
         clearBuilders();
+
+        startConfigCenter();
+        startMetadataReport();
+
+        loadRemoteConfigs();
+        useRegistryAsConfigCenterIfNecessary();
+
+//        checkApplication();
+//        checkProvider();
+//        chcckConsumer();
+//        checkRegistry();
+//        checkProtocol();
+//        checkMonitor();
 
         initialized = true;
 
@@ -238,26 +284,67 @@ public class DubboBootstrap {
         }
     }
 
-    /**
-     * Get the {@link ServiceConfig} by specified id
-     *
-     * @param id  The {@link ServiceConfig#getId() id} of {@link ServiceConfig}
-     * @param <S> the type of service interface
-     * @return <code>null</code> if not found
-     */
-    public <S> ServiceConfig<S> serviceConfig(String id) {
-        return (ServiceConfig<S>) serviceConfigs.get(id);
+    private void loadRemoteConfigs() {
+        ConfigManager configManager = ConfigManager.getInstance();
+
+        // registry ids to registry configs
+        List<RegistryConfig> tmpRegistries = new ArrayList<>();
+        Set<String> registryIds = configManager.getRegistryIds();
+        registryIds.forEach(id -> {
+            if (tmpRegistries.stream().noneMatch(reg -> reg.getId().equals(id))) {
+                tmpRegistries.add(configManager.getRegistry(id).orElseGet(() -> {
+                    RegistryConfig registryConfig = new RegistryConfig();
+                    registryConfig.setId(id);
+                    registryConfig.refresh();
+                    return registryConfig;
+                }));
+            }
+        });
+
+        configManager.addRegistries(tmpRegistries, true);
+
+        // protocol ids to protocol configs
+        List<ProtocolConfig> tmpProtocols = new ArrayList<>();
+        Set<String> protocolIds = configManager.getProtocolIds();
+        protocolIds.forEach(id -> {
+            if (tmpProtocols.stream().noneMatch(prot -> prot.getId().equals(id))) {
+                tmpProtocols.add(configManager.getProtocol(id).orElseGet(() -> {
+                    ProtocolConfig protocolConfig = new ProtocolConfig();
+                    protocolConfig.setId(id);
+                    protocolConfig.refresh();
+                    return protocolConfig;
+                }));
+            }
+        });
+
+        configManager.addProtocols(tmpProtocols, true);
     }
 
     /**
-     * Get the {@link ReferenceConfig} by specified id
-     *
-     * @param id  The {@link ReferenceConfig#getId() id} of {@link ReferenceConfig}
-     * @param <S> the type of service interface
-     * @return <code>null</code> if not found
+     * For compatibility purpose, use registry as the default config center when the registry protocol is zookeeper and
+     * there's no config center specified explicitly.
      */
-    public <S> ReferenceConfig<S> referenceConfig(String id) {
-        return (ReferenceConfig<S>) referenceConfigs.get(id);
+    private void useRegistryAsConfigCenterIfNecessary() {
+        ConfigManager configManager = ConfigManager.getInstance();
+        configManager.getDefaultRegistries().ifPresent(registryConfigs -> {
+            for (RegistryConfig registryConfig : registryConfigs) {
+                if (registryConfig != null && registryConfig.isZookeeperProtocol()) {
+                    // we use the loading status of DynamicConfiguration to decide whether ConfigCenter has been initiated.
+                    Environment.getInstance().getDynamicConfiguration().orElseGet(() -> {
+                        Set<ConfigCenterConfig> configCenters = configManager.getConfigCenters();
+                        if (CollectionUtils.isEmpty(configCenters)) {
+                            ConfigCenterConfig cc = new ConfigCenterConfig();
+                            cc.setProtocol(registryConfig.getProtocol());
+                            cc.setAddress(registryConfig.getAddress());
+                            cc.setHighestPriority(false);
+                            configManager.addConfigCenter(cc);
+                        }
+                        return null;
+                    });
+                }
+            }
+            startConfigCenter();
+        });
     }
 
     private List<ServiceDiscovery> getServiceDiscoveries() {
@@ -282,11 +369,17 @@ public class DubboBootstrap {
             exportServices();
 
             // Not only provider register and some services are exported
-            if (!onlyRegisterProvider && !serviceConfigs.isEmpty()) {
+            if (!onlyRegisterProvider && !ConfigManager.getInstance().getServiceConfigs().isEmpty()) {
                 /**
                  * export {@link MetadataService}
                  */
-                List<URL> exportedURLs = exportMetadataService(applicationConfig, registryConfigs, protocolConfigs);
+                ConfigManager configManager = ConfigManager.getInstance();
+                // TODO, only export to default registry?
+                List<URL> exportedURLs = exportMetadataService (
+                        configManager.getApplication().orElseThrow(() -> new IllegalStateException("ApplicationConfig cannot be null")),
+                        configManager.getDefaultRegistries().orElseThrow(() -> new IllegalStateException("No default RegistryConfig")),
+                        configManager.getDefaultProtocols().orElseThrow(() -> new IllegalStateException("No default ProtocolConfig"))
+                );
 
                 /**
                  * Register the local {@link ServiceInstance}
@@ -357,6 +450,7 @@ public class DubboBootstrap {
         return started;
     }
 
+    /* serve for builder apis, begin */
     private ApplicationBuilder initApplicationBuilder(String name) {
         applicationBuilder = new ApplicationBuilder().name(name);
         return applicationBuilder;
@@ -394,21 +488,76 @@ public class DubboBootstrap {
         return referenceBuilders.computeIfAbsent(id, this::createReferenceBuilder);
     }
 
-    private void initApplicationConfig() {
-        this.applicationConfig = buildApplicationConfig();
+    /* serve for builder apis, end */
+
+    private void startMetadataReport() {
+        ApplicationConfig applicationConfig = ConfigManager.getInstance().getApplication().orElseThrow(() -> new IllegalStateException("There's no ApplicationConfig specified."));
+
+        // FIXME, multiple metadata config support.
+        Set<MetadataReportConfig> metadataReportConfigs = ConfigManager.getInstance().getMetadataConfigs();
+        if (CollectionUtils.isEmpty(metadataReportConfigs)) {
+            if (CommonConstants.METADATA_REMOTE.equals(applicationConfig.getMetadata())) {
+                throw new IllegalStateException("No MetadataConfig found, you must specify the remote Metadata Center address when set 'metadata=remote'.");
+            }
+            return;
+        }
+        MetadataReportConfig metadataReportConfig = metadataReportConfigs.iterator().next();
+        if (!metadataReportConfig.isValid()) {
+            return;
+        }
+
+        RemoteWritableMetadataService remoteMetadataService =
+                (RemoteWritableMetadataService) WritableMetadataService.getExtension(applicationConfig.getMetadata());
+        remoteMetadataService.initMetadataReport(metadataReportConfig.toUrl());
     }
 
-    private void initRegistryConfigs() {
-        this.registryConfigs = buildRegistryConfigs();
+    private void startConfigCenter() {
+        Set<ConfigCenterConfig> configCenters = ConfigManager.getInstance().getConfigCenters();
+
+        if (CollectionUtils.isNotEmpty(configCenters)) {
+            CompositeDynamicConfiguration compositeDynamicConfiguration = new CompositeDynamicConfiguration();
+            for (ConfigCenterConfig configCenter : configCenters) {
+                configCenter.refresh();
+                compositeDynamicConfiguration.addConfiguration(prepareEnvironment(configCenter));
+            }
+            Environment.getInstance().setDynamicConfiguration(compositeDynamicConfiguration);
+        }
+        ConfigManager.getInstance().refreshAll();
     }
 
-    private void initProtocolConfigs() {
-        this.protocolConfigs = buildProtocolConfigs();
+    private DynamicConfiguration prepareEnvironment(ConfigCenterConfig configCenter) {
+        if (configCenter.isValid()) {
+            if (!configCenter.checkOrUpdateInited()) {
+                return null;
+            }
+            DynamicConfiguration dynamicConfiguration = getDynamicConfiguration(configCenter.toUrl());
+            String configContent = dynamicConfiguration.getConfigs(configCenter.getConfigFile(), configCenter.getGroup());
+
+            String appGroup = ConfigManager.getInstance().getApplication().orElse(new ApplicationConfig()).getName();
+            String appConfigContent = null;
+            if (StringUtils.isNotEmpty(appGroup)) {
+                appConfigContent = dynamicConfiguration.getConfigs
+                        (StringUtils.isNotEmpty(configCenter.getAppConfigFile()) ? configCenter.getAppConfigFile() : configCenter.getConfigFile(),
+                                appGroup
+                        );
+            }
+            try {
+                Environment.getInstance().setConfigCenterFirst(configCenter.isHighestPriority());
+                Environment.getInstance().updateExternalConfigurationMap(parseProperties(configContent));
+                Environment.getInstance().updateAppExternalConfigurationMap(parseProperties(appConfigContent));
+            } catch (IOException e) {
+                throw new IllegalStateException("Failed to parse configurations from Config Center.", e);
+            }
+            return dynamicConfiguration;
+        }
+        return null;
     }
 
-    private void initReferenceConfigs() {
-        this.referenceConfigs = buildReferenceConfigs();
-        this.referenceConfigs.values().forEach(this::initReferenceConfig);
+    private DynamicConfiguration getDynamicConfiguration(URL url) {
+        DynamicConfigurationFactory factory = ExtensionLoader
+                .getExtensionLoader(DynamicConfigurationFactory.class)
+                .getExtension(url.getProtocol());
+        return factory.getDynamicConfiguration(url);
     }
 
     /**
@@ -422,103 +571,49 @@ public class DubboBootstrap {
         return this;
     }
 
-    private void initServiceConfigs() {
-        this.serviceConfigs = buildServiceConfigs();
-        this.serviceConfigs.values().forEach(this::initServiceConfig);
-    }
-
     private List<URL> exportMetadataService(ApplicationConfig applicationConfig,
-                                            Map<String, RegistryConfig> globalRegistryConfigs,
-                                            Map<String, ProtocolConfig> globalProtocolConfigs) {
+                                            List<RegistryConfig> globalRegistryConfigs,
+                                            List<ProtocolConfig> globalProtocolConfigs) {
         ConfigurableMetadataServiceExporter exporter = new ConfigurableMetadataServiceExporter();
         exporter.setApplicationConfig(applicationConfig);
-        exporter.setRegistries(globalRegistryConfigs.values());
-        exporter.setProtocols(globalProtocolConfigs.values());
+        exporter.setRegistries(globalRegistryConfigs);
+        exporter.setProtocols(globalProtocolConfigs);
         return exporter.export();
     }
 
-    private ApplicationConfig buildApplicationConfig() {
-        return applicationBuilder.build();
+    private void buildApplicationConfig() {
+        ApplicationConfig applicationConfig = null;
+        if (applicationBuilder != null) {
+            applicationConfig = applicationBuilder.build();
+        }
+        ConfigManager.getInstance().setApplication(applicationConfig);
     }
 
-    private Map<String, ProtocolConfig> buildProtocolConfigs() {
-        return buildConfigs(protocolBuilders);
+    private void buildProtocolConfigs() {
+        List<ProtocolConfig> protocolConfigs = buildConfigs(protocolBuilders);
+        ConfigManager.getInstance().addProtocols(protocolConfigs, true);
     }
 
-    private Map<String, RegistryConfig> buildRegistryConfigs() {
-        return buildConfigs(registryBuilders);
+    private void buildRegistryConfigs() {
+        List<RegistryConfig> registryConfigs = buildConfigs(registryBuilders);
+        ConfigManager.getInstance().addRegistries(registryConfigs, true);
     }
 
-    private Map<String, ServiceConfig<?>> buildServiceConfigs() {
-        return buildConfigs(serviceBuilders);
+    private void buildServiceConfigs() {
+        List<ServiceConfig<?>> serviceConfigs = buildConfigs(serviceBuilders);
+        serviceConfigs.forEach(ConfigManager.getInstance()::addService);
     }
 
-    private Map<String, ReferenceConfig<?>> buildReferenceConfigs() {
-        return buildConfigs(referenceBuilders);
+    private void buildReferenceConfigs() {
+        List<ReferenceConfig<?>> referenceConfigs = buildConfigs(referenceBuilders);
+        referenceConfigs.forEach(ConfigManager.getInstance()::addReference);
     }
 
     private void exportServices() {
-        serviceConfigs.values().forEach(this::exportServiceConfig);
+        ConfigManager.getInstance().getServiceConfigs().forEach(this::exportServiceConfig);
     }
 
-    private void initServiceConfig(ServiceConfig<?> serviceConfig) {
-        initConfig(serviceConfig);
-        initProtocols(serviceConfig);
-    }
-
-    private void initReferenceConfig(ReferenceConfig<?> referenceConfig) {
-        initConfig(referenceConfig);
-    }
-
-    private void initConfig(AbstractInterfaceConfig config) {
-        initApplication(config);
-        initRegistries(config);
-    }
-
-    private void initApplication(AbstractInterfaceConfig config) {
-        if (config.getApplication() == null) {
-            config.setApplication(applicationConfig);
-        }
-    }
-
-    private void initRegistries(AbstractInterfaceConfig config) {
-        List<RegistryConfig> registries = config.getRegistries();
-        if (CollectionUtils.isEmpty(registries)) { // If no registry present
-            registries = new LinkedList<>();
-            String registerIds = config.getRegistryIds();
-            if (!isBlank(registerIds)) {
-                for (String id : split(registerIds, ',')) {
-                    RegistryConfig registryConfig = registryConfigs.get(trim(id));
-                    registries.add(registryConfig);
-                }
-            }
-            if (registries.isEmpty()) { // If empty, add all global registries
-                registries.addAll(registryConfigs.values());
-            }
-
-            config.setRegistries(registries);
-        }
-    }
-
-    private void initProtocols(ServiceConfig<?> serviceConfig) {
-        List<ProtocolConfig> protocols = serviceConfig.getProtocols();
-        if (CollectionUtils.isEmpty(protocols)) { // If no protocols present
-            protocols = new LinkedList<>();
-            String protocolIds = serviceConfig.getProtocolIds();
-            if (!isBlank(protocolIds)) {
-                for (String id : split(protocolIds, ',')) {
-                    ProtocolConfig protocol = protocolConfigs.get(trim(id));
-                    protocols.add(protocol);
-                }
-            }
-            if (protocols.isEmpty()) { // If empty, add all global protocols
-                protocols.addAll(protocolConfigs.values());
-            }
-            serviceConfig.setProtocols(protocols);
-        }
-    }
-
-    private void exportServiceConfig(ServiceConfig<?> serviceConfig) {
+    public void exportServiceConfig(ServiceConfig<?> serviceConfig) {
         serviceConfig.export();
     }
 
@@ -563,14 +658,14 @@ public class DubboBootstrap {
     }
 
     private void destroyProtocolConfigs() {
-        protocolConfigs.values().forEach(ProtocolConfig::destroy);
+        ConfigManager.getInstance().getProtocols().values().forEach(ProtocolConfig::destroy);
         if (logger.isDebugEnabled()) {
             logger.debug(NAME + "'s all ProtocolConfigs have been destroyed.");
         }
     }
 
     private void destroyReferenceConfigs() {
-        referenceConfigs.values().forEach(ReferenceConfig::destroy);
+        ConfigManager.getInstance().getReferenceConfigs().forEach(ReferenceConfig::destroy);
         if (logger.isDebugEnabled()) {
             logger.debug(NAME + "'s all ReferenceConfigs have been destroyed.");
         }
@@ -586,11 +681,7 @@ public class DubboBootstrap {
     }
 
     private void clearConfigs() {
-        this.applicationConfig = null;
-        this.registryConfigs.clear();
-        this.protocolConfigs.clear();
-        this.serviceConfigs.clear();
-        this.referenceConfigs.clear();
+        ConfigManager.getInstance().clear();
         if (logger.isDebugEnabled()) {
             logger.debug(NAME + "'s configs have been clear.");
         }
@@ -634,10 +725,10 @@ public class DubboBootstrap {
         }
     }
 
-    private static <C extends AbstractConfig, B extends AbstractBuilder> Map<String, C> buildConfigs(Map<String, B> map) {
-        Map<String, C> configs = new HashMap<>();
+    private static <C extends AbstractConfig, B extends AbstractBuilder> List<C> buildConfigs(Map<String, B> map) {
+        List<C> configs = new ArrayList<>();
         map.entrySet().forEach(entry -> {
-            configs.put(entry.getKey(), (C) entry.getValue().build());
+            configs.add((C) entry.getValue().build());
         });
         return configs;
     }

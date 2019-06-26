@@ -68,6 +68,10 @@ public class ServiceBuilder<U> extends AbstractServiceBuilder<ServiceConfig, Ser
      */
     private String generic;
 
+    public static ServiceBuilder newBuilder() {
+        return new ServiceBuilder();
+    }
+
     public ServiceBuilder id(String id) {
         return super.id(id);
     }

@@ -17,7 +17,7 @@
 package org.apache.dubbo.rpc.cluster.router;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.configcenter.DynamicConfiguration;
+import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.rpc.cluster.Router;
 
 public abstract class AbstractRouter implements Router {

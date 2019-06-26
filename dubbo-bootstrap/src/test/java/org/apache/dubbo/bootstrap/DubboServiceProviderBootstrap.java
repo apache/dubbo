@@ -16,10 +16,13 @@
  */
 package org.apache.dubbo.bootstrap;
 
-import java.io.IOException;
+import org.apache.dubbo.config.builders.ApplicationBuilder;
+import org.apache.dubbo.config.builders.MetadataReportBuilder;
+import org.apache.dubbo.config.builders.ProtocolBuilder;
+import org.apache.dubbo.config.builders.RegistryBuilder;
+import org.apache.dubbo.config.builders.ServiceBuilder;
 
-import static org.apache.dubbo.bootstrap.EchoService.GROUP;
-import static org.apache.dubbo.bootstrap.EchoService.VERSION;
+import java.io.IOException;
 
 /**
  * Dubbo Provider Bootstrap
@@ -31,21 +34,12 @@ public class DubboServiceProviderBootstrap {
     public static void main(String[] args) throws IOException {
 
         new DubboBootstrap()
-                .application("dubbo-provider-demo")
-                .next()
-                .registry()
-                .address("nacos://127.0.0.1:8848?registry-type=service")
-                .next()
-                .protocol()
-                .name("dubbo")
-                .port(-1)
-                .next()
-                .service("test")
-                .interfaceClass(EchoService.class)
-                .ref(new EchoServiceImpl())
-                .group(GROUP)
-                .version(VERSION)
-                .next()
+                .application(ApplicationBuilder.newBuilder().name("dubbo-provider-demo").metadata("remote").build())
+                .metadataReport(MetadataReportBuilder.newBuilder().address("zookeeper://127.0.0.1:2181").build())
+//                .application(ApplicationBuilder.newBuilder().name("dubbo-provider-demo").build())
+                .registry(RegistryBuilder.newBuilder().address("zookeeper://127.0.0.1:2181?registry-type=service").build())
+                .protocol(ProtocolBuilder.newBuilder().port(-1).name("dubbo").build())
+                .service(ServiceBuilder.newBuilder().id("test").interfaceClass(EchoService.class).ref(new EchoServiceImpl()).build())
                 .start()
                 .await();
     }

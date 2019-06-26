@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.utils.Assert;
+import org.apache.dubbo.rpc.Invoker;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -29,34 +30,35 @@ import java.util.Optional;
  * Consumer Model which is about subscribed services.
  */
 public class ConsumerModel {
-    private final Object proxyObject;
-    private final String serviceName;
+    private final String serviceKey;
     private final Class<?> serviceInterfaceClass;
 
     private final Map<Method, ConsumerMethodModel> methodModels = new IdentityHashMap<Method, ConsumerMethodModel>();
+
+    private Object proxyObject;
+    private Invoker<?> invoker;
 
     /**
      *  This constructor create an instance of ConsumerModel and passed objects should not be null.
      *  If service name, service instance, proxy object,methods should not be null. If these are null
      *  then this constructor will throw {@link IllegalArgumentException}
-     * @param serviceName Name of the service.
+     * @param serviceKey Name of the service.
      * @param serviceInterfaceClass Service interface class.
      * @param proxyObject  Proxy object.
      * @param methods Methods of service class
      * @param attributes Attributes of methods.
      */
-    public ConsumerModel(String serviceName
+    public ConsumerModel(String serviceKey
             , Class<?> serviceInterfaceClass
             , Object proxyObject
             , Method[] methods
             , Map<String, Object> attributes) {
 
-        Assert.notEmptyString(serviceName, "Service name can't be null or blank");
+        Assert.notEmptyString(serviceKey, "Service name can't be null or blank");
         Assert.notNull(serviceInterfaceClass, "Service interface class can't null");
-        Assert.notNull(proxyObject, "Proxy object can't be null");
         Assert.notNull(methods, "Methods can't be null");
 
-        this.serviceName = serviceName;
+        this.serviceKey = serviceKey;
         this.serviceInterfaceClass = serviceInterfaceClass;
         this.proxyObject = proxyObject;
         for (Method method : methods) {
@@ -106,7 +108,19 @@ public class ConsumerModel {
         return serviceInterfaceClass;
     }
 
-    public String getServiceName() {
-        return serviceName;
+    public String getServiceKey() {
+        return serviceKey;
+    }
+
+    public void setProxyObject(Object proxyObject) {
+        this.proxyObject = proxyObject;
+    }
+
+    public Invoker<?> getInvoker() {
+        return invoker;
+    }
+
+    public void setInvoker(Invoker<?> invoker) {
+        this.invoker = invoker;
     }
 }

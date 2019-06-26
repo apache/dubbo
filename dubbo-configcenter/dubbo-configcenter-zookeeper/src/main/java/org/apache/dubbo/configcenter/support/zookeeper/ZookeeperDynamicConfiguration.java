@@ -17,10 +17,10 @@
 package org.apache.dubbo.configcenter.support.zookeeper;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
+import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.configcenter.ConfigurationListener;
-import org.apache.dubbo.configcenter.DynamicConfiguration;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 
@@ -36,8 +36,8 @@ import java.util.concurrent.Executors;
 
 import static java.util.Collections.emptySortedSet;
 import static java.util.Collections.unmodifiableSortedSet;
+import static org.apache.dubbo.common.config.configcenter.Constants.CONFIG_NAMESPACE_KEY;
 import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
-import static org.apache.dubbo.configcenter.Constants.CONFIG_NAMESPACE_KEY;
 
 /**
  *

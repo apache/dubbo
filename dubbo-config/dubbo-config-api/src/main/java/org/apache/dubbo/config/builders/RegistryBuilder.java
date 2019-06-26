@@ -134,6 +134,10 @@ public class RegistryBuilder extends AbstractBuilder<RegistryConfig, RegistryBui
      */
     private String extraKeys;
 
+    public static RegistryBuilder newBuilder() {
+        return new RegistryBuilder();
+    }
+
     public RegistryBuilder id(String id) {
         return super.id(id);
     }

@@ -151,6 +151,14 @@ public interface CommonConstants {
 
     String REVISION_KEY = "revision";
 
+    String METADATA_REVISION = "metadata.revision";
+
+    String METADATA_KEY = "metadata";
+
+    String METADATA_DEFAULT = "local";
+
+    String METADATA_REMOTE = "remote";
+
     /**
      * package version in the manifest
      */

@@ -33,6 +33,7 @@ import static org.apache.dubbo.config.Constants.PRODUCTION_ENVIRONMENT;
  */
 public class ApplicationBuilder extends AbstractBuilder<ApplicationConfig, ApplicationBuilder> {
     private String name;
+    private String metadata;
     private String version;
     private String owner;
     private String organization;
@@ -51,8 +52,17 @@ public class ApplicationBuilder extends AbstractBuilder<ApplicationConfig, Appli
     private Map<String, String> parameters;
     private String shutwait;
 
+    public static ApplicationBuilder newBuilder() {
+        return new ApplicationBuilder();
+    }
+
     public ApplicationBuilder name(String name) {
         this.name = name;
+        return getThis();
+    }
+
+    public ApplicationBuilder metadata(String metadata) {
+        this.metadata = metadata;
         return getThis();
     }
 
@@ -167,6 +177,7 @@ public class ApplicationBuilder extends AbstractBuilder<ApplicationConfig, Appli
         super.build(config);
 
         config.setName(name);
+        config.setMetadata(metadata);
         config.setVersion(this.version);
         config.setOwner(this.owner);
         config.setOrganization(this.organization);

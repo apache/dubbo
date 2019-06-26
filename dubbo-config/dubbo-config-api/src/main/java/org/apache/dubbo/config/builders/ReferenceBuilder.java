@@ -64,6 +64,10 @@ public class ReferenceBuilder<T> extends AbstractReferenceBuilder<ReferenceConfi
      */
     private String protocol;
 
+    public static ReferenceBuilder newBuilder() {
+        return new ReferenceBuilder();
+    }
+
     public ReferenceBuilder<T> id(String id) {
         return super.id(id);
     }

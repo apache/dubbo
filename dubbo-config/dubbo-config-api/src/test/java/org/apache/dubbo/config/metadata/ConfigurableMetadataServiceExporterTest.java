@@ -49,9 +49,9 @@ public class ConfigurableMetadataServiceExporterTest {
         configManager.setApplication(applicationConfig);
 
         // Add ProtocolConfig
-        configManager.addProtocol(protocolConfig());
+        configManager.addProtocol(protocolConfig(), true);
         // Add RegistryConfig
-        configManager.addRegistry(registryConfig());
+        configManager.addRegistry(registryConfig(), true);
     }
 
     private static ProtocolConfig protocolConfig() {

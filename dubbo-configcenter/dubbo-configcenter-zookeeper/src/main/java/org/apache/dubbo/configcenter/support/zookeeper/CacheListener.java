@@ -16,11 +16,11 @@
  */
 package org.apache.dubbo.configcenter.support.zookeeper;
 
+import org.apache.dubbo.common.config.configcenter.ConfigChangeEvent;
+import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
+import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.configcenter.ConfigChangeEvent;
-import org.apache.dubbo.configcenter.ConfigChangeType;
-import org.apache.dubbo.configcenter.ConfigurationListener;
 import org.apache.dubbo.remoting.zookeeper.DataListener;
 import org.apache.dubbo.remoting.zookeeper.EventType;
 

@@ -20,15 +20,15 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.metadata.LocalMetadataService;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.ServiceNameMapping;
+import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceDiscoveryFactory;
 import org.apache.dubbo.registry.client.ServiceInstance;
-import org.apache.dubbo.registry.client.metadata.MetadataServiceProxyFactory;
+import org.apache.dubbo.registry.client.metadata.proxy.MetadataServiceProxyFactory;
 import org.apache.dubbo.registry.client.selector.ServiceInstanceSelector;
 
 import java.util.ArrayList;
@@ -50,6 +50,7 @@ import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.of;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METADATA_DEFAULT;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
@@ -61,6 +62,7 @@ import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoad
 import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
 import static org.apache.dubbo.common.utils.CollectionUtils.isNotEmpty;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
+import static org.apache.dubbo.metadata.support.Constants.METADATA_REPORT_KEY;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getExportedServicesRevision;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getMetadataServiceURLsParams;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getProviderHost;
@@ -87,18 +89,19 @@ public class ServiceOrientedRegistry extends FailbackRegistry {
 
     private final ServiceNameMapping serviceNameMapping;
 
-    private final LocalMetadataService localMetadataService;
+    private final WritableMetadataService writableMetadataService;
 
     private final MetadataServiceProxyFactory metadataServiceProxyFactory;
-
 
     public ServiceOrientedRegistry(URL registryURL) {
         super(registryURL);
         this.serviceDiscovery = buildServiceDiscovery(registryURL);
         this.subscribedServices = buildSubscribedServices(registryURL);
         this.serviceNameMapping = ServiceNameMapping.getDefaultExtension();
-        this.localMetadataService = LocalMetadataService.getDefaultExtension();
-        this.metadataServiceProxyFactory = MetadataServiceProxyFactory.getDefaultExtension();
+
+        String metadata = registryURL.getParameter(METADATA_REPORT_KEY, METADATA_DEFAULT);
+        this.writableMetadataService = WritableMetadataService.getExtension(metadata);
+        this.metadataServiceProxyFactory = MetadataServiceProxyFactory.getExtension(metadata);
     }
 
     private Set<String> buildSubscribedServices(URL url) {
@@ -140,7 +143,7 @@ public class ServiceOrientedRegistry extends FailbackRegistry {
         if (!shouldRegister(url)) { // Should Not Register
             return;
         }
-        if (localMetadataService.exportURL(url)) {
+        if (writableMetadataService.exportURL(url)) {
             if (logger.isInfoEnabled()) {
                 logger.info(format("The URL[%s] registered successfully.", url.toString()));
             }
@@ -156,7 +159,7 @@ public class ServiceOrientedRegistry extends FailbackRegistry {
         if (!shouldRegister(url)) {
             return;
         }
-        if (localMetadataService.unexportURL(url)) {
+        if (writableMetadataService.unexportURL(url)) {
             if (logger.isInfoEnabled()) {
                 logger.info(format("The URL[%s] deregistered successfully.", url.toString()));
             }
@@ -177,7 +180,7 @@ public class ServiceOrientedRegistry extends FailbackRegistry {
 
     @Override
     public void doUnsubscribe(URL url, NotifyListener listener) {
-        localMetadataService.unsubscribeURL(url);
+        writableMetadataService.unsubscribeURL(url);
     }
 
     @Override
@@ -194,7 +197,7 @@ public class ServiceOrientedRegistry extends FailbackRegistry {
 
     protected void subscribeURLs(URL url, NotifyListener listener) {
 
-        localMetadataService.subscribeURL(url);
+        writableMetadataService.subscribeURL(url);
 
         Set<String> serviceNames = getServices(url);
 
@@ -397,7 +400,7 @@ public class ServiceOrientedRegistry extends FailbackRegistry {
         String protocol = subscribedURL.getParameter(PROTOCOL_KEY);
 
         try {
-            MetadataService metadataService = metadataServiceProxyFactory.createProxy(providerInstance);
+            MetadataService metadataService = metadataServiceProxyFactory.getProxy(providerInstance);
             List<String> urls = metadataService.getExportedURLs(serviceInterface, group, version, protocol);
             exportedURLs = urls.stream().map(URL::valueOf).collect(Collectors.toList());
         } catch (Throwable e) {

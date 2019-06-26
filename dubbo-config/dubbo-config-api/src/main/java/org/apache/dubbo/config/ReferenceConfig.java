@@ -32,7 +32,7 @@ import org.apache.dubbo.config.event.ReferenceConfigInitializedEvent;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.event.Event;
 import org.apache.dubbo.event.EventDispatcher;
-import org.apache.dubbo.metadata.integration.MetadataReportService;
+import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -66,6 +66,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.METADATA_DEFAULT;
+import static org.apache.dubbo.common.constants.CommonConstants.METADATA_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
@@ -228,7 +230,6 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             throw new IllegalStateException("<dubbo:reference interface=\"\" /> interface not allow null!");
         }
         completeCompoundConfigs();
-        startConfigCenter();
         // get consumer's global configuration
         checkDefault();
         this.refresh();
@@ -340,10 +341,11 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         }
         map.put(REGISTER_IP_KEY, hostToRegistry);
 
-        ref = createProxy(map);
-
         String serviceKey = URL.buildKey(interfaceName, group, version);
         ApplicationModel.initConsumerModel(serviceKey, buildConsumerModel(serviceKey, attributes));
+        ref = createProxy(map);
+        ApplicationModel.getConsumerModel(serviceKey).setProxyObject(ref);
+
         initialized = true;
 
         // dispatch a ReferenceConfigInitializedEvent since 2.7.3
@@ -441,10 +443,11 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
          * @since 2.7.0
          * ServiceData Store
          */
-        MetadataReportService metadataReportService = null;
-        if ((metadataReportService = getMetadataReportService()) != null) {
+        String metadata = map.get(METADATA_KEY);
+        WritableMetadataService metadataService = WritableMetadataService.getExtension(metadata == null ? METADATA_DEFAULT : metadata);
+        if (metadataService != null) {
             URL consumerURL = new URL(CONSUMER_PROTOCOL, map.remove(REGISTER_IP_KEY), 0, map.get(INTERFACE_KEY), map);
-            metadataReportService.publishConsumer(consumerURL);
+            metadataService.publishServiceDefinition(consumerURL);
         }
         // create service proxy
         return (T) PROXY_FACTORY.getProxy(invoker);

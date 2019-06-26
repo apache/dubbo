@@ -32,12 +32,12 @@
     <dependencies>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-cluster</artifactId>
+            <artifactId>dubbo-common</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-configcenter-api</artifactId>
+            <artifactId>dubbo-cluster</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
@@ -64,7 +64,12 @@
 
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-metadata</artifactId>
+            <artifactId>dubbo-metadata-api</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-metadata-report-api</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
 

@@ -19,10 +19,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceDiscoveryFactory;
 
-import com.alibaba.nacos.api.naming.NamingService;
-
-import static org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils.createNamingService;
-
 /**
  * Nacos {@link ServiceDiscoveryFactory}
  *

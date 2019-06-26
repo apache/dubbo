@@ -16,11 +16,11 @@
  */
 package org.apache.dubbo.bootstrap;
 
-import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.config.builders.ApplicationBuilder;
+import org.apache.dubbo.config.builders.ProtocolBuilder;
+import org.apache.dubbo.config.builders.RegistryBuilder;
+import org.apache.dubbo.config.builders.ServiceBuilder;
 
-import org.apache.curator.test.TestingServer;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -32,65 +32,17 @@ import java.io.IOException;
  */
 public class DubboBootstrapTest {
 
-    private static int zkServerPort = NetUtils.getAvailablePort();
-
-    private static TestingServer zkServer;
-
-
-    @BeforeAll
-    public static void init() throws Exception {
-        zkServer = new TestingServer(zkServerPort, true);
-    }
-
-    @AfterAll
-    public static void destroy() throws IOException {
-        zkServer.stop();
-        zkServer.close();
-    }
-
     @Test
-    public void testProviderInFluentAPI() {
+    public void test() throws IOException {
 
         new DubboBootstrap()
-                .application("dubbo-provider-demo")
-                .next()
-                .registry()
-                .address("zookeeper://127.0.0.1:" + zkServerPort + "?registry-type=service")
-                .next()
-                .protocol()
-                .name("dubbo")
-                .port(-1)
-                .next()
-                .service("test")
-                .interfaceClass(EchoService.class)
-                .ref(new EchoServiceImpl())
-                .group("DEFAULT")
-                .version("1.0.0")
-                .next()
+                .application(ApplicationBuilder.newBuilder().name("dubbo-provider-demo").build())
+                .registry(RegistryBuilder.newBuilder().address("zookeeper://127.0.0.1:2181?registry-type=service&metadata=remote").build())
+                .protocol(ProtocolBuilder.newBuilder().port(-1).name("dubbo").build())
+                .service(ServiceBuilder.newBuilder().id("test").interfaceClass(EchoService.class).ref(new EchoServiceImpl()).build())
                 .start()
-                .stop();
+                .await();
 
-    }
-
-    @Test
-    public void testProviderInLambda() {
-        new DubboBootstrap()
-                .application("dubbo-provider-demo", builder -> {
-                })
-                .registry("default", builder ->
-                        builder.address("zookeeper://127.0.0.1:" + zkServerPort + "?registry-type=service")
-                )
-                .protocol("defalt", builder ->
-                        builder.name("dubbo")
-                                .port(-1)
-                )
-                .service("test", builder ->
-                        builder.interfaceClass(EchoService.class)
-                                .ref(new EchoServiceImpl())
-                                .group("DEFAULT")
-                                .version("1.0.0")
-                )
-                .start()
-                .stop();
+        System.in.read();
     }
 }

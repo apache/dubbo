@@ -17,7 +17,7 @@
 package org.apache.dubbo.registry.support;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.metadata.LocalMetadataService;
+import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.NotifyListener;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -66,7 +66,7 @@ public class ServiceOrientedRegistryTest {
 
     private static URL url2 = url.setProtocol("rest");
 
-    private LocalMetadataService metadataService;
+    private WritableMetadataService metadataService;
 
     private ServiceOrientedRegistry registry;
 
@@ -75,7 +75,7 @@ public class ServiceOrientedRegistryTest {
     @BeforeEach
     public void init() {
         registry = ServiceOrientedRegistry.create(registryURL);
-        metadataService = LocalMetadataService.getDefaultExtension();
+        metadataService = WritableMetadataService.getDefaultExtension();
         notifyListener = new MyNotifyListener();
     }
 

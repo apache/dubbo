@@ -22,6 +22,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import org.apache.dubbo.remoting.telnet.support.Help;
+import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ConsumerMethodModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
@@ -29,9 +30,6 @@ import org.apache.dubbo.rpc.model.ProviderMethodModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
 
 import java.lang.reflect.Method;
-
-import static org.apache.dubbo.registry.support.ProviderConsumerRegTable.getConsumerAddressNum;
-import static org.apache.dubbo.registry.support.ProviderConsumerRegTable.isRegistered;
 
 /**
  * ListTelnetHandler handler list services and its methods details.
@@ -87,11 +85,11 @@ public class ListTelnetHandler implements TelnetHandler {
         }
 
         for (ProviderModel provider : ApplicationModel.allProviderModels()) {
-            buf.append(provider.getServiceName());
+            buf.append(provider.getServiceKey());
             if (detail) {
                 buf.append(" -> ");
                 buf.append(" published: ");
-                buf.append(isRegistered(provider.getServiceName()) ? "Y" : "N");
+                buf.append(ApplicationModel.isRegistered(provider.getServiceKey()) ? "Y" : "N");
             }
             buf.append("\r\n");
         }
@@ -103,11 +101,11 @@ public class ListTelnetHandler implements TelnetHandler {
         }
 
         for (ConsumerModel consumer : ApplicationModel.allConsumerModels()) {
-            buf.append(consumer.getServiceName());
+            buf.append(consumer.getServiceKey());
             if (detail) {
                 buf.append(" -> ");
                 buf.append(" addresses: ");
-                buf.append(getConsumerAddressNum(consumer.getServiceName()));
+                buf.append(((AbstractClusterInvoker) consumer.getInvoker()).getDirectory().getAllInvokers().size());
             }
         }
     }
@@ -120,7 +118,7 @@ public class ListTelnetHandler implements TelnetHandler {
     private void printSpecifiedProvidedService(String service, StringBuilder buf, boolean detail) {
         for (ProviderModel provider : ApplicationModel.allProviderModels()) {
             if (isProviderMatched(service,provider)) {
-                buf.append(provider.getServiceName()).append(" (as provider):\r\n");
+                buf.append(provider.getServiceKey()).append(" (as provider):\r\n");
                 for (ProviderMethodModel method : provider.getAllMethods()) {
                     printMethod(method.getMethod(), buf, detail);
                 }
@@ -131,7 +129,7 @@ public class ListTelnetHandler implements TelnetHandler {
     private void printSpecifiedReferredService(String service, StringBuilder buf, boolean detail) {
         for (ConsumerModel consumer : ApplicationModel.allConsumerModels()) {
             if (isConsumerMatcher(service,consumer)) {
-                buf.append(consumer.getServiceName()).append(" (as consumer):\r\n");
+                buf.append(consumer.getServiceKey()).append(" (as consumer):\r\n");
                 for (ConsumerMethodModel method : consumer.getAllMethods()) {
                     printMethod(method.getMethod(), buf, detail);
                 }
@@ -149,13 +147,13 @@ public class ListTelnetHandler implements TelnetHandler {
     }
 
     private boolean isProviderMatched(String service, ProviderModel provider) {
-        return service.equalsIgnoreCase(provider.getServiceName())
+        return service.equalsIgnoreCase(provider.getServiceKey())
                 || service.equalsIgnoreCase(provider.getServiceInterfaceClass().getName())
                 || service.equalsIgnoreCase(provider.getServiceInterfaceClass().getSimpleName());
     }
 
     private boolean isConsumerMatcher(String service,ConsumerModel consumer) {
-        return service.equalsIgnoreCase(consumer.getServiceName())
+        return service.equalsIgnoreCase(consumer.getServiceKey())
                 || service.equalsIgnoreCase(consumer.getServiceInterfaceClass().getName())
                 || service.equalsIgnoreCase(consumer.getServiceInterfaceClass().getSimpleName());
     }
