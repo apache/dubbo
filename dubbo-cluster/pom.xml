@@ -40,9 +40,8 @@
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-monitor-default</artifactId>
-            <version>${project.parent.version}</version>
+            <groupId>com.alibaba.middleware</groupId>
+            <artifactId>metrics-os</artifactId>
         </dependency>
         <dependency>
             <groupId>org.yaml</groupId>
