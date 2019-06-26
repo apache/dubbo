@@ -22,7 +22,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import java.util.function.Function;
+import java.util.function.BiConsumer;
 
 /**
  * This class represents an unfinished RPC call, it will hold some context information for this call, for example RpcContext and Invocation,
@@ -137,8 +137,12 @@ public class AsyncRpcResult extends AbstractResult {
     }
 
     @Override
-    public Result thenApplyWithContext(Function<Result, Result> fn) {
-        this.thenApply(fn.compose(beforeContext).andThen(afterContext));
+    public Result whenCompleteWithContext(BiConsumer<Result, Throwable> fn) {
+        this.whenComplete((v, t) -> {
+            beforeContext.accept(v, t);
+            fn.accept(v, t);
+            afterContext.accept(v, t);
+        });
         // You may need to return a new Result instance representing the next async stage,
         // like thenApply will return a new CompletableFuture.
         return this;
@@ -202,18 +206,16 @@ public class AsyncRpcResult extends AbstractResult {
     private RpcContext tmpContext;
     private RpcContext tmpServerContext;
 
-    private Function<Result, Result> beforeContext = (appResponse) -> {
+    private BiConsumer<Result, Throwable> beforeContext = (appResponse, t) -> {
         tmpContext = RpcContext.getContext();
         tmpServerContext = RpcContext.getServerContext();
         RpcContext.restoreContext(storedContext);
         RpcContext.restoreServerContext(storedServerContext);
-        return appResponse;
     };
 
-    private Function<Result, Result> afterContext = (appResponse) -> {
+    private BiConsumer<Result, Throwable> afterContext = (appResponse, t) -> {
         RpcContext.restoreContext(tmpContext);
         RpcContext.restoreServerContext(tmpServerContext);
-        return appResponse;
     };
 
     /**
