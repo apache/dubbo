@@ -90,4 +90,7 @@ public class FutureAdapter<V> extends CompletableFuture<V> {
         }
     }
 
+    public CompletableFuture<AppResponse> getAppResponseFuture() {
+        return appResponseFuture;
+    }
 }
