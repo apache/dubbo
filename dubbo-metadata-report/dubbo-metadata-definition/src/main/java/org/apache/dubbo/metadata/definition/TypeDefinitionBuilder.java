@@ -33,10 +33,10 @@ import java.util.Map;
 public class TypeDefinitionBuilder {
     private static final List<TypeBuilder> BUILDERS;
 
-    static{
+    static {
         List<TypeBuilder> builders = new ArrayList<>();
         ExtensionLoader<TypeBuilder> extensionLoader = ExtensionLoader.getExtensionLoader(TypeBuilder.class);
-        for(String extensionName : extensionLoader.getSupportedExtensions()){
+        for (String extensionName : extensionLoader.getSupportedExtensions()) {
             builders.add(extensionLoader.getExtension(extensionName));
         }
         BUILDERS = builders;
@@ -47,8 +47,10 @@ public class TypeDefinitionBuilder {
         TypeDefinition td;
         if (builder != null) {
             td = builder.build(type, clazz, typeCache);
+            td.setTypeBuilderName(builder.getClass().getName());
         } else {
             td = DefaultTypeBuilder.build(clazz, typeCache);
+            td.setTypeBuilderName(DefaultTypeBuilder.class.getName());
         }
         return td;
     }
