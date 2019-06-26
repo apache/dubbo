@@ -138,14 +138,15 @@ public class AsyncRpcResult extends AbstractResult {
 
     @Override
     public Result whenCompleteWithContext(BiConsumer<Result, Throwable> fn) {
-        this.whenComplete((v, t) -> {
+        CompletableFuture<Result> future = this.whenComplete((v, t) -> {
             beforeContext.accept(v, t);
             fn.accept(v, t);
             afterContext.accept(v, t);
         });
-        // You may need to return a new Result instance representing the next async stage,
-        // like thenApply will return a new CompletableFuture.
-        return this;
+
+        AsyncRpcResult nextStage = new AsyncRpcResult(this);
+        nextStage.subscribeTo(future);
+        return nextStage;
     }
 
     public void subscribeTo(CompletableFuture<?> future) {
