@@ -212,10 +212,12 @@ public abstract class AbstractConfig implements Serializable {
         }
     }
 
+    @Deprecated
     protected static void appendAttributes(Map<String, Object> parameters, Object config) {
         appendAttributes(parameters, config, null);
     }
 
+    @Deprecated
     protected static void appendAttributes(Map<String, Object> parameters, Object config, String prefix) {
         if (config == null) {
             return;

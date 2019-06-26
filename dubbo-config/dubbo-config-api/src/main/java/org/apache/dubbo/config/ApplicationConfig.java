@@ -17,6 +17,7 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.compiler.support.AdaptiveCompiler;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -27,7 +28,12 @@ import java.util.List;
 import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_ENV_KEYS;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_LABELS;
 import static org.apache.dubbo.common.constants.CommonConstants.DUMP_DIRECTORY;
+import static org.apache.dubbo.common.constants.CommonConstants.EQUAL_SPLIT_PATTERN;
+import static org.apache.dubbo.common.constants.CommonConstants.SEMICOLON_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP_COMPATIBLE;
@@ -373,6 +379,41 @@ public class ApplicationConfig extends AbstractConfig {
     @Parameter(excluded = true)
     public boolean isValid() {
         return !StringUtils.isEmpty(name);
+    }
+
+    @Override
+    public void refresh() {
+        super.refresh();
+        appendEnvironmentProperties();
+    }
+
+    /**
+     * 1. OS Environment: DUBBO_LABELS = tag=pre;key=value
+     * 2. JVM Options: -Denv_keys = DUBBO_TAG,
+     */
+    private void appendEnvironmentProperties() {
+        String rawLabels = ConfigurationUtils.getProperty(DUBBO_LABELS);
+        if (StringUtils.isNotEmpty(rawLabels)) {
+            String[] labelPairs = SEMICOLON_SPLIT_PATTERN.split(rawLabels);
+            for (String pair : labelPairs) {
+                String[] label = EQUAL_SPLIT_PATTERN.split(pair);
+                if (label.length == 2) {
+                    parameters.put(StringUtils.toURLKey(label[0]), label[1]);
+                }
+            }
+        }
+
+        String rawKeys = ConfigurationUtils.getProperty(DUBBO_ENV_KEYS);
+        if (StringUtils.isNotEmpty(rawKeys)) {
+            String[] keys = COMMA_SPLIT_PATTERN.split(rawKeys);
+            for (String key : keys) {
+                String urlKey = StringUtils.toURLKey(key);
+                String value = ConfigurationUtils.getProperty(urlKey);
+                if (value != null) {
+                    parameters.put(urlKey, value);
+                }
+            }
+        }
     }
 
 }
