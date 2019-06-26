@@ -1,4 +1,4 @@
-package org.apache.dubbo.monitor.support;
+package org.apache.dubbo.monitor.dubbo;
 
 import org.apache.dubbo.rpc.AppResponse;
 
@@ -8,8 +8,14 @@ public class AppResponseBuilder {
     private Object result;
     private Throwable exception;
     private Map<String, String> attachments;
+    private AppResponse appResponse;
 
     private AppResponseBuilder() {
+        this.appResponse = new AppResponse();
+    }
+
+    public static AppResponseBuilder create() {
+        return new AppResponseBuilder();
     }
 
     public AppResponse build() {
