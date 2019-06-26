@@ -14,22 +14,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring.context.annotation.provider;
 
-import org.apache.dubbo.config.spring.api.HelloService;
+package com.alibaba.dubbo.remoting.exchange;
 
-import com.alibaba.dubbo.config.annotation.Service;
+
+import com.alibaba.dubbo.remoting.RemotingException;
 
 /**
- * {@link HelloService} Implementation just annotating Dubbo's {@link Service}
- *
- * @since 2.5.9
+ * 2019-06-20
  */
-@Service(interfaceName = "org.apache.dubbo.config.spring.api.HelloService")
-public class HelloServiceImpl implements HelloService {
+@Deprecated
+public interface ResponseFuture {
+    /**
+     * get result.
+     *
+     * @return result.
+     */
+    Object get() throws RemotingException;
 
-    @Override
-    public String sayHello(String name) {
-        return "Hello, " + name;
-    }
+    /**
+     * get result with the specified timeout.
+     *
+     * @param timeoutInMillis timeout.
+     * @return result.
+     */
+    Object get(int timeoutInMillis) throws RemotingException;
+
+    /**
+     * set callback.
+     *
+     * @param callback
+     */
+    void setCallback(ResponseCallback callback);
+
+    /**
+     * check is done.
+     *
+     * @return done or not.
+     */
+    boolean isDone();
 }

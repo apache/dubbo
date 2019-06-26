@@ -14,22 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring.context.annotation.provider;
 
-import org.apache.dubbo.config.spring.api.HelloService;
-
-import com.alibaba.dubbo.config.annotation.Service;
+package com.alibaba.dubbo.remoting.exchange;
 
 /**
- * {@link HelloService} Implementation just annotating Dubbo's {@link Service}
- *
- * @since 2.5.9
+ * 2019-06-20
  */
-@Service(interfaceName = "org.apache.dubbo.config.spring.api.HelloService")
-public class HelloServiceImpl implements HelloService {
+@Deprecated
+public interface ResponseCallback {
+    /**
+     * done.
+     *
+     * @param response
+     */
+    void done(Object response);
 
-    @Override
-    public String sayHello(String name) {
-        return "Hello, " + name;
-    }
+    /**
+     * caught exception.
+     *
+     * @param exception
+     */
+    void caught(Throwable exception);
+
 }
