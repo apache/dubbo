@@ -1,6 +1,7 @@
 package org.apache.dubbo.rpc.cluster.loadbalance;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.rpc.cluster.loadbalance.statistics.CpuUsageService;
 import org.apache.dubbo.rpc.cluster.loadbalance.statistics.CpuUsageServiceImpl;
 import org.apache.dubbo.rpc.Invocation;
@@ -15,7 +16,9 @@ public class StatisticsLoadBalance extends AbstractLoadBalance {
     private Map<String, Float> cpuUsage = new HashMap<>();
 
     public StatisticsLoadBalance() {
-        CpuUsageService cpuUsageService = new CpuUsageServiceImpl(100L, 500L);
+        long timeToLive = Long.parseLong(ConfigurationUtils.getProperty("time.to.live"));
+        long collectCpuUsageInMill = Long.parseLong(ConfigurationUtils.getProperty("mill.to.collect.cpu.usage"));
+        CpuUsageService cpuUsageService = new CpuUsageServiceImpl(timeToLive, collectCpuUsageInMill);
         cpuUsageService.addListener("statisticsloadbalance", (ip, cpu) -> cpuUsage.put(ip, cpu));
     }
 
