@@ -16,10 +16,8 @@
  */
 package org.apache.dubbo.rpc;
 
-import java.util.concurrent.CompletableFuture;
-
 /**
  *
  */
-public abstract class AbstractResult extends CompletableFuture<Result> implements Result {
+public abstract class AbstractResult implements Result {
 }

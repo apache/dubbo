@@ -17,7 +17,13 @@
 
 package com.alibaba.dubbo.rpc;
 
+import org.apache.dubbo.rpc.AppResponse;
+
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 
 @Deprecated
@@ -36,7 +42,27 @@ public interface Result extends org.apache.dubbo.rpc.Result {
     abstract class AbstractResult extends org.apache.dubbo.rpc.AbstractResult implements Result {
 
         @Override
-        public org.apache.dubbo.rpc.Result thenApplyWithContext(Function<org.apache.dubbo.rpc.Result, org.apache.dubbo.rpc.Result> fn) {
+        public void setValue(Object value) {
+
+        }
+
+        @Override
+        public org.apache.dubbo.rpc.Result thenApplyWithContext(Function<AppResponse, AppResponse> fn) {
+            return null;
+        }
+
+        @Override
+        public <U> CompletableFuture<U> thenApply(Function<org.apache.dubbo.rpc.Result, ? extends U> fn) {
+            return null;
+        }
+
+        @Override
+        public org.apache.dubbo.rpc.Result get() throws InterruptedException, ExecutionException {
+            return null;
+        }
+
+        @Override
+        public org.apache.dubbo.rpc.Result get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
             return null;
         }
     }

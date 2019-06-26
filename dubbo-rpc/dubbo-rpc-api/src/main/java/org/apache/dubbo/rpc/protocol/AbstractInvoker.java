@@ -179,7 +179,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         } catch (Throwable e) {
             asyncResult = AsyncRpcResult.newDefaultAsyncResult(null, e, invocation);
         }
-        RpcContext.getContext().setFuture(new FutureAdapter(asyncResult, inv));
+        RpcContext.getContext().setFuture(new FutureAdapter(asyncResult.getResponseFuture()));
         return asyncResult;
     }
 

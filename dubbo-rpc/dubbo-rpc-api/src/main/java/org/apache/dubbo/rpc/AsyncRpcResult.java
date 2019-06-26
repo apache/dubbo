@@ -55,7 +55,10 @@ public class AsyncRpcResult extends AbstractResult {
 
     private Invocation invocation;
 
-    public AsyncRpcResult(Invocation invocation) {
+    private CompletableFuture<AppResponse> responseFuture;
+
+    public AsyncRpcResult(CompletableFuture<AppResponse> future, Invocation invocation) {
+        this.responseFuture = future;
         this.invocation = invocation;
         this.storedContext = RpcContext.getContext();
         this.storedServerContext = RpcContext.getServerContext();
@@ -81,7 +84,7 @@ public class AsyncRpcResult extends AbstractResult {
     public void setValue(Object value) {
         AppResponse appResponse = new AppResponse();
         appResponse.setValue(value);
-        this.complete(appResponse);
+        responseFuture.complete(appResponse);
     }
 
     @Override
@@ -93,7 +96,7 @@ public class AsyncRpcResult extends AbstractResult {
     public void setException(Throwable t) {
         AppResponse appResponse = new AppResponse();
         appResponse.setException(t);
-        this.complete(appResponse);
+        responseFuture.complete(appResponse);
     }
 
     @Override
@@ -101,10 +104,18 @@ public class AsyncRpcResult extends AbstractResult {
         return getAppResponse().hasException();
     }
 
+    public CompletableFuture<AppResponse> getResponseFuture() {
+        return responseFuture;
+    }
+
+    public void setResponseFuture(CompletableFuture<AppResponse> responseFuture) {
+        this.responseFuture = responseFuture;
+    }
+
     public Result getAppResponse() {
         try {
-            if (this.isDone()) {
-                return super.get();
+            if (responseFuture.isDone()) {
+                return responseFuture.get();
             }
         } catch (Exception e) {
             // This should never happen;
@@ -128,7 +139,7 @@ public class AsyncRpcResult extends AbstractResult {
             ThreadlessExecutor threadlessExecutor = (ThreadlessExecutor) executor;
             threadlessExecutor.waitAndDrain();
         }
-        return super.get();
+        return responseFuture.get();
     }
 
     @Override
@@ -145,21 +156,14 @@ public class AsyncRpcResult extends AbstractResult {
         return getAppResponse().recreate();
     }
 
-    public Result thenApplyWithContext(Function<Result, Result> fn) {
-        CompletableFuture<Result> future = this.thenApply(fn.compose(beforeContext).andThen(afterContext));
-        AsyncRpcResult nextAsyncRpcResult = new AsyncRpcResult(this);
-        nextAsyncRpcResult.subscribeTo(future);
-        return nextAsyncRpcResult;
+    public Result thenApplyWithContext(Function<AppResponse, AppResponse> fn) {
+        this.responseFuture = responseFuture.thenApply(fn.compose(beforeContext).andThen(afterContext));
+        return this;
     }
 
-    public void subscribeTo(CompletableFuture<?> future) {
-        future.whenComplete((obj, t) -> {
-            if (t != null) {
-                this.completeExceptionally(t);
-            } else {
-                this.complete((Result) obj);
-            }
-        });
+    @Override
+    public <U> CompletableFuture<U> thenApply(Function<Result,? extends U> fn) {
+        return this.responseFuture.thenApply(fn);
     }
 
     @Override
@@ -218,7 +222,7 @@ public class AsyncRpcResult extends AbstractResult {
     private RpcContext tmpContext;
     private RpcContext tmpServerContext;
 
-    private Function<Result, Result> beforeContext = (appResponse) -> {
+    private Function<AppResponse, AppResponse> beforeContext = (appResponse) -> {
         tmpContext = RpcContext.getContext();
         tmpServerContext = RpcContext.getServerContext();
         RpcContext.restoreContext(storedContext);
@@ -226,7 +230,7 @@ public class AsyncRpcResult extends AbstractResult {
         return appResponse;
     };
 
-    private Function<Result, Result> afterContext = (appResponse) -> {
+    private Function<AppResponse, AppResponse> afterContext = (appResponse) -> {
         RpcContext.restoreContext(tmpContext);
         RpcContext.restoreServerContext(tmpServerContext);
         return appResponse;
@@ -236,9 +240,7 @@ public class AsyncRpcResult extends AbstractResult {
      * Some utility methods used to quickly generate default AsyncRpcResult instance.
      */
     public static AsyncRpcResult newDefaultAsyncResult(AppResponse appResponse, Invocation invocation) {
-        AsyncRpcResult asyncRpcResult = new AsyncRpcResult(invocation);
-        asyncRpcResult.complete(appResponse);
-        return asyncRpcResult;
+        return new AsyncRpcResult(CompletableFuture.completedFuture(appResponse), invocation);
     }
 
     public static AsyncRpcResult newDefaultAsyncResult(Invocation invocation) {
@@ -254,15 +256,15 @@ public class AsyncRpcResult extends AbstractResult {
     }
 
     public static AsyncRpcResult newDefaultAsyncResult(Object value, Throwable t, Invocation invocation) {
-        AsyncRpcResult asyncRpcResult = new AsyncRpcResult(invocation);
-        AppResponse appResponse = new AppResponse();
+        CompletableFuture<AppResponse> future = new CompletableFuture<>();
+        AppResponse result = new AppResponse();
         if (t != null) {
-            appResponse.setException(t);
+            result.setException(t);
         } else {
-            appResponse.setValue(value);
+            result.setValue(value);
         }
-        asyncRpcResult.complete(appResponse);
-        return asyncRpcResult;
+        future.complete(result);
+        return new AsyncRpcResult(future, invocation);
     }
 }
 

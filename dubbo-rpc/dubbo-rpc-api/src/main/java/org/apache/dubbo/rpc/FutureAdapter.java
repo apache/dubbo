@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc;
 
-import java.lang.ref.SoftReference;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
@@ -30,10 +29,7 @@ public class FutureAdapter<V> extends CompletableFuture<V> {
 
     private CompletableFuture<AppResponse> appResponseFuture;
 
-    private SoftReference<Invocation> invocationSoftReference;
-
-    public FutureAdapter(CompletableFuture<AppResponse> future, Invocation invocation) {
-        this.invocationSoftReference = new SoftReference<>(invocation);
+    public FutureAdapter(CompletableFuture<AppResponse> future) {
         this.appResponseFuture = future;
         future.whenComplete((appResponse, t) -> {
             if (t != null) {
