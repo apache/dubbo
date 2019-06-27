@@ -44,8 +44,8 @@
         <url>https://github.com/apache/dubbo</url>
         <connection>scm:git:https://github.com/apache/dubbo.git</connection>
         <developerConnection>scm:git:https://github.com/apache/dubbo.git</developerConnection>
-      <tag>HEAD</tag>
-  </scm>
+        <tag>HEAD</tag>
+    </scm>
     <mailingLists>
         <mailingList>
             <name>Development List</name>

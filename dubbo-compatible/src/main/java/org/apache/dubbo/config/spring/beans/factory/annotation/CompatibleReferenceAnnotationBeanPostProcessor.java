@@ -55,8 +55,8 @@ import java.util.concurrent.ConcurrentMap;
 
 import static org.springframework.core.BridgeMethodResolver.findBridgedMethod;
 import static org.springframework.core.BridgeMethodResolver.isVisibilityBridgeMethodPair;
-import static org.springframework.core.annotation.AnnotationUtils.findAnnotation;
-import static org.springframework.core.annotation.AnnotationUtils.getAnnotation;
+import static org.springframework.core.annotation.AnnotatedElementUtils.findMergedAnnotation;
+import static org.springframework.core.annotation.AnnotatedElementUtils.getMergedAnnotation;
 
 /**
  * {@link org.springframework.beans.factory.config.BeanPostProcessor} implementation
@@ -116,7 +116,7 @@ public class CompatibleReferenceAnnotationBeanPostProcessor extends Instantiatio
             @Override
             public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
 
-                Reference reference = getAnnotation(field, Reference.class);
+                Reference reference = getMergedAnnotation(field, Reference.class);
 
                 if (reference != null) {
 
@@ -157,7 +157,7 @@ public class CompatibleReferenceAnnotationBeanPostProcessor extends Instantiatio
                     return;
                 }
 
-                Reference reference = findAnnotation(bridgedMethod, Reference.class);
+                Reference reference = findMergedAnnotation(bridgedMethod, Reference.class);
 
                 if (reference != null && method.equals(ClassUtils.getMostSpecificMethod(method, beanClass))) {
                     if (Modifier.isStatic(method.getModifiers())) {
