@@ -64,7 +64,7 @@ import static org.apache.dubbo.config.spring.beans.factory.annotation.ServiceBea
 import static org.apache.dubbo.config.spring.util.ObjectUtils.of;
 import static org.springframework.beans.factory.support.BeanDefinitionBuilder.rootBeanDefinition;
 import static org.springframework.context.annotation.AnnotationConfigUtils.CONFIGURATION_BEAN_NAME_GENERATOR;
-import static org.springframework.core.annotation.AnnotationUtils.findAnnotation;
+import static org.springframework.core.annotation.AnnotatedElementUtils.findMergedAnnotation;
 import static org.springframework.util.ClassUtils.resolveClassName;
 
 /**
@@ -250,7 +250,7 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
 
         Class<?> beanClass = resolveClass(beanDefinitionHolder);
 
-        Service service = findAnnotation(beanClass, Service.class);
+        Service service = findMergedAnnotation(beanClass, Service.class);
 
         Class<?> interfaceClass = resolveServiceInterfaceClass(beanClass, service);
 
