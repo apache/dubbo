@@ -66,7 +66,7 @@ public class TypeDefinitionBuilder {
                 }
             } catch (NoClassDefFoundError cnfe) {
                 //ignore
-                logger.warn("Throw classNotFound (" + cnfe.getMessage() + ") in " + builder.getClass());
+                logger.info("Throw classNotFound (" + cnfe.getMessage() + ") in " + builder.getClass());
             }
         }
         return null;
