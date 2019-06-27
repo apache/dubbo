@@ -102,7 +102,7 @@ public abstract class Proxy {
         String key = sb.toString();
 
         // get cache by class loader.
-        Map<String, Object> cache;
+        final Map<String, Object> cache;
         synchronized (PROXY_CACHE_MAP) {
             cache = PROXY_CACHE_MAP.computeIfAbsent(cl, k -> new HashMap<>());
         }

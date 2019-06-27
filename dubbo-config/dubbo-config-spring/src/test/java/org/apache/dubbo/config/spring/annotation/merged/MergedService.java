@@ -14,23 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.config.spring.annotation.merged;
 
-package org.apache.dubbo.common.constants;
 
-/**
- * QosConstants
- */
-public interface QosConstants {
+import org.apache.dubbo.config.annotation.Service;
+import org.springframework.core.annotation.AliasFor;
 
-    String QOS_ENABLE = "qos.enable";
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.lang.annotation.ElementType;
 
-    String QOS_PORT = "qos.port";
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE})
+@Service
+public @interface MergedService {
 
-    String ACCEPT_FOREIGN_IP = "qos.accept.foreign.ip";
+    @AliasFor(annotation = Service.class, attribute = "group")
+    String group() default "dubbo";
 
-    String QOS_ENABLE_COMPATIBLE = "qos-enable";
-
-    String QOS_PORT_COMPATIBLE = "qos-port";
-
-    String ACCEPT_FOREIGN_IP_COMPATIBLE = "qos-accept-foreign-ip";
+    @AliasFor(annotation = Service.class, attribute = "version")
+    String version() default "1.0.0";
 }
