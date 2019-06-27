@@ -23,13 +23,13 @@ import org.apache.dubbo.rpc.cluster.loadbalance.statistics.CpuUsageServiceImpl;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class StatisticsLoadBalance extends AbstractLoadBalance {
 
-    private Map<String, Float> cpuUsage = new HashMap<>();
+    private Map<String, Float> cpuUsage = new ConcurrentHashMap<>();
 
     public StatisticsLoadBalance() {
         long timeToLive = Long.parseLong(ConfigurationUtils.getProperty("time.to.live"));
