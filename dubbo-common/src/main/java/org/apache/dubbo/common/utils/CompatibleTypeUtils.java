@@ -130,7 +130,7 @@ public class CompatibleTypeUtils {
             } else if (type == Date.class) {
                 return new Date(number.longValue());
             } else if (type == boolean.class || type == Boolean.class) {
-                return 1 == number.intValue() ? Boolean.TRUE : Boolean.FALSE;
+                return 0 != number.intValue();
             }
         } else if (value instanceof Collection) {
             Collection collection = (Collection) value;
