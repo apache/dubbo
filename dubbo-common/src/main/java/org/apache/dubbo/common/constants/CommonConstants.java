@@ -104,11 +104,13 @@ public interface CommonConstants {
 
     String UNDERLINE_SEPARATOR = "_";
 
+    String SEPARATOR_REGEX = "_|-";
+
     String GROUP_CHAR_SEPERATOR = ":";
 
     String HIDE_KEY_PREFIX = ".";
 
-    String DOT_SEPARATOR = ".";
+    String DOT_REGEX = "\\.";
 
     String DEFAULT_KEY_PREFIX = "default.";
 
@@ -177,5 +179,5 @@ public interface CommonConstants {
     String DUBBO_PROTOCOL = "dubbo";
 
     String DUBBO_LABELS = "dubbo.labels";
-    String DUBBO_ENV_KEYS = "env.keys";
+    String DUBBO_ENV_KEYS = "dubbo.env.keys";
 }

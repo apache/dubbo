@@ -24,6 +24,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -388,7 +389,7 @@ public class ApplicationConfig extends AbstractConfig {
     }
 
     /**
-     * 1. OS Environment: DUBBO_LABELS = tag=pre;key=value
+     * 1. OS Environment: DUBBO_LABELS=tag=pre;key=value
      * 2. JVM Options: -Denv_keys = DUBBO_TAG,
      */
     private void appendEnvironmentProperties() {
@@ -398,7 +399,7 @@ public class ApplicationConfig extends AbstractConfig {
             for (String pair : labelPairs) {
                 String[] label = EQUAL_SPLIT_PATTERN.split(pair);
                 if (label.length == 2) {
-                    parameters.put(StringUtils.toURLKey(label[0]), label[1]);
+                    updateParameters(parameters, StringUtils.toURLKey(label[0]), label[1]);
                 }
             }
         }
@@ -410,10 +411,17 @@ public class ApplicationConfig extends AbstractConfig {
                 String urlKey = StringUtils.toURLKey(key);
                 String value = ConfigurationUtils.getProperty(urlKey);
                 if (value != null) {
-                    parameters.put(urlKey, value);
+                    updateParameters(parameters, urlKey, value);
                 }
             }
         }
+    }
+
+    private void updateParameters(Map<String, String> map, String key, String value) {
+        if (parameters == null) {
+            parameters = new HashMap<>();
+        }
+        parameters.put(key, value);
     }
 
 }
