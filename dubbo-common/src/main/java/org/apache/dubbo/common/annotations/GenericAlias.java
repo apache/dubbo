@@ -23,6 +23,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * 
  * Indicate alias for field when generic invoking. <br>
  * <p>
  *     sometimes you receive json string which contains non-camelcase key name,e.g. order_id,
