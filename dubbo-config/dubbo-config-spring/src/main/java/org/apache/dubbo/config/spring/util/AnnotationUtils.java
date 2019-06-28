@@ -258,6 +258,17 @@ public class AnnotationUtils {
                 continue;
             }
 
+            /**
+             * @since 2.7.1
+             * ignore annotation member
+             */
+            if (attributeValue.getClass().isAnnotation()){
+                continue;
+            }
+            if (attributeValue.getClass().isArray() && attributeValue.getClass().getComponentType().isAnnotation()){
+                continue;
+            }
+
             if (attributeValue instanceof String) {
                 attributeValue = resolvePlaceholders(valueOf(attributeValue), propertyResolver);
             } else if (attributeValue instanceof String[]) {

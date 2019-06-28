@@ -19,12 +19,13 @@ package com.alibaba.dubbo.cache.support;
 
 import com.alibaba.dubbo.cache.Cache;
 import com.alibaba.dubbo.cache.CacheFactory;
-import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Invocation;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
+import static org.apache.dubbo.common.constants.CommonConstants.METHOD_KEY;
 
 @Deprecated
 public abstract class AbstractCacheFactory implements CacheFactory {
@@ -33,7 +34,7 @@ public abstract class AbstractCacheFactory implements CacheFactory {
 
     @Override
     public Cache getCache(URL url, Invocation invocation) {
-        url = url.addParameter(Constants.METHOD_KEY, invocation.getMethodName());
+        url = url.addParameter(METHOD_KEY, invocation.getMethodName());
         String key = url.toFullString();
         Cache cache = caches.get(key);
         if (cache == null) {

@@ -19,29 +19,19 @@ package org.apache.dubbo.config.builders;
 import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.ServiceConfig;
-import org.apache.dubbo.config.api.Greeting;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 
-import static org.apache.dubbo.common.Constants.GENERIC_SERIALIZATION_BEAN;
-import static org.apache.dubbo.common.Constants.GENERIC_SERIALIZATION_DEFAULT;
-import static org.apache.dubbo.common.Constants.GENERIC_SERIALIZATION_NATIVE_JAVA;
+import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_BEAN;
+import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_DEFAULT;
+import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_NATIVE_JAVA;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 class ServiceBuilderTest {
-
-    @Test
-    public void testUniqueServiceName() throws Exception {
-        ServiceBuilder<Greeting> builder = new ServiceBuilder<>();
-        builder.group("dubbo").interfaceClass(Greeting.class).version("1.0.0");
-
-        ServiceConfig<Greeting> service = builder.build();
-        assertThat(service.getUniqueServiceName(), equalTo("dubbo/" + Greeting.class.getName() + ":1.0.0"));
-    }
 
     @Test
     void path() {

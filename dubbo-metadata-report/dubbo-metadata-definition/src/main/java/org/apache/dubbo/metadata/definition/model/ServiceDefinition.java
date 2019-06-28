@@ -40,14 +40,14 @@ public class ServiceDefinition {
 
     public List<MethodDefinition> getMethods() {
         if (methods == null) {
-            methods = new ArrayList<MethodDefinition>();
+            methods = new ArrayList<>();
         }
         return methods;
     }
 
     public List<TypeDefinition> getTypes() {
         if (types == null) {
-            types = new ArrayList<TypeDefinition>();
+            types = new ArrayList<>();
         }
         return types;
     }

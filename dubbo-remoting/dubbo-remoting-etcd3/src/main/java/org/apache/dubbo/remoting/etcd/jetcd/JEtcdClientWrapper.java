@@ -25,15 +25,17 @@ import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.etcd.RetryPolicy;
 import org.apache.dubbo.remoting.etcd.StateListener;
-import org.apache.dubbo.remoting.etcd.option.Constants;
 
 import io.etcd.jetcd.ByteSequence;
 import io.etcd.jetcd.Client;
 import io.etcd.jetcd.ClientBuilder;
 import io.etcd.jetcd.CloseableClient;
+import io.etcd.jetcd.KeyValue;
 import io.etcd.jetcd.Observers;
 import io.etcd.jetcd.common.exception.ErrorCode;
 import io.etcd.jetcd.common.exception.EtcdException;
+import io.etcd.jetcd.kv.GetResponse;
+import io.etcd.jetcd.kv.PutResponse;
 import io.etcd.jetcd.lease.LeaseKeepAliveResponse;
 import io.etcd.jetcd.options.GetOption;
 import io.etcd.jetcd.options.PutOption;
@@ -63,6 +65,15 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import static java.util.stream.Collectors.toList;
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
+import static org.apache.dubbo.remoting.etcd.Constants.DEFAULT_KEEPALIVE_TIMEOUT;
+import static org.apache.dubbo.remoting.etcd.Constants.DEFAULT_RECONNECT_PERIOD;
+import static org.apache.dubbo.remoting.etcd.Constants.DEFAULT_RETRY_PERIOD;
+import static org.apache.dubbo.remoting.etcd.Constants.HTTP_KEY;
+import static org.apache.dubbo.remoting.etcd.Constants.HTTP_SUBFIX_KEY;
+import static org.apache.dubbo.remoting.etcd.Constants.RETRY_PERIOD_KEY;
+import static org.apache.dubbo.remoting.etcd.Constants.SESSION_TIMEOUT_KEY;
 
 public class JEtcdClientWrapper {
 
@@ -87,7 +98,8 @@ public class JEtcdClientWrapper {
     private RuntimeException failed;
 
     private final ScheduledFuture<?> retryFuture;
-    private final ScheduledExecutorService retryExecutor = Executors.newScheduledThreadPool(1, new NamedThreadFactory("Etcd3RegistryKeepAliveFailedRetryTimer", true));
+    private final ScheduledExecutorService retryExecutor = Executors.newScheduledThreadPool(1,
+            new NamedThreadFactory("Etcd3RegistryKeepAliveFailedRetryTimer", true));
 
     private final Set<String> failedRegistered = new ConcurrentHashSet<String>();
 
@@ -105,9 +117,9 @@ public class JEtcdClientWrapper {
 
     public JEtcdClientWrapper(URL url) {
         this.url = url;
-        this.expirePeriod = url.getParameter(Constants.SESSION_TIMEOUT_KEY, Constants.DEFAULT_KEEPALIVE_TIMEOUT) / 1000;
+        this.expirePeriod = url.getParameter(SESSION_TIMEOUT_KEY, DEFAULT_KEEPALIVE_TIMEOUT) / 1000;
         if (expirePeriod <= 0) {
-            this.expirePeriod = Constants.DEFAULT_KEEPALIVE_TIMEOUT / 1000;
+            this.expirePeriod = DEFAULT_KEEPALIVE_TIMEOUT / 1000;
         }
         this.channel = new AtomicReference<>();
         this.completableFuture = CompletableFuture.supplyAsync(() -> prepareClient(url));
@@ -116,29 +128,28 @@ public class JEtcdClientWrapper {
         this.retryPolicy = new RetryNTimes(1, 1000, TimeUnit.MILLISECONDS);
 
         this.failed = new IllegalStateException("Etcd3 registry is not connected yet, url:" + url);
-        int retryPeriod = url.getParameter(Constants.REGISTRY_RETRY_PERIOD_KEY, Constants.DEFAULT_REGISTRY_RETRY_PERIOD);
-        this.retryFuture = retryExecutor.scheduleWithFixedDelay(new Runnable() {
-            public void run() {
-                try {
-                    retry();
-                } catch (Throwable t) {
-                    logger.error("Unexpected error occur at failed retry, cause: " + t.getMessage(), t);
-                }
+        int retryPeriod = url.getParameter(RETRY_PERIOD_KEY, DEFAULT_RETRY_PERIOD);
+
+        this.retryFuture = retryExecutor.scheduleWithFixedDelay(() -> {
+            try {
+                retry();
+            } catch (Throwable t) {
+                logger.error("Unexpected error occur at failed retry, cause: " + t.getMessage(), t);
             }
         }, retryPeriod, retryPeriod, TimeUnit.MILLISECONDS);
     }
 
     private Client prepareClient(URL url) {
 
-        int maxInboudSize = DEFAULT_INBOUT_SIZE;
-        if (StringUtils.isNotEmpty(System.getProperty(GRPC_MAX_INBOUD_SIZE_KEY))) {
-            maxInboudSize = Integer.valueOf(System.getProperty(GRPC_MAX_INBOUD_SIZE_KEY));
+        int maxInboundSize = DEFAULT_INBOUND_SIZE;
+        if (StringUtils.isNotEmpty(System.getProperty(GRPC_MAX_INBOUND_SIZE_KEY))) {
+            maxInboundSize = Integer.valueOf(System.getProperty(GRPC_MAX_INBOUND_SIZE_KEY));
         }
 
         ClientBuilder clientBuilder = Client.builder()
                 .loadBalancerFactory(RoundRobinLoadBalancerFactory.getInstance())
                 .endpoints(endPoints(url.getBackupAddress()))
-                .maxInboundMessageSize(maxInboudSize);
+                .maxInboundMessageSize(maxInboundSize);
 
         return clientBuilder.build();
     }
@@ -170,29 +181,28 @@ public class JEtcdClientWrapper {
     public List<String> getChildren(String path) {
         try {
             return RetryLoops.invokeWithRetry(
-                    new Callable<List<String>>() {
-                        @Override
-                        public List<String> call() throws Exception {
-                            requiredNotNull(client, failed);
-                            int len = path.length();
-                            return client.getKVClient()
-                                    .get(ByteSequence.from(path, UTF_8),
-                                            GetOption.newBuilder().withPrefix(ByteSequence.from(path, UTF_8)).build())
-                                    .get(DEFAULT_REQUEST_TIMEOUT, TimeUnit.MILLISECONDS)
-                                    .getKvs().stream().parallel()
-                                    .filter(pair -> {
-                                        String key = pair.getKey().toString(UTF_8);
-                                        int index = len, count = 0;
-                                        if (key.length() > len) {
-                                            for (; (index = key.indexOf(Constants.PATH_SEPARATOR, index)) != -1; ++index) {
-                                                if (count++ > 1) break;
+                    () -> {
+                        requiredNotNull(client, failed);
+                        int len = path.length();
+                        return client.getKVClient()
+                                .get(ByteSequence.from(path, UTF_8),
+                                        GetOption.newBuilder().withPrefix(ByteSequence.from(path, UTF_8)).build())
+                                .get(DEFAULT_REQUEST_TIMEOUT, TimeUnit.MILLISECONDS)
+                                .getKvs().stream().parallel()
+                                .filter(pair -> {
+                                    String key = pair.getKey().toString(UTF_8);
+                                    int index = len, count = 0;
+                                    if (key.length() > len) {
+                                        for (; (index = key.indexOf(PATH_SEPARATOR, index)) != -1; ++index) {
+                                            if (count++ > 1) {
+                                                break;
                                             }
                                         }
-                                        return count == 1;
-                                    })
-                                    .map(pair -> pair.getKey().toString(UTF_8))
-                                    .collect(toList());
-                        }
+                                    }
+                                    return count == 1;
+                                })
+                                .map(pair -> pair.getKey().toString(UTF_8))
+                                .collect(toList());
                     }, retryPolicy);
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -207,15 +217,12 @@ public class JEtcdClientWrapper {
     public long createLease(long second) {
         try {
             return RetryLoops.invokeWithRetry(
-                    new Callable<Long>() {
-                        @Override
-                        public Long call() throws Exception {
-                            requiredNotNull(client, failed);
-                            return client.getLeaseClient()
-                                    .grant(second)
-                                    .get(DEFAULT_REQUEST_TIMEOUT, TimeUnit.MILLISECONDS)
-                                    .getID();
-                        }
+                    () -> {
+                        requiredNotNull(client, failed);
+                        return client.getLeaseClient()
+                                .grant(second)
+                                .get(DEFAULT_REQUEST_TIMEOUT, TimeUnit.MILLISECONDS)
+                                .getID();
                     }, retryPolicy);
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -225,15 +232,12 @@ public class JEtcdClientWrapper {
     public void revokeLease(long lease) {
         try {
             RetryLoops.invokeWithRetry(
-                    new Callable<Void>() {
-                        @Override
-                        public Void call() throws Exception {
-                            requiredNotNull(client, failed);
-                            client.getLeaseClient()
-                                    .revoke(lease)
-                                    .get(DEFAULT_REQUEST_TIMEOUT, TimeUnit.MILLISECONDS);
-                            return null;
-                        }
+                    (Callable<Void>) () -> {
+                        requiredNotNull(client, failed);
+                        client.getLeaseClient()
+                                .revoke(lease)
+                                .get(DEFAULT_REQUEST_TIMEOUT, TimeUnit.MILLISECONDS);
+                        return null;
                     }, retryPolicy);
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -260,15 +264,12 @@ public class JEtcdClientWrapper {
     public boolean checkExists(String path) {
         try {
             return RetryLoops.invokeWithRetry(
-                    new Callable<Boolean>() {
-                        @Override
-                        public Boolean call() throws Exception {
-                            requiredNotNull(client, failed);
-                            return client.getKVClient()
-                                    .get(ByteSequence.from(path, UTF_8), GetOption.newBuilder().withCountOnly(true).build())
-                                    .get(DEFAULT_REQUEST_TIMEOUT, TimeUnit.MILLISECONDS)
-                                    .getCount() > 0;
-                        }
+                    () -> {
+                        requiredNotNull(client, failed);
+                        return client.getKVClient()
+                                .get(ByteSequence.from(path, UTF_8), GetOption.newBuilder().withCountOnly(true).build())
+                                .get(DEFAULT_REQUEST_TIMEOUT, TimeUnit.MILLISECONDS)
+                                .getCount() > 0;
                     }, retryPolicy);
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -281,17 +282,14 @@ public class JEtcdClientWrapper {
     protected Long find(String path) {
         try {
             return RetryLoops.invokeWithRetry(
-                    new Callable<Long>() {
-                        @Override
-                        public Long call() throws Exception {
-                            requiredNotNull(client, failed);
-                            return client.getKVClient()
-                                    .get(ByteSequence.from(path, UTF_8))
-                                    .get(DEFAULT_REQUEST_TIMEOUT, TimeUnit.MILLISECONDS)
-                                    .getKvs().stream()
-                                    .mapToLong(keyValue -> Long.valueOf(keyValue.getValue().toString(UTF_8)))
-                                    .findFirst().getAsLong();
-                        }
+                    () -> {
+                        requiredNotNull(client, failed);
+                        return client.getKVClient()
+                                .get(ByteSequence.from(path, UTF_8))
+                                .get(DEFAULT_REQUEST_TIMEOUT, TimeUnit.MILLISECONDS)
+                                .getKvs().stream()
+                                .mapToLong(keyValue -> Long.valueOf(keyValue.getValue().toString(UTF_8)))
+                                .findFirst().getAsLong();
                     }, retryPolicy);
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -301,16 +299,13 @@ public class JEtcdClientWrapper {
     public void createPersistent(String path) {
         try {
             RetryLoops.invokeWithRetry(
-                    new Callable<Void>() {
-                        @Override
-                        public Void call() throws Exception {
-                            requiredNotNull(client, failed);
-                            client.getKVClient()
-                                    .put(ByteSequence.from(path, UTF_8),
-                                            ByteSequence.from(String.valueOf(path.hashCode()), UTF_8))
-                                    .get(DEFAULT_REQUEST_TIMEOUT, TimeUnit.MILLISECONDS);
-                            return null;
-                        }
+                    (Callable<Void>) () -> {
+                        requiredNotNull(client, failed);
+                        client.getKVClient()
+                                .put(ByteSequence.from(path, UTF_8),
+                                        ByteSequence.from(String.valueOf(path.hashCode()), UTF_8))
+                                .get(DEFAULT_REQUEST_TIMEOUT, TimeUnit.MILLISECONDS);
+                        return null;
                     }, retryPolicy);
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -328,21 +323,18 @@ public class JEtcdClientWrapper {
     public long createEphemeral(String path) {
         try {
             return RetryLoops.invokeWithRetry(
-                    new Callable<Long>() {
-                        @Override
-                        public Long call() throws Exception {
-                            requiredNotNull(client, failed);
+                    () -> {
+                        requiredNotNull(client, failed);
 
-                            registeredPaths.add(path);
-                            keepAlive();
-                            final long leaseId = globalLeaseId;
-                            client.getKVClient()
-                                    .put(ByteSequence.from(path, UTF_8)
-                                            , ByteSequence.from(String.valueOf(leaseId), UTF_8)
-                                            , PutOption.newBuilder().withLeaseId(leaseId).build())
-                                    .get(DEFAULT_REQUEST_TIMEOUT, TimeUnit.MILLISECONDS);
-                            return leaseId;
-                        }
+                        registeredPaths.add(path);
+                        keepAlive();
+                        final long leaseId = globalLeaseId;
+                        client.getKVClient()
+                                .put(ByteSequence.from(path, UTF_8)
+                                        , ByteSequence.from(String.valueOf(leaseId), UTF_8)
+                                        , PutOption.newBuilder().withLeaseId(leaseId).build())
+                                .get(DEFAULT_REQUEST_TIMEOUT, TimeUnit.MILLISECONDS);
+                        return leaseId;
                     }, retryPolicy);
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -354,6 +346,7 @@ public class JEtcdClientWrapper {
         this.keepAlive(lease, null);
     }
 
+    @SuppressWarnings("unchecked")
     private <T> void keepAlive(long lease, Consumer<T> onFailed) {
         final StreamObserver<LeaseKeepAliveResponse> observer = new Observers.Builder()
                 .onError((e) -> {
@@ -432,7 +425,9 @@ public class JEtcdClientWrapper {
             /**
              * The client is processing reconnection
              */
-            if (cancelKeepAlive) return;
+            if (cancelKeepAlive) {
+                return;
+            }
 
             cancelKeepAlive();
 
@@ -445,7 +440,9 @@ public class JEtcdClientWrapper {
                          * The client is processing reconnection,
                          * cancel remaining service registration
                          */
-                        if (cancelKeepAlive) return;
+                        if (cancelKeepAlive) {
+                            return;
+                        }
 
                         createEphemeral(path);
                         failedRegistered.remove(path);
@@ -471,16 +468,13 @@ public class JEtcdClientWrapper {
     public void delete(String path) {
         try {
             RetryLoops.invokeWithRetry(
-                    new Callable<Void>() {
-                        @Override
-                        public Void call() throws Exception {
-                            requiredNotNull(client, failed);
-                            client.getKVClient()
-                                    .delete(ByteSequence.from(path, UTF_8))
-                                    .get(DEFAULT_REQUEST_TIMEOUT, TimeUnit.MILLISECONDS);
-                            registeredPaths.remove(path);
-                            return null;
-                        }
+                    (Callable<Void>) () -> {
+                        requiredNotNull(client, failed);
+                        client.getKVClient()
+                                .delete(ByteSequence.from(path, UTF_8))
+                                .get(DEFAULT_REQUEST_TIMEOUT, TimeUnit.MILLISECONDS);
+                        registeredPaths.remove(path);
+                        return null;
                     }, retryPolicy);
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -493,14 +487,14 @@ public class JEtcdClientWrapper {
     }
 
     public String[] endPoints(String backupAddress) {
-        String[] endpoints = backupAddress.split(Constants.COMMA_SEPARATOR);
-        List<String> addressess = Arrays.stream(endpoints)
-                .map(address -> address.indexOf(Constants.HTTP_SUBFIX_KEY) > -1
+        String[] endpoints = backupAddress.split(COMMA_SEPARATOR);
+        List<String> addresses = Arrays.stream(endpoints)
+                .map(address -> address.contains(HTTP_SUBFIX_KEY)
                         ? address
-                        : Constants.HTTP_KEY + address)
+                        : HTTP_KEY + address)
                 .collect(toList());
-        Collections.shuffle(addressess);
-        return addressess.toArray(new String[0]);
+        Collections.shuffle(addresses);
+        return addresses.toArray(new String[0]);
     }
 
     /**
@@ -527,27 +521,23 @@ public class JEtcdClientWrapper {
             }
 
             try {
-                this.future = reconnectNotify.scheduleWithFixedDelay(new Runnable() {
-                    @Override
-                    public void run() {
-                        boolean connected = isConnected();
-                        if (connectState != connected) {
-                            int notifyState = connected ? StateListener.CONNECTED : StateListener.DISCONNECTED;
-                            if (connectionStateListener != null) {
-                                try {
-                                    if (connected) {
-                                        clearKeepAlive();
-                                    }
-                                    connectionStateListener.stateChanged(getClient(), notifyState);
-                                } finally {
-                                    cancelKeepAlive = false;
+                this.future = reconnectNotify.scheduleWithFixedDelay(() -> {
+                    boolean connected = isConnected();
+                    if (connectState != connected) {
+                        int notifyState = connected ? StateListener.CONNECTED : StateListener.DISCONNECTED;
+                        if (connectionStateListener != null) {
+                            try {
+                                if (connected) {
+                                    clearKeepAlive();
                                 }
+                                connectionStateListener.stateChanged(getClient(), notifyState);
+                            } finally {
+                                cancelKeepAlive = false;
                             }
-                            connectState = connected;
                         }
+                        connectState = connected;
                     }
-
-                }, Constants.DEFAULT_REGISTRY_RECONNECT_PERIOD, Constants.DEFAULT_REGISTRY_RECONNECT_PERIOD, TimeUnit.MILLISECONDS);
+                }, DEFAULT_RECONNECT_PERIOD, DEFAULT_RECONNECT_PERIOD, TimeUnit.MILLISECONDS);
             } catch (Throwable t) {
                 logger.error("monitor reconnect status failed.", t);
             }
@@ -575,7 +565,9 @@ public class JEtcdClientWrapper {
 
         try {
             cancelKeepAlive = true;
-            revokeLease(this.globalLeaseId);
+            if (globalLeaseId != 0) {
+                revokeLease(this.globalLeaseId);
+            }
         } catch (Exception e) {
             logger.warn("revoke global lease '" + globalLeaseId + "' failed, registry: " + url, e);
         }
@@ -597,7 +589,9 @@ public class JEtcdClientWrapper {
             logger.warn(t.getMessage(), t);
         }
 
-        if (getClient() != null) getClient().close();
+        if (getClient() != null) {
+            getClient().close();
+        }
     }
 
     /**
@@ -638,12 +632,49 @@ public class JEtcdClientWrapper {
         }
     }
 
+    public String getKVValue(String key) {
+        if (null == key) {
+            return null;
+        }
+
+        CompletableFuture<GetResponse> responseFuture = this.client.getKVClient().get(ByteSequence.from(key, UTF_8));
+
+        try {
+            List<KeyValue> result = responseFuture.get(DEFAULT_REQUEST_TIMEOUT, TimeUnit.MILLISECONDS).getKvs();
+            if (!result.isEmpty()) {
+                return result.get(0).getValue().toString(UTF_8);
+            }
+        } catch (Exception e) {
+            // ignore
+        }
+
+        return null;
+    }
+
+
+    public boolean put(String key, String value) {
+        if (key == null || value == null) {
+            return false;
+        }
+        CompletableFuture<PutResponse> putFuture =
+                this.client.getKVClient().put(ByteSequence.from(key, UTF_8), ByteSequence.from(value, UTF_8));
+        try {
+            putFuture.get(DEFAULT_REQUEST_TIMEOUT, TimeUnit.MILLISECONDS);
+            return true;
+        } catch (Exception e) {
+            // ignore
+        }
+        return false;
+    }
+
     private void retry() {
         if (!failedRegistered.isEmpty()) {
             Set<String> failed = new HashSet<String>(failedRegistered);
             if (!failed.isEmpty()) {
 
-                if (cancelKeepAlive) return;
+                if (cancelKeepAlive) {
+                    return;
+                }
 
                 if (logger.isWarnEnabled()) {
                     logger.warn("Retry failed register(keep alive) for path '" + failed
@@ -656,7 +687,9 @@ public class JEtcdClientWrapper {
                             /**
                              * Is it currently reconnecting ?
                              */
-                            if (cancelKeepAlive) return;
+                            if (cancelKeepAlive) {
+                                return;
+                            }
 
                             createEphemeral(path);
                             failedRegistered.remove(path);
@@ -679,24 +712,14 @@ public class JEtcdClientWrapper {
         }
     }
 
-    public interface ConnectionStateListener {
-        /**
-         * Called when there is a state change in the connection
-         *
-         * @param client   the client
-         * @param newState the new state
-         */
-        public void stateChanged(Client client, int newState);
-    }
-
     /**
      * default request timeout
      */
     public static final long DEFAULT_REQUEST_TIMEOUT = obtainRequestTimeout();
 
-    public static final int DEFAULT_INBOUT_SIZE = 100 * 1024 * 1024;
+    public static final int DEFAULT_INBOUND_SIZE = 100 * 1024 * 1024;
 
-    public static final String GRPC_MAX_INBOUD_SIZE_KEY = "grpc.max.inbound.size";
+    public static final String GRPC_MAX_INBOUND_SIZE_KEY = "grpc.max.inbound.size";
 
     public static final String ETCD_REQUEST_TIMEOUT_KEY = "etcd.request.timeout";
 

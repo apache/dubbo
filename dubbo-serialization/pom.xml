@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-parent</artifactId>
-        <version>2.7.1-SNAPSHOT</version>
+        <version>${revision}</version>
     </parent>
     <artifactId>dubbo-serialization</artifactId>
     <packaging>pom</packaging>
@@ -36,6 +36,10 @@
         <module>dubbo-serialization-fst</module>
         <module>dubbo-serialization-jdk</module>
         <module>dubbo-serialization-protostuff</module>
+        <module>dubbo-serialization-avro</module>
         <module>dubbo-serialization-test</module>
+        <module>dubbo-serialization-gson</module>
+        <module>dubbo-serialization-protobuf-json</module>
+        <module>dubbo-serialization-native-hession</module>
     </modules>
 </project>

@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-monitor</artifactId>
-        <version>2.7.1-SNAPSHOT</version>
+        <version>${revision}</version>
     </parent>
     <artifactId>dubbo-monitor-api</artifactId>
     <packaging>jar</packaging>
@@ -33,6 +33,20 @@
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-rpc-api</artifactId>
             <version>${project.parent.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-remoting-netty4</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-serialization-hessian2</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

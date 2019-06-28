@@ -22,7 +22,7 @@
     <parent>
         <artifactId>dubbo-demo</artifactId>
         <groupId>org.apache.dubbo</groupId>
-        <version>2.7.1-SNAPSHOT</version>
+        <version>${revision}</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <packaging>pom</packaging>
@@ -31,11 +31,29 @@
 
     <properties>
         <skip_maven_deploy>true</skip_maven_deploy>
+        <spring-boot-maven-plugin.version>2.1.4.RELEASE</spring-boot-maven-plugin.version>
     </properties>
 
     <modules>
         <module>dubbo-demo-xml-provider</module>
         <module>dubbo-demo-xml-consumer</module>
     </modules>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring-boot-maven-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

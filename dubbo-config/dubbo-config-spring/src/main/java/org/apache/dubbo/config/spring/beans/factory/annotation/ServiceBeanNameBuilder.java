@@ -26,7 +26,6 @@ import org.springframework.util.StringUtils;
 
 import static org.apache.dubbo.config.spring.util.AnnotationUtils.resolveInterfaceName;
 
-
 /**
  * Dubbo {@link Service @Service} Bean Builder
  *
@@ -36,7 +35,7 @@ import static org.apache.dubbo.config.spring.util.AnnotationUtils.resolveInterfa
  * @see ReferenceBean
  * @since 2.6.5
  */
-class ServiceBeanNameBuilder {
+public class ServiceBeanNameBuilder {
 
     private static final String SEPARATOR = ":";
 
@@ -84,7 +83,7 @@ class ServiceBeanNameBuilder {
 
     private static void append(StringBuilder builder, String value) {
         if (StringUtils.hasText(value)) {
-            builder.append(SEPARATOR).append(value);
+            builder.append(value).append(SEPARATOR);
         }
     }
 
@@ -99,14 +98,14 @@ class ServiceBeanNameBuilder {
     }
 
     public String build() {
-        StringBuilder beanNameBuilder = new StringBuilder("ServiceBean");
+        StringBuilder beanNameBuilder = new StringBuilder("ServiceBean").append(SEPARATOR);
         // Required
         append(beanNameBuilder, interfaceClassName);
         // Optional
         append(beanNameBuilder, version);
         append(beanNameBuilder, group);
-        // Build
-        String rawBeanName = beanNameBuilder.toString();
+        // Build and remove last ":"
+        String rawBeanName = beanNameBuilder.substring(0, beanNameBuilder.length() - 1);
         // Resolve placeholders
         return environment.resolvePlaceholders(rawBeanName);
     }

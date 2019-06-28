@@ -1,0 +1,1 @@
+avro=org.apache.dubbo.common.serialize.avro.AvroSerialization

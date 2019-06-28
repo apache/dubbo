@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.dubbo;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.Parameters;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
@@ -27,12 +26,16 @@ import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.remoting.exchange.ExchangeHandler;
 import org.apache.dubbo.remoting.exchange.Exchangers;
-import org.apache.dubbo.remoting.exchange.ResponseFuture;
 
 import java.net.InetSocketAddress;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
+import static org.apache.dubbo.remoting.Constants.SEND_RECONNECT_KEY;
+import static org.apache.dubbo.rpc.protocol.dubbo.Constants.LAZY_CONNECT_INITIAL_STATE_KEY;
+import static org.apache.dubbo.rpc.protocol.dubbo.Constants.DEFAULT_LAZY_CONNECT_INITIAL_STATE;
 
 /**
  * dubbo protocol support class.
@@ -59,9 +62,9 @@ final class LazyConnectExchangeClient implements ExchangeClient {
 
     public LazyConnectExchangeClient(URL url, ExchangeHandler requestHandler) {
         // lazy connect, need set send.reconnect = true, to avoid channel bad status.
-        this.url = url.addParameter(Constants.SEND_RECONNECT_KEY, Boolean.TRUE.toString());
+        this.url = url.addParameter(SEND_RECONNECT_KEY, Boolean.TRUE.toString());
         this.requestHandler = requestHandler;
-        this.initialState = url.getParameter(Constants.LAZY_CONNECT_INITIAL_STATE_KEY, Constants.DEFAULT_LAZY_CONNECT_INITIAL_STATE);
+        this.initialState = url.getParameter(LAZY_CONNECT_INITIAL_STATE_KEY, DEFAULT_LAZY_CONNECT_INITIAL_STATE);
         this.requestWithWarning = url.getParameter(REQUEST_WITH_WARNING_KEY, false);
     }
 
@@ -84,7 +87,7 @@ final class LazyConnectExchangeClient implements ExchangeClient {
     }
 
     @Override
-    public ResponseFuture request(Object request) throws RemotingException {
+    public CompletableFuture<Object> request(Object request) throws RemotingException {
         warning();
         initClient();
         return client.request(request);
@@ -105,7 +108,7 @@ final class LazyConnectExchangeClient implements ExchangeClient {
     }
 
     @Override
-    public ResponseFuture request(Object request, int timeout) throws RemotingException {
+    public CompletableFuture<Object> request(Object request, int timeout) throws RemotingException {
         warning();
         initClient();
         return client.request(request, timeout);

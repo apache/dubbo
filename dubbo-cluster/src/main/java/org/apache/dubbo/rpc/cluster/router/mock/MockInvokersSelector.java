@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.router.mock;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.Invocation;
@@ -26,6 +25,9 @@ import org.apache.dubbo.rpc.cluster.router.AbstractRouter;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.apache.dubbo.rpc.cluster.Constants.INVOCATION_NEED_MOCK;
+import static org.apache.dubbo.rpc.cluster.Constants.MOCK_PROTOCOL;
 
 /**
  * A specific Router designed to realize mock feature.
@@ -50,7 +52,7 @@ public class MockInvokersSelector extends AbstractRouter {
         if (invocation.getAttachments() == null) {
             return getNormalInvokers(invokers);
         } else {
-            String value = invocation.getAttachments().get(Constants.INVOCATION_NEED_MOCK);
+            String value = invocation.getAttachments().get(INVOCATION_NEED_MOCK);
             if (value == null) {
                 return getNormalInvokers(invokers);
             } else if (Boolean.TRUE.toString().equalsIgnoreCase(value)) {
@@ -66,7 +68,7 @@ public class MockInvokersSelector extends AbstractRouter {
         }
         List<Invoker<T>> sInvokers = new ArrayList<Invoker<T>>(1);
         for (Invoker<T> invoker : invokers) {
-            if (invoker.getUrl().getProtocol().equals(Constants.MOCK_PROTOCOL)) {
+            if (invoker.getUrl().getProtocol().equals(MOCK_PROTOCOL)) {
                 sInvokers.add(invoker);
             }
         }
@@ -79,7 +81,7 @@ public class MockInvokersSelector extends AbstractRouter {
         } else {
             List<Invoker<T>> sInvokers = new ArrayList<Invoker<T>>(invokers.size());
             for (Invoker<T> invoker : invokers) {
-                if (!invoker.getUrl().getProtocol().equals(Constants.MOCK_PROTOCOL)) {
+                if (!invoker.getUrl().getProtocol().equals(MOCK_PROTOCOL)) {
                     sInvokers.add(invoker);
                 }
             }
@@ -90,7 +92,7 @@ public class MockInvokersSelector extends AbstractRouter {
     private <T> boolean hasMockProviders(final List<Invoker<T>> invokers) {
         boolean hasMockProvider = false;
         for (Invoker<T> invoker : invokers) {
-            if (invoker.getUrl().getProtocol().equals(Constants.MOCK_PROTOCOL)) {
+            if (invoker.getUrl().getProtocol().equals(MOCK_PROTOCOL)) {
                 hasMockProvider = true;
                 break;
             }

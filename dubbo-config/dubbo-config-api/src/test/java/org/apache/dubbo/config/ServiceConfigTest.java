@@ -17,7 +17,6 @@
 
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.api.Greeting;
@@ -31,6 +30,7 @@ import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.service.GenericService;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,9 +41,21 @@ import org.mockito.Mockito;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.dubbo.common.Constants.GENERIC_SERIALIZATION_BEAN;
-import static org.apache.dubbo.common.Constants.GENERIC_SERIALIZATION_DEFAULT;
-import static org.apache.dubbo.common.Constants.GENERIC_SERIALIZATION_NATIVE_JAVA;
+import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
+import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
+import static org.apache.dubbo.config.Constants.SHUTDOWN_TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
+import static org.apache.dubbo.remoting.Constants.BIND_IP_KEY;
+import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
+import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
+import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_BEAN;
+import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_DEFAULT;
+import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_NATIVE_JAVA;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -129,17 +141,17 @@ public class ServiceConfigTest {
         URL url = service.toUrl();
         assertThat(url.getProtocol(), equalTo("mockprotocol2"));
         assertThat(url.getPath(), equalTo(DemoService.class.getName()));
-        assertThat(url.getParameters(), hasEntry(Constants.ANYHOST_KEY, "true"));
-        assertThat(url.getParameters(), hasEntry(Constants.APPLICATION_KEY, "app"));
-        assertThat(url.getParameters(), hasKey(Constants.BIND_IP_KEY));
-        assertThat(url.getParameters(), hasKey(Constants.BIND_PORT_KEY));
-        assertThat(url.getParameters(), hasEntry(Constants.DEFAULT_KEY + "." + Constants.EXPORT_KEY, "true"));
+        assertThat(url.getParameters(), hasEntry(ANYHOST_KEY, "true"));
+        assertThat(url.getParameters(), hasEntry(APPLICATION_KEY, "app"));
+        assertThat(url.getParameters(), hasKey(BIND_IP_KEY));
+        assertThat(url.getParameters(), hasKey(BIND_PORT_KEY));
+        assertThat(url.getParameters(), hasEntry(EXPORT_KEY, "true"));
         assertThat(url.getParameters(), hasEntry("echo.0.callback", "false"));
-        assertThat(url.getParameters(), hasEntry(Constants.GENERIC_KEY, "false"));
-        assertThat(url.getParameters(), hasEntry(Constants.INTERFACE_KEY, DemoService.class.getName()));
-        assertThat(url.getParameters(), hasKey(Constants.METHODS_KEY));
-        assertThat(url.getParameters().get(Constants.METHODS_KEY), containsString("echo"));
-        assertThat(url.getParameters(), hasEntry(Constants.SIDE_KEY, Constants.PROVIDER));
+        assertThat(url.getParameters(), hasEntry(GENERIC_KEY, "false"));
+        assertThat(url.getParameters(), hasEntry(INTERFACE_KEY, DemoService.class.getName()));
+        assertThat(url.getParameters(), hasKey(METHODS_KEY));
+        assertThat(url.getParameters().get(METHODS_KEY), containsString("echo"));
+        assertThat(url.getParameters(), hasEntry(SIDE_KEY, PROVIDER));
         Mockito.verify(protocolDelegate).export(Mockito.any(Invoker.class));
     }
 
@@ -164,14 +176,14 @@ public class ServiceConfigTest {
     @Test
     @Disabled("cannot pass in travis")
     public void testUnexport() throws Exception {
-        System.setProperty(Constants.SHUTDOWN_WAIT_KEY, "0");
+        System.setProperty(SHUTDOWN_WAIT_KEY, "0");
         try {
             service.export();
             service.unexport();
             Thread.sleep(1000);
             Mockito.verify(exporter, Mockito.atLeastOnce()).unexport();
         } finally {
-            System.clearProperty(Constants.SHUTDOWN_TIMEOUT_KEY);
+            System.clearProperty(SHUTDOWN_TIMEOUT_KEY);
         }
     }
 
@@ -242,14 +254,5 @@ public class ServiceConfigTest {
             ServiceConfig service = new ServiceConfig();
             service.setMock(true);
         });
-    }
-
-    @Test
-    public void testUniqueServiceName() throws Exception {
-        ServiceConfig<Greeting> service = new ServiceConfig<Greeting>();
-        service.setGroup("dubbo");
-        service.setInterface(Greeting.class);
-        service.setVersion("1.0.0");
-        assertThat(service.getUniqueServiceName(), equalTo("dubbo/" + Greeting.class.getName() + ":1.0.0"));
     }
 }

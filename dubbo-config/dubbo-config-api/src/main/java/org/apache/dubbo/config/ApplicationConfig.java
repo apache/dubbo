@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.compiler.support.AdaptiveCompiler;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -26,6 +25,24 @@ import org.apache.dubbo.config.support.Parameter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DUMP_DIRECTORY;
+import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
+import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
+import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP_COMPATIBLE;
+import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
+import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE_COMPATIBLE;
+import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT;
+import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT_COMPATIBLE;
+import static org.apache.dubbo.config.Constants.ARCHITECTURE;
+import static org.apache.dubbo.config.Constants.DEVELOPMENT_ENVIRONMENT;
+import static org.apache.dubbo.config.Constants.ENVIRONMENT;
+import static org.apache.dubbo.config.Constants.NAME;
+import static org.apache.dubbo.config.Constants.ORGANIZATION;
+import static org.apache.dubbo.config.Constants.OWNER;
+import static org.apache.dubbo.config.Constants.PRODUCTION_ENVIRONMENT;
+import static org.apache.dubbo.config.Constants.TEST_ENVIRONMENT;
 
 
 /**
@@ -123,7 +140,6 @@ public class ApplicationConfig extends AbstractConfig {
      */
     private String shutwait;
 
-
     public ApplicationConfig() {
     }
 
@@ -131,13 +147,13 @@ public class ApplicationConfig extends AbstractConfig {
         setName(name);
     }
 
-    @Parameter(key = Constants.APPLICATION_KEY, required = true, useKeyAsProperty = false)
+    @Parameter(key = APPLICATION_KEY, required = true, useKeyAsProperty = false)
     public String getName() {
         return name;
     }
 
     public void setName(String name) {
-        checkName(Constants.NAME, name);
+        checkName(NAME, name);
         this.name = name;
         if (StringUtils.isEmpty(id)) {
             id = name;
@@ -158,7 +174,7 @@ public class ApplicationConfig extends AbstractConfig {
     }
 
     public void setOwner(String owner) {
-        checkMultiName(Constants.OWNER, owner);
+        checkMultiName(OWNER, owner);
         this.owner = owner;
     }
 
@@ -167,7 +183,7 @@ public class ApplicationConfig extends AbstractConfig {
     }
 
     public void setOrganization(String organization) {
-        checkName(Constants.ORGANIZATION, organization);
+        checkName(ORGANIZATION, organization);
         this.organization = organization;
     }
 
@@ -176,7 +192,7 @@ public class ApplicationConfig extends AbstractConfig {
     }
 
     public void setArchitecture(String architecture) {
-        checkName(Constants.ARCHITECTURE, architecture);
+        checkName(ARCHITECTURE, architecture);
         this.architecture = architecture;
     }
 
@@ -185,18 +201,18 @@ public class ApplicationConfig extends AbstractConfig {
     }
 
     public void setEnvironment(String environment) {
-        checkName(Constants.ENVIRONMENT, environment);
+        checkName(ENVIRONMENT, environment);
         if (environment != null) {
-            if (!(Constants.DEVELOPMENT_ENVIRONMENT.equals(environment)
-                    || Constants.TEST_ENVIRONMENT.equals(environment)
-                    || Constants.PRODUCTION_ENVIRONMENT.equals(environment))) {
+            if (!(DEVELOPMENT_ENVIRONMENT.equals(environment)
+                    || TEST_ENVIRONMENT.equals(environment)
+                    || PRODUCTION_ENVIRONMENT.equals(environment))) {
 
                 throw new IllegalStateException(String.format("Unsupported environment: %s, only support %s/%s/%s, default is %s.",
                         environment,
-                        Constants.DEVELOPMENT_ENVIRONMENT,
-                        Constants.TEST_ENVIRONMENT,
-                        Constants.PRODUCTION_ENVIRONMENT,
-                        Constants.PRODUCTION_ENVIRONMENT));
+                        DEVELOPMENT_ENVIRONMENT,
+                        TEST_ENVIRONMENT,
+                        PRODUCTION_ENVIRONMENT,
+                        PRODUCTION_ENVIRONMENT));
             }
         }
         this.environment = environment;
@@ -268,7 +284,7 @@ public class ApplicationConfig extends AbstractConfig {
         this.isDefault = isDefault;
     }
 
-    @Parameter(key = Constants.DUMP_DIRECTORY)
+    @Parameter(key = DUMP_DIRECTORY)
     public String getDumpDirectory() {
         return dumpDirectory;
     }
@@ -277,7 +293,7 @@ public class ApplicationConfig extends AbstractConfig {
         this.dumpDirectory = dumpDirectory;
     }
 
-    @Parameter(key = Constants.QOS_ENABLE)
+    @Parameter(key = QOS_ENABLE)
     public Boolean getQosEnable() {
         return qosEnable;
     }
@@ -286,7 +302,7 @@ public class ApplicationConfig extends AbstractConfig {
         this.qosEnable = qosEnable;
     }
 
-    @Parameter(key = Constants.QOS_PORT)
+    @Parameter(key = QOS_PORT)
     public Integer getQosPort() {
         return qosPort;
     }
@@ -295,13 +311,44 @@ public class ApplicationConfig extends AbstractConfig {
         this.qosPort = qosPort;
     }
 
-    @Parameter(key = Constants.ACCEPT_FOREIGN_IP)
+    @Parameter(key = ACCEPT_FOREIGN_IP)
     public Boolean getQosAcceptForeignIp() {
         return qosAcceptForeignIp;
     }
 
     public void setQosAcceptForeignIp(Boolean qosAcceptForeignIp) {
         this.qosAcceptForeignIp = qosAcceptForeignIp;
+    }
+
+    /**
+     * The format is the same as the springboot, including: getQosEnableCompatible(), getQosPortCompatible(), getQosAcceptForeignIpCompatible().
+     * @return
+     */
+    @Parameter(key = QOS_ENABLE_COMPATIBLE, excluded = true)
+    public Boolean getQosEnableCompatible() {
+        return getQosEnable();
+    }
+
+    public void setQosEnableCompatible(Boolean qosEnable) {
+        setQosEnable(qosEnable);
+    }
+
+    @Parameter(key = QOS_PORT_COMPATIBLE, excluded = true)
+    public Integer getQosPortCompatible() {
+        return getQosPort();
+    }
+
+    public void setQosPortCompatible(Integer qosPort) {
+        this.setQosPort(qosPort);
+    }
+
+    @Parameter(key = ACCEPT_FOREIGN_IP_COMPATIBLE, excluded = true)
+    public Boolean getQosAcceptForeignIpCompatible() {
+        return this.getQosAcceptForeignIp();
+    }
+
+    public void setQosAcceptForeignIpCompatible(Boolean qosAcceptForeignIp) {
+        this.setQosAcceptForeignIp(qosAcceptForeignIp);
     }
 
     public Map<String, String> getParameters() {
@@ -318,7 +365,7 @@ public class ApplicationConfig extends AbstractConfig {
     }
 
     public void setShutwait(String shutwait) {
-        System.setProperty(Constants.SHUTDOWN_WAIT_KEY, shutwait);
+        System.setProperty(SHUTDOWN_WAIT_KEY, shutwait);
         this.shutwait = shutwait;
     }
 

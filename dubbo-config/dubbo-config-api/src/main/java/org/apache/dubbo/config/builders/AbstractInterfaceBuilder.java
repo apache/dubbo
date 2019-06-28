@@ -121,6 +121,8 @@ public abstract class AbstractInterfaceBuilder<T extends AbstractInterfaceConfig
     // the scope for referring/exporting a service, if it's local, it means searching in current JVM only.
     private String scope;
 
+    private String tag;
+
     /**
      * @param local
      * @see org.apache.dubbo.config.builders.AbstractInterfaceBuilder#stub(String)
@@ -267,28 +269,77 @@ public abstract class AbstractInterfaceBuilder<T extends AbstractInterfaceConfig
         return getThis();
     }
 
+    public B tag(String tag) {
+        this.tag = tag;
+        return getThis();
+    }
+
+    @Override
     public void build(T instance) {
         super.build(instance);
 
-        if (!StringUtils.isEmpty(local)) instance.setLocal(local);
-        if (!StringUtils.isEmpty(stub)) instance.setStub(stub);
-        if (monitor != null) instance.setMonitor(monitor);
-        if (!StringUtils.isEmpty(proxy)) instance.setProxy(proxy);
-        if (!StringUtils.isEmpty(cluster)) instance.setCluster(cluster);
-        if (!StringUtils.isEmpty(filter)) instance.setFilter(filter);
-        if (!StringUtils.isEmpty(listener)) instance.setListener(listener);
-        if (!StringUtils.isEmpty(owner)) instance.setOwner(owner);
-        if (connections != null) instance.setConnections(connections);
-        if (!StringUtils.isEmpty(layer)) instance.setLayer(layer);
-        if (application != null) instance.setApplication(application);
-        if (module != null) instance.setModule(module);
-        if (registries != null) instance.setRegistries(registries);
-        if (!StringUtils.isEmpty(registryIds)) instance.setRegistryIds(registryIds);
-        if (!StringUtils.isEmpty(onconnect)) instance.setOnconnect(onconnect);
-        if (!StringUtils.isEmpty(ondisconnect)) instance.setOndisconnect(ondisconnect);
-        if (metadataReportConfig != null) instance.setMetadataReportConfig(metadataReportConfig);
-        if (configCenter != null) instance.setConfigCenter(configCenter);
-        if (callbacks != null) instance.setCallbacks(callbacks);
-        if (!StringUtils.isEmpty(scope)) instance.setScope(scope);
+        if (!StringUtils.isEmpty(local)) {
+            instance.setLocal(local);
+        }
+        if (!StringUtils.isEmpty(stub)) {
+            instance.setStub(stub);
+        }
+        if (monitor != null) {
+            instance.setMonitor(monitor);
+        }
+        if (!StringUtils.isEmpty(proxy)) {
+            instance.setProxy(proxy);
+        }
+        if (!StringUtils.isEmpty(cluster)) {
+            instance.setCluster(cluster);
+        }
+        if (!StringUtils.isEmpty(filter)) {
+            instance.setFilter(filter);
+        }
+        if (!StringUtils.isEmpty(listener)) {
+            instance.setListener(listener);
+        }
+        if (!StringUtils.isEmpty(owner)) {
+            instance.setOwner(owner);
+        }
+        if (connections != null) {
+            instance.setConnections(connections);
+        }
+        if (!StringUtils.isEmpty(layer)) {
+            instance.setLayer(layer);
+        }
+        if (application != null) {
+            instance.setApplication(application);
+        }
+        if (module != null) {
+            instance.setModule(module);
+        }
+        if (registries != null) {
+            instance.setRegistries(registries);
+        }
+        if (!StringUtils.isEmpty(registryIds)) {
+            instance.setRegistryIds(registryIds);
+        }
+        if (!StringUtils.isEmpty(onconnect)) {
+            instance.setOnconnect(onconnect);
+        }
+        if (!StringUtils.isEmpty(ondisconnect)) {
+            instance.setOndisconnect(ondisconnect);
+        }
+        if (metadataReportConfig != null) {
+            instance.setMetadataReportConfig(metadataReportConfig);
+        }
+        if (configCenter != null) {
+            instance.setConfigCenter(configCenter);
+        }
+        if (callbacks != null) {
+            instance.setCallbacks(callbacks);
+        }
+        if (!StringUtils.isEmpty(scope)) {
+            instance.setScope(scope);
+        }
+        if (StringUtils.isNotEmpty(tag)) {
+            instance.setTag(tag);
+        }
     }
 }

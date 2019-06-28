@@ -164,4 +164,20 @@ public interface EtcdClient {
      */
     void revokeLease(long lease);
 
+
+    /**
+     * Get the value of the specified key.
+     * @param key the specified key
+     * @return null if the value is not found
+     */
+    String getKVValue(String key);
+
+    /**
+     * Put the key value pair to etcd
+     * @param key the specified key
+     * @param value the paired value
+     * @return true if put success
+     */
+    boolean put(String key, String value);
+
 }

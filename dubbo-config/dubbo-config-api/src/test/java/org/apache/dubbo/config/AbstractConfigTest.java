@@ -306,7 +306,7 @@ public class AbstractConfigTest {
 
             System.setProperty("dubbo.override.address", "system://127.0.0.1:2181");
             System.setProperty("dubbo.override.protocol", "system");
-            // this will not override, use 'key' instread, @Parameter(key="key1", useKeyAsProperty=false)
+            // this will not override, use 'key' instead, @Parameter(key="key1", useKeyAsProperty=false)
             System.setProperty("dubbo.override.key1", "system");
             System.setProperty("dubbo.override.key2", "system");
 
@@ -467,6 +467,32 @@ public class AbstractConfigTest {
         Assertions.assertNull(metaData.get("key2"));
     }
 
+    @Test
+    public void testEquals() {
+        ApplicationConfig application1 = new ApplicationConfig();
+        ApplicationConfig application2 = new ApplicationConfig();
+        application1.setName("app1");
+        application2.setName("app2");
+        Assertions.assertNotEquals(application1, application2);
+        application1.setName("sameName");
+        application2.setName("sameName");
+        Assertions.assertEquals(application1, application2);
+
+        ProtocolConfig protocol1 = new ProtocolConfig();
+        protocol1.setHost("127.0.0.1");// excluded
+        protocol1.setName("dubbo");
+        ProtocolConfig protocol2 = new ProtocolConfig();
+        protocol2.setHost("127.0.0.2");// excluded
+        protocol2.setName("dubbo");
+        Assertions.assertEquals(protocol1, protocol2);
+    }
+
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.ANNOTATION_TYPE})
+    public @interface ConfigField {
+        String value() default "";
+    }
+
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.FIELD, ElementType.METHOD, ElementType.ANNOTATION_TYPE})
     public @interface Config {
@@ -479,6 +505,10 @@ public class AbstractConfigTest {
         String[] listener() default {};
 
         String[] parameters() default {};
+
+        ConfigField[] configFields() default {};
+
+        ConfigField configField() default @ConfigField;
     }
 
     private static class OverrideConfig extends AbstractInterfaceConfig {
@@ -735,6 +765,7 @@ public class AbstractConfigTest {
         private String filter;
         private String listener;
         private Map<String, String> parameters;
+        private String[] configFields;
 
         public Class getInterface() {
             return interfaceClass;
@@ -766,6 +797,14 @@ public class AbstractConfigTest {
 
         public void setParameters(Map<String, String> parameters) {
             this.parameters = parameters;
+        }
+
+        public String[] getConfigFields() {
+            return configFields;
+        }
+
+        public void setConfigFields(String[] configFields) {
+            this.configFields = configFields;
         }
     }
 }
