@@ -28,15 +28,15 @@ import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.Server;
+import org.apache.dubbo.remoting.transport.dispatcher.ChannelHandlers;
 
 import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
-import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.*;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CLIENT_THREADPOOL;
 import static org.apache.dubbo.remoting.Constants.IDLE_TIMEOUT_KEY;
 import static org.apache.dubbo.remoting.Constants.DEFAULT_IDLE_TIMEOUT;
 import static org.apache.dubbo.remoting.Constants.ACCEPTS_KEY;
@@ -84,6 +84,11 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
     protected abstract void doOpen() throws Throwable;
 
     protected abstract void doClose() throws Throwable;
+
+    protected static ChannelHandler wrapChannelHandler(URL url, ChannelHandler handler) {
+        url = ExecutorUtil.setThreadName(url, SERVER_THREAD_POOL_NAME);
+        return ChannelHandlers.wrap(handler, url, true);
+    }
 
     @Override
     public void reset(URL url) {
