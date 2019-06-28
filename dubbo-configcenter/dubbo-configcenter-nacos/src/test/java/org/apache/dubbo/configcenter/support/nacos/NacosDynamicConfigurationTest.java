@@ -57,11 +57,11 @@ public class NacosDynamicConfigurationTest {
         Thread.sleep(200);
         put("dubbo.properties", "test", "aaa=bbb");
         Thread.sleep(200);
-        put("xxxx:org.apache.dubbo.demo.DemoService:1.0.0.test.configurators", "helloworld");
+        put("org.apache.dubbo.demo.DemoService:1.0.0.test:xxxx.configurators", "helloworld");
         Thread.sleep(200);
         Assertions.assertEquals("hello", config.getRule("org.apache.dubbo.nacos.testService.configurators", DynamicConfiguration.DEFAULT_GROUP));
         Assertions.assertEquals("aaa=bbb", config.getRule("dubbo.properties", "test"));
-        Assertions.assertEquals("helloworld", config.getRule("xxxx*org.apache.dubbo.demo.DemoService:1.0.0.test.configurators", DynamicConfiguration.DEFAULT_GROUP));
+        Assertions.assertEquals("helloworld", config.getRule("org.apache.dubbo.demo.DemoService:1.0.0.test:xxxx.configurators", DynamicConfiguration.DEFAULT_GROUP));
     }
 
     @Test
@@ -75,12 +75,12 @@ public class NacosDynamicConfigurationTest {
 
         config.addListener("AService.configurators", listener1);
         config.addListener("AService.configurators", listener2);
-        config.addListener("testapp.tagrouters", listener3);
-        config.addListener("testapp.tagrouters", listener4);
+        config.addListener("testapp.tag-router", listener3);
+        config.addListener("testapp.tag-router", listener4);
 
         put("AService.configurators", "new value1");
         Thread.sleep(200);
-        put("testapp.tagrouters", "new value2");
+        put("testapp.tag-router", "new value2");
         Thread.sleep(200);
         put("testapp", "new value3");
         Thread.sleep(5000);
@@ -89,8 +89,8 @@ public class NacosDynamicConfigurationTest {
 
         Assertions.assertEquals(1, listener1.getCount("AService.configurators"));
         Assertions.assertEquals(1, listener2.getCount("AService.configurators"));
-        Assertions.assertEquals(1, listener3.getCount("testapp.tagrouters"));
-        Assertions.assertEquals(1, listener4.getCount("testapp.tagrouters"));
+        Assertions.assertEquals(1, listener3.getCount("testapp.tag-router"));
+        Assertions.assertEquals(1, listener4.getCount("testapp.tag-router"));
 
         Assertions.assertEquals("new value1", listener1.getValue());
         Assertions.assertEquals("new value1", listener2.getValue());
