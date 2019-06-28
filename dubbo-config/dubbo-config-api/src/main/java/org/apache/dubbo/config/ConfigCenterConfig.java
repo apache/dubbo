@@ -133,7 +133,7 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.address = address;
     }
 
-    @Parameter(key = CONFIG_CLUSTER_KEY, useKeyAsProperty = false)
+    @Parameter(key = CONFIG_CLUSTER_KEY)
     public String getCluster() {
         return cluster;
     }
@@ -142,7 +142,7 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.cluster = cluster;
     }
 
-    @Parameter(key = CONFIG_NAMESPACE_KEY, useKeyAsProperty = false)
+    @Parameter(key = CONFIG_NAMESPACE_KEY)
     public String getNamespace() {
         return namespace;
     }
@@ -151,7 +151,7 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.namespace = namespace;
     }
 
-    @Parameter(key = CONFIG_GROUP_KEY, useKeyAsProperty = false)
+    @Parameter(key = CONFIG_GROUP_KEY)
     public String getGroup() {
         return group;
     }
@@ -160,7 +160,7 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.group = group;
     }
 
-    @Parameter(key = CONFIG_CHECK_KEY, useKeyAsProperty = false)
+    @Parameter(key = CONFIG_CHECK_KEY)
     public Boolean isCheck() {
         return check;
     }
@@ -169,7 +169,7 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.check = check;
     }
 
-    @Parameter(key = CONFIG_ENABLE_KEY, useKeyAsProperty = false)
+    @Parameter(key = CONFIG_ENABLE_KEY)
     public Boolean isHighestPriority() {
         return highestPriority;
     }
@@ -194,7 +194,7 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.password = password;
     }
 
-    @Parameter(key = CONFIG_TIMEOUT_KEY, useKeyAsProperty = false)
+    @Parameter(key = CONFIG_TIMEOUT_KEY)
     public Long getTimeout() {
         return timeout;
     }
@@ -203,7 +203,7 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.timeout = timeout;
     }
 
-    @Parameter(key = CONFIG_CONFIGFILE_KEY, useKeyAsProperty = false)
+    @Parameter(key = CONFIG_CONFIGFILE_KEY)
     public String getConfigFile() {
         return configFile;
     }
