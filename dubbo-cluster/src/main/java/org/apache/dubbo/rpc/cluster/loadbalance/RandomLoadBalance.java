@@ -26,7 +26,7 @@ import java.util.concurrent.ThreadLocalRandom;
 /**
  * This class select one provider from multiple providers randomly.
  * You can define weights for each provider:
- * If the weights are all the same then it will use random.nextInt(weight).
+ * If the weights are all the same then it will use random.nextInt(number of invokers).
  * If the weights are different then it will use random.nextInt(w1 + w2 + ... + wn)
  * Note that if the performance of the machine is better than others, you can set a larger weight.
  * If the performance is not so good, you can set a smaller weight.
@@ -34,6 +34,15 @@ import java.util.concurrent.ThreadLocalRandom;
 public class RandomLoadBalance extends AbstractLoadBalance {
 
     public static final String NAME = "random";
+
+    /**
+     * Select one invoker between a list using a random criteria
+     * @param invokers List of possible invokers
+     * @param url URL
+     * @param invocation Invocation
+     * @param <T>
+     * @return The selected invoker
+     */
     @Override
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
         // Number of invokers
