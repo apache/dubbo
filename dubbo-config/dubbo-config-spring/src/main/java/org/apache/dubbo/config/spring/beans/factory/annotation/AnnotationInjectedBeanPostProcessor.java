@@ -59,8 +59,8 @@ import java.util.concurrent.ConcurrentMap;
 import static org.apache.dubbo.config.spring.util.ClassUtils.resolveGenericType;
 import static org.springframework.core.BridgeMethodResolver.findBridgedMethod;
 import static org.springframework.core.BridgeMethodResolver.isVisibilityBridgeMethodPair;
-import static org.springframework.core.annotation.AnnotationUtils.findAnnotation;
-import static org.springframework.core.annotation.AnnotationUtils.getAnnotation;
+import static org.springframework.core.annotation.AnnotatedElementUtils.findMergedAnnotation;
+import static org.springframework.core.annotation.AnnotatedElementUtils.getMergedAnnotation;
 
 /**
  * Abstract generic {@link BeanPostProcessor} implementation for customized annotation that annotated injected-object.
@@ -150,7 +150,7 @@ public abstract class AnnotationInjectedBeanPostProcessor<A extends Annotation> 
 
         ReflectionUtils.doWithFields(beanClass, field -> {
 
-            A annotation = getAnnotation(field, getAnnotationType());
+            A annotation = getMergedAnnotation(field, getAnnotationType());
 
             if (annotation != null) {
 
@@ -188,7 +188,7 @@ public abstract class AnnotationInjectedBeanPostProcessor<A extends Annotation> 
                 return;
             }
 
-            A annotation = findAnnotation(bridgedMethod, getAnnotationType());
+            A annotation = findMergedAnnotation(bridgedMethod, getAnnotationType());
 
             if (annotation != null && method.equals(ClassUtils.getMostSpecificMethod(method, beanClass))) {
                 if (Modifier.isStatic(method.getModifiers())) {
