@@ -16,24 +16,27 @@
   -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>dubbo-parent</artifactId>
+        <artifactId>dubbo-metadata-report</artifactId>
         <groupId>org.apache.dubbo</groupId>
         <version>${revision}</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-
-    <artifactId>dubbo-metadata-report</artifactId>
-    <packaging>pom</packaging>
-    <modules>
-        <module>dubbo-metadata-report-api</module>
-        <module>dubbo-metadata-report-zookeeper</module>
-        <module>dubbo-metadata-report-redis</module>
-        <module>dubbo-metadata-definition</module>
-        <module>dubbo-metadata-definition-protobuf</module>
-        <module>dubbo-metadata-report-consul</module>
-        <module>dubbo-metadata-report-etcd</module>
-        <module>dubbo-metadata-report-nacos</module>
-    </modules>
+    <artifactId>dubbo-metadata-definition-protobuf</artifactId>
 
 
+    <dependencies>
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java-util</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-metadata-definition</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+    </dependencies>
 </project>
