@@ -29,9 +29,6 @@ import java.lang.annotation.Target;
  *     but the java bean needs camelcase name,e.g orderId, you should convert manually each other,
  *     basing GenericAlias annotation it could be converted automatically.
  * </p>
- *
- * @author rolandhe
- * @date 2019/6/11下午9:33
  */
 @Target({ElementType.METHOD,ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
