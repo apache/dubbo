@@ -28,6 +28,7 @@ import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.transport.dispatcher.ChannelEventRunnable;
 import org.apache.dubbo.remoting.transport.dispatcher.ChannelEventRunnable.ChannelState;
 import org.apache.dubbo.remoting.transport.dispatcher.WrappedChannelHandler;
+import org.apache.dubbo.remoting.transport.disruptor.ChannelDisruptorHandler;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -82,7 +83,10 @@ public class ConnectionOrderedChannelHandler extends WrappedChannelHandler {
     public void received(Channel channel, Object message) throws RemotingException {
         ExecutorService executor = getExecutorService();
         try {
-            executor.execute(new ChannelEventRunnable(channel, handler, ChannelState.RECEIVED, message));
+            ChannelHandler handler = getHandler();
+            if (!(handler instanceof ChannelDisruptorHandler)) {
+                executor.execute(new ChannelEventRunnable(channel, handler, ChannelState.RECEIVED, message));
+            }
         } catch (Throwable t) {
             //fix, reject exception can not be sent to consumer because thread pool is full, resulting in consumers waiting till timeout.
             if (message instanceof Request && t instanceof RejectedExecutionException) {
@@ -104,7 +108,10 @@ public class ConnectionOrderedChannelHandler extends WrappedChannelHandler {
     public void caught(Channel channel, Throwable exception) throws RemotingException {
         ExecutorService executor = getExecutorService();
         try {
-            executor.execute(new ChannelEventRunnable(channel, handler, ChannelState.CAUGHT, exception));
+            ChannelHandler handler = getHandler();
+            if (!(handler instanceof ChannelDisruptorHandler)) {
+                executor.execute(new ChannelEventRunnable(channel, handler, ChannelState.CAUGHT, exception));
+            }
         } catch (Throwable t) {
             throw new ExecutionException("caught event", channel, getClass() + " error when process caught event .", t);
         }

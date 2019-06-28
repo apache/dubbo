@@ -24,6 +24,7 @@ import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.transport.dispatcher.ChannelEventRunnable;
 import org.apache.dubbo.remoting.transport.dispatcher.ChannelEventRunnable.ChannelState;
 import org.apache.dubbo.remoting.transport.dispatcher.WrappedChannelHandler;
+import org.apache.dubbo.remoting.transport.disruptor.ChannelDisruptorHandler;
 
 import java.util.concurrent.ExecutorService;
 
@@ -37,7 +38,10 @@ public class MessageOnlyChannelHandler extends WrappedChannelHandler {
     public void received(Channel channel, Object message) throws RemotingException {
         ExecutorService executor = getExecutorService();
         try {
-            executor.execute(new ChannelEventRunnable(channel, handler, ChannelState.RECEIVED, message));
+            ChannelHandler handler = getHandler();
+            if (!(handler instanceof ChannelDisruptorHandler)) {
+                executor.execute(new ChannelEventRunnable(channel, handler, ChannelState.RECEIVED, message));
+            }
         } catch (Throwable t) {
             throw new ExecutionException(message, channel, getClass() + " error when process received event .", t);
         }

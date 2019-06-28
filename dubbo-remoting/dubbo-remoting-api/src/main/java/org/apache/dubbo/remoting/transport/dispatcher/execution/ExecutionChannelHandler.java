@@ -26,6 +26,7 @@ import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.transport.dispatcher.ChannelEventRunnable;
 import org.apache.dubbo.remoting.transport.dispatcher.ChannelEventRunnable.ChannelState;
 import org.apache.dubbo.remoting.transport.dispatcher.WrappedChannelHandler;
+import org.apache.dubbo.remoting.transport.disruptor.ChannelDisruptorHandler;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
@@ -45,7 +46,10 @@ public class ExecutionChannelHandler extends WrappedChannelHandler {
         ExecutorService executor = getExecutorService();
         if (message instanceof Request) {
             try {
-                executor.execute(new ChannelEventRunnable(channel, handler, ChannelState.RECEIVED, message));
+                ChannelHandler handler = getHandler();
+                if (!(handler instanceof ChannelDisruptorHandler)) {
+                    executor.execute(new ChannelEventRunnable(channel, handler, ChannelState.RECEIVED, message));
+                }
             } catch (Throwable t) {
                 // FIXME: when the thread pool is full, SERVER_THREADPOOL_EXHAUSTED_ERROR cannot return properly,
                 // therefore the consumer side has to wait until gets timeout. This is a temporary solution to prevent
