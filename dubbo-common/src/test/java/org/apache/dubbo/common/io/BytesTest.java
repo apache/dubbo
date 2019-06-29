@@ -57,6 +57,9 @@ public class BytesTest {
 
         byte[] bytesWithC64 = Bytes.base642bytes(str, C64);
         assertThat(bytesWithC64, is(bytes));
+
+        byte[] emptyBytes = Bytes.base642bytes("dubbo", 0, 0);
+        assertThat(emptyBytes, is("".getBytes()));
     }
 
     @Test
