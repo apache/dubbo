@@ -34,6 +34,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 
 /**
  * This class will work as a wrapper wrapping outside of each protocol invoker.
+ *
  * @param <T>
  */
 public class AsyncToSyncInvoker<T> implements Invoker<T> {
@@ -54,8 +55,8 @@ public class AsyncToSyncInvoker<T> implements Invoker<T> {
         Result asyncResult = invoker.invoke(invocation);
 
         try {
-            if (InvokeMode.SYNC == ((RpcInvocation)invocation).getInvokeMode()) {
-                asyncResult.get(getUrl().getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT), TimeUnit.MILLISECONDS);
+            if (InvokeMode.SYNC == ((RpcInvocation) invocation).getInvokeMode()) {
+                asyncResult.get(Integer.MAX_VALUE, TimeUnit.MILLISECONDS);
             }
         } catch (InterruptedException e) {
             throw new RpcException("Interrupted unexpectedly while waiting for remoting result to return!  method: " + invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage(), e);
