@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.serialize.protobuf.support;
+package org.apache.dubbo.metadata.definition.protobuf;
 
-import org.apache.dubbo.common.serialize.protobuf.support.model.ServiceInterface;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 import org.apache.dubbo.metadata.definition.model.MethodDefinition;
 import org.apache.dubbo.metadata.definition.model.TypeDefinition;
+import org.apache.dubbo.metadata.definition.protobuf.model.ServiceInterface;
 
 import org.junit.jupiter.api.Test;
 
@@ -30,7 +30,9 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-
+/**
+ * 2019-07-01
+ */
 public class ProtobufTypeBuilderTest {
     @Test
     public void testProtobufBuilder() {
@@ -62,8 +64,8 @@ public class ProtobufTypeBuilderTest {
         assertThat(propertiesMap.containsKey("msg"), is(true));
         assertThat(propertiesMap.get("msg").getType(), equalTo("com.google.protobuf.ByteString"));
         assertThat(propertiesMap.containsKey("phone"), is(true));
-        assertThat(propertiesMap.get("phone").getType(), equalTo("java.util.List<org.apache.dubbo.common.serialize.protobuf.support.model.GooglePB$PhoneNumber>"));
+        assertThat(propertiesMap.get("phone").getType(), equalTo("java.util.List<org.apache.dubbo.metadata.definition.protobuf.model.GooglePB$PhoneNumber>"));
         assertThat(propertiesMap.containsKey("doubleMap"), is(true));
-        assertThat(propertiesMap.get("doubleMap").getType(), equalTo("java.util.Map<java.lang.String, org.apache.dubbo.common.serialize.protobuf.support.model.GooglePB$PhoneNumber>"));
+        assertThat(propertiesMap.get("doubleMap").getType(), equalTo("java.util.Map<java.lang.String, org.apache.dubbo.metadata.definition.protobuf.model.GooglePB$PhoneNumber>"));
     }
 }
