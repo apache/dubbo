@@ -27,6 +27,7 @@ import org.apache.dubbo.registry.support.FailbackRegistry;
 
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.NamingService;
+import com.alibaba.nacos.api.naming.PreservedMetadataKeys;
 import com.alibaba.nacos.api.naming.listener.EventListener;
 import com.alibaba.nacos.api.naming.listener.NamingEvent;
 import com.alibaba.nacos.api.naming.pojo.Instance;
@@ -414,7 +415,6 @@ public class NacosRegistry extends FailbackRegistry {
     private Instance createInstance(URL url) {
         // Append default category if absent
         String category = url.getParameter(CATEGORY_KEY, DEFAULT_CATEGORY);
-        URL newURL = url.addParameter(CATEGORY_KEY, category);
         newURL = newURL.addParameter(PROTOCOL_KEY, url.getProtocol());
         newURL = newURL.addParameter(PATH_KEY, url.getPath());
         String ip = url.getHost();
@@ -422,7 +422,9 @@ public class NacosRegistry extends FailbackRegistry {
         Instance instance = new Instance();
         instance.setIp(ip);
         instance.setPort(port);
-        instance.setMetadata(new HashMap<>(newURL.getParameters()));
+        Map<String, String> metadata = new HashMap<>(newURL.getParameters());
+        metadata.put(PreservedMetadataKeys.REGISTER_SOURCE, CommonConstants.DUBBO.toUpperCase());
+        instance.setMetadata(metadata);
         return instance;
     }
 
