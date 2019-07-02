@@ -18,6 +18,7 @@ package org.apache.dubbo.registry.nacos;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.UrlUtils;
@@ -415,6 +416,7 @@ public class NacosRegistry extends FailbackRegistry {
     private Instance createInstance(URL url) {
         // Append default category if absent
         String category = url.getParameter(CATEGORY_KEY, DEFAULT_CATEGORY);
+        URL newURL = url.addParameter(CATEGORY_KEY, category);
         newURL = newURL.addParameter(PROTOCOL_KEY, url.getProtocol());
         newURL = newURL.addParameter(PATH_KEY, url.getPath());
         String ip = url.getHost();
