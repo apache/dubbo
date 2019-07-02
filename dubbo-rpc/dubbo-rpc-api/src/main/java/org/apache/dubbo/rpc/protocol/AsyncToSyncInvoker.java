@@ -29,9 +29,6 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
-import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
-
 /**
  * This class will work as a wrapper wrapping outside of each protocol invoker.
  *
