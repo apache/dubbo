@@ -174,6 +174,7 @@ public class EtcdDynamicConfiguration implements DynamicConfiguration {
                     .setKey(ByteString.copyFromUtf8(key))
                     .setProgressNotify(true);
             WatchRequest req = WatchRequest.newBuilder().setCreateRequest(builder).build();
+            observer.onNext(req);
         }
 
         private void cancelWatch() {
