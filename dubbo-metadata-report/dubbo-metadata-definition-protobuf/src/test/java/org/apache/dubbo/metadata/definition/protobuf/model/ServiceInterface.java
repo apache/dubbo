@@ -14,27 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring.context.context.annotation.provider;
+package org.apache.dubbo.metadata.definition.protobuf.model;
 
-import org.apache.dubbo.config.spring.annotation.merged.MergedService;
-import org.apache.dubbo.config.spring.api.HelloService;
-
-import org.springframework.stereotype.Service;
-
-/**
- * Default {@link HelloService} annotation with Spring's {@link Service}
- * and Dubbo's {@link org.apache.dubbo.config.annotation.Service}
- *
- * @since TODO
- */
-@Service
-//@org.apache.dubbo.config.annotation.Service
-@MergedService
-public class DefaultHelloService implements HelloService {
-
-    @Override
-    public String sayHello(String name) {
-        return "Greeting, " + name;
-    }
-
+public interface ServiceInterface {
+    GooglePB.PBResponseType sayHello(GooglePB.PBRequestType requestType);
 }

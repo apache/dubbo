@@ -14,27 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring.context.context.annotation.provider;
+package org.apache.dubbo.common.extension.ext10_multi_names.impl;
 
-import org.apache.dubbo.config.spring.annotation.merged.MergedService;
-import org.apache.dubbo.config.spring.api.HelloService;
+import org.apache.dubbo.common.extension.ext10_multi_names.Ext10MultiNames;
 
-import org.springframework.stereotype.Service;
-
-/**
- * Default {@link HelloService} annotation with Spring's {@link Service}
- * and Dubbo's {@link org.apache.dubbo.config.annotation.Service}
- *
- * @since TODO
- */
-@Service
-//@org.apache.dubbo.config.annotation.Service
-@MergedService
-public class DefaultHelloService implements HelloService {
-
-    @Override
-    public String sayHello(String name) {
-        return "Greeting, " + name;
-    }
-
+public class Ext10MultiNamesImpl implements Ext10MultiNames {
 }

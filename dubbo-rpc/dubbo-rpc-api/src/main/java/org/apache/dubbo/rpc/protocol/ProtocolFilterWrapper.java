@@ -156,33 +156,24 @@ public class ProtocolFilterWrapper implements Protocol {
         public Result invoke(Invocation invocation) throws RpcException {
             Result asyncResult = filterInvoker.invoke(invocation);
 
-            asyncResult.whenCompleteWithContext((r, t) -> {
+            asyncResult = asyncResult.whenCompleteWithContext((r, t) -> {
                 for (int i = filters.size() - 1; i >= 0; i--) {
                     Filter filter = filters.get(i);
                     // onResponse callback
                     if (filter instanceof ListenableFilter) {
                         Filter.Listener listener = ((ListenableFilter) filter).listener();
                         if (listener != null) {
-                            try {
-                                if (t == null) {
-                                    listener.onResponse(r, filterInvoker, invocation);
-                                } else {
-                                    listener.onError(t, filterInvoker, invocation);
-                                }
-                            } catch (Throwable filterError) {
-                                t = filterError;
+                            if (t == null) {
+                                listener.onResponse(r, filterInvoker, invocation);
+                            } else {
+                                listener.onError(t, filterInvoker, invocation);
                             }
                         }
                     } else {
-                        try {
-                            filter.onResponse(r, filterInvoker, invocation);
-                        } catch (Throwable filterError) {
-                            t = filterError;
-                        }
+                        filter.onResponse(r, filterInvoker, invocation);
                     }
                 }
             });
-
             return asyncResult;
         }
 
