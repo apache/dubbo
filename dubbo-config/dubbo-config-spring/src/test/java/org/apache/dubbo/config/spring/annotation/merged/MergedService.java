@@ -14,27 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring.context.context.annotation.provider;
+package org.apache.dubbo.config.spring.annotation.merged;
 
-import org.apache.dubbo.config.spring.annotation.merged.MergedService;
-import org.apache.dubbo.config.spring.api.HelloService;
 
-import org.springframework.stereotype.Service;
+import org.apache.dubbo.config.annotation.Service;
 
-/**
- * Default {@link HelloService} annotation with Spring's {@link Service}
- * and Dubbo's {@link org.apache.dubbo.config.annotation.Service}
- *
- * @since TODO
- */
+import org.springframework.core.annotation.AliasFor;
+
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE})
 @Service
-//@org.apache.dubbo.config.annotation.Service
-@MergedService
-public class DefaultHelloService implements HelloService {
+public @interface MergedService {
 
-    @Override
-    public String sayHello(String name) {
-        return "Greeting, " + name;
-    }
+    @AliasFor(annotation = Service.class, attribute = "group")
+    String group() default "dubbo";
 
+    @AliasFor(annotation = Service.class, attribute = "version")
+    String version() default "1.0.0";
 }

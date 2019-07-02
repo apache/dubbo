@@ -65,7 +65,7 @@ import static org.apache.dubbo.config.spring.util.AnnotationUtils.resolveService
 import static org.apache.dubbo.config.spring.util.ObjectUtils.of;
 import static org.springframework.beans.factory.support.BeanDefinitionBuilder.rootBeanDefinition;
 import static org.springframework.context.annotation.AnnotationConfigUtils.CONFIGURATION_BEAN_NAME_GENERATOR;
-import static org.springframework.core.annotation.AnnotationUtils.findAnnotation;
+import static org.springframework.core.annotation.AnnotatedElementUtils.findMergedAnnotation;
 import static org.springframework.core.annotation.AnnotationUtils.getAnnotationAttributes;
 import static org.springframework.util.ClassUtils.resolveClassName;
 
@@ -306,9 +306,9 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
      * @since 2.7.3
      */
     private Annotation findServiceAnnotation(Class<?> beanClass) {
-        Annotation service = findAnnotation(beanClass, Service.class);
+        Annotation service = findMergedAnnotation(beanClass, Service.class);
         if (service == null) {
-            service = findAnnotation(beanClass, com.alibaba.dubbo.config.annotation.Service.class);
+            service = findMergedAnnotation(beanClass, com.alibaba.dubbo.config.annotation.Service.class);
         }
         return service;
     }
