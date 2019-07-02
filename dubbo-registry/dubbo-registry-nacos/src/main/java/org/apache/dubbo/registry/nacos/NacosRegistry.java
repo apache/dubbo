@@ -17,6 +17,7 @@
 package org.apache.dubbo.registry.nacos;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.UrlUtils;
@@ -35,7 +36,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -55,6 +55,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGORY;
 import static org.apache.dubbo.registry.Constants.ADMIN_PROTOCOL;
@@ -135,7 +136,7 @@ public class NacosRegistry extends FailbackRegistry {
             List<String> serviceNames = getServiceNames(url, null);
             for (String serviceName : serviceNames) {
                 List<Instance> instances = namingService.getAllInstances(serviceName);
-                urls.addAll(buildURLs(url, instances));
+                urls.addAll(buildURLs(url, serviceName, instances));
             }
         });
         return urls;
@@ -167,7 +168,7 @@ public class NacosRegistry extends FailbackRegistry {
         execute(namingService -> {
             for (String serviceName : serviceNames) {
                 List<Instance> instances = namingService.getAllInstances(serviceName);
-                notifySubscriber(url, listener, instances);
+                notifySubscriber(url, serviceName, listener, instances);
                 subscribeEventListener(serviceName, url, listener);
             }
         });
@@ -331,9 +332,9 @@ public class NacosRegistry extends FailbackRegistry {
         return serviceNames;
     }
 
-    private List<URL> buildURLs(URL consumerURL, Collection<Instance> instances) {
+    private List<URL> buildURLs(URL consumerURL, String serviceName, Collection<Instance> instances) {
         if (instances.isEmpty()) {
-            return Collections.emptyList();
+            return emptyURL(consumerURL, serviceName);
         }
         List<URL> urls = new LinkedList<>();
         for (Instance instance : instances) {
@@ -351,7 +352,7 @@ public class NacosRegistry extends FailbackRegistry {
             EventListener eventListener = event -> {
                 if (event instanceof NamingEvent) {
                     NamingEvent e = (NamingEvent) event;
-                    notifySubscriber(url, listener, e.getInstances());
+                    notifySubscriber(url, serviceName, listener, e.getInstances());
                 }
             };
             namingService.subscribe(serviceName, eventListener);
@@ -363,14 +364,15 @@ public class NacosRegistry extends FailbackRegistry {
      * Notify the Healthy {@link Instance instances} to subscriber.
      *
      * @param url       {@link URL}
+     * @param serviceName
      * @param listener  {@link NotifyListener}
      * @param instances all {@link Instance instances}
      */
-    private void notifySubscriber(URL url, NotifyListener listener, Collection<Instance> instances) {
+    private void notifySubscriber(URL url, String serviceName, NotifyListener listener, Collection<Instance> instances) {
         List<Instance> healthyInstances = new LinkedList<>(instances);
         // Healthy Instances
         filterHealthyInstances(healthyInstances);
-        List<URL> urls = buildURLs(url, healthyInstances);
+        List<URL> urls = buildURLs(url, serviceName, healthyInstances);
         NacosRegistry.this.notify(url, listener, urls);
     }
 
@@ -394,6 +396,18 @@ public class NacosRegistry extends FailbackRegistry {
                 instance.getPort(),
                 path,
                 instance.getMetadata());
+    }
+
+    private List<URL> emptyURL(URL consumerURL, String serviceName) {
+        int i = serviceName.indexOf(SERVICE_NAME_SEPARATOR);
+        String category = i < 0 ? serviceName : serviceName.substring(0, i);
+        URL empty = URLBuilder.from(consumerURL)
+                .setProtocol(EMPTY_PROTOCOL)
+                .addParameter(CATEGORY_KEY, category)
+                .build();
+        List<URL> result = new ArrayList<URL>();
+        result.add(empty);
+        return result;
     }
 
     private Instance createInstance(URL url) {
