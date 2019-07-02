@@ -19,7 +19,12 @@ public class ChannelEventTranslator implements EventTranslator<ChannelEventRunna
     @Override
     public void translateTo(ChannelEventRunnable event, long sequence) {
 //        event = new ChannelEventRunnable(this.channel, this.handler, this.state, this.message, this.exception);
-        this.setEventValues(this.handler, this.channel, this.state, this.exception, this.message);
+//        this.setEventValues(event.handler, event.channel, event.state, event.exception, event.message);
+        event.channel = this.channel;
+        event.handler = this.handler;
+        event.message = this.message;
+        event.state = this.state;
+        event.exception = this.exception;
         this.clear();
     }
 
