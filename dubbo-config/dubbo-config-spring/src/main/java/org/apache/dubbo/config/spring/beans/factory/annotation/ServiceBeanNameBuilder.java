@@ -25,6 +25,7 @@ import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.env.Environment;
 import org.springframework.util.StringUtils;
 
+import static org.apache.dubbo.config.spring.util.AnnotationUtils.getAttribute;
 import static org.apache.dubbo.config.spring.util.AnnotationUtils.resolveInterfaceName;
 import static org.springframework.core.annotation.AnnotationUtils.getAnnotationAttributes;
 
@@ -62,8 +63,8 @@ public class ServiceBeanNameBuilder {
 
     private ServiceBeanNameBuilder(AnnotationAttributes attributes, Class<?> defaultInterfaceClass, Environment environment) {
         this(resolveInterfaceName(attributes, defaultInterfaceClass), environment);
-        this.group(attributes.getString("group"));
-        this.version(attributes.getString("version"));
+        this.group(getAttribute(attributes,"group"));
+        this.version(getAttribute(attributes,"version"));
     }
 
     /**

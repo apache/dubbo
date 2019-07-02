@@ -35,8 +35,11 @@ import static org.apache.dubbo.config.spring.util.BeanFactoryUtils.getOptionalBe
 
 /**
  * Abstract Configurable {@link Annotation} Bean Builder
+ *
  * @since 2.5.7
+ * @deprecated use {@link AnnotatedInterfaceConfigBeanBuilder}
  */
+@Deprecated
 abstract class AbstractAnnotationConfigBeanBuilder<A extends Annotation, B extends AbstractInterfaceConfig> {
 
     protected final Log logger = LogFactory.getLog(getClass());
