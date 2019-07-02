@@ -52,13 +52,13 @@ import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import static org.apache.dubbo.registry.Constants.ADMIN_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGORY;
+import static org.apache.dubbo.registry.Constants.ADMIN_PROTOCOL;
 
 /**
  * Nacos {@link Registry}
@@ -278,9 +278,9 @@ public class NacosRegistry extends FailbackRegistry {
 
         final String targetServiceInterface = url.getServiceInterface();
 
-        final String targetVersion = url.getParameter(VERSION_KEY,"");
+        final String targetVersion = url.getParameter(VERSION_KEY, "");
 
-        final String targetGroup = url.getParameter(GROUP_KEY,"");
+        final String targetGroup = url.getParameter(GROUP_KEY, "");
 
         filterData(serviceNames, serviceName -> {
             // split service name to segments
@@ -383,7 +383,7 @@ public class NacosRegistry extends FailbackRegistry {
      */
     private String[] getCategories(URL url) {
         return ANY_VALUE.equals(url.getServiceInterface()) ?
-                ALL_SUPPORTED_CATEGORIES : url.getParameter(CATEGORY_KEY,new String[]{DEFAULT_CATEGORY});
+                ALL_SUPPORTED_CATEGORIES : of(DEFAULT_CATEGORY);
     }
 
     private URL buildURL(Instance instance) {
