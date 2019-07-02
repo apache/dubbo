@@ -24,11 +24,11 @@ import org.apache.dubbo.remoting.ChannelHandler;
 public class ChannelEventRunnable implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(ChannelEventRunnable.class);
 
-    private final ChannelHandler handler;
-    private final Channel channel;
-    private final ChannelState state;
-    private final Throwable exception;
-    private final Object message;
+    public ChannelHandler handler;
+    public Channel channel;
+    public ChannelState state;
+    public Throwable exception;
+    public Object message;
 
     public ChannelEventRunnable(Channel channel, ChannelHandler handler, ChannelState state) {
         this(channel, handler, state, null);

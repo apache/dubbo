@@ -53,7 +53,6 @@ public class ChannelHandlers {
     }
 
     protected ChannelHandler wrapServerInternal(ChannelHandler handler, URL url) {
-        return new MultiMessageHandler(new ChannelDisruptorHandler(new HeartbeatHandler(ExtensionLoader.getExtensionLoader(Dispatcher.class)
-                .getAdaptiveExtension().dispatch(handler, url))));
+        return new MultiMessageHandler(new HeartbeatHandler(new ChannelDisruptorHandler(handler, url)));
     }
 }

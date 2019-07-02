@@ -1,3 +1,19 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.dubbo.remoting.transport.disruptor;
 
 import com.lmax.disruptor.BlockingWaitStrategy;
@@ -5,6 +21,7 @@ import com.lmax.disruptor.EventFactory;
 import com.lmax.disruptor.WorkHandler;
 import com.lmax.disruptor.dsl.Disruptor;
 import com.lmax.disruptor.dsl.ProducerType;
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
@@ -28,7 +45,7 @@ public class ChannelDisruptorHandler implements ChannelHandlerDelegate {
     private final ThreadLocal<EventInfo> threadLocalInfo = ThreadLocal.withInitial(() -> new EventInfo(new ChannelEventTranslator()));
     private final ChannelEventFactory FACTORY = new ChannelEventFactory(handler);
 
-    public ChannelDisruptorHandler(ChannelHandler handler) {
+    public ChannelDisruptorHandler(ChannelHandler handler, URL url) {
         this.handler = handler;
         ThreadFactory factory = new NamedThreadFactory("channel_disruptor_consumer_pool", false);
         this.disruptor = new Disruptor<>(
@@ -41,26 +58,62 @@ public class ChannelDisruptorHandler implements ChannelHandlerDelegate {
         );
         WorkHandler<ChannelEventRunnable>[] workHandlers = new ChannelEventHandler[16];
         for(int i = 0; i < 16 ; i++){
-            workHandlers[i] = new ChannelEventHandler();
+            workHandlers[i] = new ChannelEventHandler(handler);
         }
-//        this.disruptor.setDefaultExceptionHandler(new ChannelEventExceptionHandler());
+        this.disruptor.setDefaultExceptionHandler(new ChannelEventExceptionHandler());
         this.disruptor.handleEventsWithWorkerPool(workHandlers);
         this.disruptor.start();
     }
 
     @Override
     public void connected(Channel channel) throws RemotingException {
-        handler.connected(channel);
+//        handler.connected(channel);
+        EventInfo info = threadLocalInfo.get();
+        if (info == null) {
+            info = new EventInfo(new ChannelEventTranslator());
+            threadLocalInfo.set(info);
+        }
+        Disruptor<ChannelEventRunnable> temp = disruptor;
+        info.eventTranslator.setEventValues(handler, channel, ChannelEventRunnable.ChannelState.CONNECTED, null, null);
+        try {
+            disruptor.publishEvent(info.eventTranslator);
+        } catch (NullPointerException e) {
+            logger.error("The Disruptor queue has been closed, and the message is no longer received.");
+        }
     }
 
     @Override
     public void disconnected(Channel channel) throws RemotingException {
-        handler.disconnected(channel);
+//        handler.disconnected(channel);
+        EventInfo info = threadLocalInfo.get();
+        if (info == null) {
+            info = new EventInfo(new ChannelEventTranslator());
+            threadLocalInfo.set(info);
+        }
+        Disruptor<ChannelEventRunnable> temp = disruptor;
+        info.eventTranslator.setEventValues(handler, channel, ChannelEventRunnable.ChannelState.DISCONNECTED, null, null);
+        try {
+            disruptor.publishEvent(info.eventTranslator);
+        } catch (NullPointerException e) {
+            logger.error("The Disruptor queue has been closed, and the message is no longer received.");
+        }
     }
 
     @Override
     public void sent(Channel channel, Object message) throws RemotingException {
-        handler.sent(channel, message);
+//        handler.sent(channel, message);
+        EventInfo info = threadLocalInfo.get();
+        if (info == null) {
+            info = new EventInfo(new ChannelEventTranslator());
+            threadLocalInfo.set(info);
+        }
+        Disruptor<ChannelEventRunnable> temp = disruptor;
+        info.eventTranslator.setEventValues(handler, channel, ChannelEventRunnable.ChannelState.SENT, null, message);
+        try {
+            disruptor.publishEvent(info.eventTranslator);
+        } catch (NullPointerException e) {
+            logger.error("The Disruptor queue has been closed, and the message is no longer received.");
+        }
     }
 
     @Override
@@ -98,7 +151,7 @@ public class ChannelDisruptorHandler implements ChannelHandlerDelegate {
 
     @Override
     public ChannelHandler getHandler() {
-        return null;
+        return handler;
     }
 
     public void close() {
