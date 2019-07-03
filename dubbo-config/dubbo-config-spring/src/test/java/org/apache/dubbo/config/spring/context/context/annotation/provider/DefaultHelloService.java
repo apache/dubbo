@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.spring.context.context.annotation.provider;
 
+import org.apache.dubbo.config.spring.annotation.merged.MergedService;
 import org.apache.dubbo.config.spring.api.HelloService;
 
 import org.springframework.stereotype.Service;
@@ -27,7 +28,8 @@ import org.springframework.stereotype.Service;
  * @since TODO
  */
 @Service
-@org.apache.dubbo.config.annotation.Service
+//@org.apache.dubbo.config.annotation.Service
+@MergedService
 public class DefaultHelloService implements HelloService {
 
     @Override

@@ -29,6 +29,7 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.core.annotation.AnnotationAttributes;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
@@ -49,8 +50,8 @@ import static org.apache.dubbo.config.spring.beans.factory.annotation.ServiceBea
  *
  * @since 2.5.7
  */
-public class ReferenceAnnotationBeanPostProcessor extends AnnotationInjectedBeanPostProcessor<Reference>
-        implements ApplicationContextAware, ApplicationListener {
+public class ReferenceAnnotationBeanPostProcessor extends AnnotationInjectedBeanPostProcessor implements
+        ApplicationContextAware, ApplicationListener {
 
     /**
      * The bean name of {@link ReferenceAnnotationBeanPostProcessor}
@@ -75,6 +76,13 @@ public class ReferenceAnnotationBeanPostProcessor extends AnnotationInjectedBean
             new ConcurrentHashMap<>(CACHE_SIZE);
 
     private ApplicationContext applicationContext;
+
+    /**
+     * To support the legacy annotation that is @com.alibaba.dubbo.config.annotation.Reference since 2.7.3
+     */
+    public ReferenceAnnotationBeanPostProcessor() {
+        super(Reference.class, com.alibaba.dubbo.config.annotation.Reference.class);
+    }
 
     /**
      * Gets all beans of {@link ReferenceBean}
@@ -107,12 +115,12 @@ public class ReferenceAnnotationBeanPostProcessor extends AnnotationInjectedBean
     }
 
     @Override
-    protected Object doGetInjectedBean(Reference reference, Object bean, String beanName, Class<?> injectedType,
+    protected Object doGetInjectedBean(AnnotationAttributes attributes, Object bean, String beanName, Class<?> injectedType,
                                        InjectionMetadata.InjectedElement injectedElement) throws Exception {
 
-        String referencedBeanName = buildReferencedBeanName(reference, injectedType);
+        String referencedBeanName = buildReferencedBeanName(attributes, injectedType);
 
-        ReferenceBean referenceBean = buildReferenceBeanIfAbsent(referencedBeanName, reference, injectedType, getClassLoader());
+        ReferenceBean referenceBean = buildReferenceBeanIfAbsent(referencedBeanName, attributes, injectedType, getClassLoader());
 
         cacheInjectedReferenceBean(referenceBean, injectedElement);
 
@@ -175,22 +183,22 @@ public class ReferenceAnnotationBeanPostProcessor extends AnnotationInjectedBean
     }
 
     @Override
-    protected String buildInjectedObjectCacheKey(Reference reference, Object bean, String beanName,
+    protected String buildInjectedObjectCacheKey(AnnotationAttributes attributes, Object bean, String beanName,
                                                  Class<?> injectedType, InjectionMetadata.InjectedElement injectedElement) {
 
-        return buildReferencedBeanName(reference, injectedType) +
+        return buildReferencedBeanName(attributes, injectedType) +
                 "#source=" + (injectedElement.getMember()) +
-                "#attributes=" + AnnotationUtils.getAttributes(reference, getEnvironment(), true);
+                "#attributes=" + AnnotationUtils.resolvePlaceholders(attributes, getEnvironment());
     }
 
-    private String buildReferencedBeanName(Reference reference, Class<?> injectedType) {
+    private String buildReferencedBeanName(AnnotationAttributes attributes, Class<?> injectedType) {
 
-        ServiceBeanNameBuilder serviceBeanNameBuilder = create(reference, injectedType, getEnvironment());
+        ServiceBeanNameBuilder serviceBeanNameBuilder = create(attributes, injectedType, getEnvironment());
 
         return serviceBeanNameBuilder.build();
     }
 
-    private ReferenceBean buildReferenceBeanIfAbsent(String referencedBeanName, Reference reference,
+    private ReferenceBean buildReferenceBeanIfAbsent(String referencedBeanName, AnnotationAttributes attributes,
                                                      Class<?> referencedType, ClassLoader classLoader)
             throws Exception {
 
@@ -198,7 +206,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AnnotationInjectedBean
 
         if (referenceBean == null) {
             ReferenceBeanBuilder beanBuilder = ReferenceBeanBuilder
-                    .create(reference, classLoader, applicationContext)
+                    .create(attributes, applicationContext)
                     .interfaceClass(referencedType);
             referenceBean = beanBuilder.build();
             referenceBeanCache.put(referencedBeanName, referenceBean);
