@@ -742,7 +742,7 @@ public class ExtensionLoader<T> {
                 cacheActivateClass(clazz, names[0]);
                 for (String n : names) {
                     cacheName(clazz, n);
-                    saveInExtensionClass(extensionClasses, clazz, name);
+                    saveInExtensionClass(extensionClasses, clazz, n);
                 }
             }
         }

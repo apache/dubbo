@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.Future;
-import java.util.function.Function;
+import java.util.function.BiConsumer;
 
 
 /**
@@ -130,12 +130,12 @@ public interface Result extends CompletionStage<Result>, Future<Result>, Seriali
      * Add a callback which can be triggered when the RPC call finishes.
      * <p>
      * Just as the method name implies, this method will guarantee the callback being triggered under the same context as when the call was started,
-     * see implementation in {@link AsyncRpcResult#thenApplyWithContext(Function)}
+     * see implementation in {@link Result#whenCompleteWithContext(BiConsumer)}
      *
      * @param fn
      * @return
      */
-    Result thenApplyWithContext(Function<Result, Result> fn);
+    Result whenCompleteWithContext(BiConsumer<Result, Throwable> fn);
 
     default CompletableFuture<Result> completionFuture() {
         return toCompletableFuture();
