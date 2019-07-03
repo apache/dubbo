@@ -57,7 +57,7 @@ public class ActiveLimitFilter extends ListenableFilter {
         URL url = invoker.getUrl();
         String methodName = invocation.getMethodName();
         int max = invoker.getUrl().getMethodParameter(methodName, ACTIVES_KEY, 0);
-        RpcStatus rpcStatus = RpcStatus.getStatus(invoker.getUrl(), invocation.getMethodName());
+        final RpcStatus rpcStatus = RpcStatus.getStatus(invoker.getUrl(), invocation.getMethodName());
         if (!RpcStatus.beginCount(url, methodName, max)) {
             long timeout = invoker.getUrl().getMethodParameter(invocation.getMethodName(), TIMEOUT_KEY, 0);
             long start = System.currentTimeMillis();
@@ -109,7 +109,7 @@ public class ActiveLimitFilter extends ListenableFilter {
             return StringUtils.isNotEmpty(beginTime) ? System.currentTimeMillis() - Long.parseLong(beginTime) : 0;
         }
 
-        private void notifyFinish(RpcStatus rpcStatus, int max) {
+        private void notifyFinish(final RpcStatus rpcStatus, int max) {
             if (max > 0) {
                 synchronized (rpcStatus) {
                     rpcStatus.notifyAll();
