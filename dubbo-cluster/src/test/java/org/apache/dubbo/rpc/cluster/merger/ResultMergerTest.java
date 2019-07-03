@@ -81,7 +81,7 @@ public class ResultMergerTest {
         result = MergerFactory.getMerger(Integer[].class).merge(intArray1, intArray2, intArray3, null);
         Assertions.assertTrue(result.getClass().isArray());
         Assertions.assertEquals(7, Array.getLength(result));
-        Assertions.assertTrue(Integer.class == result.getClass().getComponentType());
+        Assertions.assertSame(Integer.class, result.getClass().getComponentType());
         for (int i = 0; i < 7; i++) {
             Assertions.assertEquals(i + 1, Array.get(result, i));
         }
@@ -170,7 +170,7 @@ public class ResultMergerTest {
         Assertions.assertEquals(4, result.length);
         double[] mergedResult = {1.2d, 3.5d, 2d, 34d};
         for (int i = 0; i < mergedResult.length; i++) {
-            Assertions.assertTrue(mergedResult[i] == result[i]);
+            Assertions.assertEquals(mergedResult[i], result[i], 0.0);
         }
 
         result = MergerFactory.getMerger(double[].class).merge(null);
@@ -191,7 +191,7 @@ public class ResultMergerTest {
         Assertions.assertEquals(4, result.length);
         double[] mergedResult = {1.2f, 3.5f, 2f, 34f};
         for (int i = 0; i < mergedResult.length; i++) {
-            Assertions.assertTrue(mergedResult[i] == result[i]);
+            Assertions.assertEquals(mergedResult[i], result[i], 0.0);
         }
 
         result = MergerFactory.getMerger(float[].class).merge(null);
@@ -212,7 +212,7 @@ public class ResultMergerTest {
         Assertions.assertEquals(4, result.length);
         double[] mergedResult = {1, 2, 2, 34};
         for (int i = 0; i < mergedResult.length; i++) {
-            Assertions.assertTrue(mergedResult[i] == result[i]);
+            Assertions.assertEquals(mergedResult[i], result[i], 0.0);
         }
 
         result = MergerFactory.getMerger(int[].class).merge(null);
@@ -296,7 +296,7 @@ public class ResultMergerTest {
         Assertions.assertEquals(4, result.length);
         double[] mergedResult = {1l, 2l, 2l, 34l};
         for (int i = 0; i < mergedResult.length; i++) {
-            Assertions.assertTrue(mergedResult[i] == result[i]);
+            Assertions.assertEquals(mergedResult[i], result[i], 0.0);
         }
 
         result = MergerFactory.getMerger(long[].class).merge(null);
@@ -352,7 +352,7 @@ public class ResultMergerTest {
         Assertions.assertEquals(4, result.length);
         double[] mergedResult = {1, 2, 2, 34};
         for (int i = 0; i < mergedResult.length; i++) {
-            Assertions.assertTrue(mergedResult[i] == result[i]);
+            Assertions.assertEquals(mergedResult[i], result[i], 0.0);
         }
 
         result = MergerFactory.getMerger(short[].class).merge(null);

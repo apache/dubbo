@@ -136,7 +136,7 @@ public class ConnectChannelHandlerTest extends WrappedChannelHandlerTest {
         handler.received(new MockedChannel() {
             @Override
             public void send(Object message) throws RemotingException {
-                Assertions.assertEquals(true, ((Response) message).isHeartbeat(), "response.heartbeat");
+                Assertions.assertTrue(((Response) message).isHeartbeat(), "response.heartbeat");
                 count.incrementAndGet();
             }
         }, req);

@@ -32,6 +32,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class RmiProtocolTest {
     private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
@@ -54,8 +55,8 @@ public class RmiProtocolTest {
             try {
                 service.throwTimeout();
             } catch (RpcException e) {
-                assertEquals(true, e.isTimeout());
-                assertEquals(true, e.getMessage().contains("Read timed out"));
+                assertTrue(e.isTimeout());
+                assertTrue(e.getMessage().contains("Read timed out"));
             }
         } finally {
             rpcExporter.unexport();

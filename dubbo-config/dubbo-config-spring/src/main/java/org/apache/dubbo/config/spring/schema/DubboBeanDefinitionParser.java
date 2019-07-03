@@ -94,7 +94,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                 id = generatedBeanName + (counter++);
             }
         }
-        if (id != null && id.length() > 0) {
+        if (StringUtils.isNotEmpty(id)) {
             if (parserContext.getRegistry().containsBeanDefinition(id)) {
                 throw new IllegalStateException("Duplicate spring bean id " + id);
             }

@@ -104,7 +104,7 @@ public class ClassUtilsTest {
         Assertions.assertEquals(Float.valueOf((float) 0), ClassUtils.boxed((float) 0));
         Assertions.assertEquals(Double.valueOf((double) 0), ClassUtils.boxed((double) 0));
 
-        Assertions.assertEquals(true, ClassUtils.unboxed(Boolean.valueOf(true)));
+        Assertions.assertTrue(ClassUtils.unboxed(Boolean.valueOf(true)));
         Assertions.assertEquals('0', ClassUtils.unboxed(Character.valueOf('0')));
         Assertions.assertEquals((byte) 0, ClassUtils.unboxed(Byte.valueOf((byte) 0)));
         Assertions.assertEquals((short) 0, ClassUtils.unboxed(Short.valueOf((short) 0)));

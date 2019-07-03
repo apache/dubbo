@@ -263,7 +263,7 @@ public class MulticastRegistry extends FailbackRegistry {
     }
 
     @Override
-    public void doSubscribe(URL url, NotifyListener listener) {
+    public void doSubscribe(URL url, final NotifyListener listener) {
         if (ANY_VALUE.equals(url.getServiceInterface())) {
             admin = true;
         }
@@ -324,7 +324,7 @@ public class MulticastRegistry extends FailbackRegistry {
                 }
                 urls.add(url);
                 List<URL> list = toList(urls);
-                for (NotifyListener listener : entry.getValue()) {
+                for (final NotifyListener listener : entry.getValue()) {
                     notify(key, listener, list);
                     synchronized (listener) {
                         listener.notify();
