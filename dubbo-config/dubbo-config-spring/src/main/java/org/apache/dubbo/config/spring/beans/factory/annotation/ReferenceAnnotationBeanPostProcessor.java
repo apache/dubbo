@@ -24,6 +24,9 @@ import org.apache.dubbo.config.spring.util.AnnotationUtils;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.InjectionMetadata;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.config.RuntimeBeanReference;
+import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEvent;
@@ -43,6 +46,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import static org.apache.dubbo.config.spring.beans.factory.annotation.ServiceBeanNameBuilder.create;
+import static org.apache.dubbo.config.spring.util.AnnotationUtils.getAttribute;
+import static org.springframework.util.StringUtils.hasText;
 
 /**
  * {@link org.springframework.beans.factory.config.BeanPostProcessor} implementation
@@ -120,11 +125,94 @@ public class ReferenceAnnotationBeanPostProcessor extends AnnotationInjectedBean
 
         String referencedBeanName = buildReferencedBeanName(attributes, injectedType);
 
-        ReferenceBean referenceBean = buildReferenceBeanIfAbsent(referencedBeanName, attributes, injectedType, getClassLoader());
+        ReferenceBean referenceBean = buildReferenceBeanIfAbsent(referencedBeanName, attributes, injectedType);
+
+        registerReferenceBean(referencedBeanName, referenceBean, attributes, injectedType);
 
         cacheInjectedReferenceBean(referenceBean, injectedElement);
 
         return buildProxy(referencedBeanName, referenceBean, injectedType);
+    }
+
+    /**
+     * Register an instance of {@link ReferenceBean} as a Spring Bean
+     *
+     * @param referencedBeanName the referenced bean name
+     * @param referenceBean      the instance of {@link ReferenceBean}
+     * @param attributes         the {@link AnnotationAttributes attributes} of {@link Reference @Reference}
+     * @param interfaceClass     the {@link Class class} of Service interface
+     * @since 2.7.3
+     */
+    private void registerReferenceBean(String referencedBeanName, ReferenceBean referenceBean,
+                                       AnnotationAttributes attributes,
+                                       Class<?> interfaceClass) {
+
+        ConfigurableListableBeanFactory beanFactory = getBeanFactory();
+
+        String beanName = getReferenceBeanName(attributes, interfaceClass);
+
+        if (beanFactory.containsBean(referencedBeanName)) { // If @Service bean is local one
+            /**
+             * Get  the @Service's BeanDefinition from {@link BeanFactory}
+             * Refer to {@link ServiceAnnotationBeanPostProcessor#buildServiceBeanDefinition}
+             */
+            AbstractBeanDefinition beanDefinition = (AbstractBeanDefinition) beanFactory.getBeanDefinition(referencedBeanName);
+            RuntimeBeanReference runtimeBeanReference = (RuntimeBeanReference) beanDefinition.getPropertyValues().get("ref");
+            // The name of bean annotated @Service
+            String serviceBeanName = runtimeBeanReference.getBeanName();
+            // register Alias rather than a new bean name, in order to reduce duplicated beans
+            beanFactory.registerAlias(serviceBeanName, beanName);
+        } else { // Remote @Service Bean
+            if (!beanFactory.containsBean(beanName)) {
+                beanFactory.registerSingleton(beanName, referenceBean);
+            }
+        }
+    }
+
+    /**
+     * Get the bean name of {@link ReferenceBean} if {@link Reference#id() id attribute} is present,
+     * or {@link #generateReferenceBeanName(AnnotationAttributes, Class) generate}.
+     *
+     * @param attributes     the {@link AnnotationAttributes attributes} of {@link Reference @Reference}
+     * @param interfaceClass the {@link Class class} of Service interface
+     * @return non-null
+     * @since 2.7.3
+     */
+    private String getReferenceBeanName(AnnotationAttributes attributes, Class<?> interfaceClass) {
+        // id attribute appears since 2.7.3
+        String beanName = getAttribute(attributes, "id");
+        if (!hasText(beanName)) {
+            beanName = generateReferenceBeanName(attributes, interfaceClass);
+        }
+        return beanName;
+    }
+
+    /**
+     * Build the bean name of {@link ReferenceBean}
+     *
+     * @param attributes     the {@link AnnotationAttributes attributes} of {@link Reference @Reference}
+     * @param interfaceClass the {@link Class class} of Service interface
+     * @return
+     * @since 2.7.3
+     */
+    private String generateReferenceBeanName(AnnotationAttributes attributes, Class<?> interfaceClass) {
+        StringBuilder beanNameBuilder = new StringBuilder("@Reference");
+
+        if (!attributes.isEmpty()) {
+            beanNameBuilder.append('(');
+            for (Map.Entry<String, Object> entry : attributes.entrySet()) {
+                beanNameBuilder.append(entry.getKey())
+                        .append('=')
+                        .append(entry.getValue())
+                        .append(',');
+            }
+            // replace the latest "," to be ")"
+            beanNameBuilder.setCharAt(beanNameBuilder.lastIndexOf(","), ')');
+        }
+
+        beanNameBuilder.append(" ").append(interfaceClass.getName());
+
+        return beanNameBuilder.toString();
     }
 
     private Object buildProxy(String referencedBeanName, ReferenceBean referenceBean, Class<?> injectedType) {
@@ -199,7 +287,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AnnotationInjectedBean
     }
 
     private ReferenceBean buildReferenceBeanIfAbsent(String referencedBeanName, AnnotationAttributes attributes,
-                                                     Class<?> referencedType, ClassLoader classLoader)
+                                                     Class<?> referencedType)
             throws Exception {
 
         ReferenceBean<?> referenceBean = referenceBeanCache.get(referencedBeanName);

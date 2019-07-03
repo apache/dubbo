@@ -86,6 +86,8 @@ public class DubboComponentScanRegistrarTest {
 
         Assertions.assertEquals("Hello,Mercy", value);
 
+        Assertions.assertEquals("Hello,Mercy", child.getDemoService().sayName("Mercy"));
+
         // From Parent
 
         demoService = child.getDemoServiceFromParent();
