@@ -814,4 +814,20 @@ public final class StringUtils {
         }
         return key;
     }
+
+    public static boolean isAllUpperCase(String str) {
+        if (str != null && !isEmpty(str)) {
+            int sz = str.length();
+
+            for(int i = 0; i < sz; ++i) {
+                if (!Character.isUpperCase(str.charAt(i))) {
+                    return false;
+                }
+            }
+
+            return true;
+        } else {
+            return false;
+        }
+    }
 }

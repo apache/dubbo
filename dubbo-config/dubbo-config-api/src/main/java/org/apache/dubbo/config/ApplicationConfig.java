@@ -390,7 +390,7 @@ public class ApplicationConfig extends AbstractConfig {
 
     /**
      * 1. OS Environment: DUBBO_LABELS=tag=pre;key=value
-     * 2. JVM Options: -Denv_keys = DUBBO_TAG,
+     * 2. JVM Options: -Denv_keys = DUBBO_KEY1, DUBBO_KEY2
      */
     private void appendEnvironmentProperties() {
         String rawLabels = ConfigurationUtils.getProperty(DUBBO_LABELS);
@@ -399,7 +399,7 @@ public class ApplicationConfig extends AbstractConfig {
             for (String pair : labelPairs) {
                 String[] label = EQUAL_SPLIT_PATTERN.split(pair);
                 if (label.length == 2) {
-                    updateParameters(parameters, StringUtils.toURLKey(label[0]), label[1]);
+                    updateParameters(parameters, label[0], label[1]);
                 }
             }
         }
@@ -408,10 +408,9 @@ public class ApplicationConfig extends AbstractConfig {
         if (StringUtils.isNotEmpty(rawKeys)) {
             String[] keys = COMMA_SPLIT_PATTERN.split(rawKeys);
             for (String key : keys) {
-                String urlKey = StringUtils.toURLKey(key);
-                String value = ConfigurationUtils.getProperty(urlKey);
+                String value = ConfigurationUtils.getProperty(key);
                 if (value != null) {
-                    updateParameters(parameters, urlKey, value);
+                    updateParameters(parameters, key, value);
                 }
             }
         }
