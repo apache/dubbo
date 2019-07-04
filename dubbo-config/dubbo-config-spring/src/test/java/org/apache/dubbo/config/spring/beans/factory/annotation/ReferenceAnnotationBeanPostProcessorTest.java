@@ -80,10 +80,27 @@ public class ReferenceAnnotationBeanPostProcessorTest {
         Assert.assertNotNull(testBean.getDemoServiceFromAncestor());
         Assert.assertNotNull(testBean.getDemoServiceFromParent());
         Assert.assertNotNull(testBean.getDemoService());
+        Assert.assertNotNull(testBean.autowiredDemoService);
 
         Assert.assertEquals("Hello,Mercy", testBean.getDemoServiceFromAncestor().sayName("Mercy"));
         Assert.assertEquals("Hello,Mercy", testBean.getDemoServiceFromParent().sayName("Mercy"));
         Assert.assertEquals("Hello,Mercy", testBean.getDemoService().sayName("Mercy"));
+        Assert.assertEquals("Hello,Mercy", testBean.autowiredDemoService.sayName("Mercy"));
+
+        DemoService myDemoService = context.getBean("my-reference-bean", DemoService.class);
+
+        Assert.assertEquals("Hello,Mercy", myDemoService.sayName("Mercy"));
+
+        Map<String, DemoService> demoServicesMap = context.getBeansOfType(DemoService.class);
+
+        Assert.assertEquals(1, demoServicesMap.size());
+
+        for (DemoService demoService1 : demoServicesMap.values()) {
+
+            Assert.assertEquals(myDemoService, demoService1);
+
+            Assert.assertEquals("Hello,Mercy", demoService1.sayName("Mercy"));
+        }
 
     }
 
@@ -194,7 +211,7 @@ public class ReferenceAnnotationBeanPostProcessorTest {
             return demoServiceFromAncestor;
         }
 
-        @Reference(version = "2.5.7", url = "dubbo://127.0.0.1:12345")
+        @Reference(id = "my-reference-bean", version = "2.5.7", url = "dubbo://127.0.0.1:12345")
         public void setDemoServiceFromAncestor(DemoService demoServiceFromAncestor) {
             this.demoServiceFromAncestor = demoServiceFromAncestor;
         }
@@ -221,6 +238,9 @@ public class ReferenceAnnotationBeanPostProcessorTest {
     static class TestBean extends ParentBean {
 
         private DemoService demoService;
+
+        @Autowired
+        private DemoService autowiredDemoService;
 
         @Autowired
         private ApplicationContext applicationContext;
