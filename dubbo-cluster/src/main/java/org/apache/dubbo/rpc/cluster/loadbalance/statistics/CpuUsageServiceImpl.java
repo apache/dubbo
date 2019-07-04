@@ -52,6 +52,6 @@ public class CpuUsageServiceImpl implements CpuUsageService {
 
     private void collectCpuUsage() {
         Gauge<Float> user = (Gauge) cpuUsage.getMetrics().get(MetricName.build("cpu.user"));
-        listeners.forEach((key, value) -> value.cpuChanged(RpcContext.getServerContext().getRemoteHost(), user.getValue()));
+        listeners.forEach((key, value) -> value.cpuChanged(RpcContext.getServerContext().getRemoteAddressString(), user.getValue()));
     }
 }
