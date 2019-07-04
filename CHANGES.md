@@ -2,10 +2,10 @@
 
 ## 2.7.3
 
-### 升级不兼容性声明
+### 升级注意事项
 
 为了统一不同配置中心（如Zookeeper、Nacos、Etcd等）对于服务治理规则的实现，我们对2.7.0以来的配置中心的部分实现进行了重构。
-**对于已使用了2.7.x新版本服务治理规则的用户，升级2.7.3之前请先[查看新版实现]()，了解[注意事项]()确保平滑升级。**
+**对于已使用了2.7.x新版本服务治理规则的用户，升级2.7.3之前请先[查看新版实现](http://dubbo.apache.org/zh-cn/docs/dev/impls/config-center.html)，了解[注意事项]()确保平滑升级。对于已经升级了2.7.x版本，但是未使用服务治理规则的用户，此次升级不受影响。对于2.6.x及以下版本用户不受此次变更影响，升级步骤请参见[升级到2.7.x的说明文档](https://github.com/apache/dubbo/releases/tag/dubbo-2.7.0)**
 
 ### Change List
 
@@ -25,7 +25,7 @@
     - 兼容zipkin官方提供的基于Dubbo-2.6 API的集成 https://github.com/apache/dubbo/issues/3728
     - DubboComponentScan支持同时扫描com.alibaba.*和org.apache.*两个包下的注解 https://github.com/apache/dubbo/issues/4330
 
-4. Nacos注册中心只订阅地址列表，不再订阅配置信息 
+4. Nacos注册中心只订阅地址列表，不再订阅配置信息 https://github.com/apache/dubbo/pull/4454
 
 5. 支持从指定位置读取环境配置，可通过-D或OS VARIABLE指定，具体请参见[使用说明]()
 
