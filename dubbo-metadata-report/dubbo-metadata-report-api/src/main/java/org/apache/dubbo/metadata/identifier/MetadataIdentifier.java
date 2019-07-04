@@ -67,7 +67,7 @@ public class MetadataIdentifier {
     }
 
     public String getIdentifierKey() {
-        return serviceInterface + SEPARATOR + (version == null ? "" : version + SEPARATOR) + (group == null ? "" : group + SEPARATOR) + side + SEPARATOR + application;
+        return serviceInterface + SEPARATOR + (version == null ? "" : version) + SEPARATOR + (group == null ? "" : group) + SEPARATOR + side + SEPARATOR + application;
     }
 
     private String getFilePathKey() {
