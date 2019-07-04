@@ -16,6 +16,9 @@
  */
 package org.apache.dubbo.rpc.protocol.dubbo;
 
+import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.remoting.exchange.ResponseCallback;
+import org.apache.dubbo.remoting.exchange.ResponseFuture;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.RpcException;
 
@@ -30,9 +33,11 @@ import java.util.concurrent.TimeoutException;
  */
 public class FutureAdapter<V> extends CompletableFuture<V> {
 
+    private final ResponseFuture deprecatedResponseFuture;
     private CompletableFuture<AppResponse> appResponseFuture;
 
     public FutureAdapter(CompletableFuture<AppResponse> future) {
+        this.deprecatedResponseFuture = new DeprecatedRespnoseFuture();
         this.appResponseFuture = future;
         future.whenComplete((appResponse, t) -> {
             if (t != null) {
@@ -93,4 +98,43 @@ public class FutureAdapter<V> extends CompletableFuture<V> {
     public CompletableFuture<AppResponse> getAppResponseFuture() {
         return appResponseFuture;
     }
+
+    @Deprecated
+    public ResponseFuture getFuture() {
+        return deprecatedResponseFuture;
+    }
+
+    private class DeprecatedRespnoseFuture implements ResponseFuture {
+
+        @Override
+        public Object get() throws RemotingException {
+            try {
+                return FutureAdapter.this.get();
+            } catch (Exception e) {
+                throw new RemotingException(null, e);
+            }
+        }
+
+        @Override
+        public Object get(int timeoutInMillis) throws RemotingException {
+            try {
+                return FutureAdapter.this.get(timeoutInMillis, TimeUnit.MILLISECONDS);
+            } catch (Exception e) {
+                throw new RemotingException(null, e);
+            }
+        }
+
+        @Override
+        public void setCallback(ResponseCallback callback) {
+            FutureAdapter.this.whenComplete((v, t) -> {
+
+            });
+        }
+
+        @Override
+        public boolean isDone() {
+            return FutureAdapter.this.isDone();
+        }
+    }
+
 }
