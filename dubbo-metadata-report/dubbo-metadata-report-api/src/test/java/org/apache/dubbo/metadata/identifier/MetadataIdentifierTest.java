@@ -37,12 +37,12 @@ public class MetadataIdentifierTest {
         Assertions.assertEquals(providerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.PATH),
                 "metadata" + PATH_SEPARATOR + interfaceName + PATH_SEPARATOR +
                         (version == null ? "" : (version + PATH_SEPARATOR))
-                + (group == null ? "" : (group + PATH_SEPARATOR)) + PROVIDER_SIDE
+                        + (group == null ? "" : (group + PATH_SEPARATOR)) + PROVIDER_SIDE
                         + PATH_SEPARATOR + application);
         Assertions.assertEquals(providerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY),
                 interfaceName + MetadataIdentifier.SEPARATOR +
-                        (version == null ? "" : version + MetadataIdentifier.SEPARATOR)
-                        + (group == null ? "" : group + MetadataIdentifier.SEPARATOR)
+                        (version == null ? "" : version) + MetadataIdentifier.SEPARATOR
+                        + (group == null ? "" : group) + MetadataIdentifier.SEPARATOR
                         + PROVIDER_SIDE + MetadataIdentifier.SEPARATOR + application);
     }
 }
