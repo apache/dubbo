@@ -52,7 +52,6 @@ import java.util.stream.Collectors;
 import static java.util.Collections.singleton;
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
@@ -455,24 +454,11 @@ public class NacosRegistry extends FailbackRegistry {
     }
 
     private String getServiceName(URL url) {
-        String category = url.getParameter(CATEGORY_KEY, DEFAULT_CATEGORY);
-        return getServiceName(url, category);
+        return getServiceName(url, url.getParameter(CATEGORY_KEY, DEFAULT_CATEGORY));
     }
 
     private String getServiceName(URL url, String category) {
-        StringBuilder serviceNameBuilder = new StringBuilder(category);
-        append(serviceNameBuilder, url, INTERFACE_KEY);
-        append(serviceNameBuilder, url, VERSION_KEY);
-        append(serviceNameBuilder, url, GROUP_KEY);
-        return serviceNameBuilder.toString();
-    }
-
-    private void append(StringBuilder target, URL url, String parameterName) {
-        target.append(SERVICE_NAME_SEPARATOR);
-        String parameterValue = url.getParameter(parameterName);
-        if (!StringUtils.isBlank(parameterValue)) {
-            target.append(parameterValue);
-        }
+        return category + SERVICE_NAME_SEPARATOR + url.getColonSeparatedKey();
     }
 
     private void execute(NamingServiceCallback callback) {
