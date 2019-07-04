@@ -42,6 +42,8 @@ public interface CommonConstants {
 
     String COMMA_SEPARATOR = ",";
 
+    String DOT_SEPARATOR = ".";
+
     Pattern COMMA_SPLIT_PATTERN = Pattern.compile("\\s*[,]+\\s*");
 
     public final static String PATH_SEPARATOR = "/";
