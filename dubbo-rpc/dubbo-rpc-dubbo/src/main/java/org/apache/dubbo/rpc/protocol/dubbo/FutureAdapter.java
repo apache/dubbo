@@ -34,10 +34,11 @@ import java.util.concurrent.TimeoutException;
 public class FutureAdapter<V> extends CompletableFuture<V> {
 
     private final ResponseFuture deprecatedResponseFuture;
+
     private CompletableFuture<AppResponse> appResponseFuture;
 
     public FutureAdapter(CompletableFuture<AppResponse> future) {
-        this.deprecatedResponseFuture = new DeprecatedRespnoseFuture();
+        this.deprecatedResponseFuture = new DeprecatedRespnoseFuture(future);
         this.appResponseFuture = future;
         future.whenComplete((appResponse, t) -> {
             if (t != null) {
@@ -106,10 +107,16 @@ public class FutureAdapter<V> extends CompletableFuture<V> {
 
     private class DeprecatedRespnoseFuture implements ResponseFuture {
 
+        private CompletableFuture<AppResponse> future;
+
+        public DeprecatedRespnoseFuture(CompletableFuture<AppResponse> future) {
+            this.future = future;
+        }
+
         @Override
         public Object get() throws RemotingException {
             try {
-                return FutureAdapter.this.get();
+                return future.get();
             } catch (Exception e) {
                 throw new RemotingException(null, e);
             }
@@ -118,7 +125,7 @@ public class FutureAdapter<V> extends CompletableFuture<V> {
         @Override
         public Object get(int timeoutInMillis) throws RemotingException {
             try {
-                return FutureAdapter.this.get(timeoutInMillis, TimeUnit.MILLISECONDS);
+                return future.get(timeoutInMillis, TimeUnit.MILLISECONDS);
             } catch (Exception e) {
                 throw new RemotingException(null, e);
             }
@@ -126,14 +133,18 @@ public class FutureAdapter<V> extends CompletableFuture<V> {
 
         @Override
         public void setCallback(ResponseCallback callback) {
-            FutureAdapter.this.whenComplete((v, t) -> {
-
+            future.whenComplete((v, t) -> {
+                if (t != null) {
+                    callback.caught(t);
+                } else {
+                    callback.done(v);
+                }
             });
         }
 
         @Override
         public boolean isDone() {
-            return FutureAdapter.this.isDone();
+            return future.isDone();
         }
     }
 
