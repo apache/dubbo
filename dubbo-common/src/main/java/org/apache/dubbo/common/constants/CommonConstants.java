@@ -58,6 +58,8 @@ public interface CommonConstants {
 
     Pattern SEMICOLON_SPLIT_PATTERN = Pattern.compile("\\s*[;]+\\s*");
 
+    Pattern EQUAL_SPLIT_PATTERN = Pattern.compile("\\s*[=]+\\s*");
+
     String DEFAULT_PROXY = "javassist";
 
     String DEFAULT_DIRECTORY = "dubbo";
@@ -102,9 +104,15 @@ public interface CommonConstants {
 
     String PROPERTIES_CHAR_SEPERATOR = "-";
 
+    String UNDERLINE_SEPARATOR = "_";
+
+    String SEPARATOR_REGEX = "_|-";
+
     String GROUP_CHAR_SEPERATOR = ":";
 
     String HIDE_KEY_PREFIX = ".";
+
+    String DOT_REGEX = "\\.";
 
     String DEFAULT_KEY_PREFIX = "default.";
 
@@ -171,4 +179,7 @@ public interface CommonConstants {
     String SHUTDOWN_WAIT_SECONDS_KEY = "dubbo.service.shutdown.wait.seconds";
     String SHUTDOWN_WAIT_KEY = "dubbo.service.shutdown.wait";
     String DUBBO_PROTOCOL = "dubbo";
+
+    String DUBBO_LABELS = "dubbo.labels";
+    String DUBBO_ENV_KEYS = "dubbo.env.keys";
 }

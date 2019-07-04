@@ -34,8 +34,12 @@ import java.util.regex.Pattern;
 
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
+import static org.apache.dubbo.common.constants.CommonConstants.DOT_REGEX;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.HIDE_KEY_PREFIX;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SEPARATOR_REGEX;
+import static org.apache.dubbo.common.constants.CommonConstants.UNDERLINE_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 
 /**
@@ -797,5 +801,33 @@ public final class StringUtils {
 
     public static String trim(String str) {
         return str == null ? null : str.trim();
+    }
+
+    public static String toURLKey(String key) {
+        return key.toLowerCase().replaceAll(SEPARATOR_REGEX, HIDE_KEY_PREFIX);
+    }
+
+    public static String toOSStyleKey(String key) {
+        key = key.toUpperCase().replaceAll(DOT_REGEX, UNDERLINE_SEPARATOR);
+        if (!key.startsWith("DUBBO_")) {
+            key = "DUBBO_" + key;
+        }
+        return key;
+    }
+
+    public static boolean isAllUpperCase(String str) {
+        if (str != null && !isEmpty(str)) {
+            int sz = str.length();
+
+            for(int i = 0; i < sz; ++i) {
+                if (!Character.isUpperCase(str.charAt(i))) {
+                    return false;
+                }
+            }
+
+            return true;
+        } else {
+            return false;
+        }
     }
 }
