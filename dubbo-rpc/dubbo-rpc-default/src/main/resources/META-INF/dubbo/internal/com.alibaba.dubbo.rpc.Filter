@@ -1,2 +1,0 @@
-trace=com.alibaba.dubbo.rpc.protocol.dubbo.filter.TraceFilter
-future=com.alibaba.dubbo.rpc.protocol.dubbo.filter.FutureFilter

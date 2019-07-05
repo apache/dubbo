@@ -1,0 +1,1 @@
+mock=org.apache.dubbo.configcenter.mock.MockDynamicConfigurationFactory

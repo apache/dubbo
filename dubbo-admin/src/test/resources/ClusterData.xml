@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<dataset>
-    <clusters ID="10000" cluster_name="cluster1" address="10.20.131.152" username="root"/>
-    <clusters ID="10001" cluster_name="cluster2" address="11.21.131.152" username="root"/>
-    <clusters ID="10002" cluster_name="cluster3" address="11.21.131.152"/>
-</dataset>
