@@ -1,5 +1,71 @@
 # Release Notes
 
+## 2.7.3
+
+### Compatibility
+
+In order to unify the implementation of service governance rules in different configuration centers, such as Zookeeper, Nacos, Etcd, etc., we have refactored some implementations of the configuration center compared to 2.7.0~2.7.2.
+
+* For users who are using 2.7.x service governance rules, please check [the new implementation](http://dubbo.apache.org/en-us/docs/dev/impls/Config-center.html) before upgrading to 2.7.3, make sure all rules have a copy under the new storage path to ensure a smooth upgrade. 
+* For users who have upgraded the 2.7.x version but are not using any service governance rules, you can upgrade directly. 
+* For users using 2.6.x and lower versions can upgrade directly. But make sure you follow the following instructions [Upgrading from 2.6.x to 2.7.x](https://github.com/apache/dubbo/releases/tag/dubbo-2.7.0)
+
+### Change List
+
+1. Asynchronous support
+
+    - Unified asynchronous and synchronous callback process, exception scenario triggers onError callback, #4401.
+    - Performance degradation caused by CompletableFuture.get() in JDK1.8 environment, #4279.
+
+2. Configuration Center
+
+    - ConfigCenter custom namespace does not take effect, #4411.
+    - Unify the models implemented by several configuration centers such as Zookeeper, Nacos, and Etcd. Please refer to the description for possible incompatibility issues, #4388.
+    - Adjust Override Coverage Rule Center Priority: Service Level > Application Level, #4175.
+
+3. 2.6.x compatibility
+
+    - Support Zipkin tracing feature provided by Zipkin officially, #3728.
+    - DubboComponentScan supports simultaneous scanning of annotations under the `com.alibaba.*` and `org.apache.*` packages, #4330.
+
+4. The Nacos Registration Center only subscribes to the address list and no longer subscribes to configuration information, #4454.
+
+5. Support to read the environment configuration from the specified location, which can be specified by -D or OS VARIABLE. Please refer to [automatically loading environment variables](http://dubbo.apache.org/en-us/docs/user/configuration/environment-variables.html)
+
+6. Some other bugfixes, #4346 #4338 #4349 #4377
+
+### 升级注意事项
+
+为了统一不同配置中心（如Zookeeper、Nacos、Etcd等）对于服务治理规则的实现，我们对2.7.0以来的配置中心的部分实现进行了重构。
+
+* 对于已使用了2.7.x新版本服务治理规则的用户，升级2.7.3之前请先[查看新版实现](http://dubbo.apache.org/zh-cn/docs/dev/impls/config-center.html)，确保已有规则在新路径下已经存在拷贝，以确保平滑升级。
+* 对于已经升级了2.7.x版本，但是未使用服务治理规则的用户，此次升级不受影响。
+* 对于2.6.x及以下版本用户不受此次变更影响，升级步骤请参见[升级到2.7.x的说明文档](https://github.com/apache/dubbo/releases/tag/dubbo-2.7.0)。
+
+### Change List
+
+1. 异步支持相关
+
+    - 统一异步和同步的回调流程，异常场景触发onError回调 https://github.com/apache/dubbo/pull/4401
+    - CompletableFuture.get()在JDK1.8环境下带来的性能下降问题 https://github.com/apache/dubbo/pull/4279
+
+2. 配置中心相关
+
+    - ConfigCenter自定义namespace不生效的问题 https://github.com/apache/dubbo/pull/4411
+    - 统一Zookeeper、Nacos、Etcd等几个配置中心实现的模型，可能带来的不兼容性问题请参见说明。相关修改：https://github.com/apache/dubbo/pull/4388
+    - 调整Override覆盖规则中心优先级：服务级别 > 应用级别 https://github.com/apache/dubbo/issues/4175
+
+3. 2.6.x兼容性
+
+    - 兼容zipkin官方提供的基于Dubbo-2.6 API的集成 https://github.com/apache/dubbo/issues/3728
+    - DubboComponentScan支持同时扫描com.alibaba.*和org.apache.*两个包下的注解 https://github.com/apache/dubbo/issues/4330
+
+4. Nacos注册中心只订阅地址列表，不再订阅配置信息 https://github.com/apache/dubbo/pull/4454
+
+5. 支持从指定位置读取环境配置，可通过-D或OS VARIABLE指定，具体请参见[使用说明](http://dubbo.apache.org/zh-cn/docs/user/configuration/environment-variables.html)
+
+6. 其他一些bugfix，#4346 #4338 #4349 #4377 
+
 ## 2.7.2
 
 ### New Features
