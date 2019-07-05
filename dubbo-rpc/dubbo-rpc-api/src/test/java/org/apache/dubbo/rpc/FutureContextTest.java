@@ -29,10 +29,10 @@ public class FutureContextTest {
     @Test
     public void testFutureContext() throws Exception {
         Thread thread1 = new Thread(() -> {
-            FutureContext.setFuture(CompletableFuture.completedFuture("future from thread1"));
+            FutureContext.getContext().setFuture(CompletableFuture.completedFuture("future from thread1"));
             try {
                 Thread.sleep(500);
-                Assertions.assertEquals("future from thread1", FutureContext.getCompletableFuture().get());
+                Assertions.assertEquals("future from thread1", FutureContext.getContext().getCompletableFuture().get());
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -42,9 +42,9 @@ public class FutureContextTest {
         Thread.sleep(100);
 
         Thread thread2 = new Thread(() -> {
-            CompletableFuture future = FutureContext.getCompletableFuture();
+            CompletableFuture future = FutureContext.getContext().getCompletableFuture();
             Assertions.assertNull(future);
-            FutureContext.setFuture(CompletableFuture.completedFuture("future from thread2"));
+            FutureContext.getContext().setFuture(CompletableFuture.completedFuture("future from thread2"));
         });
         thread2.start();
 
