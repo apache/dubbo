@@ -25,7 +25,7 @@ In order to unify the implementation of service governance rules in different co
 
 3. 2.6.x compatibility
 
-    - Support Zipkin tracing feature provided by Zipkin officially, #3728.
+    - Support Zipkin tracing feature provided by Zipkin officially, #3728, #4471.
     - DubboComponentScan supports simultaneous scanning of annotations under the `com.alibaba.*` and `org.apache.*` packages, #4330.
 
 4. The Nacos Registration Center only subscribes to the address list and no longer subscribes to configuration information, #4454.
@@ -46,21 +46,21 @@ In order to unify the implementation of service governance rules in different co
 
 1. 异步支持相关
 
-    - 统一异步和同步的回调流程，异常场景触发onError回调 https://github.com/apache/dubbo/pull/4401
-    - CompletableFuture.get()在JDK1.8环境下带来的性能下降问题 https://github.com/apache/dubbo/pull/4279
+    - 统一异步和同步的回调流程，异常场景触发onError回调 #4401
+    - CompletableFuture.get()在JDK1.8环境下带来的性能下降问题 #4279
 
 2. 配置中心相关
 
-    - ConfigCenter自定义namespace不生效的问题 https://github.com/apache/dubbo/pull/4411
-    - 统一Zookeeper、Nacos、Etcd等几个配置中心实现的模型，可能带来的不兼容性问题请参见说明。相关修改：https://github.com/apache/dubbo/pull/4388
-    - 调整Override覆盖规则中心优先级：服务级别 > 应用级别 https://github.com/apache/dubbo/issues/4175
+    - ConfigCenter自定义namespace不生效的问题 #4411
+    - 统一Zookeeper、Nacos、Etcd等几个配置中心实现的模型，可能带来的不兼容性问题请参见说明。相关修改：#4388
+    - 调整Override覆盖规则中心优先级：服务级别 > 应用级别 #4175
 
 3. 2.6.x兼容性
 
-    - 兼容zipkin官方提供的基于Dubbo-2.6 API的集成 https://github.com/apache/dubbo/issues/3728
-    - DubboComponentScan支持同时扫描com.alibaba.*和org.apache.*两个包下的注解 https://github.com/apache/dubbo/issues/4330
+    - 兼容zipkin官方提供的基于Dubbo-2.6 API的集成 #3728, #4471
+    - DubboComponentScan支持同时扫描 `com.alibaba.*` 和 `org.apache.*` 两个包下的注解 #4330
 
-4. Nacos注册中心只订阅地址列表，不再订阅配置信息 https://github.com/apache/dubbo/pull/4454
+4. Nacos注册中心只订阅地址列表，不再订阅配置信息 #4454
 
 5. 支持从指定位置读取环境配置，可通过-D或OS VARIABLE指定，具体请参见[使用说明](http://dubbo.apache.org/zh-cn/docs/user/configuration/environment-variables.html)
 
