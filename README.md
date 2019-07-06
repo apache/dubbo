@@ -121,7 +121,7 @@ public class Application {
 
 ```bash
 # mvn clean package
-# mvn -Djava.net.preferIPv4Stack=true -Dexec.mainClass=org.apache.dubbo.demo.provider.NacosProviderApplication exec:java
+# mvn -Djava.net.preferIPv4Stack=true -Dexec.mainClass=org.apache.dubbo.demo.provider.Application exec:java
 ```
 
 ### Call remote service in consumer
