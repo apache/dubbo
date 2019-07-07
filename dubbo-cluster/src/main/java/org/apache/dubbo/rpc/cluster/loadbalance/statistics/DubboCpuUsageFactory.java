@@ -22,8 +22,14 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
+import org.apache.dubbo.rpc.cluster.CpuUsageFactory;
 
-public class CpuUsageServiceFactory implements CpuUsageFactory {
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
+import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.remoting.Constants.CHECK_KEY;
+import static org.apache.dubbo.rpc.Constants.REFERENCE_FILTER_KEY;
+
+public class DubboCpuUsageFactory implements CpuUsageFactory {
 
     private Protocol protocol;
 
@@ -37,12 +43,15 @@ public class CpuUsageServiceFactory implements CpuUsageFactory {
         this.proxyFactory = proxyFactory;
     }
 
+    @Override
     public CpuUsageService createCpuUsageService(URL url) {
         URLBuilder urlBuilder = URLBuilder.from(url);
+        urlBuilder.setProtocol(url.getParameter(PROTOCOL_KEY, DUBBO_PROTOCOL));
+       // urlBuilder.addParameters(CHECK_KEY, String.valueOf(false), REFERENCE_FILTER_KEY, "-cpuusage");
         if (StringUtils.isEmpty(url.getPath())) {
             urlBuilder.setPath(CpuUsageService.class.getName());
         }
-        Invoker<CpuUsageService> cpuUsageInvoker = protocol.refer(CpuUsageService.class, url);
+        Invoker<CpuUsageService> cpuUsageInvoker = protocol.refer(CpuUsageService.class, urlBuilder.build());
         return proxyFactory.getProxy(cpuUsageInvoker);
     }
 }

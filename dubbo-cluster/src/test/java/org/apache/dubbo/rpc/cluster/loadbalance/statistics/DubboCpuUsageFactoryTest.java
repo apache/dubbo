@@ -17,11 +17,7 @@
 package org.apache.dubbo.rpc.cluster.loadbalance.statistics;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
-import org.apache.dubbo.rpc.protocol.AbstractProtocol;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
 import org.junit.jupiter.api.Assertions;
@@ -29,30 +25,27 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
-import javax.management.monitor.Monitor;
-
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-class CpuUsageServiceFactoryTest {
+class DubboCpuUsageFactoryTest {
 
     @Mock
     private ProxyFactory proxyFactory;
-    private CpuUsageServiceFactory cpuUsageServiceFactory;
+    private DubboCpuUsageFactory dubboCpuUsageFactory;
 
     @BeforeEach
     public void setUp() throws Exception {
         initMocks(this);
-        this.cpuUsageServiceFactory = new CpuUsageServiceFactory();
-        this.cpuUsageServiceFactory.setProtocol(new DubboProtocol());
-        this.cpuUsageServiceFactory.setProxyFactory(proxyFactory);
+        this.dubboCpuUsageFactory = new DubboCpuUsageFactory();
+        this.dubboCpuUsageFactory.setProtocol(new DubboProtocol());
+        this.dubboCpuUsageFactory.setProxyFactory(proxyFactory);
     }
 
     @Test
     void createCpuUsageService() {
         URL url = URL.valueOf("http://10.10.10.11");
-        CpuUsageService cpuUsage1 = cpuUsageServiceFactory.createCpuUsageService(url);
-        CpuUsageService cpuUsage2 = cpuUsageServiceFactory.createCpuUsageService(url);
+        CpuUsageService cpuUsage1 = dubboCpuUsageFactory.createCpuUsageService(url);
+        CpuUsageService cpuUsage2 = dubboCpuUsageFactory.createCpuUsageService(url);
 
         Assertions.assertEquals(cpuUsage1, cpuUsage2);
     }
