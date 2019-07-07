@@ -35,23 +35,23 @@ public class DubboCpuUsageFactory implements CpuUsageFactory {
 
     private ProxyFactory proxyFactory;
 
+    @Override
+    public CpuUsageService createCpuUsageService(URL url) {
+        URLBuilder urlBuilder = URLBuilder.from(url);
+        urlBuilder.setProtocol(url.getParameter(PROTOCOL_KEY, DUBBO_PROTOCOL));
+        urlBuilder.addParameters(CHECK_KEY, String.valueOf(false), REFERENCE_FILTER_KEY, "");
+        if (StringUtils.isEmpty(url.getPath())) {
+            urlBuilder.setPath(CpuUsageService.class.getName());
+        }
+        Invoker<CpuUsageService> cpuUsageInvoker = protocol.refer(CpuUsageService.class, urlBuilder.build());
+        return proxyFactory.getProxy(cpuUsageInvoker);
+    }
+
     public void setProtocol(Protocol protocol) {
         this.protocol = protocol;
     }
 
     public void setProxyFactory(ProxyFactory proxyFactory) {
         this.proxyFactory = proxyFactory;
-    }
-
-    @Override
-    public CpuUsageService createCpuUsageService(URL url) {
-        URLBuilder urlBuilder = URLBuilder.from(url);
-        urlBuilder.setProtocol(url.getParameter(PROTOCOL_KEY, DUBBO_PROTOCOL));
-       // urlBuilder.addParameters(CHECK_KEY, String.valueOf(false), REFERENCE_FILTER_KEY, "-cpuusage");
-        if (StringUtils.isEmpty(url.getPath())) {
-            urlBuilder.setPath(CpuUsageService.class.getName());
-        }
-        Invoker<CpuUsageService> cpuUsageInvoker = protocol.refer(CpuUsageService.class, urlBuilder.build());
-        return proxyFactory.getProxy(cpuUsageInvoker);
     }
 }
