@@ -40,6 +40,7 @@ public class DubboCpuUsageFactory implements CpuUsageFactory {
         URLBuilder urlBuilder = URLBuilder.from(url);
         urlBuilder.setProtocol(url.getParameter(PROTOCOL_KEY, DUBBO_PROTOCOL));
         urlBuilder.addParameters(CHECK_KEY, String.valueOf(false), REFERENCE_FILTER_KEY, "");
+        urlBuilder.addParameter("addListener.1.callback", true);
         if (StringUtils.isEmpty(url.getPath())) {
             urlBuilder.setPath(CpuUsageService.class.getName());
         }

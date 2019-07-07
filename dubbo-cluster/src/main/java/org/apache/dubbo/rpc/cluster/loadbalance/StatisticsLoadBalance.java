@@ -18,10 +18,12 @@ package org.apache.dubbo.rpc.cluster.loadbalance;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.rpc.cluster.loadbalance.statistics.CpuUsageListener;
 import org.apache.dubbo.rpc.cluster.loadbalance.statistics.CpuUsageService;
 import org.apache.dubbo.rpc.cluster.loadbalance.statistics.CpuUsageServiceImpl;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.cluster.loadbalance.statistics.DubboCpuUsageFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -30,6 +32,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class StatisticsLoadBalance extends AbstractLoadBalance {
 
     private Map<String, Float> cpuUsage = new ConcurrentHashMap<>();
+    private DubboCpuUsageFactory dubboCpuUsageFactory;
+    private Map<String, CpuUsageListener> listeners = new ConcurrentHashMap<>();
 
     public StatisticsLoadBalance() {
         long timeToLive = Long.parseLong(ConfigurationUtils.getProperty("time.to.live"));
@@ -40,6 +44,26 @@ public class StatisticsLoadBalance extends AbstractLoadBalance {
 
     @Override
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
+        int index = (int)(invokers.size() * Math.random());
+        Invoker<T> invoker = invokers.get(index);
+        cpuUsage.computeIfAbsent(invoker.getUrl().getAddress(), value -> {
+            CpuUsageService cpuUsageService = dubboCpuUsageFactory.createCpuUsageService(invoker.getUrl());
+            CpuUsageListener cpuUsageListener = new CpuUsageListenerImpl();
+            listeners.put(invoker.getUrl().getAddress(), cpuUsageListener);
+            cpuUsageService.addListener("statisticsloadbalance", cpuUsageListener);
+            return 0.0f;
+        });
         throw new IllegalStateException("Method unimplemented");
+    }
+
+    public void setDubboCpuUsageFactory(DubboCpuUsageFactory dubboCpuUsageFactory) {
+        this.dubboCpuUsageFactory = dubboCpuUsageFactory;
+    }
+
+    private class CpuUsageListenerImpl implements CpuUsageListener {
+        @Override
+        public void cpuChanged(String ip, Float cpu) {
+            cpuUsage.put(ip, cpu);
+        }
     }
 }
