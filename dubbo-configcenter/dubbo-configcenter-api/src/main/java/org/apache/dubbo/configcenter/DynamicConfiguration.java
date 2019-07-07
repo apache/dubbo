@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.configcenter;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.Environment;
 
@@ -79,29 +80,19 @@ public interface DynamicConfiguration extends Configuration {
     void removeListener(String key, String group, ConfigurationListener listener);
 
     /**
-     * Get the configuration mapped to the given key
-     *
-     * @param key the key to represent a configuration
-     * @return target configuration mapped to the given key
-     */
-    default String getConfig(String key) {
-        return getConfig(key, null, -1L);
-    }
-
-    /**
-     * Get the configuration mapped to the given key and the given group
+     * Get the governance rule mapped to the given key and the given group
      *
      * @param key   the key to represent a configuration
      * @param group the group where the key belongs to
      * @return target configuration mapped to the given key and the given group
      */
-    default String getConfig(String key, String group) {
-        return getConfig(key, group, -1L);
+    default String getRule(String key, String group) {
+        return getRule(key, group, -1L);
     }
 
     /**
-     * Get the configuration mapped to the given key and the given group. If the
-     * configuration fails to fetch after timeout exceeds, IllegalStateException will be thrown.
+     * Get the governance rule mapped to the given key and the given group. If the
+     * rule fails to return after timeout exceeds, IllegalStateException will be thrown.
      *
      * @param key     the key to represent a configuration
      * @param group   the group where the key belongs to
@@ -109,23 +100,21 @@ public interface DynamicConfiguration extends Configuration {
      * @return target configuration mapped to the given key and the given group, IllegalStateException will be thrown
      * if timeout exceeds.
      */
-    String getConfig(String key, String group, long timeout) throws IllegalStateException;
+    String getRule(String key, String group, long timeout) throws IllegalStateException;
 
     /**
-     * {@see #getConfig(String, String, long)}
-     *
      * This method are mostly used to get a compound config file, such as a complete dubbo.properties file.
+     * Also {@see #getConfig(String, String)}
      */
-    default String getConfigs(String key, String group) throws IllegalStateException {
-        return getConfigs(key, group, -1L);
+    default String getProperties(String key, String group) throws IllegalStateException {
+        return getProperties(key, group, -1L);
     }
 
     /**
-     * {@see #getConfig(String, String, long)}
-     *
      * This method are mostly used to get a compound config file, such as a complete dubbo.properties file.
+     * Also {@see #getConfig(String, String, long)}
      */
-    String getConfigs(String key, String group, long timeout) throws IllegalStateException;
+    String getProperties(String key, String group, long timeout) throws IllegalStateException;
 
     /**
      * Find DynamicConfiguration instance
@@ -137,5 +126,14 @@ public interface DynamicConfiguration extends Configuration {
         return (DynamicConfiguration) optional.orElseGet(() -> getExtensionLoader(DynamicConfigurationFactory.class)
                 .getDefaultExtension()
                 .getDynamicConfiguration(null));
+    }
+
+     /**
+     * The format is '{interfaceName}:[version]:[group]'
+     *
+     * @return
+     */
+     static String getRuleKey(URL url) {
+        return url.getColonSeparatedKey();
     }
 }

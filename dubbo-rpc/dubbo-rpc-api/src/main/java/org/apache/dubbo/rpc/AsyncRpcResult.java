@@ -18,10 +18,10 @@ package org.apache.dubbo.rpc;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.rpc.protocol.dubbo.FutureAdapter;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import java.util.function.BiConsumer;
 
 /**
@@ -139,29 +139,13 @@ public class AsyncRpcResult extends AbstractResult {
     @Override
     public Object recreate() throws Throwable {
         RpcInvocation rpcInvocation = (RpcInvocation) invocation;
+        FutureAdapter future = new FutureAdapter(this);
+        RpcContext.getContext().setFuture(future);
         if (InvokeMode.FUTURE == rpcInvocation.getInvokeMode()) {
-            AppResponse appResponse = new AppResponse();
-            CompletableFuture<Object> future = new CompletableFuture<>();
-            appResponse.setValue(future);
-            this.whenComplete((result, t) -> {
-                if (t != null) {
-                    if (t instanceof CompletionException) {
-                        t = t.getCause();
-                    }
-                    future.completeExceptionally(t);
-                } else {
-                    if (result.hasException()) {
-                        future.completeExceptionally(result.getException());
-                    } else {
-                        future.complete(result.getValue());
-                    }
-                }
-            });
-            return appResponse.recreate();
-        } else if (this.isDone()) {
-            return this.get().recreate();
+            return future;
         }
-        return (new AppResponse()).recreate();
+
+        return getAppResponse().recreate();
     }
 
     @Override

@@ -22,6 +22,7 @@ import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.context.annotation.DubboComponentScan;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -62,6 +63,9 @@ public class ConsumerConfiguration {
         registryConfig.setAddress("N/A");
         return registryConfig;
     }
+
+    @Autowired
+    private DemoService autowiredDemoService;
 
     @Reference(version = "2.5.7", url = "dubbo://127.0.0.1:12345")
     private DemoService demoService;
@@ -111,8 +115,16 @@ public class ConsumerConfiguration {
 
     public static class Child extends Parent {
 
+        @Autowired
+        private DemoService demoService;
+
         @Reference(version = "2.5.7", url = "dubbo://127.0.0.1:12345")
         private DemoService demoServiceFromChild;
+
+
+        public DemoService getDemoService() {
+            return demoService;
+        }
 
         public DemoService getDemoServiceFromChild() {
             return demoServiceFromChild;

@@ -26,6 +26,7 @@ import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
 import org.springframework.beans.factory.annotation.InjectionMetadata;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -91,7 +92,12 @@ public abstract class AnnotationInjectedBeanPostProcessor extends
 
     private ClassLoader classLoader;
 
-    private int order = Ordered.LOWEST_PRECEDENCE;
+    /**
+     * make sure higher priority than {@link AutowiredAnnotationBeanPostProcessor}
+     *
+     * @revision 2.7.3
+     */
+    private int order = Ordered.LOWEST_PRECEDENCE - 3;
 
     /**
      * @param annotationTypes the multiple types of {@link Annotation annotations}
