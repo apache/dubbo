@@ -23,7 +23,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 
-public class CpuUsageServiceFactory {
+public class CpuUsageServiceFactory implements CpuUsageFactory {
 
     private Protocol protocol;
 

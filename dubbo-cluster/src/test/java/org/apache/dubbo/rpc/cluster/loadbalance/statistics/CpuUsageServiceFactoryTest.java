@@ -39,7 +39,6 @@ class CpuUsageServiceFactoryTest {
     @Mock
     private ProxyFactory proxyFactory;
     private CpuUsageServiceFactory cpuUsageServiceFactory;
-    final private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
 
     @BeforeEach
     public void setUp() throws Exception {
