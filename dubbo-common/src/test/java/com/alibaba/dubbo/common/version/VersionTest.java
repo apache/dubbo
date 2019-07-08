@@ -34,9 +34,10 @@ public class VersionTest {
         Assert.assertTrue(Version.isSupportResponseAttatchment("2.0.3"));
         Assert.assertFalse(Version.isSupportResponseAttatchment("2.0.0"));
         Assert.assertFalse(Version.isSupportResponseAttatchment("1.0.0"));
+        Assert.assertTrue(Version.isSupportResponseAttatchment("2.6.6-stable"));
 
-        Assert.assertFalse(Version.isSupportResponseAttatchment("2.0.contains.string"));
+        Assert.assertFalse(Version.isSupportResponseAttatchment("2.0.contains"));
         Assert.assertFalse(Version.isSupportResponseAttatchment("version.string"));
-        Assert.assertFalse(Version.isSupportResponseAttatchment("version.string"));
+        Assert.assertFalse(Version.isSupportResponseAttatchment("prefix2.0"));
     }
 }
