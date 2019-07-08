@@ -83,6 +83,9 @@ public final class Version {
             try {
                 v = parseInt(version);
             } catch (Exception e) {
+                logger.error("Please make sure your version value has the right format: " +
+                        "\n 1. only contains digital number: 2.0.0; \n 2. with string suffix: 2.6.7-stable. " +
+                        "\nIf you are using Dubbo before v2.6.2, the version value is the same with the jar version.");
                 v = LEGACY_DUBBO_PROTOCOL_VERSION;
             }
             VERSION2INT.put(version, v);
