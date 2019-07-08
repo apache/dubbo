@@ -18,7 +18,7 @@ package org.apache.dubbo.rpc.cluster.loadbalance.statistics;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.ProxyFactory;
-import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
+import org.apache.dubbo.rpc.support.MockProtocol;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,7 +37,7 @@ class DubboCpuUsageFactoryTest {
     public void setUp() throws Exception {
         initMocks(this);
         this.dubboCpuUsageFactory = new DubboCpuUsageFactory();
-        this.dubboCpuUsageFactory.setProtocol(new DubboProtocol());
+        this.dubboCpuUsageFactory.setProtocol(new MockProtocol());
         this.dubboCpuUsageFactory.setProxyFactory(proxyFactory);
     }
 
