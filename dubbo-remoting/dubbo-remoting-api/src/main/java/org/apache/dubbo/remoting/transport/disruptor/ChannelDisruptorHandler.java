@@ -19,6 +19,7 @@ package org.apache.dubbo.remoting.transport.disruptor;
 import com.lmax.disruptor.BlockingWaitStrategy;
 import com.lmax.disruptor.EventFactory;
 import com.lmax.disruptor.WorkHandler;
+import com.lmax.disruptor.YieldingWaitStrategy;
 import com.lmax.disruptor.dsl.Disruptor;
 import com.lmax.disruptor.dsl.ProducerType;
 import org.apache.dubbo.common.URL;
@@ -39,7 +40,7 @@ public class ChannelDisruptorHandler implements ChannelHandlerDelegate {
     /**
      * Disruptor RingBuffer Size (2 ^ N)
      */
-    private static final int DISRUPTOR_RING_BUFFER_SIZE = 1024;
+    private static final int DISRUPTOR_RING_BUFFER_SIZE = 1024 * 64;
     private volatile Disruptor<ChannelEventRunnable> disruptor;
     private ChannelHandler handler;
     private final ThreadLocal<EventInfo> threadLocalInfo = ThreadLocal.withInitial(() -> new EventInfo(new ChannelEventTranslator()));
@@ -54,12 +55,15 @@ public class ChannelDisruptorHandler implements ChannelHandlerDelegate {
                 DISRUPTOR_RING_BUFFER_SIZE,
                 factory,
                 ProducerType.MULTI,
-                new BlockingWaitStrategy()
+//                new BlockingWaitStrategy()
+                new YieldingWaitStrategy()
         );
-        WorkHandler<ChannelEventRunnable>[] workHandlers = new ChannelEventHandler[16];
-        for(int i = 0; i < 16 ; i++){
-            workHandlers[i] = new ChannelEventHandler(handler);
-        }
+//        WorkHandler<ChannelEventRunnable>[] workHandlers = new ChannelEventHandler[16];
+        WorkHandler<ChannelEventRunnable>[] workHandlers = new ChannelEventHandler[1];
+//        for(int i = 0; i < 1 ; i++){
+//            workHandlers[i] = new ChannelEventHandler(handler);
+//        }
+        workHandlers[0] = new ChannelEventHandler(handler);
         this.disruptor.setDefaultExceptionHandler(new ChannelEventExceptionHandler());
         this.disruptor.handleEventsWithWorkerPool(workHandlers);
         this.disruptor.start();
