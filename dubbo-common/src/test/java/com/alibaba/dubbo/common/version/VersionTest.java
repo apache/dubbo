@@ -18,7 +18,6 @@ package com.alibaba.dubbo.common.version;
 
 
 import com.alibaba.dubbo.common.Version;
-
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -34,5 +33,11 @@ public class VersionTest {
         Assert.assertTrue(Version.isSupportResponseAttatchment("2.0.2"));
         Assert.assertTrue(Version.isSupportResponseAttatchment("2.0.3"));
         Assert.assertFalse(Version.isSupportResponseAttatchment("2.0.0"));
+        Assert.assertFalse(Version.isSupportResponseAttatchment("1.0.0"));
+        Assert.assertTrue(Version.isSupportResponseAttatchment("2.6.6-stable"));
+
+        Assert.assertFalse(Version.isSupportResponseAttatchment("2.0.contains"));
+        Assert.assertFalse(Version.isSupportResponseAttatchment("version.string"));
+        Assert.assertFalse(Version.isSupportResponseAttatchment("prefix2.0"));
     }
 }
