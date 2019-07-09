@@ -73,6 +73,16 @@ class MetadataServiceProxy implements MetadataService {
                 metadataService.getExportedURLs(serviceInterface, group, version, protocol));
     }
 
+    @Override
+    public String getServiceDefinition(String interfaceName, String version, String group) {
+        return null;
+    }
+
+    @Override
+    public String getServiceDefinition(String serviceKey) {
+        return null;
+    }
+
     protected <T> T doInMetadataService(Function<MetadataService, T> callback) {
 
         T result = null;            // execution result
