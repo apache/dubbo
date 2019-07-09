@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc;
 
 import org.apache.dubbo.common.threadlocal.InternalThreadLocal;
+import org.apache.dubbo.rpc.protocol.dubbo.FutureAdapter;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -69,9 +70,39 @@ public class FutureContext {
         return (CompletableFuture<T>) compatibleFuture;
     }
 
+    /**
+     * Guarantee 'using org.apache.dubbo.rpc.RpcContext.getFuture() before proxy returns' can work, a typical scenario is:
+     * <pre>{@code
+     *      public final class TracingFilter implements Filter {
+     *          public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
+     *              Result result = invoker.invoke(invocation);
+     *              Future<Object> future = rpcContext.getFuture();
+     *              if (future instanceof FutureAdapter) {
+     *                  ((FutureAdapter) future).getFuture().setCallback(new FinishSpanCallback(span));
+     *               }
+     *              ......
+     *          }
+     *      }
+     * }</pre>
+     *
+     * Start from 2.7.3, you don't have to get Future from RpcContext, we recommend using Result directly:
+     * <pre>{@code
+     *      public final class TracingFilter implements Filter {
+     *          public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
+     *              Result result = invoker.invoke(invocation);
+     *              result.whenComplete(new FinishSpanCallback(span));
+     *              ......
+     *          }
+     *      }
+     * }</pre>
+     *
+     */
     @Deprecated
     public void setCompatibleFuture(CompletableFuture<?> compatibleFuture) {
         this.compatibleFuture = compatibleFuture;
+        if (compatibleFuture != null) {
+            this.setFuture(new FutureAdapter(compatibleFuture));
+        }
     }
 
 }
