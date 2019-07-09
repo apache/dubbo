@@ -26,7 +26,7 @@ import java.util.List;
  * @see MetadataService
  * @see #export()
  * @see #unexport()
- * @since 2.7.3
+ * @since 2.7.4
  */
 public interface MetadataServiceExporter {
 

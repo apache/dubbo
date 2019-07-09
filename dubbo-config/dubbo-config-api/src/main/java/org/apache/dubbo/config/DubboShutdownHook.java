@@ -93,7 +93,7 @@ public class DubboShutdownHook extends Thread {
         AbstractRegistryFactory.destroyAll();
         // destroy all the protocols
         destroyProtocols();
-        // dispatch the DubboDestroyedEvent @since 2.7.3
+        // dispatch the DubboDestroyedEvent @since 2.7.4
         eventDispatcher.dispatch(new DubboServiceDestroyedEvent(this));
     }
 

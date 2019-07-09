@@ -45,7 +45,7 @@ import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkParams.MA
 /**
  * Curator Framework Utilities Class
  *
- * @since 2.7.3
+ * @since 2.7.4
  */
 public abstract class CuratorFrameworkUtils {
 

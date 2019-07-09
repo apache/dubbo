@@ -35,7 +35,7 @@ import static java.lang.String.format;
 /**
  * A listener for logging the {@link Event Dubbo event}
  *
- * @since 2.7.3
+ * @since 2.7.4
  */
 public class LoggingEventListener extends GenericEventListener {
 

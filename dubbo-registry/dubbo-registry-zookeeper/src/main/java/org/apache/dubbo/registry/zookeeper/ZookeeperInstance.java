@@ -24,7 +24,7 @@ import java.util.Map;
  * <p>
  * It's compatible with Spring Cloud
  *
- * @since 2.7.3
+ * @since 2.7.4
  */
 public class ZookeeperInstance {
 

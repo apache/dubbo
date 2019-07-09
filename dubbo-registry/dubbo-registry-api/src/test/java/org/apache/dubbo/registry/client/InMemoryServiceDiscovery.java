@@ -34,7 +34,7 @@ import static java.util.Collections.emptyList;
 /**
  * In-Memory {@link ServiceDiscovery} implementation
  *
- * @since 2.7.3
+ * @since 2.7.4
  */
 public class InMemoryServiceDiscovery implements ServiceDiscovery {
 

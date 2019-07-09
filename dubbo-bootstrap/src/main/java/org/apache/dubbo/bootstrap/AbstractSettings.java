@@ -19,7 +19,7 @@ package org.apache.dubbo.bootstrap;
 /**
  * Abstract {@link Settings}
  *
- * @since 2.7.3
+ * @since 2.7.4
  */
 public class AbstractSettings implements Settings {
 

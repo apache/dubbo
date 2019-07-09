@@ -38,7 +38,7 @@ import static org.apache.dubbo.registry.client.metadata.MetadataServiceURLBuilde
  *
  * @see ServiceInstance
  * @see MetadataService
- * @since 2.7.3
+ * @since 2.7.4
  */
 class MetadataServiceProxy implements MetadataService {
 
@@ -71,6 +71,16 @@ class MetadataServiceProxy implements MetadataService {
     public List<String> getExportedURLs(String serviceInterface, String group, String version, String protocol) {
         return doInMetadataService(metadataService ->
                 metadataService.getExportedURLs(serviceInterface, group, version, protocol));
+    }
+
+    @Override
+    public String getServiceDefinition(String interfaceName, String version, String group) {
+        return null;
+    }
+
+    @Override
+    public String getServiceDefinition(String serviceKey) {
+        return null;
     }
 
     protected <T> T doInMetadataService(Function<MetadataService, T> callback) {

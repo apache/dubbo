@@ -29,7 +29,7 @@ import org.junit.jupiter.api.Test;
 /**
  * {@link ServiceNameMappingListener} Test
  *
- * @since 2.7.3
+ * @since 2.7.4
  */
 public class ServiceNameMappingListenerTest {
 

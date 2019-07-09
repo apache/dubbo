@@ -23,7 +23,7 @@ import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
  * The Service Discovery Changed {@link EventListener Event Listener}
  *
  * @see ServiceInstancesChangedEvent
- * @since 2.7.3
+ * @since 2.7.4
  */
 public interface ServiceInstancesChangedListener extends EventListener<ServiceInstancesChangedEvent> {
 

@@ -23,7 +23,7 @@ import org.apache.dubbo.registry.client.ServiceDiscovery;
  * An event raised when the {@link ServiceDiscovery Service Discovery} is stopping.
  *
  * @see ServiceDiscovery#stop()
- * @since 2.7.3
+ * @since 2.7.4
  */
 public class ServiceDiscoveryStoppingEvent extends Event {
 

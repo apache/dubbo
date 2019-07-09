@@ -24,7 +24,7 @@ import java.util.Map;
 /**
  * The settings of {@link RegistryConfig}
  *
- * @since 2.7.3
+ * @since 2.7.4
  */
 public class RegistrySettings extends AbstractSettings {
 

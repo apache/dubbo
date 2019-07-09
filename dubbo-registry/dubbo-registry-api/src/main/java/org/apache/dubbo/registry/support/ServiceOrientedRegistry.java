@@ -77,7 +77,7 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
  *
  * @see ServiceDiscovery
  * @see FailbackRegistry
- * @since 2.7.3
+ * @since 2.7.4
  */
 public class ServiceOrientedRegistry extends FailbackRegistry {
 

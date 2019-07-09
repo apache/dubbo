@@ -25,7 +25,7 @@ import org.apache.dubbo.registry.client.ServiceInstance;
  * {@link ServiceDiscovery#unregister(ServiceInstance) unregistered}
  *
  * @see ServiceInstanceEvent
- * @since 2.7.3
+ * @since 2.7.4
  */
 public class ServiceInstanceUnregisteredEvent extends ServiceInstanceEvent {
 

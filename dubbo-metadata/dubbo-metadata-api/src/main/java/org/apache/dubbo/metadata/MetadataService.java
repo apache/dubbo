@@ -33,7 +33,7 @@ import static java.util.stream.StreamSupport.stream;
  * also providers the fine-grain methods for the precise queries.
  *
  * @see WritableMetadataService
- * @since 2.7.3
+ * @since 2.7.4
  */
 public interface MetadataService {
 

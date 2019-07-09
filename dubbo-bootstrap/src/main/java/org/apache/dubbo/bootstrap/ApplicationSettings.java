@@ -25,7 +25,7 @@ import java.util.Map;
 /**
  * {@link ApplicationConfig Application} settings
  *
- * @since 2.7.3
+ * @since 2.7.4
  */
 public class ApplicationSettings extends AbstractSettings {
 

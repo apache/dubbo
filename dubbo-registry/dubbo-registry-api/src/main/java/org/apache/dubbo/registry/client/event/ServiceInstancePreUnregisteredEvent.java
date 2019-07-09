@@ -24,7 +24,7 @@ import org.apache.dubbo.registry.client.ServiceInstance;
  * An event raised before a {@link ServiceInstance service instance}
  * {@link ServiceDiscovery#unregister(ServiceInstance) unregistered}
  *
- * @since 2.7.3
+ * @since 2.7.4
  */
 public class ServiceInstancePreUnregisteredEvent extends ServiceInstanceEvent {
 

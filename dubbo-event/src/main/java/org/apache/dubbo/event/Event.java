@@ -21,7 +21,7 @@ import java.util.EventObject;
 /**
  * An event object of Dubbo is based on the Java standard {@link EventObject event}
  *
- * @since 2.7.3
+ * @since 2.7.4
  */
 public abstract class Event extends EventObject {
 

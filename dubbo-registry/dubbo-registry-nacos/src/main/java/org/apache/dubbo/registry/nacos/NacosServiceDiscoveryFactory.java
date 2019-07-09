@@ -24,7 +24,7 @@ import org.apache.dubbo.registry.client.ServiceDiscoveryFactory;
  *
  * @see ServiceDiscoveryFactory
  * @see ServiceDiscovery
- * @since 2.7.3
+ * @since 2.7.4
  */
 public class NacosServiceDiscoveryFactory implements ServiceDiscoveryFactory {
 

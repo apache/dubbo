@@ -46,7 +46,7 @@ import static java.util.Collections.unmodifiableList;
  * @see MetadataServiceExporter
  * @see ServiceConfig
  * @see ConfigManager
- * @since 2.7.3
+ * @since 2.7.4
  */
 public class ConfigurableMetadataServiceExporter implements MetadataServiceExporter {
 

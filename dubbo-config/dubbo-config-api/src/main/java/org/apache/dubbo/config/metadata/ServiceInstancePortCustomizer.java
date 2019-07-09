@@ -24,7 +24,7 @@ import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
 /**
  * The {@link ServiceInstanceCustomizer} to customize the {@link ServiceInstance#getPort() port} of service instance.
  *
- * @since 2.7.3
+ * @since 2.7.4
  */
 public class ServiceInstancePortCustomizer implements ServiceInstanceCustomizer {
 
