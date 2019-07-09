@@ -61,7 +61,6 @@ import java.util.concurrent.ConcurrentMap;
 import static org.apache.dubbo.config.spring.util.AnnotationUtils.getMergedAttributes;
 import static org.springframework.core.BridgeMethodResolver.findBridgedMethod;
 import static org.springframework.core.BridgeMethodResolver.isVisibilityBridgeMethodPair;
-import static org.springframework.util.CollectionUtils.isEmpty;
 
 /**
  * Abstract generic {@link BeanPostProcessor} implementation for customized annotation that annotated injected-object.
@@ -172,7 +171,7 @@ public abstract class AnnotationInjectedBeanPostProcessor extends
 
                 AnnotationAttributes attributes = getMergedAttributes(field, annotationType, getEnvironment(), true);
 
-                if (!isEmpty(attributes)) {
+                if (attributes != null) {
 
                     if (Modifier.isStatic(field.getModifiers())) {
                         if (logger.isWarnEnabled()) {
@@ -213,7 +212,7 @@ public abstract class AnnotationInjectedBeanPostProcessor extends
 
                 AnnotationAttributes attributes = getMergedAttributes(bridgedMethod, annotationType, getEnvironment(), true);
 
-                if (!isEmpty(attributes) && method.equals(ClassUtils.getMostSpecificMethod(method, beanClass))) {
+                if (attributes != null && method.equals(ClassUtils.getMostSpecificMethod(method, beanClass))) {
                     if (Modifier.isStatic(method.getModifiers())) {
                         if (logger.isWarnEnabled()) {
                             logger.warn("@" + annotationType.getName() + " annotation is not supported on static methods: " + method);
