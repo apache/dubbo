@@ -99,9 +99,8 @@ public class FutureContext {
      */
     @Deprecated
     public void setCompatibleFuture(CompletableFuture<?> compatibleFuture) {
-        this.compatibleFuture = compatibleFuture;
-        // if future is not empty, does not override.
-        if (future == null && compatibleFuture != null) {
+        if (compatibleFuture != null) {
+            this.compatibleFuture = compatibleFuture;
             this.setFuture(new FutureAdapter(compatibleFuture));
         }
     }
