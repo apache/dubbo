@@ -415,7 +415,7 @@ public class AnnotationUtils {
      * @param propertyResolver     {@link PropertyResolver} instance, e.g {@link Environment}
      * @param ignoreDefaultValue   whether ignore default value or not
      * @param ignoreAttributeNames the attribute names of annotation should be ignored
-     * @return non-null
+     * @return If the specified annotation type is not found, return <code>null</code>
      * @since 2.7.3
      */
     public static AnnotationAttributes getMergedAttributes(AnnotatedElement annotatedElement,
@@ -424,7 +424,7 @@ public class AnnotationUtils {
                                                            boolean ignoreDefaultValue,
                                                            String... ignoreAttributeNames) {
         Annotation annotation = getMergedAnnotation(annotatedElement, annotationType);
-        return fromMap(getAttributes(annotation, propertyResolver, ignoreDefaultValue, ignoreAttributeNames));
+        return annotation == null ? null : fromMap(getAttributes(annotation, propertyResolver, ignoreDefaultValue, ignoreAttributeNames));
 
     }
 
