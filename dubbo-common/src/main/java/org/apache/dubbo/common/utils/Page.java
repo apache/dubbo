@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * The model class of pagination
  *
- * @since 2.7.3
+ * @since 2.7.4
  */
 public interface Page<T> {
 

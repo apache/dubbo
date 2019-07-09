@@ -23,7 +23,7 @@ import org.apache.dubbo.registry.client.ServiceDiscovery;
  * An event raised when the {@link ServiceDiscovery Service Discovery} is starting.
  *
  * @see ServiceDiscovery#start
- * @since 2.7.3
+ * @since 2.7.4
  */
 public class ServiceDiscoveryStartingEvent extends Event {
 

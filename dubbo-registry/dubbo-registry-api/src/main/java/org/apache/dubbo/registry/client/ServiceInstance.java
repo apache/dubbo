@@ -33,7 +33,7 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
  * The model class of an instance of a service, which is used for service registration and discovery.
  * <p>
  *
- * @since 2.7.3
+ * @since 2.7.4
  */
 public interface ServiceInstance {
 

@@ -24,7 +24,7 @@ import static java.lang.String.format;
  * The implementation of {@link EchoService}
  *
  * @see EchoService
- * @since 2.7.3
+ * @since 2.7.4
  */
 public class EchoServiceImpl implements EchoService {
 

@@ -181,7 +181,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     /**
      * The {@link EventDispatcher}
      *
-     * @since 2.7.3
+     * @since 2.7.4
      */
     private final EventDispatcher eventDispatcher = EventDispatcher.getDefaultExtension();
 
@@ -280,7 +280,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         invoker = null;
         ref = null;
 
-        // dispatch a ReferenceConfigDestroyedEvent since 2.7.3
+        // dispatch a ReferenceConfigDestroyedEvent since 2.7.4
         dispatch(new ReferenceConfigDestroyedEvent(this));
     }
 
@@ -348,7 +348,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
         initialized = true;
 
-        // dispatch a ReferenceConfigInitializedEvent since 2.7.3
+        // dispatch a ReferenceConfigInitializedEvent since 2.7.4
         dispatch(new ReferenceConfigInitializedEvent(this, invoker));
     }
 
@@ -686,7 +686,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
      * Dispatch an {@link Event event}
      *
      * @param event an {@link Event event}
-     * @since 2.7.3
+     * @since 2.7.4
      */
     protected void dispatch(Event event) {
         eventDispatcher.dispatch(event);

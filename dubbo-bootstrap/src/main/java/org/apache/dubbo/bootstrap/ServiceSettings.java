@@ -34,7 +34,7 @@ import java.util.Map;
 /**
  * The settings of {@link ServiceConfig Dubbo service}
  *
- * @since 2.7.3
+ * @since 2.7.4
  */
 public class ServiceSettings<S> extends AbstractSettings {
 

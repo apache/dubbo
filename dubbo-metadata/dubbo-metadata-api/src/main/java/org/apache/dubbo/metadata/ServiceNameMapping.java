@@ -25,7 +25,7 @@ import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoad
 /**
  * The interface for Dubbo service name Mapping
  *
- * @since 2.7.3
+ * @since 2.7.4
  */
 @SPI("default")
 public interface ServiceNameMapping {

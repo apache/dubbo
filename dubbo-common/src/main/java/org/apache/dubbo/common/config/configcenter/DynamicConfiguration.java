@@ -141,7 +141,7 @@ public interface DynamicConfiguration extends Configuration {
      * @param content the content of configuration
      * @return <code>true</code> if success, or <code>false</code>
      * @throws UnsupportedOperationException If the under layer does not support
-     * @since 2.7.3
+     * @since 2.7.4
      */
     default boolean publishConfig(String key, String group, String content) throws UnsupportedOperationException {
         throw new UnsupportedOperationException("No support");
@@ -153,7 +153,7 @@ public interface DynamicConfiguration extends Configuration {
      * @param group the specified group
      * @return the read-only non-null sorted {@link Set set} of config keys
      * @throws UnsupportedOperationException If the under layer does not support
-     * @since 2.7.3
+     * @since 2.7.4
      */
     default SortedSet<String> getConfigKeys(String group) throws UnsupportedOperationException {
         throw new UnsupportedOperationException("No support");
@@ -165,7 +165,7 @@ public interface DynamicConfiguration extends Configuration {
      * @param group the specified group
      * @return the read-only non-null sorted {@link SortedMap map}
      * @throws UnsupportedOperationException If the under layer does not support
-     * @since 2.7.3
+     * @since 2.7.4
      */
     default SortedMap<String, String> getConfigs(String group) throws UnsupportedOperationException {
         return getConfigs(group, -1);
@@ -179,7 +179,7 @@ public interface DynamicConfiguration extends Configuration {
      * @return the read-only non-null sorted {@link SortedMap map}
      * @throws UnsupportedOperationException If the under layer does not support
      * @throws IllegalStateException         If timeout exceeds
-     * @since 2.7.3
+     * @since 2.7.4
      */
     default SortedMap<String, String> getConfigs(String group, long timeout) throws UnsupportedOperationException,
             IllegalStateException {

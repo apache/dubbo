@@ -44,7 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * {@link ZookeeperServiceDiscovery} Test
  *
- * @since 2.7.3
+ * @since 2.7.4
  */
 public class ZookeeperServiceDiscoveryTest {
 

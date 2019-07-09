@@ -38,7 +38,7 @@ import static org.apache.dubbo.registry.integration.RegistryProtocol.DEFAULT_REG
  * @see ServiceInstance#getMetadata()
  * @see MetadataService
  * @see URL
- * @since 2.7.3
+ * @since 2.7.4
  */
 public class ServiceInstanceMetadataUtils {
 

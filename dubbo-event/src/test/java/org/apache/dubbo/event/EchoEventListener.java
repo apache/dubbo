@@ -21,7 +21,7 @@ import java.io.Serializable;
 /**
  * {@link EchoEvent} {@link EventListener}
  *
- * @since 2.7.3
+ * @since 2.7.4
  */
 public class EchoEventListener extends AbstractEventListener<EchoEvent> implements Serializable {
 

@@ -27,7 +27,7 @@ import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoad
  * @see ServiceDiscoveryFactory
  * @see EventPublishingServiceDiscovery
  * @see ServiceDiscovery
- * @since 2.7.3
+ * @since 2.7.4
  */
 public class EventPublishingServiceDiscoveryFactory implements ServiceDiscoveryFactory {
 

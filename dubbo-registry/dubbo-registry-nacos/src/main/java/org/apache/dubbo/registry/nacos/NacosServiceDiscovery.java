@@ -45,7 +45,7 @@ import static org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils.toIns
  * Nacos {@link ServiceDiscovery} implementation
  *
  * @see ServiceDiscovery
- * @since 2.7.3
+ * @since 2.7.4
  */
 public class NacosServiceDiscovery implements ServiceDiscovery {
 

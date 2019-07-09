@@ -22,7 +22,7 @@ import org.apache.dubbo.common.URL;
  * {@link InMemoryServiceDiscovery} Factory
  *
  * @see InMemoryServiceDiscovery
- * @since 2.7.3
+ * @since 2.7.4
  */
 public class InMemoryServiceDiscoveryFactory implements ServiceDiscoveryFactory {
 

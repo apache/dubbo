@@ -79,7 +79,7 @@ import static org.apache.dubbo.registry.support.AbstractRegistryFactory.getRegis
 /**
  * The bootstrap class of Dubbo
  *
- * @since 2.7.3
+ * @since 2.7.4
  */
 public class DubboBootstrap {
 

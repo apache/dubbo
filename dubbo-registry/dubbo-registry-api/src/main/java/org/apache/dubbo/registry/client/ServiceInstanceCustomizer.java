@@ -25,7 +25,7 @@ import org.apache.dubbo.registry.client.event.listener.CustomizableServiceInstan
  * @see CustomizableServiceInstanceListener
  * @see ServiceInstancePreRegisteredEvent
  * @see ServiceInstance#getMetadata()
- * @since 2.7.3
+ * @since 2.7.4
  */
 public interface ServiceInstanceCustomizer {
 
