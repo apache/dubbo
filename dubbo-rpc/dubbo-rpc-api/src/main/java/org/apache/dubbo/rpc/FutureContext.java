@@ -99,8 +99,8 @@ public class FutureContext {
      */
     @Deprecated
     public void setCompatibleFuture(CompletableFuture<?> compatibleFuture) {
+        this.compatibleFuture = compatibleFuture;
         if (compatibleFuture != null) {
-            this.compatibleFuture = compatibleFuture;
             this.setFuture(new FutureAdapter(compatibleFuture));
         }
     }
