@@ -17,6 +17,7 @@
 
 package com.alibaba.dubbo.rpc;
 
+import org.apache.dubbo.common.threadlocal.InternalThreadLocal;
 import org.apache.dubbo.rpc.FutureContext;
 
 import com.alibaba.dubbo.rpc.protocol.dubbo.FutureAdapter;
@@ -27,16 +28,22 @@ import java.util.concurrent.Future;
 @Deprecated
 public class RpcContext extends org.apache.dubbo.rpc.RpcContext {
 
+    private static final InternalThreadLocal<RpcContext> LOCAL = new InternalThreadLocal<RpcContext>() {
+        @Override
+        protected RpcContext initialValue() {
+            return new RpcContext();
+        }
+    };
 
     public static RpcContext getContext() {
         return newInstance(org.apache.dubbo.rpc.RpcContext.getContext());
     }
 
     private static RpcContext newInstance(org.apache.dubbo.rpc.RpcContext rpcContext) {
-        RpcContext copy = new RpcContext();
+        RpcContext copy = LOCAL.get();
         copy.getAttachments().putAll(rpcContext.getAttachments());
         copy.get().putAll(rpcContext.get());
-        copy.setFuture(rpcContext.getCompletableFuture());
+        copy.setFuture(rpcContext.getCompletableFuture() != null ? rpcContext.getCompletableFuture() : FutureContext.getContext().getCompatibleCompletableFuture());
         copy.setUrls(rpcContext.getUrls());
         copy.setUrl(rpcContext.getUrl());
         copy.setMethodName(rpcContext.getMethodName());
@@ -56,11 +63,17 @@ public class RpcContext extends org.apache.dubbo.rpc.RpcContext {
         return copy;
     }
 
+    @Override
     public <T> Future<T> getFuture() {
         CompletableFuture completableFuture = FutureContext.getContext().getCompatibleCompletableFuture();
         if (completableFuture == null) {
             return null;
         }
         return new FutureAdapter(completableFuture);
+    }
+
+    @Override
+    public void setFuture(CompletableFuture<?> future) {
+        FutureContext.getContext().setCompatibleFuture(future);
     }
 }
