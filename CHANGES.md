@@ -1,5 +1,85 @@
 # Release Notes
 
+## 2.6.7
+
+
+### New Features
+
+1. Multicast ipv6 support [#3430](https://github.com/apache/dubbo/pull/3430)
+2. Add Annotation-Driven for `MethodConfig` and `ArgumentConfig` [#2298](https://github.com/apache/dubbo/issues/2298)
+3. `@Method` default value will be set to the field of `MethodConfig` [#3642](https://github.com/apache/dubbo/pull/3642)
+4. ignore unrecognized dubbo versions. [#4486](https://github.com/apache/dubbo/issues/4486)
+
+### Bugfixes
+
+1. `@Reference` field can't refer its' `@Service` Bean in same JVM from v2.6.6 [#3695](https://github.com/apache/dubbo/issues/3695) 
+2.  Nacos Dubbo Registry can't sense the change of service instances [#4348](https://github.com/apache/dubbo/issues/4348)
+3. Dubbo throws IoException with error message while decoding fail [#4396](https://github.com/apache/dubbo/pull/4396)
+
+
+
+### 发布日志
+
+1. [功能] 广播注册中心支持 IP V6 
+2. [功能] 为注解驱动添加 `MethodConfig` 以及 `ArgumentConfig` 支持 [#2298](https://github.com/apache/dubbo/issues/2298)
+3. [功能] 添加 `@Method`  注解属性的默认值 [#3642](https://github.com/apache/dubbo/pull/3642)
+4. [提升] 忽略无法识别的 Dubbo 版本，提升 Dubbo 应用的健壮性 [#4486](https://github.com/apache/dubbo/issues/4486)
+5. [问题修复] `@Reference` 无法引用本地 `@Service` Bean [#3695](https://github.com/apache/dubbo/issues/3695) 
+6. [问题修复] Dubbo Nacos 注册中心无法感知应用实例的变化 [#4348](https://github.com/apache/dubbo/issues/4348)
+7. [问题修复] 当 decoding 错误时，修正 `IOException` 错误信息  [#4396](https://github.com/apache/dubbo/pull/4396)
+
+
+
+## 2.7.3
+
+### Change List
+
+1. Asynchronous support
+
+    - Unified asynchronous and synchronous callback process, exception scenario triggers onError callback, #4401.
+    - Performance degradation caused by CompletableFuture.get() in JDK1.8 environment, #4279.
+
+2. Configuration Center
+
+    - ConfigCenter custom namespace does not take effect, #4411.
+    - Unify the models implemented by several configuration centers such as Zookeeper, Nacos, and Etcd. Please refer to the description for possible incompatibility issues, #4388.
+    - Adjust Override Coverage Rule Center Priority: Service Level > Application Level, #4175.
+
+3. 2.6.x compatibility
+
+    - Support Zipkin tracing feature provided by Zipkin officially, #3728, #4471.
+    - DubboComponentScan supports simultaneous scanning of annotations under the `com.alibaba.*` and `org.apache.*` packages, #4330.
+
+4. The Nacos Registration Center only subscribes to the address list and no longer subscribes to configuration information, #4454.
+
+5. Support to read the environment configuration from the specified location, which can be specified by -D or OS VARIABLE. Please refer to [automatically loading environment variables](http://dubbo.apache.org/en-us/docs/user/configuration/environment-variables.html)
+
+6. Some other bugfixes, #4346 #4338 #4349 #4377
+
+### Change List
+
+1. 异步支持相关
+
+    - 统一异步和同步的回调流程，异常场景触发onError回调 #4401
+    - CompletableFuture.get()在JDK1.8环境下带来的性能下降问题 #4279
+
+2. 配置中心相关
+
+    - ConfigCenter自定义namespace不生效的问题 #4411
+    - 统一Zookeeper、Nacos、Etcd等几个配置中心实现的模型，可能带来的不兼容性问题请参见说明。相关修改：#4388
+    - 调整Override覆盖规则中心优先级：服务级别 > 应用级别 #4175
+
+3. 2.6.x兼容性
+
+    - 兼容zipkin官方提供的基于Dubbo-2.6 API的集成 #3728, #4471
+    - DubboComponentScan支持同时扫描 `com.alibaba.*` 和 `org.apache.*` 两个包下的注解 #4330
+
+4. Nacos注册中心只订阅地址列表，不再订阅配置信息 #4454
+
+5. 支持从指定位置读取环境配置，可通过-D或OS VARIABLE指定，具体请参见[使用说明](http://dubbo.apache.org/zh-cn/docs/user/configuration/environment-variables.html)
+
+6. 其他一些bugfix，#4346 #4338 #4349 #4377 
+
 ## 2.7.2
 
 ### New Features

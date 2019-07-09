@@ -57,7 +57,7 @@ public class RpcContext extends org.apache.dubbo.rpc.RpcContext {
     }
 
     public <T> Future<T> getFuture() {
-        CompletableFuture completableFuture = FutureContext.getCompletableFuture();
+        CompletableFuture completableFuture = FutureContext.getContext().getCompatibleCompletableFuture();
         if (completableFuture == null) {
             return null;
         }

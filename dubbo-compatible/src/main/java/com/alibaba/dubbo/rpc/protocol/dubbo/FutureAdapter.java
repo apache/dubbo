@@ -18,10 +18,12 @@
 package com.alibaba.dubbo.rpc.protocol.dubbo;
 
 import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.rpc.Result;
 
 import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.exchange.ResponseCallback;
 import com.alibaba.dubbo.remoting.exchange.ResponseFuture;
+import com.alibaba.dubbo.rpc.RpcException;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -36,11 +38,11 @@ import java.util.function.BiConsumer;
  */
 @Deprecated
 public class FutureAdapter<V> implements Future<V> {
-    private CompletableFuture<V> future;
 
-    public FutureAdapter(CompletableFuture<V> future) {
+    private CompletableFuture<Object> future;
+
+    public FutureAdapter(CompletableFuture<Object> future) {
         this.future = future;
-
     }
 
     public ResponseFuture getFuture() {
@@ -48,7 +50,7 @@ public class FutureAdapter<V> implements Future<V> {
             @Override
             public Object get() throws RemotingException {
                 try {
-                    return FutureAdapter.this.get();
+                    return future.get();
                 } catch (InterruptedException e) {
                     throw new RemotingException(e);
                 } catch (ExecutionException e) {
@@ -59,7 +61,7 @@ public class FutureAdapter<V> implements Future<V> {
             @Override
             public Object get(int timeoutInMillis) throws RemotingException {
                 try {
-                    return FutureAdapter.this.get(timeoutInMillis, TimeUnit.MILLISECONDS);
+                    return future.get(timeoutInMillis, TimeUnit.MILLISECONDS);
                 } catch (InterruptedException e) {
                     throw new RemotingException(e);
                 } catch (ExecutionException e) {
@@ -76,26 +78,23 @@ public class FutureAdapter<V> implements Future<V> {
 
             @Override
             public boolean isDone() {
-                return FutureAdapter.this.isDone();
+                return future.isDone();
             }
         };
     }
 
     void setCallback(ResponseCallback callback) {
-        if (!(future instanceof org.apache.dubbo.rpc.protocol.dubbo.FutureAdapter)) {
-            return;
-        }
-        org.apache.dubbo.rpc.protocol.dubbo.FutureAdapter futureAdapter = (org.apache.dubbo.rpc.protocol.dubbo.FutureAdapter) future;
-        BiConsumer<AppResponse, ? super Throwable> biConsumer = new BiConsumer<AppResponse, Throwable>() {
+        BiConsumer<Object, ? super Throwable> biConsumer = new BiConsumer<Object, Throwable>() {
 
             @Override
-            public void accept(AppResponse appResponse, Throwable t) {
+            public void accept(Object obj, Throwable t) {
                 if (t != null) {
                     if (t instanceof CompletionException) {
                         t = t.getCause();
                     }
                     callback.caught(t);
                 } else {
+                    AppResponse appResponse = (AppResponse)obj;
                     if (appResponse.hasException()) {
                         callback.caught(appResponse.getException());
                     } else {
@@ -104,15 +103,15 @@ public class FutureAdapter<V> implements Future<V> {
                 }
             }
         };
-        futureAdapter.getAppResponseFuture().whenComplete(biConsumer);
+        future.whenComplete(biConsumer);
     }
 
     public boolean cancel(boolean mayInterruptIfRunning) {
-        return future.cancel(mayInterruptIfRunning);
+        return false;
     }
 
     public boolean isCancelled() {
-        return future.isCancelled();
+        return false;
     }
 
     public boolean isDone() {
@@ -121,11 +120,23 @@ public class FutureAdapter<V> implements Future<V> {
 
     @SuppressWarnings("unchecked")
     public V get() throws InterruptedException, ExecutionException {
-        return future.get();
+        try {
+            return (V) (((Result) future.get()).recreate());
+        } catch (InterruptedException | ExecutionException e)  {
+            throw e;
+        } catch (Throwable e) {
+            throw new RpcException(e);
+        }
     }
 
     @SuppressWarnings("unchecked")
     public V get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-        return future.get(timeout, unit);
+        try {
+            return (V) (((Result) future.get(timeout, unit)).recreate());
+        } catch (InterruptedException | ExecutionException | TimeoutException e)  {
+            throw e;
+        } catch (Throwable e) {
+            throw new RpcException(e);
+        }
     }
 }

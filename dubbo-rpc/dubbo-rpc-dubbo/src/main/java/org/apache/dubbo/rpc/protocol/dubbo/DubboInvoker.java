@@ -24,10 +24,10 @@ import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.rpc.AsyncRpcResult;
+import org.apache.dubbo.rpc.FutureContext;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
@@ -91,13 +91,13 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
             if (isOneway) {
                 boolean isSent = getUrl().getMethodParameter(methodName, Constants.SENT_KEY, false);
                 currentClient.send(inv, isSent);
-                RpcContext.getContext().setFuture(null);
                 return AsyncRpcResult.newDefaultAsyncResult(invocation);
             } else {
                 AsyncRpcResult asyncRpcResult = new AsyncRpcResult(inv);
                 CompletableFuture<Object> responseFuture = currentClient.request(inv, timeout);
                 asyncRpcResult.subscribeTo(responseFuture);
-                RpcContext.getContext().setFuture(new FutureAdapter(asyncRpcResult));
+                // save for 2.6.x compatibility, for example, TraceFilter in Zipkin uses com.alibaba.xxx.FutureAdapter
+                FutureContext.getContext().setCompatibleFuture(responseFuture);
                 return asyncRpcResult;
             }
         } catch (TimeoutException e) {
