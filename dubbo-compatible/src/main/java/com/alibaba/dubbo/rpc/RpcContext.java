@@ -17,7 +17,6 @@
 
 package com.alibaba.dubbo.rpc;
 
-import org.apache.dubbo.common.threadlocal.InternalThreadLocal;
 import org.apache.dubbo.rpc.FutureContext;
 
 import com.alibaba.dubbo.rpc.protocol.dubbo.FutureAdapter;
@@ -28,22 +27,17 @@ import java.util.concurrent.Future;
 @Deprecated
 public class RpcContext extends org.apache.dubbo.rpc.RpcContext {
 
-    private static final InternalThreadLocal<RpcContext> LOCAL = new InternalThreadLocal<RpcContext>() {
-        @Override
-        protected RpcContext initialValue() {
-            return new RpcContext();
-        }
-    };
-
     public static RpcContext getContext() {
         return newInstance(org.apache.dubbo.rpc.RpcContext.getContext());
     }
 
     private static RpcContext newInstance(org.apache.dubbo.rpc.RpcContext rpcContext) {
-        RpcContext copy = LOCAL.get();
+        RpcContext copy = new RpcContext();
         copy.getAttachments().putAll(rpcContext.getAttachments());
         copy.get().putAll(rpcContext.get());
-        copy.setFuture(rpcContext.getCompletableFuture() != null ? rpcContext.getCompletableFuture() : FutureContext.getContext().getCompatibleCompletableFuture());
+        if (rpcContext.getCompletableFuture() != null) {
+            copy.setFuture(rpcContext.getCompletableFuture());
+        }
         copy.setUrls(rpcContext.getUrls());
         copy.setUrl(rpcContext.getUrl());
         copy.setMethodName(rpcContext.getMethodName());
