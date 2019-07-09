@@ -1,35 +1,5 @@
 # Release Notes
 
-## 2.6.7
-
-
-### New Features
-
-1. Multicast ipv6 support [#3430](https://github.com/apache/dubbo/pull/3430)
-2. Add Annotation-Driven for `MethodConfig` and `ArgumentConfig` [#2298](https://github.com/apache/dubbo/issues/2298)
-3. `@Method` default value will be set to the field of `MethodConfig` [#3642](https://github.com/apache/dubbo/pull/3642)
-4. ignore unrecognized dubbo versions. [#4486](https://github.com/apache/dubbo/issues/4486)
-
-### Bugfixes
-
-1. `@Reference` field can't refer its' `@Service` Bean in same JVM from v2.6.6 [#3695](https://github.com/apache/dubbo/issues/3695) 
-2.  Nacos Dubbo Registry can't sense the change of service instances [#4348](https://github.com/apache/dubbo/issues/4348)
-3. Dubbo throws IoException with error message while decoding fail [#4396](https://github.com/apache/dubbo/pull/4396)
-
-
-
-### 发布日志
-
-1. [功能] 广播注册中心支持 IP V6 
-2. [功能] 为注解驱动添加 `MethodConfig` 以及 `ArgumentConfig` 支持 [#2298](https://github.com/apache/dubbo/issues/2298)
-3. [功能] 添加 `@Method`  注解属性的默认值 [#3642](https://github.com/apache/dubbo/pull/3642)
-4. [提升] 忽略无法识别的 Dubbo 版本，提升 Dubbo 应用的健壮性 [#4486](https://github.com/apache/dubbo/issues/4486)
-5. [问题修复] `@Reference` 无法引用本地 `@Service` Bean [#3695](https://github.com/apache/dubbo/issues/3695) 
-6. [问题修复] Dubbo Nacos 注册中心无法感知应用实例的变化 [#4348](https://github.com/apache/dubbo/issues/4348)
-7. [问题修复] 当 decoding 错误时，修正 `IOException` 错误信息  [#4396](https://github.com/apache/dubbo/pull/4396)
-
-
-
 ## 2.7.3
 
 ### Change List
