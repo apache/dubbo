@@ -47,6 +47,18 @@ public class MethodUtilsTest {
         Assertions.assertEquals("setValue", setMethod.getName());
     }
 
+    @Test
+    public void testSet2Method(){
+        Method setMethod = null;
+        for (Method method : Method2TestClazz.class.getMethods()) {
+            if (MethodUtils.isSetter2(method)) {
+                setMethod = method;
+            }
+        }
+        Assertions.assertNotNull(setMethod);
+        Assertions.assertEquals("setValue", setMethod.getName());
+    }
+
     public class MethodTestClazz {
         private String value;
 
@@ -55,6 +67,14 @@ public class MethodUtilsTest {
         }
 
         public void setValue(String value) {
+            this.value = value;
+        }
+    }
+
+    public class Method2TestClazz {
+        private MethodTestClazz value;
+
+        public void setValue(MethodTestClazz value) {
             this.value = value;
         }
     }
