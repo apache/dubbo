@@ -41,9 +41,8 @@ public class DubboCpuUsageFactory implements CpuUsageFactory {
         urlBuilder.setProtocol(url.getParameter(PROTOCOL_KEY, DUBBO_PROTOCOL));
         urlBuilder.addParameters(CHECK_KEY, String.valueOf(false), REFERENCE_FILTER_KEY, "");
         urlBuilder.addParameter("addListener.1.callback", true);
-        if (StringUtils.isEmpty(url.getPath())) {
-            urlBuilder.setPath(CpuUsageService.class.getName());
-        }
+        urlBuilder.setPath(CpuUsageService.class.getName());
+
         Invoker<CpuUsageService> cpuUsageInvoker = protocol.refer(CpuUsageService.class, urlBuilder.build());
         return proxyFactory.getProxy(cpuUsageInvoker);
     }
