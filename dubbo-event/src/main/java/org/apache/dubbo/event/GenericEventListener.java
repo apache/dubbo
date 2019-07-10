@@ -44,7 +44,7 @@ import static org.apache.dubbo.common.function.ThrowableFunction.execute;
  *
  * @see Event
  * @see EventListener
- * @since 2.7.3
+ * @since 2.7.4
  */
 public abstract class GenericEventListener implements EventListener<Event> {
 

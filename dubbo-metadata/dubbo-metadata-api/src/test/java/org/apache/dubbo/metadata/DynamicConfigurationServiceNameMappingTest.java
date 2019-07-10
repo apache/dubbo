@@ -43,7 +43,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * {@link DynamicConfigurationServiceNameMapping} Test
  *
- * @since 2.7.3
+ * @since 2.7.4
  */
 public class DynamicConfigurationServiceNameMappingTest {
 

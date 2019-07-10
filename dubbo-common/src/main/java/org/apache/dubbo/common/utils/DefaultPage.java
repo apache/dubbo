@@ -22,7 +22,7 @@ import java.util.List;
 /**
  * The default implementation of {@link Page}
  *
- * @since 2.7.3
+ * @since 2.7.4
  */
 public class DefaultPage<T> implements Page<T>, Serializable {
 

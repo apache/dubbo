@@ -23,7 +23,7 @@ import org.apache.dubbo.config.builders.RegistryBuilder;
 /**
  * Dubbo Provider Bootstrap
  *
- * @since 2.7.3
+ * @since 2.7.4
  */
 public class DubboServiceConsumerBootstrap {
 

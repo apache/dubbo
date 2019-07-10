@@ -34,7 +34,7 @@ import static java.util.ServiceLoader.load;
  * @see EventListener
  * @see ServiceInstancePreRegisteredEvent
  * @see ServiceInstanceCustomizer
- * @since 2.7.3
+ * @since 2.7.4
  */
 public class CustomizableServiceInstanceListener implements EventListener<ServiceInstancePreRegisteredEvent> {
 

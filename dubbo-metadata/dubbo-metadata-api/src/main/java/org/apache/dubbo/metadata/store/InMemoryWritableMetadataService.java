@@ -51,7 +51,7 @@ import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
  *
  * @see MetadataService
  * @see WritableMetadataService
- * @since 2.7.3
+ * @since 2.7.4
  */
 public class InMemoryWritableMetadataService implements WritableMetadataService {
 

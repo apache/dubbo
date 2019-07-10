@@ -25,7 +25,7 @@ import java.lang.reflect.Proxy;
 /**
  * The factory of {@link MetadataService}'s {@link Proxy}
  *
- * @since 2.7.3
+ * @since 2.7.4
  */
 public class DefaultMetadataServiceProxyFactory implements MetadataServiceProxyFactory {
 

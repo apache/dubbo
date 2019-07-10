@@ -24,7 +24,7 @@ import org.apache.dubbo.registry.client.ServiceInstance;
  * An event raised after a {@link ServiceInstance service instance}
  * {@link ServiceDiscovery#register(ServiceInstance) registered}
  *
- * @since 2.7.3
+ * @since 2.7.4
  */
 public class ServiceInstanceRegisteredEvent extends ServiceInstanceEvent {
 

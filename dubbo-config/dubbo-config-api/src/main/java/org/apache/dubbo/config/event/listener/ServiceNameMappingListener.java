@@ -34,7 +34,7 @@ import static org.apache.dubbo.metadata.ServiceNameMapping.getDefaultExtension;
  *
  * @see ServiceNameMapping
  * @see ServiceConfig#getExportedUrls()
- * @since 2.7.3
+ * @since 2.7.4
  */
 public class ServiceNameMappingListener implements EventListener<ServiceConfigExportedEvent> {
 

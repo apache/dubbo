@@ -1133,7 +1133,7 @@ public final class ReflectUtils {
      *
      * @param sourceClass the source {@link Class class}
      * @return non-null read-only {@link Set}
-     * @since 2.7.3
+     * @since 2.7.4
      */
     public static Set<ParameterizedType> findParameterizedTypes(Class<?> sourceClass) {
         // Add Generic Interfaces
@@ -1166,7 +1166,7 @@ public final class ReflectUtils {
      * @param matchType   the type to match
      * @param <T>         the type to match
      * @return non-null read-only {@link Set}
-     * @since 2.7.3
+     * @since 2.7.4
      */
     public static <T> Set<Class<T>> findHierarchicalTypes(Class<?> sourceClass, Class<T> matchType) {
         if (sourceClass == null) {

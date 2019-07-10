@@ -25,7 +25,7 @@ import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoad
  * The Factory interface to create an instance of {@link ServiceDiscovery}
  *
  * @see ServiceDiscovery
- * @since 2.7.3
+ * @since 2.7.4
  */
 @SPI("event-publishing")
 public interface ServiceDiscoveryFactory {

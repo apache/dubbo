@@ -31,7 +31,7 @@ import static java.util.Collections.unmodifiableMap;
 /**
  * The common operations of Service Discovery
  *
- * @since 2.7.3
+ * @since 2.7.4
  */
 public interface ServiceDiscovery {
 

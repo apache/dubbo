@@ -23,7 +23,7 @@ import java.util.Vector;
 /**
  * {@link EchoEvent} {@link EventListener} 2
  *
- * @since 2.7.3
+ * @since 2.7.4
  */
 public class EchoEventListener2 extends Vector<EventListener<Event>> implements Serializable, Comparable<EventListener<Event>>,
         EventListener<Event> {

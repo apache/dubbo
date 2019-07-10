@@ -23,7 +23,7 @@ import java.util.Objects;
 /**
  * The default implementation of {@link ServiceInstance}.
  *
- * @since 2.7.3
+ * @since 2.7.4
  */
 public class DefaultServiceInstance implements ServiceInstance {
 

@@ -33,7 +33,7 @@ import java.util.Map;
 /**
  * The settings of {@link ReferenceConfig}
  *
- * @since 2.7.3
+ * @since 2.7.4
  */
 public class ReferenceSettings<S> extends AbstractSettings {
 

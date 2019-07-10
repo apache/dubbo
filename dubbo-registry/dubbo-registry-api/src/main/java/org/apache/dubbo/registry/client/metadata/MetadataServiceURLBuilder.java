@@ -34,7 +34,7 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
  * The {@link URL} builder for {@link MetadataService}
  *
  * @see MetadataService
- * @since 2.7.3
+ * @since 2.7.4
  */
 class MetadataServiceURLBuilder {
 

@@ -24,7 +24,7 @@ import org.apache.dubbo.registry.client.ServiceDiscoveryFactory;
  * The zookeeper {@link ServiceDiscoveryFactory} implementation
  *
  * @see ServiceDiscoveryFactory
- * @since 2.7.3
+ * @since 2.7.4
  */
 public class ZookeeperServiceDiscoveryFactory implements ServiceDiscoveryFactory {
 

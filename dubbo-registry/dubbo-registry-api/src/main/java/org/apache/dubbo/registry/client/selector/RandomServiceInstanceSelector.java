@@ -27,7 +27,7 @@ import java.util.concurrent.ThreadLocalRandom;
  *
  * @see ThreadLocalRandom
  * @see ServiceInstanceSelector
- * @since 2.7.3
+ * @since 2.7.4
  */
 public class RandomServiceInstanceSelector implements ServiceInstanceSelector {
 

@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * {@link EventDispatcher} Test
  *
  * @see DirectEventDispatcher
- * @since 2.7.3
+ * @since 2.7.4
  */
 public class EventDispatcherTest {
 

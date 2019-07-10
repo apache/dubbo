@@ -23,7 +23,7 @@ import java.io.IOException;
 /**
  * Dubbo Consumer Bootstrap
  *
- * @since 2.7.3
+ * @since 2.7.4
  */
 public class DubboConsumerBootstrap {
 
