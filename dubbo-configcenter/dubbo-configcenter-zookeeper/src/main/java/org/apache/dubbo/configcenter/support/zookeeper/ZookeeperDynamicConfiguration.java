@@ -17,6 +17,7 @@
 package org.apache.dubbo.configcenter.support.zookeeper;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.network.ConnectException;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.configcenter.ConfigurationListener;
@@ -30,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 import static org.apache.dubbo.configcenter.Constants.CONFIG_NAMESPACE_KEY;
@@ -62,7 +64,12 @@ public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
         zkClient.addDataListener(rootPath, cacheListener, executor);
         try {
             // Wait for connection
-            this.initializedLatch.await();
+            boolean w = this.initializedLatch.await(5, TimeUnit.SECONDS);
+            if (!w) {
+                String urlStr = url.toFullString();
+                logger.error("try to connect zookeeper server failed. " + urlStr);
+                throw new ConnectException("try to connect zookeeper server failed. " + urlStr);
+            }
         } catch (InterruptedException e) {
             logger.warn("Failed to build local cache for config center (zookeeper)." + url);
         }
