@@ -31,14 +31,6 @@ public class StatisticsLoadBalance extends AbstractLoadBalance {
 
     private Map<String, Float> cpuUsage = new ConcurrentHashMap<>();
     private CpuUsageFactory cpuUsageFactory;
-    private Map<String, CpuUsageListener> listeners = new ConcurrentHashMap<>();
-
-    /*public StatisticsLoadBalance() {
-        long timeToLive = Long.parseLong(ConfigurationUtils.getProperty("time.to.live"));
-        long collectCpuUsageInMill = Long.parseLong(ConfigurationUtils.getProperty("mill.to.collect.cpu.usage"));
-        CpuUsageService cpuUsageService = new CpuUsageServiceImpl(timeToLive, collectCpuUsageInMill);
-        cpuUsageService.addListener("statisticsloadbalance", (ip, cpu) -> cpuUsage.put(ip, cpu));
-    }*/
 
     @Override
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
@@ -47,7 +39,6 @@ public class StatisticsLoadBalance extends AbstractLoadBalance {
         cpuUsage.computeIfAbsent(invoker.getUrl().getAddress(), value -> {
             CpuUsageService cpuUsageService = cpuUsageFactory.createCpuUsageService(invoker.getUrl());
             CpuUsageListener cpuUsageListener = new CpuUsageListenerImpl();
-            listeners.put(invoker.getUrl().getAddress(), cpuUsageListener);
             cpuUsageService.addListener("statisticsloadbalance", cpuUsageListener);
             return 0.0f;
         });
