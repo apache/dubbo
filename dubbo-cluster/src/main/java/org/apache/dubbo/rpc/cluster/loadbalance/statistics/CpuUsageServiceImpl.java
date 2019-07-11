@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.cluster.loadbalance.statistics;
 
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.rpc.RpcContext;
 
@@ -34,7 +35,10 @@ public class CpuUsageServiceImpl implements CpuUsageService {
     private final Map<String, CpuUsageListener> listeners = new ConcurrentHashMap<>();
     private CpuUsageGaugeSet cpuUsage;
 
-    public CpuUsageServiceImpl(Long dataTimeToLive, Long collectCpuUsageInMill) {
+    public CpuUsageServiceImpl() {
+        long dataTimeToLive = Long.parseLong(ConfigurationUtils.getProperty("time.to.live"));
+        long collectCpuUsageInMill = Long.parseLong(ConfigurationUtils.getProperty("mill.to.collect.cpu.usage"));
+
         cpuUsage = new CpuUsageGaugeSet(dataTimeToLive, TimeUnit.MILLISECONDS);
         ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory(this.getClass().getSimpleName(), true));
         executor.scheduleAtFixedRate(this::collectCpuUsage, collectCpuUsageInMill, collectCpuUsageInMill, TimeUnit.MILLISECONDS);
@@ -52,6 +56,7 @@ public class CpuUsageServiceImpl implements CpuUsageService {
 
     private void collectCpuUsage() {
         Gauge<Float> user = (Gauge) cpuUsage.getMetrics().get(MetricName.build("cpu.user"));
+        System.err.println(user.getValue());
         listeners.forEach((key, value) -> value.cpuChanged(RpcContext.getServerContext().getRemoteAddressString(), user.getValue()));
     }
 }
