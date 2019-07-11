@@ -18,7 +18,7 @@ package org.apache.dubbo.rpc.cluster.loadbalance.statistics;
 
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
-import org.apache.dubbo.rpc.RpcContext;
+import org.apache.dubbo.common.utils.NetUtils;
 
 import com.alibaba.metrics.Gauge;
 import com.alibaba.metrics.MetricName;
@@ -56,7 +56,6 @@ public class CpuUsageServiceImpl implements CpuUsageService {
 
     private void collectCpuUsage() {
         Gauge<Float> user = (Gauge) cpuUsage.getMetrics().get(MetricName.build("cpu.user"));
-        System.err.println(user.getValue());
-        listeners.forEach((key, value) -> value.cpuChanged(RpcContext.getServerContext().getRemoteAddressString(), user.getValue()));
+        listeners.forEach((key, value) -> value.cpuChanged(NetUtils.getLocalHost(), user.getValue()));
     }
 }
