@@ -454,15 +454,15 @@ public class AbstractConfigTest {
     public void testOnlyPrefixedKeyTakeEffect() {
         try {
             OverrideConfig overrideConfig = new OverrideConfig();
-            overrideConfig.setAddress("override://address");
+            overrideConfig.setNotConflictKey("value-from-config");
 
             Map<String, String> external = new HashMap<>();
-            external.put("address", "external://address");
+            external.put("notConflictKey", "value-from-external");
 
             try {
                 Map<String, String> map = new HashMap<>();
-                map.put("address", "env://address");
-                map.put("dubbo.override.protocol", "env");
+                map.put("notConflictKey", "value-from-env");
+                map.put("dubbo.override.notConflictKey2", "value-from-env");
                 setOsEnv(map);
             } catch (Exception e) {
                 // ignore
@@ -473,10 +473,11 @@ public class AbstractConfigTest {
 
             overrideConfig.refresh();
 
-            Assertions.assertEquals("override://address", overrideConfig.getAddress());
-            Assertions.assertEquals("env", overrideConfig.getProtocol());
+            Assertions.assertEquals("value-from-config", overrideConfig.getNotConflictKey());
+            Assertions.assertEquals("value-from-env", overrideConfig.getNotConflictKey2());
         } finally {
             Environment.getInstance().clearExternalConfigs();
+
         }
     }
 
@@ -549,6 +550,8 @@ public class AbstractConfigTest {
         public String key;
         public String useKeyAsProperty;
         public String escape;
+        public String notConflictKey;
+        public String notConflictKey2;
 
         public String getAddress() {
             return address;
@@ -600,6 +603,22 @@ public class AbstractConfigTest {
 
         public void setEscape(String escape) {
             this.escape = escape;
+        }
+
+        public String getNotConflictKey() {
+            return notConflictKey;
+        }
+
+        public void setNotConflictKey(String notConflictKey) {
+            this.notConflictKey = notConflictKey;
+        }
+
+        public String getNotConflictKey2() {
+            return notConflictKey2;
+        }
+
+        public void setNotConflictKey2(String notConflictKey2) {
+            this.notConflictKey2 = notConflictKey2;
         }
     }
 
