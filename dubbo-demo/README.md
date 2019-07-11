@@ -19,11 +19,11 @@ Since the generated artifacts are fat jars backed by spring boot maven plugin, t
 Use '*dubbo-demo/dubbo-demo-api*' as an example, to start the provider '*dubbo-demo-api-provider*', execute the following command:
 
 ```bash
-java -Djava.net.preferIPv4Stack=true dubbo-demo-api-provider-${project.version}.jar
+java -Djava.net.preferIPv4Stack=true -jar dubbo-demo-api-provider-${project.version}.jar
 ```
 
 To run the consumer '*dubbo-demo-api-consumer*', execute the following command:
 
 ```bash
-java -Djava.net.preferIPv4Stack=true dubbo-demo-api-consumer-${project.version}.jar
+java -Djava.net.preferIPv4Stack=true -jar dubbo-demo-api-consumer-${project.version}.jar
 ```
