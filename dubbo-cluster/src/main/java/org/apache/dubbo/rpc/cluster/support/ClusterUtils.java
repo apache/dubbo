@@ -82,35 +82,28 @@ public class ClusterUtils {
         }
 
         if (localMap != null && localMap.size() > 0) {
-            map.putAll(localMap);
-        }
+            Map<String, String> copyOfLocalMap = new HashMap<>(localMap);
+            copyOfLocalMap.remove(GROUP_KEY);
+            copyOfLocalMap.remove(RELEASE_KEY);
+            copyOfLocalMap.remove(DUBBO_VERSION_KEY);
+            copyOfLocalMap.remove(VERSION_KEY);
+            copyOfLocalMap.remove(METHODS_KEY);
+            copyOfLocalMap.remove(TIMESTAMP_KEY);
+            copyOfLocalMap.remove(TAG_KEY);
 
-        // All providers reached here have been filtered by group, which means only those providers that have the exact
-        // same group value with the consumer could reach here. Based on this we don't need to care about the group value here.
-        // But when comes to group merger, there is an exception, the consumer group may use '*' while the provider
-        // group can be empty or any other values.
-        reserveRemoteValue(GROUP_KEY, map, remoteMap);
-        reserveRemoteValue(RELEASE_KEY, map, remoteMap);
-        // Use version passed from provider side
-        reserveRemoteValue(DUBBO_VERSION_KEY, map, remoteMap);
-        reserveRemoteValue(VERSION_KEY, map, remoteMap);
-        reserveRemoteValue(METHODS_KEY, map, remoteMap);
-        reserveRemoteValue(TIMESTAMP_KEY, map, remoteMap);
-        reserveRemoteValue(TAG_KEY, map, remoteMap);
+            map.putAll(copyOfLocalMap);
 
-        if (remoteMap != null && remoteMap.size() > 0) {
-            // Reserve application name from provider.
             map.put(REMOTE_APPLICATION_KEY, remoteMap.get(APPLICATION_KEY));
 
             // Combine filters and listeners on Provider and Consumer
             String remoteFilter = remoteMap.get(REFERENCE_FILTER_KEY);
-            String localFilter = localMap.get(REFERENCE_FILTER_KEY);
+            String localFilter = copyOfLocalMap.get(REFERENCE_FILTER_KEY);
             if (remoteFilter != null && remoteFilter.length() > 0
                     && localFilter != null && localFilter.length() > 0) {
                 map.put(REFERENCE_FILTER_KEY, remoteFilter + "," + localFilter);
             }
             String remoteListener = remoteMap.get(INVOKER_LISTENER_KEY);
-            String localListener = localMap.get(INVOKER_LISTENER_KEY);
+            String localListener = copyOfLocalMap.get(INVOKER_LISTENER_KEY);
             if (remoteListener != null && remoteListener.length() > 0
                     && localListener != null && localListener.length() > 0) {
                 map.put(INVOKER_LISTENER_KEY, remoteListener + "," + localListener);
@@ -118,19 +111,6 @@ public class ClusterUtils {
         }
 
         return remoteUrl.clearParameters().addParameters(map);
-    }
-
-    private static void reserveRemoteValue(String key, Map<String, String> map, Map<String, String> remoteMap) {
-        if (CollectionUtils.isEmptyMap(remoteMap)) {
-            map.remove(key);
-        }
-
-        String remoteValue = remoteMap.get(key);
-        if (StringUtils.isNotEmpty(remoteValue)) {
-            map.put(key, remoteValue);
-        } else {
-            map.remove(key);
-        }
     }
 
 }
