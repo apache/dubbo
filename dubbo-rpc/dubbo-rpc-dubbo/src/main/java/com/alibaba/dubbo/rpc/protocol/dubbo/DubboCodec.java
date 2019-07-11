@@ -22,7 +22,6 @@ import com.alibaba.dubbo.common.io.Bytes;
 import com.alibaba.dubbo.common.io.UnsafeByteArrayInputStream;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
-import com.alibaba.dubbo.common.serialize.ObjectInput;
 import com.alibaba.dubbo.common.serialize.ObjectOutput;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
@@ -73,13 +72,12 @@ public class DubboCodec extends ExchangeCodec implements Codec2 {
             byte status = header[3];
             res.setStatus(status);
             try {
-                ObjectInput in = CodecSupport.deserialize(channel.getUrl(), is, proto);
                 if (status == Response.OK) {
                     Object data;
                     if (res.isHeartbeat()) {
-                        data = decodeHeartbeatData(channel, in);
+                        data = decodeHeartbeatData(channel,  CodecSupport.deserialize(channel.getUrl(), is, proto));
                     } else if (res.isEvent()) {
-                        data = decodeEventData(channel, in);
+                        data = decodeEventData(channel,  CodecSupport.deserialize(channel.getUrl(), is, proto));
                     } else {
                         DecodeableRpcResult result;
                         if (channel.getUrl().getParameter(
@@ -97,7 +95,7 @@ public class DubboCodec extends ExchangeCodec implements Codec2 {
                     }
                     res.setResult(data);
                 } else {
-                    res.setErrorMessage(in.readUTF());
+                    res.setErrorMessage(CodecSupport.deserialize(channel.getUrl(), is, proto).readUTF());
                 }
             } catch (Throwable t) {
                 if (log.isWarnEnabled()) {
@@ -117,11 +115,10 @@ public class DubboCodec extends ExchangeCodec implements Codec2 {
             }
             try {
                 Object data;
-                ObjectInput in = CodecSupport.deserialize(channel.getUrl(), is, proto);
                 if (req.isHeartbeat()) {
-                    data = decodeHeartbeatData(channel, in);
+                    data = decodeHeartbeatData(channel, CodecSupport.deserialize(channel.getUrl(), is, proto));
                 } else if (req.isEvent()) {
-                    data = decodeEventData(channel, in);
+                    data = decodeEventData(channel, CodecSupport.deserialize(channel.getUrl(), is, proto));
                 } else {
                     DecodeableRpcInvocation inv;
                     if (channel.getUrl().getParameter(
