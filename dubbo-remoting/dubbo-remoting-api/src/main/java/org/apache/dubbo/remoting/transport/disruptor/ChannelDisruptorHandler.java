@@ -58,11 +58,11 @@ public class ChannelDisruptorHandler implements ChannelHandlerDelegate {
 //                new BlockingWaitStrategy()
                 new YieldingWaitStrategy()
         );
-//        WorkHandler<ChannelEventRunnable>[] workHandlers = new ChannelEventHandler[16];
-        WorkHandler<ChannelEventRunnable>[] workHandlers = new ChannelEventHandler[1];
-//        for(int i = 0; i < 1 ; i++){
-//            workHandlers[i] = new ChannelEventHandler(handler);
-//        }
+        WorkHandler<ChannelEventRunnable>[] workHandlers = new ChannelEventHandler[4];
+//        WorkHandler<ChannelEventRunnable>[] workHandlers = new ChannelEventHandler[1];
+        for(int i = 0; i < 4 ; i++){
+            workHandlers[i] = new ChannelEventHandler(handler);
+        }
         workHandlers[0] = new ChannelEventHandler(handler);
         this.disruptor.setDefaultExceptionHandler(new ChannelEventExceptionHandler());
         this.disruptor.handleEventsWithWorkerPool(workHandlers);
