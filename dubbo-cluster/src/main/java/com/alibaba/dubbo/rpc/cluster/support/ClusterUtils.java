@@ -91,7 +91,7 @@ public class ClusterUtils {
             }
             String tag = remoteMap.get(Constants.TAG_KEY);
             if (StringUtils.isNotEmpty(tag)) {
-                map.put(Constants.TAG_KEY, methods);
+                map.put(Constants.TAG_KEY, tag);
             } else {
                 map.remove(Constants.TAG_KEY);
             }
