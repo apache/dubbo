@@ -16,10 +16,12 @@
  */
 package org.apache.dubbo.common.config.configcenter;
 
+import java.util.EventListener;
+
 /**
  * Config listener, will get notified when the config it listens on changes.
  */
-public interface ConfigurationListener {
+public interface ConfigurationListener extends EventListener {
 
     /**
      * Listener call back method. Listener gets notified by this method once there's any change happens on the config
