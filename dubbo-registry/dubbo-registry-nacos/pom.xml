@@ -27,10 +27,16 @@
     <artifactId>dubbo-registry-nacos</artifactId>
 
     <properties>
-        <nacos.version>0.6.2</nacos.version>
+        <nacos.version>1.1.1</nacos.version>
     </properties>
 
     <dependencies>
+
+        <dependency>
+            <groupId>com.alibaba.nacos</groupId>
+            <artifactId>nacos-client</artifactId>
+            <version>${nacos.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>com.alibaba</groupId>
@@ -43,13 +49,6 @@
             <groupId>com.alibaba</groupId>
             <artifactId>dubbo-common</artifactId>
             <version>${project.version}</version>
-            <optional>true</optional>
-        </dependency>
-
-        <dependency>
-            <groupId>com.alibaba.nacos</groupId>
-            <artifactId>nacos-client</artifactId>
-            <version>${nacos.version}</version>
             <optional>true</optional>
         </dependency>
 
