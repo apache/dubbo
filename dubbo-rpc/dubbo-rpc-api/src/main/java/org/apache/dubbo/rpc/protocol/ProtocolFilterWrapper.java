@@ -135,6 +135,13 @@ public class ProtocolFilterWrapper implements Protocol {
         protocol.destroy();
     }
 
+    /**
+     * Register callback for each filter may be better, just like {@link java.util.concurrent.CompletionStage}, each callback
+     * registration generates a new CompletionStage whose status is determined by the original CompletionStage.
+     *
+     * If bridging status between filters is proved to not has significant performance drop, consider revert to the following commit:
+     * https://github.com/apache/dubbo/pull/4127
+     */
     static class CallbackRegistrationInvoker<T> implements Invoker<T> {
 
         private final Invoker<T> filterInvoker;
@@ -149,22 +156,24 @@ public class ProtocolFilterWrapper implements Protocol {
         public Result invoke(Invocation invocation) throws RpcException {
             Result asyncResult = filterInvoker.invoke(invocation);
 
-            asyncResult.thenApplyWithContext(r -> {
+            asyncResult = asyncResult.whenCompleteWithContext((r, t) -> {
                 for (int i = filters.size() - 1; i >= 0; i--) {
                     Filter filter = filters.get(i);
                     // onResponse callback
                     if (filter instanceof ListenableFilter) {
                         Filter.Listener listener = ((ListenableFilter) filter).listener();
                         if (listener != null) {
-                            listener.onResponse(r, filterInvoker, invocation);
+                            if (t == null) {
+                                listener.onResponse(r, filterInvoker, invocation);
+                            } else {
+                                listener.onError(t, filterInvoker, invocation);
+                            }
                         }
                     } else {
                         filter.onResponse(r, filterInvoker, invocation);
                     }
                 }
-                return r;
             });
-
             return asyncResult;
         }
 
