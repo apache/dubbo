@@ -16,9 +16,11 @@
  */
 package org.apache.dubbo.bootstrap;
 
+import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.builders.ApplicationBuilder;
 import org.apache.dubbo.config.builders.ReferenceBuilder;
 import org.apache.dubbo.config.builders.RegistryBuilder;
+import org.apache.dubbo.config.utils.ReferenceConfigCache;
 
 /**
  * Dubbo Provider Bootstrap
@@ -38,14 +40,12 @@ public class DubboServiceConsumerBootstrap {
                 .await();
 
         // TODO,
-//        ReferenceConfig<EchoService> referenceConfig = ReferenceConfigCache.getCache().get(EchoService.class.getName(), EchoService.class);
-//
-//        EchoService echoService = referenceConfig.get();
-//
-//        for (int i = 0; i < 500; i++) {
-//            Thread.sleep(2000L);
-//            System.out.println(echoService.echo("Hello,World"));
-//        }
+        EchoService echoService = ReferenceConfigCache.getCache().get(EchoService.class.getName(), EchoService.class);
+
+        for (int i = 0; i < 500; i++) {
+            Thread.sleep(2000L);
+            System.out.println(echoService.echo("Hello,World"));
+        }
 
     }
 }
