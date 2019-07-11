@@ -370,12 +370,7 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
-                <artifactId>dubbo-metadata-report-api</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.dubbo</groupId>
-                <artifactId>dubbo-metadata-definition</artifactId>
+                <artifactId>dubbo-metadata-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
