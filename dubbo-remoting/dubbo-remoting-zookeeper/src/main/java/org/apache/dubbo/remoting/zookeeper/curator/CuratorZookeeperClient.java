@@ -292,8 +292,8 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
         @Override
         public void childEvent(CuratorFramework client, TreeCacheEvent event) throws Exception {
             if (dataListener != null) {
-                if (logger.isInfoEnabled()) {
-                    logger.info("listen the zookeeper changed. The changed data:" + event.getData());
+                if (logger.isDebugEnabled()) {
+                    logger.debug("listen the zookeeper changed. The changed data:" + event.getData());
                 }
                 TreeCacheEvent.Type type = event.getType();
                 EventType eventType = null;

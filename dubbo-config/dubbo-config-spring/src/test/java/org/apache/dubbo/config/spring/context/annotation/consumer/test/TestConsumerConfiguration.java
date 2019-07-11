@@ -20,6 +20,7 @@ import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
@@ -36,6 +37,13 @@ public class TestConsumerConfiguration {
 
     @Reference(version = "2.5.7", url = "dubbo://127.0.0.1:12345", application = "dubbo-demo-application")
     private DemoService demoService;
+
+    @Autowired
+    private DemoService autowiredDemoService;
+
+    public DemoService getAutowiredDemoService() {
+        return autowiredDemoService;
+    }
 
     public DemoService getDemoService() {
         return demoService;
