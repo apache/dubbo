@@ -37,7 +37,7 @@ public class Constants implements CommonConstants,
         org.apache.dubbo.rpc.protocol.dubbo.Constants,
         org.apache.dubbo.common.serialize.Constants,
         org.apache.dubbo.common.config.configcenter.Constants,
-        org.apache.dubbo.metadata.support.Constants,
+        org.apache.dubbo.metadata.report.support.Constants ,
         org.apache.dubbo.rpc.protocol.rest.Constants,
         org.apache.dubbo.registry.Constants {
 }

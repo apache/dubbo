@@ -17,20 +17,23 @@
 package org.apache.dubbo.registry.etcd;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.registry.Registry;
-import org.apache.dubbo.registry.support.AbstractRegistryFactory;
+import org.apache.dubbo.registry.client.ServiceDiscovery;
+import org.apache.dubbo.registry.client.ServiceDiscoveryFactory;
 import org.apache.dubbo.remoting.etcd.EtcdTransporter;
 
-public class EtcdRegistryFactory extends AbstractRegistryFactory {
+/**
+ * @author cvictory ON 2019-07-08
+ */
+public class EtcdServiceDiscoveryFactory implements ServiceDiscoveryFactory {
 
     private EtcdTransporter etcdTransporter;
 
-    @Override
-    protected Registry createRegistry(URL url) {
-        return new EtcdRegistry(url, etcdTransporter);
-    }
-
     public void setEtcdTransporter(EtcdTransporter etcdTransporter) {
         this.etcdTransporter = etcdTransporter;
+    }
+
+    @Override
+    public ServiceDiscovery create(URL connectionURL) {
+        return new EtcdServiceDiscovery(connectionURL, etcdTransporter);
     }
 }

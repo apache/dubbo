@@ -22,15 +22,31 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>dubbo-metadata-report</artifactId>
-    <packaging>pom</packaging>
-    <modules>
-        <module>dubbo-metadata-report-zookeeper</module>
-        <module>dubbo-metadata-report-redis</module>
-        <module>dubbo-metadata-report-consul</module>
-        <module>dubbo-metadata-report-etcd</module>
-        <module>dubbo-metadata-report-nacos</module>
-    </modules>
+    <artifactId>dubbo-metadata-report-redis</artifactId>
+    <properties>
+        <jedis.version>2.9.0</jedis.version>
+    </properties>
 
-
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-metadata-api</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+            <version>${jedis.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.kstyrc</groupId>
+            <artifactId>embedded-redis</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 </project>
