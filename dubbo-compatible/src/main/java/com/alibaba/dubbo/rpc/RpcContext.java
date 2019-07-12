@@ -35,9 +35,7 @@ public class RpcContext extends org.apache.dubbo.rpc.RpcContext {
         RpcContext copy = new RpcContext();
         copy.getAttachments().putAll(rpcContext.getAttachments());
         copy.get().putAll(rpcContext.get());
-        if (rpcContext.getCompletableFuture() != null) {
-            copy.setFuture(rpcContext.getCompletableFuture());
-        }
+
         copy.setUrls(rpcContext.getUrls());
         copy.setUrl(rpcContext.getUrl());
         copy.setMethodName(rpcContext.getMethodName());
