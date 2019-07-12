@@ -5,20 +5,17 @@
 ### Change List
 
 1. Asynchronous support
-
-    - Unified asynchronous and synchronous callback process, exception scenario triggers onError callback, #4401.
-    - Performance degradation caused by CompletableFuture.get() in JDK1.8 environment, #4279.
+    * Unified asynchronous and synchronous callback process, exception scenario triggers onError callback, #4401
+    * Performance degradation caused by CompletableFuture.get() in JDK1.8 environment, #4279
 
 2. Configuration Center
-
-    - ConfigCenter custom namespace does not take effect, #4411.
-    - Unify the models implemented by several configuration centers such as Zookeeper, Nacos, and Etcd. Please refer to the description for possible incompatibility issues, #4388.
-    - Adjust Override Coverage Rule Center Priority: Service Level > Application Level, #4175.
+    * ConfigCenter custom namespace does not take effect, #4411
+    * Unify the models implemented by several configuration centers such as Zookeeper, Nacos, and Etcd. Please refer to the description for possible incompatibility issues, #4388
+    * Adjust Override Coverage Rule Center Priority: Service Level > Application Level, #4175
 
 3. 2.6.x compatibility
-
-    - Support Zipkin tracing feature provided by Zipkin officially, #3728, #4471.
-    - DubboComponentScan supports simultaneous scanning of annotations under the `com.alibaba.*` and `org.apache.*` packages, #4330.
+    * Support Zipkin tracing feature provided by Zipkin officially, #3728, #4471
+    * DubboComponentScan supports simultaneous scanning of annotations under the `com.alibaba.*` and `org.apache.*` packages, #4330
 
 4. The Nacos Registration Center only subscribes to the address list and no longer subscribes to configuration information, #4454.
 
