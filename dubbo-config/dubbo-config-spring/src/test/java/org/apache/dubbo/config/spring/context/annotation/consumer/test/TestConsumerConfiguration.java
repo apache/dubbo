@@ -35,7 +35,9 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableTransactionManagement
 public class TestConsumerConfiguration {
 
-    @Reference(version = "2.5.7", url = "dubbo://127.0.0.1:12345", application = "dubbo-demo-application")
+    private static final String remoteURL = "dubbo://127.0.0.1:12345?version=2.5.7";
+
+    @Reference(version = "2.5.7", url = remoteURL, application = "dubbo-demo-application")
     private DemoService demoService;
 
     @Autowired
@@ -61,7 +63,7 @@ public class TestConsumerConfiguration {
 
     public static abstract class Ancestor {
 
-        @Reference(version = "2.5.7", url = "dubbo://127.0.0.1:12345", application = "dubbo-demo-application")
+        @Reference(version = "2.5.7", url = remoteURL, application = "dubbo-demo-application")
         private DemoService demoServiceFromAncestor;
 
         public DemoService getDemoServiceFromAncestor() {
@@ -81,7 +83,7 @@ public class TestConsumerConfiguration {
             return demoServiceFromParent;
         }
 
-        @Reference(version = "2.5.7", url = "dubbo://127.0.0.1:12345", application = "dubbo-demo-application")
+        @Reference(version = "2.5.7", url = remoteURL, application = "dubbo-demo-application")
         public void setDemoServiceFromParent(DemoService demoServiceFromParent) {
             this.demoServiceFromParent = demoServiceFromParent;
         }
@@ -90,7 +92,7 @@ public class TestConsumerConfiguration {
 
     public static class Child extends TestConsumerConfiguration.Parent {
 
-        @Reference(version = "2.5.7", url = "dubbo://127.0.0.1:12345", application = "dubbo-demo-application")
+        @Reference(version = "2.5.7", url = remoteURL, application = "dubbo-demo-application")
         private DemoService demoServiceFromChild;
 
         public DemoService getDemoServiceFromChild() {
