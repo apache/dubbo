@@ -100,7 +100,7 @@ public final class Version {
         // for previous dubbo version(2.0.10/020010~2.6.2/020602), this version is the jar's version, so they need to
         // be ignore
         int iVersion = getIntVersion(version);
-        if (iVersion >= 2001000 && iVersion <= 2060200) {
+        if (iVersion >= 2001000 && iVersion < 2060300) {
             return false;
         }
 
