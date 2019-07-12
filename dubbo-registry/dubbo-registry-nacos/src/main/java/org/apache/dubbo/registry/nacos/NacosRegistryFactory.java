@@ -24,7 +24,6 @@ import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.NamingService;
-import com.alibaba.nacos.client.naming.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -101,7 +100,7 @@ public class NacosRegistryFactory extends AbstractRegistryFactory {
 
     private void putPropertyIfAbsent(URL url, Properties properties, String propertyName) {
         String propertyValue = url.getParameter(propertyName);
-        if (StringUtils.isNotEmpty(propertyValue)) {
+        if (propertyValue != null && propertyValue.trim().length() != 0) {
             properties.setProperty(propertyName, propertyValue);
         }
     }
