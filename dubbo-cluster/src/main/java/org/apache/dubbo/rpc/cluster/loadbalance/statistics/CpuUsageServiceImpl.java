@@ -17,8 +17,11 @@
 package org.apache.dubbo.rpc.cluster.loadbalance.statistics;
 
 import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.rpc.RpcException;
 
 import com.alibaba.metrics.Gauge;
 import com.alibaba.metrics.MetricName;
@@ -34,6 +37,7 @@ import java.util.concurrent.TimeUnit;
 public class CpuUsageServiceImpl implements CpuUsageService {
     private final Map<String, CpuUsageListener> listeners = new ConcurrentHashMap<>();
     private CpuUsageGaugeSet cpuUsage;
+    private static final Logger logger = LoggerFactory.getLogger(CpuUsageService.class);
 
     public CpuUsageServiceImpl() {
         long dataTimeToLive = Long.parseLong(ConfigurationUtils.getProperty("time.to.live"));
@@ -55,7 +59,11 @@ public class CpuUsageServiceImpl implements CpuUsageService {
     }
 
     private void collectCpuUsage() {
-        Gauge<Float> user = (Gauge) cpuUsage.getMetrics().get(MetricName.build("cpu.user"));
-        listeners.forEach((key, value) -> value.cpuChanged(NetUtils.getLocalHost(), user.getValue()));
+        try {
+            Gauge<Float> user = (Gauge) cpuUsage.getMetrics().get(MetricName.build("cpu.user"));
+            listeners.forEach((key, value) -> value.cpuChanged(NetUtils.getLocalHost(), user.getValue()));
+        } catch(RpcException e) {
+            logger.warn(e.getMessage(), e);
+        }
     }
 }
