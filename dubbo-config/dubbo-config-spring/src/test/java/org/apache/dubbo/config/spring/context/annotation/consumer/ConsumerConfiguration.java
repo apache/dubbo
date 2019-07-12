@@ -34,6 +34,8 @@ import org.springframework.context.annotation.PropertySource;
 @PropertySource("META-INF/default.properties")
 public class ConsumerConfiguration {
 
+    private static final String remoteURL = "dubbo://127.0.0.1:12345?version=2.5.7";
+
     /**
      * Current application configuration, to replace XML config:
      * <prev>
@@ -67,7 +69,7 @@ public class ConsumerConfiguration {
     @Autowired
     private DemoService autowiredDemoService;
 
-    @Reference(version = "2.5.7", url = "dubbo://127.0.0.1:12345")
+    @Reference(version = "2.5.7", url = remoteURL)
     private DemoService demoService;
 
     public DemoService getDemoService() {
@@ -86,7 +88,7 @@ public class ConsumerConfiguration {
 
     public static abstract class Ancestor {
 
-        @Reference(version = "2.5.7", url = "dubbo://127.0.0.1:12345")
+        @Reference(version = "2.5.7", url = remoteURL)
         private DemoService demoServiceFromAncestor;
 
         public DemoService getDemoServiceFromAncestor() {
@@ -106,7 +108,7 @@ public class ConsumerConfiguration {
             return demoServiceFromParent;
         }
 
-        @Reference(version = "2.5.7", url = "dubbo://127.0.0.1:12345")
+        @Reference(version = "2.5.7", url = remoteURL)
         public void setDemoServiceFromParent(DemoService demoServiceFromParent) {
             this.demoServiceFromParent = demoServiceFromParent;
         }
@@ -118,7 +120,7 @@ public class ConsumerConfiguration {
         @Autowired
         private DemoService demoService;
 
-        @Reference(version = "2.5.7", url = "dubbo://127.0.0.1:12345")
+        @Reference(version = "2.5.7", url = remoteURL)
         private DemoService demoServiceFromChild;
 
 
