@@ -18,6 +18,7 @@ package com.alibaba.dubbo.rpc.cluster.support;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.utils.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -88,18 +89,24 @@ public class ClusterUtils {
             if (remoteTimestamp != null && remoteTimestamp.length() > 0) {
                 map.put(Constants.REMOTE_TIMESTAMP_KEY, remoteMap.get(Constants.TIMESTAMP_KEY));
             }
+            String tag = remoteMap.get(Constants.TAG_KEY);
+            if (StringUtils.isNotEmpty(tag)) {
+                map.put(Constants.TAG_KEY, tag);
+            } else {
+                map.remove(Constants.TAG_KEY);
+            }
             // Combine filters and listeners on Provider and Consumer
             String remoteFilter = remoteMap.get(Constants.REFERENCE_FILTER_KEY);
             String localFilter = localMap.get(Constants.REFERENCE_FILTER_KEY);
             if (remoteFilter != null && remoteFilter.length() > 0
                     && localFilter != null && localFilter.length() > 0) {
-                localMap.put(Constants.REFERENCE_FILTER_KEY, remoteFilter + "," + localFilter);
+                map.put(Constants.REFERENCE_FILTER_KEY, remoteFilter + "," + localFilter);
             }
             String remoteListener = remoteMap.get(Constants.INVOKER_LISTENER_KEY);
             String localListener = localMap.get(Constants.INVOKER_LISTENER_KEY);
             if (remoteListener != null && remoteListener.length() > 0
                     && localListener != null && localListener.length() > 0) {
-                localMap.put(Constants.INVOKER_LISTENER_KEY, remoteListener + "," + localListener);
+                map.put(Constants.INVOKER_LISTENER_KEY, remoteListener + "," + localListener);
             }
         }
 
