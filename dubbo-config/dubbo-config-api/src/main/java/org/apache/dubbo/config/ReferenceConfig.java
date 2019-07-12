@@ -321,7 +321,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                         map.put(methodConfig.getName() + ".retries", "0");
                     }
                 }
-                ConsumerMethodModel.AsyncMethodInfo asyncMethodInfo = convertMethodConfig2AyncInfo(methodConfig);
+                ConsumerMethodModel.AsyncMethodInfo asyncMethodInfo = convertMethodConfig2AsyncInfo(methodConfig);
                 if (asyncMethodInfo != null) {
                     consumerModel.getMethodModel(methodConfig.getName()).addAttribute(Constants.ASYNC_KEY, asyncMethodInfo);
                 }
