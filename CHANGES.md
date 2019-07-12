@@ -24,7 +24,9 @@
 
 5. Support to read the environment configuration from the specified location, which can be specified by -D or OS VARIABLE. Please refer to [automatically loading environment variables](http://dubbo.apache.org/en-us/docs/user/configuration/environment-variables.html)
 
-6. Some other bugfixes, #4346 #4338 #4349 #4377
+6. Fix consumer cannot downgrade to providers with no tags when there's no tagged providers can match, #4525
+
+7. Some other bugfixes, #4346 #4338 #4349 #4377
 
 ### Change List
 
@@ -48,7 +50,9 @@
 
 5. 支持从指定位置读取环境配置，可通过-D或OS VARIABLE指定，具体请参见[使用说明](http://dubbo.apache.org/zh-cn/docs/user/configuration/environment-variables.html)
 
-6. 其他一些bugfix，#4346 #4338 #4349 #4377 
+6. 标签路由在消费端使用静态打标方式时，无法实现自动降级以消费无标签提供者 #4525
+
+7. 其他一些bugfix，#4346 #4338 #4349 #4377 
 
 ## 2.7.2
 
