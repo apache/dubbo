@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.rsocket;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -24,8 +25,10 @@ import java.util.Map;
 
 public class MetadataCodec {
 
+    private final static TypeReference<Map<String, Object>> MAP_TYPE = new TypeReference<Map<String, Object>>() {};
+
     public static Map<String, Object> decodeMetadata(byte[] bytes) throws IOException {
-        return JSON.parseObject(new String(bytes, StandardCharsets.UTF_8), Map.class);
+        return JSON.parseObject(new String(bytes, StandardCharsets.UTF_8), MAP_TYPE);
     }
 
     public static byte[] encodeMetadata(Map<String, Object> metadata) throws IOException {
