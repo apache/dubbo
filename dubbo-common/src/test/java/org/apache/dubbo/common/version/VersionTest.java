@@ -60,6 +60,7 @@ public class VersionTest {
         Assertions.assertTrue(Version.isRelease263OrHigher("2.7.0.1"));
         Assertions.assertTrue(Version.isRelease263OrHigher("2.6.4"));
         Assertions.assertFalse(Version.isRelease263OrHigher("2.6.2"));
+        Assertions.assertFalse(Version.isRelease263OrHigher("2.6.2.1"));
         Assertions.assertFalse(Version.isRelease263OrHigher("2.6.1.1"));
         Assertions.assertTrue(Version.isRelease263OrHigher("2.6.3"));
     }
