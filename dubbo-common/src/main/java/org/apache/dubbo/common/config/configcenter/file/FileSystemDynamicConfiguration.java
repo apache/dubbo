@@ -241,7 +241,6 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
                         }
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
                     return;
                 } finally {
                     if (watchKey != null) {
@@ -254,23 +253,22 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
     }
 
     private List<ConfigurationListener> getListeners(Path configFilePath) {
-        return listenersRepository.computeIfAbsent(configFilePath, p -> new LinkedList<>());
+        lock.lock();
+        try {
+            return listenersRepository.computeIfAbsent(configFilePath, p -> new LinkedList<>());
+        } finally {
+            lock.unlock();
+        }
     }
 
     private void fireConfigChangeEvent(Path configFilePath, ConfigChangeType configChangeType) {
         File watchedFile = configFilePath.toFile();
         String key = watchedFile.getName();
         String value = getConfig(watchedFile, -1L);
-        lock.lock();
-        try {
-            // fire ConfigChangeEvent one by one
-            getListeners(configFilePath).forEach(listener -> {
-                listener.process(new ConfigChangeEvent(key, value, configChangeType));
-            });
-        } finally {
-            lock.unlock();
-        }
-
+        // fire ConfigChangeEvent one by one
+        getListeners(configFilePath).forEach(listener -> {
+            listener.process(new ConfigChangeEvent(key, value, configChangeType));
+        });
     }
 
     @Override
