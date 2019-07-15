@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.config.configcenter.file;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.dubbo.common.URL;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -27,6 +28,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.commons.io.FileUtils.deleteQuietly;
 import static org.apache.dubbo.common.URL.valueOf;
+import static org.apache.dubbo.common.config.configcenter.DynamicConfiguration.DEFAULT_GROUP;
 import static org.apache.dubbo.common.config.configcenter.file.FileSystemDynamicConfiguration.CONFIG_CENTER_DIR_PARAM_NAME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -56,7 +58,7 @@ public class FileSystemDynamicConfigurationTest {
 
     @Test
     public void testInit() {
-        assertEquals(new File(getClassPath(),"config-center"), configuration.getDirectory());
+        assertEquals(new File(getClassPath(), "config-center"), configuration.getDirectory());
         assertEquals("UTF-8", configuration.getEncoding());
         assertEquals(ThreadPoolExecutor.class, configuration.getExecutorService().getClass());
         assertEquals(2, ((ThreadPoolExecutor) configuration.getExecutorService()).getMaximumPoolSize());
@@ -80,16 +82,44 @@ public class FileSystemDynamicConfigurationTest {
         configuration.addListener(KEY, event -> {
 
             processedEvent.set(true);
-
-//            assertEquals(KEY, event.getKey());
-//            assertEquals("B", event.getValue());
+            assertEquals(KEY, event.getKey());
+            System.out.printf("[%s] " + event + "\n", Thread.currentThread().getName());
         });
 
-        configuration.publishConfig(KEY, "B");
 
+        configuration.publishConfig(KEY, "B");
         while (!processedEvent.get()) {
             Thread.sleep(1 * 1000L);
         }
 
+        processedEvent.set(false);
+        configuration.publishConfig(KEY, "C");
+        while (!processedEvent.get()) {
+            Thread.sleep(1 * 1000L);
+        }
+
+        processedEvent.set(false);
+        configuration.publishConfig(KEY, "D");
+        while (!processedEvent.get()) {
+            Thread.sleep(1 * 1000L);
+        }
+
+        configuration.addListener("test", "test", event -> {
+            processedEvent.set(true);
+            assertEquals("test", event.getKey());
+            System.out.printf("[%s] " + event + "\n", Thread.currentThread().getName());
+        });
+        processedEvent.set(false);
+        configuration.publishConfig("test", "test", "TEST");
+        while (!processedEvent.get()) {
+            Thread.sleep(1 * 1000L);
+        }
+
+        processedEvent.set(false);
+        File keyFile = configuration.configFile(KEY, DEFAULT_GROUP);
+        FileUtils.deleteQuietly(keyFile);
+        while (!processedEvent.get()) {
+            Thread.sleep(1 * 1000L);
+        }
     }
 }

@@ -47,14 +47,14 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 import static java.lang.Integer.max;
 import static java.lang.String.format;
-import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
-import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
-import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
+import static java.nio.file.StandardWatchEventKinds.*;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.concurrent.Executors.newFixedThreadPool;
 import static java.util.stream.Stream.of;
@@ -123,6 +123,8 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
 
     private final Map<Path, List<ConfigurationListener>> listenersRepository;
 
+    private final Lock lock = new ReentrantLock();
+
     public FileSystemDynamicConfiguration(URL url) {
         this.directory = initDirectory(url);
         this.executorService = initExecutorService(url);
@@ -162,24 +164,25 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
         return newFixedThreadPool(threadPoolSize, new NamedThreadFactory(threadPoolName));
     }
 
-    private File groupDirectory(String group) {
+    protected File groupDirectory(String group) {
         String actualGroup = isBlank(group) ? DEFAULT_GROUP : group;
         return new File(directory, actualGroup);
     }
 
-    private File keyFile(String key, String group) {
+    protected File configFile(String key, String group) {
         return new File(groupDirectory(group), key);
     }
 
     @Override
     public void addListener(String key, String group, ConfigurationListener listener) {
-        doInListener(key, group, (watchedFilePath, listeners) -> {
+        doInListener(key, group, (configFilePath, listeners) -> {
 
-            if (listeners.isEmpty()) { // If no element, register watchService
-                ThrowableConsumer.execute(watchedFilePath, path -> {
-                    File file = path.toFile();
+            if (listeners.isEmpty()) { // If no element, it indicates watchService was registered before
+                ThrowableConsumer.execute(configFilePath, path -> {
+                    File configFile = path.toFile();
+                    FileUtils.forceMkdirParent(configFile);
                     // A directory to be watched
-                    File watchedDirectory = file.isFile() ? file.getParentFile() : file.isDirectory() ? file : null;
+                    File watchedDirectory = configFile.getParentFile();
                     if (watchedDirectory != null) {
                         watchedDirectory.toPath().register(watchService.get(), INTEREST_PATH_KINDS);
                     }
@@ -201,16 +204,19 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
 
     private void doInListener(String key, String group, BiConsumer<Path, List<ConfigurationListener>> consumer) {
         watchService.ifPresent(watchService -> {
-            // Initializes watchService if there is not any listener
-            if (listenersRepository.isEmpty()) {
-                initWatchService(watchService);
-            }
+            lock.lock();
+            try {
+                // Initializes watchService if there is not any listener
+                if (listenersRepository.isEmpty()) {
+                    initWatchService(watchService);
+                }
 
-            File keyFile = keyFile(key, group);
-            if (keyFile.exists()) { // keyFile must exist
-                Path watchedFilePath = keyFile.toPath();
-                List<ConfigurationListener> listeners = getListeners(watchedFilePath);
-                consumer.accept(watchedFilePath, listeners);
+                File configFile = configFile(key, group);
+                Path configFilePath = configFile.toPath();
+                List<ConfigurationListener> listeners = getListeners(configFilePath);
+                consumer.accept(configFilePath, listeners);
+            } finally {
+                lock.unlock();
             }
         });
     }
@@ -218,43 +224,67 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
     private void initWatchService(WatchService watchService) {
         executorService.submit(() -> { // Async execution
             while (true) {
-                WatchKey watchKey = watchService.poll();
-                if (watchKey != null && watchKey.isValid()) {
-                    List<WatchEvent<?>> events = watchKey.pollEvents();
-                    for (WatchEvent event : events) {
-                        WatchEvent.Kind kind = event.kind();
-                        // configChangeType's key to match WatchEvent's Kind
-                        ConfigChangeType configChangeType = CONFIG_CHANGE_TYPES_MAP.get(kind.name());
-                        if (configChangeType != null) {
-                            Path parentPath = (Path) watchKey.watchable();
-                            Path currentPath = (Path) event.context();
-                            fireConfigChangeEvent(parentPath.resolve(currentPath), configChangeType);
+                WatchKey watchKey = null;
+                try {
+                    watchKey = watchService.take();
+                    if (watchKey.isValid()) {
+                        for (WatchEvent event : watchKey.pollEvents()) {
+                            WatchEvent.Kind kind = event.kind();
+                            // configChangeType's key to match WatchEvent's Kind
+                            ConfigChangeType configChangeType = CONFIG_CHANGE_TYPES_MAP.get(kind.name());
+                            if (configChangeType != null) {
+                                Path parentPath = (Path) watchKey.watchable();
+                                Path currentPath = (Path) event.context();
+                                Path actualPath = parentPath.resolve(currentPath);
+                                fireConfigChangeEvent(actualPath, configChangeType);
+                            }
                         }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return;
+                } finally {
+                    if (watchKey != null) {
+                        // reset
+                        watchKey.reset();
                     }
                 }
             }
         });
     }
 
-    private List<ConfigurationListener> getListeners(Path watchedFilePath) {
-        return listenersRepository.computeIfAbsent(watchedFilePath, p -> new LinkedList<>());
+    private List<ConfigurationListener> getListeners(Path configFilePath) {
+        return listenersRepository.computeIfAbsent(configFilePath, p -> new LinkedList<>());
     }
 
-    private void fireConfigChangeEvent(Path watchedFilePath, ConfigChangeType configChangeType) {
-        File watchedFile = watchedFilePath.toFile();
+    private void fireConfigChangeEvent(Path configFilePath, ConfigChangeType configChangeType) {
+        File watchedFile = configFilePath.toFile();
         String key = watchedFile.getName();
-        String group = watchedFile.getParentFile().getName();
-        String value = getConfig(key, group);
-        // fire ConfigChangeEvent one by one
-        getListeners(watchedFilePath).forEach(listener -> {
-            listener.process(new ConfigChangeEvent(key, value, configChangeType));
-        });
+        String value = getConfig(watchedFile, -1L);
+        lock.lock();
+        try {
+            // fire ConfigChangeEvent one by one
+            getListeners(configFilePath).forEach(listener -> {
+                listener.process(new ConfigChangeEvent(key, value, configChangeType));
+            });
+        } finally {
+            lock.unlock();
+        }
+
     }
 
     @Override
     public String getConfig(String key, String group, long timeout) throws IllegalStateException {
-        File keyFile = keyFile(key, group);
-        return keyFile.exists() ? execute(() -> readFileToString(keyFile, encoding), timeout) : null;
+        File configFile = configFile(key, group);
+        return getConfig(configFile, timeout);
+    }
+
+    protected String getConfig(File configFile, long timeout) {
+        return canRead(configFile) ? execute(() -> readFileToString(configFile, encoding), timeout) : null;
+    }
+
+    private boolean canRead(File file) {
+        return file.exists() && file.canRead();
     }
 
     @Override
@@ -269,10 +299,10 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
 
     @Override
     public boolean publishConfig(String key, String group, String content) {
-        File keyFile = keyFile(key, group);
+        File configFile = configFile(key, group);
         boolean published = false;
         try {
-            FileUtils.write(keyFile, content, encoding);
+            FileUtils.write(configFile, content, encoding);
             published = true;
         } catch (IOException e) {
             if (logger.isErrorEnabled()) {
@@ -305,7 +335,9 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
                 value = future.get(timeout, TimeUnit.MILLISECONDS);
             }
         } catch (Exception e) {
-            throw new IllegalStateException(e);
+            if (logger.isErrorEnabled()) {
+                logger.error(e.getMessage(), e);
+            }
         }
         return value;
     }
