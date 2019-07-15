@@ -36,6 +36,7 @@ import java.util.concurrent.TimeUnit;
 
 public class CpuUsageServiceImpl implements CpuUsageService {
     private final Map<String, CpuUsageListener> listeners = new ConcurrentHashMap<>();
+    private final Map<String, Integer> errors = new ConcurrentHashMap<>();
     private CpuUsageGaugeSet cpuUsage;
     private static final Logger logger = LoggerFactory.getLogger(CpuUsageService.class);
 
@@ -59,11 +60,21 @@ public class CpuUsageServiceImpl implements CpuUsageService {
     }
 
     private void collectCpuUsage() {
-        try {
-            Gauge<Float> user = (Gauge) cpuUsage.getMetrics().get(MetricName.build("cpu.user"));
-            listeners.forEach((key, value) -> value.cpuChanged(NetUtils.getLocalHost(), user.getValue()));
-        } catch(RpcException e) {
-            logger.warn(e.getMessage(), e);
-        }
+        Gauge<Float> user = (Gauge) cpuUsage.getMetrics().get(MetricName.build("cpu.user"));
+        System.err.println(user.getValue());
+        listeners.forEach((key, value) -> {
+            try {
+                value.cpuChanged(NetUtils.getLocalHost(), user.getValue());
+            } catch (RpcException e) {
+                logger.warn(e.getMessage(), e);
+                if(!errors.containsKey(key)) {
+                    errors.put(key, 1);
+                } else {
+                    Integer error = errors.get(key);
+                    errors.put(key, error + 1);
+                }
+            }
+        });
+
     }
 }
