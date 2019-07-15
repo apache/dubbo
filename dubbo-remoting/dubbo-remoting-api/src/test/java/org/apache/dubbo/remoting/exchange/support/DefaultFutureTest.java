@@ -23,6 +23,7 @@ import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.handler.MockedChannel;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
@@ -59,6 +60,7 @@ public class DefaultFutureTest {
      * start time: 2018-06-21 15:13:02.215, end time: 2018-06-21 15:13:07.231...
      */
     @Test
+    @Disabled
     public void timeoutNotSend() throws Exception {
         final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         System.out.println("before a future is create , time is : " + LocalDateTime.now().format(formatter));
@@ -89,6 +91,7 @@ public class DefaultFutureTest {
      * start time: 2018-06-21 15:12:38.337, end time: 2018-06-21 15:12:43.354...
      */
     @Test
+    @Disabled
     public void timeoutSend() throws Exception {
         final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         System.out.println("before a future is create , time is : " + LocalDateTime.now().format(formatter));

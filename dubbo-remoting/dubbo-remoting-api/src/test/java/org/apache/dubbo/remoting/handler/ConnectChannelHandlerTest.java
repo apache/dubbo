@@ -51,7 +51,7 @@ public class ConnectChannelHandlerTest extends WrappedChannelHandlerTest {
             handler.disconnected(new MockedChannel());
             Assertions.assertTrue(executor.getActiveCount() <= 1, executor.getActiveCount() + " must <=1");
         }
-        //queue.size 
+        //queue.size
         Assertions.assertEquals(taskCount - 1, executor.getQueue().size());
 
         for (int i = 0; i < taskCount; i++) {
@@ -107,6 +107,7 @@ public class ConnectChannelHandlerTest extends WrappedChannelHandlerTest {
     }
 
     @Test
+    @Disabled("FIXME")
     public void test_Received_InvokeInExecuter() throws RemotingException {
         Assertions.assertThrows(ExecutionException.class, () -> {
             handler = new ConnectionOrderedChannelHandler(new BizChannelHander(false), url);
