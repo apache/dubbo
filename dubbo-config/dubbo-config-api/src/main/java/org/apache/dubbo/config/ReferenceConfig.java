@@ -76,7 +76,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
      *
      * <li>when the url is dubbo://224.5.6.7:1234/org.apache.dubbo.config.api.DemoService?application=dubbo-sample, then
      * the protocol is <b>DubboProtocol</b></li>
-     *
+     * <p>
      * Actually，when the {@link ExtensionLoader} init the {@link Protocol} instants,it will automatically wraps two
      * layers, and eventually will get a <b>ProtocolFilterWrapper</b> or <b>ProtocolListenerWrapper</b>
      */
@@ -277,12 +277,11 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         serviceMetadata.setVersion(version);
         serviceMetadata.setGroup(group);
         serviceMetadata.setDefaultGroup(group);
-        serviceMetadata.setServiceType(interfaceClass);
+        serviceMetadata.setServiceType(getActualInterface());
         serviceMetadata.setServiceInterfaceName(interfaceName);
 
 
-
-        ConsumerModel consumerModel = new ConsumerModel(interfaceName, group, version, getActualInterface());
+        ConsumerModel consumerModel = new ConsumerModel(serviceMetadata);
 
         ApplicationModel.initConsumerModel(URL.buildKey(interfaceName, group, version), consumerModel);
 
@@ -353,6 +352,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         }
         return actualInterface;
     }
+
     @SuppressWarnings({"unchecked", "rawtypes", "deprecation"})
     private T createProxy(Map<String, String> map) {
         if (shouldJvmRefer(map)) {
@@ -464,7 +464,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
     protected boolean shouldCheck() {
         Boolean shouldCheck = isCheck();
-        if (shouldCheck == null && getConsumer()!= null) {
+        if (shouldCheck == null && getConsumer() != null) {
             shouldCheck = getConsumer().isCheck();
         }
         if (shouldCheck == null) {
@@ -632,6 +632,10 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     // just for test
     Invoker<?> getInvoker() {
         return invoker;
+    }
+
+    public ServiceMetadata getServiceMetadata() {
+        return serviceMetadata;
     }
 
     @Override
