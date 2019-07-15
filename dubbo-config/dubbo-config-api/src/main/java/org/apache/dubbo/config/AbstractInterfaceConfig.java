@@ -308,10 +308,10 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     private DynamicConfiguration getDynamicConfiguration(URL url) {
-        DynamicConfigurationFactory factories = ExtensionLoader
+        DynamicConfigurationFactory factory = ExtensionLoader
                 .getExtensionLoader(DynamicConfigurationFactory.class)
                 .getExtension(url.getProtocol());
-        DynamicConfiguration configuration = factories.getDynamicConfiguration(url);
+        DynamicConfiguration configuration = factory.getDynamicConfiguration(url);
         Environment.getInstance().setDynamicConfiguration(configuration);
         return configuration;
     }
