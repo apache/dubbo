@@ -20,11 +20,10 @@ import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.Environment;
 
 import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.SortedSet;
-import java.util.TreeMap;
 
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 
@@ -133,6 +132,20 @@ public interface DynamicConfiguration extends Configuration {
      */
     String getConfigs(String key, String group, long timeout) throws IllegalStateException;
 
+
+    /**
+     * Publish Config mapped to the given key and the given group.
+     *
+     * @param key     the key to represent a configuration
+     * @param content the content of configuration
+     * @return <code>true</code> if success, or <code>false</code>
+     * @throws UnsupportedOperationException If the under layer does not support
+     * @since 2.7.4
+     */
+    default boolean publishConfig(String key, String content) throws UnsupportedOperationException {
+        return publishConfig(key, DEFAULT_GROUP, content);
+    }
+
     /**
      * Publish Config mapped to the given key and the given group.
      *
@@ -155,38 +168,38 @@ public interface DynamicConfiguration extends Configuration {
      * @throws UnsupportedOperationException If the under layer does not support
      * @since 2.7.4
      */
-    default SortedSet<String> getConfigKeys(String group) throws UnsupportedOperationException {
+    default Set<String> getConfigKeys(String group) throws UnsupportedOperationException {
         throw new UnsupportedOperationException("No support");
     }
 
     /**
-     * Get the {@link SortedMap} with with config keys and contents value by the specified group
+     * Get the {@link Map} with with config keys and contents value by the specified group
      *
      * @param group the specified group
-     * @return the read-only non-null sorted {@link SortedMap map}
+     * @return the read-only non-null sorted {@link Map map}
      * @throws UnsupportedOperationException If the under layer does not support
      * @since 2.7.4
      */
-    default SortedMap<String, String> getConfigs(String group) throws UnsupportedOperationException {
+    default Map<String, String> getConfigs(String group) throws UnsupportedOperationException {
         return getConfigs(group, -1);
     }
 
     /**
-     * Get the {@link SortedMap} with with config keys and content value by the specified group
+     * Get the {@link Map} with with config keys and content value by the specified group
      *
      * @param group   the specified group
      * @param timeout the millisecond for timeout
-     * @return the read-only non-null sorted {@link SortedMap map}
+     * @return the read-only non-null sorted {@link Map map}
      * @throws UnsupportedOperationException If the under layer does not support
      * @throws IllegalStateException         If timeout exceeds
      * @since 2.7.4
      */
-    default SortedMap<String, String> getConfigs(String group, long timeout) throws UnsupportedOperationException,
+    default Map<String, String> getConfigs(String group, long timeout) throws UnsupportedOperationException,
             IllegalStateException {
-        SortedMap<String, String> configs = new TreeMap<>();
-        SortedSet<String> configKeys = getConfigKeys(group);
+        Map<String, String> configs = new LinkedHashMap<>();
+        Set<String> configKeys = getConfigKeys(group);
         configKeys.forEach(key -> configs.put(key, getConfig(key, group, timeout)));
-        return Collections.unmodifiableSortedMap(configs);
+        return Collections.unmodifiableMap(configs);
     }
 
     /**

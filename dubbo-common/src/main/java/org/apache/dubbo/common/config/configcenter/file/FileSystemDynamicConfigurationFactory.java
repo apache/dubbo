@@ -14,17 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.config.configcenter;
+package org.apache.dubbo.common.config.configcenter.file;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.common.config.configcenter.AbstractDynamicConfigurationFactory;
+import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
+import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
 
 /**
- * The factory interface to create the instance of {@link DynamicConfiguration}
+ * File-System based {@link DynamicConfigurationFactory} implementation
+ *
+ * @since 2.7.4
  */
-@SPI("filesystem") // 2.7.4 change the
-public interface DynamicConfigurationFactory {
+public class FileSystemDynamicConfigurationFactory extends AbstractDynamicConfigurationFactory {
 
-    DynamicConfiguration getDynamicConfiguration(URL url);
-
+    @Override
+    protected DynamicConfiguration createDynamicConfiguration(URL url) {
+        return null;
+    }
 }
