@@ -63,8 +63,8 @@ public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
         try {
             // Wait for connection
             long timeout = url.getParameter("init.timeout", 5000);
-            boolean isTimeout = this.initializedLatch.await(timeout, TimeUnit.MILLISECONDS);
-            if (isTimeout) {
+            boolean isCountDown = this.initializedLatch.await(timeout, TimeUnit.MILLISECONDS);
+            if (!isCountDown) {
                 throw new IllegalStateException("Failed to receive INITIALIZED event from zookeeper, pls. check if url "
                         + url + " is correct");
             }
