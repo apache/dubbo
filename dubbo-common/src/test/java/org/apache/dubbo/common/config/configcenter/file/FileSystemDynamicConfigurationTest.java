@@ -16,13 +16,14 @@
  */
 package org.apache.dubbo.common.config.configcenter.file;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.dubbo.common.URL;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -60,9 +61,9 @@ public class FileSystemDynamicConfigurationTest {
     public void testInit() {
         assertEquals(new File(getClassPath(), "config-center"), configuration.getDirectory());
         assertEquals("UTF-8", configuration.getEncoding());
-        assertEquals(ThreadPoolExecutor.class, configuration.getExecutorService().getClass());
-        assertEquals(2, ((ThreadPoolExecutor) configuration.getExecutorService()).getMaximumPoolSize());
-        assertEquals(2, ((ThreadPoolExecutor) configuration.getExecutorService()).getCorePoolSize());
+        assertEquals(ScheduledThreadPoolExecutor.class, configuration.getWorkersThreadPool().getClass());
+        assertEquals(1, ((ThreadPoolExecutor) configuration.getWorkersThreadPool()).getMaximumPoolSize());
+        assertEquals(1, ((ThreadPoolExecutor) configuration.getWorkersThreadPool()).getCorePoolSize());
     }
 
     @Test
