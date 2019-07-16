@@ -37,7 +37,7 @@ import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoad
  * <li>3. addListener/removeListener, add or remove listeners for governance rules or config items that need to watch.</li>
  * </ul>
  */
-public interface DynamicConfiguration extends Configuration {
+public interface DynamicConfiguration extends Configuration, AutoCloseable {
 
     String DEFAULT_GROUP = "dubbo";
 
@@ -200,6 +200,17 @@ public interface DynamicConfiguration extends Configuration {
         Set<String> configKeys = getConfigKeys(group);
         configKeys.forEach(key -> configs.put(key, getConfig(key, group, timeout)));
         return Collections.unmodifiableMap(configs);
+    }
+
+    /**
+     * Close the configuration
+     *
+     * @throws Exception
+     * @since 2.7.4
+     */
+    @Override
+    default void close() throws Exception {
+        throw new UnsupportedOperationException();
     }
 
     /**

@@ -23,15 +23,17 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static java.util.Collections.singleton;
 import static org.apache.commons.io.FileUtils.deleteQuietly;
 import static org.apache.dubbo.common.URL.valueOf;
 import static org.apache.dubbo.common.config.configcenter.DynamicConfiguration.DEFAULT_GROUP;
 import static org.apache.dubbo.common.config.configcenter.file.FileSystemDynamicConfiguration.CONFIG_CENTER_DIR_PARAM_NAME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -59,18 +61,38 @@ public class FileSystemDynamicConfigurationTest {
 
     @Test
     public void testInit() {
+
         assertEquals(new File(getClassPath(), "config-center"), configuration.getDirectory());
         assertEquals("UTF-8", configuration.getEncoding());
-        assertEquals(ScheduledThreadPoolExecutor.class, configuration.getWorkersThreadPool().getClass());
-        assertEquals(1, ((ThreadPoolExecutor) configuration.getWorkersThreadPool()).getMaximumPoolSize());
-        assertEquals(1, ((ThreadPoolExecutor) configuration.getWorkersThreadPool()).getCorePoolSize());
+        assertEquals(ThreadPoolExecutor.class, configuration.getWorkersThreadPool().getClass());
+        assertEquals(1, (configuration.getWorkersThreadPool()).getCorePoolSize());
+        assertEquals(1, (configuration.getWorkersThreadPool()).getMaximumPoolSize());
+        assertNotNull(configuration.getWatchEventsLoopThreadPool());
+        assertEquals(1, (configuration.getWatchEventsLoopThreadPool()).getCorePoolSize());
+        assertEquals(1, (configuration.getWatchEventsLoopThreadPool()).getMaximumPoolSize());
+
+        if (configuration.isBasedPoolingWatchService()) {
+            assertEquals(2, configuration.getDelayToPublish());
+        } else {
+            assertNull(configuration.getDelayToPublish());
+        }
     }
 
     @Test
     public void testPublishAndGetConfig() {
         assertTrue(configuration.publishConfig(KEY, CONTENT));
+        assertTrue(configuration.publishConfig(KEY, CONTENT));
+        assertTrue(configuration.publishConfig(KEY, CONTENT));
         assertEquals(CONTENT, configuration.getConfig(KEY));
         assertTrue(configuration.getConfigs(null).size() > 0);
+    }
+
+    @Test
+    public void testGetConfigs() {
+        assertTrue(configuration.publishConfig(KEY, CONTENT));
+
+        assertEquals(singleton(KEY), configuration.getConfigKeys(DEFAULT_GROUP));
+
     }
 
     @Test
@@ -115,6 +137,11 @@ public class FileSystemDynamicConfigurationTest {
         while (!processedEvent.get()) {
             Thread.sleep(1 * 1000L);
         }
+
+        configuration.publishConfig("test", "test", "TEST");
+        configuration.publishConfig("test", "test", "TEST");
+        configuration.publishConfig("test", "test", "TEST");
+
 
         processedEvent.set(false);
         File keyFile = configuration.configFile(KEY, DEFAULT_GROUP);

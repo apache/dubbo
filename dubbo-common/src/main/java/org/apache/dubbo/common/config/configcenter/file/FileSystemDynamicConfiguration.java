@@ -37,21 +37,23 @@ import java.nio.file.Path;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -60,8 +62,10 @@ import static java.lang.String.format;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
+import static java.util.Collections.emptySet;
 import static java.util.Collections.unmodifiableMap;
-import static java.util.concurrent.Executors.newSingleThreadExecutor;
+import static java.util.concurrent.Executors.newFixedThreadPool;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.commons.io.FileUtils.readFileToString;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
@@ -73,17 +77,22 @@ import static org.apache.dubbo.common.utils.StringUtils.isBlank;
  */
 public class FileSystemDynamicConfiguration implements DynamicConfiguration {
 
-    public static final String CONFIG_CENTER_DIR_PARAM_NAME = "dubbo.config-center.dir";
+    public static final String PARAM_NAME_PREFIX = "dubbo.config-center.";
 
-    public static final String CONFIG_CENTER_THREAD_POOL_NAME_PARAM_NAME = "dubbo.config-center.thread-pool.name";
+    public static final String CONFIG_CENTER_DIR_PARAM_NAME = PARAM_NAME_PREFIX + "dir";
 
-    public static final String CONFIG_CENTER_ENCODING_PARAM_NAME = "dubbo.config-center.encoding";
+    public static final String THREAD_POOL_PREFIX_PARAM_NAME = PARAM_NAME_PREFIX + "thread-pool.prefix";
+
+    public static final String THREAD_POOL_SIZE_PARAM_NAME = PARAM_NAME_PREFIX + "thread-pool.size";
+
+    public static final String CONFIG_CENTER_ENCODING_PARAM_NAME = PARAM_NAME_PREFIX + "encoding";
 
     public static final String DEFAULT_CONFIG_CENTER_DIR_PATH = System.getProperty("user.home") + File.separator
             + ".dubbo" + File.separator + "config-center";
 
-    public static final String DEFAULT_CONFIG_CENTER_THREAD_POOL_NAME = "dubbo-config-center-workers";
+    public static final String DEFAULT_THREAD_POOL_PREFIX = PARAM_NAME_PREFIX + "workers";
 
+    public static final int DEFAULT_THREAD_POOL_SIZE = 1;
 
     public static final String DEFAULT_CONFIG_CENTER_ENCODING = "UTF-8";
 
@@ -94,7 +103,7 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
      */
     private static final String POLLING_WATCH_SERVICE_CLASS_NAME = "sun.nio.fs.PollingWatchService";
 
-    private static final int WORKERS_THREAD_POOL_SIZE = 1;
+    private static final int THREAD_POOL_SIZE = 1;
 
     /**
      * Logger
@@ -115,59 +124,81 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
                 }
             });
 
+    private static final Optional<WatchService> watchService;
+
+    /**
+     * Is Pooling Based Watch Service
+     *
+     * @see #detectPoolingBasedWatchService(Optional)
+     */
+    private static final boolean basedPoolingWatchService;
+
+    private static final WatchEvent.Modifier[] modifiers;
+
+    /**
+     * the delay to {@link #publishConfig(String, String, String) publishConfig} in seconds.
+     * If null, execute indirectly
+     */
+    private static final Integer delayToPublish;
+
+    /**
+     * The thread pool for {@link WatchEvent WatchEvents} loop
+     * It's optional if there is not any {@link ConfigurationListener} registration
+     *
+     * @see ThreadPoolExecutor
+     */
+    private static final ThreadPoolExecutor watchEventsLoopThreadPool;
+
+    // static initialization
+    static {
+        watchService = newWatchService();
+        basedPoolingWatchService = detectPoolingBasedWatchService(watchService);
+        modifiers = initWatchEventModifiers();
+        delayToPublish = initDelayToPublish(modifiers);
+        watchEventsLoopThreadPool = newWatchEventsLoopThreadPool();
+    }
 
     /**
      * The Root Directory for config center
      */
     private final File directory;
 
-    /**
-     * The thread pool for config's tasks
-     *
-     * @see ScheduledThreadPoolExecutor
-     */
-    private final ScheduledThreadPoolExecutor workersThreadPool;
-
-    /**
-     * The thread pool for {@link WatchEvent WatchEvents} loop
-     * It's optional if there is not any {@link ConfigurationListener} registration
-     *
-     * @see ExecutorService
-     */
-    private ExecutorService watchEventsLoopThreadPool;
+    private final String threadPoolPrefixName;
 
     private final String encoding;
 
-    private final Optional<WatchService> watchService;
-
-    private final Map<Path, List<ConfigurationListener>> listenersRepository;
-
-    private final Lock lock = new ReentrantLock();
+    /**
+     * The thread pool for workers who executes the tasks
+     */
+    private final ThreadPoolExecutor workersThreadPool;
 
     /**
-     * Is Pooling Based Watch Service
+     * The {@link Set} of {@link #configDirectory(String) directories} that may be processing,
+     * <p>
+     * if {@link #isBasedPoolingWatchService()} is <code>false</code>, this properties will be
+     * {@link Collections#emptySet() empty}
      *
-     * @see #isPoolingBasedWatchService(Optional)
+     * @see #initProcessingDirectories()
      */
-    private final boolean basedPoolingWatchService;
+    private final Set<File> processingDirectories;
 
-    private final WatchEvent.Modifier[] modifiers;
-
-    /**
-     * the delay to {@link #publishConfig(String, String, String) publish} in seconds.
-     * If null, execute indirectly
-     */
-    private final Integer delayToPublish;
+    private final Map<File, List<ConfigurationListener>> listenersRepository;
 
     public FileSystemDynamicConfiguration(URL url) {
         this.directory = initDirectory(url);
-        this.workersThreadPool = newWorkersThreadPool(url);
+        this.threadPoolPrefixName = getThreadPoolPrefixName(url);
         this.encoding = getEncoding(url);
-        this.watchService = newWatchService();
+        this.workersThreadPool = initWorkersThreadPool(url);
+        this.processingDirectories = initProcessingDirectories();
         this.listenersRepository = new LinkedHashMap<>();
-        this.basedPoolingWatchService = isPoolingBasedWatchService(watchService);
-        this.modifiers = initWatchEventModifiers(watchService);
-        this.delayToPublish = initDelayToPublish(modifiers);
+    }
+
+    private Set<File> initProcessingDirectories() {
+        return isBasedPoolingWatchService() ? new LinkedHashSet<>() : emptySet();
+    }
+
+    private static String getThreadPoolPrefixName(URL url) {
+        return url.getParameter(THREAD_POOL_PREFIX_PARAM_NAME, DEFAULT_THREAD_POOL_PREFIX);
     }
 
     @Override
@@ -175,13 +206,13 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
         doInListener(key, group, (configFilePath, listeners) -> {
 
             if (listeners.isEmpty()) { // If no element, it indicates watchService was registered before
-                ThrowableConsumer.execute(configFilePath, path -> {
-                    File configFile = path.toFile();
+                ThrowableConsumer.execute(configFilePath, configFile -> {
                     FileUtils.forceMkdirParent(configFile);
                     // A directory to be watched
-                    File watchedDirectory = configFile.getParentFile();
-                    if (watchedDirectory != null) {
-                        watchedDirectory.toPath().register(watchService.get(), INTEREST_PATH_KINDS, modifiers);
+                    File configDirectory = configFile.getParentFile();
+                    if (configDirectory != null) {
+                        // Register the configDirectory
+                        configDirectory.toPath().register(watchService.get(), INTEREST_PATH_KINDS, modifiers);
                     }
                 });
             }
@@ -199,46 +230,35 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
         });
     }
 
-    protected File groupDirectory(String group) {
+    protected File configDirectory(String group) {
         String actualGroup = isBlank(group) ? DEFAULT_GROUP : group;
         return new File(directory, actualGroup);
     }
 
     protected File configFile(String key, String group) {
-        return new File(groupDirectory(group), key);
+        return new File(configDirectory(group), key);
     }
 
-
-    private void doInListener(String key, String group, BiConsumer<Path, List<ConfigurationListener>> consumer) {
+    private void doInListener(String key, String group, BiConsumer<File, List<ConfigurationListener>> consumer) {
         watchService.ifPresent(watchService -> {
-            executeMutually(() -> {
-                // process the WatchEvents if there is not any listener
-                if (!initWatchEventsLoopThreadPool()) {
-                    processWatchEventsLoop(watchService);
+            File configFile = configFile(key, group);
+            executeMutually(configFile.getParentFile(), () -> {
+                // process the WatchEvents if not start
+                if (!isProcessingWatchEvents()) {
+                    processWatchEvents(watchService);
                 }
 
-                File configFile = configFile(key, group);
-                Path configFilePath = configFile.toPath();
-                List<ConfigurationListener> listeners = getListeners(configFilePath);
-                consumer.accept(configFilePath, listeners);
+                List<ConfigurationListener> listeners = getListeners(configFile);
+                consumer.accept(configFile, listeners);
 
                 // Nothing to return
-                return void.class;
+                return null;
             });
         });
     }
 
-    /**
-     * Initializes {@link #watchEventsLoopThreadPool} and return initialized or not
-     *
-     * @return if <code>watchEventsLoopThreadPool</code> is not <code>null</code>, return null
-     */
-    private boolean initWatchEventsLoopThreadPool() {
-        boolean initialized = this.watchEventsLoopThreadPool != null;
-        if (!initialized) {
-            this.watchEventsLoopThreadPool = newWatchEventsLoopThreadPool();
-        }
-        return initialized;
+    private static boolean isProcessingWatchEvents() {
+        return getWatchEventsLoopThreadPool().getActiveCount() > 0;
     }
 
     /**
@@ -246,8 +266,7 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
      *
      * @param watchService {@link WatchService}
      */
-    private void processWatchEventsLoop(WatchService watchService) {
-
+    private void processWatchEvents(WatchService watchService) {
         getWatchEventsLoopThreadPool().execute(() -> { // WatchEvents Loop
             while (true) {
                 WatchKey watchKey = null;
@@ -259,10 +278,15 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
                             // configChangeType's key to match WatchEvent's Kind
                             ConfigChangeType configChangeType = CONFIG_CHANGE_TYPES_MAP.get(kind.name());
                             if (configChangeType != null) {
-                                Path parentPath = (Path) watchKey.watchable();
+                                Path configDirectoryPath = (Path) watchKey.watchable();
                                 Path currentPath = (Path) event.context();
-                                Path actualPath = parentPath.resolve(currentPath);
-                                fireConfigChangeEvent(actualPath, configChangeType);
+                                Path configFilePath = configDirectoryPath.resolve(currentPath);
+                                File configDirectory = configDirectoryPath.toFile();
+                                executeMutually(configDirectory, () -> {
+                                    fireConfigChangeEvent(configFilePath.toFile(), configChangeType);
+                                    signalConfigDirectory(configDirectory);
+                                    return null;
+                                });
                             }
                         }
                     }
@@ -278,17 +302,42 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
         });
     }
 
-    private List<ConfigurationListener> getListeners(Path configFilePath) {
-        return executeMutually(() -> listenersRepository.computeIfAbsent(configFilePath, p -> new LinkedList<>()));
+    private void signalConfigDirectory(File configDirectory) {
+        if (isBasedPoolingWatchService()) {
+            // remove configDirectory from processing set because it's done
+            removeProcessingDirectory(configDirectory);
+            // notify configDirectory
+            notifyProcessingDirectory(configDirectory);
+            if (logger.isDebugEnabled()) {
+                logger.debug(format("The config directory[%s] is signalled...", configDirectory.getName()));
+            }
+        }
     }
 
-    private void fireConfigChangeEvent(Path configFilePath, ConfigChangeType configChangeType) {
-        File watchedFile = configFilePath.toFile();
-        String key = watchedFile.getName();
-        String value = getConfig(watchedFile, -1L);
+    private void removeProcessingDirectory(File configDirectory) {
+        processingDirectories.remove(configDirectory);
+    }
+
+    private void notifyProcessingDirectory(File configDirectory) {
+        configDirectory.notifyAll();
+    }
+
+    private List<ConfigurationListener> getListeners(File configFile) {
+        return listenersRepository.computeIfAbsent(configFile, p -> new LinkedList<>());
+    }
+
+    private void fireConfigChangeEvent(File configFile, ConfigChangeType configChangeType) {
+        String key = configFile.getName();
+        String value = getConfig(configFile, -1L);
         // fire ConfigChangeEvent one by one
-        getListeners(configFilePath).forEach(listener -> {
-            listener.process(new ConfigChangeEvent(key, value, configChangeType));
+        getListeners(configFile).forEach(listener -> {
+            try {
+                listener.process(new ConfigChangeEvent(key, value, configChangeType));
+            } catch (Throwable e) {
+                if (logger.isErrorEnabled()) {
+                    logger.error(e.getMessage(), e);
+                }
+            }
         });
     }
 
@@ -324,7 +373,7 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
         boolean published = false;
 
         try {
-            published = publish(() -> {
+            published = publishConfig(key, group, configFile, () -> {
                 FileUtils.write(configFile, content, getEncoding());
                 return true;
             });
@@ -337,21 +386,81 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
         return published;
     }
 
-    private boolean publish(Callable<Boolean> callable) throws Exception {
+    private ThreadPoolExecutor initWorkersThreadPool(URL url) {
+        int size = url.getParameter(THREAD_POOL_SIZE_PARAM_NAME, DEFAULT_THREAD_POOL_SIZE);
+        String prefix = url.getParameter(THREAD_POOL_PREFIX_PARAM_NAME, DEFAULT_THREAD_POOL_PREFIX);
+        return (ThreadPoolExecutor) newFixedThreadPool(size, new NamedThreadFactory(prefix));
+    }
+
+    private ScheduledThreadPoolExecutor newWorkersThreadPool(File groupDirectory) {
+        String group = groupDirectory.getName();
+        ThreadFactory threadFactory = newThreadFactory(group);
+        ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(THREAD_POOL_SIZE, threadFactory);
+        executor.setMaximumPoolSize(THREAD_POOL_SIZE);
+        return executor;
+    }
+
+    private ThreadFactory newThreadFactory(String group) {
+        return new NamedThreadFactory(String.format("%s[%s]", threadPoolPrefixName, group));
+    }
+
+    private boolean publishConfig(String key, String group, File configFile, Callable<Boolean> callable) throws Exception {
+        // Must be based on PoolingWatchService and has listeners under config file
+        if (isBasedPoolingWatchService()) {
+            File configDirectory = configFile.getParentFile();
+            executeMutually(configDirectory, () -> {
+                if (hasListeners(configFile) && isProcessing(configDirectory)) {
+                    Integer delayToPublish = getDelayToPublish();
+                    if (delayToPublish != null) {
+                        // wait for delay in seconds
+                        long timeout = SECONDS.toMillis(delayToPublish);
+                        if (logger.isDebugEnabled()) {
+                            logger.debug(format("The config[key : %s, group : %s] is about to delay publish in %d ms.",
+                                    key, group, timeout));
+                        }
+                        configDirectory.wait(timeout);
+                    }
+                }
+                addProcessing(configDirectory);
+
+                return null;
+            });
+        }
+
+        return callable.call();
+    }
+
+    private boolean hasListeners(File configFile) {
+        return getListeners(configFile).size() > 0;
+    }
+
+    /**
+     * Is processing on {@link #configDirectory(String) config directory}
+     *
+     * @param configDirectory {@link #configDirectory(String) config directory}
+     * @return if processing , return <code>true</code>, or <code>false</code>
+     */
+    private boolean isProcessing(File configDirectory) {
+        return processingDirectories.contains(configDirectory);
+    }
+
+    private void addProcessing(File configDirectory) {
+        processingDirectories.add(configDirectory);
+    }
+
+    private boolean asyncPublish(ScheduledThreadPoolExecutor executor, Callable<Boolean> callable) throws
+            Exception {
 
         Integer delay = getDelayToPublish();
 
-        if (delay != null) {
-            ScheduledFuture<Boolean> future = getWorkersThreadPool().schedule(callable, delay.longValue(), SECONDS);
-            return future.get();
-        } else {
-            return callable.call();
-        }
+        ScheduledFuture<Boolean> future = executor.schedule(callable, delay.longValue(), SECONDS);
+
+        return future.get();
     }
 
     @Override
     public Set<String> getConfigKeys(String group) throws UnsupportedOperationException {
-        return Stream.of(groupDirectory(group).listFiles(File::isFile))
+        return Stream.of(configDirectory(group).listFiles(File::isFile))
                 .map(File::getName)
                 .collect(Collectors.toSet());
     }
@@ -359,6 +468,11 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
     @Override
     public Map<String, String> getConfigs(String group) throws UnsupportedOperationException {
         return getConfigs(group, -1);
+    }
+
+    @Override
+    public void close() throws Exception {
+        // TODO
     }
 
     private <V> V execute(Callable<V> task, long timeout) {
@@ -383,7 +497,7 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
         return directory;
     }
 
-    protected ScheduledThreadPoolExecutor getWorkersThreadPool() {
+    protected ThreadPoolExecutor getWorkersThreadPool() {
         return workersThreadPool;
     }
 
@@ -395,34 +509,39 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
         return delayToPublish;
     }
 
-    protected boolean isBasedPoolingWatchService() {
+    /**
+     * It's whether the implementation of {@link WatchService} is based on {@linkplain sun.nio.fs.PollingWatchService}
+     * or not.
+     * <p>
+     *
+     * @return if based, return <code>true</code>, or <code>false</code>
+     * @see #detectPoolingBasedWatchService(Optional)
+     */
+    protected static boolean isBasedPoolingWatchService() {
         return basedPoolingWatchService;
     }
 
-    public ExecutorService getWatchEventsLoopThreadPool() {
+    protected static ThreadPoolExecutor getWatchEventsLoopThreadPool() {
         return watchEventsLoopThreadPool;
     }
 
-    private <V> V executeMutually(Callable<V> callable) {
+    private <V> V executeMutually(Object mutex, Callable<V> callable) {
         V value = null;
-        lock.lock();
-        try {
-            value = callable.call();
-        } catch (Exception e) {
-            if (logger.isErrorEnabled()) {
-                logger.error(e.getMessage(), e);
+        synchronized (mutex) {
+            try {
+                value = callable.call();
+            } catch (Exception e) {
+                if (logger.isErrorEnabled()) {
+                    logger.error(e.getMessage(), e);
+                }
             }
-        } finally {
-            lock.unlock();
         }
-
         return value;
     }
 
     private static <T> T[] of(T... values) {
         return values;
     }
-
 
     private static Integer initDelayToPublish(WatchEvent.Modifier[] modifiers) {
         return Stream.of(modifiers)
@@ -433,21 +552,8 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
                 .orElse(null);
     }
 
-    /**
-     * Create a new {@link ScheduledThreadPoolExecutor} whose core and max pool size both are {@link #WORKERS_THREAD_POOL_SIZE 1}
-     *
-     * @param url
-     * @return
-     */
-    private static ScheduledThreadPoolExecutor newWorkersThreadPool(URL url) {
-        String threadPoolName = url.getParameter(CONFIG_CENTER_THREAD_POOL_NAME_PARAM_NAME, DEFAULT_CONFIG_CENTER_THREAD_POOL_NAME);
-        ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(WORKERS_THREAD_POOL_SIZE, new NamedThreadFactory(threadPoolName));
-        executor.setMaximumPoolSize(WORKERS_THREAD_POOL_SIZE);
-        return executor;
-    }
-
-    private static WatchEvent.Modifier[] initWatchEventModifiers(Optional<WatchService> watchService) {
-        if (isPoolingBasedWatchService(watchService)) { // If based on PollingWatchService, High sensitivity will be used
+    private static WatchEvent.Modifier[] initWatchEventModifiers() {
+        if (isBasedPoolingWatchService()) { // If based on PollingWatchService, High sensitivity will be used
             return of(SensitivityWatchEventModifier.HIGH);
         } else {
             return of();
@@ -455,7 +561,7 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
     }
 
     /**
-     * It's whether the argument of {@link WatchService} is based on {@linkplain sun.nio.fs.PollingWatchService}
+     * Detect the argument of {@link WatchService} is based on {@linkplain sun.nio.fs.PollingWatchService}
      * or not.
      * <p>
      * Some platforms do not provide the native implementation of {@link WatchService}, just use
@@ -464,7 +570,7 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
      * @param watchService the instance of {@link WatchService}
      * @return if based, return <code>true</code>, or <code>false</code>
      */
-    private static boolean isPoolingBasedWatchService(Optional<WatchService> watchService) {
+    private static boolean detectPoolingBasedWatchService(Optional<WatchService> watchService) {
         String className = watchService.map(Object::getClass).map(Class::getName).orElse(null);
         return POLLING_WATCH_SERVICE_CLASS_NAME.equals(className);
     }
@@ -497,7 +603,10 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
         return url.getParameter(CONFIG_CENTER_ENCODING_PARAM_NAME, DEFAULT_CONFIG_CENTER_ENCODING);
     }
 
-    private static ExecutorService newWatchEventsLoopThreadPool() {
-        return newSingleThreadExecutor(new NamedThreadFactory("dubbo-config-center-watch-events-loop"));
+    private static ThreadPoolExecutor newWatchEventsLoopThreadPool() {
+        return new ThreadPoolExecutor(THREAD_POOL_SIZE, THREAD_POOL_SIZE,
+                0L, MILLISECONDS,
+                new SynchronousQueue(),
+                new NamedThreadFactory("dubbo-config-center-watch-events-loop", true));
     }
 }

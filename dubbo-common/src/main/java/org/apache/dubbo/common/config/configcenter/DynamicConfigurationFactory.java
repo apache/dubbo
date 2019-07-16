@@ -22,7 +22,7 @@ import org.apache.dubbo.common.extension.SPI;
 /**
  * The factory interface to create the instance of {@link DynamicConfiguration}
  */
-@SPI("filesystem") // 2.7.4 change the
+@SPI("filesystem") // 2.7.4 change the default SPI implementation
 public interface DynamicConfigurationFactory {
 
     DynamicConfiguration getDynamicConfiguration(URL url);
