@@ -27,6 +27,7 @@ import com.alibaba.metrics.Gauge;
 import com.alibaba.metrics.MetricName;
 import com.alibaba.metrics.os.linux.CpuUsageGaugeSet;
 
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -61,20 +62,26 @@ public class CpuUsageServiceImpl implements CpuUsageService {
 
     private void collectCpuUsage() {
         Gauge<Float> user = (Gauge) cpuUsage.getMetrics().get(MetricName.build("cpu.user"));
-        System.err.println(user.getValue());
-        listeners.forEach((key, value) -> {
+
+        Iterator<Map.Entry<String, CpuUsageListener>> iterator = listeners.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<String, CpuUsageListener> entry = iterator.next();
             try {
-                value.cpuChanged(NetUtils.getLocalHost(), user.getValue());
+                entry.getValue().cpuChanged(NetUtils.getLocalHost(), user.getValue());
             } catch (RpcException e) {
                 logger.warn(e.getMessage(), e);
-                if(!errors.containsKey(key)) {
+                String key = entry.getKey();
+                if (!errors.containsKey(key)) {
                     errors.put(key, 1);
                 } else {
                     Integer error = errors.get(key);
-                    errors.put(key, error + 1);
+                    if (error < 2) {
+                        errors.put(key, error + 1);
+                    } else {
+                        iterator.remove();
+                    }
                 }
             }
-        });
-
+        }
     }
 }
