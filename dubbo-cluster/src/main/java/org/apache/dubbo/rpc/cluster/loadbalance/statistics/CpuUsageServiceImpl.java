@@ -60,6 +60,10 @@ public class CpuUsageServiceImpl implements CpuUsageService {
        listeners.remove(key, cpuListener);
     }
 
+    public boolean isAvailable() {
+        return true;
+    }
+
     private void collectCpuUsage() {
         Gauge<Float> user = (Gauge) cpuUsage.getMetrics().get(MetricName.build("cpu.user"));
 
