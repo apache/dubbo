@@ -18,7 +18,6 @@ package org.apache.dubbo.common.extension;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.Parameter;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -63,7 +62,9 @@ public class AdaptiveClassCodeGenerator {
     
     
     private static final String CODE_EXTENSION_ASSIGNMENT = "%s extension = (%<s)%s.getExtensionLoader(%s.class).getExtension(extName);\n";
-    
+
+    private static final String CODE_EXTENSION_METHOD_INVOKE_ARGUMENT = "arg%d ";
+
     private final Class<?> type;
     
     private String defaultExtName;
@@ -294,8 +295,10 @@ public class AdaptiveClassCodeGenerator {
      */
     private String generateReturnAndInvocation(Method method) {
         String returnStatement = method.getReturnType().equals(void.class) ? "" : "return ";
-        
-        String args = Arrays.stream(method.getParameters()).map(Parameter::getName).collect(Collectors.joining(", "));
+
+        String args = IntStream.range(0, method.getParameters().length)
+                .mapToObj(i -> String.format(CODE_EXTENSION_METHOD_INVOKE_ARGUMENT, i))
+                .collect(Collectors.joining(", "));
 
         return returnStatement + String.format("extension.%s(%s);\n", method.getName(), args);
     }
