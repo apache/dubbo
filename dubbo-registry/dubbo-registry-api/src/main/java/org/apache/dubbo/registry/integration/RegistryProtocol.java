@@ -478,7 +478,7 @@ public class RegistryProtocol implements Protocol {
         }
     }
 
-    static private class DestroyableExporter<T> implements Exporter<T> {
+    private static class DestroyableExporter<T> implements Exporter<T> {
 
         private Exporter<T> exporter;
 
