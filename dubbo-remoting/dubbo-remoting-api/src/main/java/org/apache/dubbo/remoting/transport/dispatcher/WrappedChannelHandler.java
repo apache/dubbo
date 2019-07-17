@@ -113,11 +113,8 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
     }
 
     public ExecutorService getExecutorService() {
-        ExecutorService cexecutor = executor;
-        if (cexecutor == null || cexecutor.isShutdown()) {
-            cexecutor = SHARED_EXECUTOR;
-        }
-        return cexecutor;
+        return executor == null || executor.isShutdown() ? SHARED_EXECUTOR : executor;
     }
+
 
 }
