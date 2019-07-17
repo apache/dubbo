@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.utils;
 
-import java.util.Set;
 import org.apache.dubbo.common.annotations.GenericAlias;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -43,6 +42,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
@@ -422,7 +422,7 @@ public class PojoUtils {
                 history.put(pojo, dest);
                 for (Object obj : src) {
                     Type keyType = getGenericClassByIndex(genericType, 0);
-                    Class<?> keyClazz = obj.getClass();
+                    Class<?> keyClazz = obj == null ? null : obj.getClass();
                     if (keyType instanceof Class) {
                         keyClazz = (Class<?>) keyType;
                     }
@@ -526,7 +526,7 @@ public class PojoUtils {
                             } else if (field != null) {
                                 value = realize0(value, field.getType(), field.getGenericType(), history);
                                 try {
-                                    forceSetFieldValue(field,dest,value);
+                                    field.set(dest, value);
                                 } catch (IllegalAccessException e) {
                                     throw new RuntimeException("Failed to set field " + name + " of pojo " + dest.getClass().getName() + " : " + e.getMessage(), e);
                                 }
@@ -643,14 +643,20 @@ public class PojoUtils {
         String name = "set" + property.substring(0, 1).toUpperCase() + property.substring(1);
         Method method = NAME_METHODS_CACHE.get(cls.getName() + "." + name + "(" + valueCls.getName() + ")");
         if (method == null) {
+            try {
+                method = cls.getMethod(name, valueCls);
+            } catch (NoSuchMethodException e) {
                 for (Method m : cls.getMethods()) {
-                GenericAlias genericAlias = m.getAnnotation(GenericAlias.class);
-                if(genericAlias != null && genericAlias.value().equals(name)) {
+                    if (ReflectUtils.isBeanPropertyWriteMethod(m) && m.getName().equals(name)) {
                         method = m;
-                    break;
+                        break;
                     }
-                if (ReflectUtils.isBeanPropertyWriteMethod(m) && m.getName().equals(name)) {
-                    method = m;
+
+                    GenericAlias genericAlias = m.getAnnotation(GenericAlias.class);
+                    if(genericAlias != null && genericAlias.value().equals(name)) {
+                        method = m;
+                        break;
+                    }
                 }
             }
             if (method != null) {
@@ -665,15 +671,21 @@ public class PojoUtils {
         if (CLASS_FIELD_CACHE.containsKey(cls) && CLASS_FIELD_CACHE.get(cls).containsKey(fieldName)) {
             return CLASS_FIELD_CACHE.get(cls).get(fieldName);
         }
-        for (Field field : cls.getDeclaredFields()) {
-            GenericAlias genericAlias = field.getAnnotation(GenericAlias.class);
-            if(genericAlias != null && genericAlias.value().equals(fieldName)) {
+        try {
+            result = cls.getDeclaredField(fieldName);
+            result.setAccessible(true);
+        } catch (NoSuchFieldException e) {
+            for (Field field : cls.getFields()) {
+                if (fieldName.equals(field.getName()) && ReflectUtils.isPublicInstanceField(field)) {
                     result = field;
                     break;
                 }
-            if (fieldName.equals(field.getName())) {
-                result = field;
-                break;
+
+                GenericAlias genericAlias = field.getAnnotation(GenericAlias.class);
+                if(genericAlias != null && genericAlias.value().equals(fieldName)) {
+                    result = field;
+                    break;
+                }
             }
         }
         if (result != null) {

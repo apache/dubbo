@@ -37,6 +37,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
 
@@ -680,6 +681,38 @@ public class PojoUtilsTest {
         Object timestamp = PojoUtils.realize(dateTimeStr, java.sql.Timestamp.class, (Type) java.sql.Timestamp.class);
         assertEquals(java.sql.Timestamp.class, timestamp.getClass());
         assertEquals(dateTimeStr, new SimpleDateFormat(dateFormat[0]).format(timestamp));
+    }
+
+    @Test
+    public void testIntToBoolean() throws Exception {
+        Map<String, Object> map = new HashMap<>();
+        map.put("name", "myname");
+        map.put("male", 1);
+        map.put("female", 0);
+
+        PersonInfo personInfo = (PersonInfo) PojoUtils.realize(map, PersonInfo.class);
+
+        assertEquals("myname", personInfo.getName());
+        assertTrue(personInfo.isMale());
+        assertFalse(personInfo.isFemale());
+    }
+  
+    @Test
+    public void testRealizeCollectionWithNullElement() {
+        LinkedList<String> listStr = new LinkedList<>();
+        listStr.add("arrayValue");
+        listStr.add(null);
+        HashSet<String> setStr = new HashSet<>();
+        setStr.add("setValue");
+        setStr.add(null);
+
+        Object listResult = PojoUtils.realize(listStr, LinkedList.class);
+        assertEquals(LinkedList.class, listResult.getClass());
+        assertEquals(listResult, listStr);
+
+        Object setResult = PojoUtils.realize(setStr, HashSet.class);
+        assertEquals(HashSet.class, setResult.getClass());
+        assertEquals(setResult, setStr);
     }
 
     public enum Day {

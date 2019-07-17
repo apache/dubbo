@@ -82,7 +82,7 @@ public class ActivateComparator implements Comparator<Object> {
     }
 
     private Class<?> findSpi(Class clazz) {
-        if (clazz.getInterfaces().length <= 0) {
+        if (clazz.getInterfaces().length == 0) {
             return null;
         }
 

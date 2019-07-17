@@ -294,6 +294,20 @@ public class StringUtilsTest {
         assertEquals("left blank", StringUtils.trim(" left blank"));
         assertEquals("right blank", StringUtils.trim("right blank "));
         assertEquals("bi-side blank", StringUtils.trim(" bi-side blank "));
-
     }
+
+    @Test
+    public void testToURLKey() {
+        assertEquals("dubbo.tag1", StringUtils.toURLKey("dubbo_tag1"));
+        assertEquals("dubbo.tag1.tag11", StringUtils.toURLKey("dubbo-tag1_tag11"));
+    }
+
+    @Test
+    public void testToOSStyleKey() {
+        assertEquals("DUBBO_TAG1", StringUtils.toOSStyleKey("dubbo_tag1"));
+        assertEquals("DUBBO_TAG1", StringUtils.toOSStyleKey("dubbo.tag1"));
+        assertEquals("DUBBO_TAG1_TAG11", StringUtils.toOSStyleKey("dubbo.tag1.tag11"));
+        assertEquals("DUBBO_TAG1", StringUtils.toOSStyleKey("tag1"));
+    }
+
 }

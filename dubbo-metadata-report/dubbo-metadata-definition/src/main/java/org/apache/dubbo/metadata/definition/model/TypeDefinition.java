@@ -37,6 +37,7 @@ public class TypeDefinition {
     private List<String> enums;
     private String $ref;
     private Map<String, TypeDefinition> properties;
+    private String typeBuilderName;
 
     public TypeDefinition(String type) {
         this.type = type;
@@ -75,6 +76,10 @@ public class TypeDefinition {
         return type;
     }
 
+    public String getTypeBuilderName() {
+        return typeBuilderName;
+    }
+
     public void set$ref(String $ref) {
         this.$ref = $ref;
     }
@@ -97,6 +102,10 @@ public class TypeDefinition {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public void setTypeBuilderName(String typeBuilderName) {
+        this.typeBuilderName = typeBuilderName;
     }
 
     @Override

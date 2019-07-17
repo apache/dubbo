@@ -16,9 +16,7 @@
  */
 package org.apache.dubbo.metadata.definition.model;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -29,17 +27,9 @@ public class MethodDefinition {
     private String name;
     private String[] parameterTypes;
     private String returnType;
-    private List<TypeDefinition> parameters;
 
     public String getName() {
         return name;
-    }
-
-    public List<TypeDefinition> getParameters() {
-        if (parameters == null) {
-            parameters = new ArrayList<>();
-        }
-        return parameters;
     }
 
     public String[] getParameterTypes() {
@@ -52,10 +42,6 @@ public class MethodDefinition {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public void setParameters(List<TypeDefinition> parameters) {
-        this.parameters = parameters;
     }
 
     public void setParameterTypes(String[] parameterTypes) {
@@ -83,13 +69,12 @@ public class MethodDefinition {
         MethodDefinition that = (MethodDefinition) o;
         return Objects.equals(getName(), that.getName()) &&
                 Arrays.equals(getParameterTypes(), that.getParameterTypes()) &&
-                Objects.equals(getReturnType(), that.getReturnType()) &&
-                Objects.equals(getParameters(), that.getParameters());
+                Objects.equals(getReturnType(), that.getReturnType());
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(getName(), getReturnType(), getParameters());
+        int result = Objects.hash(getName(), getReturnType());
         result = 31 * result + Arrays.hashCode(getParameterTypes());
         return result;
     }

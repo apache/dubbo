@@ -30,7 +30,9 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 import static org.apache.dubbo.configcenter.Constants.CONFIG_NAMESPACE_KEY;
 
 /**
@@ -51,7 +53,7 @@ public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
 
     ZookeeperDynamicConfiguration(URL url, ZookeeperTransporter zookeeperTransporter) {
         this.url = url;
-        rootPath = "/" + url.getParameter(CONFIG_NAMESPACE_KEY, DEFAULT_GROUP) + "/config";
+        rootPath = PATH_SEPARATOR + url.getParameter(CONFIG_NAMESPACE_KEY, DEFAULT_GROUP) + "/config";
 
         initializedLatch = new CountDownLatch(1);
         this.cacheListener = new CacheListener(rootPath, initializedLatch);
@@ -61,7 +63,12 @@ public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
         zkClient.addDataListener(rootPath, cacheListener, executor);
         try {
             // Wait for connection
-            this.initializedLatch.await();
+            long timeout = url.getParameter("init.timeout", 5000);
+            boolean isCountDown = this.initializedLatch.await(timeout, TimeUnit.MILLISECONDS);
+            if (!isCountDown) {
+                throw new IllegalStateException("Failed to receive INITIALIZED event from zookeeper, pls. check if url "
+                        + url + " is correct");
+            }
         } catch (InterruptedException e) {
             logger.warn("Failed to build local cache for config center (zookeeper)." + url);
         }
@@ -81,47 +88,29 @@ public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
      */
     @Override
     public void addListener(String key, String group, ConfigurationListener listener) {
-        cacheListener.addListener(key, listener);
+        cacheListener.addListener(getPathKey(group, key), listener);
     }
 
     @Override
     public void removeListener(String key, String group, ConfigurationListener listener) {
-        cacheListener.removeListener(key, listener);
+        cacheListener.removeListener(getPathKey(group, key), listener);
     }
 
     @Override
-    public String getConfig(String key, String group, long timeout) throws IllegalStateException {
-        /**
-         * when group is not null, we are getting startup configs from Config Center, for example:
-         * group=dubbo, key=dubbo.properties
-         */
-        if (StringUtils.isNotEmpty(group)) {
-            key = group + "/" + key;
-        }
-        /**
-         * when group is null, we are fetching governance rules, for example:
-         * 1. key=org.apache.dubbo.DemoService.configurators
-         * 2. key = org.apache.dubbo.DemoService.condition-router
-         */
-        else {
-            int i = key.lastIndexOf(".");
-            key = key.substring(0, i) + "/" + key.substring(i + 1);
-        }
-
-        return (String) getInternalProperty(rootPath + "/" + key);
+    public String getRule(String key, String group, long timeout) throws IllegalStateException {
+        return (String) getInternalProperty(getPathKey(group, key));
     }
 
-    /**
-     * For zookeeper, {@link #getConfig(String, String, long)} and {@link #getConfigs(String, String, long)} have the same meaning.
-     *
-     * @param key
-     * @param group
-     * @param timeout
-     * @return
-     * @throws IllegalStateException
-     */
     @Override
-    public String getConfigs(String key, String group, long timeout) throws IllegalStateException {
-        return (String) getConfig(key, group, timeout);
+    public String getProperties(String key, String group, long timeout) throws IllegalStateException {
+        // use global group 'dubbo' if no group specified
+        if (StringUtils.isEmpty(group)) {
+            group = DEFAULT_GROUP;
+        }
+        return (String) getInternalProperty(getPathKey(group, key));
+    }
+
+    private String getPathKey(String group, String key) {
+        return rootPath + PATH_SEPARATOR + group + PATH_SEPARATOR + key;
     }
 }

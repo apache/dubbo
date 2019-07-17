@@ -22,6 +22,7 @@ import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.spring.context.annotation.DubboComponentScan;
 
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -30,7 +31,8 @@ import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-@DubboComponentScan(basePackages = "org.apache.dubbo.config.spring.context.annotation.provider")
+@DubboComponentScan(basePackages = "org.apache.dubbo")
+@ComponentScan(basePackages = "org.apache.dubbo")
 @PropertySource("META-INF/default.properties")
 @EnableTransactionManagement
 public class ProviderConfiguration {
