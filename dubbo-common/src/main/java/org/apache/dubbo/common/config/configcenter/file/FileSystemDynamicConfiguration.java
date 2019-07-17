@@ -22,6 +22,7 @@ import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.function.ThrowableConsumer;
+import org.apache.dubbo.common.function.ThrowableFunction;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 
 import com.sun.nio.file.SensitivityWatchEventModifier;
@@ -48,13 +49,11 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -136,10 +135,9 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
     private static final WatchEvent.Modifier[] modifiers;
 
     /**
-     * the delay to {@link #publishConfig(String, String, String) publishConfig} in seconds.
-     * If null, execute indirectly
+     * the delay to action in seconds. If null, execute indirectly
      */
-    private static final Integer delayToPublish;
+    private static final Integer delayAction;
 
     /**
      * The thread pool for {@link WatchEvent WatchEvents} loop
@@ -154,7 +152,7 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
         watchService = newWatchService();
         basedPoolingWatchService = detectPoolingBasedWatchService(watchService);
         modifiers = initWatchEventModifiers();
-        delayToPublish = initDelayToPublish(modifiers);
+        delayAction = initDelayAction(modifiers);
         watchEventsLoopThreadPool = newWatchEventsLoopThreadPool();
     }
 
@@ -367,23 +365,22 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
 
     @Override
     public boolean publishConfig(String key, String group, String content) {
+        return delay(key, group, configFile -> {
+            FileUtils.write(configFile, content, getEncoding());
+            return true;
+        });
+    }
 
-        File configFile = configFile(key, group);
+    @Override
+    public String removeConfig(String key, String group) {
+        return delay(key, group, configFile -> {
 
-        boolean published = false;
+            String content = getConfig(configFile, -1L);
 
-        try {
-            published = publishConfig(key, group, configFile, () -> {
-                FileUtils.write(configFile, content, getEncoding());
-                return true;
-            });
-        } catch (Exception e) {
-            if (logger.isErrorEnabled()) {
-                logger.error(e.getMessage());
-            }
-        }
+            FileUtils.deleteQuietly(configFile);
 
-        return published;
+            return content;
+        });
     }
 
     private ThreadPoolExecutor initWorkersThreadPool(URL url) {
@@ -392,42 +389,49 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
         return (ThreadPoolExecutor) newFixedThreadPool(size, new NamedThreadFactory(prefix));
     }
 
-    private ScheduledThreadPoolExecutor newWorkersThreadPool(File groupDirectory) {
-        String group = groupDirectory.getName();
-        ThreadFactory threadFactory = newThreadFactory(group);
-        ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(THREAD_POOL_SIZE, threadFactory);
-        executor.setMaximumPoolSize(THREAD_POOL_SIZE);
-        return executor;
-    }
-
-    private ThreadFactory newThreadFactory(String group) {
-        return new NamedThreadFactory(String.format("%s[%s]", threadPoolPrefixName, group));
-    }
-
-    private boolean publishConfig(String key, String group, File configFile, Callable<Boolean> callable) throws Exception {
+    /**
+     * Delay action for {@link #configFile(String, String) config file}
+     *
+     * @param key      the key to represent a configuration
+     * @param group    the group where the key belongs to
+     * @param function the customized {@link Function function} with {@link File}
+     * @param <V>      the computed value
+     * @return
+     */
+    protected <V> V delay(String key, String group, ThrowableFunction<File, V> function) {
+        File configFile = configFile(key, group);
         // Must be based on PoolingWatchService and has listeners under config file
         if (isBasedPoolingWatchService()) {
             File configDirectory = configFile.getParentFile();
             executeMutually(configDirectory, () -> {
                 if (hasListeners(configFile) && isProcessing(configDirectory)) {
-                    Integer delayToPublish = getDelayToPublish();
-                    if (delayToPublish != null) {
+                    Integer delay = getDelayAction();
+                    if (delay != null) {
                         // wait for delay in seconds
-                        long timeout = SECONDS.toMillis(delayToPublish);
+                        long timeout = SECONDS.toMillis(delay);
                         if (logger.isDebugEnabled()) {
-                            logger.debug(format("The config[key : %s, group : %s] is about to delay publish in %d ms.",
+                            logger.debug(format("The config[key : %s, group : %s] is about to delay in %d ms.",
                                     key, group, timeout));
                         }
                         configDirectory.wait(timeout);
                     }
                 }
                 addProcessing(configDirectory);
-
                 return null;
             });
         }
 
-        return callable.call();
+        V value = null;
+
+        try {
+            value = function.apply(configFile);
+        } catch (Throwable e) {
+            if (logger.isErrorEnabled()) {
+                logger.error(e.getMessage(), e);
+            }
+        }
+
+        return value;
     }
 
     private boolean hasListeners(File configFile) {
@@ -446,16 +450,6 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
 
     private void addProcessing(File configDirectory) {
         processingDirectories.add(configDirectory);
-    }
-
-    private boolean asyncPublish(ScheduledThreadPoolExecutor executor, Callable<Boolean> callable) throws
-            Exception {
-
-        Integer delay = getDelayToPublish();
-
-        ScheduledFuture<Boolean> future = executor.schedule(callable, delay.longValue(), SECONDS);
-
-        return future.get();
     }
 
     @Override
@@ -505,8 +499,8 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
         return encoding;
     }
 
-    protected Integer getDelayToPublish() {
-        return delayToPublish;
+    protected Integer getDelayAction() {
+        return delayAction;
     }
 
     /**
@@ -543,7 +537,7 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
         return values;
     }
 
-    private static Integer initDelayToPublish(WatchEvent.Modifier[] modifiers) {
+    private static Integer initDelayAction(WatchEvent.Modifier[] modifiers) {
         return Stream.of(modifiers)
                 .filter(modifier -> modifier instanceof SensitivityWatchEventModifier)
                 .map(SensitivityWatchEventModifier.class::cast)

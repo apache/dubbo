@@ -134,7 +134,7 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
 
 
     /**
-     * Publish Config mapped to the given key and the given group.
+     * Publish Config mapped to the given key under the {@link #DEFAULT_GROUP default group}
      *
      * @param key     the key to represent a configuration
      * @param content the content of configuration
@@ -157,6 +157,31 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
      * @since 2.7.4
      */
     default boolean publishConfig(String key, String group, String content) throws UnsupportedOperationException {
+        throw new UnsupportedOperationException("No support");
+    }
+
+    /**
+     * Remove Config mapped to the given key under the {@link #DEFAULT_GROUP default group}
+     *
+     * @param key the key to represent a configuration
+     * @return the content of configuration was removed
+     * @throws UnsupportedOperationException If the under layer does not support
+     * @since 2.7.4
+     */
+    default String removeConfig(String key) throws UnsupportedOperationException {
+        return removeConfig(key, DEFAULT_GROUP);
+    }
+
+    /**
+     * Remove Config mapped to the given key and the given group.
+     *
+     * @param key   the key to represent a configuration
+     * @param group the group where the key belongs to
+     * @return the content of configuration was removed
+     * @throws UnsupportedOperationException If the under layer does not support
+     * @since 2.7.4
+     */
+    default String removeConfig(String key, String group) throws UnsupportedOperationException {
         throw new UnsupportedOperationException("No support");
     }
 

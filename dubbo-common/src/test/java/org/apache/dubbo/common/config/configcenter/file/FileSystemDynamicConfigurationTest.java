@@ -72,9 +72,9 @@ public class FileSystemDynamicConfigurationTest {
         assertEquals(1, (configuration.getWatchEventsLoopThreadPool()).getMaximumPoolSize());
 
         if (configuration.isBasedPoolingWatchService()) {
-            assertEquals(2, configuration.getDelayToPublish());
+            assertEquals(2, configuration.getDelayAction());
         } else {
-            assertNull(configuration.getDelayToPublish());
+            assertNull(configuration.getDelayAction());
         }
     }
 
@@ -85,6 +85,18 @@ public class FileSystemDynamicConfigurationTest {
         assertTrue(configuration.publishConfig(KEY, CONTENT));
         assertEquals(CONTENT, configuration.getConfig(KEY));
         assertTrue(configuration.getConfigs(null).size() > 0);
+    }
+
+    @Test
+    public void testPublishAndRemoveConfig() throws InterruptedException {
+        assertTrue(configuration.publishConfig(KEY, CONTENT));
+        configuration.addListener(KEY, event -> {
+            System.out.printf("[%s] " + event + "\n", Thread.currentThread().getName());
+
+        });
+        assertTrue(configuration.publishConfig(KEY, CONTENT));
+        assertEquals(CONTENT, configuration.removeConfig(KEY));
+        Thread.sleep(configuration.getDelayAction() * 1000);
     }
 
     @Test
