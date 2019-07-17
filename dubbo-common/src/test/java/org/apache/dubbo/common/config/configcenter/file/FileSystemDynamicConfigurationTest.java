@@ -100,11 +100,15 @@ public class FileSystemDynamicConfigurationTest {
     }
 
     @Test
-    public void testGetConfigs() {
+    public void testGetConfigsAndGroups() {
         assertTrue(configuration.publishConfig(KEY, CONTENT));
-
         assertEquals(singleton(KEY), configuration.getConfigKeys(DEFAULT_GROUP));
+        assertEquals(singleton(DEFAULT_GROUP), configuration.getConfigGroups());
 
+        assertTrue(configuration.publishConfig(KEY, "test", CONTENT));
+        assertEquals(singleton(KEY), configuration.getConfigKeys(DEFAULT_GROUP));
+        assertTrue(configuration.getConfigGroups().contains(DEFAULT_GROUP));
+        assertTrue(configuration.getConfigGroups().contains("test"));
     }
 
     @Test

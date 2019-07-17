@@ -451,8 +451,17 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
     }
 
     @Override
-    public Set<String> getConfigKeys(String group) throws UnsupportedOperationException {
+    public Set<String> getConfigKeys(String group) {
         return Stream.of(configDirectory(group).listFiles(File::isFile))
+                .map(File::getName)
+                .collect(Collectors.toSet());
+    }
+
+
+    @Override
+    public Set<String> getConfigGroups() {
+        return Stream.of(getRootDirectory().listFiles())
+                .filter(File::isDirectory)
                 .map(File::getName)
                 .collect(Collectors.toSet());
     }

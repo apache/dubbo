@@ -186,10 +186,21 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
     }
 
     /**
+     * Get all groups
+     *
+     * @return the read-only non-null {@link Set set} of config keys
+     * @throws UnsupportedOperationException If the under layer does not support
+     * @since 2.7.4
+     */
+    default Set<String> getConfigGroups() throws UnsupportedOperationException {
+        throw new UnsupportedOperationException("No support");
+    }
+
+    /**
      * Get the config keys by the specified group
      *
      * @param group the specified group
-     * @return the read-only non-null sorted {@link Set set} of config keys
+     * @return the read-only non-null {@link Set set} of config keys
      * @throws UnsupportedOperationException If the under layer does not support
      * @since 2.7.4
      */
@@ -201,7 +212,7 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
      * Get the {@link Map} with with config keys and contents value by the specified group
      *
      * @param group the specified group
-     * @return the read-only non-null sorted {@link Map map}
+     * @return the read-only non-null {@link Map map}
      * @throws UnsupportedOperationException If the under layer does not support
      * @since 2.7.4
      */
@@ -214,7 +225,7 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
      *
      * @param group   the specified group
      * @param timeout the millisecond for timeout
-     * @return the read-only non-null sorted {@link Map map}
+     * @return the read-only non-null {@link Map map}
      * @throws UnsupportedOperationException If the under layer does not support
      * @throws IllegalStateException         If timeout exceeds
      * @since 2.7.4
