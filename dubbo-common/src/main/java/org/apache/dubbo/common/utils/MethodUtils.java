@@ -38,4 +38,27 @@ public class MethodUtils {
                 && method.getParameterTypes().length == 0
                 && ClassUtils.isPrimitive(method.getReturnType());
     }
+
+    public static boolean isMetaMethod(Method method) {
+        String name = method.getName();
+        if (!(name.startsWith("get") || name.startsWith("is"))) {
+            return false;
+        }
+        if ("get".equals(name)) {
+            return false;
+        }
+        if ("getClass".equals(name)) {
+            return false;
+        }
+        if (!Modifier.isPublic(method.getModifiers())) {
+            return false;
+        }
+        if (method.getParameterTypes().length != 0) {
+            return false;
+        }
+        if (!ClassUtils.isPrimitive(method.getReturnType())) {
+            return false;
+        }
+        return true;
+    }
 }
