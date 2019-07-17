@@ -280,7 +280,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         map.put(SIDE_KEY, CONSUMER_SIDE);
 
         appendRuntimeParameters(map);
-        if (!isGeneric()) {
+        if (!Boolean.valueOf(getGeneric())) {
             String revision = Version.getVersion(interfaceClass, version);
             if (revision != null && revision.length() > 0) {
                 map.put(REVISION_KEY, revision);
@@ -530,8 +530,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         if (interfaceClass != null) {
             return interfaceClass;
         }
-        if (isGeneric()
-                || (getConsumer() != null && getConsumer().isGeneric())) {
+        if (Boolean.valueOf(getGeneric()) || (getConsumer() != null && Boolean.valueOf(getConsumer().getGeneric()))) {
             return GenericService.class;
         }
         try {

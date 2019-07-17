@@ -102,9 +102,10 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
         this.init = init;
     }
 
+    // FIXME: should consider to remove this method
     @Parameter(excluded = true)
     public Boolean isGeneric() {
-        return ProtocolUtils.isGeneric(generic);
+        return this.generic != null ? ProtocolUtils.isGeneric(generic) : null;
     }
 
     public void setGeneric(Boolean generic) {
