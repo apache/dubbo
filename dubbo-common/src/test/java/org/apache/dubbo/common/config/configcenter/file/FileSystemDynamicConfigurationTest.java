@@ -52,7 +52,7 @@ public class FileSystemDynamicConfigurationTest {
         String classPath = getClassPath();
         URL url = valueOf("dubbo://127.0.0.1:20880").addParameter(CONFIG_CENTER_DIR_PARAM_NAME, classPath + File.separator + "config-center");
         configuration = new FileSystemDynamicConfiguration(url);
-        deleteQuietly(configuration.getDirectory());
+        deleteQuietly(configuration.getRootDirectory());
     }
 
     private String getClassPath() {
@@ -62,7 +62,7 @@ public class FileSystemDynamicConfigurationTest {
     @Test
     public void testInit() {
 
-        assertEquals(new File(getClassPath(), "config-center"), configuration.getDirectory());
+        assertEquals(new File(getClassPath(), "config-center"), configuration.getRootDirectory());
         assertEquals("UTF-8", configuration.getEncoding());
         assertEquals(ThreadPoolExecutor.class, configuration.getWorkersThreadPool().getClass());
         assertEquals(1, (configuration.getWorkersThreadPool()).getCorePoolSize());
@@ -72,9 +72,9 @@ public class FileSystemDynamicConfigurationTest {
         assertEquals(1, (configuration.getWatchEventsLoopThreadPool()).getMaximumPoolSize());
 
         if (configuration.isBasedPoolingWatchService()) {
-            assertEquals(2, configuration.getDelayAction());
+            assertEquals(2, configuration.getDelay());
         } else {
-            assertNull(configuration.getDelayAction());
+            assertNull(configuration.getDelay());
         }
     }
 
@@ -96,7 +96,7 @@ public class FileSystemDynamicConfigurationTest {
         });
         assertTrue(configuration.publishConfig(KEY, CONTENT));
         assertEquals(CONTENT, configuration.removeConfig(KEY));
-        Thread.sleep(configuration.getDelayAction() * 1000);
+        Thread.sleep(configuration.getDelay() * 1000);
     }
 
     @Test

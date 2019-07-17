@@ -137,7 +137,7 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
     /**
      * the delay to action in seconds. If null, execute indirectly
      */
-    private static final Integer delayAction;
+    private static final Integer delay;
 
     /**
      * The thread pool for {@link WatchEvent WatchEvents} loop
@@ -152,16 +152,14 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
         watchService = newWatchService();
         basedPoolingWatchService = detectPoolingBasedWatchService(watchService);
         modifiers = initWatchEventModifiers();
-        delayAction = initDelayAction(modifiers);
+        delay = initDelay(modifiers);
         watchEventsLoopThreadPool = newWatchEventsLoopThreadPool();
     }
 
     /**
      * The Root Directory for config center
      */
-    private final File directory;
-
-    private final String threadPoolPrefixName;
+    private final File rootDirectory;
 
     private final String encoding;
 
@@ -183,20 +181,22 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
     private final Map<File, List<ConfigurationListener>> listenersRepository;
 
     public FileSystemDynamicConfiguration(URL url) {
-        this.directory = initDirectory(url);
-        this.threadPoolPrefixName = getThreadPoolPrefixName(url);
-        this.encoding = getEncoding(url);
-        this.workersThreadPool = initWorkersThreadPool(url);
+        this(initDirectory(url), getEncoding(url), getThreadPoolPrefixName(url), getThreadPoolSize(url));
+    }
+
+    public FileSystemDynamicConfiguration(File rootDirectory, String encoding,
+                                          String threadPoolPrefixName,
+                                          int threadPoolSize
+    ) {
+        this.rootDirectory = rootDirectory;
+        this.encoding = encoding;
+        this.workersThreadPool = initWorkersThreadPool(threadPoolPrefixName, threadPoolSize);
         this.processingDirectories = initProcessingDirectories();
         this.listenersRepository = new LinkedHashMap<>();
     }
 
     private Set<File> initProcessingDirectories() {
         return isBasedPoolingWatchService() ? new LinkedHashSet<>() : emptySet();
-    }
-
-    private static String getThreadPoolPrefixName(URL url) {
-        return url.getParameter(THREAD_POOL_PREFIX_PARAM_NAME, DEFAULT_THREAD_POOL_PREFIX);
     }
 
     @Override
@@ -206,7 +206,7 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
             if (listeners.isEmpty()) { // If no element, it indicates watchService was registered before
                 ThrowableConsumer.execute(configFilePath, configFile -> {
                     FileUtils.forceMkdirParent(configFile);
-                    // A directory to be watched
+                    // A rootDirectory to be watched
                     File configDirectory = configFile.getParentFile();
                     if (configDirectory != null) {
                         // Register the configDirectory
@@ -230,7 +230,7 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
 
     protected File configDirectory(String group) {
         String actualGroup = isBlank(group) ? DEFAULT_GROUP : group;
-        return new File(directory, actualGroup);
+        return new File(rootDirectory, actualGroup);
     }
 
     protected File configFile(String key, String group) {
@@ -307,7 +307,7 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
             // notify configDirectory
             notifyProcessingDirectory(configDirectory);
             if (logger.isDebugEnabled()) {
-                logger.debug(format("The config directory[%s] is signalled...", configDirectory.getName()));
+                logger.debug(format("The config rootDirectory[%s] is signalled...", configDirectory.getName()));
             }
         }
     }
@@ -383,9 +383,7 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
         });
     }
 
-    private ThreadPoolExecutor initWorkersThreadPool(URL url) {
-        int size = url.getParameter(THREAD_POOL_SIZE_PARAM_NAME, DEFAULT_THREAD_POOL_SIZE);
-        String prefix = url.getParameter(THREAD_POOL_PREFIX_PARAM_NAME, DEFAULT_THREAD_POOL_PREFIX);
+    private ThreadPoolExecutor initWorkersThreadPool(String prefix, int size) {
         return (ThreadPoolExecutor) newFixedThreadPool(size, new NamedThreadFactory(prefix));
     }
 
@@ -405,7 +403,7 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
             File configDirectory = configFile.getParentFile();
             executeMutually(configDirectory, () -> {
                 if (hasListeners(configFile) && isProcessing(configDirectory)) {
-                    Integer delay = getDelayAction();
+                    Integer delay = getDelay();
                     if (delay != null) {
                         // wait for delay in seconds
                         long timeout = SECONDS.toMillis(delay);
@@ -439,9 +437,9 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
     }
 
     /**
-     * Is processing on {@link #configDirectory(String) config directory}
+     * Is processing on {@link #configDirectory(String) config rootDirectory}
      *
-     * @param configDirectory {@link #configDirectory(String) config directory}
+     * @param configDirectory {@link #configDirectory(String) config rootDirectory}
      * @return if processing , return <code>true</code>, or <code>false</code>
      */
     private boolean isProcessing(File configDirectory) {
@@ -487,8 +485,8 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
         return value;
     }
 
-    protected File getDirectory() {
-        return directory;
+    protected File getRootDirectory() {
+        return rootDirectory;
     }
 
     protected ThreadPoolExecutor getWorkersThreadPool() {
@@ -499,8 +497,8 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
         return encoding;
     }
 
-    protected Integer getDelayAction() {
-        return delayAction;
+    protected Integer getDelay() {
+        return delay;
     }
 
     /**
@@ -513,6 +511,10 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
      */
     protected static boolean isBasedPoolingWatchService() {
         return basedPoolingWatchService;
+    }
+
+    private static String getThreadPoolPrefixName(URL url) {
+        return url.getParameter(THREAD_POOL_PREFIX_PARAM_NAME, DEFAULT_THREAD_POOL_PREFIX);
     }
 
     protected static ThreadPoolExecutor getWatchEventsLoopThreadPool() {
@@ -537,7 +539,7 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
         return values;
     }
 
-    private static Integer initDelayAction(WatchEvent.Modifier[] modifiers) {
+    private static Integer initDelay(WatchEvent.Modifier[] modifiers) {
         return Stream.of(modifiers)
                 .filter(modifier -> modifier instanceof SensitivityWatchEventModifier)
                 .map(SensitivityWatchEventModifier.class::cast)
@@ -587,7 +589,7 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
         String directoryPath = url.getParameter(CONFIG_CENTER_DIR_PARAM_NAME, DEFAULT_CONFIG_CENTER_DIR_PATH);
         File rootDirectory = new File(url.getParameter(CONFIG_CENTER_DIR_PARAM_NAME, DEFAULT_CONFIG_CENTER_DIR_PATH));
         if (!rootDirectory.exists() && !rootDirectory.mkdirs()) {
-            throw new IllegalStateException(format("Dubbo config center directory[%s] can't be created!",
+            throw new IllegalStateException(format("Dubbo config center rootDirectory[%s] can't be created!",
                     directoryPath));
         }
         return rootDirectory;
@@ -595,6 +597,10 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
 
     private static String getEncoding(URL url) {
         return url.getParameter(CONFIG_CENTER_ENCODING_PARAM_NAME, DEFAULT_CONFIG_CENTER_ENCODING);
+    }
+
+    private static int getThreadPoolSize(URL url) {
+        return url.getParameter(THREAD_POOL_SIZE_PARAM_NAME, DEFAULT_THREAD_POOL_SIZE);
     }
 
     private static ThreadPoolExecutor newWatchEventsLoopThreadPool() {
