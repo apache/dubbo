@@ -489,7 +489,7 @@ public abstract class AbstractConfig implements Serializable {
         for (Method method : methods) {
             try {
                 String name = method.getName();
-                if (isMetaMethod(method)) {
+                if (MethodUtils.isMetaMethod(method)) {
                     String prop = calculateAttributeFromGetter(name);
                     String key;
                     Parameter parameter = method.getAnnotation(Parameter.class);
@@ -619,28 +619,6 @@ public abstract class AbstractConfig implements Serializable {
         return true;
     }
 
-    private boolean isMetaMethod(Method method) {
-        String name = method.getName();
-        if (!(name.startsWith("get") || name.startsWith("is"))) {
-            return false;
-        }
-        if ("get".equals(name)) {
-            return false;
-        }
-        if ("getClass".equals(name)) {
-            return false;
-        }
-        if (!Modifier.isPublic(method.getModifiers())) {
-            return false;
-        }
-        if (method.getParameterTypes().length != 0) {
-            return false;
-        }
-        if (!ClassUtils.isPrimitive(method.getReturnType())) {
-            return false;
-        }
-        return true;
-    }
 
     @Override
     public boolean equals(Object obj) {
