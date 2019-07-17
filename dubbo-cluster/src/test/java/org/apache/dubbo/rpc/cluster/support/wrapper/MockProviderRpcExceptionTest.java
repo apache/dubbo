@@ -53,7 +53,7 @@ public class MockProviderRpcExceptionTest {
     @Test
     public void testMockInvokerProviderRpcException() {
         URL url = URL.valueOf("remote://1.2.3.4/" + IHelloRpcService.class.getName());
-        url = url.addParameter(MOCK_KEY, "true");
+        url = url.addParameter(MOCK_KEY, "true").addParameter("invoke_return_error", "true");
         Invoker<IHelloRpcService> cluster = getClusterInvoker(url);
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getSomething4");
