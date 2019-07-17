@@ -154,7 +154,7 @@ public class AccessLogFilter implements Filter {
                  iterator.hasNext();
                  iterator.remove()) {
                 writer.write(iterator.next().getLogMessage());
-                writer.write("\r\n");
+                writer.write(System.getProperty("line.separator"));
             }
             writer.flush();
         }
