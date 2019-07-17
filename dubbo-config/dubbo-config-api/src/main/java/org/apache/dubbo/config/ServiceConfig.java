@@ -487,50 +487,48 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                     }
                 }
                 List<ArgumentConfig> arguments = method.getArguments();
-                if (CollectionUtils.isNotEmpty(arguments)) {
-                    for (ArgumentConfig argument : arguments) {
-                        // convert argument type
-                        if (argument.getType() != null && argument.getType().length() > 0) {
-                            Method[] methods = interfaceClass.getMethods();
-                            // visit all methods
-                            if (methods != null && methods.length > 0) {
-                                for (int i = 0; i < methods.length; i++) {
-                                    String methodName = methods[i].getName();
-                                    // target the method, and get its signature
-                                    if (methodName.equals(method.getName())) {
-                                        Class<?>[] argtypes = methods[i].getParameterTypes();
-                                        // one callback in the method
-                                        if (argument.getIndex() != -1) {
-                                            if (argtypes[argument.getIndex()].getName().equals(argument.getType())) {
-                                                appendParameters(map, argument, method.getName() + "." + argument.getIndex());
-                                            } else {
-                                                throw new IllegalArgumentException("Argument config error : the index attribute and type attribute not match :index :" + argument.getIndex() + ", type:" + argument.getType());
-                                            }
-                                        } else {
-                                            // multiple callbacks in the method
-                                            for (int j = 0; j < argtypes.length; j++) {
-                                                Class<?> argclazz = argtypes[j];
-                                                if (argclazz.getName().equals(argument.getType())) {
-                                                    appendParameters(map, argument, method.getName() + "." + j);
-                                                    if (argument.getIndex() != -1 && argument.getIndex() != j) {
-                                                        throw new IllegalArgumentException("Argument config error : the index attribute and type attribute not match :index :" + argument.getIndex() + ", type:" + argument.getType());
-                                                    }
-                                                }
-                                            }
-                                        }
+                if (CollectionUtils.isEmpty(arguments)) {
+                    continue;
+                }
+                for (ArgumentConfig argument : arguments) {
+                    // convert argument type
+                    if (StringUtils.isBlank(argument.getType()) && argument.getIndex() == -1) {
+                        throw new IllegalArgumentException("Argument config must set index or type attribute.eg: <dubbo:argument index='0' .../> or <dubbo:argument type=xxx .../>");
+                    } else if (StringUtils.isBlank(argument.getType())) {
+                        appendParameters(map, argument, method.getName() + "." + argument.getIndex());
+                    }
+
+                    Method[] methods = interfaceClass.getMethods();
+                    if (methods == null || methods.length == 0) {
+                        continue;
+                    }
+                    // visit all methods
+                    for (int i = 0; i < methods.length; i++) {
+                        String methodName = methods[i].getName();
+                        // target the method, and get its signature
+                        if (methodName.equals(method.getName())) {
+                            Class<?>[] argTypes = methods[i].getParameterTypes();
+                            // one callback in the method
+                            if (argument.getIndex() != -1) {
+                                if (argument.getType().equals(argTypes[argument.getIndex()].getName())) {
+                                    appendParameters(map, argument, method.getName() + "." + argument.getIndex());
+                                } else {
+                                    throw new IllegalArgumentException("Argument config error : the index attribute and type attribute not match :index :" + argument.getIndex() + ", type:" + argument.getType());
+                                }
+                            } else {
+                                // multiple callbacks in the method
+                                for (int j = 0; j < argTypes.length; j++) {
+                                    Class<?> argClazz = argTypes[j];
+                                    if (argument.getType().equals(argClazz.getName())) {
+                                        appendParameters(map, argument, method.getName() + "." + j);
                                     }
                                 }
                             }
-                        } else if (argument.getIndex() != -1) {
-                            appendParameters(map, argument, method.getName() + "." + argument.getIndex());
-                        } else {
-                            throw new IllegalArgumentException("Argument config must set index or type attribute.eg: <dubbo:argument index='0' .../> or <dubbo:argument type=xxx .../>");
                         }
-
                     }
                 }
-            } // end of methods for
-        }
+            }
+        } // end of methods for
 
         if (ProtocolUtils.isGeneric(generic)) {
             map.put(GENERIC_KEY, generic);
