@@ -16,15 +16,24 @@
  */
 package org.apache.dubbo.common.config.configcenter;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.common.config.configcenter.file.FileSystemDynamicConfigurationFactory;
+
+import org.junit.jupiter.api.Test;
+
+import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * The factory interface to create the instance of {@link DynamicConfiguration}
+ * {@link DynamicConfigurationFactory} Test
+ *
+ * @since 2.7.4
  */
-@SPI("file") // 2.7.4 change the default SPI implementation
-public interface DynamicConfigurationFactory {
+public class DynamicConfigurationFactoryTest {
 
-    DynamicConfiguration getDynamicConfiguration(URL url);
-
+    @Test
+    public void testDefaultExtension() {
+        DynamicConfigurationFactory factory = getExtensionLoader(DynamicConfigurationFactory.class).getDefaultExtension();
+        assertEquals(FileSystemDynamicConfigurationFactory.class, factory.getClass());
+        assertEquals(factory, getExtensionLoader(DynamicConfigurationFactory.class).getExtension("file"));
+    }
 }

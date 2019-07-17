@@ -30,6 +30,6 @@ public class FileSystemDynamicConfigurationFactory extends AbstractDynamicConfig
 
     @Override
     protected DynamicConfiguration createDynamicConfiguration(URL url) {
-        return null;
+        return new FileSystemDynamicConfiguration(url);
     }
 }
