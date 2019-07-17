@@ -308,10 +308,10 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     private DynamicConfiguration getDynamicConfiguration(URL url) {
-        DynamicConfigurationFactory factories = ExtensionLoader
+        DynamicConfigurationFactory factory = ExtensionLoader
                 .getExtensionLoader(DynamicConfigurationFactory.class)
                 .getExtension(url.getProtocol());
-        DynamicConfiguration configuration = factories.getDynamicConfiguration(url);
+        DynamicConfiguration configuration = factory.getDynamicConfiguration(url);
         Environment.getInstance().setDynamicConfiguration(configuration);
         return configuration;
     }
@@ -619,6 +619,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             Environment.getInstance().getDynamicConfiguration().orElseGet(() -> {
                 ConfigManager configManager = ConfigManager.getInstance();
                 ConfigCenterConfig cc = configManager.getConfigCenter().orElse(new ConfigCenterConfig());
+                cc.setParameters(new HashMap<>());
+                cc.getParameters().put(org.apache.dubbo.remoting.Constants.CLIENT_KEY,rc.getClient());
                 cc.setProtocol(rc.getProtocol());
                 cc.setAddress(rc.getAddress());
                 cc.setHighestPriority(false);

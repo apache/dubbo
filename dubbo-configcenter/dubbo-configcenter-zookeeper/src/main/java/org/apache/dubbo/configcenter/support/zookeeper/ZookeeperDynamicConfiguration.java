@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.configcenter.Constants.CONFIG_NAMESPACE_KEY;
 
@@ -61,7 +62,12 @@ public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
         zkClient.addDataListener(rootPath, cacheListener, executor);
         try {
             // Wait for connection
-            this.initializedLatch.await();
+            long timeout = url.getParameter("init.timeout", 5000);
+            boolean isCountDown = this.initializedLatch.await(timeout, TimeUnit.MILLISECONDS);
+            if (!isCountDown) {
+                throw new IllegalStateException("Failed to receive INITIALIZED event from zookeeper, pls. check if url "
+                        + url + " is correct");
+            }
         } catch (InterruptedException e) {
             logger.warn("Failed to build local cache for config center (zookeeper)." + url);
         }

@@ -249,7 +249,7 @@ public abstract class AbstractConfig implements Serializable {
         }
     }
 
-    protected static ConsumerMethodModel.AsyncMethodInfo convertMethodConfig2AyncInfo(MethodConfig methodConfig) {
+    protected static ConsumerMethodModel.AsyncMethodInfo convertMethodConfig2AsyncInfo(MethodConfig methodConfig) {
         if (methodConfig == null || (methodConfig.getOninvoke() == null && methodConfig.getOnreturn() == null && methodConfig.getOnthrow() == null)) {
             return null;
         }
@@ -650,7 +650,7 @@ public abstract class AbstractConfig implements Serializable {
 
         Method[] methods = this.getClass().getMethods();
         for (Method method1 : methods) {
-            if (MethodUtils.isGetter(method1) && ClassUtils.isPrimitive(method1.getReturnType())) {
+            if (MethodUtils.isGetter(method1)) {
                 Parameter parameter = method1.getAnnotation(Parameter.class);
                 if (parameter != null && parameter.excluded()) {
                     continue;
