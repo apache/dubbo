@@ -227,12 +227,14 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
         try {
             TreeCache treeCache = TreeCache.newBuilder(client, path).setCacheData(false).build();
             treeCacheMap.putIfAbsent(path, treeCache);
-            treeCache.start();
+
             if (executor == null) {
                 treeCache.getListenable().addListener(treeCacheListener);
             } else {
                 treeCache.getListenable().addListener(treeCacheListener, executor);
             }
+
+            treeCache.start();
         } catch (Exception e) {
             throw new IllegalStateException("Add treeCache listener for path:" + path, e);
         }

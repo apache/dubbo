@@ -108,12 +108,12 @@ public class MethodConfigTest {
     }
 
     @Test
-    public void testConverMethodConfig2AsyncInfo() throws Exception{
+    public void testConvertMethodConfig2AsyncInfo() throws Exception{
         org.apache.dubbo.config.MethodConfig methodConfig = new org.apache.dubbo.config.MethodConfig();
         methodConfig.setOninvokeMethod("setName");
         methodConfig.setOninvoke(new Person());
 
-        ConsumerMethodModel.AsyncMethodInfo methodInfo = org.apache.dubbo.config.MethodConfig.convertMethodConfig2AyncInfo(methodConfig);
+        ConsumerMethodModel.AsyncMethodInfo methodInfo = org.apache.dubbo.config.MethodConfig.convertMethodConfig2AsyncInfo(methodConfig);
 
         assertEquals(methodInfo.getOninvokeMethod(), Person.class.getMethod("setName", String.class));
     }

@@ -68,7 +68,7 @@ public class AccessLogFilter implements Filter {
 
     private static final Logger logger = LoggerFactory.getLogger(AccessLogFilter.class);
 
-    private static final String ACCESS_LOG_KEY = "dubbo.accesslog";
+    private static final String LOG_KEY = "dubbo.accesslog";
 
     private static final int LOG_MAX_BUFFER = 5000;
 
@@ -179,7 +179,7 @@ public class AccessLogFilter implements Filter {
              iterator.hasNext();
              iterator.remove()) {
             AccessLogData logData = iterator.next();
-            LoggerFactory.getLogger(ACCESS_LOG_KEY + "." + logData.getServiceName()).info(logData.getLogMessage());
+            LoggerFactory.getLogger(LOG_KEY + "." + logData.getServiceName()).info(logData.getLogMessage());
         }
     }
 

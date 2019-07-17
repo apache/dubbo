@@ -684,6 +684,20 @@ public class PojoUtilsTest {
     }
 
     @Test
+    public void testIntToBoolean() throws Exception {
+        Map<String, Object> map = new HashMap<>();
+        map.put("name", "myname");
+        map.put("male", 1);
+        map.put("female", 0);
+
+        PersonInfo personInfo = (PersonInfo) PojoUtils.realize(map, PersonInfo.class);
+
+        assertEquals("myname", personInfo.getName());
+        assertTrue(personInfo.isMale());
+        assertFalse(personInfo.isFemale());
+    }
+  
+    @Test
     public void testRealizeCollectionWithNullElement() {
         LinkedList<String> listStr = new LinkedList<>();
         listStr.add("arrayValue");
