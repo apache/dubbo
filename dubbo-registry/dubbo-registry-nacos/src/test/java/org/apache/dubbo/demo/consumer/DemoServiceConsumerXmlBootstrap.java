@@ -32,10 +32,14 @@ public class DemoServiceConsumerXmlBootstrap {
         context.setConfigLocation("/META-INF/spring/dubbo-consumer-context.xml");
         context.refresh();
         System.out.println("DemoService consumer (XML) is starting...");
-        DemoService demoService = context.getBean("demoService", DemoService.class);
-        for (int i = 0; i < 10; i++) {
-            System.out.println(demoService.sayName("小马哥（mercyblitz）"));
+
+        for (int i = 1; i <= 5; i++) {
+            DemoService demoService = context.getBean("demoService" + i, DemoService.class);
+            for (int j = 0; j < 10; j++) {
+                System.out.println(demoService.sayName("小马哥（mercyblitz）"));
+            }
         }
+
         System.in.read();
         context.close();
     }

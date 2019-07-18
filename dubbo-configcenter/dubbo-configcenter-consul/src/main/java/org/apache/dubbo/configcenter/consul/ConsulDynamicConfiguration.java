@@ -40,8 +40,8 @@ import java.util.concurrent.ExecutorService;
 
 import static java.util.concurrent.Executors.newCachedThreadPool;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
-import static org.apache.dubbo.configcenter.Constants.CONFIG_NAMESPACE_KEY;
 import static org.apache.dubbo.configcenter.ConfigChangeType.ADDED;
+import static org.apache.dubbo.configcenter.Constants.CONFIG_NAMESPACE_KEY;
 
 /**
  * config center implementation for consul
@@ -74,9 +74,10 @@ public class ConsulDynamicConfiguration implements DynamicConfiguration {
     @Override
     public void addListener(String key, String group, ConfigurationListener listener) {
         logger.info("register listener " + listener.getClass() + " for config with key: " + key + ", group: " + group);
-        ConsulKVWatcher watcher = watchers.putIfAbsent(key, new ConsulKVWatcher(key));
+        String normalizedKey = convertKey(group, key);
+        ConsulKVWatcher watcher = watchers.putIfAbsent(normalizedKey, new ConsulKVWatcher(normalizedKey));
         if (watcher == null) {
-            watcher = watchers.get(key);
+            watcher = watchers.get(normalizedKey);
             watcherService.submit(watcher);
         }
         watcher.addListener(listener);
@@ -85,27 +86,23 @@ public class ConsulDynamicConfiguration implements DynamicConfiguration {
     @Override
     public void removeListener(String key, String group, ConfigurationListener listener) {
         logger.info("unregister listener " + listener.getClass() + " for config with key: " + key + ", group: " + group);
-        ConsulKVWatcher watcher = watchers.get(key);
+        ConsulKVWatcher watcher = watchers.get(convertKey(group, key));
         if (watcher != null) {
             watcher.removeListener(listener);
         }
     }
 
     @Override
-    public String getConfig(String key, String group, long timeout) throws IllegalStateException {
-        if (StringUtils.isNotEmpty(group)) {
-            key = group + PATH_SEPARATOR + key;
-        } else {
-            int i = key.lastIndexOf(".");
-            key = key.substring(0, i) + PATH_SEPARATOR + key.substring(i + 1);
-        }
-
-        return (String) getInternalProperty(rootPath + PATH_SEPARATOR + key);
+    public String getRule(String key, String group, long timeout) throws IllegalStateException {
+        return (String) getInternalProperty(convertKey(group, key));
     }
 
     @Override
-    public String getConfigs(String key, String group, long timeout) throws IllegalStateException {
-        return getConfig(key, group, timeout);
+    public String getProperties(String key, String group, long timeout) throws IllegalStateException {
+        if (StringUtils.isEmpty(group)) {
+            group = DEFAULT_GROUP;
+        }
+        return (String) getInternalProperty(convertKey(group, key));
     }
 
     @Override
@@ -130,6 +127,10 @@ public class ConsulDynamicConfiguration implements DynamicConfiguration {
         return null;
     }
 
+    private String convertKey(String group, String key) {
+        return rootPath + PATH_SEPARATOR + group + PATH_SEPARATOR + key;
+    }
+
     private int buildWatchTimeout(URL url) {
         return url.getParameter(WATCH_TIMEOUT, DEFAULT_WATCH_TIMEOUT) / 1000;
     }
@@ -141,7 +142,7 @@ public class ConsulDynamicConfiguration implements DynamicConfiguration {
         private boolean existing = false;
 
         public ConsulKVWatcher(String key) {
-            this.key = convertKey(key);
+            this.key = key;
             this.listeners = new HashSet<>();
         }
 
@@ -198,11 +199,6 @@ public class ConsulDynamicConfiguration implements DynamicConfiguration {
 
         private void removeListener(ConfigurationListener listener) {
             this.listeners.remove(listener);
-        }
-
-        private String convertKey(String key) {
-            int index = key.lastIndexOf('.');
-            return rootPath + PATH_SEPARATOR + key.substring(0, index) + PATH_SEPARATOR + key.substring(index + 1);
         }
 
         private void stop() {

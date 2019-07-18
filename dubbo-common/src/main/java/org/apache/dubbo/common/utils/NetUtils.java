@@ -37,9 +37,9 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Pattern;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_IP_TO_BIND;
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_IP_TO_BIND;
 
 /**
  * IP and Port Helper for RPC
@@ -371,13 +371,25 @@ public class NetUtils {
             while (addresses.hasMoreElements()) {
                 InetAddress address = (InetAddress) addresses.nextElement();
                 if (preferIpv6 && address instanceof Inet6Address) {
-                    multicastSocket.setInterface(address);
-                    interfaceSet = true;
-                    break;
+                    try {
+                        if(address.isReachable(100)){
+                            multicastSocket.setInterface(address);
+                            interfaceSet = true;
+                            break;
+                        }
+                    } catch (IOException e) {
+                        // ignore
+                    }
                 } else if (!preferIpv6 && address instanceof Inet4Address) {
-                    multicastSocket.setInterface(address);
-                    interfaceSet = true;
-                    break;
+                    try {
+                        if(address.isReachable(100)){
+                            multicastSocket.setInterface(address);
+                            interfaceSet = true;
+                            break;
+                        }
+                    } catch (IOException e) {
+                        // ignore
+                    }
                 }
             }
             if (interfaceSet) {

@@ -105,6 +105,7 @@ public class RpcContext {
     private Object response;
     private AsyncContext asyncContext;
 
+
     protected RpcContext() {
     }
 
@@ -224,7 +225,7 @@ public class RpcContext {
      */
     @SuppressWarnings("unchecked")
     public <T> CompletableFuture<T> getCompletableFuture() {
-        return FutureContext.getCompletableFuture();
+        return FutureContext.getContext().getCompletableFuture();
     }
 
     /**
@@ -235,7 +236,7 @@ public class RpcContext {
      */
     @SuppressWarnings("unchecked")
     public <T> Future<T> getFuture() {
-        return FutureContext.getCompletableFuture();
+        return FutureContext.getContext().getCompletableFuture();
     }
 
     /**
@@ -244,7 +245,7 @@ public class RpcContext {
      * @param future
      */
     public void setFuture(CompletableFuture<?> future) {
-        FutureContext.setFuture(future);
+        FutureContext.getContext().setFuture(future);
     }
 
     public List<URL> getUrls() {
