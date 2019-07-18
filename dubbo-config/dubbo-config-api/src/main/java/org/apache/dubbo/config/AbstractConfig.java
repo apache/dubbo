@@ -18,8 +18,8 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.CompositeConfiguration;
+import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.Environment;
-import org.apache.dubbo.common.config.InmemoryConfiguration;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
@@ -29,6 +29,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.MethodUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.context.ConfigConfigurationAdapter;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ConsumerMethodModel;
 
@@ -212,10 +213,12 @@ public abstract class AbstractConfig implements Serializable {
         }
     }
 
+    @Deprecated
     protected static void appendAttributes(Map<String, Object> parameters, Object config) {
         appendAttributes(parameters, config, null);
     }
 
+    @Deprecated
     protected static void appendAttributes(Map<String, Object> parameters, Object config, String prefix) {
         if (config == null) {
             return;
@@ -489,7 +492,7 @@ public abstract class AbstractConfig implements Serializable {
         for (Method method : methods) {
             try {
                 String name = method.getName();
-                if (isMetaMethod(method)) {
+                if (MethodUtils.isMetaMethod(method)) {
                     String prop = calculateAttributeFromGetter(name);
                     String key;
                     Parameter parameter = method.getAnnotation(Parameter.class);
@@ -546,14 +549,13 @@ public abstract class AbstractConfig implements Serializable {
     public void refresh() {
         try {
             CompositeConfiguration compositeConfiguration = Environment.getInstance().getConfiguration(getPrefix(), getId());
-            InmemoryConfiguration config = new InmemoryConfiguration(getPrefix(), getId());
-            config.addProperties(getMetaData());
+            Configuration config = new ConfigConfigurationAdapter(this);
             if (Environment.getInstance().isConfigCenterFirst()) {
                 // The sequence would be: SystemConfiguration -> AppExternalConfiguration -> ExternalConfiguration -> AbstractConfig -> PropertiesConfiguration
-                compositeConfiguration.addConfiguration(3, config);
+                compositeConfiguration.addConfiguration(4, config);
             } else {
                 // The sequence would be: SystemConfiguration -> AbstractConfig -> AppExternalConfiguration -> ExternalConfiguration -> PropertiesConfiguration
-                compositeConfiguration.addConfiguration(1, config);
+                compositeConfiguration.addConfiguration(2, config);
             }
 
             // loop methods, get override value and set the new value back to method
@@ -619,28 +621,6 @@ public abstract class AbstractConfig implements Serializable {
         return true;
     }
 
-    private boolean isMetaMethod(Method method) {
-        String name = method.getName();
-        if (!(name.startsWith("get") || name.startsWith("is"))) {
-            return false;
-        }
-        if ("get".equals(name)) {
-            return false;
-        }
-        if ("getClass".equals(name)) {
-            return false;
-        }
-        if (!Modifier.isPublic(method.getModifiers())) {
-            return false;
-        }
-        if (method.getParameterTypes().length != 0) {
-            return false;
-        }
-        if (!ClassUtils.isPrimitive(method.getReturnType())) {
-            return false;
-        }
-        return true;
-    }
 
     @Override
     public boolean equals(Object obj) {

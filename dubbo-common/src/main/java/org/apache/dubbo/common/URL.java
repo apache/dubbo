@@ -40,20 +40,20 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.PORT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY_PREFIX;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PASSWORD_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PORT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.USERNAME_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 
 /**
  * URL - Uniform Resource Locator (Immutable, ThreadSafe)
@@ -1246,14 +1246,27 @@ class URL implements Serializable {
     }
 
     /**
-     * The format is '{group}*{interfaceName}:{version}'
-     *
+     * The format is "{interface}:[version]:[group]"
      * @return
      */
-    public String getEncodedServiceKey() {
-        String serviceKey = this.getServiceKey();
-        serviceKey = serviceKey.replaceFirst("/", "*");
-        return serviceKey;
+    public String getColonSeparatedKey() {
+        StringBuilder serviceNameBuilder = new StringBuilder();
+        append(serviceNameBuilder, INTERFACE_KEY, true);
+        append(serviceNameBuilder, VERSION_KEY, false);
+        append(serviceNameBuilder, GROUP_KEY, false);
+        return serviceNameBuilder.toString();
+    }
+
+    private void append(StringBuilder target, String parameterName, boolean first) {
+        String parameterValue = this.getParameter(parameterName);
+        if (!StringUtils.isBlank(parameterValue)) {
+            if (!first) {
+                target.append(":");
+            }
+            target.append(parameterValue);
+        } else {
+            target.append(":");
+        }
     }
 
     /**

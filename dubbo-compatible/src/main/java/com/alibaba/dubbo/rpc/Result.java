@@ -18,7 +18,7 @@
 package com.alibaba.dubbo.rpc;
 
 import java.util.Map;
-import java.util.function.Function;
+import java.util.function.BiConsumer;
 
 @Deprecated
 public interface Result extends org.apache.dubbo.rpc.Result {
@@ -36,7 +36,7 @@ public interface Result extends org.apache.dubbo.rpc.Result {
     abstract class AbstractResult extends org.apache.dubbo.rpc.AbstractResult implements Result {
 
         @Override
-        public org.apache.dubbo.rpc.Result thenApplyWithContext(Function<org.apache.dubbo.rpc.Result, org.apache.dubbo.rpc.Result> fn) {
+        public org.apache.dubbo.rpc.Result whenCompleteWithContext(BiConsumer<org.apache.dubbo.rpc.Result, Throwable> fn) {
             return null;
         }
     }
