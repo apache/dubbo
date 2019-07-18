@@ -91,6 +91,14 @@ public class BytesTest {
     }
 
     @Test
+    public void testBase642bCharArrCall() {
+        byte[] stringCall = Bytes.base642bytes("ZHViYm8=", C64);
+        byte[] charArrCall = Bytes.base642bytes("ZHViYm8=", C64.toCharArray());
+
+        assertThat(stringCall, is(charArrCall));
+    }
+
+    @Test
     public void testHex() {
         String str = Bytes.bytes2hex(b1);
         assertThat(b1, is(Bytes.hex2bytes(str)));
