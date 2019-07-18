@@ -97,7 +97,6 @@ public class NettyClient extends AbstractClient {
                 .channel(NioSocketChannel.class);
 
         bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, Math.max(3000, getConnectTimeout()));
-
         bootstrap.handler(new ChannelInitializer() {
 
             @Override
