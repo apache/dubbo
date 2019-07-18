@@ -111,37 +111,37 @@ public class SpringExtensionFactory implements ExtensionFactory {
         public void onApplicationEvent(ApplicationEvent event) {
             if (event instanceof ContextClosedEvent) {
                 if (logger.isInfoEnabled()){
-                    logger.info("Run shutdown hook now graceFull");
+                    logger.info("Run shutdown hook now graceFul");
                 }
 
                 DubboShutdownHook shutdownHook = DubboShutdownHook.getDubboShutdownHook();
                 shutdownHook.destroyRegistries();
 
-                beanLoop(GraceFullShutDown::afterRegistriesDestroyed);
+                ApplicationContext context = ((ContextClosedEvent) event).getApplicationContext();
+                beanLoop(context, GraceFulShutDown::afterRegistriesDestroyed);
                 shutdownHook.destroyProtocols();
-                beanLoop(GraceFullShutDown::afterProtocolDestroyed);
+                beanLoop(context, GraceFulShutDown::afterProtocolDestroyed);
             }
         }
 
-        private void beanLoop(Consumer<GraceFullShutDown> consumer){
+        private void beanLoop(ApplicationContext context, Consumer<GraceFulShutDown> consumer) {
 
-            for (ApplicationContext context : CONTEXTS) {
                 try {
-                    String[] beanNames = context.getBeanNamesForType(GraceFullShutDown.class);
+                    String[] beanNames = context.getBeanNamesForType(GraceFulShutDown.class);
                     for (String beanName :beanNames){
-                        GraceFullShutDown bean = context.getBean(beanName,GraceFullShutDown.class);
+                        GraceFulShutDown bean = context.getBean(beanName, GraceFulShutDown.class);
                         consumer.accept(bean);
                     }
                 }catch (NoSuchBeanDefinitionException noBeanExe){
                     if (logger.isWarnEnabled()) {
-                        logger.warn("Error when get spring extension(bean) for GraceFullShutDown:", noBeanExe);
+                        logger.warn("Error when get spring extension(bean) for GraceFulShutDown:", noBeanExe);
                     }
                 }catch (Exception e){
                     if (logger.isWarnEnabled()) {
-                        logger.warn("Error when GraceFullShutDown:", e);
+                        logger.warn("Error when GraceFulShutDown:", e);
                     }
                 }
-            }
+
         }
     }
 }
