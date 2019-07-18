@@ -748,7 +748,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
 
     /**
-     * check if the host is already
+     * check if the host is ready
      */
     private void checkHostBind() {
         lock.lock();
