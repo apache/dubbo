@@ -78,6 +78,7 @@ import static org.apache.dubbo.monitor.Constants.LOGSTAT_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
 import static org.apache.dubbo.registry.Constants.REGISTER_KEY;
 import static org.apache.dubbo.registry.Constants.SUBSCRIBE_KEY;
+import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
 import static org.apache.dubbo.remoting.Constants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.rpc.Constants.INVOKER_LISTENER_KEY;
 import static org.apache.dubbo.rpc.Constants.LOCAL_KEY;
@@ -619,8 +620,14 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             Environment.getInstance().getDynamicConfiguration().orElseGet(() -> {
                 ConfigManager configManager = ConfigManager.getInstance();
                 ConfigCenterConfig cc = configManager.getConfigCenter().orElse(new ConfigCenterConfig());
-                cc.setParameters(new HashMap<>());
-                cc.getParameters().put(org.apache.dubbo.remoting.Constants.CLIENT_KEY,rc.getClient());
+                if (StringUtils.isNotEmpty(rc.getClient())) {
+                    Map<String, String> parameters = cc.getParameters();
+                    if (parameters == null) {
+                        parameters = new HashMap<>();
+                        cc.setParameters(parameters);
+                    }
+                    parameters.putIfAbsent(CLIENT_KEY, rc.getClient());
+                }
                 cc.setProtocol(rc.getProtocol());
                 cc.setAddress(rc.getAddress());
                 cc.setHighestPriority(false);
