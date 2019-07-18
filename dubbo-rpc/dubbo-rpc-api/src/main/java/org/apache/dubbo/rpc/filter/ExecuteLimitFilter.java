@@ -52,9 +52,10 @@ public class ExecuteLimitFilter extends ListenableFilter {
         String methodName = invocation.getMethodName();
         int max = url.getMethodParameter(methodName, EXECUTES_KEY, 0);
         if (!RpcStatus.beginCount(url, methodName, max)) {
-            throw new RpcException("Failed to invoke method " + invocation.getMethodName() + " in provider " +
-                    url + ", cause: The service using threads greater than <dubbo:service executes=\"" + max +
-                    "\" /> limited.");
+            throw new RpcException(RpcException.LIMIT_EXCEEDED_EXCEPTION,
+                    "Failed to invoke method " + invocation.getMethodName() + " in provider " +
+                            url + ", cause: The service using threads greater than <dubbo:service executes=\"" + max +
+                            "\" /> limited.");
         }
 
         invocation.setAttachment(EXECUTELIMIT_FILTER_START_TIME, String.valueOf(System.currentTimeMillis()));
@@ -77,6 +78,12 @@ public class ExecuteLimitFilter extends ListenableFilter {
 
         @Override
         public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
+            if (t instanceof RpcException) {
+                RpcException rpcException = (RpcException)t;
+                if (rpcException.isLimitExceed()) {
+                    return;
+                }
+            }
             RpcStatus.endCount(invoker.getUrl(), invocation.getMethodName(), getElapsed(invocation), false);
         }
 

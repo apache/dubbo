@@ -580,6 +580,7 @@ public class PojoUtils {
                 for (Method m : cls.getMethods()) {
                     if (ReflectUtils.isBeanPropertyWriteMethod(m) && m.getName().equals(name)) {
                         method = m;
+                        break;
                     }
                 }
             }
