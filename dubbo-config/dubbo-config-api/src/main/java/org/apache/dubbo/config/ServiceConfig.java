@@ -761,7 +761,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 if (bindHosted){
                     break ;
                 }else {
-                    logger.warn("Unable to get host,Dubbo will output the results every 10s");
+                    logger.warn("Unable to get host, Dubbo will output the results every 10s");
                 }
             }
         } catch (InterruptedException e) {
