@@ -680,6 +680,8 @@ public class MockClusterInvokerTest {
 
         String getSomething3();
 
+        String getSomething4();
+
         int getInt1();
 
         boolean getBoolean1();
@@ -704,6 +706,10 @@ public class MockClusterInvokerTest {
 
         public String getSomething3() {
             return "something3";
+        }
+
+        public String getSomething4(){
+            throw new RpcException("getSomething4|RpcException");
         }
 
         public int getInt1() {
@@ -746,6 +752,10 @@ public class MockClusterInvokerTest {
 
         public String getSomething3() {
             return "something3mock";
+        }
+
+        public String getSomething4(){
+            return "something4mock";
         }
 
         public List<String> getListString() {
