@@ -496,6 +496,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                         throw new IllegalArgumentException("Argument config must set index or type attribute.eg: <dubbo:argument index='0' .../> or <dubbo:argument type=xxx .../>");
                     } else if (StringUtils.isBlank(argument.getType())) {
                         appendParameters(map, argument, method.getName() + "." + argument.getIndex());
+                        continue;
                     }
 
                     Method[] methods = interfaceClass.getMethods();
