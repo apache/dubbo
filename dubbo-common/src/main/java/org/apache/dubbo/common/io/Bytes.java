@@ -730,8 +730,12 @@ public class Bytes {
             char pc = code[64];
             if (str.charAt(off + len - 2) == pc) {
                 size -= 2;
+                --num;
+                rem = 2;
             } else if (str.charAt(off + len - 1) == pc) {
                 size--;
+                --num;
+                rem = 3;
             }
         } else {
             if (rem == 2) {
