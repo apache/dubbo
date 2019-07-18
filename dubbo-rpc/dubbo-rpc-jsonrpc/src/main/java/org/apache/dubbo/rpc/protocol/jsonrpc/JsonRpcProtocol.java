@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.dubbo.rpc.protocol.jsonrpc;
 
 import org.apache.dubbo.common.URL;
@@ -28,7 +29,10 @@ import com.googlecode.jsonrpc4j.HttpException;
 import com.googlecode.jsonrpc4j.JsonRpcClientException;
 import com.googlecode.jsonrpc4j.JsonRpcServer;
 import com.googlecode.jsonrpc4j.spring.JsonProxyFactoryBean;
+import org.apache.dubbo.rpc.service.GenericService;
+import org.apache.dubbo.rpc.support.ProtocolUtils;
 import org.springframework.remoting.RemoteAccessException;
+import org.springframework.remoting.support.RemoteInvocation;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -38,6 +42,8 @@ import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 
 public class JsonRpcProtocol extends AbstractProxyProtocol {
 
@@ -108,17 +114,38 @@ public class JsonRpcProtocol extends AbstractProxyProtocol {
             serverMap.put(addr, server);
         }
         final String path = url.getAbsolutePath();
+        final String genericPath = path + "/" + GENERIC_KEY;
         JsonRpcServer skeleton = new JsonRpcServer(impl, type);
+        JsonRpcServer genericServer = new JsonRpcServer(impl, GenericService.class);
         skeletonMap.put(path, skeleton);
-        return () -> skeletonMap.remove(path);
+        skeletonMap.put(genericPath,genericServer);
+        return () -> {
+            skeletonMap.remove(path);
+            skeletonMap.remove(genericPath);
+        };
     }
 
     @SuppressWarnings("unchecked")
     @Override
     protected <T> T doRefer(final Class<T> serviceType, URL url) throws RpcException {
+        final String generic = url.getParameter(GENERIC_KEY);
+        final boolean isGeneric = ProtocolUtils.isGeneric(generic) || serviceType.equals(GenericService.class);
         JsonProxyFactoryBean jsonProxyFactoryBean = new JsonProxyFactoryBean();
-        jsonProxyFactoryBean.setServiceUrl(url.setProtocol("http").toIdentityString());
-        jsonProxyFactoryBean.setServiceInterface(serviceType);
+        JsonRpcProxyFactoryBean jsonRpcProxyFactoryBean = new JsonRpcProxyFactoryBean(jsonProxyFactoryBean);
+        jsonRpcProxyFactoryBean.setRemoteInvocationFactory((methodInvocation) -> {
+            RemoteInvocation invocation = new JsonRemoteInvocation(methodInvocation);
+            if (isGeneric) {
+                invocation.addAttribute(GENERIC_KEY, generic);
+            }
+            return invocation;
+        });
+        String key = url.setProtocol("http").toIdentityString();
+        if (isGeneric) {
+            key = key + "/" + GENERIC_KEY;
+        }
+
+        jsonRpcProxyFactoryBean.setServiceUrl(key);
+        jsonRpcProxyFactoryBean.setServiceInterface(serviceType);
 
         jsonProxyFactoryBean.afterPropertiesSet();
         return (T) jsonProxyFactoryBean.getObject();
