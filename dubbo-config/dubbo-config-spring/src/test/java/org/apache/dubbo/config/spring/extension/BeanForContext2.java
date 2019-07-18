@@ -31,9 +31,9 @@ public class BeanForContext2 {
         return new DemoServiceImpl();
     }
 
-    @Bean("graceFullShutdown")
-    public GraceFullShutDown graceFullShutDown(){
-        return new GraceFullShutDown() {
+    @Bean("graceFulShutdown")
+    public GraceFulShutDown graceFulShutDown(){
+        return new GraceFulShutDown() {
             private final Logger logger = LoggerFactory.getLogger(SpringExtensionFactory.class);
 
             private boolean flag = false;
