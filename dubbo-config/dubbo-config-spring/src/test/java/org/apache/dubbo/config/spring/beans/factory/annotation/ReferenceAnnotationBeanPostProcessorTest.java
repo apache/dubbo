@@ -54,7 +54,7 @@ import static org.junit.Assert.assertTrue;
 @TestPropertySource(properties = {
         "packagesToScan = org.apache.dubbo.config.spring.context.annotation.provider",
         "consumer.version = ${demo.service.version}",
-        "consumer.url = dubbo://127.0.0.1:12345",
+        "consumer.url = dubbo://127.0.0.1:12345?version=2.5.7",
 })
 public class ReferenceAnnotationBeanPostProcessorTest {
 
@@ -221,7 +221,7 @@ public class ReferenceAnnotationBeanPostProcessorTest {
             return demoServiceFromAncestor;
         }
 
-        @Reference(id = "my-reference-bean", version = "2.5.7", url = "dubbo://127.0.0.1:12345")
+        @Reference(id = "my-reference-bean", version = "2.5.7", url = "dubbo://127.0.0.1:12345?version=2.5.7")
         public void setDemoServiceFromAncestor(DemoService demoServiceFromAncestor) {
             this.demoServiceFromAncestor = demoServiceFromAncestor;
         }
@@ -259,7 +259,7 @@ public class ReferenceAnnotationBeanPostProcessorTest {
             return demoService;
         }
 
-        @com.alibaba.dubbo.config.annotation.Reference(version = "2.5.7", url = "dubbo://127.0.0.1:12345")
+        @com.alibaba.dubbo.config.annotation.Reference(version = "2.5.7", url = "dubbo://127.0.0.1:12345?version=2.5.7")
         public void setDemoService(DemoService demoService) {
             this.demoService = demoService;
         }
