@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
+import org.apache.dubbo.event.EventDispatcher;
 import org.apache.dubbo.event.EventListener;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
@@ -37,6 +38,9 @@ import com.google.gson.Gson;
 
 import java.io.File;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -44,7 +48,7 @@ import java.util.concurrent.ConcurrentMap;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
 
 /**
- * @author cvictory ON 2019-07-08
+ * 2019-07-08
  */
 public class EtcdServiceDiscovery implements ServiceDiscovery, EventListener<ServiceInstancesChangedEvent> {
 
@@ -53,9 +57,11 @@ public class EtcdServiceDiscovery implements ServiceDiscovery, EventListener<Ser
     private final String root = "/services";
 
     private final Set<String> services = new ConcurrentHashSet<>();
+    private final Map<String, ChildListener> childListenerMap = new ConcurrentHashMap<>();
 
     private final ConcurrentMap<URL, ConcurrentMap<NotifyListener, ChildListener>> etcdListeners = new ConcurrentHashMap<>();
     private final EtcdClient etcdClient;
+    private final EventDispatcher dispatcher;
 
     public EtcdServiceDiscovery(URL url, EtcdTransporter etcdTransporter) {
         if (url.isAnyHost()) {
@@ -72,11 +78,14 @@ public class EtcdServiceDiscovery implements ServiceDiscovery, EventListener<Ser
                 }
             }
         });
+
+        this.dispatcher = EventDispatcher.getDefaultExtension();
+        this.dispatcher.addEventListener(this);
     }
 
     @Override
     public void onEvent(ServiceInstancesChangedEvent event) {
-
+        registerServiceWatcher(event.getServiceName());
     }
 
     @Override
@@ -104,7 +113,8 @@ public class EtcdServiceDiscovery implements ServiceDiscovery, EventListener<Ser
     }
 
     String toPath(ServiceInstance serviceInstance) {
-        return root + File.separator + serviceInstance.getServiceName() + File.separator + serviceInstance.getId();
+        return root + File.separator + serviceInstance.getServiceName() + File.separator + serviceInstance.getHost()
+                + ":" + serviceInstance.getPort();
     }
 
     @Override
@@ -139,23 +149,30 @@ public class EtcdServiceDiscovery implements ServiceDiscovery, EventListener<Ser
 
     @Override
     public void addServiceInstancesChangedListener(String serviceName, ServiceInstancesChangedListener listener) throws NullPointerException, IllegalArgumentException {
-
+        registerServiceWatcher(serviceName);
+        dispatcher.addEventListener(listener);
     }
 
     protected void registerServiceWatcher(String serviceName) {
-        String path = buildServicePath(serviceName);
-        CuratorWatcher watcher = watcherCaches.computeIfAbsent(path, key ->
-                new ZookeeperServiceDiscoveryChangeWatcher(this, serviceName, dispatcher));
-        try {
-            etcdClient.
-            curatorFramework.getChildren().usingWatcher(watcher).forPath(path);
-        } catch (KeeperException.NoNodeException e) {
-            // ignored
-            if (logger.isErrorEnabled()) {
-                logger.error(e.getMessage());
-            }
-        } catch (Exception e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
+        String path = root + File.separator + serviceName;
+        /*
+         *  if we have no category watcher listener,
+         *  we find out the current listener or create one for the current category, put or get only once.
+         */
+        ChildListener childListener =
+                Optional.ofNullable(childListenerMap.get(serviceName))
+                        .orElseGet(() -> {
+                            ChildListener watchListener, prev;
+                            prev = childListenerMap.putIfAbsent(serviceName, watchListener = (parentPath, currentChildren) ->
+                                    dispatcher.dispatch(new ServiceInstancesChangedEvent(serviceName, getInstances(serviceName))));
+                            return prev != null ? prev : watchListener;
+                        });
+
+        etcdClient.create(path);
+        /*
+         * at the first time, we want to pull already category and then watch their direct children,
+         *  eg: /dubbo/interface/providers, /dubbo/interface/consumers and so on.
+         */
+        List<String> children = etcdClient.addChildListener(path, childListener);
     }
 }

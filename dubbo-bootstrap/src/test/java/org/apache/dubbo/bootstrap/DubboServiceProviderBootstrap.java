@@ -35,9 +35,11 @@ public class DubboServiceProviderBootstrap {
 
         new DubboBootstrap()
                 .application(ApplicationBuilder.newBuilder().name("dubbo-provider-demo").metadata("remote").build())
+//                .metadataReport(MetadataReportBuilder.newBuilder().address("zookeeper://127.0.0.1:2181").build())
                 .metadataReport(MetadataReportBuilder.newBuilder().address("zookeeper://127.0.0.1:2181").build())
 //                .application(ApplicationBuilder.newBuilder().name("dubbo-provider-demo").build())
-                .registry(RegistryBuilder.newBuilder().address("zookeeper://127.0.0.1:2181?registry-type=service").build())
+//                .registry(RegistryBuilder.newBuilder().address("zookeeper://127.0.0.1:2181?registry-type=service").build())
+                .registry(RegistryBuilder.newBuilder().address("etcd3://127.0.0.1:2379?registry-type=service").build())
                 .protocol(ProtocolBuilder.newBuilder().port(-1).name("dubbo").build())
                 .service(ServiceBuilder.newBuilder().id("test").interfaceClass(EchoService.class).ref(new EchoServiceImpl()).build())
                 .start()
