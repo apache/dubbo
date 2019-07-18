@@ -19,6 +19,8 @@ package org.apache.dubbo.config.spring.beans.factory.annotation;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ArrayUtils;
+import org.apache.dubbo.config.MethodConfig;
+import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.context.annotation.DubboClassPathBeanDefinitionScanner;
@@ -387,6 +389,11 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
         builder.addPropertyValue("interface", interfaceClass.getName());
         // Convert parameters into map
         builder.addPropertyValue("parameters", convertParameters(serviceAnnotationAttributes.getStringArray("parameters")));
+        // Add methods parameters
+        List<MethodConfig> methodConfigs = convertMethodConfigs(serviceAnnotationAttributes.get("methods"));
+        if (!methodConfigs.isEmpty()) {
+            builder.addPropertyValue("methods", methodConfigs);
+        }
 
         /**
          * Add {@link org.apache.dubbo.config.ProviderConfig} Bean reference
@@ -447,6 +454,12 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
 
     }
 
+    private List<MethodConfig> convertMethodConfigs(Object methodsAnnotation) {
+        if (methodsAnnotation == null){
+            return null;
+        }
+        return MethodConfig.constructMethodConfig((Method[])methodsAnnotation);
+    }
 
     private ManagedList<RuntimeBeanReference> toRuntimeBeanReferences(String... beanNames) {
 
