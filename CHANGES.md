@@ -5,26 +5,25 @@
 ### Change List
 
 1. Asynchronous support
-
-    - Unified asynchronous and synchronous callback process, exception scenario triggers onError callback, #4401.
-    - Performance degradation caused by CompletableFuture.get() in JDK1.8 environment, #4279.
+    * Unified asynchronous and synchronous callback process, exception scenario triggers onError callback, #4401
+    * Performance degradation caused by CompletableFuture.get() in JDK1.8 environment, #4279
 
 2. Configuration Center
-
-    - ConfigCenter custom namespace does not take effect, #4411.
-    - Unify the models implemented by several configuration centers such as Zookeeper, Nacos, and Etcd. Please refer to the description for possible incompatibility issues, #4388.
-    - Adjust Override Coverage Rule Center Priority: Service Level > Application Level, #4175.
+    * ConfigCenter custom namespace does not take effect, #4411
+    * Unify the models implemented by several configuration centers such as Zookeeper, Nacos, and Etcd. Please refer to the description for possible incompatibility issues, #4388
+    * Adjust Override Coverage Rule Center Priority: Service Level > Application Level, #4175
 
 3. 2.6.x compatibility
-
-    - Support Zipkin tracing feature provided by Zipkin officially, #3728, #4471.
-    - DubboComponentScan supports simultaneous scanning of annotations under the `com.alibaba.*` and `org.apache.*` packages, #4330.
+    * Support Zipkin tracing feature provided by Zipkin officially, #3728, #4471
+    * DubboComponentScan supports simultaneous scanning of annotations under the `com.alibaba.*` and `org.apache.*` packages, #4330
 
 4. The Nacos Registration Center only subscribes to the address list and no longer subscribes to configuration information, #4454.
 
 5. Support to read the environment configuration from the specified location, which can be specified by -D or OS VARIABLE. Please refer to [automatically loading environment variables](http://dubbo.apache.org/en-us/docs/user/configuration/environment-variables.html)
 
-6. Some other bugfixes, #4346 #4338 #4349 #4377
+6. Fix consumer cannot downgrade to providers with no tags when there's no tagged providers can match, #4525
+
+7. Some other bugfixes, #4346 #4338 #4349 #4377
 
 ### Change List
 
@@ -48,7 +47,9 @@
 
 5. 支持从指定位置读取环境配置，可通过-D或OS VARIABLE指定，具体请参见[使用说明](http://dubbo.apache.org/zh-cn/docs/user/configuration/environment-variables.html)
 
-6. 其他一些bugfix，#4346 #4338 #4349 #4377 
+6. 标签路由在消费端使用静态打标方式时，无法实现自动降级以消费无标签提供者 #4525
+
+7. 其他一些bugfix，#4346 #4338 #4349 #4377 
 
 ## 2.7.2
 
