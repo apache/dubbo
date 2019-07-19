@@ -1001,6 +1001,10 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         return urls;
     }
 
+    public ServiceMetadata getServiceMetadata() {
+        return serviceMetadata;
+    }
+
     /**
      * @deprecated Replace to getProtocols()
      */
