@@ -18,7 +18,10 @@ package org.apache.dubbo.rpc.cluster.loadbalance.statistics;
 
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
+import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -26,14 +29,10 @@ import java.util.concurrent.TimeUnit;
 
 public class CpuUsageAvailabilityTask {
 
-    private CpuUsageService cpuUsageService;
     private Map<String, Float> cpuUsage;
-    private String invokerAddress;
 
-    public CpuUsageAvailabilityTask(String invokerAddress, CpuUsageService cpuUsageService, Map<String, Float> cpuUsage) {
-        this.cpuUsageService = cpuUsageService;
+    public CpuUsageAvailabilityTask(Map<String, Float> cpuUsage) {
         this.cpuUsage = cpuUsage;
-        this.invokerAddress = invokerAddress;
         long collectCpuUsageInMill = Long.parseLong(ConfigurationUtils.getProperty("mill.to.check.cpu.usage.availability"));
 
         ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory(this.getClass().getSimpleName(), true));
@@ -41,10 +40,9 @@ public class CpuUsageAvailabilityTask {
     }
 
     private void doTask() {
-        try {
-            cpuUsageService.isAvailable();
-        } catch (Exception e) {
-            cpuUsage.remove(invokerAddress);
-        }
+        Collection<Invoker<?>> invokers = DubboProtocol.getDubboProtocol().getInvokers();
+        invokers.stream()
+            .filter(i -> !i.isAvailable())
+            .forEach(i -> cpuUsage.remove(i.getUrl().getAddress()));
     }
 }
