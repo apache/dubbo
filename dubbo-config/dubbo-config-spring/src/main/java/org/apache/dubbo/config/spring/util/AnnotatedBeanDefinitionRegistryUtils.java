@@ -94,8 +94,6 @@ public abstract class AnnotatedBeanDefinitionRegistryUtils {
             return;
         }
 
-        boolean debugEnabled = logger.isDebugEnabled();
-
         // Remove all annotated-classes that have been registered
         Iterator<Class<?>> iterator = new ArrayList<>(asList(annotatedClasses)).iterator();
 
@@ -108,7 +106,7 @@ public abstract class AnnotatedBeanDefinitionRegistryUtils {
 
         AnnotatedBeanDefinitionReader reader = new AnnotatedBeanDefinitionReader(registry);
 
-        if (debugEnabled) {
+        if (logger.isDebugEnabled()) {
             logger.debug(registry.getClass().getSimpleName() + " will register annotated classes : " + asList(annotatedClasses) + " .");
         }
 
