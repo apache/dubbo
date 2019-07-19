@@ -18,15 +18,23 @@ package org.apache.dubbo.rpc.cluster.loadbalance;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
+import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.utils.NamedThreadFactory;
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.cluster.CpuUsageFactory;
 import org.apache.dubbo.rpc.cluster.loadbalance.statistics.CpuUsageListener;
 import org.apache.dubbo.rpc.cluster.loadbalance.statistics.CpuUsageService;
+import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
@@ -38,12 +46,18 @@ public class StatisticsLoadBalance extends AbstractLoadBalance {
     private Map<String, Float> cpuUsage = new ConcurrentHashMap<>();
     private CpuUsageFactory cpuUsageFactory;
 
+    public StatisticsLoadBalance() {
+        long collectCpuUsageInMill = Long.parseLong(ConfigurationUtils.getProperty("mill.to.check.cpu.usage.availability"));
+
+        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory(this.getClass().getSimpleName(), true));
+        executor.scheduleAtFixedRate(this::removeStatisticsWhichServerIsDown, collectCpuUsageInMill, collectCpuUsageInMill, TimeUnit.MILLISECONDS);
+    }
+
     @Override
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
         int index = (int)(invokers.size() * Math.random());
         Invoker<T> invoker = invokers.get(index);
         if (invoker.getUrl() != null) {
-            print();
             cpuUsage.computeIfAbsent(invoker.getUrl().getAddress(), value -> {
                 URLBuilder urlBuilder = URLBuilder.from(invoker.getUrl());
                 urlBuilder.setPath(CpuUsageService.class.getName());
@@ -53,22 +67,22 @@ public class StatisticsLoadBalance extends AbstractLoadBalance {
                 urlBuilder.addParameters(CHECK_KEY, String.valueOf(false), REFERENCE_FILTER_KEY, "");
                 urlBuilder.addParameter("addListener.1.callback", true);
                 CpuUsageService cpuUsageService = cpuUsageFactory.createCpuUsageService(invoker.getUrl());
-
-                cpuUsageService.addListener("statisticsloadbalance", new CpuUsageListenerImpl());
+                cpuUsageService.addListener(NetUtils.getLocalHost(), new CpuUsageListenerImpl());
                 return 0.0f;
             });
         }
         return invoker;
     }
 
-    private void print() {
-        for (Map.Entry<String, Float> entry : cpuUsage.entrySet()) {
-            System.err.println(entry.getKey() + "/" + entry.getValue());
-        }
-    }
-
     public void setCpuUsageFactory(CpuUsageFactory cpuUsageFactory) {
         this.cpuUsageFactory = cpuUsageFactory;
+    }
+
+    private void removeStatisticsWhichServerIsDown() {
+        Collection<Invoker<?>> invokers = DubboProtocol.getDubboProtocol().getInvokers();
+        invokers.stream()
+            .filter(i -> !i.isAvailable())
+            .forEach(i -> cpuUsage.remove(i.getUrl().getAddress()));
     }
 
     public class CpuUsageListenerImpl implements CpuUsageListener {
