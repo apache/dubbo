@@ -89,7 +89,7 @@ public class RoundRobinLoadBalance extends AbstractLoadBalance {
         String key = invokers.get(0).getUrl().getServiceKey() + "." + invocation.getMethodName();
         ConcurrentMap<String, WeightedRoundRobin> map = methodWeightMap.get(key);
         if (map == null) {
-            methodWeightMap.putIfAbsent(key, new ConcurrentHashMap<String, WeightedRoundRobin>());
+            methodWeightMap.putIfAbsent(key, new ConcurrentHashMap<>());
             map = methodWeightMap.get(key);
         }
         int totalWeight = 0;
@@ -124,15 +124,8 @@ public class RoundRobinLoadBalance extends AbstractLoadBalance {
             if (updateLock.compareAndSet(false, true)) {
                 try {
                     // copy -> modify -> update reference
-                    ConcurrentMap<String, WeightedRoundRobin> newMap = new ConcurrentHashMap<String, WeightedRoundRobin>();
-                    newMap.putAll(map);
-                    Iterator<Entry<String, WeightedRoundRobin>> it = newMap.entrySet().iterator();
-                    while (it.hasNext()) {
-                        Entry<String, WeightedRoundRobin> item = it.next();
-                        if (now - item.getValue().getLastUpdate() > RECYCLE_PERIOD) {
-                            it.remove();
-                        }
-                    }
+                    ConcurrentMap<String, WeightedRoundRobin> newMap = new ConcurrentHashMap<>(map);
+                    newMap.entrySet().removeIf(item -> now - item.getValue().getLastUpdate() > RECYCLE_PERIOD);
                     methodWeightMap.put(key, newMap);
                 } finally {
                     updateLock.set(false);
