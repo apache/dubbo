@@ -21,7 +21,9 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.remoting.exchange.ExchangeServer;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
 import com.alibaba.metrics.Gauge;
 import com.alibaba.metrics.MetricName;
@@ -29,6 +31,7 @@ import com.alibaba.metrics.os.linux.CpuUsageGaugeSet;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -71,7 +74,7 @@ public class CpuUsageServiceImpl implements CpuUsageService {
         while (iterator.hasNext()) {
             Map.Entry<String, CpuUsageListener> entry = iterator.next();
             try {
-                entry.getValue().cpuChanged(NetUtils.getLocalHost(), user.getValue());
+                entry.getValue().cpuChanged(NetUtils.getLocalHost() + ":" + getPort(), user.getValue());
             } catch (RpcException e) {
                 logger.warn(e.getMessage(), e);
                 String key = entry.getKey();
@@ -87,5 +90,16 @@ public class CpuUsageServiceImpl implements CpuUsageService {
                 }
             }
         }
+    }
+
+    private int getPort() {
+        if (DubboProtocol.getDubboProtocol().getServers().size() > 0) {
+            Optional<ExchangeServer> exchangeServerOptional = DubboProtocol.getDubboProtocol().getServers().stream()
+                .filter(s -> s.getLocalAddress().getAddress().getHostAddress().equals(NetUtils.getLocalHost()))
+                .findFirst();
+            return exchangeServerOptional.map(exchangeServer -> exchangeServer.getLocalAddress().getPort())
+                .orElse(0);
+        }
+        return 20880;
     }
 }
