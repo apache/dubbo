@@ -118,13 +118,13 @@ public class SpringExtensionFactory implements ExtensionFactory {
                 shutdownHook.destroyRegistries();
 
                 ApplicationContext context = ((ContextClosedEvent) event).getApplicationContext();
-                beanLoop(context, GraceFulShutDown::afterRegistriesDestroyed);
+                applicationLoop(context, GraceFulShutDown::afterRegistriesDestroyed);
                 shutdownHook.destroyProtocols();
-                beanLoop(context, GraceFulShutDown::afterProtocolDestroyed);
+                applicationLoop(context, GraceFulShutDown::afterProtocolDestroyed);
             }
         }
 
-        private void beanLoop(ApplicationContext context, Consumer<GraceFulShutDown> consumer) {
+        private void applicationLoop(ApplicationContext context, Consumer<GraceFulShutDown> consumer) {
 
                 try {
                     String[] beanNames = context.getBeanNamesForType(GraceFulShutDown.class);
