@@ -3,9 +3,7 @@ sudo: false # faster builds
 
 jdk:
   - openjdk11
-  - oraclejdk11
   - openjdk8
-  - oraclejdk8
 
 cache:
   directories:

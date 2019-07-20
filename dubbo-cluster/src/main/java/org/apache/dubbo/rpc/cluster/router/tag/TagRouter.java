@@ -40,8 +40,8 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import static org.apache.dubbo.rpc.cluster.Constants.TAG_KEY;
 import static org.apache.dubbo.rpc.Constants.FORCE_USE_TAG;
+import static org.apache.dubbo.rpc.cluster.Constants.TAG_KEY;
 
 /**
  * TagRouter, "application.tag-router"
@@ -249,7 +249,7 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
                 String key = providerApplication + RULE_SUFFIX;
                 configuration.addListener(key, this);
                 application = providerApplication;
-                String rawRule = configuration.getConfig(key);
+                String rawRule = configuration.getRule(key, DynamicConfiguration.DEFAULT_GROUP);
                 if (StringUtils.isNotEmpty(rawRule)) {
                     this.process(new ConfigChangeEvent(key, rawRule));
                 }

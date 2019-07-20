@@ -17,6 +17,8 @@
 package org.apache.dubbo.metadata.definition;
 
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.metadata.definition.builder.DefaultTypeBuilder;
 import org.apache.dubbo.metadata.definition.builder.TypeBuilder;
 import org.apache.dubbo.metadata.definition.model.TypeDefinition;
@@ -31,12 +33,13 @@ import java.util.Map;
  * 2015/1/27.
  */
 public class TypeDefinitionBuilder {
+    private static final Logger logger = LoggerFactory.getLogger(TypeDefinitionBuilder.class);
     private static final List<TypeBuilder> BUILDERS;
 
-    static{
+    static {
         List<TypeBuilder> builders = new ArrayList<>();
         ExtensionLoader<TypeBuilder> extensionLoader = ExtensionLoader.getExtensionLoader(TypeBuilder.class);
-        for(String extensionName : extensionLoader.getSupportedExtensions()){
+        for (String extensionName : extensionLoader.getSupportedExtensions()) {
             builders.add(extensionLoader.getExtension(extensionName));
         }
         BUILDERS = builders;
@@ -47,16 +50,23 @@ public class TypeDefinitionBuilder {
         TypeDefinition td;
         if (builder != null) {
             td = builder.build(type, clazz, typeCache);
+            td.setTypeBuilderName(builder.getClass().getName());
         } else {
             td = DefaultTypeBuilder.build(clazz, typeCache);
+            td.setTypeBuilderName(DefaultTypeBuilder.class.getName());
         }
         return td;
     }
 
     private static TypeBuilder getGenericTypeBuilder(Type type, Class<?> clazz) {
         for (TypeBuilder builder : BUILDERS) {
-            if (builder.accept(type, clazz)) {
-                return builder;
+            try {
+                if (builder.accept(type, clazz)) {
+                    return builder;
+                }
+            } catch (NoClassDefFoundError cnfe) {
+                //ignore
+                logger.info("Throw classNotFound (" + cnfe.getMessage() + ") in " + builder.getClass());
             }
         }
         return null;

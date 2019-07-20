@@ -24,6 +24,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.Date;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -55,6 +57,36 @@ public class ProtostuffObjectOutputTest {
         this.flushToInput();
 
         Timestamp serializedTime = protostuffObjectInput.readObject(Timestamp.class);
+        assertThat(serializedTime, is(originTime));
+    }
+
+    @Test
+    public void testSerializeSqlDate() throws IOException, ClassNotFoundException {
+        java.sql.Date originTime = new java.sql.Date(System.currentTimeMillis());
+        this.protostuffObjectOutput.writeObject(originTime);
+        this.flushToInput();
+
+        java.sql.Date serializedTime = protostuffObjectInput.readObject(java.sql.Date.class);
+        assertThat(serializedTime, is(originTime));
+    }
+
+    @Test
+    public void testSerializeSqlTime() throws IOException, ClassNotFoundException {
+        java.sql.Time originTime = new java.sql.Time(System.currentTimeMillis());
+        this.protostuffObjectOutput.writeObject(originTime);
+        this.flushToInput();
+
+        java.sql.Time serializedTime = protostuffObjectInput.readObject(java.sql.Time.class);
+        assertThat(serializedTime, is(originTime));
+    }
+
+    @Test
+    public void testSerializeDate() throws IOException, ClassNotFoundException {
+        Date originTime = new Date();
+        this.protostuffObjectOutput.writeObject(originTime);
+        this.flushToInput();
+
+        Date serializedTime = protostuffObjectInput.readObject(Date.class);
         assertThat(serializedTime, is(originTime));
     }
 
