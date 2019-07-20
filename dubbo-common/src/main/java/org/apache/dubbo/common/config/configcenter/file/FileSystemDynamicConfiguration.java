@@ -91,7 +91,7 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
 
     public static final String DEFAULT_THREAD_POOL_PREFIX = PARAM_NAME_PREFIX + "workers";
 
-    public static final int DEFAULT_THREAD_POOL_SIZE = 1;
+    public static final String DEFAULT_THREAD_POOL_SIZE = "1";
 
     public static final String DEFAULT_CONFIG_CENTER_ENCODING = "UTF-8";
 
@@ -523,7 +523,7 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
     }
 
     private static String getThreadPoolPrefixName(URL url) {
-        return url.getParameter(THREAD_POOL_PREFIX_PARAM_NAME, DEFAULT_THREAD_POOL_PREFIX);
+        return getParameter(url, THREAD_POOL_PREFIX_PARAM_NAME, DEFAULT_THREAD_POOL_PREFIX);
     }
 
     protected static ThreadPoolExecutor getWatchEventsLoopThreadPool() {
@@ -595,8 +595,8 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
     }
 
     private static File initDirectory(URL url) {
-        String directoryPath = url.getParameter(CONFIG_CENTER_DIR_PARAM_NAME, DEFAULT_CONFIG_CENTER_DIR_PATH);
-        File rootDirectory = new File(url.getParameter(CONFIG_CENTER_DIR_PARAM_NAME, DEFAULT_CONFIG_CENTER_DIR_PATH));
+        String directoryPath = getParameter(url, CONFIG_CENTER_DIR_PARAM_NAME, DEFAULT_CONFIG_CENTER_DIR_PATH);
+        File rootDirectory = new File(getParameter(url, CONFIG_CENTER_DIR_PARAM_NAME, DEFAULT_CONFIG_CENTER_DIR_PATH));
         if (!rootDirectory.exists() && !rootDirectory.mkdirs()) {
             throw new IllegalStateException(format("Dubbo config center rootDirectory[%s] can't be created!",
                     directoryPath));
@@ -604,12 +604,19 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
         return rootDirectory;
     }
 
+    private static String getParameter(URL url, String name, String defaultValue) {
+        if (url != null) {
+            return url.getParameter(name, defaultValue);
+        }
+        return defaultValue;
+    }
+
     private static String getEncoding(URL url) {
-        return url.getParameter(CONFIG_CENTER_ENCODING_PARAM_NAME, DEFAULT_CONFIG_CENTER_ENCODING);
+        return getParameter(url, CONFIG_CENTER_ENCODING_PARAM_NAME, DEFAULT_CONFIG_CENTER_ENCODING);
     }
 
     private static int getThreadPoolSize(URL url) {
-        return url.getParameter(THREAD_POOL_SIZE_PARAM_NAME, DEFAULT_THREAD_POOL_SIZE);
+        return Integer.parseInt(getParameter(url, THREAD_POOL_SIZE_PARAM_NAME, DEFAULT_THREAD_POOL_SIZE));
     }
 
     private static ThreadPoolExecutor newWatchEventsLoopThreadPool() {
