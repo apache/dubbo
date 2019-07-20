@@ -418,7 +418,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             throw new IllegalStateException("Failed to check the status of the service " + interfaceName + ". No provider available for the service " + (group == null ? "" : group + "/") + interfaceName + (version == null ? "" : ":" + version) + " from the url " + invoker.getUrl() + " to the consumer " + NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion());
         }
         if (logger.isInfoEnabled()) {
-            logger.info("Refer dubbo service " + interfaceClass.getName() + " from url " + invoker.getUrl());
+            logger.info(String.format("Refer %s service %s from url %s", StringUtils.isNotEmpty(getProtocol()) ? getProtocol() : "dubbo", interfaceClass.getName(), invoker.getUrl()));
         }
         /**
          * @since 2.7.0

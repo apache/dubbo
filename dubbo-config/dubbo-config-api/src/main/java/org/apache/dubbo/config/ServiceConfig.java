@@ -578,7 +578,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             // export to remote if the config is not local (export to local only when config is local)
             if (!SCOPE_LOCAL.equalsIgnoreCase(scope)) {
                 if (!isOnlyInJvm() && logger.isInfoEnabled()) {
-                    logger.info("Export dubbo service " + interfaceClass.getName() + " to url " + url);
+                    logger.info(String.format("Export %s service %s to url %s", getProtocol() != null ? getProtocol().getName() : "dubbo", interfaceClass.getName(),  url));
                 }
                 if (CollectionUtils.isNotEmpty(registryURLs)) {
                     for (URL registryURL : registryURLs) {
@@ -640,7 +640,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         Exporter<?> exporter = protocol.export(
                 PROXY_FACTORY.getInvoker(ref, (Class) interfaceClass, local));
         exporters.add(exporter);
-        logger.info("Export dubbo service " + interfaceClass.getName() + " to local registry url : " + local);
+        logger.info(String.format("Export %s service %s to local registry url : ", getProtocol() == null ? "dubbo" : getProtocol().getName(), interfaceClass.getName(), local));
     }
 
     private Optional<String> getContextPath(ProtocolConfig protocolConfig) {
