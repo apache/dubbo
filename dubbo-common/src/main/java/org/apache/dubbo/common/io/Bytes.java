@@ -620,6 +620,9 @@ public class Bytes {
         if (len < 0) {
             throw new IndexOutOfBoundsException("base642bytes: length < 0, length is " + len);
         }
+        if (len == 0) {
+            return new byte[0];
+        }
         if (off + len > str.length()) {
             throw new IndexOutOfBoundsException("base642bytes: offset + length > string length.");
         }
@@ -707,6 +710,9 @@ public class Bytes {
         }
         if (len < 0) {
             throw new IndexOutOfBoundsException("base642bytes: length < 0, length is " + len);
+        }
+        if (len == 0) {
+            return new byte[0];
         }
         if (off + len > str.length()) {
             throw new IndexOutOfBoundsException("base642bytes: offset + length > string length.");
