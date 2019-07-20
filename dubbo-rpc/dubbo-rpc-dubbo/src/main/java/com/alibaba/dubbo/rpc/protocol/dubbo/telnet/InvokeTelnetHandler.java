@@ -147,7 +147,7 @@ public class InvokeTelnetHandler implements TelnetHandler {
     }
 
     private List<Method> findSameSignatureMethod(Class clazz, String lookupMethodName, List<Object> args) {
-        List<Method> sameSignatureMethods = new ArrayList<>();
+        List<Method> sameSignatureMethods = new ArrayList<Method>();
         Method[] declaredMethods = clazz.getDeclaredMethods();
         for (Method method : declaredMethods) {
             if (method.getName().equals(lookupMethodName) && method.getParameterTypes().length == args.size()) {
@@ -158,7 +158,7 @@ public class InvokeTelnetHandler implements TelnetHandler {
     }
 
     private List<Method> findMatchMethods(List<Method> methods, List<Object> args) {
-        List<Method> matchMethod = new ArrayList<>();
+        List<Method> matchMethod = new ArrayList<Method>();
         for (Method method : methods) {
             if (isMatch(method, args)) {
                 matchMethod.add(method);
