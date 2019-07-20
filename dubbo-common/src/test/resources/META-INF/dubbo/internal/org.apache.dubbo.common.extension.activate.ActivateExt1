@@ -1,0 +1,6 @@
+group=org.apache.dubbo.common.extension.activate.impl.GroupActivateExtImpl
+value=org.apache.dubbo.common.extension.activate.impl.ValueActivateExtImpl
+order1=org.apache.dubbo.common.extension.activate.impl.OrderActivateExtImpl1
+order2=org.apache.dubbo.common.extension.activate.impl.OrderActivateExtImpl2
+old1=org.apache.dubbo.common.extension.activate.impl.OldActivateExt1Impl2
+old2=org.apache.dubbo.common.extension.activate.impl.OldActivateExt1Impl3
