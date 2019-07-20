@@ -25,7 +25,7 @@ public class SelectTelnetHandlerTest {
     @Before
     public void setup() {
         String methodName = "getPerson";
-        methods = new ArrayList<>();
+        methods = new ArrayList<Method>();
         for (Method method : DemoService.class.getMethods()) {
             if (method.getName().equals(methodName)) {
                 methods.add(method);
