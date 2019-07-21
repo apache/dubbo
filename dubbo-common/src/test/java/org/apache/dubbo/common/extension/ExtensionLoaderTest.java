@@ -28,7 +28,8 @@ import org.apache.dubbo.common.extension.activate.impl.ValueActivateExtImpl;
 import org.apache.dubbo.common.extension.ext1.SimpleExt;
 import org.apache.dubbo.common.extension.ext1.impl.SimpleExtImpl1;
 import org.apache.dubbo.common.extension.ext1.impl.SimpleExtImpl2;
-import org.apache.dubbo.common.extension.ext10_duplicate.Ext10Duplicate;
+import org.apache.dubbo.common.extension.ext10_multi_names.Ext10MultiNames;
+import org.apache.dubbo.common.extension.ext11_duplicate.Ext11Duplicate;
 import org.apache.dubbo.common.extension.ext2.Ext2;
 import org.apache.dubbo.common.extension.ext6_wrap.WrappedExt;
 import org.apache.dubbo.common.extension.ext6_wrap.impl.Ext5Wrapper1;
@@ -257,17 +258,6 @@ public class ExtensionLoaderTest {
     }
 
     @Test
-    public void test_LoadExtension_Duplicate() throws Exception {
-        try {
-            ExtensionLoader.check = true;
-            ExtensionLoader.getExtensionLoader(Ext10Duplicate.class).getExtension("duplicate");
-            fail();
-        } catch (DubboInitCheckException expected) {
-            assertThat(expected.getMessage(), containsString("Duplicate extension org.apache.dubbo.common.extension.ext10_duplicate.Ext10Duplicate name duplicate"));
-        }
-    }
-
-    @Test
     public void test_AddExtension_ExceptionWhenExistedExtension() throws Exception {
         SimpleExt ext = ExtensionLoader.getExtensionLoader(SimpleExt.class).getExtension("impl1");
 
@@ -447,6 +437,29 @@ public class ExtensionLoaderTest {
         Assertions.assertNotNull(injectExtImpl.getSimpleExt());
         Assertions.assertNull(injectExtImpl.getSimpleExt1());
         Assertions.assertNull(injectExtImpl.getGenericType());
+    }
+
+    @Test
+    void testMultiNames() {
+        Ext10MultiNames ext10MultiNames = ExtensionLoader.getExtensionLoader(Ext10MultiNames.class).getExtension("impl");
+        Assertions.assertNotNull(ext10MultiNames);
+        ext10MultiNames = ExtensionLoader.getExtensionLoader(Ext10MultiNames.class).getExtension("implMultiName");
+        Assertions.assertNotNull(ext10MultiNames);
+        Assertions.assertThrows(
+                IllegalStateException.class,
+                () -> ExtensionLoader.getExtensionLoader(Ext10MultiNames.class).getExtension("impl,implMultiName")
+        );
+    }
+
+    @Test
+    public void test_LoadExtension_Duplicate() throws Exception {
+        try {
+            ExtensionLoader.check = true;
+            ExtensionLoader.getExtensionLoader(Ext11Duplicate.class).getExtension("duplicate");
+            fail();
+        } catch (DubboInitCheckException expected) {
+            assertThat(expected.getMessage(), containsString("Duplicate extension org.apache.dubbo.common.extension.ext11_duplicate.Ext11Duplicate name duplicate"));
+        }
     }
 
 }

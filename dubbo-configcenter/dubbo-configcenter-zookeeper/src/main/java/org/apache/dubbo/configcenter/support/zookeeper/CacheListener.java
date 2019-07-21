@@ -30,6 +30,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.CountDownLatch;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DOT_SEPARATOR;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
+
 /**
  *
  */
@@ -69,7 +72,8 @@ public class CacheListener implements DataListener {
         if (StringUtils.isEmpty(path)) {
             return path;
         }
-        return path.replace(rootPath + "/", "").replaceAll("/", ".");
+        String groupKey = path.replace(rootPath + PATH_SEPARATOR, "").replaceAll(PATH_SEPARATOR, DOT_SEPARATOR);
+        return groupKey.substring(groupKey.indexOf(DOT_SEPARATOR) + 1);
     }
 
 
@@ -88,9 +92,8 @@ public class CacheListener implements DataListener {
             return;
         }
 
-        // TODO We limit the notification of config changes to a specific path level, for example
-        //  /dubbo/config/service/configurators, other config changes not in this level will not get notified,
-        //  say /dubbo/config/dubbo.properties
+        // TODO We only care the changes happened on a specific path level, for example
+        //  /dubbo/config/dubbo/configurators, other config changes not in this level will be ignored,
         if (path.split("/").length >= MIN_PATH_DEPTH) {
             String key = pathToKey(path);
             ConfigChangeType changeType;
@@ -109,7 +112,7 @@ public class CacheListener implements DataListener {
             }
 
             ConfigChangeEvent configChangeEvent = new ConfigChangeEvent(key, (String) value, changeType);
-            Set<ConfigurationListener> listeners = keyListeners.get(key);
+            Set<ConfigurationListener> listeners = keyListeners.get(path);
             if (CollectionUtils.isNotEmpty(listeners)) {
                 listeners.forEach(listener -> listener.process(configChangeEvent));
             }

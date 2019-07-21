@@ -227,13 +227,11 @@ public class ExtensionLoader<T> {
                 } else {
                     continue;
                 }
-                if (isMatchGroup(group, activateGroup)) {
-                    T ext = getExtension(name);
-                    if (!names.contains(name)
-                            && !names.contains(REMOVE_VALUE_PREFIX + name)
-                            && isActive(activateValue, url)) {
-                        exts.add(ext);
-                    }
+                if (isMatchGroup(group, activateGroup)
+                        && !names.contains(name)
+                        && !names.contains(REMOVE_VALUE_PREFIX + name)
+                        && isActive(activateValue, url)) {
+                    exts.add(getExtension(name));
                 }
             }
             exts.sort(ActivateComparator.COMPARATOR);
@@ -249,8 +247,7 @@ public class ExtensionLoader<T> {
                         usrs.clear();
                     }
                 } else {
-                    T ext = getExtension(name);
-                    usrs.add(ext);
+                    usrs.add(getExtension(name));
                 }
             }
         }
@@ -344,7 +341,7 @@ public class ExtensionLoader<T> {
         if ("true".equals(name)) {
             return getDefaultExtension();
         }
-        Holder<Object> holder = getOrCreateHolder(name);
+        final Holder<Object> holder = getOrCreateHolder(name);
         Object instance = holder.get();
         if (instance == null) {
             synchronized (holder) {
@@ -756,7 +753,7 @@ public class ExtensionLoader<T> {
                 cacheActivateClass(clazz, names[0]);
                 for (String n : names) {
                     cacheName(clazz, n);
-                    saveInExtensionClass(extensionClasses, clazz, name);
+                    saveInExtensionClass(extensionClasses, clazz, n);
                 }
             }
         }

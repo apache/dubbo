@@ -17,7 +17,6 @@
 package org.apache.dubbo.common.extension;
 
 /**
- * @author : 盲僧
  * @version : 1.0
  * Description : dubbo load exception,only effective when {@link org.apache.dubbo.common.extension.ExtensionLoader#check} = true
  * when throw exception，the program will be terminated
