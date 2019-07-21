@@ -344,7 +344,7 @@
         </xsd:attribute>
         <xsd:attribute name="check" type="xsd:boolean">
             <xsd:annotation>
-                <xsd:documentation><![CDATA[ The application name. ]]></xsd:documentation>
+                <xsd:documentation><![CDATA[ The application check. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="version" type="xsd:string">
