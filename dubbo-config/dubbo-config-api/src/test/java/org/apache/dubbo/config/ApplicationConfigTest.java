@@ -180,4 +180,15 @@ public class ApplicationConfigTest {
         assertThat(parameters, hasEntry("k1", "v1"));
         assertThat(parameters, hasEntry(ACCEPT_FOREIGN_IP, "true"));
     }
+
+    @Test
+    public void testCheck() throws Exception {
+        ApplicationConfig application = new ApplicationConfig("app");
+        application.setCheck(true);
+        assertThat(application.getCheck(), equalTo(true));
+        Map<String, String> parameters = new HashMap<String, String>();
+        ApplicationConfig.appendParameters(parameters, application);
+        assertThat(parameters, hasEntry("check", "true"));
+    }
+
 }

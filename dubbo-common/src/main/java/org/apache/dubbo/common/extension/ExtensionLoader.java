@@ -66,6 +66,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.REMOVE_VALUE_PRE
  */
 public class ExtensionLoader<T> {
 
+    public static Boolean check = false;
+
     private static final Logger logger = LoggerFactory.getLogger(ExtensionLoader.class);
 
     private static final String SERVICES_DIRECTORY = "META-INF/services/";
@@ -100,8 +102,6 @@ public class ExtensionLoader<T> {
     private Set<Class<?>> cachedWrapperClasses;
 
     private Map<String, IllegalStateException> exceptions = new ConcurrentHashMap<>();
-
-    private StringBuilder duplicateExceptionMsg = new StringBuilder();
 
     private ExtensionLoader(Class<?> type) {
         this.type = type;
@@ -641,8 +641,8 @@ public class ExtensionLoader<T> {
         loadDirectory(extensionClasses, DUBBO_DIRECTORY, type.getName().replace("org.apache", "com.alibaba"));
         loadDirectory(extensionClasses, SERVICES_DIRECTORY, type.getName());
         loadDirectory(extensionClasses, SERVICES_DIRECTORY, type.getName().replace("org.apache", "com.alibaba"));
-        if (StringUtils.isNotEmpty(duplicateExceptionMsg.toString())) {
-            throw new IllegalStateException(duplicateExceptionMsg.toString());
+        if (exceptions.size() > 0) {
+            exceptions.forEach((k, v) -> logger.warn(v.getMessage()));
         }
         return extensionClasses;
     }
@@ -684,6 +684,9 @@ public class ExtensionLoader<T> {
                 }
             }
         } catch (Throwable t) {
+            if (t instanceof DubboInitCheckException && check) {
+                throw (DubboInitCheckException) t;
+            }
             logger.error("Exception occurred when loading extension class (interface: " +
                     type + ", description file: " + fileName + ").", t);
         }
@@ -711,6 +714,9 @@ public class ExtensionLoader<T> {
                                 loadClass(extensionClasses, resourceURL, Class.forName(line, true, classLoader), name);
                             }
                         } catch (Throwable t) {
+                            if (t instanceof DubboInitCheckException && check) {
+                                throw (DubboInitCheckException) t;
+                            }
                             IllegalStateException e = new IllegalStateException("Failed to load extension class (interface: " + type + ", class line: " + line + ") in " + resourceURL + ", cause: " + t.getMessage(), t);
                             exceptions.put(line, e);
                         }
@@ -718,6 +724,9 @@ public class ExtensionLoader<T> {
                 }
             }
         } catch (Throwable t) {
+            if (t instanceof DubboInitCheckException && check) {
+                throw (DubboInitCheckException) t;
+            }
             logger.error("Exception occurred when loading extension class (interface: " +
                     type + ", class file: " + resourceURL + ") in " + resourceURL, t);
         }
@@ -738,7 +747,7 @@ public class ExtensionLoader<T> {
             if (StringUtils.isEmpty(name)) {
                 name = findAnnotationName(clazz);
                 if (name.length() == 0) {
-                    throw new IllegalStateException("No such extension name for the class " + clazz.getName() + " in the config " + resourceURL);
+                    throw new DubboInitCheckException("No such extension name for the class " + clazz.getName() + " in the config " + resourceURL);
                 }
             }
 
@@ -770,15 +779,7 @@ public class ExtensionLoader<T> {
         if (c == null) {
             extensionClasses.put(name, clazz);
         } else if (c != clazz) {
-            duplicateExceptionMsg.append("Duplicate extension ")
-                    .append(type.getName())
-                    .append(" name ")
-                    .append(name)
-                    .append(" on ")
-                    .append(c.getName())
-                    .append(" and ")
-                    .append(clazz.getName())
-                    .append("\r\n");
+            throw new DubboInitCheckException("Duplicate extension " + type.getName() + " name " + name + " on " + c.getName() + " and " + clazz.getName());
         }
     }
 

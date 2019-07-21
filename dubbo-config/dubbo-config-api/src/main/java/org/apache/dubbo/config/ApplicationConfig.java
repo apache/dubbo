@@ -17,6 +17,7 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.compiler.support.AdaptiveCompiler;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -136,6 +137,8 @@ public class ApplicationConfig extends AbstractConfig {
      * Config the shutdown.wait
      */
     private String shutwait;
+
+    private Boolean check;
 
     public ApplicationConfig() {
     }
@@ -374,4 +377,12 @@ public class ApplicationConfig extends AbstractConfig {
         return !StringUtils.isEmpty(name);
     }
 
+    public Boolean getCheck() {
+        return check;
+    }
+
+    public void setCheck(Boolean check) {
+        ExtensionLoader.check = (check == null ? false : check);
+        this.check = check;
+    }
 }

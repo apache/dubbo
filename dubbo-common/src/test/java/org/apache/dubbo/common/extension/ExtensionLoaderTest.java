@@ -259,9 +259,10 @@ public class ExtensionLoaderTest {
     @Test
     public void test_LoadExtension_Duplicate() throws Exception {
         try {
+            ExtensionLoader.check = true;
             ExtensionLoader.getExtensionLoader(Ext10Duplicate.class).getExtension("duplicate");
             fail();
-        } catch (IllegalStateException expected) {
+        } catch (DubboInitCheckException expected) {
             assertThat(expected.getMessage(), containsString("Duplicate extension org.apache.dubbo.common.extension.ext10_duplicate.Ext10Duplicate name duplicate"));
         }
     }
