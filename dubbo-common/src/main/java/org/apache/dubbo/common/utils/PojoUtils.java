@@ -171,21 +171,19 @@ public class PojoUtils {
         for (Field field : pojo.getClass().getDeclaredFields()) {
             GenericAlias genericAlias = field.getAnnotation(GenericAlias.class);
             if (ReflectUtils.isSpecialInstanceField(field) &&  genericAlias != null) {
-                String fieldAlaisName = genericAlias.value();
+                String fieldAliasName = genericAlias.value();
                 try {
                     Object fieldValue = forceGetFieldValue(field,pojo);
                     if (history.containsKey(pojo)) {
                         Object pojoGeneralizedValue = history.get(pojo);
                         if (pojoGeneralizedValue instanceof Map
-                                && ((Map) pojoGeneralizedValue).containsKey(fieldAlaisName)) {
+                                && ((Map) pojoGeneralizedValue).containsKey(fieldAliasName)) {
                             continue;
                         }
                     }
-                    if (fieldValue != null) {
                         annoFieldSet.add(field.getName());
-                        annoFieldSet.add(fieldAlaisName);
-                        map.put(fieldAlaisName, generalize(fieldValue, history));
-                    }
+                    annoFieldSet.add(fieldAliasName);
+                    map.put(fieldAliasName, generalize(fieldValue, history));
                 } catch (Exception e) {
                     throw new RuntimeException(e.getMessage(), e);
                 }
@@ -526,7 +524,7 @@ public class PojoUtils {
                             } else if (field != null) {
                                 value = realize0(value, field.getType(), field.getGenericType(), history);
                                 try {
-                                    field.set(dest, value);
+                                    forceSetFieldValue(field,dest,value);
                                 } catch (IllegalAccessException e) {
                                     throw new RuntimeException("Failed to set field " + name + " of pojo " + dest.getClass().getName() + " : " + e.getMessage(), e);
                                 }
@@ -643,20 +641,15 @@ public class PojoUtils {
         String name = "set" + property.substring(0, 1).toUpperCase() + property.substring(1);
         Method method = NAME_METHODS_CACHE.get(cls.getName() + "." + name + "(" + valueCls.getName() + ")");
         if (method == null) {
-            try {
-                method = cls.getMethod(name, valueCls);
-            } catch (NoSuchMethodException e) {
                 for (Method m : cls.getMethods()) {
-                    if (ReflectUtils.isBeanPropertyWriteMethod(m) && m.getName().equals(name)) {
-                        method = m;
-                        break;
-                    }
 
                     GenericAlias genericAlias = m.getAnnotation(GenericAlias.class);
                     if(genericAlias != null && genericAlias.value().equals(name)) {
                         method = m;
                         break;
                     }
+                if (ReflectUtils.isBeanPropertyWriteMethod(m) && m.getName().equals(name)) {
+                    method = m;
                 }
             }
             if (method != null) {
@@ -671,21 +664,16 @@ public class PojoUtils {
         if (CLASS_FIELD_CACHE.containsKey(cls) && CLASS_FIELD_CACHE.get(cls).containsKey(fieldName)) {
             return CLASS_FIELD_CACHE.get(cls).get(fieldName);
         }
-        try {
-            result = cls.getDeclaredField(fieldName);
-            result.setAccessible(true);
-        } catch (NoSuchFieldException e) {
-            for (Field field : cls.getFields()) {
-                if (fieldName.equals(field.getName()) && ReflectUtils.isPublicInstanceField(field)) {
+        for (Field field : cls.getDeclaredFields()) {
+            GenericAlias genericAlias = field.getAnnotation(GenericAlias.class);
+            if(genericAlias != null && genericAlias.value().equals(fieldName)) {
                     result = field;
                     break;
                 }
 
-                GenericAlias genericAlias = field.getAnnotation(GenericAlias.class);
-                if(genericAlias != null && genericAlias.value().equals(fieldName)) {
+            if (fieldName.equals(field.getName())) {
                     result = field;
                     break;
-                }
             }
         }
         if (result != null) {
