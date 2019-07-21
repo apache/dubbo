@@ -61,10 +61,11 @@ public class MethodConfigTest {
     private static final int ARGUMENTS_INDEX = 24;
     private static final boolean ARGUMENTS_CALLBACK = true;
     private static final String ARGUMENTS_TYPE = "sss";
+    private static final String MERGER = "false";
 
     @Reference(methods = {@Method(name = METHOD_NAME, timeout = TIMEOUT, retries = RETRIES, loadbalance = LOADBALANCE, async = ASYNC,
             actives = ACTIVES, executes = EXECUTES, deprecated = DEPERECATED, sticky = STICKY, oninvoke = ONINVOKE, onthrow = ONTHROW, onreturn = ONRETURN, cache = CACHE, validation = VALIDATION,
-            arguments = {@Argument(index = ARGUMENTS_INDEX, callback = ARGUMENTS_CALLBACK, type = ARGUMENTS_TYPE)})})
+            arguments = {@Argument(index = ARGUMENTS_INDEX, callback = ARGUMENTS_CALLBACK, type = ARGUMENTS_TYPE)}, merger = MERGER)})
     private String testField;
 
     @Test
@@ -90,6 +91,7 @@ public class MethodConfigTest {
         assertThat(ARGUMENTS_INDEX, equalTo(methodConfig.getArguments().get(0).getIndex().intValue()));
         assertThat(ARGUMENTS_CALLBACK, equalTo(methodConfig.getArguments().get(0).isCallback()));
         assertThat(ARGUMENTS_TYPE, equalTo(methodConfig.getArguments().get(0).getType()));
+        assertThat(MERGER,equalTo(methodConfig.getMerger()));
     }
 
     @Test
@@ -236,5 +238,12 @@ public class MethodConfigTest {
         MethodConfig method = new MethodConfig();
         method.setReturn(true);
         assertThat(method.isReturn(), is(true));
+    }
+
+    @Test
+    public void testSetMerger() throws  Exception {
+        MethodConfig method = new MethodConfig();
+        method.setMerger("default");
+        assertThat(method.getMerger(),equalTo("default"));
     }
 }

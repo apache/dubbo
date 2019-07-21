@@ -145,12 +145,14 @@ public class ReferenceConfigTest {
         Assertions.assertEquals(((MethodConfig) referenceConfig.getMethods().get(0)).getOnreturn(), "r");
         Assertions.assertEquals(((MethodConfig) referenceConfig.getMethods().get(0)).getOnthrow(), "t");
         Assertions.assertEquals(((MethodConfig) referenceConfig.getMethods().get(0)).getCache(), "c");
+        Assertions.assertEquals("true", referenceConfig.getMerger());
+        Assertions.assertEquals("false", ((MethodConfig) referenceConfig.getMethods().get(0)).getMerger());
     }
 
 
-    @Reference(methods = {@Method(name = "sayHello", timeout = 1300, retries = 4, loadbalance = "random", async = true,
+    @Reference(merger="true", methods = {@Method(name = "sayHello", timeout = 1300, retries = 4, loadbalance = "random", async = true,
             actives = 3, executes = 5, deprecated = true, sticky = true, oninvoke = "i", onthrow = "t", onreturn = "r", cache = "c", validation = "v",
-            arguments = {@Argument(index = 24, callback = true, type = "sss")})})
+            arguments = {@Argument(index = 24, callback = true, type = "sss")}, merger = "false")})
     private InnerTest innerTest;
 
     private class InnerTest {

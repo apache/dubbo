@@ -17,6 +17,8 @@
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
 
+import org.apache.dubbo.config.MethodConfig;
+import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.spring.ReferenceBean;
 
@@ -30,6 +32,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.springframework.core.annotation.AnnotationUtils.findAnnotation;
@@ -61,7 +64,8 @@ public class ReferenceBeanBuilderTest {
             timeout = 3, cache = "cache", filter = {"echo", "generic", "accesslog"},
             listener = {"deprecated"}, parameters = {"n1=v1  ", "n2 = v2 ", "  n3 =   v3  "},
             application = "application",
-            module = "module", consumer = "consumer", monitor = "monitor", registry = {"registry"}
+            module = "module", consumer = "consumer", monitor = "monitor", registry = {"registry"},
+            merger = "true", methods = {@Method(name = "method1", timeout = 1000, merger = "false")}
     )
     private static final Object TEST_FIELD = new Object();
 
@@ -121,5 +125,17 @@ public class ReferenceBeanBuilderTest {
         Assert.assertNull(referenceBean.getConsumer());
         Assert.assertNull(referenceBean.getMonitor());
         Assert.assertEquals(Collections.emptyList(), referenceBean.getRegistries());
+
+        // merge
+        Assert.assertEquals("true", referenceBean.getMerger());
+
+        // method
+        List<MethodConfig> methods = referenceBean.getMethods();
+        Assert.assertNotNull(methods);
+        Assert.assertEquals(1, methods.size());
+        MethodConfig methodConfig = methods.get(0);
+        Assert.assertEquals("false", methodConfig.getMerger());
+        Assert.assertEquals(1000, methodConfig.getTimeout().intValue());
+
     }
 }

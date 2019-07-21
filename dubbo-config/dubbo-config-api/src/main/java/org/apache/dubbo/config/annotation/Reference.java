@@ -280,4 +280,10 @@ public @interface Reference {
      * @since 2.7.3
      */
     String id() default "";
+
+    /**
+     * Group merger
+     * @return
+     */
+    String merger() default "";
 }

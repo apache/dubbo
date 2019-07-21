@@ -66,4 +66,6 @@ public @interface Method {
     String validation() default "";
 
     Argument[] arguments() default {};
+
+    String merger() default "";
 }
