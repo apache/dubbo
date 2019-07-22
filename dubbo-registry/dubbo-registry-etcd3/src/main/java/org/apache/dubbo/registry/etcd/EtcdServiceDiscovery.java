@@ -38,6 +38,8 @@ import com.google.gson.Gson;
 
 import java.io.File;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -62,6 +64,7 @@ public class EtcdServiceDiscovery implements ServiceDiscovery, EventListener<Ser
     private final ConcurrentMap<URL, ConcurrentMap<NotifyListener, ChildListener>> etcdListeners = new ConcurrentHashMap<>();
     private final EtcdClient etcdClient;
     private final EventDispatcher dispatcher;
+    private ServiceInstance serviceInstance;
 
     public EtcdServiceDiscovery(URL url, EtcdTransporter etcdTransporter) {
         if (url.isAnyHost()) {
@@ -72,7 +75,7 @@ public class EtcdServiceDiscovery implements ServiceDiscovery, EventListener<Ser
         etcdClient.addStateListener(state -> {
             if (state == StateListener.CONNECTED) {
                 try {
-//                    recover();
+                    recover();
                 } catch (Exception e) {
                     logger.error(e.getMessage(), e);
                 }
@@ -101,8 +104,9 @@ public class EtcdServiceDiscovery implements ServiceDiscovery, EventListener<Ser
     @Override
     public void register(ServiceInstance serviceInstance) throws RuntimeException {
         try {
+            this.serviceInstance = serviceInstance;
             String path = toPath(serviceInstance);
-            etcdClient.put(path, new Gson().toJson(serviceInstance));
+            etcdClient.putEphemeral(path, new Gson().toJson(serviceInstance));
             services.add(serviceInstance.getServiceName());
         } catch (Throwable e) {
             throw new RpcException("Failed to register " + serviceInstance + " to etcd " + etcdClient.getUrl()
@@ -137,6 +141,7 @@ public class EtcdServiceDiscovery implements ServiceDiscovery, EventListener<Ser
             String path = toPath(serviceInstance);
             etcdClient.delete(path);
             services.remove(serviceInstance.getServiceName());
+            this.serviceInstance = null;
         } catch (Throwable e) {
             throw new RpcException("Failed to unregister " + serviceInstance + " to etcd " + etcdClient.getUrl() + ", cause: " + e.getMessage(), e);
         }
@@ -174,5 +179,15 @@ public class EtcdServiceDiscovery implements ServiceDiscovery, EventListener<Ser
          *  eg: /dubbo/interface/providers, /dubbo/interface/consumers and so on.
          */
         List<String> children = etcdClient.addChildListener(path, childListener);
+    }
+
+    private void recover() throws Exception {
+        // register
+        if (serviceInstance != null) {
+            if (logger.isInfoEnabled()) {
+                logger.info("Recover application register: " + serviceInstance);
+            }
+            register(serviceInstance);
+        }
     }
 }

@@ -180,4 +180,12 @@ public interface EtcdClient {
      */
     boolean put(String key, String value);
 
+    /**
+     * Put the key value pair to etcd (Ephemeral)
+     * @param key the specified key
+     * @param value the paired value
+     * @return true if put success
+     */
+    boolean putEphemeral(String key, String value);
+
 }
