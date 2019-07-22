@@ -121,6 +121,12 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
                     throw getRpcException(type, url, invocation, e);
                 }
             }
+
+            @Override
+            public void destroy() {
+                super.destroy();
+                invokers.remove(this);
+            }
         };
         invokers.add(invoker);
         return invoker;
