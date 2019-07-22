@@ -350,7 +350,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
         Channel channel = getCliendSideChannel(url);
         Response response = new Response();
         response.setHeartbeat(true);
-        response.setId(1001l);
+        response.setId(1001L);
         response.setStatus((byte) 20);
         response.setVersion("11");
         Person person = new Person();
@@ -379,7 +379,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
         Channel channel = getCliendSideChannel(url);
         Response response = new Response();
         response.setHeartbeat(true);
-        response.setId(1001l);
+        response.setId(1001L);
         response.setStatus((byte) 10);
         response.setVersion("11");
         String badString = "bad";
