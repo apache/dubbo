@@ -23,6 +23,7 @@ import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 import org.apache.dubbo.metadata.identifier.MetadataIdentifier;
+import org.apache.dubbo.metadata.identifier.MetadataIdentifier.KeyTypeEnum;
 import org.apache.dubbo.metadata.store.MetadataReport;
 
 import com.google.gson.Gson;
@@ -190,9 +191,9 @@ public abstract class AbstractMetadataReport implements MetadataReport {
 
         try {
             if (add) {
-                properties.setProperty(metadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY), value);
+                properties.setProperty(metadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), value);
             } else {
-                properties.remove(metadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY));
+                properties.remove(metadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY));
             }
             long version = lastCacheChanged.incrementAndGet();
             if (sync) {
