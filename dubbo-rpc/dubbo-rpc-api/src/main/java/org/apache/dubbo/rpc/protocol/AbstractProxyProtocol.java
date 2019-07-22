@@ -125,6 +125,7 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
             @Override
             public void destroy() {
                 super.destroy();
+                target.destroy();
                 invokers.remove(this);
             }
         };
