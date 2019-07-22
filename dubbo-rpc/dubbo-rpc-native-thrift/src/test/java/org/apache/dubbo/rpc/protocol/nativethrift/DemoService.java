@@ -12,33 +12,33 @@ public class DemoService {
 
   public interface Iface {
 
-    public String sayHello(String name) throws org.apache.thrift.TException;
+    String sayHello(String name) throws org.apache.thrift.TException;
 
-    public boolean hasName(boolean hasName) throws org.apache.thrift.TException;
+    boolean hasName(boolean hasName) throws org.apache.thrift.TException;
 
-    public String sayHelloTimes(String name, int times) throws org.apache.thrift.TException;
+    String sayHelloTimes(String name, int times) throws org.apache.thrift.TException;
 
-    public void timeOut(int millis) throws org.apache.thrift.TException;
+    void timeOut(int millis) throws org.apache.thrift.TException;
 
-    public String customException() throws org.apache.thrift.TException;
+    String customException() throws org.apache.thrift.TException;
 
-    public String context(String name) throws org.apache.thrift.TException;
+    String context(String name) throws org.apache.thrift.TException;
 
   }
 
   public interface AsyncIface {
 
-    public void sayHello(String name, org.apache.thrift.async.AsyncMethodCallback<String> resultHandler) throws org.apache.thrift.TException;
+    void sayHello(String name, org.apache.thrift.async.AsyncMethodCallback<String> resultHandler) throws org.apache.thrift.TException;
 
-    public void hasName(boolean hasName, org.apache.thrift.async.AsyncMethodCallback<Boolean> resultHandler) throws org.apache.thrift.TException;
+    void hasName(boolean hasName, org.apache.thrift.async.AsyncMethodCallback<Boolean> resultHandler) throws org.apache.thrift.TException;
 
-    public void sayHelloTimes(String name, int times, org.apache.thrift.async.AsyncMethodCallback<String> resultHandler) throws org.apache.thrift.TException;
+    void sayHelloTimes(String name, int times, org.apache.thrift.async.AsyncMethodCallback<String> resultHandler) throws org.apache.thrift.TException;
 
-    public void timeOut(int millis, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException;
+    void timeOut(int millis, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws org.apache.thrift.TException;
 
-    public void customException(org.apache.thrift.async.AsyncMethodCallback<String> resultHandler) throws org.apache.thrift.TException;
+    void customException(org.apache.thrift.async.AsyncMethodCallback<String> resultHandler) throws org.apache.thrift.TException;
 
-    public void context(String name, org.apache.thrift.async.AsyncMethodCallback<String> resultHandler) throws org.apache.thrift.TException;
+    void context(String name, org.apache.thrift.async.AsyncMethodCallback<String> resultHandler) throws org.apache.thrift.TException;
 
   }
 

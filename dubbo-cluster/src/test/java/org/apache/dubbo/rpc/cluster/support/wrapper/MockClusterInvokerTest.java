@@ -673,7 +673,7 @@ public class MockClusterInvokerTest {
         return getClusterInvokerMock(url, null);
     }
 
-    public static interface IHelloService {
+    public interface IHelloService {
         String getSomething();
 
         String getSomething2();
@@ -688,9 +688,9 @@ public class MockClusterInvokerTest {
 
         Boolean getBoolean2();
 
-        public List<String> getListString();
+        List<String> getListString();
 
-        public List<User> getUsers();
+        List<User> getUsers();
 
         void sayHello();
     }

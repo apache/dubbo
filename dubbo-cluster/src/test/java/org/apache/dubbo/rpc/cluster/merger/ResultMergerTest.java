@@ -290,11 +290,11 @@ public class ResultMergerTest {
      */
     @Test
     public void testLongArrayMerger() {
-        long[] arrayOne = {1l, 2l};
-        long[] arrayTwo = {2l, 34l};
+        long[] arrayOne = {1L, 2L};
+        long[] arrayTwo = {2L, 34L};
         long[] result = MergerFactory.getMerger(long[].class).merge(arrayOne, arrayTwo, null);
         Assertions.assertEquals(4, result.length);
-        double[] mergedResult = {1l, 2l, 2l, 34l};
+        double[] mergedResult = {1L, 2L, 2L, 34L};
         for (int i = 0; i < mergedResult.length; i++) {
             Assertions.assertEquals(mergedResult[i], result[i], 0.0);
         }
