@@ -21,7 +21,6 @@ import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.registry.NotifyListener;
 import com.alibaba.dubbo.registry.Registry;
 import com.alibaba.dubbo.registry.RegistryFactory;
-
 import junit.framework.Assert;
 import org.junit.Test;
 
@@ -87,9 +86,15 @@ public class AbstractRegistryFactoryTest {
 
     @Test
     public void testRegistryFactoryIpCache() throws Exception {
-        Registry registry1 = registryFactory.getRegistry(URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":2233"));
-        Registry registry2 = registryFactory.getRegistry(URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostAddress() + ":2233"));
-        Assert.assertEquals(registry1, registry2);
+        String hostName = NetUtils.getLocalAddress().getHostName();
+        String ip = NetUtils.getLocalAddress().getHostAddress();
+        Registry registry1 = registryFactory.getRegistry(URL.valueOf("dubbo://" + hostName + ":2233"));
+        Registry registry2 = registryFactory.getRegistry(URL.valueOf("dubbo://" + ip + ":2233"));
+        if (hostName.equals(ip)) {
+            Assert.assertEquals(registry1, registry2);
+        } else {
+            Assert.assertNotSame(registry1, registry2);
+        }
     }
 
     @Test
