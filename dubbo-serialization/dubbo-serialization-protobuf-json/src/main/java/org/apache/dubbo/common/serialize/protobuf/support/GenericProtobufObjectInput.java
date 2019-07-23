@@ -16,14 +16,15 @@
  */
 package org.apache.dubbo.common.serialize.protobuf.support;
 
-import com.google.common.base.Charsets;
+import org.apache.dubbo.common.serialize.ObjectInput;
+
 import com.google.protobuf.BoolValue;
+import com.google.protobuf.BytesValue;
 import com.google.protobuf.DoubleValue;
 import com.google.protobuf.FloatValue;
 import com.google.protobuf.Int32Value;
 import com.google.protobuf.Int64Value;
 import com.google.protobuf.StringValue;
-import org.apache.dubbo.common.serialize.ObjectInput;
 
 import java.io.BufferedReader;
 import java.io.EOFException;
@@ -85,7 +86,7 @@ public class GenericProtobufObjectInput implements ObjectInput {
 
     @Override
     public byte[] readBytes() throws IOException {
-        return readUTF().getBytes(Charsets.ISO_8859_1);
+        return read(BytesValue.class).getValue().toByteArray();
     }
 
     @Override

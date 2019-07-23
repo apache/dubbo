@@ -16,14 +16,16 @@
  */
 package org.apache.dubbo.common.serialize.protobuf.support;
 
-import com.google.common.base.Charsets;
+import org.apache.dubbo.common.serialize.ObjectOutput;
+
 import com.google.protobuf.BoolValue;
+import com.google.protobuf.ByteString;
+import com.google.protobuf.BytesValue;
 import com.google.protobuf.DoubleValue;
 import com.google.protobuf.FloatValue;
 import com.google.protobuf.Int32Value;
 import com.google.protobuf.Int64Value;
 import com.google.protobuf.StringValue;
-import org.apache.dubbo.common.serialize.ObjectOutput;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -85,12 +87,12 @@ public class GenericProtobufObjectOutput implements ObjectOutput {
 
     @Override
     public void writeBytes(byte[] b) throws IOException {
-        writeUTF(new String(b, Charsets.ISO_8859_1));
+        writeObject(BytesValue.newBuilder().setValue(ByteString.copyFrom(b)).build());
     }
 
     @Override
     public void writeBytes(byte[] b, int off, int len) throws IOException {
-        writeUTF(new String(b, off, len, Charsets.ISO_8859_1));
+        writeObject(BytesValue.newBuilder().setValue(ByteString.copyFrom(b, off, len)).build());
     }
 
 
