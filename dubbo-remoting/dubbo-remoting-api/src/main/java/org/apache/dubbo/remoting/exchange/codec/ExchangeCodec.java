@@ -152,7 +152,8 @@ public class ExchangeCodec extends TelnetCodec {
                 if (status == Response.OK) {
                     Object data;
                     if (res.isHeartbeat()) {
-                        data = decodeHeartbeatData(channel, in);
+                        // data = decodeHeartbeatData(channel, in);
+                        data = null;
                     } else if (res.isEvent()) {
                         data = decodeEventData(channel, in);
                     } else {
@@ -378,7 +379,11 @@ public class ExchangeCodec extends TelnetCodec {
     }
 
     private void encodeEventData(ObjectOutput out, Object data) throws IOException {
-        out.writeObject(data);
+        if(data != null) {
+            out.writeObject(data);
+        }else{
+            logger.warn("encodeEventData  data is null");
+        }
     }
 
     @Deprecated
