@@ -73,6 +73,7 @@ public class FailoverRpcExceptionTest {
             Result ret = invoker.invoke(invocation);
         } catch (RpcException expected) {
             assertTrue((expected.isTimeout() || expected.getCode() == 0));
+            //assert retries times
             assertTrue(expected.getMessage().indexOf("Tried "+(retries + 1) + " times") > 0);
         }
     }
