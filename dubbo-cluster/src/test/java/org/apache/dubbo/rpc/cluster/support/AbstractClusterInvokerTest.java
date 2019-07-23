@@ -445,7 +445,6 @@ public class AbstractClusterInvokerTest {
         }
 
         Assertions.assertEquals(runs, counter.get(invoker2).get() + counter.get(invoker4).get());
-        ;
 
     }
 

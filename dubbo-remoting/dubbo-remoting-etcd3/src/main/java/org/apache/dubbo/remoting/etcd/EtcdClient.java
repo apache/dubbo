@@ -154,7 +154,7 @@ public interface EtcdClient {
      * @throws TimeoutException if the wait timed out
      * @return lease id from etcd
      */
-    public long createLease(long ttl, long timeout, TimeUnit unit)
+    long createLease(long ttl, long timeout, TimeUnit unit)
             throws InterruptedException, ExecutionException, TimeoutException;
 
     /**
