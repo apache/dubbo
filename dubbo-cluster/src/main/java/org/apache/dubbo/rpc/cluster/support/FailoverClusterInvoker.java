@@ -91,6 +91,11 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
                             + " using the dubbo version " + Version.getVersion() + ". Last error is: "
                             + le.getMessage(), le);
                 }
+
+                if(result.getException() != null && result.getException() instanceof RpcException){
+                    throw result.getException();
+                }
+
                 return result;
             } catch (RpcException e) {
                 if (e.isBiz()) { // biz exception.
