@@ -92,7 +92,7 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
                             + le.getMessage(), le);
                 }
 
-                if(result.getException() != null && result.getException() instanceof RpcException){
+                if(result != null && result.getException() != null && result.getException() instanceof RpcException){
                     throw result.getException();
                 }
 
