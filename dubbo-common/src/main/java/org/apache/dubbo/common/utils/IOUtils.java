@@ -133,7 +133,7 @@ public class IOUtils {
     public static long write(Reader reader, Writer writer, int bufferSize) throws IOException {
         int read;
         long total = 0;
-        char[] buf = new char[BUFFER_SIZE];
+        char[] buf = new char[bufferSize];
         while ((read = reader.read(buf)) != -1) {
             writer.write(buf, 0, read);
             total += read;
