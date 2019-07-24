@@ -35,6 +35,7 @@ import java.util.List;
 
 public class IOUtils {
     private static final int BUFFER_SIZE = 1024 * 8;
+    public static final int EOF = -1;
 
     private IOUtils() {
     }
@@ -61,17 +62,18 @@ public class IOUtils {
      * @throws IOException
      */
     public static long write(InputStream is, OutputStream os, int bufferSize) throws IOException {
-        int read;
-        long total = 0;
         byte[] buff = new byte[bufferSize];
-        while (is.available() > 0) {
-            read = is.read(buff, 0, buff.length);
-            if (read > 0) {
-                os.write(buff, 0, read);
-                total += read;
-            }
+        return write(is, os, buff);
+    }
+
+    public static long write (final InputStream input, final OutputStream output, final byte[] buffer) throws IOException {
+        long count = 0;
+        int n;
+        while (EOF != (n = input.read(buffer))) {
+            output.write(buffer, 0, n);
+            count += n;
         }
-        return total;
+        return count;
     }
 
     /**
