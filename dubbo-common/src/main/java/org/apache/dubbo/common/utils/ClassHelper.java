@@ -116,11 +116,11 @@ public class ClassHelper {
     }
 
     /**
-     * @see org.apache.dubbo.common.utils.MethodUtils#isSetter(Method)
+     * @see org.apache.dubbo.common.utils.MethodUtils#isPrimitiveSetter(Method)
      * @deprecated Replace to <code>MethodUtils#isSetter(Method)</code>
      */
     public static boolean isSetter(Method method) {
-        return MethodUtils.isSetter(method);
+        return MethodUtils.isPrimitiveSetter(method);
     }
 
     /**

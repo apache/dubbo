@@ -36,10 +36,10 @@ public class MethodUtilsTest {
     }
 
     @Test
-    public void testSetMethod() {
+    public void testPrimitiveSetMethod() {
         Method setMethod = null;
         for (Method method : MethodTestClazz.class.getMethods()) {
-            if (MethodUtils.isSetter(method)) {
+            if (MethodUtils.isPrimitiveSetter(method)) {
                 setMethod = method;
             }
         }
@@ -48,10 +48,10 @@ public class MethodUtilsTest {
     }
 
     @Test
-    public void testSet2Method(){
+    public void testSetMethod(){
         Method setMethod = null;
         for (Method method : Method2TestClazz.class.getMethods()) {
-            if (MethodUtils.isSetter2(method)) {
+            if (MethodUtils.isSetter(method)) {
                 setMethod = method;
             }
         }

@@ -20,23 +20,14 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
 public class MethodUtils {
-
-    /**
-     * return true if and only if:
-     * <p>
-     * 1, public
-     * <p>
-     * 2, name starts with "set"
-     * <p>
-     * 3, only has one parameter
-     */
-    public static boolean isSetter2(Method method) {
+    
+    public static boolean isSetter(Method method) {
         return method.getName().startsWith("set")
                 && method.getParameterTypes().length == 1
                 && Modifier.isPublic(method.getModifiers());
     }
 
-    public static boolean isSetter(Method method) {
+    public static boolean isPrimitiveSetter(Method method) {
         return method.getName().startsWith("set")
                 && !"set".equals(method.getName())
                 && Modifier.isPublic(method.getModifiers())
