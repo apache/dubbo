@@ -66,5 +66,9 @@ public class ProxyTest {
         String getName();
 
         void setName(String name, String name2);
+
+        static String sayBye() {
+            return "Bye!";
+        }
     }
 }
