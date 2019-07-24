@@ -169,8 +169,6 @@ public class ProtocolFilterWrapper implements Protocol {
                                 listener.onError(t, filterInvoker, invocation);
                             }
                         }
-                    } else {
-                        filter.onResponse(r, filterInvoker, invocation);
                     }
                 }
             });
