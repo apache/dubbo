@@ -25,6 +25,7 @@ import java.lang.annotation.Target;
 /**
  * 
  * Indicate alias for field when generic invoking. <br>
+ *
  * <p>
  *     sometimes you receive json string which contains non-camelcase key name,e.g. order_id,
  *     but the java bean needs camelcase name,e.g orderId, you should convert manually each other,
