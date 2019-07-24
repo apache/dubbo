@@ -73,7 +73,7 @@ public class JdkCompiler extends AbstractCompiler {
         StandardJavaFileManager manager = compiler.getStandardFileManager(diagnosticCollector, null, null);
         final ClassLoader loader = Thread.currentThread().getContextClassLoader();
         if (loader instanceof URLClassLoader
-                && (!loader.getClass().getName().equals("sun.misc.Launcher$AppClassLoader"))) {
+                && (!"sun.misc.Launcher$AppClassLoader".equals(loader.getClass().getName()))) {
             try {
                 URLClassLoader urlClassLoader = (URLClassLoader) loader;
                 List<File> files = new ArrayList<File>();
