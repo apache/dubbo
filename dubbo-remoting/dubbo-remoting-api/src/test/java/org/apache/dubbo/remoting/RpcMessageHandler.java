@@ -69,7 +69,7 @@ public class RpcMessageHandler implements Replier<RpcMessage> {
 
     }
 
-    public static interface ServiceProvider {
+    public interface ServiceProvider {
         Object getImplementation(String service);
     }
 

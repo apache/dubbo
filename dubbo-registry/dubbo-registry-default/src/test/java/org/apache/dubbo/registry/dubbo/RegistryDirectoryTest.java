@@ -495,8 +495,6 @@ public class RegistryDirectoryTest {
 
     }
 
-    ;
-
     /**
      * When the first arg of a method is String or Enum, Registry server can do parameter-value-based routing.
      */
@@ -1083,7 +1081,7 @@ public class RegistryDirectoryTest {
         MORGAN,
     }
 
-    private static interface DemoService {
+    private interface DemoService {
     }
 
     private static class MockRegistry implements Registry {

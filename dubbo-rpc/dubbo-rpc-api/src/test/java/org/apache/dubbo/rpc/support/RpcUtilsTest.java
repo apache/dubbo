@@ -79,7 +79,7 @@ public class RpcUtilsTest {
         URL url = URL.valueOf("dubbo://localhost/?test.async=true");
         Invocation inv = new RpcInvocation("test", new Class[]{}, new String[]{});
         RpcUtils.attachInvocationIdIfAsync(url, inv);
-        assertTrue(RpcUtils.getInvocationId(inv) >= 0l);
+        assertTrue(RpcUtils.getInvocationId(inv) >= 0L);
     }
 
     /**

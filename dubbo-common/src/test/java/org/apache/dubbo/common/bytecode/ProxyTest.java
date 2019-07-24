@@ -62,7 +62,7 @@ public class ProxyTest {
         }
     }
 
-    public static interface ITest {
+    public interface ITest {
         String getName();
 
         void setName(String name, String name2);
