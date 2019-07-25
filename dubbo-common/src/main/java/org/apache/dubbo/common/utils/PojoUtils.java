@@ -561,10 +561,10 @@ public class PojoUtils {
      * @return
      */
     private static Object getDefaultValue(Class<?> parameterType) {
-        if (parameterType.getName().equals("char")) {
+        if ("char".equals(parameterType.getName())) {
             return Character.MIN_VALUE;
         }
-        if (parameterType.getName().equals("bool")) {
+        if ("bool".equals(parameterType.getName())) {
             return false;
         }
         return parameterType.isPrimitive() ? 0 : null;
