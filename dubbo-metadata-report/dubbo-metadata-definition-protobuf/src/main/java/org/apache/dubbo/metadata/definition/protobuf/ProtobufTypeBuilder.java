@@ -227,9 +227,9 @@ public class ProtobufTypeBuilder implements TypeBuilder {
         // 1. - setUnknownFields( com.google.protobuf.UnknownFieldSet unknownFields)
         // 2. - setField(com.google.protobuf.Descriptors.FieldDescriptor field,java.lang.Object value)
         // 3. - setRepeatedField(com.google.protobuf.Descriptors.FieldDescriptor field,int index,java.lang.Object value）
-        if (methodName.equals("setField") && types[0].equals(Descriptors.FieldDescriptor.class)
-                || methodName.equals("setUnknownFields") && types[0].equals(UnknownFieldSet.class)
-                || methodName.equals("setRepeatedField") && types[0].equals(Descriptors.FieldDescriptor.class)) {
+        if ("setField".equals(methodName) && types[0].equals(Descriptors.FieldDescriptor.class)
+                || "setUnknownFields".equals(methodName) && types[0].equals(UnknownFieldSet.class)
+                || "setRepeatedField".equals(methodName) && types[0].equals(Descriptors.FieldDescriptor.class)) {
             return false;
         }
 

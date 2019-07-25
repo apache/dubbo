@@ -187,6 +187,7 @@ public final class MapValue {
       return attachments_;
     }
 
+    @Override
     public int getAttachmentsCount() {
       return internalGetAttachments().getMap().size();
     }
@@ -194,6 +195,7 @@ public final class MapValue {
      * <code>map&lt;string, string&gt; attachments = 1;</code>
      */
 
+    @Override
     public boolean containsAttachments(
         String key) {
       if (key == null) { throw new NullPointerException(); }
@@ -202,6 +204,7 @@ public final class MapValue {
     /**
      * Use {@link #getAttachmentsMap()} instead.
      */
+    @Override
     @Deprecated
     public java.util.Map<String, String> getAttachments() {
       return getAttachmentsMap();
@@ -210,6 +213,7 @@ public final class MapValue {
      * <code>map&lt;string, string&gt; attachments = 1;</code>
      */
 
+    @Override
     public java.util.Map<String, String> getAttachmentsMap() {
       return internalGetAttachments().getMap();
     }
@@ -217,6 +221,7 @@ public final class MapValue {
      * <code>map&lt;string, string&gt; attachments = 1;</code>
      */
 
+    @Override
     public String getAttachmentsOrDefault(
         String key,
         String defaultValue) {
@@ -229,6 +234,7 @@ public final class MapValue {
      * <code>map&lt;string, string&gt; attachments = 1;</code>
      */
 
+    @Override
     public String getAttachmentsOrThrow(
         String key) {
       if (key == null) { throw new NullPointerException(); }
@@ -244,8 +250,12 @@ public final class MapValue {
     @Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized == 1) return true;
-      if (isInitialized == 0) return false;
+      if (isInitialized == 1) {
+          return true;
+      }
+      if (isInitialized == 0) {
+          return false;
+      }
 
       memoizedIsInitialized = 1;
       return true;
@@ -266,7 +276,9 @@ public final class MapValue {
     @Override
     public int getSerializedSize() {
       int size = memoizedSize;
-      if (size != -1) return size;
+      if (size != -1) {
+          return size;
+      }
 
       size = 0;
       for (java.util.Map.Entry<String, String> entry
@@ -419,6 +431,7 @@ public final class MapValue {
         return MapValue.internal_static_Map_descriptor;
       }
 
+      @Override
       @SuppressWarnings({"rawtypes"})
       protected com.google.protobuf.MapField internalGetMapField(
           int number) {
@@ -430,6 +443,7 @@ public final class MapValue {
                 "Invalid map field number: " + number);
         }
       }
+      @Override
       @SuppressWarnings({"rawtypes"})
       protected com.google.protobuf.MapField internalGetMutableMapField(
           int number) {
@@ -544,7 +558,9 @@ public final class MapValue {
       }
 
       public Builder mergeFrom(Map other) {
-        if (other == Map.getDefaultInstance()) return this;
+        if (other == Map.getDefaultInstance()) {
+            return this;
+        }
         internalGetMutableAttachments().mergeFrom(
             other.internalGetAttachments());
         this.mergeUnknownFields(other.unknownFields);
@@ -600,6 +616,7 @@ public final class MapValue {
         return attachments_;
       }
 
+      @Override
       public int getAttachmentsCount() {
         return internalGetAttachments().getMap().size();
       }
@@ -607,6 +624,7 @@ public final class MapValue {
        * <code>map&lt;string, string&gt; attachments = 1;</code>
        */
 
+      @Override
       public boolean containsAttachments(
           String key) {
         if (key == null) { throw new NullPointerException(); }
@@ -615,6 +633,7 @@ public final class MapValue {
       /**
        * Use {@link #getAttachmentsMap()} instead.
        */
+      @Override
       @Deprecated
       public java.util.Map<String, String> getAttachments() {
         return getAttachmentsMap();
@@ -623,6 +642,7 @@ public final class MapValue {
        * <code>map&lt;string, string&gt; attachments = 1;</code>
        */
 
+      @Override
       public java.util.Map<String, String> getAttachmentsMap() {
         return internalGetAttachments().getMap();
       }
@@ -630,6 +650,7 @@ public final class MapValue {
        * <code>map&lt;string, string&gt; attachments = 1;</code>
        */
 
+      @Override
       public String getAttachmentsOrDefault(
           String key,
           String defaultValue) {
@@ -642,6 +663,7 @@ public final class MapValue {
        * <code>map&lt;string, string&gt; attachments = 1;</code>
        */
 
+      @Override
       public String getAttachmentsOrThrow(
           String key) {
         if (key == null) { throw new NullPointerException(); }
@@ -779,6 +801,7 @@ public final class MapValue {
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
+          @Override
           public com.google.protobuf.ExtensionRegistry assignDescriptors(
               com.google.protobuf.Descriptors.FileDescriptor root) {
             descriptor = root;
