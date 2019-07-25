@@ -43,7 +43,9 @@ import org.jboss.resteasy.util.GetRestful;
 import javax.servlet.ServletContext;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.WebApplicationException;
+import java.util.Collections;
 import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -160,44 +162,47 @@ public class RestProtocol extends AbstractProxyProtocol {
                 .setTcpNoDelay(true)
                 .build();
 
-        ResteasyClient client = clients.get(uri);
-        // if never create client for this url
-        if (client == null) {
-            CloseableHttpClient httpClient = HttpClientBuilder.create()
-                    .setConnectionManager(connectionMonitor.getConnectionManager(uri))
-                    .setKeepAliveStrategy((response, context) -> {
-                        HeaderElementIterator it = new BasicHeaderElementIterator(response.headerIterator(HTTP.CONN_KEEP_ALIVE));
-                        while (it.hasNext()) {
-                            HeaderElement he = it.nextElement();
-                            String param = he.getName();
-                            String value = he.getValue();
-                            if (value != null && param.equalsIgnoreCase(TIMEOUT_KEY)) {
-                                return Long.parseLong(value) * 1000;
-                            }
+        // create new client
+        ResteasyClient client = clients.remove(uri);
+        if (client != null) {
+            if (!client.isClosed()) {
+                client.close();
+            }
+        }
+        CloseableHttpClient httpClient = HttpClientBuilder.create()
+                .setConnectionManager(connectionMonitor.getConnectionManager(uri))
+                .setKeepAliveStrategy((response, context) -> {
+                    HeaderElementIterator it = new BasicHeaderElementIterator(response.headerIterator(HTTP.CONN_KEEP_ALIVE));
+                    while (it.hasNext()) {
+                        HeaderElement he = it.nextElement();
+                        String param = he.getName();
+                        String value = he.getValue();
+                        if (value != null && param.equalsIgnoreCase(TIMEOUT_KEY)) {
+                            return Long.parseLong(value) * 1000;
                         }
-                        return HTTPCLIENT_KEEPALIVEDURATION;
-                    })
-                    .setDefaultRequestConfig(requestConfig)
-                    .setDefaultSocketConfig(socketConfig)
-                    .build();
-
-            ApacheHttpClient4Engine engine = new ApacheHttpClient4Engine(httpClient/*, localContext*/);
-
-            client = new ResteasyClientBuilder().httpEngine(engine).build();
-            client.register(RpcContextFilter.class);
-
-            for (String clazz : COMMA_SPLIT_PATTERN.split(url.getParameter(EXTENSION_KEY, ""))) {
-                if (!StringUtils.isEmpty(clazz)) {
-                    try {
-                        client.register(Thread.currentThread().getContextClassLoader().loadClass(clazz.trim()));
-                    } catch (ClassNotFoundException e) {
-                        throw new RpcException("Error loading JAX-RS extension class: " + clazz.trim(), e);
                     }
+                    return HTTPCLIENT_KEEPALIVEDURATION;
+                })
+                .setDefaultRequestConfig(requestConfig)
+                .setDefaultSocketConfig(socketConfig)
+                .build();
+
+        ApacheHttpClient4Engine engine = new ApacheHttpClient4Engine(httpClient/*, localContext*/);
+
+        client = new ResteasyClientBuilder().httpEngine(engine).build();
+        client.register(RpcContextFilter.class);
+
+        for (String clazz : COMMA_SPLIT_PATTERN.split(url.getParameter(EXTENSION_KEY, ""))) {
+            if (!StringUtils.isEmpty(clazz)) {
+                try {
+                    client.register(Thread.currentThread().getContextClassLoader().loadClass(clazz.trim()));
+                } catch (ClassNotFoundException e) {
+                    throw new RpcException("Error loading JAX-RS extension class: " + clazz.trim(), e);
                 }
             }
-
-            clients.put(uri, client);
         }
+
+        clients.put(uri, client);
 
         // TODO protocol
         ResteasyWebTarget target = client.target("http://" + url.getHost() + ":" + url.getPort() + "/" + getContextPath(url));
@@ -244,9 +249,9 @@ public class RestProtocol extends AbstractProxyProtocol {
     }
 
     /**
-     *  getPath() will return: [contextpath + "/" +] path
-     *  1. contextpath is empty if user does not set through ProtocolConfig or ProviderConfig
-     *  2. path will never be empty, it's default value is the interface name.
+     * getPath() will return: [contextpath + "/" +] path
+     * 1. contextpath is empty if user does not set through ProtocolConfig or ProviderConfig
+     * 2. path will never be empty, it's default value is the interface name.
      *
      * @return return path only if user has explicitly gave then a value.
      */
