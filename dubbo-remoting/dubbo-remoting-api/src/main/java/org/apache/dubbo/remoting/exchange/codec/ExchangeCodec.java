@@ -378,11 +378,7 @@ public class ExchangeCodec extends TelnetCodec {
     }
 
     private void encodeEventData(ObjectOutput out, Object data) throws IOException {
-        if(data != null) {
-            out.writeObject(data);
-        }else{
-            logger.warn("encodeEventData  data is null");
-        }
+        out.writeObject(data);
     }
 
     @Deprecated
