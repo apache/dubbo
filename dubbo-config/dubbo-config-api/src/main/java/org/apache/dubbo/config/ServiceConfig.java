@@ -882,15 +882,14 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     private void convertProtocolIdsToProtocols() {
         if (StringUtils.isEmpty(protocolIds)) {
             if (CollectionUtils.isEmpty(protocols)) {
-                setProtocols(
-                        ConfigManager.getInstance().getDefaultProtocols()
-                                .filter(CollectionUtils::isNotEmpty)
-                                .orElseGet(() -> {
-                                    ProtocolConfig protocolConfig = new ProtocolConfig();
-                                    protocolConfig.refresh();
-                                    return new ArrayList<>(Arrays.asList(protocolConfig));
-                                })
-                );
+                List<ProtocolConfig> protocolConfigs = ConfigManager.getInstance().getDefaultProtocols();
+                if (protocolConfigs.isEmpty()) {
+                    protocolConfigs = new ArrayList<>(1);
+                    ProtocolConfig protocolConfig = new ProtocolConfig();
+                    protocolConfig.refresh();
+                    protocolConfigs.add(protocolConfig);
+                }
+                setProtocols(protocolConfigs);
             }
         } else {
             String[] arr = COMMA_SPLIT_PATTERN.split(protocolIds);

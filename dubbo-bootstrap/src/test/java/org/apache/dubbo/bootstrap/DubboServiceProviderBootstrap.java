@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.bootstrap;
 
+import org.apache.curator.test.TestingServer;
+
 import java.io.IOException;
 
 /**
@@ -25,14 +27,34 @@ import java.io.IOException;
  */
 public class DubboServiceProviderBootstrap {
 
-    public static void main(String[] args) throws IOException {
+    private static final String ZK_ADDRESS = "127.0.0.1";
+
+    private static final int ZK_PORT = 2181;
+
+    public static void main(String[] args) throws Exception {
+
+        String address = "zookeeper://" + ZK_ADDRESS + ":" + ZK_PORT + "?registry-type=service";
+
+        TestingServer testingServer = new TestingServer(2181, true);
 
         new DubboBootstrap()
                 .application("dubbo-provider-demo")
-                .registry(builder -> builder.address("zookeeper://127.0.0.1:2181?registry-type=service"))
+                // Zookeeper in service registry type
+                .registry("zookeeper", builder -> builder.address(address))
+                // Nacos
+//                .registry("nacos", builder -> builder.address("nacos://127.0.0.1:8848?registry-type=service"))
                 .protocol(builder -> builder.port(-1).name("dubbo"))
                 .service(builder -> builder.id("test").interfaceClass(EchoService.class).ref(new EchoServiceImpl()))
                 .start()
                 .await();
+
+
+        // shutdown Zookeeper server
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                testingServer.close();
+            } catch (IOException e) {
+            }
+        }));
     }
 }

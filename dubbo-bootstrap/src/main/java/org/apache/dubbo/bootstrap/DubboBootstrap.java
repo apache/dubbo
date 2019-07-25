@@ -59,6 +59,7 @@ import org.apache.dubbo.registry.support.ServiceOrientedRegistry;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -149,7 +150,7 @@ public class DubboBootstrap {
     }
 
     public DubboBootstrap metadataReport(List<MetadataReportConfig> metadataReportConfigs) {
-        configManager.addMetadataReport(metadataReportConfigs);
+        configManager.addMetadataReports(metadataReportConfigs);
         return this;
     }
 
@@ -193,22 +194,48 @@ public class DubboBootstrap {
 
     // {@link RegistryConfig} correlative methods
 
+    /**
+     * Add an instance of {@link RegistryConfig} with {@link #DEFAULT_REGISTRY_ID default ID}
+     *
+     * @param consumerBuilder the {@link Consumer} of {@link RegistryBuilder}
+     * @return current {@link DubboBootstrap} instance
+     */
     public DubboBootstrap registry(Consumer<RegistryBuilder> consumerBuilder) {
         return registry(DEFAULT_REGISTRY_ID, consumerBuilder);
     }
 
+    /**
+     * Add an instance of {@link RegistryConfig} with the specified ID
+     *
+     * @param id              the {@link RegistryConfig#getId() id}  of {@link RegistryConfig}
+     * @param consumerBuilder the {@link Consumer} of {@link RegistryBuilder}
+     * @return current {@link DubboBootstrap} instance
+     */
     public DubboBootstrap registry(String id, Consumer<RegistryBuilder> consumerBuilder) {
         RegistryBuilder builder = createRegistryBuilder(id);
         consumerBuilder.accept(builder);
         return registry(builder.build());
     }
 
+    /**
+     * Add an instance of {@link RegistryConfig}
+     *
+     * @param registryConfig an instance of {@link RegistryConfig}
+     * @return current {@link DubboBootstrap} instance
+     */
     public DubboBootstrap registry(RegistryConfig registryConfig) {
-        return registries(asList(registryConfig));
+        configManager.addRegistry(registryConfig);
+        return this;
     }
 
-    public DubboBootstrap registries(List<RegistryConfig> registryConfigs) {
-        configManager.addRegistries(registryConfigs, true);
+    /**
+     * Add an instance of {@link RegistryConfig}
+     *
+     * @param registryConfigs the multiple instances of {@link RegistryConfig}
+     * @return current {@link DubboBootstrap} instance
+     */
+    public DubboBootstrap registries(Iterable<RegistryConfig> registryConfigs) {
+        registryConfigs.forEach(this::registry);
         return this;
     }
 
@@ -315,7 +342,7 @@ public class DubboBootstrap {
     }
 
     public DubboBootstrap configCenter(List<ConfigCenterConfig> configCenterConfigs) {
-        configManager.addConfigCenter(configCenterConfigs);
+        configManager.addConfigCenters(configCenterConfigs);
         return this;
     }
 
@@ -358,7 +385,7 @@ public class DubboBootstrap {
             }
         });
 
-        configManager.addRegistries(tmpRegistries, true);
+        configManager.addRegistries(tmpRegistries);
 
         // protocol ids to protocol configs
         List<ProtocolConfig> tmpProtocols = new ArrayList<>();
@@ -382,22 +409,20 @@ public class DubboBootstrap {
      * there's no config center specified explicitly.
      */
     private void useRegistryAsConfigCenterIfNecessary() {
-        configManager.getDefaultRegistries().ifPresent(registryConfigs -> {
-            for (RegistryConfig registryConfig : registryConfigs) {
-                if (registryConfig != null && registryConfig.isZookeeperProtocol()) {
-                    // we use the loading status of DynamicConfiguration to decide whether ConfigCenter has been initiated.
-                    Environment.getInstance().getDynamicConfiguration().orElseGet(() -> {
-                        Set<ConfigCenterConfig> configCenters = configManager.getConfigCenters();
-                        if (CollectionUtils.isEmpty(configCenters)) {
-                            ConfigCenterConfig cc = new ConfigCenterConfig();
-                            cc.setProtocol(registryConfig.getProtocol());
-                            cc.setAddress(registryConfig.getAddress());
-                            cc.setHighestPriority(false);
-                            configManager.addConfigCenter(cc);
-                        }
-                        return null;
-                    });
-                }
+        configManager.getDefaultRegistries().forEach(registryConfig -> {
+            if (registryConfig != null && registryConfig.isZookeeperProtocol()) {
+                // we use the loading status of DynamicConfiguration to decide whether ConfigCenter has been initiated.
+                Environment.getInstance().getDynamicConfiguration().orElseGet(() -> {
+                    Collection<ConfigCenterConfig> configCenters = configManager.getConfigCenters();
+                    if (CollectionUtils.isEmpty(configCenters)) {
+                        ConfigCenterConfig cc = new ConfigCenterConfig();
+                        cc.setProtocol(registryConfig.getProtocol());
+                        cc.setAddress(registryConfig.getAddress());
+                        cc.setHighestPriority(false);
+                        configManager.addConfigCenter(cc);
+                    }
+                    return null;
+                });
             }
             startConfigCenter();
         });
@@ -432,8 +457,8 @@ public class DubboBootstrap {
                 // TODO, only export to default registry?
                 List<URL> exportedURLs = exportMetadataService(
                         configManager.getApplication().orElseThrow(() -> new IllegalStateException("ApplicationConfig cannot be null")),
-                        configManager.getDefaultRegistries().orElseThrow(() -> new IllegalStateException("No default RegistryConfig")),
-                        configManager.getDefaultProtocols().orElseThrow(() -> new IllegalStateException("No default ProtocolConfig"))
+                        configManager.getRegistries().values(),
+                        configManager.getProtocols().values()
                 );
 
                 /**
@@ -541,7 +566,7 @@ public class DubboBootstrap {
         ApplicationConfig applicationConfig = configManager.getApplication().orElseThrow(() -> new IllegalStateException("There's no ApplicationConfig specified."));
 
         // FIXME, multiple metadata config support.
-        Set<MetadataReportConfig> metadataReportConfigs = configManager.getMetadataConfigs();
+        Collection<MetadataReportConfig> metadataReportConfigs = configManager.getMetadataConfigs();
         if (CollectionUtils.isEmpty(metadataReportConfigs)) {
             if (CommonConstants.METADATA_REMOTE.equals(applicationConfig.getMetadata())) {
                 throw new IllegalStateException("No MetadataConfig found, you must specify the remote Metadata Center address when set 'metadata=remote'.");
@@ -559,7 +584,7 @@ public class DubboBootstrap {
     }
 
     private void startConfigCenter() {
-        Set<ConfigCenterConfig> configCenters = configManager.getConfigCenters();
+        Collection<ConfigCenterConfig> configCenters = configManager.getConfigCenters();
 
         if (CollectionUtils.isNotEmpty(configCenters)) {
             CompositeDynamicConfiguration compositeDynamicConfiguration = new CompositeDynamicConfiguration();
@@ -619,8 +644,8 @@ public class DubboBootstrap {
     }
 
     private List<URL> exportMetadataService(ApplicationConfig applicationConfig,
-                                            List<RegistryConfig> globalRegistryConfigs,
-                                            List<ProtocolConfig> globalProtocolConfigs) {
+                                            Collection<RegistryConfig> globalRegistryConfigs,
+                                            Collection<ProtocolConfig> globalProtocolConfigs) {
         ConfigurableMetadataServiceExporter exporter = new ConfigurableMetadataServiceExporter();
         exporter.setApplicationConfig(applicationConfig);
         exporter.setRegistries(globalRegistryConfigs);
