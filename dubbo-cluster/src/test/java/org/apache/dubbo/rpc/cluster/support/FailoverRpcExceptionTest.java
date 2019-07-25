@@ -29,11 +29,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
-/**
- * @description:
- * @author: chengang6
- * @create: 2019/7/22 19:40
- **/
 public class FailoverRpcExceptionTest {
     private List<Invoker<FailoverClusterInvokerTest>> invokers = new ArrayList<Invoker<FailoverClusterInvokerTest>>();
     private int retries = 3;
