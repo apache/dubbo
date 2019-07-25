@@ -673,12 +673,14 @@ public class MockClusterInvokerTest {
         return getClusterInvokerMock(url, null);
     }
 
-    public static interface IHelloService {
+    public interface IHelloService {
         String getSomething();
 
         String getSomething2();
 
         String getSomething3();
+
+        String getSomething4();
 
         int getInt1();
 
@@ -686,9 +688,9 @@ public class MockClusterInvokerTest {
 
         Boolean getBoolean2();
 
-        public List<String> getListString();
+        List<String> getListString();
 
-        public List<User> getUsers();
+        List<User> getUsers();
 
         void sayHello();
     }
@@ -704,6 +706,10 @@ public class MockClusterInvokerTest {
 
         public String getSomething3() {
             return "something3";
+        }
+
+        public String getSomething4(){
+            throw new RpcException("getSomething4|RpcException");
         }
 
         public int getInt1() {
@@ -746,6 +752,10 @@ public class MockClusterInvokerTest {
 
         public String getSomething3() {
             return "something3mock";
+        }
+
+        public String getSomething4(){
+            return "something4mock";
         }
 
         public List<String> getListString() {
