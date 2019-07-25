@@ -181,7 +181,8 @@ public class RegistryConfig extends AbstractConfig {
         if (address != null) {
             int i = address.indexOf("://");
             if (i > 0) {
-                this.updateIdIfAbsent(address.substring(0, i));
+                String protocol = address.substring(0, i);
+                this.setProtocol(protocol);
             }
         }
     }

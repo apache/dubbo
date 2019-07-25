@@ -44,6 +44,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.StampedLock;
 import java.util.stream.Collectors;
 
+import static java.lang.Boolean.TRUE;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.Optional.ofNullable;
@@ -157,7 +158,7 @@ public class ConfigManager {
     // ConfigCenterConfig correlative methods
 
     public void addConfigCenter(ConfigCenterConfig configCenter) {
-        putIfAbsent(configCenter.getId(), configCenter, configCenters);
+        addIfAbsent(configCenter, configCenters);
     }
 
     public void addConfigCenters(Iterable<ConfigCenterConfig> configCenters) {
@@ -175,7 +176,7 @@ public class ConfigManager {
     // MetadataReportConfig correlative methods
 
     public void addMetadataReport(MetadataReportConfig metadataReportConfig) {
-        putIfAbsent(metadataReportConfig.getId(), metadataReportConfig, metadataConfigs);
+        addIfAbsent(metadataReportConfig, metadataConfigs);
     }
 
     public void addMetadataReports(Iterable<MetadataReportConfig> metadataReportConfigs) {
@@ -189,7 +190,7 @@ public class ConfigManager {
     // MetadataReportConfig correlative methods
 
     public void addProvider(ProviderConfig providerConfig) {
-        putIfAbsent(providerConfig, providers);
+        addIfAbsent(providerConfig, providers);
     }
 
     public Optional<ProviderConfig> getProvider(String id) {
@@ -207,7 +208,7 @@ public class ConfigManager {
     // ConsumerConfig correlative methods
 
     public void addConsumer(ConsumerConfig consumerConfig) {
-        putIfAbsent(consumerConfig, consumers);
+        addIfAbsent(consumerConfig, consumers);
     }
 
     public Optional<ConsumerConfig> getConsumer(String id) {
@@ -225,7 +226,7 @@ public class ConfigManager {
     // ProtocolConfig correlative methods
 
     public void addProtocol(ProtocolConfig protocolConfig) {
-        putIfAbsent(protocolConfig, protocols);
+        addIfAbsent(protocolConfig, protocols);
     }
 
     public void addProtocols(Iterable<ProtocolConfig> protocolConfigs, boolean canBeDefault) {
@@ -261,7 +262,7 @@ public class ConfigManager {
     // RegistryConfig correlative methods
 
     public void addRegistry(RegistryConfig registryConfig) {
-        putIfAbsent(registryConfig, registries);
+        addIfAbsent(registryConfig, registries);
     }
 
     public void addRegistries(Iterable<RegistryConfig> registryConfigs) {
@@ -296,7 +297,7 @@ public class ConfigManager {
     // ServiceConfig correlative methods
 
     public void addService(ServiceConfig<?> serviceConfig) {
-        putIfAbsent(serviceConfig.getId(), serviceConfig, serviceConfigs);
+        addIfAbsent(serviceConfig, serviceConfigs);
     }
 
     public Collection<ServiceConfig<?>> getServiceConfigs() {
@@ -310,7 +311,7 @@ public class ConfigManager {
     // ReferenceConfig correlative methods
 
     public void addReference(ReferenceConfig<?> referenceConfig) {
-        putIfAbsent(referenceConfig.getId(), referenceConfig, referenceConfigs);
+        addIfAbsent(referenceConfig, referenceConfigs);
     }
 
     public Collection<ReferenceConfig<?>> getReferenceConfigs() {
@@ -405,14 +406,6 @@ public class ConfigManager {
         return value;
     }
 
-    private <V> void putIfAbsent(String key, V value, Map<String, V> map) {
-        if (read(() -> !map.containsKey(key) && !map.containsValue(value))) {
-            write(() -> {
-                map.putIfAbsent(key, value);
-            });
-        }
-    }
-
     private static void checkDuplicate(AbstractConfig oldOne, AbstractConfig newOne) {
         if (oldOne != null && !oldOne.equals(newOne)) {
             String configName = oldOne.getClass().getSimpleName();
@@ -424,17 +417,13 @@ public class ConfigManager {
         return new HashMap<>();
     }
 
-    private static <C extends AbstractConfig> void putIfAbsent(C config, Map<String, C> configsMap) {
+    private static <C extends AbstractConfig> void addIfAbsent(C config, Map<String, C> configsMap) {
 
         if (config == null) {
             return;
         }
 
-        String id = config.getId();
-
-        Boolean isDefault = getProperty(config, "default");
-
-        String key = isNotEmpty(id) ? id : Boolean.TRUE.equals(isDefault) ? DEFAULT_KEY : null;
+        String key = getId(config);
 
         C existedConfig = configsMap.get(key);
 
@@ -449,13 +438,21 @@ public class ConfigManager {
         }
     }
 
-    private static <C extends AbstractConfig> List<C> getDefaultConfigs(Map<String, C> configsMap) {
+    static <C extends AbstractConfig> String getId(C config) {
+        String id = config.getId();
+        return isNotEmpty(id) ? id : isDefaultConfig(config) ?
+                config.getClass().getSimpleName() + "#" + DEFAULT_KEY : null;
+    }
+
+    static <C extends AbstractConfig> boolean isDefaultConfig(C config) {
+        Boolean isDefault = getProperty(config, "default");
+        return isDefault == null || TRUE.equals(isDefault);
+    }
+
+    static <C extends AbstractConfig> List<C> getDefaultConfigs(Map<String, C> configsMap) {
         return configsMap.values()
                 .stream()
-                .filter(config -> {
-                    Boolean isDefault = getProperty(config, "default");
-                    return isDefault == null || Boolean.TRUE.equals(isDefault);
-                })
+                .filter(ConfigManager::isDefaultConfig)
                 .collect(Collectors.toList());
     }
 }
