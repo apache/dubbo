@@ -17,10 +17,8 @@
 package org.apache.dubbo.bootstrap;
 
 import org.apache.dubbo.config.ReferenceConfig;
-import org.apache.dubbo.config.builders.ApplicationBuilder;
-import org.apache.dubbo.config.builders.ReferenceBuilder;
-import org.apache.dubbo.config.builders.RegistryBuilder;
-import org.apache.dubbo.config.utils.ReferenceConfigCache;
+import org.apache.dubbo.config.context.ConfigManager;
+
 
 /**
  * Dubbo Provider Bootstrap
@@ -31,16 +29,22 @@ public class DubboServiceConsumerBootstrap {
 
     public static void main(String[] args) throws Exception {
 
-        DubboBootstrap bootstrap = new DubboBootstrap()
-                .application(ApplicationBuilder.newBuilder().name("dubbo-consumer-demo").build())
-                .registry(RegistryBuilder.newBuilder().address("zookeeper://127.0.0.1:2181?registry-type=service&subscribed-services=dubbo-provider-demo&metadata=remote").build())
-                .reference(ReferenceBuilder.newBuilder().id("ref").interfaceClass(EchoService.class).build())
+        new DubboBootstrap()
+                .application("dubbo-consumer-demo")
+                // Zookeeper
+                .registry("zookeeper", builder -> builder.address("zookeeper://127.0.0.1:2181?registry-type=service&subscribed-services=dubbo-provider-demo"))
+                // Nacos
+                .registry("nacos", builder -> builder.address("nacos://127.0.0.1:8848?registry-type=service&subscribed-services=dubbo-provider-demo"))
+                .reference("ref", builder -> builder.interfaceClass(EchoService.class))
                 .onlyRegisterProvider(true)
                 .start()
                 .await();
 
-        // TODO,
-        EchoService echoService = ReferenceConfigCache.getCache().get(EchoService.class.getName(), EchoService.class);
+        ConfigManager configManager = ConfigManager.getInstance();
+
+        ReferenceConfig<EchoService> referenceConfig = configManager.getReferenceConfig("ref");
+
+        EchoService echoService = referenceConfig.get();
 
         for (int i = 0; i < 500; i++) {
             Thread.sleep(2000L);

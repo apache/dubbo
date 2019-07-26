@@ -16,11 +16,6 @@
  */
 package org.apache.dubbo.bootstrap;
 
-import org.apache.dubbo.config.builders.ApplicationBuilder;
-import org.apache.dubbo.config.builders.ProtocolBuilder;
-import org.apache.dubbo.config.builders.RegistryBuilder;
-import org.apache.dubbo.config.builders.ServiceBuilder;
-
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -35,14 +30,5 @@ public class DubboBootstrapTest {
     @Test
     public void test() throws IOException {
 
-        new DubboBootstrap()
-                .application(ApplicationBuilder.newBuilder().name("dubbo-provider-demo").build())
-                .registry(RegistryBuilder.newBuilder().address("zookeeper://127.0.0.1:2181?registry-type=service&metadata=remote").build())
-                .protocol(ProtocolBuilder.newBuilder().port(-1).name("dubbo").build())
-                .service(ServiceBuilder.newBuilder().id("test").interfaceClass(EchoService.class).ref(new EchoServiceImpl()).build())
-                .start()
-                .await();
-
-        System.in.read();
     }
 }
