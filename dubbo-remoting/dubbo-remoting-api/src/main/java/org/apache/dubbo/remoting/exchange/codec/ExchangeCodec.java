@@ -383,7 +383,7 @@ public class ExchangeCodec extends TelnetCodec {
 
     @Deprecated
     protected void encodeHeartbeatData(ObjectOutput out, Object data) throws IOException {
-        encodeEventData(out, data);
+        // no-op
     }
 
     protected void encodeRequestData(ObjectOutput out, Object data) throws IOException {
@@ -409,11 +409,7 @@ public class ExchangeCodec extends TelnetCodec {
 
     @Deprecated
     protected Object decodeHeartbeatData(Channel channel, ObjectInput in) throws IOException {
-        try {
-            return in.readObject();
-        } catch (ClassNotFoundException e) {
-            throw new IOException(StringUtils.toString("Read object failed.", e));
-        }
+        return Response.HEARTBEAT_EVENT;
     }
 
     protected Object decodeRequestData(Channel channel, ObjectInput in) throws IOException {
