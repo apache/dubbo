@@ -43,7 +43,9 @@ import org.jboss.resteasy.util.GetRestful;
 import javax.servlet.ServletContext;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.WebApplicationException;
+import java.util.Collections;
 import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -74,7 +76,7 @@ public class RestProtocol extends AbstractProxyProtocol {
 
     // TODO in the future maybe we can just use a single rest client and connection manager
 //    private final List<ResteasyClient> clients = Collections.synchronizedList(new LinkedList<>());
-    private final Map<String, ResteasyClient> clients = new ConcurrentHashMap<>();
+    private final Map<String, ResteasyClient> clients = Collections.synchronizedMap(new WeakHashMap<>());
 
     private volatile ConnectionMonitor connectionMonitor;
 
