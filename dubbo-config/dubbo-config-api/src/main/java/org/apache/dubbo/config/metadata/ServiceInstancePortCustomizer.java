@@ -38,7 +38,6 @@ public class ServiceInstancePortCustomizer implements ServiceInstanceCustomizer 
 
         ConfigManager.getInstance()
                 .getProtocols()
-                .values()
                 .stream()
                 .findFirst()
                 .ifPresent(protocolConfig -> {

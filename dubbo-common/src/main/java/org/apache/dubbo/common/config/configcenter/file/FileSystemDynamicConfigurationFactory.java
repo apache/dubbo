@@ -14,23 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.bootstrap;
+package org.apache.dubbo.common.config.configcenter.file;
+
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.configcenter.AbstractDynamicConfigurationFactory;
+import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
+import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
 
 /**
- * Abstract {@link Settings}
+ * File-System based {@link DynamicConfigurationFactory} implementation
  *
  * @since 2.7.4
  */
-public class AbstractSettings implements Settings {
-
-    private final DubboBootstrap dubboBootstrap;
-
-    public AbstractSettings(DubboBootstrap dubboBootstrap) {
-        this.dubboBootstrap = dubboBootstrap;
-    }
+public class FileSystemDynamicConfigurationFactory extends AbstractDynamicConfigurationFactory {
 
     @Override
-    public DubboBootstrap next() {
-        return dubboBootstrap;
+    protected DynamicConfiguration createDynamicConfiguration(URL url) {
+        return new FileSystemDynamicConfiguration(url);
     }
 }

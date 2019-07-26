@@ -14,19 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.bootstrap;
+package org.apache.dubbo.common.config.configcenter;
+
+import org.apache.dubbo.common.config.configcenter.file.FileSystemDynamicConfigurationFactory;
+
+import org.junit.jupiter.api.Test;
+
+import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * The Dubbo settings
+ * {@link DynamicConfigurationFactory} Test
  *
  * @since 2.7.4
  */
-public interface Settings {
+public class DynamicConfigurationFactoryTest {
 
-    /**
-     * Go next settings
-     *
-     * @return {@link DubboBootstrap}
-     */
-    DubboBootstrap next();
+    @Test
+    public void testDefaultExtension() {
+        DynamicConfigurationFactory factory = getExtensionLoader(DynamicConfigurationFactory.class).getDefaultExtension();
+        assertEquals(FileSystemDynamicConfigurationFactory.class, factory.getClass());
+        assertEquals(factory, getExtensionLoader(DynamicConfigurationFactory.class).getExtension("file"));
+    }
 }

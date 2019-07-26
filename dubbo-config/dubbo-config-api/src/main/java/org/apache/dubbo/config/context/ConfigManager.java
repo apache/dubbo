@@ -19,8 +19,6 @@ package org.apache.dubbo.config.context;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
@@ -34,16 +32,24 @@ import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 
-import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.StampedLock;
 import java.util.stream.Collectors;
 
+import static java.lang.Boolean.TRUE;
+import static java.util.Collections.unmodifiableSet;
+import static java.util.Optional.ofNullable;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
+import static org.apache.dubbo.common.utils.ReflectUtils.getProperty;
+import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
 import static org.apache.dubbo.config.Constants.PROTOCOLS_SUFFIX;
 import static org.apache.dubbo.config.Constants.REGISTRIES_SUFFIX;
 
@@ -82,40 +88,34 @@ import static org.apache.dubbo.config.Constants.REGISTRIES_SUFFIX;
  * All workflow internally can rely on ConfigManager.
  */
 public class ConfigManager {
+
     private static final Logger logger = LoggerFactory.getLogger(ConfigManager.class);
+
     private static final ConfigManager CONFIG_MANAGER = new ConfigManager();
 
-    private ApplicationConfig application;
-    private MonitorConfig monitor;
-    private ModuleConfig module;
+    private volatile ModuleConfig module;
+    private volatile ApplicationConfig application;
+    private volatile MonitorConfig monitor;
 
-    private Map<String, ProtocolConfig> protocols = new ConcurrentHashMap<>();
-    private Map<String, RegistryConfig> registries = new ConcurrentHashMap<>();
-    private Map<String, ProviderConfig> providers = new ConcurrentHashMap<>();
-    private Map<String, ConsumerConfig> consumers = new ConcurrentHashMap<>();
+    private final Map<String, ProtocolConfig> protocols = new ConcurrentHashMap<>();
+    private final Map<String, RegistryConfig> registries = new ConcurrentHashMap<>();
+    private final Map<String, ProviderConfig> providers = new ConcurrentHashMap<>();
+    private final Map<String, ConsumerConfig> consumers = new ConcurrentHashMap<>();
+    private final Map<String, ConfigCenterConfig> configCenters = new ConcurrentHashMap<>();
+    private final Map<String, MetadataReportConfig> metadataConfigs = new ConcurrentHashMap<>();
+    private final Map<String, ServiceConfig<?>> serviceConfigs = new ConcurrentHashMap<>();
+    private final Map<String, ReferenceConfig<?>> referenceConfigs = new ConcurrentHashMap<>();
 
-    private List<ProtocolConfig> defaultProtocols = new ArrayList<>();
-    private List<RegistryConfig> defaultRegistries = new ArrayList<>();
-
-    private Set<ConfigCenterConfig> configCenters = new HashSet<>();
-    private Set<MetadataReportConfig> metadataConfigs = new HashSet<>();
-    private Set<String> registryIds = new HashSet<>();
-    private Set<String> protocolIds = new HashSet<>();
-
-    private List<ServiceConfig<?>> serviceConfigs = new ArrayList<>();
-    private List<ReferenceConfig<?>> referenceConfigs = new ArrayList<>();
+    private final StampedLock lock = new StampedLock();
 
     public static ConfigManager getInstance() {
         return CONFIG_MANAGER;
     }
 
     private ConfigManager() {
-
     }
 
-    public Optional<ApplicationConfig> getApplication() {
-        return Optional.ofNullable(application);
-    }
+    // ApplicationConfig correlative methods
 
     public void setApplication(ApplicationConfig application) {
         if (application != null) {
@@ -124,9 +124,11 @@ public class ConfigManager {
         }
     }
 
-    public Optional<MonitorConfig> getMonitor() {
-        return Optional.ofNullable(monitor);
+    public Optional<ApplicationConfig> getApplication() {
+        return ofNullable(application);
     }
+
+    // MonitorConfig correlative methods
 
     public void setMonitor(MonitorConfig monitor) {
         if (monitor != null) {
@@ -135,9 +137,11 @@ public class ConfigManager {
         }
     }
 
-    public Optional<ModuleConfig> getModule() {
-        return Optional.ofNullable(module);
+    public Optional<MonitorConfig> getMonitor() {
+        return ofNullable(monitor);
     }
+
+    // ModuleConfig correlative methods
 
     public void setModule(ModuleConfig module) {
         if (module != null) {
@@ -146,210 +150,175 @@ public class ConfigManager {
         }
     }
 
-    public Set<ConfigCenterConfig> getConfigCenters() {
-        return configCenters;
+    public Optional<ModuleConfig> getModule() {
+        return ofNullable(module);
     }
+
+    // ConfigCenterConfig correlative methods
 
     public void addConfigCenter(ConfigCenterConfig configCenter) {
-        if (configCenter != null && !configCenters.contains(configCenter)) {
-            this.configCenters.add(configCenter);
-        }
+        addIfAbsent(configCenter, configCenters);
     }
 
-    public void addConfigCenter(List<ConfigCenterConfig> configCenters) {
-        if (CollectionUtils.isNotEmpty(configCenters)) {
-            this.configCenters.addAll(configCenters);
-        }
+    public void addConfigCenters(Iterable<ConfigCenterConfig> configCenters) {
+        configCenters.forEach(this::addConfigCenter);
     }
 
-    public Set<MetadataReportConfig> getMetadataConfigs() {
-        return metadataConfigs;
+    public ConfigCenterConfig getConfigCenter(String id) {
+        return configCenters.get(id);
     }
+
+    public Collection<ConfigCenterConfig> getConfigCenters() {
+        return configCenters.values();
+    }
+
+    // MetadataReportConfig correlative methods
 
     public void addMetadataReport(MetadataReportConfig metadataReportConfig) {
-        if (metadataReportConfig != null && !metadataConfigs.contains(metadataReportConfig)) {
-            this.metadataConfigs.add(metadataReportConfig);
-        }
+        addIfAbsent(metadataReportConfig, metadataConfigs);
     }
 
-    public void addMetadataReport(List<MetadataReportConfig> metadataReportConfigs) {
-        if (CollectionUtils.isNotEmpty(metadataReportConfigs)) {
-            this.metadataConfigs.addAll(metadataReportConfigs);
-        }
+    public void addMetadataReports(Iterable<MetadataReportConfig> metadataReportConfigs) {
+        metadataReportConfigs.forEach(this::addMetadataReport);
+    }
+
+    public Collection<MetadataReportConfig> getMetadataConfigs() {
+        return metadataConfigs.values();
+    }
+
+    // MetadataReportConfig correlative methods
+
+    public void addProvider(ProviderConfig providerConfig) {
+        addIfAbsent(providerConfig, providers);
     }
 
     public Optional<ProviderConfig> getProvider(String id) {
-        return Optional.ofNullable(providers.get(id));
+        return ofNullable(providers.get(id));
     }
 
     public Optional<ProviderConfig> getDefaultProvider() {
-        return Optional.ofNullable(providers.get(DEFAULT_KEY));
+        return getProvider(DEFAULT_KEY);
     }
 
-    public void addProvider(ProviderConfig providerConfig) {
-        if (providerConfig == null) {
-            return;
-        }
+    public Collection<ProviderConfig> getProviders() {
+        return providers.values();
+    }
 
-        String key = StringUtils.isNotEmpty(providerConfig.getId())
-                ? providerConfig.getId()
-                : (providerConfig.isDefault() == null || providerConfig.isDefault()) ? DEFAULT_KEY : null;
+    // ConsumerConfig correlative methods
 
-        if (StringUtils.isEmpty(key)) {
-            throw new IllegalStateException("A ProviderConfig should either has an id or it's the default one, " + providerConfig);
-        }
-
-        if (providers.containsKey(key) && !providerConfig.equals(providers.get(key))) {
-            logger.warn("Duplicate ProviderConfig found, there already has one default ProviderConfig or more than two ProviderConfigs have the same id, " +
-                                                    "you can try to give each ProviderConfig a different id. " + providerConfig);
-        } else {
-            providers.put(key, providerConfig);
-        }
+    public void addConsumer(ConsumerConfig consumerConfig) {
+        addIfAbsent(consumerConfig, consumers);
     }
 
     public Optional<ConsumerConfig> getConsumer(String id) {
-        return Optional.ofNullable(consumers.get(id));
+        return ofNullable(consumers.get(id));
     }
 
     public Optional<ConsumerConfig> getDefaultConsumer() {
-        return Optional.ofNullable(consumers.get(DEFAULT_KEY));
+        return getConsumer(DEFAULT_KEY);
     }
 
-    public void addConsumer(ConsumerConfig consumerConfig) {
-        if (consumerConfig == null) {
-            return;
-        }
+    public Collection<ConsumerConfig> getConsumers() {
+        return consumers.values();
+    }
 
-        String key = StringUtils.isNotEmpty(consumerConfig.getId())
-                ? consumerConfig.getId()
-                : (consumerConfig.isDefault() == null || consumerConfig.isDefault()) ? DEFAULT_KEY : null;
+    // ProtocolConfig correlative methods
 
-        if (StringUtils.isEmpty(key)) {
-            throw new IllegalStateException("A ConsumerConfig should either has an id or it's the default one, " + consumerConfig);
-        }
+    public void addProtocol(ProtocolConfig protocolConfig) {
+        addIfAbsent(protocolConfig, protocols);
+    }
 
-        if (consumers.containsKey(key) && !consumerConfig.equals(consumers.get(key))) {
-            logger.warn("Duplicate ConsumerConfig found, there already has one default ConsumerConfig or more than two ConsumerConfigs have the same id, " +
-                                                    "you can try to give each ConsumerConfig a different id. " + consumerConfig);
-        } else {
-            consumers.put(key, consumerConfig);
+    public void addProtocols(Iterable<ProtocolConfig> protocolConfigs, boolean canBeDefault) {
+        if (protocolConfigs != null) {
+            protocolConfigs.forEach(this::addProtocol);
         }
     }
 
     public Optional<ProtocolConfig> getProtocol(String id) {
-        return Optional.ofNullable(protocols.get(id));
+        return ofNullable(protocols.get(id));
     }
 
-    public Optional<List<ProtocolConfig>> getDefaultProtocols() {
-        return Optional.of(defaultProtocols);
+    public List<ProtocolConfig> getDefaultProtocols() {
+        return getDefaultConfigs(protocols);
     }
 
-    public void addProtocols(List<ProtocolConfig> protocolConfigs, boolean canBeDefault) {
-        if (protocolConfigs != null) {
-            protocolConfigs.forEach(pc -> this.addProtocol(pc, canBeDefault));
-        }
+    public Collection<ProtocolConfig> getProtocols() {
+        return protocols.values();
     }
 
-    public void addProtocol(ProtocolConfig protocolConfig, boolean canBeDefault) {
-        if (protocolConfig == null) {
-            return;
-        }
+    public Set<String> getProtocolIds() {
+        Set<String> protocolIds = new HashSet<>();
+        protocolIds.addAll(getSubProperties(Environment.getInstance()
+                .getExternalConfigurationMap(), PROTOCOLS_SUFFIX));
+        protocolIds.addAll(getSubProperties(Environment.getInstance()
+                .getAppExternalConfigurationMap(), PROTOCOLS_SUFFIX));
 
-        // if isDefault is not false and a ProtocolConfig is not specified being false.
-        if (canBeDefault && (protocolConfig.isDefault() == null || protocolConfig.isDefault())) {
-            this.defaultProtocols.add(protocolConfig);
-        }
+        protocolIds.addAll(protocols.keySet());
+        return unmodifiableSet(protocolIds);
+    }
 
-        String key = StringUtils.isNotEmpty(protocolConfig.getId())
-                ? protocolConfig.getId()
-                : DEFAULT_KEY;
 
-        if (StringUtils.isEmpty(key)) {
-            throw new IllegalStateException("A ProtocolConfig should either has an id or it's the default one, " + protocolConfig);
-        }
+    // RegistryConfig correlative methods
 
-        if (protocols.containsKey(key) && !protocolConfig.equals(protocols.get(key))) {
-            logger.warn("Duplicate ProtocolConfig found, there already has one default ProtocolConfig or more than two ProtocolConfigs have the same id, " +
-                                                    "you can try to give each ProtocolConfig a different id. " + protocolConfig);
-        } else {
-            protocols.put(key, protocolConfig);
+    public void addRegistry(RegistryConfig registryConfig) {
+        addIfAbsent(registryConfig, registries);
+    }
+
+    public void addRegistries(Iterable<RegistryConfig> registryConfigs) {
+        if (registryConfigs != null) {
+            registryConfigs.forEach(this::addRegistry);
         }
     }
 
     public Optional<RegistryConfig> getRegistry(String id) {
-        return Optional.ofNullable(registries.get(id));
+        return ofNullable(registries.get(id));
     }
 
-    public Optional<List<RegistryConfig>> getDefaultRegistries() {
-        return Optional.of(defaultRegistries);
+    public List<RegistryConfig> getDefaultRegistries() {
+        return getDefaultConfigs(registries);
     }
 
-    public void addRegistries(List<RegistryConfig> registryConfigs, boolean canBeDefault) {
-        if (registryConfigs != null) {
-            registryConfigs.forEach(rc -> this.addRegistry(rc, canBeDefault));
-        }
-    }
-
-    public void addRegistry(RegistryConfig registryConfig, boolean canBeDefault) {
-        if (registryConfig == null) {
-            return;
-        }
-
-        if (canBeDefault && (registryConfig.isDefault() == null || registryConfig.isDefault())) {
-            this.defaultRegistries.add(registryConfig);
-        }
-        String key = StringUtils.isNotEmpty(registryConfig.getId())
-                ? registryConfig.getId()
-                : DEFAULT_KEY;
-
-        if (StringUtils.isEmpty(key)) {
-            throw new IllegalStateException("A RegistryConfig should either has an id or it's the default one, " + registryConfig);
-        }
-
-        if (registries.containsKey(key) && !registryConfig.equals(registries.get(key))) {
-            logger.warn("Duplicate RegistryConfig found, there already has one default RegistryConfig or more than two RegistryConfigs have the same id, " +
-                                                    "you can try to give each RegistryConfig a different id. " + registryConfig);
-        } else {
-            registries.put(key, registryConfig);
-        }
-    }
-
-    public void addProtocolIds(List<String> protocolIds) {
-        this.protocolIds.addAll(protocolIds);
-    }
-
-    public void addRegistryIds(List<String> registryIds) {
-        this.registryIds.addAll(registryIds);
-    }
-
-    public void addService(ServiceConfig<?> serviceConfig) {
-        this.serviceConfigs.add(serviceConfig);
-    }
-
-    public void addReference(ReferenceConfig<?> referenceConfig) {
-        this.referenceConfigs.add(referenceConfig);
+    public Collection<RegistryConfig> getRegistries() {
+        return registries.values();
     }
 
     public Set<String> getRegistryIds() {
-        Set<String> configedRegistries = new HashSet<>();
-        configedRegistries.addAll(getSubProperties(Environment.getInstance().getExternalConfigurationMap(),
+        Set<String> registryIds = new HashSet<>();
+        registryIds.addAll(getSubProperties(Environment.getInstance().getExternalConfigurationMap(),
                 REGISTRIES_SUFFIX));
-        configedRegistries.addAll(getSubProperties(Environment.getInstance().getAppExternalConfigurationMap(),
+        registryIds.addAll(getSubProperties(Environment.getInstance().getAppExternalConfigurationMap(),
                 REGISTRIES_SUFFIX));
 
-        configedRegistries.addAll(registryIds);
-        return configedRegistries;
+        registryIds.addAll(registries.keySet());
+        return unmodifiableSet(registryIds);
     }
 
-    public Set<String> getProtocolIds() {
-        Set<String> configedProtocols = new HashSet<>();
-        configedProtocols.addAll(getSubProperties(Environment.getInstance()
-                .getExternalConfigurationMap(), PROTOCOLS_SUFFIX));
-        configedProtocols.addAll(getSubProperties(Environment.getInstance()
-                .getAppExternalConfigurationMap(), PROTOCOLS_SUFFIX));
+    // ServiceConfig correlative methods
 
-        configedProtocols.addAll(protocolIds);
-        return configedProtocols;
+    public void addService(ServiceConfig<?> serviceConfig) {
+        addIfAbsent(serviceConfig, serviceConfigs);
+    }
+
+    public Collection<ServiceConfig<?>> getServiceConfigs() {
+        return serviceConfigs.values();
+    }
+
+    public <T> ServiceConfig<T> getServiceConfig(String id) {
+        return (ServiceConfig<T>) serviceConfigs.get(id);
+    }
+
+    // ReferenceConfig correlative methods
+
+    public void addReference(ReferenceConfig<?> referenceConfig) {
+        addIfAbsent(referenceConfig, referenceConfigs);
+    }
+
+    public Collection<ReferenceConfig<?>> getReferenceConfigs() {
+        return referenceConfigs.values();
+    }
+
+    public <T> ReferenceConfig<T> getReferenceConfig(String id) {
+        return (ReferenceConfig<T>) referenceConfigs.get(id);
     }
 
     protected static Set<String> getSubProperties(Map<String, String> properties, String prefix) {
@@ -359,62 +328,130 @@ public class ConfigManager {
         }).collect(Collectors.toSet());
     }
 
-    public Map<String, ProtocolConfig> getProtocols() {
-        return protocols;
-    }
-
-    public Map<String, RegistryConfig> getRegistries() {
-        return registries;
-    }
-
-    public Map<String, ProviderConfig> getProviders() {
-        return providers;
-    }
-
-    public Map<String, ConsumerConfig> getConsumers() {
-        return consumers;
-    }
-
-    public List<ServiceConfig<?>> getServiceConfigs() {
-        return serviceConfigs;
-    }
-
-    public List<ReferenceConfig<?>> getReferenceConfigs() {
-        return referenceConfigs;
-    }
-
     public void refreshAll() {
-        // refresh all configs here,
-        getApplication().ifPresent(ApplicationConfig::refresh);
-        getMonitor().ifPresent(MonitorConfig::refresh);
-        getModule().ifPresent(ModuleConfig::refresh);
+        write(() -> {
+            // refresh all configs here,
+            getApplication().ifPresent(ApplicationConfig::refresh);
+            getMonitor().ifPresent(MonitorConfig::refresh);
+            getModule().ifPresent(ModuleConfig::refresh);
 
-        getProtocols().values().forEach(ProtocolConfig::refresh);
-        getRegistries().values().forEach(RegistryConfig::refresh);
-        getProviders().values().forEach(ProviderConfig::refresh);
-        getConsumers().values().forEach(ConsumerConfig::refresh);
+            getProtocols().forEach(ProtocolConfig::refresh);
+            getRegistries().forEach(RegistryConfig::refresh);
+            getProviders().forEach(ProviderConfig::refresh);
+            getConsumers().forEach(ConsumerConfig::refresh);
+        });
+
     }
 
-    private void checkDuplicate(AbstractConfig oldOne, AbstractConfig newOne) {
+
+    // For test purpose
+    public void clear() {
+        write(() -> {
+            this.application = null;
+            this.monitor = null;
+            this.module = null;
+            this.registries.clear();
+            this.protocols.clear();
+            this.providers.clear();
+            this.consumers.clear();
+            this.configCenters.clear();
+            this.metadataConfigs.clear();
+        });
+    }
+
+    private <V> V write(Callable<V> callable) {
+        V value = null;
+        long stamp = lock.writeLock();
+        try {
+            value = callable.call();
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        } finally {
+            lock.unlockWrite(stamp);
+        }
+        return value;
+    }
+
+    private void write(Runnable runnable) {
+        write(() -> {
+            runnable.run();
+            return null;
+        });
+    }
+
+
+    private <V> V read(Callable<V> callable) {
+        long stamp = lock.tryOptimisticRead();
+
+        boolean readLock = false;
+
+        V value = null;
+
+        try {
+            readLock = !lock.validate(stamp);
+
+            if (readLock) {
+                stamp = lock.readLock();
+            }
+            value = callable.call();
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        } finally {
+            if (readLock) {
+                lock.unlockRead(stamp);
+            }
+        }
+
+        return value;
+    }
+
+    private static void checkDuplicate(AbstractConfig oldOne, AbstractConfig newOne) {
         if (oldOne != null && !oldOne.equals(newOne)) {
             String configName = oldOne.getClass().getSimpleName();
             throw new IllegalStateException("Duplicate Config found for " + configName + ", you should use only one unique " + configName + " for one application.");
         }
     }
 
-    // For test purpose
-    public void clear() {
-        this.application = null;
-        this.monitor = null;
-        this.module = null;
-        this.registries.clear();
-        this.protocols.clear();
-        this.providers.clear();
-        this.consumers.clear();
-        this.configCenters.clear();
-        this.metadataConfigs.clear();
-        this.registryIds.clear();
-        this.protocolIds.clear();
+    private static Map<Class<? extends AbstractConfig>, Map<String, ? extends AbstractConfig>> newMap() {
+        return new HashMap<>();
     }
 
+    private static <C extends AbstractConfig> void addIfAbsent(C config, Map<String, C> configsMap) {
+
+        if (config == null) {
+            return;
+        }
+
+        String key = getId(config);
+
+        C existedConfig = configsMap.get(key);
+
+        if (existedConfig != null && !config.equals(existedConfig)) {
+            if (logger.isWarnEnabled()) {
+                String type = config.getClass().getSimpleName();
+                logger.warn(String.format("Duplicate %s found, there already has one default %s or more than two %ss have the same id, " +
+                        "you can try to give each %s a different id : %s", type, type, type, type, config));
+            }
+        } else {
+            configsMap.put(key, config);
+        }
+    }
+
+    static <C extends AbstractConfig> String getId(C config) {
+        String id = config.getId();
+        return isNotEmpty(id) ? id : isDefaultConfig(config) ?
+                config.getClass().getSimpleName() + "#" + DEFAULT_KEY : null;
+    }
+
+    static <C extends AbstractConfig> boolean isDefaultConfig(C config) {
+        Boolean isDefault = getProperty(config, "default");
+        return isDefault == null || TRUE.equals(isDefault);
+    }
+
+    static <C extends AbstractConfig> List<C> getDefaultConfigs(Map<String, C> configsMap) {
+        return configsMap.values()
+                .stream()
+                .filter(ConfigManager::isDefaultConfig)
+                .collect(Collectors.toList());
+    }
 }

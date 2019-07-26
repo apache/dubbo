@@ -36,7 +36,7 @@ public abstract class AbstractBuilder<C extends AbstractConfig, B extends Abstra
     protected String id;
     protected String prefix;
 
-    protected B id(String id) {
+    public B id(String id) {
         this.id = id;
         return getThis();
     }
