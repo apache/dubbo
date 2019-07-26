@@ -45,7 +45,6 @@ import java.util.concurrent.locks.StampedLock;
 import java.util.stream.Collectors;
 
 import static java.lang.Boolean.TRUE;
-import static java.util.Collections.unmodifiableMap;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.Optional.ofNullable;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
@@ -201,8 +200,8 @@ public class ConfigManager {
         return getProvider(DEFAULT_KEY);
     }
 
-    public Map<String, ProviderConfig> getProviders() {
-        return unmodifiableMap(providers);
+    public Collection<ProviderConfig> getProviders() {
+        return providers.values();
     }
 
     // ConsumerConfig correlative methods
@@ -219,8 +218,8 @@ public class ConfigManager {
         return getConsumer(DEFAULT_KEY);
     }
 
-    public Map<String, ConsumerConfig> getConsumers() {
-        return unmodifiableMap(consumers);
+    public Collection<ConsumerConfig> getConsumers() {
+        return consumers.values();
     }
 
     // ProtocolConfig correlative methods
@@ -243,8 +242,8 @@ public class ConfigManager {
         return getDefaultConfigs(protocols);
     }
 
-    public Map<String, ProtocolConfig> getProtocols() {
-        return unmodifiableMap(protocols);
+    public Collection<ProtocolConfig> getProtocols() {
+        return protocols.values();
     }
 
     public Set<String> getProtocolIds() {
@@ -279,8 +278,8 @@ public class ConfigManager {
         return getDefaultConfigs(registries);
     }
 
-    public Map<String, RegistryConfig> getRegistries() {
-        return unmodifiableMap(registries);
+    public Collection<RegistryConfig> getRegistries() {
+        return registries.values();
     }
 
     public Set<String> getRegistryIds() {
@@ -336,10 +335,10 @@ public class ConfigManager {
             getMonitor().ifPresent(MonitorConfig::refresh);
             getModule().ifPresent(ModuleConfig::refresh);
 
-            getProtocols().values().forEach(ProtocolConfig::refresh);
-            getRegistries().values().forEach(RegistryConfig::refresh);
-            getProviders().values().forEach(ProviderConfig::refresh);
-            getConsumers().values().forEach(ConsumerConfig::refresh);
+            getProtocols().forEach(ProtocolConfig::refresh);
+            getRegistries().forEach(RegistryConfig::refresh);
+            getProviders().forEach(ProviderConfig::refresh);
+            getConsumers().forEach(ConsumerConfig::refresh);
         });
 
     }

@@ -408,22 +408,26 @@ public class DubboBootstrap {
      * there's no config center specified explicitly.
      */
     private void useRegistryAsConfigCenterIfNecessary() {
-        configManager.getDefaultRegistries().forEach(registryConfig -> {
-            // we use the loading status of DynamicConfiguration to decide whether ConfigCenter has been initiated.
-            Environment.getInstance().getDynamicConfiguration().orElseGet(() -> {
-                Collection<ConfigCenterConfig> configCenters = configManager.getConfigCenters();
-                if (CollectionUtils.isEmpty(configCenters)) {
-                    String protocol = registryConfig.getProtocol();
-                    ConfigCenterConfig cc = new ConfigCenterConfig();
-                    cc.setProtocol(protocol);
-                    cc.setAddress(registryConfig.getAddress());
-                    cc.setHighestPriority(false);
-                    configManager.addConfigCenter(cc);
-                }
-                return null;
-            });
-            startConfigCenter();
+        // we use the loading status of DynamicConfiguration to decide whether ConfigCenter has been initiated.
+        if (Environment.getInstance().getDynamicConfiguration().isPresent()) {
+            return;
+        }
+
+        if (CollectionUtils.isNotEmpty(configManager.getConfigCenters())) {
+            return;
+        }
+
+        configManager.getRegistries().forEach(registryConfig -> {
+            String protocol = registryConfig.getProtocol();
+            String id = "config-center-" + protocol + "-" + registryConfig.getPort();
+            ConfigCenterConfig cc = new ConfigCenterConfig();
+            cc.setId(id);
+            cc.setProtocol(protocol);
+            cc.setAddress(registryConfig.getAddress());
+            cc.setHighestPriority(false);
+            configManager.addConfigCenter(cc);
         });
+        startConfigCenter();
     }
 
     private List<ServiceDiscovery> getServiceDiscoveries() {
@@ -455,8 +459,8 @@ public class DubboBootstrap {
                 // TODO, only export to default registry?
                 List<URL> exportedURLs = exportMetadataService(
                         configManager.getApplication().orElseThrow(() -> new IllegalStateException("ApplicationConfig cannot be null")),
-                        configManager.getRegistries().values(),
-                        configManager.getProtocols().values()
+                        configManager.getRegistries(),
+                        configManager.getProtocols()
                 );
 
                 /**
@@ -693,7 +697,7 @@ public class DubboBootstrap {
     }
 
     private void destroyProtocolConfigs() {
-        configManager.getProtocols().values().forEach(ProtocolConfig::destroy);
+        configManager.getProtocols().forEach(ProtocolConfig::destroy);
         if (logger.isDebugEnabled()) {
             logger.debug(NAME + "'s all ProtocolConfigs have been destroyed.");
         }

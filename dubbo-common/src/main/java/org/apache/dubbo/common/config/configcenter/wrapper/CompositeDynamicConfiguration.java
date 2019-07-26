@@ -89,9 +89,6 @@ public class CompositeDynamicConfiguration implements DynamicConfiguration {
         Object value = null;
         for (DynamicConfiguration configuration : configurations) {
             value = func.apply(configuration);
-            if (value != null) {
-                break;
-            }
         }
         return value;
     }

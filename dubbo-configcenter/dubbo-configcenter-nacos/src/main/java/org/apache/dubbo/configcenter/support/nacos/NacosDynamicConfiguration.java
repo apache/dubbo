@@ -94,12 +94,19 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     }
 
     public void publishNacosConfig(String key, String value) {
+        String[] keyAndGroup = getKeyAndGroup(key);
+        publishConfig(keyAndGroup[0], keyAndGroup[1], value);
+    }
+
+    @Override
+    public boolean publishConfig(String key, String group, String content) {
+        boolean published = false;
         try {
-            String[] keyAndGroup = getKeyAndGroup(key);
-            configService.publishConfig(keyAndGroup[0], keyAndGroup[1], value);
+            published = configService.publishConfig(key, group, content);
         } catch (NacosException e) {
             logger.error(e.getErrMsg());
         }
+        return published;
     }
 
     private String[] getKeyAndGroup(String key) {
@@ -107,7 +114,7 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
         if (i < 0) {
             return new String[]{key, null};
         } else {
-            return new String[]{key.substring(0, i), key.substring(i+1)};
+            return new String[]{key.substring(0, i), key.substring(i + 1)};
         }
     }
 
