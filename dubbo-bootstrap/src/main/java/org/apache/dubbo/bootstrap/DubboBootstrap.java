@@ -57,6 +57,7 @@ import org.apache.dubbo.registry.support.ServiceOrientedRegistry;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -76,7 +77,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
 import static org.apache.dubbo.config.context.ConfigManager.getInstance;
 import static org.apache.dubbo.registry.support.AbstractRegistryFactory.getRegistries;
-import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
 import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
 
 /**
@@ -424,7 +424,9 @@ public class DubboBootstrap {
             String id = "config-center-" + protocol + "-" + registryConfig.getPort();
             ConfigCenterConfig cc = new ConfigCenterConfig();
             cc.setId(id);
-            cc.setParameters(registryConfig.getParameters() == null ? new HashMap<>() : registryConfig.getParameters());
+            cc.setParameters(registryConfig.getParameters() == null ?
+                    new HashMap<>() :
+                    new HashMap<>(registryConfig.getParameters()));
             cc.getParameters().put(CLIENT_KEY,registryConfig.getClient());
             cc.setProtocol(registryConfig.getProtocol());
             cc.setAddress(registryConfig.getAddress());

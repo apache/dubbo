@@ -17,6 +17,7 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.remoting.Constants;
@@ -185,9 +186,7 @@ public class RegistryConfig extends AbstractConfig {
                 this.updateIdIfAbsent(url.getProtocol());
                 this.updateProtocolIfAbsent(url.getProtocol());
                 this.updatePortIfAbsent(url.getPort());
-                setUsername(url.getUsername());
-                setPassword(url.getPassword());
-                setParameters(url.getParameters());
+                this.updateParameters(url.getParameters());
             } catch (Exception ignored) {
             }
         }
@@ -387,6 +386,18 @@ public class RegistryConfig extends AbstractConfig {
     public void setParameters(Map<String, String> parameters) {
         checkParameterName(parameters);
         this.parameters = parameters;
+    }
+
+    public void updateParameters(Map<String, String> parameters) {
+        checkParameterName(parameters);
+        if (CollectionUtils.isEmptyMap(parameters)) {
+            return;
+        }
+        if (this.parameters == null) {
+            this.parameters = parameters;
+        } else {
+            this.parameters.putAll(parameters);
+        }
     }
 
     public Boolean isDefault() {

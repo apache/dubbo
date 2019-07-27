@@ -340,7 +340,7 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
     }
 
     @Override
-    public String getConfig(String key, String group, long timeout) throws IllegalStateException {
+    public String getRule(String key, String group, long timeout) throws IllegalStateException {
         File configFile = configFile(key, group);
         return getConfig(configFile, timeout);
     }
@@ -354,8 +354,8 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
     }
 
     @Override
-    public String getConfigs(String key, String group, long timeout) throws IllegalStateException {
-        return getConfig(key, group, timeout);
+    public String getProperties(String key, String group, long timeout) throws IllegalStateException {
+        return getRule(key, group, timeout);
     }
 
     @Override

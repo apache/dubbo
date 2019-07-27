@@ -32,11 +32,12 @@ import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoad
 /**
  * Dynamic Configuration
  * <br/>
- * From the use scenario internally in framework, there're mainly three kinds of methods:
+ * From the use scenario internally inside framework, there're mainly three kinds of methods:
  * <ul>
- * <li>1. getConfig, get governance rules or single config item from Config Center.</li>
- * <li>2. getConfigFile, get configuration file from Config Center at start up.</li>
+ * <li>1. getRule, get governance rules.</li>
+ * <li>2. getProperties, get configuration file from Config Center at start up.</li>
  * <li>3. addListener/removeListener, add or remove listeners for governance rules or config items that need to watch.</li>
+ * <li>4. getProperty, get a single config item.</li>
  * </ul>
  */
 public interface DynamicConfiguration extends Configuration, AutoCloseable {
@@ -110,7 +111,6 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
 
     /**
      * This method are mostly used to get a compound config file, such as a complete dubbo.properties file.
-     * Also {@see #getConfig(String, String)}
      */
     default String getProperties(String key, String group) throws IllegalStateException {
         return getProperties(key, group, -1L);
@@ -118,7 +118,6 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
 
     /**
      * This method are mostly used to get a compound config file, such as a complete dubbo.properties file.
-     * Also {@see #getConfig(String, String, long)}
      */
     String getProperties(String key, String group, long timeout) throws IllegalStateException;
 
