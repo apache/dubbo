@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.remoting.Constants;
@@ -179,14 +180,15 @@ public class RegistryConfig extends AbstractConfig {
     public void setAddress(String address) {
         this.address = address;
         if (address != null) {
-            int i = address.indexOf("://");
-            if (i > 0) {
-                this.updateIdIfAbsent(address.substring(0, i));
-                this.updateProtocolIfAbsent(address.substring(0, i));
-                int port = address.lastIndexOf(":");
-                if (port > 0) {
-                    this.updatePortIfAbsent(StringUtils.parseInteger(address.substring(port + 1)));
-                }
+            try {
+                URL url = URL.valueOf(address);
+                this.updateIdIfAbsent(url.getProtocol());
+                this.updateProtocolIfAbsent(url.getProtocol());
+                this.updatePortIfAbsent(url.getPort());
+                setUsername(url.getUsername());
+                setPassword(url.getPassword());
+                setParameters(url.getParameters());
+            } catch (Exception ignored) {
             }
         }
     }

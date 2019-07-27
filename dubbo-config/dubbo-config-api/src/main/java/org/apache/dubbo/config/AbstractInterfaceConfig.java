@@ -255,7 +255,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     /**
-     *
      * Load the registry and conversion it to {@link URL}, the priority order is: system property > dubbo registry config
      *
      * @param provider whether it is the provider side
@@ -298,7 +297,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     /**
-     *
      * Load the monitor config from the system properties and conversation it to {@link URL}
      *
      * @param registryURL
@@ -358,7 +356,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
      * methods configured in the configuration file are included in the interface of remote service
      *
      * @param interfaceClass the interface of remote service
-     * @param methods the methods configured
+     * @param methods        the methods configured
      */
     protected void checkInterfaceAndMethods(Class<?> interfaceClass, List<MethodConfig> methods) {
         // interface cannot be null
@@ -466,15 +464,14 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     private void convertRegistryIdsToRegistries() {
         if (StringUtils.isEmpty(registryIds)) {
             if (CollectionUtils.isEmpty(registries)) {
-                setRegistries(
-                        ConfigManager.getInstance().getDefaultRegistries()
-                        .filter(CollectionUtils::isNotEmpty)
-                        .orElseGet(() -> {
-                            RegistryConfig registryConfig = new RegistryConfig();
-                            registryConfig.refresh();
-                            return Arrays.asList(registryConfig);
-                        })
-                );
+                List<RegistryConfig> registryConfigs = ConfigManager.getInstance().getDefaultRegistries();
+                if (registryConfigs.isEmpty()) {
+                    registryConfigs = new ArrayList<>();
+                    RegistryConfig registryConfig = new RegistryConfig();
+                    registryConfig.refresh();
+                    registryConfigs.add(registryConfig);
+                }
+                setRegistries(registryConfigs);
             }
         } else {
             String[] ids = COMMA_SPLIT_PATTERN.split(registryIds);
@@ -668,7 +665,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     @SuppressWarnings({"unchecked"})
     public void setRegistries(List<? extends RegistryConfig> registries) {
-        ConfigManager.getInstance().addRegistries((List<RegistryConfig>) registries, false);
+        ConfigManager.getInstance().addRegistries((List<RegistryConfig>) registries);
         this.registries = (List<RegistryConfig>) registries;
     }
 

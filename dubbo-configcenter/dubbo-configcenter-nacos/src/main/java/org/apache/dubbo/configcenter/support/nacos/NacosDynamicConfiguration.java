@@ -46,9 +46,7 @@ import static com.alibaba.nacos.api.PropertyKeyConst.NAMESPACE;
 import static com.alibaba.nacos.api.PropertyKeyConst.SECRET_KEY;
 import static com.alibaba.nacos.api.PropertyKeyConst.SERVER_ADDR;
 import static com.alibaba.nacos.client.naming.utils.UtilAndComs.NACOS_NAMING_LOG_NAME;
-import static org.apache.dubbo.common.config.configcenter.Constants.CONFIG_NAMESPACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_CHAR_SEPERATOR;
-import static org.apache.dubbo.common.constants.CommonConstants.PROPERTIES_CHAR_SEPERATOR;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 
 /**
@@ -89,6 +87,31 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
             throw new IllegalStateException(e);
         }
         return configService;
+    }
+
+    public void publishNacosConfig(String key, String value) {
+        String[] keyAndGroup = getKeyAndGroup(key);
+        publishConfig(keyAndGroup[0], keyAndGroup[1], value);
+    }
+
+    @Override
+    public boolean publishConfig(String key, String group, String content) {
+        boolean published = false;
+        try {
+            published = configService.publishConfig(key, group, content);
+        } catch (NacosException e) {
+            logger.error(e.getErrMsg());
+        }
+        return published;
+    }
+
+    private String[] getKeyAndGroup(String key) {
+        int i = key.lastIndexOf(GROUP_CHAR_SEPERATOR);
+        if (i < 0) {
+            return new String[]{key, null};
+        } else {
+            return new String[]{key.substring(0, i), key.substring(i + 1)};
+        }
     }
 
     private Properties buildNacosProperties(URL url) {

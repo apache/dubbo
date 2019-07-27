@@ -21,6 +21,9 @@ import javassist.CtConstructor;
 import javassist.CtMethod;
 import javassist.NotFoundException;
 
+import java.beans.BeanInfo;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -48,6 +51,7 @@ import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableSet;
@@ -1127,7 +1131,7 @@ public final class ReflectUtils {
         }
         return new Type[]{returnType, genericReturnType};
     }
-  
+
     /**
      * Find the {@link Set} of {@link ParameterizedType}
      *
@@ -1184,4 +1188,28 @@ public final class ReflectUtils {
 
         return unmodifiableSet(hierarchicalTypes);
     }
+
+    public static <T> T getProperty(Object bean, String propertyName) {
+        Class<?> beanClass = bean.getClass();
+        BeanInfo beanInfo = null;
+        T propertyValue = null;
+        try {
+            beanInfo = Introspector.getBeanInfo(beanClass);
+            propertyValue = (T) Stream.of(beanInfo.getPropertyDescriptors())
+                    .filter(propertyDescriptor -> propertyName.equals(propertyDescriptor.getName()))
+                    .map(PropertyDescriptor::getReadMethod)
+                    .findFirst()
+                    .map(method -> {
+                        try {
+                            return method.invoke(bean);
+                        } catch (Exception e) {
+                        }
+                        return null;
+                    }).get();
+        } catch (Exception e) {
+
+        }
+        return propertyValue;
+    }
+
 }

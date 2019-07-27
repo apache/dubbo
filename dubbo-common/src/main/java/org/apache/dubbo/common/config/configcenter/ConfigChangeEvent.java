@@ -16,15 +16,18 @@
  */
 package org.apache.dubbo.common.config.configcenter;
 
+import java.util.EventObject;
+
 /**
  * Config change event, immutable.
  *
  * @see ConfigChangeType
  */
-public class ConfigChangeEvent {
+public class ConfigChangeEvent extends EventObject {
     private final String key;
 
     private final String value;
+
     private final ConfigChangeType changeType;
 
     public ConfigChangeEvent(String key, String value) {
@@ -32,6 +35,7 @@ public class ConfigChangeEvent {
     }
 
     public ConfigChangeEvent(String key, String value, ConfigChangeType changeType) {
+        super(key + "=" + value);
         this.key = key;
         this.value = value;
         this.changeType = changeType;
