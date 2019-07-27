@@ -100,6 +100,11 @@ public class EnableDubboTest {
 
         Assertions.assertEquals("Hello,Mercy", value);
 
+        DemoService autowiredDemoService = consumerConfiguration.getAutowiredDemoService();
+
+        Assertions.assertEquals("Hello,Mercy", autowiredDemoService.sayName("Mercy"));
+
+
         TestConsumerConfiguration.Child child = context.getBean(TestConsumerConfiguration.Child.class);
 
         // From Child

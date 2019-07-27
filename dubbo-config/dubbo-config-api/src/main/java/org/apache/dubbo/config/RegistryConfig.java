@@ -182,6 +182,11 @@ public class RegistryConfig extends AbstractConfig {
             int i = address.indexOf("://");
             if (i > 0) {
                 this.updateIdIfAbsent(address.substring(0, i));
+                this.updateProtocolIfAbsent(address.substring(0, i));
+                int port = address.lastIndexOf(":");
+                if (port > 0) {
+                    this.updatePortIfAbsent(StringUtils.parseInteger(address.substring(port + 1)));
+                }
             }
         }
     }
@@ -432,4 +437,15 @@ public class RegistryConfig extends AbstractConfig {
         return !StringUtils.isEmpty(address);
     }
 
+    protected void updatePortIfAbsent(Integer value) {
+        if (value != null && value > 0 && port == null) {
+            this.port = value;
+        }
+    }
+
+    protected void updateProtocolIfAbsent(String value) {
+        if (StringUtils.isNotEmpty(value) && StringUtils.isEmpty(protocol)) {
+            this.protocol = value;
+        }
+    }
 }

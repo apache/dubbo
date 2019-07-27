@@ -90,7 +90,7 @@ public class ProviderInvokerWrapper<T> implements Invoker {
 
     @Override
     public boolean equals(Object o) {
-        if (o == null || !(o instanceof ProviderInvokerWrapper)) {
+        if (!(o instanceof ProviderInvokerWrapper)) {
             return false;
         }
         ProviderInvokerWrapper other = (ProviderInvokerWrapper) o;

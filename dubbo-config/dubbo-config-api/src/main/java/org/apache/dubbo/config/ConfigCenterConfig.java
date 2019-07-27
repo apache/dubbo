@@ -23,6 +23,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.support.Parameter;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -37,6 +38,10 @@ import static org.apache.dubbo.config.Constants.CONFIG_CONFIGFILE_KEY;
 import static org.apache.dubbo.config.Constants.CONFIG_ENABLE_KEY;
 import static org.apache.dubbo.config.Constants.CONFIG_TIMEOUT_KEY;
 import static org.apache.dubbo.config.Constants.ZOOKEEPER_PROTOCOL;
+import static org.apache.dubbo.configcenter.Constants.CONFIG_CHECK_KEY;
+import static org.apache.dubbo.configcenter.Constants.CONFIG_CLUSTER_KEY;
+import static org.apache.dubbo.configcenter.Constants.CONFIG_GROUP_KEY;
+import static org.apache.dubbo.configcenter.Constants.CONFIG_NAMESPACE_KEY;
 
 /**
  * ConfigCenterConfig
@@ -90,7 +95,8 @@ public class ConfigCenterConfig extends AbstractConfig {
     }
 
     public URL toUrl() {
-        Map<String, String> map = this.getMetaData();
+        Map<String, String> map = new HashMap<>();
+        appendParameters(map, this);
         if (StringUtils.isEmpty(address)) {
             address = ANYHOST_VALUE;
         }
@@ -131,7 +137,7 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.address = address;
     }
 
-    @Parameter(key = CONFIG_CLUSTER_KEY, useKeyAsProperty = false)
+    @Parameter(key = CONFIG_CLUSTER_KEY)
     public String getCluster() {
         return cluster;
     }
@@ -140,7 +146,7 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.cluster = cluster;
     }
 
-    @Parameter(key = CONFIG_NAMESPACE_KEY, useKeyAsProperty = false)
+    @Parameter(key = CONFIG_NAMESPACE_KEY)
     public String getNamespace() {
         return namespace;
     }
@@ -149,7 +155,7 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.namespace = namespace;
     }
 
-    @Parameter(key = CONFIG_GROUP_KEY, useKeyAsProperty = false)
+    @Parameter(key = CONFIG_GROUP_KEY)
     public String getGroup() {
         return group;
     }
@@ -158,7 +164,7 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.group = group;
     }
 
-    @Parameter(key = CONFIG_CHECK_KEY, useKeyAsProperty = false)
+    @Parameter(key = CONFIG_CHECK_KEY)
     public Boolean isCheck() {
         return check;
     }
@@ -167,7 +173,7 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.check = check;
     }
 
-    @Parameter(key = CONFIG_ENABLE_KEY, useKeyAsProperty = false)
+    @Parameter(key = CONFIG_ENABLE_KEY)
     public Boolean isHighestPriority() {
         return highestPriority;
     }
@@ -192,7 +198,7 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.password = password;
     }
 
-    @Parameter(key = CONFIG_TIMEOUT_KEY, useKeyAsProperty = false)
+    @Parameter(key = CONFIG_TIMEOUT_KEY)
     public Long getTimeout() {
         return timeout;
     }
@@ -201,7 +207,7 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.timeout = timeout;
     }
 
-    @Parameter(key = CONFIG_CONFIGFILE_KEY, useKeyAsProperty = false)
+    @Parameter(key = CONFIG_CONFIGFILE_KEY)
     public String getConfigFile() {
         return configFile;
     }

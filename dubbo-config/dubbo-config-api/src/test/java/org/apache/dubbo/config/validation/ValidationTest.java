@@ -134,7 +134,7 @@ public class ValidationTest {
                     Assertions.fail();
                 } catch (ConstraintViolationException ve) {
                     Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
-                    Assertions.assertTrue(violations.size() == 3);
+                    Assertions.assertEquals(3, violations.size());
                     Assertions.assertNotNull(violations);
                 }
 

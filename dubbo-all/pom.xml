@@ -624,7 +624,8 @@
                                     <include>org.apache.dubbo:dubbo-serialization-jdk</include>
                                     <include>org.apache.dubbo:dubbo-serialization-protostuff</include>
                                     <include>org.apache.dubbo:dubbo-serialization-gson</include>
-                                    <include>org.apache.dubbo:dubbo-serialization-googlePb</include>
+                                    <include>org.apache.dubbo:dubbo-serialization-protobuf-json</include>
+                                    <include>org.apache.dubbo:dubbo-configcenter-api</include>
                                     <include>org.apache.dubbo:dubbo-configcenter-definition</include>
                                     <include>org.apache.dubbo:dubbo-configcenter-apollo</include>
                                     <include>org.apache.dubbo:dubbo-configcenter-zookeeper</include>
@@ -788,6 +789,10 @@
                                 </transformer>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>META-INF/dubbo/internal/org.apache.dubbo.registry.client.ServiceDiscoveryFactory
+                                    </resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/dubbo/internal/org.apache.dubbo.metadata.definition.builder.TypeBuilder
                                     </resource>
                                 </transformer>
                             </transformers>

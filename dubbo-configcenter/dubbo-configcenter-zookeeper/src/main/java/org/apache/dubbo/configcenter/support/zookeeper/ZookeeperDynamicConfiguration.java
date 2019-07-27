@@ -33,11 +33,10 @@ import java.util.TreeSet;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
-import static java.util.Collections.emptySortedSet;
-import static java.util.Collections.unmodifiableSortedSet;
-import static org.apache.dubbo.common.config.configcenter.Constants.CONFIG_NAMESPACE_KEY;
-import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
+import static org.apache.dubbo.configcenter.Constants.CONFIG_NAMESPACE_KEY;
 
 /**
  *
@@ -60,7 +59,7 @@ public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
 
     ZookeeperDynamicConfiguration(URL url, ZookeeperTransporter zookeeperTransporter) {
         this.url = url;
-        rootPath = "/" + url.getParameter(CONFIG_NAMESPACE_KEY, DEFAULT_GROUP) + "/config";
+        rootPath = PATH_SEPARATOR + url.getParameter(CONFIG_NAMESPACE_KEY, DEFAULT_GROUP) + "/config";
 
         initializedLatch = new CountDownLatch(1);
         this.cacheListener = new CacheListener(rootPath, initializedLatch);
@@ -70,7 +69,12 @@ public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
         zkClient.addDataListener(rootPath, cacheListener, executor);
         try {
             // Wait for connection
-            this.initializedLatch.await();
+            long timeout = url.getParameter("init.timeout", 5000);
+            boolean isCountDown = this.initializedLatch.await(timeout, TimeUnit.MILLISECONDS);
+            if (!isCountDown) {
+                throw new IllegalStateException("Failed to receive INITIALIZED event from zookeeper, pls. check if url "
+                        + url + " is correct");
+            }
         } catch (InterruptedException e) {
             logger.warn("Failed to build local cache for config center (zookeeper)." + url);
         }
@@ -90,32 +94,26 @@ public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
      */
     @Override
     public void addListener(String key, String group, ConfigurationListener listener) {
-        cacheListener.addListener(key, listener);
+        cacheListener.addListener(getPathKey(group, key), listener);
     }
 
     @Override
     public void removeListener(String key, String group, ConfigurationListener listener) {
-        cacheListener.removeListener(key, listener);
+        cacheListener.removeListener(getPathKey(group, key), listener);
     }
 
     @Override
-    public String getConfig(String key, String group, long timeout) throws IllegalStateException {
-        String path = buildPath(key, group);
-        return (String) getInternalProperty(path);
+    public String getRule(String key, String group, long timeout) throws IllegalStateException {
+        return (String) getInternalProperty(getPathKey(group, key));
     }
 
-    /**
-     * For zookeeper, {@link #getConfig(String, String, long)} and {@link #getConfigs(String, String, long)} have the same meaning.
-     *
-     * @param key
-     * @param group
-     * @param timeout
-     * @return
-     * @throws IllegalStateException
-     */
     @Override
-    public String getConfigs(String key, String group, long timeout) throws IllegalStateException {
-        return getConfig(key, group, timeout);
+    public String getProperties(String key, String group, long timeout) throws IllegalStateException {
+        // use global group 'dubbo' if no group specified
+        if (StringUtils.isEmpty(group)) {
+            group = DEFAULT_GROUP;
+        }
+        return (String) getInternalProperty(getPathKey(group, key));
     }
 
     @Override
@@ -130,6 +128,10 @@ public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
         String path = buildPath(group);
         List<String> nodes = zkClient.getChildren(path);
         return isEmpty(nodes) ? emptySortedSet() : unmodifiableSortedSet(new TreeSet<>(nodes));
+    }
+
+    private String getPathKey(String group, String key) {
+        return rootPath + PATH_SEPARATOR + group + PATH_SEPARATOR + key;
     }
 
     /**

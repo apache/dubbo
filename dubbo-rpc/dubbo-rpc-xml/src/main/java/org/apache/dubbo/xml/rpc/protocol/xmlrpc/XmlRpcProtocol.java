@@ -84,9 +84,9 @@ public class XmlRpcProtocol extends AbstractProxyProtocol {
                 response.setHeader(ACCESS_CONTROL_ALLOW_METHODS_HEADER, "POST");
                 response.setHeader(ACCESS_CONTROL_ALLOW_HEADERS_HEADER, "*");
             }
-            if (request.getMethod().equalsIgnoreCase("OPTIONS")) {
+            if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
                 response.setStatus(200);
-            } else if (request.getMethod().equalsIgnoreCase("POST")) {
+            } else if ("POST".equalsIgnoreCase(request.getMethod())) {
 
                 RpcContext.getContext().setRemoteAddress(request.getRemoteAddr(), request.getRemotePort());
                 try {
@@ -150,6 +150,7 @@ public class XmlRpcProtocol extends AbstractProxyProtocol {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     protected <T> T doRefer(final Class<T> serviceType, URL url) throws RpcException {
         XmlRpcProxyFactoryBean xmlRpcProxyFactoryBean = new XmlRpcProxyFactoryBean();
         xmlRpcProxyFactoryBean.setServiceUrl(url.setProtocol("http").toIdentityString());

@@ -18,11 +18,11 @@ package org.apache.dubbo.rpc;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.rpc.protocol.dubbo.FutureAdapter;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
-import java.util.function.Function;
+import java.util.function.BiConsumer;
 
 /**
  * This class represents an unfinished RPC call, it will hold some context information for this call, for example RpcContext and Invocation,
@@ -72,11 +72,30 @@ public class AsyncRpcResult extends AbstractResult {
         return getAppResponse().getValue();
     }
 
+    /**
+     * CompletableFuture can only be completed once, so try to update the result of one completed CompletableFuture will
+     * has no effect. To avoid this problem, we check the complete status of this future before update it's value.
+     *
+     * But notice that trying to give an uncompleted CompletableFuture a new specified value may face a race condition,
+     * because the background thread watching the real result will also change the status of this CompletableFuture.
+     * The result is you may lose the value you expected to set.
+     *
+     * @param value
+     */
     @Override
     public void setValue(Object value) {
-        AppResponse appResponse = new AppResponse();
-        appResponse.setValue(value);
-        this.complete(appResponse);
+        try {
+            if (this.isDone()) {
+                this.get().setValue(value);
+            } else {
+                AppResponse appResponse = new AppResponse();
+                appResponse.setValue(value);
+                this.complete(appResponse);
+            }
+        } catch (Exception e) {
+            // This should never happen;
+            logger.error("Got exception when trying to change the value of the underlying result from AsyncRpcResult.", e);
+        }
     }
 
     @Override
@@ -86,9 +105,18 @@ public class AsyncRpcResult extends AbstractResult {
 
     @Override
     public void setException(Throwable t) {
-        AppResponse appResponse = new AppResponse();
-        appResponse.setException(t);
-        this.complete(appResponse);
+        try {
+            if (this.isDone()) {
+                this.get().setException(t);
+            } else {
+                AppResponse appResponse = new AppResponse();
+                appResponse.setException(t);
+                this.complete(appResponse);
+            }
+        } catch (Exception e) {
+            // This should never happen;
+            logger.error("Got exception when trying to change the value of the underlying result from AsyncRpcResult.", e);
+        }
     }
 
     @Override
@@ -111,37 +139,26 @@ public class AsyncRpcResult extends AbstractResult {
     @Override
     public Object recreate() throws Throwable {
         RpcInvocation rpcInvocation = (RpcInvocation) invocation;
+        FutureAdapter future = new FutureAdapter(this);
+        RpcContext.getContext().setFuture(future);
         if (InvokeMode.FUTURE == rpcInvocation.getInvokeMode()) {
-            AppResponse appResponse = new AppResponse();
-            CompletableFuture<Object> future = new CompletableFuture<>();
-            appResponse.setValue(future);
-            this.whenComplete((result, t) -> {
-                if (t != null) {
-                    if (t instanceof CompletionException) {
-                        t = t.getCause();
-                    }
-                    future.completeExceptionally(t);
-                } else {
-                    if (result.hasException()) {
-                        future.completeExceptionally(result.getException());
-                    } else {
-                        future.complete(result.getValue());
-                    }
-                }
-            });
-            return appResponse.recreate();
-        } else if (this.isDone()) {
-            return this.get().recreate();
+            return future;
         }
-        return (new AppResponse()).recreate();
+
+        return getAppResponse().recreate();
     }
 
     @Override
-    public Result thenApplyWithContext(Function<Result, Result> fn) {
-        this.thenApply(fn.compose(beforeContext).andThen(afterContext));
-        // You may need to return a new Result instance representing the next async stage,
-        // like thenApply will return a new CompletableFuture.
-        return this;
+    public Result whenCompleteWithContext(BiConsumer<Result, Throwable> fn) {
+        CompletableFuture<Result> future = this.whenComplete((v, t) -> {
+            beforeContext.accept(v, t);
+            fn.accept(v, t);
+            afterContext.accept(v, t);
+        });
+
+        AsyncRpcResult nextStage = new AsyncRpcResult(this);
+        nextStage.subscribeTo(future);
+        return nextStage;
     }
 
     public void subscribeTo(CompletableFuture<?> future) {
@@ -202,18 +219,16 @@ public class AsyncRpcResult extends AbstractResult {
     private RpcContext tmpContext;
     private RpcContext tmpServerContext;
 
-    private Function<Result, Result> beforeContext = (appResponse) -> {
+    private BiConsumer<Result, Throwable> beforeContext = (appResponse, t) -> {
         tmpContext = RpcContext.getContext();
         tmpServerContext = RpcContext.getServerContext();
         RpcContext.restoreContext(storedContext);
         RpcContext.restoreServerContext(storedServerContext);
-        return appResponse;
     };
 
-    private Function<Result, Result> afterContext = (appResponse) -> {
+    private BiConsumer<Result, Throwable> afterContext = (appResponse, t) -> {
         RpcContext.restoreContext(tmpContext);
         RpcContext.restoreServerContext(tmpServerContext);
-        return appResponse;
     };
 
     /**

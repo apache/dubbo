@@ -134,13 +134,8 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
         }
     }
 
-    /**
-     * This method will be used to:
-     * 1. get configuration file at startup phase
-     * 2. get all kinds of Dubbo rules
-     */
     @Override
-    public String getConfig(String key, String group, long timeout) throws IllegalStateException {
+    public String getRule(String key, String group, long timeout) throws IllegalStateException {
         if (StringUtils.isNotEmpty(group)) {
             if (group.equals(url.getParameter(APPLICATION_KEY))) {
                 return ConfigService.getAppConfig().getProperty(key, null);
@@ -152,7 +147,7 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
     }
 
     @Override
-    public String getConfigs(String key, String group, long timeout) throws IllegalStateException {
+    public String getProperties(String key, String group, long timeout) throws IllegalStateException {
         if(StringUtils.isEmpty(group)) {
             return dubboConfigFile.getContent();
         }
@@ -176,7 +171,6 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
     public String getInternalProperty(String key) {
         return dubboConfig.getProperty(key, null);
     }
-
 
     /**
      * Ignores the group parameter.

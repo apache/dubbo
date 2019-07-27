@@ -477,7 +477,7 @@ public class RegistryProtocol implements Protocol {
         }
     }
 
-    static private class DestroyableExporter<T> implements Exporter<T> {
+    private static class DestroyableExporter<T> implements Exporter<T> {
 
         private Exporter<T> exporter;
 
@@ -591,7 +591,7 @@ public class RegistryProtocol implements Protocol {
         public ServiceConfigurationListener(URL providerUrl, OverrideListener notifyListener) {
             this.providerUrl = providerUrl;
             this.notifyListener = notifyListener;
-            this.initWith(providerUrl.getEncodedServiceKey() + CONFIGURATORS_SUFFIX);
+            this.initWith(DynamicConfiguration.getRuleKey(providerUrl) + CONFIGURATORS_SUFFIX);
         }
 
         private <T> URL overrideUrl(URL providerUrl) {

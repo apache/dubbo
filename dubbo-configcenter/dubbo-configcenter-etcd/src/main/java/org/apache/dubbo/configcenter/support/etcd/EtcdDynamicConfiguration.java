@@ -64,7 +64,7 @@ public class EtcdDynamicConfiguration implements DynamicConfiguration {
     private final ConcurrentMap<ConfigurationListener, EtcdConfigWatcher> watchListenerMap;
 
     EtcdDynamicConfiguration(URL url) {
-        rootPath = "/" + url.getParameter(CONFIG_NAMESPACE_KEY, DEFAULT_GROUP) + "/config";
+        rootPath = PATH_SEPARATOR + url.getParameter(CONFIG_NAMESPACE_KEY, DEFAULT_GROUP) + "/config";
         etcdClient = new JEtcdClient(url);
         etcdClient.addStateListener(state -> {
             if (state == StateListener.CONNECTED) {
@@ -81,7 +81,7 @@ public class EtcdDynamicConfiguration implements DynamicConfiguration {
     @Override
     public void addListener(String key, String group, ConfigurationListener listener) {
         if (watchListenerMap.get(listener) == null) {
-            String normalizedKey = convertKey(key);
+            String normalizedKey = convertKey(group, key);
             EtcdConfigWatcher watcher = new EtcdConfigWatcher(normalizedKey, listener);
             watchListenerMap.put(listener, watcher);
             watcher.watch();
@@ -94,21 +94,17 @@ public class EtcdDynamicConfiguration implements DynamicConfiguration {
         watcher.cancelWatch();
     }
 
-    // TODO Abstract the logic into super class
     @Override
-    public String getConfig(String key, String group, long timeout) throws IllegalStateException {
-        if (StringUtils.isNotEmpty(group)) {
-            key = group + PATH_SEPARATOR + key;
-        } else {
-            int i = key.lastIndexOf(".");
-            key = key.substring(0, i) + PATH_SEPARATOR + key.substring(i + 1);
-        }
-        return (String) getInternalProperty(rootPath + PATH_SEPARATOR + key);
+    public String getRule(String key, String group, long timeout) throws IllegalStateException {
+        return (String) getInternalProperty(convertKey(group, key));
     }
 
     @Override
-    public String getConfigs(String key, String group, long timeout) throws IllegalStateException {
-        return getConfig(key, group, timeout);
+    public String getProperties(String key, String group, long timeout) throws IllegalStateException {
+        if (StringUtils.isEmpty(group)) {
+            group = DEFAULT_GROUP;
+        }
+        return (String) getInternalProperty(convertKey(group, key));
     }
 
     @Override
@@ -117,9 +113,8 @@ public class EtcdDynamicConfiguration implements DynamicConfiguration {
     }
 
 
-    private String convertKey(String key) {
-        int index = key.lastIndexOf('.');
-        return rootPath + PATH_SEPARATOR + key.substring(0, index) + PATH_SEPARATOR + key.substring(index + 1);
+    private String convertKey(String group, String key) {
+        return rootPath + PATH_SEPARATOR + group + PATH_SEPARATOR + key;
     }
 
     private void recover() {

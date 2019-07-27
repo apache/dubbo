@@ -97,7 +97,7 @@
         <grizzly_version>2.1.4</grizzly_version>
         <httpclient_version>4.5.3</httpclient_version>
         <httpcore_version>4.4.6</httpcore_version>
-        <fastjson_version>1.2.46</fastjson_version>
+        <fastjson_version>1.2.58</fastjson_version>
         <zookeeper_version>3.4.13</zookeeper_version>
         <curator_version>4.0.1</curator_version>
         <curator_test_version>2.12.0</curator_test_version>
@@ -128,7 +128,7 @@
         <resteasy_version>3.0.19.Final</resteasy_version>
         <tomcat_embed_version>8.5.31</tomcat_embed_version>
         <jetcd_version>0.3.0</jetcd_version>
-        <nacos_version>1.0.0</nacos_version>
+        <nacos_version>1.1.1</nacos_version>
         <!-- Log libs -->
         <slf4j_version>1.7.25</slf4j_version>
         <jcl_version>1.2</jcl_version>
@@ -412,11 +412,6 @@
                 <version>${tomcat_embed_version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.tomcat.embed</groupId>
-                <artifactId>tomcat-embed-logging-juli</artifactId>
-                <version>${tomcat_embed_version}</version>
-            </dependency>
-            <dependency>
                 <groupId>io.etcd</groupId>
                 <artifactId>jetcd-core</artifactId>
                 <version>${jetcd_version}</version>
@@ -608,6 +603,12 @@
                 <groupId>io.etcd</groupId>
                 <artifactId>jetcd-launcher</artifactId>
                 <version>${etcd_launcher_version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.github.spotbugs</groupId>
+                        <artifactId>spotbugs-annotations</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.testcontainers</groupId>

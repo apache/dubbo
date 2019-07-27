@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -40,7 +41,7 @@ public class ExpiringMap<K, V> implements Map<K, V> {
      */
     private static final int DEFAULT_EXPIRATION_INTERVAL = 1;
 
-    private static volatile int expireCount = 1;
+    private static AtomicInteger expireCount = new AtomicInteger(1);
 
     private final ConcurrentHashMap<K, ExpiryObject> delegateMap;
 
@@ -263,7 +264,7 @@ public class ExpiringMap<K, V> implements Map<K, V> {
         }
 
         public ExpireThread() {
-            expirerThread = new Thread(this, "ExpiryMapExpire-" + expireCount++);
+            expirerThread = new Thread(this, "ExpiryMapExpire-" + expireCount.getAndIncrement());
             expirerThread.setDaemon(true);
         }
 

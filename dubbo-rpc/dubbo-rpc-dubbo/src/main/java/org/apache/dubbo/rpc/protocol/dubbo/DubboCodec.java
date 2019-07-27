@@ -33,7 +33,6 @@ import org.apache.dubbo.remoting.transport.CodecSupport;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -121,10 +120,11 @@ public class DubboCodec extends ExchangeCodec {
             }
             try {
                 Object data;
-                ObjectInput in = CodecSupport.deserialize(channel.getUrl(), is, proto);
                 if (req.isHeartbeat()) {
+                    ObjectInput in = CodecSupport.deserialize(channel.getUrl(), is, proto);
                     data = decodeHeartbeatData(channel, in);
                 } else if (req.isEvent()) {
+                    ObjectInput in = CodecSupport.deserialize(channel.getUrl(), is, proto);
                     data = decodeEventData(channel, in);
                 } else {
                     DecodeableRpcInvocation inv;
@@ -186,7 +186,7 @@ public class DubboCodec extends ExchangeCodec {
                 out.writeObject(encodeInvocationArgument(channel, inv, i));
             }
         }
-        out.writeObject(RpcUtils.getNecessaryAttachments(inv));
+        out.writeObject(inv.getAttachments());
     }
 
     @Override

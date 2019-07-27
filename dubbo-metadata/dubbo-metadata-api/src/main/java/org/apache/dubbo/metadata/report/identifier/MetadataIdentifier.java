@@ -69,10 +69,10 @@ public class MetadataIdentifier {
 
     public String getIdentifierKey() {
         return serviceInterface
-                + (version == null ? "" : (SEPARATOR + version))
-                + (group == null ? "" : (SEPARATOR + version))
-                + (side == null ? "" : (SEPARATOR + side))
-                + (getApplication() == null ? "" : (SEPARATOR + getApplication()));
+                + SEPARATOR + (version == null ? "" : version)
+                + SEPARATOR + (group == null ? "" : group)
+                + SEPARATOR + (side == null ? "" : side)
+                + SEPARATOR + application;
     }
 
     private String getFilePathKey() {
@@ -136,7 +136,7 @@ public class MetadataIdentifier {
         this.application = application;
     }
 
-    public static enum KeyTypeEnum {
+    public enum KeyTypeEnum {
         PATH, UNIQUE_KEY
     }
 }

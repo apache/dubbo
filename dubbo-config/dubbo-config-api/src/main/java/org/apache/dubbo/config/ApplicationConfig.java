@@ -17,21 +17,31 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.compiler.support.AdaptiveCompiler;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_ENV_KEYS;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_LABELS;
 import static org.apache.dubbo.common.constants.CommonConstants.DUMP_DIRECTORY;
+import static org.apache.dubbo.common.constants.CommonConstants.EQUAL_SPLIT_PATTERN;
+import static org.apache.dubbo.common.constants.CommonConstants.SEMICOLON_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
+import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP_COMPATIBLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
+import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE_COMPATIBLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT;
+import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT_COMPATIBLE;
 import static org.apache.dubbo.config.Constants.ARCHITECTURE;
 import static org.apache.dubbo.config.Constants.DEVELOPMENT_ENVIRONMENT;
 import static org.apache.dubbo.config.Constants.ENVIRONMENT;
@@ -322,36 +332,34 @@ public class ApplicationConfig extends AbstractConfig {
         this.qosAcceptForeignIp = qosAcceptForeignIp;
     }
 
-    @Deprecated
-    @Parameter(key = "qos.enable", excluded = true)
-    public Boolean getQosEnableDeprecated() {
+    /**
+     * The format is the same as the springboot, including: getQosEnableCompatible(), getQosPortCompatible(), getQosAcceptForeignIpCompatible().
+     * @return
+     */
+    @Parameter(key = QOS_ENABLE_COMPATIBLE, excluded = true)
+    public Boolean getQosEnableCompatible() {
         return getQosEnable();
     }
 
-    @Deprecated
-    public void setQosEnableDeprecated(Boolean qosEnable) {
+    public void setQosEnableCompatible(Boolean qosEnable) {
         setQosEnable(qosEnable);
     }
 
-    @Deprecated
-    @Parameter(key = "qos.port", excluded = true)
-    public Integer getQosPortDeprecated() {
+    @Parameter(key = QOS_PORT_COMPATIBLE, excluded = true)
+    public Integer getQosPortCompatible() {
         return getQosPort();
     }
 
-    @Deprecated
-    public void setQosPortDeprecated(Integer qosPort) {
+    public void setQosPortCompatible(Integer qosPort) {
         this.setQosPort(qosPort);
     }
 
-    @Deprecated
-    @Parameter(key = "qos.accept.foreign.ip", excluded = true)
-    public Boolean getQosAcceptForeignIpDeprecated() {
+    @Parameter(key = ACCEPT_FOREIGN_IP_COMPATIBLE, excluded = true)
+    public Boolean getQosAcceptForeignIpCompatible() {
         return this.getQosAcceptForeignIp();
     }
 
-    @Deprecated
-    public void setQosAcceptForeignIpDeprecated(Boolean qosAcceptForeignIp) {
+    public void setQosAcceptForeignIpCompatible(Boolean qosAcceptForeignIp) {
         this.setQosAcceptForeignIp(qosAcceptForeignIp);
     }
 
@@ -386,4 +394,46 @@ public class ApplicationConfig extends AbstractConfig {
     public void setMetadata(String metadata) {
         this.metadata = metadata;
     }
+
+    @Override
+    public void refresh() {
+        super.refresh();
+        appendEnvironmentProperties();
+    }
+
+    /**
+     * 1. OS Environment: DUBBO_LABELS=tag=pre;key=value
+     * 2. JVM Options: -Denv_keys = DUBBO_KEY1, DUBBO_KEY2
+     */
+    private void appendEnvironmentProperties() {
+        String rawLabels = ConfigurationUtils.getProperty(DUBBO_LABELS);
+        if (StringUtils.isNotEmpty(rawLabels)) {
+            String[] labelPairs = SEMICOLON_SPLIT_PATTERN.split(rawLabels);
+            for (String pair : labelPairs) {
+                String[] label = EQUAL_SPLIT_PATTERN.split(pair);
+                if (label.length == 2) {
+                    updateParameters(parameters, label[0], label[1]);
+                }
+            }
+        }
+
+        String rawKeys = ConfigurationUtils.getProperty(DUBBO_ENV_KEYS);
+        if (StringUtils.isNotEmpty(rawKeys)) {
+            String[] keys = COMMA_SPLIT_PATTERN.split(rawKeys);
+            for (String key : keys) {
+                String value = ConfigurationUtils.getProperty(key);
+                if (value != null) {
+                    updateParameters(parameters, key, value);
+                }
+            }
+        }
+    }
+
+    private void updateParameters(Map<String, String> map, String key, String value) {
+        if (parameters == null) {
+            parameters = new HashMap<>();
+        }
+        parameters.put(key, value);
+    }
+
 }

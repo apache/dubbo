@@ -329,7 +329,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                         map.put(methodConfig.getName() + ".retries", "0");
                     }
                 }
-                attributes.put(methodConfig.getName(), convertMethodConfig2AyncInfo(methodConfig));
+                attributes.put(methodConfig.getName(), convertMethodConfig2AsyncInfo(methodConfig));
             }
         }
 
