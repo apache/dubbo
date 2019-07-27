@@ -174,7 +174,7 @@ public interface DynamicConfiguration extends Configuration {
             IllegalStateException {
         SortedMap<String, String> configs = new TreeMap<>();
         SortedSet<String> configKeys = getConfigKeys(group);
-        configKeys.forEach(key -> configs.put(key, getConfig(key, group, timeout)));
+        configKeys.forEach(key -> configs.put(key, getString(key)));
         return Collections.unmodifiableSortedMap(configs);
     }
 
@@ -184,8 +184,8 @@ public interface DynamicConfiguration extends Configuration {
      * @return DynamicConfiguration instance
      */
     static DynamicConfiguration getDynamicConfiguration() {
-        Optional<Configuration> optional = Environment.getInstance().getDynamicConfiguration();
-        return (DynamicConfiguration) optional.orElseGet(() -> getExtensionLoader(DynamicConfigurationFactory.class)
+        Optional<DynamicConfiguration> optional = Environment.getInstance().getDynamicConfiguration();
+        return optional.orElseGet(() -> getExtensionLoader(DynamicConfigurationFactory.class)
                 .getDefaultExtension()
                 .getDynamicConfiguration(null));
     }

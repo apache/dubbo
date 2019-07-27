@@ -50,13 +50,13 @@ public class CompositeDynamicConfiguration implements DynamicConfiguration {
     }
 
     @Override
-    public String getConfig(String key, String group, long timeout) throws IllegalStateException {
-        return (String) iterateConfigOperation(configuration -> configuration.getConfig(key, group, timeout));
+    public String getRule(String key, String group, long timeout) throws IllegalStateException {
+        return (String) iterateConfigOperation(configuration -> configuration.getRule(key, group, timeout));
     }
 
     @Override
-    public String getConfigs(String key, String group, long timeout) throws IllegalStateException {
-        return (String) iterateConfigOperation(configuration -> configuration.getConfigs(key, group, timeout));
+    public String getProperties(String key, String group, long timeout) throws IllegalStateException {
+        return (String) iterateConfigOperation(configuration -> configuration.getProperties(key, group, timeout));
     }
 
     @Override
@@ -66,15 +66,23 @@ public class CompositeDynamicConfiguration implements DynamicConfiguration {
 
     @Override
     public boolean publishConfig(String key, String group, String content) throws UnsupportedOperationException {
-        return (boolean) iterateConfigOperation(configuration -> configuration.publishConfig(key, group, content));
+        boolean publishedAll = true;
+        for (DynamicConfiguration configuration : configurations) {
+            if (!configuration.publishConfig(key, group, content)) {
+                publishedAll = false;
+            }
+        }
+        return publishedAll;
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public SortedSet<String> getConfigKeys(String group) throws UnsupportedOperationException {
         return (SortedSet<String>) iterateConfigOperation(configuration -> configuration.getConfigKeys(group));
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public SortedMap<String, String> getConfigs(String group) throws UnsupportedOperationException {
         return (SortedMap<String, String>) iterateConfigOperation(configuration -> configuration.getConfigs(group));
     }

@@ -75,6 +75,7 @@ import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static org.apache.dubbo.common.config.ConfigurationUtils.parseProperties;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.registry.support.AbstractRegistryFactory.getRegistries;
+import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
 
 /**
  * The bootstrap class of Dubbo
@@ -328,20 +329,21 @@ public class DubboBootstrap {
         ConfigManager configManager = ConfigManager.getInstance();
         configManager.getDefaultRegistries().ifPresent(registryConfigs -> {
             for (RegistryConfig registryConfig : registryConfigs) {
-                if (registryConfig != null && registryConfig.isZookeeperProtocol()) {
-                    // we use the loading status of DynamicConfiguration to decide whether ConfigCenter has been initiated.
-                    Environment.getInstance().getDynamicConfiguration().orElseGet(() -> {
-                        Set<ConfigCenterConfig> configCenters = configManager.getConfigCenters();
-                        if (CollectionUtils.isEmpty(configCenters)) {
-                            ConfigCenterConfig cc = new ConfigCenterConfig();
-                            cc.setProtocol(registryConfig.getProtocol());
-                            cc.setAddress(registryConfig.getAddress());
-                            cc.setHighestPriority(false);
-                            configManager.addConfigCenter(cc);
-                        }
-                        return null;
-                    });
-                }
+                // we use the loading status of DynamicConfiguration to decide whether ConfigCenter has been initiated.
+                Environment.getInstance().getDynamicConfiguration().orElseGet(() -> {
+                    Set<ConfigCenterConfig> configCenters = configManager.getConfigCenters();
+                    if (CollectionUtils.isEmpty(configCenters)) {
+                        ConfigCenterConfig cc = new ConfigCenterConfig();
+                        cc.setParameters(registryConfig.getParameters() == null ? new HashMap<>() : registryConfig.getParameters());
+                        cc.getParameters().put(CLIENT_KEY,registryConfig.getClient());
+                        cc.setProtocol(registryConfig.getProtocol());
+                        cc.setAddress(registryConfig.getAddress());
+                        cc.setNamespace(registryConfig.getGroup());
+                        cc.setHighestPriority(false);
+                        configManager.addConfigCenter(cc);
+                    }
+                    return null;
+                });
             }
             startConfigCenter();
         });
@@ -531,12 +533,12 @@ public class DubboBootstrap {
                 return null;
             }
             DynamicConfiguration dynamicConfiguration = getDynamicConfiguration(configCenter.toUrl());
-            String configContent = dynamicConfiguration.getConfigs(configCenter.getConfigFile(), configCenter.getGroup());
+            String configContent = dynamicConfiguration.getProperties(configCenter.getConfigFile(), configCenter.getGroup());
 
             String appGroup = ConfigManager.getInstance().getApplication().orElse(new ApplicationConfig()).getName();
             String appConfigContent = null;
             if (StringUtils.isNotEmpty(appGroup)) {
-                appConfigContent = dynamicConfiguration.getConfigs
+                appConfigContent = dynamicConfiguration.getProperties
                         (StringUtils.isNotEmpty(configCenter.getAppConfigFile()) ? configCenter.getAppConfigFile() : configCenter.getConfigFile(),
                                 appGroup
                         );

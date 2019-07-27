@@ -35,8 +35,11 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import static java.util.Collections.emptySortedSet;
+import static java.util.Collections.unmodifiableSortedSet;
+import static org.apache.dubbo.common.config.configcenter.Constants.CONFIG_NAMESPACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
-import static org.apache.dubbo.configcenter.Constants.CONFIG_NAMESPACE_KEY;
+import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
 
 /**
  *

@@ -42,8 +42,6 @@ import static java.util.concurrent.Executors.newCachedThreadPool;
 import static org.apache.dubbo.common.config.configcenter.ConfigChangeType.ADDED;
 import static org.apache.dubbo.common.config.configcenter.Constants.CONFIG_NAMESPACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
-import static org.apache.dubbo.configcenter.ConfigChangeType.ADDED;
-import static org.apache.dubbo.configcenter.Constants.CONFIG_NAMESPACE_KEY;
 
 /**
  * config center implementation for consul
