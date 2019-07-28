@@ -123,7 +123,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AnnotationInjectedBean
     protected Object doGetInjectedBean(AnnotationAttributes attributes, Object bean, String beanName, Class<?> injectedType,
                                        InjectionMetadata.InjectedElement injectedElement) throws Exception {
 
-        String referencedBeanName = buildReferencedBeanName(attributes, injectedType);
+        String referencedBeanName = buildInjectedObjectCacheKey(attributes, bean, beanName, injectedType, injectedElement);
 
         ReferenceBean referenceBean = buildReferenceBeanIfAbsent(referencedBeanName, attributes, injectedType);
 
