@@ -32,7 +32,6 @@ import java.lang.annotation.Target;
  *     basing GenericAlias annotation it could be converted automatically.
  * </p>
  *
- *
  */
 @Target({ElementType.METHOD,ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
