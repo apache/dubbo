@@ -105,6 +105,9 @@ public class HashedWheelTimer implements Timer {
     @SuppressWarnings({"unused", "FieldMayBeFinal"})
     private volatile int workerState;
 
+    /**
+     * 每次tick 一次的时间间隔，每次tick一次就会到下一个槽位
+     */
     private final long tickDuration;
     private final HashedWheelBucket[] wheel;
     private final int mask;

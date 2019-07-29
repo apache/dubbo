@@ -232,6 +232,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     /**
      *
+     * 加载注册信息
      * Load the registry and conversion it to {@link URL}, the priority order is: system property > dubbo registry config
      *
      * @param provider whether it is the provider side
@@ -239,6 +240,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
      */
     protected List<URL> loadRegistries(boolean provider) {
         // check && override if necessary
+        // 校验 registries属性进行校验，若为空，则从配置文件加载
         checkRegistry();
         checkRegistryDataConfig();
         List<URL> registryList = new ArrayList<URL>();

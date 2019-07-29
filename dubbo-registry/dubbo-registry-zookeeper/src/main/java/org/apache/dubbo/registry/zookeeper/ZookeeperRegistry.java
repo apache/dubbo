@@ -123,17 +123,29 @@ public class ZookeeperRegistry extends FailbackRegistry {
         }
     }
 
+    /**
+     * 订阅zookeeper节点是通过创建
+     * @param url
+     * @param listener
+     */
     @Override
     public void doSubscribe(final URL url, final NotifyListener listener) {
         try {
+            //接口名称 * 代表舰艇root下面的所有节点
             if (Constants.ANY_VALUE.equals(url.getServiceInterface())) {
                 String root = toRootPath();
+                // 如果 listeners为空创建并放入map中
                 ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.get(url);
                 if (listeners == null) {
                     zkListeners.putIfAbsent(url, new ConcurrentHashMap<>());
                     listeners = zkListeners.get(url);
                 }
                 ChildListener zkListener = listeners.get(listener);
+                /**
+                 * root下的子节点是service接口
+                 * 创建子节点监听器，对root下的子节点做监听，一旦有子节点发生改变，
+                 * 那么就对这个节点进行订阅.
+                 **/
                 if (zkListener == null) {
                     listeners.putIfAbsent(listener, (parentPath, currentChilds) -> {
                         for (String child : currentChilds) {
@@ -147,9 +159,12 @@ public class ZookeeperRegistry extends FailbackRegistry {
                     });
                     zkListener = listeners.get(listener);
                 }
+                // 创建root节点
                 zkClient.create(root, false);
+                // 添加root节点的监听器，并返回当前的service
                 List<String> services = zkClient.addChildListener(root, zkListener);
                 if (services != null && !services.isEmpty()) {
+                    //对root下的所有service节点进行订阅
                     for (String service : services) {
                         service = URL.decode(service);
                         anyServices.add(service);
@@ -159,6 +174,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
                 }
             } else {
                 List<URL> urls = new ArrayList<>();
+                // 转换url
                 for (String path : toCategoriesPath(url)) {
                     ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.get(url);
                     if (listeners == null) {

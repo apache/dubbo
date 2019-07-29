@@ -50,6 +50,13 @@ import static org.apache.dubbo.config.spring.util.BeanFactoryUtils.addApplicatio
 /**
  * ServiceFactoryBean
  *
+ *  InitializingBean 为bean 提供初始化方法
+ *  DisposableBean  bean 销毁的时候， spring自动启动destory 方法进行销毁
+ *  ApplicationContextAware 实现此接口的bean，spring容器初始化的时候，会自动将 applicationContext加载进来
+ *  ApplicationListener ApplicationEvent事件监听，spring容器启动后会发一个事件通知
+ *  BeanNameAware 获得自身初始化时，本身的bean的id属性
+ *
+ *
  * @export
  */
 public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean, DisposableBean, ApplicationContextAware, ApplicationListener<ContextRefreshedEvent>, BeanNameAware {
@@ -95,6 +102,10 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
         return service;
     }
 
+    /**
+     * 监听 Spring容器的初始化
+     * @param event
+     */
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
         if (!isExported() && !isUnexported()) {
@@ -105,6 +116,13 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
         }
     }
 
+    /**
+     * 依次解析标签信息
+     *  <dubbo:provider>
+     *  <dubbo:application>
+     *  <dubbo:module>
+     * @throws Exception
+     */
     @Override
     @SuppressWarnings({"unchecked", "deprecation"})
     public void afterPropertiesSet() throws Exception {
@@ -290,6 +308,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
             }
         }
         if (!supportedApplicationListener) {
+            // 发布服务
             export();
         }
     }

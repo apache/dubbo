@@ -29,9 +29,9 @@ import java.util.List;
 public interface RegistryService {
 
     /**
-     * Register data, such as : provider service, consumer address, route rule, override rule and other data.
+     * 注册数据, 如提供者地址，消费者地址，路由规则，覆盖规则等数据
      * <p>
-     * Registering is required to support the contract:<br>
+     * 注册需要处理的契约:<br>
      * 1. When the URL sets the check=false parameter. When the registration fails, the exception is not thrown and retried in the background. Otherwise, the exception will be thrown.<br>
      * 2. When URL sets the dynamic=false parameter, it needs to be stored persistently, otherwise, it should be deleted automatically when the registrant has an abnormal exit.<br>
      * 3. When the URL sets category=routers, it means classified storage, the default category is providers, and the data can be notified by the classified section. <br>
@@ -83,9 +83,12 @@ public interface RegistryService {
     void unsubscribe(URL url, NotifyListener listener);
 
     /**
+     * 查询符合条件的已注册数据，与订阅的推模式相对比，这里为拉模式，只返回一次结果
      * Query the registered data that matches the conditions. Corresponding to the push mode of the subscription, this is the pull mode and returns only one result.
      *
+     * 查询题哦啊见，不允许为空，如 consumer://10.20.153.10/org.apache.dubbo.foo.BarService?version=1.0.0&application=kylin
      * @param url Query condition, is not allowed to be empty, e.g. consumer://10.20.153.10/org.apache.dubbo.foo.BarService?version=1.0.0&application=kylin
+     *            已注册信息列表，可能为空，含义同{@link org.apache.dubbo.registry.NotifyListener#notify(List<URL>)} 参数
      * @return The registered information list, which may be empty, the meaning is the same as the parameters of {@link org.apache.dubbo.registry.NotifyListener#notify(List<URL>)}.
      * @see org.apache.dubbo.registry.NotifyListener#notify(List)
      */

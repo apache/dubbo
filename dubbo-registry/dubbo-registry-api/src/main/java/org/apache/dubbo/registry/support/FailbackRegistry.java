@@ -38,6 +38,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * FailbackRegistry. (SPI, Prototype, ThreadSafe)
+ * 主要提供失败自动恢复
  */
 public abstract class FailbackRegistry extends AbstractRegistry {
 
@@ -354,6 +355,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             doNotify(url, listener, urls);
         } catch (Exception t) {
             // Record a failed registration request to a failed list, retry regularly
+            // 记录失败的通知请求记录到失败列表 ,定时重试
             addFailedNotified(url, listener, urls);
             logger.error("Failed to notify for subscribe " + url + ", waiting for retry, cause: " + t.getMessage(), t);
         }
@@ -396,7 +398,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         retryTimer.stop();
     }
 
-    // ==== Template method ====
+    // ==== Template method 模版方法 ====
 
     public abstract void doRegister(URL url);
 

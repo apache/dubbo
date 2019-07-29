@@ -31,7 +31,9 @@ import org.apache.dubbo.config.spring.ServiceBean;
 import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
 
 /**
- * DubboNamespaceHandler
+ * DubboNamespaceHandler 初始化配置文件
+ * dubbo:provider
+ * dubbo:service 等等
  *
  * @export
  */

@@ -395,6 +395,7 @@ public abstract class AbstractRegistry implements Registry {
         if (result.size() == 0) {
             return;
         }
+        // 进行url分割
         Map<String, List<URL>> categoryNotified = notified.computeIfAbsent(url, k -> {
             return new ConcurrentHashMap<>();
         });
@@ -403,10 +404,15 @@ public abstract class AbstractRegistry implements Registry {
             List<URL> categoryList = entry.getValue();
             categoryNotified.put(category, categoryList);
             saveProperties(url);
+            // 监听url
             listener.notify(categoryList);
         }
     }
 
+    /**
+     * 保存到本地的缓存文件
+     * @param url
+     */
     private void saveProperties(URL url) {
         if (file == null) {
             return;

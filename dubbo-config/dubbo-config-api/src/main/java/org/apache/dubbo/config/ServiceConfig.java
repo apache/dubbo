@@ -151,11 +151,15 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
     /**
      * Whether the provider has been exported
+     *
+     * 标识的服务是否 发布 false
      */
     private transient volatile boolean exported;
 
     /**
      * The flag whether a service has unexported ,if the method unexported is invoked, the value is true
+     *
+     *  标识位，标识服务是否取消发布，默认值为false
      */
     private transient volatile boolean unexported;
 
@@ -329,6 +333,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         checkMock(interfaceClass);
     }
 
+    /**
+     * 原子操作
+     */
     public synchronized void export() {
         checkAndUpdateSubConfigs();
 
@@ -336,6 +343,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             if (export == null) {
                 export = provider.getExport();
             }
+            // 判断是否延迟
             if (delay == null) {
                 delay = provider.getDelay();
             }
@@ -343,7 +351,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (export != null && !export) {
             return;
         }
-
+        // 如果是延迟线程池处理延迟的，延迟发布 doExport()
         if (delay != null && delay > 0) {
             delayExportExecutor.schedule(this::doExport, delay, TimeUnit.MILLISECONDS);
         } else {
@@ -408,7 +416,14 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
     }
 
+    /**
+     * 创建两个对应的url
+     *
+     * @param protocolConfig
+     * @param registryURLs
+     */
     private void doExportUrlsFor1Protocol(ProtocolConfig protocolConfig, List<URL> registryURLs) {
+        // 获得协议名称，这里默认为dubbo
         String name = protocolConfig.getName();
         if (name == null || name.length() == 0) {
             name = Constants.DUBBO;
@@ -551,11 +566,12 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                         if (StringUtils.isNotEmpty(proxy)) {
                             registryURL = registryURL.addParameter(Constants.PROXY_KEY, proxy);
                         }
-
+                        // 获得代理对象
                         Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, registryURL.addParameterAndEncoded(Constants.EXPORT_KEY, url.toFullString()));
                         DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
-
+                        //注册服务
                         Exporter<?> exporter = protocol.export(wrapperInvoker);
+                        // 将exporter添加到集合中
                         exporters.add(exporter);
                     }
                 } else {
