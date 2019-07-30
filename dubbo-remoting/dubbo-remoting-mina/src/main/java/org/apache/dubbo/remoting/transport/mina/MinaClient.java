@@ -163,7 +163,7 @@ public class MinaClient extends AbstractClient {
     }
 
     @Override
-    protected Channel getChannel() {
+    public Channel getChannel() {
         IoSession s = session;
         if (s == null || !s.isConnected()) {
             return null;

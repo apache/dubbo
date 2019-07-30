@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
+import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Client;
 import org.apache.dubbo.remoting.Constants;
@@ -27,6 +28,7 @@ import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.remoting.exchange.ExchangeHandler;
+import org.apache.dubbo.remoting.transport.AbstractClient;
 
 import java.net.InetSocketAddress;
 import java.util.Collections;
@@ -55,7 +57,7 @@ public class HeaderExchangeClient implements ExchangeClient {
     public HeaderExchangeClient(Client client, boolean startTimer) {
         Assert.notNull(client, "Client can't be null");
         this.client = client;
-        this.channel = new HeaderExchangeChannel(client);
+        this.channel = new HeaderExchangeChannel(unwrapChannel(client));
 
         if (startTimer) {
             URL url = client.getUrl();
@@ -223,5 +225,9 @@ public class HeaderExchangeClient implements ExchangeClient {
     @Override
     public String toString() {
         return "HeaderExchangeClient [channel=" + channel + "]";
+    }
+
+    private Channel unwrapChannel(Client client) {
+        return (client instanceof AbstractClient) ? ((AbstractClient) client).getChannel() : client;
     }
 }

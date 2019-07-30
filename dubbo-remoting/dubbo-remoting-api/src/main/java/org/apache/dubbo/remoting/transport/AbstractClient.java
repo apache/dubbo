@@ -325,5 +325,5 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
      *
      * @return channel
      */
-    protected abstract Channel getChannel();
+    public abstract Channel getChannel();
 }
