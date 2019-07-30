@@ -101,7 +101,7 @@ public class GrizzlyClient extends AbstractClient {
     }
 
     @Override
-    public Channel getChannel() {
+    protected Channel getChannel() {
         Connection<?> c = connection;
         if (c == null || !c.isOpen()) {
             return null;
