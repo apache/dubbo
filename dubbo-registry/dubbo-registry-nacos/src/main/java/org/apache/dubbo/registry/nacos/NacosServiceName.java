@@ -222,8 +222,12 @@ public class NacosServiceName {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof NacosServiceName)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof NacosServiceName)) {
+            return false;
+        }
         NacosServiceName that = (NacosServiceName) o;
         return Objects.equals(getValue(), that.getValue());
     }
@@ -233,6 +237,7 @@ public class NacosServiceName {
         return Objects.hash(getValue());
     }
 
+    @Override
     public String toString() {
         return getValue();
     }
