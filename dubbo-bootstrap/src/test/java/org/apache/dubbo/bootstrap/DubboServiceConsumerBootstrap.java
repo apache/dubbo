@@ -34,7 +34,7 @@ public class DubboServiceConsumerBootstrap {
                 // Zookeeper
                 .registry("zookeeper", builder -> builder.address("zookeeper://127.0.0.1:2181?registry-type=service&subscribed-services=dubbo-provider-demo"))
                 // Nacos
-                .registry("nacos", builder -> builder.address("nacos://127.0.0.1:8848?registry-type=service&subscribed-services=dubbo-provider-demo"))
+//                .registry("nacos", builder -> builder.address("nacos://127.0.0.1:8848?registry-type=service&subscribed-services=dubbo-provider-demo"))
                 .reference("ref", builder -> builder.interfaceClass(EchoService.class))
                 .onlyRegisterProvider(true)
                 .start()
