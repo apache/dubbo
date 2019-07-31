@@ -343,20 +343,8 @@ public class AnnotationUtils {
             if (ignoreDefaultValue && nullSafeEquals(attributeValue, getDefaultValue(annotation, attributeName))) {
                 continue;
             }
-
-            /**
-             * @since 2.7.1
-             * ignore annotation member
-             */
-            if (attributeValue.getClass().isAnnotation()) {
-                continue;
-            }
-            if (attributeValue.getClass().isArray() && attributeValue.getClass().getComponentType().isAnnotation()) {
-                continue;
-            }
             actualAttributes.put(attributeName, attributeValue);
         }
-
 
         return resolvePlaceholders(actualAttributes, propertyResolver, ignoreAttributeNames);
     }
