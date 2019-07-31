@@ -470,6 +470,111 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         }
     }
 
+    protected void loadApplication(Map<String, ApplicationConfig> applicationConfigMap) {
+        if (applicationConfigMap != null && applicationConfigMap.size() > 0) {
+            ApplicationConfig applicationConfig = null;
+            for (ApplicationConfig config : applicationConfigMap.values()) {
+                if (applicationConfig != null) {
+                    throw new IllegalStateException("Duplicate application configs: " + applicationConfig + " and " + config);
+                }
+                applicationConfig = config;
+            }
+            if (applicationConfig != null) {
+                setApplication(applicationConfig);
+            }
+        }
+    }
+
+    protected void loadModule(Map<String, ModuleConfig> moduleConfigMap) {
+        if (moduleConfigMap != null && moduleConfigMap.size() > 0) {
+            ModuleConfig moduleConfig = null;
+            for (ModuleConfig config : moduleConfigMap.values()) {
+                if (config.isDefault() == null || config.isDefault()) {
+                    if (moduleConfig != null) {
+                        throw new IllegalStateException("Duplicate module configs: " + moduleConfig + " and " + config);
+                    }
+                    moduleConfig = config;
+                }
+            }
+            if (moduleConfig != null) {
+                setModule(moduleConfig);
+            }
+        }
+    }
+
+    protected void loadRegistries(Map<String, RegistryConfig> registryConfigMap) {
+        if (registryConfigMap != null && registryConfigMap.size() > 0) {
+            List<RegistryConfig> registryConfigs = new ArrayList<>();
+            if (StringUtils.isNotEmpty(registryIds)) {
+                Arrays.stream(COMMA_SPLIT_PATTERN.split(registryIds)).forEach(id -> {
+                    if (registryConfigMap.containsKey(id)) {
+                        registryConfigs.add(registryConfigMap.get(id));
+                    }
+                });
+            }
+
+            if (registryConfigs.isEmpty()) {
+                for (RegistryConfig config : registryConfigMap.values()) {
+                    if (StringUtils.isEmpty(registryIds)) {
+                        registryConfigs.add(config);
+                    }
+                }
+            }
+            if (!registryConfigs.isEmpty()) {
+                setRegistries(registryConfigs);
+            }
+        }
+    }
+
+    protected void loadMetadataReportConfig(Map<String, MetadataReportConfig> metadataReportConfigMap) {
+        if (metadataReportConfigMap != null && metadataReportConfigMap.size() == 1) {
+            // first elements
+            setMetadataReportConfig(metadataReportConfigMap.values().iterator().next());
+        } else if (metadataReportConfigMap != null && metadataReportConfigMap.size() > 1) {
+            throw new IllegalStateException("Multiple MetadataReport configs: " + metadataReportConfigMap);
+        }
+    }
+
+    protected void loadConfigCenter(Map<String, ConfigCenterConfig> configCenterMap) {
+        if (configCenterMap != null && configCenterMap.size() == 1) {
+            setConfigCenter(configCenterMap.values().iterator().next());
+        } else if (configCenterMap != null && configCenterMap.size() > 1) {
+            throw new IllegalStateException("Multiple ConfigCenter found:" + configCenterMap);
+        }
+    }
+
+    protected void loadMonitor(Map<String, MonitorConfig> monitorConfigMap) {
+        if (monitorConfigMap != null && monitorConfigMap.size() > 0) {
+            MonitorConfig monitorConfig = null;
+            for (MonitorConfig config : monitorConfigMap.values()) {
+                if (config.isDefault() == null || config.isDefault()) {
+                    if (monitorConfig != null) {
+                        throw new IllegalStateException("Duplicate monitor configs: " + monitorConfig + " and " + config);
+                    }
+                    monitorConfig = config;
+                }
+            }
+            if (monitorConfig != null) {
+                setMonitor(monitorConfig);
+            }
+        }
+    }
+
+    protected void loadMetrics(Map<String, MetricsConfig> metricsConfigMap) {
+        if (metricsConfigMap != null && metricsConfigMap.size() > 0) {
+            MetricsConfig metricsConfig = null;
+            for (MetricsConfig config : metricsConfigMap.values()) {
+                if (metricsConfig != null) {
+                    throw new IllegalStateException("Duplicate metrics configs: " + metricsConfig + " and " + config);
+                }
+                metricsConfig = config;
+            }
+            if (metricsConfig != null) {
+                setMetrics(metricsConfig);
+            }
+        }
+    }
+
     /**
      * Legitimacy check and setup of local simulated operations. The operations can be a string with Simple operation or
      * a classname whose {@link Class} implements a particular function
