@@ -38,7 +38,7 @@ public class ChangeTelnetHandler implements TelnetHandler {
             return "Please input service name, eg: \r\ncd XxxService\r\ncd com.xxx.XxxService";
         }
         StringBuilder buf = new StringBuilder();
-        if (message.equals("/") || message.equals("..")) {
+        if ("/".equals(message) || "..".equals(message)) {
             String service = (String) channel.getAttribute(SERVICE_KEY);
             channel.removeAttribute(SERVICE_KEY);
             buf.append("Cancelled default service " + service + ".");

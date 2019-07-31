@@ -36,7 +36,7 @@ public class ShutdownTelnetHandler implements TelnetHandler {
         int sleepMilliseconds = 0;
         if (StringUtils.isNotEmpty(message)) {
             String[] parameters = message.split("\\s+");
-            if (parameters.length == 2 && parameters[0].equals("-t") && StringUtils.isInteger(parameters[1])) {
+            if (parameters.length == 2 && "-t".equals(parameters[0]) && StringUtils.isInteger(parameters[1])) {
                 sleepMilliseconds = Integer.parseInt(parameters[1]);
             } else {
                 return "Invalid parameter,please input like shutdown -t 10000";
