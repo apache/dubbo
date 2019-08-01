@@ -104,7 +104,10 @@ class CallbackServiceCodec {
         // add method, for verifying against method, automatic fallback (see dubbo protocol)
         params.put(METHODS_KEY, StringUtils.join(Wrapper.getWrapper(clazz).getDeclaredMethodNames(), ","));
 
-        Map<String, String> tmpMap = new HashMap<>(url.getParameters());
+        Map<String, String> tmpMap = new HashMap<>();
+        if(url != null){
+            tmpMap.putAll(url.getParameters());
+        }
         tmpMap.putAll(params);
         tmpMap.remove(VERSION_KEY);// doesn't need to distinguish version for callback
         tmpMap.put(INTERFACE_KEY, clazz.getName());
