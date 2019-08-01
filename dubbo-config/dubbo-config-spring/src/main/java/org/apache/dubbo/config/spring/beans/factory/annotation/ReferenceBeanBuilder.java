@@ -22,7 +22,6 @@ import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.spring.ReferenceBean;
-
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.AnnotationAttributes;
@@ -57,6 +56,15 @@ class ReferenceBeanBuilder extends AnnotatedInterfaceConfigBeanBuilder<Reference
     }
 
     private void configureInterface(AnnotationAttributes attributes, ReferenceBean referenceBean) {
+        Boolean generic = getAttribute(attributes, "generic");
+        if (generic != null && generic) {
+            // it's a generic reference
+            String interfaceClassName = getAttribute(attributes, "interfaceName");
+            Assert.hasText(interfaceClassName,
+                    "@Reference interfaceName() must be present when reference a generic service!");
+            referenceBean.setInterface(interfaceClassName);
+            return;
+        }
 
         Class<?> serviceInterfaceClass = resolveServiceInterfaceClass(attributes, interfaceClass);
 
