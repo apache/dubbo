@@ -55,8 +55,9 @@ public class ZookeeperRegistryTest {
     public void setUp() throws Exception {
         int zkServerPort = NetUtils.getAvailablePort();
         this.zkServer = new TestingServer(zkServerPort, true);
-        this.registryUrl = URL.valueOf("zookeeper://localhost:" + zkServerPort);
+        this.zkServer.start();
 
+        this.registryUrl = URL.valueOf("zookeeper://localhost:" + zkServerPort);
         zookeeperRegistryFactory = new ZookeeperRegistryFactory();
         zookeeperRegistryFactory.setZookeeperTransporter(new CuratorZookeeperTransporter());
         this.zookeeperRegistry = (ZookeeperRegistry) zookeeperRegistryFactory.createRegistry(registryUrl);
