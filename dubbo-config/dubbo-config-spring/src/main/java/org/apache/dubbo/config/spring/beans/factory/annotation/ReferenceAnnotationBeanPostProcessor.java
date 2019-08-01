@@ -80,6 +80,9 @@ public class ReferenceAnnotationBeanPostProcessor extends AnnotationInjectedBean
     private final ConcurrentMap<InjectionMetadata.InjectedElement, ReferenceBean<?>> injectedMethodReferenceBeanCache =
             new ConcurrentHashMap<>(CACHE_SIZE);
 
+    private final ConcurrentMap<String, String> referencedBeanKeyCache =
+            new ConcurrentHashMap<>(CACHE_SIZE);
+
     private ApplicationContext applicationContext;
 
     /**
@@ -123,15 +126,15 @@ public class ReferenceAnnotationBeanPostProcessor extends AnnotationInjectedBean
     protected Object doGetInjectedBean(AnnotationAttributes attributes, Object bean, String beanName, Class<?> injectedType,
                                        InjectionMetadata.InjectedElement injectedElement) throws Exception {
 
-        String referencedBeanName = buildReferencedBeanName(attributes, injectedType);
+        String referencedBeanCacheKey = getReferenceBeanName(attributes, injectedType);
 
-        ReferenceBean referenceBean = buildReferenceBeanIfAbsent(referencedBeanName, attributes, injectedType);
+        ReferenceBean referenceBean = buildReferenceBeanIfAbsent(referencedBeanCacheKey, attributes, injectedType);
 
-        registerReferenceBean(referencedBeanName, referenceBean, attributes, injectedType);
+        registerReferenceBean(referencedBeanKeyCache.get(referencedBeanCacheKey), referenceBean, attributes, injectedType);
 
         cacheInjectedReferenceBean(referenceBean, injectedElement);
 
-        return buildProxy(referencedBeanName, referenceBean, injectedType);
+        return buildProxy(referencedBeanCacheKey, referenceBean, injectedType);
     }
 
     /**
@@ -215,8 +218,8 @@ public class ReferenceAnnotationBeanPostProcessor extends AnnotationInjectedBean
         return beanNameBuilder.toString();
     }
 
-    private Object buildProxy(String referencedBeanName, ReferenceBean referenceBean, Class<?> injectedType) {
-        InvocationHandler handler = buildInvocationHandler(referencedBeanName, referenceBean);
+    private Object buildProxy(String referencedBeanCacheKey, ReferenceBean referenceBean, Class<?> injectedType) {
+        InvocationHandler handler = buildInvocationHandler(referencedBeanKeyCache.get(referencedBeanCacheKey), referenceBean);
         return Proxy.newProxyInstance(getClassLoader(), new Class[]{injectedType}, handler);
     }
 
@@ -286,18 +289,19 @@ public class ReferenceAnnotationBeanPostProcessor extends AnnotationInjectedBean
         return serviceBeanNameBuilder.build();
     }
 
-    private ReferenceBean buildReferenceBeanIfAbsent(String referencedBeanName, AnnotationAttributes attributes,
+    private ReferenceBean buildReferenceBeanIfAbsent(String referencedBeanCacheKey, AnnotationAttributes attributes,
                                                      Class<?> referencedType)
             throws Exception {
 
-        ReferenceBean<?> referenceBean = referenceBeanCache.get(referencedBeanName);
+        ReferenceBean<?> referenceBean = referenceBeanCache.get(referencedBeanCacheKey);
 
         if (referenceBean == null) {
             ReferenceBeanBuilder beanBuilder = ReferenceBeanBuilder
                     .create(attributes, applicationContext)
                     .interfaceClass(referencedType);
             referenceBean = beanBuilder.build();
-            referenceBeanCache.put(referencedBeanName, referenceBean);
+            referenceBeanCache.put(referencedBeanCacheKey, referenceBean);
+            referencedBeanKeyCache.put(referencedBeanCacheKey, buildReferencedBeanName(attributes, referencedType));
         }
 
         return referenceBean;

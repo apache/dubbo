@@ -17,10 +17,10 @@
 package org.apache.dubbo.config.spring.context.annotation.provider;
 
 import org.apache.dubbo.config.annotation.Method;
+import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.api.Box;
 import org.apache.dubbo.config.spring.api.DemoService;
 
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
@@ -29,14 +29,13 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * @since 2.5.8
  */
-@org.apache.dubbo.config.annotation.Service(
+@Service(
         version = "2.5.7",
         application = "${demo.service.application}",
         protocol = "${demo.service.protocol}",
         registry = "${demo.service.registry}",
         methods = @Method(timeout = 100,name = "sayName")
 )
-@Service
 @Transactional
 public class DemoServiceImpl implements DemoService {
 
