@@ -112,19 +112,14 @@ public class DubboBootstrap {
 
     private final ConfigManager configManager = getInstance();
 
-    /**
-     * Is provider or not
-     */
-    private boolean isProvider;
+    private volatile boolean initialized = false;
 
-    private boolean initialized = false;
-
-    private boolean started = false;
+    private volatile boolean started = false;
 
     /**
      * Only Provider Register
      */
-    private boolean onlyRegisterProvider = false;
+    private volatile boolean onlyRegisterProvider = false;
 
     private ServiceInstance serviceInstance;
 
@@ -153,8 +148,8 @@ public class DubboBootstrap {
         return this;
     }
 
-    // {@link ApplicationConfig} correlative methods
 
+    // {@link ApplicationConfig} correlative methods
     /**
      * Set the name of application
      *
@@ -191,8 +186,8 @@ public class DubboBootstrap {
         return this;
     }
 
-    // {@link RegistryConfig} correlative methods
 
+    // {@link RegistryConfig} correlative methods
     /**
      * Add an instance of {@link RegistryConfig} with {@link #DEFAULT_REGISTRY_ID default ID}
      *
@@ -238,8 +233,8 @@ public class DubboBootstrap {
         return this;
     }
 
-    // {@link ProtocolConfig} correlative methods
 
+    // {@link ProtocolConfig} correlative methods
     public DubboBootstrap protocol(Consumer<ProtocolBuilder> consumerBuilder) {
         return protocol(DEFAULT_PROTOCOL_ID, consumerBuilder);
     }
@@ -259,8 +254,8 @@ public class DubboBootstrap {
         return this;
     }
 
-    // {@link ServiceConfig} correlative methods
 
+    // {@link ServiceConfig} correlative methods
     public <S> DubboBootstrap service(Consumer<ServiceBuilder<S>> consumerBuilder) {
         return service(DEFAULT_SERVICE_ID, consumerBuilder);
     }
@@ -276,8 +271,8 @@ public class DubboBootstrap {
         return this;
     }
 
-    // {@link Reference} correlative methods
 
+    // {@link Reference} correlative methods
     public <S> DubboBootstrap reference(Consumer<ReferenceBuilder<S>> consumerBuilder) {
         return reference(DEFAULT_REFERENCE_ID, consumerBuilder);
     }
@@ -293,8 +288,8 @@ public class DubboBootstrap {
         return this;
     }
 
-    // {@link ProviderConfig} correlative methods
 
+    // {@link ProviderConfig} correlative methods
     public DubboBootstrap provider(Consumer<ProviderBuilder> builderConsumer) {
         return provider(DEFAULT_PROVIDER_ID, builderConsumer);
     }
@@ -314,8 +309,8 @@ public class DubboBootstrap {
         return this;
     }
 
-    // {@link ConsumerConfig} correlative methods
 
+    // {@link ConsumerConfig} correlative methods
     public DubboBootstrap consumer(Consumer<ConsumerBuilder> builderConsumer) {
         return consumer(DEFAULT_CONSUMER_ID, builderConsumer);
     }
@@ -336,10 +331,10 @@ public class DubboBootstrap {
     }
 
     // {@link ConfigCenterConfig} correlative methods
+
     public DubboBootstrap configCenter(ConfigCenterConfig configCenterConfig) {
         return configCenter(asList(configCenterConfig));
     }
-
     public DubboBootstrap configCenter(List<ConfigCenterConfig> configCenterConfigs) {
         configManager.addConfigCenters(configCenterConfigs);
         return this;
@@ -456,7 +451,6 @@ public class DubboBootstrap {
                 /**
                  * export {@link MetadataService}
                  */
-                // TODO, only export to default registry?
                 List<URL> exportedURLs = exportMetadataService(
                         configManager.getApplication().orElseThrow(() -> new IllegalStateException("ApplicationConfig cannot be null")),
                         configManager.getRegistries(),
@@ -534,10 +528,10 @@ public class DubboBootstrap {
 
 
     /* serve for builder apis, begin */
+
     private ApplicationBuilder createApplicationBuilder(String name) {
         return new ApplicationBuilder().name(name);
     }
-
     private RegistryBuilder createRegistryBuilder(String id) {
         return new RegistryBuilder().id(id);
     }
@@ -562,8 +556,8 @@ public class DubboBootstrap {
         return new ConsumerBuilder().id(id);
     }
 
-    /* serve for builder apis, end */
 
+    /* serve for builder apis, end */
     private void startMetadataReport() {
         ApplicationConfig applicationConfig = configManager.getApplication().orElseThrow(() -> new IllegalStateException("There's no ApplicationConfig specified."));
 
@@ -654,6 +648,10 @@ public class DubboBootstrap {
 
     public void exportServiceConfig(ServiceConfig<?> serviceConfig) {
         serviceConfig.export();
+    }
+
+    public boolean isOnlyRegisterProvider() {
+        return onlyRegisterProvider;
     }
 
     private void registerServiceInstance(List<URL> exportedURLs) {
