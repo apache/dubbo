@@ -682,6 +682,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             if (isInvalidLocalHost(hostToBind)) {
                 anyhost = true;
                 try {
+                    logger.info( "No valid ip found from environment, try to find valid host from DNS.");
                     hostToBind = InetAddress.getLocalHost().getHostAddress();
                 } catch (UnknownHostException e) {
                     logger.warn(e.getMessage(), e);
@@ -725,6 +726,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
         return hostToRegistry;
     }
+
 
     /**
      * Register port and bind port for the provider, can be configured separately
