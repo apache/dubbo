@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.config;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
@@ -175,6 +176,15 @@ public class RegistryConfigTest {
         RegistryConfig registry = new RegistryConfig();
         registry.setDefault(true);
         assertThat(registry.isDefault(), is(true));
+    }
+
+    @Test
+    public void testEquals() throws Exception {
+        RegistryConfig registry1 = new RegistryConfig();
+        RegistryConfig registry2 = new RegistryConfig();
+        registry1.setAddress("zookeeper://127.0.0.1:2182");
+        registry2.setAddress("zookeeper://127.0.0.1:2183");
+        Assertions.assertNotEquals(registry1, registry2);
     }
 
 }

@@ -625,6 +625,8 @@
                                     <include>org.apache.dubbo:dubbo-serialization-protostuff</include>
                                     <include>org.apache.dubbo:dubbo-serialization-gson</include>
                                     <include>org.apache.dubbo:dubbo-serialization-googlePb</include>
+                                    <include>org.apache.dubbo:dubbo-serialization-protobuf-json</include>
+                                    <include>org.apache.dubbo:dubbo-configcenter-api</include>
                                     <include>org.apache.dubbo:dubbo-configcenter-definition</include>
                                     <include>org.apache.dubbo:dubbo-configcenter-apollo</include>
                                     <include>org.apache.dubbo:dubbo-configcenter-zookeeper</include>

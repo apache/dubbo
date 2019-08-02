@@ -14,9 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.identifier;
-
-import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
+package org.apache.dubbo.metadata.report.identifier;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

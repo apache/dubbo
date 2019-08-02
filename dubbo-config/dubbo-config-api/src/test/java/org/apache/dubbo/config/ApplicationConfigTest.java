@@ -180,4 +180,38 @@ public class ApplicationConfigTest {
         assertThat(parameters, hasEntry("k1", "v1"));
         assertThat(parameters, hasEntry(ACCEPT_FOREIGN_IP, "true"));
     }
+
+    @Test
+    public void testAppendEnvironmentProperties() {
+        try {
+            ApplicationConfig application = new ApplicationConfig("app");
+            System.setProperty("dubbo.labels", "tag1=value1;tag2=value2 ; tag3 = value3");
+            application.refresh();
+            Map<String, String> parameters = application.getParameters();
+            Assertions.assertEquals("value1", parameters.get("tag1"));
+            Assertions.assertEquals("value2", parameters.get("tag2"));
+            Assertions.assertEquals("value3", parameters.get("tag3"));
+
+            ApplicationConfig application1 = new ApplicationConfig("app");
+            System.setProperty("dubbo.env.keys", "tag1, tag2,tag3");
+            // mock environment variables
+            System.setProperty("tag1", "value1");
+            System.setProperty("tag2", "value2");
+            System.setProperty("tag3", "value3");
+            application1.refresh();
+            Map<String, String> parameters1 = application1.getParameters();
+            Assertions.assertEquals("value1", parameters1.get("tag1"));
+            Assertions.assertEquals("value2", parameters1.get("tag2"));
+            Assertions.assertEquals("value3", parameters1.get("tag3"));
+
+            Map<String, String> urlParameters = new HashMap<>();
+            ApplicationConfig.appendParameters(urlParameters, application1);
+            Assertions.assertEquals("value1", urlParameters.get("tag1"));
+            Assertions.assertEquals("value2", urlParameters.get("tag2"));
+            Assertions.assertEquals("value3", urlParameters.get("tag3"));
+        } finally {
+            System.clearProperty("dubbo.labels");
+            System.clearProperty("dubbo.keys");
+        }
+    }
 }

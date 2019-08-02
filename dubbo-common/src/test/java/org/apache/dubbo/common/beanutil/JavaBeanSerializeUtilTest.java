@@ -54,7 +54,7 @@ public class JavaBeanSerializeUtilTest {
     public void testSerialize_Primitive_NUll() {
         JavaBeanDescriptor descriptor;
         descriptor = JavaBeanSerializeUtil.serialize(null);
-        Assertions.assertTrue(descriptor == null);
+        Assertions.assertNull(descriptor);
     }
 
     @Test
@@ -146,7 +146,7 @@ public class JavaBeanSerializeUtilTest {
     public void testDeserialize_get_and_set() {
         JavaBeanDescriptor descriptor = new JavaBeanDescriptor(long.class.getName(), JavaBeanDescriptor.TYPE_BEAN);
         descriptor.setType(JavaBeanDescriptor.TYPE_PRIMITIVE);
-        Assertions.assertTrue(descriptor.getType() == JavaBeanDescriptor.TYPE_PRIMITIVE);
+        Assertions.assertEquals(descriptor.getType(), JavaBeanDescriptor.TYPE_PRIMITIVE);
         descriptor.setClassName(JavaBeanDescriptor.class.getName());
         Assertions.assertEquals(JavaBeanDescriptor.class.getName(), descriptor.getClassName());
     }
@@ -169,7 +169,7 @@ public class JavaBeanSerializeUtilTest {
         Assertions.assertEquals(integers.length, descriptor.propertySize());
         for (int i = 0; i < integers.length; i++) {
             if (integers[i] == null) {
-                Assertions.assertTrue(integers[i] == descriptor.getProperty(i));
+                Assertions.assertSame(integers[i], descriptor.getProperty(i));
             } else {
                 Assertions.assertEquals(integers[i], ((JavaBeanDescriptor) descriptor.getProperty(i)).getPrimitiveProperty());
             }
@@ -215,7 +215,7 @@ public class JavaBeanSerializeUtilTest {
         Assertions.assertEquals((double) 0, JavaBeanSerializeUtil.getConstructorArg(Double.class));
         Assertions.assertEquals((char) 0, JavaBeanSerializeUtil.getConstructorArg(char.class));
         Assertions.assertEquals(new Character((char) 0), JavaBeanSerializeUtil.getConstructorArg(Character.class));
-        Assertions.assertEquals(null, JavaBeanSerializeUtil.getConstructorArg(JavaBeanSerializeUtil.class));
+        Assertions.assertNull(JavaBeanSerializeUtil.getConstructorArg(JavaBeanSerializeUtil.class));
     }
 
     @Test
@@ -228,7 +228,7 @@ public class JavaBeanSerializeUtilTest {
 
         Object obj = JavaBeanSerializeUtil.deserialize(descriptor);
         Assertions.assertTrue(obj.getClass().isArray());
-        Assertions.assertTrue(int.class == obj.getClass().getComponentType());
+        Assertions.assertSame(int.class, obj.getClass().getComponentType());
         for (int i = 0; i < len; i++) {
             Assertions.assertEquals(i, Array.get(obj, i));
         }
@@ -290,7 +290,7 @@ public class JavaBeanSerializeUtilTest {
         assertEqualsPrimitive(parent.getEmail(), descriptor.getProperty("email"));
 
         JavaBeanDescriptor childDescriptor = (JavaBeanDescriptor) descriptor.getProperty("child");
-        Assertions.assertTrue(descriptor == childDescriptor.getProperty("parent"));
+        Assertions.assertSame(descriptor, childDescriptor.getProperty("parent"));
         assertEqualsPrimitive(child.getName(), childDescriptor.getProperty("name"));
         assertEqualsPrimitive(child.getAge(), childDescriptor.getProperty("age"));
     }
@@ -385,7 +385,7 @@ public class JavaBeanSerializeUtilTest {
     public void testSerializeJavaBeanDescriptor() {
         JavaBeanDescriptor descriptor = new JavaBeanDescriptor();
         JavaBeanDescriptor result = JavaBeanSerializeUtil.serialize(descriptor);
-        Assertions.assertTrue(descriptor == result);
+        Assertions.assertSame(descriptor, result);
 
         Map map = new HashMap();
         map.put("first", descriptor);

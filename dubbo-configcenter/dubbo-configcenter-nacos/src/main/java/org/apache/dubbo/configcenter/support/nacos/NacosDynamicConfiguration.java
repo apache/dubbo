@@ -46,9 +46,7 @@ import static com.alibaba.nacos.api.PropertyKeyConst.NAMESPACE;
 import static com.alibaba.nacos.api.PropertyKeyConst.SECRET_KEY;
 import static com.alibaba.nacos.api.PropertyKeyConst.SERVER_ADDR;
 import static com.alibaba.nacos.client.naming.utils.UtilAndComs.NACOS_NAMING_LOG_NAME;
-import static org.apache.dubbo.common.config.configcenter.Constants.CONFIG_NAMESPACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_CHAR_SEPERATOR;
-import static org.apache.dubbo.common.constants.CommonConstants.PROPERTIES_CHAR_SEPERATOR;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 
 /**
@@ -57,11 +55,10 @@ import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 public class NacosDynamicConfiguration implements DynamicConfiguration {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
-
     /**
-     * The final root path would be: /$NAME_SPACE/config
+     * the default timeout in millis to get config from nacos
      */
-    private String rootPath;
+    private static final long DEFAULT_TIMEOUT = 5000L;
 
     /**
      * The nacos configService
@@ -75,7 +72,6 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     private final ConcurrentMap<String, NacosConfigListener> watchListenerMap;
 
     NacosDynamicConfiguration(URL url) {
-        rootPath = url.getParameter(CONFIG_NAMESPACE_KEY, DEFAULT_GROUP) + "-config";
         buildConfigService(url);
         watchListenerMap = new ConcurrentHashMap<>();
     }
@@ -171,32 +167,18 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
 
     @Override
     public void addListener(String key, String group, ConfigurationListener listener) {
-        String[] keyAndGroup = getKeyAndGroup(key);
-        if (keyAndGroup[1] != null) {
-            group = keyAndGroup[1];
-        }
-        String finalGroup = group;
-        NacosConfigListener nacosConfigListener = watchListenerMap.computeIfAbsent(generateKey(key, group), k -> createTargetListener(key, finalGroup));
-        String keyInNacos = rootPath + PROPERTIES_CHAR_SEPERATOR + key;
+        NacosConfigListener nacosConfigListener = watchListenerMap.computeIfAbsent(key, k -> createTargetListener(key, group));
         nacosConfigListener.addListener(listener);
         try {
-            configService.addListener(keyInNacos, group, nacosConfigListener);
-            System.out.println("1");
+            configService.addListener(key, group, nacosConfigListener);
         } catch (NacosException e) {
             logger.error(e.getMessage());
         }
     }
 
-    private String generateKey(String key, String group) {
-        if (StringUtils.isNotEmpty(group)) {
-            key = key + GROUP_CHAR_SEPERATOR + group;
-        }
-        return key;
-    }
-
     @Override
     public void removeListener(String key, String group, ConfigurationListener listener) {
-        NacosConfigListener eventListener = watchListenerMap.get(generateKey(key, group));
+        NacosConfigListener eventListener = watchListenerMap.get(key);
         if (eventListener != null) {
             eventListener.removeListener(listener);
         }
@@ -204,8 +186,16 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
 
     @Override
     public String getConfig(String key, String group, long timeout) throws IllegalStateException {
-        key = generateKey(key, group);
-        return (String) getInternalProperty(rootPath + PROPERTIES_CHAR_SEPERATOR + key);
+        try {
+            long nacosTimeout = timeout < 0 ?  DEFAULT_TIMEOUT : timeout;
+            if (StringUtils.isEmpty(group)) {
+                group = DEFAULT_GROUP;
+            }
+            return configService.getConfig(key, group, nacosTimeout);
+        } catch (NacosException e) {
+            logger.error(e.getMessage());
+        }
+        return null;
     }
 
     @Override
@@ -216,8 +206,7 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     @Override
     public Object getInternalProperty(String key) {
         try {
-            String[] keyAndGroup = getKeyAndGroup(key);
-            return configService.getConfig(keyAndGroup[0], keyAndGroup[1], 5000L);
+            return configService.getConfig(key, DEFAULT_GROUP, DEFAULT_TIMEOUT);
         } catch (NacosException e) {
             logger.error(e.getMessage());
         }

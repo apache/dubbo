@@ -115,6 +115,7 @@ public class Environment {
         CompositeConfiguration compositeConfiguration = new CompositeConfiguration();
         // Config center has the highest priority
         compositeConfiguration.addConfiguration(this.getSystemConfig(prefix, id));
+        compositeConfiguration.addConfiguration(this.getEnvironmentConfig(prefix, id));
         compositeConfiguration.addConfiguration(this.getAppExternalConfig(prefix, id));
         compositeConfiguration.addConfiguration(this.getExternalConfig(prefix, id));
         compositeConfiguration.addConfiguration(this.getPropertiesConfig(prefix, id));

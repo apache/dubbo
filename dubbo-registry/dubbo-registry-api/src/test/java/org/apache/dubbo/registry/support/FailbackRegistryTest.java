@@ -164,7 +164,7 @@ public class FailbackRegistryTest {
             public void notify(List<URL> urls) {
                 count.incrementAndGet();
                 //The exception is thrown for the first time to see if the back will be called again to incrementAndGet
-                if (count.get() == 1l) {
+                if (count.get() == 1L) {
                     throw new RuntimeException("test exception please ignore");
                 }
             }
@@ -203,7 +203,7 @@ public class FailbackRegistryTest {
         countDownLatch.await();
         Assertions.assertEquals(0, mockRegistry.getFailedRegistered().size());
         FailbackRegistry.Holder h = new FailbackRegistry.Holder(registryUrl, listener);
-        Assertions.assertEquals(null, mockRegistry.getFailedSubscribed().get(h));
+        Assertions.assertNull(mockRegistry.getFailedSubscribed().get(h));
         Assertions.assertEquals(countDownLatch.getCount(), 0);
     }
 

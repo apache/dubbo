@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -28,14 +29,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.dubbo.rpc.Constants.AUTO_ATTACH_INVOCATIONID_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
-
-import static org.apache.dubbo.rpc.Constants.AUTO_ATTACH_INVOCATIONID_KEY;
 
 public class RpcUtilsTest {
 
@@ -53,7 +53,7 @@ public class RpcUtilsTest {
         long id1 = RpcUtils.getInvocationId(inv);
         RpcUtils.attachInvocationIdIfAsync(url, inv);
         long id2 = RpcUtils.getInvocationId(inv);
-        assertTrue(id1 == id2); // verify if it's idempotent
+        assertEquals(id1, id2); // verify if it's idempotent
         assertTrue(id1 >= 0);
         assertEquals("bb", attachments.get("aa"));
     }
@@ -79,7 +79,7 @@ public class RpcUtilsTest {
         URL url = URL.valueOf("dubbo://localhost/?test.async=true");
         Invocation inv = new RpcInvocation("test", new Class[]{}, new String[]{});
         RpcUtils.attachInvocationIdIfAsync(url, inv);
-        assertTrue(RpcUtils.getInvocationId(inv) >= 0l);
+        assertTrue(RpcUtils.getInvocationId(inv) >= 0L);
     }
 
     /**
@@ -139,8 +139,8 @@ public class RpcUtilsTest {
         Invocation inv4 = new RpcInvocation("testReturnType4", new Class<?>[]{String.class}, null, null, invoker);
         java.lang.reflect.Type[] types4 = RpcUtils.getReturnTypes(inv4);
         Assertions.assertEquals(2, types4.length);
-        Assertions.assertEquals(null, types4[0]);
-        Assertions.assertEquals(null, types4[1]);
+        Assertions.assertNull(types4[0]);
+        Assertions.assertNull(types4[1]);
 
         Invocation inv5 = new RpcInvocation("testReturnType5", new Class<?>[]{String.class}, null, null, invoker);
         java.lang.reflect.Type[] types5 = RpcUtils.getReturnTypes(inv5);

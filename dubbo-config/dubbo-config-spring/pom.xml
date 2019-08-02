@@ -20,6 +20,7 @@
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-config</artifactId>
         <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>dubbo-config-spring</artifactId>
     <packaging>jar</packaging>
@@ -128,5 +129,6 @@
             <artifactId>tomcat-embed-core</artifactId>
             <scope>test</scope>
         </dependency>
+
     </dependencies>
 </project>

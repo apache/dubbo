@@ -184,8 +184,9 @@ public class RegistryConfig extends AbstractConfig {
                 URL url = URL.valueOf(address);
                 setUsername(url.getUsername());
                 setPassword(url.getPassword());
-                setProtocol(url.getProtocol());
-                setPort(url.getPort());
+                updateIdIfAbsent(url.getProtocol());
+                updateProtocolIfAbsent(url.getProtocol());
+                updatePortIfAbsent(url.getPort());
                 setParameters(url.getParameters());
             } catch (Exception ignored) {
             }
@@ -438,4 +439,15 @@ public class RegistryConfig extends AbstractConfig {
         return !StringUtils.isEmpty(address);
     }
 
+    protected void updatePortIfAbsent(Integer value) {
+        if (value != null && value > 0 && port == null) {
+            this.port = value;
+        }
+    }
+
+    protected void updateProtocolIfAbsent(String value) {
+        if (StringUtils.isNotEmpty(value) && StringUtils.isEmpty(protocol)) {
+            this.protocol = value;
+        }
+    }
 }

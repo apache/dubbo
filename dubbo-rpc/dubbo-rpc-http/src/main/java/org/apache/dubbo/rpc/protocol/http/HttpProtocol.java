@@ -208,7 +208,7 @@ public class HttpProtocol extends AbstractProxyProtocol {
                 throws IOException, ServletException {
             String uri = request.getRequestURI();
             HttpInvokerServiceExporter skeleton = skeletonMap.get(uri);
-            if (!request.getMethod().equalsIgnoreCase("POST")) {
+            if (!"POST".equalsIgnoreCase(request.getMethod())) {
                 response.setStatus(500);
             } else {
                 RpcContext.getContext().setRemoteAddress(request.getRemoteAddr(), request.getRemotePort());

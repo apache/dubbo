@@ -255,6 +255,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     /**
+     *
      * Load the registry and conversion it to {@link URL}, the priority order is: system property > dubbo registry config
      *
      * @param provider whether it is the provider side

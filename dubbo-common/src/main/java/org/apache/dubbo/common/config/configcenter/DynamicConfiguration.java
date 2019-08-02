@@ -264,6 +264,15 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
     }
 
     /**
+     * The format is '{interfaceName}:[version]:[group]'
+     *
+     * @return
+     */
+    static String getRuleKey(URL url) {
+        return url.getColonSeparatedKey();
+    }
+
+    /**
      * Get the instance of {@link DynamicConfiguration} by the specified connection {@link URL}
      *
      * @param connectionURL

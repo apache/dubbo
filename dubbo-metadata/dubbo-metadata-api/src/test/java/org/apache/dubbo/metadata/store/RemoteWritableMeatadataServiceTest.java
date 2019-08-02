@@ -81,7 +81,7 @@ public class RemoteWritableMeatadataServiceTest {
     @Test
     public void testPublishProviderContainInterface() throws InterruptedException {
 
-        URL publishUrl = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.3&application=vicpubp&interface=org.apache.dubbo.metadata.integration.InterfaceNameTestService&side=provider");
+        URL publishUrl = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.3&application=vicpubp&interface=org.apache.dubbo.metadata.store.InterfaceNameTestService&side=provider");
         metadataReportService1.publishProvider(publishUrl);
         Thread.sleep(300);
 
@@ -95,7 +95,7 @@ public class RemoteWritableMeatadataServiceTest {
         Map<String,String> map = fullServiceDefinition.getParameters();
         Assertions.assertEquals(map.get("application"), "vicpubp");
         Assertions.assertEquals(map.get("version"), "1.0.3");
-        Assertions.assertEquals(map.get("interface"), "org.apache.dubbo.metadata.integration.InterfaceNameTestService");
+        Assertions.assertEquals(map.get("interface"), "org.apache.dubbo.metadata.store.InterfaceNameTestService");
     }
 
     @Test

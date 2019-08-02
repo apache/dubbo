@@ -1,4 +1,4 @@
-package org.apache.dubbo.registry.nacos.util;/*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,10 +14,12 @@ package org.apache.dubbo.registry.nacos.util;/*
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.registry.nacos.util;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
 
@@ -25,7 +27,6 @@ import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.pojo.Instance;
-import com.alibaba.nacos.client.naming.utils.StringUtils;
 
 import java.util.Properties;
 

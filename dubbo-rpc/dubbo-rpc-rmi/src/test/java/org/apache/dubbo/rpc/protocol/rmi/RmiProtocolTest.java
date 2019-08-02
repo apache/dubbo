@@ -20,18 +20,19 @@ package org.apache.dubbo.rpc.protocol.rmi;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.rpc.Exporter;
+import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.service.EchoService;
-
 import org.apache.dubbo.rpc.service.GenericService;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class RmiProtocolTest {
     private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
@@ -54,8 +55,8 @@ public class RmiProtocolTest {
             try {
                 service.throwTimeout();
             } catch (RpcException e) {
-                assertEquals(true, e.isTimeout());
-                assertEquals(true, e.getMessage().contains("Read timed out"));
+                assertTrue(e.isTimeout());
+                assertTrue(e.getMessage().contains("Read timed out"));
             }
         } finally {
             rpcExporter.unexport();
@@ -131,7 +132,7 @@ public class RmiProtocolTest {
         exporter.unexport();
     }
 
-    public static interface NonStdRmiInterface {
+    public interface NonStdRmiInterface {
         void bark();
     }
 

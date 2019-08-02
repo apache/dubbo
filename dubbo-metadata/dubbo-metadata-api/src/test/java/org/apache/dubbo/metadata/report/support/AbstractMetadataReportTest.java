@@ -64,7 +64,7 @@ public class AbstractMetadataReportTest {
 
     @Test
     public void testStoreProviderUsual() throws ClassNotFoundException, InterruptedException {
-        String interfaceName = "org.apache.dubbo.metadata.integration.InterfaceNameTestService";
+        String interfaceName = "org.apache.dubbo.metadata.store.InterfaceNameTestService";
         String version = "1.0.0";
         String group = null;
         String application = "vic";
@@ -75,7 +75,7 @@ public class AbstractMetadataReportTest {
 
     @Test
     public void testStoreProviderSync() throws ClassNotFoundException, InterruptedException {
-        String interfaceName = "org.apache.dubbo.metadata.integration.InterfaceNameTestService";
+        String interfaceName = "org.apache.dubbo.metadata.store.InterfaceNameTestService";
         String version = "1.0.0";
         String group = null;
         String application = "vic";
@@ -87,12 +87,12 @@ public class AbstractMetadataReportTest {
     @Test
     public void testFileExistAfterPut() throws InterruptedException, ClassNotFoundException {
         //just for one method
-        URL singleUrl = URL.valueOf("redis://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.metadata.integration.InterfaceNameTestService?version=1.0.0&application=singleTest");
+        URL singleUrl = URL.valueOf("redis://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.metadata.store.InterfaceNameTestService?version=1.0.0&application=singleTest");
         NewMetadataReport singleMetadataReport = new NewMetadataReport(singleUrl);
 
         Assertions.assertFalse(singleMetadataReport.file.exists());
 
-        String interfaceName = "org.apache.dubbo.metadata.integration.InterfaceNameTestService";
+        String interfaceName = "org.apache.dubbo.metadata.store.InterfaceNameTestService";
         String version = "1.0.0";
         String group = null;
         String application = "vic";
@@ -105,7 +105,7 @@ public class AbstractMetadataReportTest {
 
     @Test
     public void testRetry() throws InterruptedException, ClassNotFoundException {
-        String interfaceName = "org.apache.dubbo.metadata.integration.RetryTestService";
+        String interfaceName = "org.apache.dubbo.metadata.store.RetryTestService";
         String version = "1.0.0.retry";
         String group = null;
         String application = "vic.retry";
@@ -114,7 +114,7 @@ public class AbstractMetadataReportTest {
         retryReport.metadataReportRetry.retryPeriod = 400L;
         URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic");
         Assertions.assertNull(retryReport.metadataReportRetry.retryScheduledFuture);
-        Assertions.assertTrue(retryReport.metadataReportRetry.retryCounter.get() == 0);
+        Assertions.assertEquals(0,retryReport.metadataReportRetry.retryCounter.get());
         Assertions.assertTrue(retryReport.store.isEmpty());
         Assertions.assertTrue(retryReport.failedReports.isEmpty());
 
@@ -134,7 +134,7 @@ public class AbstractMetadataReportTest {
 
     @Test
     public void testRetryCancel() throws InterruptedException, ClassNotFoundException {
-        String interfaceName = "org.apache.dubbo.metadata.integration.RetryTestService";
+        String interfaceName = "org.apache.dubbo.metadata.store.RetryTestService";
         String version = "1.0.0.retrycancel";
         String group = null;
         String application = "vic.retry";
@@ -184,7 +184,7 @@ public class AbstractMetadataReportTest {
 
         Assertions.assertTrue(abstractMetadataReport.store.isEmpty());
         Assertions.assertTrue(abstractMetadataReport.allMetadataReports.isEmpty());
-        String interfaceName = "org.apache.dubbo.metadata.integration.InterfaceNameTestService";
+        String interfaceName = "org.apache.dubbo.metadata.store.InterfaceNameTestService";
         String version = "1.0.0";
         String group = null;
         String application = "vic";
@@ -208,16 +208,16 @@ public class AbstractMetadataReportTest {
         Map tmpMapResult = (Map) abstractMetadataReport.allMetadataReports.get(consumerMetadataIdentifier);
         Assertions.assertEquals(tmpMapResult.get("testPKey"), "9090");
         Assertions.assertEquals(tmpMapResult.get("testKey"), "value");
-        Assertions.assertTrue(abstractMetadataReport.store.size() == 3);
+        Assertions.assertEquals(3,abstractMetadataReport.store.size());
 
         abstractMetadataReport.store.clear();
 
-        Assertions.assertTrue(abstractMetadataReport.store.size() == 0);
+        Assertions.assertEquals(0,abstractMetadataReport.store.size());
 
         abstractMetadataReport.publishAll();
         Thread.sleep(200);
 
-        Assertions.assertTrue(abstractMetadataReport.store.size() == 3);
+        Assertions.assertEquals(3,abstractMetadataReport.store.size());
 
         String v = abstractMetadataReport.store.get(providerMetadataIdentifier1.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY));
         Gson gson = new Gson();
