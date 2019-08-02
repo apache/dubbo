@@ -30,4 +30,6 @@ public interface HttpService {
 
     String customException();
 
+    String getRemoteApplicationName();
+
 }

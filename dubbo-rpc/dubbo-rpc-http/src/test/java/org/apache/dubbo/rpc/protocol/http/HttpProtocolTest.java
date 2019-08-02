@@ -200,4 +200,19 @@ public class HttpProtocolTest {
         exporter.unexport();
     }
 
+    @Test
+    public void testRemoteApplicationName() {
+        HttpServiceImpl server = new HttpServiceImpl();
+        ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+        Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+        URL url = URL.valueOf("http://127.0.0.1:5342/" + HttpService.class.getName() + "?release=2.7.0").addParameter("application", "consumer");
+        Exporter<HttpService> exporter = protocol.export(proxyFactory.getInvoker(server, HttpService.class, url));
+        Invoker<HttpService> invoker = protocol.refer(HttpService.class, url);
+        HttpService client = proxyFactory.getProxy(invoker);
+        String result = client.getRemoteApplicationName();
+        Assertions.assertEquals("consumer", result);
+        invoker.destroy();
+        exporter.unexport();
+    }
+
 }

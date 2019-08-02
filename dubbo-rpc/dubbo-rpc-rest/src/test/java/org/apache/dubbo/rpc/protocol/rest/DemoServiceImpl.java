@@ -17,6 +17,8 @@
 package org.apache.dubbo.rpc.protocol.rest;
 
 
+import org.apache.dubbo.rpc.RpcContext;
+
 public class DemoServiceImpl implements DemoService {
     private boolean called;
 
@@ -38,5 +40,10 @@ public class DemoServiceImpl implements DemoService {
     @Override
     public String error() {
         throw new RuntimeException();
+    }
+
+    @Override
+    public String getRemoteApplicationName() {
+        return RpcContext.getContext().getRemoteApplicationName();
     }
 }
