@@ -50,6 +50,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
+import java.util.stream.Collectors;
 
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
@@ -122,8 +123,8 @@ public class RegistryProtocol implements Protocol {
 
     private final static Logger logger = LoggerFactory.getLogger(RegistryProtocol.class);
     private static RegistryProtocol INSTANCE;
-    private final Map<URL, NotifyListener> overrideListeners = new ConcurrentHashMap<>();
-    private final Map<String, ServiceConfigurationListener> serviceConfigurationListeners = new ConcurrentHashMap<>();
+    private final Map<URL, List<NotifyListener>> overrideListeners = new ConcurrentHashMap<>();
+    private final Map<String, List<ServiceConfigurationListener>> serviceConfigurationListeners = new ConcurrentHashMap<>();
     private final ProviderConfigurationListener providerConfigurationListener = new ProviderConfigurationListener();
     //To solve the problem of RMI repeated exposure port conflicts, the services that have been exposed are no longer exposed.
     //providerurl <--> exporter
@@ -177,7 +178,7 @@ public class RegistryProtocol implements Protocol {
         return 9090;
     }
 
-    public Map<URL, NotifyListener> getOverrideListeners() {
+    public Map<URL, List<NotifyListener>> getOverrideListeners() {
         return overrideListeners;
     }
 
@@ -202,8 +203,13 @@ public class RegistryProtocol implements Protocol {
         //  the same service. Because the subscribed is cached key with the name of the service, it causes the
         //  subscription information to cover.
         final URL overrideSubscribeUrl = getSubscribedOverrideUrl(providerUrl);
+
+        final List<OverrideListener> overrideSubscribeListeners = overrideListeners.computeIfAbsent(overrideSubscribeUrl, url -> new ArrayList<>())
+                .stream().map(notifyListener -> (OverrideListener) notifyListener).collect(Collectors.toList());
+
         final OverrideListener overrideSubscribeListener = new OverrideListener(overrideSubscribeUrl, originInvoker);
-        overrideListeners.put(overrideSubscribeUrl, overrideSubscribeListener);
+
+        overrideSubscribeListeners.add(overrideSubscribeListener);
 
         providerUrl = overrideUrlWithConfig(providerUrl, overrideSubscribeListener);
         //export invoker
@@ -233,7 +239,8 @@ public class RegistryProtocol implements Protocol {
     private URL overrideUrlWithConfig(URL providerUrl, OverrideListener listener) {
         providerUrl = providerConfigurationListener.overrideUrl(providerUrl);
         ServiceConfigurationListener serviceConfigurationListener = new ServiceConfigurationListener(providerUrl, listener);
-        serviceConfigurationListeners.put(providerUrl.getServiceKey(), serviceConfigurationListener);
+        serviceConfigurationListeners.computeIfAbsent(providerUrl.getServiceKey(),
+                serviceKey -> new ArrayList<>()).add(serviceConfigurationListener);
         return serviceConfigurationListener.overrideUrl(providerUrl);
     }
 
@@ -559,13 +566,17 @@ public class RegistryProtocol implements Protocol {
             //Merged with this configuration
             URL newUrl = getConfigedInvokerUrl(configurators, originUrl);
             newUrl = getConfigedInvokerUrl(providerConfigurationListener.getConfigurators(), newUrl);
-            newUrl = getConfigedInvokerUrl(serviceConfigurationListeners.get(originUrl.getServiceKey())
-                    .getConfigurators(), newUrl);
-            if (!currentUrl.equals(newUrl)) {
-                RegistryProtocol.this.reExport(originInvoker, newUrl);
-                logger.info("exported provider url changed, origin url: " + originUrl +
-                        ", old export url: " + currentUrl + ", new export url: " + newUrl);
-            }
+
+            URL finalNewUrl = newUrl;
+            serviceConfigurationListeners.get(originUrl.getServiceKey()).forEach(listener -> {
+                URL tempNewUrl = finalNewUrl;
+                tempNewUrl = getConfigedInvokerUrl(listener.getConfigurators(), tempNewUrl);
+                if (!currentUrl.equals(tempNewUrl)) {
+                    RegistryProtocol.this.reExport(originInvoker, tempNewUrl);
+                    logger.info("exported provider url changed, origin url: " + originUrl +
+                            ", old export url: " + currentUrl + ", new export url: " + tempNewUrl);
+                }
+            });
         }
 
         private List<URL> getMatchedUrls(List<URL> configuratorUrls, URL currentSubscribe) {
@@ -625,7 +636,9 @@ public class RegistryProtocol implements Protocol {
 
         @Override
         protected void notifyOverrides() {
-            overrideListeners.values().forEach(listener -> ((OverrideListener) listener).doOverrideIfNecessary());
+            overrideListeners.values().forEach(listeners
+                    -> listeners.forEach(listener
+                    -> ((OverrideListener) listener).doOverrideIfNecessary()));
         }
     }
 
@@ -674,11 +687,12 @@ public class RegistryProtocol implements Protocol {
                 logger.warn(t.getMessage(), t);
             }
             try {
-                NotifyListener listener = RegistryProtocol.INSTANCE.overrideListeners.remove(subscribeUrl);
-                registry.unsubscribe(subscribeUrl, listener);
-                DynamicConfiguration.getDynamicConfiguration()
-                        .removeListener(subscribeUrl.getServiceKey() + CONFIGURATORS_SUFFIX,
-                                serviceConfigurationListeners.get(subscribeUrl.getServiceKey()));
+                List<NotifyListener> listeners = RegistryProtocol.INSTANCE.overrideListeners.remove(subscribeUrl);
+                listeners.forEach(listener -> registry.unsubscribe(subscribeUrl, listener));
+                // todo
+                serviceConfigurationListeners.get(subscribeUrl.getServiceKey())
+                        .forEach(listener -> DynamicConfiguration.getDynamicConfiguration()
+                                .removeListener(subscribeUrl.getServiceKey() + CONFIGURATORS_SUFFIX, listener));
             } catch (Throwable t) {
                 logger.warn(t.getMessage(), t);
             }

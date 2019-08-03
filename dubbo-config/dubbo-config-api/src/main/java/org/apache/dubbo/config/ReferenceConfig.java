@@ -281,6 +281,9 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         map.put(SIDE_KEY, CONSUMER_SIDE);
 
         appendRuntimeParameters(map);
+        if (Boolean.FALSE.equals(getContainTimestamp())) {
+            map.remove(TIMESTAMP_KEY);
+        }
         if (!isGeneric()) {
             String revision = Version.getVersion(interfaceClass, version);
             if (revision != null && revision.length() > 0) {
@@ -296,7 +299,6 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             }
         }
         map.put(INTERFACE_KEY, interfaceName);
-        map.remove(TIMESTAMP_KEY);
         appendParameters(map, metrics);
         appendParameters(map, application);
         appendParameters(map, module);

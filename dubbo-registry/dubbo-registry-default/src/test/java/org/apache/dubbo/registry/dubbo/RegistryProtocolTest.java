@@ -181,7 +181,7 @@ public class RegistryProtocolTest {
     }
 
     private NotifyListener getListener(RegistryProtocol protocol) throws Exception {
-        return protocol.getOverrideListeners().values().iterator().next();
+        return protocol.getOverrideListeners().values().iterator().next().get(0);
     }
 
     static class MockInvoker<T> extends AbstractInvoker<T> {

@@ -191,6 +191,11 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     protected String tag;
 
     /**
+     * Whether parameters contains timestamp
+     */
+    private Boolean containTimestamp;
+
+    /**
      * Check whether the registry config is exists, and then conversion it to {@link RegistryConfig}
      */
     protected void checkRegistry() {
@@ -340,7 +345,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                     appendParameters(map, config);
                     map.put(PATH_KEY, RegistryService.class.getName());
                     appendRuntimeParameters(map);
-                    map.remove(TIMESTAMP_KEY);
                     if (!map.containsKey(PROTOCOL_KEY)) {
                         map.put(PROTOCOL_KEY, DUBBO_PROTOCOL);
                     }
@@ -888,5 +892,13 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     public void setTag(String tag) {
         this.tag = tag;
+    }
+
+    public Boolean getContainTimestamp() {
+        return containTimestamp;
+    }
+
+    public void setContainTimestamp(Boolean containTimestamp) {
+        this.containTimestamp = containTimestamp;
     }
 }

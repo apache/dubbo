@@ -469,7 +469,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         map.put(SIDE_KEY, PROVIDER_SIDE);
 
         appendRuntimeParameters(map);
-        map.remove(TIMESTAMP_KEY);
+        if (Boolean.FALSE.equals(getContainTimestamp())) {
+            map.remove(TIMESTAMP_KEY);
+        }
         appendParameters(map, metrics);
         appendParameters(map, application);
         appendParameters(map, module);
