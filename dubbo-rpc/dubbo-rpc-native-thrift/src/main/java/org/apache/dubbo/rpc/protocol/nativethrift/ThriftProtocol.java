@@ -40,7 +40,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- *  native thrift protocol
+ * native thrift protocol
  */
 public class ThriftProtocol extends AbstractProxyProtocol {
 
@@ -88,37 +88,34 @@ public class ThriftProtocol extends AbstractProxyProtocol {
             try {
                 Class<?> clazz = Class.forName(processorClsName);
                 Constructor constructor = clazz.getConstructor(type);
-                try {
-                    TProcessor tprocessor = (TProcessor) constructor.newInstance(impl);
-                    processor.registerProcessor(typeName,tprocessor);
 
-                    tserver = serverMap.get(url.getAddress());
-                    if(tserver == null) {
+                TProcessor tprocessor = (TProcessor) constructor.newInstance(impl);
+                processor.registerProcessor(typeName, tprocessor);
 
-                        /**Solve the problem of only 50 of the default number of concurrent connections*/
-                        TNonblockingServerSocket.NonblockingAbstractServerSocketArgs args = new TNonblockingServerSocket.NonblockingAbstractServerSocketArgs();
-                        /**1000 connections*/
-                        args.backlog(1000);
-                        args.bindAddr(new InetSocketAddress(url.getHost(), url.getPort()));
-                        /**timeout: 10s */
-                        args.clientTimeout(10000);
+                tserver = serverMap.get(url.getAddress());
+                if (tserver == null) {
 
-                        TNonblockingServerSocket transport = new TNonblockingServerSocket(args);
+                    /**Solve the problem of only 50 of the default number of concurrent connections*/
+                    TNonblockingServerSocket.NonblockingAbstractServerSocketArgs args = new TNonblockingServerSocket.NonblockingAbstractServerSocketArgs();
+                    /**1000 connections*/
+                    args.backlog(1000);
+                    args.bindAddr(new InetSocketAddress(url.getHost(), url.getPort()));
+                    /**timeout: 10s */
+                    args.clientTimeout(10000);
 
-                        tArgs = new TThreadedSelectorServer.Args(transport);
-                        tArgs.workerThreads(200);
-                        tArgs.selectorThreads(4);
-                        tArgs.acceptQueueSizePerThread(256);
-                        tArgs.processor(processor);
-                        tArgs.transportFactory(new TFramedTransport.Factory());
-                        tArgs.protocolFactory(new TCompactProtocol.Factory());
-                    }else{
-                        return null; // if server is starting, return and do nothing here
-                    }
-                } catch (Exception e) {
-                    logger.error(e.getMessage(), e);
-                    throw new RpcException("Fail to create nativethrift server(" + url + ") : " + e.getMessage(), e);
+                    TNonblockingServerSocket transport = new TNonblockingServerSocket(args);
+
+                    tArgs = new TThreadedSelectorServer.Args(transport);
+                    tArgs.workerThreads(200);
+                    tArgs.selectorThreads(4);
+                    tArgs.acceptQueueSizePerThread(256);
+                    tArgs.processor(processor);
+                    tArgs.transportFactory(new TFramedTransport.Factory());
+                    tArgs.protocolFactory(new TCompactProtocol.Factory());
+                } else {
+                    return null; // if server is starting, return and do nothing here
                 }
+
             } catch (Exception e) {
                 logger.error(e.getMessage(), e);
                 throw new RpcException("Fail to create nativethrift server(" + url + ") : " + e.getMessage(), e);
@@ -129,8 +126,8 @@ public class ThriftProtocol extends AbstractProxyProtocol {
             logger.error("Fail to create nativethrift server(" + url + ") due to null args");
             throw new RpcException("Fail to create nativethrift server(" + url + ") due to null args");
         }
-        final TServer thriftServer =  new TThreadedSelectorServer(tArgs);
-        serverMap.put(url.getAddress(),thriftServer);
+        final TServer thriftServer = new TThreadedSelectorServer(tArgs);
+        serverMap.put(url.getAddress(), thriftServer);
 
         new Thread(() -> {
             logger.info("Start Thrift ThreadedSelectorServer");
@@ -161,7 +158,7 @@ public class ThriftProtocol extends AbstractProxyProtocol {
                     TSocket tSocket = new TSocket(url.getHost(), url.getPort());
                     TTransport transport = new TFramedTransport(tSocket);
                     TProtocol tprotocol = new TCompactProtocol(transport);
-                    TMultiplexedProtocol protocol = new TMultiplexedProtocol(tprotocol,typeName);
+                    TMultiplexedProtocol protocol = new TMultiplexedProtocol(tprotocol, typeName);
                     thriftClient = (T) constructor.newInstance(protocol);
                     transport.open();
                     logger.info("nativethrift client opened for service(" + url + ")");
