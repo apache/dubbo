@@ -204,8 +204,8 @@ public class RegistryProtocol implements Protocol {
         //  subscription information to cover.
         final URL overrideSubscribeUrl = getSubscribedOverrideUrl(providerUrl);
 
-        final List<OverrideListener> overrideSubscribeListeners = overrideListeners.computeIfAbsent(overrideSubscribeUrl, url -> new ArrayList<>())
-                .stream().map(notifyListener -> (OverrideListener) notifyListener).collect(Collectors.toList());
+        final List<NotifyListener> overrideSubscribeListeners = overrideListeners.computeIfAbsent(
+                overrideSubscribeUrl, url -> new ArrayList<>());
 
         final OverrideListener overrideSubscribeListener = new OverrideListener(overrideSubscribeUrl, originInvoker);
 

@@ -138,7 +138,7 @@ public class AbstractInterfaceConfigTest {
         Assertions.assertEquals("registry", url.getProtocol());
         Assertions.assertEquals("addr1:9090", url.getAddress());
         Assertions.assertEquals(RegistryService.class.getName(), url.getPath());
-        Assertions.assertFalse(url.getParameters().containsKey("timestamp"));
+        Assertions.assertTrue(url.getParameters().containsKey("timestamp"));
         Assertions.assertTrue(url.getParameters().containsKey("pid"));
         Assertions.assertTrue(url.getParameters().containsKey("registry"));
         Assertions.assertTrue(url.getParameters().containsKey("dubbo"));
