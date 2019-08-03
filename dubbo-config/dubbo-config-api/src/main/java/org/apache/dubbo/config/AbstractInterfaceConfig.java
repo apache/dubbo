@@ -63,6 +63,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PID_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.RELEASE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_SECONDS_KEY;
@@ -327,6 +328,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         // check && override if necessary
         List<URL> registryList = new ArrayList<URL>();
         if (CollectionUtils.isNotEmpty(registries)) {
+            Set<URL> registrySet = new HashSet<>(registries.size(), 1);
             for (RegistryConfig config : registries) {
                 String address = config.getAddress();
                 if (StringUtils.isEmpty(address)) {
@@ -338,6 +340,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                     appendParameters(map, config);
                     map.put(PATH_KEY, RegistryService.class.getName());
                     appendRuntimeParameters(map);
+                    map.remove(TIMESTAMP_KEY);
                     if (!map.containsKey(PROTOCOL_KEY)) {
                         map.put(PROTOCOL_KEY, DUBBO_PROTOCOL);
                     }
@@ -348,8 +351,9 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                                 .addParameter(REGISTRY_KEY, url.getProtocol())
                                 .setProtocol(REGISTRY_PROTOCOL)
                                 .build();
-                        if ((provider && url.getParameter(REGISTER_KEY, true))
-                                || (!provider && url.getParameter(SUBSCRIBE_KEY, true))) {
+                        if (((provider && url.getParameter(REGISTER_KEY, true))
+                                || (!provider && url.getParameter(SUBSCRIBE_KEY, true)))
+                                && registrySet.add(url)) {
                             registryList.add(url);
                         }
                     }
@@ -622,7 +626,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 cc.setParameters(new HashMap<>());
                 cc.getParameters().put(org.apache.dubbo.remoting.Constants.CLIENT_KEY,rc.getClient());
                 cc.setProtocol(rc.getProtocol());
-                cc.setAddress(rc.getAddress());
+                cc.setAddress(REGISTRY_SPLIT_PATTERN.split(rc.getAddress())[0]);
                 cc.setHighestPriority(false);
                 setConfigCenter(cc);
                 startConfigCenter();
