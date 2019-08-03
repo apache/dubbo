@@ -121,7 +121,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     protected ModuleConfig module;
 
     /**
-     * Registry centers
+     * Registry centers 注册中心配置
      */
     protected List<RegistryConfig> registries;
 
@@ -233,6 +233,10 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     /**
      *
      * 加载注册信息
+     *  1.检测是否存在注册中心配置类，不存在抛出异常
+     *  2.构建参数映射集合
+     *  3.构建注册中心链接列表
+     *  4.遍历链接列表，根据条件判断是否需要加入 集合中
      * Load the registry and conversion it to {@link URL}, the priority order is: system property > dubbo registry config
      *
      * @param provider whether it is the provider side
@@ -250,6 +254,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             for (RegistryConfig config : registries) {
                 String address = config.getAddress();
                 if (StringUtils.isEmpty(address)) {
+                    // 若address 为空，则将其设置为 0.0.0.0
                     address = Constants.ANYHOST_VALUE;
                 }
                 if (!RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(address)) {
@@ -261,6 +266,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                     if (!map.containsKey("protocol")) {
                         map.put("protocol", "dubbo");
                     }
+                    // 解析得到 URL 列表，address 可能包含多个注册中心 ip，
+                    // 因此解析得到的是一个 URL 列表
                     List<URL> urls = UrlUtils.parseURLs(address, map);
 
                     for (URL url : urls) {
@@ -268,6 +275,9 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                         url = url.setProtocol(Constants.REGISTRY_PROTOCOL);
                         // add parameter
                         url = url.addParametersIfAbsent(registryDataConfigurationMap);
+                        // 通过判断条件，决定是否添加 url 到 registryList 中，条件如下：
+                        // (服务提供者 && register = true 或 null)
+                        //    || (非服务提供者 && subscribe = true 或 null)
                         if ((provider && url.getParameter(Constants.REGISTER_KEY, true))
                                 || (!provider && url.getParameter(Constants.SUBSCRIBE_KEY, true))) {
                             registryList.add(url);
