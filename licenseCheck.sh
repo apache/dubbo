@@ -18,9 +18,9 @@ else
     echo "checking whole project"
 fi
 
-echo "Running command: ./mvnw clean package -DskipTests=true -PlicenseCheck $APPEND_ARG"
+echo "Running command: mvn clean package -DskipTests=true -PlicenseCheck $APPEND_ARG"
 
-./mvnw clean package -DskipTests=true -PlicenseCheck $APPEND_ARG
+mvn clean package -DskipTests=true -PlicenseCheck $APPEND_ARG
 
 status=$?
 if [ $status -eq 0 ]; then
@@ -91,7 +91,7 @@ allowLicense=(
 )
 
 #filter allow license
-license_need_check=`cat $TARGET_FILE | grep -v "generated-sources/license/THIRD-PARTY.txt" | grep -v "third-party dependencies" | grep -v $LINE_FLAG`
+license_need_check=`cat $TARGET_FILE | grep -v "generated-sources/license/THIRD-PARTY.txt" | grep -v "third-party dependencies" | grep -v "The project has no dependencies." | grep -v $LINE_FLAG`
 
 for i in "${allowLicense[@]}"; do
     license_need_check=`echo "$license_need_check"|grep -vi "$i"`
@@ -106,3 +106,5 @@ else
     echo "${red}Please check below license${reset}"
     cat license-need-check
 fi
+
+rm -f license-list license-need-check
