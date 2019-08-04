@@ -31,7 +31,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public final class FailedNotifiedTask extends AbstractRetryTask {
 
-    private static final String NAME = "retry subscribe";
+    private static final String NAME = "retry notify";
 
     private final NotifyListener listener;
 
