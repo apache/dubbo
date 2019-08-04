@@ -18,9 +18,9 @@ else
     echo "checking whole project"
 fi
 
-echo "Running command: ./mvn clean package -DskipTests=true -PlicenseCheck $APPEND_ARG"
+echo "Running command: mvn clean package -DskipTests=true -PlicenseCheck $APPEND_ARG"
 
-./mvn clean package -DskipTests=true -PlicenseCheck $APPEND_ARG
+mvn clean package -DskipTests=true -PlicenseCheck $APPEND_ARG
 
 status=$?
 if [ $status -eq 0 ]; then
@@ -106,3 +106,5 @@ else
     echo "${red}Please check below license${reset}"
     cat license-need-check
 fi
+
+rm -f license-list license-need-check
