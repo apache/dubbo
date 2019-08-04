@@ -3,7 +3,7 @@
 APPEND_ARG=""
 FOLDER="./"
 LINE_FLAG="=============================================="
-TARGET_FILE="./license-list.txt"
+TARGET_FILE="./license-list"
 
 red=`tput setaf 1`
 green=`tput setaf 2`
@@ -57,8 +57,12 @@ missingLicense=(
 for i in "${missingLicense[@]}"; do
     search=`echo $i |awk -F: '{print $1}'`
     replace=`echo $i |awk -F: '{print $2}'`
-    sed -i -e 's/'"$search"'/'"$replace"'/g' $TARGET_FILE
+    sed -i.bak 's/'"$search"'/'"$replace"'/g' $TARGET_FILE
 done
+
+if [ -f $TARGET_FILE.bak ]; then
+  rm -rf $TARGET_FILE.bak
+fi
 
 check_unknown_license=`cat $TARGET_FILE | grep "Unknown license"`
 
@@ -78,6 +82,12 @@ allowLicense=(
     "MIT"
     "The 3-Clause BSD License"
     "Public domain"
+    "JSR.*107"
+    "Common Public License Version 1.0"
+    "org.scijava:native-lib-loader"
+    "org.codehaus.woodstox:stax2-api"
+    "wsdl4j:wsdl4j"
+    "net.jcip:jcip-annotations"
 )
 
 #filter allow license
@@ -87,10 +97,12 @@ for i in "${allowLicense[@]}"; do
     license_need_check=`echo "$license_need_check"|grep -vi "$i"`
 done
 
-if test -z "$license_need_check"
-then
+# remove empty lines
+echo $license_need_check | sed '/^[[:space:]]*$/d' > license-need-check
+
+if [ ! -s license-need-check ]; then
     echo "${green}All dependencies license looks good${reset}"
 else
     echo "${red}Please check below license${reset}"
-    echo "$license_need_check"
+    cat license-need-check
 fi
