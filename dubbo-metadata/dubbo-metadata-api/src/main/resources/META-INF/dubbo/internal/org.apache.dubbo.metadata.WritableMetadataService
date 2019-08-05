@@ -1,2 +1,2 @@
-local=org.apache.dubbo.metadata.store.InMemoryWritableMetadataService
+in-memory=org.apache.dubbo.metadata.store.InMemoryWritableMetadataService
 remote=org.apache.dubbo.metadata.store.RemoteWritableMetadataService

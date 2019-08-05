@@ -30,7 +30,7 @@ import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoad
  *
  * @since 2.7.4
  */
-@SPI("local")
+@SPI("in-memory")
 public interface WritableMetadataService extends MetadataService {
 
     /**
