@@ -55,8 +55,6 @@ public class MetadataReportService {
 
     private static volatile MetadataReportService metadataReportService;
 
-    private static Thread t;
-
     private static Object lock = new Object();
 
     private MetadataReportFactory metadataReportFactory = ExtensionLoader.getExtensionLoader(MetadataReportFactory.class).getAdaptiveExtension();
@@ -100,10 +98,10 @@ public class MetadataReportService {
         try {
             String interfaceName = providerUrl.getParameter(INTERFACE_KEY);
             if (StringUtils.isNotEmpty(interfaceName)) {
-                ClassLoader classLoader = ClassLoader.getSystemClassLoader();
+                ClassLoader classLoader = MetadataReportService.class.getClassLoader();
                 classLoader.loadClass(interfaceName);
-                t.setContextClassLoader(classLoader);
-                Class interfaceClass =t.getContextClassLoader().getClass();
+                Thread.currentThread().setContextClassLoader(classLoader);
+                Class interfaceClass =Thread.currentThread().getContextClassLoader().getClass();
                 FullServiceDefinition fullServiceDefinition = ServiceDefinitionBuilder.buildFullDefinition(interfaceClass, providerUrl.getParameters());
                 metadataReport.storeProviderMetadata(new MetadataIdentifier(providerUrl.getServiceInterface(),
                         providerUrl.getParameter(VERSION_KEY), providerUrl.getParameter(GROUP_KEY),
