@@ -520,7 +520,7 @@ public class DubboProtocol extends AbstractProtocol {
     }
 
     /**
-     * Add client references in bulk
+     * Increase the reference Count if we create new invoker shares same connection, the connection will be closed without any reference.
      *
      * @param referenceCountExchangeClients
      */

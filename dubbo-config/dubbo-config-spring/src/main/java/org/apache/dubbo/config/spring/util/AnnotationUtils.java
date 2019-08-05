@@ -18,7 +18,6 @@ package org.apache.dubbo.config.spring.util;
 
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.annotation.Service;
-
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.PropertyResolver;
@@ -93,6 +92,14 @@ public class AnnotationUtils {
      * @throws IllegalStateException if interface name was not found
      */
     public static String resolveInterfaceName(AnnotationAttributes attributes, Class<?> defaultInterfaceClass) {
+        Boolean generic = getAttribute(attributes, "generic");
+        if (generic != null && generic) {
+            // it's a generic reference
+            String interfaceClassName = getAttribute(attributes, "interfaceName");
+            Assert.hasText(interfaceClassName,
+                    "@Reference interfaceName() must be present when reference a generic service!");
+                return interfaceClassName;
+        }
         return resolveServiceInterfaceClass(attributes, defaultInterfaceClass).getName();
     }
 
@@ -343,20 +350,8 @@ public class AnnotationUtils {
             if (ignoreDefaultValue && nullSafeEquals(attributeValue, getDefaultValue(annotation, attributeName))) {
                 continue;
             }
-
-            /**
-             * @since 2.7.1
-             * ignore annotation member
-             */
-            if (attributeValue.getClass().isAnnotation()) {
-                continue;
-            }
-            if (attributeValue.getClass().isArray() && attributeValue.getClass().getComponentType().isAnnotation()) {
-                continue;
-            }
             actualAttributes.put(attributeName, attributeValue);
         }
-
 
         return resolvePlaceholders(actualAttributes, propertyResolver, ignoreAttributeNames);
     }
