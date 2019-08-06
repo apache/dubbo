@@ -16,9 +16,9 @@
  */
 package org.apache.dubbo.config.annotation;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.rpc.ExporterListener;
 import org.apache.dubbo.rpc.Filter;
+import org.apache.dubbo.rpc.cluster.Constants;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -30,6 +30,7 @@ import java.lang.annotation.Target;
  * Reference
  *
  * @export
+ * @since 2.7.0
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
@@ -71,9 +72,9 @@ public @interface Reference {
     boolean generic() default false;
 
     /**
-     * When enable, prefer to call local service in the same JVM if it's present, default value is false
+     * When enable, prefer to call local service in the same JVM if it's present, default value is true
      */
-    boolean injvm() default false;
+    boolean injvm() default true;
 
     /**
      * Check if service provider is available during boot up, default value is true
@@ -93,7 +94,7 @@ public @interface Reference {
     /**
      * Export an stub service for event dispatch, default value is false.
      *
-     * @see Constants#STUB_EVENT_METHODS_KEY
+     * @see org.apache.dubbo.rpc.Constants#STUB_EVENT_METHODS_KEY
      */
     boolean stubevent() default false;
 
@@ -101,7 +102,7 @@ public @interface Reference {
      * Whether to reconnect if connection is lost, if not specify, reconnect is enabled by default, and the interval
      * for retry connecting is 2000 ms
      *
-     * @see Constants#DEFAULT_RECONNECT_PERIOD
+     * @see org.apache.dubbo.remoting.Constants#DEFAULT_RECONNECT_PERIOD
      */
     String reconnect() default "";
 
@@ -135,7 +136,7 @@ public @interface Reference {
     /**
      * The callback instance limit peer connection
      *
-     * @see Constants#DEFAULT_CALLBACK_INSTANCES
+     * @see org.apache.dubbo.rpc.Constants#DEFAULT_CALLBACK_INSTANCES
      */
     int callbacks() default 0;
 
@@ -228,32 +229,55 @@ public @interface Reference {
     String[] parameters() default {};
 
     /**
-     * Application spring bean name
+     * Application associated name
      */
     String application() default "";
 
     /**
-     * Module spring bean name
+     * Module associated name
      */
     String module() default "";
 
     /**
-     * Consumer spring bean name
+     * Consumer associated name
      */
     String consumer() default "";
 
     /**
-     * Monitor spring bean name
+     * Monitor associated name
      */
     String monitor() default "";
 
     /**
-     * Registry spring bean name
+     * Registry associated name
      */
     String[] registry() default {};
 
     /**
-     * Protocol spring bean names
+     * The communication protocol of Dubbo Service
+     *
+     * @return the default value is ""
+     * @since 2.6.6
      */
     String protocol() default "";
+
+    /**
+     * Service tag name
+     */
+    String tag() default "";
+
+    /**
+     * methods support
+     *
+     * @return
+     */
+    Method[] methods() default {};
+
+    /**
+     * The id
+     *
+     * @return default value is empty
+     * @since 2.7.3
+     */
+    String id() default "";
 }

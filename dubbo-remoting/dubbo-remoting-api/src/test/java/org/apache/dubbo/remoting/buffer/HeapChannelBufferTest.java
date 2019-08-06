@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.remoting.buffer;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 public class HeapChannelBufferTest extends AbstractChannelBufferTest {
 
@@ -25,7 +25,7 @@ public class HeapChannelBufferTest extends AbstractChannelBufferTest {
     @Override
     protected ChannelBuffer newBuffer(int capacity) {
         buffer = ChannelBuffers.buffer(capacity);
-        Assert.assertEquals(0, buffer.writerIndex());
+        Assertions.assertEquals(0, buffer.writerIndex());
         return buffer;
     }
 

@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.monitor.support;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -38,20 +37,29 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+
 /**
  * AbstractMonitorFactory. (SPI, Singleton, ThreadSafe)
  */
 public abstract class AbstractMonitorFactory implements MonitorFactory {
     private static final Logger logger = LoggerFactory.getLogger(AbstractMonitorFactory.class);
 
-    // lock for getting monitor center
+    /**
+     * The lock for getting monitor center
+     */
     private static final ReentrantLock LOCK = new ReentrantLock();
 
-    // monitor centers Map<RegistryAddress, Registry>
+    /**
+     * The monitor centers Map<RegistryAddress, Registry>
+     */
     private static final Map<String, Monitor> MONITORS = new ConcurrentHashMap<String, Monitor>();
 
     private static final Map<String, CompletableFuture<Monitor>> FUTURES = new ConcurrentHashMap<String, CompletableFuture<Monitor>>();
 
+    /**
+     * The monitor create executor
+     */
     private static final ExecutorService executor = new ThreadPoolExecutor(0, 10, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), new NamedThreadFactory("DubboMonitorCreator", true));
 
     public static Collection<Monitor> getMonitors() {
@@ -60,7 +68,7 @@ public abstract class AbstractMonitorFactory implements MonitorFactory {
 
     @Override
     public Monitor getMonitor(URL url) {
-        url = url.setPath(MonitorService.class.getName()).addParameter(Constants.INTERFACE_KEY, MonitorService.class.getName());
+        url = url.setPath(MonitorService.class.getName()).addParameter(INTERFACE_KEY, MonitorService.class.getName());
         String key = url.toServiceStringWithoutResolving();
         Monitor monitor = MONITORS.get(key);
         Future<Monitor> future = FUTURES.get(key);
@@ -78,8 +86,8 @@ public abstract class AbstractMonitorFactory implements MonitorFactory {
 
             final URL monitorUrl = url;
             final CompletableFuture<Monitor> completableFuture = CompletableFuture.supplyAsync(() -> AbstractMonitorFactory.this.createMonitor(monitorUrl));
-            completableFuture.thenRunAsync(new MonitorListener(key), executor);
             FUTURES.put(key, completableFuture);
+            completableFuture.thenRunAsync(new MonitorListener(key), executor);
 
             return null;
         } finally {

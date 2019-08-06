@@ -16,12 +16,20 @@
  */
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.ExporterListener;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.rpc.Constants.SERVICE_FILTER_KEY;
+import static org.apache.dubbo.rpc.Constants.EXPORTER_LISTENER_KEY;
+import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 
 /**
  * AbstractServiceConfig
@@ -32,56 +40,88 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
 
     private static final long serialVersionUID = 1L;
 
-    // version
+    /**
+     * The service version
+     */
     protected String version;
 
-    // group
+    /**
+     * The service group
+     */
     protected String group;
 
-    // whether the service is deprecated
-    protected Boolean deprecated;
+    /**
+     * whether the service is deprecated
+     */
+    protected Boolean deprecated = false;
 
-    // delay service exporting
+    /**
+     * The time delay register service (milliseconds)
+     */
     protected Integer delay;
 
-    // whether to export the service
+    /**
+     * Whether to export the service
+     */
     protected Boolean export;
 
-    // weight
+    /**
+     * The service weight
+     */
     protected Integer weight;
 
-    // document center
+    /**
+     * Document center
+     */
     protected String document;
 
-    // whether to register as a dynamic service or not on register center
-    protected Boolean dynamic;
+    /**
+     * Whether to register as a dynamic service or not on register center, the value is true, the status will be enabled
+     * after the service registered,and it needs to be disabled manually; if you want to disable the service, you also need
+     * manual processing
+     */
+    protected Boolean dynamic = true;
 
-    // whether to use token
+    /**
+     * Whether to use token
+     */
     protected String token;
 
-    // access log
+    /**
+     * Whether to export access logs to logs
+     */
     protected String accesslog;
+
+    /**
+     * The protocol list the service will export with
+     */
     protected List<ProtocolConfig> protocols;
+    protected String protocolIds;
+
     // max allowed execute times
     private Integer executes;
-    // whether to register
-    private Boolean register;
 
-    // warm up period
+    /**
+     * Whether to register
+     */
+    private Boolean register = true;
+
+    /**
+     * Warm up period
+     */
     private Integer warmup;
 
-    // serialization
+    /**
+     * The serialization type
+     */
     private String serialization;
-
-    // provider tag
-    protected String tag;
 
     public String getVersion() {
         return version;
     }
 
     public void setVersion(String version) {
-        checkKey("version", version);
+        checkKey(VERSION_KEY, version);
         this.version = version;
     }
 
@@ -90,7 +130,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     }
 
     public void setGroup(String group) {
-        checkKey("group", group);
+        checkKey(GROUP_KEY, group);
         this.group = group;
     }
 
@@ -131,17 +171,17 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
         return token;
     }
 
-    public void setToken(String token) {
-        checkName("token", token);
-        this.token = token;
-    }
-
     public void setToken(Boolean token) {
         if (token == null) {
             setToken((String) null);
         } else {
             setToken(String.valueOf(token));
         }
+    }
+
+    public void setToken(String token) {
+        checkName(TOKEN_KEY, token);
+        this.token = token;
     }
 
     public Boolean isDeprecated() {
@@ -166,23 +206,29 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
 
     @SuppressWarnings({"unchecked"})
     public void setProtocols(List<? extends ProtocolConfig> protocols) {
+        ConfigManager.getInstance().addProtocols((List<ProtocolConfig>) protocols);
         this.protocols = (List<ProtocolConfig>) protocols;
     }
 
     public ProtocolConfig getProtocol() {
-        return protocols == null || protocols.isEmpty() ? null : protocols.get(0);
+        return CollectionUtils.isEmpty(protocols) ? null : protocols.get(0);
     }
 
     public void setProtocol(ProtocolConfig protocol) {
-        this.protocols = Arrays.asList(protocol);
+        setProtocols(new ArrayList<>(Arrays.asList(protocol)));
+    }
+
+    @Parameter(excluded = true)
+    public String getProtocolIds() {
+        return protocolIds;
+    }
+
+    public void setProtocolIds(String protocolIds) {
+        this.protocolIds = protocolIds;
     }
 
     public String getAccesslog() {
         return accesslog;
-    }
-
-    public void setAccesslog(String accesslog) {
-        this.accesslog = accesslog;
     }
 
     public void setAccesslog(Boolean accesslog) {
@@ -191,6 +237,10 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
         } else {
             setAccesslog(String.valueOf(accesslog));
         }
+    }
+
+    public void setAccesslog(String accesslog) {
+        this.accesslog = accesslog;
     }
 
     public Integer getExecutes() {
@@ -202,13 +252,13 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     }
 
     @Override
-    @Parameter(key = Constants.SERVICE_FILTER_KEY, append = true)
+    @Parameter(key = SERVICE_FILTER_KEY, append = true)
     public String getFilter() {
         return super.getFilter();
     }
 
     @Override
-    @Parameter(key = Constants.EXPORTER_LISTENER_KEY, append = true)
+    @Parameter(key = EXPORTER_LISTENER_KEY, append = true)
     public String getListener() {
         return listener;
     }
@@ -241,13 +291,5 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
 
     public void setSerialization(String serialization) {
         this.serialization = serialization;
-    }
-
-    public String getTag() {
-        return tag;
-    }
-
-    public void setTag(String tag) {
-        this.tag = tag;
     }
 }

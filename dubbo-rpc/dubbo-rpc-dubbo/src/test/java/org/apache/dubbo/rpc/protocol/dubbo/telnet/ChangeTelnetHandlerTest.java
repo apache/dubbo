@@ -25,12 +25,12 @@ import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoService;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
@@ -44,13 +44,13 @@ public class ChangeTelnetHandlerTest {
     private Channel mockChannel;
     private Invoker<DemoService> mockInvoker;
 
-    @AfterClass
+    @AfterAll
     public static void tearDown() {
 
     }
 
     @SuppressWarnings("unchecked")
-    @Before
+    @BeforeEach
     public void setUp() {
         mockChannel = mock(Channel.class);
         mockInvoker = mock(Invoker.class);
@@ -71,7 +71,7 @@ public class ChangeTelnetHandlerTest {
 
     }
 
-    @After
+    @AfterEach
     public void after() {
         ProtocolUtils.closeAll();
         reset(mockChannel, mockInvoker);

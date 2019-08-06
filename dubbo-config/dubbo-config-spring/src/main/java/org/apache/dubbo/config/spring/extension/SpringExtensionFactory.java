@@ -29,6 +29,7 @@ import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.event.ContextClosedEvent;
 
 import java.util.Set;
@@ -39,25 +40,29 @@ import java.util.Set;
 public class SpringExtensionFactory implements ExtensionFactory {
     private static final Logger logger = LoggerFactory.getLogger(SpringExtensionFactory.class);
 
-    private static final Set<ApplicationContext> contexts = new ConcurrentHashSet<ApplicationContext>();
-    private static final ApplicationListener shutdownHookListener = new ShutdownHookListener();
+    private static final Set<ApplicationContext> CONTEXTS = new ConcurrentHashSet<ApplicationContext>();
+    private static final ApplicationListener SHUTDOWN_HOOK_LISTENER = new ShutdownHookListener();
 
     public static void addApplicationContext(ApplicationContext context) {
-        contexts.add(context);
-        BeanFactoryUtils.addApplicationListener(context, shutdownHookListener);
+        CONTEXTS.add(context);
+        if (context instanceof ConfigurableApplicationContext) {
+            ((ConfigurableApplicationContext) context).registerShutdownHook();
+            DubboShutdownHook.getDubboShutdownHook().unregister();
+        }
+        BeanFactoryUtils.addApplicationListener(context, SHUTDOWN_HOOK_LISTENER);
     }
 
     public static void removeApplicationContext(ApplicationContext context) {
-        contexts.remove(context);
+        CONTEXTS.remove(context);
     }
 
     public static Set<ApplicationContext> getContexts() {
-        return contexts;
+        return CONTEXTS;
     }
 
     // currently for test purpose
     public static void clearContexts() {
-        contexts.clear();
+        CONTEXTS.clear();
     }
 
     @Override
@@ -69,7 +74,7 @@ public class SpringExtensionFactory implements ExtensionFactory {
             return null;
         }
 
-        for (ApplicationContext context : contexts) {
+        for (ApplicationContext context : CONTEXTS) {
             if (context.containsBean(name)) {
                 Object bean = context.getBean(name);
                 if (type.isInstance(bean)) {
@@ -84,7 +89,7 @@ public class SpringExtensionFactory implements ExtensionFactory {
             return null;
         }
 
-        for (ApplicationContext context : contexts) {
+        for (ApplicationContext context : CONTEXTS) {
             try {
                 return context.getBean(type);
             } catch (NoUniqueBeanDefinitionException multiBeanExe) {
@@ -105,11 +110,8 @@ public class SpringExtensionFactory implements ExtensionFactory {
         @Override
         public void onApplicationEvent(ApplicationEvent event) {
             if (event instanceof ContextClosedEvent) {
-                // we call it anyway since dubbo shutdown hook make sure its destroyAll() is re-entrant.
-                // pls. note we should not remove dubbo shutdown hook when spring framework is present, this is because
-                // its shutdown hook may not be installed.
                 DubboShutdownHook shutdownHook = DubboShutdownHook.getDubboShutdownHook();
-                shutdownHook.destroyAll();
+                shutdownHook.doDestroy();
             }
         }
     }

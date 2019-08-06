@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.qos.protocol;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -29,9 +28,11 @@ import org.apache.dubbo.rpc.RpcException;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.apache.dubbo.common.Constants.ACCEPT_FOREIGN_IP;
-import static org.apache.dubbo.common.Constants.QOS_ENABLE;
-import static org.apache.dubbo.common.Constants.QOS_PORT;
+import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
+import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
+import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST;
+import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
 
 
 public class QosProtocolWrapper implements Protocol {
@@ -56,7 +57,7 @@ public class QosProtocolWrapper implements Protocol {
 
     @Override
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
-        if (Constants.REGISTRY_PROTOCOL.equals(invoker.getUrl().getProtocol())) {
+        if (REGISTRY_PROTOCOL.equals(invoker.getUrl().getProtocol())) {
             startQosServer(invoker.getUrl());
             return protocol.export(invoker);
         }
@@ -65,7 +66,7 @@ public class QosProtocolWrapper implements Protocol {
 
     @Override
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
-        if (Constants.REGISTRY_PROTOCOL.equals(url.getProtocol())) {
+        if (REGISTRY_PROTOCOL.equals(url.getProtocol())) {
             startQosServer(url);
             return protocol.refer(type, url);
         }
@@ -80,7 +81,11 @@ public class QosProtocolWrapper implements Protocol {
 
     private void startQosServer(URL url) {
         try {
-            boolean qosEnable = url.getParameter(QOS_ENABLE,true);
+            if (!hasStarted.compareAndSet(false, true)) {
+                return;
+            }
+
+            boolean qosEnable = url.getParameter(QOS_ENABLE, true);
             if (!qosEnable) {
                 logger.info("qos won't be started because it is disabled. " +
                         "Please check dubbo.application.qos.enable is configured either in system property, " +
@@ -88,13 +93,11 @@ public class QosProtocolWrapper implements Protocol {
                 return;
             }
 
-            if (!hasStarted.compareAndSet(false, true)) {
-                return;
-            }
-
+            String host = url.getParameter(QOS_HOST);
             int port = url.getParameter(QOS_PORT, QosConstants.DEFAULT_PORT);
-            boolean acceptForeignIp = Boolean.parseBoolean(url.getParameter(ACCEPT_FOREIGN_IP,"false"));
+            boolean acceptForeignIp = Boolean.parseBoolean(url.getParameter(ACCEPT_FOREIGN_IP, "false"));
             Server server = Server.getInstance();
+            server.setHost(host);
             server.setPort(port);
             server.setAcceptForeignIp(acceptForeignIp);
             server.start();

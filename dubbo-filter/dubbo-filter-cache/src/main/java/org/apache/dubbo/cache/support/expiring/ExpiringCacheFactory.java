@@ -20,11 +20,23 @@ import org.apache.dubbo.cache.Cache;
 import org.apache.dubbo.cache.support.AbstractCacheFactory;
 import org.apache.dubbo.common.URL;
 
+
 /**
- * ExpiringCacheFactory
+ * Implement {@link org.apache.dubbo.cache.CacheFactory} by extending {@link AbstractCacheFactory} and provide
+ * instance of new {@link ExpiringCache}.
+ *
+ * @see AbstractCacheFactory
+ * @see ExpiringCache
+ * @see Cache
  */
+
 public class ExpiringCacheFactory extends AbstractCacheFactory {
-    
+
+    /**
+     * Takes url as an method argument and return new instance of cache store implemented by JCache.
+     * @param url url of the method
+     * @return ExpiringCache instance of cache
+     */
     @Override
     protected Cache createCache(URL url) {
         return new ExpiringCache(url);

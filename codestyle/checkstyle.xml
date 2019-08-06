@@ -9,7 +9,7 @@
 
     <!-- TreeWalker Checks -->
     <module name="TreeWalker">
-        <module name="SuppressWarningsHolder" />
+        <module name="SuppressWarningsHolder"/>
 
         <module name="AvoidStarImport"/>
         <module name="AvoidEscapedUnicodeCharacters">
@@ -20,11 +20,12 @@
         <module name="NoLineWrap"/>
         <module name="OuterTypeFilename"/>
         <module name="UnusedImports"/>
+        <module name="RedundantImport"/>
 
-        <module name="CustomImportOrder">
-            <property name="specialImportsRegExp" value="org.apache.dubbo.*"/>
-            <property name="sortImportsInGroupAlphabetically" value="false"/>
-            <property name="customImportOrderRules" value="SPECIAL_IMPORTS###THIRD_PARTY_PACKAGE###STANDARD_JAVA_PACKAGE###STATIC"/>
-        </module>
+        <!--<module name="CustomImportOrder">-->
+        <!--<property name="specialImportsRegExp" value="org.apache.dubbo.*"/>-->
+        <!--<property name="sortImportsInGroupAlphabetically" value="false"/>-->
+        <!--<property name="customImportOrderRules" value="SPECIAL_IMPORTS###THIRD_PARTY_PACKAGE###STANDARD_JAVA_PACKAGE###STATIC"/>-->
+        <!--</module>-->
     </module>
 </module>

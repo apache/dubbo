@@ -23,7 +23,7 @@ public class CommandContext extends org.apache.dubbo.qos.command.CommandContext 
     public CommandContext(org.apache.dubbo.qos.command.CommandContext context) {
         super(context.getCommandName(), context.getArgs(), context.isHttp());
         setRemote(context.getRemote());
-        setOrginRequest(context.getOrginRequest());
+        setOriginRequest(context.getOriginRequest());
     }
 
     public CommandContext(String commandName) {

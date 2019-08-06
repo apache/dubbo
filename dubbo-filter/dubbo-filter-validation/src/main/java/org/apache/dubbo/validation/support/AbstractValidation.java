@@ -24,11 +24,16 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * AbstractValidation
+ * AbstractValidation is abstract class for Validation interface. It helps low level Validation implementation classes
+ * by performing common task e.g. key formation, storing instance of validation class to avoid creation of unnecessary
+ * copy of validation instance and faster execution.
+ *
+ * @see Validation
+ * @see Validator
  */
 public abstract class AbstractValidation implements Validation {
 
-    private final ConcurrentMap<String, Validator> validators = new ConcurrentHashMap<String, Validator>();
+    private final ConcurrentMap<String, Validator> validators = new ConcurrentHashMap<>();
 
     @Override
     public Validator getValidator(URL url) {

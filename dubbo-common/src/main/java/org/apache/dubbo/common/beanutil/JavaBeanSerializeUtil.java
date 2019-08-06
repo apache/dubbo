@@ -144,12 +144,11 @@ public final class JavaBeanSerializeUtil {
             }
         } else if (obj instanceof Map) {
             Map map = (Map) obj;
-            for (Object key : map.keySet()) {
-                Object value = map.get(key);
+            map.forEach((key, value) -> {
                 Object keyDescriptor = key == null ? null : createDescriptorIfAbsent(key, accessor, cache);
                 Object valueDescriptor = value == null ? null : createDescriptorIfAbsent(value, accessor, cache);
                 descriptor.setProperty(keyDescriptor, valueDescriptor);
-            } // ~ end of loop map
+            });// ~ end of loop map
         } else {
             if (JavaBeanAccessor.isAccessByMethod(accessor)) {
                 Map<String, Method> methods = ReflectUtils.getBeanPropertyReadMethods(obj.getClass());
@@ -238,12 +237,12 @@ public final class JavaBeanSerializeUtil {
             for (Map.Entry<Object, Object> entry : beanDescriptor) {
                 Object key = entry.getKey();
                 Object value = entry.getValue();
-                if (key != null && key instanceof JavaBeanDescriptor) {
+                if (key instanceof JavaBeanDescriptor) {
                     JavaBeanDescriptor keyDescriptor = (JavaBeanDescriptor) entry.getKey();
                     key = instantiateForDeserialize(keyDescriptor, loader, cache);
                     deserializeInternal(key, keyDescriptor, loader, cache);
                 }
-                if (value != null && value instanceof JavaBeanDescriptor) {
+                if (value instanceof JavaBeanDescriptor) {
                     JavaBeanDescriptor valueDescriptor = (JavaBeanDescriptor) entry.getValue();
                     value = instantiateForDeserialize(valueDescriptor, loader, cache);
                     deserializeInternal(value, valueDescriptor, loader, cache);

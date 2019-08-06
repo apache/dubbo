@@ -16,10 +16,9 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,12 +27,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class UrlUtilsTest {
 
@@ -331,16 +333,16 @@ public class UrlUtilsTest {
     @Test
     public void testIsServiceKeyMatch() throws Exception {
         URL url = URL.valueOf("test://127.0.0.1");
-        URL pattern = url.addParameter(Constants.GROUP_KEY, "test")
-                .addParameter(Constants.INTERFACE_KEY, "test")
-                .addParameter(Constants.VERSION_KEY, "test");
+        URL pattern = url.addParameter(GROUP_KEY, "test")
+                .addParameter(INTERFACE_KEY, "test")
+                .addParameter(VERSION_KEY, "test");
         URL value = pattern;
         assertTrue(UrlUtils.isServiceKeyMatch(pattern, value));
 
-        pattern = pattern.addParameter(Constants.GROUP_KEY, "*");
+        pattern = pattern.addParameter(GROUP_KEY, "*");
         assertTrue(UrlUtils.isServiceKeyMatch(pattern, value));
 
-        pattern = pattern.addParameter(Constants.VERSION_KEY, "*");
+        pattern = pattern.addParameter(VERSION_KEY, "*");
         assertTrue(UrlUtils.isServiceKeyMatch(pattern, value));
     }
 

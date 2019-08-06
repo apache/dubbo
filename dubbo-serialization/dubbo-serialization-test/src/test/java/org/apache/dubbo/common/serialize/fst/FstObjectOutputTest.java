@@ -18,8 +18,9 @@ package org.apache.dubbo.common.serialize.fst;
 
 import org.apache.dubbo.common.serialize.model.AnimalEnum;
 import org.apache.dubbo.common.serialize.model.person.FullAddress;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -27,7 +28,7 @@ import java.io.IOException;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class FstObjectOutputTest {
     private FstObjectOutput fstObjectOutput;
@@ -35,10 +36,15 @@ public class FstObjectOutputTest {
     private ByteArrayOutputStream byteArrayOutputStream;
     private ByteArrayInputStream byteArrayInputStream;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         this.byteArrayOutputStream = new ByteArrayOutputStream();
         this.fstObjectOutput = new FstObjectOutput(byteArrayOutputStream);
+    }
+
+    @AfterEach
+    public void tearDown() throws IOException {
+        new FstObjectInput(new ByteArrayInputStream(new byte[]{0}));
     }
 
 

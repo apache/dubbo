@@ -18,16 +18,16 @@ package org.apache.dubbo.common.timer;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.ClassHelper;
+import org.apache.dubbo.common.utils.ClassUtils;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
@@ -109,8 +109,8 @@ public class HashedWheelTimer implements Timer {
     private final HashedWheelBucket[] wheel;
     private final int mask;
     private final CountDownLatch startTimeInitialized = new CountDownLatch(1);
-    private final Queue<HashedWheelTimeout> timeouts = new ArrayBlockingQueue<HashedWheelTimeout>(1024);
-    private final Queue<HashedWheelTimeout> cancelledTimeouts = new ArrayBlockingQueue<HashedWheelTimeout>(1024);
+    private final Queue<HashedWheelTimeout> timeouts = new LinkedBlockingQueue<>();
+    private final Queue<HashedWheelTimeout> cancelledTimeouts = new LinkedBlockingQueue<>();
     private final AtomicLong pendingTimeouts = new AtomicLong(0);
     private final long maxPendingTimeouts;
 
@@ -290,11 +290,13 @@ public class HashedWheelTimer implements Timer {
     }
 
     private static int normalizeTicksPerWheel(int ticksPerWheel) {
-        int normalizedTicksPerWheel = 1;
-        while (normalizedTicksPerWheel < ticksPerWheel) {
-            normalizedTicksPerWheel <<= 1;
-        }
-        return normalizedTicksPerWheel;
+        int normalizedTicksPerWheel = ticksPerWheel - 1;
+        normalizedTicksPerWheel |= normalizedTicksPerWheel >>> 1;
+        normalizedTicksPerWheel |= normalizedTicksPerWheel >>> 2;
+        normalizedTicksPerWheel |= normalizedTicksPerWheel >>> 4;
+        normalizedTicksPerWheel |= normalizedTicksPerWheel >>> 8;
+        normalizedTicksPerWheel |= normalizedTicksPerWheel >>> 16;
+        return normalizedTicksPerWheel + 1;
     }
 
     /**
@@ -413,7 +415,7 @@ public class HashedWheelTimer implements Timer {
     }
 
     private static void reportTooManyInstances() {
-        String resourceType = ClassHelper.simpleClassName(HashedWheelTimer.class);
+        String resourceType = ClassUtils.simpleClassName(HashedWheelTimer.class);
         logger.error("You are creating too many " + resourceType + " instances. " +
                 resourceType + " is a shared resource that must be reused across the JVM," +
                 "so that only a few instances are created.");
@@ -655,7 +657,7 @@ public class HashedWheelTimer implements Timer {
         public String toString() {
             final long currentTime = System.nanoTime();
             long remaining = deadline - currentTime + timer.startTime;
-            String simpleClassName = ClassHelper.simpleClassName(this.getClass());
+            String simpleClassName = ClassUtils.simpleClassName(this.getClass());
 
             StringBuilder buf = new StringBuilder(192)
                     .append(simpleClassName)

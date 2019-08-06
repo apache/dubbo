@@ -22,7 +22,7 @@
     ">
 
     <!-- 当前应用信息配置 -->
-    <dubbo:application name="dubbo-provider"/>
+    <dubbo:application name="dubbo-spring-test"/>
 
     <!-- 连接注册中心配置 -->
     <dubbo:registry address="N/A"/>

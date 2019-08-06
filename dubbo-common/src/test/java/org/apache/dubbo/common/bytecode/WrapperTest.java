@@ -16,12 +16,12 @@
  */
 package org.apache.dubbo.common.bytecode;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class WrapperTest {
     @Test
@@ -63,48 +63,54 @@ public class WrapperTest {
     @Test
     public void testHasMethod() throws Exception {
         Wrapper w = Wrapper.getWrapper(I1.class);
-        Assert.assertTrue(w.hasMethod("setName"));
-        Assert.assertTrue(w.hasMethod("hello"));
-        Assert.assertTrue(w.hasMethod("showInt"));
-        Assert.assertTrue(w.hasMethod("getFloat"));
-        Assert.assertTrue(w.hasMethod("setFloat"));
-        Assert.assertFalse(w.hasMethod("setFloatXXX"));
+        Assertions.assertTrue(w.hasMethod("setName"));
+        Assertions.assertTrue(w.hasMethod("hello"));
+        Assertions.assertTrue(w.hasMethod("showInt"));
+        Assertions.assertTrue(w.hasMethod("getFloat"));
+        Assertions.assertTrue(w.hasMethod("setFloat"));
+        Assertions.assertFalse(w.hasMethod("setFloatXXX"));
     }
 
     @Test
     public void testWrapperObject() throws Exception {
         Wrapper w = Wrapper.getWrapper(Object.class);
-        Assert.assertTrue(w.getMethodNames().length == 4);
-        Assert.assertTrue(w.getPropertyNames().length == 0);
-        Assert.assertEquals(null, w.getPropertyType(null));
+        Assertions.assertEquals(4, w.getMethodNames().length);
+        Assertions.assertEquals(0, w.getPropertyNames().length);
+        Assertions.assertNull(w.getPropertyType(null));
     }
 
-    @Test(expected = NoSuchPropertyException.class)
+    @Test
     public void testGetPropertyValue() throws Exception {
-        Wrapper w = Wrapper.getWrapper(Object.class);
-        w.getPropertyValue(null, null);
+        Assertions.assertThrows(NoSuchPropertyException.class, () -> {
+            Wrapper w = Wrapper.getWrapper(Object.class);
+            w.getPropertyValue(null, null);
+        });
     }
 
-    @Test(expected = NoSuchPropertyException.class)
+    @Test
     public void testSetPropertyValue() throws Exception {
-        Wrapper w = Wrapper.getWrapper(Object.class);
-        w.setPropertyValue(null, null, null);
+        Assertions.assertThrows(NoSuchPropertyException.class, () -> {
+            Wrapper w = Wrapper.getWrapper(Object.class);
+            w.setPropertyValue(null, null, null);
+        });
     }
 
     @Test
     public void testInvokeWrapperObject() throws Exception {
         Wrapper w = Wrapper.getWrapper(Object.class);
         Object instance = new Object();
-        Assert.assertEquals(instance.getClass(), (Class<?>) w.invokeMethod(instance, "getClass", null, null));
-        Assert.assertEquals(instance.hashCode(), (int) w.invokeMethod(instance, "hashCode", null, null));
-        Assert.assertEquals(instance.toString(), (String) w.invokeMethod(instance, "toString", null, null));
-        Assert.assertEquals(true, (boolean) w.invokeMethod(instance, "equals", null, new Object[]{instance}));
+        Assertions.assertEquals(instance.getClass(), (Class<?>) w.invokeMethod(instance, "getClass", null, null));
+        Assertions.assertEquals(instance.hashCode(), (int) w.invokeMethod(instance, "hashCode", null, null));
+        Assertions.assertEquals(instance.toString(), (String) w.invokeMethod(instance, "toString", null, null));
+        Assertions.assertTrue((boolean)w.invokeMethod(instance, "equals", null, new Object[] {instance}));
     }
 
-    @Test(expected = NoSuchMethodException.class)
+    @Test
     public void testNoSuchMethod() throws Exception {
-        Wrapper w = Wrapper.getWrapper(Object.class);
-        w.invokeMethod(new Object(), "__XX__", null, null);
+        Assertions.assertThrows(NoSuchMethodException.class, () -> {
+            Wrapper w = Wrapper.getWrapper(Object.class);
+            w.invokeMethod(new Object(), "__XX__", null, null);
+        });
     }
 
     /**
@@ -125,11 +131,11 @@ public class WrapperTest {
         assertArrayEquals(new String[]{"hello", "world"}, Wrapper.getWrapper(Son.class).getMethodNames());
     }
 
-    public static interface I0 {
+    public interface I0 {
         String getName();
     }
 
-    public static interface I1 extends I0 {
+    public interface I1 extends I0 {
         void setName(String name);
 
         void hello(String name);
@@ -141,19 +147,19 @@ public class WrapperTest {
         void setFloat(float f);
     }
 
-    public static interface EmptyService {
+    public interface EmptyService {
     }
 
-    public static interface Parent1 {
+    public interface Parent1 {
         void hello();
     }
 
 
-    public static interface Parent2 {
+    public interface Parent2 {
         void world();
     }
 
-    public static interface Son extends Parent1, Parent2 {
+    public interface Son extends Parent1, Parent2 {
 
     }
 

@@ -48,24 +48,23 @@ public class LogTelnetHandler implements TelnetHandler {
         if (message == null || message.trim().length() == 0) {
             buf.append("EXAMPLE: log error / log 100");
         } else {
-            String str[] = message.split(" ");
+            String[] str = message.split(" ");
             if (!StringUtils.isInteger(str[0])) {
                 LoggerFactory.setLevel(Level.valueOf(message.toUpperCase()));
             } else {
-                int SHOW_LOG_LENGTH = Integer.parseInt(str[0]);
+                int showLogLength = Integer.parseInt(str[0]);
 
                 if (file != null && file.exists()) {
-                    try {
-                        FileInputStream fis = new FileInputStream(file);
+                    try(FileInputStream fis = new FileInputStream(file)) {
                         FileChannel filechannel = fis.getChannel();
                         size = filechannel.size();
                         ByteBuffer bb;
-                        if (size <= SHOW_LOG_LENGTH) {
+                        if (size <= showLogLength) {
                             bb = ByteBuffer.allocate((int) size);
                             filechannel.read(bb, 0);
                         } else {
-                            int pos = (int) (size - SHOW_LOG_LENGTH);
-                            bb = ByteBuffer.allocate(SHOW_LOG_LENGTH);
+                            int pos = (int) (size - showLogLength);
+                            bb = ByteBuffer.allocate(showLogLength);
                             filechannel.read(bb, pos);
                         }
                         bb.flip();

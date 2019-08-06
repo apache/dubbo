@@ -16,22 +16,26 @@
  */
 package org.apache.dubbo.rpc.protocol.rmi;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.Version;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.AbstractProxyProtocol;
+import org.apache.dubbo.rpc.service.GenericService;
+import org.apache.dubbo.rpc.support.ProtocolUtils;
 
-import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.remoting.RemoteAccessException;
 import org.springframework.remoting.rmi.RmiProxyFactoryBean;
 import org.springframework.remoting.rmi.RmiServiceExporter;
 import org.springframework.remoting.support.RemoteInvocation;
-import org.springframework.remoting.support.RemoteInvocationFactory;
 
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.rmi.RemoteException;
+
+import static org.apache.dubbo.common.Version.isRelease263OrHigher;
+import static org.apache.dubbo.common.Version.isRelease270OrHigher;
+import static org.apache.dubbo.common.constants.CommonConstants.RELEASE_KEY;
+import static org.apache.dubbo.remoting.Constants.DUBBO_VERSION_KEY;
+import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 
 /**
  * RmiProtocol.
@@ -51,21 +55,14 @@ public class RmiProtocol extends AbstractProxyProtocol {
 
     @Override
     protected <T> Runnable doExport(final T impl, Class<T> type, URL url) throws RpcException {
-        final RmiServiceExporter rmiServiceExporter = new RmiServiceExporter();
-        rmiServiceExporter.setRegistryPort(url.getPort());
-        rmiServiceExporter.setServiceName(url.getPath());
-        rmiServiceExporter.setServiceInterface(type);
-        rmiServiceExporter.setService(impl);
-        try {
-            rmiServiceExporter.afterPropertiesSet();
-        } catch (RemoteException e) {
-            throw new RpcException(e.getMessage(), e);
-        }
+        RmiServiceExporter rmiServiceExporter = createExporter(impl, type, url, false);
+        RmiServiceExporter genericServiceExporter = createExporter(impl, GenericService.class, url, true);
         return new Runnable() {
             @Override
             public void run() {
                 try {
                     rmiServiceExporter.destroy();
+                    genericServiceExporter.destroy();
                 } catch (Throwable e) {
                     logger.warn(e.getMessage(), e);
                 }
@@ -77,17 +74,39 @@ public class RmiProtocol extends AbstractProxyProtocol {
     @SuppressWarnings("unchecked")
     protected <T> T doRefer(final Class<T> serviceType, final URL url) throws RpcException {
         final RmiProxyFactoryBean rmiProxyFactoryBean = new RmiProxyFactoryBean();
-        // RMI needs extra parameter since it uses customized remote invocation object
-        if (url.getParameter(Constants.DUBBO_VERSION_KEY, Version.getProtocolVersion()).equals(Version.getProtocolVersion())) {
-            // Check dubbo version on provider, this feature only support
-            rmiProxyFactoryBean.setRemoteInvocationFactory(new RemoteInvocationFactory() {
-                @Override
-                public RemoteInvocation createRemoteInvocation(MethodInvocation methodInvocation) {
-                    return new RmiRemoteInvocation(methodInvocation);
+        final String generic = url.getParameter(GENERIC_KEY);
+        final boolean isGeneric = ProtocolUtils.isGeneric(generic) || serviceType.equals(GenericService.class);
+        /*
+          RMI needs extra parameter since it uses customized remote invocation object
+
+          The customized RemoteInvocation was firstly introduced in v2.6.3; The package was renamed to 'org.apache.*' since v2.7.0
+          Considering the above two conditions, we need to check before sending customized RemoteInvocation:
+          1. if the provider version is v2.7.0 or higher, send 'org.apache.dubbo.rpc.protocol.rmi.RmiRemoteInvocation'.
+          2. if the provider version is v2.6.3 or higher, send 'com.alibaba.dubbo.rpc.protocol.rmi.RmiRemoteInvocation'.
+          3. if the provider version is lower than v2.6.3, does not use customized RemoteInvocation.
+         */
+        if (isRelease270OrHigher(url.getParameter(RELEASE_KEY))) {
+            rmiProxyFactoryBean.setRemoteInvocationFactory((methodInvocation) -> {
+                RemoteInvocation invocation = new RmiRemoteInvocation(methodInvocation);
+                if (invocation != null && isGeneric) {
+                    invocation.addAttribute(GENERIC_KEY, generic);
                 }
+                return invocation;
+            });
+        } else if (isRelease263OrHigher(url.getParameter(DUBBO_VERSION_KEY))) {
+            rmiProxyFactoryBean.setRemoteInvocationFactory((methodInvocation) -> {
+                RemoteInvocation invocation = new com.alibaba.dubbo.rpc.protocol.rmi.RmiRemoteInvocation(methodInvocation);
+                if (invocation != null && isGeneric) {
+                    invocation.addAttribute(GENERIC_KEY, generic);
+                }
+                return invocation;
             });
         }
-        rmiProxyFactoryBean.setServiceUrl(url.toIdentityString());
+        String serviceUrl = url.toIdentityString();
+        if (isGeneric) {
+            serviceUrl = serviceUrl + "/" + GENERIC_KEY;
+        }
+        rmiProxyFactoryBean.setServiceUrl(serviceUrl);
         rmiProxyFactoryBean.setServiceInterface(serviceType);
         rmiProxyFactoryBean.setCacheStub(true);
         rmiProxyFactoryBean.setLookupStubOnStartup(true);
@@ -112,6 +131,24 @@ public class RmiProtocol extends AbstractProxyProtocol {
             }
         }
         return super.getErrorCode(e);
+    }
+
+    private <T> RmiServiceExporter createExporter(T impl, Class<?> type, URL url, boolean isGeneric) {
+        final RmiServiceExporter rmiServiceExporter = new RmiServiceExporter();
+        rmiServiceExporter.setRegistryPort(url.getPort());
+        if (isGeneric) {
+            rmiServiceExporter.setServiceName(url.getPath() + "/" + GENERIC_KEY);
+        } else {
+            rmiServiceExporter.setServiceName(url.getPath());
+        }
+        rmiServiceExporter.setServiceInterface(type);
+        rmiServiceExporter.setService(impl);
+        try {
+            rmiServiceExporter.afterPropertiesSet();
+        } catch (RemoteException e) {
+            throw new RpcException(e.getMessage(), e);
+        }
+        return rmiServiceExporter;
     }
 
 }

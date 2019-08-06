@@ -16,33 +16,34 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.threadpool.ThreadPool;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
 import static java.util.Arrays.asList;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ConfigUtilsTest {
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         ConfigUtils.setProperties(null);
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         ConfigUtils.setProperties(null);
     }
@@ -119,19 +120,19 @@ public class ConfigUtilsTest {
     @Test
     public void testGetProperties1() throws Exception {
         try {
-            System.setProperty(Constants.DUBBO_PROPERTIES_KEY, "properties.load");
+            System.setProperty(CommonConstants.DUBBO_PROPERTIES_KEY, "properties.load");
             Properties p = ConfigUtils.getProperties();
             assertThat((String) p.get("a"), equalTo("12"));
             assertThat((String) p.get("b"), equalTo("34"));
             assertThat((String) p.get("c"), equalTo("56"));
         } finally {
-            System.clearProperty(Constants.DUBBO_PROPERTIES_KEY);
+            System.clearProperty(CommonConstants.DUBBO_PROPERTIES_KEY);
         }
     }
 
     @Test
     public void testGetProperties2() throws Exception {
-        System.clearProperty(Constants.DUBBO_PROPERTIES_KEY);
+        System.clearProperty(CommonConstants.DUBBO_PROPERTIES_KEY);
         Properties p = ConfigUtils.getProperties();
         assertThat((String) p.get("dubbo"), equalTo("properties"));
     }
@@ -228,12 +229,12 @@ public class ConfigUtilsTest {
     }
 
 
-    @Ignore("see http://code.alibabatech.com/jira/browse/DUBBO-133")
+    @Disabled("see http://code.alibabatech.com/jira/browse/DUBBO-133")
     @Test
     public void testLoadPropertiesMultiFileNotRootPathException() throws Exception {
         try {
             ConfigUtils.loadProperties("META-INF/services/org.apache.dubbo.common.status.StatusChecker", false);
-            Assert.fail();
+            Assertions.fail();
         } catch (IllegalStateException expected) {
             assertThat(expected.getMessage(), containsString("only 1 META-INF/services/org.apache.dubbo.common.status.StatusChecker file is expected, but 2 dubbo.properties files found on class path:"));
         }
@@ -255,32 +256,5 @@ public class ConfigUtilsTest {
     @Test
     public void testGetPid() throws Exception {
         assertThat(ConfigUtils.getPid(), greaterThan(0));
-    }
-
-    @Test
-    public void testGetServerShutdownTimeoutFromShutdownWait() throws Exception {
-        System.setProperty(Constants.SHUTDOWN_WAIT_KEY, "1234");
-        try {
-            assertThat(ConfigUtils.getServerShutdownTimeout(), equalTo(1234));
-        } finally {
-            System.clearProperty(Constants.SHUTDOWN_WAIT_KEY);
-        }
-    }
-
-    @Test
-    public void testGetServerShutdownTimeoutFromShutdownWaitSeconds() throws Exception {
-        System.setProperty(Constants.SHUTDOWN_WAIT_SECONDS_KEY, "1234");
-        try {
-            assertThat(ConfigUtils.getServerShutdownTimeout(), equalTo(1234 * 1000));
-        } finally {
-            System.clearProperty(Constants.SHUTDOWN_WAIT_SECONDS_KEY);
-        }
-    }
-
-    @Test
-    public void testGetServerShutdownTimeoutFromDefault() throws Exception {
-        System.clearProperty(Constants.SHUTDOWN_WAIT_KEY);
-        System.clearProperty(Constants.SHUTDOWN_WAIT_SECONDS_KEY);
-        assertThat(ConfigUtils.getServerShutdownTimeout(), equalTo(Constants.DEFAULT_SERVER_SHUTDOWN_TIMEOUT));
     }
 }

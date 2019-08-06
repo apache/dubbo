@@ -16,12 +16,12 @@
  */
 package org.apache.dubbo.rpc.protocol.dubbo.status;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.status.Status;
 import org.apache.dubbo.common.status.StatusChecker;
 import org.apache.dubbo.common.store.DataStore;
+import org.apache.dubbo.remoting.Constants;
 
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -44,7 +44,7 @@ public class ThreadPoolStatusChecker implements StatusChecker {
             String port = entry.getKey();
             ExecutorService executor = (ExecutorService) entry.getValue();
 
-            if (executor != null && executor instanceof ThreadPoolExecutor) {
+            if (executor instanceof ThreadPoolExecutor) {
                 ThreadPoolExecutor tp = (ThreadPoolExecutor) executor;
                 boolean ok = tp.getActiveCount() < tp.getMaximumPoolSize() - 1;
                 Status.Level lvl = Status.Level.OK;

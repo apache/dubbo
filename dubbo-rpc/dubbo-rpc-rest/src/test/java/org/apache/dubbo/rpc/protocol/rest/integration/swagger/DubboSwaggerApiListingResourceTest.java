@@ -18,17 +18,15 @@ package org.apache.dubbo.rpc.protocol.rest.integration.swagger;
 
 import io.swagger.models.Swagger;
 import org.jboss.resteasy.spi.ResteasyUriInfo;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -55,10 +53,10 @@ public class DubboSwaggerApiListingResourceTest {
         Response response = resource.getListingJson(app, sc,
                 null, new ResteasyUriInfo(new URI("http://rest.test")));
 
-        Assert.assertNotNull(response);
+        Assertions.assertNotNull(response);
         Swagger swagger = (Swagger)response.getEntity();
-        Assert.assertEquals("SwaggerService",swagger.getTags().get(0).getName());
-        Assert.assertEquals("/demoService/hello",swagger.getPaths().keySet().toArray()[0].toString());
+        Assertions.assertEquals("SwaggerService",swagger.getTags().get(0).getName());
+        Assertions.assertEquals("/demoService/hello",swagger.getPaths().keySet().toArray()[0].toString());
     }
 
 }
