@@ -134,8 +134,11 @@ public abstract class AbstractEventDispatcher implements EventDispatcher {
                 List<EventListener> listeners = listenersCache.computeIfAbsent(eventType, e -> new LinkedList<>());
                 // consume
                 consumer.accept(listeners);
-                // sort
-                sort(listeners);
+                if (CollectionUtils.isEmpty(listeners)) {
+                    listenersCache.remove(eventType);
+                } else {// sort
+                    sort(listeners);
+                }
             }
         }
     }
