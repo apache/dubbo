@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -49,33 +50,25 @@ public class RandomLoadBalance extends AbstractLoadBalance {
         int length = invokers.size();
         // Every invoker has the same weight?
         boolean sameWeight = true;
-        // the weight of every invokers
-        int[] weights = new int[length];
+        // the accumulated weight of every invokers
+        int[] weightsSum = new int[length];
         // the first invoker's weight
         int firstWeight = getWeight(invokers.get(0), invocation);
-        weights[0] = firstWeight;
-        // The sum of weights
-        int totalWeight = firstWeight;
+        weightsSum[0] = firstWeight;
         for (int i = 1; i < length; i++) {
             int weight = getWeight(invokers.get(i), invocation);
-            // save for later use
-            weights[i] = weight;
-            // Sum
-            totalWeight += weight;
+            // save accumulated sum for later use
+            weightsSum[i] = weightsSum[i - 1] + weight;
             if (sameWeight && weight != firstWeight) {
                 sameWeight = false;
             }
         }
-        if (totalWeight > 0 && !sameWeight) {
+        if (weightsSum[length - 1] > 0 && !sameWeight) {
             // If (not every invoker has the same weight & at least one invoker's weight>0), select randomly based on totalWeight.
-            int offset = ThreadLocalRandom.current().nextInt(totalWeight);
-            // Return a invoker based on the random value.
-            for (int i = 0; i < length; i++) {
-                offset -= weights[i];
-                if (offset < 0) {
-                    return invokers.get(i);
-                }
-            }
+            int offset = ThreadLocalRandom.current().nextInt(weightsSum[length - 1]) + 1;
+            // find a invoker based on the random value.
+            int idx = Arrays.binarySearch(weightsSum, offset);
+            return idx >= 0 ? invokers.get(idx) : invokers.get(-idx - 1);
         }
         // If all invokers have the same weight value or totalWeight=0, return evenly.
         return invokers.get(ThreadLocalRandom.current().nextInt(length));
