@@ -1,0 +1,2 @@
+org.apache.dubbo.demo.provider.SayChineseNameImpl
+org.apache.dubbo.demo.provider.SayEnglishNameImpl

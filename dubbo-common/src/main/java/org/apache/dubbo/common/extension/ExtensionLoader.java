@@ -46,6 +46,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
 
 /**
+ *  拓展加载器
  * Load dubbo extensions
  * <ul>
  * <li>auto inject dependency extension </li>
