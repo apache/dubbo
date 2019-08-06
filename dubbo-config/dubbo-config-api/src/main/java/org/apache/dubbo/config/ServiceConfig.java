@@ -325,7 +325,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             generic = Boolean.FALSE.toString();
         }
         if (local != null) {
-            if ("true".equals(local)) {
+            if (Boolean.TRUE.toString().equals(local)) {
                 local = interfaceName + "Local";
             }
             Class<?> localClass;
@@ -339,7 +339,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             }
         }
         if (stub != null) {
-            if ("true".equals(stub)) {
+            if (Boolean.TRUE.toString().equals(stub)) {
                 stub = interfaceName + "Stub";
             }
             Class<?> stubClass;
@@ -482,7 +482,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 String retryKey = method.getName() + ".retry";
                 if (map.containsKey(retryKey)) {
                     String retryValue = map.remove(retryKey);
-                    if ("false".equals(retryValue)) {
+                    if (Boolean.FALSE.toString().equals(retryValue)) {
                         map.put(method.getName() + ".retries", "0");
                     }
                 }
