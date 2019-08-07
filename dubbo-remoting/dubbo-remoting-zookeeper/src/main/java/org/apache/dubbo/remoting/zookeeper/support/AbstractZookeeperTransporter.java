@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.config.Constants;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 
@@ -137,8 +138,8 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
     URL toClientURL(URL url) {
         Map<String, String> parameterMap = new HashMap<>();
         // for CuratorZookeeperClient
-        if (url.getParameter(TIMEOUT_KEY) != null) {
-            parameterMap.put(TIMEOUT_KEY, url.getParameter(TIMEOUT_KEY));
+        if (url.getParameter(Constants.CONFIG_TIMEOUT_KEY) != null) {
+            parameterMap.put(Constants.CONFIG_TIMEOUT_KEY, url.getParameter(Constants.CONFIG_TIMEOUT_KEY));
         }
         if (url.getParameter(RemotingConstants.BACKUP_KEY) != null) {
             parameterMap.put(RemotingConstants.BACKUP_KEY, url.getParameter(RemotingConstants.BACKUP_KEY));
