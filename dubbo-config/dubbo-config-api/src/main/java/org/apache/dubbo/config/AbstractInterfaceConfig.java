@@ -50,6 +50,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.apache.dubbo.common.config.ConfigurationUtils.parseProperties;
@@ -624,6 +625,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 cc.setProtocol(rc.getProtocol());
                 cc.setAddress(rc.getAddress());
                 cc.setHighestPriority(false);
+                Optional.ofNullable(rc.getTimeout()).ifPresent(timeout -> cc.setTimeout(Long.valueOf(timeout)));
                 setConfigCenter(cc);
                 startConfigCenter();
                 return null;

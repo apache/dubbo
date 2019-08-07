@@ -33,7 +33,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.configcenter.Constants.CONFIG_NAMESPACE_KEY;
+import static org.apache.dubbo.configcenter.Constants.CONFIG_TIMEOUT_KEY;
 
 /**
  *
@@ -59,7 +61,7 @@ public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
         this.cacheListener = new CacheListener(rootPath, initializedLatch);
         this.executor = Executors.newFixedThreadPool(1, new NamedThreadFactory(this.getClass().getSimpleName(), true));
 
-        zkClient = zookeeperTransporter.connect(url);
+        zkClient = zookeeperTransporter.connect(configCenterToTransporterURL(url));
         zkClient.addDataListener(rootPath, cacheListener, executor);
         try {
             // Wait for connection
@@ -112,5 +114,17 @@ public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
 
     private String getPathKey(String group, String key) {
         return rootPath + PATH_SEPARATOR + group + PATH_SEPARATOR + key;
+    }
+
+    private URL configCenterToTransporterURL(URL url) {
+        if (url == null) {
+            return url;
+        }
+        if (StringUtils.isEmpty(url.getParameter(TIMEOUT_KEY))
+                && StringUtils.isNotEmpty(url.getParameter(CONFIG_TIMEOUT_KEY))) {
+            return url.addParameter(TIMEOUT_KEY, url.getParameter(CONFIG_TIMEOUT_KEY))
+                    .removeParameter(CONFIG_TIMEOUT_KEY);
+        }
+        return url;
     }
 }

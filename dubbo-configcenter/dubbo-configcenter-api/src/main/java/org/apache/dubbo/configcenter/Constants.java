@@ -21,4 +21,5 @@ public interface Constants {
     String CONFIG_NAMESPACE_KEY = "config.namespace";
     String CONFIG_GROUP_KEY = "config.group";
     String CONFIG_CHECK_KEY = "config.check";
+    String CONFIG_TIMEOUT_KEY = "config.timeout";
 }
