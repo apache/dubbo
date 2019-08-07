@@ -21,6 +21,9 @@ package org.apache.dubbo.common.utils;
  */
 public class Holder<T> {
 
+    /**
+     * 这里用volatile修饰，是在扩展类创建的时候采用了 dubbo-check的方式
+     */
     private volatile T value;
 
     public void set(T value) {
