@@ -110,7 +110,7 @@ public class CompatibleTypeUtils {
                 }catch (DateTimeParseException e){
                     throw new IllegalStateException("Failed to parse localDate " + value + " by format " + DATE_FORMAT + ", cause: " + e.getMessage(), e);
                 }
-            } else if (type == Class.class) {	            }else if (type == Class.class) {
+            }else if (type == Class.class) {
                 try {
                     return ReflectUtils.name2class((String) value);
                 } catch (ClassNotFoundException e) {
