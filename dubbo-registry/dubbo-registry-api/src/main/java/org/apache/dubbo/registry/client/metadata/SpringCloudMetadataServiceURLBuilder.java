@@ -17,37 +17,33 @@
 package org.apache.dubbo.registry.client.metadata;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.metadata.MetadataService;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.client.ServiceInstance;
 
+import com.alibaba.fastjson.JSON;
+
+import java.util.Collections;
 import java.util.List;
-import java.util.ServiceLoader;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.DUBBO_METADATA_SERVICE_URLS_PROPERTY_NAME;
 
 /**
- * The builder interface of {@link MetadataService} to build {@link URL URLs}, the multiple implementations
- * will be loaded by Java standard {@link ServiceLoader} and {@link #composite() composited},
- * whose building {@link URL URLs} will be aggregated
+ * The {@link MetadataServiceURLBuilder} implementation for The standard Dubbo scenario
  *
- * @see CompositeMetadataServiceURLBuilder
  * @since 2.7.4
  */
-public interface MetadataServiceURLBuilder {
+public class SpringCloudMetadataServiceURLBuilder implements MetadataServiceURLBuilder {
 
-    /**
-     * Build the {@link URL URLs} from the specified {@link ServiceInstance}
-     *
-     * @param serviceInstance {@link ServiceInstance}
-     * @return non-null
-     */
-    List<URL> build(ServiceInstance serviceInstance);
-
-    /**
-     * Get the composite implementation of {@link MetadataServiceURLBuilder}
-     *
-     * @return the instance of {@link CompositeMetadataServiceURLBuilder}
-     * @see CompositeMetadataServiceURLBuilder
-     */
-    static MetadataServiceURLBuilder composite() {
-        return new CompositeMetadataServiceURLBuilder();
+    @Override
+    public List<URL> build(ServiceInstance serviceInstance) {
+        Map<String, String> metadata = serviceInstance.getMetadata();
+        String dubboURLsJSON = metadata.get(DUBBO_METADATA_SERVICE_URLS_PROPERTY_NAME);
+        if (StringUtils.isBlank(dubboURLsJSON)) {
+            return Collections.emptyList();
+        }
+        List<String> urlStrings = JSON.parseArray(dubboURLsJSON, String.class);
+        return urlStrings.stream().map(URL::valueOf).collect(Collectors.toList());
     }
 }

@@ -43,6 +43,7 @@ import static java.util.stream.StreamSupport.stream;
  */
 public interface MetadataService {
 
+
     /**
      * The value of all service names
      */
@@ -52,6 +53,11 @@ public interface MetadataService {
      * The value of All service instances
      */
     String ALL_SERVICE_INTERFACES = "*";
+
+    /**
+     * The service interface name of {@link MetadataService}
+     */
+    String SERVICE_INTERFACE_NAME = MetadataService.class.getName();
 
     /**
      * The contract version of {@link MetadataService}, the future update must make sure compatible.
@@ -163,6 +169,17 @@ public interface MetadataService {
      * @return
      */
     String getServiceDefinition(String serviceKey);
+
+    /**
+     * Is the {@link URL} for the {@link MetadataService} or not?
+     *
+     * @param url {@link URL url}
+     * @return
+     */
+    static boolean isMetadataServiceURL(URL url) {
+        String serviceInterface = url.getServiceInterface();
+        return SERVICE_INTERFACE_NAME.equals(serviceInterface);
+    }
 
     /**
      * Convert the multiple {@link URL urls} to a {@link List list} of {@link URL urls}
