@@ -86,26 +86,42 @@ public class MetadataReportService {
         return metadataReportService;
     }
 
+    private static boolean isInterfaceAllowed(String interfaceName, ClassLoader classLoader) {
+        boolean result = false;
+        Class<?> aClass = null;
+        try {
+            // The incoming classLoader is the current class loader that calls interfaceName, looking for the class object of interfaceName
+            aClass =  Class.forName(interfaceName, true, classLoader);
+        } catch (Exception ex) {
+            result = false;
+        }
+            //Only when the Class in the same class loader is compared using ==, this is the time when the user registers the interfaceName.
+             //,the class loader to which the interfaceName belongs is the same as when it was called.
+            result = ( aClass == Thread.currentThread().getContextClassLoader().getClass() ) ? true : false;
+
+
+        return result;
+    }
+
+
     public void publishProvider(URL providerUrl) throws RpcException {
         //first add into the list
         // remove the individul param
         providerUrl = providerUrl.removeParameters(PID_KEY, TIMESTAMP_KEY, Constants.BIND_IP_KEY, Constants.BIND_PORT_KEY, TIMESTAMP_KEY);
 
-        try {
-            String interfaceName = providerUrl.getParameter(INTERFACE_KEY);
-            if (StringUtils.isNotEmpty(interfaceName)) {
-                Thread.currentThread().setContextClassLoader(Class.forName(interfaceName).getClassLoader());
+        String interfaceName = providerUrl.getParameter(INTERFACE_KEY);
+        if (StringUtils.isNotEmpty(interfaceName)) {
+            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+            if (isInterfaceAllowed(interfaceName,classLoader)) {
                 Class interfaceClass = Thread.currentThread().getContextClassLoader().getClass();
                 FullServiceDefinition fullServiceDefinition = ServiceDefinitionBuilder.buildFullDefinition(interfaceClass, providerUrl.getParameters());
                 metadataReport.storeProviderMetadata(new MetadataIdentifier(providerUrl.getServiceInterface(),
                         providerUrl.getParameter(VERSION_KEY), providerUrl.getParameter(GROUP_KEY),
                         PROVIDER_SIDE, providerUrl.getParameter(APPLICATION_KEY)), fullServiceDefinition);
-                return;
+            }else {
+                logger.error("publishProvider interfaceName is empty . providerUrl: " + providerUrl.toFullString());
             }
-            logger.error("publishProvider interfaceName is empty . providerUrl: " + providerUrl.toFullString());
-        } catch (ClassNotFoundException e) {
-            //ignore error
-            logger.error("publishProvider getServiceDescriptor error. providerUrl: " + providerUrl.toFullString(), e);
+            return;
         }
     }
 
