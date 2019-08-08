@@ -21,6 +21,9 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -94,7 +97,20 @@ public class CompatibleTypeUtils {
                 } catch (ParseException e) {
                     throw new IllegalStateException("Failed to parse date " + value + " by format " + DATE_FORMAT + ", cause: " + e.getMessage(), e);
                 }
-            } else if (type == Class.class) {
+            } else if (type == java.time.LocalDate.class || type == java.time.LocalTime.class || type == java.time.LocalDateTime.class){
+                try {//如果java时间类型为LocalDate
+                    LocalDateTime localDateTime = LocalDateTime.parse((String) value, DateTimeFormatter.ofPattern(DATE_FORMAT));
+                    if (type == java.time.LocalDate.class) {
+                        return localDateTime.toLocalDate();
+                    } else if (type == java.time.LocalTime.class) {
+                        return localDateTime.toLocalTime();
+                    } else {
+                        return localDateTime;
+                    }
+                }catch (DateTimeParseException e){
+                    throw new IllegalStateException("Failed to parse localDate " + value + " by format " + DATE_FORMAT + ", cause: " + e.getMessage(), e);
+                }
+            }else if (type == Class.class) {
                 try {
                     return ReflectUtils.name2class((String) value);
                 } catch (ClassNotFoundException e) {
