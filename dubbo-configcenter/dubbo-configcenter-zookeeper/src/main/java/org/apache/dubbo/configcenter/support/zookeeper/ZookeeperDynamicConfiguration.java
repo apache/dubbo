@@ -97,56 +97,83 @@ public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
      */
     @Override
     public void addListener(String key, String group, ConfigurationListener listener) {
-        cacheListener.addListener(getKeyPath(group, key), listener);
+        cacheListener.addListener(getPathKey(group, key), listener);
     }
 
     @Override
     public void removeListener(String key, String group, ConfigurationListener listener) {
-        cacheListener.removeListener(getKeyPath(group, key), listener);
+        cacheListener.removeListener(getPathKey(group, key), listener);
     }
 
     @Override
     public String getConfig(String key, String group, long timeout) throws IllegalStateException {
-        return (String) getInternalProperty(getKeyPath(group, key));
+        return (String) getInternalProperty(getPathKey(group, key));
     }
 
-    /**
-     * For zookeeper, {@link #getConfig(String, String, long)} and {@link #getConfigs(String, String, long)} have the same meaning.
-     *
-     * @param key
-     * @param group
-     * @param timeout
-     * @return
-     * @throws IllegalStateException
-     */
     @Override
-    public String getConfigs(String key, String group, long timeout) throws IllegalStateException {
+    public String getRule(String key, String group, long timeout) throws IllegalStateException {
+        return getConfig(key, group, timeout);
+    }
+
+    @Override
+    public String getProperties(String key, String group, long timeout) throws IllegalStateException {
         return getConfig(key, group, timeout);
     }
 
     @Override
     public boolean publishConfig(String key, String group, String content) {
-        String path = getKeyPath(group, key);
+        String path = getPathKey(key, group);
         zkClient.create(path, content, true);
         return true;
     }
 
     @Override
     public SortedSet<String> getConfigKeys(String group) {
-        String path = getGroupPath(group);
+        String path = buildPath(group);
         List<String> nodes = zkClient.getChildren(path);
         return isEmpty(nodes) ? emptySortedSet() : unmodifiableSortedSet(new TreeSet<>(nodes));
     }
 
-    private String getKeyPath(String group, String key) {
-        return getGroupPath(group) + PATH_SEPARATOR + key;
-    }
-
-    private String getGroupPath(String group) {
-        String actualGroup = group;
-        if (StringUtils.isEmpty(actualGroup)) {
-            actualGroup = DEFAULT_GROUP;
-        }
+    private String buildPath(String group) {
+        String actualGroup = StringUtils.isEmpty(group) ? DEFAULT_GROUP : group;
         return rootPath + PATH_SEPARATOR + actualGroup;
     }
+
+    private String getPathKey(String group, String key) {
+        return buildPath(group) + PATH_SEPARATOR + key;
+    }
+
+//    /**
+//     * Build the config node path by the specified <code>key</code> and <code>group</code>
+//     *
+//     * @param key   the key to represent a configuration
+//     * @param group the group where the key belongs to
+//     * @return
+//     */
+//    protected String buildPath(String key, String group) {
+//        String path = null;
+//        /**
+//         * when group is not null, we are getting startup configs from Config Center, for example:
+//         * group=dubbo, key=dubbo.properties
+//         */
+//        if (StringUtils.isNotEmpty(group)) {
+//            path = group + "/" + key;
+//        }
+//        /**
+//         * when group is null, we are fetching governance rules, for example:
+//         * 1. key=org.apache.dubbo.DemoService.configurators
+//         * 2. key = org.apache.dubbo.DemoService.condition-router
+//         */
+//        else {
+//            int i = key.lastIndexOf(".");
+//            path = key.substring(0, i) + "/" + key.substring(i + 1);
+//        }
+//        return buildPath(path);
+//    }
+//
+//    protected String buildPath(String relativePath) {
+//        String path = rootPath + "/" + relativePath;
+//        return path;
+//    }
+
 }

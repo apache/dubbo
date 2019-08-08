@@ -22,7 +22,7 @@ import org.apache.dubbo.registry.client.ServiceDiscoveryFactory;
 import org.apache.dubbo.remoting.etcd.EtcdTransporter;
 
 /**
- * @author cvictory ON 2019-07-08
+ * 2019-07-08
  */
 public class EtcdServiceDiscoveryFactory implements ServiceDiscoveryFactory {
 

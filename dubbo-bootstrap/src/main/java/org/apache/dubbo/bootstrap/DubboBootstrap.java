@@ -150,6 +150,7 @@ public class DubboBootstrap {
 
 
     // {@link ApplicationConfig} correlative methods
+
     /**
      * Set the name of application
      *
@@ -188,6 +189,7 @@ public class DubboBootstrap {
 
 
     // {@link RegistryConfig} correlative methods
+
     /**
      * Add an instance of {@link RegistryConfig} with {@link #DEFAULT_REGISTRY_ID default ID}
      *
@@ -335,6 +337,7 @@ public class DubboBootstrap {
     public DubboBootstrap configCenter(ConfigCenterConfig configCenterConfig) {
         return configCenter(asList(configCenterConfig));
     }
+
     public DubboBootstrap configCenter(List<ConfigCenterConfig> configCenterConfigs) {
         configManager.addConfigCenters(configCenterConfigs);
         return this;
@@ -532,6 +535,7 @@ public class DubboBootstrap {
     private ApplicationBuilder createApplicationBuilder(String name) {
         return new ApplicationBuilder().name(name);
     }
+
     private RegistryBuilder createRegistryBuilder(String id) {
         return new RegistryBuilder().id(id);
     }
@@ -599,15 +603,14 @@ public class DubboBootstrap {
                 return null;
             }
             DynamicConfiguration dynamicConfiguration = getDynamicConfiguration(configCenter.toUrl());
-            String configContent = dynamicConfiguration.getConfigs(configCenter.getConfigFile(), configCenter.getGroup());
+            String configContent = dynamicConfiguration.getRule(configCenter.getConfigFile(), configCenter.getGroup());
 
             String appGroup = configManager.getApplication().orElse(new ApplicationConfig()).getName();
             String appConfigContent = null;
             if (isNotEmpty(appGroup)) {
-                appConfigContent = dynamicConfiguration.getConfigs
-                        (isNotEmpty(configCenter.getAppConfigFile()) ? configCenter.getAppConfigFile() : configCenter.getConfigFile(),
-                                appGroup
-                        );
+                appConfigContent = dynamicConfiguration.getConfig(isNotEmpty(configCenter.getAppConfigFile()) ?
+                        configCenter.getAppConfigFile() : configCenter.getConfigFile(), appGroup
+                );
             }
             try {
                 Environment.getInstance().setConfigCenterFirst(configCenter.isHighestPriority());

@@ -21,10 +21,11 @@ import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.Environment;
 
 import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeMap;
 
 import static org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory.getDynamicConfigurationFactory;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
@@ -32,12 +33,14 @@ import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoad
 /**
  * Dynamic Configuration
  * <br/>
- * From the use scenario internally in framework, there're mainly three kinds of methods:
- * <ul>
- * <li>1. getConfig, get governance rules or single config item from Config Center.</li>
- * <li>2. getConfigFile, get configuration file from Config Center at start up.</li>
- * <li>3. addListener/removeListener, add or remove listeners for governance rules or config items that need to watch.</li>
- * </ul>
+ * From the use scenario internally inside framework, there're mainly three kinds of methods:
+ * <ol>
+ * <li>{@link #getRule(String, String, long)}, get governance rules.</li>
+ * <li>{@link #getProperties(String, String, long)}, get configuration file from Config Center at start up.</li>
+ * <li>{@link #addListener(String, String, ConfigurationListener)}/ {@link #removeListener(String, String, ConfigurationListener)}
+ * , add or remove listeners for governance rules or config items that need to watch.</li>
+ * <li>{@link #getProperty(String, Object)}, get a single config item.</li>
+ * </ol>
  */
 public interface DynamicConfiguration extends Configuration, AutoCloseable {
 
@@ -86,16 +89,6 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
     void removeListener(String key, String group, ConfigurationListener listener);
 
     /**
-     * Get the configuration mapped to the given key
-     *
-     * @param key the key to represent a configuration
-     * @return target configuration mapped to the given key
-     */
-    default String getConfig(String key) {
-        return getConfig(key, null, -1L);
-    }
-
-    /**
      * Get the configuration mapped to the given key and the given group
      *
      * @param key   the key to represent a configuration
@@ -119,21 +112,45 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
     String getConfig(String key, String group, long timeout) throws IllegalStateException;
 
     /**
-     * {@see #getConfig(String, String, long)}
-     * <p>
      * This method are mostly used to get a compound config file, such as a complete dubbo.properties file.
      */
-    default String getConfigs(String key, String group) throws IllegalStateException {
-        return getConfigs(key, group, -1L);
+    default String getProperties(String key, String group) throws IllegalStateException {
+        return getProperties(key, group, -1L);
     }
 
     /**
-     * {@see #getConfig(String, String, long)}
-     * <p>
      * This method are mostly used to get a compound config file, such as a complete dubbo.properties file.
+     *
+     * @revision 2.7.4
      */
-    String getConfigs(String key, String group, long timeout) throws IllegalStateException;
+    default String getProperties(String key, String group, long timeout) throws IllegalStateException {
+        return getConfig(key, group, timeout);
+    }
 
+    /**
+     * Get the governance rule mapped to the given key and the given group
+     *
+     * @param key   the key to represent a configuration
+     * @param group the group where the key belongs to
+     * @return target configuration mapped to the given key and the given group
+     * @since 2.7.3
+     */
+    default String getRule(String key, String group) {
+        return getRule(key, group, -1L);
+    }
+
+    /**
+     * Get the governance rule mapped to the given key and the given group. If the
+     * rule fails to return after timeout exceeds, IllegalStateException will be thrown.
+     *
+     * @param key     the key to represent a configuration
+     * @param group   the group where the key belongs to
+     * @param timeout timeout value for fetching the target config
+     * @return target configuration mapped to the given key and the given group, IllegalStateException will be thrown
+     * if timeout exceeds.
+     * @since 2.7.3
+     */
+    String getRule(String key, String group, long timeout) throws IllegalStateException;
 
     /**
      * Publish Config mapped to the given key under the {@link #DEFAULT_GROUP default group}
@@ -202,42 +219,42 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
      * Get the config keys by the specified group
      *
      * @param group the specified group
-     * @return the read-only non-null {@link Set set} of config keys
+     * @return the read-only non-null sorted {@link Set set} of config keys
      * @throws UnsupportedOperationException If the under layer does not support
      * @since 2.7.4
      */
-    default Set<String> getConfigKeys(String group) throws UnsupportedOperationException {
+    default SortedSet<String> getConfigKeys(String group) throws UnsupportedOperationException {
         throw new UnsupportedOperationException("No support");
     }
 
     /**
-     * Get the {@link Map} with with config keys and contents value by the specified group
+     * Get the {@link SortedMap} with with config keys and contents value by the specified group
      *
      * @param group the specified group
-     * @return the read-only non-null {@link Map map}
+     * @return the read-only non-null sorted {@link SortedMap map}
      * @throws UnsupportedOperationException If the under layer does not support
      * @since 2.7.4
      */
-    default Map<String, String> getConfigs(String group) throws UnsupportedOperationException {
+    default SortedMap<String, String> getConfigs(String group) throws UnsupportedOperationException {
         return getConfigs(group, -1);
     }
 
     /**
-     * Get the {@link Map} with with config keys and content value by the specified group
+     * Get the {@link SortedMap} with with config keys and content value by the specified group
      *
      * @param group   the specified group
      * @param timeout the millisecond for timeout
-     * @return the read-only non-null {@link Map map}
+     * @return the read-only non-null sorted {@link SortedMap map}
      * @throws UnsupportedOperationException If the under layer does not support
      * @throws IllegalStateException         If timeout exceeds
      * @since 2.7.4
      */
-    default Map<String, String> getConfigs(String group, long timeout) throws UnsupportedOperationException,
+    default SortedMap<String, String> getConfigs(String group, long timeout) throws UnsupportedOperationException,
             IllegalStateException {
-        Map<String, String> configs = new LinkedHashMap<>();
-        Set<String> configKeys = getConfigKeys(group);
-        configKeys.forEach(key -> configs.put(key, getConfig(key, group, timeout)));
-        return Collections.unmodifiableMap(configs);
+        SortedMap<String, String> configs = new TreeMap<>();
+        SortedSet<String> configKeys = getConfigKeys(group);
+        configKeys.forEach(key -> configs.put(key, getString(key)));
+        return Collections.unmodifiableSortedMap(configs);
     }
 
     /**
@@ -257,19 +274,10 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
      * @return DynamicConfiguration instance
      */
     static DynamicConfiguration getDynamicConfiguration() {
-        Optional<Configuration> optional = Environment.getInstance().getDynamicConfiguration();
-        return (DynamicConfiguration) optional.orElseGet(() -> getExtensionLoader(DynamicConfigurationFactory.class)
+        Optional<DynamicConfiguration> optional = Environment.getInstance().getDynamicConfiguration();
+        return optional.orElseGet(() -> getExtensionLoader(DynamicConfigurationFactory.class)
                 .getDefaultExtension()
                 .getDynamicConfiguration(null));
-    }
-
-    /**
-     * The format is '{interfaceName}:[version]:[group]'
-     *
-     * @return
-     */
-    static String getRuleKey(URL url) {
-        return url.getColonSeparatedKey();
     }
 
     /**
@@ -283,5 +291,14 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
         String protocol = connectionURL.getProtocol();
         DynamicConfigurationFactory factory = getDynamicConfigurationFactory(protocol);
         return factory.getDynamicConfiguration(connectionURL);
+    }
+
+    /**
+     * The format is '{interfaceName}:[version]:[group]'
+     *
+     * @return
+     */
+    static String getRuleKey(URL url) {
+        return url.getColonSeparatedKey();
     }
 }

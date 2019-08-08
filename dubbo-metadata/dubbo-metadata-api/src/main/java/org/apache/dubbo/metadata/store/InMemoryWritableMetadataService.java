@@ -98,17 +98,11 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
 
     @Override
     public boolean exportURL(URL url) {
-        if (MetadataService.isMetadataServiceURL(url)) {
-            return false;
-        }
         return addURL(exportedServiceURLs, url);
     }
 
     @Override
     public boolean unexportURL(URL url) {
-        if (MetadataService.isMetadataServiceURL(url)) {
-            return false;
-        }
         return removeURL(exportedServiceURLs, url);
     }
 
@@ -186,9 +180,9 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
         return success;
     }
 
-    private static SortedSet<String> getServiceURLs(Map<String, SortedSet<URL>> exportedServiceURLs, String
-            serviceKey,
+    private static SortedSet<String> getServiceURLs(Map<String, SortedSet<URL>> exportedServiceURLs, String serviceKey,
                                                     String protocol) {
+
         SortedSet<URL> serviceURLs = exportedServiceURLs.get(serviceKey);
 
         if (isEmpty(serviceURLs)) {

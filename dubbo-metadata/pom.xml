@@ -14,7 +14,8 @@
   See the License for the specific language governing permissions and
   limitations under the License.
   -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <groupId>org.apache.dubbo</groupId>
@@ -31,10 +32,8 @@
         <module>dubbo-metadata-report-zookeeper</module>
         <module>dubbo-metadata-report-redis</module>
         <module>dubbo-metadata-report-consul</module>
-        <module>dubbo-metadata-definition-protobuf</module>
         <module>dubbo-metadata-report-etcd</module>
         <module>dubbo-metadata-report-nacos</module>
     </modules>
-
 
 </project>

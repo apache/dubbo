@@ -134,7 +134,7 @@ public class ZookeeperDynamicConfigurationTest {
         String content = "test";
 
         assertTrue(configuration.publishConfig(key, group, content));
-        assertEquals("test", configuration.getConfigs(key, group));
+        assertEquals("test", configuration.getProperties(key, group));
     }
 
     @Test
