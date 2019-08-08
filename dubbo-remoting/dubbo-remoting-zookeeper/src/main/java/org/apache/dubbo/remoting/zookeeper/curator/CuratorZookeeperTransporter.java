@@ -24,6 +24,7 @@ public class CuratorZookeeperTransporter implements ZookeeperTransporter {
 
     @Override
     public ZookeeperClient connect(URL url) {
+        // 创建 CuratorZookeeperClient
         return new CuratorZookeeperClient(url);
     }
 

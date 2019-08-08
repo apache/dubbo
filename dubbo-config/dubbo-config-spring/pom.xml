@@ -126,6 +126,12 @@
             <artifactId>tomcat-embed-core</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <version>5.2.0.BUILD-SNAPSHOT</version>
+            <scope>test</scope>
+        </dependency>
 
     </dependencies>
 </project>

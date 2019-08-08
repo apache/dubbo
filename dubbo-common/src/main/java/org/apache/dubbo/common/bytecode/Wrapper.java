@@ -112,9 +112,10 @@ public abstract class Wrapper {
         if (c == Object.class) {
             return OBJECT_WRAPPER;
         }
-
+        // 从缓存中获取wrapper实例
         Wrapper ret = WRAPPER_MAP.get(c);
         if (ret == null) {
+            //缓存未命中，则创建 Wrapper
             ret = makeWrapper(c);
             WRAPPER_MAP.put(c, ret);
         }
@@ -122,6 +123,7 @@ public abstract class Wrapper {
     }
 
     private static Wrapper makeWrapper(Class<?> c) {
+        // 检查是否为基本类型
         if (c.isPrimitive()) {
             throw new IllegalArgumentException("Can not create wrapper for primitive type: " + c);
         }
@@ -137,16 +139,21 @@ public abstract class Wrapper {
         c2.append(name).append(" w; try{ w = ((").append(name).append(")$1); }catch(Throwable e){ throw new IllegalArgumentException(e); }");
         c3.append(name).append(" w; try{ w = ((").append(name).append(")$1); }catch(Throwable e){ throw new IllegalArgumentException(e); }");
 
+        // 存储成员变量名和类型
         Map<String, Class<?>> pts = new HashMap<String, Class<?>>(); // <property name, property types>
-        Map<String, Method> ms = new LinkedHashMap<String, Method>(); // <method desc, Method instance>
-        List<String> mns = new ArrayList<String>(); // method names.
-        List<String> dmns = new ArrayList<String>(); // declaring method names.
+        // ms 用于存储方法描述信息（可理解为方法签名）及 Method 实例
+        Map<String, Method> ms = new LinkedHashMap<String, Method>();
+        // mns 为方法名列表
+        List<String> mns = new ArrayList<String>();
+        // dmns 用于存储“定义在当前类中的方法”的名称
+        List<String> dmns = new ArrayList<String>();
 
-        // get all public field.
+        // get all public field. 获得所有可访问级别的字段，并未所有字段生成条件判断语句
         for (Field f : c.getFields()) {
             String fn = f.getName();
             Class<?> ft = f.getType();
             if (Modifier.isStatic(f.getModifiers()) || Modifier.isTransient(f.getModifiers())) {
+                //忽略关键字的修饰
                 continue;
             }
 
@@ -154,9 +161,9 @@ public abstract class Wrapper {
             c2.append(" if( $2.equals(\"").append(fn).append("\") ){ return ($w)w.").append(fn).append("; }");
             pts.put(fn, ft);
         }
-
+         /*****************************************************/
         Method[] methods = c.getMethods();
-        // get all public method.
+        // get all public method. 检测 c 中是否包含在当前类中声明的方法
         boolean hasMethod = hasMethods(methods);
         if (hasMethod) {
             c3.append(" try{");
@@ -212,6 +219,7 @@ public abstract class Wrapper {
 
         c3.append(" throw new " + NoSuchMethodException.class.getName() + "(\"Not found method \\\"\"+$2+\"\\\" in class " + c.getName() + ".\"); }");
 
+        /*****************************************************/
         // deal with get/set method.
         Matcher matcher;
         for (Map.Entry<String, Method> entry : ms.entrySet()) {
@@ -234,9 +242,10 @@ public abstract class Wrapper {
         }
         c1.append(" throw new " + NoSuchPropertyException.class.getName() + "(\"Not found property \\\"\"+$2+\"\\\" field or setter method in class " + c.getName() + ".\"); }");
         c2.append(" throw new " + NoSuchPropertyException.class.getName() + "(\"Not found property \\\"\"+$2+\"\\\" field or setter method in class " + c.getName() + ".\"); }");
-
+        /*****************************************************/
         // make class
         long id = WRAPPER_CLASS_COUNTER.getAndIncrement();
+        //创建类生成器
         ClassGenerator cc = ClassGenerator.newInstance(cl);
         cc.setClassName((Modifier.isPublic(c.getModifiers()) ? Wrapper.class.getName() : c.getName() + "$sw") + id);
         cc.setSuperClass(Wrapper.class);

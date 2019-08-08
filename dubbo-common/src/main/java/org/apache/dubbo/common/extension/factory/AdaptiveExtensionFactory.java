@@ -43,6 +43,8 @@ public class AdaptiveExtensionFactory implements ExtensionFactory {
 
     @Override
     public <T> T getExtension(Class<T> type, String name) {
+        //factories=[SpiExtensionFactory,SpringExtensionFactory]
+        //遍历获取spi,先从SpiExtensionFactory获取,如果没有,再从SpringExtensionFactory获取
         for (ExtensionFactory factory : factories) {
             T extension = factory.getExtension(type, name);
             if (extension != null) {

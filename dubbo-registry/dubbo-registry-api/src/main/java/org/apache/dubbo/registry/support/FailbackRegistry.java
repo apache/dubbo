@@ -228,6 +228,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         removeFailedUnregistered(url);
         try {
             // Sending a registration request to the server side
+            // 模版方法
             doRegister(url);
         } catch (Exception e) {
             Throwable t = e;
@@ -247,6 +248,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             }
 
             // Record a failed registration request to a failed list, retry regularly
+            //记录注册失败的链接
             addFailedRegistered(url);
         }
     }
