@@ -75,6 +75,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_IP_TO_BIND
 import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
 import static org.apache.dubbo.config.Constants.DUBBO_PORT_TO_BIND;
 import static org.apache.dubbo.config.Constants.DUBBO_PORT_TO_REGISTRY;
+import static org.apache.dubbo.config.Constants.REGISTER_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
 import static org.apache.dubbo.config.Constants.MULTICAST;
 import static org.apache.dubbo.config.Constants.PROTOCOLS_SUFFIX;
@@ -577,9 +578,6 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             }
             // export to remote if the config is not local (export to local only when config is local)
             if (!SCOPE_LOCAL.equalsIgnoreCase(scope)) {
-                if (!isOnlyInJvm() && logger.isInfoEnabled()) {
-                    logger.info("Export dubbo service " + interfaceClass.getName() + " to url " + url);
-                }
                 if (CollectionUtils.isNotEmpty(registryURLs)) {
                     for (URL registryURL : registryURLs) {
                         //if protocol is only injvm ,not register
@@ -592,7 +590,11 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                             url = url.addParameterAndEncoded(MONITOR_KEY, monitorUrl.toFullString());
                         }
                         if (logger.isInfoEnabled()) {
-                            logger.info("Register dubbo service " + interfaceClass.getName() + " url " + url + " to registry " + registryURL);
+                            if (url.getParameter(REGISTER_KEY, true)) {
+                                logger.info("Register dubbo service " + interfaceClass.getName() + " url " + url + " to registry " + registryURL);
+                            } else {
+                                logger.info("Export dubbo service " + interfaceClass.getName() + " to url " + url);
+                            }
                         }
 
                         // For providers, this is used to enable custom proxy to generate invoker
@@ -608,6 +610,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                         exporters.add(exporter);
                     }
                 } else {
+                    if (logger.isInfoEnabled()) {
+                        logger.info("Export dubbo service " + interfaceClass.getName() + " to url " + url);
+                    }
                     Invoker<?> invoker = PROXY_FACTORY.getInvoker(ref, (Class) interfaceClass, url);
                     DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
 
