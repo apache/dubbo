@@ -84,8 +84,7 @@ public class EtcdMetadataReport extends AbstractMetadataReport {
 
     @Override
     protected void doSaveMetadata(URL url) {
-
-//        storeMetadata(consumerMetadataIdentifier, url.toFullString());
+        throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
     }
 
     @Override
