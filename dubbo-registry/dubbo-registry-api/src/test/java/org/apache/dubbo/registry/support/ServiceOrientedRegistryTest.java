@@ -99,7 +99,7 @@ public class ServiceOrientedRegistryTest {
 
         SortedSet<String> urls = metadataService.getExportedURLs();
 
-        assertFalse(urls.isEmpty());
+        assertTrue(urls.isEmpty());
         assertEquals(toSortedSet(), metadataService.getExportedURLs(SERVICE_INTERFACE));
         assertEquals(toSortedSet(), metadataService.getExportedURLs(SERVICE_INTERFACE, GROUP));
         assertEquals(metadataService.getExportedURLs(SERVICE_INTERFACE, GROUP, VERSION), urls);
@@ -128,9 +128,7 @@ public class ServiceOrientedRegistryTest {
         // register
         registry.register(newURL);
 
-        SortedSet<String> urls = new TreeSet<>(metadataService.getExportedURLs());
-
-        urls.remove(url.toFullString());
+        SortedSet<String> urls = metadataService.getExportedURLs();
 
         assertFalse(urls.isEmpty());
         assertEquals(metadataService.getExportedURLs(serviceInterface, GROUP, VERSION), urls);
@@ -141,9 +139,9 @@ public class ServiceOrientedRegistryTest {
 
         urls = metadataService.getExportedURLs();
 
-        assertEquals(toSortedSet(url.toFullString()), urls);
-        assertTrue(metadataService.getExportedURLs(SERVICE_INTERFACE).isEmpty());
-        assertTrue(metadataService.getExportedURLs(SERVICE_INTERFACE, GROUP).isEmpty());
+        assertEquals(toSortedSet(), urls);
+        assertEquals(metadataService.getExportedURLs(SERVICE_INTERFACE), urls);
+        assertEquals(metadataService.getExportedURLs(SERVICE_INTERFACE, GROUP), urls);
         assertEquals(metadataService.getExportedURLs(SERVICE_INTERFACE, GROUP, VERSION), urls);
         assertEquals(metadataService.getExportedURLs(SERVICE_INTERFACE, GROUP, VERSION, DEFAULT_PROTOCOL), urls);
     }
