@@ -14,21 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring.context.context.annotation.provider;
+package org.apache.dubbo.registry.client.event.listener;
 
-import org.apache.dubbo.config.annotation.Service;
-import org.apache.dubbo.config.spring.api.HelloService;
+import org.apache.dubbo.registry.client.DefaultServiceInstanceTest;
+import org.apache.dubbo.registry.client.event.ServiceInstancePreRegisteredEvent;
+
+import org.junit.jupiter.api.Test;
 
 /**
- * {@link HelloService} Implementation just annotating Dubbo's {@link Service}
+ * {@link CustomizableServiceInstanceListener} Test
  *
- * @since 2.5.9
+ * @since 2.7.4
  */
-@Service(interfaceName = "org.apache.dubbo.config.spring.api.HelloService")
-public class HelloServiceImpl implements HelloService {
+public class CustomizableServiceInstanceListenerTest {
 
-    @Override
-    public String sayHello(String name) {
-        return "Hello, " + name;
+    private CustomizableServiceInstanceListener listener = new CustomizableServiceInstanceListener();
+
+    @Test
+    public void testOnEvent() {
+        ServiceInstancePreRegisteredEvent event = new ServiceInstancePreRegisteredEvent(this, DefaultServiceInstanceTest.createInstance());
+        // breaking test
+        listener.onEvent(event);
     }
 }

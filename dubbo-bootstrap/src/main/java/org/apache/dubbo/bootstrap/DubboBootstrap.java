@@ -57,7 +57,6 @@ import org.apache.dubbo.registry.support.ServiceOrientedRegistry;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -77,7 +76,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
 import static org.apache.dubbo.config.context.ConfigManager.getInstance;
 import static org.apache.dubbo.registry.support.AbstractRegistryFactory.getRegistries;
-import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
 
 /**
  * The bootstrap class of Dubbo
@@ -114,19 +112,14 @@ public class DubboBootstrap {
 
     private final ConfigManager configManager = getInstance();
 
-    /**
-     * Is provider or not
-     */
-    private boolean isProvider;
+    private volatile boolean initialized = false;
 
-    private boolean initialized = false;
-
-    private boolean started = false;
+    private volatile boolean started = false;
 
     /**
      * Only Provider Register
      */
-    private boolean onlyRegisterProvider = false;
+    private volatile boolean onlyRegisterProvider = false;
 
     private ServiceInstance serviceInstance;
 
@@ -154,6 +147,7 @@ public class DubboBootstrap {
         configManager.addMetadataReports(metadataReportConfigs);
         return this;
     }
+
 
     // {@link ApplicationConfig} correlative methods
 
@@ -192,6 +186,7 @@ public class DubboBootstrap {
         configManager.setApplication(applicationConfig);
         return this;
     }
+
 
     // {@link RegistryConfig} correlative methods
 
@@ -240,8 +235,8 @@ public class DubboBootstrap {
         return this;
     }
 
-    // {@link ProtocolConfig} correlative methods
 
+    // {@link ProtocolConfig} correlative methods
     public DubboBootstrap protocol(Consumer<ProtocolBuilder> consumerBuilder) {
         return protocol(DEFAULT_PROTOCOL_ID, consumerBuilder);
     }
@@ -261,8 +256,8 @@ public class DubboBootstrap {
         return this;
     }
 
-    // {@link ServiceConfig} correlative methods
 
+    // {@link ServiceConfig} correlative methods
     public <S> DubboBootstrap service(Consumer<ServiceBuilder<S>> consumerBuilder) {
         return service(DEFAULT_SERVICE_ID, consumerBuilder);
     }
@@ -278,8 +273,8 @@ public class DubboBootstrap {
         return this;
     }
 
-    // {@link Reference} correlative methods
 
+    // {@link Reference} correlative methods
     public <S> DubboBootstrap reference(Consumer<ReferenceBuilder<S>> consumerBuilder) {
         return reference(DEFAULT_REFERENCE_ID, consumerBuilder);
     }
@@ -295,8 +290,8 @@ public class DubboBootstrap {
         return this;
     }
 
-    // {@link ProviderConfig} correlative methods
 
+    // {@link ProviderConfig} correlative methods
     public DubboBootstrap provider(Consumer<ProviderBuilder> builderConsumer) {
         return provider(DEFAULT_PROVIDER_ID, builderConsumer);
     }
@@ -316,8 +311,8 @@ public class DubboBootstrap {
         return this;
     }
 
-    // {@link ConsumerConfig} correlative methods
 
+    // {@link ConsumerConfig} correlative methods
     public DubboBootstrap consumer(Consumer<ConsumerBuilder> builderConsumer) {
         return consumer(DEFAULT_CONSUMER_ID, builderConsumer);
     }
@@ -338,6 +333,7 @@ public class DubboBootstrap {
     }
 
     // {@link ConfigCenterConfig} correlative methods
+
     public DubboBootstrap configCenter(ConfigCenterConfig configCenterConfig) {
         return configCenter(asList(configCenterConfig));
     }
@@ -424,13 +420,8 @@ public class DubboBootstrap {
             String id = "config-center-" + protocol + "-" + registryConfig.getPort();
             ConfigCenterConfig cc = new ConfigCenterConfig();
             cc.setId(id);
-            cc.setParameters(registryConfig.getParameters() == null ?
-                    new HashMap<>() :
-                    new HashMap<>(registryConfig.getParameters()));
-            cc.getParameters().put(CLIENT_KEY,registryConfig.getClient());
-            cc.setProtocol(registryConfig.getProtocol());
+            cc.setProtocol(protocol);
             cc.setAddress(registryConfig.getAddress());
-            cc.setNamespace(registryConfig.getGroup());
             cc.setHighestPriority(false);
             configManager.addConfigCenter(cc);
         });
@@ -463,7 +454,6 @@ public class DubboBootstrap {
                 /**
                  * export {@link MetadataService}
                  */
-                // TODO, only export to default registry?
                 List<URL> exportedURLs = exportMetadataService(
                         configManager.getApplication().orElseThrow(() -> new IllegalStateException("ApplicationConfig cannot be null")),
                         configManager.getRegistries(),
@@ -541,6 +531,7 @@ public class DubboBootstrap {
 
 
     /* serve for builder apis, begin */
+
     private ApplicationBuilder createApplicationBuilder(String name) {
         return new ApplicationBuilder().name(name);
     }
@@ -569,8 +560,8 @@ public class DubboBootstrap {
         return new ConsumerBuilder().id(id);
     }
 
-    /* serve for builder apis, end */
 
+    /* serve for builder apis, end */
     private void startMetadataReport() {
         ApplicationConfig applicationConfig = configManager.getApplication().orElseThrow(() -> new IllegalStateException("There's no ApplicationConfig specified."));
 
@@ -612,15 +603,14 @@ public class DubboBootstrap {
                 return null;
             }
             DynamicConfiguration dynamicConfiguration = getDynamicConfiguration(configCenter.toUrl());
-            String configContent = dynamicConfiguration.getProperties(configCenter.getConfigFile(), configCenter.getGroup());
+            String configContent = dynamicConfiguration.getRule(configCenter.getConfigFile(), configCenter.getGroup());
 
             String appGroup = configManager.getApplication().orElse(new ApplicationConfig()).getName();
             String appConfigContent = null;
             if (isNotEmpty(appGroup)) {
-                appConfigContent = dynamicConfiguration.getProperties
-                        (isNotEmpty(configCenter.getAppConfigFile()) ? configCenter.getAppConfigFile() : configCenter.getConfigFile(),
-                                appGroup
-                        );
+                appConfigContent = dynamicConfiguration.getConfig(isNotEmpty(configCenter.getAppConfigFile()) ?
+                        configCenter.getAppConfigFile() : configCenter.getConfigFile(), appGroup
+                );
             }
             try {
                 Environment.getInstance().setConfigCenterFirst(configCenter.isHighestPriority());
@@ -661,6 +651,10 @@ public class DubboBootstrap {
 
     public void exportServiceConfig(ServiceConfig<?> serviceConfig) {
         serviceConfig.export();
+    }
+
+    public boolean isOnlyRegisterProvider() {
+        return onlyRegisterProvider;
     }
 
     private void registerServiceInstance(List<URL> exportedURLs) {

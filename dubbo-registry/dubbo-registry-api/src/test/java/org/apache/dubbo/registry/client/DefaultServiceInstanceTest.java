@@ -30,31 +30,37 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 public class DefaultServiceInstanceTest {
 
-    public static DefaultServiceInstance INSTANCE =
-            new DefaultServiceInstance("A", "127.0.0.1", 8080);
+    public DefaultServiceInstance instance;
+
+    public static DefaultServiceInstance createInstance() {
+        DefaultServiceInstance instance = new DefaultServiceInstance("A", "127.0.0.1", 8080);
+        instance.getMetadata().put("dubbo.metadata-service.urls", "[ \"dubbo://192.168.0.102:20881/com.alibaba.cloud.dubbo.service.DubboMetadataService?anyhost=true&application=spring-cloud-alibaba-dubbo-provider&bind.ip=192.168.0.102&bind.port=20881&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&group=spring-cloud-alibaba-dubbo-provider&interface=com.alibaba.cloud.dubbo.service.DubboMetadataService&methods=getAllServiceKeys,getServiceRestMetadata,getExportedURLs,getAllExportedURLs&pid=17134&qos.enable=false&register=true&release=2.7.3&revision=1.0.0&side=provider&timestamp=1564826098503&version=1.0.0\" ]");
+        instance.getMetadata().put("dubbo.metadata-service.url-params", "{\"dubbo\":{\"application\":\"dubbo-provider-demo\",\"deprecated\":\"false\",\"group\":\"dubbo-provider-demo\",\"version\":\"1.0.0\",\"timestamp\":\"1564845042651\",\"dubbo\":\"2.0.2\",\"provider.host\":\"192.168.0.102\",\"provider.port\":\"20880\"}}");
+        return instance;
+    }
 
     @BeforeEach
     public void init() {
-        INSTANCE = new DefaultServiceInstance("A", "127.0.0.1", 8080);
+        instance = createInstance();
     }
 
     @Test
     public void testDefaultValues() {
-        assertTrue(INSTANCE.isEnabled());
-        assertTrue(INSTANCE.isHealthy());
-        assertTrue(INSTANCE.getMetadata().isEmpty());
+        assertTrue(instance.isEnabled());
+        assertTrue(instance.isHealthy());
+        assertFalse(instance.getMetadata().isEmpty());
     }
 
     @Test
     public void testSetAndGetValues() {
-        INSTANCE.setEnabled(false);
-        INSTANCE.setHealthy(false);
+        instance.setEnabled(false);
+        instance.setHealthy(false);
 
-        assertEquals("A", INSTANCE.getServiceName());
-        assertEquals("127.0.0.1", INSTANCE.getHost());
-        assertEquals(8080, INSTANCE.getPort());
-        assertFalse(INSTANCE.isEnabled());
-        assertFalse(INSTANCE.isHealthy());
-        assertTrue(INSTANCE.getMetadata().isEmpty());
+        assertEquals("A", instance.getServiceName());
+        assertEquals("127.0.0.1", instance.getHost());
+        assertEquals(8080, instance.getPort());
+        assertFalse(instance.isEnabled());
+        assertFalse(instance.isHealthy());
+        assertFalse(instance.getMetadata().isEmpty());
     }
 }

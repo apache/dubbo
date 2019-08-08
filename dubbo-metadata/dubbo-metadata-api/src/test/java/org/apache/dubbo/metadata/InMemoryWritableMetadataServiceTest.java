@@ -23,9 +23,12 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.unmodifiableSortedSet;
 import static org.apache.dubbo.common.URL.valueOf;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
@@ -71,9 +74,9 @@ public class InMemoryWritableMetadataServiceTest {
     public void testGetExportedURLs() {
 
         assertTrue(metadataService.exportURL(BASE_URL));
-        List<String> exportedURLs = metadataService.getExportedURLs(TEST_SERVICE);
+        Set<String> exportedURLs = metadataService.getExportedURLs(TEST_SERVICE);
         assertEquals(1, exportedURLs.size());
-        assertEquals(asList(BASE_URL.toFullString()), exportedURLs);
+        assertEquals(asSortedSet(BASE_URL.toFullString()), exportedURLs);
         assertTrue(metadataService.unexportURL(BASE_URL));
 
         assertTrue(metadataService.exportURL(BASE_URL));
@@ -83,21 +86,21 @@ public class InMemoryWritableMetadataServiceTest {
         assertTrue(metadataService.exportURL(BASE_URL_GROUP_AND_VERSION));
 
         exportedURLs = metadataService.getExportedURLs(TEST_SERVICE);
-        assertEquals(asList(BASE_URL.toFullString()), exportedURLs);
-        assertEquals(asList(
+        assertEquals(asSortedSet(BASE_URL.toFullString()), exportedURLs);
+        assertEquals(asSortedSet(
                 BASE_URL.toFullString(),
                 BASE_URL_GROUP.toFullString(),
                 BASE_URL_GROUP_AND_VERSION.toFullString()), metadataService.getExportedURLs());
 
         assertTrue(metadataService.exportURL(REST_BASE_URL));
         exportedURLs = metadataService.getExportedURLs(TEST_SERVICE);
-        assertEquals(asList(BASE_URL.toFullString(), REST_BASE_URL.toFullString()), exportedURLs);
+        assertEquals(asSortedSet(BASE_URL.toFullString(), REST_BASE_URL.toFullString()), exportedURLs);
 
         metadataService.exportURL(BASE_URL_GROUP_AND_VERSION_AND_PROTOCOL);
 
         exportedURLs = metadataService.getExportedURLs(TEST_SERVICE, "test", "1.0.0", "rest");
 
-        assertEquals(asList(BASE_URL_GROUP_AND_VERSION_AND_PROTOCOL.toFullString()), exportedURLs);
+        assertEquals(asSortedSet(BASE_URL_GROUP_AND_VERSION_AND_PROTOCOL.toFullString()), exportedURLs);
     }
 
     @Test
@@ -109,9 +112,9 @@ public class InMemoryWritableMetadataServiceTest {
         assertTrue(metadataService.subscribeURL(BASE_URL_GROUP_AND_VERSION));
         assertTrue(metadataService.subscribeURL(REST_BASE_URL));
 
-        List<String> subscribedURLs = metadataService.getSubscribedURLs();
+        Set<String> subscribedURLs = metadataService.getSubscribedURLs();
         assertEquals(4, subscribedURLs.size());
-        assertEquals(asList(
+        assertEquals(asSortedSet(
                 BASE_URL.toFullString(),
                 REST_BASE_URL.toFullString(),
                 BASE_URL_GROUP.toFullString(),
@@ -120,7 +123,7 @@ public class InMemoryWritableMetadataServiceTest {
         assertTrue(metadataService.unsubscribeURL(REST_BASE_URL));
         subscribedURLs = metadataService.getSubscribedURLs();
         assertEquals(3, subscribedURLs.size());
-        assertEquals(asList(
+        assertEquals(asSortedSet(
                 BASE_URL.toFullString(),
                 BASE_URL_GROUP.toFullString(),
                 BASE_URL_GROUP_AND_VERSION.toFullString()), subscribedURLs);
@@ -128,14 +131,19 @@ public class InMemoryWritableMetadataServiceTest {
         assertTrue(metadataService.unsubscribeURL(BASE_URL_GROUP));
         subscribedURLs = metadataService.getSubscribedURLs();
         assertEquals(2, subscribedURLs.size());
-        assertEquals(asList(
+        assertEquals(asSortedSet(
                 BASE_URL.toFullString(),
                 BASE_URL_GROUP_AND_VERSION.toFullString()), subscribedURLs);
 
         assertTrue(metadataService.unsubscribeURL(BASE_URL_GROUP_AND_VERSION));
         subscribedURLs = metadataService.getSubscribedURLs();
         assertEquals(1, subscribedURLs.size());
-        assertEquals(asList(
+        assertEquals(asSortedSet(
                 BASE_URL.toFullString()), subscribedURLs);
     }
+
+    private static <T extends Comparable<T>> SortedSet<T> asSortedSet(T... values) {
+        return unmodifiableSortedSet(new TreeSet<>(asList(values)));
+    }
+
 }

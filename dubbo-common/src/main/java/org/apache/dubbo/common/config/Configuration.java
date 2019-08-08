@@ -127,6 +127,4 @@ public interface Configuration {
 
         return cls.cast(obj);
     }
-
-
 }

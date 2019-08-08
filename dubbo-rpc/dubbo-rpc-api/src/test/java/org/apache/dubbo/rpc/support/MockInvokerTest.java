@@ -16,16 +16,17 @@
  */
 package org.apache.dubbo.rpc.support;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.RpcInvocation;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
 import java.io.Serializable;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
-
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.RpcInvocation;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.rpc.Constants.MOCK_KEY;
 

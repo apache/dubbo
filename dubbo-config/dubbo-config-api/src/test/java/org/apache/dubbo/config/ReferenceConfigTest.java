@@ -177,10 +177,10 @@ public class ReferenceConfigTest {
         Assertions.assertEquals(3, (int)((MethodConfig)referenceConfig.getMethods().get(0)).getActives());
         Assertions.assertEquals(5, (int)((MethodConfig)referenceConfig.getMethods().get(0)).getExecutes());
         Assertions.assertTrue(((MethodConfig) referenceConfig.getMethods().get(0)).isAsync());
-        assertEquals(((MethodConfig) referenceConfig.getMethods().get(0)).getOninvoke(), "i");
-        assertEquals(((MethodConfig) referenceConfig.getMethods().get(0)).getOnreturn(), "r");
-        assertEquals(((MethodConfig) referenceConfig.getMethods().get(0)).getOnthrow(), "t");
-        assertEquals(((MethodConfig) referenceConfig.getMethods().get(0)).getCache(), "c");
+        Assertions.assertEquals(((MethodConfig) referenceConfig.getMethods().get(0)).getOninvoke(), "i");
+        Assertions.assertEquals(((MethodConfig) referenceConfig.getMethods().get(0)).getOnreturn(), "r");
+        Assertions.assertEquals(((MethodConfig) referenceConfig.getMethods().get(0)).getOnthrow(), "t");
+        Assertions.assertEquals(((MethodConfig) referenceConfig.getMethods().get(0)).getCache(), "c");
     }
 
 

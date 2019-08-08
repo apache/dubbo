@@ -38,16 +38,12 @@ import com.google.gson.Gson;
 
 import java.io.File;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
-import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
 
 /**
  * 2019-07-08

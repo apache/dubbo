@@ -27,20 +27,21 @@ import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.support.AvailableCluster;
 
-import java.lang.reflect.Proxy;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static org.apache.dubbo.registry.client.metadata.MetadataServiceURLBuilder.composite;
+
 /**
- * The factory of {@link MetadataService}'s {@link Proxy}
+ * The default {@link MetadataServiceProxyFactory} to get the proxy of {@link MetadataService}
  *
  * @since 2.7.4
  */
 public class DefaultMetadataServiceProxyFactory implements MetadataServiceProxyFactory {
 
-    private final Map<String, MetadataService> proxys = new HashMap<>();
+    private final Map<String, MetadataService> proxies = new HashMap<>();
 
     private ProxyFactory proxyFactory;
 
@@ -58,11 +59,11 @@ public class DefaultMetadataServiceProxyFactory implements MetadataServiceProxyF
 
     @Override
     public MetadataService getProxy(ServiceInstance serviceInstance) {
-        return proxys.computeIfAbsent(serviceInstance.getId(), id -> createProxy(serviceInstance));
+        return proxies.computeIfAbsent(serviceInstance.getId(), id -> createProxy(serviceInstance));
     }
 
     protected MetadataService createProxy(ServiceInstance serviceInstance) {
-        List<URL> urls = ServiceInstance.toUrls(serviceInstance);
+        List<URL> urls = composite().build(serviceInstance);
         List<Invoker<MetadataService>> invokers = urls.stream()
                 .map(url -> protocol.refer(MetadataService.class, url))
                 .collect(Collectors.toList());

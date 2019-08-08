@@ -16,18 +16,7 @@
  */
 package org.apache.dubbo.registry.client;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.URLBuilder;
-import org.apache.dubbo.metadata.MetadataService;
-
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-
-import static java.lang.String.valueOf;
-import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getMetadataServiceURLsParams;
-import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getProviderHost;
-import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getProviderPort;
 
 /**
  * The model class of an instance of a service, which is used for service registration and discovery.
@@ -103,36 +92,4 @@ public interface ServiceInstance {
      */
     boolean equals(Object another);
 
-    /**
-     * Build the {@link URL urls} from {@link ServiceInstance#getMetadata() the metadata} of {@link ServiceInstance}
-     *
-     * @param serviceInstance {@link ServiceInstance}
-     * @return the not-null {@link List}
-     */
-    static List<URL> toUrls(ServiceInstance serviceInstance) {
-
-        Map<String, Map<String, Object>> paramsMap = getMetadataServiceURLsParams(serviceInstance);
-
-        List<URL> urls = new ArrayList<>(paramsMap.size());
-
-        for (Map.Entry<String, Map<String, Object>> entry : paramsMap.entrySet()) {
-
-            URLBuilder urlBuilder = new URLBuilder();
-            String protocol = entry.getKey();
-            Map<String, Object> urlParams = entry.getValue();
-            String host = getProviderHost(urlParams);
-            Integer port = getProviderPort(urlParams);
-            urlBuilder.setHost(host)
-                    .setPort(port)
-                    .setProtocol(protocol)
-                    .setPath(MetadataService.class.getName());
-
-            // add parameters
-            entry.getValue().forEach((name, value) -> urlBuilder.addParameter(name, valueOf(value)));
-
-            urls.add(urlBuilder.build());
-        }
-
-        return urls;
-    }
 }

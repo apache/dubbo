@@ -21,6 +21,8 @@ import org.apache.dubbo.common.function.ThrowableConsumer;
 import org.apache.dubbo.common.function.ThrowableFunction;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.DefaultPage;
+import org.apache.dubbo.common.utils.Page;
 import org.apache.dubbo.event.EventDispatcher;
 import org.apache.dubbo.event.EventListener;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
@@ -32,7 +34,9 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.api.CuratorWatcher;
 import org.apache.zookeeper.KeeperException;
 
+import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -111,6 +115,39 @@ public class ZookeeperServiceDiscovery implements ServiceDiscovery, EventListene
     @Override
     public List<ServiceInstance> getInstances(String serviceName) throws NullPointerException {
         return doInServiceDiscovery(s -> build(s.queryForInstances(serviceName)));
+    }
+
+    @Override
+    public Page<ServiceInstance> getInstances(String serviceName, int offset, int pageSize, boolean healthyOnly) {
+        String path = buildServicePath(serviceName);
+
+        return execute(path, p -> {
+
+            List<ServiceInstance> serviceInstances = new LinkedList<>();
+
+            List<String> serviceIds = new LinkedList<>(curatorFramework.getChildren().forPath(p));
+
+            int totalSize = serviceIds.size();
+
+            Iterator<String> iterator = serviceIds.iterator();
+
+            for (int i = 0; i < offset; i++) {
+                if (iterator.hasNext()) { // remove the elements from 0 to offset
+                    iterator.next();
+                    iterator.remove();
+                }
+            }
+
+            for (int i = 0; i < pageSize; i++) {
+                if (iterator.hasNext()) {
+                    String serviceId = iterator.next();
+                    ServiceInstance serviceInstance = build(serviceDiscovery.queryForInstance(serviceName, serviceId));
+                    serviceInstances.add(serviceInstance);
+                }
+            }
+
+            return new DefaultPage<>(offset, pageSize, serviceInstances, totalSize);
+        });
     }
 
     @Override

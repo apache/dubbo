@@ -70,7 +70,6 @@ public class DynamicConfigurationServiceNameMapping implements ServiceNameMappin
 
         DynamicConfiguration dynamicConfiguration = DynamicConfiguration.getDynamicConfiguration();
 
-        String key = ApplicationModel.getApplication();
         Set<String> serviceNames = new LinkedHashSet<>();
         execute(() -> {
             Set<String> keys = dynamicConfiguration.getConfigKeys(buildGroup(serviceInterface, group, version, protocol));
@@ -80,11 +79,13 @@ public class DynamicConfigurationServiceNameMapping implements ServiceNameMappin
     }
 
     protected static String buildGroup(String serviceInterface, String group, String version, String protocol) {
-        StringBuilder groupBuilder = new StringBuilder(serviceInterface)
-                .append(SEPARATOR).append(defaultString(group))
-                .append(SEPARATOR).append(defaultString(version))
-                .append(SEPARATOR).append(defaultString(protocol));
-        return groupBuilder.toString();
+        //        the issue : https://github.com/apache/dubbo/issues/4671
+        //        StringBuilder groupBuilder = new StringBuilder(serviceInterface)
+        //                .append(SEPARATOR).append(defaultString(group))
+        //                .append(SEPARATOR).append(defaultString(version))
+        //                .append(SEPARATOR).append(defaultString(protocol));
+        //        return groupBuilder.toString();
+        return serviceInterface;
     }
 
     private static String defaultString(String value) {

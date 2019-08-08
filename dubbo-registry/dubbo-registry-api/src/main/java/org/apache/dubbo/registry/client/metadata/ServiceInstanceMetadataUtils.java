@@ -43,9 +43,21 @@ import static org.apache.dubbo.registry.integration.RegistryProtocol.DEFAULT_REG
 public class ServiceInstanceMetadataUtils {
 
     /**
+     * The prefix of {@link MetadataService} : "dubbo.metadata-service."
+     */
+    public static final String DUBBO_METADATA_SERVICE_PREFIX = "dubbo.metadata-service.";
+
+    /**
      * The key of metadata JSON of {@link MetadataService}'s {@link URL}
      */
-    public static String METADATA_SERVICE_URL_PARAMS_KEY = "dubbo.metadata-service.url-params";
+    public static String METADATA_SERVICE_URL_PARAMS_KEY = DUBBO_METADATA_SERVICE_PREFIX + "url-params";
+
+    /**
+     * The {@link URL URLs} property name of {@link MetadataService} :
+     * "dubbo.metadata-service.urls", which is used to be compatible with Dubbo Spring Cloud and
+     * discovery the metadata of instance
+     */
+    public static final String DUBBO_METADATA_SERVICE_URLS_PROPERTY_NAME = DUBBO_METADATA_SERVICE_PREFIX + "urls";
 
     /**
      * The key of The revision for all exported Dubbo services.

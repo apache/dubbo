@@ -106,22 +106,23 @@ public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
     }
 
     @Override
-    public String getRule(String key, String group, long timeout) throws IllegalStateException {
+    public String getConfig(String key, String group, long timeout) throws IllegalStateException {
         return (String) getInternalProperty(getPathKey(group, key));
+    }
+
+    @Override
+    public String getRule(String key, String group, long timeout) throws IllegalStateException {
+        return getConfig(key, group, timeout);
     }
 
     @Override
     public String getProperties(String key, String group, long timeout) throws IllegalStateException {
-        // use global group 'dubbo' if no group specified
-        if (StringUtils.isEmpty(group)) {
-            group = DEFAULT_GROUP;
-        }
-        return (String) getInternalProperty(getPathKey(group, key));
+        return getConfig(key, group, timeout);
     }
 
     @Override
     public boolean publishConfig(String key, String group, String content) {
-        String path = buildPath(key, group);
+        String path = getPathKey(key, group);
         zkClient.create(path, content, true);
         return true;
     }
@@ -133,41 +134,46 @@ public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
         return isEmpty(nodes) ? emptySortedSet() : unmodifiableSortedSet(new TreeSet<>(nodes));
     }
 
+    private String buildPath(String group) {
+        String actualGroup = StringUtils.isEmpty(group) ? DEFAULT_GROUP : group;
+        return rootPath + PATH_SEPARATOR + actualGroup;
+    }
+
     private String getPathKey(String group, String key) {
-        return rootPath + PATH_SEPARATOR + group + PATH_SEPARATOR + key;
+        return buildPath(group) + PATH_SEPARATOR + key;
     }
 
-    /**
-     * Build the config node path by the specified <code>key</code> and <code>group</code>
-     *
-     * @param key   the key to represent a configuration
-     * @param group the group where the key belongs to
-     * @return
-     */
-    protected String buildPath(String key, String group) {
-        String path = null;
-        /**
-         * when group is not null, we are getting startup configs from Config Center, for example:
-         * group=dubbo, key=dubbo.properties
-         */
-        if (StringUtils.isNotEmpty(group)) {
-            path = group + "/" + key;
-        }
-        /**
-         * when group is null, we are fetching governance rules, for example:
-         * 1. key=org.apache.dubbo.DemoService.configurators
-         * 2. key = org.apache.dubbo.DemoService.condition-router
-         */
-        else {
-            int i = key.lastIndexOf(".");
-            path = key.substring(0, i) + "/" + key.substring(i + 1);
-        }
-        return buildPath(path);
-    }
-
-    protected String buildPath(String relativePath) {
-        String path = rootPath + "/" + relativePath;
-        return path;
-    }
+//    /**
+//     * Build the config node path by the specified <code>key</code> and <code>group</code>
+//     *
+//     * @param key   the key to represent a configuration
+//     * @param group the group where the key belongs to
+//     * @return
+//     */
+//    protected String buildPath(String key, String group) {
+//        String path = null;
+//        /**
+//         * when group is not null, we are getting startup configs from Config Center, for example:
+//         * group=dubbo, key=dubbo.properties
+//         */
+//        if (StringUtils.isNotEmpty(group)) {
+//            path = group + "/" + key;
+//        }
+//        /**
+//         * when group is null, we are fetching governance rules, for example:
+//         * 1. key=org.apache.dubbo.DemoService.configurators
+//         * 2. key = org.apache.dubbo.DemoService.condition-router
+//         */
+//        else {
+//            int i = key.lastIndexOf(".");
+//            path = key.substring(0, i) + "/" + key.substring(i + 1);
+//        }
+//        return buildPath(path);
+//    }
+//
+//    protected String buildPath(String relativePath) {
+//        String path = rootPath + "/" + relativePath;
+//        return path;
+//    }
 
 }
