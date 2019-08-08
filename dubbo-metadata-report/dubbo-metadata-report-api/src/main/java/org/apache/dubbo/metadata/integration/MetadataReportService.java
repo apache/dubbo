@@ -112,8 +112,8 @@ public class MetadataReportService {
         try {
             String interfaceName = providerUrl.getParameter(INTERFACE_KEY);
             if (StringUtils.isNotEmpty(interfaceName)) {
-                Class interfaceClass =Class.forName(interfaceName);
-                ClassLoader classLoader = interfaceClass.getClassLoader();
+                ClassLoader classLoader = null == Thread.currentThread().getContextClassLoader() ? this.getClass().getClassLoader() : Thread.currentThread().getContextClassLoader();
+                Class interfaceClass = Class.forName(interfaceName, true, classLoader);
                 if(isInterfaceAllowed(interfaceClass,classLoader)) {
                     FullServiceDefinition fullServiceDefinition = ServiceDefinitionBuilder.buildFullDefinition(interfaceClass, providerUrl.getParameters());
                     metadataReport.storeProviderMetadata(new MetadataIdentifier(providerUrl.getServiceInterface(),
