@@ -92,7 +92,7 @@ public class ZookeeperDynamicConfigurationTest {
 
     @Test
     public void testGetConfig() throws Exception {
-        Assertions.assertEquals("The content from dubbo.properties", configuration.getProperties("dubbo.properties", "dubbo"));
+        Assertions.assertEquals("The content from dubbo.properties", configuration.getConfig("dubbo.properties", "dubbo"));
     }
 
     @Test

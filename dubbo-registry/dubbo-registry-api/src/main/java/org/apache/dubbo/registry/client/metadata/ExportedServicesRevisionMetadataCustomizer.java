@@ -25,7 +25,7 @@ import org.apache.dubbo.registry.client.ServiceInstanceMetadataCustomizer;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
+import java.util.SortedSet;
 
 import static java.lang.String.valueOf;
 import static java.util.Objects.hash;
@@ -48,7 +48,7 @@ public class ExportedServicesRevisionMetadataCustomizer extends ServiceInstanceM
     @Override
     protected String buildMetadataValue(ServiceInstance serviceInstance) {
         WritableMetadataService writableMetadataService = WritableMetadataService.getDefaultExtension();
-        List<String> exportedURLs = writableMetadataService.getExportedURLs();
+        SortedSet<String> exportedURLs = writableMetadataService.getExportedURLs();
         Object[] data = exportedURLs.stream()
                 .map(URL::valueOf)                       // String to URL
                 .map(URL::getServiceInterface)           // get the service interface

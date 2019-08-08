@@ -59,9 +59,9 @@ public class NacosDynamicConfigurationTest {
         Thread.sleep(200);
         put("org.apache.dubbo.demo.DemoService:1.0.0.test:xxxx.configurators", "helloworld");
         Thread.sleep(200);
-        Assertions.assertEquals("hello", config.getRule("org.apache.dubbo.nacos.testService.configurators", DynamicConfiguration.DEFAULT_GROUP));
-        Assertions.assertEquals("aaa=bbb", config.getRule("dubbo.properties", "test"));
-        Assertions.assertEquals("helloworld", config.getRule("org.apache.dubbo.demo.DemoService:1.0.0.test:xxxx.configurators", DynamicConfiguration.DEFAULT_GROUP));
+        Assertions.assertEquals("hello", config.getConfig("org.apache.dubbo.nacos.testService.configurators", DynamicConfiguration.DEFAULT_GROUP));
+        Assertions.assertEquals("aaa=bbb", config.getConfig("dubbo.properties", "test"));
+        Assertions.assertEquals("helloworld", config.getConfig("org.apache.dubbo.demo.DemoService:1.0.0.test:xxxx.configurators", DynamicConfiguration.DEFAULT_GROUP));
     }
 
     @Test

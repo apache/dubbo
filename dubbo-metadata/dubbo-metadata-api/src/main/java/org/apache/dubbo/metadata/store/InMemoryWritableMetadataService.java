@@ -28,18 +28,18 @@ import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
 import com.google.gson.Gson;
 
 import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Comparator;
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ConcurrentNavigableMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
 
-import static java.util.Collections.emptyList;
-import static java.util.Collections.unmodifiableList;
+import static java.util.Collections.emptySortedSet;
+import static java.util.Collections.unmodifiableSortedSet;
 import static org.apache.dubbo.common.URL.buildKey;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
@@ -55,11 +55,6 @@ import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
  */
 public class InMemoryWritableMetadataService implements WritableMetadataService {
 
-    /**
-     * The class name of {@link MetadataService}
-     */
-    static final String METADATA_SERVICE_CLASS_NAME = MetadataService.class.getName();
-
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final Lock lock = new ReentrantLock();
@@ -68,9 +63,9 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
 
     /**
      * All exported {@link URL urls} {@link Map} whose key is the return value of {@link URL#getServiceKey()} method
-     * and value is the {@link List} of the {@link URL URLs}
+     * and value is the {@link SortedSet sorted set} of the {@link URL URLs}
      */
-    private ConcurrentMap<String, List<URL>> exportedServiceURLs = new ConcurrentHashMap<>();
+    private ConcurrentNavigableMap<String, SortedSet<URL>> exportedServiceURLs = new ConcurrentSkipListMap<>();
 
     // ==================================================================================== //
 
@@ -78,42 +73,36 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
 
     /**
      * The subscribed {@link URL urls} {@link Map} of {@link MetadataService},
-     * whose key is the return value of {@link URL#getServiceKey()} method and value is the {@link List} of
-     * the {@link URL URLs}
+     * whose key is the return value of {@link URL#getServiceKey()} method and value is
+     * the {@link SortedSet sorted set} of the {@link URL URLs}
      */
-    private final ConcurrentMap<String, List<URL>> subscribedServiceURLs = new ConcurrentHashMap<>();
+    private final ConcurrentNavigableMap<String, SortedSet<URL>> subscribedServiceURLs = new ConcurrentSkipListMap<>();
 
-    private final ConcurrentHashMap<String, String> serviceDefinitions = new ConcurrentHashMap<>();
+    private final ConcurrentNavigableMap<String, String> serviceDefinitions = new ConcurrentSkipListMap<>();
 
     // ==================================================================================== //
 
     @Override
-    public List<String> getSubscribedURLs() {
+    public SortedSet<String> getSubscribedURLs() {
         return getAllUnmodifiableServiceURLs(subscribedServiceURLs);
     }
 
     @Override
-    public List<String> getExportedURLs(String serviceInterface, String group, String version, String protocol) {
+    public SortedSet<String> getExportedURLs(String serviceInterface, String group, String version, String protocol) {
         if (ALL_SERVICE_INTERFACES.equals(serviceInterface)) {
             return getAllUnmodifiableServiceURLs(exportedServiceURLs);
         }
         String serviceKey = buildKey(serviceInterface, group, version);
-        return unmodifiableList(getServiceURLs(exportedServiceURLs, serviceKey, protocol));
+        return unmodifiableSortedSet(getServiceURLs(exportedServiceURLs, serviceKey, protocol));
     }
 
     @Override
     public boolean exportURL(URL url) {
-//        if (isMetadataServiceURL(url)) { // ignore MetadataService in the export phase
-//            return true;
-//        }
         return addURL(exportedServiceURLs, url);
     }
 
     @Override
     public boolean unexportURL(URL url) {
-//        if (isMetadataServiceURL(url)) { // ignore MetadataService in the export phase
-//            return true;
-//        }
         return removeURL(exportedServiceURLs, url);
     }
 
@@ -156,22 +145,20 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
         return serviceDefinitions.get(serviceKey);
     }
 
-    private boolean addURL(Map<String, List<URL>> serviceURLs, URL url) {
+    private boolean addURL(Map<String, SortedSet<URL>> serviceURLs, URL url) {
         return executeMutually(() -> {
-            List<URL> urls = serviceURLs.computeIfAbsent(url.getServiceKey(), s -> new LinkedList());
-            if (!urls.contains(url)) {
-                return urls.add(url);
-            }
-            return false;
+            SortedSet<URL> urls = serviceURLs.computeIfAbsent(url.getServiceKey(), this::newSortedURLs);
+            return urls.add(url);
         });
     }
 
-    private boolean removeURL(Map<String, List<URL>> serviceURLs, URL url) {
+    private SortedSet<URL> newSortedURLs(String serviceKey) {
+        return new TreeSet<>(URLComparator.INSTANCE);
+    }
+
+    private boolean removeURL(Map<String, SortedSet<URL>> serviceURLs, URL url) {
         return executeMutually(() -> {
-            List<URL> urls = serviceURLs.get(url.getServiceKey());
-            if (isEmpty(urls)) {
-                return false;
-            }
+            SortedSet<URL> urls = serviceURLs.getOrDefault(url.getServiceKey(), emptySortedSet());
             return urls.remove(url);
         });
     }
@@ -193,19 +180,16 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
         return success;
     }
 
-    private static List<String> getServiceURLs(Map<String, List<URL>> exportedServiceURLs, String serviceKey,
-                                               String protocol) {
-        List<URL> serviceURLs = exportedServiceURLs.get(serviceKey);
+    private static SortedSet<String> getServiceURLs(Map<String, SortedSet<URL>> exportedServiceURLs, String serviceKey,
+                                                    String protocol) {
+
+        SortedSet<URL> serviceURLs = exportedServiceURLs.get(serviceKey);
 
         if (isEmpty(serviceURLs)) {
-            return emptyList();
+            return emptySortedSet();
         }
 
-        return serviceURLs
-                .stream()
-                .filter(url -> isAcceptableProtocol(protocol, url))
-                .map(URL::toFullString)
-                .collect(Collectors.toList());
+        return MetadataService.toSortedStrings(serviceURLs.stream().filter(url -> isAcceptableProtocol(protocol, url)));
     }
 
     private static boolean isAcceptableProtocol(String protocol, URL url) {
@@ -214,18 +198,17 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
                 || protocol.equals(url.getProtocol());
     }
 
-//    private static boolean isMetadataServiceURL(URL url) {
-//        String serviceInterface = url.getServiceInterface();
-//        return METADATA_SERVICE_CLASS_NAME.equals(serviceInterface);
-//    }
+    private static SortedSet<String> getAllUnmodifiableServiceURLs(Map<String, SortedSet<URL>> serviceURLs) {
+        return MetadataService.toSortedStrings(serviceURLs.values().stream().flatMap(Collection::stream));
+    }
 
-    private static List<String> getAllUnmodifiableServiceURLs(Map<String, List<URL>> serviceURLs) {
-        return unmodifiableList(
-                serviceURLs
-                        .values()
-                        .stream()
-                        .flatMap(Collection::stream)
-                        .map(URL::toFullString)
-                        .collect(Collectors.toList()));
+    private static class URLComparator implements Comparator<URL> {
+
+        public static final URLComparator INSTANCE = new URLComparator();
+
+        @Override
+        public int compare(URL o1, URL o2) {
+            return o1.toFullString().compareTo(o2.toFullString());
+        }
     }
 }

@@ -22,7 +22,6 @@ import org.apache.dubbo.common.config.configcenter.ConfigChangeEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.etcd.StateListener;
 import org.apache.dubbo.remoting.etcd.jetcd.JEtcdClient;
 
@@ -95,17 +94,22 @@ public class EtcdDynamicConfiguration implements DynamicConfiguration {
     }
 
     @Override
-    public String getRule(String key, String group, long timeout) throws IllegalStateException {
+    public String getConfig(String key, String group, long timeout) throws IllegalStateException {
         return (String) getInternalProperty(convertKey(group, key));
     }
 
     @Override
-    public String getProperties(String key, String group, long timeout) throws IllegalStateException {
-        if (StringUtils.isEmpty(group)) {
-            group = DEFAULT_GROUP;
-        }
-        return (String) getInternalProperty(convertKey(group, key));
+    public String getRule(String key, String group, long timeout) throws IllegalStateException {
+        return getConfig(key, group, timeout);
     }
+
+//    @Override
+//    public String getConfigs(String key, String group, long timeout) throws IllegalStateException {
+//        if (StringUtils.isEmpty(group)) {
+//            group = DEFAULT_GROUP;
+//        }
+//        return (String) getInternalProperty(convertKey(group, key));
+//    }
 
     @Override
     public Object getInternalProperty(String key) {
@@ -118,7 +122,7 @@ public class EtcdDynamicConfiguration implements DynamicConfiguration {
     }
 
     private void recover() {
-        for (EtcdConfigWatcher watcher: watchListenerMap.values()) {
+        for (EtcdConfigWatcher watcher : watchListenerMap.values()) {
             watcher.watch();
         }
     }

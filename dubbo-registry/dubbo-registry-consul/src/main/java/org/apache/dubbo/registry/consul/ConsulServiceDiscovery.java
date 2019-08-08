@@ -176,17 +176,17 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
         }
 
         private void processService() {
-            String service = url.getServiceKey();
-            Response<List<HealthService>> response = getHealthServices(service, consulIndex, buildWatchTimeout(url));
-            Long currentIndex = response.getConsulIndex();
-            if (currentIndex != null && currentIndex > consulIndex) {
-                consulIndex = currentIndex;
-                List<HealthService> services = response.getValue();
-                List<URL> urls = convert(services, url);
-                for (NotifyListener listener : getSubscribed().get(url)) {
-                    doNotify(url, listener, urls);
-                }
-            }
+//            String service = url.getServiceKey();
+//            Response<List<HealthService>> response = getHealthServices(service, consulIndex, buildWatchTimeout(url));
+//            Long currentIndex = response.getConsulIndex();
+//            if (currentIndex != null && currentIndex > consulIndex) {
+//                consulIndex = currentIndex;
+//                List<HealthService> services = response.getValue();
+//                List<URL> urls = convert(services, url);
+//                for (NotifyListener listener : getSubscribed().get(url)) {
+//                    doNotify(url, listener, urls);
+//                }
+//            }
         }
 
         void stop() {

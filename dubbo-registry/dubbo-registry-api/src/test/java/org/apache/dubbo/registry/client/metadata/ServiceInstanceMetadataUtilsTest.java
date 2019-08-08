@@ -18,10 +18,13 @@ package org.apache.dubbo.registry.client.metadata;
 
 import org.apache.dubbo.common.URL;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -35,7 +38,7 @@ public class ServiceInstanceMetadataUtilsTest {
     private static URL url = URL.valueOf("dubbo://192.168.0.102:20880/org.apache.dubbo.metadata.MetadataService?&anyhost=true&application=spring-cloud-alibaba-dubbo-provider&bind.ip=192.168.0.102&bind.port=20880&default.deprecated=false&default.dynamic=false&default.register=true&deprecated=false&dubbo=2.0.2&dynamic=false&generic=false&group=spring-cloud-alibaba-dubbo-provider&interface=org.apache.dubbo.metadata.MetadataService&methods=getAllServiceKeys,getServiceRestMetadata,getExportedURLs,getAllExportedURLs&pid=58350&register=true&release=2.7.1&revision=1.0.0&side=provider&timestamp=1557928573174&version=1.0.0");
     private static URL url2 = URL.valueOf("rest://192.168.0.102:20880/org.apache.dubbo.metadata.MetadataService?&anyhost=true&application=spring-cloud-alibaba-dubbo-provider&bind.ip=192.168.0.102&bind.port=20880&default.deprecated=false&default.dynamic=false&default.register=true&deprecated=false&dubbo=2.0.2&dynamic=false&generic=false&group=spring-cloud-alibaba-dubbo-provider&interface=org.apache.dubbo.metadata.MetadataService&methods=getAllServiceKeys,getServiceRestMetadata,getExportedURLs,getAllExportedURLs&pid=58350&register=true&release=2.7.1&revision=1.0.0&side=provider&timestamp=1557928573174&version=1.0.0");
 
-    private static final String VALUE = "{\"rest\":{\"application\":\"spring-cloud-alibaba-dubbo-provider\",\"bind.ip\":\"192.168.0.102\",\"bind.port\":\"20880\",\"dubbo\":\"2.0.2\",\"release\":\"2.7.1\",\"side\":\"provider\",\"version\":\"1.0.0\"},\"dubbo\":{\"application\":\"spring-cloud-alibaba-dubbo-provider\",\"bind.ip\":\"192.168.0.102\",\"bind.port\":\"20880\",\"dubbo\":\"2.0.2\",\"release\":\"2.7.1\",\"side\":\"provider\",\"version\":\"1.0.0\"}}";
+    private static final String VALUE = "{\"rest\":{\"application\":\"spring-cloud-alibaba-dubbo-provider\",\"deprecated\":\"false\",\"group\":\"spring-cloud-alibaba-dubbo-provider\",\"version\":\"1.0.0\",\"timestamp\":\"1557928573174\",\"dubbo\":\"2.0.2\",\"release\":\"2.7.1\",\"provider.host\":\"192.168.0.102\",\"provider.port\":\"20880\"},\"dubbo\":{\"application\":\"spring-cloud-alibaba-dubbo-provider\",\"deprecated\":\"false\",\"group\":\"spring-cloud-alibaba-dubbo-provider\",\"version\":\"1.0.0\",\"timestamp\":\"1557928573174\",\"dubbo\":\"2.0.2\",\"release\":\"2.7.1\",\"provider.host\":\"192.168.0.102\",\"provider.port\":\"20880\"}}";
 
     @Test
     public void testMetadataServiceURLParameters() {
@@ -43,6 +46,18 @@ public class ServiceInstanceMetadataUtilsTest {
         List<URL> urls = Arrays.asList(url, url2);
 
         String parameter = ServiceInstanceMetadataUtils.getMetadataServiceParameter(urls);
+
+        JSONObject jsonObject = JSON.parseObject(parameter);
+
+        urls.forEach(url -> {
+            JSONObject map = jsonObject.getJSONObject(url.getProtocol());
+            for (Map.Entry<String, String> param : url.getParameters().entrySet()) {
+                String value = map.getString(param.getKey());
+                if (value != null) {
+                    assertEquals(param.getValue(), value);
+                }
+            }
+        });
 
         assertEquals(VALUE, parameter);
     }

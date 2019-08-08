@@ -50,6 +50,11 @@ public class CompositeDynamicConfiguration implements DynamicConfiguration {
     }
 
     @Override
+    public String getConfig(String key, String group, long timeout) throws IllegalStateException {
+        return (String) iterateConfigOperation(configuration -> configuration.getConfig(key, group, timeout));
+    }
+
+    @Override
     public String getRule(String key, String group, long timeout) throws IllegalStateException {
         return (String) iterateConfigOperation(configuration -> configuration.getRule(key, group, timeout));
     }

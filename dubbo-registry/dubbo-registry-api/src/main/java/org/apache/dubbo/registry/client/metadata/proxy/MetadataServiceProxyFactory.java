@@ -29,7 +29,7 @@ import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoad
  * @see MetadataService
  * @since 2.7.4
  */
-@SPI("local")
+@SPI("default")
 public interface MetadataServiceProxyFactory {
 
     /**

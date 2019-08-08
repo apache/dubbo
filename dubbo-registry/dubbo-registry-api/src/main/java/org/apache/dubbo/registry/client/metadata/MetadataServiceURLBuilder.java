@@ -17,65 +17,37 @@
 package org.apache.dubbo.registry.client.metadata;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.ServiceInstance;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-
-import static java.lang.String.valueOf;
-import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getMetadataServiceURLsParams;
-import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getProviderHost;
-import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getProviderPort;
+import java.util.ServiceLoader;
 
 /**
- * The {@link URL} builder for {@link MetadataService}
+ * The builder interface of {@link MetadataService} to build {@link URL URLs}, the multiple implementations
+ * will be loaded by Java standard {@link ServiceLoader} and {@link #composite() composited},
+ * whose building {@link URL URLs} will be aggregated
  *
- * @see MetadataService
+ * @see CompositeMetadataServiceURLBuilder
  * @since 2.7.4
  */
-class MetadataServiceURLBuilder {
+public interface MetadataServiceURLBuilder {
 
     /**
-     * The singleton instance of {@link MetadataServiceURLBuilder}
-     */
-    public static final MetadataServiceURLBuilder INSTANCE = new MetadataServiceURLBuilder();
-
-    private MetadataServiceURLBuilder() {
-    }
-
-    /**
-     * Build the {@link URL urls} from {@link ServiceInstance#getMetadata() the metadata} of {@link ServiceInstance}
+     * Build the {@link URL URLs} from the specified {@link ServiceInstance}
      *
      * @param serviceInstance {@link ServiceInstance}
-     * @return the not-null {@link List}
+     * @return non-null
      */
-    public List<URL> build(ServiceInstance serviceInstance) {
+    List<URL> build(ServiceInstance serviceInstance);
 
-        Map<String, Map<String, Object>> paramsMap = getMetadataServiceURLsParams(serviceInstance);
-
-        List<URL> urls = new ArrayList<>(paramsMap.size());
-
-        for (Map.Entry<String, Map<String, Object>> entry : paramsMap.entrySet()) {
-
-            URLBuilder urlBuilder = new URLBuilder();
-            String protocol = entry.getKey();
-            Map<String, Object> urlParams = entry.getValue();
-            String host = getProviderHost(urlParams);
-            Integer port = getProviderPort(urlParams);
-            urlBuilder.setHost(host)
-                    .setPort(port)
-                    .setProtocol(protocol)
-                    .setPath(MetadataService.class.getName());
-
-            // add parameters
-            entry.getValue().forEach((name, value) -> urlBuilder.addParameter(name, valueOf(value)));
-
-            urls.add(urlBuilder.build());
-        }
-
-        return urls;
+    /**
+     * Get the composite implementation of {@link MetadataServiceURLBuilder}
+     *
+     * @return the instance of {@link CompositeMetadataServiceURLBuilder}
+     * @see CompositeMetadataServiceURLBuilder
+     */
+    static MetadataServiceURLBuilder composite() {
+        return new CompositeMetadataServiceURLBuilder();
     }
 }

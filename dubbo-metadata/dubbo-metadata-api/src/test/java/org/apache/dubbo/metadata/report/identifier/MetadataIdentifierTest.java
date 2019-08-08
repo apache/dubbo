@@ -42,7 +42,7 @@ public class MetadataIdentifierTest {
                         (version == null ? "" : (version + PATH_SEPARATOR))
                         + (group == null ? "" : (group + PATH_SEPARATOR)) + PROVIDER_SIDE
                         + PATH_SEPARATOR + application);
-        Assertions.assertEquals(providerMetadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY),
+        Assertions.assertEquals(providerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY),
                 interfaceName + MetadataIdentifier.SEPARATOR +
                         (version == null ? "" : version) + MetadataIdentifier.SEPARATOR
                         + (group == null ? "" : group) + MetadataIdentifier.SEPARATOR

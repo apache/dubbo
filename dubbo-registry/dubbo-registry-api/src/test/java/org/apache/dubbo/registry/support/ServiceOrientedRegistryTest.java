@@ -25,8 +25,11 @@ import org.junit.jupiter.api.Test;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
-import static java.util.Collections.emptyList;
+import static java.util.Arrays.asList;
+import static java.util.Collections.unmodifiableSortedSet;
 import static org.apache.dubbo.common.URL.valueOf;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
@@ -51,7 +54,7 @@ public class ServiceOrientedRegistryTest {
 
     private static final String SERVICE_INTERFACE = "org.apache.dubbo.metadata.MetadataService";
 
-    private static final String GROUP = "spring-cloud-alibaba-dubbo-provider";
+    private static final String GROUP = "dubbo-provider";
 
     private static final String VERSION = "1.0.0";
 
@@ -94,11 +97,11 @@ public class ServiceOrientedRegistryTest {
 
         registry.register(url);
 
-        List<String> urls = metadataService.getExportedURLs();
+        SortedSet<String> urls = metadataService.getExportedURLs();
 
-        assertEquals(emptyList(), urls);
-        assertEquals(metadataService.getExportedURLs(SERVICE_INTERFACE), urls);
-        assertEquals(metadataService.getExportedURLs(SERVICE_INTERFACE, GROUP), urls);
+        assertTrue(urls.isEmpty());
+        assertEquals(toSortedSet(), metadataService.getExportedURLs(SERVICE_INTERFACE));
+        assertEquals(toSortedSet(), metadataService.getExportedURLs(SERVICE_INTERFACE, GROUP));
         assertEquals(metadataService.getExportedURLs(SERVICE_INTERFACE, GROUP, VERSION), urls);
         assertEquals(metadataService.getExportedURLs(SERVICE_INTERFACE, GROUP, VERSION, DEFAULT_PROTOCOL), urls);
 
@@ -110,8 +113,8 @@ public class ServiceOrientedRegistryTest {
 
         urls = metadataService.getExportedURLs();
 
-        assertEquals(metadataService.getExportedURLs(serviceInterface, GROUP, VERSION), urls);
-        assertEquals(metadataService.getExportedURLs(serviceInterface, GROUP, VERSION, DEFAULT_PROTOCOL), urls);
+        assertEquals(metadataService.getExportedURLs(serviceInterface, GROUP, VERSION), toSortedSet(urls.first()));
+        assertEquals(metadataService.getExportedURLs(serviceInterface, GROUP, VERSION, DEFAULT_PROTOCOL), toSortedSet(urls.first()));
 
     }
 
@@ -125,7 +128,7 @@ public class ServiceOrientedRegistryTest {
         // register
         registry.register(newURL);
 
-        List<String> urls = metadataService.getExportedURLs();
+        SortedSet<String> urls = metadataService.getExportedURLs();
 
         assertFalse(urls.isEmpty());
         assertEquals(metadataService.getExportedURLs(serviceInterface, GROUP, VERSION), urls);
@@ -136,7 +139,7 @@ public class ServiceOrientedRegistryTest {
 
         urls = metadataService.getExportedURLs();
 
-        assertEquals(emptyList(), urls);
+        assertEquals(toSortedSet(), urls);
         assertEquals(metadataService.getExportedURLs(SERVICE_INTERFACE), urls);
         assertEquals(metadataService.getExportedURLs(SERVICE_INTERFACE, GROUP), urls);
         assertEquals(metadataService.getExportedURLs(SERVICE_INTERFACE, GROUP, VERSION), urls);
@@ -148,10 +151,9 @@ public class ServiceOrientedRegistryTest {
 
         registry.subscribe(url, new MyNotifyListener());
 
-        List<String> urls = metadataService.getSubscribedURLs();
+        SortedSet<String> urls = metadataService.getSubscribedURLs();
 
-        assertFalse(urls.isEmpty());
-        assertEquals(url, urls.get(0));
+        assertTrue(urls.isEmpty());
 
     }
 
@@ -168,6 +170,10 @@ public class ServiceOrientedRegistryTest {
         public List<URL> getURLs() {
             return cache;
         }
+    }
+
+    private static <T extends Comparable<T>> SortedSet<T> toSortedSet(T... values) {
+        return unmodifiableSortedSet(new TreeSet<>(asList(values)));
     }
 
 }

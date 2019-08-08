@@ -194,13 +194,13 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             if (!ReferenceConfig.this.destroyed) {
                 logger.warn("ReferenceConfig(" + url + ") is not DESTROYED when FINALIZE");
 
-        /* don't destroy for now
-        try {
-            ReferenceConfig.this.destroy();
-        } catch (Throwable t) {
-                logger.warn("Unexpected err when destroy invoker of ReferenceConfig(" + url + ") in finalize method!", t);
-        }
-        */
+                /* don't destroy for now
+                try {
+                    ReferenceConfig.this.destroy();
+                } catch (Throwable t) {
+                        logger.warn("Unexpected err when destroy invoker of ReferenceConfig(" + url + ") in finalize method!", t);
+                }
+                */
             }
         }
     };

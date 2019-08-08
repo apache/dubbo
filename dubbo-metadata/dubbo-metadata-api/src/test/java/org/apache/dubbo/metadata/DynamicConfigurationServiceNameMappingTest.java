@@ -16,18 +16,11 @@
  */
 package org.apache.dubbo.metadata;
 
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
-import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import org.apache.curator.framework.CuratorFramework;
-import org.apache.curator.framework.CuratorFrameworkFactory;
-import org.apache.curator.retry.ExponentialBackoffRetry;
-import org.apache.curator.test.TestingServer;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -47,44 +40,25 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 public class DynamicConfigurationServiceNameMappingTest {
 
-    private static CuratorFramework client;
-
-    private static URL configUrl;
-    private static int zkServerPort = NetUtils.getAvailablePort();
-    private static TestingServer zkServer;
 
     private final ServiceNameMapping serviceNameMapping = getDefaultExtension();
 
     @BeforeAll
     public static void setUp() throws Exception {
 
-        zkServer = new TestingServer(zkServerPort, true);
-
-        client = CuratorFrameworkFactory.newClient("localhost:" + zkServerPort, 60 * 1000, 60 * 1000,
-                new ExponentialBackoffRetry(1000, 3));
-
-        client.start();
-
-        configUrl = URL.valueOf("zookeeper://localhost:" + zkServerPort);
-
         DynamicConfiguration configuration = getExtensionLoader(DynamicConfigurationFactory.class)
-                .getExtension(configUrl.getProtocol())
-                .getDynamicConfiguration(configUrl);
+                .getDefaultExtension()
+                .getDynamicConfiguration(null);
 
         Environment.getInstance().setDynamicConfiguration(configuration);
     }
 
-    @AfterAll
-    public static void tearDown() throws Exception {
-        zkServer.stop();
-    }
-
     @Test
     public void testBuildGroup() {
-        assertEquals("test:::", buildGroup("test", null, null, null));
-        assertEquals("test:default::", buildGroup("test", "default", null, null));
-        assertEquals("test:default:1.0.0:", buildGroup("test", "default", "1.0.0", null));
-        assertEquals("test:default:1.0.0:dubbo", buildGroup("test", "default", "1.0.0", "dubbo"));
+        assertEquals("test", buildGroup("test", null, null, null));
+        assertEquals("test", buildGroup("test", "default", null, null));
+        assertEquals("test", buildGroup("test", "default", "1.0.0", null));
+        assertEquals("test", buildGroup("test", "default", "1.0.0", "dubbo"));
     }
 
     @Test

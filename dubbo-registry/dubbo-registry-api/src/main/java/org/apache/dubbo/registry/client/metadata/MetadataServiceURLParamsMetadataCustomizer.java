@@ -22,7 +22,7 @@ import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstanceMetadataCustomizer;
 
-import java.util.List;
+import java.util.SortedSet;
 
 import static org.apache.dubbo.metadata.MetadataService.toURLs;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.METADATA_SERVICE_URL_PARAMS_KEY;
@@ -53,7 +53,7 @@ public class MetadataServiceURLParamsMetadataCustomizer extends ServiceInstanceM
 
         String version = MetadataService.VERSION;
 
-        List<String> urls = writableMetadataService.getExportedURLs(serviceInterface, group, version);
+        SortedSet<String> urls = writableMetadataService.getExportedURLs(serviceInterface, group, version);
 
         return getMetadataServiceParameter(toURLs(urls));
     }

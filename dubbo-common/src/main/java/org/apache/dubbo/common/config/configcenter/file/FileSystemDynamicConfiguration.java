@@ -47,6 +47,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.SynchronousQueue;
@@ -228,6 +231,12 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
         });
     }
 
+    @Override
+    public String getConfig(String key, String group, long timeout) throws IllegalStateException {
+        File configFile = configFile(key, group);
+        return getConfig(configFile, timeout);
+    }
+
     protected File configDirectory(String group) {
         String actualGroup = isBlank(group) ? DEFAULT_GROUP : group;
         return new File(rootDirectory, actualGroup);
@@ -341,8 +350,7 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
 
     @Override
     public String getRule(String key, String group, long timeout) throws IllegalStateException {
-        File configFile = configFile(key, group);
-        return getConfig(configFile, timeout);
+        return getConfig(key, group, timeout);
     }
 
     protected String getConfig(File configFile, long timeout) {
@@ -351,11 +359,6 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
 
     private boolean canRead(File file) {
         return file.exists() && file.canRead();
-    }
-
-    @Override
-    public String getProperties(String key, String group, long timeout) throws IllegalStateException {
-        return getRule(key, group, timeout);
     }
 
     @Override
@@ -451,10 +454,10 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
     }
 
     @Override
-    public Set<String> getConfigKeys(String group) {
+    public SortedSet<String> getConfigKeys(String group) {
         return Stream.of(configDirectory(group).listFiles(File::isFile))
                 .map(File::getName)
-                .collect(Collectors.toSet());
+                .collect(TreeSet::new, Set::add, Set::addAll);
     }
 
 
@@ -467,7 +470,7 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
     }
 
     @Override
-    public Map<String, String> getConfigs(String group) throws UnsupportedOperationException {
+    public SortedMap<String, String> getConfigs(String group) throws UnsupportedOperationException {
         return getConfigs(group, -1);
     }
 

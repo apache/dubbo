@@ -21,6 +21,7 @@
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-config</artifactId>
         <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>dubbo-config-api</artifactId>
     <packaging>jar</packaging>

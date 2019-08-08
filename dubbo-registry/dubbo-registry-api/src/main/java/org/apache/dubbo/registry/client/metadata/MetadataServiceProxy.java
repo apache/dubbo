@@ -27,10 +27,11 @@ import org.apache.dubbo.rpc.proxy.InvokerInvocationHandler;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.SortedSet;
 import java.util.function.Function;
 
 import static java.lang.reflect.Proxy.newProxyInstance;
-import static org.apache.dubbo.registry.client.metadata.MetadataServiceURLBuilder.INSTANCE;
+import static org.apache.dubbo.registry.client.metadata.MetadataServiceURLBuilder.composite;
 
 /**
  * The Proxy object for the {@link MetadataService} whose {@link ServiceInstance} providers may export multiple
@@ -49,7 +50,7 @@ class MetadataServiceProxy implements MetadataService {
     private final Protocol protocol;
 
     public MetadataServiceProxy(ServiceInstance serviceInstance, Protocol protocol) {
-        this(INSTANCE.build(serviceInstance), protocol);
+        this(composite().build(serviceInstance), protocol);
     }
 
     public MetadataServiceProxy(List<URL> urls, Protocol protocol) {
@@ -63,12 +64,12 @@ class MetadataServiceProxy implements MetadataService {
     }
 
     @Override
-    public List<String> getSubscribedURLs() {
+    public SortedSet<String> getSubscribedURLs() {
         return doInMetadataService(MetadataService::getSubscribedURLs);
     }
 
     @Override
-    public List<String> getExportedURLs(String serviceInterface, String group, String version, String protocol) {
+    public SortedSet<String> getExportedURLs(String serviceInterface, String group, String version, String protocol) {
         return doInMetadataService(metadataService ->
                 metadataService.getExportedURLs(serviceInterface, group, version, protocol));
     }

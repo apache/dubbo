@@ -1,4 +1,3 @@
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -767,7 +766,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             if (portToBind == null || portToBind == 0) {
                 portToBind = defaultPort;
             }
-            if (portToBind <= 0) {
+            if (portToBind == null || portToBind <= 0) {
                 portToBind = getRandomPort(name);
                 if (portToBind == null || portToBind < 0) {
                     portToBind = getAvailablePort(defaultPort);

@@ -93,16 +93,16 @@ public class ConsulDynamicConfiguration implements DynamicConfiguration {
     }
 
     @Override
-    public String getRule(String key, String group, long timeout) throws IllegalStateException {
+    public String getConfig(String key, String group, long timeout) throws IllegalStateException {
         return (String) getInternalProperty(convertKey(group, key));
     }
 
     @Override
-    public String getProperties(String key, String group, long timeout) throws IllegalStateException {
+    public String getRule(String key, String group, long timeout) throws IllegalStateException {
         if (StringUtils.isEmpty(group)) {
             group = DEFAULT_GROUP;
         }
-        return (String) getInternalProperty(convertKey(group, key));
+        return getConfig(key, group, timeout);
     }
 
     @Override

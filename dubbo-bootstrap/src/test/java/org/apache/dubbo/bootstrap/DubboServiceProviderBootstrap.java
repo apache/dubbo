@@ -31,6 +31,7 @@ public class DubboServiceProviderBootstrap {
                 // Nacos
 //                .registry("nacos", builder -> builder.address("nacos://127.0.0.1:8848?registry-type=service"))
 //                .registry(RegistryBuilder.newBuilder().address("etcd3://127.0.0.1:2379?registry-type=service").build())
+//                .registry("nacos", builder -> builder.address("nacos://127.0.0.1:8848?registry-type=service"))
                 .protocol(builder -> builder.port(-1).name("dubbo"))
                 .service(builder -> builder.id("test").interfaceClass(EchoService.class).ref(new EchoServiceImpl()))
                 .start()
