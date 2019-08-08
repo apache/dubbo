@@ -170,14 +170,15 @@ public class FileSystemDynamicConfiguration extends AbstractDynamicConfiguration
     private final Map<File, List<ConfigurationListener>> listenersRepository;
 
     public FileSystemDynamicConfiguration(URL url) {
-        this(initDirectory(url), getEncoding(url), getThreadPoolPrefixName(url), getThreadPoolSize(url));
+        this(initDirectory(url), getEncoding(url), getThreadPoolPrefixName(url), getThreadPoolSize(url),
+                getThreadPoolKeepAliveTime(url));
     }
 
     public FileSystemDynamicConfiguration(File rootDirectory, String encoding,
                                           String threadPoolPrefixName,
-                                          int threadPoolSize
-    ) {
-        super(threadPoolPrefixName, threadPoolSize);
+                                          int threadPoolSize,
+                                          long keepAliveTime) {
+        super(threadPoolPrefixName, threadPoolSize, keepAliveTime);
         this.rootDirectory = rootDirectory;
         this.encoding = encoding;
         this.processingDirectories = initProcessingDirectories();
