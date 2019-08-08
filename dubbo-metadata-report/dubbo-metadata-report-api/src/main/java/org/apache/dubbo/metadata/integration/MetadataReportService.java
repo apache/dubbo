@@ -114,13 +114,11 @@ public class MetadataReportService {
             if (StringUtils.isNotEmpty(interfaceName)) {
                 ClassLoader classLoader = null == Thread.currentThread().getContextClassLoader() ? this.getClass().getClassLoader() : Thread.currentThread().getContextClassLoader();
                 Class interfaceClass = Class.forName(interfaceName, true, classLoader);
-                if(isInterfaceAllowed(interfaceClass,classLoader)) {
-                    FullServiceDefinition fullServiceDefinition = ServiceDefinitionBuilder.buildFullDefinition(interfaceClass, providerUrl.getParameters());
-                    metadataReport.storeProviderMetadata(new MetadataIdentifier(providerUrl.getServiceInterface(),
-                            providerUrl.getParameter(VERSION_KEY), providerUrl.getParameter(GROUP_KEY),
-                            PROVIDER_SIDE, providerUrl.getParameter(APPLICATION_KEY)), fullServiceDefinition);
-                    return;
-                }
+                FullServiceDefinition fullServiceDefinition = ServiceDefinitionBuilder.buildFullDefinition(interfaceClass, providerUrl.getParameters());
+                metadataReport.storeProviderMetadata(new MetadataIdentifier(providerUrl.getServiceInterface(),
+                        providerUrl.getParameter(VERSION_KEY), providerUrl.getParameter(GROUP_KEY),
+                        PROVIDER_SIDE, providerUrl.getParameter(APPLICATION_KEY)), fullServiceDefinition);
+                return;
             }
             logger.error("publishProvider interfaceName is empty . providerUrl: " + providerUrl.toFullString());
         } catch (ClassNotFoundException e) {
