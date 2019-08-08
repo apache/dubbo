@@ -16,59 +16,43 @@
  */
 package org.apache.dubbo.remoting;
 
+import org.apache.dubbo.common.Resetable;
+
 import java.net.InetSocketAddress;
+import java.util.Collection;
 
 /**
- * Channel. (API/SPI, Prototype, ThreadSafe)
+ * Remoting Server. (API/SPI, Prototype, ThreadSafe)
+ * <p>
+ * <a href="http://en.wikipedia.org/wiki/Client%E2%80%93server_model">Client/Server</a>
  *
- * @see org.apache.dubbo.remoting.Client
- * @see RemotingServer#getChannels()
- * @see RemotingServer#getChannel(InetSocketAddress)
+ * @see org.apache.dubbo.remoting.Transporter#bind(org.apache.dubbo.common.URL, ChannelHandler)
  */
-public interface Channel extends Endpoint {
+public interface RemotingServer extends Endpoint, Resetable, IdleSensible {
 
     /**
-     * get remote address.
+     * is bound.
      *
-     * @return remote address.
+     * @return bound
      */
-    InetSocketAddress getRemoteAddress();
+    boolean isBound();
 
     /**
-     * is connected.
+     * get channels.
      *
-     * @return connected
+     * @return channels
      */
-    boolean isConnected();
+    Collection<Channel> getChannels();
 
     /**
-     * has attribute.
+     * get channel.
      *
-     * @param key key.
-     * @return has or has not.
+     * @param remoteAddress
+     * @return channel
      */
-    boolean hasAttribute(String key);
+    Channel getChannel(InetSocketAddress remoteAddress);
 
-    /**
-     * get attribute.
-     *
-     * @param key key.
-     * @return value.
-     */
-    Object getAttribute(String key);
+    @Deprecated
+    void reset(org.apache.dubbo.common.Parameters parameters);
 
-    /**
-     * set attribute.
-     *
-     * @param key   key.
-     * @param value value.
-     */
-    void setAttribute(String key, Object value);
-
-    /**
-     * remove attribute.
-     *
-     * @param key key.
-     */
-    void removeAttribute(String key);
 }

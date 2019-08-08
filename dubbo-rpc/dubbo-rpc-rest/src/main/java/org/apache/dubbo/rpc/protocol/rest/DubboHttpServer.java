@@ -36,7 +36,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Enumeration;
 
-public class DubboHttpServer extends BaseRestServer {
+public class DubboHttpServer extends BaseRestProtocolServer {
 
     private final HttpServletDispatcher dispatcher = new HttpServletDispatcher();
     private final ResteasyDeployment deployment = new ResteasyDeployment();
@@ -72,7 +72,7 @@ public class DubboHttpServer extends BaseRestServer {
     }
 
     @Override
-    public void stop() {
+    public void close() {
         httpServer.close();
     }
 

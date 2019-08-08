@@ -14,27 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.client;
+package org.apache.dubbo.rpc.protocol.rest;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Adaptive;
-import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.rpc.ProtocolServer;
 
-/**
- * The Factory interface to create an instance of {@link ServiceDiscovery}
- *
- * @see ServiceDiscovery
- * @since 2.7.4
- */
-@SPI("zookeeper")
-public interface ServiceDiscoveryFactory {
+public interface RestProtocolServer extends ProtocolServer {
+
+    void start(URL url);
 
     /**
-     * Creates an instance of {@link ServiceDiscovery}.
-     *
-     * @param connectionURL the  {@link URL connection url}
-     * @return an instance of {@link ServiceDiscovery}
+     * @param resourceDef it could be either resource interface or resource impl
      */
-    @Adaptive({"protocol"})
-    ServiceDiscovery getDiscovery(URL connectionURL);
+    void deploy(Class resourceDef, Object resourceInstance, String contextPath);
+
+    void undeploy(Class resourceDef);
+
 }

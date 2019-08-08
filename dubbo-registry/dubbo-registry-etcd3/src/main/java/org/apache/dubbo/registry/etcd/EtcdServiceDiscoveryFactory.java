@@ -17,14 +17,14 @@
 package org.apache.dubbo.registry.etcd;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.registry.client.AbstractServiceDiscoveryFactory;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
-import org.apache.dubbo.registry.client.ServiceDiscoveryFactory;
 import org.apache.dubbo.remoting.etcd.EtcdTransporter;
 
 /**
  * 2019-07-08
  */
-public class EtcdServiceDiscoveryFactory implements ServiceDiscoveryFactory {
+public class EtcdServiceDiscoveryFactory extends AbstractServiceDiscoveryFactory {
 
     private EtcdTransporter etcdTransporter;
 
@@ -33,7 +33,7 @@ public class EtcdServiceDiscoveryFactory implements ServiceDiscoveryFactory {
     }
 
     @Override
-    public ServiceDiscovery create(URL connectionURL) {
+    public ServiceDiscovery createDiscovery(URL connectionURL) {
         return new EtcdServiceDiscovery(connectionURL, etcdTransporter);
     }
 }

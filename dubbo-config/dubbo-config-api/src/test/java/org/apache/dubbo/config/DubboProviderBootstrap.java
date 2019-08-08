@@ -17,6 +17,7 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.metadata.ConfigurableMetadataServiceExporter;
@@ -67,9 +68,9 @@ public class DubboProviderBootstrap {
         // 暴露 MetadataService 服务
         exporter.export();
 
-        ServiceDiscoveryFactory factory = ServiceDiscoveryFactory.getDefaultExtension();
+        ServiceDiscoveryFactory factory = ExtensionLoader.getExtensionLoader(ServiceDiscoveryFactory.class).getAdaptiveExtension();
 
-        ServiceDiscovery serviceDiscovery = factory.create(connectionURL);
+        ServiceDiscovery serviceDiscovery = factory.getDiscovery(connectionURL);
 
         serviceDiscovery.start();
 

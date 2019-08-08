@@ -17,9 +17,10 @@
 package org.apache.dubbo.xml.rpc.protocol.xmlrpc;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.RemotingServer;
 import org.apache.dubbo.remoting.http.HttpBinder;
 import org.apache.dubbo.remoting.http.HttpHandler;
-import org.apache.dubbo.remoting.http.HttpServer;
+import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.AbstractProxyProtocol;
@@ -46,8 +47,6 @@ public class XmlRpcProtocol extends AbstractProxyProtocol {
     public static final String ACCESS_CONTROL_ALLOW_ORIGIN_HEADER = "Access-Control-Allow-Origin";
     public static final String ACCESS_CONTROL_ALLOW_METHODS_HEADER = "Access-Control-Allow-Methods";
     public static final String ACCESS_CONTROL_ALLOW_HEADERS_HEADER = "Access-Control-Allow-Headers";
-
-    private final Map<String, HttpServer> serverMap = new ConcurrentHashMap<>();
 
     private final Map<String, XmlRpcServletServer> skeletonMap = new ConcurrentHashMap<>();
 
@@ -105,10 +104,10 @@ public class XmlRpcProtocol extends AbstractProxyProtocol {
     protected <T> Runnable doExport(T impl, Class<T> type, URL url) throws RpcException {
         final URL httpUrl = url.setProtocol("http");
         String addr = httpUrl.getIp() + ":" + httpUrl.getPort();
-        HttpServer server = serverMap.get(addr);
-        if (server == null) {
-            server = httpBinder.bind(httpUrl, new InternalHandler(httpUrl.getParameter("cors", false)));
-            serverMap.put(addr, server);
+        ProtocolServer protocolServer = serverMap.get(addr);
+        if (protocolServer == null) {
+            RemotingServer remotingServer = httpBinder.bind(httpUrl, new InternalHandler(httpUrl.getParameter("cors", false)));
+            serverMap.put(addr, new ProxyProtocolServer(remotingServer));
         }
         final String path = httpUrl.getAbsolutePath();
 
@@ -181,7 +180,7 @@ public class XmlRpcProtocol extends AbstractProxyProtocol {
     public void destroy() {
         super.destroy();
         for (String key : new ArrayList<>(serverMap.keySet())) {
-            HttpServer server = serverMap.remove(key);
+            ProtocolServer server = serverMap.remove(key);
             if (server != null) {
                 try {
                     if (logger.isInfoEnabled()) {

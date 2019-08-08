@@ -17,6 +17,7 @@
 package org.apache.dubbo.registry.support;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -114,8 +115,8 @@ public class ServiceOrientedRegistry extends FailbackRegistry {
     }
 
     private ServiceDiscovery buildServiceDiscovery(URL url) {
-        ServiceDiscoveryFactory serviceDiscoveryFactory = ServiceDiscoveryFactory.getDefaultExtension();
-        ServiceDiscovery serviceDiscovery = serviceDiscoveryFactory.create(url);
+        ServiceDiscoveryFactory factory = ExtensionLoader.getExtensionLoader(ServiceDiscoveryFactory.class).getAdaptiveExtension();
+        ServiceDiscovery serviceDiscovery = factory.getDiscovery(url);
         serviceDiscovery.start();
         return serviceDiscovery;
     }

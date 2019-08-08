@@ -228,7 +228,7 @@ public class ConfigManager {
         addIfAbsent(protocolConfig, protocols);
     }
 
-    public void addProtocols(Iterable<ProtocolConfig> protocolConfigs, boolean canBeDefault) {
+    public void addProtocols(Iterable<ProtocolConfig> protocolConfigs) {
         if (protocolConfigs != null) {
             protocolConfigs.forEach(this::addProtocol);
         }

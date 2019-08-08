@@ -24,10 +24,10 @@ import org.apache.dubbo.common.URL;
  * @see InMemoryServiceDiscovery
  * @since 2.7.4
  */
-public class InMemoryServiceDiscoveryFactory implements ServiceDiscoveryFactory {
+public class InMemoryServiceDiscoveryFactory extends AbstractServiceDiscoveryFactory {
 
     @Override
-    public ServiceDiscovery create(URL connectionURL) {
+    public ServiceDiscovery createDiscovery(URL connectionURL) {
         return new InMemoryServiceDiscovery();
     }
 }

@@ -19,10 +19,13 @@ package org.apache.dubbo.rpc.protocol;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.remoting.RemotingServer;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
@@ -148,5 +151,40 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
     protected abstract <T> Runnable doExport(T impl, Class<T> type, URL url) throws RpcException;
 
     protected abstract <T> T doRefer(Class<T> type, URL url) throws RpcException;
+
+    protected class ProxyProtocolServer implements ProtocolServer {
+
+        private RemotingServer server;
+        private String address;
+
+        public ProxyProtocolServer(RemotingServer server) {
+            this.server = server;
+        }
+
+        @Override
+        public RemotingServer getRemotingServer() {
+            return server;
+        }
+
+        @Override
+        public String getAddress() {
+            return StringUtils.isNotEmpty(address) ? address : server.getUrl().getAddress();
+        }
+
+        @Override
+        public void setAddress() {
+            this.address = address;
+        }
+
+        @Override
+        public URL getUrl() {
+            return server.getUrl();
+        }
+
+        @Override
+        public void close() {
+            server.close();
+        }
+    }
 
 }

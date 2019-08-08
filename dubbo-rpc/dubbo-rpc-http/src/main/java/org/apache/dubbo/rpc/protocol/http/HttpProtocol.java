@@ -20,9 +20,10 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.remoting.RemotingServer;
 import org.apache.dubbo.remoting.http.HttpBinder;
 import org.apache.dubbo.remoting.http.HttpHandler;
-import org.apache.dubbo.remoting.http.HttpServer;
+import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.AbstractProxyProtocol;
@@ -60,8 +61,6 @@ public class HttpProtocol extends AbstractProxyProtocol {
 
     public static final int DEFAULT_PORT = 80;
 
-    private final Map<String, HttpServer> serverMap = new ConcurrentHashMap<String, HttpServer>();
-
     private final Map<String, HttpInvokerServiceExporter> skeletonMap = new ConcurrentHashMap<String, HttpInvokerServiceExporter>();
 
     private HttpBinder httpBinder;
@@ -82,10 +81,10 @@ public class HttpProtocol extends AbstractProxyProtocol {
     @Override
     protected <T> Runnable doExport(final T impl, Class<T> type, URL url) throws RpcException {
         String addr = getAddr(url);
-        HttpServer server = serverMap.get(addr);
-        if (server == null) {
-            server = httpBinder.bind(url, new InternalHandler());
-            serverMap.put(addr, server);
+        ProtocolServer protocolServer = serverMap.get(addr);
+        if (protocolServer == null) {
+            RemotingServer remotingServer = httpBinder.bind(url, new InternalHandler());
+            serverMap.put(addr, new ProxyProtocolServer(remotingServer));
         }
         final String path = url.getAbsolutePath();
         skeletonMap.put(path, createExporter(impl, type));
@@ -221,5 +220,4 @@ public class HttpProtocol extends AbstractProxyProtocol {
         }
 
     }
-
 }

@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,29 +14,49 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.apache.dubbo.config.mock;
+package org.apache.dubbo.rpc.protocol.dubbo;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.remoting.ChannelHandler;
-import org.apache.dubbo.remoting.Client;
-import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.RemotingServer;
-import org.apache.dubbo.remoting.Transporter;
+import org.apache.dubbo.rpc.ProtocolServer;
 
-import org.mockito.Mockito;
+public class DubboProtocolServer implements ProtocolServer {
 
-public class MockTransporter implements Transporter {
-    private RemotingServer server = Mockito.mock(RemotingServer.class);
-    private Client client = Mockito.mock(Client.class);
+    private RemotingServer server;
+    private String address;
+
+    public DubboProtocolServer(RemotingServer server) {
+        this.server = server;
+    }
 
     @Override
-    public RemotingServer bind(URL url, ChannelHandler handler) throws RemotingException {
+    public RemotingServer getRemotingServer() {
         return server;
     }
 
     @Override
-    public Client connect(URL url, ChannelHandler handler) throws RemotingException {
-        return client;
+    public String getAddress() {
+        return StringUtils.isNotEmpty(address) ? address : server.getUrl().getAddress();
+    }
+
+    @Override
+    public void setAddress() {
+        this.address = address;
+    }
+
+    @Override
+    public URL getUrl() {
+        return server.getUrl();
+    }
+
+    @Override
+    public void reset(URL url) {
+        server.reset(url);
+    }
+
+    @Override
+    public void close() {
+        server.close();
     }
 }

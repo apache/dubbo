@@ -21,7 +21,10 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
+import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.RpcException;
+
+import java.util.List;
 
 public class MockProtocol2 implements Protocol {
     public static Protocol delegate;
@@ -44,5 +47,10 @@ public class MockProtocol2 implements Protocol {
     @Override
     public void destroy() {
         delegate.destroy();
+    }
+
+    @Override
+    public List<ProtocolServer> getServers() {
+        return delegate.getServers();
     }
 }

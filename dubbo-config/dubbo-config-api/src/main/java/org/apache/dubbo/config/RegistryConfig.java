@@ -30,7 +30,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.USERNAME_KEY;
 import static org.apache.dubbo.config.Constants.REGISTRIES_SUFFIX;
-import static org.apache.dubbo.config.Constants.ZOOKEEPER_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.EXTRA_KEYS_KEY;
 
 /**
@@ -150,6 +149,16 @@ public class RegistryConfig extends AbstractConfig {
      * @since 2.7.0
      */
     private String extraKeys;
+
+    /**
+     * the address work as config center or not
+     */
+    private Boolean useAsConfigCenter;
+
+    /**
+     * the address work as remote metadata center or not
+     */
+    private Boolean useAsMetadataCenter;
 
     public RegistryConfig() {
     }
@@ -426,12 +435,21 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     @Parameter(excluded = true)
-    public boolean isZookeeperProtocol() {
-        if (!isValid()) {
-            return false;
-        }
-        return ZOOKEEPER_PROTOCOL.equals(getProtocol())
-                || getAddress().startsWith(ZOOKEEPER_PROTOCOL);
+    public Boolean getUseAsConfigCenter() {
+        return useAsConfigCenter;
+    }
+
+    public void setUseAsConfigCenter(Boolean useAsConfigCenter) {
+        this.useAsConfigCenter = useAsConfigCenter;
+    }
+
+    @Parameter(excluded = true)
+    public Boolean getUseAsMetadataCenter() {
+        return useAsMetadataCenter;
+    }
+
+    public void setUseAsMetadataCenter(Boolean useAsMetadataCenter) {
+        this.useAsMetadataCenter = useAsMetadataCenter;
     }
 
     @Override

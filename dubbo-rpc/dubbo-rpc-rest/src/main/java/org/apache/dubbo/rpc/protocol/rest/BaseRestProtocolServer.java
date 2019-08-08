@@ -24,7 +24,7 @@ import org.jboss.resteasy.spi.ResteasyDeployment;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.rpc.protocol.rest.Constants.EXTENSION_KEY;
 
-public abstract class BaseRestServer implements RestServer {
+public abstract class BaseRestProtocolServer implements RestProtocolServer {
 
     @Override
     public void start(URL url) {

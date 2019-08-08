@@ -574,6 +574,16 @@
                 <xsd:documentation><![CDATA[ Extra Parameter Keys. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="use-as-config-center" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ work as config center or not. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="use-as-metadata-center" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ work as metadata center or not. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
     </xsd:complexType>
 
     <xsd:complexType name="metadataReportType">

@@ -27,7 +27,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
- * support multiple config center, simply iterating each underlying config center.
+ * support multiple config center, simply iterating each concrete config center.
  */
 public class CompositeDynamicConfiguration implements DynamicConfiguration {
 

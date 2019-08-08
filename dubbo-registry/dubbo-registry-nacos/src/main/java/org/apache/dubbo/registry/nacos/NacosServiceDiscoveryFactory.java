@@ -16,6 +16,7 @@ package org.apache.dubbo.registry.nacos;/*
  */
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.registry.client.AbstractServiceDiscoveryFactory;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceDiscoveryFactory;
 
@@ -26,10 +27,10 @@ import org.apache.dubbo.registry.client.ServiceDiscoveryFactory;
  * @see ServiceDiscovery
  * @since 2.7.4
  */
-public class NacosServiceDiscoveryFactory implements ServiceDiscoveryFactory {
+public class NacosServiceDiscoveryFactory extends AbstractServiceDiscoveryFactory {
 
     @Override
-    public ServiceDiscovery create(URL connectionURL) {
+    public ServiceDiscovery createDiscovery(URL connectionURL) {
         return new NacosServiceDiscovery(connectionURL);
     }
 }

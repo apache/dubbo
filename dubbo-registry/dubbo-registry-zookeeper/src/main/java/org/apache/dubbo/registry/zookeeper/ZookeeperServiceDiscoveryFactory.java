@@ -17,6 +17,7 @@
 package org.apache.dubbo.registry.zookeeper;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.registry.client.AbstractServiceDiscoveryFactory;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceDiscoveryFactory;
 
@@ -26,10 +27,10 @@ import org.apache.dubbo.registry.client.ServiceDiscoveryFactory;
  * @see ServiceDiscoveryFactory
  * @since 2.7.4
  */
-public class ZookeeperServiceDiscoveryFactory implements ServiceDiscoveryFactory {
+public class ZookeeperServiceDiscoveryFactory extends AbstractServiceDiscoveryFactory {
 
     @Override
-    public ServiceDiscovery create(URL connectionURL) {
+    public ServiceDiscovery createDiscovery(URL connectionURL) {
         try {
             return new ZookeeperServiceDiscovery(connectionURL);
         } catch (Exception e) {

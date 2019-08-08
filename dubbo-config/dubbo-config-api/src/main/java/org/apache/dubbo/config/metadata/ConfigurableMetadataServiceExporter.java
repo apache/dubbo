@@ -79,6 +79,7 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
 
         if (!isExported()) {
 
+            // FIXME, if uses remote metadata center, does not need to export MetadataService locally.
             WritableMetadataService metadataService = WritableMetadataService.getDefaultExtension();
 
             ServiceConfig<MetadataService> serviceConfig = new ServiceConfig<>();

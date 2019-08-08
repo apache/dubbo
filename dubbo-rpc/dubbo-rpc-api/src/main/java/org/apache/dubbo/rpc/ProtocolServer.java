@@ -14,20 +14,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.rest;
+package org.apache.dubbo.rpc;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.RemotingServer;
 
-public interface RestServer {
+/**
+ * Distinct from {@link RemotingServer}, each protocol holds one or more ProtocolServers(the number usually decides by port numbers),
+ * while each ProtocolServer holds zero or one RemotingServer.
+ */
+public interface ProtocolServer {
 
-    void start(URL url);
+    default RemotingServer getRemotingServer() {
+        return null;
+    }
 
-    /**
-     * @param resourceDef it could be either resource interface or resource impl
-     */
-    void deploy(Class resourceDef, Object resourceInstance, String contextPath);
+    default void setRemotingServers() {
 
-    void undeploy(Class resourceDef);
+    }
 
-    void stop();
+    String getAddress();
+
+    void setAddress();
+
+    default URL getUrl() {
+        return null;
+    }
+
+    default void reset(URL url) {
+    }
+
+    void close();
 }

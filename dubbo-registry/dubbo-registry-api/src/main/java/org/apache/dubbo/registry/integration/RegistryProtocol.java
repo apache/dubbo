@@ -34,6 +34,7 @@ import org.apache.dubbo.registry.RegistryService;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
+import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Cluster;
@@ -444,6 +445,11 @@ public class RegistryProtocol implements Protocol {
 
         DynamicConfiguration.getDynamicConfiguration()
                 .removeListener(ApplicationModel.getApplication() + CONFIGURATORS_SUFFIX, providerConfigurationListener);
+    }
+
+    @Override
+    public List<ProtocolServer> getServers() {
+        return protocol.getServers();
     }
 
     //Merge the urls of configurators
