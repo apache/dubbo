@@ -21,6 +21,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
@@ -28,6 +29,7 @@ import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.MetadataServiceExporter;
 import org.apache.dubbo.metadata.WritableMetadataService;
+import org.apache.dubbo.metadata.store.RemoteWritableMetadataService;
 
 import java.util.Collection;
 import java.util.LinkedList;
@@ -55,6 +57,7 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
     private volatile ServiceConfig<MetadataService> serviceConfig;
 
     private ApplicationConfig applicationConfig;
+    private MetadataReportConfig metadataReportConfig;
 
     private List<RegistryConfig> registries = new LinkedList<>();
 
@@ -98,6 +101,7 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
             }
 
             this.serviceConfig = serviceConfig;
+
         } else {
             if (logger.isWarnEnabled()) {
                 logger.warn("The MetadataService has been exported : " + serviceConfig.getExportedUrls());
