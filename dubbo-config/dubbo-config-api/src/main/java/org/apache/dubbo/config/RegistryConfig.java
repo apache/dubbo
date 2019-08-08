@@ -192,10 +192,12 @@ public class RegistryConfig extends AbstractConfig {
         if (address != null) {
             try {
                 URL url = URL.valueOf(address);
-                this.updateIdIfAbsent(url.getProtocol());
-                this.updateProtocolIfAbsent(url.getProtocol());
-                this.updatePortIfAbsent(url.getPort());
-                this.updateParameters(url.getParameters());
+                setUsername(url.getUsername());
+                setPassword(url.getPassword());
+                updateIdIfAbsent(url.getProtocol());
+                updateProtocolIfAbsent(url.getProtocol());
+                updatePortIfAbsent(url.getPort());
+                setParameters(url.getParameters());
             } catch (Exception ignored) {
             }
         }

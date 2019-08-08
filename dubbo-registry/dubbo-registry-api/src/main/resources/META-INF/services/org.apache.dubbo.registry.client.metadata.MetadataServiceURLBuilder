@@ -1,0 +1,2 @@
+org.apache.dubbo.registry.client.metadata.StandardMetadataServiceURLBuilder
+org.apache.dubbo.registry.client.metadata.SpringCloudMetadataServiceURLBuilder

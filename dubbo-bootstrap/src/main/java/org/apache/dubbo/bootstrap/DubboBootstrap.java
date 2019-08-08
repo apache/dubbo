@@ -59,7 +59,6 @@ import org.apache.dubbo.rpc.ProtocolServer;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -117,19 +116,14 @@ public class DubboBootstrap {
 
     private final ConfigManager configManager = getInstance();
 
-    /**
-     * Is provider or not
-     */
-    private boolean isProvider;
+    private volatile boolean initialized = false;
 
-    private boolean initialized = false;
-
-    private boolean started = false;
+    private volatile boolean started = false;
 
     /**
      * Only Provider Register
      */
-    private boolean onlyRegisterProvider = false;
+    private volatile boolean onlyRegisterProvider = false;
 
     private ServiceInstance serviceInstance;
 
@@ -157,6 +151,7 @@ public class DubboBootstrap {
         configManager.addMetadataReports(metadataReportConfigs);
         return this;
     }
+
 
     // {@link ApplicationConfig} correlative methods
 
@@ -195,6 +190,7 @@ public class DubboBootstrap {
         configManager.setApplication(applicationConfig);
         return this;
     }
+
 
     // {@link RegistryConfig} correlative methods
 
@@ -243,8 +239,8 @@ public class DubboBootstrap {
         return this;
     }
 
-    // {@link ProtocolConfig} correlative methods
 
+    // {@link ProtocolConfig} correlative methods
     public DubboBootstrap protocol(Consumer<ProtocolBuilder> consumerBuilder) {
         return protocol(DEFAULT_PROTOCOL_ID, consumerBuilder);
     }
@@ -265,7 +261,6 @@ public class DubboBootstrap {
     }
 
     // {@link ServiceConfig} correlative methods
-
     public <S> DubboBootstrap service(Consumer<ServiceBuilder<S>> consumerBuilder) {
         return service(DEFAULT_SERVICE_ID, consumerBuilder);
     }
@@ -282,7 +277,6 @@ public class DubboBootstrap {
     }
 
     // {@link Reference} correlative methods
-
     public <S> DubboBootstrap reference(Consumer<ReferenceBuilder<S>> consumerBuilder) {
         return reference(DEFAULT_REFERENCE_ID, consumerBuilder);
     }
@@ -299,7 +293,6 @@ public class DubboBootstrap {
     }
 
     // {@link ProviderConfig} correlative methods
-
     public DubboBootstrap provider(Consumer<ProviderBuilder> builderConsumer) {
         return provider(DEFAULT_PROVIDER_ID, builderConsumer);
     }
@@ -320,7 +313,6 @@ public class DubboBootstrap {
     }
 
     // {@link ConsumerConfig} correlative methods
-
     public DubboBootstrap consumer(Consumer<ConsumerBuilder> builderConsumer) {
         return consumer(DEFAULT_CONSUMER_ID, builderConsumer);
     }
@@ -572,7 +564,6 @@ public class DubboBootstrap {
     }
 
     /* serve for builder apis, end */
-
     private void startMetadataReport() {
         ApplicationConfig applicationConfig = configManager.getApplication().orElseThrow(
                 () -> new IllegalStateException("There's no ApplicationConfig specified.")
@@ -666,6 +657,10 @@ public class DubboBootstrap {
 
     public void exportServiceConfig(ServiceConfig<?> serviceConfig) {
         serviceConfig.export();
+    }
+
+    public boolean isOnlyRegisterProvider() {
+        return onlyRegisterProvider;
     }
 
     private void registerServiceInstance(ApplicationConfig applicationConfig) {

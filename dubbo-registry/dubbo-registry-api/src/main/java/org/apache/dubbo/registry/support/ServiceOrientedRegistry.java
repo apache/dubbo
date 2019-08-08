@@ -41,6 +41,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
@@ -140,10 +141,15 @@ public class ServiceOrientedRegistry extends FailbackRegistry {
     }
 
     @Override
-    public void doRegister(URL url) {
+    public final void register(URL url) {
         if (!shouldRegister(url)) { // Should Not Register
             return;
         }
+        super.register(url);
+    }
+
+    @Override
+    public void doRegister(URL url) {
         if (writableMetadataService.exportURL(url)) {
             if (logger.isInfoEnabled()) {
                 logger.info(format("The URL[%s] registered successfully.", url.toString()));
@@ -156,10 +162,15 @@ public class ServiceOrientedRegistry extends FailbackRegistry {
     }
 
     @Override
-    public void doUnregister(URL url) {
+    public final void unregister(URL url) {
         if (!shouldRegister(url)) {
             return;
         }
+        super.unregister(url);
+    }
+
+    @Override
+    public void doUnregister(URL url) {
         if (writableMetadataService.unexportURL(url)) {
             if (logger.isInfoEnabled()) {
                 logger.info(format("The URL[%s] deregistered successfully.", url.toString()));
@@ -172,11 +183,24 @@ public class ServiceOrientedRegistry extends FailbackRegistry {
     }
 
     @Override
-    public void doSubscribe(URL url, NotifyListener listener) {
+    public final void subscribe(URL url, NotifyListener listener) {
         if (!shouldSubscribe(url)) { // Should Not Subscribe
             return;
         }
+        super.subscribe(url, listener);
+    }
+
+    @Override
+    public void doSubscribe(URL url, NotifyListener listener) {
         subscribeURLs(url, listener);
+    }
+
+    @Override
+    public final void unsubscribe(URL url, NotifyListener listener) {
+        if (!shouldSubscribe(url)) { // Should Not Subscribe
+            return;
+        }
+        super.unsubscribe(url, listener);
     }
 
     @Override
@@ -402,7 +426,7 @@ public class ServiceOrientedRegistry extends FailbackRegistry {
 
         try {
             MetadataService metadataService = metadataServiceProxyFactory.getProxy(providerInstance);
-            List<String> urls = metadataService.getExportedURLs(serviceInterface, group, version, protocol);
+            SortedSet<String> urls = metadataService.getExportedURLs(serviceInterface, group, version, protocol);
             exportedURLs = urls.stream().map(URL::valueOf).collect(Collectors.toList());
         } catch (Throwable e) {
             if (logger.isErrorEnabled()) {

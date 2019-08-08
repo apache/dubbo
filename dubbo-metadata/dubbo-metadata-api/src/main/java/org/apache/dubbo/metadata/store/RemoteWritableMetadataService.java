@@ -33,7 +33,10 @@ import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.RpcException;
 
-import java.util.List;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.function.Consumer;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
@@ -57,7 +60,8 @@ public class RemoteWritableMetadataService implements WritableMetadataService {
     private MetadataReportFactory metadataReportFactory = ExtensionLoader.getExtensionLoader(MetadataReportFactory.class).getAdaptiveExtension();
     private MetadataReport metadataReport;
 
-    public RemoteWritableMetadataService() {}
+    public RemoteWritableMetadataService() {
+    }
 
     public void initMetadataReport(URL metadataReportURL) {
         if (METADATA_REPORT_KEY.equals(metadataReportURL.getProtocol())) {
@@ -148,14 +152,18 @@ public class RemoteWritableMetadataService implements WritableMetadataService {
     }
 
     @Override
-    public List<String> getSubscribedURLs() {
-        return metadataReport.getSubscribedURLs();
+    public SortedSet<String> getSubscribedURLs() {
+        return toSortedStrings(metadataReport.getSubscribedURLs());
     }
 
     // TODO, protocol should be used
     @Override
-    public List<String> getExportedURLs(String serviceInterface, String group, String version, String protocol) {
-        return metadataReport.getExportedURLs(new MetadataIdentifier(serviceInterface, group, version, null, null));
+    public SortedSet<String> getExportedURLs(String serviceInterface, String group, String version, String protocol) {
+        return toSortedStrings(metadataReport.getExportedURLs(new MetadataIdentifier(serviceInterface, group, version, null, null)));
+    }
+
+    private static SortedSet<String> toSortedStrings(Collection<String> values) {
+        return Collections.unmodifiableSortedSet(new TreeSet<>(values));
     }
 
     @Override

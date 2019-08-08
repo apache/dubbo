@@ -38,16 +38,12 @@ import com.google.gson.Gson;
 
 import java.io.File;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
+
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
-import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
 
 /**
  * 2019-07-08
@@ -174,11 +170,8 @@ public class EtcdServiceDiscovery implements ServiceDiscovery, EventListener<Ser
                         });
 
         etcdClient.create(path);
-        /*
-         * at the first time, we want to pull already category and then watch their direct children,
-         *  eg: /dubbo/interface/providers, /dubbo/interface/consumers and so on.
-         */
-        List<String> children = etcdClient.addChildListener(path, childListener);
+
+        etcdClient.addChildListener(path, childListener);
     }
 
     private void recover() throws Exception {

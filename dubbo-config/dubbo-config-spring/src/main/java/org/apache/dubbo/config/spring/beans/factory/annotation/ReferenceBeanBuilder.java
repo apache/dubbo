@@ -57,6 +57,15 @@ class ReferenceBeanBuilder extends AnnotatedInterfaceConfigBeanBuilder<Reference
     }
 
     private void configureInterface(AnnotationAttributes attributes, ReferenceBean referenceBean) {
+        Boolean generic = getAttribute(attributes, "generic");
+        if (generic != null && generic) {
+            // it's a generic reference
+            String interfaceClassName = getAttribute(attributes, "interfaceName");
+            Assert.hasText(interfaceClassName,
+                    "@Reference interfaceName() must be present when reference a generic service!");
+            referenceBean.setInterface(interfaceClassName);
+            return;
+        }
 
         Class<?> serviceInterfaceClass = resolveServiceInterfaceClass(attributes, interfaceClass);
 

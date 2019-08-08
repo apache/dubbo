@@ -249,7 +249,7 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
                 String key = providerApplication + RULE_SUFFIX;
                 configuration.addListener(key, this);
                 application = providerApplication;
-                String rawRule = configuration.getRule(key, DynamicConfiguration.DEFAULT_GROUP);
+                String rawRule = configuration.getConfig(key, DynamicConfiguration.DEFAULT_GROUP);
                 if (StringUtils.isNotEmpty(rawRule)) {
                     this.process(new ConfigChangeEvent(key, rawRule));
                 }

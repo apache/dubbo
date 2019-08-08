@@ -22,7 +22,6 @@ import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.metadata.MetadataService;
-import org.apache.dubbo.metadata.MetadataServiceExporter;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -44,6 +43,7 @@ public class ConfigurableMetadataServiceExporterTest {
     @BeforeAll
     public static void init() {
         ConfigManager configManager = ConfigManager.getInstance();
+        configManager.clear();
         ApplicationConfig applicationConfig = new ApplicationConfig();
         applicationConfig.setName("test");
         configManager.setApplication(applicationConfig);
@@ -69,7 +69,8 @@ public class ConfigurableMetadataServiceExporterTest {
 
     @Test
     public void testExportAndUnexport() {
-        MetadataServiceExporter exporter = new ConfigurableMetadataServiceExporter();
+        ConfigurableMetadataServiceExporter exporter = new ConfigurableMetadataServiceExporter();
+        exporter.setApplicationConfig(ConfigManager.getInstance().getApplication().get());
         List<URL> urls = exporter.export();
 
         assertEquals(1, urls.size());
