@@ -21,6 +21,10 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -206,6 +210,18 @@ public class CompatibleTypeUtilsTest {
             assertTrue(((String[]) result)[0].equals("a"));
             assertTrue(((String[]) result)[1].equals("b"));
 
+        }
+
+        {
+
+            result = CompatibleTypeUtils.compatibleTypeConvert("2011-12-11 12:24:12", LocalDate.class);
+            assertEquals(LocalDateTime.parse("2011-12-11 12:24:12", DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")).toLocalDate(),  result);
+
+            result = CompatibleTypeUtils.compatibleTypeConvert("2011-12-11 12:24:12", LocalTime.class);
+            assertEquals(LocalDateTime.parse("2011-12-11 12:24:12", DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")).toLocalTime().toString(), "12:24:12");
+
+            result = CompatibleTypeUtils.compatibleTypeConvert("2011-12-11 12:24:12", LocalDateTime.class);
+            assertEquals(LocalDateTime.parse("2011-12-11 12:24:12", DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")).toString(), "2011-12-11T12:24:12");
         }
 
     }
