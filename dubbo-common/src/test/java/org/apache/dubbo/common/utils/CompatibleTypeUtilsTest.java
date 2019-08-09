@@ -223,6 +223,5 @@ public class CompatibleTypeUtilsTest {
             result = CompatibleTypeUtils.compatibleTypeConvert("2011-12-11 12:24:12", LocalDateTime.class);
             assertEquals(LocalDateTime.parse("2011-12-11 12:24:12", DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")).toString(), "2011-12-11T12:24:12");
         }
-
     }
 }
