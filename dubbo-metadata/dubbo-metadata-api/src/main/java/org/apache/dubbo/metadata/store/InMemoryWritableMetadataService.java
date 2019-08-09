@@ -27,8 +27,12 @@ import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
 
 import com.google.gson.Gson;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -43,6 +47,7 @@ import static java.util.Collections.unmodifiableSortedSet;
 import static org.apache.dubbo.common.URL.buildKey;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
 
 /**
@@ -65,7 +70,7 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
      * All exported {@link URL urls} {@link Map} whose key is the return value of {@link URL#getServiceKey()} method
      * and value is the {@link SortedSet sorted set} of the {@link URL URLs}
      */
-    private ConcurrentNavigableMap<String, SortedSet<URL>> exportedServiceURLs = new ConcurrentSkipListMap<>();
+    ConcurrentNavigableMap<String, SortedSet<URL>> exportedServiceURLs = new ConcurrentSkipListMap<>();
 
     // ==================================================================================== //
 
@@ -76,9 +81,9 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
      * whose key is the return value of {@link URL#getServiceKey()} method and value is
      * the {@link SortedSet sorted set} of the {@link URL URLs}
      */
-    private final ConcurrentNavigableMap<String, SortedSet<URL>> subscribedServiceURLs = new ConcurrentSkipListMap<>();
+    final ConcurrentNavigableMap<String, SortedSet<URL>> subscribedServiceURLs = new ConcurrentSkipListMap<>();
 
-    private final ConcurrentNavigableMap<String, String> serviceDefinitions = new ConcurrentSkipListMap<>();
+    final ConcurrentNavigableMap<String, String> serviceDefinitions = new ConcurrentSkipListMap<>();
 
     // ==================================================================================== //
 
@@ -117,6 +122,33 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
     }
 
     @Override
+    public boolean refreshExportedMetadata(String revision) {
+        boolean result = true;
+        for (SortedSet<URL> urls : exportedServiceURLs.values()) {
+            Iterator<URL> iterator = urls.iterator();
+            List<URL> newList = new ArrayList<>(urls.size());
+            while (iterator.hasNext()) {
+                URL url = iterator.next();
+                // refresh revision in urls
+                Map<String, String> parameters = new HashMap<>(url.getParameters());
+                parameters.put(REVISION_KEY, revision);
+                URL newUrl = new URL(url.getProtocol(), url.getUsername(), url.getPassword(), url.getHost(), url.getPort(), url.getPath(), parameters);
+                newList.add(newUrl);
+                if (!finishRefreshExportedMetadata(newUrl)) {
+                    result = false;
+                }
+            }
+            urls.clear();
+            urls.addAll(newList);
+        }
+        return result;
+    }
+
+    protected boolean finishRefreshExportedMetadata(URL url) {
+        return true;
+    }
+
+    @Override
     public void publishServiceDefinition(URL providerUrl) {
         try {
             String interfaceName = providerUrl.getParameter(INTERFACE_KEY);
@@ -145,25 +177,26 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
         return serviceDefinitions.get(serviceKey);
     }
 
-    private boolean addURL(Map<String, SortedSet<URL>> serviceURLs, URL url) {
+    boolean addURL(Map<String, SortedSet<URL>> serviceURLs, URL url) {
         return executeMutually(() -> {
             SortedSet<URL> urls = serviceURLs.computeIfAbsent(url.getServiceKey(), this::newSortedURLs);
+            // make sure the parameters of tmpUrl is variable
             return urls.add(url);
         });
     }
 
-    private SortedSet<URL> newSortedURLs(String serviceKey) {
-        return new TreeSet<>(URLComparator.INSTANCE);
-    }
-
-    private boolean removeURL(Map<String, SortedSet<URL>> serviceURLs, URL url) {
+    boolean removeURL(Map<String, SortedSet<URL>> serviceURLs, URL url) {
         return executeMutually(() -> {
             SortedSet<URL> urls = serviceURLs.getOrDefault(url.getServiceKey(), emptySortedSet());
             return urls.remove(url);
         });
     }
 
-    private boolean executeMutually(Callable<Boolean> callable) {
+    private SortedSet<URL> newSortedURLs(String serviceKey) {
+        return new TreeSet<>(InMemoryWritableMetadataService.URLComparator.INSTANCE);
+    }
+
+    boolean executeMutually(Callable<Boolean> callable) {
         boolean success = false;
         try {
             lock.lock();
@@ -202,7 +235,8 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
         return MetadataService.toSortedStrings(serviceURLs.values().stream().flatMap(Collection::stream));
     }
 
-    private static class URLComparator implements Comparator<URL> {
+
+    static class URLComparator implements Comparator<URL> {
 
         public static final URLComparator INSTANCE = new URLComparator();
 
@@ -211,4 +245,5 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
             return o1.toFullString().compareTo(o2.toFullString());
         }
     }
+
 }
