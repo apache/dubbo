@@ -14,24 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.demo.provider;
-
-import org.apache.dubbo.demo.service.DemoService;
-
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-
-import java.io.IOException;
+package org.apache.dubbo.config.spring.registry.nacos.demo.service;
 
 /**
- * {@link DemoService} provider demo XML bootstrap
+ * DemoService
+ *
+ * @since 2.6.5
  */
-public class DemoServiceProviderXmlBootstrap {
+public interface DemoService {
 
-    public static void main(String[] args) throws IOException {
-        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext();
-        context.setConfigLocation("/META-INF/spring/dubbo-provider-context.xml");
-        context.refresh();
-        System.out.println("DemoService provider (XML) is starting...");
-        System.in.read();
-    }
+    String sayName(String name);
+
 }
