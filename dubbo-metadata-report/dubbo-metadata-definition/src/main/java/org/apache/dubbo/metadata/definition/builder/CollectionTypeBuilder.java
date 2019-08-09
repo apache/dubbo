@@ -22,26 +22,21 @@ import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 
 /**
  * 2015/1/27.
  */
-public class
-CollectionTypeBuilder implements TypeBuilder {
+public class CollectionTypeBuilder implements TypeBuilder {
 
     @Override
     public boolean accept(Type type, Class<?> clazz) {
         if (clazz == null) {
             return false;
         }
-
-        if (Collection.class.isAssignableFrom(clazz)) {
-            return true;
-        }
-
-        return false;
+        return Collection.class.isAssignableFrom(clazz);
     }
 
     @Override
@@ -54,8 +49,9 @@ CollectionTypeBuilder implements TypeBuilder {
         Type[] actualTypeArgs = parameterizedType.getActualTypeArguments();
         if (actualTypeArgs == null || actualTypeArgs.length != 1) {
             throw new IllegalArgumentException(MessageFormat.format(
-                    "[ServiceDefinitionBuilder] Collection type [{0}] with unexpected amount of arguments [{1}]." + actualTypeArgs,
-                    new Object[]{type, actualTypeArgs}));
+                    "[ServiceDefinitionBuilder] Collection type [{0}] with unexpected amount of arguments [{1}]."
+                            + Arrays.toString(actualTypeArgs),
+                    type, actualTypeArgs));
         }
 
         Type actualType = actualTypeArgs[0];
@@ -65,15 +61,10 @@ CollectionTypeBuilder implements TypeBuilder {
             TypeDefinitionBuilder.build(actualType, rawType, typeCache);
         } else if (actualType instanceof Class<?>) {
             Class<?> actualClass = (Class<?>) actualType;
-            if (actualClass.isArray() || actualClass.isEnum()) {
-                TypeDefinitionBuilder.build(null, actualClass, typeCache);
-            } else {
-                DefaultTypeBuilder.build(actualClass, typeCache);
-            }
+            TypeDefinitionBuilder.build(null, actualClass, typeCache);
         }
 
-        TypeDefinition td = new TypeDefinition(type.toString());
-        return td;
+        return new TypeDefinition(type.toString());
     }
 
 }

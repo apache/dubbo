@@ -48,7 +48,7 @@ public class LogTelnetHandler implements TelnetHandler {
         if (message == null || message.trim().length() == 0) {
             buf.append("EXAMPLE: log error / log 100");
         } else {
-            String str[] = message.split(" ");
+            String[] str = message.split(" ");
             if (!StringUtils.isInteger(str[0])) {
                 LoggerFactory.setLevel(Level.valueOf(message.toUpperCase()));
             } else {
@@ -56,10 +56,8 @@ public class LogTelnetHandler implements TelnetHandler {
 
                 if (file != null && file.exists()) {
                     try {
-                        FileInputStream fis = new FileInputStream(file);
-                        try {
-                            FileChannel filechannel = fis.getChannel();
-                            try {
+                        try (FileInputStream fis = new FileInputStream(file)) {
+                            try (FileChannel filechannel = fis.getChannel()) {
                                 size = filechannel.size();
                                 ByteBuffer bb;
                                 if (size <= showLogLength) {
@@ -78,11 +76,7 @@ public class LogTelnetHandler implements TelnetHandler {
                                 buf.append("\r\nmodified:" + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
                                         .format(new Date(file.lastModified()))));
                                 buf.append("\r\nsize:" + size + "\r\n");
-                            } finally {
-                                filechannel.close();
                             }
-                        } finally {
-                            fis.close();
                         }
                     } catch (Exception e) {
                         buf.append(e.getMessage());

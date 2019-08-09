@@ -33,7 +33,7 @@ public class SystemConfiguration extends AbstractPrefixConfiguration {
     }
 
     @Override
-    protected Object getInternalProperty(String key) {
+    public Object getInternalProperty(String key) {
         return System.getProperty(key);
     }
 

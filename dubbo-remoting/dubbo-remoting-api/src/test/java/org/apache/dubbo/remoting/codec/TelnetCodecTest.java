@@ -24,9 +24,9 @@ import org.apache.dubbo.remoting.buffer.ChannelBuffer;
 import org.apache.dubbo.remoting.buffer.ChannelBuffers;
 import org.apache.dubbo.remoting.telnet.codec.TelnetCodec;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -47,7 +47,7 @@ public class TelnetCodecTest {
     /**
      * @throws java.lang.Exception
      */
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         codec = new TelnetCodec();
     }
@@ -116,7 +116,7 @@ public class TelnetCodecTest {
 
         //decode
         Object obj = codec.decode(channel, buffer);
-        Assert.assertEquals(ret, obj);
+        Assertions.assertEquals(ret, obj);
     }
 
 
@@ -130,10 +130,10 @@ public class TelnetCodecTest {
         byte[] data = new byte[buffer.readableBytes()];
         buffer.readBytes(data);
 
-        Assert.assertEquals(ret.length, data.length);
+        Assertions.assertEquals(ret.length, data.length);
         for (int i = 0; i < ret.length; i++) {
             if (ret[i] != data[i]) {
-                Assert.fail();
+                Assertions.fail();
             }
         }
     }
@@ -157,8 +157,8 @@ public class TelnetCodecTest {
 
         //decode
         Object obj = codec.decode(channel, buffer);
-        Assert.assertEquals(expectret, obj);
-        Assert.assertEquals(channelReceive, channel.getReceivedMessage());
+        Assertions.assertEquals(expectret, obj);
+        Assertions.assertEquals(channelReceive, channel.getReceivedMessage());
     }
 
     private void testDecode_PersonWithEnterByte(byte[] enterbytes, boolean isNeedmore) throws IOException {
@@ -172,9 +172,9 @@ public class TelnetCodecTest {
         //decode
         Object obj = codec.decode(channel, buffer);
         if (isNeedmore) {
-            Assert.assertEquals(Codec2.DecodeResult.NEED_MORE_INPUT, obj);
+            Assertions.assertEquals(Codec2.DecodeResult.NEED_MORE_INPUT, obj);
         } else {
-            Assert.assertTrue("return must string ", obj instanceof String);
+            Assertions.assertTrue(obj instanceof String, "return must string ");
         }
     }
 
@@ -185,7 +185,7 @@ public class TelnetCodecTest {
 
         //decode
         codec.decode(channel, buffer);
-        Assert.assertEquals(isChannelClose, channel.isClosed());
+        Assertions.assertEquals(isChannelClose, channel.isClosed());
     }
 
     @Test
@@ -254,11 +254,13 @@ public class TelnetCodecTest {
         testDecode_assertEquals(new byte[]{'a', 'x', -1, 'x', '\b'}, Codec2.DecodeResult.NEED_MORE_INPUT, new String(new byte[]{32, 32, 8, 8}));
     }
 
-    @Test(expected = IOException.class)
+    @Test
     public void testDecode_Backspace_WithError() throws IOException {
-        url = url.addParameter(AbstractMockChannel.ERROR_WHEN_SEND, Boolean.TRUE.toString());
-        testDecode_Backspace();
-        url = url.removeParameter(AbstractMockChannel.ERROR_WHEN_SEND);
+        Assertions.assertThrows(IOException.class, () -> {
+            url = url.addParameter(AbstractMockChannel.ERROR_WHEN_SEND, Boolean.TRUE.toString());
+            testDecode_Backspace();
+            url = url.removeParameter(AbstractMockChannel.ERROR_WHEN_SEND);
+        });
     }
 
     @Test()
@@ -276,23 +278,25 @@ public class TelnetCodecTest {
         testDecode_assertEquals(channel, UP, Codec2.DecodeResult.NEED_MORE_INPUT, expected1);
     }
 
-    @Test(expected = IOException.class)
+    @Test
     public void testDecode_UPorDOWN_WithError() throws IOException {
-        url = url.addParameter(AbstractMockChannel.ERROR_WHEN_SEND, Boolean.TRUE.toString());
+        Assertions.assertThrows(IOException.class, () -> {
+            url = url.addParameter(AbstractMockChannel.ERROR_WHEN_SEND, Boolean.TRUE.toString());
 
-        //init channel
-        AbstractMockChannel channel = getServerSideChannel(url);
+            //init channel
+            AbstractMockChannel channel = getServerSideChannel(url);
 
-        testDecode_assertEquals(channel, UP, Codec2.DecodeResult.NEED_MORE_INPUT, null);
+            testDecode_assertEquals(channel, UP, Codec2.DecodeResult.NEED_MORE_INPUT, null);
 
-        String request1 = "aaa\n";
-        Object expected1 = "aaa";
-        //init history
-        testDecode_assertEquals(channel, request1, expected1, null);
+            String request1 = "aaa\n";
+            Object expected1 = "aaa";
+            //init history
+            testDecode_assertEquals(channel, request1, expected1, null);
 
-        testDecode_assertEquals(channel, UP, Codec2.DecodeResult.NEED_MORE_INPUT, expected1);
+            testDecode_assertEquals(channel, UP, Codec2.DecodeResult.NEED_MORE_INPUT, expected1);
 
-        url = url.removeParameter(AbstractMockChannel.ERROR_WHEN_SEND);
+            url = url.removeParameter(AbstractMockChannel.ERROR_WHEN_SEND);
+        });
     }
 
     //=============================================================================================================================

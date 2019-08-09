@@ -26,15 +26,15 @@ import org.apache.dubbo.rpc.protocol.dubbo.support.DemoService;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoServiceImpl;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
 
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
@@ -46,17 +46,17 @@ public class ListTelnetHandlerTest {
     private static TelnetHandler list = new ListTelnetHandler();
     private Channel mockChannel;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() {
         ProtocolUtils.closeAll();
     }
 
-    @Before
+    @BeforeEach
     public void init() {
         ApplicationModel.reset();
     }
 
-    @After
+    @AfterEach
     public void after() {
         ProtocolUtils.closeAll();
     }

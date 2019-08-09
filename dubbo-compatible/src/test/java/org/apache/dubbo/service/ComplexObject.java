@@ -1,14 +1,27 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.dubbo.service;
 
-import net.sf.cglib.beans.BeanMap;
-
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 /**
  * ON 2018/11/5
@@ -32,7 +45,7 @@ public class ComplexObject {
         InnerObject2 io22 = new InnerObject2();
         io22.setInnerA2(var1 + "_22");
         io22.setInnerB2(var2 + 200000);
-        this.setInnerObject2(new HashSet<InnerObject2>(Arrays.asList(io21, io22)));
+        this.setInnerObject2(new ArrayList<>(Arrays.asList(io21, io22)));
 
         InnerObject3 io31 = new InnerObject3();
         io31.setInnerA3(var1 + "_31");
@@ -47,7 +60,7 @@ public class ComplexObject {
     }
 
     private InnerObject innerObject;
-    private Set<InnerObject2> innerObject2;
+    private List<InnerObject2> innerObject2;
     private InnerObject3[] innerObject3;
     private String[] strArrays;
     private List<Integer> intList;
@@ -95,11 +108,11 @@ public class ComplexObject {
         this.testEnum = testEnum;
     }
 
-    public Set<InnerObject2> getInnerObject2() {
+    public List<InnerObject2> getInnerObject2() {
         return innerObject2;
     }
 
-    public void setInnerObject2(Set<InnerObject2> innerObject2) {
+    public void setInnerObject2(List<InnerObject2> innerObject2) {
         this.innerObject2 = innerObject2;
     }
 
@@ -156,7 +169,7 @@ public class ComplexObject {
         return result;
     }
 
-    static public enum TestEnum {
+    public enum TestEnum {
         VALUE1, VALUE2
     }
 
@@ -211,7 +224,7 @@ public class ComplexObject {
             return innerA2;
         }
 
-        public void setInnerA2(String innerA) {
+        public void setInnerA2(String innerA2) {
             this.innerA2 = innerA2;
         }
 
@@ -219,7 +232,7 @@ public class ComplexObject {
             return innerB2;
         }
 
-        public void setInnerB2(int innerB) {
+        public void setInnerB2(int innerB2) {
             this.innerB2 = innerB2;
         }
 

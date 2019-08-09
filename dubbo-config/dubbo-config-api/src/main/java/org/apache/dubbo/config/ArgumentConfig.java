@@ -16,25 +16,43 @@
  */
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.config.annotation.Argument;
 import org.apache.dubbo.config.support.Parameter;
 
 import java.io.Serializable;
 
 /**
+ * The method arguments configuration
+ *
  * @export
  */
 public class ArgumentConfig implements Serializable {
 
     private static final long serialVersionUID = -2165482463925213595L;
 
-    //argument: index -1 represents not set
+    /**
+     * The argument index: index -1 represents not set
+     */
     private Integer index = -1;
 
-    //argument type
+    /**
+     * Argument type
+     */
     private String type;
 
-    //callback interface
+    /**
+     * Whether the argument is the callback interface
+     */
     private Boolean callback;
+
+    public ArgumentConfig() {
+    }
+
+    public ArgumentConfig(Argument argument) {
+        this.index = argument.index();
+        this.type = argument.type();
+        this.callback = argument.callback();
+    }
 
     @Parameter(excluded = true)
     public Integer getIndex() {

@@ -16,6 +16,9 @@
  */
 package org.apache.dubbo.common.config;
 
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -23,7 +26,8 @@ import java.util.List;
 /**
  *
  */
-public class CompositeConfiguration extends AbstractConfiguration {
+public class CompositeConfiguration implements Configuration {
+    private Logger logger = LoggerFactory.getLogger(CompositeConfiguration.class);
 
     /**
      * List holding all the configuration
@@ -56,7 +60,7 @@ public class CompositeConfiguration extends AbstractConfiguration {
     }
 
     @Override
-    protected Object getInternalProperty(String key) {
+    public Object getInternalProperty(String key) {
         Configuration firstMatchingConfiguration = null;
         for (Configuration config : configList) {
             try {
@@ -65,7 +69,7 @@ public class CompositeConfiguration extends AbstractConfiguration {
                     break;
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("Error when trying to get value for key " + key + " from " + config + ", will continue to try the next one.");
             }
         }
         if (firstMatchingConfiguration != null) {

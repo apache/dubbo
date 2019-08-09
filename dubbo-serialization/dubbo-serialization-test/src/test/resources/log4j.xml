@@ -18,6 +18,7 @@
 <!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
     <appender name="dubbo" class="org.apache.dubbo.common.utils.DubboAppender">
+        <param name="File" value="../../dubbo.log"/>
         <param name="encoding" value="GBK"/>
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d %p [%c:%M] - %m%n"/>

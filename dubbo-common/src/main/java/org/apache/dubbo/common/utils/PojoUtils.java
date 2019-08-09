@@ -16,6 +16,9 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -27,6 +30,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -57,6 +61,7 @@ import java.util.concurrent.ConcurrentSkipListMap;
  */
 public class PojoUtils {
 
+    private static final Logger logger = LoggerFactory.getLogger(PojoUtils.class);
     private static final ConcurrentMap<String, Method> NAME_METHODS_CACHE = new ConcurrentHashMap<String, Method>();
     private static final ConcurrentMap<Class<?>, ConcurrentMap<String, Field>> CLASS_FIELD_CACHE = new ConcurrentHashMap<Class<?>, ConcurrentMap<String, Field>>();
 
@@ -361,7 +366,7 @@ public class PojoUtils {
                 history.put(pojo, dest);
                 for (Object obj : src) {
                     Type keyType = getGenericClassByIndex(genericType, 0);
-                    Class<?> keyClazz = obj.getClass();
+                    Class<?> keyClazz = obj == null ? null : obj.getClass();
                     if (keyType instanceof Class) {
                         keyClazz = (Class<?>) keyType;
                     }
@@ -376,7 +381,7 @@ public class PojoUtils {
             Object className = ((Map<Object, Object>) pojo).get("class");
             if (className instanceof String) {
                 try {
-                    type = ClassHelper.forName((String) className);
+                    type = ClassUtils.forName((String) className);
                 } catch (ClassNotFoundException e) {
                     // ignore
                 }
@@ -457,9 +462,10 @@ public class PojoUtils {
                                 try {
                                     method.invoke(dest, value);
                                 } catch (Exception e) {
-                                    e.printStackTrace();
-                                    throw new RuntimeException("Failed to set pojo " + dest.getClass().getSimpleName() + " property " + name
-                                            + " value " + value + "(" + value.getClass() + "), cause: " + e.getMessage(), e);
+                                    String exceptionDescription = "Failed to set pojo " + dest.getClass().getSimpleName() + " property " + name
+                                            + " value " + value + "(" + value.getClass() + "), cause: " + e.getMessage();
+                                    logger.error(exceptionDescription, e);
+                                    throw new RuntimeException(exceptionDescription, e);
                                 }
                             } else if (field != null) {
                                 value = realize0(value, field.getType(), field.getGenericType(), history);
@@ -515,7 +521,14 @@ public class PojoUtils {
         } catch (Throwable t) {
             try {
                 Constructor<?>[] constructors = cls.getDeclaredConstructors();
-                if (constructors != null && constructors.length == 0) {
+                /**
+                 * From Javadoc java.lang.Class#getDeclaredConstructors
+                 * This method returns an array of Constructor objects reflecting all the constructors
+                 * declared by the class represented by this Class object.
+                 * This method returns an array of length 0,
+                 * if this Class object represents an interface, a primitive type, an array class, or void.
+                 */
+                if (constructors.length == 0) {
                     throw new RuntimeException("Illegal constructor: " + cls.getName());
                 }
                 Constructor<?> constructor = constructors[0];
@@ -530,7 +543,8 @@ public class PojoUtils {
                     }
                 }
                 constructor.setAccessible(true);
-                return constructor.newInstance(new Object[constructor.getParameterTypes().length]);
+                Object[] parameters = Arrays.stream(constructor.getParameterTypes()).map(PojoUtils::getDefaultValue).toArray();
+                return constructor.newInstance(parameters);
             } catch (InstantiationException e) {
                 throw new RuntimeException(e.getMessage(), e);
             } catch (IllegalAccessException e) {
@@ -539,6 +553,21 @@ public class PojoUtils {
                 throw new RuntimeException(e.getMessage(), e);
             }
         }
+    }
+
+    /**
+     * return init value
+     * @param parameterType
+     * @return
+     */
+    private static Object getDefaultValue(Class<?> parameterType) {
+        if ("char".equals(parameterType.getName())) {
+            return Character.MIN_VALUE;
+        }
+        if ("bool".equals(parameterType.getName())) {
+            return false;
+        }
+        return parameterType.isPrimitive() ? 0 : null;
     }
 
     private static Method getSetterMethod(Class<?> cls, String property, Class<?> valueCls) {
@@ -551,6 +580,7 @@ public class PojoUtils {
                 for (Method m : cls.getMethods()) {
                     if (ReflectUtils.isBeanPropertyWriteMethod(m) && m.getName().equals(name)) {
                         method = m;
+                        break;
                     }
                 }
             }

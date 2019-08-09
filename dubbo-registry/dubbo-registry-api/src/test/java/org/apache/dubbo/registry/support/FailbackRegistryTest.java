@@ -16,13 +16,13 @@
  */
 package org.apache.dubbo.registry.support;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.registry.NotifyListener;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.List;
@@ -30,7 +30,9 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.junit.Assert.assertEquals;
+import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
+import static org.apache.dubbo.registry.Constants.REGISTRY_RETRY_PERIOD_KEY;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class FailbackRegistryTest {
     static String service;
@@ -44,11 +46,11 @@ public class FailbackRegistryTest {
     /**
      * @throws java.lang.Exception
      */
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         service = "org.apache.dubbo.test.DemoService";
         serviceUrl = URL.valueOf("remote://127.0.0.1/demoservice?method=get");
-        registryUrl = URL.valueOf("http://1.2.3.4:9090/registry?check=false&file=N/A").addParameter(Constants.REGISTRY_RETRY_PERIOD_KEY, String.valueOf(FAILED_PERIOD));
+        registryUrl = URL.valueOf("http://1.2.3.4:9090/registry?check=false&file=N/A").addParameter(REGISTRY_RETRY_PERIOD_KEY, String.valueOf(FAILED_PERIOD));
     }
 
     /**
@@ -74,8 +76,8 @@ public class FailbackRegistryTest {
         registry.setBad(true);
         registry.register(serviceUrl);
         registry.unregister(serviceUrl);
-        registry.subscribe(serviceUrl.setProtocol(Constants.CONSUMER_PROTOCOL).addParameters(CollectionUtils.toStringMap("check", "false")), listner);
-        registry.unsubscribe(serviceUrl.setProtocol(Constants.CONSUMER_PROTOCOL).addParameters(CollectionUtils.toStringMap("check", "false")), listner);
+        registry.subscribe(serviceUrl.setProtocol(CONSUMER_PROTOCOL).addParameters(CollectionUtils.toStringMap("check", "false")), listner);
+        registry.unsubscribe(serviceUrl.setProtocol(CONSUMER_PROTOCOL).addParameters(CollectionUtils.toStringMap("check", "false")), listner);
 
         //Failure can not be called to listener.
         assertEquals(false, notified.get());
@@ -130,7 +132,7 @@ public class FailbackRegistryTest {
         };
         registry = new MockRegistry(registryUrl, latch);
         registry.setBad(true);
-        registry.subscribe(serviceUrl.setProtocol(Constants.CONSUMER_PROTOCOL).addParameters(CollectionUtils.toStringMap("check", "false")), listner);
+        registry.subscribe(serviceUrl.setProtocol(CONSUMER_PROTOCOL).addParameters(CollectionUtils.toStringMap("check", "false")), listner);
 
         //Failure can not be called to listener.
         assertEquals(false, notified.get());
@@ -162,13 +164,13 @@ public class FailbackRegistryTest {
             public void notify(List<URL> urls) {
                 count.incrementAndGet();
                 //The exception is thrown for the first time to see if the back will be called again to incrementAndGet
-                if (count.get() == 1l) {
+                if (count.get() == 1L) {
                     throw new RuntimeException("test exception please ignore");
                 }
             }
         };
         registry = new MockRegistry(registryUrl, new CountDownLatch(0));
-        registry.subscribe(serviceUrl.setProtocol(Constants.CONSUMER_PROTOCOL).addParameters(CollectionUtils.toStringMap("check", "false")), listner);
+        registry.subscribe(serviceUrl.setProtocol(CONSUMER_PROTOCOL).addParameters(CollectionUtils.toStringMap("check", "false")), listner);
 
         assertEquals(1, count.get()); //Make sure that the subscribe call has just been called once count.incrementAndGet after the call is completed
         //Wait for the timer.
@@ -195,14 +197,14 @@ public class FailbackRegistryTest {
         MockRegistry mockRegistry = new MockRegistry(registryUrl, countDownLatch);
         mockRegistry.register(serviceUrl);
         mockRegistry.subscribe(serviceUrl, listener);
-        Assert.assertEquals(1, mockRegistry.getRegistered().size());
-        Assert.assertEquals(1, mockRegistry.getSubscribed().size());
+        Assertions.assertEquals(1, mockRegistry.getRegistered().size());
+        Assertions.assertEquals(1, mockRegistry.getSubscribed().size());
         mockRegistry.recover();
         countDownLatch.await();
-        Assert.assertEquals(0, mockRegistry.getFailedRegistered().size());
+        Assertions.assertEquals(0, mockRegistry.getFailedRegistered().size());
         FailbackRegistry.Holder h = new FailbackRegistry.Holder(registryUrl, listener);
-        Assert.assertEquals(null, mockRegistry.getFailedSubscribed().get(h));
-        Assert.assertEquals(countDownLatch.getCount(), 0);
+        Assertions.assertNull(mockRegistry.getFailedSubscribed().get(h));
+        Assertions.assertEquals(countDownLatch.getCount(), 0);
     }
 
     private static class MockRegistry extends FailbackRegistry {

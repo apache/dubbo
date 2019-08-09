@@ -40,14 +40,14 @@ public class ServiceDefinition {
 
     public List<MethodDefinition> getMethods() {
         if (methods == null) {
-            methods = new ArrayList<MethodDefinition>();
+            methods = new ArrayList<>();
         }
         return methods;
     }
 
     public List<TypeDefinition> getTypes() {
         if (types == null) {
-            types = new ArrayList<TypeDefinition>();
+            types = new ArrayList<>();
         }
         return types;
     }
@@ -80,8 +80,12 @@ public class ServiceDefinition {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ServiceDefinition)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ServiceDefinition)) {
+            return false;
+        }
         ServiceDefinition that = (ServiceDefinition) o;
         return Objects.equals(getCanonicalName(), that.getCanonicalName()) &&
                 Objects.equals(getCodeSource(), that.getCodeSource()) &&

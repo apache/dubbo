@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.common.config;
 
+import org.apache.dubbo.common.utils.StringUtils;
+
 /**
  * Configuration from system environment
  */
@@ -30,8 +32,12 @@ public class EnvironmentConfiguration extends AbstractPrefixConfiguration {
     }
 
     @Override
-    protected Object getInternalProperty(String key) {
-        return System.getenv(key);
+    public Object getInternalProperty(String key) {
+        String value = System.getenv(key);
+        if (StringUtils.isEmpty(value)) {
+            value = System.getenv(StringUtils.toOSStyleKey(key));
+        }
+        return value;
     }
 
 }

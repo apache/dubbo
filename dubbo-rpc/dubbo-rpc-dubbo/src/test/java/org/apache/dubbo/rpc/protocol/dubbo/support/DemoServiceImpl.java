@@ -71,7 +71,7 @@ public class DemoServiceImpl implements DemoService {
             return Type.Lower;
         return types[0];
     }
-    
+
     public Type getType(Type type) {
         return type;
     }
@@ -109,12 +109,16 @@ public class DemoServiceImpl implements DemoService {
 
     @Override
     public int getPerson(Person person) {
-        return 1;
+        return person.getAge();
     }
 
     @Override
     public int getPerson(Person person1, Person perso2) {
-        return 2;
+        return person1.getAge() + perso2.getAge();
     }
 
+    @Override
+    public String getPerson(Man man) {
+        return man.getName();
+    }
 }

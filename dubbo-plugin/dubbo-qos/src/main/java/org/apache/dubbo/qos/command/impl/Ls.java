@@ -44,8 +44,8 @@ public class Ls implements BaseCommand {
 
     public String listProvider() {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("As Provider side:\n");
-        Collection<ProviderModel> ProviderModelList = ApplicationModel.allProviderModels();
+        stringBuilder.append("As Provider side:" + System.lineSeparator());
+        Collection<ProviderModel> providerModelList = ApplicationModel.allProviderModels();
 
         TTable tTable = new TTable(new TTable.ColumnDefine[]{
                 new TTable.ColumnDefine(TTable.Align.MIDDLE),
@@ -56,7 +56,7 @@ public class Ls implements BaseCommand {
         tTable.addRow("Provider Service Name", "PUB");
 
         //Content
-        for (ProviderModel providerModel : ProviderModelList) {
+        for (ProviderModel providerModel : providerModelList) {
             tTable.addRow(providerModel.getServiceName(), isRegistered(providerModel.getServiceName()) ? "Y" : "N");
         }
         stringBuilder.append(tTable.rendering());
@@ -66,7 +66,7 @@ public class Ls implements BaseCommand {
 
     public String listConsumer() {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("As Consumer side:\n");
+        stringBuilder.append("As Consumer side:" + System.lineSeparator());
         Collection<ConsumerModel> consumerModelList = ApplicationModel.allConsumerModels();
 
         TTable tTable = new TTable(new TTable.ColumnDefine[]{

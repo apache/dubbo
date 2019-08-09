@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config.spring.schema;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ReflectUtils;
@@ -52,6 +51,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import static org.apache.dubbo.common.constants.CommonConstants.HIDE_KEY_PREFIX;
+
 /**
  * AbstractBeanDefinitionParser
  *
@@ -75,16 +76,16 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
         beanDefinition.setBeanClass(beanClass);
         beanDefinition.setLazyInit(false);
         String id = element.getAttribute("id");
-        if ((id == null || id.length() == 0) && required) {
+        if (StringUtils.isEmpty(id) && required) {
             String generatedBeanName = element.getAttribute("name");
-            if (generatedBeanName == null || generatedBeanName.length() == 0) {
+            if (StringUtils.isEmpty(generatedBeanName)) {
                 if (ProtocolConfig.class.equals(beanClass)) {
                     generatedBeanName = "dubbo";
                 } else {
                     generatedBeanName = element.getAttribute("interface");
                 }
             }
-            if (generatedBeanName == null || generatedBeanName.length() == 0) {
+            if (StringUtils.isEmpty(generatedBeanName)) {
                 generatedBeanName = beanClass.getName();
             }
             id = generatedBeanName;
@@ -93,7 +94,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                 id = generatedBeanName + (counter++);
             }
         }
-        if (id != null && id.length() > 0) {
+        if (StringUtils.isNotEmpty(id)) {
             if (parserContext.getRegistry().containsBeanDefinition(id)) {
                 throw new IllegalStateException("Duplicate spring bean id " + id);
             }
@@ -125,7 +126,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
         } else if (ConsumerConfig.class.equals(beanClass)) {
             parseNested(element, parserContext, ReferenceBean.class, false, "reference", "consumer", id, beanDefinition);
         }
-        Set<String> props = new HashSet<String>();
+        Set<String> props = new HashSet<>();
         ManagedMap parameters = null;
         for (Method setter : beanClass.getMethods()) {
             String name = setter.getName();
@@ -136,6 +137,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                 String beanProperty = name.substring(3, 4).toLowerCase() + name.substring(4);
                 String property = StringUtils.camelToSplitName(beanProperty, "-");
                 props.add(property);
+                // check the setter/getter whether match
                 Method getter = null;
                 try {
                     getter = beanClass.getMethod("get" + name.substring(3), new Class<?>[0]);
@@ -143,6 +145,8 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                     try {
                         getter = beanClass.getMethod("is" + name.substring(3), new Class<?>[0]);
                     } catch (NoSuchMethodException e2) {
+                        // ignore, there is no need any log here since some class implement the interface: EnvironmentAware,
+                        // ApplicationAware, etc. They only have setter method, otherwise will cause the error log during application start up.
                     }
                 }
                 if (getter == null
@@ -165,8 +169,14 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                                 RegistryConfig registryConfig = new RegistryConfig();
                                 registryConfig.setAddress(RegistryConfig.NO_AVAILABLE);
                                 beanDefinition.getPropertyValues().addPropertyValue(beanProperty, registryConfig);
-                            } else if ("provider".equals(property) || "protocol".equals(property) || "registry".equals(property)) {
-                                beanDefinition.getPropertyValues().addPropertyValue(beanProperty, value);
+                            } else if ("provider".equals(property) || "registry".equals(property) || ("protocol".equals(property) && ServiceBean.class.equals(beanClass))) {
+                                /**
+                                 * For 'provider' 'protocol' 'registry', keep literal value (should be id/name) and set the value to 'registryIds' 'providerIds' protocolIds'
+                                 * The following process should make sure each id refers to the corresponding instance, here's how to find the instance for different use cases:
+                                 * 1. Spring, check existing bean by id, see{@link ServiceBean#afterPropertiesSet()}; then try to use id to find configs defined in remote Config Center
+                                 * 2. API, directly use id to find configs defined in remote Config Center; if all config instances are defined locally, please use {@link org.apache.dubbo.config.ServiceConfig#setRegistries(List)}
+                                 */
+                                beanDefinition.getPropertyValues().addPropertyValue(beanProperty + "Ids", value);
                             } else {
                                 Object reference;
                                 if (isPrimitive(type)) {
@@ -252,7 +262,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                         if (first) {
                             first = false;
                             String isDefault = element.getAttribute("default");
-                            if (isDefault == null || isDefault.length() == 0) {
+                            if (StringUtils.isEmpty(isDefault)) {
                                 beanDefinition.getPropertyValues().addPropertyValue("default", "false");
                             }
                         }
@@ -307,7 +317,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                         String value = ((Element) node).getAttribute("value");
                         boolean hide = "true".equals(((Element) node).getAttribute("hide"));
                         if (hide) {
-                            key = Constants.HIDE_KEY_PREFIX + key;
+                            key = HIDE_KEY_PREFIX + key;
                         }
                         parameters.put(key, new TypedStringValue(value, String.class));
                     }
@@ -329,7 +339,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                     Element element = (Element) node;
                     if ("method".equals(node.getNodeName()) || "method".equals(node.getLocalName())) {
                         String methodName = element.getAttribute("name");
-                        if (methodName == null || methodName.length() == 0) {
+                        if (StringUtils.isEmpty(methodName)) {
                             throw new IllegalStateException("<dubbo:method> name attribute == null");
                         }
                         if (methods == null) {

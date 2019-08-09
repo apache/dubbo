@@ -16,11 +16,10 @@
  */
 package org.apache.dubbo.metadata.definition;
 
-import org.apache.dubbo.metadata.definition.builder.ArrayTypeBuilder;
-import org.apache.dubbo.metadata.definition.builder.CollectionTypeBuilder;
+import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.metadata.definition.builder.DefaultTypeBuilder;
-import org.apache.dubbo.metadata.definition.builder.EnumTypeBuilder;
-import org.apache.dubbo.metadata.definition.builder.MapTypeBuilder;
 import org.apache.dubbo.metadata.definition.builder.TypeBuilder;
 import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 
@@ -34,46 +33,53 @@ import java.util.Map;
  * 2015/1/27.
  */
 public class TypeDefinitionBuilder {
-
-    private static final ThreadLocal<ArrayList<TypeBuilder>> builders;
+    private static final Logger logger = LoggerFactory.getLogger(TypeDefinitionBuilder.class);
+    private static final List<TypeBuilder> BUILDERS;
 
     static {
-        builders = new ThreadLocal<ArrayList<TypeBuilder>>();
-        builders.set(new ArrayList<TypeBuilder>());
-        builders.get().add(new ArrayTypeBuilder());
-        builders.get().add(new CollectionTypeBuilder());
-        builders.get().add(new MapTypeBuilder());
-        builders.get().add(new EnumTypeBuilder());
+        List<TypeBuilder> builders = new ArrayList<>();
+        ExtensionLoader<TypeBuilder> extensionLoader = ExtensionLoader.getExtensionLoader(TypeBuilder.class);
+        for (String extensionName : extensionLoader.getSupportedExtensions()) {
+            builders.add(extensionLoader.getExtension(extensionName));
+        }
+        BUILDERS = builders;
     }
 
     public static TypeDefinition build(Type type, Class<?> clazz, Map<Class<?>, TypeDefinition> typeCache) {
         TypeBuilder builder = getGenericTypeBuilder(type, clazz);
-        TypeDefinition td = null;
+        TypeDefinition td;
         if (builder != null) {
             td = builder.build(type, clazz, typeCache);
+            td.setTypeBuilderName(builder.getClass().getName());
         } else {
             td = DefaultTypeBuilder.build(clazz, typeCache);
+            td.setTypeBuilderName(DefaultTypeBuilder.class.getName());
         }
         return td;
     }
 
     private static TypeBuilder getGenericTypeBuilder(Type type, Class<?> clazz) {
-        for (TypeBuilder builder : builders.get()) {
-            if (builder.accept(type, clazz)) {
-                return builder;
+        for (TypeBuilder builder : BUILDERS) {
+            try {
+                if (builder.accept(type, clazz)) {
+                    return builder;
+                }
+            } catch (NoClassDefFoundError cnfe) {
+                //ignore
+                logger.info("Throw classNotFound (" + cnfe.getMessage() + ") in " + builder.getClass());
             }
         }
         return null;
     }
 
-    private Map<Class<?>, TypeDefinition> typeCache = new HashMap<Class<?>, TypeDefinition>();
+    private Map<Class<?>, TypeDefinition> typeCache = new HashMap<>();
 
     public TypeDefinition build(Type type, Class<?> clazz) {
         return build(type, clazz, typeCache);
     }
 
     public List<TypeDefinition> getTypeDefinitions() {
-        return new ArrayList<TypeDefinition>(typeCache.values());
+        return new ArrayList<>(typeCache.values());
     }
 
 }

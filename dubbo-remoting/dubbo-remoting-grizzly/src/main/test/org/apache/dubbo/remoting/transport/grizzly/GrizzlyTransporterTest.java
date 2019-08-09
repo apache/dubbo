@@ -16,22 +16,23 @@
  */
 package org.apache.dubbo.remoting.transport.grizzly;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Server;
 import org.apache.dubbo.remoting.transport.ChannelHandlerAdapter;
-import org.junit.Test;
 
+import org.junit.jupiter.api.Test;
+
+import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class GrizzlyTransporterTest {
     @Test
     public void shouldAbleToBindGrizzly() throws Exception {
         int port = NetUtils.getAvailablePort();
         URL url = new URL("http", "localhost", port,
-                new String[]{Constants.BIND_PORT_KEY, String.valueOf(port)});
+                new String[]{BIND_PORT_KEY, String.valueOf(port)});
 
         Server server = new GrizzlyTransporter().bind(url, new ChannelHandlerAdapter());
 

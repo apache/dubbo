@@ -28,6 +28,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY_PREFIX;
+import static org.apache.dubbo.common.constants.CommonConstants.HIDE_KEY_PREFIX;
+
 /**
  * Parameters for backward compatibility for version prior to 2.0.5
  *
@@ -96,21 +99,21 @@ public class Parameters {
 
     public String getParameter(String key) {
         String value = parameters.get(key);
-        if (value == null || value.length() == 0) {
-            value = parameters.get(Constants.HIDE_KEY_PREFIX + key);
+        if (StringUtils.isEmpty(value)) {
+            value = parameters.get(HIDE_KEY_PREFIX + key);
         }
-        if (value == null || value.length() == 0) {
-            value = parameters.get(Constants.DEFAULT_KEY_PREFIX + key);
+        if (StringUtils.isEmpty(value)) {
+            value = parameters.get(DEFAULT_KEY_PREFIX + key);
         }
-        if (value == null || value.length() == 0) {
-            value = parameters.get(Constants.HIDE_KEY_PREFIX + Constants.DEFAULT_KEY_PREFIX + key);
+        if (StringUtils.isEmpty(value)) {
+            value = parameters.get(HIDE_KEY_PREFIX + DEFAULT_KEY_PREFIX + key);
         }
         return value;
     }
 
     public String getParameter(String key, String defaultValue) {
         String value = getParameter(key);
-        if (value == null || value.length() == 0) {
+        if (StringUtils.isEmpty(value)) {
             return defaultValue;
         }
         return value;
@@ -118,7 +121,7 @@ public class Parameters {
 
     public int getIntParameter(String key) {
         String value = getParameter(key);
-        if (value == null || value.length() == 0) {
+        if (StringUtils.isEmpty(value)) {
             return 0;
         }
         return Integer.parseInt(value);
@@ -126,7 +129,7 @@ public class Parameters {
 
     public int getIntParameter(String key, int defaultValue) {
         String value = getParameter(key);
-        if (value == null || value.length() == 0) {
+        if (StringUtils.isEmpty(value)) {
             return defaultValue;
         }
         return Integer.parseInt(value);
@@ -137,7 +140,7 @@ public class Parameters {
             throw new IllegalArgumentException("defaultValue <= 0");
         }
         String value = getParameter(key);
-        if (value == null || value.length() == 0) {
+        if (StringUtils.isEmpty(value)) {
             return defaultValue;
         }
         int i = Integer.parseInt(value);
@@ -149,7 +152,7 @@ public class Parameters {
 
     public boolean getBooleanParameter(String key) {
         String value = getParameter(key);
-        if (value == null || value.length() == 0) {
+        if (StringUtils.isEmpty(value)) {
             return false;
         }
         return Boolean.parseBoolean(value);
@@ -157,23 +160,23 @@ public class Parameters {
 
     public boolean getBooleanParameter(String key, boolean defaultValue) {
         String value = getParameter(key);
-        if (value == null || value.length() == 0) {
+        if (StringUtils.isEmpty(value)) {
             return defaultValue;
         }
         return Boolean.parseBoolean(value);
     }
 
-    public boolean hasParamter(String key) {
+    public boolean hasParameter(String key) {
         String value = getParameter(key);
         return value != null && value.length() > 0;
     }
 
     public String getMethodParameter(String method, String key) {
         String value = parameters.get(method + "." + key);
-        if (value == null || value.length() == 0) {
-            value = parameters.get(Constants.HIDE_KEY_PREFIX + method + "." + key);
+        if (StringUtils.isEmpty(value)) {
+            value = parameters.get(HIDE_KEY_PREFIX + method + "." + key);
         }
-        if (value == null || value.length() == 0) {
+        if (StringUtils.isEmpty(value)) {
             return getParameter(key);
         }
         return value;
@@ -181,7 +184,7 @@ public class Parameters {
 
     public String getMethodParameter(String method, String key, String defaultValue) {
         String value = getMethodParameter(method, key);
-        if (value == null || value.length() == 0) {
+        if (StringUtils.isEmpty(value)) {
             return defaultValue;
         }
         return value;
@@ -189,7 +192,7 @@ public class Parameters {
 
     public int getMethodIntParameter(String method, String key) {
         String value = getMethodParameter(method, key);
-        if (value == null || value.length() == 0) {
+        if (StringUtils.isEmpty(value)) {
             return 0;
         }
         return Integer.parseInt(value);
@@ -197,7 +200,7 @@ public class Parameters {
 
     public int getMethodIntParameter(String method, String key, int defaultValue) {
         String value = getMethodParameter(method, key);
-        if (value == null || value.length() == 0) {
+        if (StringUtils.isEmpty(value)) {
             return defaultValue;
         }
         return Integer.parseInt(value);
@@ -208,7 +211,7 @@ public class Parameters {
             throw new IllegalArgumentException("defaultValue <= 0");
         }
         String value = getMethodParameter(method, key);
-        if (value == null || value.length() == 0) {
+        if (StringUtils.isEmpty(value)) {
             return defaultValue;
         }
         int i = Integer.parseInt(value);
@@ -220,7 +223,7 @@ public class Parameters {
 
     public boolean getMethodBooleanParameter(String method, String key) {
         String value = getMethodParameter(method, key);
-        if (value == null || value.length() == 0) {
+        if (StringUtils.isEmpty(value)) {
             return false;
         }
         return Boolean.parseBoolean(value);
@@ -228,13 +231,13 @@ public class Parameters {
 
     public boolean getMethodBooleanParameter(String method, String key, boolean defaultValue) {
         String value = getMethodParameter(method, key);
-        if (value == null || value.length() == 0) {
+        if (StringUtils.isEmpty(value)) {
             return defaultValue;
         }
         return Boolean.parseBoolean(value);
     }
 
-    public boolean hasMethodParamter(String method, String key) {
+    public boolean hasMethodParameter(String method, String key) {
         String value = getMethodParameter(method, key);
         return value != null && value.length() > 0;
     }

@@ -103,16 +103,11 @@ public class CompatibleTypeUtils {
             } else if (char[].class.equals(type)) {
                 // Process string to char array for generic invoke
                 // See
-                // - https://github.com/apache/incubator-dubbo/issues/2003
-                if (string == null) {
-                    return null;
-                }
-                else {
-                    int len = string.length();
-                    char[] chars = new char[len];
-                    string.getChars(0, len, chars, 0);
-                    return chars;
-                }
+                // - https://github.com/apache/dubbo/issues/2003
+                int len = string.length();
+                char[] chars = new char[len];
+                string.getChars(0, len, chars, 0);
+                return chars;
             }
         } else if (value instanceof Number) {
             Number number = (Number) value;
@@ -134,6 +129,8 @@ public class CompatibleTypeUtils {
                 return BigDecimal.valueOf(number.doubleValue());
             } else if (type == Date.class) {
                 return new Date(number.longValue());
+            } else if (type == boolean.class || type == Boolean.class) {
+                return 0 != number.intValue();
             }
         } else if (value instanceof Collection) {
             Collection collection = (Collection) value;

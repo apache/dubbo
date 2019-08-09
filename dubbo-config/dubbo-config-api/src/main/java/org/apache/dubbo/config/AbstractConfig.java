@@ -16,18 +16,20 @@
  */
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.CompositeConfiguration;
+import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.Environment;
-import org.apache.dubbo.common.config.InmemoryConfiguration;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.ClassHelper;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.MethodUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.context.ConfigConfigurationAdapter;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ConsumerMethodModel;
 
@@ -41,6 +43,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REMOVE_VALUE_PREFIX;
+
 /**
  * Utility methods and public methods for parsing configuration
  *
@@ -50,38 +55,74 @@ public abstract class AbstractConfig implements Serializable {
 
     protected static final Logger logger = LoggerFactory.getLogger(AbstractConfig.class);
     private static final long serialVersionUID = 4267533505537413570L;
+
+    /**
+     * The maximum length of a <b>parameter's value</b>
+     */
     private static final int MAX_LENGTH = 200;
 
+    /**
+     * The maximum length of a <b>path</b>
+     */
     private static final int MAX_PATH_LENGTH = 200;
 
+    /**
+     * The rule qualification for <b>name</b>
+     */
     private static final Pattern PATTERN_NAME = Pattern.compile("[\\-._0-9a-zA-Z]+");
 
+    /**
+     * The rule qualification for <b>multiply name</b>
+     */
     private static final Pattern PATTERN_MULTI_NAME = Pattern.compile("[,\\-._0-9a-zA-Z]+");
 
+    /**
+     * The rule qualification for <b>method names</b>
+     */
     private static final Pattern PATTERN_METHOD_NAME = Pattern.compile("[a-zA-Z][0-9a-zA-Z]*");
 
+    /**
+     * The rule qualification for <b>path</b>
+     */
     private static final Pattern PATTERN_PATH = Pattern.compile("[/\\-$._0-9a-zA-Z]+");
 
+    /**
+     * The pattern matches a value who has a symbol
+     */
     private static final Pattern PATTERN_NAME_HAS_SYMBOL = Pattern.compile("[:*,\\s/\\-._0-9a-zA-Z]+");
 
+    /**
+     * The pattern matches a property key
+     */
     private static final Pattern PATTERN_KEY = Pattern.compile("[*,\\-._0-9a-zA-Z]+");
-    private static final Map<String, String> legacyProperties = new HashMap<String, String>();
+
+    /**
+     * The legacy properties container
+     */
+    private static final Map<String, String> LEGACY_PROPERTIES = new HashMap<String, String>();
+
+    /**
+     * The suffix container
+     */
     private static final String[] SUFFIXES = new String[]{"Config", "Bean"};
 
     static {
-        legacyProperties.put("dubbo.protocol.name", "dubbo.service.protocol");
-        legacyProperties.put("dubbo.protocol.host", "dubbo.service.server.host");
-        legacyProperties.put("dubbo.protocol.port", "dubbo.service.server.port");
-        legacyProperties.put("dubbo.protocol.threads", "dubbo.service.max.thread.pool.size");
-        legacyProperties.put("dubbo.consumer.timeout", "dubbo.service.invoke.timeout");
-        legacyProperties.put("dubbo.consumer.retries", "dubbo.service.max.retry.providers");
-        legacyProperties.put("dubbo.consumer.check", "dubbo.service.allow.no.provider");
-        legacyProperties.put("dubbo.service.url", "dubbo.service.address");
+        LEGACY_PROPERTIES.put("dubbo.protocol.name", "dubbo.service.protocol");
+        LEGACY_PROPERTIES.put("dubbo.protocol.host", "dubbo.service.server.host");
+        LEGACY_PROPERTIES.put("dubbo.protocol.port", "dubbo.service.server.port");
+        LEGACY_PROPERTIES.put("dubbo.protocol.threads", "dubbo.service.max.thread.pool.size");
+        LEGACY_PROPERTIES.put("dubbo.consumer.timeout", "dubbo.service.invoke.timeout");
+        LEGACY_PROPERTIES.put("dubbo.consumer.retries", "dubbo.service.max.retry.providers");
+        LEGACY_PROPERTIES.put("dubbo.consumer.check", "dubbo.service.allow.no.provider");
+        LEGACY_PROPERTIES.put("dubbo.service.url", "dubbo.service.address");
 
         // this is only for compatibility
         DubboShutdownHook.getDubboShutdownHook().register();
     }
 
+    /**
+     * The config id
+     */
     protected String id;
     protected String prefix;
 
@@ -104,7 +145,7 @@ public abstract class AbstractConfig implements Serializable {
                 break;
             }
         }
-        return tag.substring(0, 1).toLowerCase() + tag.substring(1);
+        return StringUtils.camelToSplitName(tag, "-");
     }
 
     protected static void appendParameters(Map<String, String> parameters, Object config) {
@@ -120,7 +161,7 @@ public abstract class AbstractConfig implements Serializable {
         for (Method method : methods) {
             try {
                 String name = method.getName();
-                if (ClassHelper.isGetter(method)) {
+                if (MethodUtils.isGetter(method)) {
                     Parameter parameter = method.getAnnotation(Parameter.class);
                     if (method.getReturnType() == Object.class || parameter != null && parameter.excluded()) {
                         continue;
@@ -138,7 +179,7 @@ public abstract class AbstractConfig implements Serializable {
                             str = URL.encode(str);
                         }
                         if (parameter != null && parameter.append()) {
-                            String pre = parameters.get(Constants.DEFAULT_KEY + "." + key);
+                            String pre = parameters.get(DEFAULT_KEY + "." + key);
                             if (pre != null && pre.length() > 0) {
                                 str = pre + "," + str;
                             }
@@ -172,10 +213,12 @@ public abstract class AbstractConfig implements Serializable {
         }
     }
 
+    @Deprecated
     protected static void appendAttributes(Map<String, Object> parameters, Object config) {
         appendAttributes(parameters, config, null);
     }
 
+    @Deprecated
     protected static void appendAttributes(Map<String, Object> parameters, Object config, String prefix) {
         if (config == null) {
             return;
@@ -188,7 +231,7 @@ public abstract class AbstractConfig implements Serializable {
                     continue;
                 }
                 String name = method.getName();
-                if (ClassHelper.isGetter(method)) {
+                if (MethodUtils.isGetter(method)) {
                     String key;
                     if (parameter.key().length() > 0) {
                         key = parameter.key();
@@ -209,7 +252,7 @@ public abstract class AbstractConfig implements Serializable {
         }
     }
 
-    protected static ConsumerMethodModel.AsyncMethodInfo convertMethodConfig2AyncInfo(MethodConfig methodConfig) {
+    protected static ConsumerMethodModel.AsyncMethodInfo convertMethodConfig2AsyncInfo(MethodConfig methodConfig) {
         if (methodConfig == null || (methodConfig.getOninvoke() == null && methodConfig.getOnreturn() == null && methodConfig.getOnthrow() == null)) {
             return null;
         }
@@ -255,38 +298,32 @@ public abstract class AbstractConfig implements Serializable {
         }
     }
 
-    /**
-     * We only check boolean value at this moment.
-     *
-     * @param type
-     * @param value
-     * @return
-     */
-    private static boolean isTypeMatch(Class<?> type, String value) {
-        if ((type == boolean.class || type == Boolean.class)
-                && !("true".equals(value) || "false".equals(value))) {
-            return false;
-        }
-        return true;
-    }
 
     protected static void checkExtension(Class<?> type, String property, String value) {
         checkName(property, value);
-        if (value != null && value.length() > 0
+        if (StringUtils.isNotEmpty(value)
                 && !ExtensionLoader.getExtensionLoader(type).hasExtension(value)) {
             throw new IllegalStateException("No such extension " + value + " for " + property + "/" + type.getName());
         }
     }
 
+    /**
+     * Check whether there is a <code>Extension</code> who's name (property) is <code>value</code> (special treatment is
+     * required)
+     *
+     * @param type     The Extension type
+     * @param property The extension key
+     * @param value    The Extension name
+     */
     protected static void checkMultiExtension(Class<?> type, String property, String value) {
         checkMultiName(property, value);
-        if (value != null && value.length() > 0) {
+        if (StringUtils.isNotEmpty(value)) {
             String[] values = value.split("\\s*[,]+\\s*");
             for (String v : values) {
-                if (v.startsWith(Constants.REMOVE_VALUE_PREFIX)) {
+                if (v.startsWith(REMOVE_VALUE_PREFIX)) {
                     v = v.substring(1);
                 }
-                if (Constants.DEFAULT_KEY.equals(v)) {
+                if (DEFAULT_KEY.equals(v)) {
                     continue;
                 }
                 if (!ExtensionLoader.getExtensionLoader(type).hasExtension(v)) {
@@ -329,7 +366,7 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     protected static void checkParameterName(Map<String, String> parameters) {
-        if (parameters == null || parameters.size() == 0) {
+        if (CollectionUtils.isEmptyMap(parameters)) {
             return;
         }
         for (Map.Entry<String, String> entry : parameters.entrySet()) {
@@ -338,7 +375,7 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     protected static void checkProperty(String property, String value, int maxlength, Pattern pattern) {
-        if (value == null || value.length() == 0) {
+        if (StringUtils.isEmpty(value)) {
             return;
         }
         if (value.length() > maxlength) {
@@ -455,12 +492,7 @@ public abstract class AbstractConfig implements Serializable {
         for (Method method : methods) {
             try {
                 String name = method.getName();
-                if ((name.startsWith("get") || name.startsWith("is"))
-                        && !name.equals("get")
-                        && !"getClass".equals(name)
-                        && Modifier.isPublic(method.getModifiers())
-                        && method.getParameterTypes().length == 0
-                        && ClassHelper.isPrimitive(method.getReturnType())) {
+                if (MethodUtils.isMetaMethod(method)) {
                     String prop = calculateAttributeFromGetter(name);
                     String key;
                     Parameter parameter = method.getAnnotation(Parameter.class);
@@ -478,31 +510,10 @@ public abstract class AbstractConfig implements Serializable {
                     Object value = method.invoke(this);
                     String str = String.valueOf(value).trim();
                     if (value != null && str.length() > 0) {
-                        // ignore escape, keep the original value.
-                        /*if (parameter != null && parameter.escaped()) {
-                            str = URL.encode(str);
-                        }*/
-                        if (parameter != null && parameter.append()) {
-                            String pre = String.valueOf(metaData.get(Constants.DEFAULT_KEY + "." + key));
-                            if (pre != null && pre.length() > 0) {
-                                str = pre + "," + str;
-                            }
-                            pre = String.valueOf(metaData.get(key));
-                            if (pre != null && pre.length() > 0) {
-                                str = pre + "," + str;
-                            }
-                        }
-                      /*  if (prefix != null && prefix.length() > 0) {
-                            key = prefix + "." + key;
-                        }*/
                         metaData.put(key, str);
                     } else {
                         metaData.put(key, null);
                     }
-                    // TODO check required somewhere else.
-                    /*else if (parameter != null && parameter.required()) {
-                        throw new IllegalStateException(this.getClass().getSimpleName() + "." + key + " == null");
-                    }*/
                 } else if ("getParameters".equals(name)
                         && Modifier.isPublic(method.getModifiers())
                         && method.getParameterTypes().length == 0
@@ -524,7 +535,7 @@ public abstract class AbstractConfig implements Serializable {
 
     @Parameter(excluded = true)
     public String getPrefix() {
-        return StringUtils.isNotEmpty(prefix) ? prefix : (Constants.DUBBO + "." + getTagName(this.getClass()));
+        return StringUtils.isNotEmpty(prefix) ? prefix : (CommonConstants.DUBBO + "." + getTagName(this.getClass()));
     }
 
     public void setPrefix(String prefix) {
@@ -538,25 +549,24 @@ public abstract class AbstractConfig implements Serializable {
     public void refresh() {
         try {
             CompositeConfiguration compositeConfiguration = Environment.getInstance().getConfiguration(getPrefix(), getId());
-            InmemoryConfiguration config = new InmemoryConfiguration(getPrefix(), getId());
-            config.addProperties(getMetaData());
+            Configuration config = new ConfigConfigurationAdapter(this);
             if (Environment.getInstance().isConfigCenterFirst()) {
-                // The sequence would be: SystemConfiguration -> ExternalConfiguration -> AppExternalConfiguration -> AbstractConfig -> PropertiesConfiguration
-                compositeConfiguration.addConfiguration(3,config);
+                // The sequence would be: SystemConfiguration -> AppExternalConfiguration -> ExternalConfiguration -> AbstractConfig -> PropertiesConfiguration
+                compositeConfiguration.addConfiguration(4, config);
             } else {
-                // The sequence would be: SystemConfiguration -> AbstractConfig -> ExternalConfiguration -> AppExternalConfiguration -> PropertiesConfiguration
-                compositeConfiguration.addConfiguration(1, config);
+                // The sequence would be: SystemConfiguration -> AbstractConfig -> AppExternalConfiguration -> ExternalConfiguration -> PropertiesConfiguration
+                compositeConfiguration.addConfiguration(2, config);
             }
 
             // loop methods, get override value and set the new value back to method
             Method[] methods = getClass().getMethods();
             for (Method method : methods) {
-                if (ClassHelper.isSetter(method)) {
+                if (MethodUtils.isSetter(method)) {
                     try {
-                        String value = compositeConfiguration.getString(extractPropertyName(getClass(), method));
+                        String value = StringUtils.trim(compositeConfiguration.getString(extractPropertyName(getClass(), method)));
                         // isTypeMatch() is called to avoid duplicate and incorrect update, for example, we have two 'setGeneric' methods in ReferenceConfig.
-                        if (value != null && ClassHelper.isTypeMatch(method.getParameterTypes()[0], value)) {
-                            method.invoke(this, ClassHelper.convertPrimitive(method.getParameterTypes()[0], value));
+                        if (StringUtils.isNotEmpty(value) && ClassUtils.isTypeMatch(method.getParameterTypes()[0], value)) {
+                            method.invoke(this, ClassUtils.convertPrimitive(method.getParameterTypes()[0], value));
                         }
                     } catch (NoSuchMethodException e) {
                         logger.info("Failed to override the property " + method.getName() + " in " +
@@ -579,7 +589,7 @@ public abstract class AbstractConfig implements Serializable {
             Method[] methods = getClass().getMethods();
             for (Method method : methods) {
                 try {
-                    if (ClassHelper.isGetter(method)) {
+                    if (MethodUtils.isGetter(method)) {
                         String name = method.getName();
                         String key = calculateAttributeFromGetter(name);
                         Object value = method.invoke(this);
@@ -611,4 +621,32 @@ public abstract class AbstractConfig implements Serializable {
         return true;
     }
 
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null || !(obj.getClass().getName().equals(this.getClass().getName()))) {
+            return false;
+        }
+
+        Method[] methods = this.getClass().getMethods();
+        for (Method method1 : methods) {
+            if (MethodUtils.isGetter(method1)) {
+                Parameter parameter = method1.getAnnotation(Parameter.class);
+                if (parameter != null && parameter.excluded()) {
+                    continue;
+                }
+                try {
+                    Method method2 = obj.getClass().getMethod(method1.getName(), method1.getParameterTypes());
+                    Object value1 = method1.invoke(this, new Object[]{});
+                    Object value2 = method2.invoke(obj, new Object[]{});
+                    if ((value1 != null && value2 != null) && !value1.equals(value2)) {
+                        return false;
+                    }
+                } catch (Exception e) {
+                    return true;
+                }
+            }
+        }
+        return true;
+    }
 }

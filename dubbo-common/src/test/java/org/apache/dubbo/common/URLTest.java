@@ -18,7 +18,8 @@ package org.apache.dubbo.common;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.util.Arrays;
@@ -27,12 +28,12 @@ import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class URLTest {
 
@@ -71,7 +72,7 @@ public class URLTest {
         assertNull(url.getPassword());
         assertEquals("10.20.130.230", url.getHost());
         assertEquals(0, url.getPort());
-        assertEquals(null, url.getPath());
+        assertNull(url.getPath());
         assertEquals(0, url.getParameters().size());
 
         url = URL.valueOf("10.20.130.230:20880");
@@ -80,7 +81,7 @@ public class URLTest {
         assertNull(url.getPassword());
         assertEquals("10.20.130.230", url.getHost());
         assertEquals(20880, url.getPort());
-        assertEquals(null, url.getPath());
+        assertNull(url.getPath());
         assertEquals(0, url.getParameters().size());
 
         url = URL.valueOf("10.20.130.230/context/path");
@@ -124,7 +125,7 @@ public class URLTest {
         assertEquals("home/user1/router.js", url.getPath());
         assertEquals(0, url.getParameters().size());
 
-        // Caution!! 
+        // Caution!!
         url = URL.valueOf("file://home/user1/router.js");
         //                      ^^ only tow slash!
         assertEquals("file", url.getProtocol());
@@ -189,7 +190,7 @@ public class URLTest {
         assertNull(url.getPassword());
         assertEquals("10.20.130.230", url.getHost());
         assertEquals(0, url.getPort());
-        assertEquals(null, url.getPath());
+        assertNull(url.getPath());
         assertEquals(0, url.getParameters().size());
 
         url = URL.valueOf("dubbo://10.20.130.230:20880/context/path");
@@ -207,7 +208,7 @@ public class URLTest {
         assertEquals("hello1234", url.getPassword());
         assertEquals("10.20.130.230", url.getHost());
         assertEquals(20880, url.getPort());
-        assertEquals(null, url.getPath());
+        assertNull(url.getPath());
         assertEquals(0, url.getParameters().size());
 
         url = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880?version=1.0.0");
@@ -216,7 +217,7 @@ public class URLTest {
         assertEquals("hello1234", url.getPassword());
         assertEquals("10.20.130.230", url.getHost());
         assertEquals(20880, url.getPort());
-        assertEquals(null, url.getPath());
+        assertNull(url.getPath());
         assertEquals(1, url.getParameters().size());
         assertEquals("1.0.0", url.getParameter("version"));
 
@@ -281,7 +282,7 @@ public class URLTest {
     @Test
     public void test_getAbsolutePath() throws Exception {
         URL url = new URL("p1", "1.2.2.2", 33);
-        assertEquals(null, url.getAbsolutePath());
+        assertNull(url.getAbsolutePath());
 
         url = new URL("file", null, 90, "/home/user1/route.js");
         assertEquals("/home/user1/route.js", url.getAbsolutePath());
@@ -679,5 +680,44 @@ public class URLTest {
         assertEquals(2, url.getParameters().size());
         assertEquals("1.0.0", url.getParameter("version"));
         assertEquals("morgan", url.getParameter("application"));
+    }
+
+    @Test
+    public void testDefaultPort() {
+        Assertions.assertEquals("10.20.153.10:2181", URL.appendDefaultPort("10.20.153.10:0", 2181));
+        Assertions.assertEquals("10.20.153.10:2181", URL.appendDefaultPort("10.20.153.10", 2181));
+    }
+
+    @Test
+    public void testGetServiceKey () {
+        URL url1 = URL.valueOf("10.20.130.230:20880/context/path?interface=org.apache.dubbo.test.interfaceName");
+        Assertions.assertEquals("org.apache.dubbo.test.interfaceName", url1.getServiceKey());
+
+        URL url2 = URL.valueOf("10.20.130.230:20880/org.apache.dubbo.test.interfaceName?interface=org.apache.dubbo.test.interfaceName");
+        Assertions.assertEquals("org.apache.dubbo.test.interfaceName", url2.getServiceKey());
+
+        URL url3 = URL.valueOf("10.20.130.230:20880/org.apache.dubbo.test.interfaceName?interface=org.apache.dubbo.test.interfaceName&group=group1&version=1.0.0");
+        Assertions.assertEquals("group1/org.apache.dubbo.test.interfaceName:1.0.0", url3.getServiceKey());
+
+        URL url4 = URL.valueOf("10.20.130.230:20880/context/path?interface=org.apache.dubbo.test.interfaceName");
+        Assertions.assertEquals("context/path", url4.getPathKey());
+
+        URL url5 = URL.valueOf("10.20.130.230:20880/context/path?interface=org.apache.dubbo.test.interfaceName&group=group1&version=1.0.0");
+        Assertions.assertEquals("group1/context/path:1.0.0", url5.getPathKey());
+    }
+
+    @Test
+    public void testGetColonSeparatedKey() {
+        URL url1 = URL.valueOf("10.20.130.230:20880/context/path?interface=org.apache.dubbo.test.interfaceName&group=group&version=1.0.0");
+        Assertions.assertEquals("org.apache.dubbo.test.interfaceName:1.0.0:group", url1.getColonSeparatedKey());
+
+        URL url2 = URL.valueOf("10.20.130.230:20880/context/path?interface=org.apache.dubbo.test.interfaceName&version=1.0.0");
+        Assertions.assertEquals("org.apache.dubbo.test.interfaceName:1.0.0:", url2.getColonSeparatedKey());
+
+        URL url3 = URL.valueOf("10.20.130.230:20880/context/path?interface=org.apache.dubbo.test.interfaceName&group=group");
+        Assertions.assertEquals("org.apache.dubbo.test.interfaceName::group", url3.getColonSeparatedKey());
+
+        URL url4 = URL.valueOf("10.20.130.230:20880/context/path?interface=org.apache.dubbo.test.interfaceName");
+        Assertions.assertEquals("org.apache.dubbo.test.interfaceName::", url4.getColonSeparatedKey());
     }
 }

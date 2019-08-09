@@ -45,17 +45,18 @@ public class TraceTelnetHandler implements TelnetHandler {
         String[] parts = message.split("\\s+");
         String method;
         String times;
-        if (service == null || service.length() == 0) {
+        // message like : XxxService , XxxService 10 , XxxService xxxMethod , XxxService xxxMethod 10
+        if (StringUtils.isEmpty(service)) {
             service = parts.length > 0 ? parts[0] : null;
             method = parts.length > 1 ? parts[1] : null;
-        } else {
+            times = parts.length > 2 ? parts[2] : "1";
+        } else {  //message like : xxxMethod, xxxMethod 10
             method = parts.length > 0 ? parts[0] : null;
+            times = parts.length > 1 ? parts[1] : "1";
         }
         if (StringUtils.isInteger(method)) {
             times = method;
             method = null;
-        } else {
-            times = parts.length > 2 ? parts[2] : "1";
         }
         if (!StringUtils.isInteger(times)) {
             return "Illegal times " + times + ", must be integer.";

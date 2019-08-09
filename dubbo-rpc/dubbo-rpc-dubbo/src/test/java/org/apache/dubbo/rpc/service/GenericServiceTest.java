@@ -18,7 +18,6 @@
  */
 package org.apache.dubbo.rpc.service;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.beanutil.JavaBeanAccessor;
 import org.apache.dubbo.common.beanutil.JavaBeanDescriptor;
 import org.apache.dubbo.common.beanutil.JavaBeanSerializeUtil;
@@ -31,9 +30,9 @@ import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -43,10 +42,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_NATIVE_JAVA;
+import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_BEAN;
+
 /**
  * GenericServiceTest
  */
-@Ignore("Keeps failing on Travis, but can not be reproduced locally.")
+@Disabled("Keeps failing on Travis, but can not be reproduced locally.")
 public class GenericServiceTest {
 
     @Test
@@ -81,18 +83,18 @@ public class GenericServiceTest {
             DemoService demoService = reference.get();
             try {
                 // say name
-                Assert.assertEquals("Generic Haha", demoService.sayName("Haha"));
+                Assertions.assertEquals("Generic Haha", demoService.sayName("Haha"));
                 // get users
                 List<User> users = new ArrayList<User>();
                 users.add(new User("Aaa"));
                 users = demoService.getUsers(users);
-                Assert.assertEquals("Aaa", users.get(0).getName());
+                Assertions.assertEquals("Aaa", users.get(0).getName());
                 // throw demo exception
                 try {
                     demoService.throwDemoException();
-                    Assert.fail();
+                    Assertions.fail();
                 } catch (DemoException e) {
-                    Assert.assertEquals("Generic", e.getMessage());
+                    Assertions.assertEquals("Generic", e.getMessage());
                 }
             } finally {
                 reference.destroy();
@@ -126,8 +128,8 @@ public class GenericServiceTest {
                 user.put("name", "actual.provider");
                 users.add(user);
                 users = (List<Map<String, Object>>) genericService.$invoke("getUsers", new String[]{List.class.getName()}, new Object[]{users});
-                Assert.assertEquals(1, users.size());
-                Assert.assertEquals("actual.provider", users.get(0).get("name"));
+                Assertions.assertEquals(1, users.size());
+                Assertions.assertEquals("actual.provider", users.get(0).get("name"));
             } finally {
                 reference.destroy();
             }
@@ -151,7 +153,7 @@ public class GenericServiceTest {
             reference.setApplication(new ApplicationConfig("generic-consumer"));
             reference.setInterface(DemoService.class);
             reference.setUrl("dubbo://127.0.0.1:29581?scope=remote&timeout=3000");
-            reference.setGeneric(Constants.GENERIC_SERIALIZATION_NATIVE_JAVA);
+            reference.setGeneric(GENERIC_SERIALIZATION_NATIVE_JAVA);
             GenericService genericService = reference.get();
             try {
                 String name = "kimi";
@@ -160,9 +162,9 @@ public class GenericServiceTest {
                         .getExtension("nativejava").serialize(null, bos).writeObject(name);
                 byte[] arg = bos.toByteArray();
                 Object obj = genericService.$invoke("sayName", new String[]{String.class.getName()}, new Object[]{arg});
-                Assert.assertTrue(obj instanceof byte[]);
+                Assertions.assertTrue(obj instanceof byte[]);
                 byte[] result = (byte[]) obj;
-                Assert.assertEquals(ref.sayName(name), ExtensionLoader.getExtensionLoader(Serialization.class)
+                Assertions.assertEquals(ref.sayName(name), ExtensionLoader.getExtensionLoader(Serialization.class)
                         .getExtension("nativejava").deserialize(null, new ByteArrayInputStream(result)).readObject().toString());
 
                 // getUsers
@@ -176,9 +178,9 @@ public class GenericServiceTest {
                 obj = genericService.$invoke("getUsers",
                         new String[]{List.class.getName()},
                         new Object[]{bos.toByteArray()});
-                Assert.assertTrue(obj instanceof byte[]);
+                Assertions.assertTrue(obj instanceof byte[]);
                 result = (byte[]) obj;
-                Assert.assertEquals(users,
+                Assertions.assertEquals(users,
                         ExtensionLoader.getExtensionLoader(Serialization.class)
                                 .getExtension("nativejava")
                                 .deserialize(null, new ByteArrayInputStream(result))
@@ -189,8 +191,8 @@ public class GenericServiceTest {
                 ExtensionLoader.getExtensionLoader(Serialization.class).getExtension("nativejava")
                         .serialize(null, bos).writeObject(Integer.MAX_VALUE);
                 obj = genericService.$invoke("echo", new String[]{int.class.getName()}, new Object[]{bos.toByteArray()});
-                Assert.assertTrue(obj instanceof byte[]);
-                Assert.assertEquals(Integer.MAX_VALUE,
+                Assertions.assertTrue(obj instanceof byte[]);
+                Assertions.assertEquals(Integer.MAX_VALUE,
                         ExtensionLoader.getExtensionLoader(Serialization.class)
                                 .getExtension("nativejava")
                                 .deserialize(null, new ByteArrayInputStream((byte[]) obj))
@@ -220,20 +222,20 @@ public class GenericServiceTest {
             reference.setApplication(new ApplicationConfig("bean-consumer"));
             reference.setInterface(DemoService.class);
             reference.setUrl("dubbo://127.0.0.1:29581?scope=remote&timeout=3000");
-            reference.setGeneric(Constants.GENERIC_SERIALIZATION_BEAN);
+            reference.setGeneric(GENERIC_SERIALIZATION_BEAN);
             GenericService genericService = reference.get();
             User user = new User();
             user.setName("zhangsan");
             List<User> users = new ArrayList<User>();
             users.add(user);
             Object result = genericService.$invoke("getUsers", new String[]{ReflectUtils.getName(List.class)}, new Object[]{JavaBeanSerializeUtil.serialize(users, JavaBeanAccessor.METHOD)});
-            Assert.assertTrue(result instanceof JavaBeanDescriptor);
+            Assertions.assertTrue(result instanceof JavaBeanDescriptor);
             JavaBeanDescriptor descriptor = (JavaBeanDescriptor) result;
-            Assert.assertTrue(descriptor.isCollectionType());
-            Assert.assertEquals(1, descriptor.propertySize());
+            Assertions.assertTrue(descriptor.isCollectionType());
+            Assertions.assertEquals(1, descriptor.propertySize());
             descriptor = (JavaBeanDescriptor) descriptor.getProperty(0);
-            Assert.assertTrue(descriptor.isBeanType());
-            Assert.assertEquals(user.getName(), ((JavaBeanDescriptor) descriptor.getProperty("name")).getPrimitiveProperty());
+            Assertions.assertTrue(descriptor.isBeanType());
+            Assertions.assertEquals(user.getName(), ((JavaBeanDescriptor) descriptor.getProperty("name")).getPrimitiveProperty());
         } finally {
             if (reference != null) {
                 reference.destroy();
@@ -280,24 +282,24 @@ public class GenericServiceTest {
             List<User> users = new ArrayList<User>();
             users.add(user);
             List<User> result = demoService.getUsers(users);
-            Assert.assertEquals(users.size(), result.size());
-            Assert.assertEquals(user.getName(), result.get(0).getName());
+            Assertions.assertEquals(users.size(), result.size());
+            Assertions.assertEquals(user.getName(), result.get(0).getName());
 
             GenericParameter gp = (GenericParameter) reference.get();
-            Assert.assertEquals("getUsers", gp.method);
-            Assert.assertEquals(1, gp.parameterTypes.length);
-            Assert.assertEquals(ReflectUtils.getName(List.class), gp.parameterTypes[0]);
-            Assert.assertEquals(1, gp.arguments.length);
-            Assert.assertTrue(gp.arguments[0] instanceof JavaBeanDescriptor);
+            Assertions.assertEquals("getUsers", gp.method);
+            Assertions.assertEquals(1, gp.parameterTypes.length);
+            Assertions.assertEquals(ReflectUtils.getName(List.class), gp.parameterTypes[0]);
+            Assertions.assertEquals(1, gp.arguments.length);
+            Assertions.assertTrue(gp.arguments[0] instanceof JavaBeanDescriptor);
             JavaBeanDescriptor descriptor = (JavaBeanDescriptor) gp.arguments[0];
-            Assert.assertTrue(descriptor.isCollectionType());
-            Assert.assertEquals(ArrayList.class.getName(), descriptor.getClassName());
-            Assert.assertEquals(1, descriptor.propertySize());
+            Assertions.assertTrue(descriptor.isCollectionType());
+            Assertions.assertEquals(ArrayList.class.getName(), descriptor.getClassName());
+            Assertions.assertEquals(1, descriptor.propertySize());
             descriptor = (JavaBeanDescriptor) descriptor.getProperty(0);
-            Assert.assertTrue(descriptor.isBeanType());
-            Assert.assertEquals(User.class.getName(), descriptor.getClassName());
-            Assert.assertEquals(user.getName(), ((JavaBeanDescriptor) descriptor.getProperty("name")).getPrimitiveProperty());
-            Assert.assertNull(demoService.sayName("zhangsan"));
+            Assertions.assertTrue(descriptor.isBeanType());
+            Assertions.assertEquals(User.class.getName(), descriptor.getClassName());
+            Assertions.assertEquals(user.getName(), ((JavaBeanDescriptor) descriptor.getProperty("name")).getPrimitiveProperty());
+            Assertions.assertNull(demoService.sayName("zhangsan"));
         } finally {
             if (ref != null) {
                 ref.destroy();

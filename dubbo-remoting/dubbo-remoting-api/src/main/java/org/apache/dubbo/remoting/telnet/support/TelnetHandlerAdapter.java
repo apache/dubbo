@@ -16,14 +16,17 @@
  */
 package org.apache.dubbo.remoting.telnet.support;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import org.apache.dubbo.remoting.transport.ChannelHandlerAdapter;
+
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
+import static org.apache.dubbo.remoting.Constants.TELNET;
 
 public class TelnetHandlerAdapter extends ChannelHandlerAdapter implements TelnetHandler {
 
@@ -74,27 +77,24 @@ public class TelnetHandlerAdapter extends ChannelHandlerAdapter implements Telne
         if (buf.length() > 0) {
             buf.append("\r\n");
         }
-        if (prompt != null && prompt.length() > 0 && !noprompt) {
+        if (StringUtils.isNotEmpty(prompt) && !noprompt) {
             buf.append(prompt);
         }
         return buf.toString();
     }
 
     private boolean commandEnabled(URL url, String command) {
-        boolean commandEnable = false;
-        String supportCommands = url.getParameter(Constants.TELNET);
+        String supportCommands = url.getParameter(TELNET);
         if (StringUtils.isEmpty(supportCommands)) {
-            commandEnable = true;
-        } else {
-            String[] commands = Constants.COMMA_SPLIT_PATTERN.split(supportCommands);
-            for (String c : commands) {
-                if (command.equals(c)) {
-                    commandEnable = true;
-                    break;
-                }
+            return true;
+        }
+        String[] commands = COMMA_SPLIT_PATTERN.split(supportCommands);
+        for (String c : commands) {
+            if (command.equals(c)) {
+                return true;
             }
         }
-        return commandEnable;
+        return false;
     }
 
 }

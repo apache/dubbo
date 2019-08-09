@@ -28,9 +28,10 @@ import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
-import static junit.framework.TestCase.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 @SuppressWarnings("unused")
 public class UrlTestBase {
@@ -50,8 +51,7 @@ public class UrlTestBase {
     private static final int TESTVALUE5 = 8;
     private static final int TESTVALUE6 = 9;
     private static final int TESTVALUE7 = 10;
-    protected ApplicationConfig appConfForProvider;
-    protected ApplicationConfig appConfForService;
+    protected ApplicationConfig application = new ApplicationConfig();
     protected RegistryConfig regConfForProvider;
     protected RegistryConfig regConfForService;
     protected ProviderConfig provConf;
@@ -81,13 +81,7 @@ public class UrlTestBase {
             //            {"subscribe", "subscribe", "boolean", true, false, "", "", "", "", ""},
             {"dynamic", "dynamic", "boolean", true, false, "", "", "", "", ""},
     };
-    protected Object provConfTable[][] = {
-            {"cluster", "default.cluster", "string", "string", "failover", "failfast", "failsafe", "", "", ""},
-            {"async", "default.async", "boolean", false, true, "", "", "", "", ""},
-            {"loadbalance", "default.loadbalance", "string", "random", "leastactive", "", "", "", "", ""},
-            {"connections", "default.connections", "int", 0, 60, "", "", "", "", ""},
-            {"retries", "default.retries", "int", 2, 60, "", "", "", "", ""},
-            {"timeout", "default.timeout", "int", 5000, 60, "", "", "", "", ""},
+    protected Object provConfTable[][] = {{"cluster", "cluster", "string", "string", "failover", "failfast", "failsafe", "", "", ""}, {"async", "async", "boolean", false, true, "", "", "", "", ""}, {"loadbalance", "loadbalance", "string", "random", "leastactive", "", "", "", "", ""}, {"connections", "connections", "int", 0, 60, "", "", "", "", ""}, {"retries", "retries", "int", 2, 60, "", "", "", "", ""}, {"timeout", "timeout", "int", 5000, 60, "", "", "", "", ""},
             //change by fengting listener 没有缺省值
             //{"listener", "exporter.listener", "string", "", "", "", "", "", "", ""},
             //{"filter", "service.filter", "string", "", "", "", "", "", "", ""},
@@ -141,9 +135,6 @@ public class UrlTestBase {
 
     @SuppressWarnings("deprecation")
     protected void initServConf() {
-
-        appConfForProvider = new ApplicationConfig();
-        appConfForService = new ApplicationConfig();
         regConfForProvider = new RegistryConfig();
         regConfForService = new RegistryConfig();
         provConf = new ProviderConfig();
@@ -152,14 +143,14 @@ public class UrlTestBase {
         methodConfForService = new MethodConfig();
         servConf = new ServiceConfig<DemoService>();
 
-        provConf.setApplication(appConfForProvider);
-        servConf.setApplication(appConfForService);
+//        provConf.setApplication(appConfForProvider);
+        servConf.setApplication(application);
 
         provConf.setRegistry(regConfForProvider);
         servConf.setRegistry(regConfForService);
 
-        provConf.setProtocols(Arrays.asList(new ProtocolConfig[]{protoConfForProvider}));
-        servConf.setProtocols(Arrays.asList(new ProtocolConfig[]{protoConfForService}));
+        provConf.setProtocols(new ArrayList<>(Arrays.asList(protoConfForProvider)));
+        servConf.setProtocols(new ArrayList<>(Arrays.asList(protoConfForService)));
 
         servConf.setMethods(Arrays.asList(new MethodConfig[]{methodConfForService}));
         servConf.setProvider(provConf);
@@ -170,7 +161,7 @@ public class UrlTestBase {
         methodConfForService.setName("sayName");
         regConfForService.setAddress("127.0.0.1:9090");
         regConfForService.setProtocol("mockregistry");
-        appConfForService.setName("ConfigTests");
+        application.setName("ConfigTests");
     }
 
     protected String getProviderParamString() {

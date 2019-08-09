@@ -17,9 +17,9 @@
 package org.apache.dubbo.rpc.filter;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcStatus;
 import org.apache.dubbo.rpc.support.BlockMyInvoker;
@@ -27,20 +27,22 @@ import org.apache.dubbo.rpc.support.MockInvocation;
 import org.apache.dubbo.rpc.support.MyInvoker;
 import org.apache.dubbo.rpc.support.RuntimeExceptionInvoker;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * ActiveLimitFilterTest.java
  */
 public class ActiveLimitFilterTest {
 
-    Filter activeLimitFilter = new ActiveLimitFilter();
+    ActiveLimitFilter activeLimitFilter = new ActiveLimitFilter();
 
     @Test
     public void testInvokeNoActives() {
@@ -96,7 +98,7 @@ public class ActiveLimitFilterTest {
     }
 
     @Test
-    public void testInvokeTimeOut() {
+    public void testInvokeTimeOut() throws Exception {
         int totalThread = 100;
         int maxActives = 10;
         long timeout = 1;
@@ -104,7 +106,7 @@ public class ActiveLimitFilterTest {
         AtomicInteger count = new AtomicInteger(0);
         final CountDownLatch latch = new CountDownLatch(1);
         final CountDownLatch latchBlocking = new CountDownLatch(totalThread);
-        URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&actives="+maxActives+"&timeout="+timeout);
+        URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&actives=" + maxActives + "&timeout=" + timeout);
         final Invoker<ActiveLimitFilterTest> invoker = new BlockMyInvoker<ActiveLimitFilterTest>(url, blockTime);
         final Invocation invocation = new MockInvocation();
         RpcStatus.removeStatus(url);
@@ -112,18 +114,23 @@ public class ActiveLimitFilterTest {
         for (int i = 0; i < totalThread; i++) {
             Thread thread = new Thread(new Runnable() {
                 public void run() {
-                    try{
+                    try {
                         try {
                             latch.await();
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
                         try {
-                            activeLimitFilter.invoke(invoker, invocation);
+                            Result asyncResult = activeLimitFilter.invoke(invoker, invocation);
+                            Result result = asyncResult.get();
+                            activeLimitFilter.listener().onResponse(result, invoker, invocation);
                         } catch (RpcException expected) {
                             count.incrementAndGet();
+//                            activeLimitFilter.listener().onError(expected, invoker, invocation);
+                        } catch (Exception e) {
+                            fail();
                         }
-                    }finally {
+                    } finally {
                         latchBlocking.countDown();
                     }
                 }
@@ -141,7 +148,7 @@ public class ActiveLimitFilterTest {
     }
 
     @Test
-    public void testInvokeNotTimeOut() {
+    public void testInvokeNotTimeOut() throws Exception {
         int totalThread = 100;
         int maxActives = 10;
         long timeout = 1000;
@@ -149,24 +156,29 @@ public class ActiveLimitFilterTest {
         AtomicInteger count = new AtomicInteger(0);
         final CountDownLatch latch = new CountDownLatch(1);
         final CountDownLatch latchBlocking = new CountDownLatch(totalThread);
-        URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&actives="+maxActives+"&timeout="+timeout);
+        URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&actives=" + maxActives + "&timeout=" + timeout);
         final Invoker<ActiveLimitFilterTest> invoker = new BlockMyInvoker<ActiveLimitFilterTest>(url, blockTime);
         final Invocation invocation = new MockInvocation();
         for (int i = 0; i < totalThread; i++) {
             Thread thread = new Thread(new Runnable() {
                 public void run() {
-                    try{
+                    try {
                         try {
                             latch.await();
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
                         try {
-                            activeLimitFilter.invoke(invoker, invocation);
+                            Result asyncResult = activeLimitFilter.invoke(invoker, invocation);
+                            Result result = asyncResult.get();
+                            activeLimitFilter.listener().onResponse(result, invoker, invocation);
                         } catch (RpcException expected) {
                             count.incrementAndGet();
+                            activeLimitFilter.listener().onError(expected, invoker, invocation);
+                        } catch (Exception e) {
+                            fail();
                         }
-                    }finally {
+                    } finally {
                         latchBlocking.countDown();
                     }
                 }
@@ -183,17 +195,18 @@ public class ActiveLimitFilterTest {
         assertEquals(0, count.intValue());
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void testInvokeRuntimeException() {
-        URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&actives=0");
-        Invoker<ActiveLimitFilterTest> invoker = new RuntimeExceptionInvoker(url);
-        Invocation invocation = new MockInvocation();
-        RpcStatus count = RpcStatus.getStatus(invoker.getUrl(), invocation.getMethodName());
-        int beforeExceptionActiveCount = count.getActive();
-        activeLimitFilter.invoke(invoker, invocation);
-        int afterExceptionActiveCount = count.getActive();
-        assertEquals("After exception active count should be same"
-                , beforeExceptionActiveCount, afterExceptionActiveCount);
+        Assertions.assertThrows(RuntimeException.class, () -> {
+            URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&actives=0");
+            Invoker<ActiveLimitFilterTest> invoker = new RuntimeExceptionInvoker(url);
+            Invocation invocation = new MockInvocation();
+            RpcStatus count = RpcStatus.getStatus(invoker.getUrl(), invocation.getMethodName());
+            int beforeExceptionActiveCount = count.getActive();
+            activeLimitFilter.invoke(invoker, invocation);
+            int afterExceptionActiveCount = count.getActive();
+            assertEquals(beforeExceptionActiveCount, afterExceptionActiveCount, "After exception active count should be same");
+        });
     }
 
     @Test
@@ -206,9 +219,9 @@ public class ActiveLimitFilterTest {
         try {
             activeLimitFilter.invoke(invoker, invocation);
         } catch (RuntimeException ex) {
+            activeLimitFilter.listener().onError(ex, invoker, invocation);
             int afterExceptionActiveCount = count.getActive();
-            assertEquals("After exception active count should be same"
-                    , beforeExceptionActiveCount, afterExceptionActiveCount);
+            assertEquals(beforeExceptionActiveCount, afterExceptionActiveCount, "After exception active count should be same");
         }
     }
 }

@@ -16,24 +16,23 @@
  */
 package org.apache.dubbo.rpc.protocol.redis;
 
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.RpcResult;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.exceptions.JedisConnectionException;
@@ -41,11 +40,10 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.embedded.RedisServer;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class RedisProtocolTest {
     private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
@@ -53,16 +51,14 @@ public class RedisProtocolTest {
     private RedisServer redisServer;
     private URL registryUrl;
 
-    @Rule
-    public TestName name = new TestName();
-
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    public void setUp(TestInfo testInfo) {
         int redisPort = NetUtils.getAvailablePort();
-        if (name.getMethodName().equals("testAuthRedis") || name.getMethodName().equals("testWrongAuthRedis")) {
+        String methodName = testInfo.getTestMethod().get().getName();
+        if ("testAuthRedis".equals(methodName) || ("testWrongAuthRedis".equals(methodName))) {
             String password = "123456";
             this.redisServer = RedisServer.builder().port(redisPort).setting("requirepass " + password).build();
-            this.registryUrl = URL.valueOf("redis://username:"+password+"@localhost:"+redisPort+"?db.index=0");
+            this.registryUrl = URL.valueOf("redis://username:" + password + "@localhost:" + redisPort + "?db.index=0");
         } else {
             this.redisServer = RedisServer.builder().port(redisPort).build();
             this.registryUrl = URL.valueOf("redis://localhost:" + redisPort);
@@ -70,7 +66,7 @@ public class RedisProtocolTest {
         this.redisServer.start();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         this.redisServer.stop();
     }
@@ -105,33 +101,39 @@ public class RedisProtocolTest {
         refer.destroy();
     }
 
-    @Test(expected = RpcException.class)
+    @Test
     public void testUnsupportedMethod() {
-        Invoker<IDemoService> refer = protocol.refer(IDemoService.class, registryUrl);
-        IDemoService demoService = this.proxy.getProxy(refer);
+        Assertions.assertThrows(RpcException.class, () -> {
+            Invoker<IDemoService> refer = protocol.refer(IDemoService.class, registryUrl);
+            IDemoService demoService = this.proxy.getProxy(refer);
 
-        demoService.unsupported(null);
+            demoService.unsupported(null);
+        });
     }
 
-    @Test(expected = RpcException.class)
+    @Test
     public void testWrongParameters() {
-        Invoker<IDemoService> refer = protocol.refer(IDemoService.class, registryUrl);
-        IDemoService demoService = this.proxy.getProxy(refer);
+        Assertions.assertThrows(RpcException.class, () -> {
+            Invoker<IDemoService> refer = protocol.refer(IDemoService.class, registryUrl);
+            IDemoService demoService = this.proxy.getProxy(refer);
 
-        demoService.set("key", "value", "wrongValue");
+            demoService.set("key", "value", "wrongValue");
+        });
     }
 
-    @Test(expected = RpcException.class)
+    @Test
     public void testWrongRedis() {
-        Invoker<IDemoService> refer = protocol.refer(IDemoService.class, URL.valueOf("redis://localhost:1"));
-        IDemoService demoService = this.proxy.getProxy(refer);
+        Assertions.assertThrows(RpcException.class, () -> {
+            Invoker<IDemoService> refer = protocol.refer(IDemoService.class, URL.valueOf("redis://localhost:1"));
+            IDemoService demoService = this.proxy.getProxy(refer);
 
-        demoService.get("key");
+            demoService.get("key");
+        });
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void testExport() {
-        protocol.export(protocol.refer(IDemoService.class, registryUrl));
+        Assertions.assertThrows(UnsupportedOperationException.class, () -> protocol.export(protocol.refer(IDemoService.class, registryUrl)));
     }
 
     @Test
@@ -171,21 +173,16 @@ public class RedisProtocolTest {
         assertThat(value, is("newValue"));
 
         // jedis gets the result comparison
-        JedisPool pool = new JedisPool(new GenericObjectPoolConfig(), "localhost", registryUrl.getPort(), 2000, password, database, (String)null);
-        Jedis jedis = null;
-        try {
-            jedis = pool.getResource();
+        JedisPool pool = new JedisPool(new GenericObjectPoolConfig(), "localhost", registryUrl.getPort(), 2000, password, database, (String) null);
+        try (Jedis jedis = pool.getResource()) {
             byte[] valueByte = jedis.get("key".getBytes());
             Serialization serialization = ExtensionLoader.getExtensionLoader(Serialization.class).getExtension(this.registryUrl.getParameter(Constants.SERIALIZATION_KEY, "java"));
             ObjectInput oin = serialization.deserialize(this.registryUrl, new ByteArrayInputStream(valueByte));
             String actual = (String) oin.readObject();
             assertThat(value, is(actual));
-        } catch(Exception e) {
-            Assert.fail("jedis gets the result comparison is error!");
+        } catch (Exception e) {
+            Assertions.fail("jedis gets the result comparison is error!");
         } finally {
-            if (jedis != null) {
-                jedis.close();
-            }
             pool.destroy();
         }
 
@@ -211,9 +208,9 @@ public class RedisProtocolTest {
             assertThat(value, is(nullValue()));
         } catch (RpcException e) {
             if (e.getCause() instanceof JedisConnectionException && e.getCause().getCause() instanceof JedisDataException) {
-                Assert.assertEquals("ERR invalid password" , e.getCause().getCause().getMessage());
+                Assertions.assertEquals("ERR invalid password", e.getCause().getCause().getMessage());
             } else {
-                Assert.fail("no invalid password exception!");
+                Assertions.fail("no invalid password exception!");
             }
         }
 

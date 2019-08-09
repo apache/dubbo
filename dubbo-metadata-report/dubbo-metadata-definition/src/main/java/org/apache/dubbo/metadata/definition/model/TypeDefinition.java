@@ -37,6 +37,7 @@ public class TypeDefinition {
     private List<String> enums;
     private String $ref;
     private Map<String, TypeDefinition> properties;
+    private String typeBuilderName;
 
     public TypeDefinition(String type) {
         this.type = type;
@@ -59,20 +60,24 @@ public class TypeDefinition {
 
     public List<TypeDefinition> getItems() {
         if (items == null) {
-            items = new ArrayList<TypeDefinition>();
+            items = new ArrayList<>();
         }
         return items;
     }
 
     public Map<String, TypeDefinition> getProperties() {
         if (properties == null) {
-            properties = new HashMap<String, TypeDefinition>();
+            properties = new HashMap<>();
         }
         return properties;
     }
 
     public String getType() {
         return type;
+    }
+
+    public String getTypeBuilderName() {
+        return typeBuilderName;
     }
 
     public void set$ref(String $ref) {
@@ -99,6 +104,10 @@ public class TypeDefinition {
         this.type = type;
     }
 
+    public void setTypeBuilderName(String typeBuilderName) {
+        this.typeBuilderName = typeBuilderName;
+    }
+
     @Override
     public String toString() {
         return "TypeDefinition [id=" + id + ", type=" + type + ", properties=" + properties + ", $ref=" + $ref + "]";
@@ -106,8 +115,12 @@ public class TypeDefinition {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof TypeDefinition)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof TypeDefinition)) {
+            return false;
+        }
         TypeDefinition that = (TypeDefinition) o;
         return Objects.equals(getId(), that.getId()) &&
                 Objects.equals(getType(), that.getType()) &&
