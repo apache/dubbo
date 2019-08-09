@@ -39,6 +39,7 @@ import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.Configurator;
+import org.apache.dubbo.rpc.cluster.governance.GovernanceRuleRepository;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.invoker.ProviderInvokerWrapper;
 import org.apache.dubbo.rpc.protocol.InvokerWrapper;
@@ -443,7 +444,7 @@ public class RegistryProtocol implements Protocol {
         }
         bounds.clear();
 
-        DynamicConfiguration.getDynamicConfiguration()
+        ExtensionLoader.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension()
                 .removeListener(ApplicationModel.getApplication() + CONFIGURATORS_SUFFIX, providerConfigurationListener);
     }
 
@@ -680,7 +681,7 @@ public class RegistryProtocol implements Protocol {
             try {
                 NotifyListener listener = RegistryProtocol.INSTANCE.overrideListeners.remove(subscribeUrl);
                 registry.unsubscribe(subscribeUrl, listener);
-                DynamicConfiguration.getDynamicConfiguration()
+                ExtensionLoader.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension()
                         .removeListener(subscribeUrl.getServiceKey() + CONFIGURATORS_SUFFIX,
                                 serviceConfigurationListeners.get(subscribeUrl.getServiceKey()));
             } catch (Throwable t) {

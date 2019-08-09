@@ -97,6 +97,7 @@ public class RestProtocol extends AbstractProxyProtocol {
         Class implClass = ApplicationModel.getProviderModel(url.getPathKey()).getServiceInstance().getClass();
         RestProtocolServer server = (RestProtocolServer) serverMap.computeIfAbsent(addr, restServer -> {
             RestProtocolServer s = serverFactory.createServer(url.getParameter(SERVER_KEY, DEFAULT_SERVER));
+            s.setAddress(url.getAddress());
             s.start(url);
             return s;
         });

@@ -83,7 +83,7 @@ public class FileSystemDynamicConfigurationTest {
         assertTrue(configuration.publishConfig(KEY, CONTENT));
         assertTrue(configuration.publishConfig(KEY, CONTENT));
         assertTrue(configuration.publishConfig(KEY, CONTENT));
-        assertEquals(CONTENT, configuration.getRule(KEY, DEFAULT_GROUP));
+        assertEquals(CONTENT, configuration.getConfig(KEY, DEFAULT_GROUP));
         assertTrue(configuration.getConfigs(null).size() > 0);
     }
 

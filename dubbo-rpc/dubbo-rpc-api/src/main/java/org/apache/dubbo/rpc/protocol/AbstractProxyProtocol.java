@@ -172,7 +172,7 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
         }
 
         @Override
-        public void setAddress() {
+        public void setAddress(String address) {
             this.address = address;
         }
 

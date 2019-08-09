@@ -34,7 +34,7 @@ public class RestServerFactory {
     public RestProtocolServer createServer(String name) {
         // TODO move names to Constants
         if ("servlet".equalsIgnoreCase(name) || "jetty".equalsIgnoreCase(name) || "tomcat".equalsIgnoreCase(name)) {
-            return new DubboHttpServer(httpBinder);
+            return new DubboHttpProtocolServer(httpBinder);
         } else if ("netty".equalsIgnoreCase(name)) {
             return new NettyRestProtocolServer();
         } else {

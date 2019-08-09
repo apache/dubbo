@@ -29,13 +29,12 @@ public interface ProtocolServer {
         return null;
     }
 
-    default void setRemotingServers() {
-
+    default void setRemotingServers(RemotingServer server) {
     }
 
     String getAddress();
 
-    void setAddress();
+    void setAddress(String address);
 
     default URL getUrl() {
         return null;

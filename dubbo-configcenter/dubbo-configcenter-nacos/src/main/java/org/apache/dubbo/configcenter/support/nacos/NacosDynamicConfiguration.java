@@ -199,11 +199,6 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     }
 
     @Override
-    public String getRule(String key, String group, long timeout) throws IllegalStateException {
-        return getConfig(key, group, timeout);
-    }
-
-    @Override
     public Object getInternalProperty(String key) {
         try {
             return configService.getConfig(key, DEFAULT_GROUP, DEFAULT_TIMEOUT);

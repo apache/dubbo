@@ -55,8 +55,8 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
     private TagRouterRule tagRouterRule;
     private String application;
 
-    public TagRouter(DynamicConfiguration configuration, URL url) {
-        super(configuration, url);
+    public TagRouter(URL url) {
+        super(url);
         this.priority = TAG_ROUTER_DEFAULT_PRIORITY;
     }
 
@@ -244,12 +244,12 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
         synchronized (this) {
             if (!providerApplication.equals(application)) {
                 if (!StringUtils.isEmpty(application)) {
-                    configuration.removeListener(application + RULE_SUFFIX, this);
+                    ruleRepository.removeListener(application + RULE_SUFFIX, this);
                 }
                 String key = providerApplication + RULE_SUFFIX;
-                configuration.addListener(key, this);
+                ruleRepository.addListener(key, this);
                 application = providerApplication;
-                String rawRule = configuration.getConfig(key, DynamicConfiguration.DEFAULT_GROUP);
+                String rawRule = ruleRepository.getRule(key, DynamicConfiguration.DEFAULT_GROUP);
                 if (StringUtils.isNotEmpty(rawRule)) {
                     this.process(new ConfigChangeEvent(key, rawRule));
                 }

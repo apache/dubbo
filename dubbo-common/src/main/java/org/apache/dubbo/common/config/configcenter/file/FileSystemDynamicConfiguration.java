@@ -348,11 +348,6 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
         });
     }
 
-    @Override
-    public String getRule(String key, String group, long timeout) throws IllegalStateException {
-        return getConfig(key, group, timeout);
-    }
-
     protected String getConfig(File configFile, long timeout) {
         return canRead(configFile) ? execute(() -> readFileToString(configFile, getEncoding()), timeout) : null;
     }

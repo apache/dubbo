@@ -14,23 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.condition.config;
+package org.apache.dubbo.rpc.cluster.governance;
 
-import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 
-/**
- * Service level router, "server-unique-name.condition-router"
- */
-public class ServiceRouter extends ListenableRouter {
-    public static final String NAME = "SERVICE_ROUTER";
-    /**
-     * ServiceRouter should before AppRouter
-     */
-    private static final int SERVICE_ROUTER_DEFAULT_PRIORITY = 140;
+public class DefaultGovernanceRuleRepositoryImpl implements GovernanceRuleRepository {
 
-    public ServiceRouter(URL url) {
-        super(url, DynamicConfiguration.getRuleKey(url));
-        this.priority = SERVICE_ROUTER_DEFAULT_PRIORITY;
+    private DynamicConfiguration dynamicConfiguration = DynamicConfiguration.getDynamicConfiguration();
+
+    @Override
+    public void addListener(String key, String group, ConfigurationListener listener) {
+        dynamicConfiguration.addListener(key, group, listener);
+    }
+
+    @Override
+    public void removeListener(String key, String group, ConfigurationListener listener) {
+        dynamicConfiguration.removeListener(key, group, listener);
+    }
+
+    @Override
+    public String getRule(String key, String group, long timeout) throws IllegalStateException {
+        return dynamicConfiguration.getConfig(key, group, timeout);
     }
 }

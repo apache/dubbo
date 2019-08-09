@@ -98,14 +98,6 @@ public class ConsulDynamicConfiguration implements DynamicConfiguration {
     }
 
     @Override
-    public String getRule(String key, String group, long timeout) throws IllegalStateException {
-        if (StringUtils.isEmpty(group)) {
-            group = DEFAULT_GROUP;
-        }
-        return getConfig(key, group, timeout);
-    }
-
-    @Override
     public Object getInternalProperty(String key) {
         logger.info("get config from: " + key);
         Response<GetValue> response = getValue(key);
@@ -127,8 +119,13 @@ public class ConsulDynamicConfiguration implements DynamicConfiguration {
         return null;
     }
 
+    private String buildPath(String group) {
+        String actualGroup = StringUtils.isEmpty(group) ? DEFAULT_GROUP : group;
+        return rootPath + PATH_SEPARATOR + actualGroup;
+    }
+
     private String convertKey(String group, String key) {
-        return rootPath + PATH_SEPARATOR + group + PATH_SEPARATOR + key;
+        return buildPath(group) + PATH_SEPARATOR + key;
     }
 
     private int buildWatchTimeout(URL url) {

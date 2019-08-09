@@ -35,7 +35,6 @@ import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoad
  * <br/>
  * From the use scenario internally inside framework, there're mainly three kinds of methods:
  * <ol>
- * <li>{@link #getRule(String, String, long)}, get governance rules.</li>
  * <li>{@link #getProperties(String, String, long)}, get configuration file from Config Center at start up.</li>
  * <li>{@link #addListener(String, String, ConfigurationListener)}/ {@link #removeListener(String, String, ConfigurationListener)}
  * , add or remove listeners for governance rules or config items that need to watch.</li>
@@ -126,31 +125,6 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
     default String getProperties(String key, String group, long timeout) throws IllegalStateException {
         return getConfig(key, group, timeout);
     }
-
-    /**
-     * Get the governance rule mapped to the given key and the given group
-     *
-     * @param key   the key to represent a configuration
-     * @param group the group where the key belongs to
-     * @return target configuration mapped to the given key and the given group
-     * @since 2.7.3
-     */
-    default String getRule(String key, String group) {
-        return getRule(key, group, -1L);
-    }
-
-    /**
-     * Get the governance rule mapped to the given key and the given group. If the
-     * rule fails to return after timeout exceeds, IllegalStateException will be thrown.
-     *
-     * @param key     the key to represent a configuration
-     * @param group   the group where the key belongs to
-     * @param timeout timeout value for fetching the target config
-     * @return target configuration mapped to the given key and the given group, IllegalStateException will be thrown
-     * if timeout exceeds.
-     * @since 2.7.3
-     */
-    String getRule(String key, String group, long timeout) throws IllegalStateException;
 
     /**
      * Publish Config mapped to the given key under the {@link #DEFAULT_GROUP default group}

@@ -36,7 +36,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Enumeration;
 
-public class DubboHttpServer extends BaseRestProtocolServer {
+public class DubboHttpProtocolServer extends BaseRestProtocolServer {
 
     private final HttpServletDispatcher dispatcher = new HttpServletDispatcher();
     private final ResteasyDeployment deployment = new ResteasyDeployment();
@@ -44,7 +44,7 @@ public class DubboHttpServer extends BaseRestProtocolServer {
     private HttpServer httpServer;
 //    private boolean isExternalServer;
 
-    public DubboHttpServer(HttpBinder httpBinder) {
+    public DubboHttpProtocolServer(HttpBinder httpBinder) {
         this.httpBinder = httpBinder;
     }
 

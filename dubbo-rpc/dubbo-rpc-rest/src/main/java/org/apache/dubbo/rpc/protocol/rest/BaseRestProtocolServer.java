@@ -26,6 +26,8 @@ import static org.apache.dubbo.rpc.protocol.rest.Constants.EXTENSION_KEY;
 
 public abstract class BaseRestProtocolServer implements RestProtocolServer {
 
+    private String address;
+
     @Override
     public void start(URL url) {
         getDeployment().getMediaTypeMappings().put("json", "application/json");
@@ -52,6 +54,16 @@ public abstract class BaseRestProtocolServer implements RestProtocolServer {
     @Override
     public void undeploy(Class resourceDef) {
         getDeployment().getRegistry().removeRegistrations(resourceDef);
+    }
+
+    @Override
+    public String getAddress() {
+        return address;
+    }
+
+    @Override
+    public void setAddress(String address) {
+        this.address = address;
     }
 
     protected void loadProviders(String value) {

@@ -41,7 +41,7 @@ public class DubboProtocolServer implements ProtocolServer {
     }
 
     @Override
-    public void setAddress() {
+    public void setAddress(String address) {
         this.address = address;
     }
 
