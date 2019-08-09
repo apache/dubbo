@@ -634,6 +634,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     private void createApplicationIfAbsent() {
         if (this.application != null) {
+            this.application.refresh();
             return;
         }
         ConfigManager configManager = ConfigManager.getInstance();

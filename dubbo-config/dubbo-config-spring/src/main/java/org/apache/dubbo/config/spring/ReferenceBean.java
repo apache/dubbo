@@ -20,6 +20,7 @@ import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.spring.extension.SpringExtensionFactory;
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.config.utils.ReferenceConfigCache;
 
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.DisposableBean;
@@ -53,7 +54,7 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
 
     @Override
     public Object getObject() {
-        return get();
+        return ReferenceConfigCache.getCache().get(this);
     }
 
     @Override

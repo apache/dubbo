@@ -24,6 +24,7 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.config.ConsumerConfig;
 import org.apache.dubbo.config.MetadataReportConfig;
+import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
@@ -96,6 +97,7 @@ public class ConfigManager {
     private volatile ModuleConfig module;
     private volatile ApplicationConfig application;
     private volatile MonitorConfig monitor;
+    private volatile MetricsConfig metrics;
 
     private final Map<String, ProtocolConfig> protocols = new ConcurrentHashMap<>();
     private final Map<String, RegistryConfig> registries = new ConcurrentHashMap<>();
@@ -152,6 +154,17 @@ public class ConfigManager {
 
     public Optional<ModuleConfig> getModule() {
         return ofNullable(module);
+    }
+
+    public void setMetrics(MetricsConfig metrics) {
+        if (metrics != null) {
+            checkDuplicate(this.metrics, metrics);
+            this.metrics = metrics;
+        }
+    }
+
+    public Optional<MetricsConfig> getMetrics() {
+        return ofNullable(metrics);
     }
 
     // ConfigCenterConfig correlative methods
