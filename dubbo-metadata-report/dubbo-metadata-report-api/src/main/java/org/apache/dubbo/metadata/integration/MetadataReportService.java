@@ -86,24 +86,6 @@ public class MetadataReportService {
         return metadataReportService;
     }
 
-    private static boolean isInterfaceAllowed(Class<?> tClass, ClassLoader classLoader) {
-        boolean result = false;
-        Class<?> aClass = null;
-        try {
-            // The incoming classLoader is the current class loader that calls interfaceName, looking for the class object of interfaceName
-            aClass =  Class.forName(tClass.getName(), true, classLoader);
-        } catch (Exception ex) {
-            result = false;
-        }
-        //Only when the Class in the same class loader is compared using ==, this is the time when the user registers the interfaceName.
-        //,the class loader to which the interfaceName belongs is the same as when it was called.
-        result = ( aClass == tClass ) ? true : false;
-
-
-        return result;
-    }
-
-
     public void publishProvider(URL providerUrl) throws RpcException {
         //first add into the list
         // remove the individul param
