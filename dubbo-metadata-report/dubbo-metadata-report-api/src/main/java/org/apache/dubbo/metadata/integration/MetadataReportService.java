@@ -28,11 +28,8 @@ import org.apache.dubbo.metadata.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.store.MetadataReport;
 import org.apache.dubbo.metadata.store.MetadataReportFactory;
 import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.remoting.transport.dispatcher.WrappedChannelHandler;
 import org.apache.dubbo.rpc.RpcException;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.function.Supplier;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
@@ -54,9 +51,6 @@ public class MetadataReportService {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     private static volatile MetadataReportService metadataReportService;
-
-    private static Thread t;
-
     private static Object lock = new Object();
 
     private MetadataReportFactory metadataReportFactory = ExtensionLoader.getExtensionLoader(MetadataReportFactory.class).getAdaptiveExtension();
@@ -100,8 +94,7 @@ public class MetadataReportService {
         try {
             String interfaceName = providerUrl.getParameter(INTERFACE_KEY);
             if (StringUtils.isNotEmpty(interfaceName)) {
-                ClassLoader classLoader = Thread.currentThread().getContextClassLoader();;
-                Class interfaceClass =classLoader.loadClass(interfaceName);
+                Class interfaceClass = Class.forName(interfaceName);
                 FullServiceDefinition fullServiceDefinition = ServiceDefinitionBuilder.buildFullDefinition(interfaceClass, providerUrl.getParameters());
                 metadataReport.storeProviderMetadata(new MetadataIdentifier(providerUrl.getServiceInterface(),
                         providerUrl.getParameter(VERSION_KEY), providerUrl.getParameter(GROUP_KEY),
