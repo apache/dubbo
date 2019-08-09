@@ -48,6 +48,7 @@ public class DecodeHandler extends AbstractChannelHandlerDelegate {
             decode(((Response) message).getResult());
         }
 
+        // 如果使用telnet方式调用provider，那么message是String类型，不需要再做任何处理，直接运行到
         handler.received(channel, message);
     }
 

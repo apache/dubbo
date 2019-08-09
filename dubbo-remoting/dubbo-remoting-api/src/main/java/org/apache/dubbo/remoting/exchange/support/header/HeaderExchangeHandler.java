@@ -196,6 +196,7 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
                 if (request.isEvent()) {
                     handlerEvent(channel, request);
                 } else {
+                    // twoway就是指Consumer需要拿到Provider的结果的调用
                     if (request.isTwoWay()) {
                         handleRequest(exchangeChannel, request);
                     } else {

@@ -36,6 +36,9 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
 
     protected static final Logger logger = LoggerFactory.getLogger(WrappedChannelHandler.class);
 
+    /**
+     * 初始化共享的线城池
+     */
     protected static final ExecutorService SHARED_EXECUTOR = Executors.newCachedThreadPool(new NamedThreadFactory("DubboSharedHandler", true));
 
     protected final ExecutorService executor;
@@ -44,6 +47,7 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
 
     protected final URL url;
 
+    // 构造方法中给executor赋值，通过ThreadPool的SPI注解可知，Provider的默认线程池为FixedThreadPool
     public WrappedChannelHandler(ChannelHandler handler, URL url) {
         this.handler = handler;
         this.url = url;
@@ -111,6 +115,7 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
 
     public ExecutorService getExecutorService() {
         ExecutorService cexecutor = executor;
+        // 如果构造方法中初始化的ExecutorService为空，或者线程池已经被shutdown，那么用共享连接池处理请求
         if (cexecutor == null || cexecutor.isShutdown()) {
             cexecutor = SHARED_EXECUTOR;
         }
