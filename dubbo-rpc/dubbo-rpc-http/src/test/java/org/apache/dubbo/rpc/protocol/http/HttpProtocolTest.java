@@ -38,7 +38,7 @@ public class HttpProtocolTest {
         assertFalse(server.isCalled());
         ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
-        URL url = URL.valueOf("jsonrpc://127.0.0.1:5342/" + JsonRpcService.class.getName() + "?version=1.0.0");
+        URL url = URL.valueOf("http://127.0.0.1:5342/" + JsonRpcService.class.getName() + "?version=1.0.0");
         Exporter<JsonRpcService> exporter = protocol.export(proxyFactory.getInvoker(server, JsonRpcService.class, url));
         Invoker<JsonRpcService> invoker = protocol.refer(JsonRpcService.class, url);
         JsonRpcService client = proxyFactory.getProxy(invoker);
@@ -50,12 +50,12 @@ public class HttpProtocolTest {
     }
 
     @Test
-    public void testJsonrpcProtocolForServerJetty9() {
+    public void testJsonrpcProtocolForServerJetty() {
         JsonRpcServiceImpl server = new JsonRpcServiceImpl();
         assertFalse(server.isCalled());
         ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
-        URL url = URL.valueOf("jsonrpc://127.0.0.1:5342/" + JsonRpcService.class.getName() + "?version=1.0.0&server=jetty9");
+        URL url = URL.valueOf("http://127.0.0.1:5342/" + JsonRpcService.class.getName() + "?version=1.0.0&server=jetty");
         Exporter<JsonRpcService> exporter = protocol.export(proxyFactory.getInvoker(server, JsonRpcService.class, url));
         Invoker<JsonRpcService> invoker = protocol.refer(JsonRpcService.class, url);
         JsonRpcService client = proxyFactory.getProxy(invoker);
