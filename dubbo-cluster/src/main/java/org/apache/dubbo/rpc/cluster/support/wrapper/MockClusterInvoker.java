@@ -73,7 +73,7 @@ public class MockClusterInvoker<T> implements Invoker<T> {
         Result result = null;
 
         String value = directory.getUrl().getMethodParameter(invocation.getMethodName(), MOCK_KEY, Boolean.FALSE.toString()).trim();
-        if (value.length() == 0 || value.equalsIgnoreCase("false")) {
+        if (value.length() == 0 || "false".equalsIgnoreCase(value)) {
             //no mock
             result = this.invoker.invoke(invocation);
         } else if (value.startsWith("force")) {
@@ -86,6 +86,17 @@ public class MockClusterInvoker<T> implements Invoker<T> {
             //fail-mock
             try {
                 result = this.invoker.invoke(invocation);
+
+                //fix:#4585
+                if(result.getException() != null && result.getException() instanceof RpcException){
+                    RpcException rpcException= (RpcException)result.getException();
+                    if(rpcException.isBiz()){
+                        throw  rpcException;
+                    }else {
+                        result = doMockInvoke(invocation, rpcException);
+                    }
+                }
+
             } catch (RpcException e) {
                 if (e.isBiz()) {
                     throw e;

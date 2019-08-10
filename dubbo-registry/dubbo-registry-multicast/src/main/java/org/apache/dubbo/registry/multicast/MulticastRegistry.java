@@ -150,7 +150,7 @@ public class MulticastRegistry extends FailbackRegistry {
     private void checkMulticastAddress(InetAddress multicastAddress) {
         if (!multicastAddress.isMulticastAddress()) {
             String message = "Invalid multicast address " + multicastAddress;
-            if (!(multicastAddress instanceof Inet4Address)) {
+            if (multicastAddress instanceof Inet4Address) {
                 throw new IllegalArgumentException(message + ", " +
                         "ipv4 multicast address scope: 224.0.0.0 - 239.255.255.255.");
             } else {

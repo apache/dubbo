@@ -42,7 +42,7 @@ There's a [README](https://github.com/apache/dubbo-samples/tree/master/dubbo-sam
 
 ```xml
 <properties>
-    <dubbo.version>2.7.2</dubbo.version>
+    <dubbo.version>2.7.3</dubbo.version>
 </properties>
     
 <dependencies>
@@ -166,7 +166,7 @@ The consumer will print out `Hello world` on the screen.
 
 ## Building
 
-If you want to try out the cutting-edge features, you can built with the following commands. (Java 1.8 is required to build the master branch)
+If you want to try out the cutting-edge features, you can build with the following commands. (Java 1.8 is required to build the master branch)
 
 ```
   mvn clean install

@@ -203,7 +203,7 @@ public class FailoverClusterInvokerTest {
         clusterinvoker.invoke(inv);
     }
 
-    public static interface Demo {
+    public interface Demo {
     }
 
     public static class MockInvoker<T> extends AbstractInvoker<T> {

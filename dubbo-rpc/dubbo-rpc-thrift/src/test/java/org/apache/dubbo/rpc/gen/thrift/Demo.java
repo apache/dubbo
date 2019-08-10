@@ -19,37 +19,39 @@ public class Demo {
 
     public interface Iface {
 
-        public boolean echoBool(boolean arg) throws org.apache.thrift.TException;
+        boolean echoBool(boolean arg) throws org.apache.thrift.TException;
 
-        public byte echoByte(byte arg) throws org.apache.thrift.TException;
+        byte echoByte(byte arg) throws org.apache.thrift.TException;
 
-        public short echoI16(short arg) throws org.apache.thrift.TException;
+        short echoI16(short arg) throws org.apache.thrift.TException;
 
-        public int echoI32(int arg) throws org.apache.thrift.TException;
+        int echoI32(int arg) throws org.apache.thrift.TException;
 
-        public long echoI64(long arg) throws org.apache.thrift.TException;
+        long echoI64(long arg) throws org.apache.thrift.TException;
 
-        public double echoDouble(double arg) throws org.apache.thrift.TException;
+        double echoDouble(double arg) throws org.apache.thrift.TException;
 
-        public String echoString(String arg) throws org.apache.thrift.TException;
+        String echoString(String arg) throws org.apache.thrift.TException;
 
     }
 
     public interface AsyncIface {
 
-        public void echoBool(boolean arg, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.echoBool_call> resultHandler) throws org.apache.thrift.TException;
+        void echoBool(boolean arg, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.echoBool_call> resultHandler) throws org.apache.thrift.TException;
 
-        public void echoByte(byte arg, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.echoByte_call> resultHandler) throws org.apache.thrift.TException;
+        void echoByte(byte arg, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.echoByte_call> resultHandler) throws org.apache.thrift.TException;
 
-        public void echoI16(short arg, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.echoI16_call> resultHandler) throws org.apache.thrift.TException;
+        void echoI16(short arg, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.echoI16_call> resultHandler) throws org.apache.thrift.TException;
 
-        public void echoI32(int arg, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.echoI32_call> resultHandler) throws org.apache.thrift.TException;
+        void echoI32(int arg, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.echoI32_call> resultHandler) throws org.apache.thrift.TException;
 
-        public void echoI64(long arg, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.echoI64_call> resultHandler) throws org.apache.thrift.TException;
+        void echoI64(long arg, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.echoI64_call> resultHandler) throws org.apache.thrift.TException;
 
-        public void echoDouble(double arg, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.echoDouble_call> resultHandler) throws org.apache.thrift.TException;
+        void echoDouble(double arg,
+                        org.apache.thrift.async.AsyncMethodCallback<AsyncClient.echoDouble_call> resultHandler) throws org.apache.thrift.TException;
 
-        public void echoString(String arg, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.echoString_call> resultHandler) throws org.apache.thrift.TException;
+        void echoString(String arg,
+                        org.apache.thrift.async.AsyncMethodCallback<AsyncClient.echoString_call> resultHandler) throws org.apache.thrift.TException;
 
     }
 

@@ -72,7 +72,11 @@ public class ActiveLimitFilter extends ListenableFilter {
                     long elapsed = System.currentTimeMillis() - start;
                     remain = timeout - elapsed;
                     if (remain <= 0) {
-                        throw new RpcException("Waiting concurrent invoke timeout in client-side for service:  " + invoker.getInterface().getName() + ", method: " + invocation.getMethodName() + ", elapsed: " + elapsed + ", timeout: " + timeout + ". concurrent invokes: " + rpcStatus.getActive() + ". max concurrent invoke limit: " + max);
+                        throw new RpcException(RpcException.LIMIT_EXCEEDED_EXCEPTION,
+                                "Waiting concurrent invoke timeout in client-side for service:  " +
+                                        invoker.getInterface().getName() + ", method: " + invocation.getMethodName() +
+                                        ", elapsed: " + elapsed + ", timeout: " + timeout + ". concurrent invokes: " +
+                                        rpcStatus.getActive() + ". max concurrent invoke limit: " + max);
                     }
                 }
             }
@@ -100,6 +104,12 @@ public class ActiveLimitFilter extends ListenableFilter {
             URL url = invoker.getUrl();
             int max = invoker.getUrl().getMethodParameter(methodName, ACTIVES_KEY, 0);
 
+            if (t instanceof RpcException) {
+                RpcException rpcException = (RpcException)t;
+                if (rpcException.isLimitExceed()) {
+                    return;
+                }
+            }
             RpcStatus.endCount(url, methodName, getElapsed(invocation), false);
             notifyFinish(RpcStatus.getStatus(url, methodName), max);
         }
@@ -116,5 +126,7 @@ public class ActiveLimitFilter extends ListenableFilter {
                 }
             }
         }
+
+
     }
 }

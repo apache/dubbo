@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.metadata.identifier;
 
+import org.apache.dubbo.metadata.identifier.MetadataIdentifier.KeyTypeEnum;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -34,15 +35,15 @@ public class MetadataIdentifierTest {
         String group = null;
         String application = "vic.zk.md";
         MetadataIdentifier providerMetadataIdentifier = new MetadataIdentifier(interfaceName, version, group, PROVIDER_SIDE, application);
-        Assertions.assertEquals(providerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.PATH),
+        Assertions.assertEquals(providerMetadataIdentifier.getUniqueKey(KeyTypeEnum.PATH),
                 "metadata" + PATH_SEPARATOR + interfaceName + PATH_SEPARATOR +
                         (version == null ? "" : (version + PATH_SEPARATOR))
-                + (group == null ? "" : (group + PATH_SEPARATOR)) + PROVIDER_SIDE
+                        + (group == null ? "" : (group + PATH_SEPARATOR)) + PROVIDER_SIDE
                         + PATH_SEPARATOR + application);
-        Assertions.assertEquals(providerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY),
+        Assertions.assertEquals(providerMetadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY),
                 interfaceName + MetadataIdentifier.SEPARATOR +
-                        (version == null ? "" : version + MetadataIdentifier.SEPARATOR)
-                        + (group == null ? "" : group + MetadataIdentifier.SEPARATOR)
+                        (version == null ? "" : version) + MetadataIdentifier.SEPARATOR
+                        + (group == null ? "" : group) + MetadataIdentifier.SEPARATOR
                         + PROVIDER_SIDE + MetadataIdentifier.SEPARATOR + application);
     }
 }
