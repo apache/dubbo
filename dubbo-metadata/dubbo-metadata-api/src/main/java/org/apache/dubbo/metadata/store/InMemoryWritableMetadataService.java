@@ -122,7 +122,7 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
     }
 
     @Override
-    public boolean refreshExportedMetadata(String revision) {
+    public boolean refreshMetadata(String revision) {
         boolean result = true;
         for (SortedSet<URL> urls : exportedServiceURLs.values()) {
             Iterator<URL> iterator = urls.iterator();

@@ -31,6 +31,7 @@ public class MetadataReportInstance {
                     .build();
         }
         metadataReport = metadataReportFactory.getMetadataReport(metadataReportURL);
+        init.set(true);
     }
 
     public static MetadataReport getMetadataReport() {

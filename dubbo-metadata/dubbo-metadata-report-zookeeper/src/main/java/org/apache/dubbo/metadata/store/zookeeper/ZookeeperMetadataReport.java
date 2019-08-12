@@ -20,6 +20,8 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
+import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
+import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 import org.apache.dubbo.metadata.report.support.AbstractMetadataReport;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
@@ -71,12 +73,12 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
     }
 
     @Override
-    protected void doSaveMetadata(URL url) {
+    protected void doSaveMetadata(ServiceMetadataIdentifier metadataIdentifier, URL url) {
 //        zkClient.create(, URL.encode(url.toFullString()));
     }
 
     @Override
-    protected void doRemoveMetadata(URL url) {
+    protected void doRemoveMetadata(ServiceMetadataIdentifier metadataIdentifier, URL url) {
 
     }
 
@@ -86,7 +88,12 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
     }
 
     @Override
-    protected List<String> doGetSubscribedURLs() {
+    protected void doSaveSubscriberData(SubscriberMetadataIdentifier subscriberMetadataIdentifier, List<String> urls) {
+
+    }
+
+    @Override
+    protected List<String> doGetSubscribedURLs(SubscriberMetadataIdentifier subscriberMetadataIdentifier) {
         return null;
     }
 

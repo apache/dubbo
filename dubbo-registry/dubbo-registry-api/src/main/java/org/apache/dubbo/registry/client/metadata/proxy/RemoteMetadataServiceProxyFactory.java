@@ -29,7 +29,7 @@ public class RemoteMetadataServiceProxyFactory extends BaseMetadataServiceProxyF
 
     @Override
     public MetadataService createProxy(ServiceInstance serviceInstance) {
-        return new RemoteMetadataServiceProxy();
+        return new RemoteMetadataServiceProxy(serviceInstance);
     }
 
 }

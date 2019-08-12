@@ -13,7 +13,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
  * <p>
  * 2019-08-09
  */
-public class ServiceMetadataIdentifier extends BaseMetadataIdentifier {
+public class ServiceMetadataIdentifier extends BaseServiceMetadataIdentifier {
 
     private String serviceInterface;
     private String version;

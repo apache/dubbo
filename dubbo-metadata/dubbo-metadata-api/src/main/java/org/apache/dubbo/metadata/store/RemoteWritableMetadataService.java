@@ -53,14 +53,6 @@ public class RemoteWritableMetadataService extends InMemoryWritableMetadataServi
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-
-    private AtomicBoolean init;
-
-    public RemoteWritableMetadataService() {
-
-    }
-
-
     public MetadataReport getMetadataReport() {
         return MetadataReportInstance.getMetadataReport(true);
     }

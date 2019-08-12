@@ -29,7 +29,7 @@ import static org.apache.dubbo.metadata.MetadataConstants.KEY_SEPARATOR;
  * <p>
  * 2018/10/25
  */
-public class MetadataIdentifier extends BaseMetadataIdentifier {
+public class MetadataIdentifier extends BaseServiceMetadataIdentifier {
 
     private String application;
 

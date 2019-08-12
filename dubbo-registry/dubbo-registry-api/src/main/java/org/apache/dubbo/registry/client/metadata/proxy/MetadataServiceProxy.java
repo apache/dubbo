@@ -64,11 +64,6 @@ public class MetadataServiceProxy implements MetadataService {
     }
 
     @Override
-    public SortedSet<String> getSubscribedURLs() {
-        return doInMetadataService(MetadataService::getSubscribedURLs);
-    }
-
-    @Override
     public SortedSet<String> getExportedURLs(String serviceInterface, String group, String version, String protocol) {
         return doInMetadataService(metadataService ->
                 metadataService.getExportedURLs(serviceInterface, group, version, protocol));
@@ -76,12 +71,14 @@ public class MetadataServiceProxy implements MetadataService {
 
     @Override
     public String getServiceDefinition(String interfaceName, String version, String group) {
-        return null;
+        return doInMetadataService(metadataService ->
+                metadataService.getServiceDefinition(interfaceName, version, group));
     }
 
     @Override
     public String getServiceDefinition(String serviceKey) {
-        return null;
+        return doInMetadataService(metadataService ->
+                metadataService.getServiceDefinition(serviceKey));
     }
 
     protected <T> T doInMetadataService(Function<MetadataService, T> callback) {

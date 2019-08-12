@@ -21,6 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
+import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 
 import java.util.List;
 import java.util.Map;
@@ -34,13 +35,15 @@ public interface MetadataReport {
 
     void storeConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, Map<String, String> serviceParameterMap);
 
-    void saveServiceMetadata(ServiceMetadataIdentifier serviceMetadataIdentifier, URL url);
+    void saveServiceMetadata(URL url);
 
-    void removeServiceMetadata(ServiceMetadataIdentifier serviceMetadataIdentifier, URL url);
+    void removeServiceMetadata(URL url);
 
-    List<String> getExportedURLs(MetadataIdentifier metadataIdentifier);
+    List<String> getExportedURLs(ServiceMetadataIdentifier metadataIdentifier);
 
-    List<String> getSubscribedURLs();
+    void saveSubscriberData(SubscriberMetadataIdentifier subscriberMetadataIdentifier, List<String> urls);
+
+    List<String> getSubscribedURLs(SubscriberMetadataIdentifier subscriberMetadataIdentifier);
 
     String getServiceDefinition(MetadataIdentifier consumerMetadataIdentifier);
 }

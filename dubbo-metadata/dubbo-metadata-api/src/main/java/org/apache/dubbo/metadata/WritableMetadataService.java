@@ -64,7 +64,7 @@ public interface WritableMetadataService extends MetadataService {
      *
      * @return If success , return <code>true</code>
      */
-    default boolean refreshExportedMetadata(String revision){
+    default boolean refreshMetadata(String revision){
         return true;
     }
 

@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.identifier;
+package org.apache.dubbo.metadata.report.identifier;
 
-import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
+import org.apache.dubbo.metadata.MetadataConstants;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier.KeyTypeEnum;
 
 import org.junit.jupiter.api.Assertions;
@@ -43,9 +43,9 @@ public class MetadataIdentifierTest {
                         + (group == null ? "" : (group + PATH_SEPARATOR)) + PROVIDER_SIDE
                         + PATH_SEPARATOR + application);
         Assertions.assertEquals(providerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY),
-                interfaceName + MetadataIdentifier.SEPARATOR +
-                        (version == null ? "" : version) + MetadataIdentifier.SEPARATOR
-                        + (group == null ? "" : group) + MetadataIdentifier.SEPARATOR
-                        + PROVIDER_SIDE + MetadataIdentifier.SEPARATOR + application);
+                interfaceName + MetadataConstants.KEY_SEPARATOR +
+                        (version == null ? "" : version) + MetadataConstants.KEY_SEPARATOR
+                        + (group == null ? "" : group) + MetadataConstants.KEY_SEPARATOR
+                        + PROVIDER_SIDE + MetadataConstants.KEY_SEPARATOR + application);
     }
 }

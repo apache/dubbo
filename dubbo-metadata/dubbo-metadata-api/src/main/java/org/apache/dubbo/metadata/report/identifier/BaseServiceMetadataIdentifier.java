@@ -9,9 +9,11 @@ import static org.apache.dubbo.metadata.MetadataConstants.DEFAULT_PATH_TAG;
 import static org.apache.dubbo.metadata.MetadataConstants.KEY_SEPARATOR;
 
 /**
- * @author cvictory ON 2019-08-09
+ * The Base class of MetadataIdentifier for service scope
+ * <p>
+ * 2019-08-09
  */
-public class BaseMetadataIdentifier {
+public class BaseServiceMetadataIdentifier {
     String serviceInterface;
     String version;
     String group;
