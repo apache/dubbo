@@ -62,6 +62,10 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
 
     private static final Logger logger = LoggerFactory.getLogger(DubboBeanDefinitionParser.class);
     private static final Pattern GROUP_AND_VERION = Pattern.compile("^[\\-.0-9_a-zA-Z]+(\\:[\\-.0-9_a-zA-Z]+)?$");
+    private static final String ONRETURN = "onreturn";
+    private static final String ONTHROW = "onthrow";
+    private static final String ONINVOKE = "oninvoke";
+    private static final String METHOD = "Method";
     private final Class<?> beanClass;
     private final boolean required;
 
@@ -190,24 +194,12 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                                         value = null;
                                     }
                                     reference = value;
-                                } else if ("onreturn".equals(property)) {
+                                } else if(ONRETURN.equals(property) || ONTHROW.equals(property) || ONINVOKE.equals(property)) {
                                     int index = value.lastIndexOf(".");
-                                    String returnRef = value.substring(0, index);
-                                    String returnMethod = value.substring(index + 1);
-                                    reference = new RuntimeBeanReference(returnRef);
-                                    beanDefinition.getPropertyValues().addPropertyValue("onreturnMethod", returnMethod);
-                                } else if ("onthrow".equals(property)) {
-                                    int index = value.lastIndexOf(".");
-                                    String throwRef = value.substring(0, index);
-                                    String throwMethod = value.substring(index + 1);
-                                    reference = new RuntimeBeanReference(throwRef);
-                                    beanDefinition.getPropertyValues().addPropertyValue("onthrowMethod", throwMethod);
-                                } else if ("oninvoke".equals(property)) {
-                                    int index = value.lastIndexOf(".");
-                                    String invokeRef = value.substring(0, index);
-                                    String invokeRefMethod = value.substring(index + 1);
-                                    reference = new RuntimeBeanReference(invokeRef);
-                                    beanDefinition.getPropertyValues().addPropertyValue("oninvokeMethod", invokeRefMethod);
+                                    String ref = value.substring(0, index);
+                                    String method = value.substring(index + 1);
+                                    reference = new RuntimeBeanReference(ref);
+                                    beanDefinition.getPropertyValues().addPropertyValue(property + METHOD, method);
                                 } else {
                                     if ("ref".equals(property) && parserContext.getRegistry().containsBeanDefinition(value)) {
                                         BeanDefinition refBean = parserContext.getRegistry().getBeanDefinition(value);
