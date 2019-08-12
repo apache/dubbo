@@ -20,11 +20,13 @@ import org.apache.dubbo.common.config.configcenter.ConfigChangeEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.cluster.Configurator;
 import org.apache.dubbo.rpc.cluster.configurator.parser.ConfigParser;
+import org.apache.dubbo.rpc.cluster.governance.GovernanceRuleRepository;
 
 import java.util.Collections;
 import java.util.List;
@@ -39,9 +41,9 @@ public abstract class AbstractConfiguratorListener implements ConfigurationListe
 
 
     protected final void initWith(String key) {
-        DynamicConfiguration dynamicConfiguration = DynamicConfiguration.getDynamicConfiguration();
-        dynamicConfiguration.addListener(key, this);
-        String rawConfig = dynamicConfiguration.getRule(key, DynamicConfiguration.DEFAULT_GROUP);
+        GovernanceRuleRepository ruleRepository = ExtensionLoader.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension();
+        ruleRepository.addListener(key, this);
+        String rawConfig = ruleRepository.getRule(key, DynamicConfiguration.DEFAULT_GROUP);
         if (!StringUtils.isEmpty(rawConfig)) {
             genConfiguratorsFromRawRule(rawConfig);
         }

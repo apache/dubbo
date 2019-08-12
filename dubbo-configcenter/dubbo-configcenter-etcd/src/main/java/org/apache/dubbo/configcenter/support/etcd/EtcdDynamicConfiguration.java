@@ -22,6 +22,7 @@ import org.apache.dubbo.common.config.configcenter.ConfigChangeEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.etcd.StateListener;
 import org.apache.dubbo.remoting.etcd.jetcd.JEtcdClient;
 
@@ -98,11 +99,6 @@ public class EtcdDynamicConfiguration implements DynamicConfiguration {
         return (String) getInternalProperty(convertKey(group, key));
     }
 
-    @Override
-    public String getRule(String key, String group, long timeout) throws IllegalStateException {
-        return getConfig(key, group, timeout);
-    }
-
 //    @Override
 //    public String getConfigs(String key, String group, long timeout) throws IllegalStateException {
 //        if (StringUtils.isEmpty(group)) {
@@ -116,9 +112,13 @@ public class EtcdDynamicConfiguration implements DynamicConfiguration {
         return etcdClient.getKVValue(key);
     }
 
+    private String buildPath(String group) {
+        String actualGroup = StringUtils.isEmpty(group) ? DEFAULT_GROUP : group;
+        return rootPath + PATH_SEPARATOR + actualGroup;
+    }
 
     private String convertKey(String group, String key) {
-        return rootPath + PATH_SEPARATOR + group + PATH_SEPARATOR + key;
+        return buildPath(group) + PATH_SEPARATOR + key;
     }
 
     private void recover() {

@@ -329,11 +329,6 @@ public class FileSystemDynamicConfiguration extends AbstractDynamicConfiguration
         });
     }
 
-    @Override
-    public String getRule(String key, String group, long timeout) throws IllegalStateException {
-        return getConfig(key, group, timeout);
-    }
-
     private boolean canRead(File file) {
         return file.exists() && file.canRead();
     }

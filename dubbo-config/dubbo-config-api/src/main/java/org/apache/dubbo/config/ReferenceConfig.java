@@ -625,7 +625,6 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     }
 
     public void setConsumer(ConsumerConfig consumer) {
-        ConfigManager.getInstance().addConsumer(consumer);
         this.consumer = consumer;
     }
 
@@ -690,5 +689,15 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
      */
     protected void dispatch(Event event) {
         eventDispatcher.dispatch(event);
+    }
+
+    @Override
+    protected void computeValidRegistryIds() {
+        super.computeValidRegistryIds();
+        if (StringUtils.isEmpty(getRegistryIds())) {
+            if (getConsumer() != null && StringUtils.isNotEmpty(getConsumer().getRegistryIds())) {
+                setRegistryIds(getConsumer().getRegistryIds());
+            }
+        }
     }
 }

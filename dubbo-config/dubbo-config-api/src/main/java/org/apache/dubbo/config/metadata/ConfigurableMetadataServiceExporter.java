@@ -21,6 +21,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
@@ -55,6 +56,7 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
     private volatile ServiceConfig<MetadataService> serviceConfig;
 
     private ApplicationConfig applicationConfig;
+    private MetadataReportConfig metadataReportConfig;
 
     private List<RegistryConfig> registries = new LinkedList<>();
 
@@ -79,6 +81,7 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
 
         if (!isExported()) {
 
+            // FIXME, if uses remote metadata center, does not need to export MetadataService locally.
             WritableMetadataService metadataService = WritableMetadataService.getDefaultExtension();
 
             ServiceConfig<MetadataService> serviceConfig = new ServiceConfig<>();
@@ -98,6 +101,7 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
             }
 
             this.serviceConfig = serviceConfig;
+
         } else {
             if (logger.isWarnEnabled()) {
                 logger.warn("The MetadataService has been exported : " + serviceConfig.getExportedUrls());

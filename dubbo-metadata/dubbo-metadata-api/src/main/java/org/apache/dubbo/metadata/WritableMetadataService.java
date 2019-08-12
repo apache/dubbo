@@ -60,6 +60,15 @@ public interface WritableMetadataService extends MetadataService {
     boolean unexportURL(URL url);
 
     /**
+     * fresh Exports
+     *
+     * @return If success , return <code>true</code>
+     */
+    default boolean refreshExportedMetadata(String revision){
+        return true;
+    }
+
+    /**
      * Subscribes a {@link URL}
      *
      * @param url a {@link URL}
@@ -90,5 +99,6 @@ public interface WritableMetadataService extends MetadataService {
     static WritableMetadataService getExtension(String name) {
         return getExtensionLoader(WritableMetadataService.class).getExtension(name);
     }
+
 
 }

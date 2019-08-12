@@ -29,8 +29,8 @@ public class ServiceRouter extends ListenableRouter {
      */
     private static final int SERVICE_ROUTER_DEFAULT_PRIORITY = 140;
 
-    public ServiceRouter(DynamicConfiguration configuration, URL url) {
-        super(configuration, url, DynamicConfiguration.getRuleKey(url));
+    public ServiceRouter(URL url) {
+        super(url, DynamicConfiguration.getRuleKey(url));
         this.priority = SERVICE_ROUTER_DEFAULT_PRIORITY;
     }
 }

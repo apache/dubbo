@@ -14,10 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.demo.provider;
+package org.apache.dubbo.config.spring.registry.nacos.demo.provider;
 
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
-import org.apache.dubbo.demo.service.DemoService;
 
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.PropertySource;
@@ -25,10 +24,10 @@ import org.springframework.context.annotation.PropertySource;
 import java.io.IOException;
 
 /**
- * {@link DemoService} provider demo
+ * {@link org.apache.dubbo.config.spring.registry.nacos.demo.service.DemoService} provider demo
  */
 @EnableDubbo(scanBasePackages = "org.apache.dubbo.demo.service")
-@PropertySource(value = "classpath:/provider-config.properties")
+@PropertySource(value = "classpath:/nacos-provider-config.properties")
 public class DemoServiceProviderBootstrap {
 
     public static void main(String[] args) throws IOException {

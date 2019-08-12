@@ -24,6 +24,7 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.config.ConsumerConfig;
 import org.apache.dubbo.config.MetadataReportConfig;
+import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
@@ -96,6 +97,7 @@ public class ConfigManager {
     private volatile ModuleConfig module;
     private volatile ApplicationConfig application;
     private volatile MonitorConfig monitor;
+    private volatile MetricsConfig metrics;
 
     private final Map<Class<? extends AbstractConfig>, Map<String, AbstractConfig>> configsCache = newMap();
 
@@ -175,6 +177,17 @@ public class ConfigManager {
         return ofNullable(module);
     }
 
+    public void setMetrics(MetricsConfig metrics) {
+        if (metrics != null) {
+            checkDuplicate(this.metrics, metrics);
+            this.metrics = metrics;
+        }
+    }
+
+    public Optional<MetricsConfig> getMetrics() {
+        return ofNullable(metrics);
+    }
+
     // ConfigCenterConfig correlative methods
 
     public void addConfigCenter(ConfigCenterConfig configCenter) {
@@ -249,7 +262,7 @@ public class ConfigManager {
         addConfig(protocolConfig);
     }
 
-    public void addProtocols(Iterable<ProtocolConfig> protocolConfigs, boolean canBeDefault) {
+    public void addProtocols(Iterable<ProtocolConfig> protocolConfigs) {
         if (protocolConfigs != null) {
             protocolConfigs.forEach(this::addProtocol);
         }
@@ -441,7 +454,7 @@ public class ConfigManager {
 
     private static <C extends AbstractConfig> void addIfAbsent(C config, Map<String, C> configsMap) {
 
-        if (config == null) {
+        if (config == null || configsMap == null) {
             return;
         }
 

@@ -34,14 +34,14 @@ import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
 import static org.apache.dubbo.remoting.Constants.DEFAULT_IO_THREADS;
 import static org.apache.dubbo.remoting.Constants.DEFAULT_PAYLOAD;
 import static org.apache.dubbo.remoting.Constants.PAYLOAD_KEY;
-import static org.apache.dubbo.rpc.protocol.rest.Constants.KEEP_ALIVE_KEY;
 import static org.apache.dubbo.rpc.protocol.rest.Constants.DEFAULT_KEEP_ALIVE;
+import static org.apache.dubbo.rpc.protocol.rest.Constants.KEEP_ALIVE_KEY;
 
 /**
  * Netty server can't support @Context injection of servlet objects since it's not a servlet container
  *
  */
-public class NettyServer extends BaseRestServer {
+public class NettyRestProtocolServer extends BaseRestProtocolServer {
 
     private final NettyJaxrsServer server = new NettyJaxrsServer();
 
@@ -62,7 +62,7 @@ public class NettyServer extends BaseRestServer {
     }
 
     @Override
-    public void stop() {
+    public void close() {
         server.stop();
     }
 

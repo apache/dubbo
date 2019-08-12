@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.demo.consumer;
+package org.apache.dubbo.config.spring.registry.nacos.demo.consumer;
 
-import org.apache.dubbo.demo.service.DemoService;
+import org.apache.dubbo.config.spring.registry.nacos.demo.service.DemoService;
 
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -29,7 +29,7 @@ public class DemoServiceConsumerXmlBootstrap {
 
     public static void main(String[] args) throws IOException {
         ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext();
-        context.setConfigLocation("/META-INF/spring/dubbo-consumer-context.xml");
+        context.setConfigLocation("/META-INF/spring/dubbo-nacos-consumer-context.xml");
         context.refresh();
         System.out.println("DemoService consumer (XML) is starting...");
 

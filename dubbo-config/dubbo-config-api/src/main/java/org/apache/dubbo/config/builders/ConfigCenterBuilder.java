@@ -38,7 +38,6 @@ public class ConfigCenterBuilder extends AbstractBuilder<ConfigCenterConfig, Con
     private Boolean highestPriority = true;
     private Boolean check = true;
 
-    private String appName;
     private String configFile = "dubbo.properties";
     private String appConfigFile;
 

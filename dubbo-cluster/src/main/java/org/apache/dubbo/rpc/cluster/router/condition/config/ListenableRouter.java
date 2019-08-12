@@ -49,8 +49,8 @@ public abstract class ListenableRouter extends AbstractRouter implements Configu
     private ConditionRouterRule routerRule;
     private List<ConditionRouter> conditionRouters = Collections.emptyList();
 
-    public ListenableRouter(DynamicConfiguration configuration, URL url, String ruleKey) {
-        super(configuration, url);
+    public ListenableRouter(URL url, String ruleKey) {
+        super(url);
         this.force = false;
         this.init(ruleKey);
     }
@@ -118,8 +118,8 @@ public abstract class ListenableRouter extends AbstractRouter implements Configu
             return;
         }
         String routerKey = ruleKey + RULE_SUFFIX;
-        configuration.addListener(routerKey, this);
-        String rule = configuration.getConfig(routerKey, DynamicConfiguration.DEFAULT_GROUP);
+        ruleRepository.addListener(routerKey, this);
+        String rule = ruleRepository.getRule(routerKey, DynamicConfiguration.DEFAULT_GROUP);
         if (StringUtils.isNotEmpty(rule)) {
             this.process(new ConfigChangeEvent(routerKey, rule));
         }

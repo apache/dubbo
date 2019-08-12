@@ -37,6 +37,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
@@ -53,17 +54,21 @@ import static org.apache.dubbo.metadata.report.support.Constants.METADATA_REPORT
 /**
  * @since 2.7.0
  */
-public class RemoteWritableMetadataService implements WritableMetadataService {
+public class RemoteWritableMetadataService extends InMemoryWritableMetadataService implements WritableMetadataService {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     private MetadataReportFactory metadataReportFactory = ExtensionLoader.getExtensionLoader(MetadataReportFactory.class).getAdaptiveExtension();
     private MetadataReport metadataReport;
+    private AtomicBoolean init;
 
     public RemoteWritableMetadataService() {
     }
 
     public void initMetadataReport(URL metadataReportURL) {
+        if (!init.compareAndSet(false, true)) {
+            return;
+        }
         if (METADATA_REPORT_KEY.equals(metadataReportURL.getProtocol())) {
             String protocol = metadataReportURL.getParameter(METADATA_REPORT_KEY, DEFAULT_DIRECTORY);
             metadataReportURL = URLBuilder.from(metadataReportURL)
@@ -133,22 +138,30 @@ public class RemoteWritableMetadataService implements WritableMetadataService {
 
     @Override
     public boolean exportURL(URL url) {
-        return throwableAction(metadataReport::saveMetadata, url);
+        return super.exportURL(url);
     }
 
     @Override
     public boolean unexportURL(URL url) {
+        super.unexportURL(url);
         return throwableAction(metadataReport::removeMetadata, url);
     }
 
     @Override
     public boolean subscribeURL(URL url) {
+        super.subscribeURL(url);
         return throwableAction(metadataReport::saveMetadata, url);
     }
 
     @Override
     public boolean unsubscribeURL(URL url) {
+        super.unsubscribeURL(url);
         return throwableAction(metadataReport::removeMetadata, url);
+    }
+
+    @Override
+    protected boolean finishRefreshExportedMetadata(URL url) {
+        return throwableAction(metadataReport::saveMetadata, url);
     }
 
     @Override

@@ -29,6 +29,7 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.remoting.RemotingServer;
 import org.apache.dubbo.remoting.Transporter;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
@@ -40,6 +41,7 @@ import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
+import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
@@ -96,10 +98,6 @@ public class DubboProtocol extends AbstractProtocol {
     private static final String IS_CALLBACK_SERVICE_INVOKE = "_isCallBackServiceInvoke";
     private static DubboProtocol INSTANCE;
 
-    /**
-     * <host:port,Exchanger>
-     */
-    private final Map<String, ExchangeServer> serverMap = new ConcurrentHashMap<>();
     /**
      * <host:port,Exchanger>
      */
@@ -219,10 +217,6 @@ public class DubboProtocol extends AbstractProtocol {
         return INSTANCE;
     }
 
-    public Collection<ExchangeServer> getServers() {
-        return Collections.unmodifiableCollection(serverMap.values());
-    }
-
     public Collection<Exporter<?>> getExporters() {
         return Collections.unmodifiableCollection(exporterMap.values());
     }
@@ -315,7 +309,7 @@ public class DubboProtocol extends AbstractProtocol {
         //client can export a service which's only for server to invoke
         boolean isServer = url.getParameter(IS_SERVER_KEY, true);
         if (isServer) {
-            ExchangeServer server = serverMap.get(key);
+            ProtocolServer server = serverMap.get(key);
             if (server == null) {
                 synchronized (this) {
                     server = serverMap.get(key);
@@ -330,7 +324,7 @@ public class DubboProtocol extends AbstractProtocol {
         }
     }
 
-    private ExchangeServer createServer(URL url) {
+    private ProtocolServer createServer(URL url) {
         url = URLBuilder.from(url)
                 // send readonly event when server closes, it's enabled by default
                 .addParameterIfAbsent(CHANNEL_READONLYEVENT_SENT_KEY, Boolean.TRUE.toString())
@@ -359,7 +353,7 @@ public class DubboProtocol extends AbstractProtocol {
             }
         }
 
-        return server;
+        return new DubboProtocolServer(server);
     }
 
     private void optimizeSerialization(URL url) throws RpcException {
@@ -605,11 +599,13 @@ public class DubboProtocol extends AbstractProtocol {
     @Override
     public void destroy() {
         for (String key : new ArrayList<>(serverMap.keySet())) {
-            ExchangeServer server = serverMap.remove(key);
+            ProtocolServer protocolServer = serverMap.remove(key);
 
-            if (server == null) {
+            if (protocolServer == null) {
                 continue;
             }
+
+            RemotingServer server = protocolServer.getRemotingServer();
 
             try {
                 if (logger.isInfoEnabled()) {

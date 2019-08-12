@@ -17,15 +17,15 @@
 package org.apache.dubbo.registry.consul;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.registry.client.AbstractServiceDiscoveryFactory;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
-import org.apache.dubbo.registry.client.ServiceDiscoveryFactory;
 
 /**
  * 2019-07-31
  */
-public class ConsulServiceDiscoveryFactory implements ServiceDiscoveryFactory {
+public class ConsulServiceDiscoveryFactory extends AbstractServiceDiscoveryFactory {
     @Override
-    public ServiceDiscovery create(URL connectionURL) {
+    public ServiceDiscovery createDiscovery(URL connectionURL) {
         return new ConsulServiceDiscovery(connectionURL);
     }
 }

@@ -111,16 +111,6 @@ public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
     }
 
     @Override
-    public String getRule(String key, String group, long timeout) throws IllegalStateException {
-        return getConfig(key, group, timeout);
-    }
-
-    @Override
-    public String getProperties(String key, String group, long timeout) throws IllegalStateException {
-        return getConfig(key, group, timeout);
-    }
-
-    @Override
     public boolean publishConfig(String key, String group, String content) {
         String path = getPathKey(key, group);
         zkClient.create(path, content, true);

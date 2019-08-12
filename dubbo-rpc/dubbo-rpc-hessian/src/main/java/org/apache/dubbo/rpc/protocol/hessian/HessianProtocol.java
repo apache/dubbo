@@ -17,9 +17,10 @@
 package org.apache.dubbo.rpc.protocol.hessian;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.RemotingServer;
 import org.apache.dubbo.remoting.http.HttpBinder;
 import org.apache.dubbo.remoting.http.HttpHandler;
-import org.apache.dubbo.remoting.http.HttpServer;
+import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.AbstractProxyProtocol;
@@ -59,8 +60,6 @@ import static org.apache.dubbo.rpc.protocol.hessian.Constants.HESSIAN_OVERLOAD_M
  */
 public class HessianProtocol extends AbstractProxyProtocol {
 
-    private final Map<String, HttpServer> serverMap = new ConcurrentHashMap<String, HttpServer>();
-
     private final Map<String, HessianSkeleton> skeletonMap = new ConcurrentHashMap<String, HessianSkeleton>();
 
     private HttpBinder httpBinder;
@@ -81,10 +80,10 @@ public class HessianProtocol extends AbstractProxyProtocol {
     @Override
     protected <T> Runnable doExport(T impl, Class<T> type, URL url) throws RpcException {
         String addr = getAddr(url);
-        HttpServer server = serverMap.get(addr);
-        if (server == null) {
-            server = httpBinder.bind(url, new HessianHandler());
-            serverMap.put(addr, server);
+        ProtocolServer protocolServer = serverMap.get(addr);
+        if (protocolServer == null) {
+            RemotingServer remotingServer = httpBinder.bind(url, new HessianHandler());
+            serverMap.put(addr, new ProxyProtocolServer(remotingServer));
         }
         final String path = url.getAbsolutePath();
         final HessianSkeleton skeleton = new HessianSkeleton(impl, type);
@@ -155,13 +154,13 @@ public class HessianProtocol extends AbstractProxyProtocol {
     public void destroy() {
         super.destroy();
         for (String key : new ArrayList<String>(serverMap.keySet())) {
-            HttpServer server = serverMap.remove(key);
-            if (server != null) {
+            ProtocolServer protocolServer = serverMap.remove(key);
+            if (protocolServer != null) {
                 try {
                     if (logger.isInfoEnabled()) {
-                        logger.info("Close hessian server " + server.getUrl());
+                        logger.info("Close hessian server " + protocolServer.getUrl());
                     }
-                    server.close();
+                    protocolServer.close();
                 } catch (Throwable t) {
                     logger.warn(t.getMessage(), t);
                 }

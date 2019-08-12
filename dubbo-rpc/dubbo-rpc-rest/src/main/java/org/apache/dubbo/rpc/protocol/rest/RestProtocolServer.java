@@ -17,8 +17,9 @@
 package org.apache.dubbo.rpc.protocol.rest;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.ProtocolServer;
 
-public interface RestServer {
+public interface RestProtocolServer extends ProtocolServer {
 
     void start(URL url);
 
@@ -29,5 +30,4 @@ public interface RestServer {
 
     void undeploy(Class resourceDef);
 
-    void stop();
 }

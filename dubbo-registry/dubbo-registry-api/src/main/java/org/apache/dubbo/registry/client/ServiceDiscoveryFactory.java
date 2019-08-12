@@ -17,9 +17,8 @@
 package org.apache.dubbo.registry.client;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.SPI;
-
-import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 
 /**
  * The Factory interface to create an instance of {@link ServiceDiscovery}
@@ -27,7 +26,7 @@ import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoad
  * @see ServiceDiscovery
  * @since 2.7.4
  */
-@SPI("event-publishing")
+@SPI("zookeeper")
 public interface ServiceDiscoveryFactory {
 
     /**
@@ -36,14 +35,6 @@ public interface ServiceDiscoveryFactory {
      * @param connectionURL the  {@link URL connection url}
      * @return an instance of {@link ServiceDiscovery}
      */
-    ServiceDiscovery create(URL connectionURL);
-
-    /**
-     * Get the default extension of {@link ServiceDiscoveryFactory}
-     *
-     * @return non-null
-     */
-    static ServiceDiscoveryFactory getDefaultExtension() {
-        return getExtensionLoader(ServiceDiscoveryFactory.class).getDefaultExtension();
-    }
+    @Adaptive({"protocol"})
+    ServiceDiscovery getDiscovery(URL connectionURL);
 }

@@ -23,16 +23,17 @@ import org.apache.dubbo.rpc.ExporterListener;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.InvokerListener;
 import org.apache.dubbo.rpc.Protocol;
+import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.listener.ListenerExporterWrapper;
 import org.apache.dubbo.rpc.listener.ListenerInvokerWrapper;
 
 import java.util.Collections;
+import java.util.List;
 
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
-
-import static org.apache.dubbo.rpc.Constants.INVOKER_LISTENER_KEY;
 import static org.apache.dubbo.rpc.Constants.EXPORTER_LISTENER_KEY;
+import static org.apache.dubbo.rpc.Constants.INVOKER_LISTENER_KEY;
 
 /**
  * ListenerProtocol
@@ -79,4 +80,8 @@ public class ProtocolListenerWrapper implements Protocol {
         protocol.destroy();
     }
 
+    @Override
+    public List<ProtocolServer> getServers() {
+        return protocol.getServers();
+    }
 }

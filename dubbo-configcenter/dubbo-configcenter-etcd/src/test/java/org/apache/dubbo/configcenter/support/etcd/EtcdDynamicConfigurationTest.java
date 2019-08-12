@@ -58,8 +58,8 @@ public class EtcdDynamicConfigurationTest {
 
         put("/dubbo/config/org.apache.dubbo.etcd.testService/configurators", "hello");
         put("/dubbo/config/test/dubbo.properties", "aaa=bbb");
-        Assert.assertEquals("hello", config.getRule("org.apache.dubbo.etcd.testService.configurators", DynamicConfiguration.DEFAULT_GROUP));
-        Assert.assertEquals("aaa=bbb", config.getRule("dubbo.properties", "test"));
+        Assert.assertEquals("hello", config.getConfig("org.apache.dubbo.etcd.testService.configurators", DynamicConfiguration.DEFAULT_GROUP));
+        Assert.assertEquals("aaa=bbb", config.getConfig("dubbo.properties", "test"));
     }
 
     @Test

@@ -879,6 +879,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     private void convertProtocolIdsToProtocols() {
+        computeValidProtocolIds();
         if (StringUtils.isEmpty(protocolIds)) {
             if (CollectionUtils.isEmpty(protocols)) {
                 List<ProtocolConfig> protocolConfigs = ConfigManager.getInstance().getDefaultProtocols();
@@ -1058,5 +1059,23 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
      */
     protected void dispatch(Event event) {
         eventDispatcher.dispatch(event);
+    }
+
+    private void computeValidProtocolIds() {
+        if (StringUtils.isEmpty(getProtocolIds())) {
+            if (getProvider() != null && StringUtils.isNotEmpty(getProvider().getProtocolIds())) {
+                setProtocolIds(getProvider().getProtocolIds());
+            }
+        }
+    }
+
+    @Override
+    protected void computeValidRegistryIds() {
+        super.computeValidRegistryIds();
+        if (StringUtils.isEmpty(getRegistryIds())) {
+            if (getProvider() != null && StringUtils.isNotEmpty(getProvider().getRegistryIds())) {
+                setRegistryIds(getProvider().getRegistryIds());
+            }
+        }
     }
 }

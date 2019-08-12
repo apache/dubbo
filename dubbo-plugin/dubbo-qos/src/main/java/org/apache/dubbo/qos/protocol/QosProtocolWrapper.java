@@ -24,8 +24,10 @@ import org.apache.dubbo.qos.server.Server;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
+import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.RpcException;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
@@ -76,6 +78,11 @@ public class QosProtocolWrapper implements Protocol {
     public void destroy() {
         protocol.destroy();
         stopServer();
+    }
+
+    @Override
+    public List<ProtocolServer> getServers() {
+        return protocol.getServers();
     }
 
     private void startQosServer(URL url) {

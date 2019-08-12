@@ -14,24 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.demo.provider;
+package org.apache.dubbo.rpc;
 
-import org.apache.dubbo.demo.service.DemoService;
-
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-
-import java.io.IOException;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.RemotingServer;
 
 /**
- * {@link DemoService} provider demo XML bootstrap
+ * Distinct from {@link RemotingServer}, each protocol holds one or more ProtocolServers(the number usually decides by port numbers),
+ * while each ProtocolServer holds zero or one RemotingServer.
  */
-public class DemoServiceProviderXmlBootstrap {
+public interface ProtocolServer {
 
-    public static void main(String[] args) throws IOException {
-        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext();
-        context.setConfigLocation("/META-INF/spring/dubbo-provider-context.xml");
-        context.refresh();
-        System.out.println("DemoService provider (XML) is starting...");
-        System.in.read();
+    default RemotingServer getRemotingServer() {
+        return null;
     }
+
+    default void setRemotingServers(RemotingServer server) {
+    }
+
+    String getAddress();
+
+    void setAddress(String address);
+
+    default URL getUrl() {
+        return null;
+    }
+
+    default void reset(URL url) {
+    }
+
+    void close();
 }
