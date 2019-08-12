@@ -20,7 +20,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
@@ -453,6 +452,8 @@ public class NacosRegistry extends FailbackRegistry {
         // Append default category if absent
         String category = url.getParameter(CATEGORY_KEY, DEFAULT_CATEGORY);
         URL newURL = url.addParameter(CATEGORY_KEY, category);
+        newURL = newURL.addParameter(PROTOCOL_KEY, url.getProtocol());
+        newURL = newURL.addParameter(PATH_KEY, url.getPath());
         String ip = url.getHost();
         int port = url.getPort();
         Instance instance = new Instance();
