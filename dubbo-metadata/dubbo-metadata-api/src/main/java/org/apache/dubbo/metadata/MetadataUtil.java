@@ -12,10 +12,10 @@ public class MetadataUtil {
 //
 //    private String getIdentifierKey() {
 //        return serviceInterface
-//                + SEPARATOR + (version == null ? "" : version)
-//                + SEPARATOR + (group == null ? "" : group)
-//                + SEPARATOR + (side == null ? "" : side)
-//                + SEPARATOR + application;
+//                + KEY_SEPARATOR + (version == null ? "" : version)
+//                + KEY_SEPARATOR + (group == null ? "" : group)
+//                + KEY_SEPARATOR + (side == null ? "" : side)
+//                + KEY_SEPARATOR + application;
 //    }
 //
 //    private String getFilePathKey() {

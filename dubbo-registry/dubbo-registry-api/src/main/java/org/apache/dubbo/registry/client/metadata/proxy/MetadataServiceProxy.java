@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.client.metadata;
+package org.apache.dubbo.registry.client.metadata.proxy;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
@@ -41,7 +41,7 @@ import static org.apache.dubbo.registry.client.metadata.MetadataServiceURLBuilde
  * @see MetadataService
  * @since 2.7.4
  */
-class MetadataServiceProxy implements MetadataService {
+public class MetadataServiceProxy implements MetadataService {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -64,11 +64,6 @@ class MetadataServiceProxy implements MetadataService {
     }
 
     @Override
-    public SortedSet<String> getSubscribedURLs() {
-        return doInMetadataService(MetadataService::getSubscribedURLs);
-    }
-
-    @Override
     public SortedSet<String> getExportedURLs(String serviceInterface, String group, String version, String protocol) {
         return doInMetadataService(metadataService ->
                 metadataService.getExportedURLs(serviceInterface, group, version, protocol));
@@ -76,12 +71,14 @@ class MetadataServiceProxy implements MetadataService {
 
     @Override
     public String getServiceDefinition(String interfaceName, String version, String group) {
-        return null;
+        return doInMetadataService(metadataService ->
+                metadataService.getServiceDefinition(interfaceName, version, group));
     }
 
     @Override
     public String getServiceDefinition(String serviceKey) {
-        return null;
+        return doInMetadataService(metadataService ->
+                metadataService.getServiceDefinition(serviceKey));
     }
 
     protected <T> T doInMetadataService(Function<MetadataService, T> callback) {

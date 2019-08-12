@@ -52,7 +52,7 @@ import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
 
 /**
  * The {@link WritableMetadataService} implementation stores the metadata of Dubbo services in memory locally when they
- * exported.
+ * exported. It is used by server (provider).
  *
  * @see MetadataService
  * @see WritableMetadataService
@@ -122,7 +122,7 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
     }
 
     @Override
-    public boolean refreshExportedMetadata(String revision) {
+    public boolean refreshMetadata(String revision) {
         boolean result = true;
         for (SortedSet<URL> urls : exportedServiceURLs.values()) {
             Iterator<URL> iterator = urls.iterator();

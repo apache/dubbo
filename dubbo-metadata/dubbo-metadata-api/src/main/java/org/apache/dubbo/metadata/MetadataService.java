@@ -88,7 +88,9 @@ public interface MetadataService {
      * @see #toSortedStrings(Stream)
      * @see URL#toFullString()
      */
-    SortedSet<String> getSubscribedURLs();
+    default SortedSet<String> getSubscribedURLs(){
+        throw new UnsupportedOperationException("This operation is not supported for consumer.");
+    }
 
     /**
      * Get the {@link SortedSet sorted set} of String that presents all Dubbo exported {@link URL urls}

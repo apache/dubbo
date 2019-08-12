@@ -20,6 +20,8 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
+import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
+import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 import org.apache.dubbo.metadata.report.support.AbstractMetadataReport;
 
 import java.util.List;
@@ -60,12 +62,12 @@ public class JTestMetadataReport4Test extends AbstractMetadataReport {
     }
 
     @Override
-    protected void doSaveMetadata(URL url) {
+    protected void doSaveMetadata(ServiceMetadataIdentifier metadataIdentifier, URL url) {
         throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
     }
 
     @Override
-    protected void doRemoveMetadata(URL url) {
+    protected void doRemoveMetadata(ServiceMetadataIdentifier metadataIdentifier, URL url) {
         throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
     }
 
@@ -75,7 +77,12 @@ public class JTestMetadataReport4Test extends AbstractMetadataReport {
     }
 
     @Override
-    protected List<String> doGetSubscribedURLs() {
+    protected void doSaveSubscriberData(SubscriberMetadataIdentifier subscriberMetadataIdentifier, List<String> urls) {
+
+    }
+
+    @Override
+    protected List<String> doGetSubscribedURLs(SubscriberMetadataIdentifier metadataIdentifier) {
         throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
     }
 
