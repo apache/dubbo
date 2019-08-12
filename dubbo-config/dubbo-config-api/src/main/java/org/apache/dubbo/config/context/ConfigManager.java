@@ -41,7 +41,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.concurrent.locks.StampedLock;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 
 import static java.lang.Boolean.TRUE;
@@ -96,7 +98,7 @@ public class ConfigManager {
 
     private final Map<Class<? extends AbstractConfig>, Map<String, AbstractConfig>> configsCache = newMap();
 
-    private final StampedLock lock = new StampedLock();
+    private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
     public static ConfigManager getInstance() {
         return CONFIG_MANAGER;
@@ -125,6 +127,9 @@ public class ConfigManager {
     }
 
     protected void addConfig(AbstractConfig config, boolean unique) {
+        if (config == null) {
+            return;
+        }
         Class<? extends AbstractConfig> configType = config.getClass();
         write(() -> {
             Map<String, AbstractConfig> configsMap = configsCache.computeIfAbsent(configType, type -> newMap());
@@ -151,7 +156,7 @@ public class ConfigManager {
         return read(() -> {
             Map<String, C> configsMap = (Map) configsCache.getOrDefault(configType, emptyMap());
             int size = configsMap.size();
-            if (size < 0) {
+            if (size < 1) {
 //                throw new IllegalStateException("No such " + configType.getName() + " is found");
                 return null;
             } else if (size > 1) {
@@ -397,13 +402,14 @@ public class ConfigManager {
 
     private <V> V write(Callable<V> callable) {
         V value = null;
-        long stamp = lock.writeLock();
+        Lock writeLock = lock.writeLock();
         try {
+            writeLock.lock();
             value = callable.call();
         } catch (Throwable e) {
             throw new RuntimeException(e);
         } finally {
-            lock.unlockWrite(stamp);
+            writeLock.unlock();
         }
         return value;
     }
@@ -417,25 +423,17 @@ public class ConfigManager {
 
 
     private <V> V read(Callable<V> callable) {
-        long stamp = lock.tryOptimisticRead();
-
-        boolean readLock = false;
+        Lock readLock = lock.readLock();
 
         V value = null;
 
         try {
-            readLock = !lock.validate(stamp);
-
-            if (readLock) {
-                stamp = lock.readLock();
-            }
+            readLock.lock();
             value = callable.call();
         } catch (Throwable e) {
             throw new RuntimeException(e);
         } finally {
-            if (readLock) {
-                lock.unlockRead(stamp);
-            }
+            readLock.unlock();
         }
 
         return value;
