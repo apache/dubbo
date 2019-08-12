@@ -19,7 +19,10 @@ package org.apache.dubbo.bootstrap;
 import org.apache.dubbo.bootstrap.rest.UserService;
 import org.apache.dubbo.bootstrap.rest.UserServiceImpl;
 import org.apache.dubbo.config.ProtocolConfig;
-import org.apache.dubbo.config.builders.RegistryBuilder;
+import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.ServiceConfig;
+
+import java.util.Arrays;
 
 /**
  * Dubbo Provider Bootstrap
@@ -29,10 +32,34 @@ import org.apache.dubbo.config.builders.RegistryBuilder;
 public class DubboServiceProviderBootstrap {
 
     public static void main(String[] args) {
+        multipleRegistries();
+    }
+
+    private static void multipleRegistries() {
         ProtocolConfig restProtocol = new ProtocolConfig();
         restProtocol.setName("rest");
         restProtocol.setId("rest");
         restProtocol.setPort(-1);
+
+        RegistryConfig interfaceRegistry = new RegistryConfig();
+        interfaceRegistry.setId("interfaceRegistry");
+        interfaceRegistry.setAddress("zookeeper://127.0.0.1:2181");
+
+        RegistryConfig serviceRegistry = new RegistryConfig();
+        serviceRegistry.setId("serviceRegistry");
+        serviceRegistry.setAddress("zookeeper://127.0.0.1:2181?registry-type=service");
+
+        ServiceConfig<EchoService> echoService = new ServiceConfig<>();
+        echoService.setInterface(EchoService.class.getName());
+        echoService.setRef(new EchoServiceImpl());
+//        echoService.setRegistries(Arrays.asList(interfaceRegistry, serviceRegistry));
+
+        ServiceConfig<UserService> userService = new ServiceConfig<>();
+        userService.setInterface(UserService.class.getName());
+        userService.setRef(new UserServiceImpl());
+        userService.setProtocol(restProtocol);
+//        userService.setRegistries(Arrays.asList(interfaceRegistry, serviceRegistry));
+
 
         new DubboBootstrap()
                 .application("dubbo-provider-demo")
@@ -40,10 +67,11 @@ public class DubboServiceProviderBootstrap {
 //                .registry("zookeeper", builder -> builder.address("zookeeper://127.0.0.1:2181?registry-type=service"))
                 // Nacos
 //                .registry("zookeeper", builder -> builder.address("nacos://127.0.0.1:8848?registry-type=service"))
-                .registry(RegistryBuilder.newBuilder().address("consul://127.0.0.1:8500?registry-type=service").build())
+                .registries(Arrays.asList(interfaceRegistry, serviceRegistry))
+//                .registry(RegistryBuilder.newBuilder().address("consul://127.0.0.1:8500?registry-type=service").build())
                 .protocol(builder -> builder.port(-1).name("dubbo"))
-                .service(builder -> builder.id("echo").interfaceClass(EchoService.class).ref(new EchoServiceImpl()))
-                .service(builder -> builder.id("user").interfaceClass(UserService.class).ref(new UserServiceImpl()).addProtocol(restProtocol))
+                .service(echoService)
+                .service(userService)
                 .start()
                 .await();
     }
@@ -59,4 +87,5 @@ public class DubboServiceProviderBootstrap {
     private static void testDubboTansormation() {
 
     }
+
 }
