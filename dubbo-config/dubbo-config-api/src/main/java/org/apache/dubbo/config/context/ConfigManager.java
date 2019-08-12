@@ -94,11 +94,6 @@ public class ConfigManager {
 
     private static final ConfigManager CONFIG_MANAGER = new ConfigManager();
 
-    private volatile ModuleConfig module;
-    private volatile ApplicationConfig application;
-    private volatile MonitorConfig monitor;
-    private volatile MetricsConfig metrics;
-
     private final Map<Class<? extends AbstractConfig>, Map<String, AbstractConfig>> configsCache = newMap();
 
     private final StampedLock lock = new StampedLock();
@@ -113,14 +108,11 @@ public class ConfigManager {
     // ApplicationConfig correlative methods
 
     public void setApplication(ApplicationConfig application) {
-        if (application != null) {
-            checkDuplicate(this.application, application);
-            this.application = application;
-        }
+        addConfig(application, true);
     }
 
     public Optional<ApplicationConfig> getApplication() {
-        return ofNullable(application);
+        return ofNullable(getConfig(ApplicationConfig.class));
     }
 
     /**
@@ -129,10 +121,14 @@ public class ConfigManager {
      * @param config the dubbo {@link AbstractConfig config}
      */
     public void addConfig(AbstractConfig config) {
+        addConfig(config, false);
+    }
+
+    protected void addConfig(AbstractConfig config, boolean unique) {
         Class<? extends AbstractConfig> configType = config.getClass();
         write(() -> {
             Map<String, AbstractConfig> configsMap = configsCache.computeIfAbsent(configType, type -> newMap());
-            addIfAbsent(config, configsMap);
+            addIfAbsent(config, configsMap, unique);
         });
     }
 
@@ -151,41 +147,48 @@ public class ConfigManager {
         });
     }
 
+    protected <C extends AbstractConfig> C getConfig(Class<C> configType) throws IllegalStateException {
+        return read(() -> {
+            Map<String, C> configsMap = (Map) configsCache.getOrDefault(configType, emptyMap());
+            int size = configsMap.size();
+            if (size < 0) {
+//                throw new IllegalStateException("No such " + configType.getName() + " is found");
+                return null;
+            } else if (size > 1) {
+                throw new IllegalStateException("The expected single matching " + configType.getName() + " but found " + size + " instances");
+            } else {
+                return configsMap.values().iterator().next();
+            }
+        });
+    }
+
     // MonitorConfig correlative methods
 
     public void setMonitor(MonitorConfig monitor) {
-        if (monitor != null) {
-            checkDuplicate(this.monitor, monitor);
-            this.monitor = monitor;
-        }
+        addConfig(monitor, true);
     }
 
     public Optional<MonitorConfig> getMonitor() {
-        return ofNullable(monitor);
+        return ofNullable(getConfig(MonitorConfig.class));
     }
 
     // ModuleConfig correlative methods
 
     public void setModule(ModuleConfig module) {
-        if (module != null) {
-            checkDuplicate(this.module, module);
-            this.module = module;
-        }
+        addConfig(module, true);
+
     }
 
     public Optional<ModuleConfig> getModule() {
-        return ofNullable(module);
+        return ofNullable(getConfig(ModuleConfig.class));
     }
 
     public void setMetrics(MetricsConfig metrics) {
-        if (metrics != null) {
-            checkDuplicate(this.metrics, metrics);
-            this.metrics = metrics;
-        }
+        addConfig(metrics, true);
     }
 
     public Optional<MetricsConfig> getMetrics() {
-        return ofNullable(metrics);
+        return ofNullable(getConfig(MetricsConfig.class));
     }
 
     // ConfigCenterConfig correlative methods
@@ -381,9 +384,6 @@ public class ConfigManager {
     // For test purpose
     public void clear() {
         write(() -> {
-            this.application = null;
-            this.monitor = null;
-            this.module = null;
             this.configsCache.clear();
         });
     }
@@ -441,7 +441,7 @@ public class ConfigManager {
         return value;
     }
 
-    private static void checkDuplicate(AbstractConfig oldOne, AbstractConfig newOne) {
+    private static void checkDuplicate(AbstractConfig oldOne, AbstractConfig newOne) throws IllegalStateException {
         if (oldOne != null && !oldOne.equals(newOne)) {
             String configName = oldOne.getClass().getSimpleName();
             throw new IllegalStateException("Duplicate Config found for " + configName + ", you should use only one unique " + configName + " for one application.");
@@ -452,10 +452,17 @@ public class ConfigManager {
         return new HashMap<>();
     }
 
-    private static <C extends AbstractConfig> void addIfAbsent(C config, Map<String, C> configsMap) {
+    static <C extends AbstractConfig> void addIfAbsent(C config, Map<String, C> configsMap, boolean unique)
+            throws IllegalStateException {
 
         if (config == null || configsMap == null) {
             return;
+        }
+
+        if (unique) { // check duplicate
+            configsMap.values().forEach(c -> {
+                checkDuplicate(c, config);
+            });
         }
 
         String key = getId(config);
