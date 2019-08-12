@@ -19,6 +19,6 @@ public class RefreshServiceMetadataCustomizer implements ServiceInstanceCustomiz
         // FIXME to define the constant
         WritableMetadataService remoteWritableMetadataService =
                 WritableMetadataService.getExtension(serviceInstance.getMetadata().getOrDefault("", DEFAULT_KEY));
-        remoteWritableMetadataService.refreshExportedMetadata(serviceInstance.getMetadata().get(EXPORTED_SERVICES_REVISION_KEY));
+        remoteWritableMetadataService.refreshMetadata(serviceInstance.getMetadata().get(EXPORTED_SERVICES_REVISION_KEY));
     }
 }

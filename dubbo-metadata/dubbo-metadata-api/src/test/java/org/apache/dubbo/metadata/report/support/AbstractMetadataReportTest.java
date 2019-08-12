@@ -21,6 +21,8 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
+import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
+import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 
 import com.google.gson.Gson;
 import org.junit.jupiter.api.Assertions;
@@ -114,7 +116,7 @@ public class AbstractMetadataReportTest {
         retryReport.metadataReportRetry.retryPeriod = 400L;
         URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic");
         Assertions.assertNull(retryReport.metadataReportRetry.retryScheduledFuture);
-        Assertions.assertEquals(0,retryReport.metadataReportRetry.retryCounter.get());
+        Assertions.assertEquals(0, retryReport.metadataReportRetry.retryCounter.get());
         Assertions.assertTrue(retryReport.store.isEmpty());
         Assertions.assertTrue(retryReport.failedReports.isEmpty());
 
@@ -158,7 +160,7 @@ public class AbstractMetadataReportTest {
         URL url = URL.valueOf("xxx://" + NetUtils.getLocalAddress().getHostName() + ":4444/" + interfaceName + "?version=" + version + "&application="
                 + application + (group == null ? "" : "&group=" + group) + "&testPKey=8989");
 
-        MetadataIdentifier providerMetadataIdentifier = new MetadataIdentifier(interfaceName, version, group, PROVIDER_SIDE,application);
+        MetadataIdentifier providerMetadataIdentifier = new MetadataIdentifier(interfaceName, version, group, PROVIDER_SIDE, application);
         Class interfaceClass = Class.forName(interfaceName);
         FullServiceDefinition fullServiceDefinition = ServiceDefinitionBuilder.buildFullDefinition(interfaceClass, url.getParameters());
 
@@ -208,16 +210,16 @@ public class AbstractMetadataReportTest {
         Map tmpMapResult = (Map) abstractMetadataReport.allMetadataReports.get(consumerMetadataIdentifier);
         Assertions.assertEquals(tmpMapResult.get("testPKey"), "9090");
         Assertions.assertEquals(tmpMapResult.get("testKey"), "value");
-        Assertions.assertEquals(3,abstractMetadataReport.store.size());
+        Assertions.assertEquals(3, abstractMetadataReport.store.size());
 
         abstractMetadataReport.store.clear();
 
-        Assertions.assertEquals(0,abstractMetadataReport.store.size());
+        Assertions.assertEquals(0, abstractMetadataReport.store.size());
 
         abstractMetadataReport.publishAll();
         Thread.sleep(200);
 
-        Assertions.assertEquals(3,abstractMetadataReport.store.size());
+        Assertions.assertEquals(3, abstractMetadataReport.store.size());
 
         String v = abstractMetadataReport.store.get(providerMetadataIdentifier1.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY));
         Gson gson = new Gson();
@@ -290,12 +292,12 @@ public class AbstractMetadataReportTest {
         }
 
         @Override
-        protected void doSaveMetadata(URL url) {
+        protected void doSaveMetadata(ServiceMetadataIdentifier metadataIdentifier, URL url) {
             throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
         }
 
         @Override
-        protected void doRemoveMetadata(URL url) {
+        protected void doRemoveMetadata(ServiceMetadataIdentifier metadataIdentifier, URL url) {
             throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
         }
 
@@ -305,7 +307,12 @@ public class AbstractMetadataReportTest {
         }
 
         @Override
-        protected List<String> doGetSubscribedURLs() {
+        protected void doSaveSubscriberData(SubscriberMetadataIdentifier subscriberMetadataIdentifier, List<String> urls) {
+
+        }
+
+        @Override
+        protected List<String> doGetSubscribedURLs(SubscriberMetadataIdentifier metadataIdentifier) {
             throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
         }
 
@@ -346,12 +353,12 @@ public class AbstractMetadataReportTest {
         }
 
         @Override
-        protected void doSaveMetadata(URL url) {
+        protected void doSaveMetadata(ServiceMetadataIdentifier metadataIdentifier, URL url) {
             throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
         }
 
         @Override
-        protected void doRemoveMetadata(URL url) {
+        protected void doRemoveMetadata(ServiceMetadataIdentifier metadataIdentifier, URL url) {
             throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
         }
 
@@ -361,7 +368,12 @@ public class AbstractMetadataReportTest {
         }
 
         @Override
-        protected List<String> doGetSubscribedURLs() {
+        protected void doSaveSubscriberData(SubscriberMetadataIdentifier subscriberMetadataIdentifier, List<String> urls) {
+
+        }
+
+        @Override
+        protected List<String> doGetSubscribedURLs(SubscriberMetadataIdentifier metadataIdentifier) {
             throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
         }
 

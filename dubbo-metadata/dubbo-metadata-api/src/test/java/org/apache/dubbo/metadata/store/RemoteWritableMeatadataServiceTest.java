@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
+import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.metadata.test.JTestMetadataReport4Test;
 
 import com.google.gson.Gson;
@@ -41,7 +42,7 @@ public class RemoteWritableMeatadataServiceTest {
     @BeforeEach
     public void before() {
         metadataReportService1 = (RemoteWritableMetadataService) WritableMetadataService.getExtension(METADATA_REMOTE);
-        metadataReportService1.initMetadataReport(url);
+        MetadataReportInstance.init(url);
     }
 
     @Test

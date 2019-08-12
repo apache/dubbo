@@ -21,6 +21,8 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
+import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
+import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 
 import com.alibaba.fastjson.JSON;
 import org.junit.jupiter.api.Assertions;
@@ -46,22 +48,27 @@ public class AbstractMetadataReportFactoryTest {
                 }
 
                 @Override
-                public void saveMetadata(URL url) {
+                public void saveServiceMetadata(URL url) {
 
                 }
 
                 @Override
-                public void removeMetadata(URL url) {
+                public void removeServiceMetadata(URL url) {
 
                 }
 
                 @Override
-                public List<String> getExportedURLs(MetadataIdentifier metadataIdentifier) {
+                public List<String> getExportedURLs(ServiceMetadataIdentifier metadataIdentifier) {
                     return null;
                 }
 
                 @Override
-                public List<String> getSubscribedURLs() {
+                public void saveSubscriberData(SubscriberMetadataIdentifier subscriberMetadataIdentifier, List<String> urls) {
+
+                }
+
+                @Override
+                public List<String> getSubscribedURLs(SubscriberMetadataIdentifier subscriberMetadataIdentifier) {
                     return null;
                 }
 

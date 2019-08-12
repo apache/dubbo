@@ -25,6 +25,8 @@ import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
+import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
+import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 
 import com.google.gson.Gson;
 
@@ -284,33 +286,43 @@ public abstract class AbstractMetadataReport implements MetadataReport {
     }
 
     @Override
-    public void saveMetadata(URL url) {
+    public void saveServiceMetadata(URL url) {
         if (syncReport) {
-            doSaveMetadata(url);
+            doSaveMetadata(new ServiceMetadataIdentifier(url), url);
         } else {
-            reportCacheExecutor.execute(() -> doSaveMetadata(url));
+            reportCacheExecutor.execute(() -> doSaveMetadata(new ServiceMetadataIdentifier(url), url));
         }
     }
 
     @Override
-    public void removeMetadata(URL url) {
+    public void removeServiceMetadata(URL url) {
         if (syncReport) {
-            doRemoveMetadata(url);
+            doRemoveMetadata(new ServiceMetadataIdentifier(url), url);
         } else {
-            reportCacheExecutor.execute(() -> doRemoveMetadata(url));
+            reportCacheExecutor.execute(() -> doRemoveMetadata(new ServiceMetadataIdentifier(url), url));
         }
     }
 
     @Override
-    public List<String> getExportedURLs(MetadataIdentifier metadataIdentifier) {
+    public List<String> getExportedURLs(ServiceMetadataIdentifier metadataIdentifier) {
         // TODO, fallback to local cache
         return doGetExportedURLs();
     }
 
     @Override
-    public List<String> getSubscribedURLs() {
+    public void saveSubscriberData(SubscriberMetadataIdentifier subscriberMetadataIdentifier, List<String> urls) {
+        if (syncReport) {
+            doSaveSubscriberData(subscriberMetadataIdentifier, urls);
+        } else {
+            reportCacheExecutor.execute(() -> doSaveSubscriberData(subscriberMetadataIdentifier, urls));
+        }
+    }
+
+
+    @Override
+    public List<String> getSubscribedURLs(SubscriberMetadataIdentifier subscriberMetadataIdentifier) {
         // TODO, fallback to local cache
-        return doGetSubscribedURLs();
+        return doGetSubscribedURLs(subscriberMetadataIdentifier);
     }
 
     String getProtocol(URL url) {
@@ -422,12 +434,14 @@ public abstract class AbstractMetadataReport implements MetadataReport {
 
     protected abstract void doStoreConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, String serviceParameterString);
 
-    protected abstract void doSaveMetadata(URL url);
+    protected abstract void doSaveMetadata(ServiceMetadataIdentifier metadataIdentifier, URL url);
 
-    protected abstract void doRemoveMetadata(URL url);
+    protected abstract void doRemoveMetadata(ServiceMetadataIdentifier metadataIdentifier, URL url);
 
     protected abstract List<String> doGetExportedURLs();
 
-    protected abstract List<String> doGetSubscribedURLs();
+    protected abstract void doSaveSubscriberData(SubscriberMetadataIdentifier subscriberMetadataIdentifier, List<String> urls);
+
+    protected abstract List<String> doGetSubscribedURLs(SubscriberMetadataIdentifier subscriberMetadataIdentifier);
 
 }

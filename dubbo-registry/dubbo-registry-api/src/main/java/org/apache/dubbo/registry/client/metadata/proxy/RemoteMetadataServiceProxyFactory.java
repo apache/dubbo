@@ -25,11 +25,11 @@ import static org.apache.dubbo.common.constants.CommonConstants.METADATA_REMOTE;
 /**
  *
  */
-public class RemoteMetadataServiceProxyFactory implements MetadataServiceProxyFactory {
+public class RemoteMetadataServiceProxyFactory extends BaseMetadataServiceProxyFactory implements MetadataServiceProxyFactory {
 
     @Override
-    public MetadataService getProxy(ServiceInstance serviceInstance) {
-        return WritableMetadataService.getExtension(METADATA_REMOTE);
+    public MetadataService createProxy(ServiceInstance serviceInstance) {
+        return new RemoteMetadataServiceProxy(serviceInstance);
     }
 
 }
