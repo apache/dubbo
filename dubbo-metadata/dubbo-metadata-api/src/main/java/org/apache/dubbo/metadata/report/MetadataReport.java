@@ -20,11 +20,13 @@ package org.apache.dubbo.metadata.report;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
+import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 
 import java.util.List;
 import java.util.Map;
 
 /**
+ *
  */
 public interface MetadataReport {
 
@@ -32,9 +34,9 @@ public interface MetadataReport {
 
     void storeConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, Map<String, String> serviceParameterMap);
 
-    void saveMetadata(URL url);
+    void saveServiceMetadata(ServiceMetadataIdentifier serviceMetadataIdentifier, URL url);
 
-    void removeMetadata(URL url);
+    void removeServiceMetadata(ServiceMetadataIdentifier serviceMetadataIdentifier, URL url);
 
     List<String> getExportedURLs(MetadataIdentifier metadataIdentifier);
 

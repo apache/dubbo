@@ -17,28 +17,20 @@
 package org.apache.dubbo.metadata.report.identifier;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.utils.StringUtils;
 
-import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.metadata.MetadataConstants.KEY_SEPARATOR;
 
 /**
+ * The MetadataIdentifier is used to store method descriptor.
+ * <p>
  * 2018/10/25
  */
-public class MetadataIdentifier {
+public class MetadataIdentifier extends BaseMetadataIdentifier {
 
-    public static final String SEPARATOR = ":";
-    public final static String DEFAULT_PATH_TAG = "metadata";
-    public final static String META_DATA_STORE_TAG = ".metaData";
-
-    private String serviceInterface;
-    private String version;
-    private String group;
-    private String side;
     private String application;
 
     public MetadataIdentifier() {
@@ -52,6 +44,7 @@ public class MetadataIdentifier {
         this.application = application;
     }
 
+
     public MetadataIdentifier(URL url) {
         this.serviceInterface = url.getServiceInterface();
         this.version = url.getParameter(VERSION_KEY);
@@ -61,40 +54,12 @@ public class MetadataIdentifier {
     }
 
     public String getUniqueKey(KeyTypeEnum keyType) {
-        if (keyType == KeyTypeEnum.PATH) {
-            return getFilePathKey();
-        }
-        return getIdentifierKey();
+        return super.getUniqueKey(keyType, application);
     }
 
     public String getIdentifierKey() {
-        return serviceInterface
-                + SEPARATOR + (version == null ? "" : version)
-                + SEPARATOR + (group == null ? "" : group)
-                + SEPARATOR + (side == null ? "" : side)
-                + SEPARATOR + application;
+        return super.getIdentifierKey(application);
     }
-
-    private String getFilePathKey() {
-        return getFilePathKey(DEFAULT_PATH_TAG);
-    }
-
-    private String getFilePathKey(String pathTag) {
-        return pathTag
-                + (StringUtils.isEmpty(toServicePath()) ? "" : (PATH_SEPARATOR + toServicePath()))
-                + (version == null ? "" : (PATH_SEPARATOR + version))
-                + (group == null ? "" : (PATH_SEPARATOR + group))
-                + (side == null ? "" : (PATH_SEPARATOR + side))
-                + (getApplication() == null ? "" : (PATH_SEPARATOR + getApplication()));
-    }
-
-    private String toServicePath() {
-        if (ANY_VALUE.equals(serviceInterface)) {
-            return "";
-        }
-        return URL.encode(serviceInterface);
-    }
-
 
     public String getServiceInterface() {
         return serviceInterface;

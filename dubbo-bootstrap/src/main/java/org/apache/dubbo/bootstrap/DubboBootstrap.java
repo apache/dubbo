@@ -48,6 +48,7 @@ import org.apache.dubbo.config.metadata.ConfigurableMetadataServiceExporter;
 import org.apache.dubbo.event.EventDispatcher;
 import org.apache.dubbo.event.EventListener;
 import org.apache.dubbo.metadata.WritableMetadataService;
+import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.metadata.store.RemoteWritableMetadataService;
 import org.apache.dubbo.registry.client.AbstractServiceDiscoveryFactory;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
@@ -584,9 +585,7 @@ public class DubboBootstrap {
             return;
         }
 
-        RemoteWritableMetadataService remoteMetadataService =
-                (RemoteWritableMetadataService) WritableMetadataService.getExtension(metadataType);
-        remoteMetadataService.initMetadataReport(metadataReportConfig.toUrl());
+        MetadataReportInstance.init(metadataReportConfig.toUrl());
     }
 
     private void startConfigCenter() {

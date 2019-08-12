@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.client.metadata;
+package org.apache.dubbo.registry.client.metadata.proxy;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
@@ -41,7 +41,7 @@ import static org.apache.dubbo.registry.client.metadata.MetadataServiceURLBuilde
  * @see MetadataService
  * @since 2.7.4
  */
-class MetadataServiceProxy implements MetadataService {
+public class MetadataServiceProxy implements MetadataService {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 

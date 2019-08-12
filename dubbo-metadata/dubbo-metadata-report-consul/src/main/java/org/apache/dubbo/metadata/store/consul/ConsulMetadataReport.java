@@ -21,6 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
+import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.support.AbstractMetadataReport;
 import org.apache.dubbo.rpc.RpcException;
 
@@ -56,12 +57,12 @@ public class ConsulMetadataReport extends AbstractMetadataReport {
     }
 
     @Override
-    protected void doSaveMetadata(URL url) {
+    protected void doSaveMetadata(ServiceMetadataIdentifier serviceMetadataIdentifier, URL url) {
         throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
     }
 
     @Override
-    protected void doRemoveMetadata(URL url) {
+    protected void doRemoveMetadata(ServiceMetadataIdentifier serviceMetadataIdentifier, URL url) {
         throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
     }
 

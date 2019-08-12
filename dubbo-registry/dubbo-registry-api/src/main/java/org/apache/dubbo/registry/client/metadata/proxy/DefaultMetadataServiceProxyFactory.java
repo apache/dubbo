@@ -39,9 +39,8 @@ import static org.apache.dubbo.registry.client.metadata.MetadataServiceURLBuilde
  *
  * @since 2.7.4
  */
-public class DefaultMetadataServiceProxyFactory implements MetadataServiceProxyFactory {
+public class DefaultMetadataServiceProxyFactory extends BaseMetadataServiceProxyFactory implements MetadataServiceProxyFactory {
 
-    private final Map<String, MetadataService> proxies = new HashMap<>();
 
     private ProxyFactory proxyFactory;
 
@@ -57,10 +56,6 @@ public class DefaultMetadataServiceProxyFactory implements MetadataServiceProxyF
         this.proxyFactory = proxyFactory;
     }
 
-    @Override
-    public MetadataService getProxy(ServiceInstance serviceInstance) {
-        return proxies.computeIfAbsent(serviceInstance.getId(), id -> createProxy(serviceInstance));
-    }
 
     protected MetadataService createProxy(ServiceInstance serviceInstance) {
         List<URL> urls = composite().build(serviceInstance);

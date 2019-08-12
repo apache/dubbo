@@ -52,7 +52,7 @@ import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
 
 /**
  * The {@link WritableMetadataService} implementation stores the metadata of Dubbo services in memory locally when they
- * exported.
+ * exported. It is used by server (provider).
  *
  * @see MetadataService
  * @see WritableMetadataService

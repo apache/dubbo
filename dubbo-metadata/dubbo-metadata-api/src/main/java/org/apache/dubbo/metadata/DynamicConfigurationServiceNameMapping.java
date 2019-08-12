@@ -81,9 +81,9 @@ public class DynamicConfigurationServiceNameMapping implements ServiceNameMappin
     protected static String buildGroup(String serviceInterface, String group, String version, String protocol) {
         //        the issue : https://github.com/apache/dubbo/issues/4671
         //        StringBuilder groupBuilder = new StringBuilder(serviceInterface)
-        //                .append(SEPARATOR).append(defaultString(group))
-        //                .append(SEPARATOR).append(defaultString(version))
-        //                .append(SEPARATOR).append(defaultString(protocol));
+        //                .append(KEY_SEPARATOR).append(defaultString(group))
+        //                .append(KEY_SEPARATOR).append(defaultString(version))
+        //                .append(KEY_SEPARATOR).append(defaultString(protocol));
         //        return groupBuilder.toString();
         return serviceInterface;
     }

@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
+import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.support.AbstractMetadataReport;
 import org.apache.dubbo.rpc.RpcException;
 
@@ -37,7 +38,7 @@ import java.util.Set;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
-import static org.apache.dubbo.metadata.report.identifier.MetadataIdentifier.META_DATA_STORE_TAG;
+import static org.apache.dubbo.metadata.MetadataConstants.META_DATA_STORE_TAG;
 
 /**
  * RedisMetadataReport
@@ -79,12 +80,12 @@ public class RedisMetadataReport extends AbstractMetadataReport {
     }
 
     @Override
-    protected void doSaveMetadata(URL url) {
+    protected void doSaveMetadata(ServiceMetadataIdentifier serviceMetadataIdentifier, URL url) {
 
     }
 
     @Override
-    protected void doRemoveMetadata(URL url) {
+    protected void doRemoveMetadata(ServiceMetadataIdentifier serviceMetadataIdentifier, URL url) {
 
     }
 

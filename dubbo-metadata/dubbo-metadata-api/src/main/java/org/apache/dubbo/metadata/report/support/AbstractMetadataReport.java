@@ -25,6 +25,7 @@ import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
+import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 
 import com.google.gson.Gson;
 
@@ -284,20 +285,20 @@ public abstract class AbstractMetadataReport implements MetadataReport {
     }
 
     @Override
-    public void saveMetadata(URL url) {
+    public void saveServiceMetadata(ServiceMetadataIdentifier metadataIdentifier, URL url) {
         if (syncReport) {
-            doSaveMetadata(url);
+            doSaveMetadata(metadataIdentifier, url);
         } else {
-            reportCacheExecutor.execute(() -> doSaveMetadata(url));
+            reportCacheExecutor.execute(() -> doSaveMetadata(metadataIdentifier, url));
         }
     }
 
     @Override
-    public void removeMetadata(URL url) {
+    public void removeServiceMetadata(ServiceMetadataIdentifier metadataIdentifier, URL url) {
         if (syncReport) {
-            doRemoveMetadata(url);
+            doRemoveMetadata(metadataIdentifier, url);
         } else {
-            reportCacheExecutor.execute(() -> doRemoveMetadata(url));
+            reportCacheExecutor.execute(() -> doRemoveMetadata(metadataIdentifier, url));
         }
     }
 
@@ -422,9 +423,9 @@ public abstract class AbstractMetadataReport implements MetadataReport {
 
     protected abstract void doStoreConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, String serviceParameterString);
 
-    protected abstract void doSaveMetadata(URL url);
+    protected abstract void doSaveMetadata(ServiceMetadataIdentifier metadataIdentifier, URL url);
 
-    protected abstract void doRemoveMetadata(URL url);
+    protected abstract void doRemoveMetadata(ServiceMetadataIdentifier metadataIdentifier, URL url);
 
     protected abstract List<String> doGetExportedURLs();
 
