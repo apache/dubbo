@@ -17,6 +17,7 @@
 package org.apache.dubbo.common.config.configcenter.file;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.configcenter.AbstractDynamicConfiguration;
 import org.apache.dubbo.common.config.configcenter.ConfigChangeEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
@@ -51,10 +52,8 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -66,7 +65,6 @@ import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.unmodifiableMap;
-import static java.util.concurrent.Executors.newFixedThreadPool;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.commons.io.FileUtils.readFileToString;
@@ -77,22 +75,14 @@ import static org.apache.dubbo.common.utils.StringUtils.isBlank;
  *
  * @since 2.7.4
  */
-public class FileSystemDynamicConfiguration implements DynamicConfiguration {
-
-    public static final String PARAM_NAME_PREFIX = "dubbo.config-center.";
+public class FileSystemDynamicConfiguration extends AbstractDynamicConfiguration {
 
     public static final String CONFIG_CENTER_DIR_PARAM_NAME = PARAM_NAME_PREFIX + "dir";
-
-    public static final String THREAD_POOL_PREFIX_PARAM_NAME = PARAM_NAME_PREFIX + "thread-pool.prefix";
-
-    public static final String THREAD_POOL_SIZE_PARAM_NAME = PARAM_NAME_PREFIX + "thread-pool.size";
 
     public static final String CONFIG_CENTER_ENCODING_PARAM_NAME = PARAM_NAME_PREFIX + "encoding";
 
     public static final String DEFAULT_CONFIG_CENTER_DIR_PATH = System.getProperty("user.home") + File.separator
             + ".dubbo" + File.separator + "config-center";
-
-    public static final String DEFAULT_THREAD_POOL_PREFIX = PARAM_NAME_PREFIX + "workers";
 
     public static final String DEFAULT_THREAD_POOL_SIZE = "1";
 
@@ -111,6 +101,7 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
      * Logger
      */
     private static final Log logger = LogFactory.getLog(FileSystemDynamicConfiguration.class);
+
 
     /**
      * The unmodifiable map for {@link ConfigChangeType} whose key is the {@link WatchEvent.Kind#name() name} of
@@ -167,11 +158,6 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
     private final String encoding;
 
     /**
-     * The thread pool for workers who executes the tasks
-     */
-    private final ThreadPoolExecutor workersThreadPool;
-
-    /**
      * The {@link Set} of {@link #configDirectory(String) directories} that may be processing,
      * <p>
      * if {@link #isBasedPoolingWatchService()} is <code>false</code>, this properties will be
@@ -184,16 +170,17 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
     private final Map<File, List<ConfigurationListener>> listenersRepository;
 
     public FileSystemDynamicConfiguration(URL url) {
-        this(initDirectory(url), getEncoding(url), getThreadPoolPrefixName(url), getThreadPoolSize(url));
+        this(initDirectory(url), getEncoding(url), getThreadPoolPrefixName(url), getThreadPoolSize(url),
+                getThreadPoolKeepAliveTime(url));
     }
 
     public FileSystemDynamicConfiguration(File rootDirectory, String encoding,
                                           String threadPoolPrefixName,
-                                          int threadPoolSize
-    ) {
+                                          int threadPoolSize,
+                                          long keepAliveTime) {
+        super(threadPoolPrefixName, threadPoolSize, keepAliveTime);
         this.rootDirectory = rootDirectory;
         this.encoding = encoding;
-        this.workersThreadPool = initWorkersThreadPool(threadPoolPrefixName, threadPoolSize);
         this.processingDirectories = initProcessingDirectories();
         this.listenersRepository = new LinkedHashMap<>();
     }
@@ -229,12 +216,6 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
             // Remove into cache
             listeners.remove(listener);
         });
-    }
-
-    @Override
-    public String getConfig(String key, String group, long timeout) throws IllegalStateException {
-        File configFile = configFile(key, group);
-        return getConfig(configFile, timeout);
     }
 
     protected File configDirectory(String group) {
@@ -335,7 +316,7 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
 
     private void fireConfigChangeEvent(File configFile, ConfigChangeType configChangeType) {
         String key = configFile.getName();
-        String value = getConfig(configFile, -1L);
+        String value = getConfig(configFile);
         // fire ConfigChangeEvent one by one
         getListeners(configFile).forEach(listener -> {
             try {
@@ -346,10 +327,6 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
                 }
             }
         });
-    }
-
-    protected String getConfig(File configFile, long timeout) {
-        return canRead(configFile) ? execute(() -> readFileToString(configFile, getEncoding()), timeout) : null;
     }
 
     private boolean canRead(File file) {
@@ -373,16 +350,12 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
     public String removeConfig(String key, String group) {
         return delay(key, group, configFile -> {
 
-            String content = getConfig(configFile, -1L);
+            String content = getConfig(configFile);
 
             FileUtils.deleteQuietly(configFile);
 
             return content;
         });
-    }
-
-    private ThreadPoolExecutor initWorkersThreadPool(String prefix, int size) {
-        return (ThreadPoolExecutor) newFixedThreadPool(size, new NamedThreadFactory(prefix));
     }
 
     /**
@@ -470,34 +443,23 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
     }
 
     @Override
-    public void close() throws Exception {
-        // TODO
+    protected String doGetConfig(String key, String group) throws Exception {
+        File configFile = configFile(key, group);
+        return getConfig(configFile);
     }
 
-    private <V> V execute(Callable<V> task, long timeout) {
-        V value = null;
-        try {
+    protected String getConfig(File configFile) {
+        return ThrowableFunction.execute(configFile,
+                file -> canRead(configFile) ? readFileToString(configFile, getEncoding()) : null);
+    }
 
-            if (timeout < 1) { // less or equal 0
-                value = task.call();
-            } else {
-                Future<V> future = workersThreadPool.submit(task);
-                value = future.get(timeout, TimeUnit.MILLISECONDS);
-            }
-        } catch (Exception e) {
-            if (logger.isErrorEnabled()) {
-                logger.error(e.getMessage(), e);
-            }
-        }
-        return value;
+    @Override
+    protected void doClose() throws Exception {
+
     }
 
     protected File getRootDirectory() {
         return rootDirectory;
-    }
-
-    protected ThreadPoolExecutor getWorkersThreadPool() {
-        return workersThreadPool;
     }
 
     protected String getEncoding() {
@@ -520,12 +482,12 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
         return basedPoolingWatchService;
     }
 
-    private static String getThreadPoolPrefixName(URL url) {
-        return getParameter(url, THREAD_POOL_PREFIX_PARAM_NAME, DEFAULT_THREAD_POOL_PREFIX);
-    }
-
     protected static ThreadPoolExecutor getWatchEventsLoopThreadPool() {
         return watchEventsLoopThreadPool;
+    }
+
+    protected ThreadPoolExecutor getWorkersThreadPool() {
+        return super.getWorkersThreadPool();
     }
 
     private <V> V executeMutually(Object mutex, Callable<V> callable) {
@@ -592,7 +554,7 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
         return watchService;
     }
 
-    private static File initDirectory(URL url) {
+    protected static File initDirectory(URL url) {
         String directoryPath = getParameter(url, CONFIG_CENTER_DIR_PARAM_NAME, DEFAULT_CONFIG_CENTER_DIR_PATH);
         File rootDirectory = new File(getParameter(url, CONFIG_CENTER_DIR_PARAM_NAME, DEFAULT_CONFIG_CENTER_DIR_PATH));
         if (!rootDirectory.exists() && !rootDirectory.mkdirs()) {
@@ -602,19 +564,8 @@ public class FileSystemDynamicConfiguration implements DynamicConfiguration {
         return rootDirectory;
     }
 
-    private static String getParameter(URL url, String name, String defaultValue) {
-        if (url != null) {
-            return url.getParameter(name, defaultValue);
-        }
-        return defaultValue;
-    }
-
-    private static String getEncoding(URL url) {
+    protected static String getEncoding(URL url) {
         return getParameter(url, CONFIG_CENTER_ENCODING_PARAM_NAME, DEFAULT_CONFIG_CENTER_ENCODING);
-    }
-
-    private static int getThreadPoolSize(URL url) {
-        return Integer.parseInt(getParameter(url, THREAD_POOL_SIZE_PARAM_NAME, DEFAULT_THREAD_POOL_SIZE));
     }
 
     private static ThreadPoolExecutor newWatchEventsLoopThreadPool() {

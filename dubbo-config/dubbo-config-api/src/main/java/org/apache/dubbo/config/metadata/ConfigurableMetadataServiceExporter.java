@@ -29,7 +29,6 @@ import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.MetadataServiceExporter;
 import org.apache.dubbo.metadata.WritableMetadataService;
-import org.apache.dubbo.metadata.store.RemoteWritableMetadataService;
 
 import java.util.Collection;
 import java.util.LinkedList;

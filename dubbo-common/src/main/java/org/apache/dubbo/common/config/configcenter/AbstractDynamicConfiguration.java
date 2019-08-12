@@ -23,10 +23,9 @@ import org.apache.dubbo.common.utils.NamedThreadFactory;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-
-import static java.util.concurrent.Executors.newFixedThreadPool;
 
 /**
  * The abstract implementation of {@link DynamicConfiguration}
@@ -39,11 +38,21 @@ public abstract class AbstractDynamicConfiguration implements DynamicConfigurati
 
     public static final String THREAD_POOL_PREFIX_PARAM_NAME = PARAM_NAME_PREFIX + "thread-pool.prefix";
 
-    public static final String THREAD_POOL_SIZE_PARAM_NAME = PARAM_NAME_PREFIX + "thread-pool.size";
-
     public static final String DEFAULT_THREAD_POOL_PREFIX = PARAM_NAME_PREFIX + "workers";
 
-    public static final String DEFAULT_THREAD_POOL_SIZE = "1";
+    public static final String THREAD_POOL_SIZE_PARAM_NAME = PARAM_NAME_PREFIX + "thread-pool.size";
+
+    /**
+     * The keep alive time in milliseconds for threads in {@link ThreadPoolExecutor}
+     */
+    public static final String THREAD_POOL_KEEP_ALIVE_TIME_PARAM_NAME = PARAM_NAME_PREFIX + "thread-pool.keep-alive-time";
+
+    public static final int DEFAULT_THREAD_POOL_SIZE = 1;
+
+    /**
+     * Default keep alive time in milliseconds for threads in {@link ThreadPoolExecutor} is 1 minute( 60 * 1000 ms)
+     */
+    public static final long DEFAULT_THREAD_POOL_KEEP_ALIVE_TIME = TimeUnit.MINUTES.toMillis(1);
 
     /**
      * Logger
@@ -55,8 +64,18 @@ public abstract class AbstractDynamicConfiguration implements DynamicConfigurati
      */
     private final ThreadPoolExecutor workersThreadPool;
 
+    public AbstractDynamicConfiguration() {
+        this(DEFAULT_THREAD_POOL_PREFIX, DEFAULT_THREAD_POOL_SIZE, DEFAULT_THREAD_POOL_KEEP_ALIVE_TIME);
+    }
+
     public AbstractDynamicConfiguration(URL url) {
-        this.workersThreadPool = initWorkersThreadPool(url);
+        this(getThreadPoolPrefixName(url), getThreadPoolSize(url), getThreadPoolKeepAliveTime(url));
+    }
+
+    public AbstractDynamicConfiguration(String threadPoolPrefixName,
+                                        int threadPoolSize,
+                                        long keepAliveTime) {
+        this.workersThreadPool = initWorkersThreadPool(threadPoolPrefixName, threadPoolSize, keepAliveTime);
     }
 
     @Override
@@ -94,9 +113,9 @@ public abstract class AbstractDynamicConfiguration implements DynamicConfigurati
      * @param key   the key
      * @param group the group
      * @return if found, return the content of configuration
-     * @throws IllegalStateException
+     * @throws Exception If met with some problems
      */
-    protected abstract String doGetConfig(String key, String group) throws IllegalStateException;
+    protected abstract String doGetConfig(String key, String group) throws Exception;
 
     /**
      * Close the resources if necessary
@@ -144,6 +163,10 @@ public abstract class AbstractDynamicConfiguration implements DynamicConfigurati
         return value;
     }
 
+    protected ThreadPoolExecutor getWorkersThreadPool() {
+        return workersThreadPool;
+    }
+
     private void doFinally() {
         shutdownWorkersThreadPool();
     }
@@ -154,10 +177,11 @@ public abstract class AbstractDynamicConfiguration implements DynamicConfigurati
         }
     }
 
-    protected ThreadPoolExecutor initWorkersThreadPool(URL url) {
-        int size = getThreadPoolSize(url);
-        String name = getThreadPoolPrefixName(url);
-        return (ThreadPoolExecutor) newFixedThreadPool(size, new NamedThreadFactory(name));
+    protected ThreadPoolExecutor initWorkersThreadPool(String threadPoolPrefixName,
+                                                       int threadPoolSize,
+                                                       long keepAliveTime) {
+        return new ThreadPoolExecutor(threadPoolSize, threadPoolSize, keepAliveTime,
+                TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), new NamedThreadFactory(threadPoolPrefixName));
     }
 
     protected static String getThreadPoolPrefixName(URL url) {
@@ -165,7 +189,11 @@ public abstract class AbstractDynamicConfiguration implements DynamicConfigurati
     }
 
     protected static int getThreadPoolSize(URL url) {
-        return Integer.parseInt(getParameter(url, THREAD_POOL_SIZE_PARAM_NAME, DEFAULT_THREAD_POOL_SIZE));
+        return url.getParameter(THREAD_POOL_SIZE_PARAM_NAME, DEFAULT_THREAD_POOL_SIZE);
+    }
+
+    protected static long getThreadPoolKeepAliveTime(URL url) {
+        return url.getParameter(THREAD_POOL_KEEP_ALIVE_TIME_PARAM_NAME, DEFAULT_THREAD_POOL_KEEP_ALIVE_TIME);
     }
 
     protected static String getParameter(URL url, String name, String defaultValue) {

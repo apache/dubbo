@@ -30,9 +30,11 @@ import org.apache.dubbo.common.utils.MethodUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.context.ConfigConfigurationAdapter;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ConsumerMethodModel;
 
+import javax.annotation.PostConstruct;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -645,5 +647,18 @@ public abstract class AbstractConfig implements Serializable {
             }
         }
         return true;
+    }
+
+    /**
+     * Add {@link AbstractConfig current instance} into {@link ConfigManager}
+     * <p>
+     * Current method will invoked by Spring or Java EE container automatically, or should be triggered manually.
+     *
+     * @see ConfigManager#addConfig(AbstractConfig)
+     * @since 2.7.4
+     */
+    @PostConstruct
+    public void addIntoConfigManager() {
+        ConfigManager.getInstance().addConfig(this);
     }
 }
