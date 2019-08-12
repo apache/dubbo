@@ -39,7 +39,10 @@ import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoad
  * <li>{@link #addListener(String, String, ConfigurationListener)}/ {@link #removeListener(String, String, ConfigurationListener)}
  * , add or remove listeners for governance rules or config items that need to watch.</li>
  * <li>{@link #getProperty(String, Object)}, get a single config item.</li>
+ * <li>{@link #getConfig(String, String, long)}, get the specified config</li>
  * </ol>
+ *
+ * @see AbstractDynamicConfiguration
  */
 public interface DynamicConfiguration extends Configuration, AutoCloseable {
 
