@@ -30,6 +30,9 @@ import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.config.ConsumerConfig;
 import org.apache.dubbo.config.DubboShutdownHook;
 import org.apache.dubbo.config.MetadataReportConfig;
+import org.apache.dubbo.config.MetricsConfig;
+import org.apache.dubbo.config.ModuleConfig;
+import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.ReferenceConfig;
@@ -45,6 +48,7 @@ import org.apache.dubbo.config.builders.RegistryBuilder;
 import org.apache.dubbo.config.builders.ServiceBuilder;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.metadata.ConfigurableMetadataServiceExporter;
+import org.apache.dubbo.config.utils.ReferenceConfigCache;
 import org.apache.dubbo.event.EventDispatcher;
 import org.apache.dubbo.event.EventListener;
 import org.apache.dubbo.metadata.WritableMetadataService;
@@ -118,6 +122,8 @@ public class DubboBootstrap {
 
     private final ConfigManager configManager = getInstance();
 
+    private ReferenceConfigCache cache;
+
     private volatile boolean initialized = false;
 
     private volatile boolean started = false;
@@ -149,7 +155,11 @@ public class DubboBootstrap {
         return this;
     }
 
-    public DubboBootstrap metadataReport(List<MetadataReportConfig> metadataReportConfigs) {
+    public DubboBootstrap metadataReports(List<MetadataReportConfig> metadataReportConfigs) {
+        if (CollectionUtils.isEmpty(metadataReportConfigs)) {
+            return this;
+        }
+
         configManager.addMetadataReports(metadataReportConfigs);
         return this;
     }
@@ -236,7 +246,10 @@ public class DubboBootstrap {
      * @param registryConfigs the multiple instances of {@link RegistryConfig}
      * @return current {@link DubboBootstrap} instance
      */
-    public DubboBootstrap registries(Iterable<RegistryConfig> registryConfigs) {
+    public DubboBootstrap registries(List<RegistryConfig> registryConfigs) {
+        if (CollectionUtils.isEmpty(registryConfigs)) {
+            return this;
+        }
         registryConfigs.forEach(this::registry);
         return this;
     }
@@ -258,6 +271,9 @@ public class DubboBootstrap {
     }
 
     public DubboBootstrap protocols(List<ProtocolConfig> protocolConfigs) {
+        if (CollectionUtils.isEmpty(protocolConfigs)) {
+            return this;
+        }
         configManager.addProtocols(protocolConfigs);
         return this;
     }
@@ -278,6 +294,14 @@ public class DubboBootstrap {
         return this;
     }
 
+    public DubboBootstrap services(List<ServiceConfig> serviceConfigs) {
+        if (CollectionUtils.isEmpty(serviceConfigs)) {
+            return this;
+        }
+        serviceConfigs.forEach(configManager::addService);
+        return this;
+    }
+
     // {@link Reference} correlative methods
     public <S> DubboBootstrap reference(Consumer<ReferenceBuilder<S>> consumerBuilder) {
         return reference(DEFAULT_REFERENCE_ID, consumerBuilder);
@@ -291,6 +315,15 @@ public class DubboBootstrap {
 
     public DubboBootstrap reference(ReferenceConfig<?> referenceConfig) {
         configManager.addReference(referenceConfig);
+        return this;
+    }
+
+    public DubboBootstrap references(List<ReferenceConfig> referenceConfigs) {
+        if (CollectionUtils.isEmpty(referenceConfigs)) {
+            return this;
+        }
+
+        referenceConfigs.forEach(configManager::addReference);
         return this;
     }
 
@@ -310,6 +343,10 @@ public class DubboBootstrap {
     }
 
     public DubboBootstrap providers(List<ProviderConfig> providerConfigs) {
+        if (CollectionUtils.isEmpty(providerConfigs)) {
+            return this;
+        }
+
         providerConfigs.forEach(configManager::addProvider);
         return this;
     }
@@ -330,17 +367,44 @@ public class DubboBootstrap {
     }
 
     public DubboBootstrap consumers(List<ConsumerConfig> consumerConfigs) {
+        if (CollectionUtils.isEmpty(consumerConfigs)) {
+            return this;
+        }
+
         consumerConfigs.forEach(configManager::addConsumer);
         return this;
     }
 
     // {@link ConfigCenterConfig} correlative methods
     public DubboBootstrap configCenter(ConfigCenterConfig configCenterConfig) {
-        return configCenter(asList(configCenterConfig));
+        return configCenters(asList(configCenterConfig));
     }
 
-    public DubboBootstrap configCenter(List<ConfigCenterConfig> configCenterConfigs) {
+    public DubboBootstrap configCenters(List<ConfigCenterConfig> configCenterConfigs) {
+        if (CollectionUtils.isEmpty(configCenterConfigs)) {
+            return this;
+        }
         configManager.addConfigCenters(configCenterConfigs);
+        return this;
+    }
+
+    public DubboBootstrap monitor(MonitorConfig monitor) {
+        configManager.setMonitor(monitor);
+        return this;
+    }
+
+    public DubboBootstrap metrics(MetricsConfig metrics) {
+        configManager.setMetrics(metrics);
+        return this;
+    }
+
+    public DubboBootstrap module(ModuleConfig module) {
+        configManager.setModule(module);
+        return this;
+    }
+
+    public DubboBootstrap cache(ReferenceConfigCache cache) {
+        this.cache = cache;
         return this;
     }
 
@@ -471,6 +535,8 @@ public class DubboBootstrap {
                  */
                 registerServiceInstance(applicationConfig);
             }
+
+            referServices();
 
             started = true;
 
@@ -659,6 +725,13 @@ public class DubboBootstrap {
         serviceConfig.export();
     }
 
+    private void referServices() {
+        if (cache == null) {
+            cache = ReferenceConfigCache.getCache();
+        }
+        configManager.getReferenceConfigs().forEach(cache::get);
+    }
+
     public boolean isOnlyRegisterProvider() {
         return onlyRegisterProvider;
     }
@@ -692,7 +765,7 @@ public class DubboBootstrap {
     }
 
     /**
-     * If use rest protocol if there's one, otherwise, choose the first one available.
+     * Use rest protocol if there's one, otherwise, choose the first one available.
      *
      * @return
      */

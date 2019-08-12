@@ -462,6 +462,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     private void convertRegistryIdsToRegistries() {
+        computeValidRegistryIds();
         if (StringUtils.isEmpty(registryIds)) {
             if (CollectionUtils.isEmpty(registries)) {
                 List<RegistryConfig> registryConfigs = ConfigManager.getInstance().getDefaultRegistries();
@@ -490,6 +491,14 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             setRegistries(tmpRegistries);
         }
 
+    }
+
+    protected void computeValidRegistryIds() {
+        if (StringUtils.isEmpty(getRegistryIds())) {
+            if (getApplication() != null && StringUtils.isNotEmpty(getApplication().getRegistryIds())) {
+                setRegistryIds(getApplication().getRegistryIds());
+            }
+        }
     }
 
     private void loadRegistriesFromBackwardConfig() {
@@ -620,12 +629,12 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public void setApplication(ApplicationConfig application) {
-        ConfigManager.getInstance().setApplication(application);
         this.application = application;
     }
 
     private void createApplicationIfAbsent() {
         if (this.application != null) {
+            this.application.refresh();
             return;
         }
         ConfigManager configManager = ConfigManager.getInstance();
@@ -645,7 +654,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public void setModule(ModuleConfig module) {
-        ConfigManager.getInstance().setModule(module);
         this.module = module;
     }
 
@@ -665,7 +673,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     @SuppressWarnings({"unchecked"})
     public void setRegistries(List<? extends RegistryConfig> registries) {
-        ConfigManager.getInstance().addRegistries((List<RegistryConfig>) registries);
         this.registries = (List<RegistryConfig>) registries;
     }
 
@@ -687,7 +694,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public void setMonitor(MonitorConfig monitor) {
-        ConfigManager.getInstance().setMonitor(monitor);
         this.monitor = monitor;
     }
 
@@ -705,7 +711,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public void setConfigCenter(ConfigCenterConfig configCenter) {
-        ConfigManager.getInstance().addConfigCenter(configCenter);
         this.configCenter = configCenter;
     }
 
