@@ -75,9 +75,7 @@ import static org.apache.dubbo.config.Constants.LAYER_KEY;
 import static org.apache.dubbo.config.Constants.LISTENER_KEY;
 import static org.apache.dubbo.config.Constants.REGISTRIES_SUFFIX;
 import static org.apache.dubbo.monitor.Constants.LOGSTAT_PROTOCOL;
-import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
-import static org.apache.dubbo.registry.Constants.REGISTER_KEY;
-import static org.apache.dubbo.registry.Constants.SUBSCRIBE_KEY;
+import static org.apache.dubbo.registry.Constants.*;
 import static org.apache.dubbo.remoting.Constants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.rpc.Constants.INVOKER_LISTENER_KEY;
 import static org.apache.dubbo.rpc.Constants.LOCAL_KEY;
@@ -163,6 +161,9 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
      * Registry centers
      */
     protected List<RegistryConfig> registries;
+
+    // Registered route
+    protected String router;
 
     protected String registryIds;
 
@@ -348,10 +349,14 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                                 .addParameter(REGISTRY_KEY, url.getProtocol())
                                 .setProtocol(REGISTRY_PROTOCOL)
                                 .build();
+                        if(this.router!=null&&this.router.length()>0){
+                            url = url.addParameter(ROUTER_KEY, this.router);
+                        }
                         if ((provider && url.getParameter(REGISTER_KEY, true))
                                 || (!provider && url.getParameter(SUBSCRIBE_KEY, true))) {
                             registryList.add(url);
                         }
+
                     }
                 }
             }

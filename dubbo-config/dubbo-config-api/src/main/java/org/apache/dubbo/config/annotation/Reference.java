@@ -254,6 +254,11 @@ public @interface Reference {
     String[] registry() default {};
 
     /**
+     * Registered route name
+     */
+    String[] router() default {};
+
+    /**
      * The communication protocol of Dubbo Service
      *
      * @return the default value is ""

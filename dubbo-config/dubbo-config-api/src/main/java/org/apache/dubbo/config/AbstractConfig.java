@@ -449,7 +449,7 @@ public abstract class AbstractConfig implements Serializable {
                     && !Modifier.isStatic(method.getModifiers())) {
                 try {
                     String property = method.getName();
-                    if ("interfaceClass".equals(property) || "interfaceName".equals(property)) {
+                    if ("interfaceClass".equals(property) || "interfaceName".equals(property)|| "router".equals(property)) {
                         property = "interface";
                     }
                     String setter = "set" + property.substring(0, 1).toUpperCase() + property.substring(1);

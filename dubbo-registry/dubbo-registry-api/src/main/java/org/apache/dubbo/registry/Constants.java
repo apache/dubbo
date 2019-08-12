@@ -28,6 +28,8 @@ public interface Constants {
 
     String REGISTER = "register";
 
+    String ROUTER_KEY = "router";
+
     String UNREGISTER = "unregister";
 
     String SUBSCRIBE = "subscribe";
