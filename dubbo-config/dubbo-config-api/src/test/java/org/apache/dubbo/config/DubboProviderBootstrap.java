@@ -39,7 +39,7 @@ public class DubboProviderBootstrap {
         ApplicationConfig application = new ApplicationConfig();
         application.setName("dubbo-provider-demo");
 
-        URL connectionURL = URL.valueOf("zookeeper://127.0.0.1:2181?registry-type=service");
+        URL connectionURL = URL.valueOf("zookeeper://127.0.0.1:2181?registry.type=service");
 
         // 连接注册中心配置
         RegistryConfig registry = new RegistryConfig();

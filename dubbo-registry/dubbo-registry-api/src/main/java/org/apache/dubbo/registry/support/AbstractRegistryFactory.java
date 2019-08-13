@@ -47,11 +47,8 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
     // The lock for the acquisition process of the registry
     private static final ReentrantLock LOCK = new ReentrantLock();
 
-    // Registry Collection Map<RegistryAddress, ServiceOrientedRegistry>
-    private static final Map<String, Registry> REGISTRIES = new HashMap<>();
-
     // Registry Collection Map<RegistryAddress, Registry>
-    private static final Map<String, Registry> COMPATIBLE_REGISTRIES = new HashMap<>();
+    private static final Map<String, Registry> REGISTRIES = new HashMap<>();
 
     /**
      * Get all registries
@@ -97,40 +94,21 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
         // Lock the registry access process to ensure a single instance of the registry
         LOCK.lock();
         try {
-            boolean isServiceOriented = ServiceOrientedRegistry.supports(url);
-            if (isServiceOriented) {
-                Registry registry = REGISTRIES.get(key);
-                if (registry != null) {
-                    return registry;
-                }
-                //create registry by spi/ioc
-                registry = ServiceOrientedRegistry.create(url);
-                if (registry == null) {
-                    throw new IllegalStateException("Can not service-oriented registry " + url);
-                }
-                REGISTRIES.put(key, registry);
+            Registry registry = REGISTRIES.get(key);
+            if (registry != null) {
                 return registry;
-            } else {
-                return getCompatibleRegistry(key, url);
             }
+            //create registry by spi/ioc
+            registry = createRegistry(url);
+            if (registry == null) {
+                throw new IllegalStateException("Can not create registry " + url);
+            }
+            REGISTRIES.put(key, registry);
+            return registry;
         } finally {
             // Release the lock
             LOCK.unlock();
         }
-    }
-
-    private Registry getCompatibleRegistry(String key, URL url) {
-        Registry registry = COMPATIBLE_REGISTRIES.get(key);
-        if (registry != null) {
-            return registry;
-        }
-        //create registry by spi/ioc
-        registry = createRegistry(url);
-        if (registry == null) {
-            throw new IllegalStateException("Can not create registry " + url);
-        }
-        COMPATIBLE_REGISTRIES.put(key, registry);
-        return registry;
     }
 
     protected abstract Registry createRegistry(URL url);
