@@ -68,7 +68,7 @@ public class ConsulMetadataReport extends AbstractMetadataReport {
     }
 
     @Override
-    protected List<String> doGetExportedURLs() {
+    protected List<String> doGetExportedURLs(ServiceMetadataIdentifier metadataIdentifier) {
         throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
     }
 

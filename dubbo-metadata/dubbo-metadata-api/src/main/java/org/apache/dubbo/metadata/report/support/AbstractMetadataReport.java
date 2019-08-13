@@ -306,7 +306,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
     @Override
     public List<String> getExportedURLs(ServiceMetadataIdentifier metadataIdentifier) {
         // TODO, fallback to local cache
-        return doGetExportedURLs();
+        return doGetExportedURLs(metadataIdentifier);
     }
 
     @Override
@@ -438,7 +438,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
 
     protected abstract void doRemoveMetadata(ServiceMetadataIdentifier metadataIdentifier, URL url);
 
-    protected abstract List<String> doGetExportedURLs();
+    protected abstract List<String> doGetExportedURLs(ServiceMetadataIdentifier metadataIdentifier);
 
     protected abstract void doSaveSubscriberData(SubscriberMetadataIdentifier subscriberMetadataIdentifier, List<String> urls);
 

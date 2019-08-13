@@ -26,6 +26,8 @@ import org.apache.dubbo.metadata.report.support.AbstractMetadataReport;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
@@ -74,17 +76,17 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
 
     @Override
     protected void doSaveMetadata(ServiceMetadataIdentifier metadataIdentifier, URL url) {
-//        zkClient.create(, URL.encode(url.toFullString()));
+        zkClient.create(getNodePath(metadataIdentifier), URL.encode(url.toFullString()), false);
     }
 
     @Override
     protected void doRemoveMetadata(ServiceMetadataIdentifier metadataIdentifier, URL url) {
-
+        zkClient.delete(getNodePath(metadataIdentifier));
     }
 
     @Override
-    protected List<String> doGetExportedURLs() {
-        return null;
+    protected List<String> doGetExportedURLs(ServiceMetadataIdentifier metadataIdentifier) {
+        return new ArrayList<String>(Arrays.asList(URL.decode(zkClient.getContent(getNodePath(metadataIdentifier)))));
     }
 
     @Override
@@ -107,6 +109,10 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
     }
 
     String getNodePath(MetadataIdentifier metadataIdentifier) {
+        return toRootDir() + metadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.PATH);
+    }
+
+    String getNodePath(ServiceMetadataIdentifier metadataIdentifier) {
         return toRootDir() + metadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.PATH);
     }
 

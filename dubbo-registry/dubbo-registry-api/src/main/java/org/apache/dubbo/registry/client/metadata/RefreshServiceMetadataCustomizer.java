@@ -3,7 +3,6 @@ package org.apache.dubbo.registry.client.metadata;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
-import org.apache.dubbo.registry.client.ServiceInstanceMetadataCustomizer;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
@@ -20,6 +19,9 @@ public class RefreshServiceMetadataCustomizer implements ServiceInstanceCustomiz
         // FIXME to define the constant
         WritableMetadataService remoteWritableMetadataService =
                 WritableMetadataService.getExtension(serviceInstance.getMetadata().getOrDefault(REVISION_KEY, DEFAULT_KEY));
+        // FIXME  TEST
+        remoteWritableMetadataService =
+                WritableMetadataService.getExtension("remote");
         remoteWritableMetadataService.refreshMetadata(serviceInstance.getMetadata().get(EXPORTED_SERVICES_REVISION_KEY));
     }
 }

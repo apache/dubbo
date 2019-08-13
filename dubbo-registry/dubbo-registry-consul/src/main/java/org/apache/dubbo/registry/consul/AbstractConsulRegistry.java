@@ -1,9 +1,5 @@
 package org.apache.dubbo.registry.consul;
 
-import org.apache.dubbo.common.URL;
-
-import com.ecwid.consul.v1.agent.model.NewService;
-
 /**
  * @author cvictory ON 2019-08-02
  */

@@ -6,6 +6,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.metadata.MetadataConstants.KEY_REVISON_PREFIX;
 
 /**
  * The ServiceMetadataIdentifier is used to store the {@link org.apache.dubbo.common.URL}
@@ -15,11 +16,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
  */
 public class ServiceMetadataIdentifier extends BaseServiceMetadataIdentifier {
 
-    private String serviceInterface;
-    private String version;
-    private String group;
-    private String side;
     private String revision;
+    private String protocol;
 
     public ServiceMetadataIdentifier() {
     }
@@ -42,10 +40,10 @@ public class ServiceMetadataIdentifier extends BaseServiceMetadataIdentifier {
     }
 
     public String getUniqueKey(MetadataIdentifier.KeyTypeEnum keyType) {
-        return super.getUniqueKey(keyType, revision);
+        return super.getUniqueKey(keyType, protocol, KEY_REVISON_PREFIX + revision);
     }
 
     public String getIdentifierKey() {
-        return super.getIdentifierKey(revision);
+        return super.getIdentifierKey(protocol, KEY_REVISON_PREFIX + revision);
     }
 }
