@@ -41,6 +41,9 @@ public class BaseServiceMetadataIdentifier {
         }
         StringBuilder sb = new StringBuilder();
         for (String param : params) {
+            if (param == null) {
+                continue;
+            }
             sb.append(joinChar);
             sb.append(param);
         }

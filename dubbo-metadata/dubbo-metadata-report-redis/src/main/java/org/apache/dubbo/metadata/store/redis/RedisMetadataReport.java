@@ -91,7 +91,7 @@ public class RedisMetadataReport extends AbstractMetadataReport {
     }
 
     @Override
-    protected List<String> doGetExportedURLs() {
+    protected List<String> doGetExportedURLs(ServiceMetadataIdentifier metadataIdentifier) {
         return null;
     }
 

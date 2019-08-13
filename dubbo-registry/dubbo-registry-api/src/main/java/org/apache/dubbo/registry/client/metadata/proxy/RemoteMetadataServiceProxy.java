@@ -10,12 +10,14 @@ import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 import org.apache.dubbo.registry.client.ServiceInstance;
+import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import static org.apache.dubbo.common.constants.CommonConstants.METADATA_REVISION;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 
@@ -32,7 +34,7 @@ public class RemoteMetadataServiceProxy implements MetadataService {
 
     public RemoteMetadataServiceProxy(ServiceInstance serviceInstance) {
         this.serviceName = serviceInstance.getServiceName();
-        this.revision = serviceInstance.getMetadata().getOrDefault(REVISION_KEY, "");
+        this.revision = serviceInstance.getMetadata().getOrDefault(ServiceInstanceMetadataUtils.EXPORTED_SERVICES_REVISION_KEY, "");
     }
 
     @Override

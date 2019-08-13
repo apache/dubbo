@@ -104,6 +104,8 @@ public class ServiceOrientedRegistry extends FailbackRegistry {
         this.serviceNameMapping = ServiceNameMapping.getDefaultExtension();
 
         String metadata = registryURL.getParameter(METADATA_REPORT_KEY, METADATA_DEFAULT);
+        // FIXME
+        metadata = "remote";
         this.writableMetadataService = WritableMetadataService.getExtension(metadata);
         this.metadataServiceProxyFactory = MetadataServiceProxyFactory.getExtension(metadata);
     }

@@ -117,56 +117,6 @@ public class ConfigManager {
         return ofNullable(getConfig(ApplicationConfig.class));
     }
 
-    /**
-     * Add the dubbo {@link AbstractConfig config}
-     *
-     * @param config the dubbo {@link AbstractConfig config}
-     */
-    public void addConfig(AbstractConfig config) {
-        addConfig(config, false);
-    }
-
-    protected void addConfig(AbstractConfig config, boolean unique) {
-        if (config == null) {
-            return;
-        }
-        Class<? extends AbstractConfig> configType = config.getClass();
-        write(() -> {
-            Map<String, AbstractConfig> configsMap = configsCache.computeIfAbsent(configType, type -> newMap());
-            addIfAbsent(config, configsMap, unique);
-        });
-    }
-
-    protected <C extends AbstractConfig> Map<String, C> getConfigsMap(Class<? extends C> configType) {
-        return read(() -> (Map) configsCache.getOrDefault(configType, emptyMap()));
-    }
-
-    protected <C extends AbstractConfig> Collection<C> getConfigs(Class<C> configType) {
-        return read(() -> getConfigsMap(configType).values());
-    }
-
-    protected <C extends AbstractConfig> C getConfig(Class<C> configType, String id) {
-        return read(() -> {
-            Map<String, C> configsMap = (Map) configsCache.getOrDefault(configType, emptyMap());
-            return configsMap.get(id);
-        });
-    }
-
-    protected <C extends AbstractConfig> C getConfig(Class<C> configType) throws IllegalStateException {
-        return read(() -> {
-            Map<String, C> configsMap = (Map) configsCache.getOrDefault(configType, emptyMap());
-            int size = configsMap.size();
-            if (size < 1) {
-//                throw new IllegalStateException("No such " + configType.getName() + " is found");
-                return null;
-            } else if (size > 1) {
-                throw new IllegalStateException("The expected single matching " + configType.getName() + " but found " + size + " instances");
-            } else {
-                return configsMap.values().iterator().next();
-            }
-        });
-    }
-
     // MonitorConfig correlative methods
 
     public void setMonitor(MonitorConfig monitor) {
@@ -181,7 +131,6 @@ public class ConfigManager {
 
     public void setModule(ModuleConfig module) {
         addConfig(module, true);
-
     }
 
     public Optional<ModuleConfig> getModule() {
@@ -234,6 +183,10 @@ public class ConfigManager {
         addConfig(providerConfig);
     }
 
+    public void addProviders(Iterable<ProviderConfig> providerConfigs) {
+        providerConfigs.forEach(this::addProvider);
+    }
+
     public Optional<ProviderConfig> getProvider(String id) {
         return ofNullable(getConfig(ProviderConfig.class, id));
     }
@@ -250,6 +203,10 @@ public class ConfigManager {
 
     public void addConsumer(ConsumerConfig consumerConfig) {
         addConfig(consumerConfig);
+    }
+
+    public void addConsumers(Iterable<ConsumerConfig> consumerConfigs) {
+        consumerConfigs.forEach(this::addConsumer);
     }
 
     public Optional<ConsumerConfig> getConsumer(String id) {
@@ -341,11 +298,15 @@ public class ConfigManager {
         addConfig(serviceConfig);
     }
 
-    public Collection<ServiceConfig> getServiceConfigs() {
+    public void addServices(Iterable<ServiceConfig<?>> serviceConfigs) {
+        serviceConfigs.forEach(this::addService);
+    }
+
+    public Collection<ServiceConfig> getServices() {
         return getConfigs(ServiceConfig.class);
     }
 
-    public <T> ServiceConfig<T> getServiceConfig(String id) {
+    public <T> ServiceConfig<T> getService(String id) {
         return getConfig(ServiceConfig.class, id);
     }
 
@@ -355,11 +316,15 @@ public class ConfigManager {
         addConfig(referenceConfig);
     }
 
-    public Collection<ReferenceConfig> getReferenceConfigs() {
+    public void addReferences(Iterable<ReferenceConfig<?>> referenceConfigs) {
+        referenceConfigs.forEach(this::addReference);
+    }
+
+    public Collection<ReferenceConfig> getReferences() {
         return getConfigs(ReferenceConfig.class);
     }
 
-    public <T> ReferenceConfig<T> getReferenceConfig(String id) {
+    public <T> ReferenceConfig<T> getReference(String id) {
         return getConfig(ReferenceConfig.class, id);
     }
 
@@ -393,7 +358,57 @@ public class ConfigManager {
         });
     }
 
-    private <C extends AbstractConfig> Collection<String> getConfigIds(Class<C> configType) {
+    /**
+     * Add the dubbo {@link AbstractConfig config}
+     *
+     * @param config the dubbo {@link AbstractConfig config}
+     */
+    public void addConfig(AbstractConfig config) {
+        addConfig(config, false);
+    }
+
+    protected void addConfig(AbstractConfig config, boolean unique) {
+        if (config == null) {
+            return;
+        }
+        Class<? extends AbstractConfig> configType = config.getClass();
+        write(() -> {
+            Map<String, AbstractConfig> configsMap = configsCache.computeIfAbsent(configType, type -> newMap());
+            addIfAbsent(config, configsMap, unique);
+        });
+    }
+
+    protected <C extends AbstractConfig> Map<String, C> getConfigsMap(Class<? extends C> configType) {
+        return read(() -> (Map) configsCache.getOrDefault(configType, emptyMap()));
+    }
+
+    protected <C extends AbstractConfig> Collection<C> getConfigs(Class<C> configType) {
+        return read(() -> getConfigsMap(configType).values());
+    }
+
+    protected <C extends AbstractConfig> C getConfig(Class<C> configType, String id) {
+        return read(() -> {
+            Map<String, C> configsMap = (Map) configsCache.getOrDefault(configType, emptyMap());
+            return configsMap.get(id);
+        });
+    }
+
+    protected <C extends AbstractConfig> C getConfig(Class<C> configType) throws IllegalStateException {
+        return read(() -> {
+            Map<String, C> configsMap = (Map) configsCache.getOrDefault(configType, emptyMap());
+            int size = configsMap.size();
+            if (size < 1) {
+//                throw new IllegalStateException("No such " + configType.getName() + " is found");
+                return null;
+            } else if (size > 1) {
+                throw new IllegalStateException("The expected single matching " + configType.getName() + " but found " + size + " instances");
+            } else {
+                return configsMap.values().iterator().next();
+            }
+        });
+    }
+
+    protected <C extends AbstractConfig> Collection<String> getConfigIds(Class<C> configType) {
         return getConfigs(configType)
                 .stream()
                 .map(AbstractConfig::getId)
@@ -406,8 +421,10 @@ public class ConfigManager {
         try {
             writeLock.lock();
             value = callable.call();
+        } catch (RuntimeException e) {
+            throw e;
         } catch (Throwable e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(e.getCause());
         } finally {
             writeLock.unlock();
         }
@@ -421,12 +438,9 @@ public class ConfigManager {
         });
     }
 
-
     private <V> V read(Callable<V> callable) {
         Lock readLock = lock.readLock();
-
         V value = null;
-
         try {
             readLock.lock();
             value = callable.call();
@@ -435,7 +449,6 @@ public class ConfigManager {
         } finally {
             readLock.unlock();
         }
-
         return value;
     }
 
