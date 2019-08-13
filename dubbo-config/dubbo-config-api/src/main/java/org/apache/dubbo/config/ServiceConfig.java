@@ -65,33 +65,33 @@ import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_IP_TO_BIND;
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_IP_TO_BIND;
-import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
-import static org.apache.dubbo.config.Constants.DUBBO_PORT_TO_BIND;
-import static org.apache.dubbo.config.Constants.DUBBO_PORT_TO_REGISTRY;
-import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
-import static org.apache.dubbo.config.Constants.MULTICAST;
-import static org.apache.dubbo.config.Constants.PROTOCOLS_SUFFIX;
-import static org.apache.dubbo.rpc.Constants.SCOPE_KEY;
-import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
-import static org.apache.dubbo.config.Constants.SCOPE_NONE;
-import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
-import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
-import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
-import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
-import static org.apache.dubbo.rpc.Constants.PROXY_KEY;
-import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 import static org.apache.dubbo.common.utils.NetUtils.getAvailablePort;
 import static org.apache.dubbo.common.utils.NetUtils.getLocalHost;
 import static org.apache.dubbo.common.utils.NetUtils.isInvalidLocalHost;
 import static org.apache.dubbo.common.utils.NetUtils.isInvalidPort;
+import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
+import static org.apache.dubbo.config.Constants.DUBBO_PORT_TO_BIND;
+import static org.apache.dubbo.config.Constants.DUBBO_PORT_TO_REGISTRY;
+import static org.apache.dubbo.config.Constants.MULTICAST;
+import static org.apache.dubbo.config.Constants.PROTOCOLS_SUFFIX;
+import static org.apache.dubbo.config.Constants.SCOPE_NONE;
+import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
+import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
+import static org.apache.dubbo.rpc.Constants.PROXY_KEY;
+import static org.apache.dubbo.rpc.Constants.SCOPE_KEY;
+import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
+import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
+import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
 
 /**
  * ServiceConfig
@@ -387,7 +387,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
     @Override
     public Boolean getExport() {
-        return (export == null && provider != null) ? provider.getExport() : export;
+        return (export == null && getProvider() != null) ? getProvider().getExport() : export;
     }
 
     private boolean shouldDelay() {
@@ -397,7 +397,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
     @Override
     public Integer getDelay() {
-        return (delay == null && provider != null) ? provider.getDelay() : delay;
+        return (delay == null && getProvider() != null) ? getProvider().getDelay() : delay;
     }
 
     protected synchronized void doExport() {
@@ -468,12 +468,12 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         map.put(SIDE_KEY, PROVIDER_SIDE);
 
         appendRuntimeParameters(map);
-        appendParameters(map, metrics);
-        appendParameters(map, application);
-        appendParameters(map, module);
+        appendParameters(map, getMetrics());
+        appendParameters(map, getApplication());
+        appendParameters(map, getModule());
         // remove 'default.' prefix for configs from ProviderConfig
         // appendParameters(map, provider, Constants.DEFAULT_KEY);
-        appendParameters(map, provider);
+        appendParameters(map, getProvider());
         appendParameters(map, protocolConfig);
         appendParameters(map, this);
         if (CollectionUtils.isNotEmpty(methods)) {
@@ -493,7 +493,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                         if (argument.getType() != null && argument.getType().length() > 0) {
                             Method[] methods = interfaceClass.getMethods();
                             // visit all methods
-                            if (methods != null && methods.length > 0) {
+                            if (methods.length > 0) {
                                 for (int i = 0; i < methods.length; i++) {
                                     String methodName = methods[i].getName();
                                     // target the method, and get its signature
@@ -645,8 +645,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
     private Optional<String> getContextPath(ProtocolConfig protocolConfig) {
         String contextPath = protocolConfig.getContextpath();
-        if (StringUtils.isEmpty(contextPath) && provider != null) {
-            contextPath = provider.getContextpath();
+        if (StringUtils.isEmpty(contextPath) && getProvider() != null) {
+            contextPath = getProvider().getContextpath();
         }
         return Optional.ofNullable(contextPath);
     }
@@ -676,8 +676,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         // if bind ip is not found in environment, keep looking up
         if (StringUtils.isEmpty(hostToBind)) {
             hostToBind = protocolConfig.getHost();
-            if (provider != null && StringUtils.isEmpty(hostToBind)) {
-                hostToBind = provider.getHost();
+            if (getProvider() != null && StringUtils.isEmpty(hostToBind)) {
+                hostToBind = getProvider().getHost();
             }
             if (isInvalidLocalHost(hostToBind)) {
                 anyhost = true;
@@ -747,8 +747,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         // if there's no bind port found from environment, keep looking up.
         if (portToBind == null) {
             portToBind = protocolConfig.getPort();
-            if (provider != null && (portToBind == null || portToBind == 0)) {
-                portToBind = provider.getPort();
+            if (getProvider() != null && (portToBind == null || portToBind == 0)) {
+                portToBind = getProvider().getPort();
             }
             final int defaultPort = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(name).getDefaultPort();
             if (portToBind == null || portToBind == 0) {
@@ -802,39 +802,40 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     private void completeCompoundConfigs() {
-        if (provider != null) {
-            if (application == null) {
-                setApplication(provider.getApplication());
+        if (getProvider() != null) {
+            if (getApplication() == null) {
+                setApplication(getProvider().getApplication());
             }
-            if (module == null) {
-                setModule(provider.getModule());
+            if (getModule() == null) {
+                setModule(getProvider().getModule());
             }
             if (registries == null) {
-                setRegistries(provider.getRegistries());
+                setRegistries(getProvider().getRegistries());
             }
-            if (monitor == null) {
-                setMonitor(provider.getMonitor());
+            if (getMonitor() == null) {
+                setMonitor(getProvider().getMonitor());
             }
             if (protocols == null) {
-                setProtocols(provider.getProtocols());
+                setProtocols(getProvider().getProtocols());
             }
-            if (configCenter == null) {
-                setConfigCenter(provider.getConfigCenter());
+            if (getConfigCenter() == null) {
+                setConfigCenter(getProvider().getConfigCenter());
             }
         }
-        if (module != null) {
+        if (getModule() != null) {
             if (registries == null) {
-                setRegistries(module.getRegistries());
+                setRegistries(getModule().getRegistries());
             }
-            if (monitor == null) {
-                setMonitor(module.getMonitor());
+            if (getMonitor() == null) {
+                setMonitor(getModule().getMonitor());
             }
         }
-        if (application != null) {
+        if (getApplication() != null) {
+            ApplicationConfig application = getApplication();
             if (registries == null) {
                 setRegistries(application.getRegistries());
             }
-            if (monitor == null) {
+            if (getMonitor() == null) {
                 setMonitor(application.getMonitor());
             }
         }
@@ -845,7 +846,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     private void createProviderIfAbsent() {
-        if (provider != null) {
+        if (getProvider() != null) {
             return;
         }
         setProvider(
@@ -860,8 +861,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     private void checkProtocol() {
-        if (CollectionUtils.isEmpty(protocols) && provider != null) {
-            setProtocols(provider.getProtocols());
+        if (CollectionUtils.isEmpty(protocols) && getProvider() != null) {
+            setProtocols(getProvider().getProtocols());
         }
         convertProtocolIdsToProtocols();
     }

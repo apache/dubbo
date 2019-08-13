@@ -56,24 +56,24 @@ import java.util.Map;
 import java.util.Properties;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SEMICOLON_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
-import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
-import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
-import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
-import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
-import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 import static org.apache.dubbo.common.utils.NetUtils.isInvalidLocalHost;
+import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
+import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
+import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
+import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
+import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 
 /**
  * ReferenceConfig
@@ -295,9 +295,9 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             }
         }
         map.put(INTERFACE_KEY, interfaceName);
-        appendParameters(map, metrics);
-        appendParameters(map, application);
-        appendParameters(map, module);
+        appendParameters(map, getMetrics());
+        appendParameters(map, getApplication());
+        appendParameters(map, getModule());
         // remove 'default.' prefix for configs from ConsumerConfig
         // appendParameters(map, consumer, Constants.DEFAULT_KEY);
         appendParameters(map, consumer);
@@ -495,33 +495,33 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
     private void completeCompoundConfigs() {
         if (consumer != null) {
-            if (application == null) {
+            if (getApplication() == null) {
                 setApplication(consumer.getApplication());
             }
-            if (module == null) {
+            if (getModule() == null) {
                 setModule(consumer.getModule());
             }
             if (registries == null) {
                 setRegistries(consumer.getRegistries());
             }
-            if (monitor == null) {
+            if (getMonitor() == null) {
                 setMonitor(consumer.getMonitor());
             }
         }
-        if (module != null) {
+        if (getModule() != null) {
             if (registries == null) {
-                setRegistries(module.getRegistries());
+                setRegistries(getModule().getRegistries());
             }
-            if (monitor == null) {
-                setMonitor(module.getMonitor());
+            if (getMonitor() == null) {
+                setMonitor(getModule().getMonitor());
             }
         }
-        if (application != null) {
+        if (getApplication() != null) {
             if (registries == null) {
-                setRegistries(application.getRegistries());
+                setRegistries(getApplication().getRegistries());
             }
-            if (monitor == null) {
-                setMonitor(application.getMonitor());
+            if (getMonitor() == null) {
+                setMonitor(getApplication().getMonitor());
             }
         }
     }

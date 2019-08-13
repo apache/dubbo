@@ -108,11 +108,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     protected String stub;
 
     /**
-     * Service monitor
-     */
-    protected MonitorConfig monitor;
-
-    /**
      * Strategies for generating dynamic agents，there are two strategies can be choosed: jdk and javassist
      */
     protected String proxy;
@@ -150,16 +145,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     protected String layer;
 
     /**
-     * The application info
-     */
-    protected ApplicationConfig application;
-
-    /**
-     * The module info
-     */
-    protected ModuleConfig module;
-
-    /**
      * Registry centers
      */
     protected List<RegistryConfig> registries;
@@ -173,14 +158,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
      * Disconnection events
      */
     protected String ondisconnect;
-
-    /**
-     * The metrics configuration
-     */
-    protected MetricsConfig metrics;
-    protected MetadataReportConfig metadataReportConfig;
-
-    protected ConfigCenterConfig configCenter;
 
     // callback limits
     private Integer callbacks;
@@ -212,12 +189,12 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         // for backward compatibility
         createApplicationIfAbsent();
 
-        if (!application.isValid()) {
+        if (!getApplication().isValid()) {
             throw new IllegalStateException("No application config found or it's not a valid config! " +
                     "Please add <dubbo:application name=\"...\" /> to your spring config.");
         }
 
-        ApplicationModel.setApplication(application.getName());
+        ApplicationModel.setApplication(getApplication().getName());
 
         // backward compatibility
         String wait = ConfigUtils.getProperty(SHUTDOWN_WAIT_KEY);
@@ -233,35 +210,37 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     protected void checkMonitor() {
         createMonitorIfAbsent();
-        if (!monitor.isValid()) {
+        if (!getMonitor().isValid()) {
             logger.info("There's no valid monitor config found, if you want to open monitor statistics for Dubbo, " +
                     "please make sure your monitor is configured properly.");
         }
     }
 
     private void createMonitorIfAbsent() {
-        if (this.monitor != null) {
+        if (getMonitor() != null) {
             return;
         }
-        ConfigManager configManager = ConfigManager.getInstance();
         setMonitor(
-                configManager
-                        .getMonitor()
-                        .orElseGet(() -> {
-                            MonitorConfig monitorConfig = new MonitorConfig();
-                            monitorConfig.refresh();
-                            return monitorConfig;
-                        })
+            ConfigManager.getInstance().getMonitor().orElseGet(() -> {
+                MonitorConfig monitorConfig = new MonitorConfig();
+                monitorConfig.refresh();
+                return monitorConfig;
+            })
         );
     }
 
     protected void checkMetadataReport() {
-        // TODO get from ConfigManager first, only create if absent.
-        if (metadataReportConfig == null) {
-            setMetadataReportConfig(new MetadataReportConfig());
+        if (getMetadataReportConfig() != null) {
+            return;
         }
-        metadataReportConfig.refresh();
-        if (!metadataReportConfig.isValid()) {
+        setMetadataReportConfig(
+            ConfigManager.getInstance().getMetadataReportConfig().orElseGet(() ->{
+                MetadataReportConfig metadataReportConfig = new MetadataReportConfig();
+                metadataReportConfig.refresh();
+                return metadataReportConfig;
+            })
+        );
+        if (!getMetadataReportConfig().isValid()) {
             logger.warn("There's no valid metadata config found, if you are using the simplified mode of registry url, " +
                     "please make sure you have a metadata address configured properly.");
         }
@@ -269,27 +248,21 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
 
     void startConfigCenter() {
-        if (configCenter == null) {
-            ConfigManager.getInstance().getConfigCenter().ifPresent(cc -> this.configCenter = cc);
-        }
-
-        if (this.configCenter != null) {
+        ConfigManager.getInstance().getConfigCenter().ifPresent(cc -> {
             // TODO there may have duplicate refresh
-            this.configCenter.refresh();
+            cc.refresh();
             prepareEnvironment();
-        }
+        });
         ConfigManager.getInstance().refreshAll();
     }
 
     private void prepareEnvironment() {
-        if (configCenter.isValid()) {
-            if (!configCenter.checkOrUpdateInited()) {
-                return;
-            }
+        ConfigCenterConfig configCenter = getConfigCenter();
+        if (configCenter.isValid() && configCenter.checkOrUpdateInited()) {
             DynamicConfiguration dynamicConfiguration = getDynamicConfiguration(configCenter.toUrl());
             String configContent = dynamicConfiguration.getProperties(configCenter.getConfigFile(), configCenter.getGroup());
 
-            String appGroup = application != null ? application.getName() : null;
+            String appGroup = getApplication() != null ? getApplication().getName() : null;
             String appConfigContent = null;
             if (StringUtils.isNotEmpty(appGroup)) {
                 appConfigContent = dynamicConfiguration.getProperties
@@ -334,7 +307,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 }
                 if (!RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(address)) {
                     Map<String, String> map = new HashMap<String, String>();
-                    appendParameters(map, application);
+                    appendParameters(map, getApplication());
                     appendParameters(map, config);
                     map.put(PATH_KEY, RegistryService.class.getName());
                     appendRuntimeParameters(map);
@@ -380,9 +353,9 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                     DUBBO_IP_TO_REGISTRY + ", value:" + hostToRegistry);
         }
         map.put(REGISTER_IP_KEY, hostToRegistry);
-        appendParameters(map, monitor);
-        appendParameters(map, application);
-        String address = monitor.getAddress();
+        appendParameters(map, getMonitor());
+        appendParameters(map, getApplication());
+        String address = getMonitor().getAddress();
         String sysaddress = System.getProperty("dubbo.monitor.address");
         if (sysaddress != null && sysaddress.length() > 0) {
             address = sysaddress;
@@ -396,7 +369,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 }
             }
             return UrlUtils.parseURL(address, map);
-        } else if (REGISTRY_PROTOCOL.equals(monitor.getProtocol()) && registryURL != null) {
+        } else if (REGISTRY_PROTOCOL.equals(getMonitor().getProtocol()) && registryURL != null) {
             return URLBuilder.from(registryURL)
                     .setProtocol(DUBBO_PROTOCOL)
                     .addParameter(PROTOCOL_KEY, REGISTRY_PROTOCOL)
@@ -416,18 +389,18 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     private URL loadMetadataReporterURL() {
-        String address = metadataReportConfig.getAddress();
+        String address = getMetadataReportConfig().getAddress();
         if (StringUtils.isEmpty(address)) {
             return null;
         }
         Map<String, String> map = new HashMap<String, String>();
-        appendParameters(map, metadataReportConfig);
+        appendParameters(map, getMetadataReportConfig());
         return UrlUtils.parseURL(address, map);
     }
 
     protected MetadataReportService getMetadataReportService() {
 
-        if (metadataReportConfig == null || !metadataReportConfig.isValid()) {
+        if (getMetadataReportConfig() == null || !getMetadataReportConfig().isValid()) {
             return null;
         }
         return MetadataReportService.instance(this::loadMetadataReporterURL);
@@ -736,41 +709,36 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public ApplicationConfig getApplication() {
-        return application;
+        return ConfigManager.getInstance().getApplication().orElse(null);
     }
 
     public void setApplication(ApplicationConfig application) {
         ConfigManager.getInstance().setApplication(application);
-        this.application = application;
     }
 
     private void createApplicationIfAbsent() {
-        if (this.application != null) {
+        if (ConfigManager.getInstance().getApplication().isPresent()) {
             return;
         }
-        ConfigManager configManager = ConfigManager.getInstance();
         setApplication(
-                configManager
-                        .getApplication()
-                        .orElseGet(() -> {
-                            ApplicationConfig applicationConfig = new ApplicationConfig();
-                            applicationConfig.refresh();
-                            return applicationConfig;
-                        })
+            ConfigManager.getInstance().getApplication().orElseGet(() -> {
+                ApplicationConfig applicationConfig = new ApplicationConfig();
+                applicationConfig.refresh();
+                return applicationConfig;
+            })
         );
     }
 
     public ModuleConfig getModule() {
-        return module;
+        return ConfigManager.getInstance().getModule().orElse(null);
     }
 
     public void setModule(ModuleConfig module) {
         ConfigManager.getInstance().setModule(module);
-        this.module = module;
     }
 
     public RegistryConfig getRegistry() {
-        return CollectionUtils.isEmpty(registries) ? null : registries.get(0);
+        return getRegistries().stream().findFirst().orElse(null);
     }
 
     public void setRegistry(RegistryConfig registry) {
@@ -786,7 +754,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     @SuppressWarnings({"unchecked"})
     public void setRegistries(List<? extends RegistryConfig> registries) {
         ConfigManager.getInstance().addRegistries((List<RegistryConfig>) registries);
-        this.registries = (List<RegistryConfig>) registries;
+        this.registries = (List<RegistryConfig>)registries;
     }
 
     @Parameter(excluded = true)
@@ -799,7 +767,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public MonitorConfig getMonitor() {
-        return monitor;
+        return ConfigManager.getInstance().getMonitor().orElse(null);
     }
 
     public void setMonitor(String monitor) {
@@ -808,7 +776,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     public void setMonitor(MonitorConfig monitor) {
         ConfigManager.getInstance().setMonitor(monitor);
-        this.monitor = monitor;
     }
 
     public String getOwner() {
@@ -821,12 +788,11 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public ConfigCenterConfig getConfigCenter() {
-        return configCenter;
+        return ConfigManager.getInstance().getConfigCenter().orElse(null);
     }
 
     public void setConfigCenter(ConfigCenterConfig configCenter) {
         ConfigManager.getInstance().setConfigCenter(configCenter);
-        this.configCenter = configCenter;
     }
 
     public Integer getCallbacks() {
@@ -862,19 +828,19 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public MetadataReportConfig getMetadataReportConfig() {
-        return metadataReportConfig;
+        return ConfigManager.getInstance().getMetadataReportConfig().orElse(null);
     }
 
     public void setMetadataReportConfig(MetadataReportConfig metadataReportConfig) {
-        this.metadataReportConfig = metadataReportConfig;
+        ConfigManager.getInstance().setMetadataReportConfig(metadataReportConfig);
     }
 
     public MetricsConfig getMetrics() {
-        return metrics;
+        return ConfigManager.getInstance().getMetrics().orElse(null);
     }
 
     public void setMetrics(MetricsConfig metrics) {
-        this.metrics = metrics;
+        ConfigManager.getInstance().setMetrics(metrics);
     }
 
     @Parameter(key = TAG_KEY, useKeyAsProperty = false)
