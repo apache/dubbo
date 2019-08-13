@@ -27,6 +27,12 @@ import java.lang.annotation.Target;
 /**
  * Provide helpful information for {@link ExtensionLoader} to inject dependency extension instance.
  *
+ * 1. 标记在类上，代表手动实现它是一个拓展接口的 Adaptive 拓展实现类。目前 Dubbo 项目里，只有 ExtensionFactory 拓展的实现类 AdaptiveExtensionFactory 有这么用
+ * 2. 标记在拓展接口的方法上，代表自动生成代码实现该接口的 Adaptive 拓展实现类
+ *     value ，从 Dubbo URL 获取参数中，使用键名( Key )，获取键值。该值为真正的拓展名
+ *     自适应拓展实现类，会获取拓展名对应的真正的拓展对象。通过该对象，执行真正的逻辑
+ *     可以设置多个键名( Key )，顺序获取直到有值。若最终获取不到，使用默认拓展名
+ *
  * @see ExtensionLoader
  * @see URL
  */
@@ -54,6 +60,22 @@ public @interface Adaptive {
      * <code>String[] {"yyy.invoker.wrapper"}</code>. This name will be used to search for parameter from URL.
      *
      * @return parameter key names in URL
+     *
+     * 从 {@link URL }的 Key 名，对应的 Value 作为要 Adapt 成的 Extension 名。
+     * <p>
+     * 如果 {@link URL} 这些 Key 都没有 Value ，使用 缺省的扩展（在接口的{@link SPI}中设定的值）。<br>
+     * 比如，<code>String[] {"key1", "key2"}</code>，表示
+     * <ol>
+     *      <li>先在URL上找key1的Value作为要Adapt成的Extension名；
+     *      <li>key1没有Value，则使用key2的Value作为要Adapt成的Extension名。
+     *      <li>key2没有Value，使用缺省的扩展。
+     *      <li>如果没有设定缺省扩展，则方法调用会抛出{@link IllegalStateException}。
+     * </ol>
+     * <p>
+     * 如果不设置则缺省使用Extension接口类名的点分隔小写字串。<br>
+     * 即对于Extension接口 {@code com.alibaba.dubbo.xxx.YyyInvokerWrapper} 的缺省值为 <code>String[] {"yyy.invoker.wrapper"}</code>
+     *
+     * @see SPI#value()
      */
     String[] value() default {};
 
