@@ -23,6 +23,8 @@ import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.config.ConsumerConfig;
+import org.apache.dubbo.config.MetadataReportConfig;
+import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
@@ -64,12 +66,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
  *  }
  *  }
  * </pre>
- * </p>
- * TODO
- * The properties defined here are duplicate with that in ReferenceConfig/ServiceConfig,
- * the properties here are currently only used for duplication check but are still not being used in the export/refer process yet.
- * Maybe we can remove the property definition in ReferenceConfig/ServiceConfig and only keep the setXxxConfig() as an entrance.
- * All workflow internally can rely on ConfigManager.
  */
 public class ConfigManager {
     private static final Logger logger = LoggerFactory.getLogger(ConfigManager.class);
@@ -79,6 +75,12 @@ public class ConfigManager {
     private MonitorConfig monitor;
     private ModuleConfig module;
     private ConfigCenterConfig configCenter;
+
+    /**
+     * The metrics configuration
+     */
+    protected MetricsConfig metrics;
+    protected MetadataReportConfig metadataReportConfig;
 
     private Map<String, ProtocolConfig> protocols = new ConcurrentHashMap<>();
     private Map<String, RegistryConfig> registries = new ConcurrentHashMap<>();
@@ -134,6 +136,28 @@ public class ConfigManager {
         if (configCenter != null) {
             checkDuplicate(this.configCenter, configCenter);
             this.configCenter = configCenter;
+        }
+    }
+
+    public Optional<MetricsConfig> getMetrics() {
+        return Optional.ofNullable(metrics);
+    }
+
+    public void setMetrics(MetricsConfig metrics) {
+        if (metrics != null) {
+            checkDuplicate(this.metrics, metrics);
+            this.metrics = metrics;
+        }
+    }
+
+    public Optional<MetadataReportConfig> getMetadataReportConfig() {
+        return Optional.ofNullable(metadataReportConfig);
+    }
+
+    public void setMetadataReportConfig(MetadataReportConfig metadataReportConfig) {
+        if (metadataReportConfig != null) {
+            checkDuplicate(this.metadataReportConfig, metadataReportConfig);
+            this.metadataReportConfig = metadataReportConfig;
         }
     }
 
@@ -302,6 +326,8 @@ public class ConfigManager {
         getApplication().ifPresent(ApplicationConfig::refresh);
         getMonitor().ifPresent(MonitorConfig::refresh);
         getModule().ifPresent(ModuleConfig::refresh);
+        getMetrics().ifPresent(MetricsConfig::refresh);
+        getMetadataReportConfig().ifPresent(MetadataReportConfig::refresh);
 
         getProtocols().values().forEach(ProtocolConfig::refresh);
         getRegistries().values().forEach(RegistryConfig::refresh);
@@ -322,6 +348,8 @@ public class ConfigManager {
         this.configCenter = null;
         this.monitor = null;
         this.module = null;
+        this.metrics = null;
+        this.metadataReportConfig = null;
         this.registries.clear();
         this.protocols.clear();
         this.providers.clear();
