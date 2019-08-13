@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.registry.client;
 
+import org.apache.dubbo.common.lang.Prioritized;
 import org.apache.dubbo.registry.client.event.ServiceInstancePreRegisteredEvent;
 import org.apache.dubbo.registry.client.event.listener.CustomizableServiceInstanceListener;
 
@@ -27,7 +28,7 @@ import org.apache.dubbo.registry.client.event.listener.CustomizableServiceInstan
  * @see ServiceInstance#getMetadata()
  * @since 2.7.4
  */
-public interface ServiceInstanceCustomizer {
+public interface ServiceInstanceCustomizer extends Prioritized {
 
     /**
      * Customizes {@link ServiceInstance the service instance}

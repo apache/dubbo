@@ -21,10 +21,10 @@ import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
 import org.apache.dubbo.registry.client.event.ServiceInstancePreRegisteredEvent;
 
-import java.util.Iterator;
 import java.util.ServiceLoader;
 
 import static java.util.ServiceLoader.load;
+import static java.util.stream.StreamSupport.stream;
 
 
 /**
@@ -43,12 +43,11 @@ public class CustomizableServiceInstanceListener implements EventListener<Servic
 
         ServiceLoader<ServiceInstanceCustomizer> customizers = load(ServiceInstanceCustomizer.class);
 
-        Iterator<ServiceInstanceCustomizer> iterator = customizers.iterator();
-
-        while (iterator.hasNext()) {
-            ServiceInstanceCustomizer customizer = iterator.next();
-            // customizes
-            customizer.customize(event.getServiceInstance());
-        }
+        stream(customizers.spliterator(), false)
+                .sorted()
+                .forEach(customizer -> {
+                    // customizes
+                    customizer.customize(event.getServiceInstance());
+                });
     }
 }
