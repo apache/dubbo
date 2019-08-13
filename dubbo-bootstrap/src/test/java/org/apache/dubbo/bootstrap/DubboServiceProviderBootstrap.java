@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.bootstrap;
 
+import org.apache.dubbo.config.MetadataReportConfig;
+
 /**
  * Dubbo Provider Bootstrap
  *
@@ -33,6 +35,7 @@ public class DubboServiceProviderBootstrap {
 //                .registry(RegistryBuilder.newBuilder().address("etcd3://127.0.0.1:2379?registry-type=service").build())
                 .protocol(builder -> builder.port(-1).name("dubbo"))
                 .protocol(builder -> builder.port(-1).name("hessian"))
+                .metadataReport(new MetadataReportConfig("zookeeper://127.0.0.1:2181"))
                 .service(builder -> builder.id("test").interfaceClass(EchoService.class).ref(new EchoServiceImpl()))
                 .start()
                 .await();

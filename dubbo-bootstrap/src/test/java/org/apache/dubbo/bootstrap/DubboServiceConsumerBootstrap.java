@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.bootstrap;
 
+import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 
@@ -35,6 +36,7 @@ public class DubboServiceConsumerBootstrap {
                 // Nacos
 //                .registry("nacos", builder -> builder.address("nacos://127.0.0.1:8848?registry-type=service&subscribed-services=dubbo-provider-demo"))
                 .reference("ref", builder -> builder.interfaceClass(EchoService.class))
+                .metadataReport(new MetadataReportConfig("zookeeper://127.0.0.1:2181"))
                 .onlyRegisterProvider(true)
                 .start()
                 .await();
