@@ -36,7 +36,9 @@ public class CompositeDynamicConfiguration implements DynamicConfiguration {
     private Set<DynamicConfiguration> configurations = new HashSet<>();
 
     public void addConfiguration(DynamicConfiguration configuration) {
-        this.configurations.add(configuration);
+        if (configuration != null) {
+            this.configurations.add(configuration);
+        }
     }
 
     @Override
