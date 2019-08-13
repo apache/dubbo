@@ -551,10 +551,10 @@ public abstract class AbstractConfig implements Serializable {
             CompositeConfiguration compositeConfiguration = Environment.getInstance().getConfiguration(getPrefix(), getId());
             Configuration config = new ConfigConfigurationAdapter(this);
             if (Environment.getInstance().isConfigCenterFirst()) {
-                // The sequence would be: SystemConfiguration -> AppExternalConfiguration -> ExternalConfiguration -> AbstractConfig -> PropertiesConfiguration
+                // The sequence would be: SystemConfiguration -> EnvironmentConfiguration -> AppExternalConfiguration -> ExternalConfiguration -> AbstractConfig -> PropertiesConfiguration
                 compositeConfiguration.addConfiguration(4, config);
             } else {
-                // The sequence would be: SystemConfiguration -> AbstractConfig -> AppExternalConfiguration -> ExternalConfiguration -> PropertiesConfiguration
+                // The sequence would be: SystemConfiguration -> EnvironmentConfiguration -> AbstractConfig -> AppExternalConfiguration -> ExternalConfiguration -> PropertiesConfiguration
                 compositeConfiguration.addConfiguration(2, config);
             }
 
