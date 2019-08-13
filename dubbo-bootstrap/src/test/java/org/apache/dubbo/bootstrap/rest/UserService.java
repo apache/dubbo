@@ -42,6 +42,4 @@ public interface UserService {
     @Path("{id : \\d+}")
     @ApiOperation(value = "getUser")
     User getUser(@ApiParam(value = "id") @PathParam("id") Long id);
-
-    Long registerUser(User user);
 }

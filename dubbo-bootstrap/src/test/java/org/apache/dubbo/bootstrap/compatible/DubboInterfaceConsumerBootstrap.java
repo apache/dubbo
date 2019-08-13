@@ -14,10 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.bootstrap;
+package org.apache.dubbo.bootstrap.compatible;
 
+import org.apache.dubbo.bootstrap.DubboBootstrap;
+import org.apache.dubbo.bootstrap.EchoService;
 import org.apache.dubbo.bootstrap.rest.UserService;
 import org.apache.dubbo.config.ReferenceConfig;
+import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 
 /**
@@ -25,16 +28,19 @@ import org.apache.dubbo.config.context.ConfigManager;
  *
  * @since 2.7.4
  */
-public class DubboServiceConsumerBootstrap {
+public class DubboInterfaceConsumerBootstrap {
 
     public static void main(String[] args) throws Exception {
+        RegistryConfig interfaceRegistry = new RegistryConfig();
+        interfaceRegistry.setId("interfaceRegistry");
+        interfaceRegistry.setAddress("zookeeper://127.0.0.1:2181");
 
         new DubboBootstrap()
                 .application("dubbo-consumer-demo")
                 // Zookeeper
-                .registry("zookeeper", builder -> builder.address("zookeeper://127.0.0.1:2181?registry.type=service&subscribed.services=dubbo-provider-demo"))
+                .registry(interfaceRegistry)
                 // Nacos
-//                .registry("consul", builder -> builder.address("consul://127.0.0.1:8500?registry.type=service&subscribed.services=dubbo-provider-demo").group("namespace1"))
+//                .registry("consul", builder -> builder.address("consul://127.0.0.1:8500?registry.type=service&subscribed.services=dubbo-provider-demo"))
                 .reference("echo", builder -> builder.interfaceClass(EchoService.class).protocol("dubbo"))
                 .reference("user", builder -> builder.interfaceClass(UserService.class).protocol("rest"))
                 .onlyRegisterProvider(true)
@@ -44,12 +50,15 @@ public class DubboServiceConsumerBootstrap {
         ConfigManager configManager = ConfigManager.getInstance();
 
         ReferenceConfig<EchoService> referenceConfig = configManager.getReferenceConfig("echo");
-
         EchoService echoService = referenceConfig.get();
+
+        ReferenceConfig<UserService> referenceConfig1 = configManager.getReferenceConfig("user");
+        UserService userService = referenceConfig1.get();
 
         for (int i = 0; i < 500; i++) {
             Thread.sleep(2000L);
             System.out.println(echoService.echo("Hello,World"));
+            System.out.println(userService.getUser(1L));
         }
 
     }
