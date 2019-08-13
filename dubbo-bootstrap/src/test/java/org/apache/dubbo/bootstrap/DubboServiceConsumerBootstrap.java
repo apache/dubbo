@@ -43,7 +43,7 @@ public class DubboServiceConsumerBootstrap {
 
         ConfigManager configManager = ConfigManager.getInstance();
 
-        ReferenceConfig<EchoService> referenceConfig = configManager.getReferenceConfig("ref");
+        ReferenceConfig<EchoService> referenceConfig = configManager.getReference("ref");
 
         EchoService echoService = referenceConfig.get();
 

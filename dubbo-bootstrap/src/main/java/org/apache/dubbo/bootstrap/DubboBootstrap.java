@@ -51,9 +51,7 @@ import org.apache.dubbo.config.metadata.ConfigurableMetadataServiceExporter;
 import org.apache.dubbo.config.utils.ReferenceConfigCache;
 import org.apache.dubbo.event.EventDispatcher;
 import org.apache.dubbo.event.EventListener;
-import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
-import org.apache.dubbo.metadata.store.RemoteWritableMetadataService;
 import org.apache.dubbo.registry.client.AbstractServiceDiscoveryFactory;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
@@ -517,7 +515,7 @@ public class DubboBootstrap {
             exportServices();
 
             // Not only provider register and some services are exported
-            if (!onlyRegisterProvider && !configManager.getServiceConfigs().isEmpty()) {
+            if (!onlyRegisterProvider && !configManager.getServices().isEmpty()) {
                 /**
                  * export {@link MetadataService}
                  */
@@ -718,7 +716,7 @@ public class DubboBootstrap {
     }
 
     private void exportServices() {
-        configManager.getServiceConfigs().forEach(this::exportServiceConfig);
+        configManager.getServices().forEach(this::exportServiceConfig);
     }
 
     public void exportServiceConfig(ServiceConfig<?> serviceConfig) {
@@ -729,7 +727,7 @@ public class DubboBootstrap {
         if (cache == null) {
             cache = ReferenceConfigCache.getCache();
         }
-        configManager.getReferenceConfigs().forEach(cache::get);
+        configManager.getReferences().forEach(cache::get);
     }
 
     public boolean isOnlyRegisterProvider() {
@@ -816,7 +814,7 @@ public class DubboBootstrap {
     }
 
     private void destroyReferenceConfigs() {
-        configManager.getReferenceConfigs().forEach(ReferenceConfig::destroy);
+        configManager.getReferences().forEach(ReferenceConfig::destroy);
         if (logger.isDebugEnabled()) {
             logger.debug(NAME + "'s all ReferenceConfigs have been destroyed.");
         }
