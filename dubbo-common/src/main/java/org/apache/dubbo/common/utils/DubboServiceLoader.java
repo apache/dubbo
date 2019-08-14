@@ -25,7 +25,6 @@ import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.StreamSupport.stream;
-import static org.apache.dubbo.common.extension.support.ActivateComparator.COMPARATOR;
 
 /**
  * An extension class of {@link ServiceLoader} to help the ease for use of Dubbo services/components
@@ -57,7 +56,7 @@ public class DubboServiceLoader {
 
         ServiceLoader<S> serviceLoader = ServiceLoader.load(serviceClass, actualClassLoader);
 
-        return stream(serviceLoader.spliterator(), false).sorted(COMPARATOR);
+        return stream(serviceLoader.spliterator(), false).sorted(Prioritized.COMPARATOR);
     }
 
     /**
