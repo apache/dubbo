@@ -217,4 +217,11 @@ public class CollectionUtils {
         return !isEmptyMap(map);
     }
 
+    public static boolean mapSizeGt(Map map, int value) {
+        return map != null && map.size() > value;
+    }
+
+    public static boolean mapSizeEq(Map map, int value) {
+        return map != null && map.size() == value;
+    }
 }

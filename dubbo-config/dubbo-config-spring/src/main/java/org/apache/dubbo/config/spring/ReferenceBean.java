@@ -93,7 +93,7 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
 
         if (getConsumer() == null) {
             Map<String, ConsumerConfig> consumerConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ConsumerConfig.class, false, false);
-            if (consumerConfigMap != null && consumerConfigMap.size() > 0) {
+            if (CollectionUtils.isNotEmptyMap(consumerConfigMap)) {
                 ConsumerConfig consumerConfig = null;
                 for (ConsumerConfig config : consumerConfigMap.values()) {
                     if (config.isDefault() == null || config.isDefault()) {
@@ -111,7 +111,7 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
         if (getApplication() == null
                 && (getConsumer() == null || getConsumer().getApplication() == null)) {
             Map<String, ApplicationConfig> applicationConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ApplicationConfig.class, false, false);
-            if (applicationConfigMap != null && applicationConfigMap.size() > 0) {
+            if (CollectionUtils.isNotEmptyMap(applicationConfigMap)) {
                 ApplicationConfig applicationConfig = null;
                 for (ApplicationConfig config : applicationConfigMap.values()) {
                     if (applicationConfig != null) {
@@ -127,7 +127,7 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
         if (getModule() == null
                 && (getConsumer() == null || getConsumer().getModule() == null)) {
             Map<String, ModuleConfig> moduleConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ModuleConfig.class, false, false);
-            if (moduleConfigMap != null && moduleConfigMap.size() > 0) {
+            if (CollectionUtils.isNotEmptyMap(moduleConfigMap)) {
                 ModuleConfig moduleConfig = null;
                 for (ModuleConfig config : moduleConfigMap.values()) {
                     if (config.isDefault() == null || config.isDefault()) {
@@ -156,7 +156,7 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
                 && (getConsumer() == null || CollectionUtils.isEmpty(getConsumer().getRegistries()))
                 && (getApplication() == null || CollectionUtils.isEmpty(getApplication().getRegistries()))) {
             Map<String, RegistryConfig> registryConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, RegistryConfig.class, false, false);
-            if (registryConfigMap != null && registryConfigMap.size() > 0) {
+            if (CollectionUtils.isNotEmptyMap(registryConfigMap)) {
                 List<RegistryConfig> registryConfigs = new ArrayList<>();
                 if (StringUtils.isNotEmpty(registryIds)) {
                     Arrays.stream(COMMA_SPLIT_PATTERN.split(registryIds)).forEach(id -> {
@@ -181,19 +181,19 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
 
         if (getMetadataReportConfig() == null) {
             Map<String, MetadataReportConfig> metadataReportConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, MetadataReportConfig.class, false, false);
-            if (metadataReportConfigMap != null && metadataReportConfigMap.size() == 1) {
+            if (CollectionUtils.mapSizeEq(metadataReportConfigMap, 1)) {
                 // first elements
                 super.setMetadataReportConfig(metadataReportConfigMap.values().iterator().next());
-            } else if (metadataReportConfigMap != null && metadataReportConfigMap.size() > 1) {
+            } else if (CollectionUtils.mapSizeGt(metadataReportConfigMap, 1)) {
                 throw new IllegalStateException("Multiple MetadataReport configs: " + metadataReportConfigMap);
             }
         }
 
         if (getConfigCenter() == null) {
             Map<String, ConfigCenterConfig> configenterMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ConfigCenterConfig.class, false, false);
-            if (configenterMap != null && configenterMap.size() == 1) {
+            if (CollectionUtils.mapSizeEq(configenterMap, 1)) {
                 super.setConfigCenter(configenterMap.values().iterator().next());
-            } else if (configenterMap != null && configenterMap.size() > 1) {
+            } else if (CollectionUtils.mapSizeGt(configenterMap, 1)) {
                 throw new IllegalStateException("Multiple ConfigCenter found:" + configenterMap);
             }
         }
@@ -202,7 +202,7 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
                 && (getConsumer() == null || getConsumer().getMonitor() == null)
                 && (getApplication() == null || getApplication().getMonitor() == null)) {
             Map<String, MonitorConfig> monitorConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, MonitorConfig.class, false, false);
-            if (monitorConfigMap != null && monitorConfigMap.size() > 0) {
+            if (CollectionUtils.isNotEmptyMap(monitorConfigMap)) {
                 MonitorConfig monitorConfig = null;
                 for (MonitorConfig config : monitorConfigMap.values()) {
                     if (config.isDefault() == null || config.isDefault()) {
@@ -220,7 +220,7 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
 
         if (getMetrics() == null) {
             Map<String, MetricsConfig> metricsConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, MetricsConfig.class, false, false);
-            if (metricsConfigMap != null && metricsConfigMap.size() > 0) {
+            if (CollectionUtils.isNotEmptyMap(metricsConfigMap)) {
                 MetricsConfig metricsConfig = null;
                 for (MetricsConfig config : metricsConfigMap.values()) {
                     if (metricsConfig != null) {
