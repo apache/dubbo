@@ -17,14 +17,24 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.lang.ShutdownHookCallback;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.event.DubboServiceDestroyedEvent;
+import org.apache.dubbo.config.event.DubboShutdownHookRegisteredEvent;
+import org.apache.dubbo.config.event.DubboShutdownHookUnregisteredEvent;
+import org.apache.dubbo.event.Event;
 import org.apache.dubbo.event.EventDispatcher;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 import org.apache.dubbo.rpc.Protocol;
 
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import static java.util.Collections.sort;
+import static java.util.ServiceLoader.load;
 
 /**
  * The shutdown hook thread to do the clean up stuff.
@@ -37,10 +47,12 @@ public class DubboShutdownHook extends Thread {
     private static final Logger logger = LoggerFactory.getLogger(DubboShutdownHook.class);
 
     private static final DubboShutdownHook DUBBO_SHUTDOWN_HOOK = new DubboShutdownHook("DubboShutdownHook");
+
     /**
      * Has it already been registered or not?
      */
     private final AtomicBoolean registered = new AtomicBoolean(false);
+
     /**
      * Has it already been destroyed or not?
      */
@@ -48,8 +60,16 @@ public class DubboShutdownHook extends Thread {
 
     private final EventDispatcher eventDispatcher = EventDispatcher.getDefaultExtension();
 
+    private final List<ShutdownHookCallback> callbacks = new LinkedList<>();
+
     private DubboShutdownHook(String name) {
         super(name);
+        loadCallbacks();
+    }
+
+    public DubboShutdownHook addCallback(ShutdownHookCallback callback) {
+        this.callbacks.add(callback);
+        return this;
     }
 
     public static DubboShutdownHook getDubboShutdownHook() {
@@ -61,7 +81,39 @@ public class DubboShutdownHook extends Thread {
         if (logger.isInfoEnabled()) {
             logger.info("Run shutdown hook now.");
         }
+        callback();
         doDestroy();
+    }
+
+    /**
+     * For testing purpose
+     */
+    Collection<ShutdownHookCallback> getCallbacks() {
+        sort(callbacks);
+        return callbacks;
+    }
+
+    /**
+     * For testing purpose
+     */
+    void clear() {
+        callbacks.clear();
+    }
+
+    private void loadCallbacks() {
+        load(ShutdownHookCallback.class).forEach(callbacks::add);
+    }
+
+    private void callback() {
+        getCallbacks().forEach(callback -> {
+            try {
+                callback.callback();
+            } catch (Throwable e) {
+                if (logger.isErrorEnabled()) {
+                    logger.error(e.getMessage(), e);
+                }
+            }
+        });
     }
 
     /**
@@ -69,7 +121,9 @@ public class DubboShutdownHook extends Thread {
      */
     public void register() {
         if (!registered.get() && registered.compareAndSet(false, true)) {
-            Runtime.getRuntime().addShutdownHook(getDubboShutdownHook());
+            DubboShutdownHook dubboShutdownHook = getDubboShutdownHook();
+            Runtime.getRuntime().addShutdownHook(dubboShutdownHook);
+            dispatch(new DubboShutdownHookRegisteredEvent(dubboShutdownHook));
         }
     }
 
@@ -78,7 +132,9 @@ public class DubboShutdownHook extends Thread {
      */
     public void unregister() {
         if (registered.get() && registered.compareAndSet(true, false)) {
-            Runtime.getRuntime().removeShutdownHook(getDubboShutdownHook());
+            DubboShutdownHook dubboShutdownHook = getDubboShutdownHook();
+            Runtime.getRuntime().removeShutdownHook(dubboShutdownHook);
+            dispatch(new DubboShutdownHookUnregisteredEvent(dubboShutdownHook));
         }
     }
 
@@ -94,7 +150,11 @@ public class DubboShutdownHook extends Thread {
         // destroy all the protocols
         destroyProtocols();
         // dispatch the DubboDestroyedEvent @since 2.7.4
-        eventDispatcher.dispatch(new DubboServiceDestroyedEvent(this));
+        dispatch(new DubboServiceDestroyedEvent(this));
+    }
+
+    private void dispatch(Event event) {
+        eventDispatcher.dispatch(event);
     }
 
     /**

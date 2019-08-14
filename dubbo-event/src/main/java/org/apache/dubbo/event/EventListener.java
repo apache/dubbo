@@ -16,11 +16,12 @@
  */
 package org.apache.dubbo.event;
 
+import org.apache.dubbo.common.lang.Prioritized;
+
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Objects;
 
-import static java.lang.Integer.compare;
 import static org.apache.dubbo.common.utils.ReflectUtils.findParameterizedTypes;
 
 /**
@@ -36,7 +37,7 @@ import static org.apache.dubbo.common.utils.ReflectUtils.findParameterizedTypes;
  * @since 2.7.4
  */
 @FunctionalInterface
-public interface EventListener<E extends Event> extends java.util.EventListener, Comparable<EventListener<E>> {
+public interface EventListener<E extends Event> extends java.util.EventListener, Prioritized {
 
     /**
      * Handle a {@link Event Dubbo Event} when it's be published
@@ -50,18 +51,10 @@ public interface EventListener<E extends Event> extends java.util.EventListener,
      *
      * @return the value is more greater, the priority is more lower.
      * {@link Integer#MIN_VALUE} indicates the highest priority. The default value is {@link Integer#MAX_VALUE}.
-     * The comparison rule , refer to {@link #compareTo(EventListener)}.
-     * @see #compareTo(EventListener)
-     * @see Integer#MAX_VALUE
-     * @see Integer#MIN_VALUE
+     * The comparison rule , refer to {@link #compareTo}.
      */
     default int getPriority() {
-        return Integer.MAX_VALUE;
-    }
-
-    @Override
-    default int compareTo(EventListener<E> another) {
-        return compare(this.getPriority(), another.getPriority());
+        return MIN_PRIORITY;
     }
 
     /**

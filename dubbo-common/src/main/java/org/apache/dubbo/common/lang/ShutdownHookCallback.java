@@ -14,26 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.client;
-
-import org.apache.dubbo.common.lang.Prioritized;
-import org.apache.dubbo.registry.client.event.ServiceInstancePreRegisteredEvent;
-import org.apache.dubbo.registry.client.event.listener.CustomizableServiceInstanceListener;
+package org.apache.dubbo.common.lang;
 
 /**
- * The interface to customize {@link ServiceInstance the service instance} on {@link ServiceInstancePreRegisteredEvent}
+ * Dubbo ShutdownHook callback interface
  *
- * @see CustomizableServiceInstanceListener
- * @see ServiceInstancePreRegisteredEvent
- * @see ServiceInstance#getMetadata()
  * @since 2.7.4
  */
-public interface ServiceInstanceCustomizer extends Prioritized {
+public interface ShutdownHookCallback extends Prioritized {
 
     /**
-     * Customizes {@link ServiceInstance the service instance}
+     * Callback execution
      *
-     * @param serviceInstance {@link ServiceInstance the service instance}
+     * @throws Throwable if met with some errors
      */
-    void customize(ServiceInstance serviceInstance);
+    void callback() throws Throwable;
 }

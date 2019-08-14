@@ -14,26 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.client;
+package org.apache.dubbo.config.spring.context.annotation;
 
-import org.apache.dubbo.common.lang.Prioritized;
-import org.apache.dubbo.registry.client.event.ServiceInstancePreRegisteredEvent;
-import org.apache.dubbo.registry.client.event.listener.CustomizableServiceInstanceListener;
+import org.apache.dubbo.config.spring.context.DubboLifecycleComponentsApplicationListener;
+
+import org.springframework.context.Lifecycle;
+import org.springframework.context.annotation.Import;
+
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * The interface to customize {@link ServiceInstance the service instance} on {@link ServiceInstancePreRegisteredEvent}
+ * Enables Dubbo {@link Lifecycle} components
  *
- * @see CustomizableServiceInstanceListener
- * @see ServiceInstancePreRegisteredEvent
- * @see ServiceInstance#getMetadata()
  * @since 2.7.4
  */
-public interface ServiceInstanceCustomizer extends Prioritized {
-
-    /**
-     * Customizes {@link ServiceInstance the service instance}
-     *
-     * @param serviceInstance {@link ServiceInstance the service instance}
-     */
-    void customize(ServiceInstance serviceInstance);
+@Target({ElementType.TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+@Inherited
+@Documented
+@Import(DubboLifecycleComponentsApplicationListener.class)
+public @interface EnableDubboLifecycle {
 }

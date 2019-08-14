@@ -25,6 +25,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import static java.util.Collections.sort;
 import static java.util.Collections.unmodifiableList;
@@ -81,18 +83,25 @@ public abstract class AbstractEventDispatcher implements EventDispatcher {
     public List<EventListener<?>> getAllEventListeners() {
         List<EventListener<?>> listeners = new LinkedList<>();
 
-        listenersCache
-                .entrySet()
-                .stream()
-                .map(Map.Entry::getValue)
-                .flatMap(Collection::stream)
-                .forEach(listener -> {
-                    addIfAbsent(listeners, listener);
-                });
-
-        sort((List) listeners);
+        sortedListeners().forEach(listener -> {
+            addIfAbsent(listeners, listener);
+        });
 
         return unmodifiableList(listeners);
+    }
+
+    protected Stream<EventListener> sortedListeners() {
+        return sortedListeners(e -> true);
+    }
+
+    protected Stream<EventListener> sortedListeners(Predicate<Map.Entry<Class<? extends Event>, List<EventListener>>> predicate) {
+        return listenersCache
+                .entrySet()
+                .stream()
+                .filter(predicate)
+                .map(Map.Entry::getValue)
+                .flatMap(Collection::stream)
+                .sorted();
     }
 
     private <E> void addIfAbsent(Collection<E> collection, E element) {
@@ -108,11 +117,7 @@ public abstract class AbstractEventDispatcher implements EventDispatcher {
 
         // execute in sequential or parallel execution model
         executor.execute(() -> {
-            listenersCache.entrySet()
-                    .stream()
-                    .filter(entry -> entry.getKey().isAssignableFrom(event.getClass()))
-                    .map(Map.Entry::getValue)
-                    .flatMap(Collection::stream)
+            sortedListeners(entry -> entry.getKey().isAssignableFrom(event.getClass()))
                     .forEach(listener -> {
                         listener.onEvent(event);
                     });

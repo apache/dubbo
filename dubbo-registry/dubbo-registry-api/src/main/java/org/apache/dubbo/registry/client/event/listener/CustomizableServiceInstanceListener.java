@@ -21,10 +21,9 @@ import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
 import org.apache.dubbo.registry.client.event.ServiceInstancePreRegisteredEvent;
 
-import java.util.Iterator;
 import java.util.ServiceLoader;
 
-import static java.util.ServiceLoader.load;
+import static org.apache.dubbo.common.utils.DubboServiceLoader.load;
 
 
 /**
@@ -40,15 +39,9 @@ public class CustomizableServiceInstanceListener implements EventListener<Servic
 
     @Override
     public void onEvent(ServiceInstancePreRegisteredEvent event) {
-
-        ServiceLoader<ServiceInstanceCustomizer> customizers = load(ServiceInstanceCustomizer.class);
-
-        Iterator<ServiceInstanceCustomizer> iterator = customizers.iterator();
-
-        while (iterator.hasNext()) {
-            ServiceInstanceCustomizer customizer = iterator.next();
+        load(ServiceInstanceCustomizer.class).forEach(customizer -> {
             // customizes
             customizer.customize(event.getServiceInstance());
-        }
+        });
     }
 }

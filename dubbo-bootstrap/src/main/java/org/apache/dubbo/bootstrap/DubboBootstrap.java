@@ -20,11 +20,11 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.config.configcenter.wrapper.CompositeDynamicConfiguration;
+import org.apache.dubbo.common.context.Lifecycle;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.config.ConsumerConfig;
@@ -38,7 +38,6 @@ import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
-import org.apache.dubbo.config.builders.AbstractBuilder;
 import org.apache.dubbo.config.builders.ApplicationBuilder;
 import org.apache.dubbo.config.builders.ConsumerBuilder;
 import org.apache.dubbo.config.builders.ProtocolBuilder;
@@ -64,7 +63,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -90,7 +88,7 @@ import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
  *
  * @since 2.7.4
  */
-public class DubboBootstrap {
+public class DubboBootstrap implements Lifecycle {
 
     public static final String DEFAULT_REGISTRY_ID = "REGISTRY#DEFAULT";
 
@@ -409,25 +407,26 @@ public class DubboBootstrap {
     /**
      * Initialize
      */
-    public void init() {
+    public DubboBootstrap initialize() {
+        if (!isInitialized()) {
 
-        if (isInitialized()) {
-            return;
+            startConfigCenter();
+
+            startMetadataReport();
+
+            loadRemoteConfigs();
+
+            useRegistryAsConfigCenterIfNecessary();
+
+            initialized = true;
+
+            if (logger.isInfoEnabled()) {
+                logger.info(NAME + " has been initialized!");
+            }
+
         }
 
-        startConfigCenter();
-
-        startMetadataReport();
-
-        loadRemoteConfigs();
-
-        useRegistryAsConfigCenterIfNecessary();
-
-        initialized = true;
-
-        if (logger.isInfoEnabled()) {
-            logger.info(NAME + " has been initialized!");
-        }
+        return this;
     }
 
     private void loadRemoteConfigs() {
@@ -505,12 +504,12 @@ public class DubboBootstrap {
     /**
      * Start the bootstrap
      */
+    @Override
     public DubboBootstrap start() {
-
+        if (!isInitialized()) {
+            initialize();
+        }
         if (!isStarted()) {
-            if (!isInitialized()) {
-                init();
-            }
 
             exportServices();
 
@@ -574,31 +573,25 @@ public class DubboBootstrap {
     /**
      * Stop the bootstrap
      */
-    public void stop() {
-
-        if (!isInitialized() || !isStarted()) {
-            return;
+    @Override
+    public DubboBootstrap stop() {
+        if (isInitialized() && isStarted()) {
+            unregisterServiceInstance();
+            unexportServices();
+            started = false;
         }
-
-        unregisterServiceInstance();
-
-        destroy();
-
-        clear();
-
-        release();
-
-        shutdown();
+        return this;
     }
 
+    @Override
     public boolean isInitialized() {
         return initialized;
     }
 
+    @Override
     public boolean isStarted() {
         return started;
     }
-
 
     /* serve for builder apis, begin */
     private ApplicationBuilder createApplicationBuilder(String name) {
@@ -716,11 +709,11 @@ public class DubboBootstrap {
     }
 
     private void exportServices() {
-        configManager.getServices().forEach(this::exportServiceConfig);
+        configManager.getServices().forEach(ServiceConfig::export);
     }
 
-    public void exportServiceConfig(ServiceConfig<?> serviceConfig) {
-        serviceConfig.export();
+    private void unexportServices() {
+        configManager.getServices().forEach(ServiceConfig::unexport);
     }
 
     private void referServices() {
@@ -803,22 +796,29 @@ public class DubboBootstrap {
         return this.serviceInstance;
     }
 
-    private void destroy() {
+    public void destroy() {
 
-        destroyProtocolConfigs();
+        stop();
 
-        destroyReferenceConfigs();
+        destroyProtocols();
 
+        destroyReferences();
+
+        clear();
+
+        release();
+
+        shutdown();
     }
 
-    private void destroyProtocolConfigs() {
+    private void destroyProtocols() {
         configManager.getProtocols().forEach(ProtocolConfig::destroy);
         if (logger.isDebugEnabled()) {
             logger.debug(NAME + "'s all ProtocolConfigs have been destroyed.");
         }
     }
 
-    private void destroyReferenceConfigs() {
+    private void destroyReferences() {
         configManager.getReferences().forEach(ReferenceConfig::destroy);
         if (logger.isDebugEnabled()) {
             logger.debug(NAME + "'s all ReferenceConfigs have been destroyed.");
@@ -861,14 +861,5 @@ public class DubboBootstrap {
         } finally {
             lock.unlock();
         }
-    }
-
-    private static <C extends AbstractConfig, B extends
-            AbstractBuilder> List<C> buildConfigs(Map<String, B> map) {
-        List<C> configs = new ArrayList<>();
-        map.entrySet().forEach(entry -> {
-            configs.add((C) entry.getValue().build());
-        });
-        return configs;
     }
 }
