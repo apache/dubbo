@@ -29,6 +29,7 @@ import org.apache.dubbo.config.spring.impl.DemoServiceImpl;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.BeanCreationException;
@@ -42,9 +43,14 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class DubboNamespaceHandlerTest {
+
+    @BeforeAll
+    public static void beforeAll() {
+        ConfigManager.getInstance().clear();
+    }
+
     @BeforeEach
     public void setUp() {
-        ConfigManager.getInstance().clear();
     }
 
     @AfterEach

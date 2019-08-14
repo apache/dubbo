@@ -128,16 +128,15 @@ public class InvokerSideConfigUrlTest extends UrlTestBase {
     // ======================================================
 
     @BeforeAll
-    public static void start() {
+    public static void beforeAll() {
         //RegistryController.startRegistryIfAbsence(1);
+        ConfigManager.getInstance().clear();
     }
-
 
     @BeforeEach
     public void setUp() {
         initServConf();
         initRefConf();
-        ConfigManager.getInstance().clear();
     }
 
     @AfterEach()

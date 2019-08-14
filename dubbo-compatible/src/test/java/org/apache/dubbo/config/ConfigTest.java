@@ -23,15 +23,20 @@ import org.apache.dubbo.service.DemoServiceImpl;
 
 import com.alibaba.dubbo.config.ReferenceConfig;
 import com.alibaba.dubbo.config.ServiceConfig;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class ConfigTest {
     private com.alibaba.dubbo.config.ApplicationConfig applicationConfig = new com.alibaba.dubbo.config.ApplicationConfig("first-dubbo-test");
     private com.alibaba.dubbo.config.RegistryConfig registryConfig = new com.alibaba.dubbo.config.RegistryConfig("multicast://224.5.6.7:1234");
+
+    @BeforeAll
+    public static void beforeAll() {
+        ConfigManager.getInstance().clear();
+    }
 
     @AfterEach
     public void tearDown() {
@@ -42,7 +47,6 @@ public class ConfigTest {
     public void setup() {
         // In IDE env, make sure adding the following argument to VM options
         System.setProperty("java.net.preferIPv4Stack", "true");
-        ConfigManager.getInstance().clear();
     }
 
     @Test

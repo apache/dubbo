@@ -24,6 +24,7 @@ import org.apache.dubbo.config.spring.context.annotation.provider.DemoServiceImp
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.aop.support.AopUtils;
@@ -50,9 +51,13 @@ public class EnableDubboTest {
 
     private AnnotationConfigApplicationContext context;
 
+    @BeforeAll
+    public static void beforeAll() {
+        ConfigManager.getInstance().clear();
+    }
+
     @BeforeEach
     public void setUp() {
-        ConfigManager.getInstance().clear();
         context = new AnnotationConfigApplicationContext();
     }
 

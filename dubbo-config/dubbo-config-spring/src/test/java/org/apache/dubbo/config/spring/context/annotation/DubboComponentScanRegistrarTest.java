@@ -24,6 +24,7 @@ import org.apache.dubbo.config.spring.context.annotation.provider.ProviderConfig
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.aop.support.AopUtils;
@@ -39,9 +40,13 @@ import static org.springframework.core.annotation.AnnotationUtils.findAnnotation
  */
 public class DubboComponentScanRegistrarTest {
 
+    @BeforeAll
+    public static void beforeAll() {
+        ConfigManager.getInstance().clear();
+    }
+
     @BeforeEach
     public void setUp() {
-        ConfigManager.getInstance().clear();
     }
 
     @AfterEach

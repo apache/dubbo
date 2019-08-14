@@ -33,6 +33,7 @@ import org.apache.dubbo.rpc.service.GenericService;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -46,16 +47,16 @@ import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
-import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
-import static org.apache.dubbo.config.Constants.SHUTDOWN_TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+import static org.apache.dubbo.config.Constants.SHUTDOWN_TIMEOUT_KEY;
 import static org.apache.dubbo.remoting.Constants.BIND_IP_KEY;
 import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_BEAN;
 import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_DEFAULT;
 import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_NATIVE_JAVA;
+import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -74,6 +75,11 @@ public class ServiceConfigTest {
     private ServiceConfig<DemoServiceImpl> service = new ServiceConfig<DemoServiceImpl>();
     private ServiceConfig<DemoServiceImpl> service2 = new ServiceConfig<DemoServiceImpl>();
     private ServiceConfig<DemoServiceImpl> delayService = new ServiceConfig<DemoServiceImpl>();
+
+    @BeforeAll
+    public static void beforeAll() {
+        ConfigManager.getInstance().clear();
+    }
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -124,8 +130,6 @@ public class ServiceConfigTest {
         delayService.setRef(new DemoServiceImpl());
         delayService.setMethods(Collections.singletonList(method));
         delayService.setDelay(100);
-
-        ConfigManager.getInstance().clear();
     }
 
     @AfterEach

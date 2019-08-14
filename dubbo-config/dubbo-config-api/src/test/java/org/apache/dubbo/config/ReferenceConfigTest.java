@@ -25,6 +25,7 @@ import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -32,9 +33,13 @@ import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 
 public class ReferenceConfigTest {
 
+    @BeforeAll
+    public static void beforeAll() {
+        ConfigManager.getInstance().clear();
+    }
+
     @BeforeEach
     public void setUp() {
-        ConfigManager.getInstance().clear();
     }
 
     @AfterEach
