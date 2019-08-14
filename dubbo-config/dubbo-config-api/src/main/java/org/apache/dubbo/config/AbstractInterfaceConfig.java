@@ -248,6 +248,13 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     protected void checkMetadataReport() {
         // TODO get from ConfigManager first, only create if absent.
         if (metadataReportConfig == null) {
+            ConfigManager configManager = ConfigManager.getInstance();
+            if (CollectionUtils.isNotEmpty(configManager.getMetadataConfigs())) {
+                setMetadataReportConfig(configManager.getMetadataConfigs()
+                        .toArray(new MetadataReportConfig[configManager.getMetadataConfigs().size()])[0]);
+            }
+        }
+        if (metadataReportConfig == null) {
             setMetadataReportConfig(new MetadataReportConfig());
         }
         metadataReportConfig.refresh();

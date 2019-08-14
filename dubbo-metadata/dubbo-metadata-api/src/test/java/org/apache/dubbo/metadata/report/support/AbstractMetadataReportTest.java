@@ -297,7 +297,7 @@ public class AbstractMetadataReportTest {
         }
 
         @Override
-        protected void doRemoveMetadata(ServiceMetadataIdentifier metadataIdentifier, URL url) {
+        protected void doRemoveMetadata(ServiceMetadataIdentifier metadataIdentifier) {
             throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
         }
 
@@ -307,12 +307,12 @@ public class AbstractMetadataReportTest {
         }
 
         @Override
-        protected void doSaveSubscriberData(SubscriberMetadataIdentifier subscriberMetadataIdentifier, List<String> urls) {
+        protected void doSaveSubscriberData(SubscriberMetadataIdentifier subscriberMetadataIdentifier, String urls) {
 
         }
 
         @Override
-        protected List<String> doGetSubscribedURLs(SubscriberMetadataIdentifier metadataIdentifier) {
+        protected String doGetSubscribedURLs(SubscriberMetadataIdentifier metadataIdentifier) {
             throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
         }
 
@@ -358,7 +358,7 @@ public class AbstractMetadataReportTest {
         }
 
         @Override
-        protected void doRemoveMetadata(ServiceMetadataIdentifier metadataIdentifier, URL url) {
+        protected void doRemoveMetadata(ServiceMetadataIdentifier metadataIdentifier) {
             throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
         }
 
@@ -368,12 +368,12 @@ public class AbstractMetadataReportTest {
         }
 
         @Override
-        protected void doSaveSubscriberData(SubscriberMetadataIdentifier subscriberMetadataIdentifier, List<String> urls) {
+        protected void doSaveSubscriberData(SubscriberMetadataIdentifier subscriberMetadataIdentifier, String urls) {
 
         }
 
         @Override
-        protected List<String> doGetSubscribedURLs(SubscriberMetadataIdentifier metadataIdentifier) {
+        protected String doGetSubscribedURLs(SubscriberMetadataIdentifier metadataIdentifier) {
             throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
         }
 

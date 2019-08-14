@@ -65,6 +65,16 @@ public class ServiceInstanceMetadataUtils {
     public static String EXPORTED_SERVICES_REVISION_KEY = "dubbo.exported-services.revision";
 
     /**
+     * The key of The revision for all subscribed Dubbo services.
+     */
+    public static String SUBSCRIBER_SERVICES_REVISION_KEY = "dubbo.subscribed-services.revision";
+
+    /**
+     * The key of metadata store type.
+     */
+    public static String MEATADATA_STORED_TYPE_KEY = "dubbo.metadata.stored-type";
+
+    /**
      * The {@link URL url's} parameter name of Dubbo Provider host
      */
     public static final String HOST_PARAM_NAME = "provider.host";
@@ -157,6 +167,28 @@ public class ServiceInstanceMetadataUtils {
     public static String getExportedServicesRevision(ServiceInstance serviceInstance) {
         Map<String, String> metadata = serviceInstance.getMetadata();
         return metadata.get(EXPORTED_SERVICES_REVISION_KEY);
+    }
+
+    /**
+     * The revision for all subscribed Dubbo services from the specified {@link ServiceInstance}.
+     *
+     * @param serviceInstance the specified {@link ServiceInstance}
+     * @return <code>null</code> if not exits
+     */
+    public static String getSubscribedServicesRevision(ServiceInstance serviceInstance) {
+        Map<String, String> metadata = serviceInstance.getMetadata();
+        return metadata.get(SUBSCRIBER_SERVICES_REVISION_KEY);
+    }
+
+    /**
+     * The metadata is stored in the type used to which {@link org.apache.dubbo.metadata.WritableMetadataService} instance.
+     *
+     * @param serviceInstance the specified {@link ServiceInstance}
+     * @return <code>null</code> if not exits
+     */
+    public static String getMetadataStoredType(ServiceInstance serviceInstance) {
+        Map<String, String> metadata = serviceInstance.getMetadata();
+        return metadata.get(MEATADATA_STORED_TYPE_KEY);
     }
 
     private static void setProviderHostParam(Map<String, String> params, URL providerURL) {

@@ -80,7 +80,7 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
     }
 
     @Override
-    protected void doRemoveMetadata(ServiceMetadataIdentifier metadataIdentifier, URL url) {
+    protected void doRemoveMetadata(ServiceMetadataIdentifier metadataIdentifier) {
         zkClient.delete(getNodePath(metadataIdentifier));
     }
 
@@ -90,18 +90,18 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
     }
 
     @Override
-    protected void doSaveSubscriberData(SubscriberMetadataIdentifier subscriberMetadataIdentifier, List<String> urls) {
-
+    protected void doSaveSubscriberData(SubscriberMetadataIdentifier subscriberMetadataIdentifier, String urls) {
+        zkClient.create(getNodePath(subscriberMetadataIdentifier), urls, false);
     }
 
     @Override
-    protected List<String> doGetSubscribedURLs(SubscriberMetadataIdentifier subscriberMetadataIdentifier) {
-        return null;
+    protected String doGetSubscribedURLs(SubscriberMetadataIdentifier subscriberMetadataIdentifier) {
+        return zkClient.getContent(getNodePath(subscriberMetadataIdentifier));
     }
 
     @Override
-    public String getServiceDefinition(MetadataIdentifier consumerMetadataIdentifier) {
-        throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
+    public String getServiceDefinition(MetadataIdentifier metadataIdentifier) {
+        return zkClient.getContent(getNodePath(metadataIdentifier));
     }
 
     private void storeMetadata(MetadataIdentifier metadataIdentifier, String v) {
@@ -113,6 +113,10 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
     }
 
     String getNodePath(ServiceMetadataIdentifier metadataIdentifier) {
+        return toRootDir() + metadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.PATH);
+    }
+
+    String getNodePath(SubscriberMetadataIdentifier metadataIdentifier) {
         return toRootDir() + metadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.PATH);
     }
 

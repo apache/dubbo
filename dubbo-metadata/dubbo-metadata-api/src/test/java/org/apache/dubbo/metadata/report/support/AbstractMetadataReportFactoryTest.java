@@ -30,6 +30,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -48,12 +49,12 @@ public class AbstractMetadataReportFactoryTest {
                 }
 
                 @Override
-                public void saveServiceMetadata(URL url) {
+                public void saveServiceMetadata(ServiceMetadataIdentifier metadataIdentifier, URL url) {
 
                 }
 
                 @Override
-                public void removeServiceMetadata(URL url) {
+                public void removeServiceMetadata(ServiceMetadataIdentifier metadataIdentifier) {
 
                 }
 
@@ -63,7 +64,8 @@ public class AbstractMetadataReportFactoryTest {
                 }
 
                 @Override
-                public void saveSubscriberData(SubscriberMetadataIdentifier subscriberMetadataIdentifier, List<String> urls) {
+                public void saveSubscribedData(SubscriberMetadataIdentifier subscriberMetadataIdentifier,
+                                               Set<String> urls) {
 
                 }
 

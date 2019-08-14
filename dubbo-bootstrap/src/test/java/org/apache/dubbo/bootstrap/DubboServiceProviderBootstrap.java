@@ -18,6 +18,7 @@ package org.apache.dubbo.bootstrap;
 
 import org.apache.dubbo.bootstrap.rest.UserService;
 import org.apache.dubbo.bootstrap.rest.UserServiceImpl;
+import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
@@ -70,6 +71,7 @@ public class DubboServiceProviderBootstrap {
                 .registries(Arrays.asList(interfaceRegistry, serviceRegistry))
 //                .registry(RegistryBuilder.newBuilder().address("consul://127.0.0.1:8500?registry.type=service").build())
                 .protocol(builder -> builder.port(-1).name("dubbo"))
+                .metadataReport(new MetadataReportConfig("zookeeper://127.0.0.1:2181"))
                 .service(echoService)
                 .service(userService)
                 .start()

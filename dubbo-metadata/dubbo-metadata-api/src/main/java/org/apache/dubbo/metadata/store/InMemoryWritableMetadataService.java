@@ -17,8 +17,6 @@
 package org.apache.dubbo.metadata.store;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.WritableMetadataService;
@@ -27,18 +25,11 @@ import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
 
 import com.google.gson.Gson;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentNavigableMap;
-import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -47,7 +38,6 @@ import static java.util.Collections.unmodifiableSortedSet;
 import static org.apache.dubbo.common.URL.buildKey;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
 
 /**
@@ -58,32 +48,11 @@ import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
  * @see WritableMetadataService
  * @since 2.7.4
  */
-public class InMemoryWritableMetadataService implements WritableMetadataService {
+public class InMemoryWritableMetadataService extends BaseWritableMetadataService implements WritableMetadataService {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+
 
     private final Lock lock = new ReentrantLock();
-
-    // =================================== Registration =================================== //
-
-    /**
-     * All exported {@link URL urls} {@link Map} whose key is the return value of {@link URL#getServiceKey()} method
-     * and value is the {@link SortedSet sorted set} of the {@link URL URLs}
-     */
-    ConcurrentNavigableMap<String, SortedSet<URL>> exportedServiceURLs = new ConcurrentSkipListMap<>();
-
-    // ==================================================================================== //
-
-    // =================================== Subscription =================================== //
-
-    /**
-     * The subscribed {@link URL urls} {@link Map} of {@link MetadataService},
-     * whose key is the return value of {@link URL#getServiceKey()} method and value is
-     * the {@link SortedSet sorted set} of the {@link URL URLs}
-     */
-    final ConcurrentNavigableMap<String, SortedSet<URL>> subscribedServiceURLs = new ConcurrentSkipListMap<>();
-
-    final ConcurrentNavigableMap<String, String> serviceDefinitions = new ConcurrentSkipListMap<>();
 
     // ==================================================================================== //
 
@@ -119,33 +88,6 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
     @Override
     public boolean unsubscribeURL(URL url) {
         return removeURL(subscribedServiceURLs, url);
-    }
-
-    @Override
-    public boolean refreshMetadata(String revision) {
-        boolean result = true;
-        for (SortedSet<URL> urls : exportedServiceURLs.values()) {
-            Iterator<URL> iterator = urls.iterator();
-            List<URL> newList = new ArrayList<>(urls.size());
-            while (iterator.hasNext()) {
-                URL url = iterator.next();
-                // refresh revision in urls
-                Map<String, String> parameters = new HashMap<>(url.getParameters());
-                parameters.put(REVISION_KEY, revision);
-                URL newUrl = new URL(url.getProtocol(), url.getUsername(), url.getPassword(), url.getHost(), url.getPort(), url.getPath(), parameters);
-                newList.add(newUrl);
-                if (!finishRefreshExportedMetadata(newUrl)) {
-                    result = false;
-                }
-            }
-            urls.clear();
-            urls.addAll(newList);
-        }
-        return result;
-    }
-
-    protected boolean finishRefreshExportedMetadata(URL url) {
-        return true;
     }
 
     @Override
@@ -229,10 +171,6 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
         return protocol == null
                 || protocol.equals(url.getParameter(PROTOCOL_KEY))
                 || protocol.equals(url.getProtocol());
-    }
-
-    private static SortedSet<String> getAllUnmodifiableServiceURLs(Map<String, SortedSet<URL>> serviceURLs) {
-        return MetadataService.toSortedStrings(serviceURLs.values().stream().flatMap(Collection::stream));
     }
 
 

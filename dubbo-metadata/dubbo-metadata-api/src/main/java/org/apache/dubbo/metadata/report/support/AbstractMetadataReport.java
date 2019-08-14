@@ -19,6 +19,7 @@ package org.apache.dubbo.metadata.report.support;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
@@ -29,6 +30,7 @@ import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,13 +38,17 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
+import java.lang.reflect.Type;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.SortedSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -286,20 +292,20 @@ public abstract class AbstractMetadataReport implements MetadataReport {
     }
 
     @Override
-    public void saveServiceMetadata(URL url) {
+    public void saveServiceMetadata(ServiceMetadataIdentifier metadataIdentifier, URL url) {
         if (syncReport) {
-            doSaveMetadata(new ServiceMetadataIdentifier(url), url);
+            doSaveMetadata(metadataIdentifier, url);
         } else {
             reportCacheExecutor.execute(() -> doSaveMetadata(new ServiceMetadataIdentifier(url), url));
         }
     }
 
     @Override
-    public void removeServiceMetadata(URL url) {
+    public void removeServiceMetadata(ServiceMetadataIdentifier metadataIdentifier) {
         if (syncReport) {
-            doRemoveMetadata(new ServiceMetadataIdentifier(url), url);
+            doRemoveMetadata(metadataIdentifier);
         } else {
-            reportCacheExecutor.execute(() -> doRemoveMetadata(new ServiceMetadataIdentifier(url), url));
+            reportCacheExecutor.execute(() -> doRemoveMetadata(metadataIdentifier));
         }
     }
 
@@ -310,19 +316,21 @@ public abstract class AbstractMetadataReport implements MetadataReport {
     }
 
     @Override
-    public void saveSubscriberData(SubscriberMetadataIdentifier subscriberMetadataIdentifier, List<String> urls) {
+    public void saveSubscribedData(SubscriberMetadataIdentifier subscriberMetadataIdentifier, Set<String> urls) {
         if (syncReport) {
-            doSaveSubscriberData(subscriberMetadataIdentifier, urls);
+            doSaveSubscriberData(subscriberMetadataIdentifier, new Gson().toJson(urls));
         } else {
-            reportCacheExecutor.execute(() -> doSaveSubscriberData(subscriberMetadataIdentifier, urls));
+            reportCacheExecutor.execute(() -> doSaveSubscriberData(subscriberMetadataIdentifier, new Gson().toJson(urls)));
         }
     }
 
 
     @Override
     public List<String> getSubscribedURLs(SubscriberMetadataIdentifier subscriberMetadataIdentifier) {
-        // TODO, fallback to local cache
-        return doGetSubscribedURLs(subscriberMetadataIdentifier);
+        String content = doGetSubscribedURLs(subscriberMetadataIdentifier);
+        Type setType = new TypeToken<SortedSet<String>>() {
+        }.getType();
+        return new Gson().fromJson(content, setType);
     }
 
     String getProtocol(URL url) {
@@ -430,18 +438,29 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         }
     }
 
+    private void doSaveSubscriberData(SubscriberMetadataIdentifier subscriberMetadataIdentifier, List<String> urls) {
+        if (CollectionUtils.isEmpty(urls)) {
+            return;
+        }
+        List<String> encodedUrlList = new ArrayList<>(urls.size());
+        for (String url : urls) {
+            encodedUrlList.add(URL.encode(url));
+        }
+        doSaveSubscriberData(subscriberMetadataIdentifier, encodedUrlList);
+    }
+
     protected abstract void doStoreProviderMetadata(MetadataIdentifier providerMetadataIdentifier, String serviceDefinitions);
 
     protected abstract void doStoreConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, String serviceParameterString);
 
     protected abstract void doSaveMetadata(ServiceMetadataIdentifier metadataIdentifier, URL url);
 
-    protected abstract void doRemoveMetadata(ServiceMetadataIdentifier metadataIdentifier, URL url);
+    protected abstract void doRemoveMetadata(ServiceMetadataIdentifier metadataIdentifier);
 
     protected abstract List<String> doGetExportedURLs(ServiceMetadataIdentifier metadataIdentifier);
 
-    protected abstract void doSaveSubscriberData(SubscriberMetadataIdentifier subscriberMetadataIdentifier, List<String> urls);
+    protected abstract void doSaveSubscriberData(SubscriberMetadataIdentifier subscriberMetadataIdentifier, String urlListStr);
 
-    protected abstract List<String> doGetSubscribedURLs(SubscriberMetadataIdentifier subscriberMetadataIdentifier);
+    protected abstract String doGetSubscribedURLs(SubscriberMetadataIdentifier subscriberMetadataIdentifier);
 
 }

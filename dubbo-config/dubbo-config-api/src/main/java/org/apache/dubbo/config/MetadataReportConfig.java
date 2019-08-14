@@ -26,6 +26,7 @@ import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.PROPERTIES_CHAR_SEPERATOR;
+import static org.apache.dubbo.metadata.report.support.Constants.METADATA_REPORT_KEY;
 
 /**
  * MetadataReportConfig
@@ -93,7 +94,13 @@ public class MetadataReportConfig extends AbstractConfig {
         }
         Map<String, String> map = new HashMap<String, String>();
         appendParameters(map, this);
-        return UrlUtils.parseURL(address, map);
+        if (!StringUtils.isEmpty(address)) {
+            URL url = URL.valueOf(address);
+            map.put(METADATA_REPORT_KEY, url.getProtocol());
+            return new URL(METADATA_REPORT_KEY, url.getUsername(), url.getPassword(), url.getHost(),
+                    url.getPort(), url.getPath(), map);
+        }
+        throw new IllegalArgumentException("The address of metadata report is invalid.");
     }
 
     @Parameter(excluded = true)
