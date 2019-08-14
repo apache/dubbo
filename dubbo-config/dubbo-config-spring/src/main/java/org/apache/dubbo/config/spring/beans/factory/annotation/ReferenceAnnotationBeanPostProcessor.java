@@ -154,7 +154,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AnnotationInjectedBean
         if (beanFactory.containsBean(referencedBeanName)) { // If @Service bean is local one
             /**
              * Get  the @Service's BeanDefinition from {@link BeanFactory}
-             * Refer to {@link ServiceAnnotationBeanPostProcessor#buildServiceBeanDefinition}
+             * Refer to {@link ServiceAnnotationBeanFactoryPostProcessor#buildServiceBeanDefinition}
              */
             AbstractBeanDefinition beanDefinition = (AbstractBeanDefinition) beanFactory.getBeanDefinition(referencedBeanName);
             RuntimeBeanReference runtimeBeanReference = (RuntimeBeanReference) beanDefinition.getPropertyValues().get("ref");

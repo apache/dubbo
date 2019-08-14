@@ -108,9 +108,9 @@ public class ServiceAnnotationTestConfiguration {
     }
 
     @Bean
-    public ServiceAnnotationBeanPostProcessor serviceAnnotationBeanPostProcessor
+    public ServiceAnnotationBeanFactoryPostProcessor serviceAnnotationBeanPostProcessor
             (@Value("${packagesToScan}") String... packagesToScan) {
-        return new ServiceAnnotationBeanPostProcessor(packagesToScan);
+        return new ServiceAnnotationBeanFactoryPostProcessor(packagesToScan);
     }
 
 }

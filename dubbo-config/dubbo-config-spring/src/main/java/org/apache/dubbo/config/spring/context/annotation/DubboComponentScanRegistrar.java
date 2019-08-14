@@ -18,7 +18,7 @@ package org.apache.dubbo.config.spring.context.annotation;
 
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
-import org.apache.dubbo.config.spring.beans.factory.annotation.ServiceAnnotationBeanPostProcessor;
+import org.apache.dubbo.config.spring.beans.factory.annotation.ServiceAnnotationBeanFactoryPostProcessor;
 import org.apache.dubbo.config.spring.util.BeanRegistrar;
 
 import org.springframework.beans.factory.BeanFactory;
@@ -45,7 +45,7 @@ import static org.springframework.beans.factory.support.BeanDefinitionBuilder.ro
  * @see Service
  * @see DubboComponentScan
  * @see ImportBeanDefinitionRegistrar
- * @see ServiceAnnotationBeanPostProcessor
+ * @see ServiceAnnotationBeanFactoryPostProcessor
  * @see ReferenceAnnotationBeanPostProcessor
  * @since 2.5.7
  */
@@ -63,7 +63,7 @@ public class DubboComponentScanRegistrar implements ImportBeanDefinitionRegistra
     }
 
     /**
-     * Registers {@link ServiceAnnotationBeanPostProcessor}
+     * Registers {@link ServiceAnnotationBeanFactoryPostProcessor}
      *
      * @param packagesToScan packages to scan without resolving placeholders
      * @param registry       {@link BeanDefinitionRegistry}
@@ -71,7 +71,7 @@ public class DubboComponentScanRegistrar implements ImportBeanDefinitionRegistra
      */
     private void registerServiceAnnotationBeanPostProcessor(Set<String> packagesToScan, BeanDefinitionRegistry registry) {
 
-        BeanDefinitionBuilder builder = rootBeanDefinition(ServiceAnnotationBeanPostProcessor.class);
+        BeanDefinitionBuilder builder = rootBeanDefinition(ServiceAnnotationBeanFactoryPostProcessor.class);
         builder.addConstructorArgValue(packagesToScan);
         builder.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
         AbstractBeanDefinition beanDefinition = builder.getBeanDefinition();

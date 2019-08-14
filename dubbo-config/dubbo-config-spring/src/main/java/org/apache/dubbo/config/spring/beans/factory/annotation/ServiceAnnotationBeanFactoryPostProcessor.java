@@ -78,7 +78,7 @@ import static org.springframework.util.ClassUtils.resolveClassName;
  *
  * @since 2.5.8
  */
-public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistryPostProcessor, EnvironmentAware,
+public class ServiceAnnotationBeanFactoryPostProcessor implements BeanDefinitionRegistryPostProcessor, EnvironmentAware,
         ResourceLoaderAware, BeanClassLoaderAware {
 
 
@@ -92,15 +92,15 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
 
     private ClassLoader classLoader;
 
-    public ServiceAnnotationBeanPostProcessor(String... packagesToScan) {
+    public ServiceAnnotationBeanFactoryPostProcessor(String... packagesToScan) {
         this(Arrays.asList(packagesToScan));
     }
 
-    public ServiceAnnotationBeanPostProcessor(Collection<String> packagesToScan) {
+    public ServiceAnnotationBeanFactoryPostProcessor(Collection<String> packagesToScan) {
         this(new LinkedHashSet<>(packagesToScan));
     }
 
-    public ServiceAnnotationBeanPostProcessor(Set<String> packagesToScan) {
+    public ServiceAnnotationBeanFactoryPostProcessor(Set<String> packagesToScan) {
         this.packagesToScan = packagesToScan;
     }
 

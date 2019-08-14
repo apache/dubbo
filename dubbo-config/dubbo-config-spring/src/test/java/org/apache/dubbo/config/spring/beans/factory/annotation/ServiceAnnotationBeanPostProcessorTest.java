@@ -17,7 +17,6 @@
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
 import org.apache.dubbo.config.spring.ServiceBean;
-import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.api.HelloService;
 
 import org.junit.Assert;
@@ -34,7 +33,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.util.Map;
 
 /**
- * {@link ServiceAnnotationBeanPostProcessor} Test
+ * {@link ServiceAnnotationBeanFactoryPostProcessor} Test
  *
  * @since 2.5.8
  */
@@ -54,9 +53,9 @@ public class ServiceAnnotationBeanPostProcessorTest {
     private ConfigurableListableBeanFactory beanFactory;
 
     @Bean
-    public ServiceAnnotationBeanPostProcessor serviceAnnotationBeanPostProcessor2
+    public ServiceAnnotationBeanFactoryPostProcessor serviceAnnotationBeanPostProcessor2
             (@Value("${packagesToScan}") String... packagesToScan) {
-        return new ServiceAnnotationBeanPostProcessor(packagesToScan);
+        return new ServiceAnnotationBeanFactoryPostProcessor(packagesToScan);
     }
 
     @Test
@@ -70,8 +69,8 @@ public class ServiceAnnotationBeanPostProcessorTest {
 
         Assert.assertEquals(2, serviceBeansMap.size());
 
-        Map<String, ServiceAnnotationBeanPostProcessor> beanPostProcessorsMap =
-                beanFactory.getBeansOfType(ServiceAnnotationBeanPostProcessor.class);
+        Map<String, ServiceAnnotationBeanFactoryPostProcessor> beanPostProcessorsMap =
+                beanFactory.getBeansOfType(ServiceAnnotationBeanFactoryPostProcessor.class);
 
         Assert.assertEquals(2, beanPostProcessorsMap.size());
 
