@@ -1,1 +1,1 @@
-fastjson=org.apache.dubbo.common.serialize.fastjson.FastJsonSerialization
+fastjson=fastjson=com.alibaba.dubbo.common.serialize.support.json.GenericFastJsonSerialization
