@@ -1011,7 +1011,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (StringUtils.isEmpty(generic)) {
             return;
         }
-        if (ProtocolUtils.isGeneric(generic)) {
+        if (Boolean.FALSE.toString().equals(generic) || ProtocolUtils.isGeneric(generic)) {
             this.generic = generic;
         } else {
             throw new IllegalArgumentException("Unsupported generic type " + generic);
