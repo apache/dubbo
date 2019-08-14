@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.http;
+package org.apache.dubbo.rpc.protocol.httpinvoker;
 
 
 /**

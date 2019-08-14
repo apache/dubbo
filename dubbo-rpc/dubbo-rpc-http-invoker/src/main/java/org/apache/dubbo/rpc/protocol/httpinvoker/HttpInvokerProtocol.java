@@ -157,7 +157,7 @@ public class HttpInvokerProtocol extends AbstractProxyProtocol {
             key = key + "/" + GENERIC_KEY;
         }
 
-        httpProxyFactoryBean.setServiceUrl(key);
+        httpProxyFactoryBean.setServiceUrl(key.replace("http-invoker","http"));
         httpProxyFactoryBean.setServiceInterface(serviceType);
         String client = url.getParameter(Constants.CLIENT_KEY);
         if (StringUtils.isEmpty(client) || "simple".equals(client)) {
