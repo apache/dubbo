@@ -763,14 +763,19 @@ public class DubboBootstrap implements Lifecycle {
     private String findOneProtocolForServiceInstance(Set<String> protocols) {
         String result = null;
         for (String protocol : protocols) {
-            if ("rest".equals(protocol)) {
+            if ("rest".equalsIgnoreCase(protocol)) {
                 result = protocol;
                 break;
             }
         }
 
         if (result == null) {
-            result = protocols.iterator().next();
+            for (String protocol : protocols) {
+                if (!"injvm".equalsIgnoreCase(protocol) && "registry".equalsIgnoreCase(protocol)) {
+                    result = protocol;
+                    break;
+                }
+            }
         }
         return result;
     }

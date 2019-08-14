@@ -1,0 +1,1 @@
+service-oriented-registry=org.apache.dubbo.registry.service.ServiceOrientedRegistryFactory

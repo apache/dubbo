@@ -1,0 +1,3 @@
+service:
+  host: http://service-holding
+  me: ${service.host}/me

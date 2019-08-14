@@ -59,6 +59,9 @@ import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_SE
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_PROTOCOL;
+import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_TYPE;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
 import static org.apache.dubbo.config.Constants.LAYER_KEY;
@@ -281,9 +284,10 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                     List<URL> urls = UrlUtils.parseURLs(address, map);
 
                     for (URL url : urls) {
+
                         url = URLBuilder.from(url)
                                 .addParameter(REGISTRY_KEY, url.getProtocol())
-                                .setProtocol(REGISTRY_PROTOCOL)
+                                .setProtocol(extractRegistryType(url))
                                 .build();
                         if ((provider && url.getParameter(REGISTER_KEY, true))
                                 || (!provider && url.getParameter(SUBSCRIBE_KEY, true))) {
@@ -294,6 +298,12 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             }
         }
         return registryList;
+    }
+
+    private String extractRegistryType(URL url) {
+        boolean isServiceRegistry = url.getParameter(REGISTRY_TYPE_KEY) != null
+                && SERVICE_REGISTRY_TYPE.equals(url.getParameter(REGISTRY_TYPE_KEY));
+        return isServiceRegistry ? SERVICE_REGISTRY_PROTOCOL : REGISTRY_PROTOCOL;
     }
 
     /**
@@ -332,10 +342,11 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 }
             }
             return UrlUtils.parseURL(address, map);
-        } else if (REGISTRY_PROTOCOL.equals(monitor.getProtocol()) && registryURL != null) {
+        } else if ((REGISTRY_PROTOCOL.equals(monitor.getProtocol()) || SERVICE_REGISTRY_PROTOCOL.equals(monitor.getProtocol()))
+                && registryURL != null) {
             return URLBuilder.from(registryURL)
                     .setProtocol(DUBBO_PROTOCOL)
-                    .addParameter(PROTOCOL_KEY, REGISTRY_PROTOCOL)
+                    .addParameter(PROTOCOL_KEY, monitor.getProtocol())
                     .addParameterAndEncoded(REFER_KEY, StringUtils.toQueryString(map))
                     .build();
         }

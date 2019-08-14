@@ -98,13 +98,8 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
             if (registry != null) {
                 return registry;
             }
-            // creates an instance of ServiceOrientedRegistry if supported
-            // since 2.7.4
-            registry = ServiceOrientedRegistry.create(url);
-            if (registry == null) { // If not supported, create the default Registry
-                //create registry by spi/ioc
-                registry = createRegistry(url);
-            }
+            //create registry by spi/ioc
+            registry = createRegistry(url);
             if (registry == null) {
                 throw new IllegalStateException("Can not create registry " + url);
             }

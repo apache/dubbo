@@ -19,6 +19,7 @@ package org.apache.dubbo.registry.support;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.NotifyListener;
+import org.apache.dubbo.registry.service.ServiceOrientedRegistry;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

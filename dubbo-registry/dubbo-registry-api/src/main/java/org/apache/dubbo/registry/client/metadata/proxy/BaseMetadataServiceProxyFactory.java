@@ -2,6 +2,7 @@ package org.apache.dubbo.registry.client.metadata.proxy;
 
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.ServiceInstance;
+import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,7 +17,7 @@ abstract class BaseMetadataServiceProxyFactory implements MetadataServiceProxyFa
 
     public final MetadataService getProxy(ServiceInstance serviceInstance) {
         return proxies.computeIfAbsent(serviceInstance.getServiceName() + "##" +
-                serviceInstance.getMetadata().getOrDefault(REVISION_KEY, ""), id -> createProxy(serviceInstance));
+                serviceInstance.getMetadata().getOrDefault(ServiceInstanceMetadataUtils.EXPORTED_SERVICES_REVISION_KEY, ""), id -> createProxy(serviceInstance));
     }
 
     protected abstract MetadataService createProxy(ServiceInstance serviceInstance);
