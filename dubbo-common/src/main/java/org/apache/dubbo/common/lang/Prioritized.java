@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.common.lang;
 
+import java.util.Comparator;
+
 import static java.lang.Integer.compare;
 
 /**
@@ -25,6 +27,11 @@ import static java.lang.Integer.compare;
  * @since 2.7.4
  */
 public interface Prioritized extends Comparable<Prioritized> {
+
+    /**
+     * The {@link Comparator} of {@link Prioritized}
+     */
+    Comparator<Prioritized> COMPARATOR = (a, b) -> a.compareTo(b);
 
     /**
      * The maximum priority
