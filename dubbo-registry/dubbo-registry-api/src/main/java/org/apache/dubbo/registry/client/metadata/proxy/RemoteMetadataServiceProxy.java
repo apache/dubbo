@@ -34,7 +34,8 @@ public class RemoteMetadataServiceProxy implements MetadataService {
 
     public RemoteMetadataServiceProxy(ServiceInstance serviceInstance) {
         this.serviceName = serviceInstance.getServiceName();
-        this.revision = serviceInstance.getMetadata().getOrDefault(ServiceInstanceMetadataUtils.EXPORTED_SERVICES_REVISION_KEY, "");
+        this.revision = serviceInstance.getMetadata()
+                .getOrDefault(ServiceInstanceMetadataUtils.EXPORTED_SERVICES_REVISION_KEY, "");
     }
 
     @Override
@@ -45,7 +46,8 @@ public class RemoteMetadataServiceProxy implements MetadataService {
     // TODO, protocol should be used
     @Override
     public SortedSet<String> getExportedURLs(String serviceInterface, String group, String version, String protocol) {
-        return toSortedStrings(getMetadataReport().getExportedURLs(new ServiceMetadataIdentifier(serviceInterface, group, version, PROVIDER_SIDE, revision)));
+        return toSortedStrings(getMetadataReport().getExportedURLs(
+                new ServiceMetadataIdentifier(serviceInterface, group, version, PROVIDER_SIDE, revision, protocol)));
     }
 
     private static SortedSet<String> toSortedStrings(Collection<String> values) {

@@ -81,6 +81,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.METADATA_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_REMOTE;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
 import static org.apache.dubbo.config.context.ConfigManager.getInstance;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.MEATADATA_STORED_TYPE_KEY;
 import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
 
 /**
@@ -792,7 +793,7 @@ public class DubboBootstrap implements Lifecycle {
 
     private ServiceInstance initServiceInstance(String serviceName, String host, int port, String metadataType) {
         this.serviceInstance = new DefaultServiceInstance(serviceName, host, port);
-        this.serviceInstance.getMetadata().put(METADATA_KEY, metadataType);
+        this.serviceInstance.getMetadata().put(MEATADATA_STORED_TYPE_KEY, metadataType);
         return this.serviceInstance;
     }
 

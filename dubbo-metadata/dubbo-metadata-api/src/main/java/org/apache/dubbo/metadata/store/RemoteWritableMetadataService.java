@@ -129,6 +129,7 @@ public class RemoteWritableMetadataService extends BaseWritableMetadataService i
     public boolean unexportURL(URL url) {
         ServiceMetadataIdentifier metadataIdentifier = new ServiceMetadataIdentifier(url);
         metadataIdentifier.setRevision(exportedRevision);
+        metadataIdentifier.setProtocol(url.getProtocol());
         return throwableAction(getMetadataReport()::removeServiceMetadata, metadataIdentifier);
     }
 
@@ -174,6 +175,7 @@ public class RemoteWritableMetadataService extends BaseWritableMetadataService i
                 // refresh revision in urls
                 ServiceMetadataIdentifier metadataIdentifier = new ServiceMetadataIdentifier(url);
                 metadataIdentifier.setRevision(exportedRevision);
+                metadataIdentifier.setProtocol(url.getProtocol());
 
                 boolean tmpResult = throwableAction(getMetadataReport()::saveServiceMetadata, metadataIdentifier, url);
                 if (!tmpResult) result = tmpResult;

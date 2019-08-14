@@ -296,7 +296,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         if (syncReport) {
             doSaveMetadata(metadataIdentifier, url);
         } else {
-            reportCacheExecutor.execute(() -> doSaveMetadata(new ServiceMetadataIdentifier(url), url));
+            reportCacheExecutor.execute(() -> doSaveMetadata(metadataIdentifier, url));
         }
     }
 

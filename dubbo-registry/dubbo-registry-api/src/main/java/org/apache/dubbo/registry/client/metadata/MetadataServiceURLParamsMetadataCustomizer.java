@@ -24,8 +24,8 @@ import org.apache.dubbo.registry.client.ServiceInstanceMetadataCustomizer;
 
 import java.util.SortedSet;
 
-import static org.apache.dubbo.common.constants.CommonConstants.METADATA_KEY;
 import static org.apache.dubbo.metadata.MetadataService.toURLs;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.MEATADATA_STORED_TYPE_KEY;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.METADATA_SERVICE_URL_PARAMS_KEY;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getMetadataServiceParameter;
 
@@ -47,7 +47,7 @@ public class MetadataServiceURLParamsMetadataCustomizer extends ServiceInstanceM
     public String buildMetadataValue(ServiceInstance serviceInstance) {
 
         WritableMetadataService writableMetadataService = WritableMetadataService.getExtension(
-                serviceInstance.getMetadata().get(METADATA_KEY)
+                serviceInstance.getMetadata().get(MEATADATA_STORED_TYPE_KEY)
         );
 
         String serviceInterface = MetadataService.class.getName();

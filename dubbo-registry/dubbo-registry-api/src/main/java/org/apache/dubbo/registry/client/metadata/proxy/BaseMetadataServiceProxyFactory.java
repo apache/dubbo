@@ -17,7 +17,7 @@ abstract class BaseMetadataServiceProxyFactory implements MetadataServiceProxyFa
 
     public final MetadataService getProxy(ServiceInstance serviceInstance) {
         return proxies.computeIfAbsent(serviceInstance.getServiceName() + "##" +
-                serviceInstance.getMetadata().getOrDefault(ServiceInstanceMetadataUtils.EXPORTED_SERVICES_REVISION_KEY, ""), id -> createProxy(serviceInstance));
+                ServiceInstanceMetadataUtils.getExportedServicesRevision(serviceInstance), id -> createProxy(serviceInstance));
     }
 
     protected abstract MetadataService createProxy(ServiceInstance serviceInstance);

@@ -17,9 +17,15 @@
 package org.apache.dubbo.bootstrap;
 
 import org.apache.dubbo.bootstrap.rest.UserService;
+import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.context.ConfigManager;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.apache.dubbo.common.constants.CommonConstants.METADATA_KEY;
 
 /**
  * Dubbo Provider Bootstrap

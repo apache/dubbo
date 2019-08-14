@@ -29,8 +29,8 @@ import java.util.SortedSet;
 
 import static java.lang.String.valueOf;
 import static java.util.Objects.hash;
-import static org.apache.dubbo.common.constants.CommonConstants.METADATA_KEY;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.EXPORTED_SERVICES_REVISION_KEY;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.MEATADATA_STORED_TYPE_KEY;
 
 /**
  * The customizer to a add the metadata that the reversion of Dubbo exported services calculates.
@@ -49,7 +49,7 @@ public class ExportedServicesRevisionMetadataCustomizer extends ServiceInstanceM
     @Override
     protected String buildMetadataValue(ServiceInstance serviceInstance) {
         WritableMetadataService writableMetadataService = WritableMetadataService.getExtension(
-                serviceInstance.getMetadata().get(METADATA_KEY)
+                serviceInstance.getMetadata().get(MEATADATA_STORED_TYPE_KEY)
         );
         SortedSet<String> exportedURLs = writableMetadataService.getExportedURLs();
         Object[] data = exportedURLs.stream()

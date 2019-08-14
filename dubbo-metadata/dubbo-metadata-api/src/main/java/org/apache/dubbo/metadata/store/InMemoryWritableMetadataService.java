@@ -58,7 +58,7 @@ public class InMemoryWritableMetadataService extends BaseWritableMetadataService
 
     @Override
     public SortedSet<String> getSubscribedURLs() {
-        return getAllUnmodifiableServiceURLs(subscribedServiceURLs);
+        return super.getSubscribedURLs();
     }
 
     @Override
