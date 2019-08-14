@@ -66,9 +66,11 @@ import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoad
 import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
 import static org.apache.dubbo.common.utils.CollectionUtils.isNotEmpty;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
+import static org.apache.dubbo.metadata.WritableMetadataService.DEFAULT_EXTENSION;
 import static org.apache.dubbo.metadata.report.support.Constants.METADATA_REPORT_KEY;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getExportedServicesRevision;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getMetadataServiceURLsParams;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getMetadataStoredType;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getProviderHost;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getProviderPort;
 
@@ -95,7 +97,6 @@ public class ServiceOrientedRegistry extends FailbackRegistry {
 
     private final WritableMetadataService writableMetadataService;
 
-    private final MetadataServiceProxyFactory metadataServiceProxyFactory;
 
     public ServiceOrientedRegistry(URL registryURL) {
         super(registryURL);
@@ -105,9 +106,7 @@ public class ServiceOrientedRegistry extends FailbackRegistry {
 
         String metadata = registryURL.getParameter(METADATA_REPORT_KEY, METADATA_DEFAULT);
         // FIXME
-        metadata = "remote";
         this.writableMetadataService = WritableMetadataService.getExtension(metadata);
-        this.metadataServiceProxyFactory = MetadataServiceProxyFactory.getExtension(metadata);
     }
 
     private Set<String> buildSubscribedServices(URL url) {
@@ -430,9 +429,12 @@ public class ServiceOrientedRegistry extends FailbackRegistry {
         String version = subscribedURL.getParameter(VERSION_KEY);
         // The subscribed protocol may be null
         String protocol = subscribedURL.getParameter(PROTOCOL_KEY);
+        String metadataServiceType = getMetadataStoredType(providerInstance);
 
         try {
-            MetadataService metadataService = metadataServiceProxyFactory.getProxy(providerInstance);
+            MetadataService metadataService = MetadataServiceProxyFactory
+                    .getExtension(metadataServiceType == null ? DEFAULT_EXTENSION : metadataServiceType)
+                    .getProxy(providerInstance);
             SortedSet<String> urls = metadataService.getExportedURLs(serviceInterface, group, version, protocol);
             exportedURLs = urls.stream().map(URL::valueOf).collect(Collectors.toList());
         } catch (Throwable e) {
@@ -440,7 +442,6 @@ public class ServiceOrientedRegistry extends FailbackRegistry {
                 logger.error(e.getMessage(), e);
             }
         }
-
         return exportedURLs;
     }
 

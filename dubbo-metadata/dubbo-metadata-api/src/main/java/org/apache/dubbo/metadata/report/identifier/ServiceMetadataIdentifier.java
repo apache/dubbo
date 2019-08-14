@@ -37,6 +37,7 @@ public class ServiceMetadataIdentifier extends BaseServiceMetadataIdentifier {
         this.group = url.getParameter(GROUP_KEY);
         this.side = url.getParameter(SIDE_KEY);
         this.revision = (url.getParameter(REVISION_KEY));
+        this.protocol = url.getProtocol();
     }
 
     public String getUniqueKey(MetadataIdentifier.KeyTypeEnum keyType) {
@@ -45,5 +46,25 @@ public class ServiceMetadataIdentifier extends BaseServiceMetadataIdentifier {
 
     public String getIdentifierKey() {
         return super.getIdentifierKey(protocol, KEY_REVISON_PREFIX + revision);
+    }
+
+    public void setRevision(String revision) {
+        this.revision = revision;
+    }
+
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
+    }
+
+    @Override
+    public String toString() {
+        return "ServiceMetadataIdentifier{" +
+                "revision='" + revision + '\'' +
+                ", protocol='" + protocol + '\'' +
+                ", serviceInterface='" + serviceInterface + '\'' +
+                ", version='" + version + '\'' +
+                ", group='" + group + '\'' +
+                ", side='" + side + '\'' +
+                "} " + super.toString();
     }
 }

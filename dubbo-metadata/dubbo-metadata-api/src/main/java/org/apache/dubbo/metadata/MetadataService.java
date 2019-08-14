@@ -43,6 +43,8 @@ import static java.util.stream.StreamSupport.stream;
  */
 public interface MetadataService {
 
+    //FIXME the value is default, it was used by testing temporarily
+    static final String DEFAULT_EXTENSION = "default";
 
     /**
      * The value of all service names

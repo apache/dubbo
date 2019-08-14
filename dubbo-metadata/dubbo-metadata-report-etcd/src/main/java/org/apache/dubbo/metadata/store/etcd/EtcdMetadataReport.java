@@ -90,7 +90,7 @@ public class EtcdMetadataReport extends AbstractMetadataReport {
     }
 
     @Override
-    protected void doRemoveMetadata(ServiceMetadataIdentifier serviceMetadataIdentifier, URL url) {
+    protected void doRemoveMetadata(ServiceMetadataIdentifier serviceMetadataIdentifier) {
         throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
     }
 
@@ -100,12 +100,12 @@ public class EtcdMetadataReport extends AbstractMetadataReport {
     }
 
     @Override
-    protected void doSaveSubscriberData(SubscriberMetadataIdentifier subscriberMetadataIdentifier, List<String> urls) {
+    protected void doSaveSubscriberData(SubscriberMetadataIdentifier subscriberMetadataIdentifier, String urlListStr) {
 
     }
 
     @Override
-    protected List<String> doGetSubscribedURLs(SubscriberMetadataIdentifier subscriberMetadataIdentifier) {
+    protected String doGetSubscribedURLs(SubscriberMetadataIdentifier subscriberMetadataIdentifier) {
         throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
     }
 

@@ -27,10 +27,15 @@ import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
+import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
+import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.RpcException;
 
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
@@ -47,11 +52,16 @@ import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
  * exported.
  * It is used by server (provider).
  *
- * @since 2.7.0
+ * @since 2.7.5
  */
-public class RemoteWritableMetadataService extends InMemoryWritableMetadataService implements WritableMetadataService {
+public class RemoteWritableMetadataService extends BaseWritableMetadataService implements WritableMetadataService {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
+    private volatile String exportedRevision;
+    private volatile String subscribedRevision;
+
+    public RemoteWritableMetadataService() {
+    }
 
     public MetadataReport getMetadataReport() {
         return MetadataReportInstance.getMetadataReport(true);
@@ -112,41 +122,109 @@ public class RemoteWritableMetadataService extends InMemoryWritableMetadataServi
 
     @Override
     public boolean exportURL(URL url) {
-        return super.exportURL(url);
+        return true;
     }
 
     @Override
     public boolean unexportURL(URL url) {
-        super.unexportURL(url);
-        return throwableAction(getMetadataReport()::removeServiceMetadata, url);
+        ServiceMetadataIdentifier metadataIdentifier = new ServiceMetadataIdentifier(url);
+        metadataIdentifier.setRevision(exportedRevision);
+        return throwableAction(getMetadataReport()::removeServiceMetadata, metadataIdentifier);
     }
 
     @Override
     public boolean subscribeURL(URL url) {
-        super.subscribeURL(url);
-        return throwableAction(getMetadataReport()::saveServiceMetadata, url);
+        return true;
     }
 
     @Override
     public boolean unsubscribeURL(URL url) {
-        super.unsubscribeURL(url);
-        return throwableAction(getMetadataReport()::removeServiceMetadata, url);
+        return true;
     }
 
     @Override
-    protected boolean finishRefreshExportedMetadata(URL url) {
-        return throwableAction(getMetadataReport()::saveServiceMetadata, url);
+    public boolean refreshMetadata(String exportedRevision, String subscribedRevision) {
+        boolean result = true;
+        if (!StringUtils.isEmpty(exportedRevision) && !exportedRevision.equals(this.exportedRevision)) {
+            this.exportedRevision = exportedRevision;
+            boolean executeResult = saveServiceMetadata();
+            if (!executeResult) {
+                result = false;
+            }
+        }
+        if (!StringUtils.isEmpty(subscribedRevision) && !subscribedRevision.equals(this.subscribedRevision)) {
+            this.subscribedRevision = subscribedRevision;
+            SubscriberMetadataIdentifier metadataIdentifier = new SubscriberMetadataIdentifier();
+            metadataIdentifier.setApplication(serviceName());
+            metadataIdentifier.setRevision(subscribedRevision);
+            boolean executeResult = throwableAction(getMetadataReport()::saveSubscribedData, metadataIdentifier, super.getSubscribedURLs());
+            if (!executeResult) {
+                result = false;
+            }
+        }
+        return result;
+    }
+
+    private boolean saveServiceMetadata() {
+        boolean result = true;
+        for (SortedSet<URL> urls : exportedServiceURLs.values()) {
+            Iterator<URL> iterator = urls.iterator();
+            while (iterator.hasNext()) {
+                URL url = iterator.next();
+                // refresh revision in urls
+                ServiceMetadataIdentifier metadataIdentifier = new ServiceMetadataIdentifier(url);
+                metadataIdentifier.setRevision(exportedRevision);
+
+                boolean tmpResult = throwableAction(getMetadataReport()::saveServiceMetadata, metadataIdentifier, url);
+                if (!tmpResult) result = tmpResult;
+            }
+        }
+        return result;
     }
 
 
-    private boolean throwableAction(Consumer<URL> consumer, URL url) {
+    @Override
+    public SortedSet<String> getExportedURLs(String serviceInterface, String group, String version, String protocol) {
+        return null;
+    }
+
+    @Override
+    public String getServiceDefinition(String interfaceName, String version, String group) {
+        return null;
+    }
+
+    @Override
+    public String getServiceDefinition(String serviceKey) {
+        return null;
+    }
+
+    boolean throwableAction(BiConsumer<ServiceMetadataIdentifier, URL> consumer, ServiceMetadataIdentifier metadataIdentifier, URL url) {
         try {
-            consumer.accept(url);
+            consumer.accept(metadataIdentifier, url);
         } catch (Exception e) {
-            logger.error("Failed to remove url metadata to remote center, url is: " + url);
+            logger.error("Failed to execute consumer, url is: " + url);
             return false;
         }
         return true;
     }
 
+    boolean throwableAction(BiConsumer<SubscriberMetadataIdentifier, Set<String>> consumer, SubscriberMetadataIdentifier metadataIdentifier, Set<String> urls) {
+        try {
+            consumer.accept(metadataIdentifier, urls);
+        } catch (Exception e) {
+            logger.error("Failed to execute consumer, url is: " + urls);
+            return false;
+        }
+        return true;
+    }
+
+    boolean throwableAction(Consumer<ServiceMetadataIdentifier> consumer, ServiceMetadataIdentifier metadataIdentifier) {
+        try {
+            consumer.accept(metadataIdentifier);
+        } catch (Exception e) {
+            logger.error("Failed to remove url metadata to remote center, metadataIdentifier is: " + metadataIdentifier);
+            return false;
+        }
+        return true;
+    }
 }

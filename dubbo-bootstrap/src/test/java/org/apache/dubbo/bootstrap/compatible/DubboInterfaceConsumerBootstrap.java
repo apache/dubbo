@@ -49,10 +49,10 @@ public class DubboInterfaceConsumerBootstrap {
 
         ConfigManager configManager = ConfigManager.getInstance();
 
-        ReferenceConfig<EchoService> referenceConfig = configManager.getReferenceConfig("echo");
+        ReferenceConfig<EchoService> referenceConfig = configManager.getReference("echo");
         EchoService echoService = referenceConfig.get();
 
-        ReferenceConfig<UserService> referenceConfig1 = configManager.getReferenceConfig("user");
+        ReferenceConfig<UserService> referenceConfig1 = configManager.getReference("user");
         UserService userService = referenceConfig1.get();
 
         for (int i = 0; i < 500; i++) {
