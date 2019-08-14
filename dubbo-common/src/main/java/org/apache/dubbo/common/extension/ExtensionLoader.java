@@ -791,7 +791,7 @@ public class ExtensionLoader<T> {
             BufferedReader reader = new BufferedReader(new InputStreamReader(resourceURL.openStream(), "utf-8"));
             try {
                 String line;
-                // 按照行读取内容
+                // 按照行读取内容，提取扩展名或扩展类lujing路径
                 while ((line = reader.readLine()) != null) {
                     final int ci = line.indexOf('#');
                     if (ci >= 0) {
@@ -972,6 +972,7 @@ public class ExtensionLoader<T> {
         return compiler.compile(code, classLoader);
     }
 
+    // 创建当前扩展动态适配器
     private String createAdaptiveExtensionClassCode() {
         StringBuilder codeBuilder = new StringBuilder();
         // 获取所有的方法

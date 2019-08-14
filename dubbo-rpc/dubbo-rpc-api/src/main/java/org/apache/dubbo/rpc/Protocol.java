@@ -70,6 +70,18 @@ public interface Protocol {
      * @return invoker service's local proxy
      * @throws RpcException when there's any error while connecting to the service provider
      */
+    /**
+     * 引用远程服务：<br>
+     * 1. 当用户调用refer()所返回的Invoker对象的invoke()方法时，协议需相应执行同URL远端export()传入的Invoker对象的invoke()方法。<br>
+     * 2. refer()返回的Invoker由协议实现，协议通常需要在此Invoker中发送远程请求。<br>
+     * 3. 当url中有设置check=false时，连接失败不能抛出异常，并内部自动恢复。<br>
+     *
+     * @param <T> 服务的类型
+     * @param type 服务的类型
+     * @param url 远程服务的URL地址
+     * @return invoker 服务的本地代理
+     * @throws RpcException 当连接服务提供方失败时抛出
+     */
     @Adaptive
     <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException;
 
