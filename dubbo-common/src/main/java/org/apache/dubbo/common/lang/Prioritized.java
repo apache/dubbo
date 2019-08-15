@@ -54,6 +54,10 @@ public interface Prioritized extends Comparable<Prioritized> {
      * The minimum priority
      */
     int MIN_PRIORITY = Integer.MAX_VALUE;
+    /**
+     * Normal Priority
+     */
+    int NORMAL_PRIORITY = 0;
 
     /**
      * Get the priority
@@ -61,7 +65,7 @@ public interface Prioritized extends Comparable<Prioritized> {
      * @return the default is {@link #MIN_PRIORITY minimum one}
      */
     default int getPriority() {
-        return MIN_PRIORITY;
+        return NORMAL_PRIORITY;
     }
 
     @Override

@@ -22,12 +22,13 @@ public class ServiceMetadataIdentifier extends BaseServiceMetadataIdentifier {
     public ServiceMetadataIdentifier() {
     }
 
-    public ServiceMetadataIdentifier(String serviceInterface, String version, String group, String side, String revision) {
+    public ServiceMetadataIdentifier(String serviceInterface, String version, String group, String side, String revision, String protocol) {
         this.serviceInterface = serviceInterface;
         this.version = version;
         this.group = group;
         this.side = side;
         this.revision = revision;
+        this.protocol = protocol;
     }
 
 
@@ -36,7 +37,6 @@ public class ServiceMetadataIdentifier extends BaseServiceMetadataIdentifier {
         this.version = url.getParameter(VERSION_KEY);
         this.group = url.getParameter(GROUP_KEY);
         this.side = url.getParameter(SIDE_KEY);
-        this.revision = (url.getParameter(REVISION_KEY));
         this.protocol = url.getProtocol();
     }
 

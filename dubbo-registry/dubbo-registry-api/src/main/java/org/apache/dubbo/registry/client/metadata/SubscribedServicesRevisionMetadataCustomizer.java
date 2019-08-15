@@ -29,8 +29,7 @@ import java.util.SortedSet;
 
 import static java.lang.String.valueOf;
 import static java.util.Objects.hash;
-import static org.apache.dubbo.common.constants.CommonConstants.METADATA_KEY;
-import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.EXPORTED_SERVICES_REVISION_KEY;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.MEATADATA_STORED_TYPE_KEY;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.SUBSCRIBER_SERVICES_REVISION_KEY;
 
 /**
@@ -50,7 +49,7 @@ public class SubscribedServicesRevisionMetadataCustomizer extends ServiceInstanc
     @Override
     protected String buildMetadataValue(ServiceInstance serviceInstance) {
         WritableMetadataService writableMetadataService = WritableMetadataService.getExtension(
-                serviceInstance.getMetadata().get(METADATA_KEY)
+                serviceInstance.getMetadata().get(MEATADATA_STORED_TYPE_KEY)
         );
         SortedSet<String> subscribedURLs = writableMetadataService.getSubscribedURLs();
         Object[] data = subscribedURLs.stream()

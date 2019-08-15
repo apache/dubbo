@@ -20,7 +20,7 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
 public class RefreshServiceMetadataCustomizer implements ServiceInstanceCustomizer {
 
     public int getPriority() {
-        return MAX_PRIORITY;
+        return MIN_PRIORITY;
     }
 
     @Override
