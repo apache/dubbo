@@ -29,6 +29,7 @@ import org.apache.dubbo.remoting.zookeeper.support.AbstractZookeeperClient;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.api.CuratorWatcher;
+import org.apache.curator.framework.imps.CuratorFrameworkState;
 import org.apache.curator.framework.recipes.cache.TreeCache;
 import org.apache.curator.framework.recipes.cache.TreeCacheEvent;
 import org.apache.curator.framework.recipes.cache.TreeCacheListener;
@@ -180,7 +181,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
 
     @Override
     public boolean isConnected() {
-        return client.getZookeeperClient().isConnected();
+        return client.getState() == CuratorFrameworkState.STARTED && client.getZookeeperClient().isConnected();
     }
 
     @Override
