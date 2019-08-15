@@ -29,6 +29,8 @@ import org.apache.zookeeper.Watcher.Event.KeeperState;
 
 import java.util.List;
 
+import static com.alibaba.dubbo.common.Constants.TIMEOUT_KEY;
+
 public class ZkclientZookeeperClient extends AbstractZookeeperClient<IZkChildListener> {
 
     private final ZkClientWrapper client;
@@ -37,7 +39,8 @@ public class ZkclientZookeeperClient extends AbstractZookeeperClient<IZkChildLis
 
     public ZkclientZookeeperClient(URL url) {
         super(url);
-        client = new ZkClientWrapper(url.getBackupAddress(), 30000);
+        long timeout = url.getParameter(TIMEOUT_KEY, 30000L);
+        client = new ZkClientWrapper(url.getBackupAddress(), timeout);
         client.addListener(new IZkStateListener() {
             @Override
             public void handleStateChanged(KeeperState state) throws Exception {
