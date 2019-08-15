@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.Collections.sort;
-import static java.util.ServiceLoader.load;
+import static org.apache.dubbo.common.utils.DubboServiceLoader.load;
 
 /**
  * The shutdown hook thread to do the clean up stuff.
