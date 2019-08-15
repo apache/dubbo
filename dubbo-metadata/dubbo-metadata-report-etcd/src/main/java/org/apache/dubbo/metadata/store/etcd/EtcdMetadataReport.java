@@ -36,12 +36,18 @@ package org.apache.dubbo.metadata.store.etcd;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.metadata.report.identifier.BaseMetadataIdentifier;
+import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 import org.apache.dubbo.metadata.report.support.AbstractMetadataReport;
 import org.apache.dubbo.remoting.etcd.jetcd.JEtcdClient;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
@@ -86,22 +92,32 @@ public class EtcdMetadataReport extends AbstractMetadataReport {
 
     @Override
     protected void doSaveMetadata(ServiceMetadataIdentifier serviceMetadataIdentifier, URL url) {
-        throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
+        String key = getNodeKey(serviceMetadataIdentifier);
+        if (!etcdClient.put(key, URL.encode(url.toFullString()))) {
+            logger.error("Failed to put " + serviceMetadataIdentifier + " to etcd, value: " + url);
+        }
     }
 
     @Override
     protected void doRemoveMetadata(ServiceMetadataIdentifier serviceMetadataIdentifier) {
-        throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
+        etcdClient.delete(getNodeKey(serviceMetadataIdentifier));
     }
 
     @Override
     protected List<String> doGetExportedURLs(ServiceMetadataIdentifier metadataIdentifier) {
-        throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
+        String content = etcdClient.getKVValue(getNodeKey(metadataIdentifier));
+        if (StringUtils.isEmpty(content)) {
+            return Collections.emptyList();
+        }
+        return new ArrayList<String>(Arrays.asList(URL.decode(content)));
     }
 
     @Override
     protected void doSaveSubscriberData(SubscriberMetadataIdentifier subscriberMetadataIdentifier, String urlListStr) {
-
+        String key = getNodeKey(subscriberMetadataIdentifier);
+        if (!etcdClient.put(key, urlListStr)) {
+            logger.error("Failed to put " + subscriberMetadataIdentifier + " to etcd, value: " + urlListStr);
+        }
     }
 
     @Override
@@ -121,8 +137,8 @@ public class EtcdMetadataReport extends AbstractMetadataReport {
         }
     }
 
-    String getNodeKey(MetadataIdentifier identifier) {
-        return toRootDir() + identifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.PATH);
+    String getNodeKey(BaseMetadataIdentifier identifier) {
+        return toRootDir() + identifier.getUniqueKey(KeyTypeEnum.PATH);
     }
 
     String toRootDir() {

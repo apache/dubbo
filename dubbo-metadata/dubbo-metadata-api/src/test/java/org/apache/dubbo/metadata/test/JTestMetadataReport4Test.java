@@ -19,6 +19,7 @@ package org.apache.dubbo.metadata.test;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
@@ -53,12 +54,12 @@ public class JTestMetadataReport4Test extends AbstractMetadataReport {
 
     @Override
     protected void doStoreProviderMetadata(MetadataIdentifier providerMetadataIdentifier, String serviceDefinitions) {
-        store.put(providerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY), serviceDefinitions);
+        store.put(providerMetadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), serviceDefinitions);
     }
 
     @Override
     protected void doStoreConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, String serviceParameterString) {
-        store.put(consumerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY), serviceParameterString);
+        store.put(consumerMetadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), serviceParameterString);
     }
 
     @Override
@@ -87,11 +88,11 @@ public class JTestMetadataReport4Test extends AbstractMetadataReport {
     }
 
     public static String getProviderKey(URL url) {
-        return new MetadataIdentifier(url).getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY);
+        return new MetadataIdentifier(url).getUniqueKey(KeyTypeEnum.UNIQUE_KEY);
     }
 
     public static String getConsumerKey(URL url) {
-        return new MetadataIdentifier(url).getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY);
+        return new MetadataIdentifier(url).getUniqueKey(KeyTypeEnum.UNIQUE_KEY);
     }
 
     @Override

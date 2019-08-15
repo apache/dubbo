@@ -22,14 +22,15 @@ import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import static org.apache.dubbo.metadata.MetadataConstants.KEY_SEPARATOR;
 
 /**
  * The MetadataIdentifier is used to store method descriptor.
  * <p>
+ * The name of class is reserved because of it has been used in the previous version.
+ * <p>
  * 2018/10/25
  */
-public class MetadataIdentifier extends BaseServiceMetadataIdentifier {
+public class MetadataIdentifier extends BaseServiceMetadataIdentifier implements BaseMetadataIdentifier {
 
     private String application;
 
@@ -101,7 +102,4 @@ public class MetadataIdentifier extends BaseServiceMetadataIdentifier {
         this.application = application;
     }
 
-    public enum KeyTypeEnum {
-        PATH, UNIQUE_KEY
-    }
 }

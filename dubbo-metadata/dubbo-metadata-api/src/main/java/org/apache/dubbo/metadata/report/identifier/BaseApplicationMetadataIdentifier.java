@@ -12,8 +12,8 @@ import static org.apache.dubbo.metadata.MetadataConstants.KEY_SEPARATOR;
 public class BaseApplicationMetadataIdentifier {
     String application;
 
-    String getUniqueKey(MetadataIdentifier.KeyTypeEnum keyType, String... params) {
-        if (keyType == MetadataIdentifier.KeyTypeEnum.PATH) {
+    String getUniqueKey(KeyTypeEnum keyType, String... params) {
+        if (keyType == KeyTypeEnum.PATH) {
             return getFilePathKey(params);
         }
         return getIdentifierKey(params);

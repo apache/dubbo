@@ -19,6 +19,9 @@ package org.apache.dubbo.metadata.store.zookeeper;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.metadata.report.identifier.BaseMetadataIdentifier;
+import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
@@ -28,6 +31,7 @@ import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
@@ -86,7 +90,11 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
 
     @Override
     protected List<String> doGetExportedURLs(ServiceMetadataIdentifier metadataIdentifier) {
-        return new ArrayList<String>(Arrays.asList(URL.decode(zkClient.getContent(getNodePath(metadataIdentifier)))));
+        String content = zkClient.getContent(getNodePath(metadataIdentifier));
+        if (StringUtils.isEmpty(content)) {
+            return Collections.emptyList();
+        }
+        return new ArrayList<String>(Arrays.asList(URL.decode(content)));
     }
 
     @Override
@@ -108,17 +116,8 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
         zkClient.create(getNodePath(metadataIdentifier), v, false);
     }
 
-    String getNodePath(MetadataIdentifier metadataIdentifier) {
-        return toRootDir() + metadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.PATH);
+    String getNodePath(BaseMetadataIdentifier metadataIdentifier) {
+        return toRootDir() + metadataIdentifier.getUniqueKey(KeyTypeEnum.PATH);
     }
-
-    String getNodePath(ServiceMetadataIdentifier metadataIdentifier) {
-        return toRootDir() + metadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.PATH);
-    }
-
-    String getNodePath(SubscriberMetadataIdentifier metadataIdentifier) {
-        return toRootDir() + metadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.PATH);
-    }
-
 
 }
