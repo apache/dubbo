@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
+import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 
 import com.alibaba.nacos.api.config.ConfigService;
@@ -68,7 +69,7 @@ public class NacosMetadataReportTest {
         String application = "nacos-metdata-report-test";
         MetadataIdentifier providerIdentifier =
                 storeProvider(nacosMetadataReport, TEST_SERVICE, version, group, application);
-        String serverContent = configService.getConfig(providerIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY), NACOS_GROUP, 5000L);
+        String serverContent = configService.getConfig(providerIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), NACOS_GROUP, 5000L);
         Assertions.assertNotNull(serverContent);
 
         Gson gson = new Gson();
@@ -83,7 +84,7 @@ public class NacosMetadataReportTest {
         String application = "nacos-metadata-report-consumer-test";
         MetadataIdentifier consumerIdentifier = storeConsumer(nacosMetadataReport, TEST_SERVICE, version, group, application);
 
-        String serverContent = configService.getConfig(consumerIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY), NACOS_GROUP, 5000L);
+        String serverContent = configService.getConfig(consumerIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), NACOS_GROUP, 5000L);
         Assertions.assertNotNull(serverContent);
         Assertions.assertEquals(serverContent, "{\"paramConsumerTest\":\"nacosConsumer\"}");
     }

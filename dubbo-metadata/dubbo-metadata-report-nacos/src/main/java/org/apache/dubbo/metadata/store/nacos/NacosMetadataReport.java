@@ -21,6 +21,8 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.metadata.report.identifier.BaseMetadataIdentifier;
+import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
@@ -31,6 +33,9 @@ import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.exception.NacosException;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
@@ -127,43 +132,68 @@ public class NacosMetadataReport extends AbstractMetadataReport {
 
     @Override
     protected void doSaveMetadata(ServiceMetadataIdentifier serviceMetadataIdentifier, URL url) {
-        throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
+        storeMetadata(serviceMetadataIdentifier, URL.encode(url.toFullString()));
     }
 
     @Override
     protected void doRemoveMetadata(ServiceMetadataIdentifier serviceMetadataIdentifier) {
-        throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
+        deleteMetadata(serviceMetadataIdentifier);
     }
 
     @Override
     protected List<String> doGetExportedURLs(ServiceMetadataIdentifier metadataIdentifier) {
-        throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
+        String content = getConfig(metadataIdentifier);
+        if (StringUtils.isEmpty(content)) {
+            return Collections.emptyList();
+        }
+        return new ArrayList<String>(Arrays.asList(URL.decode(content)));
     }
 
     @Override
     protected void doSaveSubscriberData(SubscriberMetadataIdentifier subscriberMetadataIdentifier, String urlListStr) {
-        throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
+        storeMetadata(subscriberMetadataIdentifier, urlListStr);
     }
 
     @Override
     protected String doGetSubscribedURLs(SubscriberMetadataIdentifier subscriberMetadataIdentifier) {
-        throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
+        return getConfig(subscriberMetadataIdentifier);
     }
 
     @Override
-    public String getServiceDefinition(MetadataIdentifier consumerMetadataIdentifier) {
-        throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
+    public String getServiceDefinition(MetadataIdentifier metadataIdentifier) {
+        return getConfig(metadataIdentifier);
     }
 
-    private void storeMetadata(MetadataIdentifier identifier, String value) {
+    private void storeMetadata(BaseMetadataIdentifier identifier, String value) {
         try {
-            boolean publishResult = configService.publishConfig(identifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY), group, value);
+            boolean publishResult = configService.publishConfig(identifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), group, value);
             if (!publishResult) {
                 throw new RuntimeException("publish nacos metadata failed");
             }
         } catch (Throwable t) {
             logger.error("Failed to put " + identifier + " to nacos " + value + ", cause: " + t.getMessage(), t);
             throw new RpcException("Failed to put " + identifier + " to nacos " + value + ", cause: " + t.getMessage(), t);
+        }
+    }
+
+    private void deleteMetadata(BaseMetadataIdentifier identifier) {
+        try {
+            boolean publishResult = configService.removeConfig(identifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), group);
+            if (!publishResult) {
+                throw new RuntimeException("remove nacos metadata failed");
+            }
+        } catch (Throwable t) {
+            logger.error("Failed to remove " + identifier + " from nacos , cause: " + t.getMessage(), t);
+            throw new RpcException("Failed to remove " + identifier + " from nacos , cause: " + t.getMessage(), t);
+        }
+    }
+
+    private String getConfig(BaseMetadataIdentifier identifier) {
+        try {
+            return configService.getConfig(identifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), group, 300);
+        } catch (Throwable t) {
+            logger.error("Failed to get " + identifier + " from nacos , cause: " + t.getMessage(), t);
+            throw new RpcException("Failed to get " + identifier + " from nacos , cause: " + t.getMessage(), t);
         }
     }
 }

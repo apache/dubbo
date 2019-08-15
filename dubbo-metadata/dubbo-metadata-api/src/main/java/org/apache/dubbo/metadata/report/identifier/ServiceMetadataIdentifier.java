@@ -3,7 +3,6 @@ package org.apache.dubbo.metadata.report.identifier;
 import org.apache.dubbo.common.URL;
 
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.metadata.MetadataConstants.KEY_REVISON_PREFIX;
@@ -14,7 +13,7 @@ import static org.apache.dubbo.metadata.MetadataConstants.KEY_REVISON_PREFIX;
  * <p>
  * 2019-08-09
  */
-public class ServiceMetadataIdentifier extends BaseServiceMetadataIdentifier {
+public class ServiceMetadataIdentifier extends BaseServiceMetadataIdentifier implements BaseMetadataIdentifier {
 
     private String revision;
     private String protocol;
@@ -40,7 +39,7 @@ public class ServiceMetadataIdentifier extends BaseServiceMetadataIdentifier {
         this.protocol = url.getProtocol();
     }
 
-    public String getUniqueKey(MetadataIdentifier.KeyTypeEnum keyType) {
+    public String getUniqueKey(KeyTypeEnum keyType) {
         return super.getUniqueKey(keyType, protocol, KEY_REVISON_PREFIX + revision);
     }
 

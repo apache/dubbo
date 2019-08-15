@@ -6,10 +6,9 @@ import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 
 /**
- *
  * 2019-08-12
  */
-public class SubscriberMetadataIdentifier extends BaseApplicationMetadataIdentifier{
+public class SubscriberMetadataIdentifier extends BaseApplicationMetadataIdentifier implements BaseMetadataIdentifier {
 
     private String revision;
 
@@ -27,7 +26,7 @@ public class SubscriberMetadataIdentifier extends BaseApplicationMetadataIdentif
         this.revision = url.getParameter(REVISION_KEY, "");
     }
 
-    public String getUniqueKey(MetadataIdentifier.KeyTypeEnum keyType) {
+    public String getUniqueKey(KeyTypeEnum keyType) {
         return super.getUniqueKey(keyType, revision);
     }
 

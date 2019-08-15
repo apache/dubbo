@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
+import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.rpc.RpcException;
 
@@ -94,7 +95,7 @@ public class RedisMetadataReportTest {
         Jedis jedis = null;
         try {
             jedis = redisMetadataReport.pool.getResource();
-            String keyTmp = providerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY);
+            String keyTmp = providerMetadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY);
             String value = jedis.get(keyTmp);
             if (value == null) {
                 Thread.sleep(moreTime);
@@ -110,7 +111,7 @@ public class RedisMetadataReportTest {
             throw new RpcException("Failed to put to redis . cause: " + e.getMessage(), e);
         } finally {
             if (jedis != null) {
-                jedis.del(providerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY));
+                jedis.del(providerMetadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY));
             }
             redisMetadataReport.pool.close();
         }
@@ -134,7 +135,7 @@ public class RedisMetadataReportTest {
         Jedis jedis = null;
         try {
             jedis = redisMetadataReport.pool.getResource();
-            String keyTmp = consumerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY);
+            String keyTmp = consumerMetadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY);
             String value = jedis.get(keyTmp);
             if (value == null) {
                 Thread.sleep(moreTime);
@@ -145,7 +146,7 @@ public class RedisMetadataReportTest {
             throw new RpcException("Failed to put to redis . cause: " + e.getMessage(), e);
         } finally {
             if (jedis != null) {
-                jedis.del(consumerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY));
+                jedis.del(consumerMetadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY));
             }
             redisMetadataReport.pool.close();
         }

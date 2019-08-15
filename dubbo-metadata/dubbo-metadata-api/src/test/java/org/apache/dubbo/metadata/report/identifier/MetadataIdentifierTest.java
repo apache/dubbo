@@ -17,7 +17,7 @@
 package org.apache.dubbo.metadata.report.identifier;
 
 import org.apache.dubbo.metadata.MetadataConstants;
-import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier.KeyTypeEnum;
+import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -42,7 +42,7 @@ public class MetadataIdentifierTest {
                         (version == null ? "" : (version + PATH_SEPARATOR))
                         + (group == null ? "" : (group + PATH_SEPARATOR)) + PROVIDER_SIDE
                         + PATH_SEPARATOR + application);
-        Assertions.assertEquals(providerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY),
+        Assertions.assertEquals(providerMetadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY),
                 interfaceName + MetadataConstants.KEY_SEPARATOR +
                         (version == null ? "" : version) + MetadataConstants.KEY_SEPARATOR
                         + (group == null ? "" : group) + MetadataConstants.KEY_SEPARATOR

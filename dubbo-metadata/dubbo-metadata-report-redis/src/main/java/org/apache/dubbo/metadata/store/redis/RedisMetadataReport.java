@@ -19,6 +19,9 @@ package org.apache.dubbo.metadata.store.redis;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.metadata.report.identifier.BaseMetadataIdentifier;
+import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
@@ -32,6 +35,9 @@ import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -82,35 +88,39 @@ public class RedisMetadataReport extends AbstractMetadataReport {
 
     @Override
     protected void doSaveMetadata(ServiceMetadataIdentifier serviceMetadataIdentifier, URL url) {
-
+        this.storeMetadata(serviceMetadataIdentifier, URL.encode(url.toFullString()));
     }
 
     @Override
     protected void doRemoveMetadata(ServiceMetadataIdentifier serviceMetadataIdentifier) {
-
+        this.deleteMetadata(serviceMetadataIdentifier);
     }
 
     @Override
     protected List<String> doGetExportedURLs(ServiceMetadataIdentifier metadataIdentifier) {
-        return null;
+        String content = getMetadata(metadataIdentifier);
+        if (StringUtils.isEmpty(content)) {
+            return Collections.emptyList();
+        }
+        return new ArrayList<String>(Arrays.asList(URL.decode(content)));
     }
 
     @Override
     protected void doSaveSubscriberData(SubscriberMetadataIdentifier subscriberMetadataIdentifier, String urlListStr) {
-        throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
+        this.storeMetadata(subscriberMetadataIdentifier, urlListStr);
     }
 
     @Override
     protected String doGetSubscribedURLs(SubscriberMetadataIdentifier subscriberMetadataIdentifier) {
-        throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
+        return this.getMetadata(subscriberMetadataIdentifier);
     }
 
     @Override
-    public String getServiceDefinition(MetadataIdentifier consumerMetadataIdentifier) {
-        throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
+    public String getServiceDefinition(MetadataIdentifier metadataIdentifier) {
+        return this.getMetadata(metadataIdentifier);
     }
 
-    private void storeMetadata(MetadataIdentifier metadataIdentifier, String v) {
+    private void storeMetadata(BaseMetadataIdentifier metadataIdentifier, String v) {
         if (pool != null) {
             storeMetadataStandalone(metadataIdentifier, v);
         } else {
@@ -118,7 +128,7 @@ public class RedisMetadataReport extends AbstractMetadataReport {
         }
     }
 
-    private void storeMetadataInCluster(MetadataIdentifier metadataIdentifier, String v) {
+    private void storeMetadataInCluster(BaseMetadataIdentifier metadataIdentifier, String v) {
         try (JedisCluster jedisCluster = new JedisCluster(jedisClusterNodes, timeout, timeout, 2, password, new GenericObjectPoolConfig())) {
             jedisCluster.set(metadataIdentifier.getIdentifierKey() + META_DATA_STORE_TAG, v);
         } catch (Throwable e) {
@@ -127,12 +137,64 @@ public class RedisMetadataReport extends AbstractMetadataReport {
         }
     }
 
-    private void storeMetadataStandalone(MetadataIdentifier metadataIdentifier, String v) {
+    private void storeMetadataStandalone(BaseMetadataIdentifier metadataIdentifier, String v) {
         try (Jedis jedis = pool.getResource()) {
-            jedis.set(metadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY), v);
+            jedis.set(metadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), v);
         } catch (Throwable e) {
             logger.error("Failed to put " + metadataIdentifier + " to redis " + v + ", cause: " + e.getMessage(), e);
             throw new RpcException("Failed to put " + metadataIdentifier + " to redis " + v + ", cause: " + e.getMessage(), e);
+        }
+    }
+
+    private void deleteMetadata(BaseMetadataIdentifier metadataIdentifier) {
+        if (pool != null) {
+            deleteMetadataStandalone(metadataIdentifier);
+        } else {
+            deleteMetadataInCluster(metadataIdentifier);
+        }
+    }
+
+    private void deleteMetadataInCluster(BaseMetadataIdentifier metadataIdentifier) {
+        try (JedisCluster jedisCluster = new JedisCluster(jedisClusterNodes, timeout, timeout, 2, password, new GenericObjectPoolConfig())) {
+            jedisCluster.del(metadataIdentifier.getIdentifierKey() + META_DATA_STORE_TAG);
+        } catch (Throwable e) {
+            logger.error("Failed to delete " + metadataIdentifier + " from redis cluster , cause: " + e.getMessage(), e);
+            throw new RpcException("Failed to delete " + metadataIdentifier + " from redis cluster , cause: " + e.getMessage(), e);
+        }
+    }
+
+    private void deleteMetadataStandalone(BaseMetadataIdentifier metadataIdentifier) {
+        try (Jedis jedis = pool.getResource()) {
+            jedis.del(metadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY));
+        } catch (Throwable e) {
+            logger.error("Failed to delete " + metadataIdentifier + " from redis , cause: " + e.getMessage(), e);
+            throw new RpcException("Failed to delete " + metadataIdentifier + " from redis , cause: " + e.getMessage(), e);
+        }
+    }
+
+    private String getMetadata(BaseMetadataIdentifier metadataIdentifier) {
+        if (pool != null) {
+            return getMetadataStandalone(metadataIdentifier);
+        } else {
+            return getMetadataInCluster(metadataIdentifier);
+        }
+    }
+
+    private String getMetadataInCluster(BaseMetadataIdentifier metadataIdentifier) {
+        try (JedisCluster jedisCluster = new JedisCluster(jedisClusterNodes, timeout, timeout, 2, password, new GenericObjectPoolConfig())) {
+            return jedisCluster.get(metadataIdentifier.getIdentifierKey() + META_DATA_STORE_TAG);
+        } catch (Throwable e) {
+            logger.error("Failed to get " + metadataIdentifier + " from redis cluster , cause: " + e.getMessage(), e);
+            throw new RpcException("Failed to get " + metadataIdentifier + " from redis cluster , cause: " + e.getMessage(), e);
+        }
+    }
+
+    private String getMetadataStandalone(BaseMetadataIdentifier metadataIdentifier) {
+        try (Jedis jedis = pool.getResource()) {
+            return jedis.get(metadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY));
+        } catch (Throwable e) {
+            logger.error("Failed to get " + metadataIdentifier + " from redis , cause: " + e.getMessage(), e);
+            throw new RpcException("Failed to get " + metadataIdentifier + " from redis , cause: " + e.getMessage(), e);
         }
     }
 
