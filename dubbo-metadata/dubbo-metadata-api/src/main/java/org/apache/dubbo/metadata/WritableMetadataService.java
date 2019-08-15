@@ -64,7 +64,7 @@ public interface WritableMetadataService extends MetadataService {
      *
      * @return If success , return <code>true</code>
      */
-    default boolean refreshMetadata(String exportedRevision, String subscribedRevision){
+    default boolean refreshMetadata(String exportedRevision, String subscribedRevision) {
         return true;
     }
 
@@ -97,8 +97,6 @@ public interface WritableMetadataService extends MetadataService {
     }
 
     static WritableMetadataService getExtension(String name) {
-        return getExtensionLoader(WritableMetadataService.class).getExtension(name);
+        return getExtensionLoader(WritableMetadataService.class).getOrDefaultExtension(name);
     }
-
-
 }

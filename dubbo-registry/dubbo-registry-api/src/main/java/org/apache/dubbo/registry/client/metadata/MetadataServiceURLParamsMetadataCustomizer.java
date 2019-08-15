@@ -25,9 +25,10 @@ import org.apache.dubbo.registry.client.ServiceInstanceMetadataCustomizer;
 import java.util.SortedSet;
 
 import static org.apache.dubbo.metadata.MetadataService.toURLs;
-import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.MEATADATA_STORED_TYPE_KEY;
+import static org.apache.dubbo.metadata.WritableMetadataService.getExtension;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.METADATA_SERVICE_URL_PARAMS_KEY;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getMetadataServiceParameter;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getMetadataStorageType;
 
 /**
  * An {@link ServiceInstanceMetadataCustomizer} to customize the {@link URL urls} of {@link MetadataService}
@@ -46,9 +47,9 @@ public class MetadataServiceURLParamsMetadataCustomizer extends ServiceInstanceM
     @Override
     public String buildMetadataValue(ServiceInstance serviceInstance) {
 
-        WritableMetadataService writableMetadataService = WritableMetadataService.getExtension(
-                serviceInstance.getMetadata().get(MEATADATA_STORED_TYPE_KEY)
-        );
+        String metadataStorageType = getMetadataStorageType(serviceInstance);
+
+        WritableMetadataService writableMetadataService = getExtension(metadataStorageType);
 
         String serviceInterface = MetadataService.class.getName();
 

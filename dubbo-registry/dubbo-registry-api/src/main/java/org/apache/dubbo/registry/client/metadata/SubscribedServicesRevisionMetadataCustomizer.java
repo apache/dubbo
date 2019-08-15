@@ -29,8 +29,9 @@ import java.util.SortedSet;
 
 import static java.lang.String.valueOf;
 import static java.util.Objects.hash;
-import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.MEATADATA_STORED_TYPE_KEY;
+import static org.apache.dubbo.metadata.WritableMetadataService.getExtension;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.SUBSCRIBER_SERVICES_REVISION_KEY;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getMetadataStorageType;
 
 /**
  * The customizer to a add the metadata that the reversion of Dubbo subscribed services calculates.
@@ -48,9 +49,11 @@ public class SubscribedServicesRevisionMetadataCustomizer extends ServiceInstanc
 
     @Override
     protected String buildMetadataValue(ServiceInstance serviceInstance) {
-        WritableMetadataService writableMetadataService = WritableMetadataService.getExtension(
-                serviceInstance.getMetadata().get(MEATADATA_STORED_TYPE_KEY)
-        );
+
+        String metadataStorageType = getMetadataStorageType(serviceInstance);
+
+        WritableMetadataService writableMetadataService = getExtension(metadataStorageType);
+
         SortedSet<String> subscribedURLs = writableMetadataService.getSubscribedURLs();
         Object[] data = subscribedURLs.stream()
                 .map(URL::valueOf)                       // String to URL

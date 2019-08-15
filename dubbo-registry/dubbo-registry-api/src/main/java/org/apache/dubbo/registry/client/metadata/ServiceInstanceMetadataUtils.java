@@ -18,6 +18,9 @@ package org.apache.dubbo.registry.client.metadata;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.metadata.MetadataService;
+import org.apache.dubbo.metadata.WritableMetadataService;
+import org.apache.dubbo.metadata.store.InMemoryWritableMetadataService;
+import org.apache.dubbo.metadata.store.RemoteWritableMetadataService;
 import org.apache.dubbo.registry.client.ServiceInstance;
 
 import com.alibaba.fastjson.JSON;
@@ -45,19 +48,19 @@ public class ServiceInstanceMetadataUtils {
     /**
      * The prefix of {@link MetadataService} : "dubbo.metadata-service."
      */
-    public static final String DUBBO_METADATA_SERVICE_PREFIX = "dubbo.metadata-service.";
+    public static final String METADATA_SERVICE_PREFIX = "dubbo.metadata-service.";
 
     /**
      * The key of metadata JSON of {@link MetadataService}'s {@link URL}
      */
-    public static String METADATA_SERVICE_URL_PARAMS_KEY = DUBBO_METADATA_SERVICE_PREFIX + "url-params";
+    public static String METADATA_SERVICE_URL_PARAMS_KEY = METADATA_SERVICE_PREFIX + "url-params";
 
     /**
      * The {@link URL URLs} property name of {@link MetadataService} :
      * "dubbo.metadata-service.urls", which is used to be compatible with Dubbo Spring Cloud and
      * discovery the metadata of instance
      */
-    public static final String DUBBO_METADATA_SERVICE_URLS_PROPERTY_NAME = DUBBO_METADATA_SERVICE_PREFIX + "urls";
+    public static final String METADATA_SERVICE_URLS_PROPERTY_NAME = METADATA_SERVICE_PREFIX + "urls";
 
     /**
      * The key of The revision for all exported Dubbo services.
@@ -70,9 +73,19 @@ public class ServiceInstanceMetadataUtils {
     public static String SUBSCRIBER_SERVICES_REVISION_KEY = "dubbo.subscribed-services.revision";
 
     /**
-     * The key of metadata store type.
+     * The key of metadata storage type.
      */
-    public static String MEATADATA_STORED_TYPE_KEY = "dubbo.metadata.stored-type";
+    public static String METADATA_STORAGE_TYPE_KEY = "dubbo.metadata.storage-type";
+
+    /**
+     * The storage type value for {@link InMemoryWritableMetadataService}
+     */
+    public static String DEFAULT_METADATA_STORAGE_TYPE = "default";
+
+    /**
+     * The storage type value for {@link RemoteWritableMetadataService}
+     */
+    public static String REMOTE_METADATA_STORAGE_TYPE = "remote";
 
     /**
      * The {@link URL url's} parameter name of Dubbo Provider host
@@ -181,14 +194,38 @@ public class ServiceInstanceMetadataUtils {
     }
 
     /**
-     * The metadata is stored in the type used to which {@link org.apache.dubbo.metadata.WritableMetadataService} instance.
+     * Get metadata's storage type
+     *
+     * @param registryURL the {@link URL} to connect the registry
+     * @return if not found in {@link URL#getParameters() parameters} of {@link URL registry URL}, return
+     * {@link #DEFAULT_METADATA_STORAGE_TYPE "default"}
+     */
+    public static String getMetadataStorageType(URL registryURL) {
+        return registryURL.getParameter(METADATA_STORAGE_TYPE_KEY, DEFAULT_METADATA_STORAGE_TYPE);
+    }
+
+    /**
+     * The metadata's storage type is used to which {@link WritableMetadataService} instance.
      *
      * @param serviceInstance the specified {@link ServiceInstance}
-     * @return <code>null</code> if not exits
+     * @return if not found in {@link ServiceInstance#getMetadata() metadata} of {@link ServiceInstance}, return
+     * {@link #DEFAULT_METADATA_STORAGE_TYPE "default"}
      */
-    public static String getMetadataStoredType(ServiceInstance serviceInstance) {
+    public static String getMetadataStorageType(ServiceInstance serviceInstance) {
         Map<String, String> metadata = serviceInstance.getMetadata();
-        return metadata.get(MEATADATA_STORED_TYPE_KEY);
+        return metadata.getOrDefault(METADATA_STORAGE_TYPE_KEY, DEFAULT_METADATA_STORAGE_TYPE);
+    }
+
+    /**
+     * Set the metadata storage type in specified {@link ServiceInstance service instance}
+     *
+     * @param serviceInstance {@link ServiceInstance service instance}
+     * @param isDefaultType   is default storage type or not
+     */
+    public static void setMetadataStorageType(ServiceInstance serviceInstance, boolean isDefaultType) {
+        Map<String, String> metadata = serviceInstance.getMetadata();
+        metadata.put(METADATA_STORAGE_TYPE_KEY, isDefaultType ?
+                DEFAULT_METADATA_STORAGE_TYPE : REMOTE_METADATA_STORAGE_TYPE);
     }
 
     private static void setProviderHostParam(Map<String, String> params, URL providerURL) {

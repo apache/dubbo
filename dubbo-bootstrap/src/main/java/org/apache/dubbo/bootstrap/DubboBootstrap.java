@@ -76,12 +76,10 @@ import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static org.apache.dubbo.common.config.ConfigurationUtils.parseProperties;
 import static org.apache.dubbo.common.config.configcenter.DynamicConfiguration.getDynamicConfiguration;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_CHAR_SEPERATOR;
-import static org.apache.dubbo.common.constants.CommonConstants.METADATA_DEFAULT;
-import static org.apache.dubbo.common.constants.CommonConstants.METADATA_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_REMOTE;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
 import static org.apache.dubbo.config.context.ConfigManager.getInstance;
-import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.MEATADATA_STORED_TYPE_KEY;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.setMetadataStorageType;
 import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
 
 /**
@@ -130,7 +128,9 @@ public class DubboBootstrap implements Lifecycle {
      */
     private volatile boolean onlyRegisterProvider = false;
 
-    private ServiceInstance serviceInstance;
+    private volatile boolean defaultMetadataStorageType = true;
+
+    private volatile ServiceInstance serviceInstance;
 
     public DubboBootstrap() {
         DubboShutdownHook.getDubboShutdownHook().register();
@@ -147,6 +147,15 @@ public class DubboBootstrap implements Lifecycle {
         return this;
     }
 
+    public boolean isDefaultMetadataStorageType() {
+        return defaultMetadataStorageType;
+    }
+
+    public DubboBootstrap setDefaultMetadataStorageType(boolean defaultMetadataStorageType) {
+        this.defaultMetadataStorageType = defaultMetadataStorageType;
+        return this;
+    }
+
     public DubboBootstrap metadataReport(MetadataReportConfig metadataReportConfig) {
         configManager.addMetadataReport(metadataReportConfig);
         return this;
@@ -160,7 +169,6 @@ public class DubboBootstrap implements Lifecycle {
         configManager.addMetadataReports(metadataReportConfigs);
         return this;
     }
-
 
     // {@link ApplicationConfig} correlative methods
 
@@ -746,12 +754,7 @@ public class DubboBootstrap implements Lifecycle {
         String host = address[0];
         int port = Integer.parseInt(address[1]);
 
-        ServiceInstance serviceInstance = initServiceInstance(
-                serviceName,
-                host,
-                port,
-                applicationConfig.getMetadata() == null ? METADATA_DEFAULT : applicationConfig.getMetadata()
-        );
+        ServiceInstance serviceInstance = initServiceInstance(serviceName, host, port);
 
         getServiceDiscoveries().forEach(serviceDiscovery -> serviceDiscovery.register(serviceInstance));
     }
@@ -791,9 +794,9 @@ public class DubboBootstrap implements Lifecycle {
 
     }
 
-    private ServiceInstance initServiceInstance(String serviceName, String host, int port, String metadataType) {
+    private ServiceInstance initServiceInstance(String serviceName, String host, int port) {
         this.serviceInstance = new DefaultServiceInstance(serviceName, host, port);
-        this.serviceInstance.getMetadata().put(MEATADATA_STORED_TYPE_KEY, metadataType);
+        setMetadataStorageType(serviceInstance, isDefaultMetadataStorageType());
         return this.serviceInstance;
     }
 

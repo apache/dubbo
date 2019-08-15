@@ -354,6 +354,16 @@ public class ExtensionLoader<T> {
     }
 
     /**
+     * Get the extension by specified name if found, or {@link #getDefaultExtension() returns the default one}
+     *
+     * @param name the name of extension
+     * @return non-null
+     */
+    public T getOrDefaultExtension(String name) {
+        return containsExtension(name)  ? getExtension(name) : getDefaultExtension();
+    }
+
+    /**
      * Return default extension, return <code>null</code> if it's not configured.
      */
     public T getDefaultExtension() {
@@ -541,6 +551,10 @@ public class ExtensionLoader<T> {
             throw new IllegalStateException("Extension instance (name: " + name + ", class: " +
                     type + ") couldn't be instantiated: " + t.getMessage(), t);
         }
+    }
+
+    private boolean containsExtension(String name) {
+        return getExtensionClasses().containsKey(name);
     }
 
     private T injectExtension(T instance) {

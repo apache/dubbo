@@ -41,18 +41,18 @@ public class ServiceDiscoveryTest {
     private ServiceDiscovery serviceDiscovery;
 
     @BeforeEach
-    public void init() {
+    public void init() throws Exception {
         if (serviceDiscovery == null) {
             setServiceDiscovery(new InMemoryServiceDiscovery());
         }
         // test start()
-        serviceDiscovery.start();
+        serviceDiscovery.initialize(null);
     }
 
     @AfterEach
-    public void destroy() {
+    public void destroy() throws Exception {
         // test stop()
-        serviceDiscovery.stop();
+        serviceDiscovery.destroy();
     }
 
     @Test

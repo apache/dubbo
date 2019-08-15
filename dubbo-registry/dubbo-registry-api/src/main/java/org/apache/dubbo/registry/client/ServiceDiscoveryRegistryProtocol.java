@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.service;
+package org.apache.dubbo.registry.client;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.registry.integration.RegistryProtocol;
@@ -25,7 +25,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGIST
 /**
  * TODO, replace RegistryProtocol completely in the future.
  */
-public class ServiceOrientedRegistryProtocol extends RegistryProtocol {
+public class ServiceDiscoveryRegistryProtocol extends RegistryProtocol {
 
     @Override
     protected URL getRegistryUrl(Invoker<?> originInvoker) {
