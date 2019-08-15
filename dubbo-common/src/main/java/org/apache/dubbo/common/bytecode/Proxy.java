@@ -106,6 +106,7 @@ public abstract class Proxy {
 
         // get cache by class loader.
         Map<String, Object> cache;
+        // 从缓存中获取 Reference<Proxy> 实例
         synchronized (ProxyCacheMap) {
             cache = ProxyCacheMap.get(cl);
             if (cache == null) {
@@ -124,13 +125,14 @@ public abstract class Proxy {
                         return proxy;
                     }
                 }
-
+                // 并发控制，保证只有一个线程可以进行后续操作
                 if (value == PendingGenerationMarker) {
                     try {
+                        // 其他线程在此处进行等待
                         cache.wait();
                     } catch (InterruptedException e) {
                     }
-                } else {
+                } else {// 放置标志位到缓存中，并跳出 while 循环进行后续操作
                     cache.put(key, PendingGenerationMarker);
                     break;
                 }

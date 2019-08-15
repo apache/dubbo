@@ -70,8 +70,10 @@ public class Transporters {
         } else if (handlers.length == 1) {
             handler = handlers[0];
         } else {
+            // 如果 handler 数量大于1，则创建一个 ChannelHandler 分发器
             handler = new ChannelHandlerDispatcher(handlers);
         }
+        // 获取 Transporter 自适应拓展类，并调用 connect 方法生成 Client 实例
         return getTransporter().connect(url, handler);
     }
 
