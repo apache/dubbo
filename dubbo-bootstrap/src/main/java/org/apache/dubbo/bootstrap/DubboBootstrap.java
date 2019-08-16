@@ -49,19 +49,21 @@ import org.apache.dubbo.config.metadata.ConfigurableMetadataServiceExporter;
 import org.apache.dubbo.config.utils.ReferenceConfigCache;
 import org.apache.dubbo.event.EventDispatcher;
 import org.apache.dubbo.event.EventListener;
+import org.apache.dubbo.event.GenericEventListener;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.MetadataServiceExporter;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
-import org.apache.dubbo.registry.client.AbstractServiceDiscoveryFactory;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
+import org.apache.dubbo.registry.client.event.ServiceDiscoveryInitializingEvent;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
@@ -73,10 +75,12 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.sort;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static org.apache.dubbo.common.config.ConfigurationUtils.parseProperties;
 import static org.apache.dubbo.common.config.configcenter.DynamicConfiguration.getDynamicConfiguration;
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_REMOTE;
+import static org.apache.dubbo.common.function.ThrowableAction.execute;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
 import static org.apache.dubbo.config.context.ConfigManager.getInstance;
 import static org.apache.dubbo.metadata.WritableMetadataService.getExtension;
@@ -88,7 +92,7 @@ import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
  *
  * @since 2.7.4
  */
-public class DubboBootstrap implements Lifecycle {
+public class DubboBootstrap extends GenericEventListener implements Lifecycle {
 
     public static final String DEFAULT_REGISTRY_ID = "REGISTRY#DEFAULT";
 
@@ -137,8 +141,23 @@ public class DubboBootstrap implements Lifecycle {
 
     private volatile MetadataServiceExporter metadataServiceExporter;
 
+    private volatile List<ServiceDiscovery> serviceDiscoveries = new LinkedList<>();
+
     public DubboBootstrap() {
         DubboShutdownHook.getDubboShutdownHook().register();
+    }
+
+    /**
+     * Store the {@link ServiceDiscovery} instances into {@link ServiceDiscoveryInitializingEvent}
+     *
+     * @param event {@link ServiceDiscoveryInitializingEvent}
+     * @see {@linkplan org.apache.dubbo.registry.client.EventPublishingServiceDiscovery}
+     */
+    public void onServiceDiscoveryInitializing(ServiceDiscoveryInitializingEvent event) {
+        executeMutually(() -> {
+            serviceDiscoveries.add(event.getSource());
+            sort(serviceDiscoveries);
+        });
     }
 
     /**
@@ -440,6 +459,8 @@ public class DubboBootstrap implements Lifecycle {
 
             initMetadataServiceExporter();
 
+            initEventListener();
+
             initialized = true;
 
             if (logger.isInfoEnabled()) {
@@ -451,56 +472,40 @@ public class DubboBootstrap implements Lifecycle {
         return this;
     }
 
-    /**
-     * Initialize {@link MetadataService} from {@link WritableMetadataService}'s extension
-     */
-    private void initMetadataService() {
-        this.metadataService = getExtension(isDefaultMetadataStorageType());
+    private void startConfigCenter() {
+        Collection<ConfigCenterConfig> configCenters = configManager.getConfigCenters();
+
+        if (CollectionUtils.isNotEmpty(configCenters)) {
+            CompositeDynamicConfiguration compositeDynamicConfiguration = new CompositeDynamicConfiguration();
+            for (ConfigCenterConfig configCenter : configCenters) {
+                configCenter.refresh();
+                compositeDynamicConfiguration.addConfiguration(prepareEnvironment(configCenter));
+            }
+            Environment.getInstance().setDynamicConfiguration(compositeDynamicConfiguration);
+        }
+        configManager.refreshAll();
     }
 
-    /**
-     * Initialize {@link MetadataServiceExporter}
-     */
-    private void initMetadataServiceExporter() {
-        this.metadataServiceExporter = new ConfigurableMetadataServiceExporter()
-                .setApplicationConfig(getApplication())
-                .setRegistries(configManager.getRegistries())
-                .setProtocols(configManager.getProtocols())
-                .metadataService(metadataService);
-    }
+    private void startMetadataReport() {
+        ApplicationConfig applicationConfig = configManager.getApplication().orElseThrow(
+                () -> new IllegalStateException("There's no ApplicationConfig specified.")
+        );
 
-    private void loadRemoteConfigs() {
-        // registry ids to registry configs
-        List<RegistryConfig> tmpRegistries = new ArrayList<>();
-        Set<String> registryIds = configManager.getRegistryIds();
-        registryIds.forEach(id -> {
-            if (tmpRegistries.stream().noneMatch(reg -> reg.getId().equals(id))) {
-                tmpRegistries.add(configManager.getRegistry(id).orElseGet(() -> {
-                    RegistryConfig registryConfig = new RegistryConfig();
-                    registryConfig.setId(id);
-                    registryConfig.refresh();
-                    return registryConfig;
-                }));
+        String metadataType = applicationConfig.getMetadata();
+        // FIXME, multiple metadata config support.
+        Collection<MetadataReportConfig> metadataReportConfigs = configManager.getMetadataConfigs();
+        if (CollectionUtils.isEmpty(metadataReportConfigs)) {
+            if (METADATA_REMOTE.equals(metadataType)) {
+                throw new IllegalStateException("No MetadataConfig found, you must specify the remote Metadata Center address when set 'metadata=remote'.");
             }
-        });
+            return;
+        }
+        MetadataReportConfig metadataReportConfig = metadataReportConfigs.iterator().next();
+        if (!metadataReportConfig.isValid()) {
+            return;
+        }
 
-        configManager.addRegistries(tmpRegistries);
-
-        // protocol ids to protocol configs
-        List<ProtocolConfig> tmpProtocols = new ArrayList<>();
-        Set<String> protocolIds = configManager.getProtocolIds();
-        protocolIds.forEach(id -> {
-            if (tmpProtocols.stream().noneMatch(prot -> prot.getId().equals(id))) {
-                tmpProtocols.add(configManager.getProtocol(id).orElseGet(() -> {
-                    ProtocolConfig protocolConfig = new ProtocolConfig();
-                    protocolConfig.setId(id);
-                    protocolConfig.refresh();
-                    return protocolConfig;
-                }));
-            }
-        });
-
-        configManager.addProtocols(tmpProtocols);
+        MetadataReportInstance.init(metadataReportConfig.toUrl());
     }
 
     /**
@@ -537,8 +542,69 @@ public class DubboBootstrap implements Lifecycle {
         startConfigCenter();
     }
 
+    private void loadRemoteConfigs() {
+        // registry ids to registry configs
+        List<RegistryConfig> tmpRegistries = new ArrayList<>();
+        Set<String> registryIds = configManager.getRegistryIds();
+        registryIds.forEach(id -> {
+            if (tmpRegistries.stream().noneMatch(reg -> reg.getId().equals(id))) {
+                tmpRegistries.add(configManager.getRegistry(id).orElseGet(() -> {
+                    RegistryConfig registryConfig = new RegistryConfig();
+                    registryConfig.setId(id);
+                    registryConfig.refresh();
+                    return registryConfig;
+                }));
+            }
+        });
+
+        configManager.addRegistries(tmpRegistries);
+
+        // protocol ids to protocol configs
+        List<ProtocolConfig> tmpProtocols = new ArrayList<>();
+        Set<String> protocolIds = configManager.getProtocolIds();
+        protocolIds.forEach(id -> {
+            if (tmpProtocols.stream().noneMatch(prot -> prot.getId().equals(id))) {
+                tmpProtocols.add(configManager.getProtocol(id).orElseGet(() -> {
+                    ProtocolConfig protocolConfig = new ProtocolConfig();
+                    protocolConfig.setId(id);
+                    protocolConfig.refresh();
+                    return protocolConfig;
+                }));
+            }
+        });
+
+        configManager.addProtocols(tmpProtocols);
+    }
+
+
+    /**
+     * Initialize {@link MetadataService} from {@link WritableMetadataService}'s extension
+     */
+    private void initMetadataService() {
+        this.metadataService = getExtension(isDefaultMetadataStorageType());
+    }
+
+    /**
+     * Initialize {@link MetadataServiceExporter}
+     */
+    private void initMetadataServiceExporter() {
+        this.metadataServiceExporter = new ConfigurableMetadataServiceExporter()
+                .setApplicationConfig(getApplication())
+                .setRegistries(configManager.getRegistries())
+                .setProtocols(configManager.getProtocols())
+                .metadataService(metadataService);
+    }
+
+    /**
+     * Initialize {@link EventListener}
+     */
+    private void initEventListener() {
+        // Add current instance into listeners
+        addEventListener(this);
+    }
+
     private Collection<ServiceDiscovery> getServiceDiscoveries() {
-        return AbstractServiceDiscoveryFactory.getDiscoveries();
+        return serviceDiscoveries;
     }
 
     /**
@@ -631,8 +697,8 @@ public class DubboBootstrap implements Lifecycle {
     public boolean isStarted() {
         return started;
     }
-
     /* serve for builder apis, begin */
+
     private ApplicationBuilder createApplicationBuilder(String name) {
         return new ApplicationBuilder().name(name);
     }
@@ -660,43 +726,7 @@ public class DubboBootstrap implements Lifecycle {
     private ConsumerBuilder createConsumerBuilder(String id) {
         return new ConsumerBuilder().id(id);
     }
-
     /* serve for builder apis, end */
-    private void startMetadataReport() {
-        ApplicationConfig applicationConfig = configManager.getApplication().orElseThrow(
-                () -> new IllegalStateException("There's no ApplicationConfig specified.")
-        );
-
-        String metadataType = applicationConfig.getMetadata();
-        // FIXME, multiple metadata config support.
-        Collection<MetadataReportConfig> metadataReportConfigs = configManager.getMetadataConfigs();
-        if (CollectionUtils.isEmpty(metadataReportConfigs)) {
-            if (METADATA_REMOTE.equals(metadataType)) {
-                throw new IllegalStateException("No MetadataConfig found, you must specify the remote Metadata Center address when set 'metadata=remote'.");
-            }
-            return;
-        }
-        MetadataReportConfig metadataReportConfig = metadataReportConfigs.iterator().next();
-        if (!metadataReportConfig.isValid()) {
-            return;
-        }
-
-        MetadataReportInstance.init(metadataReportConfig.toUrl());
-    }
-
-    private void startConfigCenter() {
-        Collection<ConfigCenterConfig> configCenters = configManager.getConfigCenters();
-
-        if (CollectionUtils.isNotEmpty(configCenters)) {
-            CompositeDynamicConfiguration compositeDynamicConfiguration = new CompositeDynamicConfiguration();
-            for (ConfigCenterConfig configCenter : configCenters) {
-                configCenter.refresh();
-                compositeDynamicConfiguration.addConfiguration(prepareEnvironment(configCenter));
-            }
-            Environment.getInstance().setDynamicConfiguration(compositeDynamicConfiguration);
-        }
-        configManager.refreshAll();
-    }
 
     private DynamicConfiguration prepareEnvironment(ConfigCenterConfig configCenter) {
         if (configCenter.isValid()) {
@@ -777,7 +807,7 @@ public class DubboBootstrap implements Lifecycle {
 
         int port = exportedURL.getPort();
 
-        ServiceInstance serviceInstance = initServiceInstance(serviceName, host, port);
+        ServiceInstance serviceInstance = createServiceInstance(serviceName, host, port);
 
         getServiceDiscoveries().forEach(serviceDiscovery -> serviceDiscovery.register(serviceInstance));
     }
@@ -801,42 +831,15 @@ public class DubboBootstrap implements Lifecycle {
         return selectedURL;
     }
 
-    /**
-     * Use rest protocol if there's one, otherwise, choose the first one available.
-     *
-     * @return
-     */
-    private String findOneProtocolForServiceInstance(Set<String> protocols) {
-        String result = null;
-        for (String protocol : protocols) {
-            if ("rest".equalsIgnoreCase(protocol)) {
-                result = protocol;
-                break;
-            }
-        }
-
-        if (result == null) {
-            for (String protocol : protocols) {
-                if (!"injvm".equalsIgnoreCase(protocol) && "registry".equalsIgnoreCase(protocol)) {
-                    result = protocol;
-                    break;
-                }
-            }
-        }
-        return result;
-    }
-
     private void unregisterServiceInstance() {
-
         if (serviceInstance != null) {
             getServiceDiscoveries().forEach(serviceDiscovery -> {
                 serviceDiscovery.unregister(serviceInstance);
             });
         }
-
     }
 
-    private ServiceInstance initServiceInstance(String serviceName, String host, int port) {
+    private ServiceInstance createServiceInstance(String serviceName, String host, int port) {
         this.serviceInstance = new DefaultServiceInstance(serviceName, host, port);
         setMetadataStorageType(serviceInstance, isDefaultMetadataStorageType());
         return this.serviceInstance;
@@ -849,6 +852,8 @@ public class DubboBootstrap implements Lifecycle {
         destroyProtocols();
 
         destroyReferences();
+
+        destroyServiceDiscoveries();
 
         clear();
 
@@ -871,14 +876,33 @@ public class DubboBootstrap implements Lifecycle {
         }
     }
 
+    private void destroyServiceDiscoveries() {
+        getServiceDiscoveries().forEach(serviceDiscovery -> {
+            execute(() -> {
+                serviceDiscovery.destroy();
+            });
+        });
+        if (logger.isDebugEnabled()) {
+            logger.debug(NAME + "'s all ServiceDiscoveries have been destroyed.");
+        }
+    }
+
     private void clear() {
         clearConfigs();
+        clearServiceDiscoveries();
     }
 
     private void clearConfigs() {
         configManager.clear();
         if (logger.isDebugEnabled()) {
             logger.debug(NAME + "'s configs have been clear.");
+        }
+    }
+
+    private void clearServiceDiscoveries() {
+        serviceDiscoveries.clear();
+        if (logger.isDebugEnabled()) {
+            logger.debug(NAME + "'s serviceDiscoveries have been clear.");
         }
     }
 

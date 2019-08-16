@@ -17,51 +17,26 @@
 package org.apache.dubbo.registry.client;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+/**
+ * Abstract {@link ServiceDiscoveryFactory} implementation with cache, the subclass
+ * should implement {@link #createDiscovery(URL)} method to create an instance of {@link ServiceDiscovery}
+ *
+ * @see ServiceDiscoveryFactory
+ * @since 2.7.4
+ */
 public abstract class AbstractServiceDiscoveryFactory implements ServiceDiscoveryFactory {
 
-    private static final Logger logger = LoggerFactory.getLogger(AbstractServiceDiscoveryFactory.class);
+    private final ConcurrentMap<String, ServiceDiscovery> discoveries = new ConcurrentHashMap<>();
 
-    private static ConcurrentMap<String, ServiceDiscovery> discoveries = new ConcurrentHashMap<>();
-
-    public static Collection<ServiceDiscovery> getDiscoveries() {
-        return Collections.unmodifiableCollection(discoveries.values());
-    }
-
-    /**
-     * Close all created registries
-     */
-    public static void destroyAll() {
-        if (logger.isInfoEnabled()) {
-            logger.info("Closing all ServiceDiscovery instances: " + getDiscoveries());
-        }
-
-        for (ServiceDiscovery discovery : getDiscoveries()) {
-            try {
-                discovery.destroy();
-            } catch (Throwable e) {
-                logger.error("Error trying to close ServiceDiscovery instance.", e);
-            }
-        }
-        discoveries.clear();
-    }
-
-    /**
-     * @param registryURL "zookeeper://ip:port/RegistryService?xxx"
-     * @return
-     */
     @Override
     public ServiceDiscovery getServiceDiscovery(URL registryURL) {
         String key = registryURL.toServiceStringWithoutResolving();
         return discoveries.computeIfAbsent(key, k -> createDiscovery(registryURL));
     }
 
-    protected abstract ServiceDiscovery createDiscovery(URL url);
+    protected abstract ServiceDiscovery createDiscovery(URL registryURL);
 }

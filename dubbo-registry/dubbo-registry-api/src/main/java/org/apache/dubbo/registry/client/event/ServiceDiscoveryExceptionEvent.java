@@ -29,14 +29,8 @@ public class ServiceDiscoveryExceptionEvent extends ServiceDiscoveryEvent {
 
     private final Exception cause;
 
-    /**
-     * Constructs a prototypical Event.
-     *
-     * @param serviceDiscovery The {@link ServiceDiscovery} on which the Event initially occurred.
-     * @throws IllegalArgumentException if any argument is null.
-     */
-    public ServiceDiscoveryExceptionEvent(ServiceDiscovery serviceDiscovery, Exception cause) {
-        super(serviceDiscovery);
+    public ServiceDiscoveryExceptionEvent(ServiceDiscovery source, ServiceDiscovery original, Exception cause) {
+        super(source, original);
         if (cause == null) {
             throw new NullPointerException("The cause of Exception must not null");
         }
