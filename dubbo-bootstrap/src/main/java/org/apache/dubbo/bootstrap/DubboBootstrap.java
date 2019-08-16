@@ -63,10 +63,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
@@ -75,6 +75,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.sort;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static org.apache.dubbo.common.config.ConfigurationUtils.parseProperties;
 import static org.apache.dubbo.common.config.configcenter.DynamicConfiguration.getDynamicConfiguration;
@@ -140,7 +141,7 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
 
     private volatile MetadataServiceExporter metadataServiceExporter;
 
-    private SortedSet<ServiceDiscovery> serviceDiscoveries = new ConcurrentSkipListSet<>();
+    private volatile List<ServiceDiscovery> serviceDiscoveries = new LinkedList<>();
 
     public DubboBootstrap() {
         DubboShutdownHook.getDubboShutdownHook().register();
@@ -153,7 +154,10 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
      * @see {@linkplan org.apache.dubbo.registry.client.EventPublishingServiceDiscovery}
      */
     public void onServiceDiscoveryInitializing(ServiceDiscoveryInitializingEvent event) {
-        serviceDiscoveries.add(event.getSource());
+        executeMutually(() -> {
+            serviceDiscoveries.add(event.getSource());
+            sort(serviceDiscoveries);
+        });
     }
 
     /**
