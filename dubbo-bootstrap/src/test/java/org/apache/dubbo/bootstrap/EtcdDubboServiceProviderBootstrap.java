@@ -63,7 +63,7 @@ public class EtcdDubboServiceProviderBootstrap {
 //        userService.setRegistries(Arrays.asList(interfaceRegistry, serviceRegistry));
 
         ApplicationConfig applicationConfig = new ApplicationConfig("dubbo-provider-demo");
-        applicationConfig.setMetadata("remote");
+        applicationConfig.setMetadataStorageType("remote");
         new DubboBootstrap()
                 .application(applicationConfig)
                 .defaultMetadataStorageType(true)

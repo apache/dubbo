@@ -84,6 +84,7 @@ import static org.apache.dubbo.common.function.ThrowableAction.execute;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
 import static org.apache.dubbo.config.context.ConfigManager.getInstance;
 import static org.apache.dubbo.metadata.WritableMetadataService.getExtension;
+import static org.apache.dubbo.metadata.WritableMetadataService.getMetadataStorageType;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.setMetadataStorageType;
 import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
 
@@ -455,6 +456,8 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
 
             useRegistryAsConfigCenterIfNecessary();
 
+            initApplicationMetadata();
+
             initMetadataService();
 
             initMetadataServiceExporter();
@@ -470,6 +473,11 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
         }
 
         return this;
+    }
+
+    private void initApplicationMetadata() {
+        String metadataStorageType = getMetadataStorageType(isDefaultMetadataStorageType());
+        getApplication().setMetadataStorageType(metadataStorageType);
     }
 
     private void startConfigCenter() {
@@ -491,7 +499,7 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
                 () -> new IllegalStateException("There's no ApplicationConfig specified.")
         );
 
-        String metadataType = applicationConfig.getMetadata();
+        String metadataType = applicationConfig.getMetadataStorageType();
         // FIXME, multiple metadata config support.
         Collection<MetadataReportConfig> metadataReportConfigs = configManager.getMetadataConfigs();
         if (CollectionUtils.isEmpty(metadataReportConfigs)) {
@@ -588,11 +596,7 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
      * Initialize {@link MetadataServiceExporter}
      */
     private void initMetadataServiceExporter() {
-        this.metadataServiceExporter = new ConfigurableMetadataServiceExporter()
-                .setApplicationConfig(getApplication())
-                .setRegistries(configManager.getRegistries())
-                .setProtocols(configManager.getProtocols())
-                .metadataService(metadataService);
+        this.metadataServiceExporter = new ConfigurableMetadataServiceExporter(metadataService);
     }
 
     /**
@@ -768,12 +772,10 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
     }
 
     /**
-     * export {@link MetadataService} and get the exported {@link URL URLs}
-     *
-     * @return {@link MetadataServiceExporter#getExportedURLs()}
+     * export {@link MetadataService}
      */
-    private List<URL> exportMetadataService() {
-        return metadataServiceExporter.export().getExportedURLs();
+    private void exportMetadataService() {
+        metadataServiceExporter.export();
     }
 
     private void unexportMetadataService() {

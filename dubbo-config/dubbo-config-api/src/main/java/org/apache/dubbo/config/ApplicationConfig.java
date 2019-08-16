@@ -150,7 +150,7 @@ public class ApplicationConfig extends AbstractConfig {
     /**
      * Metadata type, local or remote, if choose remote, you need to further specify metadata center.
      */
-    private String metadata;
+    private String metadataStorageType;
 
     public ApplicationConfig() {
     }
@@ -334,6 +334,7 @@ public class ApplicationConfig extends AbstractConfig {
 
     /**
      * The format is the same as the springboot, including: getQosEnableCompatible(), getQosPortCompatible(), getQosAcceptForeignIpCompatible().
+     *
      * @return
      */
     @Parameter(key = QOS_ENABLE_COMPATIBLE, excluded = true)
@@ -387,12 +388,12 @@ public class ApplicationConfig extends AbstractConfig {
         return !StringUtils.isEmpty(name);
     }
 
-    public String getMetadata() {
-        return metadata;
+    public String getMetadataStorageType() {
+        return metadataStorageType;
     }
 
-    public void setMetadata(String metadata) {
-        this.metadata = metadata;
+    public void setMetadataStorageType(String metadataStorageType) {
+        this.metadataStorageType = metadataStorageType;
     }
 
     @Override

@@ -19,7 +19,6 @@ package org.apache.dubbo.config.metadata;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
@@ -28,14 +27,15 @@ import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.MetadataServiceExporter;
 
-import java.util.Collection;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 
 /**
- * {@link MetadataServiceExporter} implementation based on {@link AbstractConfig Dubbo configurations}, the clients
+ * {@link MetadataServiceExporter} implementation based on {@link ConfigManager Dubbo configurations}, the clients
  * should make sure the {@link ApplicationConfig}, {@link RegistryConfig} and {@link ProtocolConfig} are ready before
  * {@link #export()}.
  * <p>
@@ -53,38 +53,15 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private ApplicationConfig applicationConfig;
+    private final ConfigManager configManager;
 
-    private List<RegistryConfig> registries = new LinkedList<>();
-
-    private List<ProtocolConfig> protocols = new LinkedList<>();
-
-    private MetadataService metadataService;
+    private final MetadataService metadataService;
 
     private ServiceConfig<MetadataService> serviceConfig;
 
-    public ConfigurableMetadataServiceExporter setApplicationConfig(ApplicationConfig applicationConfig) {
-        this.applicationConfig = applicationConfig;
-        return this;
-    }
-
-    public ConfigurableMetadataServiceExporter setRegistries(Collection<RegistryConfig> registries) {
-        this.registries.clear();
-        this.registries.addAll(registries);
-        return this;
-    }
-
-    public ConfigurableMetadataServiceExporter setProtocols(Collection<ProtocolConfig> protocols) {
-        this.protocols.clear();
-        // TODO  only support "dubbo" protocol, add more in the future
-        protocols.stream().filter(protocolConfig -> "dubbo".equals(protocolConfig.getName()))
-                .forEach(this.protocols::add);
-        return this;
-    }
-
-    public ConfigurableMetadataServiceExporter metadataService(MetadataService metadataService) {
+    public ConfigurableMetadataServiceExporter(MetadataService metadataService) {
+        this.configManager = ConfigManager.getInstance();
         this.metadataService = metadataService;
-        return this;
     }
 
     @Override
@@ -93,12 +70,12 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
         if (!isExported()) {
 
             ServiceConfig<MetadataService> serviceConfig = new ServiceConfig<>();
-            serviceConfig.setApplication(applicationConfig);
-            serviceConfig.setRegistries(registries);
-            serviceConfig.setProtocols(protocols);
+            serviceConfig.setApplication(getApplicationConfig());
+            serviceConfig.setRegistries(getRegistries());
+            serviceConfig.setProtocols(getProtocols());
             serviceConfig.setInterface(MetadataService.class);
             serviceConfig.setRef(metadataService);
-            serviceConfig.setGroup(applicationConfig.getName());
+            serviceConfig.setGroup(getApplicationConfig().getName());
             serviceConfig.setVersion(metadataService.version());
 
             // export
@@ -134,5 +111,25 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
 
     public boolean isExported() {
         return serviceConfig != null && serviceConfig.isExported();
+    }
+
+    private ApplicationConfig getApplicationConfig() {
+        return configManager.getApplication().get();
+    }
+
+    private List<RegistryConfig> getRegistries() {
+        return new ArrayList<>(configManager.getRegistries());
+    }
+
+    private List<ProtocolConfig> getProtocols() {
+        return asList(getDefaultProtocol());
+    }
+
+    private ProtocolConfig getDefaultProtocol() {
+        ProtocolConfig defaultProtocol = new ProtocolConfig();
+        defaultProtocol.setName(DUBBO);
+        // auto-increment port
+        defaultProtocol.setPort(-1);
+        return defaultProtocol;
     }
 }

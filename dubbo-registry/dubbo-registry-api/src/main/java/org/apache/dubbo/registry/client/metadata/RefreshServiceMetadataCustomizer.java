@@ -4,7 +4,7 @@ import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
 
-import static org.apache.dubbo.metadata.WritableMetadataService.DEFAULT_EXTENSION;
+import static org.apache.dubbo.metadata.WritableMetadataService.getExtension;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getExportedServicesRevision;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getMetadataStorageType;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getSubscribedServicesRevision;
@@ -22,12 +22,12 @@ public class RefreshServiceMetadataCustomizer implements ServiceInstanceCustomiz
 
     @Override
     public void customize(ServiceInstance serviceInstance) {
-        // FIXME to define the constant
-        String metadataStoredType = getMetadataStorageType(serviceInstance);
-        WritableMetadataService remoteWritableMetadataService =
-                WritableMetadataService.getExtension(metadataStoredType == null ? DEFAULT_EXTENSION : metadataStoredType);
 
-        remoteWritableMetadataService.refreshMetadata(getExportedServicesRevision(serviceInstance),
+        String metadataStoredType = getMetadataStorageType(serviceInstance);
+
+        WritableMetadataService writableMetadataService = getExtension(metadataStoredType);
+
+        writableMetadataService.refreshMetadata(getExportedServicesRevision(serviceInstance),
                 getSubscribedServicesRevision(serviceInstance));
     }
 }

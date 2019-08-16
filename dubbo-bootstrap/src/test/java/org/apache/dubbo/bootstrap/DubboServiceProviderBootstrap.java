@@ -25,10 +25,6 @@ import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.apache.dubbo.common.constants.CommonConstants.METADATA_KEY;
 
 /**
  * Dubbo Provider Bootstrap
@@ -67,7 +63,7 @@ public class DubboServiceProviderBootstrap {
 //        userService.setRegistries(Arrays.asList(interfaceRegistry, serviceRegistry));
 
         ApplicationConfig applicationConfig = new ApplicationConfig("dubbo-provider-demo");
-//        applicationConfig.setMetadata("remote");
+        applicationConfig.setMetadataStorageType("remote");
         new DubboBootstrap()
                 .application(applicationConfig)
                 // Zookeeper in service registry type

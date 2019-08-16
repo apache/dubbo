@@ -26,6 +26,8 @@ import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceDiscoveryFactory;
 
+import static org.apache.dubbo.metadata.WritableMetadataService.getDefaultExtension;
+
 /**
  * Dubbo Provider Bootstrap
  */
@@ -60,7 +62,7 @@ public class DubboProviderBootstrap {
         // 暴露及注册服务
         service.export();
 
-        MetadataServiceExporter exporter = new ConfigurableMetadataServiceExporter();
+        MetadataServiceExporter exporter = new ConfigurableMetadataServiceExporter(getDefaultExtension());
 
         // 暴露 MetadataService 服务
         exporter.export();
