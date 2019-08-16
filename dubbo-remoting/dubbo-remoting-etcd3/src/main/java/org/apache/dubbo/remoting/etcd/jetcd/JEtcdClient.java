@@ -205,7 +205,7 @@ public class JEtcdClient extends AbstractEtcdClient<JEtcdClient.EtcdWatcher> {
 
     @Override
     public boolean putEphemeral(String key, String value) {
-        return clientWrapper.put(key, value);
+        return clientWrapper.putEphemeral(key, value);
     }
 
     public ManagedChannel getChannel() {
