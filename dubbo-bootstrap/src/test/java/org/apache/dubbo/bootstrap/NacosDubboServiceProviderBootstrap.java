@@ -25,7 +25,7 @@ import org.apache.dubbo.config.MetadataReportConfig;
  *
  * @since 2.7.4
  */
-public class DubboServiceProvider2Bootstrap {
+public class NacosDubboServiceProviderBootstrap {
 
     public static void main(String[] args) {
         new DubboBootstrap()

@@ -32,6 +32,7 @@
     <description>The etcd3 remoting module of Dubbo project</description>
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
+        <assertj.version>3.13.2</assertj.version>
     </properties>
     <dependencies>
         <dependency>
@@ -48,10 +49,24 @@
             <groupId>io.etcd</groupId>
             <artifactId>jetcd-core</artifactId>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/io.etcd/jetcd-launcher -->
+        <dependency>
+            <groupId>io.etcd</groupId>
+            <artifactId>jetcd-launcher</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>${assertj.version}</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
 
