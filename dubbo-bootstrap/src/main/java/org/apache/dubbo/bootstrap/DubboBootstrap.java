@@ -588,11 +588,7 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
      * Initialize {@link MetadataServiceExporter}
      */
     private void initMetadataServiceExporter() {
-        this.metadataServiceExporter = new ConfigurableMetadataServiceExporter()
-                .setApplicationConfig(getApplication())
-                .setRegistries(configManager.getRegistries())
-                .setProtocols(configManager.getProtocols())
-                .metadataService(metadataService);
+        this.metadataServiceExporter = new ConfigurableMetadataServiceExporter(metadataService);
     }
 
     /**
@@ -768,12 +764,10 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
     }
 
     /**
-     * export {@link MetadataService} and get the exported {@link URL URLs}
-     *
-     * @return {@link MetadataServiceExporter#getExportedURLs()}
+     * export {@link MetadataService}
      */
-    private List<URL> exportMetadataService() {
-        return metadataServiceExporter.export().getExportedURLs();
+    private void exportMetadataService() {
+        metadataServiceExporter.export();
     }
 
     private void unexportMetadataService() {
