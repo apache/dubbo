@@ -33,6 +33,7 @@ import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoad
  * @since 2.7.4
  */
 public class DefaultServiceDiscoveryFactory extends AbstractServiceDiscoveryFactory {
+
     /**
      * Create the {@link ServiceDiscovery} by {@link URL#getProtocol() the protocol} from {@link URL connection URL}
      *
