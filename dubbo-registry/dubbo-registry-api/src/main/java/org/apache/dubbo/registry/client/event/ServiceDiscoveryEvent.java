@@ -14,18 +14,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.consul;
+package org.apache.dubbo.registry.client.event;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.registry.client.AbstractServiceDiscoveryFactory;
+import org.apache.dubbo.event.Event;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 
 /**
- * 2019-07-31
+ * An abstract {@link Event} class for {@link ServiceDiscovery}
+ *
+ * @see Event
+ * @see ServiceDiscovery
+ * @since 2.7.4
  */
-public class ConsulServiceDiscoveryFactory extends AbstractServiceDiscoveryFactory {
-    @Override
-    public ServiceDiscovery createDiscovery(URL connectionURL) {
-        return new ConsulServiceDiscovery(connectionURL);
+public abstract class ServiceDiscoveryEvent extends Event {
+
+    /**
+     * Constructs a prototypical Event.
+     *
+     * @param serviceDiscovery The {@link ServiceDiscovery} on which the Event initially occurred.
+     * @throws IllegalArgumentException if source is null.
+     */
+    public ServiceDiscoveryEvent(ServiceDiscovery serviceDiscovery) {
+        super(serviceDiscovery);
+    }
+
+    /**
+     * Get the {@link ServiceDiscovery} on which the Event initially occurred.
+     *
+     * @return {@link ServiceDiscovery} instance
+     */
+    public final ServiceDiscovery getServiceDiscovery() {
+        return (ServiceDiscovery) getSource();
     }
 }

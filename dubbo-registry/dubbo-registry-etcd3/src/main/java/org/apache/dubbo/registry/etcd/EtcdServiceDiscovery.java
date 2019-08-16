@@ -17,6 +17,7 @@
 package org.apache.dubbo.registry.etcd;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
@@ -57,15 +58,26 @@ public class EtcdServiceDiscovery implements ServiceDiscovery, EventListener<Ser
     private final Map<String, ChildListener> childListenerMap = new ConcurrentHashMap<>();
 
     private final ConcurrentMap<URL, ConcurrentMap<NotifyListener, ChildListener>> etcdListeners = new ConcurrentHashMap<>();
-    private final EtcdClient etcdClient;
-    private final EventDispatcher dispatcher;
+
+    private EtcdClient etcdClient;
+    private EventDispatcher dispatcher;
     private ServiceInstance serviceInstance;
 
-    public EtcdServiceDiscovery(URL url, EtcdTransporter etcdTransporter) {
-        if (url.isAnyHost()) {
-            throw new IllegalStateException("Service discovery address is invalid, actual: '" + url.getHost() + "'");
+    @Override
+    public void onEvent(ServiceInstancesChangedEvent event) {
+        registerServiceWatcher(event.getServiceName());
+    }
+
+    @Override
+    public void initialize(URL registryURL) throws Exception {
+
+        EtcdTransporter etcdTransporter = ExtensionLoader.getExtensionLoader(EtcdTransporter.class).getAdaptiveExtension();
+
+        if (registryURL.isAnyHost()) {
+            throw new IllegalStateException("Service discovery address is invalid, actual: '" + registryURL.getHost() + "'");
         }
-        etcdClient = etcdTransporter.connect(url);
+
+        etcdClient = etcdTransporter.connect(registryURL);
 
         etcdClient.addStateListener(state -> {
             if (state == StateListener.CONNECTED) {
@@ -82,17 +94,7 @@ public class EtcdServiceDiscovery implements ServiceDiscovery, EventListener<Ser
     }
 
     @Override
-    public void onEvent(ServiceInstancesChangedEvent event) {
-        registerServiceWatcher(event.getServiceName());
-    }
-
-    @Override
-    public void start() {
-
-    }
-
-    @Override
-    public void stop() {
+    public void destroy() {
 
     }
 

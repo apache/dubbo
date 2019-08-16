@@ -56,25 +56,31 @@ public class ZookeeperServiceDiscovery implements ServiceDiscovery, EventListene
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final CuratorFramework curatorFramework;
+    private EventDispatcher dispatcher;
 
-    private final String rootPath;
+    private CuratorFramework curatorFramework;
 
-    private final org.apache.curator.x.discovery.ServiceDiscovery<ZookeeperInstance> serviceDiscovery;
+    private String rootPath;
 
-    private final EventDispatcher dispatcher;
+    private org.apache.curator.x.discovery.ServiceDiscovery<ZookeeperInstance> serviceDiscovery;
 
     /**
      * The Key is watched Zookeeper path, the value is an instance of {@link CuratorWatcher}
      */
     private final Map<String, CuratorWatcher> watcherCaches = new ConcurrentHashMap<>();
 
-    public ZookeeperServiceDiscovery(URL connectionURL) throws Exception {
-        this.curatorFramework = buildCuratorFramework(connectionURL);
-        this.rootPath = ROOT_PATH.getParameterValue(connectionURL);
-        this.serviceDiscovery = buildServiceDiscovery(curatorFramework, rootPath);
+    @Override
+    public void initialize(URL registryURL) throws Exception {
         this.dispatcher = EventDispatcher.getDefaultExtension();
         this.dispatcher.addEventListener(this);
+        this.curatorFramework = buildCuratorFramework(registryURL);
+        this.rootPath = ROOT_PATH.getParameterValue(registryURL);
+        this.serviceDiscovery = buildServiceDiscovery(curatorFramework, rootPath);
+        this.serviceDiscovery.start();
+    }
+
+    public void destroy() throws Exception {
+        serviceDiscovery.close();
     }
 
     public void register(ServiceInstance serviceInstance) throws RuntimeException {
@@ -92,18 +98,6 @@ public class ZookeeperServiceDiscovery implements ServiceDiscovery, EventListene
     public void unregister(ServiceInstance serviceInstance) throws RuntimeException {
         doInServiceRegistry(serviceDiscovery -> {
             serviceDiscovery.unregisterService(build(serviceInstance));
-        });
-    }
-
-    public void start() {
-        doInServiceRegistry(serviceDiscovery -> {
-            serviceDiscovery.start();
-        });
-    }
-
-    public void stop() {
-        doInServiceRegistry(serviceDiscovery -> {
-            serviceDiscovery.close();
         });
     }
 

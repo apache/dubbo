@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.DUBBO_METADATA_SERVICE_URLS_PROPERTY_NAME;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.METADATA_SERVICE_URLS_PROPERTY_NAME;
 
 /**
  * The {@link MetadataServiceURLBuilder} implementation for The standard Dubbo scenario
@@ -39,7 +39,7 @@ public class SpringCloudMetadataServiceURLBuilder implements MetadataServiceURLB
     @Override
     public List<URL> build(ServiceInstance serviceInstance) {
         Map<String, String> metadata = serviceInstance.getMetadata();
-        String dubboURLsJSON = metadata.get(DUBBO_METADATA_SERVICE_URLS_PROPERTY_NAME);
+        String dubboURLsJSON = metadata.get(METADATA_SERVICE_URLS_PROPERTY_NAME);
         if (StringUtils.isBlank(dubboURLsJSON)) {
             return Collections.emptyList();
         }

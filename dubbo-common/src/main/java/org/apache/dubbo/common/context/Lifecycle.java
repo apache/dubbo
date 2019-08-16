@@ -21,7 +21,7 @@ package org.apache.dubbo.common.context;
  *
  * @since 2.7.4
  */
-public interface Lifecycle {
+public interface Lifecycle<V> {
 
     /**
      * Initialize the component before {@link #start() start}

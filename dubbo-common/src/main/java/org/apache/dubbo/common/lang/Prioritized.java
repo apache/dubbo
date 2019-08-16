@@ -38,7 +38,7 @@ public interface Prioritized extends Comparable<Prioritized> {
             return -1;
         } else if (b2 && !b1) { // two is Prioritized, one is not
             return 1;
-        } else if (b1 && b2) {  //  one and two both Prioritized
+        } else if (b1 && b2) {  //  one and two both are Prioritized
             return ((Prioritized) one).compareTo((Prioritized) two);
         } else {                // no different
             return 0;
@@ -54,6 +54,7 @@ public interface Prioritized extends Comparable<Prioritized> {
      * The minimum priority
      */
     int MIN_PRIORITY = Integer.MAX_VALUE;
+
     /**
      * Normal Priority
      */

@@ -14,21 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.service;
+package org.apache.dubbo.registry.client;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.ServiceNameMapping;
 import org.apache.dubbo.metadata.WritableMetadataService;
+import org.apache.dubbo.metadata.store.InMemoryWritableMetadataService;
+import org.apache.dubbo.metadata.store.RemoteWritableMetadataService;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
-import org.apache.dubbo.registry.client.ServiceDiscovery;
-import org.apache.dubbo.registry.client.ServiceDiscoveryFactory;
-import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.metadata.proxy.MetadataServiceProxyFactory;
 import org.apache.dubbo.registry.client.selector.ServiceInstanceSelector;
 import org.apache.dubbo.registry.support.FailbackRegistry;
@@ -54,7 +52,6 @@ import static java.util.stream.Stream.of;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.METADATA_DEFAULT;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
@@ -63,29 +60,36 @@ import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_TYPE;
 import static org.apache.dubbo.common.constants.RegistryConstants.SUBSCRIBED_SERVICE_NAMES_KEY;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
+import static org.apache.dubbo.common.function.ThrowableAction.execute;
 import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
 import static org.apache.dubbo.common.utils.CollectionUtils.isNotEmpty;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 import static org.apache.dubbo.metadata.WritableMetadataService.DEFAULT_EXTENSION;
-import static org.apache.dubbo.metadata.report.support.Constants.METADATA_REPORT_KEY;
+import static org.apache.dubbo.registry.client.ServiceDiscoveryFactory.getExtension;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getExportedServicesRevision;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getMetadataServiceURLsParams;
-import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getMetadataStoredType;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getMetadataStorageType;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getProviderHost;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getProviderPort;
 
 /**
- * Service-Oriented {@link Registry} that is dislike the traditional {@link Registry} will not communicate to
- * registry immediately instead of persisting into the metadata's repository when the Dubbo service exports.
- * The metadata repository will be used as the data source of Dubbo Metadata service that is about to export and be
- * subscribed by the consumers.
+ * {@link ServiceDiscoveryRegistry} is the service-oriented {@link Registry} and dislike the traditional one that
+ * {@link #register(URL) registers} to and {@link #subscribe(URL, NotifyListener) discoveries}
+ * the Dubbo's {@link URL urls} from the external registry. In the {@link #register(URL) registration}
+ * phase, The {@link URL urls} of Dubbo services will be {@link WritableMetadataService#exportURL(URL) exported} into
+ * {@link WritableMetadataService} that is either {@link InMemoryWritableMetadataService in-memory} or
+ * {@link RemoteWritableMetadataService remote},
+ * <p>
+ * it's decided by metadata
+ * subscribes from the remote proxy of {@link MetadataService}
+ *
  * <p>
  *
  * @see ServiceDiscovery
  * @see FailbackRegistry
  * @since 2.7.4
  */
-public class ServiceOrientedRegistry extends FailbackRegistry {
+public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -97,20 +101,17 @@ public class ServiceOrientedRegistry extends FailbackRegistry {
 
     private final WritableMetadataService writableMetadataService;
 
-
-    public ServiceOrientedRegistry(URL registryURL) {
+    public ServiceDiscoveryRegistry(URL registryURL) {
         super(registryURL);
-        this.serviceDiscovery = buildServiceDiscovery(registryURL);
-        this.subscribedServices = buildSubscribedServices(registryURL);
+        this.serviceDiscovery = getServiceDiscovery(registryURL);
+        this.subscribedServices = getSubscribedServices(registryURL);
         this.serviceNameMapping = ServiceNameMapping.getDefaultExtension();
-
-        String metadata = registryURL.getParameter(METADATA_REPORT_KEY, METADATA_DEFAULT);
-        // FIXME
-        this.writableMetadataService = WritableMetadataService.getExtension(metadata);
+        String metadataStorageType = getMetadataStorageType(registryURL);
+        this.writableMetadataService = WritableMetadataService.getExtension(metadataStorageType);
     }
 
-    private Set<String> buildSubscribedServices(URL url) {
-        String subscribedServiceNames = url.getParameter(SUBSCRIBED_SERVICE_NAMES_KEY);
+    protected Set<String> getSubscribedServices(URL registryURL) {
+        String subscribedServiceNames = registryURL.getParameter(SUBSCRIBED_SERVICE_NAMES_KEY);
         return isBlank(subscribedServiceNames) ? emptySet() :
                 unmodifiableSet(of(subscribedServiceNames.split(","))
                         .map(String::trim)
@@ -118,17 +119,24 @@ public class ServiceOrientedRegistry extends FailbackRegistry {
                         .collect(toSet()));
     }
 
-    private ServiceDiscovery buildServiceDiscovery(URL url) {
-        ServiceDiscoveryFactory factory = ExtensionLoader.getExtensionLoader(ServiceDiscoveryFactory.class).getAdaptiveExtension();
-        ServiceDiscovery serviceDiscovery = factory.getDiscovery(url
-                .addParameter(INTERFACE_KEY, ServiceDiscovery.class.getName())
-                .removeParameter(REGISTRY_TYPE_KEY)
-        );
-        serviceDiscovery.start();
+    /**
+     * Get the {@link ServiceDiscovery} from the connection {@link URL}
+     *
+     * @param registryURL the {@link URL} to connect the registry
+     * @return non-null
+     */
+    protected ServiceDiscovery getServiceDiscovery(URL registryURL) {
+        ServiceDiscoveryFactory factory = getExtension(registryURL);
+        ServiceDiscovery serviceDiscovery = factory.getServiceDiscovery(registryURL);
+        execute(() -> {
+            serviceDiscovery.initialize(registryURL.addParameter(INTERFACE_KEY, ServiceDiscovery.class.getName())
+                    .removeParameter(REGISTRY_TYPE_KEY));
+        });
         return serviceDiscovery;
     }
 
     protected boolean shouldRegister(URL providerURL) {
+
         String side = providerURL.getParameter(SIDE_KEY);
 
         boolean should = PROVIDER_SIDE.equals(side); // Only register the Provider.
@@ -222,8 +230,10 @@ public class ServiceOrientedRegistry extends FailbackRegistry {
     @Override
     public void destroy() {
         super.destroy();
-        // stop ServiceDiscovery
-        serviceDiscovery.stop();
+        execute(() -> {
+            // stop ServiceDiscovery
+            serviceDiscovery.destroy();
+        });
     }
 
     protected void subscribeURLs(URL url, NotifyListener listener) {
@@ -429,11 +439,11 @@ public class ServiceOrientedRegistry extends FailbackRegistry {
         String version = subscribedURL.getParameter(VERSION_KEY);
         // The subscribed protocol may be null
         String protocol = subscribedURL.getParameter(PROTOCOL_KEY);
-        String metadataServiceType = getMetadataStoredType(providerInstance);
+        String metadataStorageType = getMetadataStorageType(providerInstance);
 
         try {
             MetadataService metadataService = MetadataServiceProxyFactory
-                    .getExtension(metadataServiceType == null ? DEFAULT_EXTENSION : metadataServiceType)
+                    .getExtension(metadataStorageType == null ? DEFAULT_EXTENSION : metadataStorageType)
                     .getProxy(providerInstance);
             SortedSet<String> urls = metadataService.getExportedURLs(serviceInterface, group, version, protocol);
             exportedURLs = urls.stream().map(URL::valueOf).collect(Collectors.toList());
@@ -478,13 +488,13 @@ public class ServiceOrientedRegistry extends FailbackRegistry {
     }
 
     /**
-     * Create an instance of {@link ServiceOrientedRegistry} if supported
+     * Create an instance of {@link ServiceDiscoveryRegistry} if supported
      *
      * @param registryURL the {@link URL url} of registry
      * @return <code>null</code> if not supported
      */
-    public static ServiceOrientedRegistry create(URL registryURL) {
-        return supports(registryURL) ? new ServiceOrientedRegistry(registryURL) : null;
+    public static ServiceDiscoveryRegistry create(URL registryURL) {
+        return supports(registryURL) ? new ServiceDiscoveryRegistry(registryURL) : null;
     }
 
     /**

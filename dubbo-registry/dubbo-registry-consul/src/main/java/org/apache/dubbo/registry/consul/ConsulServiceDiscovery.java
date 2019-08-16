@@ -63,6 +63,7 @@ import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.WATCH_TIME
  * 2019-07-31
  */
 public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<ServiceInstancesChangedEvent> {
+
     private static final Logger logger = LoggerFactory.getLogger(ConsulServiceDiscovery.class);
 
     private ConsulClient client;
@@ -72,7 +73,14 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
     private long checkPassInterval;
     private URL url;
 
-    public ConsulServiceDiscovery(URL url) {
+    @Override
+    public void onEvent(ServiceInstancesChangedEvent event) {
+
+    }
+
+    @Override
+    public void initialize(URL registryURL) throws Exception {
+        this.url = registryURL;
         String host = url.getHost();
         int port = url.getPort() != 0 ? url.getPort() : DEFAULT_PORT;
         checkPassInterval = url.getParameter(CHECK_PASS_INTERVAL, DEFAULT_CHECK_PASS_INTERVAL);
@@ -82,18 +90,7 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
     }
 
     @Override
-    public void onEvent(ServiceInstancesChangedEvent event) {
-
-    }
-
-    @Override
-    public void start() {
-
-    }
-
-    @Override
-    public void stop() {
-
+    public void destroy() {
     }
 
     @Override
