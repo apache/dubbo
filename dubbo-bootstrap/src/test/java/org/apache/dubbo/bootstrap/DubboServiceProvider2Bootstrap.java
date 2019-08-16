@@ -18,6 +18,7 @@ package org.apache.dubbo.bootstrap;
 
 import org.apache.dubbo.bootstrap.rest.UserService;
 import org.apache.dubbo.bootstrap.rest.UserServiceImpl;
+import org.apache.dubbo.config.MetadataReportConfig;
 
 /**
  * Dubbo Provider Bootstrap
@@ -28,12 +29,14 @@ public class DubboServiceProvider2Bootstrap {
 
     public static void main(String[] args) {
         new DubboBootstrap()
+                .defaultMetadataStorageType(false)
                 .application("dubbo-provider-demo")
                 // Zookeeper in service registry type
                 .registry("zookeeper", builder -> builder.address("zookeeper://127.0.0.1:2181?registry.type=service"))
                 // Nacos
-                .registry("nacos", builder -> builder.address("nacos://127.0.0.1:8848?registry.type=service"))
+//                .registry("nacos", builder -> builder.address("nacos://127.0.0.1:8848?registry.type=service"))
 //                .registry(RegistryBuilder.newBuilder().address("etcd3://127.0.0.1:2379?registry.type=service").build())
+                .metadataReport(new MetadataReportConfig("zookeeper://127.0.0.1:2181"))
                 .protocol("dubbo", builder -> builder.port(20885).name("dubbo"))
                 .protocol("rest", builder -> builder.port(9090).name("rest"))
                 .service(builder -> builder.id("echo").interfaceClass(EchoService.class).ref(new EchoServiceImpl()).protocolIds("dubbo"))
