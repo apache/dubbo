@@ -71,7 +71,7 @@ public class ConfigurableMetadataServiceExporterTest {
     public void testExportAndUnexport() {
         ConfigurableMetadataServiceExporter exporter = new ConfigurableMetadataServiceExporter();
         exporter.setApplicationConfig(ConfigManager.getInstance().getApplication().get());
-        List<URL> urls = exporter.export();
+        List<URL> urls = exporter.export().getExportedURLs();
 
         assertEquals(1, urls.size());
 

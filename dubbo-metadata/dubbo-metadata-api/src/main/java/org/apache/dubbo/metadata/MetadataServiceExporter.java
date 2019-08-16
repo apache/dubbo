@@ -33,12 +33,29 @@ public interface MetadataServiceExporter {
     /**
      * Exports the {@link MetadataService} as a Dubbo service
      *
-     * @return the exported {@link URL URLs}
+     * @return {@link MetadataServiceExporter itself}
      */
-    List<URL> export();
+    MetadataServiceExporter export();
 
     /**
      * Unexports the {@link MetadataService}
+     *
+     * @return {@link MetadataServiceExporter itself}
      */
-    void unexport();
+    MetadataServiceExporter unexport();
+
+    /**
+     * Get the {@link URL URLs} that were exported
+     *
+     * @return non-null
+     */
+    List<URL> getExportedURLs();
+
+    /**
+     * {@link MetadataService} is export or not
+     *
+     * @return if {@link #export()} was executed, return <code>true</code>, or <code>false</code>
+     */
+    boolean isExported();
 }
+

@@ -34,6 +34,16 @@ import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoad
 public interface WritableMetadataService extends MetadataService {
 
     /**
+     * The default storage type value as the extension name
+     */
+    public static String DEFAULT_METADATA_STORAGE_TYPE = "default";
+
+    /**
+     * The remote storage type value as the extension name
+     */
+    public static String REMOTE_METADATA_STORAGE_TYPE = "remote";
+
+    /**
      * Gets the current Dubbo Service name
      *
      * @return non-null
@@ -94,6 +104,20 @@ public interface WritableMetadataService extends MetadataService {
      */
     static WritableMetadataService getDefaultExtension() {
         return getExtensionLoader(WritableMetadataService.class).getDefaultExtension();
+    }
+
+    /**
+     * Get the metadata's storage type
+     *
+     * @param isDefaultStorageType is default storage type or not
+     * @return non-null, {@link #DEFAULT_METADATA_STORAGE_TYPE "default"} or {@link #REMOTE_METADATA_STORAGE_TYPE "remote"}
+     */
+    public static String getMetadataStorageType(boolean isDefaultStorageType) {
+        return isDefaultStorageType ? DEFAULT_METADATA_STORAGE_TYPE : REMOTE_METADATA_STORAGE_TYPE;
+    }
+
+    static WritableMetadataService getExtension(boolean isDefaultStorageType) {
+        return getExtension(getMetadataStorageType(isDefaultStorageType));
     }
 
     static WritableMetadataService getExtension(String name) {
