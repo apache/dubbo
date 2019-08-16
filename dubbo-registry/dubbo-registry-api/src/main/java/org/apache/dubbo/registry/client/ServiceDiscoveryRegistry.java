@@ -103,7 +103,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
     public ServiceDiscoveryRegistry(URL registryURL) {
         super(registryURL);
-        this.serviceDiscovery = getServiceDiscovery(registryURL);
+        this.serviceDiscovery = createServiceDiscovery(registryURL);
         this.subscribedServices = getSubscribedServices(registryURL);
         this.serviceNameMapping = ServiceNameMapping.getDefaultExtension();
         String metadataStorageType = getMetadataStorageType(registryURL);
@@ -120,14 +120,14 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
     }
 
     /**
-     * Get the {@link ServiceDiscovery} from the connection {@link URL}
+     * Create the {@link ServiceDiscovery} from the registry {@link URL}
      *
      * @param registryURL the {@link URL} to connect the registry
      * @return non-null
      */
-    protected ServiceDiscovery getServiceDiscovery(URL registryURL) {
-        ServiceDiscoveryFactory factory = getExtension(registryURL);
-        ServiceDiscovery serviceDiscovery = factory.getServiceDiscovery(registryURL);
+    protected ServiceDiscovery createServiceDiscovery(URL registryURL) {
+        ServiceDiscovery originalServiceDiscovery = getServiceDiscovery(registryURL);
+        ServiceDiscovery serviceDiscovery = enhanceEventPublishing(originalServiceDiscovery);
         execute(() -> {
             serviceDiscovery.initialize(registryURL.addParameter(INTERFACE_KEY, ServiceDiscovery.class.getName())
                     .removeParameter(REGISTRY_TYPE_KEY));
@@ -135,6 +135,28 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         return serviceDiscovery;
     }
 
+    /**
+     * Get the instance {@link ServiceDiscovery} from the registry {@link URL} using
+     * {@link ServiceDiscoveryFactory} SPI
+     *
+     * @param registryURL the {@link URL} to connect the registry
+     * @return
+     */
+    private ServiceDiscovery getServiceDiscovery(URL registryURL) {
+        ServiceDiscoveryFactory factory = getExtension(registryURL);
+        return factory.getServiceDiscovery(registryURL);
+    }
+
+    /**
+     * Enhance the original {@link ServiceDiscovery} with event publishing feature
+     *
+     * @param original the original {@link ServiceDiscovery}
+     * @return {@link EventPublishingServiceDiscovery} instance
+     */
+    private ServiceDiscovery enhanceEventPublishing(ServiceDiscovery original) {
+        return new EventPublishingServiceDiscovery(original);
+    }
+  
     protected boolean shouldRegister(URL providerURL) {
 
         String side = providerURL.getParameter(SIDE_KEY);
@@ -505,14 +527,5 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
      */
     public static boolean supports(URL registryURL) {
         return SERVICE_REGISTRY_TYPE.equalsIgnoreCase(registryURL.getParameter(REGISTRY_TYPE_KEY));
-    }
-
-    /**
-     * Get the instance of {@link ServiceDiscovery}
-     *
-     * @return non-null
-     */
-    public ServiceDiscovery getServiceDiscovery() {
-        return serviceDiscovery;
     }
 }

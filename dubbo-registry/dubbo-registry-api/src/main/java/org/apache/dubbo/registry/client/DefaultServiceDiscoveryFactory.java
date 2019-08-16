@@ -33,21 +33,15 @@ import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoad
  * @since 2.7.4
  */
 public class DefaultServiceDiscoveryFactory extends AbstractServiceDiscoveryFactory {
-
-    @Override
-    protected ServiceDiscovery createDiscovery(URL connectionURL) {
-        ServiceDiscovery serviceDiscovery = load(connectionURL);
-        return new EventPublishingServiceDiscovery(serviceDiscovery);
-    }
-
     /**
-     * Load the {@link ServiceDiscovery} by {@link URL#getProtocol() the protocol} from {@link URL connection URL}
+     * Create the {@link ServiceDiscovery} by {@link URL#getProtocol() the protocol} from {@link URL connection URL}
      *
-     * @param connectionURL the {@link URL url} to connect
-     * @return non-null
+     * @param registryURL
+     * @return
      */
-    private ServiceDiscovery load(URL connectionURL) {
-        String protocol = connectionURL.getProtocol();
+    @Override
+    protected ServiceDiscovery createDiscovery(URL registryURL) {
+        String protocol = registryURL.getProtocol();
         ExtensionLoader<ServiceDiscovery> loader = getExtensionLoader(ServiceDiscovery.class);
         return loader.getOrDefaultExtension(protocol);
     }
