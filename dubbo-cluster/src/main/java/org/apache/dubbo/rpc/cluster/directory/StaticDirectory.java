@@ -60,6 +60,10 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
         return invokers.get(0).getInterface();
     }
 
+    /**
+     * 检测服务目录是否可用
+     * @return
+     */
     @Override
     public boolean isAvailable() {
         if (isDestroyed()) {
