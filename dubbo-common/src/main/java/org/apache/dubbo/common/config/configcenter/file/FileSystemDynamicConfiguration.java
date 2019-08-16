@@ -169,6 +169,10 @@ public class FileSystemDynamicConfiguration extends AbstractDynamicConfiguration
 
     private final Map<File, List<ConfigurationListener>> listenersRepository;
 
+    public FileSystemDynamicConfiguration() {
+        this(URL.valueOf("file:///default"));
+    }
+
     public FileSystemDynamicConfiguration(URL url) {
         this(initDirectory(url), getEncoding(url), getThreadPoolPrefixName(url), getThreadPoolSize(url),
                 getThreadPoolKeepAliveTime(url));

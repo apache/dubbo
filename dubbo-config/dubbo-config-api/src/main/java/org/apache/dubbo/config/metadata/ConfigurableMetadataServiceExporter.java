@@ -21,20 +21,18 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.MetadataServiceExporter;
-import org.apache.dubbo.metadata.WritableMetadataService;
 
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
-import static java.util.Collections.unmodifiableList;
+import static java.util.Collections.emptyList;
 
 /**
  * {@link MetadataServiceExporter} implementation based on {@link AbstractConfig Dubbo configurations}, the clients
@@ -43,6 +41,8 @@ import static java.util.Collections.unmodifiableList;
  * <p>
  * Typically, do not worry about their ready status, because they are initialized before
  * any {@link ServiceConfig} exports, or The Dubbo export will be failed.
+ * <p>
+ * Being aware of it's not a thread-safe implementation.
  *
  * @see MetadataServiceExporter
  * @see ServiceConfig
@@ -53,36 +53,44 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private volatile ServiceConfig<MetadataService> serviceConfig;
-
     private ApplicationConfig applicationConfig;
-    private MetadataReportConfig metadataReportConfig;
 
     private List<RegistryConfig> registries = new LinkedList<>();
 
     private List<ProtocolConfig> protocols = new LinkedList<>();
 
-    public void setApplicationConfig(ApplicationConfig applicationConfig) {
+    private MetadataService metadataService;
+
+    private ServiceConfig<MetadataService> serviceConfig;
+
+    public ConfigurableMetadataServiceExporter setApplicationConfig(ApplicationConfig applicationConfig) {
         this.applicationConfig = applicationConfig;
+        return this;
     }
 
-    public void setRegistries(Collection<RegistryConfig> registries) {
+    public ConfigurableMetadataServiceExporter setRegistries(Collection<RegistryConfig> registries) {
         this.registries.clear();
         this.registries.addAll(registries);
+        return this;
     }
 
-    public void setProtocols(Collection<ProtocolConfig> protocols) {
+    public ConfigurableMetadataServiceExporter setProtocols(Collection<ProtocolConfig> protocols) {
         this.protocols.clear();
-        this.protocols.addAll(protocols);
+        // TODO  only support "dubbo" protocol, add more in the future
+        protocols.stream().filter(protocolConfig -> "dubbo".equals(protocolConfig.getName()))
+                .forEach(this.protocols::add);
+        return this;
+    }
+
+    public ConfigurableMetadataServiceExporter metadataService(MetadataService metadataService) {
+        this.metadataService = metadataService;
+        return this;
     }
 
     @Override
-    public List<URL> export() {
+    public ConfigurableMetadataServiceExporter export() {
 
         if (!isExported()) {
-
-            // FIXME, if uses remote metadata center, does not need to export MetadataService locally.
-            WritableMetadataService metadataService = WritableMetadataService.getDefaultExtension();
 
             ServiceConfig<MetadataService> serviceConfig = new ServiceConfig<>();
             serviceConfig.setApplication(applicationConfig);
@@ -90,7 +98,7 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
             serviceConfig.setProtocols(protocols);
             serviceConfig.setInterface(MetadataService.class);
             serviceConfig.setRef(metadataService);
-            serviceConfig.setGroup(getApplicationConfig().getName());
+            serviceConfig.setGroup(applicationConfig.getName());
             serviceConfig.setVersion(metadataService.version());
 
             // export
@@ -107,29 +115,24 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
                 logger.warn("The MetadataService has been exported : " + serviceConfig.getExportedUrls());
             }
         }
-        return serviceConfig.getExportedUrls();
+
+        return this;
     }
 
     @Override
-    public void unexport() {
+    public ConfigurableMetadataServiceExporter unexport() {
         if (isExported()) {
             serviceConfig.unexport();
         }
+        return this;
     }
 
-    private List<ProtocolConfig> getProtocols() {
-        return unmodifiableList(protocols);
+    @Override
+    public List<URL> getExportedURLs() {
+        return serviceConfig != null ? serviceConfig.getExportedUrls() : emptyList();
     }
 
-    private List<RegistryConfig> getRegistries() {
-        return unmodifiableList(registries);
-    }
-
-    private ApplicationConfig getApplicationConfig() {
-        return applicationConfig;
-    }
-
-    private boolean isExported() {
+    public boolean isExported() {
         return serviceConfig != null && serviceConfig.isExported();
     }
 }

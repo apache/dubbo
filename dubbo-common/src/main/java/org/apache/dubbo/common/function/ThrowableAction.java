@@ -14,36 +14,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.client.event;
+package org.apache.dubbo.common.function;
 
-import org.apache.dubbo.event.Event;
-import org.apache.dubbo.registry.client.ServiceDiscovery;
+import java.util.function.Function;
 
 /**
- * An event raised after the {@link ServiceDiscovery Service Discovery} started
+ * A function interface for action with {@link Throwable}
  *
- * @see ServiceDiscovery#start()
+ * @see Function
+ * @see Throwable
  * @since 2.7.4
  */
-public class ServiceDiscoveryStartedEvent extends Event {
+@FunctionalInterface
+public interface ThrowableAction {
 
     /**
-     * Constructs a prototypical Event.
+     * Executes the action
      *
-     * @param serviceDiscovery The instance of {@link ServiceDiscovery} as source
-     * @throws IllegalArgumentException if source is null.
+     * @throws Exception if met with error
      */
-    public ServiceDiscoveryStartedEvent(ServiceDiscovery serviceDiscovery) {
-        super(serviceDiscovery);
-    }
+    void execute() throws Exception;
 
     /**
-     * Get the instance of {@link ServiceDiscovery} as source
+     * Executes {@link ThrowableAction}
      *
-     * @return the instance of {@link ServiceDiscovery} as source
+     * @param action {@link ThrowableAction}
+     * @throws RuntimeException wrap {@link Exception} to {@link RuntimeException}
      */
-    public ServiceDiscovery getServiceDiscovery() {
-        return (ServiceDiscovery) getSource();
+    static void execute(ThrowableAction action) throws RuntimeException {
+        try {
+            action.execute();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
-
 }

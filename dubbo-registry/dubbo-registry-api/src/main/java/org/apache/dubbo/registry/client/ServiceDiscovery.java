@@ -16,6 +16,9 @@
  */
 package org.apache.dubbo.registry.client;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.common.lang.Prioritized;
 import org.apache.dubbo.common.utils.Page;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 
@@ -33,19 +36,25 @@ import static java.util.Collections.unmodifiableMap;
  *
  * @since 2.7.4
  */
-public interface ServiceDiscovery {
+@SPI("file")
+public interface ServiceDiscovery extends Prioritized {
 
     // ==================================== Lifecycle ==================================== //
 
     /**
-     * Starts the ServiceRegistry. This is a lifecycle method.
+     * Initializes the {@link ServiceDiscovery}
+     *
+     * @param registryURL the {@link URL url} to connect service registry
+     * @throws Exception If met with error
      */
-    void start();
+    void initialize(URL registryURL) throws Exception;
 
     /**
-     * Stops the ServiceRegistry. This is a lifecycle method.
+     * Destroy the {@link ServiceDiscovery}
+     *
+     * @throws Exception If met with error
      */
-    void stop();
+    void destroy() throws Exception;
 
     // ==================================================================================== //
 

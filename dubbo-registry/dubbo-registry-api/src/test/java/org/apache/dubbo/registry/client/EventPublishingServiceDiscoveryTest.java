@@ -19,10 +19,10 @@ package org.apache.dubbo.registry.client;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.event.EventDispatcher;
 import org.apache.dubbo.event.EventListener;
-import org.apache.dubbo.registry.client.event.ServiceDiscoveryStartedEvent;
-import org.apache.dubbo.registry.client.event.ServiceDiscoveryStartingEvent;
-import org.apache.dubbo.registry.client.event.ServiceDiscoveryStoppedEvent;
-import org.apache.dubbo.registry.client.event.ServiceDiscoveryStoppingEvent;
+import org.apache.dubbo.registry.client.event.ServiceDiscoveryDestroyedEvent;
+import org.apache.dubbo.registry.client.event.ServiceDiscoveryDestroyingEvent;
+import org.apache.dubbo.registry.client.event.ServiceDiscoveryInitializedEvent;
+import org.apache.dubbo.registry.client.event.ServiceDiscoveryInitializingEvent;
 import org.apache.dubbo.registry.client.event.ServiceInstancePreRegisteredEvent;
 import org.apache.dubbo.registry.client.event.ServiceInstanceRegisteredEvent;
 
@@ -53,7 +53,7 @@ public class EventPublishingServiceDiscoveryTest {
     private ServiceDiscoveryTest serviceDiscoveryTest;
 
     @BeforeEach
-    public void init() {
+    public void init() throws Exception {
 
         // remove all EventListeners
         eventDispatcher.removeAllEventListeners();
@@ -67,17 +67,17 @@ public class EventPublishingServiceDiscoveryTest {
         serviceDiscoveryTest.setServiceDiscovery(serviceDiscovery);
 
         // ServiceDiscoveryStartingEvent
-        eventDispatcher.addEventListener(new EventListener<ServiceDiscoveryStartingEvent>() {
+        eventDispatcher.addEventListener(new EventListener<ServiceDiscoveryInitializingEvent>() {
             @Override
-            public void onEvent(ServiceDiscoveryStartingEvent event) {
+            public void onEvent(ServiceDiscoveryInitializingEvent event) {
                 assertEquals(delegate, event.getServiceDiscovery());
             }
         });
 
         // ServiceDiscoveryStartedEvent
-        eventDispatcher.addEventListener(new EventListener<ServiceDiscoveryStartedEvent>() {
+        eventDispatcher.addEventListener(new EventListener<ServiceDiscoveryInitializedEvent>() {
             @Override
-            public void onEvent(ServiceDiscoveryStartedEvent event) {
+            public void onEvent(ServiceDiscoveryInitializedEvent event) {
                 assertEquals(delegate, event.getServiceDiscovery());
             }
         });
@@ -98,43 +98,43 @@ public class EventPublishingServiceDiscoveryTest {
             }
         });
 
-        assertFalse(serviceDiscovery.isStarted());
-        assertFalse(serviceDiscovery.isStopped());
+        assertFalse(serviceDiscovery.isInitialized());
+        assertFalse(serviceDiscovery.isDestroyed());
 
         // test start()
         serviceDiscoveryTest.init();
 
-        assertTrue(serviceDiscovery.isStarted());
-        assertFalse(serviceDiscovery.isStopped());
+        assertTrue(serviceDiscovery.isInitialized());
+        assertFalse(serviceDiscovery.isDestroyed());
     }
 
     @AfterEach
-    public void destroy() {
+    public void destroy() throws Exception {
 
         // ServiceDiscoveryStoppingEvent
-        eventDispatcher.addEventListener(new EventListener<ServiceDiscoveryStoppingEvent>() {
+        eventDispatcher.addEventListener(new EventListener<ServiceDiscoveryDestroyingEvent>() {
             @Override
-            public void onEvent(ServiceDiscoveryStoppingEvent event) {
+            public void onEvent(ServiceDiscoveryDestroyingEvent event) {
                 assertEquals(delegate, event.getServiceDiscovery());
             }
         });
 
         // ServiceDiscoveryStoppedEvent
-        eventDispatcher.addEventListener(new EventListener<ServiceDiscoveryStoppedEvent>() {
+        eventDispatcher.addEventListener(new EventListener<ServiceDiscoveryDestroyedEvent>() {
             @Override
-            public void onEvent(ServiceDiscoveryStoppedEvent event) {
+            public void onEvent(ServiceDiscoveryDestroyedEvent event) {
                 assertEquals(delegate, event.getServiceDiscovery());
             }
         });
 
-        assertTrue(serviceDiscovery.isStarted());
-        assertFalse(serviceDiscovery.isStopped());
+        assertTrue(serviceDiscovery.isInitialized());
+        assertFalse(serviceDiscovery.isDestroyed());
 
         // test stop()
         serviceDiscoveryTest.destroy();
 
-        assertTrue(serviceDiscovery.isStarted());
-        assertTrue(serviceDiscovery.isStopped());
+        assertTrue(serviceDiscovery.isInitialized());
+        assertTrue(serviceDiscovery.isDestroyed());
     }
 
     @Test

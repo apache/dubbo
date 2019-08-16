@@ -16,16 +16,16 @@
  */
 package org.apache.dubbo.registry.client.event;
 
-import org.apache.dubbo.event.Event;
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 
 /**
- * An event raised after the {@link ServiceDiscovery Service Discovery} stopped.
+ * An event raised after the {@link ServiceDiscovery Service Discovery} initialized
  *
- * @see ServiceDiscovery#stop()
+ * @see ServiceDiscovery#initialize(URL)
  * @since 2.7.4
  */
-public class ServiceDiscoveryStoppedEvent extends Event {
+public class ServiceDiscoveryInitializedEvent extends ServiceDiscoveryEvent {
 
     /**
      * Constructs a prototypical Event.
@@ -33,16 +33,8 @@ public class ServiceDiscoveryStoppedEvent extends Event {
      * @param serviceDiscovery The instance of {@link ServiceDiscovery} as source
      * @throws IllegalArgumentException if source is null.
      */
-    public ServiceDiscoveryStoppedEvent(ServiceDiscovery serviceDiscovery) {
+    public ServiceDiscoveryInitializedEvent(ServiceDiscovery serviceDiscovery) {
         super(serviceDiscovery);
     }
 
-    /**
-     * Get the instance of {@link ServiceDiscovery} as source
-     *
-     * @return the instance of {@link ServiceDiscovery} as source
-     */
-    public ServiceDiscovery getServiceDiscovery() {
-        return (ServiceDiscovery) getSource();
-    }
 }

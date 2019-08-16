@@ -19,10 +19,10 @@ package org.apache.dubbo.registry.client.event.listener;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.registry.client.FileSystemServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
-import org.apache.dubbo.registry.client.event.ServiceDiscoveryStartedEvent;
-import org.apache.dubbo.registry.client.event.ServiceDiscoveryStartingEvent;
-import org.apache.dubbo.registry.client.event.ServiceDiscoveryStoppedEvent;
-import org.apache.dubbo.registry.client.event.ServiceDiscoveryStoppingEvent;
+import org.apache.dubbo.registry.client.event.ServiceDiscoveryDestroyedEvent;
+import org.apache.dubbo.registry.client.event.ServiceDiscoveryDestroyingEvent;
+import org.apache.dubbo.registry.client.event.ServiceDiscoveryInitializedEvent;
+import org.apache.dubbo.registry.client.event.ServiceDiscoveryInitializingEvent;
 import org.apache.dubbo.registry.client.event.ServiceInstancePreRegisteredEvent;
 import org.apache.dubbo.registry.client.event.ServiceInstancePreUnregisteredEvent;
 import org.apache.dubbo.registry.client.event.ServiceInstanceRegisteredEvent;
@@ -50,16 +50,19 @@ public class LoggingEventListenerTest {
     }
 
     @Test
-    public void testOnEvent() {
+    public void testOnEvent() throws Exception {
 
         URL connectionURL = URL.valueOf("file:///Users/Home");
-        ServiceDiscovery serviceDiscovery = new FileSystemServiceDiscovery(connectionURL);
+
+        ServiceDiscovery serviceDiscovery = new FileSystemServiceDiscovery();
+
+        serviceDiscovery.initialize(connectionURL);
 
         // ServiceDiscoveryStartingEvent
-        listener.onEvent(new ServiceDiscoveryStartingEvent(serviceDiscovery));
+        listener.onEvent(new ServiceDiscoveryInitializingEvent(serviceDiscovery));
 
         // ServiceDiscoveryStartedEvent
-        listener.onEvent(new ServiceDiscoveryStartedEvent(serviceDiscovery));
+        listener.onEvent(new ServiceDiscoveryInitializedEvent(serviceDiscovery));
 
         // ServiceInstancePreRegisteredEvent
         listener.onEvent(new ServiceInstancePreRegisteredEvent(serviceDiscovery, createInstance()));
@@ -77,9 +80,9 @@ public class LoggingEventListenerTest {
         listener.onEvent(new ServiceInstanceUnregisteredEvent(serviceDiscovery, createInstance()));
 
         // ServiceDiscoveryStoppingEvent
-        listener.onEvent(new ServiceDiscoveryStoppingEvent(serviceDiscovery));
+        listener.onEvent(new ServiceDiscoveryDestroyingEvent(serviceDiscovery));
 
         // ServiceDiscoveryStoppedEvent
-        listener.onEvent(new ServiceDiscoveryStoppedEvent(serviceDiscovery));
+        listener.onEvent(new ServiceDiscoveryDestroyedEvent(serviceDiscovery));
     }
 }

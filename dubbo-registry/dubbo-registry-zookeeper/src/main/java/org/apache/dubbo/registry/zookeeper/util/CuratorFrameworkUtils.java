@@ -20,7 +20,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.zookeeper.ZookeeperInstance;
-import org.apache.dubbo.registry.zookeeper.ZookeeperServiceDiscovery;
 
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
@@ -48,10 +47,6 @@ import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkParams.MA
  * @since 2.7.4
  */
 public abstract class CuratorFrameworkUtils {
-
-    public static ZookeeperServiceDiscovery buildZookeeperServiceDiscovery(URL connectionURL) throws Exception {
-        return new ZookeeperServiceDiscovery(connectionURL);
-    }
 
     public static ServiceDiscovery<ZookeeperInstance> buildServiceDiscovery(CuratorFramework curatorFramework,
                                                                             String basePath) {

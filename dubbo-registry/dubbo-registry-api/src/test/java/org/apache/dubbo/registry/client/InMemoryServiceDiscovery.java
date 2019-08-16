@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.registry.client;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.DefaultPage;
 import org.apache.dubbo.common.utils.Page;
 import org.apache.dubbo.event.EventDispatcher;
@@ -95,12 +96,12 @@ public class InMemoryServiceDiscovery implements ServiceDiscovery {
     }
 
     @Override
-    public void start() {
+    public void initialize(URL registryURL) throws Exception {
 
     }
 
     @Override
-    public void stop() {
+    public void destroy() {
     }
 
     @Override

@@ -16,6 +16,9 @@
  */
 package org.apache.dubbo.bootstrap;
 
+import org.apache.dubbo.bootstrap.rest.UserService;
+import org.apache.dubbo.bootstrap.rest.UserServiceImpl;
+
 /**
  * Dubbo Provider Bootstrap
  *
@@ -31,8 +34,10 @@ public class DubboServiceProvider2Bootstrap {
                 // Nacos
 //                .registry("nacos", builder -> builder.address("nacos://127.0.0.1:8848?registry.type=service"))
 //                .registry(RegistryBuilder.newBuilder().address("etcd3://127.0.0.1:2379?registry.type=service").build())
-                .protocol(builder -> builder.port(20885).name("dubbo"))
-                .service(builder -> builder.id("test").interfaceClass(EchoService.class).ref(new EchoServiceImpl()))
+                .protocol("dubbo", builder -> builder.port(20885).name("dubbo"))
+                .protocol("rest", builder -> builder.port(9090).name("rest"))
+                .service(builder -> builder.id("echo").interfaceClass(EchoService.class).ref(new EchoServiceImpl()).protocolIds("dubbo"))
+                .service(builder -> builder.id("user").interfaceClass(UserService.class).ref(new UserServiceImpl()).protocolIds("rest"))
                 .start()
                 .await();
     }

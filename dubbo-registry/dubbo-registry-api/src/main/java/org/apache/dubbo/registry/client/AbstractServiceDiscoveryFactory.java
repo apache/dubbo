@@ -40,12 +40,12 @@ public abstract class AbstractServiceDiscoveryFactory implements ServiceDiscover
      */
     public static void destroyAll() {
         if (logger.isInfoEnabled()) {
-            logger.info("Closing all ServiceDicovery instances: " + getDiscoveries());
+            logger.info("Closing all ServiceDiscovery instances: " + getDiscoveries());
         }
 
         for (ServiceDiscovery discovery : getDiscoveries()) {
             try {
-                discovery.stop();
+                discovery.destroy();
             } catch (Throwable e) {
                 logger.error("Error trying to close ServiceDiscovery instance.", e);
             }
@@ -54,17 +54,13 @@ public abstract class AbstractServiceDiscoveryFactory implements ServiceDiscover
     }
 
     /**
-     * @param url "zookeeper://ip:port/RegistryService?xxx"
+     * @param registryURL "zookeeper://ip:port/RegistryService?xxx"
      * @return
      */
     @Override
-    public ServiceDiscovery getDiscovery(URL url) {
-        String key = url.toServiceStringWithoutResolving();
-
-        return discoveries.computeIfAbsent(key, k -> {
-            ServiceDiscovery discovery = createDiscovery(url);
-            return new EventPublishingServiceDiscovery(discovery);
-        });
+    public ServiceDiscovery getServiceDiscovery(URL registryURL) {
+        String key = registryURL.toServiceStringWithoutResolving();
+        return discoveries.computeIfAbsent(key, k -> createDiscovery(registryURL));
     }
 
     protected abstract ServiceDiscovery createDiscovery(URL url);

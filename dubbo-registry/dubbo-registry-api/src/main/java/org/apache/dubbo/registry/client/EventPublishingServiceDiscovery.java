@@ -16,15 +16,18 @@
  */
 package org.apache.dubbo.registry.client;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.function.ThrowableAction;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.Page;
 import org.apache.dubbo.event.Event;
 import org.apache.dubbo.event.EventDispatcher;
-import org.apache.dubbo.registry.client.event.ServiceDiscoveryStartedEvent;
-import org.apache.dubbo.registry.client.event.ServiceDiscoveryStartingEvent;
-import org.apache.dubbo.registry.client.event.ServiceDiscoveryStoppedEvent;
-import org.apache.dubbo.registry.client.event.ServiceDiscoveryStoppingEvent;
+import org.apache.dubbo.registry.client.event.ServiceDiscoveryDestroyedEvent;
+import org.apache.dubbo.registry.client.event.ServiceDiscoveryDestroyingEvent;
+import org.apache.dubbo.registry.client.event.ServiceDiscoveryExceptionEvent;
+import org.apache.dubbo.registry.client.event.ServiceDiscoveryInitializedEvent;
+import org.apache.dubbo.registry.client.event.ServiceDiscoveryInitializingEvent;
 import org.apache.dubbo.registry.client.event.ServiceInstancePreRegisteredEvent;
 import org.apache.dubbo.registry.client.event.ServiceInstancePreUnregisteredEvent;
 import org.apache.dubbo.registry.client.event.ServiceInstanceRegisteredEvent;
@@ -55,14 +58,14 @@ import static java.util.Optional.of;
  * </thead>
  * <tbody>
  * <tr>
- * <td>{@link #START_ACTION start}</td>
- * <td>{@link ServiceDiscoveryStartingEvent}</td>
- * <td>{@link ServiceDiscoveryStartedEvent}</td>
+ * <td>{@link #INITIALIZE_ACTION start}</td>
+ * <td>{@link ServiceDiscoveryInitializingEvent}</td>
+ * <td>{@link ServiceDiscoveryInitializedEvent}</td>
  * </tr>
  * <tr>
- * <td>{@link #STOP_ACTION stop}</td>
- * <td>{@link ServiceDiscoveryStoppingEvent}</td>
- * <td>{@link ServiceDiscoveryStoppedEvent}</td>
+ * <td>{@link #DESTROY_ACTION stop}</td>
+ * <td>{@link ServiceDiscoveryDestroyingEvent}</td>
+ * <td>{@link ServiceDiscoveryDestroyedEvent}</td>
  * </tr>
  * </tbody>
  * </table>
@@ -96,15 +99,15 @@ import static java.util.Optional.of;
  * </ul>
  *
  * @see ServiceDiscovery
- * @see ServiceDiscoveryStartingEvent
- * @see ServiceDiscoveryStartedEvent
+ * @see ServiceDiscoveryInitializingEvent
+ * @see ServiceDiscoveryInitializedEvent
  * @see ServiceInstancePreRegisteredEvent
  * @see ServiceInstanceRegisteredEvent
- * @see ServiceDiscoveryStoppingEvent
- * @see ServiceDiscoveryStoppedEvent
+ * @see ServiceDiscoveryDestroyingEvent
+ * @see ServiceDiscoveryDestroyedEvent
  * @since 2.7.4
  */
-class EventPublishingServiceDiscovery implements ServiceDiscovery {
+final class EventPublishingServiceDiscovery implements ServiceDiscovery {
 
     /**
      * @see ServiceInstancePreRegisteredEvent
@@ -117,22 +120,22 @@ class EventPublishingServiceDiscovery implements ServiceDiscovery {
     protected static final String UNREGISTER_ACTION = "unregister";
 
     /**
-     * @see ServiceDiscoveryStartingEvent
-     * @see ServiceDiscoveryStartedEvent
+     * @see ServiceDiscoveryInitializingEvent
+     * @see ServiceDiscoveryInitializedEvent
      */
-    protected static final String START_ACTION = "start";
+    protected static final String INITIALIZE_ACTION = "initialize";
 
     /**
-     * @see ServiceDiscoveryStoppingEvent
-     * @see ServiceDiscoveryStoppedEvent
+     * @see ServiceDiscoveryDestroyingEvent
+     * @see ServiceDiscoveryDestroyedEvent
      */
-    protected static final String STOP_ACTION = "stop";
+    protected static final String DESTROY_ACTION = "destroy";
 
     protected final EventDispatcher eventDispatcher = EventDispatcher.getDefaultExtension();
 
-    protected final AtomicBoolean started = new AtomicBoolean(false);
+    protected final AtomicBoolean initialized = new AtomicBoolean(false);
 
-    protected final AtomicBoolean stopped = new AtomicBoolean(false);
+    protected final AtomicBoolean destroyed = new AtomicBoolean(false);
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -148,8 +151,8 @@ class EventPublishingServiceDiscovery implements ServiceDiscovery {
     @Override
     public final void register(ServiceInstance serviceInstance) throws RuntimeException {
 
-        requireStarted(REGISTER_ACTION);
-        requireNotStopped(REGISTER_ACTION);
+        assertDestroyed(REGISTER_ACTION);
+        assertInitialized(REGISTER_ACTION);
 
         executeWithEvents(
                 of(new ServiceInstancePreRegisteredEvent(serviceDiscovery, serviceInstance)),
@@ -161,8 +164,8 @@ class EventPublishingServiceDiscovery implements ServiceDiscovery {
     @Override
     public final void update(ServiceInstance serviceInstance) throws RuntimeException {
 
-        requireStarted(UPDATE_ACTION);
-        requireNotStopped(UPDATE_ACTION);
+        assertDestroyed(UPDATE_ACTION);
+        assertInitialized(UPDATE_ACTION);
 
         executeWithEvents(
                 empty(),
@@ -174,8 +177,8 @@ class EventPublishingServiceDiscovery implements ServiceDiscovery {
     @Override
     public final void unregister(ServiceInstance serviceInstance) throws RuntimeException {
 
-        requireStarted(UNREGISTER_ACTION);
-        requireNotStopped(UNREGISTER_ACTION);
+        assertDestroyed(UNREGISTER_ACTION);
+        assertInitialized(UNREGISTER_ACTION);
 
         executeWithEvents(
                 of(new ServiceInstancePreUnregisteredEvent(this, serviceInstance)),
@@ -220,11 +223,11 @@ class EventPublishingServiceDiscovery implements ServiceDiscovery {
     }
 
     @Override
-    public final void start() {
+    public void initialize(URL registryURL) {
 
-        requireNotStopped(START_ACTION);
+        assertInitialized(INITIALIZE_ACTION);
 
-        if (isStarted()) {
+        if (isInitialized()) {
             if (logger.isWarnEnabled()) {
                 logger.warn("It's ignored to start current ServiceDiscovery, because it has been started.");
             }
@@ -232,21 +235,21 @@ class EventPublishingServiceDiscovery implements ServiceDiscovery {
         }
 
         executeWithEvents(
-                of(new ServiceDiscoveryStartingEvent(serviceDiscovery)),
-                serviceDiscovery::start,
-                of(new ServiceDiscoveryStartedEvent(serviceDiscovery))
+                of(new ServiceDiscoveryInitializingEvent(serviceDiscovery)),
+                () -> serviceDiscovery.initialize(registryURL),
+                of(new ServiceDiscoveryInitializedEvent(serviceDiscovery))
         );
 
         // doesn't start -> started
-        started.compareAndSet(false, true);
+        initialized.compareAndSet(false, true);
     }
 
     @Override
-    public final void stop() {
+    public void destroy() {
 
-        requireStarted(STOP_ACTION);
+        assertDestroyed(DESTROY_ACTION);
 
-        if (isStopped()) {
+        if (isDestroyed()) {
             if (logger.isWarnEnabled()) {
                 logger.warn("It's ignored to stop current ServiceDiscovery, because it has been stopped.");
             }
@@ -254,40 +257,48 @@ class EventPublishingServiceDiscovery implements ServiceDiscovery {
         }
 
         executeWithEvents(
-                of(new ServiceDiscoveryStoppingEvent(serviceDiscovery)),
-                serviceDiscovery::stop,
-                of(new ServiceDiscoveryStoppedEvent(serviceDiscovery))
+                of(new ServiceDiscoveryDestroyingEvent(serviceDiscovery)),
+                serviceDiscovery::destroy,
+                of(new ServiceDiscoveryDestroyedEvent(serviceDiscovery))
         );
 
         // doesn't stop -> stopped
-        stopped.compareAndSet(false, true);
+        destroyed.compareAndSet(false, true);
     }
 
     protected final void executeWithEvents(Optional<? extends Event> beforeEvent,
-                                           Runnable action,
+                                           ThrowableAction action,
                                            Optional<? extends Event> afterEvent) {
-        beforeEvent.ifPresent(eventDispatcher::dispatch);
-        action.run();
-        afterEvent.ifPresent(eventDispatcher::dispatch);
+        beforeEvent.ifPresent(this::dispatchEvent);
+        try {
+            action.execute();
+        } catch (Exception e) {
+            dispatchEvent(new ServiceDiscoveryExceptionEvent(serviceDiscovery, e));
+        }
+        afterEvent.ifPresent(this::dispatchEvent);
     }
 
-    public final boolean isStarted() {
-        return started.get();
+    private void dispatchEvent(Event event) {
+        eventDispatcher.dispatch(event);
     }
 
-    public final boolean isStopped() {
-        return stopped.get();
+    public final boolean isInitialized() {
+        return initialized.get();
     }
 
-    protected void requireStarted(String action) throws IllegalStateException {
-        if (!isStarted()) {
-            throw new IllegalStateException("The action[" + action + "] is rejected, because the ServiceDiscovery is not started yet.");
+    public final boolean isDestroyed() {
+        return destroyed.get();
+    }
+
+    protected void assertDestroyed(String action) throws IllegalStateException {
+        if (!isInitialized()) {
+            throw new IllegalStateException("The action[" + action + "] is rejected, because the ServiceDiscovery is not initialized yet.");
         }
     }
 
-    protected void requireNotStopped(String action) throws IllegalStateException {
-        if (isStopped()) {
-            throw new IllegalStateException("The action[" + action + "] is rejected, because the ServiceDiscovery is stopped already.");
+    protected void assertInitialized(String action) throws IllegalStateException {
+        if (isDestroyed()) {
+            throw new IllegalStateException("The action[" + action + "] is rejected, because the ServiceDiscovery is destroyed already.");
         }
     }
 }
