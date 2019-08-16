@@ -40,12 +40,21 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
 
     protected static final Logger logger = LoggerFactory.getLogger(AbortPolicyWithReport.class);
 
+    /**
+     * 线程名称
+     */
     private final String threadName;
 
     private final URL url;
 
+    /**
+     * 最后的打印时间
+     */
     private static volatile long lastPrintTime = 0;
 
+    /**
+     * 信号量
+     */
     private static Semaphore guard = new Semaphore(1);
 
     public AbortPolicyWithReport(String threadName, URL url) {
@@ -62,6 +71,7 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
                 e.getTaskCount(), e.getCompletedTaskCount(), e.isShutdown(), e.isTerminated(), e.isTerminating(),
                 url.getProtocol(), url.getIp(), url.getPort());
         logger.warn(msg);
+        // 打印 JStack ，分析线程状态。
         dumpJStack();
         throw new RejectedExecutionException(msg);
     }
@@ -69,15 +79,15 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
     private void dumpJStack() {
         long now = System.currentTimeMillis();
 
-        //dump every 10 minutes
+        //dump every 10 minutes 每10分钟打印一次
         if (now - lastPrintTime < 10 * 60 * 1000) {
             return;
         }
-
+        // 获取信号量
         if (!guard.tryAcquire()) {
             return;
         }
-
+        // 创建线程，这里只能让一个线程处理
         Executors.newSingleThreadExecutor().execute(new Runnable() {
             @Override
             public void run() {

@@ -252,6 +252,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             Map<String, String> registryDataConfigurationMap = new HashMap<>(4);
             appendParameters(registryDataConfigurationMap, registryDataConfig);
             for (RegistryConfig config : registries) {
+                // 获得注册中心的地址
                 String address = config.getAddress();
                 if (StringUtils.isEmpty(address)) {
                     // 若address 为空，则将其设置为 0.0.0.0
@@ -263,15 +264,19 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                     appendParameters(map, config);
                     map.put("path", RegistryService.class.getName());
                     appendRuntimeParameters(map);
+                    // 若不存在 `protocol` 参数，默认 "dubbo" 添加到 `map` 集合中。
                     if (!map.containsKey("protocol")) {
                         map.put("protocol", "dubbo");
                     }
                     // 解析得到 URL 列表，address 可能包含多个注册中心 ip，
                     // 因此解析得到的是一个 URL 列表
+                    // zookeeper://127.0.0.1:2181/org.apache.dubbo.registry.RegistryService?application=demo-provider&dubbo=2.0.2&pid=82874&qos.port=22222&timestamp=1565945807491
                     List<URL> urls = UrlUtils.parseURLs(address, map);
 
                     for (URL url : urls) {
+                        //zzookeeper://127.0.0.1:2181/org.apache.dubbo.registry.RegistryService?application=demo-provider&dubbo=2.0.2&pid=83032&qos.port=22222&registry=zookeeper&timestamp=1565946091845
                         url = url.addParameter(Constants.REGISTRY_KEY, url.getProtocol());
+                        //registry://127.0.0.1:2181/org.apache.dubbo.registry.RegistryService?application=demo-provider&dubbo=2.0.2&pid=83032&qos.port=22222&registry=zookeeper&timestamp=1565946091845
                         url = url.setProtocol(Constants.REGISTRY_PROTOCOL);
                         // add parameter
                         url = url.addParametersIfAbsent(registryDataConfigurationMap);

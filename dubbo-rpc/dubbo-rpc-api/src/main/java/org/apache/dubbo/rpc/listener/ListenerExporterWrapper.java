@@ -26,6 +26,7 @@ import java.util.List;
 
 /**
  * ListenerExporter
+ * 装饰者 监听功能
  */
 public class ListenerExporterWrapper<T> implements Exporter<T> {
 
