@@ -66,6 +66,7 @@ public class EtcdDubboServiceProviderBootstrap {
         applicationConfig.setMetadata("remote");
         new DubboBootstrap()
                 .application(applicationConfig)
+                .defaultMetadataStorageType(true)
                 // Zookeeper in service registry type
 //                .registry("zookeeper", builder -> builder.address("zookeeper://127.0.0.1:2181?registry.type=service"))
                 // Nacos
