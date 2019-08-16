@@ -20,10 +20,10 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.event.Event;
 import org.apache.dubbo.event.GenericEventListener;
-import org.apache.dubbo.registry.client.event.ServiceDiscoveryStartedEvent;
-import org.apache.dubbo.registry.client.event.ServiceDiscoveryStartingEvent;
-import org.apache.dubbo.registry.client.event.ServiceDiscoveryStoppedEvent;
-import org.apache.dubbo.registry.client.event.ServiceDiscoveryStoppingEvent;
+import org.apache.dubbo.registry.client.event.ServiceDiscoveryDestroyedEvent;
+import org.apache.dubbo.registry.client.event.ServiceDiscoveryDestroyingEvent;
+import org.apache.dubbo.registry.client.event.ServiceDiscoveryInitializedEvent;
+import org.apache.dubbo.registry.client.event.ServiceDiscoveryInitializingEvent;
 import org.apache.dubbo.registry.client.event.ServiceInstancePreRegisteredEvent;
 import org.apache.dubbo.registry.client.event.ServiceInstancePreUnregisteredEvent;
 import org.apache.dubbo.registry.client.event.ServiceInstanceRegisteredEvent;
@@ -41,12 +41,12 @@ public class LoggingEventListener extends GenericEventListener {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    public void onEvent(ServiceDiscoveryStartingEvent event) {
-        info("%s is starting...", event.getServiceDiscovery());
+    public void onEvent(ServiceDiscoveryInitializingEvent event) {
+        info("%s is initializing...", event.getServiceDiscovery());
     }
 
-    public void onEvent(ServiceDiscoveryStartedEvent event) {
-        info("%s is started.", event.getServiceDiscovery());
+    public void onEvent(ServiceDiscoveryInitializedEvent event) {
+        info("%s is initialized.", event.getServiceDiscovery());
     }
 
     public void onEvent(ServiceInstancePreRegisteredEvent event) {
@@ -69,11 +69,11 @@ public class LoggingEventListener extends GenericEventListener {
         info("%s has been unregistered from %s.", event.getServiceInstance(), event.getSource());
     }
 
-    public void onEvent(ServiceDiscoveryStoppingEvent event) {
+    public void onEvent(ServiceDiscoveryDestroyingEvent event) {
         info("%s is stopping...", event.getServiceDiscovery());
     }
 
-    public void onEvent(ServiceDiscoveryStoppedEvent event) {
+    public void onEvent(ServiceDiscoveryDestroyedEvent event) {
         info("%s is stopped.", event.getServiceDiscovery());
     }
 

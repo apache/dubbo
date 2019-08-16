@@ -36,13 +36,7 @@ import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoad
  */
 public class FileSystemServiceDiscovery implements ServiceDiscovery, EventListener<ServiceInstancesChangedEvent> {
 
-    private final URL connectionURL;
-
     private FileSystemDynamicConfiguration dynamicConfiguration;
-
-    public FileSystemServiceDiscovery(URL connectionURL) {
-        this.connectionURL = connectionURL;
-    }
 
     @Override
     public void onEvent(ServiceInstancesChangedEvent event) {
@@ -50,21 +44,13 @@ public class FileSystemServiceDiscovery implements ServiceDiscovery, EventListen
     }
 
     @Override
-    public void start() {
-        if (dynamicConfiguration == null) {
-            dynamicConfiguration = createDynamicConfiguration(connectionURL);
-        }
+    public void initialize(URL registryURL) throws Exception {
+        dynamicConfiguration = createDynamicConfiguration(registryURL);
     }
 
     @Override
-    public void stop() {
-        try {
-            if (dynamicConfiguration != null) {
-                dynamicConfiguration.close();
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    public void destroy() throws Exception {
+        dynamicConfiguration.close();
     }
 
     private String getConfigKey(ServiceInstance serviceInstance) {

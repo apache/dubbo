@@ -14,27 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.zookeeper;
+package org.apache.dubbo.registry.client.event;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.registry.client.AbstractServiceDiscoveryFactory;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
-import org.apache.dubbo.registry.client.ServiceDiscoveryFactory;
 
 /**
- * The zookeeper {@link ServiceDiscoveryFactory} implementation
+ * An event raised when the {@link ServiceDiscovery Service Discovery} is destroying.
  *
- * @see ServiceDiscoveryFactory
+ * @see ServiceDiscovery#destroy()
  * @since 2.7.4
  */
-public class ZookeeperServiceDiscoveryFactory extends AbstractServiceDiscoveryFactory {
+public class ServiceDiscoveryDestroyingEvent extends ServiceDiscoveryEvent {
 
-    @Override
-    public ServiceDiscovery createDiscovery(URL connectionURL) {
-        try {
-            return new ZookeeperServiceDiscovery(connectionURL);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    /**
+     * Constructs a prototypical Event.
+     *
+     * @param serviceDiscovery The instance of {@link ServiceDiscovery} as source
+     * @throws IllegalArgumentException if source is null.
+     */
+    public ServiceDiscoveryDestroyingEvent(ServiceDiscovery serviceDiscovery) {
+        super(serviceDiscovery);
     }
+
 }

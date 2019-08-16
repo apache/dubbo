@@ -23,31 +23,32 @@ import org.apache.dubbo.common.extension.SPI;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 
 /**
- * The factory to create {@link ServiceDiscovery}
+ * The default {@link SPI} implementation of {@link ServiceDiscoveryFactory} to {@link #getServiceDiscovery(URL) get the
+ * instance of ServiceDiscovery} via the {@link URL#getProtocol() protocol} from the {@link URL} that will connect
+ * the infrastructure of Service registration and discovery. The {@link URL#getProtocol() protocol} will be used as the
+ * extension name by which the {@link ServiceDiscovery} instance is loaded.
  *
- * @see ServiceDiscovery
+ * @see AbstractServiceDiscoveryFactory
+ * @see EventPublishingServiceDiscovery
  * @since 2.7.4
  */
-@SPI("default")
-public interface ServiceDiscoveryFactory {
+public class DefaultServiceDiscoveryFactory extends AbstractServiceDiscoveryFactory {
+
+    @Override
+    protected ServiceDiscovery createDiscovery(URL connectionURL) {
+        ServiceDiscovery serviceDiscovery = load(connectionURL);
+        return new EventPublishingServiceDiscovery(serviceDiscovery);
+    }
 
     /**
-     * Get the instance of {@link ServiceDiscovery}
+     * Load the {@link ServiceDiscovery} by {@link URL#getProtocol() the protocol} from {@link URL connection URL}
      *
-     * @param registryURL the {@link URL} to connect the registry
+     * @param connectionURL the {@link URL url} to connect
      * @return non-null
      */
-    ServiceDiscovery getServiceDiscovery(URL registryURL);
-
-    /**
-     * Get the extension instance of {@link ServiceDiscoveryFactory} by {@link URL#getProtocol() the protocol}
-     *
-     * @param registryURL the {@link URL} to connect the registry
-     * @return non-null
-     */
-    static ServiceDiscoveryFactory getExtension(URL registryURL) {
-        String protocol = registryURL.getProtocol();
-        ExtensionLoader<ServiceDiscoveryFactory> loader = getExtensionLoader(ServiceDiscoveryFactory.class);
+    private ServiceDiscovery load(URL connectionURL) {
+        String protocol = connectionURL.getProtocol();
+        ExtensionLoader<ServiceDiscovery> loader = getExtensionLoader(ServiceDiscovery.class);
         return loader.getOrDefaultExtension(protocol);
     }
 }

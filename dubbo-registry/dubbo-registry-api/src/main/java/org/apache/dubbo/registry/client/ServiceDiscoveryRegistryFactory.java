@@ -1,4 +1,4 @@
-package org.apache.dubbo.registry.nacos;/*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,23 +14,25 @@ package org.apache.dubbo.registry.nacos;/*
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.registry.client;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.registry.client.AbstractServiceDiscoveryFactory;
-import org.apache.dubbo.registry.client.ServiceDiscovery;
-import org.apache.dubbo.registry.client.ServiceDiscoveryFactory;
+import org.apache.dubbo.registry.Registry;
+import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 
-/**
- * Nacos {@link ServiceDiscoveryFactory}
- *
- * @see ServiceDiscoveryFactory
- * @see ServiceDiscovery
- * @since 2.7.4
- */
-public class NacosServiceDiscoveryFactory extends AbstractServiceDiscoveryFactory {
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_PROTOCOL;
+import static org.apache.dubbo.registry.Constants.DEFAULT_REGISTRY;
+
+public class ServiceDiscoveryRegistryFactory extends AbstractRegistryFactory {
 
     @Override
-    public ServiceDiscovery createDiscovery(URL connectionURL) {
-        return new NacosServiceDiscovery(connectionURL);
+    protected Registry createRegistry(URL url) {
+        if (SERVICE_REGISTRY_PROTOCOL.equalsIgnoreCase(url.getProtocol())) {
+            String protocol = url.getParameter(REGISTRY_KEY, DEFAULT_REGISTRY);
+            url = url.setProtocol(protocol).removeParameter(REGISTRY_KEY);
+        }
+        return new ServiceDiscoveryRegistry(url);
     }
+
 }

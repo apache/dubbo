@@ -19,7 +19,7 @@ package org.apache.dubbo.registry.support;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.NotifyListener;
-import org.apache.dubbo.registry.service.ServiceOrientedRegistry;
+import org.apache.dubbo.registry.client.ServiceDiscoveryRegistry;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,7 +43,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * {@link ServiceOrientedRegistry} Test
+ * {@link ServiceDiscoveryRegistry} Test
  *
  * @since 2.7.4
  */
@@ -72,20 +72,20 @@ public class ServiceOrientedRegistryTest {
 
     private WritableMetadataService metadataService;
 
-    private ServiceOrientedRegistry registry;
+    private ServiceDiscoveryRegistry registry;
 
     private NotifyListener notifyListener;
 
     @BeforeEach
     public void init() {
-        registry = ServiceOrientedRegistry.create(registryURL);
+        registry = ServiceDiscoveryRegistry.create(registryURL);
         metadataService = WritableMetadataService.getDefaultExtension();
         notifyListener = new MyNotifyListener();
     }
 
     @Test
     public void testSupports() {
-        assertTrue(ServiceOrientedRegistry.supports(registryURL));
+        assertTrue(ServiceDiscoveryRegistry.supports(registryURL));
     }
 
     @Test

@@ -16,33 +16,39 @@
  */
 package org.apache.dubbo.registry.client.event;
 
-import org.apache.dubbo.event.Event;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 
 /**
- * An event raised when the {@link ServiceDiscovery Service Discovery} is starting.
+ * An event raised when the {@link ServiceDiscovery Service Discovery} met with some exception
  *
- * @see ServiceDiscovery#start
+ * @see ServiceDiscovery
+ * @see org.apache.dubbo.event.Event
  * @since 2.7.4
  */
-public class ServiceDiscoveryStartingEvent extends Event {
+public class ServiceDiscoveryExceptionEvent extends ServiceDiscoveryEvent {
+
+    private final Exception cause;
 
     /**
      * Constructs a prototypical Event.
      *
-     * @param serviceDiscovery The instance of {@link ServiceDiscovery} as source
-     * @throws IllegalArgumentException if source is null.
+     * @param serviceDiscovery The {@link ServiceDiscovery} on which the Event initially occurred.
+     * @throws IllegalArgumentException if any argument is null.
      */
-    public ServiceDiscoveryStartingEvent(ServiceDiscovery serviceDiscovery) {
+    public ServiceDiscoveryExceptionEvent(ServiceDiscovery serviceDiscovery, Exception cause) {
         super(serviceDiscovery);
+        if (cause == null) {
+            throw new NullPointerException("The cause of Exception must not null");
+        }
+        this.cause = cause;
     }
 
     /**
-     * Get the instance of {@link ServiceDiscovery} as source
+     * The cause of {@link Exception}
      *
-     * @return the instance of {@link ServiceDiscovery} as source
+     * @return non-nul
      */
-    public ServiceDiscovery getServiceDiscovery() {
-        return (ServiceDiscovery) getSource();
+    public Exception getCause() {
+        return cause;
     }
 }

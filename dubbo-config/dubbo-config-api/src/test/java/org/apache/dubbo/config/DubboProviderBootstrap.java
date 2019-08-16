@@ -17,7 +17,6 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.metadata.ConfigurableMetadataServiceExporter;
@@ -27,14 +26,12 @@ import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceDiscoveryFactory;
 
-import java.io.IOException;
-
 /**
  * Dubbo Provider Bootstrap
  */
 public class DubboProviderBootstrap {
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
 
         ApplicationConfig application = new ApplicationConfig();
         application.setName("dubbo-provider-demo");
@@ -68,11 +65,11 @@ public class DubboProviderBootstrap {
         // 暴露 MetadataService 服务
         exporter.export();
 
-        ServiceDiscoveryFactory factory = ExtensionLoader.getExtensionLoader(ServiceDiscoveryFactory.class).getAdaptiveExtension();
+        ServiceDiscoveryFactory factory = ServiceDiscoveryFactory.getExtension(connectionURL);
 
-        ServiceDiscovery serviceDiscovery = factory.getDiscovery(connectionURL);
+        ServiceDiscovery serviceDiscovery = factory.getServiceDiscovery(connectionURL);
 
-        serviceDiscovery.start();
+        serviceDiscovery.initialize(connectionURL);
 
         DefaultServiceInstance serviceInstance = new DefaultServiceInstance(application.getName(), "127.0.0.1", protocol.getPort());
 
@@ -80,6 +77,6 @@ public class DubboProviderBootstrap {
 
         System.in.read();
 
-        serviceDiscovery.stop();
+        serviceDiscovery.destroy();
     }
 }

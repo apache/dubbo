@@ -17,15 +17,8 @@
 package org.apache.dubbo.bootstrap;
 
 import org.apache.dubbo.bootstrap.rest.UserService;
-import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.context.ConfigManager;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.apache.dubbo.common.constants.CommonConstants.METADATA_KEY;
 
 /**
  * Dubbo Provider Bootstrap
@@ -40,7 +33,7 @@ public class DubboServiceConsumerBootstrap {
                 .application("dubbo-consumer-demo")
                 // Zookeeper
                 .registry("zookeeper", builder -> builder.address("zookeeper://127.0.0.1:2181?registry.type=service&subscribed.services=dubbo-provider-demo"))
-                .metadataReport(new MetadataReportConfig("zookeeper://127.0.0.1:2181"))
+//                .metadataReport(new MetadataReportConfig("zookeeper://127.0.0.1:2181"))
                 // Nacos
 //                .registry("consul", builder -> builder.address("consul://127.0.0.1:8500?registry.type=service&subscribed.services=dubbo-provider-demo").group("namespace1"))
                 .reference("echo", builder -> builder.interfaceClass(EchoService.class).protocol("dubbo"))

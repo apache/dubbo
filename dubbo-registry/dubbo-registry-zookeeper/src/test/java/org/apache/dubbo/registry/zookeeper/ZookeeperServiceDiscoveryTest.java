@@ -27,7 +27,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -36,7 +35,6 @@ import java.util.concurrent.CountDownLatch;
 
 import static java.util.Arrays.asList;
 import static org.apache.dubbo.common.utils.NetUtils.getAvailablePort;
-import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkUtils.buildZookeeperServiceDiscovery;
 import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkUtils.generateId;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -67,13 +65,13 @@ public class ZookeeperServiceDiscoveryTest {
         zkServer.start();
 
         this.registryUrl = URL.valueOf("zookeeper://127.0.0.1:" + zkServerPort);
-        this.discovery = buildZookeeperServiceDiscovery(registryUrl);
-        this.discovery.start();
+        this.discovery = new ZookeeperServiceDiscovery();
+        this.discovery.initialize(registryUrl);
     }
 
     @AfterEach
-    public void close() throws IOException {
-        discovery.stop();
+    public void close() throws Exception {
+        discovery.destroy();
         zkServer.stop();
     }
 

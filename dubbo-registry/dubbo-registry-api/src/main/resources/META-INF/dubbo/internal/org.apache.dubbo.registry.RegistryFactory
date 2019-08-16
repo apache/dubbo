@@ -1,1 +1,1 @@
-service-oriented-registry=org.apache.dubbo.registry.service.ServiceOrientedRegistryFactory
+service-discovery-registry=org.apache.dubbo.registry.client.ServiceDiscoveryRegistryFactory

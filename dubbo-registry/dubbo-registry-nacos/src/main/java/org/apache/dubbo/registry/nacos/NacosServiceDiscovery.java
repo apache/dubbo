@@ -51,24 +51,18 @@ public class NacosServiceDiscovery implements ServiceDiscovery {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final URL connectionURL;
-
-    private final String group;
+    private String group;
 
     private NamingService namingService;
 
-    public NacosServiceDiscovery(URL connectionURL) {
-        this.connectionURL = connectionURL;
-        this.group = getGroup(connectionURL);
+    @Override
+    public void initialize(URL registryURL) throws Exception {
+        this.namingService = createNamingService(registryURL);
+        this.group = getGroup(registryURL);
     }
 
     @Override
-    public void start() {
-        this.namingService = createNamingService(connectionURL);
-    }
-
-    @Override
-    public void stop() {
+    public void destroy() {
         this.namingService = null;
     }
 

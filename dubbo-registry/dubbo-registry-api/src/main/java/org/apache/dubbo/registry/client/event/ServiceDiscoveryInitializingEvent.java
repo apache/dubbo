@@ -14,20 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.client;
+package org.apache.dubbo.registry.client.event;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.registry.client.ServiceDiscovery;
 
 /**
- * {@link InMemoryServiceDiscovery} Factory
+ * An event raised when the {@link ServiceDiscovery Service Discovery} is initializing.
  *
- * @see InMemoryServiceDiscovery
+ * @see ServiceDiscovery#initialize(URL)
  * @since 2.7.4
  */
-public class InMemoryServiceDiscoveryFactory extends AbstractServiceDiscoveryFactory {
+public class ServiceDiscoveryInitializingEvent extends ServiceDiscoveryEvent {
 
-    @Override
-    public ServiceDiscovery createDiscovery(URL connectionURL) {
-        return new InMemoryServiceDiscovery();
+    /**
+     * Constructs a prototypical Event.
+     *
+     * @param serviceDiscovery The instance of {@link ServiceDiscovery} as source
+     * @throws IllegalArgumentException if source is null.
+     */
+    public ServiceDiscoveryInitializingEvent(ServiceDiscovery serviceDiscovery) {
+        super(serviceDiscovery);
     }
 }

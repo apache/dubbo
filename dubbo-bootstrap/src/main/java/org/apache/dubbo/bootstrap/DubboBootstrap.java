@@ -21,7 +21,6 @@ import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.config.configcenter.wrapper.CompositeDynamicConfiguration;
 import org.apache.dubbo.common.context.Lifecycle;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -50,13 +49,14 @@ import org.apache.dubbo.config.metadata.ConfigurableMetadataServiceExporter;
 import org.apache.dubbo.config.utils.ReferenceConfigCache;
 import org.apache.dubbo.event.EventDispatcher;
 import org.apache.dubbo.event.EventListener;
+import org.apache.dubbo.metadata.MetadataService;
+import org.apache.dubbo.metadata.MetadataServiceExporter;
+import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.registry.client.AbstractServiceDiscoveryFactory;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
-import org.apache.dubbo.rpc.Protocol;
-import org.apache.dubbo.rpc.ProtocolServer;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -64,6 +64,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
@@ -75,13 +76,11 @@ import static java.util.Arrays.asList;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static org.apache.dubbo.common.config.ConfigurationUtils.parseProperties;
 import static org.apache.dubbo.common.config.configcenter.DynamicConfiguration.getDynamicConfiguration;
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_CHAR_SEPERATOR;
-import static org.apache.dubbo.common.constants.CommonConstants.METADATA_DEFAULT;
-import static org.apache.dubbo.common.constants.CommonConstants.METADATA_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_REMOTE;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
 import static org.apache.dubbo.config.context.ConfigManager.getInstance;
-import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.MEATADATA_STORED_TYPE_KEY;
+import static org.apache.dubbo.metadata.WritableMetadataService.getExtension;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.setMetadataStorageType;
 import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
 
 /**
@@ -130,7 +129,13 @@ public class DubboBootstrap implements Lifecycle {
      */
     private volatile boolean onlyRegisterProvider = false;
 
-    private ServiceInstance serviceInstance;
+    private volatile boolean defaultMetadataStorageType = true;
+
+    private volatile ServiceInstance serviceInstance;
+
+    private volatile MetadataService metadataService;
+
+    private volatile MetadataServiceExporter metadataServiceExporter;
 
     public DubboBootstrap() {
         DubboShutdownHook.getDubboShutdownHook().register();
@@ -147,6 +152,19 @@ public class DubboBootstrap implements Lifecycle {
         return this;
     }
 
+    public boolean isOnlyRegisterProvider() {
+        return onlyRegisterProvider;
+    }
+
+    public boolean isDefaultMetadataStorageType() {
+        return defaultMetadataStorageType;
+    }
+
+    public DubboBootstrap defaultMetadataStorageType(boolean defaultMetadataStorageType) {
+        this.defaultMetadataStorageType = defaultMetadataStorageType;
+        return this;
+    }
+
     public DubboBootstrap metadataReport(MetadataReportConfig metadataReportConfig) {
         configManager.addMetadataReport(metadataReportConfig);
         return this;
@@ -160,7 +178,6 @@ public class DubboBootstrap implements Lifecycle {
         configManager.addMetadataReports(metadataReportConfigs);
         return this;
     }
-
 
     // {@link ApplicationConfig} correlative methods
 
@@ -419,6 +436,10 @@ public class DubboBootstrap implements Lifecycle {
 
             useRegistryAsConfigCenterIfNecessary();
 
+            initMetadataService();
+
+            initMetadataServiceExporter();
+
             initialized = true;
 
             if (logger.isInfoEnabled()) {
@@ -428,6 +449,24 @@ public class DubboBootstrap implements Lifecycle {
         }
 
         return this;
+    }
+
+    /**
+     * Initialize {@link MetadataService} from {@link WritableMetadataService}'s extension
+     */
+    private void initMetadataService() {
+        this.metadataService = getExtension(isDefaultMetadataStorageType());
+    }
+
+    /**
+     * Initialize {@link MetadataServiceExporter}
+     */
+    private void initMetadataServiceExporter() {
+        this.metadataServiceExporter = new ConfigurableMetadataServiceExporter()
+                .setApplicationConfig(getApplication())
+                .setRegistries(configManager.getRegistries())
+                .setProtocols(configManager.getProtocols())
+                .metadataService(metadataService);
     }
 
     private void loadRemoteConfigs() {
@@ -512,26 +551,16 @@ public class DubboBootstrap implements Lifecycle {
         }
         if (!isStarted()) {
 
+            // 1. export Dubbo Services
             exportServices();
 
-            // Not only provider register and some services are exported
-            if (!onlyRegisterProvider && !configManager.getServices().isEmpty()) {
-                /**
-                 * export {@link MetadataService}
-                 */
-                // TODO, only export to default registry?
-                ApplicationConfig applicationConfig = configManager.getApplication().orElseThrow(() -> new IllegalStateException("ApplicationConfig cannot be null"));
-                if (!METADATA_REMOTE.equals(applicationConfig.getMetadata())) {
-                    exportMetadataService(
-                            applicationConfig,
-                            configManager.getRegistries(),
-                            configManager.getProtocols()
-                    );
-                }
-                /**
-                 * Register the local {@link ServiceInstance}
-                 */
-                registerServiceInstance(applicationConfig);
+            // 2. export MetadataService
+            exportMetadataService();
+
+            // Not only provider register
+            if (!isOnlyRegisterProvider() || hasExportedServices()) {
+                //3. Register the local ServiceInstance if required
+                registerServiceInstance();
             }
 
             referServices();
@@ -543,6 +572,14 @@ public class DubboBootstrap implements Lifecycle {
             }
         }
         return this;
+    }
+
+    private boolean hasExportedServices() {
+        return !metadataService.getExportedURLs().isEmpty();
+    }
+
+    private ApplicationConfig getApplication() {
+        return configManager.getApplication().orElseThrow(() -> new IllegalStateException("ApplicationConfig cannot be null"));
     }
 
     /**
@@ -578,6 +615,7 @@ public class DubboBootstrap implements Lifecycle {
     public DubboBootstrap stop() {
         if (isInitialized() && isStarted()) {
             unregisterServiceInstance();
+            unexportMetadataService();
             unexportServices();
             started = false;
         }
@@ -699,14 +737,17 @@ public class DubboBootstrap implements Lifecycle {
         return this;
     }
 
-    private List<URL> exportMetadataService(ApplicationConfig applicationConfig,
-                                            Collection<RegistryConfig> globalRegistryConfigs,
-                                            Collection<ProtocolConfig> globalProtocolConfigs) {
-        ConfigurableMetadataServiceExporter exporter = new ConfigurableMetadataServiceExporter();
-        exporter.setApplicationConfig(applicationConfig);
-        exporter.setRegistries(globalRegistryConfigs);
-        exporter.setProtocols(globalProtocolConfigs);
-        return exporter.export();
+    /**
+     * export {@link MetadataService} and get the exported {@link URL URLs}
+     *
+     * @return {@link MetadataServiceExporter#getExportedURLs()}
+     */
+    private List<URL> exportMetadataService() {
+        return metadataServiceExporter.export().getExportedURLs();
+    }
+
+    private void unexportMetadataService() {
+        metadataServiceExporter.unexport();
     }
 
     private void exportServices() {
@@ -724,36 +765,40 @@ public class DubboBootstrap implements Lifecycle {
         configManager.getReferences().forEach(cache::get);
     }
 
-    public boolean isOnlyRegisterProvider() {
-        return onlyRegisterProvider;
-    }
+    private void registerServiceInstance() {
 
-    private void registerServiceInstance(ApplicationConfig applicationConfig) {
-        ExtensionLoader<Protocol> loader = ExtensionLoader.getExtensionLoader(Protocol.class);
-        Set<String> protocols = loader.getLoadedExtensions();
-        if (CollectionUtils.isEmpty(protocols)) {
-            throw new IllegalStateException("There should has at least one Protocol specified.");
-        }
+        ApplicationConfig application = getApplication();
 
-        String protocol = findOneProtocolForServiceInstance(protocols);
+        String serviceName = application.getName();
 
-        Protocol protocolInstance = loader.getExtension(protocol);
+        URL exportedURL = selectMetadataServiceExportedURL();
 
-        String serviceName = applicationConfig.getName();
-        // TODO, only support exporting one server
-        ProtocolServer server = protocolInstance.getServers().get(0);
-        String[] address = server.getAddress().split(GROUP_CHAR_SEPERATOR);
-        String host = address[0];
-        int port = Integer.parseInt(address[1]);
+        String host = exportedURL.getHost();
 
-        ServiceInstance serviceInstance = initServiceInstance(
-                serviceName,
-                host,
-                port,
-                applicationConfig.getMetadata() == null ? METADATA_DEFAULT : applicationConfig.getMetadata()
-        );
+        int port = exportedURL.getPort();
+
+        ServiceInstance serviceInstance = initServiceInstance(serviceName, host, port);
 
         getServiceDiscoveries().forEach(serviceDiscovery -> serviceDiscovery.register(serviceInstance));
+    }
+
+    private URL selectMetadataServiceExportedURL() {
+
+        URL selectedURL = null;
+
+        SortedSet<String> urlValues = metadataService.getExportedURLs();
+
+        for (String urlValue : urlValues) {
+            URL url = URL.valueOf(urlValue);
+            if ("rest".equals(url.getProtocol())) { // REST first
+                selectedURL = url;
+                break;
+            } else {
+                selectedURL = url; // If not found, take any one
+            }
+        }
+
+        return selectedURL;
     }
 
     /**
@@ -791,9 +836,9 @@ public class DubboBootstrap implements Lifecycle {
 
     }
 
-    private ServiceInstance initServiceInstance(String serviceName, String host, int port, String metadataType) {
+    private ServiceInstance initServiceInstance(String serviceName, String host, int port) {
         this.serviceInstance = new DefaultServiceInstance(serviceName, host, port);
-        this.serviceInstance.getMetadata().put(MEATADATA_STORED_TYPE_KEY, metadataType);
+        setMetadataStorageType(serviceInstance, isDefaultMetadataStorageType());
         return this.serviceInstance;
     }
 
