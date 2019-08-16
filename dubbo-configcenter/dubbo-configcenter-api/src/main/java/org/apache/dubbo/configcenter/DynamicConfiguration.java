@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.configcenter;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.Environment;
 
@@ -24,7 +25,14 @@ import java.util.Optional;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 
 /**
- * Dynamic configuration
+ * Dynamic Configuration
+ * <br/>
+ * From the use scenario internally in framework, there're mainly three kinds of methods:
+ * <ul>
+ *     <li>1. getConfig, get governance rules or single config item from Config Center.</li>
+ *     <li>2. getConfigFile, get configuration file from Config Center at start up.</li>
+ *     <li>3. addListener/removeListener, add or remove listeners for governance rules or config items that need to watch.</li>
+ * </ul>
  */
 public interface DynamicConfiguration extends Configuration {
     String DEFAULT_GROUP = "dubbo";
@@ -72,29 +80,19 @@ public interface DynamicConfiguration extends Configuration {
     void removeListener(String key, String group, ConfigurationListener listener);
 
     /**
-     * Get the configuration mapped to the given key
-     *
-     * @param key the key to represent a configuration
-     * @return target configuration mapped to the given key
-     */
-    default String getConfig(String key) {
-        return getConfig(key, null, 0L);
-    }
-
-    /**
-     * Get the configuration mapped to the given key and the given group
+     * Get the governance rule mapped to the given key and the given group
      *
      * @param key   the key to represent a configuration
      * @param group the group where the key belongs to
      * @return target configuration mapped to the given key and the given group
      */
-    default String getConfig(String key, String group) {
-        return getConfig(key, group, 0L);
+    default String getRule(String key, String group) {
+        return getRule(key, group, -1L);
     }
 
     /**
-     * Get the configuration mapped to the given key and the given group. If the
-     * configuration fails to fetch after timeout exceeds, IllegalStateException will be thrown.
+     * Get the governance rule mapped to the given key and the given group. If the
+     * rule fails to return after timeout exceeds, IllegalStateException will be thrown.
      *
      * @param key     the key to represent a configuration
      * @param group   the group where the key belongs to
@@ -102,7 +100,21 @@ public interface DynamicConfiguration extends Configuration {
      * @return target configuration mapped to the given key and the given group, IllegalStateException will be thrown
      * if timeout exceeds.
      */
-    String getConfig(String key, String group, long timeout) throws IllegalStateException;
+    String getRule(String key, String group, long timeout) throws IllegalStateException;
+
+    /**
+     * This method are mostly used to get a compound config file, such as a complete dubbo.properties file.
+     * Also {@see #getConfig(String, String)}
+     */
+    default String getProperties(String key, String group) throws IllegalStateException {
+        return getProperties(key, group, -1L);
+    }
+
+    /**
+     * This method are mostly used to get a compound config file, such as a complete dubbo.properties file.
+     * Also {@see #getConfig(String, String, long)}
+     */
+    String getProperties(String key, String group, long timeout) throws IllegalStateException;
 
     /**
      * Find DynamicConfiguration instance
@@ -114,5 +126,14 @@ public interface DynamicConfiguration extends Configuration {
         return (DynamicConfiguration) optional.orElseGet(() -> getExtensionLoader(DynamicConfigurationFactory.class)
                 .getDefaultExtension()
                 .getDynamicConfiguration(null));
+    }
+
+     /**
+     * The format is '{interfaceName}:[version]:[group]'
+     *
+     * @return
+     */
+     static String getRuleKey(URL url) {
+        return url.getColonSeparatedKey();
     }
 }

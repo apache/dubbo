@@ -16,10 +16,12 @@
  */
 package org.apache.dubbo.metadata.identifier;
 
-import org.apache.dubbo.common.Constants;
-
+import org.apache.dubbo.metadata.identifier.MetadataIdentifier.KeyTypeEnum;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
+import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 
 /**
  * 2019/1/7
@@ -32,12 +34,16 @@ public class MetadataIdentifierTest {
         String version = "1.0.0.zk.md";
         String group = null;
         String application = "vic.zk.md";
-        MetadataIdentifier providerMetadataIdentifier = new MetadataIdentifier(interfaceName, version, group, Constants.PROVIDER_SIDE, application);
-        System.out.println(providerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.PATH));
-        Assertions.assertEquals(providerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.PATH), "metadata" + Constants.PATH_SEPARATOR + interfaceName + Constants.PATH_SEPARATOR + (version == null ? "" : (version + Constants.PATH_SEPARATOR))
-                + (group == null ? "" : (group + Constants.PATH_SEPARATOR)) + Constants.PROVIDER_SIDE + Constants.PATH_SEPARATOR + application);
-        System.out.println(providerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY));
-        Assertions.assertEquals(providerMetadataIdentifier.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY),
-                interfaceName + MetadataIdentifier.SEPARATOR + (version == null ? "" : version + MetadataIdentifier.SEPARATOR) + (group == null ? "" : group + MetadataIdentifier.SEPARATOR) + Constants.PROVIDER_SIDE + MetadataIdentifier.SEPARATOR + application);
+        MetadataIdentifier providerMetadataIdentifier = new MetadataIdentifier(interfaceName, version, group, PROVIDER_SIDE, application);
+        Assertions.assertEquals(providerMetadataIdentifier.getUniqueKey(KeyTypeEnum.PATH),
+                "metadata" + PATH_SEPARATOR + interfaceName + PATH_SEPARATOR +
+                        (version == null ? "" : (version + PATH_SEPARATOR))
+                        + (group == null ? "" : (group + PATH_SEPARATOR)) + PROVIDER_SIDE
+                        + PATH_SEPARATOR + application);
+        Assertions.assertEquals(providerMetadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY),
+                interfaceName + MetadataIdentifier.SEPARATOR +
+                        (version == null ? "" : version) + MetadataIdentifier.SEPARATOR
+                        + (group == null ? "" : group) + MetadataIdentifier.SEPARATOR
+                        + PROVIDER_SIDE + MetadataIdentifier.SEPARATOR + application);
     }
 }

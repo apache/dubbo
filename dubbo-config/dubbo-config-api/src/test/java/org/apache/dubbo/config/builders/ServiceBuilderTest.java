@@ -25,9 +25,9 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 
-import static org.apache.dubbo.common.Constants.GENERIC_SERIALIZATION_BEAN;
-import static org.apache.dubbo.common.Constants.GENERIC_SERIALIZATION_DEFAULT;
-import static org.apache.dubbo.common.Constants.GENERIC_SERIALIZATION_NATIVE_JAVA;
+import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_BEAN;
+import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_DEFAULT;
+import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_NATIVE_JAVA;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 

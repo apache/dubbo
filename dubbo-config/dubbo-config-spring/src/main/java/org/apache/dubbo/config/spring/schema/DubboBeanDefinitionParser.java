@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config.spring.schema;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ReflectUtils;
@@ -52,6 +51,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import static org.apache.dubbo.common.constants.CommonConstants.HIDE_KEY_PREFIX;
+
 /**
  * AbstractBeanDefinitionParser
  *
@@ -61,6 +62,10 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
 
     private static final Logger logger = LoggerFactory.getLogger(DubboBeanDefinitionParser.class);
     private static final Pattern GROUP_AND_VERION = Pattern.compile("^[\\-.0-9_a-zA-Z]+(\\:[\\-.0-9_a-zA-Z]+)?$");
+    private static final String ONRETURN = "onreturn";
+    private static final String ONTHROW = "onthrow";
+    private static final String ONINVOKE = "oninvoke";
+    private static final String METHOD = "Method";
     private final Class<?> beanClass;
     private final boolean required;
 
@@ -93,7 +98,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                 id = generatedBeanName + (counter++);
             }
         }
-        if (id != null && id.length() > 0) {
+        if (StringUtils.isNotEmpty(id)) {
             if (parserContext.getRegistry().containsBeanDefinition(id)) {
                 throw new IllegalStateException("Duplicate spring bean id " + id);
             }
@@ -189,24 +194,12 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                                         value = null;
                                     }
                                     reference = value;
-                                } else if ("onreturn".equals(property)) {
+                                } else if(ONRETURN.equals(property) || ONTHROW.equals(property) || ONINVOKE.equals(property)) {
                                     int index = value.lastIndexOf(".");
-                                    String returnRef = value.substring(0, index);
-                                    String returnMethod = value.substring(index + 1);
-                                    reference = new RuntimeBeanReference(returnRef);
-                                    beanDefinition.getPropertyValues().addPropertyValue("onreturnMethod", returnMethod);
-                                } else if ("onthrow".equals(property)) {
-                                    int index = value.lastIndexOf(".");
-                                    String throwRef = value.substring(0, index);
-                                    String throwMethod = value.substring(index + 1);
-                                    reference = new RuntimeBeanReference(throwRef);
-                                    beanDefinition.getPropertyValues().addPropertyValue("onthrowMethod", throwMethod);
-                                } else if ("oninvoke".equals(property)) {
-                                    int index = value.lastIndexOf(".");
-                                    String invokeRef = value.substring(0, index);
-                                    String invokeRefMethod = value.substring(index + 1);
-                                    reference = new RuntimeBeanReference(invokeRef);
-                                    beanDefinition.getPropertyValues().addPropertyValue("oninvokeMethod", invokeRefMethod);
+                                    String ref = value.substring(0, index);
+                                    String method = value.substring(index + 1);
+                                    reference = new RuntimeBeanReference(ref);
+                                    beanDefinition.getPropertyValues().addPropertyValue(property + METHOD, method);
                                 } else {
                                     if ("ref".equals(property) && parserContext.getRegistry().containsBeanDefinition(value)) {
                                         BeanDefinition refBean = parserContext.getRegistry().getBeanDefinition(value);
@@ -316,7 +309,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                         String value = ((Element) node).getAttribute("value");
                         boolean hide = "true".equals(((Element) node).getAttribute("hide"));
                         if (hide) {
-                            key = Constants.HIDE_KEY_PREFIX + key;
+                            key = HIDE_KEY_PREFIX + key;
                         }
                         parameters.put(key, new TypedStringValue(value, String.class));
                     }

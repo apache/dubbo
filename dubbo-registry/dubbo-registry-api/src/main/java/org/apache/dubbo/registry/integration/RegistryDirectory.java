@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.registry.integration;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.Version;
@@ -31,6 +30,7 @@ import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.configcenter.DynamicConfiguration;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -58,14 +58,29 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.apache.dubbo.common.Constants.APP_DYNAMIC_CONFIGURATORS_CATEGORY;
-import static org.apache.dubbo.common.Constants.CATEGORY_KEY;
-import static org.apache.dubbo.common.Constants.CONFIGURATORS_CATEGORY;
-import static org.apache.dubbo.common.Constants.DEFAULT_CATEGORY;
-import static org.apache.dubbo.common.Constants.DYNAMIC_CONFIGURATORS_CATEGORY;
-import static org.apache.dubbo.common.Constants.PROVIDERS_CATEGORY;
-import static org.apache.dubbo.common.Constants.ROUTERS_CATEGORY;
-import static org.apache.dubbo.common.Constants.ROUTE_PROTOCOL;
+import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DISABLED_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
+import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.APP_DYNAMIC_CONFIGURATORS_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.COMPATIBLE_CONFIG_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_CONFIGURATORS_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
+import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.ROUTE_PROTOCOL;
+import static org.apache.dubbo.registry.Constants.CONFIGURATORS_SUFFIX;
+import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.ROUTER_KEY;
 
 
 /**
@@ -75,9 +90,9 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     private static final Logger logger = LoggerFactory.getLogger(RegistryDirectory.class);
 
-    private static final Cluster cluster = ExtensionLoader.getExtensionLoader(Cluster.class).getAdaptiveExtension();
+    private static final Cluster CLUSTER = ExtensionLoader.getExtensionLoader(Cluster.class).getAdaptiveExtension();
 
-    private static final RouterFactory routerFactory = ExtensionLoader.getExtensionLoader(RouterFactory.class)
+    private static final RouterFactory ROUTER_FACTORY = ExtensionLoader.getExtensionLoader(RouterFactory.class)
             .getAdaptiveExtension();
 
     private final String serviceKey; // Initialization at construction time, assertion not null
@@ -108,7 +123,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     // Set<invokerUrls> cache invokeUrls to invokers mapping.
     private volatile Set<URL> cachedInvokerUrls; // The initial value is null and the midway may be assigned to null, please use the local variable reference
 
-    private static final ConsumerConfigurationListener consumerConfigurationListener = new ConsumerConfigurationListener();
+    private static final ConsumerConfigurationListener CONSUMER_CONFIGURATION_LISTENER = new ConsumerConfigurationListener();
     private ReferenceConfigurationListener serviceConfigurationListener;
 
 
@@ -122,23 +137,23 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         }
         this.serviceType = serviceType;
         this.serviceKey = url.getServiceKey();
-        this.queryMap = StringUtils.parseQueryString(url.getParameterAndDecoded(Constants.REFER_KEY));
+        this.queryMap = StringUtils.parseQueryString(url.getParameterAndDecoded(REFER_KEY));
         this.overrideDirectoryUrl = this.directoryUrl = turnRegistryUrlToConsumerUrl(url);
-        String group = directoryUrl.getParameter(Constants.GROUP_KEY, "");
-        this.multiGroup = group != null && (Constants.ANY_VALUE.equals(group) || group.contains(","));
+        String group = directoryUrl.getParameter(GROUP_KEY, "");
+        this.multiGroup = group != null && (ANY_VALUE.equals(group) || group.contains(","));
     }
 
     private URL turnRegistryUrlToConsumerUrl(URL url) {
         // save any parameter in registry that will be useful to the new url.
-        String isDefault = url.getParameter(Constants.DEFAULT_KEY);
+        String isDefault = url.getParameter(DEFAULT_KEY);
         if (StringUtils.isNotEmpty(isDefault)) {
-            queryMap.put(Constants.REGISTRY_KEY + "." + Constants.DEFAULT_KEY, isDefault);
+            queryMap.put(REGISTRY_KEY + "." + DEFAULT_KEY, isDefault);
         }
         return URLBuilder.from(url)
                 .setPath(url.getServiceInterface())
                 .clearParameters()
                 .addParameters(queryMap)
-                .removeParameter(Constants.MONITOR_KEY)
+                .removeParameter(MONITOR_KEY)
                 .build();
     }
 
@@ -152,7 +167,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     public void subscribe(URL url) {
         setConsumerUrl(url);
-        consumerConfigurationListener.addNotifyListener(this);
+        CONSUMER_CONFIGURATION_LISTENER.addNotifyListener(this);
         serviceConfigurationListener = new ReferenceConfigurationListener(this, url);
         registry.subscribe(url, this);
     }
@@ -178,7 +193,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 registry.unsubscribe(getConsumerUrl(), this);
             }
             DynamicConfiguration.getDynamicConfiguration()
-                    .removeListener(ApplicationModel.getApplication(), consumerConfigurationListener);
+                    .removeListener(ApplicationModel.getApplication(), CONSUMER_CONFIGURATION_LISTENER);
         } catch (Throwable t) {
             logger.warn("unexpected error when unsubscribe service " + serviceKey + "from registry" + registry.getUrl(), t);
         }
@@ -242,7 +257,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
         if (invokerUrls.size() == 1
                 && invokerUrls.get(0) != null
-                && Constants.EMPTY_PROTOCOL.equals(invokerUrls.get(0).getProtocol())) {
+                && EMPTY_PROTOCOL.equals(invokerUrls.get(0).getProtocol())) {
             this.forbidden = true; // Forbid to access
             this.invokers = Collections.emptyList();
             routerChain.setInvokers(this.invokers);
@@ -297,7 +312,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         List<Invoker<T>> mergedInvokers = new ArrayList<>();
         Map<String, List<Invoker<T>>> groupMap = new HashMap<>();
         for (Invoker<T> invoker : invokers) {
-            String group = invoker.getUrl().getParameter(Constants.GROUP_KEY, "");
+            String group = invoker.getUrl().getParameter(GROUP_KEY, "");
             groupMap.computeIfAbsent(group, k -> new ArrayList<>());
             groupMap.get(group).add(invoker);
         }
@@ -308,7 +323,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             for (List<Invoker<T>> groupList : groupMap.values()) {
                 StaticDirectory<T> staticDirectory = new StaticDirectory<>(groupList);
                 staticDirectory.buildRouterChain();
-                mergedInvokers.add(cluster.join(staticDirectory));
+                mergedInvokers.add(CLUSTER.join(staticDirectory));
             }
         } else {
             mergedInvokers = invokers;
@@ -328,15 +343,15 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
         List<Router> routers = new ArrayList<>();
         for (URL url : urls) {
-            if (Constants.EMPTY_PROTOCOL.equals(url.getProtocol())) {
+            if (EMPTY_PROTOCOL.equals(url.getProtocol())) {
                 continue;
             }
-            String routerType = url.getParameter(Constants.ROUTER_KEY);
+            String routerType = url.getParameter(ROUTER_KEY);
             if (routerType != null && routerType.length() > 0) {
                 url = url.setProtocol(routerType);
             }
             try {
-                Router router = routerFactory.getRouter(url);
+                Router router = ROUTER_FACTORY.getRouter(url);
                 if (!routers.contains(router)) {
                     routers.add(router);
                 }
@@ -360,7 +375,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             return newUrlInvokerMap;
         }
         Set<String> keys = new HashSet<>();
-        String queryProtocols = this.queryMap.get(Constants.PROTOCOL_KEY);
+        String queryProtocols = this.queryMap.get(PROTOCOL_KEY);
         for (URL providerUrl : urls) {
             // If protocol is configured at the reference side, only the matching protocol is selected
             if (queryProtocols != null && queryProtocols.length() > 0) {
@@ -376,7 +391,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                     continue;
                 }
             }
-            if (Constants.EMPTY_PROTOCOL.equals(providerUrl.getProtocol())) {
+            if (EMPTY_PROTOCOL.equals(providerUrl.getProtocol())) {
                 continue;
             }
             if (!ExtensionLoader.getExtensionLoader(Protocol.class).hasExtension(providerUrl.getProtocol())) {
@@ -399,10 +414,10 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             if (invoker == null) { // Not in the cache, refer again
                 try {
                     boolean enabled = true;
-                    if (url.hasParameter(Constants.DISABLED_KEY)) {
-                        enabled = !url.getParameter(Constants.DISABLED_KEY, false);
+                    if (url.hasParameter(DISABLED_KEY)) {
+                        enabled = !url.getParameter(DISABLED_KEY, false);
                     } else {
-                        enabled = url.getParameter(Constants.ENABLED_KEY, true);
+                        enabled = url.getParameter(ENABLED_KEY, true);
                     }
                     if (enabled) {
                         invoker = new InvokerDelegate<>(protocol.refer(serviceType, url), url, providerUrl);
@@ -438,9 +453,9 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         this.overrideDirectoryUrl = this.overrideDirectoryUrl.addParametersIfAbsent(providerUrl.getParameters()); // Merge the provider side parameters
 
         if ((providerUrl.getPath() == null || providerUrl.getPath()
-                .length() == 0) && Constants.DUBBO_PROTOCOL.equals(providerUrl.getProtocol())) { // Compatible version 1.0
+                .length() == 0) && DUBBO_PROTOCOL.equals(providerUrl.getProtocol())) { // Compatible version 1.0
             //fix by tony.chenl DUBBO-44
-            String path = directoryUrl.getParameter(Constants.INTERFACE_KEY);
+            String path = directoryUrl.getParameter(INTERFACE_KEY);
             if (path != null) {
                 int i = path.indexOf('/');
                 if (i >= 0) {
@@ -461,7 +476,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         providerUrl = overrideWithConfigurators(this.configurators, providerUrl);
 
         // override url with configurator from configurator from "app-name.configurators"
-        providerUrl = overrideWithConfigurators(consumerConfigurationListener.getConfigurators(), providerUrl);
+        providerUrl = overrideWithConfigurators(CONSUMER_CONFIGURATION_LISTENER.getConfigurators(), providerUrl);
 
         // override url with configurator from configurators from "service-name.configurators"
         if (serviceConfigurationListener != null) {
@@ -647,7 +662,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     }
 
     private boolean isNotCompatibleFor26x(URL url) {
-        return StringUtils.isEmpty(url.getParameter(Constants.COMPATIBLE_CONFIG_KEY));
+        return StringUtils.isEmpty(url.getParameter(COMPATIBLE_CONFIG_KEY));
     }
 
     private void overrideDirectoryUrl() {
@@ -655,7 +670,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         this.overrideDirectoryUrl = directoryUrl;
         List<Configurator> localConfigurators = this.configurators; // local reference
         doOverrideUrl(localConfigurators);
-        List<Configurator> localAppDynamicConfigurators = consumerConfigurationListener.getConfigurators(); // local reference
+        List<Configurator> localAppDynamicConfigurators = CONSUMER_CONFIGURATION_LISTENER.getConfigurators(); // local reference
         doOverrideUrl(localAppDynamicConfigurators);
         if (serviceConfigurationListener != null) {
             List<Configurator> localDynamicConfigurators = serviceConfigurationListener.getConfigurators(); // local reference
@@ -696,7 +711,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         ReferenceConfigurationListener(RegistryDirectory directory, URL url) {
             this.directory = directory;
             this.url = url;
-            this.initWith(url.getEncodedServiceKey() + Constants.CONFIGURATORS_SUFFIX);
+            this.initWith(DynamicConfiguration.getRuleKey(url) + CONFIGURATORS_SUFFIX);
         }
 
         @Override
@@ -710,7 +725,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         List<RegistryDirectory> listeners = new ArrayList<>();
 
         ConsumerConfigurationListener() {
-            this.initWith(ApplicationModel.getApplication() + Constants.CONFIGURATORS_SUFFIX);
+            this.initWith(ApplicationModel.getApplication() + CONFIGURATORS_SUFFIX);
         }
 
         void addNotifyListener(RegistryDirectory listener) {

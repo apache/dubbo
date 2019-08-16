@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.extension;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.activate.ActivateExt1;
 import org.apache.dubbo.common.extension.activate.impl.ActivateExt1Impl1;
@@ -29,6 +28,7 @@ import org.apache.dubbo.common.extension.activate.impl.ValueActivateExtImpl;
 import org.apache.dubbo.common.extension.ext1.SimpleExt;
 import org.apache.dubbo.common.extension.ext1.impl.SimpleExtImpl1;
 import org.apache.dubbo.common.extension.ext1.impl.SimpleExtImpl2;
+import org.apache.dubbo.common.extension.ext10_multi_names.Ext10MultiNames;
 import org.apache.dubbo.common.extension.ext2.Ext2;
 import org.apache.dubbo.common.extension.ext6_wrap.WrappedExt;
 import org.apache.dubbo.common.extension.ext6_wrap.impl.Ext5Wrapper1;
@@ -57,6 +57,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -373,17 +374,17 @@ public class ExtensionLoaderTest {
         List<ActivateExt1> list = ExtensionLoader.getExtensionLoader(ActivateExt1.class)
                 .getActivateExtension(url, new String[]{}, "default_group");
         Assertions.assertEquals(1, list.size());
-        Assertions.assertTrue(list.get(0).getClass() == ActivateExt1Impl1.class);
+        Assertions.assertSame(list.get(0).getClass(), ActivateExt1Impl1.class);
 
         // test group
-        url = url.addParameter(Constants.GROUP_KEY, "group1");
+        url = url.addParameter(GROUP_KEY, "group1");
         list = ExtensionLoader.getExtensionLoader(ActivateExt1.class)
                 .getActivateExtension(url, new String[]{}, "group1");
         Assertions.assertEquals(1, list.size());
-        Assertions.assertTrue(list.get(0).getClass() == GroupActivateExtImpl.class);
+        Assertions.assertSame(list.get(0).getClass(), GroupActivateExtImpl.class);
 
         // test old @Activate group
-        url = url.addParameter(Constants.GROUP_KEY, "old_group");
+        url = url.addParameter(GROUP_KEY, "old_group");
         list = ExtensionLoader.getExtensionLoader(ActivateExt1.class)
                 .getActivateExtension(url, new String[]{}, "old_group");
         Assertions.assertEquals(2, list.size());
@@ -391,22 +392,22 @@ public class ExtensionLoaderTest {
                 || list.get(0).getClass() == OldActivateExt1Impl3.class);
 
         // test value
-        url = url.removeParameter(Constants.GROUP_KEY);
-        url = url.addParameter(Constants.GROUP_KEY, "value");
+        url = url.removeParameter(GROUP_KEY);
+        url = url.addParameter(GROUP_KEY, "value");
         url = url.addParameter("value", "value");
         list = ExtensionLoader.getExtensionLoader(ActivateExt1.class)
                 .getActivateExtension(url, new String[]{}, "value");
         Assertions.assertEquals(1, list.size());
-        Assertions.assertTrue(list.get(0).getClass() == ValueActivateExtImpl.class);
+        Assertions.assertSame(list.get(0).getClass(), ValueActivateExtImpl.class);
 
         // test order
         url = URL.valueOf("test://localhost/test");
-        url = url.addParameter(Constants.GROUP_KEY, "order");
+        url = url.addParameter(GROUP_KEY, "order");
         list = ExtensionLoader.getExtensionLoader(ActivateExt1.class)
                 .getActivateExtension(url, new String[]{}, "order");
         Assertions.assertEquals(2, list.size());
-        Assertions.assertTrue(list.get(0).getClass() == OrderActivateExtImpl1.class);
-        Assertions.assertTrue(list.get(1).getClass() == OrderActivateExtImpl2.class);
+        Assertions.assertSame(list.get(0).getClass(), OrderActivateExtImpl1.class);
+        Assertions.assertSame(list.get(1).getClass(), OrderActivateExtImpl2.class);
     }
 
     @Test
@@ -416,15 +417,15 @@ public class ExtensionLoaderTest {
         List<ActivateExt1> list = ExtensionLoader.getExtensionLoader(ActivateExt1.class)
                 .getActivateExtension(url, "ext", "default_group");
         Assertions.assertEquals(2, list.size());
-        Assertions.assertTrue(list.get(0).getClass() == OrderActivateExtImpl1.class);
-        Assertions.assertTrue(list.get(1).getClass() == ActivateExt1Impl1.class);
+        Assertions.assertSame(list.get(0).getClass(), OrderActivateExtImpl1.class);
+        Assertions.assertSame(list.get(1).getClass(), ActivateExt1Impl1.class);
 
         url = URL.valueOf("test://localhost/test?ext=default,order1");
         list = ExtensionLoader.getExtensionLoader(ActivateExt1.class)
                 .getActivateExtension(url, "ext", "default_group");
         Assertions.assertEquals(2, list.size());
-        Assertions.assertTrue(list.get(0).getClass() == ActivateExt1Impl1.class);
-        Assertions.assertTrue(list.get(1).getClass() == OrderActivateExtImpl1.class);
+        Assertions.assertSame(list.get(0).getClass(), ActivateExt1Impl1.class);
+        Assertions.assertSame(list.get(1).getClass(), OrderActivateExtImpl1.class);
     }
 
     @Test
@@ -437,4 +438,15 @@ public class ExtensionLoaderTest {
         Assertions.assertNull(injectExtImpl.getGenericType());
     }
 
+    @Test
+    void testMultiNames() {
+        Ext10MultiNames ext10MultiNames = ExtensionLoader.getExtensionLoader(Ext10MultiNames.class).getExtension("impl");
+        Assertions.assertNotNull(ext10MultiNames);
+        ext10MultiNames = ExtensionLoader.getExtensionLoader(Ext10MultiNames.class).getExtension("implMultiName");
+        Assertions.assertNotNull(ext10MultiNames);
+        Assertions.assertThrows(
+                IllegalStateException.class,
+                () -> ExtensionLoader.getExtensionLoader(Ext10MultiNames.class).getExtension("impl,implMultiName")
+        );
+    }
 }

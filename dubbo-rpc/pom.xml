@@ -37,9 +37,11 @@
         <module>dubbo-rpc-hessian</module>
         <module>dubbo-rpc-http</module>
         <module>dubbo-rpc-webservice</module>
+        <module>dubbo-rpc-native-thrift</module>
         <module>dubbo-rpc-thrift</module>
         <module>dubbo-rpc-memcached</module>
         <module>dubbo-rpc-redis</module>
         <module>dubbo-rpc-rest</module>
+        <module>dubbo-rpc-xml</module>
     </modules>
 </project>

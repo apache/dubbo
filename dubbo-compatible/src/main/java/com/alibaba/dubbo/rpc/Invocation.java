@@ -29,7 +29,16 @@ public interface Invocation extends org.apache.dubbo.rpc.Invocation {
         return null;
     }
 
-    class CompatibleInvocation implements Invocation {
+    @Override
+    default void setAttachmentIfAbsent(String key, String value) {
+    }
+
+    @Override
+    default void setAttachment(String key, String value) {
+
+    }
+
+    class CompatibleInvocation implements Invocation, org.apache.dubbo.rpc.Invocation {
 
         private org.apache.dubbo.rpc.Invocation delegate;
 

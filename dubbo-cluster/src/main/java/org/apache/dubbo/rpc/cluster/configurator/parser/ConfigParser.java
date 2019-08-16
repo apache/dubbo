@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.configurator.parser;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -30,6 +29,11 @@ import org.yaml.snakeyaml.constructor.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import static org.apache.dubbo.rpc.cluster.Constants.OVERRIDE_PROVIDERS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
+import static org.apache.dubbo.common.constants.RegistryConstants.APP_DYNAMIC_CONFIGURATORS_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_CONFIGURATORS_CATEGORY;
 
 /**
  * Config parser
@@ -75,7 +79,7 @@ public class ConfigParser {
 
             parseEnabled(item, config, urlBuilder);
 
-            urlBuilder.append("&category=").append(Constants.DYNAMIC_CONFIGURATORS_CATEGORY);
+            urlBuilder.append("&category=").append(DYNAMIC_CONFIGURATORS_CATEGORY);
             urlBuilder.append("&configVersion=").append(config.getConfigVersion());
 
             List<String> apps = item.getApplications();
@@ -112,7 +116,7 @@ public class ConfigParser {
 
                 parseEnabled(item, config, urlBuilder);
 
-                urlBuilder.append("&category=").append(Constants.APP_DYNAMIC_CONFIGURATORS_CATEGORY);
+                urlBuilder.append("&category=").append(APP_DYNAMIC_CONFIGURATORS_CATEGORY);
                 urlBuilder.append("&configVersion=").append(config.getConfigVersion());
 
                 urls.add(URL.valueOf(urlBuilder.toString()));
@@ -124,7 +128,7 @@ public class ConfigParser {
     private static String toParameterString(ConfigItem item) {
         StringBuilder sb = new StringBuilder();
         sb.append("category=");
-        sb.append(Constants.DYNAMIC_CONFIGURATORS_CATEGORY);
+        sb.append(DYNAMIC_CONFIGURATORS_CATEGORY);
         if (item.getSide() != null) {
             sb.append("&side=");
             sb.append(item.getSide());
@@ -144,7 +148,7 @@ public class ConfigParser {
 
         if (CollectionUtils.isNotEmpty(item.getProviderAddresses())) {
             sb.append("&");
-            sb.append(Constants.OVERRIDE_PROVIDERS_KEY);
+            sb.append(OVERRIDE_PROVIDERS_KEY);
             sb.append("=");
             sb.append(CollectionUtils.join(item.getProviderAddresses(), ","));
         }
@@ -194,7 +198,7 @@ public class ConfigParser {
             addresses = new ArrayList<>();
         }
         if (addresses.size() == 0) {
-            addresses.add(Constants.ANYHOST_VALUE);
+            addresses.add(ANYHOST_VALUE);
         }
         return addresses;
     }

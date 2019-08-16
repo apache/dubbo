@@ -41,9 +41,9 @@ public abstract class AbstractConfiguratorListener implements ConfigurationListe
     protected final void initWith(String key) {
         DynamicConfiguration dynamicConfiguration = DynamicConfiguration.getDynamicConfiguration();
         dynamicConfiguration.addListener(key, this);
-        String rawConfig = dynamicConfiguration.getConfig(key);
+        String rawConfig = dynamicConfiguration.getRule(key, DynamicConfiguration.DEFAULT_GROUP);
         if (!StringUtils.isEmpty(rawConfig)) {
-            process(new ConfigChangeEvent(key, rawConfig));
+            genConfiguratorsFromRawRule(rawConfig);
         }
     }
 
@@ -57,18 +57,26 @@ public abstract class AbstractConfiguratorListener implements ConfigurationListe
         if (event.getChangeType().equals(ConfigChangeType.DELETED)) {
             configurators.clear();
         } else {
-            try {
-                // parseConfigurators will recognize app/service config automatically.
-                configurators = Configurator.toConfigurators(ConfigParser.parseConfigurators(event.getValue()))
-                        .orElse(configurators);
-            } catch (Exception e) {
-                logger.error("Failed to parse raw dynamic config and it will not take effect, the raw config is: " +
-                        event.getValue(), e);
+            if (!genConfiguratorsFromRawRule(event.getValue())) {
                 return;
             }
         }
 
         notifyOverrides();
+    }
+
+    private boolean genConfiguratorsFromRawRule(String rawConfig) {
+        boolean parseSuccess = true;
+        try {
+            // parseConfigurators will recognize app/service config automatically.
+            configurators = Configurator.toConfigurators(ConfigParser.parseConfigurators(rawConfig))
+                    .orElse(configurators);
+        } catch (Exception e) {
+            logger.error("Failed to parse raw dynamic config and it will not take effect, the raw config is: " +
+                    rawConfig, e);
+            parseSuccess = false;
+        }
+        return parseSuccess;
     }
 
     protected abstract void notifyOverrides();

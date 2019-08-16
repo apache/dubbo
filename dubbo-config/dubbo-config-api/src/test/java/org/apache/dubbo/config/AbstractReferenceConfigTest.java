@@ -17,18 +17,22 @@
 
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.remoting.Constants;
 
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.apache.dubbo.rpc.cluster.Constants.CLUSTER_STICKY_KEY;
+import static org.apache.dubbo.rpc.Constants.INVOKER_LISTENER_KEY;
+import static org.apache.dubbo.rpc.Constants.REFERENCE_FILTER_KEY;
+import static org.apache.dubbo.rpc.Constants.STUB_EVENT_KEY;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasValue;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 public class AbstractReferenceConfigTest {
 
@@ -70,7 +74,7 @@ public class AbstractReferenceConfigTest {
         referenceConfig.setFilter("mockfilter");
         assertThat(referenceConfig.getFilter(), equalTo("mockfilter"));
         Map<String, String> parameters = new HashMap<String, String>();
-        parameters.put(Constants.REFERENCE_FILTER_KEY, "prefilter");
+        parameters.put(REFERENCE_FILTER_KEY, "prefilter");
         AbstractInterfaceConfig.appendParameters(parameters, referenceConfig);
         assertThat(parameters, hasValue("prefilter,mockfilter"));
     }
@@ -81,7 +85,7 @@ public class AbstractReferenceConfigTest {
         referenceConfig.setListener("mockinvokerlistener");
         assertThat(referenceConfig.getListener(), equalTo("mockinvokerlistener"));
         Map<String, String> parameters = new HashMap<String, String>();
-        parameters.put(Constants.INVOKER_LISTENER_KEY, "prelistener");
+        parameters.put(INVOKER_LISTENER_KEY, "prelistener");
         AbstractInterfaceConfig.appendParameters(parameters, referenceConfig);
         assertThat(parameters, hasValue("prelistener,mockinvokerlistener"));
     }
@@ -115,7 +119,7 @@ public class AbstractReferenceConfigTest {
         referenceConfig.setOnconnect("onConnect");
         Map<String, String> parameters = new HashMap<String, String>();
         AbstractInterfaceConfig.appendParameters(parameters, referenceConfig);
-        assertThat(parameters, hasKey(Constants.STUB_EVENT_KEY));
+        assertThat(parameters, hasKey(STUB_EVENT_KEY));
     }
 
     @Test
@@ -135,7 +139,7 @@ public class AbstractReferenceConfigTest {
         Map<String, String> parameters = new HashMap<String, String>();
         AbstractInterfaceConfig.appendParameters(parameters, referenceConfig);
         assertThat(referenceConfig.getSticky(), is(true));
-        assertThat(parameters, hasKey(Constants.CLUSTER_STICKY_KEY));
+        assertThat(parameters, hasKey(CLUSTER_STICKY_KEY));
     }
 
     @Test

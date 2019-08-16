@@ -16,15 +16,23 @@
  */
 package org.apache.dubbo.metadata.identifier;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+
+import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
+import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 
 /**
  * 2018/10/25
  */
 public class MetadataIdentifier {
+
     public static final String SEPARATOR = ":";
-    final static String DEFAULT_PATH_TAG = "metadata";
+    public final static String DEFAULT_PATH_TAG = "metadata";
+    public final static String META_DATA_STORE_TAG = ".metaData";
 
     private String serviceInterface;
     private String version;
@@ -45,10 +53,10 @@ public class MetadataIdentifier {
 
     public MetadataIdentifier(URL url) {
         this.serviceInterface = url.getServiceInterface();
-        this.version = url.getParameter(Constants.VERSION_KEY);
-        this.group = url.getParameter(Constants.GROUP_KEY);
-        this.side = url.getParameter(Constants.SIDE_KEY);
-        setApplication(url.getParameter(Constants.APPLICATION_KEY));
+        this.version = url.getParameter(VERSION_KEY);
+        this.group = url.getParameter(GROUP_KEY);
+        this.side = url.getParameter(SIDE_KEY);
+        setApplication(url.getParameter(APPLICATION_KEY));
     }
 
     public String getUniqueKey(KeyTypeEnum keyType) {
@@ -59,7 +67,7 @@ public class MetadataIdentifier {
     }
 
     public String getIdentifierKey() {
-        return serviceInterface + SEPARATOR + (version == null ? "" : version + SEPARATOR) + (group == null ? "" : group + SEPARATOR) + side + SEPARATOR + application;
+        return serviceInterface + SEPARATOR + (version == null ? "" : version) + SEPARATOR + (group == null ? "" : group) + SEPARATOR + side + SEPARATOR + application;
     }
 
     private String getFilePathKey() {
@@ -67,12 +75,12 @@ public class MetadataIdentifier {
     }
 
     private String getFilePathKey(String pathTag) {
-        return pathTag + Constants.PATH_SEPARATOR + toServicePath() + Constants.PATH_SEPARATOR + (version == null ? "" : (version + Constants.PATH_SEPARATOR))
-                + (group == null ? "" : (group + Constants.PATH_SEPARATOR)) + side + Constants.PATH_SEPARATOR + getApplication();
+        return pathTag + PATH_SEPARATOR + toServicePath() + PATH_SEPARATOR + (version == null ? "" : (version + PATH_SEPARATOR))
+                + (group == null ? "" : (group + PATH_SEPARATOR)) + side + PATH_SEPARATOR + getApplication();
     }
 
     private String toServicePath() {
-        if (Constants.ANY_VALUE.equals(serviceInterface)) {
+        if (ANY_VALUE.equals(serviceInterface)) {
             return "";
         }
         return URL.encode(serviceInterface);
@@ -119,7 +127,7 @@ public class MetadataIdentifier {
         this.application = application;
     }
 
-    public static enum KeyTypeEnum {
+    public enum KeyTypeEnum {
         PATH, UNIQUE_KEY
     }
 }

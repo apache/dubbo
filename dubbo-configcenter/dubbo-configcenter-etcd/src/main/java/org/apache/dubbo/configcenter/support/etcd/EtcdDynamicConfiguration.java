@@ -17,15 +17,6 @@
 
 package org.apache.dubbo.configcenter.support.etcd;
 
-import com.google.protobuf.ByteString;
-import io.etcd.jetcd.api.Event;
-import io.etcd.jetcd.api.WatchCancelRequest;
-import io.etcd.jetcd.api.WatchCreateRequest;
-import io.etcd.jetcd.api.WatchGrpc;
-import io.etcd.jetcd.api.WatchRequest;
-import io.etcd.jetcd.api.WatchResponse;
-import io.grpc.ManagedChannel;
-import io.grpc.stub.StreamObserver;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.configcenter.ConfigChangeEvent;
@@ -35,12 +26,22 @@ import org.apache.dubbo.configcenter.DynamicConfiguration;
 import org.apache.dubbo.remoting.etcd.StateListener;
 import org.apache.dubbo.remoting.etcd.jetcd.JEtcdClient;
 
+import com.google.protobuf.ByteString;
+import io.etcd.jetcd.api.Event;
+import io.etcd.jetcd.api.WatchCancelRequest;
+import io.etcd.jetcd.api.WatchCreateRequest;
+import io.etcd.jetcd.api.WatchGrpc;
+import io.etcd.jetcd.api.WatchRequest;
+import io.etcd.jetcd.api.WatchResponse;
+import io.grpc.ManagedChannel;
+import io.grpc.stub.StreamObserver;
+
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.dubbo.common.Constants.CONFIG_NAMESPACE_KEY;
-import static org.apache.dubbo.common.Constants.PATH_SEPARATOR;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
+import static org.apache.dubbo.configcenter.Constants.CONFIG_NAMESPACE_KEY;
 
 /**
  * The etcd implementation of {@link DynamicConfiguration}
@@ -63,7 +64,7 @@ public class EtcdDynamicConfiguration implements DynamicConfiguration {
     private final ConcurrentMap<ConfigurationListener, EtcdConfigWatcher> watchListenerMap;
 
     EtcdDynamicConfiguration(URL url) {
-        rootPath = "/" + url.getParameter(CONFIG_NAMESPACE_KEY, DEFAULT_GROUP) + "/config";
+        rootPath = PATH_SEPARATOR + url.getParameter(CONFIG_NAMESPACE_KEY, DEFAULT_GROUP) + "/config";
         etcdClient = new JEtcdClient(url);
         etcdClient.addStateListener(state -> {
             if (state == StateListener.CONNECTED) {
@@ -80,7 +81,7 @@ public class EtcdDynamicConfiguration implements DynamicConfiguration {
     @Override
     public void addListener(String key, String group, ConfigurationListener listener) {
         if (watchListenerMap.get(listener) == null) {
-            String normalizedKey = convertKey(key);
+            String normalizedKey = convertKey(group, key);
             EtcdConfigWatcher watcher = new EtcdConfigWatcher(normalizedKey, listener);
             watchListenerMap.put(listener, watcher);
             watcher.watch();
@@ -93,16 +94,17 @@ public class EtcdDynamicConfiguration implements DynamicConfiguration {
         watcher.cancelWatch();
     }
 
-    // TODO Abstract the logic into super class
     @Override
-    public String getConfig(String key, String group, long timeout) throws IllegalStateException {
-        if (StringUtils.isNotEmpty(group)) {
-            key = group + PATH_SEPARATOR + key;
-        } else {
-            int i = key.lastIndexOf(".");
-            key = key.substring(0, i) + PATH_SEPARATOR + key.substring(i + 1);
+    public String getRule(String key, String group, long timeout) throws IllegalStateException {
+        return (String) getInternalProperty(convertKey(group, key));
+    }
+
+    @Override
+    public String getProperties(String key, String group, long timeout) throws IllegalStateException {
+        if (StringUtils.isEmpty(group)) {
+            group = DEFAULT_GROUP;
         }
-        return (String) getInternalProperty(rootPath + PATH_SEPARATOR + key);
+        return (String) getInternalProperty(convertKey(group, key));
     }
 
     @Override
@@ -111,9 +113,8 @@ public class EtcdDynamicConfiguration implements DynamicConfiguration {
     }
 
 
-    private String convertKey(String key) {
-        int index = key.lastIndexOf('.');
-        return rootPath + PATH_SEPARATOR + key.substring(0, index) + PATH_SEPARATOR + key.substring(index + 1);
+    private String convertKey(String group, String key) {
+        return rootPath + PATH_SEPARATOR + group + PATH_SEPARATOR + key;
     }
 
     private void recover() {

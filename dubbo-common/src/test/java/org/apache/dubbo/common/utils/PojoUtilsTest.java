@@ -18,6 +18,7 @@ package org.apache.dubbo.common.utils;
 
 import org.apache.dubbo.common.model.Person;
 import org.apache.dubbo.common.model.SerializablePerson;
+import org.apache.dubbo.common.model.User;
 import org.apache.dubbo.common.model.person.BigPerson;
 import org.apache.dubbo.common.model.person.FullAddress;
 import org.apache.dubbo.common.model.person.PersonInfo;
@@ -36,6 +37,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
 
@@ -130,6 +132,11 @@ public class PojoUtilsTest {
     public void test_pojo() throws Exception {
         assertObject(new Person());
         assertObject(new SerializablePerson());
+    }
+
+    @Test
+    public void test_has_no_nullary_constructor_pojo() {
+        assertObject(new User(1,"fibbery"));
     }
 
     @Test
@@ -554,9 +561,9 @@ public class PojoUtilsTest {
 
         Object obj = PojoUtils.generalize(data);
         Assertions.assertEquals(3, data.getChildren().size());
-        assertTrue(data.getChildren().get("first").getClass() == Child.class);
+        assertSame(data.getChildren().get("first").getClass(), Child.class);
         Assertions.assertEquals(1, data.getList().size());
-        assertTrue(data.getList().get(0).getClass() == Child.class);
+        assertSame(data.getList().get(0).getClass(), Child.class);
 
         TestData realizadData = (TestData) PojoUtils.realize(obj, TestData.class);
         Assertions.assertEquals(data.getChildren().size(), realizadData.getChildren().size());
@@ -614,7 +621,7 @@ public class PojoUtilsTest {
         assertTrue(realizeObject instanceof ListResult);
         ListResult listResult = (ListResult) realizeObject;
         List l = listResult.getResult();
-        assertTrue(l.size() == 1);
+        assertEquals(1, l.size());
         assertTrue(l.get(0) instanceof Parent);
         Parent realizeParent = (Parent) l.get(0);
         Assertions.assertEquals(parent.getName(), realizeParent.getName());
@@ -674,6 +681,38 @@ public class PojoUtilsTest {
         Object timestamp = PojoUtils.realize(dateTimeStr, java.sql.Timestamp.class, (Type) java.sql.Timestamp.class);
         assertEquals(java.sql.Timestamp.class, timestamp.getClass());
         assertEquals(dateTimeStr, new SimpleDateFormat(dateFormat[0]).format(timestamp));
+    }
+
+    @Test
+    public void testIntToBoolean() throws Exception {
+        Map<String, Object> map = new HashMap<>();
+        map.put("name", "myname");
+        map.put("male", 1);
+        map.put("female", 0);
+
+        PersonInfo personInfo = (PersonInfo) PojoUtils.realize(map, PersonInfo.class);
+
+        assertEquals("myname", personInfo.getName());
+        assertTrue(personInfo.isMale());
+        assertFalse(personInfo.isFemale());
+    }
+  
+    @Test
+    public void testRealizeCollectionWithNullElement() {
+        LinkedList<String> listStr = new LinkedList<>();
+        listStr.add("arrayValue");
+        listStr.add(null);
+        HashSet<String> setStr = new HashSet<>();
+        setStr.add("setValue");
+        setStr.add(null);
+
+        Object listResult = PojoUtils.realize(listStr, LinkedList.class);
+        assertEquals(LinkedList.class, listResult.getClass());
+        assertEquals(listResult, listStr);
+
+        Object setResult = PojoUtils.realize(setStr, HashSet.class);
+        assertEquals(HashSet.class, setResult.getClass());
+        assertEquals(setResult, setStr);
     }
 
     public enum Day {
