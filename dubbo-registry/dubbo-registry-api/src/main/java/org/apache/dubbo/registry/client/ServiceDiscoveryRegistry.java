@@ -156,7 +156,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
     private ServiceDiscovery enhanceEventPublishing(ServiceDiscovery original) {
         return new EventPublishingServiceDiscovery(original);
     }
-  
+
     protected boolean shouldRegister(URL providerURL) {
 
         String side = providerURL.getParameter(SIDE_KEY);
