@@ -19,10 +19,12 @@ package org.apache.dubbo.registry.etcd;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.event.EventDispatcher;
 import org.apache.dubbo.event.EventListener;
 import org.apache.dubbo.registry.NotifyListener;
+import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
@@ -37,12 +39,16 @@ import org.apache.dubbo.rpc.RpcException;
 import com.google.gson.Gson;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
+import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
 
 /**
  * 2019-07-08
@@ -101,6 +107,7 @@ public class EtcdServiceDiscovery implements ServiceDiscovery, EventListener<Ser
         try {
             this.serviceInstance = serviceInstance;
             String path = toPath(serviceInstance);
+//            etcdClient.createEphemeral(path);
             etcdClient.putEphemeral(path, new Gson().toJson(serviceInstance));
             services.add(serviceInstance.getServiceName());
         } catch (Throwable e) {
@@ -114,6 +121,10 @@ public class EtcdServiceDiscovery implements ServiceDiscovery, EventListener<Ser
     String toPath(ServiceInstance serviceInstance) {
         return root + File.separator + serviceInstance.getServiceName() + File.separator + serviceInstance.getHost()
                 + ":" + serviceInstance.getPort();
+    }
+
+    String toParentPath(String serviceName) {
+        return root + File.separator + serviceName;
     }
 
     @Override
@@ -152,6 +163,21 @@ public class EtcdServiceDiscovery implements ServiceDiscovery, EventListener<Ser
         registerServiceWatcher(serviceName);
         dispatcher.addEventListener(listener);
     }
+
+    @Override
+    public List<ServiceInstance> getInstances(String serviceName) {
+        List<String> children = etcdClient.getChildren(toParentPath(serviceName));
+        if (CollectionUtils.isEmpty(children)) {
+            return Collections.EMPTY_LIST;
+        }
+        List<ServiceInstance> list = new ArrayList<>(children.size());
+        for (String child : children) {
+            ServiceInstance serviceInstance = new Gson().fromJson(etcdClient.getKVValue(child), DefaultServiceInstance.class);
+            list.add(serviceInstance);
+        }
+        return list;
+    }
+
 
     protected void registerServiceWatcher(String serviceName) {
         String path = root + File.separator + serviceName;
