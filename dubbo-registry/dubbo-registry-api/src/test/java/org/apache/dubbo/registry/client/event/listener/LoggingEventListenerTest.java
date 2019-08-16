@@ -59,10 +59,10 @@ public class LoggingEventListenerTest {
         serviceDiscovery.initialize(connectionURL);
 
         // ServiceDiscoveryStartingEvent
-        listener.onEvent(new ServiceDiscoveryInitializingEvent(serviceDiscovery));
+        listener.onEvent(new ServiceDiscoveryInitializingEvent(serviceDiscovery, serviceDiscovery));
 
         // ServiceDiscoveryStartedEvent
-        listener.onEvent(new ServiceDiscoveryInitializedEvent(serviceDiscovery));
+        listener.onEvent(new ServiceDiscoveryInitializedEvent(serviceDiscovery, serviceDiscovery));
 
         // ServiceInstancePreRegisteredEvent
         listener.onEvent(new ServiceInstancePreRegisteredEvent(serviceDiscovery, createInstance()));
@@ -80,9 +80,9 @@ public class LoggingEventListenerTest {
         listener.onEvent(new ServiceInstanceUnregisteredEvent(serviceDiscovery, createInstance()));
 
         // ServiceDiscoveryStoppingEvent
-        listener.onEvent(new ServiceDiscoveryDestroyingEvent(serviceDiscovery));
+        listener.onEvent(new ServiceDiscoveryDestroyingEvent(serviceDiscovery, serviceDiscovery));
 
         // ServiceDiscoveryStoppedEvent
-        listener.onEvent(new ServiceDiscoveryDestroyedEvent(serviceDiscovery));
+        listener.onEvent(new ServiceDiscoveryDestroyedEvent(serviceDiscovery, serviceDiscovery));
     }
 }
