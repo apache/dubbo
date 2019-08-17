@@ -17,7 +17,7 @@
 
 package org.apache.dubbo.common.serialize.protostuff;
 
-import io.protostuff.GraphIOUtil;
+import io.protostuff.ProtobufIOUtil;
 import io.protostuff.LinkedBuffer;
 import io.protostuff.Schema;
 import io.protostuff.runtime.RuntimeSchema;
@@ -50,11 +50,11 @@ public class ProtostuffObjectOutput implements ObjectOutput {
             if (obj == null || WrapperUtils.needWrapper(obj)) {
                 Schema<Wrapper> schema = RuntimeSchema.getSchema(Wrapper.class);
                 Wrapper wrapper = new Wrapper(obj);
-                bytes = GraphIOUtil.toByteArray(wrapper, schema, buffer);
+                bytes = ProtobufIOUtil.toByteArray(wrapper, schema, buffer);
                 classNameBytes = Wrapper.class.getName().getBytes();
             } else {
                 Schema schema = RuntimeSchema.getSchema(obj.getClass());
-                bytes = GraphIOUtil.toByteArray(obj, schema, buffer);
+                bytes = ProtobufIOUtil.toByteArray(obj, schema, buffer);
                 classNameBytes = obj.getClass().getName().getBytes();
             }
         } finally {

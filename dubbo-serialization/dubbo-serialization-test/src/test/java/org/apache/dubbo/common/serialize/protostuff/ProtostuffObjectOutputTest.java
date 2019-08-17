@@ -23,9 +23,13 @@ import static org.hamcrest.Matchers.nullValue;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
+import org.apache.dubbo.common.serialize.model.SerializablePerson;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -90,9 +94,58 @@ public class ProtostuffObjectOutputTest {
         assertThat(serializedTime, is(originTime));
     }
 
+    @Test
+    public void testListObject() throws IOException, ClassNotFoundException {
+        List<SerializablePerson> list = new ArrayList<SerializablePerson>();
+        list.add(new SerializablePerson());
+        list.add(new SerializablePerson());
+        list.add(new SerializablePerson());
+        SerializablePersonList personList = new SerializablePersonList(list);
+        this.protostuffObjectOutput.writeObject(personList);
+        this.flushToInput();
+
+        SerializablePersonList serializedTime = protostuffObjectInput.readObject(SerializablePersonList.class);
+        assertThat(serializedTime, is(personList));
+    }
+
     private void flushToInput() throws IOException {
         this.protostuffObjectOutput.flushBuffer();
         this.byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         this.protostuffObjectInput = new ProtostuffObjectInput(byteArrayInputStream);
+    }
+
+    private class SerializablePersonList implements Serializable {
+        private static final long serialVersionUID = 1L;
+
+        public List<SerializablePerson> personList;
+
+        public SerializablePersonList() {}
+
+        public SerializablePersonList(List<SerializablePerson> list) {
+            this.personList = list;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+
+            SerializablePersonList list = (SerializablePersonList) obj;
+            if (list.personList == null && this.personList == null)
+                return true;
+            if (list.personList == null || this.personList == null)
+                return false;
+            if (list.personList.size() != this.personList.size())
+                return false;
+            for (int i =0; i < this.personList.size(); i++) {
+                if (!this.personList.get(i).equals(list.personList.get(i)))
+                    return false;
+            }
+            return true;
+        }
     }
 }

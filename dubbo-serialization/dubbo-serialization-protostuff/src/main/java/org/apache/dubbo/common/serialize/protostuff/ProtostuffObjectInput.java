@@ -17,7 +17,7 @@
 
 package org.apache.dubbo.common.serialize.protostuff;
 
-import io.protostuff.GraphIOUtil;
+import io.protostuff.ProtobufIOUtil;
 import io.protostuff.Schema;
 import io.protostuff.runtime.RuntimeSchema;
 import java.io.DataInputStream;
@@ -61,12 +61,12 @@ public class ProtostuffObjectInput implements ObjectInput {
         if (WrapperUtils.needWrapper(clazz)) {
             Schema<Wrapper> schema = RuntimeSchema.getSchema(Wrapper.class);
             Wrapper wrapper = schema.newMessage();
-            GraphIOUtil.mergeFrom(bytes, wrapper, schema);
+            ProtobufIOUtil.mergeFrom(bytes, wrapper, schema);
             result = wrapper.getData();
         } else {
             Schema schema = RuntimeSchema.getSchema(clazz);
             result = schema.newMessage();
-            GraphIOUtil.mergeFrom(bytes, result, schema);
+            ProtobufIOUtil.mergeFrom(bytes, result, schema);
         }
 
         return result;
