@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.dubbo.telnet;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
@@ -24,11 +25,16 @@ import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import org.apache.dubbo.remoting.telnet.support.Help;
 import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.rpc.Exporter;
+import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ProviderMethodModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
 
 import com.alibaba.fastjson.JSON;
+import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -122,13 +128,21 @@ public class InvokeTelnetHandler implements TelnetHandler {
         if (selectedProvider != null) {
             if (invokeMethod != null) {
                 try {
+                    Invoker<?> invoker = findInvoker(selectedProvider);
+                    if (invoker == null) {
+                        return "No invoker found for service: " + selectedProvider.getServiceName();
+                    }
+
                     Object[] array = realize(list.toArray(), invokeMethod.getParameterTypes(),
                             invokeMethod.getGenericParameterTypes());
                     long start = System.currentTimeMillis();
                     AppResponse result = new AppResponse();
                     try {
-                        Object o = invokeMethod.invoke(selectedProvider.getServiceInstance(), array);
-                        result.setValue(o);
+                        RpcInvocation invocation = new RpcInvocation();
+                        invocation.setMethodName(invokeMethod.getName());
+                        invocation.setParameterTypes(invokeMethod.getParameterTypes());
+                        invocation.setArguments(array);
+                        result.setValue(invoker.invoke(invocation).recreate());
                     } catch (Throwable t) {
                         result.setException(t);
                     }
@@ -150,6 +164,17 @@ public class InvokeTelnetHandler implements TelnetHandler {
         return buf.toString();
     }
 
+    private Invoker<?> findInvoker(ProviderModel provider) {
+        for (Exporter<?> exporter : DubboProtocol.getDubboProtocol().getExporters()) {
+            Invoker<?> invoker = exporter.getInvoker();
+            URL invokerUrl = invoker.getUrl();
+            String serviceName = URL.buildKey(invokerUrl.getPath(), invokerUrl.getParameter("group"), invokerUrl.getParameter("version"));
+            if (serviceName.equals(provider.getServiceName())) {
+                return invoker;
+            }
+        }
+        return null;
+    }
 
     private boolean isServiceMatch(String service, ProviderModel provider) {
         return provider.getServiceName().equalsIgnoreCase(service)
