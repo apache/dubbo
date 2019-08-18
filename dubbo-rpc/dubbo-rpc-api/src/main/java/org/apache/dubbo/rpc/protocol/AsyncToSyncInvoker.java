@@ -27,9 +27,11 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This class will work as a wrapper wrapping outside of each protocol invoker.
+ *
  * @param <T>
  */
 public class AsyncToSyncInvoker<T> implements Invoker<T> {
@@ -50,8 +52,8 @@ public class AsyncToSyncInvoker<T> implements Invoker<T> {
         Result asyncResult = invoker.invoke(invocation);
 
         try {
-            if (InvokeMode.SYNC == ((RpcInvocation)invocation).getInvokeMode()) {
-                asyncResult.get();
+            if (InvokeMode.SYNC == ((RpcInvocation) invocation).getInvokeMode()) {
+                asyncResult.get(Integer.MAX_VALUE, TimeUnit.MILLISECONDS);
             }
         } catch (InterruptedException e) {
             throw new RpcException("Interrupted unexpectedly while waiting for remoting result to return!  method: " + invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage(), e);

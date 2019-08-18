@@ -162,7 +162,7 @@ public class ReferenceConfigCache {
                 + ")";
     }
 
-    public static interface KeyGenerator {
+    public interface KeyGenerator {
         String generateKey(ReferenceConfig<?> referenceConfig);
     }
 }

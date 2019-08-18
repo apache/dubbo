@@ -164,7 +164,7 @@ public class FailbackRegistryTest {
             public void notify(List<URL> urls) {
                 count.incrementAndGet();
                 //The exception is thrown for the first time to see if the back will be called again to incrementAndGet
-                if (count.get() == 1l) {
+                if (count.get() == 1L) {
                     throw new RuntimeException("test exception please ignore");
                 }
             }

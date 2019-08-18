@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 
@@ -84,6 +85,10 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
                 }
             });
             client.start();
+            boolean connected = client.blockUntilConnected(timeout, TimeUnit.MILLISECONDS);
+            if (!connected) {
+                throw new IllegalStateException("zookeeper not connected");
+            }
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -227,12 +232,14 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
         try {
             TreeCache treeCache = TreeCache.newBuilder(client, path).setCacheData(false).build();
             treeCacheMap.putIfAbsent(path, treeCache);
-            treeCache.start();
+
             if (executor == null) {
                 treeCache.getListenable().addListener(treeCacheListener);
             } else {
                 treeCache.getListenable().addListener(treeCacheListener, executor);
             }
+
+            treeCache.start();
         } catch (Exception e) {
             throw new IllegalStateException("Add treeCache listener for path:" + path, e);
         }
@@ -292,8 +299,8 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
         @Override
         public void childEvent(CuratorFramework client, TreeCacheEvent event) throws Exception {
             if (dataListener != null) {
-                if (logger.isInfoEnabled()) {
-                    logger.info("listen the zookeeper changed. The changed data:" + event.getData());
+                if (logger.isDebugEnabled()) {
+                    logger.debug("listen the zookeeper changed. The changed data:" + event.getData());
                 }
                 TreeCacheEvent.Type type = event.getType();
                 EventType eventType = null;

@@ -447,8 +447,17 @@ public class JEtcdClient extends AbstractEtcdClient<JEtcdClient.EtcdWatcher> {
             if (this.watchRequest == null) {
                 return;
             }
-            this.watchRequest.onCompleted();
-            this.watchRequest = null;
+
+            try {
+                WatchCancelRequest watchCancelRequest =
+                        WatchCancelRequest.newBuilder().setWatchId(watchId).build();
+                WatchRequest cancelRequest = WatchRequest.newBuilder()
+                        .setCancelRequest(watchCancelRequest).build();
+                watchRequest.onNext(cancelRequest);
+            } finally {
+                this.watchRequest.onCompleted();
+                this.watchRequest = null;
+            }
         }
 
         @Override

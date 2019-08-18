@@ -68,9 +68,9 @@ class CallbackServiceCodec {
         if (url != null) {
             String callback = url.getParameter(methodName + "." + argIndex + ".callback");
             if (callback != null) {
-                if (callback.equalsIgnoreCase("true")) {
+                if ("true".equalsIgnoreCase(callback)) {
                     isCallback = CALLBACK_CREATE;
-                } else if (callback.equalsIgnoreCase("false")) {
+                } else if ("false".equalsIgnoreCase(callback)) {
                     isCallback = CALLBACK_DESTROY;
                 }
             }

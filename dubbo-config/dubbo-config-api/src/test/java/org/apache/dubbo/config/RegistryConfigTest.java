@@ -17,14 +17,15 @@
 
 package org.apache.dubbo.config;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.apache.dubbo.config.Constants.SHUTDOWN_TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
+import static org.apache.dubbo.config.Constants.SHUTDOWN_TIMEOUT_KEY;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -175,6 +176,15 @@ public class RegistryConfigTest {
         RegistryConfig registry = new RegistryConfig();
         registry.setDefault(true);
         assertThat(registry.isDefault(), is(true));
+    }
+
+    @Test
+    public void testEquals() throws Exception {
+        RegistryConfig registry1 = new RegistryConfig();
+        RegistryConfig registry2 = new RegistryConfig();
+        registry1.setAddress("zookeeper://127.0.0.1:2182");
+        registry2.setAddress("zookeeper://127.0.0.1:2183");
+        Assertions.assertNotEquals(registry1, registry2);
     }
 
 }
