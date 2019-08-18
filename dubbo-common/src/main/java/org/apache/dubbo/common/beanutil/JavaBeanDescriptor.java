@@ -24,21 +24,18 @@ import java.util.Map;
 
 public final class JavaBeanDescriptor implements Serializable, Iterable<Map.Entry<Object, Object>> {
 
+    private static final long serialVersionUID = -8505586483570518029L;
+
     public static final int TYPE_CLASS = 1;
     public static final int TYPE_ENUM = 2;
     public static final int TYPE_COLLECTION = 3;
     public static final int TYPE_MAP = 4;
     public static final int TYPE_ARRAY = 5;
-    /**
-     * @see org.apache.dubbo.common.utils.ReflectUtils#isPrimitive(Class)
-     */
     public static final int TYPE_PRIMITIVE = 6;
     public static final int TYPE_BEAN = 7;
-    private static final long serialVersionUID = -8505586483570518029L;
+
     private static final String ENUM_PROPERTY_NAME = "name";
-
     private static final String CLASS_PROPERTY_NAME = "name";
-
     private static final String PRIMITIVE_PROPERTY_VALUE = "value";
 
     /**
@@ -47,7 +44,6 @@ public final class JavaBeanDescriptor implements Serializable, Iterable<Map.Entr
      * @see #isValidType(int)
      */
     private static final int TYPE_MAX = TYPE_BEAN;
-
     /**
      * Used to define a type is valid.
      *
@@ -56,16 +52,14 @@ public final class JavaBeanDescriptor implements Serializable, Iterable<Map.Entr
     private static final int TYPE_MIN = TYPE_CLASS;
 
     private String className;
-
     private int type;
 
-    private Map<Object, Object> properties = new LinkedHashMap<Object, Object>();
+    private Map<Object, Object> properties = new LinkedHashMap<>();
 
-    public JavaBeanDescriptor() {
-    }
+    public JavaBeanDescriptor() {}
 
     public JavaBeanDescriptor(String className, int type) {
-        notEmpty(className, "class name is empty");
+        notEmpty(className);
         if (!isValidType(type)) {
             throw new IllegalArgumentException("type [ " + type + " ] is unsupported");
         }
@@ -119,10 +113,8 @@ public final class JavaBeanDescriptor implements Serializable, Iterable<Map.Entr
     }
 
     public Object setProperty(Object propertyName, Object propertyValue) {
-        notNull(propertyName, "Property name is null");
-
-        Object oldValue = properties.put(propertyName, propertyValue);
-        return oldValue;
+        notNull(propertyName);
+        return properties.put(propertyName, propertyValue);
     }
 
     public String setEnumNameProperty(String name) {
@@ -172,13 +164,12 @@ public final class JavaBeanDescriptor implements Serializable, Iterable<Map.Entr
     }
 
     public Object getProperty(Object propertyName) {
-        notNull(propertyName, "Property name is null");
-        Object propertyValue = properties.get(propertyName);
-        return propertyValue;
+        notNull(propertyName);
+        return properties.get(propertyName);
     }
 
     public boolean containsProperty(Object propertyName) {
-        notNull(propertyName, "Property name is null");
+        notNull(propertyName);
         return properties.containsKey(propertyName);
     }
 
@@ -195,15 +186,15 @@ public final class JavaBeanDescriptor implements Serializable, Iterable<Map.Entr
         return TYPE_MIN <= type && type <= TYPE_MAX;
     }
 
-    private void notNull(Object obj, String message) {
+    private void notNull(Object obj) {
         if (obj == null) {
-            throw new IllegalArgumentException(message);
+            throw new IllegalArgumentException("Property name is null");
         }
     }
 
-    private void notEmpty(String string, String message) {
+    private void notEmpty(String string) {
         if (isEmpty(string)) {
-            throw new IllegalArgumentException(message);
+            throw new IllegalArgumentException("class name is empty");
         }
     }
 
