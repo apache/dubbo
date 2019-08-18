@@ -31,9 +31,6 @@ public final class JavaBeanDescriptor implements Serializable, Iterable<Map.Entr
     public static final int TYPE_COLLECTION = 3;
     public static final int TYPE_MAP = 4;
     public static final int TYPE_ARRAY = 5;
-    /**
-     * @see org.apache.dubbo.common.utils.ReflectUtils#isPrimitive(Class)
-     */
     public static final int TYPE_PRIMITIVE = 6;
     public static final int TYPE_BEAN = 7;
 
@@ -62,7 +59,7 @@ public final class JavaBeanDescriptor implements Serializable, Iterable<Map.Entr
     public JavaBeanDescriptor() {}
 
     public JavaBeanDescriptor(String className, int type) {
-        notEmpty(className, "class name is empty");
+        notEmpty(className);
         if (!isValidType(type)) {
             throw new IllegalArgumentException("type [ " + type + " ] is unsupported");
         }
@@ -172,7 +169,7 @@ public final class JavaBeanDescriptor implements Serializable, Iterable<Map.Entr
     }
 
     public boolean containsProperty(Object propertyName) {
-        notNull(propertyName, "Property name is null");
+        notNull(propertyName);
         return properties.containsKey(propertyName);
     }
 
@@ -189,15 +186,15 @@ public final class JavaBeanDescriptor implements Serializable, Iterable<Map.Entr
         return TYPE_MIN <= type && type <= TYPE_MAX;
     }
 
-    private void notNull(Object obj, String message) {
+    private void notNull(Object obj) {
         if (obj == null) {
-            throw new IllegalArgumentException(message);
+            throw new IllegalArgumentException("Property name is null");
         }
     }
 
-    private void notEmpty(String string, String message) {
+    private void notEmpty(String string) {
         if (isEmpty(string)) {
-            throw new IllegalArgumentException(message);
+            throw new IllegalArgumentException("class name is empty");
         }
     }
 
