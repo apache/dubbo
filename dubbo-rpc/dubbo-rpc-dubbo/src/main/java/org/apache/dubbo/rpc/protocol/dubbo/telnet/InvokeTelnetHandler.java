@@ -27,14 +27,13 @@ import org.apache.dubbo.remoting.telnet.support.Help;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ProviderMethodModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
+import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
 import com.alibaba.fastjson.JSON;
-import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
