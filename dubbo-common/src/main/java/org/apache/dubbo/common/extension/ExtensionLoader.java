@@ -80,8 +80,6 @@ public class ExtensionLoader<T> {
 
     private static final ConcurrentMap<Class<?>, Object> EXTENSION_INSTANCES = new ConcurrentHashMap<>();
 
-    // ==============================
-
     private final Class<?> type;
 
     private final ExtensionFactory objectFactory;
