@@ -23,12 +23,16 @@ import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.service.EchoService;
 
+import org.apache.dubbo.rpc.service.GenericService;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class RmiProtocolTest {
     private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
@@ -51,8 +55,8 @@ public class RmiProtocolTest {
             try {
                 service.throwTimeout();
             } catch (RpcException e) {
-                assertEquals(true, e.isTimeout());
-                assertEquals(true, e.getMessage().contains("Read timed out"));
+                assertTrue(e.isTimeout());
+                assertTrue(e.getMessage().contains("Read timed out"));
             }
         } finally {
             rpcExporter.unexport();
@@ -115,7 +119,20 @@ public class RmiProtocolTest {
         rpcExporter.unexport();
     }
 
-    public static interface NonStdRmiInterface {
+    @Test
+    public void testGenericInvoke() {
+        DemoService service = new DemoServiceImpl();
+        URL url = URL.valueOf("rmi://127.0.0.1:9003/" + DemoService.class.getName() + "?release=2.7.0");
+        Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(service, DemoService.class, url));
+        Invoker<GenericService> invoker = protocol.refer(GenericService.class, url);
+        GenericService client = proxy.getProxy(invoker, true);
+        String result = (String) client.$invoke("sayHi", new String[]{"java.lang.String"}, new Object[]{"haha"});
+        Assertions.assertEquals("Hi, haha", result);
+        invoker.destroy();
+        exporter.unexport();
+    }
+
+    public interface NonStdRmiInterface {
         void bark();
     }
 

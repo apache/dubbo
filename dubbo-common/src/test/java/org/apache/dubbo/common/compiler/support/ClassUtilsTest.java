@@ -104,7 +104,7 @@ public class ClassUtilsTest {
         Assertions.assertEquals(Float.valueOf((float) 0), ClassUtils.boxed((float) 0));
         Assertions.assertEquals(Double.valueOf((double) 0), ClassUtils.boxed((double) 0));
 
-        Assertions.assertEquals(true, ClassUtils.unboxed(Boolean.valueOf(true)));
+        Assertions.assertTrue(ClassUtils.unboxed(Boolean.valueOf(true)));
         Assertions.assertEquals('0', ClassUtils.unboxed(Character.valueOf('0')));
         Assertions.assertEquals((byte) 0, ClassUtils.unboxed(Byte.valueOf((byte) 0)));
         Assertions.assertEquals((short) 0, ClassUtils.unboxed(Short.valueOf((short) 0)));
@@ -145,6 +145,13 @@ public class ClassUtilsTest {
     @Test
     public void testGetSizeMethod() {
         Assertions.assertEquals("getLength()", ClassUtils.getSizeMethod(GenericClass3.class));
+    }
+    
+    @Test
+    public void testGetSimpleClassName() {
+        Assertions.assertNull(ClassUtils.getSimpleClassName(null));
+        Assertions.assertEquals("Map", ClassUtils.getSimpleClassName(Map.class.getName()));
+        Assertions.assertEquals("Map", ClassUtils.getSimpleClassName(Map.class.getSimpleName()));
     }
 
     private interface GenericInterface<T> {

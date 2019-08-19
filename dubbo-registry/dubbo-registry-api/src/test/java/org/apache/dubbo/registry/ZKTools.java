@@ -30,6 +30,7 @@ import org.apache.curator.framework.recipes.cache.TreeCacheEvent;
 import org.apache.curator.framework.recipes.cache.TreeCacheListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -70,7 +71,7 @@ public class ZKTools {
     public static void testStartupConfig() {
         String str = "dubbo.registry.address=zookeeper://127.0.0.1:2181\n" +
                 "dubbo.registry.group=dubboregistrygroup1\n" +
-                "dubbo.metadatareport.address=zookeeper://127.0.0.1:2181\n" +
+                "dubbo.metadata-report.address=zookeeper://127.0.0.1:2181\n" +
                 "dubbo.protocol.port=20990\n" +
                 "dubbo.service.org.apache.dubbo.demo.DemoService.timeout=9999\n";
 
@@ -233,7 +234,7 @@ public class ZKTools {
 
                 if (data.getPath().split("/").length == 5) {
                     byte[] value = data.getData();
-                    String stringValue = new String(value, "utf-8");
+                    String stringValue = new String(value, StandardCharsets.UTF_8);
 
                     // fire event to all listeners
                     Map<String, Object> added = null;

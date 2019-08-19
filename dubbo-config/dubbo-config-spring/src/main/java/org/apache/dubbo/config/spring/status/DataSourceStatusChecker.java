@@ -31,6 +31,8 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * DataSourceStatusChecker
@@ -41,21 +43,16 @@ public class DataSourceStatusChecker implements StatusChecker {
     private static final Logger logger = LoggerFactory.getLogger(DataSourceStatusChecker.class);
 
     @Override
-    @SuppressWarnings("unchecked")
     public Status check() {
-        ApplicationContext context = null;
-        for (ApplicationContext c : SpringExtensionFactory.getContexts()) {
-            if (c != null) {
-                context = c;
-                break;
-            }
-        }
+        Optional<ApplicationContext> context =
+                SpringExtensionFactory.getContexts().stream().filter(Objects::nonNull).findFirst();
 
-        if (context == null) {
+        if (!context.isPresent()) {
             return new Status(Status.Level.UNKNOWN);
         }
 
-        Map<String, DataSource> dataSources = context.getBeansOfType(DataSource.class, false, false);
+        Map<String, DataSource> dataSources =
+                context.get().getBeansOfType(DataSource.class, false, false);
         if (CollectionUtils.isEmptyMap(dataSources)) {
             return new Status(Status.Level.UNKNOWN);
         }
@@ -67,27 +64,20 @@ public class DataSourceStatusChecker implements StatusChecker {
                 buf.append(", ");
             }
             buf.append(entry.getKey());
-            try {
-                Connection connection = dataSource.getConnection();
-                try {
-                    DatabaseMetaData metaData = connection.getMetaData();
-                    ResultSet resultSet = metaData.getTypeInfo();
-                    try {
-                        if (!resultSet.next()) {
-                            level = Status.Level.ERROR;
-                        }
-                    } finally {
-                        resultSet.close();
+
+            try (Connection connection = dataSource.getConnection()) {
+                DatabaseMetaData metaData = connection.getMetaData();
+                try (ResultSet resultSet = metaData.getTypeInfo()) {
+                    if (!resultSet.next()) {
+                        level = Status.Level.ERROR;
                     }
-                    buf.append(metaData.getURL());
-                    buf.append("(");
-                    buf.append(metaData.getDatabaseProductName());
-                    buf.append("-");
-                    buf.append(metaData.getDatabaseProductVersion());
-                    buf.append(")");
-                } finally {
-                    connection.close();
                 }
+                buf.append(metaData.getURL());
+                buf.append("(");
+                buf.append(metaData.getDatabaseProductName());
+                buf.append("-");
+                buf.append(metaData.getDatabaseProductVersion());
+                buf.append(")");
             } catch (Throwable e) {
                 logger.warn(e.getMessage(), e);
                 return new Status(level, e.getMessage());

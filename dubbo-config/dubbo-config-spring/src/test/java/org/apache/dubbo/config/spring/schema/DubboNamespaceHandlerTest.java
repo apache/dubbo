@@ -21,17 +21,19 @@ import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.spring.ConfigTest;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.impl.DemoServiceImpl;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import java.io.IOException;
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -40,6 +42,16 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class DubboNamespaceHandlerTest {
+    @BeforeEach
+    public void setUp() {
+        ConfigManager.getInstance().clear();
+    }
+
+    @AfterEach
+    public void tearDown() {
+        ConfigManager.getInstance().clear();
+    }
+
     @Test
     public void testProviderXml() {
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/demo-provider.xml");
@@ -99,7 +111,7 @@ public class DubboNamespaceHandlerTest {
 
     @Test
     public void testDelayFixedTime() {
-        ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/delay-fixed-time.xml");
+        ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext("classpath:/" + ConfigTest.class.getPackage().getName().replace('.', '/') + "/delay-fixed-time.xml");
         ctx.start();
 
         assertThat(ctx.getBean(ServiceBean.class).getDelay(), is(300));

@@ -18,7 +18,6 @@
  */
 package org.apache.dubbo.rpc.service;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.beanutil.JavaBeanAccessor;
 import org.apache.dubbo.common.beanutil.JavaBeanDescriptor;
 import org.apache.dubbo.common.beanutil.JavaBeanSerializeUtil;
@@ -42,6 +41,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+
+import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_NATIVE_JAVA;
+import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_BEAN;
 
 /**
  * GenericServiceTest
@@ -151,7 +153,7 @@ public class GenericServiceTest {
             reference.setApplication(new ApplicationConfig("generic-consumer"));
             reference.setInterface(DemoService.class);
             reference.setUrl("dubbo://127.0.0.1:29581?scope=remote&timeout=3000");
-            reference.setGeneric(Constants.GENERIC_SERIALIZATION_NATIVE_JAVA);
+            reference.setGeneric(GENERIC_SERIALIZATION_NATIVE_JAVA);
             GenericService genericService = reference.get();
             try {
                 String name = "kimi";
@@ -220,7 +222,7 @@ public class GenericServiceTest {
             reference.setApplication(new ApplicationConfig("bean-consumer"));
             reference.setInterface(DemoService.class);
             reference.setUrl("dubbo://127.0.0.1:29581?scope=remote&timeout=3000");
-            reference.setGeneric(Constants.GENERIC_SERIALIZATION_BEAN);
+            reference.setGeneric(GENERIC_SERIALIZATION_BEAN);
             GenericService genericService = reference.get();
             User user = new User();
             user.setName("zhangsan");

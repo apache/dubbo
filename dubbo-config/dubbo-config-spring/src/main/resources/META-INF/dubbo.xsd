@@ -172,6 +172,12 @@
                             <![CDATA[ Defines the service visibility, choise:[local remote]. default is remote, which can be invoked by network。  ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
+                <xsd:attribute name="tag" type="xsd:string">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            <![CDATA[ Defines the service tag]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
@@ -315,12 +321,6 @@
                 <xsd:attribute name="serialization" type="xsd:string">
                     <xsd:annotation>
                         <xsd:documentation><![CDATA[ The serialization protocol of service. ]]></xsd:documentation>
-                    </xsd:annotation>
-                </xsd:attribute>
-                <xsd:attribute name="tag" type="xsd:string">
-                    <xsd:annotation>
-                        <xsd:documentation>
-                            <![CDATA[ Defines the service tag]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
                 <xsd:anyAttribute namespace="##other" processContents="lax"/>
@@ -559,16 +559,16 @@
                 <xsd:documentation><![CDATA[ Is default. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-        <!--<xsd:attribute name="simple" type="xsd:boolean">-->
-            <!--<xsd:annotation>-->
-                <!--<xsd:documentation><![CDATA[ Is simple. ]]></xsd:documentation>-->
-            <!--</xsd:annotation>-->
-        <!--</xsd:attribute>-->
-        <!--<xsd:attribute name="plusparamkeys" type="xsd:string">-->
-            <!--<xsd:annotation>-->
-                <!--<xsd:documentation><![CDATA[ Addtional Parameter Keys. ]]></xsd:documentation>-->
-            <!--</xsd:annotation>-->
-        <!--</xsd:attribute>-->
+        <xsd:attribute name="simplified" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Is simple. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="extra-keys" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Extra Parameter Keys. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
     </xsd:complexType>
 
     <xsd:complexType name="metadataReportType">
@@ -600,6 +600,37 @@
                 <xsd:documentation><![CDATA[ The request timeout. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="group" type="xsd:string" use="optional">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The group of metadata-report. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+
+        <xsd:attribute name="retry-times" type="xsd:integer" use="optional">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ if fail, retry times. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="retry-period" type="xsd:integer" use="optional">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ if fail, retry period. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="cycle-report" type="xsd:boolean" use="optional">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ report cyclely. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="sync-report" type="xsd:boolean" use="optional">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Sync or Async report. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="cluster" type="xsd:boolean" use="optional">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Need cluster support, default false. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
     </xsd:complexType>
 
     <xsd:complexType name="configCenterType">
@@ -618,18 +649,19 @@
         </xsd:attribute>
         <xsd:attribute name="cluster" type="xsd:string" use="optional">
             <xsd:annotation>
-                <xsd:documentation><![CDATA[ The config center cluster. ]]></xsd:documentation>
+                <xsd:documentation><![CDATA[ The config center cluster, it's real meaning may very on different Config Center products. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="namespace" type="xsd:string" use="optional">
             <xsd:annotation>
                 <xsd:documentation>
-                    <![CDATA[ The group of the config center, an isolated space for config items in the same config center. ]]></xsd:documentation>
+                    <![CDATA[ The namespace of the config center, generally it's used for multi-tenant, but it's real meaning depends on the actual Config Center you use. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-        <xsd:attribute name="app-name" type="xsd:string" use="optional">
+        <xsd:attribute name="group" type="xsd:string" use="optional">
             <xsd:annotation>
-                <xsd:documentation><![CDATA[ The group of the config center. ]]></xsd:documentation>
+                <xsd:documentation>
+                    <![CDATA[ The group of the config center, generally it's used to identify an isolated space for a batch of config items, but it's real meaning depends on the actual Config Center you use. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="config-file" type="xsd:string" use="optional">
@@ -663,7 +695,7 @@
                     <![CDATA[ Whether the configs from config center has the highest priority. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-        <xsd:attribute name="from-spring" type="xsd:boolean" use="optional">
+        <xsd:attribute name="include-spring-env" type="xsd:boolean" use="optional">
             <xsd:annotation>
                 <xsd:documentation>
                     <![CDATA[ Load the config items by Dubbo itself or Spring. ]]></xsd:documentation>
@@ -737,6 +769,19 @@
         <xsd:attribute name="hide" type="xsd:boolean">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ Hide parameter. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="metricsType">
+        <xsd:attribute name="port" type="xsd:string" use="required">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The metrics service port. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="protocol" type="xsd:string" use="required">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The metrics service protocol. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
     </xsd:complexType>
@@ -863,6 +908,12 @@
                 <xsd:attribute name="queues" type="xsd:string">
                     <xsd:annotation>
                         <xsd:documentation><![CDATA[ The thread pool queue size. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+                <xsd:attribute name="shareconnections" type="xsd:string">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            <![CDATA[ The default share connections. default share one connection. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
                 <xsd:anyAttribute namespace="##other" processContents="lax"/>
@@ -1336,15 +1387,25 @@
         </xsd:annotation>
     </xsd:element>
 
-    <xsd:element name="metadata" type="metadataReportType">
+    <xsd:element name="metadata-report" type="metadataReportType">
         <xsd:annotation>
             <xsd:documentation><![CDATA[ The metadataReport config ]]></xsd:documentation>
+            <xsd:appinfo>
+                <tool:annotation>
+                    <tool:exports type="org.apache.dubbo.config.MetadataReportConfig"/>
+                </tool:annotation>
+            </xsd:appinfo>
         </xsd:annotation>
     </xsd:element>
 
     <xsd:element name="config-center" type="configCenterType">
         <xsd:annotation>
             <xsd:documentation><![CDATA[ The config center config ]]></xsd:documentation>
+            <xsd:appinfo>
+                <tool:annotation>
+                    <tool:exports type="org.apache.dubbo.config.ConfigCenterConfig"/>
+                </tool:annotation>
+            </xsd:appinfo>
         </xsd:annotation>
     </xsd:element>
 
@@ -1439,6 +1500,17 @@
     <xsd:element name="parameter" type="parameterType">
         <xsd:annotation>
             <xsd:documentation><![CDATA[ The service url parameter ]]></xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="metrics" type="metricsType">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[ The metrics service ]]></xsd:documentation>
+            <xsd:appinfo>
+                <tool:annotation>
+                    <tool:exports type="org.apache.dubbo.config.MetricsConfig"/>
+                </tool:annotation>
+            </xsd:appinfo>
         </xsd:annotation>
     </xsd:element>
 

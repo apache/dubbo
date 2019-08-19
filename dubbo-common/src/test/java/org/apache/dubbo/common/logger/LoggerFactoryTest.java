@@ -58,4 +58,12 @@ public class LoggerFactoryTest {
 
         assertThat(logger1, is(logger2));
     }
+
+    @Test
+    public void shouldReturnSameLogger() {
+        Logger logger1 = LoggerFactory.getLogger(this.getClass().getName());
+        Logger logger2 = LoggerFactory.getLogger(this.getClass().getName());
+
+        assertThat(logger1, is(logger2));
+    }
 }

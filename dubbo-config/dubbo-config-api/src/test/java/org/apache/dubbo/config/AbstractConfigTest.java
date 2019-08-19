@@ -17,6 +17,7 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.config.Environment;
+import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.config.api.Greeting;
 import org.apache.dubbo.config.support.Parameter;
 
@@ -28,9 +29,11 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -304,7 +307,7 @@ public class AbstractConfigTest {
 
             System.setProperty("dubbo.override.address", "system://127.0.0.1:2181");
             System.setProperty("dubbo.override.protocol", "system");
-            // this will not override, use 'key' instread, @Parameter(key="key1", useKeyAsProperty=false)
+            // this will not override, use 'key' instead, @Parameter(key="key1", useKeyAsProperty=false)
             System.setProperty("dubbo.override.key1", "system");
             System.setProperty("dubbo.override.key2", "system");
 
@@ -353,13 +356,17 @@ public class AbstractConfigTest {
     }
 
     @Test
-    public void testRefreshProperties() {
+    public void testRefreshProperties() throws Exception{
         try {
             Environment.getInstance().setExternalConfigMap(new HashMap<>());
             OverrideConfig overrideConfig = new OverrideConfig();
             overrideConfig.setAddress("override-config://127.0.0.1:2181");
             overrideConfig.setProtocol("override-config");
             overrideConfig.setEscape("override-config://");
+
+            Properties properties = new Properties();
+            properties.load(this.getClass().getResourceAsStream("/dubbo.properties"));
+            ConfigUtils.setProperties(properties);
 
             overrideConfig.refresh();
 
@@ -369,6 +376,7 @@ public class AbstractConfigTest {
             //Assertions.assertEquals("properties", overrideConfig.getUseKeyAsProperty());
         } finally {
             Environment.getInstance().clearExternalConfigs();
+            ConfigUtils.setProperties(null);
         }
     }
 
@@ -407,7 +415,7 @@ public class AbstractConfigTest {
     }
 
     @Test
-    public void testRefreshId() {
+    public void testRefreshById() {
         try {
             OverrideConfig overrideConfig = new OverrideConfig();
             overrideConfig.setId("override-id");
@@ -428,8 +436,7 @@ public class AbstractConfigTest {
             Environment.getInstance().setExternalConfigMap(external);
 
             ConfigCenterConfig configCenter = new ConfigCenterConfig();
-            configCenter.init();
-
+            overrideConfig.setConfigCenter(configCenter);
             // Load configuration from  system properties -> externalConfiguration -> RegistryConfig -> dubbo.properties
             overrideConfig.refresh();
 
@@ -440,6 +447,37 @@ public class AbstractConfigTest {
             Assertions.assertEquals("external", overrideConfig.getUseKeyAsProperty());
         } finally {
             Environment.getInstance().clearExternalConfigs();
+        }
+    }
+
+    @Test
+    public void testOnlyPrefixedKeyTakeEffect() {
+        try {
+            OverrideConfig overrideConfig = new OverrideConfig();
+            overrideConfig.setNotConflictKey("value-from-config");
+
+            Map<String, String> external = new HashMap<>();
+            external.put("notConflictKey", "value-from-external");
+
+            try {
+                Map<String, String> map = new HashMap<>();
+                map.put("notConflictKey", "value-from-env");
+                map.put("dubbo.override.notConflictKey2", "value-from-env");
+                setOsEnv(map);
+            } catch (Exception e) {
+                // ignore
+                e.printStackTrace();
+            }
+
+            Environment.getInstance().setExternalConfigMap(external);
+
+            overrideConfig.refresh();
+
+            Assertions.assertEquals("value-from-config", overrideConfig.getNotConflictKey());
+            Assertions.assertEquals("value-from-env", overrideConfig.getNotConflictKey2());
+        } finally {
+            Environment.getInstance().clearExternalConfigs();
+
         }
     }
 
@@ -461,6 +499,32 @@ public class AbstractConfigTest {
         Assertions.assertNull(metaData.get("key2"));
     }
 
+    @Test
+    public void testEquals() {
+        ApplicationConfig application1 = new ApplicationConfig();
+        ApplicationConfig application2 = new ApplicationConfig();
+        application1.setName("app1");
+        application2.setName("app2");
+        Assertions.assertNotEquals(application1, application2);
+        application1.setName("sameName");
+        application2.setName("sameName");
+        Assertions.assertEquals(application1, application2);
+
+        ProtocolConfig protocol1 = new ProtocolConfig();
+        protocol1.setHost("127.0.0.1");// excluded
+        protocol1.setName("dubbo");
+        ProtocolConfig protocol2 = new ProtocolConfig();
+        protocol2.setHost("127.0.0.2");// excluded
+        protocol2.setName("dubbo");
+        Assertions.assertEquals(protocol1, protocol2);
+    }
+
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.ANNOTATION_TYPE})
+    public @interface ConfigField {
+        String value() default "";
+    }
+
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.FIELD, ElementType.METHOD, ElementType.ANNOTATION_TYPE})
     public @interface Config {
@@ -473,15 +537,21 @@ public class AbstractConfigTest {
         String[] listener() default {};
 
         String[] parameters() default {};
+
+        ConfigField[] configFields() default {};
+
+        ConfigField configField() default @ConfigField;
     }
 
-    private static class OverrideConfig extends AbstractConfig {
+    private static class OverrideConfig extends AbstractInterfaceConfig {
         public String address;
         public String protocol;
         public String exclude;
         public String key;
         public String useKeyAsProperty;
         public String escape;
+        public String notConflictKey;
+        public String notConflictKey2;
 
         public String getAddress() {
             return address;
@@ -533,6 +603,22 @@ public class AbstractConfigTest {
 
         public void setEscape(String escape) {
             this.escape = escape;
+        }
+
+        public String getNotConflictKey() {
+            return notConflictKey;
+        }
+
+        public void setNotConflictKey(String notConflictKey) {
+            this.notConflictKey = notConflictKey;
+        }
+
+        public String getNotConflictKey2() {
+            return notConflictKey2;
+        }
+
+        public void setNotConflictKey2(String notConflictKey2) {
+            this.notConflictKey2 = notConflictKey2;
         }
     }
 
@@ -729,6 +815,7 @@ public class AbstractConfigTest {
         private String filter;
         private String listener;
         private Map<String, String> parameters;
+        private String[] configFields;
 
         public Class getInterface() {
             return interfaceClass;
@@ -760,6 +847,41 @@ public class AbstractConfigTest {
 
         public void setParameters(Map<String, String> parameters) {
             this.parameters = parameters;
+        }
+
+        public String[] getConfigFields() {
+            return configFields;
+        }
+
+        public void setConfigFields(String[] configFields) {
+            this.configFields = configFields;
+        }
+    }
+
+    protected static void setOsEnv(Map<String, String> newenv) throws Exception {
+        try {
+            Class<?> processEnvironmentClass = Class.forName("java.lang.ProcessEnvironment");
+            Field theEnvironmentField = processEnvironmentClass.getDeclaredField("theEnvironment");
+            theEnvironmentField.setAccessible(true);
+            Map<String, String> env = (Map<String, String>) theEnvironmentField.get(null);
+            env.putAll(newenv);
+            Field theCaseInsensitiveEnvironmentField = processEnvironmentClass.getDeclaredField("theCaseInsensitiveEnvironment");
+            theCaseInsensitiveEnvironmentField.setAccessible(true);
+            Map<String, String> cienv = (Map<String, String>) theCaseInsensitiveEnvironmentField.get(null);
+            cienv.putAll(newenv);
+        } catch (NoSuchFieldException e) {
+            Class[] classes = Collections.class.getDeclaredClasses();
+            Map<String, String> env = System.getenv();
+            for (Class cl : classes) {
+                if ("java.util.Collections$UnmodifiableMap".equals(cl.getName())) {
+                    Field field = cl.getDeclaredField("m");
+                    field.setAccessible(true);
+                    Object obj = field.get(env);
+                    Map<String, String> map = (Map<String, String>) obj;
+                    map.clear();
+                    map.putAll(newenv);
+                }
+            }
         }
     }
 }

@@ -29,35 +29,39 @@ public class ReconnectTimerTask extends AbstractTimerTask {
 
     private static final Logger logger = LoggerFactory.getLogger(ReconnectTimerTask.class);
 
-    private final int heartbeatTimeout;
+    private final int idleTimeout;
 
-    ReconnectTimerTask(ChannelProvider channelProvider, Long heartbeatTimeoutTick, int heartbeatTimeout1) {
+    public ReconnectTimerTask(ChannelProvider channelProvider, Long heartbeatTimeoutTick, int idleTimeout) {
         super(channelProvider, heartbeatTimeoutTick);
-        this.heartbeatTimeout = heartbeatTimeout1;
+        this.idleTimeout = idleTimeout;
     }
 
     @Override
     protected void doTask(Channel channel) {
-        Long lastRead = lastRead(channel);
-        Long now = now();
-        if (lastRead != null && now - lastRead > heartbeatTimeout) {
-            if (channel instanceof Client) {
+        try {
+            Long lastRead = lastRead(channel);
+            Long now = now();
+
+            // Rely on reconnect timer to reconnect when AbstractClient.doConnect fails to init the connection
+            if (!channel.isConnected()) {
                 try {
-                    logger.warn("Reconnect to remote channel " + channel.getRemoteAddress() + ", because heartbeat read idle time out: "
-                            + heartbeatTimeout + "ms");
+                    logger.info("Initial connection to " + channel);
                     ((Client) channel).reconnect();
-                } catch (Throwable t) {
-                    // do nothing
+                } catch (Exception e) {
+                    logger.error("Fail to connect to " + channel, e);
                 }
-            } else {
+            // check pong at client
+            } else if (lastRead != null && now - lastRead > idleTimeout) {
+                logger.warn("Reconnect to channel " + channel + ", because heartbeat read idle time out: "
+                        + idleTimeout + "ms");
                 try {
-                    logger.warn("Close channel " + channel + ", because heartbeat read idle time out: "
-                            + heartbeatTimeout + "ms");
-                    channel.close();
-                } catch (Throwable t) {
-                    logger.warn("Exception when close channel " + channel, t);
+                    ((Client) channel).reconnect();
+                } catch (Exception e) {
+                    logger.error(channel + "reconnect failed during idle time.", e);
                 }
             }
+        } catch (Throwable t) {
+            logger.warn("Exception when reconnect to remote channel " + channel.getRemoteAddress(), t);
         }
     }
 }

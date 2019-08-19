@@ -16,14 +16,10 @@
  */
 package org.apache.dubbo.rpc;
 
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class AsyncContextImpl implements AsyncContext {
-    private static final Logger logger = LoggerFactory.getLogger(AsyncContextImpl.class);
 
     private final AtomicBoolean started = new AtomicBoolean(false);
     private final AtomicBoolean stopped = new AtomicBoolean(false);
@@ -34,10 +30,6 @@ public class AsyncContextImpl implements AsyncContext {
     private RpcContext storedServerContext;
 
     public AsyncContextImpl() {
-    }
-
-    public AsyncContextImpl(CompletableFuture<Object> future) {
-        this.future = future;
         this.storedContext = RpcContext.getContext();
         this.storedServerContext = RpcContext.getServerContext();
     }
@@ -68,7 +60,9 @@ public class AsyncContextImpl implements AsyncContext {
 
     @Override
     public void start() {
-        this.started.set(true);
+        if (this.started.compareAndSet(false, true)) {
+            this.future = new CompletableFuture<>();
+        }
     }
 
     @Override
@@ -78,8 +72,7 @@ public class AsyncContextImpl implements AsyncContext {
         // Restore any other contexts in here if necessary.
     }
 
-    @Override
-    public CompletableFuture getInternalFuture() {
+    public CompletableFuture<Object> getInternalFuture() {
         return future;
     }
 }

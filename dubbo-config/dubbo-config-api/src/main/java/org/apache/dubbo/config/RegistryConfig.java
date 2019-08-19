@@ -16,11 +16,20 @@
  */
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.remoting.Constants;
 
 import java.util.Map;
+
+import static org.apache.dubbo.common.constants.CommonConstants.FILE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PASSWORD_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.USERNAME_KEY;
+import static org.apache.dubbo.config.Constants.REGISTRIES_SUFFIX;
+import static org.apache.dubbo.config.Constants.ZOOKEEPER_PROTOCOL;
+import static org.apache.dubbo.registry.Constants.EXTRA_KEYS_KEY;
 
 /**
  * RegistryConfig
@@ -126,18 +135,19 @@ public class RegistryConfig extends AbstractConfig {
     private Boolean isDefault;
 
     /**
-     * Simple the registry.
+     * Simple the registry. both useful for provider and consumer
      *
      * @since 2.7.0
      */
-    private Boolean simple;
+    private Boolean simplified;
     /**
-     * After simplify the registry, should add some parameter individually.
-     * additionalParameterKeys = addParamKeys
+     * After simplify the registry, should add some paramter individually. just for provider.
+     * <p>
+     * such as: extra-keys = A,b,c,d
      *
      * @since 2.7.0
      */
-    private String addParamKeys;
+    private String extraKeys;
 
     public RegistryConfig() {
     }
@@ -156,7 +166,7 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     public void setProtocol(String protocol) {
-        checkName(Constants.PROTOCOL_KEY, protocol);
+        checkName(PROTOCOL_KEY, protocol);
         this.protocol = protocol;
         this.updateIdIfAbsent(protocol);
     }
@@ -172,6 +182,11 @@ public class RegistryConfig extends AbstractConfig {
             int i = address.indexOf("://");
             if (i > 0) {
                 this.updateIdIfAbsent(address.substring(0, i));
+                this.updateProtocolIfAbsent(address.substring(0, i));
+                int port = address.lastIndexOf(":");
+                if (port > 0) {
+                    this.updatePortIfAbsent(StringUtils.parseInteger(address.substring(port + 1)));
+                }
             }
         }
     }
@@ -189,7 +204,7 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     public void setUsername(String username) {
-        checkName("username", username);
+        checkName(USERNAME_KEY, username);
         this.username = username;
     }
 
@@ -198,7 +213,7 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     public void setPassword(String password) {
-        checkLength("password", password);
+        checkLength(PASSWORD_KEY, password);
         this.password = password;
     }
 
@@ -221,7 +236,7 @@ public class RegistryConfig extends AbstractConfig {
     public void setWait(Integer wait) {
         this.wait = wait;
         if (wait != null && wait > 0) {
-            System.setProperty(Constants.SHUTDOWN_WAIT_KEY, String.valueOf(wait));
+            System.setProperty(SHUTDOWN_WAIT_KEY, String.valueOf(wait));
         }
     }
 
@@ -238,7 +253,7 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     public void setFile(String file) {
-        checkPathLength("file", file);
+        checkPathLength(FILE_KEY, file);
         this.file = file;
     }
 
@@ -292,7 +307,7 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     public void setClient(String client) {
-        checkName("client", client);
+        checkName(Constants.CLIENT_KEY, client);
         /*if(client != null && client.length() > 0 && ! ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(client)){
             throw new IllegalStateException("No such client type : " + client);
         }*/
@@ -380,13 +395,39 @@ public class RegistryConfig extends AbstractConfig {
         this.isDefault = isDefault;
     }
 
+    public Boolean getSimplified() {
+        return simplified;
+    }
+
+    public void setSimplified(Boolean simplified) {
+        this.simplified = simplified;
+    }
+
+    @Parameter(key = EXTRA_KEYS_KEY)
+    public String getExtraKeys() {
+        return extraKeys;
+    }
+
+    public void setExtraKeys(String extraKeys) {
+        this.extraKeys = extraKeys;
+    }
+
     @Parameter(excluded = true)
     public boolean isZookeeperProtocol() {
         if (!isValid()) {
             return false;
         }
-        return Constants.ZOOKEEPER_PROTOCOL.equals(getProtocol())
-                || getAddress().startsWith(Constants.ZOOKEEPER_PROTOCOL);
+        return ZOOKEEPER_PROTOCOL.equals(getProtocol())
+                || getAddress().startsWith(ZOOKEEPER_PROTOCOL);
+    }
+
+    @Override
+    public void refresh() {
+        super.refresh();
+        if (StringUtils.isNotEmpty(this.getId())) {
+            this.setPrefix(REGISTRIES_SUFFIX);
+            super.refresh();
+        }
     }
 
     @Override
@@ -396,4 +437,15 @@ public class RegistryConfig extends AbstractConfig {
         return !StringUtils.isEmpty(address);
     }
 
+    protected void updatePortIfAbsent(Integer value) {
+        if (value != null && value > 0 && port == null) {
+            this.port = value;
+        }
+    }
+
+    protected void updateProtocolIfAbsent(String value) {
+        if (StringUtils.isNotEmpty(value) && StringUtils.isEmpty(protocol)) {
+            this.protocol = value;
+        }
+    }
 }

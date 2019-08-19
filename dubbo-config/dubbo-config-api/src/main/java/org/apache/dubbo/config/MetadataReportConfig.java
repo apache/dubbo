@@ -21,14 +21,23 @@ import org.apache.dubbo.config.support.Parameter;
 
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
+import static org.apache.dubbo.common.constants.CommonConstants.PROPERTIES_CHAR_SEPERATOR;
+
 /**
- * RegistryConfig
+ * MetadataReportConfig
  *
  * @export
  */
 public class MetadataReportConfig extends AbstractConfig {
 
     private static final long serialVersionUID = 55233L;
+    /**
+     * the value is : metadata-report
+     */
+    private static final String PREFIX_TAG = StringUtils.camelToSplitName(
+            MetadataReportConfig.class.getSimpleName().substring(0, MetadataReportConfig.class.getSimpleName().length() - 6), PROPERTIES_CHAR_SEPERATOR);
+
     // Register center address
     private String address;
 
@@ -40,6 +49,11 @@ public class MetadataReportConfig extends AbstractConfig {
 
     // Request timeout in milliseconds for register center
     private Integer timeout;
+
+    /**
+     * The group the metadata in . It is the same as registry
+     */
+    private String group;
 
     // Customized parameters
     private Map<String, String> parameters;
@@ -57,6 +71,11 @@ public class MetadataReportConfig extends AbstractConfig {
      */
     private Boolean syncReport;
 
+    /**
+     * cluster
+     */
+    private Boolean cluster;
+
     public MetadataReportConfig() {
     }
 
@@ -64,6 +83,7 @@ public class MetadataReportConfig extends AbstractConfig {
         setAddress(address);
     }
 
+    @Parameter(excluded = true)
     public String getAddress() {
         return address;
     }
@@ -104,6 +124,7 @@ public class MetadataReportConfig extends AbstractConfig {
         this.parameters = parameters;
     }
 
+    @Parameter(key = "retry-times")
     public Integer getRetryTimes() {
         return retryTimes;
     }
@@ -112,6 +133,7 @@ public class MetadataReportConfig extends AbstractConfig {
         this.retryTimes = retryTimes;
     }
 
+    @Parameter(key = "retry-period")
     public Integer getRetryPeriod() {
         return retryPeriod;
     }
@@ -120,6 +142,7 @@ public class MetadataReportConfig extends AbstractConfig {
         this.retryPeriod = retryPeriod;
     }
 
+    @Parameter(key = "cycle-report")
     public Boolean getCycleReport() {
         return cycleReport;
     }
@@ -128,17 +151,40 @@ public class MetadataReportConfig extends AbstractConfig {
         this.cycleReport = cycleReport;
     }
 
-    @Override
-    @Parameter(excluded = true)
-    public boolean isValid() {
-        return StringUtils.isNotEmpty(address);
-    }
-
+    @Parameter(key = "sync-report")
     public Boolean getSyncReport() {
         return syncReport;
     }
 
     public void setSyncReport(Boolean syncReport) {
         this.syncReport = syncReport;
+    }
+
+    @Override
+    @Parameter(excluded = true)
+    public String getPrefix() {
+        return StringUtils.isNotEmpty(prefix) ? prefix : (DUBBO + "." + PREFIX_TAG);
+    }
+
+    @Override
+    @Parameter(excluded = true)
+    public boolean isValid() {
+        return StringUtils.isNotEmpty(address);
+    }
+
+    public String getGroup() {
+        return group;
+    }
+
+    public void setGroup(String group) {
+        this.group = group;
+    }
+
+    public Boolean getCluster() {
+        return cluster;
+    }
+
+    public void setCluster(Boolean cluster) {
+        this.cluster = cluster;
     }
 }

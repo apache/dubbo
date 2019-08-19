@@ -39,38 +39,38 @@ public class ApplicationModel {
     /**
      * full qualified class name -> provided service
      */
-    private static final ConcurrentMap<String, ProviderModel> providedServices = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<String, ProviderModel> PROVIDED_SERVICES = new ConcurrentHashMap<>();
     /**
      * full qualified class name -> subscribe service
      */
-    private static final ConcurrentMap<String, ConsumerModel> consumedServices = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<String, ConsumerModel> CONSUMED_SERVICES = new ConcurrentHashMap<>();
 
     private static String application;
 
     public static Collection<ConsumerModel> allConsumerModels() {
-        return consumedServices.values();
+        return CONSUMED_SERVICES.values();
     }
 
     public static Collection<ProviderModel> allProviderModels() {
-        return providedServices.values();
+        return PROVIDED_SERVICES.values();
     }
 
     public static ProviderModel getProviderModel(String serviceName) {
-        return providedServices.get(serviceName);
+        return PROVIDED_SERVICES.get(serviceName);
     }
 
     public static ConsumerModel getConsumerModel(String serviceName) {
-        return consumedServices.get(serviceName);
+        return CONSUMED_SERVICES.get(serviceName);
     }
 
     public static void initConsumerModel(String serviceName, ConsumerModel consumerModel) {
-        if (consumedServices.putIfAbsent(serviceName, consumerModel) != null) {
+        if (CONSUMED_SERVICES.putIfAbsent(serviceName, consumerModel) != null) {
             LOGGER.warn("Already register the same consumer:" + serviceName);
         }
     }
 
     public static void initProviderModel(String serviceName, ProviderModel providerModel) {
-        if (providedServices.putIfAbsent(serviceName, providerModel) != null) {
+        if (PROVIDED_SERVICES.putIfAbsent(serviceName, providerModel) != null) {
             LOGGER.warn("Already register the same:" + serviceName);
         }
     }
@@ -87,7 +87,7 @@ public class ApplicationModel {
      * For unit test
      */
     public static void reset() {
-        providedServices.clear();
-        consumedServices.clear();
+        PROVIDED_SERVICES.clear();
+        CONSUMED_SERVICES.clear();
     }
 }

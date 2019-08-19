@@ -23,10 +23,14 @@ import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
+
+import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.PropertySource;
+
+import java.util.Map;
 
 /**
  * {@link EnableDubboConfig} Test
@@ -91,15 +95,23 @@ public class EnableDubboConfigTest {
         ApplicationConfig applicationBean3 = context.getBean("applicationBean3", ApplicationConfig.class);
         Assertions.assertEquals("dubbo-demo-application3", applicationBean3.getName());
 
+        Map<String, ProtocolConfig> protocolConfigs = context.getBeansOfType(ProtocolConfig.class);
+
+        for (Map.Entry<String, ProtocolConfig> entry : protocolConfigs.entrySet()) {
+            String beanName = entry.getKey();
+            ProtocolConfig protocol = entry.getValue();
+            Assert.assertEquals(beanName, protocol.getName());
+        }
+
     }
 
-    @EnableDubboConfig(multiple = true)
+    @EnableDubboConfig
     @PropertySource("META-INF/config.properties")
     private static class TestMultipleConfig {
 
     }
 
-    @EnableDubboConfig
+    @EnableDubboConfig(multiple = false)
     @PropertySource("META-INF/config.properties")
     private static class TestConfig {
 

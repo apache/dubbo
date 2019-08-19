@@ -17,6 +17,7 @@
 package org.apache.dubbo.config.spring.context.annotation.provider;
 
 import org.apache.dubbo.config.spring.api.HelloService;
+
 import org.springframework.stereotype.Service;
 
 /**

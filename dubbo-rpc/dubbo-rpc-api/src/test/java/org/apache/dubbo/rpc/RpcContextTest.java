@@ -17,12 +17,12 @@
 package org.apache.dubbo.rpc;
 
 import org.apache.dubbo.common.URL;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 public class RpcContextTest {
 
@@ -50,17 +50,17 @@ public class RpcContextTest {
     public void testAddress() {
         RpcContext context = RpcContext.getContext();
         context.setLocalAddress("127.0.0.1", 20880);
-        Assertions.assertTrue(context.getLocalAddress().getPort() == 20880);
+        Assertions.assertEquals(20880, context.getLocalAddress().getPort());
         Assertions.assertEquals("127.0.0.1:20880", context.getLocalAddressString());
 
         context.setRemoteAddress("127.0.0.1", 20880);
-        Assertions.assertTrue(context.getRemoteAddress().getPort() == 20880);
+        Assertions.assertEquals(20880, context.getRemoteAddress().getPort());
         Assertions.assertEquals("127.0.0.1:20880", context.getRemoteAddressString());
 
         context.setRemoteAddress("127.0.0.1", -1);
         context.setLocalAddress("127.0.0.1", -1);
-        Assertions.assertTrue(context.getRemoteAddress().getPort() == 0);
-        Assertions.assertTrue(context.getLocalAddress().getPort() == 0);
+        Assertions.assertEquals(0, context.getRemoteAddress().getPort());
+        Assertions.assertEquals(0, context.getLocalAddress().getPort());
         Assertions.assertEquals("127.0.0.1", context.getRemoteHostName());
         Assertions.assertEquals("127.0.0.1", context.getLocalHostName());
     }
@@ -142,20 +142,14 @@ public class RpcContextTest {
     @Test
     public void testAsync() {
 
-        CompletableFuture<Object> future = new CompletableFuture<>();
-        AsyncContext asyncContext = new AsyncContextImpl(future);
-
         RpcContext rpcContext = RpcContext.getContext();
         Assertions.assertFalse(rpcContext.isAsyncStarted());
 
-        rpcContext.setAsyncContext(asyncContext);
-        Assertions.assertFalse(rpcContext.isAsyncStarted());
-
-        RpcContext.startAsync();
+        AsyncContext asyncContext = RpcContext.startAsync();
         Assertions.assertTrue(rpcContext.isAsyncStarted());
 
         asyncContext.write(new Object());
-        Assertions.assertTrue(future.isDone());
+        Assertions.assertTrue(((AsyncContextImpl)asyncContext).getInternalFuture().isDone());
 
         rpcContext.stopAsync();
         Assertions.assertTrue(rpcContext.isAsyncStarted());

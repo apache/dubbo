@@ -20,12 +20,12 @@ import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConsumerConfig;
 import org.apache.dubbo.config.MetadataReportConfig;
+import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
-import org.apache.dubbo.config.RegistryDataConfig;
 import org.apache.dubbo.config.spring.ConfigCenterBean;
 
 import org.springframework.context.annotation.Configuration;
@@ -60,8 +60,8 @@ public class DubboConfigConfiguration {
             @EnableDubboConfigBinding(prefix = "dubbo.provider", type = ProviderConfig.class),
             @EnableDubboConfigBinding(prefix = "dubbo.consumer", type = ConsumerConfig.class),
             @EnableDubboConfigBinding(prefix = "dubbo.config-center", type = ConfigCenterBean.class),
-            @EnableDubboConfigBinding(prefix = "dubbo.registry-data", type = RegistryDataConfig.class),
-            @EnableDubboConfigBinding(prefix = "dubbo.metadata-report", type = MetadataReportConfig.class)
+            @EnableDubboConfigBinding(prefix = "dubbo.metadata-report", type = MetadataReportConfig.class),
+            @EnableDubboConfigBinding(prefix = "dubbo.metrics", type = MetricsConfig.class)
     })
     public static class Single {
 
@@ -78,7 +78,9 @@ public class DubboConfigConfiguration {
             @EnableDubboConfigBinding(prefix = "dubbo.monitors", type = MonitorConfig.class, multiple = true),
             @EnableDubboConfigBinding(prefix = "dubbo.providers", type = ProviderConfig.class, multiple = true),
             @EnableDubboConfigBinding(prefix = "dubbo.consumers", type = ConsumerConfig.class, multiple = true),
-            @EnableDubboConfigBinding(prefix = "dubbo.config-centers", type = ConfigCenterBean.class, multiple = true)
+            @EnableDubboConfigBinding(prefix = "dubbo.config-centers", type = ConfigCenterBean.class, multiple = true),
+            @EnableDubboConfigBinding(prefix = "dubbo.metadata-reports", type = MetadataReportConfig.class, multiple = true),
+            @EnableDubboConfigBinding(prefix = "dubbo.metricses", type = MetricsConfig.class, multiple = true)
     })
     public static class Multiple {
 

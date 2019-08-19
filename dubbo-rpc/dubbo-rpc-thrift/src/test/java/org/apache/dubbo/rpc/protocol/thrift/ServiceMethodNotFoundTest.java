@@ -20,7 +20,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.gen.dubbo.$__DemoStub;
 import org.apache.dubbo.rpc.gen.dubbo.Demo;
 import org.apache.dubbo.rpc.protocol.thrift.ext.MultiServiceProcessor;
-
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;

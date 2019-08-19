@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config.spring;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -48,9 +47,9 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.service.GenericException;
 import org.apache.dubbo.rpc.service.GenericService;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -58,19 +57,22 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import java.util.Collection;
 import java.util.List;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.matchers.JUnitMatchers.containsString;
+
+import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_BEAN;
+import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 
 
 /**
  * ConfigTest
  */
-@Disabled
+@Ignore
 public class ConfigTest {
 
     private static void unexportService(ServiceConfig<?> config) {
@@ -896,7 +898,7 @@ public class ConfigTest {
             service.setProtocol(protocol);
             service.export();
 
-            Assertions.assertEquals(port, service.getExportedUrls().get(0).getPort());
+            Assert.assertEquals(port, service.getExportedUrls().get(0).getPort());
         } finally {
             if (StringUtils.isNotEmpty(dubboPort)) {
                 System.setProperty("dubbo.protocol.dubbo.port", dubboPort);
@@ -940,7 +942,7 @@ public class ConfigTest {
             demoService.export();
             helloService.export();
 
-            Assertions.assertEquals(demoService.getExportedUrls().get(0).getPort(),
+            Assert.assertEquals(demoService.getExportedUrls().get(0).getPort(),
                     helloService.getExportedUrls().get(0).getPort());
         } finally {
             unexportService(demoService);
@@ -958,12 +960,7 @@ public class ConfigTest {
         sc.setApplication(ac);
         sc.setRegistry(rc);
         sc.setInterface(DemoService.class.getName());
-        sc.setRef(new GenericService() {
-
-            public Object $invoke(String method, String[] parameterTypes, Object[] args) throws GenericException {
-                return null;
-            }
-        });
+        sc.setRef((method, parameterTypes, args) -> null);
 
         ReferenceConfig<DemoService> ref = new ReferenceConfig<DemoService>();
         ref.setApplication(ac);
@@ -973,7 +970,7 @@ public class ConfigTest {
         try {
             sc.export();
             ref.get();
-            Assertions.fail();
+            Assert.fail();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -988,19 +985,14 @@ public class ConfigTest {
         service.setApplication(new ApplicationConfig("test"));
         service.setRegistry(new RegistryConfig("mock://localhost"));
         service.setInterface(DemoService.class.getName());
-        service.setGeneric(Constants.GENERIC_SERIALIZATION_BEAN);
-        service.setRef(new GenericService() {
-
-            public Object $invoke(String method, String[] parameterTypes, Object[] args) throws GenericException {
-                return null;
-            }
-        });
+        service.setGeneric(GENERIC_SERIALIZATION_BEAN);
+        service.setRef((method, parameterTypes, args) -> null);
         try {
             service.export();
             Collection<Registry> collection = MockRegistryFactory.getCachedRegistry();
             MockRegistry registry = (MockRegistry) collection.iterator().next();
             URL url = registry.getRegistered().get(0);
-            Assertions.assertEquals(Constants.GENERIC_SERIALIZATION_BEAN, url.getParameter(Constants.GENERIC_KEY));
+            Assert.assertEquals(GENERIC_SERIALIZATION_BEAN, url.getParameter(GENERIC_KEY));
         } finally {
             MockRegistryFactory.cleanCachedRegistry();
             service.unexport();
@@ -1014,7 +1006,7 @@ public class ConfigTest {
             ctx.start();
             ServiceConfig serviceConfig = (ServiceConfig) ctx.getBean("dubboDemoService");
             URL url = (URL) serviceConfig.getExportedUrls().get(0);
-            Assertions.assertEquals(Constants.GENERIC_SERIALIZATION_BEAN, url.getParameter(Constants.GENERIC_KEY));
+            Assert.assertEquals(GENERIC_SERIALIZATION_BEAN, url.getParameter(GENERIC_KEY));
         } finally {
             ctx.destroy();
         }
