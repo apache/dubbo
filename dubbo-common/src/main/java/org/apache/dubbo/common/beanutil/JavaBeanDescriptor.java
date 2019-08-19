@@ -31,6 +31,9 @@ public final class JavaBeanDescriptor implements Serializable, Iterable<Map.Entr
     public static final int TYPE_COLLECTION = 3;
     public static final int TYPE_MAP = 4;
     public static final int TYPE_ARRAY = 5;
+    /**
+     * @see org.apache.dubbo.common.utils.ReflectUtils#isPrimitive(Class)
+     */
     public static final int TYPE_PRIMITIVE = 6;
     public static final int TYPE_BEAN = 7;
 
@@ -59,7 +62,7 @@ public final class JavaBeanDescriptor implements Serializable, Iterable<Map.Entr
     public JavaBeanDescriptor() {}
 
     public JavaBeanDescriptor(String className, int type) {
-        notEmpty(className);
+        notEmpty(className, "class name is empty");
         if (!isValidType(type)) {
             throw new IllegalArgumentException("type [ " + type + " ] is unsupported");
         }
@@ -113,7 +116,7 @@ public final class JavaBeanDescriptor implements Serializable, Iterable<Map.Entr
     }
 
     public Object setProperty(Object propertyName, Object propertyValue) {
-        notNull(propertyName);
+        notNull(propertyName, "Property name is null");
         return properties.put(propertyName, propertyValue);
     }
 
@@ -164,12 +167,12 @@ public final class JavaBeanDescriptor implements Serializable, Iterable<Map.Entr
     }
 
     public Object getProperty(Object propertyName) {
-        notNull(propertyName);
+        notNull(propertyName, "Property name is null");
         return properties.get(propertyName);
     }
 
     public boolean containsProperty(Object propertyName) {
-        notNull(propertyName);
+        notNull(propertyName, "Property name is null");
         return properties.containsKey(propertyName);
     }
 
@@ -186,15 +189,15 @@ public final class JavaBeanDescriptor implements Serializable, Iterable<Map.Entr
         return TYPE_MIN <= type && type <= TYPE_MAX;
     }
 
-    private void notNull(Object obj) {
+    private void notNull(Object obj, String message) {
         if (obj == null) {
-            throw new IllegalArgumentException("Property name is null");
+            throw new IllegalArgumentException(message);
         }
     }
 
-    private void notEmpty(String string) {
+    private void notEmpty(String string, String message) {
         if (isEmpty(string)) {
-            throw new IllegalArgumentException("class name is empty");
+            throw new IllegalArgumentException(message);
         }
     }
 
