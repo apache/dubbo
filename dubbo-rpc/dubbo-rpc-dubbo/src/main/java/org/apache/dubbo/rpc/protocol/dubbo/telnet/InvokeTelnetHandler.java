@@ -129,7 +129,7 @@ public class InvokeTelnetHandler implements TelnetHandler {
                 try {
                     Invoker<?> invoker = findInvoker(selectedProvider);
                     if (invoker == null) {
-                        return "No invoker found for service: " + selectedProvider.getServiceName();
+                        return "No invoker found (dubbo protocol required) for service: " + selectedProvider.getServiceName();
                     }
 
                     Object[] array = realize(list.toArray(), invokeMethod.getParameterTypes(),
