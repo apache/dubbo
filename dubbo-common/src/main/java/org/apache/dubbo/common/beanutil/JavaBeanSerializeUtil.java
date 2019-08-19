@@ -62,8 +62,7 @@ public final class JavaBeanSerializeUtil {
     }
 
     public static JavaBeanDescriptor serialize(Object obj) {
-        JavaBeanDescriptor result = serialize(obj, JavaBeanAccessor.FIELD);
-        return result;
+        return serialize(obj, JavaBeanAccessor.FIELD);
     }
 
     public static JavaBeanDescriptor serialize(Object obj, JavaBeanAccessor accessor) {
@@ -74,8 +73,7 @@ public final class JavaBeanSerializeUtil {
             return (JavaBeanDescriptor) obj;
         }
         IdentityHashMap<Object, JavaBeanDescriptor> cache = new IdentityHashMap<Object, JavaBeanDescriptor>();
-        JavaBeanDescriptor result = createDescriptorIfAbsent(obj, accessor, cache);
-        return result;
+        return createDescriptorIfAbsent(obj, accessor, cache);
     }
 
     private static JavaBeanDescriptor createDescriptorForSerialize(Class<?> cl) {
@@ -189,10 +187,9 @@ public final class JavaBeanSerializeUtil {
     } // ~ end of method serializeInternal
 
     public static Object deserialize(JavaBeanDescriptor beanDescriptor) {
-        Object result = deserialize(
+        return deserialize(
                 beanDescriptor,
                 Thread.currentThread().getContextClassLoader());
-        return result;
     }
 
     public static Object deserialize(JavaBeanDescriptor beanDescriptor, ClassLoader loader) {
@@ -331,11 +328,7 @@ public final class JavaBeanSerializeUtil {
             try {
                 constructor.setAccessible(true);
                 return constructor.newInstance(constructorArgs);
-            } catch (InstantiationException e) {
-                LogHelper.warn(logger, e.getMessage(), e);
-            } catch (IllegalAccessException e) {
-                LogHelper.warn(logger, e.getMessage(), e);
-            } catch (InvocationTargetException e) {
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
                 LogHelper.warn(logger, e.getMessage(), e);
             }
         }
@@ -369,27 +362,31 @@ public final class JavaBeanSerializeUtil {
         if (cache.containsKey(beanDescriptor)) {
             return cache.get(beanDescriptor);
         }
-        Object result = null;
+
         if (beanDescriptor.isClassType()) {
             try {
-                result = name2Class(loader, beanDescriptor.getClassNameProperty());
-                return result;
+                return name2Class(loader, beanDescriptor.getClassNameProperty());
             } catch (ClassNotFoundException e) {
                 throw new RuntimeException(e.getMessage(), e);
             }
-        } else if (beanDescriptor.isEnumType()) {
+        }
+
+        if (beanDescriptor.isEnumType()) {
             try {
                 Class<?> enumType = name2Class(loader, beanDescriptor.getClassName());
                 Method method = getEnumValueOfMethod(enumType);
-                result = method.invoke(null, enumType, beanDescriptor.getEnumPropertyName());
-                return result;
+                return method.invoke(null, enumType, beanDescriptor.getEnumPropertyName());
             } catch (Exception e) {
                 throw new RuntimeException(e.getMessage(), e);
             }
-        } else if (beanDescriptor.isPrimitiveType()) {
-            result = beanDescriptor.getPrimitiveProperty();
-            return result;
-        } else if (beanDescriptor.isArrayType()) {
+        }
+
+        if (beanDescriptor.isPrimitiveType()) {
+            return beanDescriptor.getPrimitiveProperty();
+        }
+
+        Object result;
+        if (beanDescriptor.isArrayType()) {
             Class<?> componentType;
             try {
                 componentType = name2Class(loader, beanDescriptor.getClassName());
@@ -403,8 +400,6 @@ public final class JavaBeanSerializeUtil {
                 Class<?> cl = name2Class(loader, beanDescriptor.getClassName());
                 result = instantiate(cl);
                 cache.put(beanDescriptor, result);
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e.getMessage(), e);
             } catch (Exception e) {
                 throw new RuntimeException(e.getMessage(), e);
             }
