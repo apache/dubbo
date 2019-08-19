@@ -104,14 +104,14 @@ public class JavaBeanSerializeUtilTest {
             descriptor.setEnumNameProperty(JavaBeanDescriptor.class.getName());
         });
 
-        JavaBeanDescriptor descriptor1 = new JavaBeanDescriptor(JavaBeanDescriptor.class.getName(),
+        JavaBeanDescriptor descriptor = new JavaBeanDescriptor(JavaBeanDescriptor.class.getName(),
                 JavaBeanDescriptor.TYPE_ENUM);
 
-        String oldValue1 = descriptor1.setEnumNameProperty(JavaBeanDescriptor.class.getName());
-        Assertions.assertNull(oldValue1);
+        String oldValueOrigin = descriptor.setEnumNameProperty(JavaBeanDescriptor.class.getName());
+        Assertions.assertNull(oldValueOrigin);
 
-        String oldValue2 = descriptor1.setEnumNameProperty(JavaBeanDescriptor.class.getName());
-        Assertions.assertEquals(oldValue2, descriptor1.getEnumPropertyName());
+        String oldValueNext = descriptor.setEnumNameProperty(JavaBeanDescriptor.class.getName());
+        Assertions.assertEquals(oldValueNext, descriptor.getEnumPropertyName());
     }
 
     @Test
@@ -132,14 +132,14 @@ public class JavaBeanSerializeUtilTest {
             descriptor.setClassNameProperty(JavaBeanDescriptor.class.getName());
         });
 
-        JavaBeanDescriptor descriptor1 = new JavaBeanDescriptor(JavaBeanDescriptor.class.getName(),
+        JavaBeanDescriptor descriptor = new JavaBeanDescriptor(JavaBeanDescriptor.class.getName(),
                 JavaBeanDescriptor.TYPE_CLASS);
 
-        String oldValue1 = descriptor1.setClassNameProperty(JavaBeanDescriptor.class.getName());
+        String oldValue1 = descriptor.setClassNameProperty(JavaBeanDescriptor.class.getName());
         Assertions.assertNull(oldValue1);
 
-        String oldValue2 = descriptor1.setClassNameProperty(JavaBeanDescriptor.class.getName());
-        Assertions.assertEquals(oldValue2, descriptor1.getClassNameProperty());
+        String oldValue2 = descriptor.setClassNameProperty(JavaBeanDescriptor.class.getName());
+        Assertions.assertEquals(oldValue2, descriptor.getClassNameProperty());
     }
 
     @Test
