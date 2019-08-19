@@ -25,7 +25,6 @@ import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
-import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 
 import com.ecwid.consul.v1.ConsulClient;
@@ -115,11 +114,6 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
     @Override
     public Set<String> getServices() {
         return null;
-    }
-
-    @Override
-    public void addServiceInstancesChangedListener(String serviceName, ServiceInstancesChangedListener listener) throws NullPointerException, IllegalArgumentException {
-
     }
 
     @Override

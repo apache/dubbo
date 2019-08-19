@@ -21,6 +21,8 @@ import org.apache.dubbo.common.utils.Page;
 import org.apache.dubbo.event.EventDispatcher;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
+import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
+import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 
 import org.apache.curator.test.TestingServer;
 import org.junit.jupiter.api.AfterEach;
@@ -124,9 +126,12 @@ public class ZookeeperServiceDiscoveryTest {
         CountDownLatch latch = new CountDownLatch(1);
 
         // Add Listener
-        discovery.addServiceInstancesChangedListener(SERVICE_NAME, event -> {
-            serviceInstances.addAll(event.getServiceInstances());
-            latch.countDown();
+        discovery.addServiceInstancesChangedListener(new ServiceInstancesChangedListener(SERVICE_NAME) {
+            @Override
+            public void onEvent(ServiceInstancesChangedEvent event) {
+                serviceInstances.addAll(event.getServiceInstances());
+                latch.countDown();
+            }
         });
 
         discovery.register(createServiceInstance(SERVICE_NAME, LOCALHOST, 8082));

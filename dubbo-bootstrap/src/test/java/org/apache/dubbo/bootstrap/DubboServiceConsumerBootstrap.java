@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.bootstrap;
 
-import org.apache.dubbo.bootstrap.rest.UserService;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 
@@ -33,13 +32,14 @@ public class DubboServiceConsumerBootstrap {
                 .application("dubbo-consumer-demo")
                 .protocol(builder -> builder.port(20887).name("dubbo"))
                 // Zookeeper
-                .registry("zookeeper", builder -> builder.address("zookeeper://127.0.0.1:2181?registry.type=service&subscribed.services=dubbo-provider-demo"))
+//                .registry("zookeeper", builder -> builder.address("zookeeper://127.0.0.1:2181?registry.type=service&subscribed.services=dubbo-provider-demo"))
+                .registry("file",builder-> builder.address("file://1111?registry.type=service&subscribed.services=dubbo-provider-demo"))
 //                .metadataReport(new MetadataReportConfig("zookeeper://127.0.0.1:2181"))
                 // Nacos
 //                .registry("nacos", builder -> builder.address("nacos://127.0.0.1:8848?registry.type=service&subscribed.services=dubbo-provider-demo"))
 //                .registry("consul", builder -> builder.address("consul://127.0.0.1:8500?registry.type=service&subscribed.services=dubbo-provider-demo").group("namespace1"))
                 .reference("echo", builder -> builder.interfaceClass(EchoService.class).protocol("dubbo"))
-                .reference("user", builder -> builder.interfaceClass(UserService.class).protocol("rest"))
+//                .reference("user", builder -> builder.interfaceClass(UserService.class).protocol("rest"))
                 .onlyRegisterProvider(true)
                 .start()
                 .await();
