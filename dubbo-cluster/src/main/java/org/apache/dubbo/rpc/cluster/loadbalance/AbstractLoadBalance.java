@@ -44,8 +44,8 @@ public abstract class AbstractLoadBalance implements LoadBalance {
      * @return weight which takes warmup into account
      */
     static int calculateWarmupWeight(int uptime, int warmup, int weight) {
-        int ww = (int) ((float) uptime / ((float) warmup / (float) weight));
-        return ww < 1 ? 1 : (ww > weight ? weight : ww);
+        int ww = (int) ( uptime / ((float) warmup / weight));
+        return ww < 1 ? 1 : (Math.min(ww, weight));
     }
 
     @Override
@@ -70,7 +70,7 @@ public abstract class AbstractLoadBalance implements LoadBalance {
      * @param invocation the invocation of this invoker
      * @return weight
      */
-    protected int getWeight(Invoker<?> invoker, Invocation invocation) {
+    int getWeight(Invoker<?> invoker, Invocation invocation) {
         int weight = invoker.getUrl().getMethodParameter(invocation.getMethodName(), WEIGHT_KEY, DEFAULT_WEIGHT);
         if (weight > 0) {
             long timestamp = invoker.getUrl().getParameter(REMOTE_TIMESTAMP_KEY, 0L);
@@ -82,7 +82,7 @@ public abstract class AbstractLoadBalance implements LoadBalance {
                 }
             }
         }
-        return weight >= 0 ? weight : 0;
+        return Math.max(weight, 0);
     }
 
 }
