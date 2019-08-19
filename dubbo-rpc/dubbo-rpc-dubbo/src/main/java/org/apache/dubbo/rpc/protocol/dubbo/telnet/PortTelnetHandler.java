@@ -58,7 +58,7 @@ public class PortTelnetHandler implements TelnetHandler {
                     buf.append("\r\n");
                 }
                 if (detail) {
-                    buf.append(server.getUrl().getProtocol() + "://" + server.getUrl().getAddress());
+                    buf.append(server.getUrl().getProtocol()).append("://").append(server.getUrl().getAddress());
                 } else {
                     buf.append(server.getUrl().getPort());
                 }
@@ -79,13 +79,13 @@ public class PortTelnetHandler implements TelnetHandler {
                         buf.append("\r\n");
                     }
                     if (detail) {
-                        buf.append(c.getRemoteAddress() + " -> " + c.getLocalAddress());
+                        buf.append(c.getRemoteAddress()).append(" -> ").append(c.getLocalAddress());
                     } else {
                         buf.append(c.getRemoteAddress());
                     }
                 }
             } else {
-                buf.append("No such port " + port);
+                buf.append("No such port ").append(port);
             }
         }
         return buf.toString();
