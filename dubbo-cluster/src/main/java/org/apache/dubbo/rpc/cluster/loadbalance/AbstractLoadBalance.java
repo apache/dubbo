@@ -76,10 +76,7 @@ public abstract class AbstractLoadBalance implements LoadBalance {
             long timestamp = invoker.getUrl().getParameter(TIMESTAMP_KEY, 0L);
             if (timestamp > 0L) {
                 long uptime = System.currentTimeMillis() - timestamp;
-                if (uptime >= Integer.MAX_VALUE) {
-                    return weight;
-                }
-                else if (uptime < 0) {
+                if (uptime < 0) {
                     return 1;
                 }
                 int warmup = invoker.getUrl().getParameter(WARMUP_KEY, DEFAULT_WARMUP);
@@ -90,5 +87,4 @@ public abstract class AbstractLoadBalance implements LoadBalance {
         }
         return Math.max(weight, 0);
     }
-
 }
