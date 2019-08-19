@@ -119,6 +119,13 @@ public abstract class AbstractEventDispatcher implements EventDispatcher {
         executor.execute(() -> {
             sortedListeners(entry -> entry.getKey().isAssignableFrom(event.getClass()))
                     .forEach(listener -> {
+                        if (listener instanceof ConditionalEventListener) {
+                            ConditionalEventListener predicateEventListener = (ConditionalEventListener) listener;
+                            if (!predicateEventListener.accept(event)) { // No accept
+                                return;
+                            }
+                        }
+                        // Handle the event
                         listener.onEvent(event);
                     });
         });
