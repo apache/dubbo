@@ -18,8 +18,8 @@
 package org.apache.dubbo.configcenter.support.etcd;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.configcenter.ConfigChangeEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
+import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -81,8 +81,7 @@ public class EtcdDynamicConfiguration implements DynamicConfiguration {
     @Override
     public void addListener(String key, String group, ConfigurationListener listener) {
         if (watchListenerMap.get(listener) == null) {
-            String normalizedKey = convertKey(group, key);
-            EtcdConfigWatcher watcher = new EtcdConfigWatcher(normalizedKey, listener);
+            EtcdConfigWatcher watcher = new EtcdConfigWatcher(key, group, listener);
             watchListenerMap.put(listener, watcher);
             watcher.watch();
         }
@@ -134,10 +133,17 @@ public class EtcdDynamicConfiguration implements DynamicConfiguration {
         private StreamObserver<WatchRequest> observer;
         protected long watchId;
         private ManagedChannel channel;
-        private String key;
 
-        public EtcdConfigWatcher(String key, ConfigurationListener listener) {
+        private final String key;
+
+        private final String group;
+
+        private String normalizedKey;
+
+        public EtcdConfigWatcher(String key, String group, ConfigurationListener listener) {
             this.key = key;
+            this.group = group;
+            this.normalizedKey = convertKey(group, key);
             this.listener = listener;
             this.channel = etcdClient.getChannel();
         }
@@ -150,8 +156,7 @@ public class EtcdDynamicConfiguration implements DynamicConfiguration {
                 if (etcdEvent.getType() == Event.EventType.DELETE) {
                     type = ConfigChangeType.DELETED;
                 }
-                ConfigChangeEvent event = new ConfigChangeEvent(
-                        etcdEvent.getKv().getKey().toString(UTF_8),
+                ConfigChangedEvent event = new ConfigChangedEvent(key, group,
                         etcdEvent.getKv().getValue().toString(UTF_8), type);
                 listener.process(event);
             }
@@ -175,7 +180,7 @@ public class EtcdDynamicConfiguration implements DynamicConfiguration {
             watchStub = WatchGrpc.newStub(channel);
             observer = watchStub.watch(this);
             WatchCreateRequest.Builder builder = WatchCreateRequest.newBuilder()
-                    .setKey(ByteString.copyFromUtf8(key))
+                    .setKey(ByteString.copyFromUtf8(normalizedKey))
                     .setProgressNotify(true);
             WatchRequest req = WatchRequest.newBuilder().setCreateRequest(builder).build();
             observer.onNext(req);

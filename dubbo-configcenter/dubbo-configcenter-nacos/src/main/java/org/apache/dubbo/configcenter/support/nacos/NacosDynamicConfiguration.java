@@ -18,8 +18,8 @@
 package org.apache.dubbo.configcenter.support.nacos;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.configcenter.ConfigChangeEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
+import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.logger.Logger;
@@ -231,7 +231,7 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
         @Override
         public void innerReceive(String dataId, String group, String configInfo) {
             String oldValue = cacheData.get(dataId);
-            ConfigChangeEvent event = new ConfigChangeEvent(dataId, configInfo, getChangeType(configInfo, oldValue));
+            ConfigChangedEvent event = new ConfigChangedEvent(dataId, group, configInfo, getChangeType(configInfo, oldValue));
             if (configInfo == null) {
                 cacheData.remove(dataId);
             } else {

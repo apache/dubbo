@@ -19,25 +19,29 @@ package org.apache.dubbo.common.config.configcenter;
 import java.util.EventObject;
 
 /**
- * Config change event, immutable.
+ * An event raised when the config changed, immutable.
  *
  * @see ConfigChangeType
  */
-public class ConfigChangeEvent extends EventObject {
+public class ConfigChangedEvent extends EventObject {
+
     private final String key;
 
-    private final String value;
+    private final String group;
+
+    private final String content;
 
     private final ConfigChangeType changeType;
 
-    public ConfigChangeEvent(String key, String value) {
-        this(key, value, ConfigChangeType.MODIFIED);
+    public ConfigChangedEvent(String key, String group, String content) {
+        this(key, group, content, ConfigChangeType.MODIFIED);
     }
 
-    public ConfigChangeEvent(String key, String value, ConfigChangeType changeType) {
-        super(key + "=" + value);
+    public ConfigChangedEvent(String key, String group, String content, ConfigChangeType changeType) {
+        super(key + "=" + content);
         this.key = key;
-        this.value = value;
+        this.group = group;
+        this.content = content;
         this.changeType = changeType;
     }
 
@@ -45,8 +49,8 @@ public class ConfigChangeEvent extends EventObject {
         return key;
     }
 
-    public String getValue() {
-        return value;
+    public String getContent() {
+        return content;
     }
 
     public ConfigChangeType getChangeType() {
@@ -57,7 +61,7 @@ public class ConfigChangeEvent extends EventObject {
     public String toString() {
         return "ConfigChangeEvent{" +
                 "key='" + key + '\'' +
-                ", value='" + value + '\'' +
+                ", value='" + content + '\'' +
                 ", changeType=" + changeType +
                 '}';
     }

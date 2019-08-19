@@ -18,8 +18,8 @@
 package org.apache.dubbo.configcenter.consul;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.configcenter.ConfigChangeEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
+import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.logger.Logger;
@@ -75,7 +75,7 @@ public class ConsulDynamicConfiguration implements DynamicConfiguration {
     public void addListener(String key, String group, ConfigurationListener listener) {
         logger.info("register listener " + listener.getClass() + " for config with key: " + key + ", group: " + group);
         String normalizedKey = convertKey(group, key);
-        ConsulKVWatcher watcher = watchers.putIfAbsent(normalizedKey, new ConsulKVWatcher(normalizedKey));
+        ConsulKVWatcher watcher = watchers.putIfAbsent(normalizedKey, new ConsulKVWatcher(key, group));
         if (watcher == null) {
             watcher = watchers.get(normalizedKey);
             watcherService.submit(watcher);
@@ -133,21 +133,25 @@ public class ConsulDynamicConfiguration implements DynamicConfiguration {
     }
 
     private class ConsulKVWatcher implements Runnable {
-        private String key;
+        private final String key;
+        private final String group;
+        private final String normalizedKey;
         private Set<ConfigurationListener> listeners;
         private boolean running = true;
         private boolean existing = false;
 
-        public ConsulKVWatcher(String key) {
+        public ConsulKVWatcher(String key, String group) {
             this.key = key;
+            this.group = group;
+            this.normalizedKey = convertKey(group, key);
             this.listeners = new HashSet<>();
         }
 
         @Override
         public void run() {
             while (running) {
-                Long lastIndex = consulIndexes.computeIfAbsent(key, k -> -1L);
-                Response<GetValue> response = getValue(key);
+                Long lastIndex = consulIndexes.computeIfAbsent(normalizedKey, k -> -1L);
+                Response<GetValue> response = getValue(normalizedKey);
                 if (response == null) {
                     try {
                         Thread.sleep(watchTimeout);
@@ -164,20 +168,20 @@ public class ConsulDynamicConfiguration implements DynamicConfiguration {
                 }
 
                 consulIndexes.put(key, currentIndex);
-                ConfigChangeEvent event = null;
+                ConfigChangedEvent event = null;
                 if (getValue != null) {
                     String value = getValue.getDecodedValue();
                     if (existing) {
-                        logger.info("notify change for key: " + key + ", the changed value is: " + value);
-                        event = new ConfigChangeEvent(key, value);
+                        logger.info("notify change for key: " + normalizedKey + ", the changed value is: " + value);
+                        event = new ConfigChangedEvent(key, group, value);
                     } else {
-                        logger.info("notify change for key: " + key + ", the added value is: " + value);
-                        event = new ConfigChangeEvent(key, value, ADDED);
+                        logger.info("notify change for key: " + normalizedKey + ", the added value is: " + value);
+                        event = new ConfigChangedEvent(key, group, value, ADDED);
                     }
                 } else {
                     if (existing) {
-                        logger.info("notify change for key: " + key + ", the value is deleted");
-                        event = new ConfigChangeEvent(key, null, ConfigChangeType.DELETED);
+                        logger.info("notify change for key: " + normalizedKey + ", the value is deleted");
+                        event = new ConfigChangedEvent(key, group, null, ConfigChangeType.DELETED);
                     }
                 }
 
