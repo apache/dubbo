@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.remoting.zookeeper.support;
 
+import com.google.common.collect.Sets;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -45,6 +46,8 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
 
     private volatile boolean closed = false;
 
+    private final Set<String>  persistentExistNodePath = Sets.newConcurrentHashSet();
+
     public AbstractZookeeperClient(URL url) {
         this.url = url;
     }
@@ -57,7 +60,11 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
     @Override
     public void create(String path, boolean ephemeral) {
         if (!ephemeral) {
+            if(persistentExistNodePath.contains(path)){
+                return;
+            }
             if (checkExists(path)) {
+                persistentExistNodePath.add(path);
                 return;
             }
         }
@@ -69,6 +76,7 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
             createEphemeral(path);
         } else {
             createPersistent(path);
+            persistentExistNodePath.add(path);
         }
     }
 
