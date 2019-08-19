@@ -45,11 +45,16 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
@@ -87,6 +92,8 @@ public abstract class AbstractRegistry implements Registry {
     private URL registryUrl;
     // Local disk cache file
     private File file;
+
+    private final ExecutorService registryDestroyExecutor = new ThreadPoolExecutor(0, Integer.MAX_VALUE, 5, TimeUnit.SECONDS, new SynchronousQueue<>(), new NamedThreadFactory("DubboRegistryDestroy", true));
 
     public AbstractRegistry(URL url) {
         setUrl(url);
@@ -459,17 +466,21 @@ public abstract class AbstractRegistry implements Registry {
         }
         Set<URL> destroyRegistered = new HashSet<>(getRegistered());
         if (!destroyRegistered.isEmpty()) {
-            for (URL url : new HashSet<>(getRegistered())) {
-                if (url.getParameter(DYNAMIC_KEY, true)) {
-                    try {
-                        unregister(url);
-                        if (logger.isInfoEnabled()) {
-                            logger.info("Destroy unregister url " + url);
+            List<Runnable> runnables = destroyRegistered.stream()
+                    .filter(url -> url.getParameter(DYNAMIC_KEY, true))
+                    .map(url -> (Runnable)() -> {
+                        try {
+                            unregister(url);
+                            if (logger.isInfoEnabled()) {
+                                logger.info("Destroy unregister url " + url);
+                            }
+                        } catch (Throwable t) {
+                            logger.warn("Failed to unregister url " + url + " to registry " + getUrl() + " on destroy, cause: " + t.getMessage(), t);
                         }
-                    } catch (Throwable t) {
-                        logger.warn("Failed to unregister url " + url + " to registry " + getUrl() + " on destroy, cause: " + t.getMessage(), t);
-                    }
-                }
+                    }).collect(Collectors.toList());
+            if(!runnables.isEmpty()){
+                //Wait at most 5 seconds.
+                executeTasksBlocking(runnables, 5000);
             }
         }
         Map<URL, Set<NotifyListener>> destroySubscribed = new HashMap<>(getSubscribed());
@@ -487,6 +498,29 @@ public abstract class AbstractRegistry implements Registry {
                     }
                 }
             }
+        }
+    }
+
+    private void executeTasksBlocking(List<Runnable> runnables, long maxWaitTimeMillis){
+        final CountDownLatch latch = new CountDownLatch(runnables.size());
+
+        for (final Runnable r : runnables) {
+            registryDestroyExecutor.execute(() -> {
+                try {
+                    r.run();
+                } finally {
+                    latch.countDown();
+                }
+            });
+        }
+
+        try {
+            boolean success = latch.await(maxWaitTimeMillis, TimeUnit.MILLISECONDS);
+            if(!success){
+                logger.warn("unregister all registries is not finished in " + maxWaitTimeMillis + " ms.");
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
     }
 
