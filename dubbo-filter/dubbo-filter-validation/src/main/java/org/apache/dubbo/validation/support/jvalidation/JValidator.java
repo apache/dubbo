@@ -146,7 +146,12 @@ public class JValidator implements Validator {
         throws Exception {
         ClassPool pool = ClassGenerator.getClassPool(clazz.getClassLoader());
         synchronized (parameterClassName.intern()) {
-            CtClass ctClass = pool.getCtClass(parameterClassName);
+            CtClass ctClass = null;
+            try {
+                ctClass = pool.getCtClass(parameterClassName);
+            } catch (NotFoundException ignore) {
+            }
+
             if (null == ctClass) {
                 ctClass = pool.makeClass(parameterClassName);
                 ClassFile classFile = ctClass.getClassFile();
