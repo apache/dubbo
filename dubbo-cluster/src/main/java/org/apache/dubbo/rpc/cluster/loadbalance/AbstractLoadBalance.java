@@ -24,9 +24,9 @@ import org.apache.dubbo.rpc.cluster.LoadBalance;
 
 import java.util.List;
 
+import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_WARMUP;
 import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_WEIGHT;
-import static org.apache.dubbo.rpc.cluster.Constants.REMOTE_TIMESTAMP_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.WARMUP_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.WEIGHT_KEY;
 
@@ -73,7 +73,7 @@ public abstract class AbstractLoadBalance implements LoadBalance {
     protected int getWeight(Invoker<?> invoker, Invocation invocation) {
         int weight = invoker.getUrl().getMethodParameter(invocation.getMethodName(), WEIGHT_KEY, DEFAULT_WEIGHT);
         if (weight > 0) {
-            long timestamp = invoker.getUrl().getParameter(REMOTE_TIMESTAMP_KEY, 0L);
+            long timestamp = invoker.getUrl().getParameter(TIMESTAMP_KEY, 0L);
             if (timestamp > 0L) {
                 long uptime = System.currentTimeMillis() - timestamp;
                 if (uptime >= Integer.MAX_VALUE) {
