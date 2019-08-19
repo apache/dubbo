@@ -17,6 +17,7 @@
 package org.apache.dubbo.common.config.configcenter;
 
 import java.util.EventObject;
+import java.util.Objects;
 
 /**
  * An event raised when the config changed, immutable.
@@ -49,6 +50,10 @@ public class ConfigChangedEvent extends EventObject {
         return key;
     }
 
+    public String getGroup() {
+        return group;
+    }
+
     public String getContent() {
         return content;
     }
@@ -58,11 +63,28 @@ public class ConfigChangedEvent extends EventObject {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ConfigChangedEvent)) return false;
+        ConfigChangedEvent that = (ConfigChangedEvent) o;
+        return Objects.equals(getKey(), that.getKey()) &&
+                Objects.equals(group, that.group) &&
+                Objects.equals(getContent(), that.getContent()) &&
+                getChangeType() == that.getChangeType();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getKey(), group, getContent(), getChangeType());
+    }
+
+    @Override
     public String toString() {
-        return "ConfigChangeEvent{" +
+        return "ConfigChangedEvent{" +
                 "key='" + key + '\'' +
-                ", value='" + content + '\'' +
+                ", group='" + group + '\'' +
+                ", content='" + content + '\'' +
                 ", changeType=" + changeType +
-                '}';
+                "} " + super.toString();
     }
 }
