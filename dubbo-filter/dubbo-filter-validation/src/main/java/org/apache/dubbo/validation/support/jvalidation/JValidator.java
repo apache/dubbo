@@ -119,51 +119,7 @@ public class JValidator implements Validator {
             try {
                 parameterClass = Class.forName(parameterClassName, true, clazz.getClassLoader());
             } catch (ClassNotFoundException e) {
-                ClassPool pool = ClassGenerator.getClassPool(clazz.getClassLoader());
-                synchronized (parameterClassName.intern()) {
-                    CtClass ctClass = pool.getCtClass(parameterClassName);
-                    if (null == ctClass) {
-                        ctClass = pool.makeClass(parameterClassName);
-                        ClassFile classFile = ctClass.getClassFile();
-                        classFile.setVersionToJava5();
-                        ctClass.addConstructor(CtNewConstructor.defaultConstructor(pool.getCtClass(parameterClassName)));
-                        // parameter fields
-                        Class<?>[] parameterTypes = method.getParameterTypes();
-                        Annotation[][] parameterAnnotations = method.getParameterAnnotations();
-                        for (int i = 0; i < parameterTypes.length; i++) {
-                            Class<?> type = parameterTypes[i];
-                            Annotation[] annotations = parameterAnnotations[i];
-                            AnnotationsAttribute attribute = new AnnotationsAttribute(classFile.getConstPool(), AnnotationsAttribute.visibleTag);
-                            for (Annotation annotation : annotations) {
-                                if (annotation.annotationType().isAnnotationPresent(Constraint.class)) {
-                                    javassist.bytecode.annotation.Annotation ja = new javassist.bytecode.annotation.Annotation(
-                                            classFile.getConstPool(), pool.getCtClass(annotation.annotationType().getName()));
-                                    Method[] members = annotation.annotationType().getMethods();
-                                    for (Method member : members) {
-                                        if (Modifier.isPublic(member.getModifiers())
-                                                && member.getParameterTypes().length == 0
-                                                && member.getDeclaringClass() == annotation.annotationType()) {
-                                            Object value = member.invoke(annotation);
-                                            if (null != value) {
-                                                MemberValue memberValue = createMemberValue(
-                                                        classFile.getConstPool(), pool.get(member.getReturnType().getName()), value);
-                                                ja.addMemberValue(member.getName(), memberValue);
-                                            }
-                                        }
-                                    }
-                                    attribute.addAnnotation(ja);
-                                }
-                            }
-                            String fieldName = method.getName() + "Argument" + i;
-                            CtField ctField = CtField.make("public " + type.getCanonicalName() + " " + fieldName + ";", pool.getCtClass(parameterClassName));
-                            ctField.getFieldInfo().addAttribute(attribute);
-                            ctClass.addField(ctField);
-                        }
-                        parameterClass = ctClass.toClass(clazz.getClassLoader(), null);
-                    } else {
-                        parameterClass = Class.forName(parameterClassName, true, clazz.getClassLoader());
-                    }
-                }                
+                parameterClass = generateMethodParameterClass(clazz, method, parameterClassName);
             }
             Object parameterBean = parameterClass.newInstance();
             for (int i = 0; i < args.length; i++) {
@@ -174,6 +130,64 @@ public class JValidator implements Validator {
         } catch (Throwable e) {
             logger.warn(e.getMessage(), e);
             return null;
+        }
+    }
+
+    /**
+     * try to generate methodParameterClass.
+     *
+     * @param clazz interface class
+     * @param method invoke method
+     * @param parameterClassName generated parameterClassName
+     * @return Class<?> generated methodParameterClass
+     * @throws Exception
+     */
+    private static Class<?> generateMethodParameterClass(Class<?> clazz, Method method, String parameterClassName)
+        throws Exception {
+        ClassPool pool = ClassGenerator.getClassPool(clazz.getClassLoader());
+        synchronized (parameterClassName.intern()) {
+            CtClass ctClass = pool.getCtClass(parameterClassName);
+            if (null == ctClass) {
+                ctClass = pool.makeClass(parameterClassName);
+                ClassFile classFile = ctClass.getClassFile();
+                classFile.setVersionToJava5();
+                ctClass.addConstructor(CtNewConstructor.defaultConstructor(pool.getCtClass(parameterClassName)));
+                // parameter fields
+                Class<?>[] parameterTypes = method.getParameterTypes();
+                Annotation[][] parameterAnnotations = method.getParameterAnnotations();
+                for (int i = 0; i < parameterTypes.length; i++) {
+                    Class<?> type = parameterTypes[i];
+                    Annotation[] annotations = parameterAnnotations[i];
+                    AnnotationsAttribute attribute = new AnnotationsAttribute(classFile.getConstPool(), AnnotationsAttribute.visibleTag);
+                    for (Annotation annotation : annotations) {
+                        if (annotation.annotationType().isAnnotationPresent(Constraint.class)) {
+                            javassist.bytecode.annotation.Annotation ja = new javassist.bytecode.annotation.Annotation(
+                                classFile.getConstPool(), pool.getCtClass(annotation.annotationType().getName()));
+                            Method[] members = annotation.annotationType().getMethods();
+                            for (Method member : members) {
+                                if (Modifier.isPublic(member.getModifiers())
+                                    && member.getParameterTypes().length == 0
+                                    && member.getDeclaringClass() == annotation.annotationType()) {
+                                    Object value = member.invoke(annotation);
+                                    if (null != value) {
+                                        MemberValue memberValue = createMemberValue(
+                                            classFile.getConstPool(), pool.get(member.getReturnType().getName()), value);
+                                        ja.addMemberValue(member.getName(), memberValue);
+                                    }
+                                }
+                            }
+                            attribute.addAnnotation(ja);
+                        }
+                    }
+                    String fieldName = method.getName() + "Argument" + i;
+                    CtField ctField = CtField.make("public " + type.getCanonicalName() + " " + fieldName + ";", pool.getCtClass(parameterClassName));
+                    ctField.getFieldInfo().addAttribute(attribute);
+                    ctClass.addField(ctField);
+                }
+                return ctClass.toClass(clazz.getClassLoader(), null);
+            } else {
+                return Class.forName(parameterClassName, true, clazz.getClassLoader());
+            }
         }
     }
 
