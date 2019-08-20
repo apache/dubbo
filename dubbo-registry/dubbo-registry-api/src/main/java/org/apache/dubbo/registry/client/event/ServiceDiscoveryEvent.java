@@ -28,14 +28,23 @@ import org.apache.dubbo.registry.client.ServiceDiscovery;
  */
 public abstract class ServiceDiscoveryEvent extends Event {
 
+    private final ServiceDiscovery original;
+
     /**
      * Constructs a prototypical Event.
      *
-     * @param serviceDiscovery The {@link ServiceDiscovery} on which the Event initially occurred.
+     * @param source   The object on which the Event initially occurred.
+     * @param original The original {@link ServiceDiscovery}
      * @throws IllegalArgumentException if source is null.
      */
-    public ServiceDiscoveryEvent(ServiceDiscovery serviceDiscovery) {
-        super(serviceDiscovery);
+    public ServiceDiscoveryEvent(ServiceDiscovery source, ServiceDiscovery original) {
+        super(source);
+        this.original = original;
+    }
+
+    @Override
+    public ServiceDiscovery getSource() {
+        return (ServiceDiscovery) super.getSource();
     }
 
     /**
@@ -44,6 +53,15 @@ public abstract class ServiceDiscoveryEvent extends Event {
      * @return {@link ServiceDiscovery} instance
      */
     public final ServiceDiscovery getServiceDiscovery() {
-        return (ServiceDiscovery) getSource();
+        return getSource();
+    }
+
+    /**
+     * Get the original {@link ServiceDiscovery}
+     *
+     * @return the original {@link ServiceDiscovery}
+     */
+    public final ServiceDiscovery getOriginal() {
+        return original;
     }
 }

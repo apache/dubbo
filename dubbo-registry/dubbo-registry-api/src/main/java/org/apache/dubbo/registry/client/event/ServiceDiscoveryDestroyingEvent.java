@@ -26,14 +26,8 @@ import org.apache.dubbo.registry.client.ServiceDiscovery;
  */
 public class ServiceDiscoveryDestroyingEvent extends ServiceDiscoveryEvent {
 
-    /**
-     * Constructs a prototypical Event.
-     *
-     * @param serviceDiscovery The instance of {@link ServiceDiscovery} as source
-     * @throws IllegalArgumentException if source is null.
-     */
-    public ServiceDiscoveryDestroyingEvent(ServiceDiscovery serviceDiscovery) {
-        super(serviceDiscovery);
+    public ServiceDiscoveryDestroyingEvent(ServiceDiscovery source, ServiceDiscovery original) {
+        super(source, original);
     }
 
 }

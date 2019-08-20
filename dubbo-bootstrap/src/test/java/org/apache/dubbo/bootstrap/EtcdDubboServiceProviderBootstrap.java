@@ -31,7 +31,7 @@ import java.util.Arrays;
  *
  * @since 2.7.4
  */
-public class DubboServiceProviderBootstrap {
+public class EtcdDubboServiceProviderBootstrap {
 
     public static void main(String[] args) {
         multipleRegistries();
@@ -45,11 +45,11 @@ public class DubboServiceProviderBootstrap {
 
         RegistryConfig interfaceRegistry = new RegistryConfig();
         interfaceRegistry.setId("interfaceRegistry");
-        interfaceRegistry.setAddress("zookeeper://127.0.0.1:2181");
+        interfaceRegistry.setAddress("etcd3://127.0.0.1:2379");
 
         RegistryConfig serviceRegistry = new RegistryConfig();
         serviceRegistry.setId("serviceRegistry");
-        serviceRegistry.setAddress("zookeeper://127.0.0.1:2181?registry.type=service");
+        serviceRegistry.setAddress("etcd3://127.0.0.1:2379?registry.type=service");
 
         ServiceConfig<EchoService> echoService = new ServiceConfig<>();
         echoService.setInterface(EchoService.class.getName());
@@ -66,6 +66,7 @@ public class DubboServiceProviderBootstrap {
         applicationConfig.setMetadataStorageType("remote");
         new DubboBootstrap()
                 .application(applicationConfig)
+                .defaultMetadataStorageType(true)
                 // Zookeeper in service registry type
 //                .registry("zookeeper", builder -> builder.address("zookeeper://127.0.0.1:2181?registry.type=service"))
                 // Nacos
@@ -73,7 +74,7 @@ public class DubboServiceProviderBootstrap {
                 .registries(Arrays.asList(interfaceRegistry, serviceRegistry))
 //                .registry(RegistryBuilder.newBuilder().address("consul://127.0.0.1:8500?registry.type=service").build())
                 .protocol(builder -> builder.port(-1).name("dubbo"))
-                .metadataReport(new MetadataReportConfig("zookeeper://127.0.0.1:2181"))
+                .metadataReport(new MetadataReportConfig("etcd://127.0.0.1:2379"))
                 .service(echoService)
                 .service(userService)
                 .start()

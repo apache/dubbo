@@ -235,9 +235,9 @@ final class EventPublishingServiceDiscovery implements ServiceDiscovery {
         }
 
         executeWithEvents(
-                of(new ServiceDiscoveryInitializingEvent(serviceDiscovery)),
+                of(new ServiceDiscoveryInitializingEvent(this, serviceDiscovery)),
                 () -> serviceDiscovery.initialize(registryURL),
-                of(new ServiceDiscoveryInitializedEvent(serviceDiscovery))
+                of(new ServiceDiscoveryInitializedEvent(this, serviceDiscovery))
         );
 
         // doesn't start -> started
@@ -257,9 +257,9 @@ final class EventPublishingServiceDiscovery implements ServiceDiscovery {
         }
 
         executeWithEvents(
-                of(new ServiceDiscoveryDestroyingEvent(serviceDiscovery)),
+                of(new ServiceDiscoveryDestroyingEvent(this, serviceDiscovery)),
                 serviceDiscovery::destroy,
-                of(new ServiceDiscoveryDestroyedEvent(serviceDiscovery))
+                of(new ServiceDiscoveryDestroyedEvent(this, serviceDiscovery))
         );
 
         // doesn't stop -> stopped
@@ -273,7 +273,7 @@ final class EventPublishingServiceDiscovery implements ServiceDiscovery {
         try {
             action.execute();
         } catch (Exception e) {
-            dispatchEvent(new ServiceDiscoveryExceptionEvent(serviceDiscovery, e));
+            dispatchEvent(new ServiceDiscoveryExceptionEvent(this, serviceDiscovery, e));
         }
         afterEvent.ifPresent(this::dispatchEvent);
     }
