@@ -174,6 +174,9 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
     public void create(String path, String content, boolean ephemeral) {
         if (checkExists(path)) {
             delete(path);
+            if(!ephemeral){
+                persistentExistNodePath.remove(path);
+            }
         }
         int i = path.lastIndexOf('/');
         if (i > 0) {
