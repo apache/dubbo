@@ -26,7 +26,7 @@ import java.io.InvalidClassException;
 import java.io.ObjectStreamClass;
 
 public class CodebaseAwareObjectInputStream extends org.springframework.remoting.rmi.CodebaseAwareObjectInputStream {
-    Logger logger = LoggerFactory.getLogger(CodebaseAwareObjectInputStream.class);
+    private static final Logger logger = LoggerFactory.getLogger(CodebaseAwareObjectInputStream.class);
 
     public CodebaseAwareObjectInputStream(InputStream in, ClassLoader classLoader, boolean acceptProxyClasses) throws IOException {
         super(in, classLoader, acceptProxyClasses);
