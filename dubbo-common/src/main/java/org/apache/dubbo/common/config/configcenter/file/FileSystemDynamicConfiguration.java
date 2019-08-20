@@ -18,13 +18,14 @@ package org.apache.dubbo.common.config.configcenter.file;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.AbstractDynamicConfiguration;
-import org.apache.dubbo.common.config.configcenter.ConfigChangeEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
+import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.function.ThrowableConsumer;
 import org.apache.dubbo.common.function.ThrowableFunction;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
+import org.apache.dubbo.common.utils.StringUtils;
 
 import com.sun.nio.file.SensitivityWatchEventModifier;
 import org.apache.commons.io.FileUtils;
@@ -84,7 +85,7 @@ public class FileSystemDynamicConfiguration extends AbstractDynamicConfiguration
     public static final String DEFAULT_CONFIG_CENTER_DIR_PATH = System.getProperty("user.home") + File.separator
             + ".dubbo" + File.separator + "config-center";
 
-    public static final String DEFAULT_THREAD_POOL_SIZE = "1";
+    public static final int DEFAULT_THREAD_POOL_SIZE = 1;
 
     public static final String DEFAULT_CONFIG_CENTER_ENCODING = "UTF-8";
 
@@ -158,7 +159,7 @@ public class FileSystemDynamicConfiguration extends AbstractDynamicConfiguration
     private final String encoding;
 
     /**
-     * The {@link Set} of {@link #configDirectory(String) directories} that may be processing,
+     * The {@link Set} of {@link #groupDirectory(String) directories} that may be processing,
      * <p>
      * if {@link #isBasedPoolingWatchService()} is <code>false</code>, this properties will be
      * {@link Collections#emptySet() empty}
@@ -170,12 +171,24 @@ public class FileSystemDynamicConfiguration extends AbstractDynamicConfiguration
     private final Map<File, List<ConfigurationListener>> listenersRepository;
 
     public FileSystemDynamicConfiguration() {
-        this(URL.valueOf("file:///default"));
+        this(new File(DEFAULT_CONFIG_CENTER_DIR_PATH));
     }
 
-    public FileSystemDynamicConfiguration(URL url) {
-        this(initDirectory(url), getEncoding(url), getThreadPoolPrefixName(url), getThreadPoolSize(url),
-                getThreadPoolKeepAliveTime(url));
+    public FileSystemDynamicConfiguration(File rootDirectory) {
+        this(rootDirectory, DEFAULT_CONFIG_CENTER_ENCODING);
+    }
+
+    public FileSystemDynamicConfiguration(File rootDirectory, String encoding) {
+        this(rootDirectory, encoding, DEFAULT_THREAD_POOL_PREFIX);
+    }
+
+    public FileSystemDynamicConfiguration(File rootDirectory, String encoding, String threadPoolPrefixName) {
+        this(rootDirectory, encoding, threadPoolPrefixName, DEFAULT_THREAD_POOL_SIZE);
+    }
+
+    public FileSystemDynamicConfiguration(File rootDirectory, String encoding, String threadPoolPrefixName,
+                                          int threadPoolSize) {
+        this(rootDirectory, encoding, threadPoolPrefixName, threadPoolSize, DEFAULT_THREAD_POOL_KEEP_ALIVE_TIME);
     }
 
     public FileSystemDynamicConfiguration(File rootDirectory, String encoding,
@@ -187,6 +200,11 @@ public class FileSystemDynamicConfiguration extends AbstractDynamicConfiguration
         this.encoding = encoding;
         this.processingDirectories = initProcessingDirectories();
         this.listenersRepository = new LinkedHashMap<>();
+    }
+
+    public FileSystemDynamicConfiguration(URL url) {
+        this(initDirectory(url), getEncoding(url), getThreadPoolPrefixName(url), getThreadPoolSize(url),
+                getThreadPoolKeepAliveTime(url));
     }
 
     private Set<File> initProcessingDirectories() {
@@ -222,13 +240,13 @@ public class FileSystemDynamicConfiguration extends AbstractDynamicConfiguration
         });
     }
 
-    protected File configDirectory(String group) {
+    public File groupDirectory(String group) {
         String actualGroup = isBlank(group) ? DEFAULT_GROUP : group;
         return new File(rootDirectory, actualGroup);
     }
 
-    protected File configFile(String key, String group) {
-        return new File(configDirectory(group), key);
+    public File configFile(String key, String group) {
+        return new File(groupDirectory(group), key);
     }
 
     private void doInListener(String key, String group, BiConsumer<File, List<ConfigurationListener>> consumer) {
@@ -275,7 +293,7 @@ public class FileSystemDynamicConfiguration extends AbstractDynamicConfiguration
                                 Path configFilePath = configDirectoryPath.resolve(currentPath);
                                 File configDirectory = configDirectoryPath.toFile();
                                 executeMutually(configDirectory, () -> {
-                                    fireConfigChangeEvent(configFilePath.toFile(), configChangeType);
+                                    fireConfigChangeEvent(configDirectory, configFilePath.toFile(), configChangeType);
                                     signalConfigDirectory(configDirectory);
                                     return null;
                                 });
@@ -318,13 +336,13 @@ public class FileSystemDynamicConfiguration extends AbstractDynamicConfiguration
         return listenersRepository.computeIfAbsent(configFile, p -> new LinkedList<>());
     }
 
-    private void fireConfigChangeEvent(File configFile, ConfigChangeType configChangeType) {
+    private void fireConfigChangeEvent(File configDirectory, File configFile, ConfigChangeType configChangeType) {
         String key = configFile.getName();
         String value = getConfig(configFile);
         // fire ConfigChangeEvent one by one
         getListeners(configFile).forEach(listener -> {
             try {
-                listener.process(new ConfigChangeEvent(key, value, configChangeType));
+                listener.process(new ConfigChangedEvent(key, configDirectory.getName(), value, configChangeType));
             } catch (Throwable e) {
                 if (logger.isErrorEnabled()) {
                     logger.error(e.getMessage(), e);
@@ -412,9 +430,9 @@ public class FileSystemDynamicConfiguration extends AbstractDynamicConfiguration
     }
 
     /**
-     * Is processing on {@link #configDirectory(String) config rootDirectory}
+     * Is processing on {@link #groupDirectory(String) config rootDirectory}
      *
-     * @param configDirectory {@link #configDirectory(String) config rootDirectory}
+     * @param configDirectory {@link #groupDirectory(String) config rootDirectory}
      * @return if processing , return <code>true</code>, or <code>false</code>
      */
     private boolean isProcessing(File configDirectory) {
@@ -427,7 +445,7 @@ public class FileSystemDynamicConfiguration extends AbstractDynamicConfiguration
 
     @Override
     public SortedSet<String> getConfigKeys(String group) {
-        return Stream.of(configDirectory(group).listFiles(File::isFile))
+        return Stream.of(groupDirectory(group).listFiles(File::isFile))
                 .map(File::getName)
                 .collect(TreeSet::new, Set::add, Set::addAll);
     }
@@ -462,11 +480,11 @@ public class FileSystemDynamicConfiguration extends AbstractDynamicConfiguration
 
     }
 
-    protected File getRootDirectory() {
+    public File getRootDirectory() {
         return rootDirectory;
     }
 
-    protected String getEncoding() {
+    public String getEncoding() {
         return encoding;
     }
 
@@ -559,11 +577,19 @@ public class FileSystemDynamicConfiguration extends AbstractDynamicConfiguration
     }
 
     protected static File initDirectory(URL url) {
-        String directoryPath = getParameter(url, CONFIG_CENTER_DIR_PARAM_NAME, DEFAULT_CONFIG_CENTER_DIR_PATH);
-        File rootDirectory = new File(getParameter(url, CONFIG_CENTER_DIR_PARAM_NAME, DEFAULT_CONFIG_CENTER_DIR_PATH));
+        String directoryPath = url.getParameter(CONFIG_CENTER_DIR_PARAM_NAME, url.getPath());
+        File rootDirectory = null;
+        if (!StringUtils.isBlank(directoryPath)) {
+            rootDirectory = new File("/" + directoryPath);
+        }
+
+        if (!rootDirectory.exists()) { // If the directory does not exist
+            rootDirectory = new File(DEFAULT_CONFIG_CENTER_DIR_PATH);
+        }
+
         if (!rootDirectory.exists() && !rootDirectory.mkdirs()) {
             throw new IllegalStateException(format("Dubbo config center rootDirectory[%s] can't be created!",
-                    directoryPath));
+                    rootDirectory.getAbsolutePath()));
         }
         return rootDirectory;
     }

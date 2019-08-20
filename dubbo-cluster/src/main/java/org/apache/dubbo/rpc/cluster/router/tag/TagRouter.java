@@ -17,8 +17,8 @@
 package org.apache.dubbo.rpc.cluster.router.tag;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.configcenter.ConfigChangeEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
+import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.constants.CommonConstants;
@@ -61,17 +61,17 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
     }
 
     @Override
-    public synchronized void process(ConfigChangeEvent event) {
+    public synchronized void process(ConfigChangedEvent event) {
         if (logger.isDebugEnabled()) {
             logger.debug("Notification of tag rule, change type is: " + event.getChangeType() + ", raw rule is:\n " +
-                    event.getValue());
+                    event.getContent());
         }
 
         try {
             if (event.getChangeType().equals(ConfigChangeType.DELETED)) {
                 this.tagRouterRule = null;
             } else {
-                this.tagRouterRule = TagRuleParser.parse(event.getValue());
+                this.tagRouterRule = TagRuleParser.parse(event.getContent());
             }
         } catch (Exception e) {
             logger.error("Failed to parse the raw tag router rule and it will not take effect, please check if the " +
@@ -251,7 +251,7 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
                 application = providerApplication;
                 String rawRule = ruleRepository.getRule(key, DynamicConfiguration.DEFAULT_GROUP);
                 if (StringUtils.isNotEmpty(rawRule)) {
-                    this.process(new ConfigChangeEvent(key, rawRule));
+                    this.process(new ConfigChangedEvent(key, DynamicConfiguration.DEFAULT_GROUP, rawRule));
                 }
             }
         }

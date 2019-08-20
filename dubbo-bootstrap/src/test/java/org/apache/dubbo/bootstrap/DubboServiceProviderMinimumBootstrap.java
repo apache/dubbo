@@ -14,20 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.config.configcenter;
-
-import java.util.EventListener;
+package org.apache.dubbo.bootstrap;
 
 /**
- * Config listener, will get notified when the config it listens on changes.
+ * TODO
  */
-public interface ConfigurationListener extends EventListener {
+public class DubboServiceProviderMinimumBootstrap {
 
-    /**
-     * Listener call back method. Listener gets notified by this method once there's any change happens on the config
-     * the listener listens on.
-     *
-     * @param event config change event
-     */
-    void process(ConfigChangedEvent event);
+    public static void main(String[] args) {
+        new DubboBootstrap()
+                .application("dubbo-provider-demo")
+//                .registry(builder -> builder.address("zookeeper://127.0.0.1:2181?registry.type=service"))
+                .registry(builder -> builder.address("file://?registry.type=service"))
+                .protocol(builder -> builder.port(-1).name("dubbo"))
+                .service(builder -> builder.interfaceClass(EchoService.class).ref(new EchoServiceImpl()))
+                .start()
+                .await();
+    }
 }

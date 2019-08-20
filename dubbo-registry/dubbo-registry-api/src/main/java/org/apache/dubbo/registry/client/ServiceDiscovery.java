@@ -20,6 +20,8 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.lang.Prioritized;
 import org.apache.dubbo.common.utils.Page;
+import org.apache.dubbo.event.EventDispatcher;
+import org.apache.dubbo.event.EventListener;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 
 import java.util.LinkedHashMap;
@@ -30,6 +32,7 @@ import java.util.Set;
 
 import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableMap;
+import static org.apache.dubbo.event.EventDispatcher.getDefaultExtension;
 
 /**
  * The common operations of Service Discovery
@@ -190,14 +193,18 @@ public interface ServiceDiscovery extends Prioritized {
 
     /**
      * Add an instance of {@link ServiceInstancesChangedListener} for specified service
+     * <p>
+     * Default, the ServiceInstancesChangedListener will be {@link EventDispatcher#addEventListener(EventListener) added}
+     * into {@link EventDispatcher}
      *
-     * @param serviceName the service name
-     * @param listener    an instance of {@link ServiceInstancesChangedListener}
+     * @param listener an instance of {@link ServiceInstancesChangedListener}
      * @throws NullPointerException
      * @throws IllegalArgumentException
      */
-    void addServiceInstancesChangedListener(String serviceName, ServiceInstancesChangedListener listener)
-            throws NullPointerException, IllegalArgumentException;
+    default void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener)
+            throws NullPointerException, IllegalArgumentException {
+        getDefaultExtension().addEventListener(listener);
+    }
 
     // ==================================================================================== //
 

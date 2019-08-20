@@ -27,6 +27,8 @@ import org.apache.dubbo.metadata.store.InMemoryWritableMetadataService;
 import org.apache.dubbo.metadata.store.RemoteWritableMetadataService;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
+import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
+import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.registry.client.metadata.proxy.MetadataServiceProxyFactory;
 import org.apache.dubbo.registry.client.selector.ServiceInstanceSelector;
 import org.apache.dubbo.registry.support.FailbackRegistry;
@@ -275,8 +277,12 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         subscribeURLs(url, listener, serviceName, serviceInstances);
 
         // Add Listener
-        serviceDiscovery.addServiceInstancesChangedListener(serviceName, event -> {
-            subscribeURLs(url, listener, event.getServiceName(), new ArrayList<>(event.getServiceInstances()));
+        serviceDiscovery.addServiceInstancesChangedListener(new ServiceInstancesChangedListener(serviceName) {
+
+            @Override
+            public void onEvent(ServiceInstancesChangedEvent event) {
+                subscribeURLs(url, listener, event.getServiceName(), new ArrayList<>(event.getServiceInstances()));
+            }
         });
     }
 

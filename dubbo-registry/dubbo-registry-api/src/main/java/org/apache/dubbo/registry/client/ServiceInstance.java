@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.registry.client;
 
+import java.io.Serializable;
 import java.util.Map;
 
 /**
@@ -24,7 +25,7 @@ import java.util.Map;
  *
  * @since 2.7.4
  */
-public interface ServiceInstance {
+public interface ServiceInstance extends Serializable {
 
     /**
      * The id of the registered service instance.

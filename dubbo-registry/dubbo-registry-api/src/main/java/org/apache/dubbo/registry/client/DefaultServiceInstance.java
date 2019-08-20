@@ -27,11 +27,13 @@ import java.util.Objects;
  */
 public class DefaultServiceInstance implements ServiceInstance {
 
-    private final String id;
+    private static final long serialVersionUID = 1149677083747278100L;
 
-    private final String serviceName;
+    private String id;
 
-    private final String host;
+    private String serviceName;
+
+    private String host;
 
     private Integer port;
 
@@ -40,6 +42,9 @@ public class DefaultServiceInstance implements ServiceInstance {
     private boolean healthy;
 
     private Map<String, String> metadata = new HashMap<>();
+
+    public DefaultServiceInstance() {
+    }
 
     public DefaultServiceInstance(String id, String serviceName, String host, Integer port) {
         if (port != null && port.intValue() < 1) {
@@ -55,6 +60,18 @@ public class DefaultServiceInstance implements ServiceInstance {
 
     public DefaultServiceInstance(String serviceName, String host, Integer port) {
         this(null, serviceName, host, port);
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setServiceName(String serviceName) {
+        this.serviceName = serviceName;
+    }
+
+    public void setHost(String host) {
+        this.host = host;
     }
 
     @Override
