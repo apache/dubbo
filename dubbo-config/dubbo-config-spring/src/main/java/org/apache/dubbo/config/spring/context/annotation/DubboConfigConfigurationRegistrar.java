@@ -21,7 +21,7 @@ import org.apache.dubbo.config.AbstractConfig;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.Ordered;
-import org.springframework.core.annotation.AnnotationAttributes;
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.type.AnnotationMetadata;
 
 import static org.apache.dubbo.config.spring.util.AnnotatedBeanDefinitionRegistryUtils.registerBeans;
@@ -38,16 +38,18 @@ public class DubboConfigConfigurationRegistrar implements ImportBeanDefinitionRe
 
     @Override
     public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
-
-        AnnotationAttributes attributes = AnnotationAttributes.fromMap(
-                importingClassMetadata.getAnnotationAttributes(EnableDubboConfig.class.getName()));
-
-        boolean multiple = attributes.getBoolean("multiple");
-
+        EnableDubboConfig anno = null;
+        try {
+            anno = AnnotatedElementUtils.findMergedAnnotation(
+                    Class.forName(importingClassMetadata.getClassName()),
+                    EnableDubboConfig.class);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("Error when parsing @EnableDubboConfig: ClassNotFoundException");
+        }
         // Single Config Bindings
         registerBeans(registry, DubboConfigConfiguration.Single.class);
 
-        if (multiple) { // Since 2.6.6 https://github.com/apache/dubbo/issues/3193
+        if (anno.multiple()) { // Since 2.6.6 https://github.com/apache/dubbo/issues/3193
             registerBeans(registry, DubboConfigConfiguration.Multiple.class);
         }
     }

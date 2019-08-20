@@ -28,7 +28,7 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
-import org.springframework.core.annotation.AnnotationAttributes;
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.util.ClassUtils;
 
@@ -54,7 +54,12 @@ public class DubboComponentScanRegistrar implements ImportBeanDefinitionRegistra
     @Override
     public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
 
-        Set<String> packagesToScan = getPackagesToScan(importingClassMetadata);
+        Set<String> packagesToScan;
+        try {
+            packagesToScan = getPackagesToScan(importingClassMetadata);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("Error when parsing @DubboComponentScan: ClassNotFoundException");
+        }
 
         registerServiceAnnotationBeanPostProcessor(packagesToScan, registry);
 
@@ -92,16 +97,13 @@ public class DubboComponentScanRegistrar implements ImportBeanDefinitionRegistra
 
     }
 
-    private Set<String> getPackagesToScan(AnnotationMetadata metadata) {
-        AnnotationAttributes attributes = AnnotationAttributes.fromMap(
-                metadata.getAnnotationAttributes(DubboComponentScan.class.getName()));
-        String[] basePackages = attributes.getStringArray("basePackages");
-        Class<?>[] basePackageClasses = attributes.getClassArray("basePackageClasses");
-        String[] value = attributes.getStringArray("value");
+    private Set<String> getPackagesToScan(AnnotationMetadata metadata) throws ClassNotFoundException {
+        DubboComponentScan anno = AnnotatedElementUtils.findMergedAnnotation(
+                Class.forName(metadata.getClassName()),
+                DubboComponentScan.class);
         // Appends value array attributes
-        Set<String> packagesToScan = new LinkedHashSet<String>(Arrays.asList(value));
-        packagesToScan.addAll(Arrays.asList(basePackages));
-        for (Class<?> basePackageClass : basePackageClasses) {
+        Set<String> packagesToScan = new LinkedHashSet<String>(Arrays.asList(anno.basePackages()));
+        for (Class<?> basePackageClass : anno.basePackageClasses()) {
             packagesToScan.add(ClassUtils.getPackageName(basePackageClass));
         }
         if (packagesToScan.isEmpty()) {

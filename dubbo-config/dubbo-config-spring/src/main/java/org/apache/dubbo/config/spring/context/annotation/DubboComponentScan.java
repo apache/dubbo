@@ -20,6 +20,7 @@ import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.annotation.Service;
 
 import org.springframework.context.annotation.Import;
+import org.springframework.core.annotation.AliasFor;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;
@@ -49,6 +50,7 @@ public @interface DubboComponentScan {
      *
      * @return the base packages to scan
      */
+    @AliasFor("basePackages")
     String[] value() default {};
 
     /**
@@ -60,6 +62,7 @@ public @interface DubboComponentScan {
      *
      * @return the base packages to scan
      */
+    @AliasFor("value")
     String[] basePackages() default {};
 
     /**
