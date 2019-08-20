@@ -54,6 +54,8 @@ public interface CommonConstants {
 
     Pattern REGISTRY_SPLIT_PATTERN = Pattern.compile("\\s*[|;]+\\s*");
 
+    Pattern D_REGISTRY_SPLIT_PATTERN = Pattern.compile("\\s*[|]+\\s*");
+
     String SEMICOLON_SEPARATOR = ";";
 
     Pattern SEMICOLON_SPLIT_PATTERN = Pattern.compile("\\s*[;]+\\s*");
