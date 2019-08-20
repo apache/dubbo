@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.httpinvoker;
 
-import org.apache.dubbo.common.utils.SerialDetector;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -29,8 +27,7 @@ public class HttpInvokerServiceExporter extends org.springframework.remoting.htt
 
     @Override
     protected ObjectInputStream createObjectInputStream(InputStream is) throws IOException {
-        ObjectInputStream inputStream = super.createObjectInputStream(is);
-        return new SerialDetector(inputStream);
+        return new CodebaseAwareObjectInputStream(is, super.getBeanClassLoader(), super.isAcceptProxyClasses());
     }
 
 }

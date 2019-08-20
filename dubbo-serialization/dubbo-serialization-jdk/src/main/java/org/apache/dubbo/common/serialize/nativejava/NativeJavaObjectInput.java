@@ -34,7 +34,7 @@ public class NativeJavaObjectInput implements ObjectInput {
     private final ObjectInputStream inputStream;
 
     public NativeJavaObjectInput(InputStream is) throws IOException {
-        this(new ObjectInputStream(new SerialDetector(is)));
+        this(new SerialDetector(is));
     }
 
     protected NativeJavaObjectInput(ObjectInputStream is) {

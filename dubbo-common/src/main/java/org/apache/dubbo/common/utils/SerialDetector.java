@@ -57,28 +57,40 @@ public class SerialDetector extends ObjectInputStream {
 
     @Override
     protected Class<?> resolveClass(final ObjectStreamClass serialInput) throws IOException, ClassNotFoundException {
-        // Enforce SerialDetector's blacklist
-        Iterable<Pattern> blacklistIterable = configuration.blacklist();
-        if (blacklistIterable == null) {
-            return super.resolveClass(serialInput);
-        }
-
-        for (Pattern blackPattern : blacklistIterable) {
-            Matcher blackMatcher = blackPattern.matcher(serialInput.getName());
-
-            if (blackMatcher.find()) {
-                if (!configuration.shouldCheck()) {
-                    // Reporting mode
-                    logger.info(String.format("Blacklist match: '%s'", serialInput.getName()));
-                } else {
-                    // Blocking mode
-                    logger.error(String.format("Blocked by blacklist '%s'. Match found for '%s'", new Object[]{blackPattern.pattern(), serialInput.getName()}));
-                    throw new InvalidClassException(serialInput.getName(), "Class blocked from deserialization (blacklist)");
-                }
+        if (isClassInBlacklist(serialInput)) {
+            if (!configuration.shouldCheck()) {
+                // Reporting mode
+                logger.info(String.format("Blacklist match: '%s'", serialInput.getName()));
+            } else {
+                // Blocking mode
+                logger.error(String.format("Blocked by blacklist'. Match found for '%s'", serialInput.getName()));
+                throw new InvalidClassException(serialInput.getName(), "Class blocked from deserialization (blacklist)");
             }
         }
 
         return super.resolveClass(serialInput);
+    }
+
+    public static boolean isClassInBlacklist(final ObjectStreamClass serialInput) {
+        // Enforce SerialDetector's blacklist
+        Iterable<Pattern> blacklistIterable = configuration.blacklist();
+        if (blacklistIterable == null) {
+            return false;
+        }
+
+        boolean inBlacklist = false;
+        for (Pattern blackPattern : blacklistIterable) {
+            Matcher blackMatcher = blackPattern.matcher(serialInput.getName());
+            if (blackMatcher.find()) {
+                inBlacklist = true;
+                break;
+            }
+        }
+        return inBlacklist;
+    }
+
+    public static boolean shouldCheck() {
+        return configuration.shouldCheck();
     }
 
     static final class BlacklistConfiguration {
