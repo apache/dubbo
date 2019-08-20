@@ -18,6 +18,7 @@ package org.apache.dubbo.common.serialize.java;
 
 
 import org.apache.dubbo.common.utils.ClassUtils;
+import org.apache.dubbo.common.utils.SerialDetector;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -33,7 +34,7 @@ public class CompactedObjectInputStream extends ObjectInputStream {
     private ClassLoader mClassLoader;
 
     public CompactedObjectInputStream(InputStream in) throws IOException {
-        this(in, Thread.currentThread().getContextClassLoader());
+        this(new SerialDetector(in), Thread.currentThread().getContextClassLoader());
     }
 
     public CompactedObjectInputStream(InputStream in, ClassLoader cl) throws IOException {
