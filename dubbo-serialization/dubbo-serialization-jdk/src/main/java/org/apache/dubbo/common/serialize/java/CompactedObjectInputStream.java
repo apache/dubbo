@@ -17,12 +17,15 @@
 package org.apache.dubbo.common.serialize.java;
 
 
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.SerialDetector;
 
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InvalidClassException;
 import java.io.ObjectInputStream;
 import java.io.ObjectStreamClass;
 import java.io.StreamCorruptedException;
@@ -31,15 +34,31 @@ import java.io.StreamCorruptedException;
  * Compacted java object input implementation
  */
 public class CompactedObjectInputStream extends ObjectInputStream {
+    private static final Logger logger = LoggerFactory.getLogger(CompactedObjectInputStream.class);
     private ClassLoader mClassLoader;
 
     public CompactedObjectInputStream(InputStream in) throws IOException {
-        this(new SerialDetector(in), Thread.currentThread().getContextClassLoader());
+        this(in, Thread.currentThread().getContextClassLoader());
     }
 
     public CompactedObjectInputStream(InputStream in, ClassLoader cl) throws IOException {
         super(in);
         mClassLoader = cl == null ? ClassUtils.getClassLoader() : cl;
+    }
+
+    @Override
+    protected Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
+        if (SerialDetector.isClassInBlacklist(desc)) {
+            if (!SerialDetector.shouldCheck()) {
+                // Reporting mode
+                logger.info(String.format("Blacklist match: '%s'", desc.getName()));
+            } else {
+                // Blocking mode
+                logger.error(String.format("Blocked by blacklist'. Match found for '%s'", desc.getName()));
+                throw new InvalidClassException(desc.getName(), "Class blocked from deserialization (blacklist)");
+            }
+        }
+        return super.resolveClass(desc);
     }
 
     @Override
