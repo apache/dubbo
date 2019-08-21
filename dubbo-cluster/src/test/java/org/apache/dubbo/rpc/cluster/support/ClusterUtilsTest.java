@@ -133,8 +133,8 @@ public class ClusterUtilsTest {
         remoteURL = URL.valueOf("dubbo://localhost:20880/DemoService");
         mergedUrl = ClusterUtils.mergeUrl(remoteURL, localURL.getParameters());
 
-        Assertions.assertNull(mergedUrl.getParameter(VERSION_KEY));
-        Assertions.assertNull(mergedUrl.getParameter(GROUP_KEY));
+        Assertions.assertEquals(mergedUrl.getParameter(VERSION_KEY),localURL.getParameter(VERSION_KEY));
+        Assertions.assertEquals(mergedUrl.getParameter(GROUP_KEY),localURL.getParameter(GROUP_KEY));
         Assertions.assertNull(mergedUrl.getParameter(DUBBO_VERSION_KEY));
         Assertions.assertNull(mergedUrl.getParameter(RELEASE_KEY));
         Assertions.assertNull(mergedUrl.getParameter(METHODS_KEY));
@@ -147,8 +147,8 @@ public class ClusterUtilsTest {
         remoteURL = URL.valueOf("dubbo://localhost:20880/DemoService?key=value");
         mergedUrl = ClusterUtils.mergeUrl(remoteURL, localURL.getParameters());
 
-        Assertions.assertNull(mergedUrl.getParameter(VERSION_KEY));
-        Assertions.assertNull(mergedUrl.getParameter(GROUP_KEY));
+        Assertions.assertEquals(mergedUrl.getParameter(VERSION_KEY),localURL.getParameter(VERSION_KEY));
+        Assertions.assertEquals(mergedUrl.getParameter(GROUP_KEY),localURL.getParameter(GROUP_KEY));
         Assertions.assertNull(mergedUrl.getParameter(DUBBO_VERSION_KEY));
         Assertions.assertNull(mergedUrl.getParameter(RELEASE_KEY));
         Assertions.assertNull(mergedUrl.getParameter(METHODS_KEY));
