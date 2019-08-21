@@ -26,8 +26,9 @@ import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.util.ObjectUtils;
 
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Objects;
 
 import static java.lang.String.format;
@@ -94,8 +95,10 @@ public abstract class AnnotatedBeanDefinitionRegistryUtils {
             return;
         }
 
+        List<Class<?>> classesToRegister = new LinkedList<>(asList(annotatedClasses));
+
         // Remove all annotated-classes that have been registered
-        Iterator<Class<?>> iterator = new ArrayList<>(asList(annotatedClasses)).iterator();
+        Iterator<Class<?>> iterator = classesToRegister.iterator();
 
         while (iterator.hasNext()) {
             Class<?> annotatedClass = iterator.next();
@@ -110,7 +113,7 @@ public abstract class AnnotatedBeanDefinitionRegistryUtils {
             logger.debug(registry.getClass().getSimpleName() + " will register annotated classes : " + asList(annotatedClasses) + " .");
         }
 
-        reader.register(annotatedClasses);
+        reader.register(classesToRegister.toArray(new Class[0]));
 
     }
 }
