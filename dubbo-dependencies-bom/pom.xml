@@ -129,6 +129,7 @@
         <tomcat_embed_version>8.5.31</tomcat_embed_version>
         <jetcd_version>0.3.0</jetcd_version>
         <nacos_version>1.1.1</nacos_version>
+        <grpc.version>1.22.0</grpc.version>
         <!-- Log libs -->
         <slf4j_version>1.7.25</slf4j_version>
         <jcl_version>1.2</jcl_version>
@@ -153,7 +154,7 @@
         <mortbay_jetty_version>6.1.26</mortbay_jetty_version>
         <portlet_version>2.0</portlet_version>
         <maven_flatten_version>1.1.0</maven_flatten_version>
-        <revision>2.7.4-SNAPSHOT</revision>
+        <revision>2.7.4-grpc-SNAPSHOT</revision>
     </properties>
 
     <dependencyManagement>
@@ -413,6 +414,10 @@
                         <groupId>io.netty</groupId>
                         <artifactId>netty-handler-proxy</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>io.grpc</groupId>
+                        <artifactId>grpc-core</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
             <!-- Log libs -->
@@ -609,6 +614,12 @@
                 <artifactId>nacos-client</artifactId>
                 <version>${nacos_version}</version>
             </dependency>
+            <!-- grpc related dependencies -->
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-all</artifactId>
+                <version>${grpc.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -663,5 +674,4 @@
             </build>
         </profile>
     </profiles>
-
 </project>

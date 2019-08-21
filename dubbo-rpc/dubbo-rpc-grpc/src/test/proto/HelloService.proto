@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+option java_package = "org.apache.dubbo.rpc.protocol.grpc";
+
+package helloworld;
+
+service Greeter {
+    rpc HelloWorld (HelloRequest) returns (HelloResponse) {
+    }
+    rpc RequestStream (stream HelloRequest) returns (HelloResponse) {
+    }
+    rpc ResponseStream (HelloRequest) returns (HelloResponse) {
+    }
+    rpc AllStream (stream HelloRequest) returns (stream HelloResponse) {
+    }
+}
+
+message HelloRequest {
+    string requestData = 1;
+}
+
+message HelloResponse {
+    string responseData = 1;
+}
