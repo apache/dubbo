@@ -542,10 +542,6 @@ public abstract class AbstractConfig implements Serializable {
         this.prefix = prefix;
     }
 
-    /**
-     * TODO: Currently, only support overriding of properties explicitly defined in Config class, doesn't support
-     * overriding of customized parameters stored in 'parameters'.
-     */
     public void refresh() {
         try {
             CompositeConfiguration compositeConfiguration = Environment.getInstance().getConfiguration(getPrefix(), getId());
@@ -561,18 +557,32 @@ public abstract class AbstractConfig implements Serializable {
             // loop methods, get override value and set the new value back to method
             Method[] methods = getClass().getMethods();
             for (Method method : methods) {
-                if (MethodUtils.isSetter(method)) {
-                    try {
+                try {
+                    if (MethodUtils.isSetter(method)) {
                         String value = StringUtils.trim(compositeConfiguration.getString(extractPropertyName(getClass(), method)));
                         // isTypeMatch() is called to avoid duplicate and incorrect update, for example, we have two 'setGeneric' methods in ReferenceConfig.
                         if (StringUtils.isNotEmpty(value) && ClassUtils.isTypeMatch(method.getParameterTypes()[0], value)) {
                             method.invoke(this, ClassUtils.convertPrimitive(method.getParameterTypes()[0], value));
                         }
-                    } catch (NoSuchMethodException e) {
-                        logger.info("Failed to override the property " + method.getName() + " in " +
-                                this.getClass().getSimpleName() +
-                                ", please make sure every property has getter/setter method provided.");
+                    } else if (MethodUtils.isStringMapSetter(method)) {
+                        String value = StringUtils.trim(compositeConfiguration.getString(extractPropertyName(getClass(), method)));
+                        if (StringUtils.isNotEmpty(value)) {
+                            Method getterMethod = MethodUtils.findGetterBySetter(getClass(), method);
+                            if (getterMethod != null) {
+                                @SuppressWarnings("unchecked")
+                                Map<String, String> map = (Map<String, String>) getterMethod.invoke(this);
+                                if (map == null) {
+                                    map = new HashMap<>();
+                                }
+                                map.putAll(URL.valueOf("?"+value).getParameters());
+                                method.invoke(this, map);
+                            }
+                        }
                     }
+                } catch (NoSuchMethodException e) {
+                    logger.info("Failed to override the property " + method.getName() + " in " +
+                            this.getClass().getSimpleName() +
+                            ", please make sure every property has getter/setter method provided.");
                 }
             }
         } catch (Exception e) {

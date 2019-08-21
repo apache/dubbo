@@ -20,7 +20,6 @@ import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.config.api.Greeting;
 import org.apache.dubbo.config.support.Parameter;
-
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -446,6 +445,41 @@ public class AbstractConfigTest {
             Assertions.assertEquals("external", overrideConfig.getKey());
             Assertions.assertEquals("external", overrideConfig.getUseKeyAsProperty());
         } finally {
+            Environment.getInstance().clearExternalConfigs();
+        }
+    }
+
+    @Test
+    public void testRefreshParameters() {
+        try {
+            Map<String, String> parameters = new HashMap<>();
+            parameters.put("key1", "value1");
+            parameters.put("key2", "value2");
+            OverrideConfig overrideConfig = new OverrideConfig();
+            overrideConfig.setParameters(parameters);
+
+
+            Map<String, String> external = new HashMap<>();
+            external.put("dubbo.override.parameters", "key3=value3&key4=value4&key2=value5");
+            Environment.getInstance().setExternalConfigMap(external);
+
+            ConfigCenterConfig configCenter = new ConfigCenterConfig();
+            overrideConfig.setConfigCenter(configCenter);
+            // Load configuration from  system properties -> externalConfiguration -> RegistryConfig -> dubbo.properties
+            overrideConfig.refresh();
+
+            Assertions.assertEquals("value1", overrideConfig.getParameters().get("key1"));
+            Assertions.assertEquals("value5", overrideConfig.getParameters().get("key2"));
+            Assertions.assertEquals("value3", overrideConfig.getParameters().get("key3"));
+            Assertions.assertEquals("value4", overrideConfig.getParameters().get("key4"));
+
+            System.setProperty("dubbo.override.parameters", "key3=value6");
+            overrideConfig.refresh();
+
+            Assertions.assertEquals("value6", overrideConfig.getParameters().get("key3"));
+            Assertions.assertEquals("value4", overrideConfig.getParameters().get("key4"));
+        } finally {
+            System.clearProperty("dubbo.override.parameters");
             Environment.getInstance().clearExternalConfigs();
         }
     }

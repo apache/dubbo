@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
+import java.util.Map;
 
 public class MethodUtilsTest {
 
@@ -47,6 +48,21 @@ public class MethodUtilsTest {
         Assertions.assertEquals("setValue", setMethod.getName());
     }
 
+    @Test
+    public void testMapSetter() {
+        int found = 0;
+        for (Method method : MethodTestClazz.class.getMethods()) {
+            if (MethodUtils.isStringMapSetter(method)) {
+                Assertions.assertEquals("setStringMap", method.getName());
+                Method getterMethod = MethodUtils.findGetterBySetter(MethodTestClazz.class, method);
+                Assertions.assertNotNull(getterMethod);
+                Assertions.assertEquals("getStringMap", getterMethod.getName());
+                found++;
+            }
+        }
+        Assertions.assertEquals(1, found);
+    }
+
     public class MethodTestClazz {
         private String value;
 
@@ -56,6 +72,19 @@ public class MethodUtilsTest {
 
         public void setValue(String value) {
             this.value = value;
+        }
+
+        public Map<String, String> getStringMap() {
+            return null;
+        }
+
+        public void setStringMap(Map<String, String> map) {
+        }
+
+        public void setNonStringMap(Map<String, Object> map) {
+        }
+
+        public void setRawMap(Map map) {
         }
     }
 
