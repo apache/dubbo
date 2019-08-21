@@ -40,6 +40,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
@@ -75,7 +76,7 @@ public class LoggingFilter implements ContainerRequestFilter, ClientRequestFilte
     @Override
     public Object aroundReadFrom(ReaderInterceptorContext context) throws IOException, WebApplicationException {
         byte[] buffer = IOUtils.toByteArray(context.getInputStream());
-        logger.info("The contents of request body is: \n" + new String(buffer, "UTF-8") + "\n");
+        logger.info("The contents of request body is: \n" + new String(buffer, StandardCharsets.UTF_8) + "\n");
         context.setInputStream(new ByteArrayInputStream(buffer));
         return context.proceed();
     }
@@ -85,7 +86,7 @@ public class LoggingFilter implements ContainerRequestFilter, ClientRequestFilte
         OutputStreamWrapper wrapper = new OutputStreamWrapper(context.getOutputStream());
         context.setOutputStream(wrapper);
         context.proceed();
-        logger.info("The contents of response body is: \n" + new String(wrapper.getBytes(), "UTF-8") + "\n");
+        logger.info("The contents of response body is: \n" + new String(wrapper.getBytes(), StandardCharsets.UTF_8) + "\n");
     }
 
     protected void logHttpHeaders(MultivaluedMap<String, String> headers) {

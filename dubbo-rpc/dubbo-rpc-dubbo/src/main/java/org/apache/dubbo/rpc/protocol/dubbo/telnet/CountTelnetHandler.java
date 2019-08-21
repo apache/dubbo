@@ -49,7 +49,7 @@ public class CountTelnetHandler implements TelnetHandler {
         }
         StringBuilder buf = new StringBuilder();
         if (service != null && service.length() > 0) {
-            buf.append("Use default service " + service + ".\r\n");
+            buf.append("Use default service ").append(service).append(".\r\n");
         }
         String[] parts = message.split("\\s+");
         String method;
@@ -112,7 +112,7 @@ public class CountTelnetHandler implements TelnetHandler {
                 thread.start();
             }
         } else {
-            buf.append("No such service " + service);
+            buf.append("No such service ").append(service);
         }
         return buf.toString();
     }

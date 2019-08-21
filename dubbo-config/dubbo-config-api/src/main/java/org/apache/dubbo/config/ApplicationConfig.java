@@ -40,6 +40,8 @@ import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP_COMPATIBLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE_COMPATIBLE;
+import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST;
+import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST_COMPATIBLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT_COMPATIBLE;
 import static org.apache.dubbo.config.Constants.ARCHITECTURE;
@@ -126,6 +128,11 @@ public class ApplicationConfig extends AbstractConfig {
      * Whether to enable qos or not
      */
     private Boolean qosEnable;
+
+    /**
+     * The qos host to listen
+     */
+    private String qosHost;
 
     /**
      * The qos port to listen
@@ -309,6 +316,15 @@ public class ApplicationConfig extends AbstractConfig {
         this.qosEnable = qosEnable;
     }
 
+    @Parameter(key = QOS_HOST)
+    public String getQosHost() {
+        return qosHost;
+    }
+
+    public void setQosHost(String qosHost) {
+        this.qosHost = qosHost;
+    }
+
     @Parameter(key = QOS_PORT)
     public Integer getQosPort() {
         return qosPort;
@@ -338,6 +354,15 @@ public class ApplicationConfig extends AbstractConfig {
 
     public void setQosEnableCompatible(Boolean qosEnable) {
         setQosEnable(qosEnable);
+    }
+
+    @Parameter(key = QOS_HOST_COMPATIBLE, excluded = true)
+    public String getQosHostCompatible() {
+        return getQosHost();
+    }
+
+    public void setQosHostCompatible(String qosHost) {
+        this.setQosHost(qosHost);
     }
 
     @Parameter(key = QOS_PORT_COMPATIBLE, excluded = true)

@@ -299,11 +299,11 @@ public class ReferenceCountExchangeClientTest {
     }
 
     public interface IDemoService {
-        public String demo();
+        String demo();
     }
 
     public interface IHelloService {
-        public String hello();
+        String hello();
     }
 
     public class DemoServiceImpl implements IDemoService {

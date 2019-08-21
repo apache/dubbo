@@ -17,7 +17,6 @@
 package org.apache.dubbo.common.serialize.protobuf.support;
 
 import org.apache.dubbo.common.serialize.protobuf.support.model.GooglePB;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -74,6 +73,127 @@ public class GenericProtobufObjectOutputTest {
         this.genericProtobufObjectOutput.writeObject(request);
         this.flushToInput();
         assertThat(genericProtobufObjectInput.readObject(GooglePB.PBRequestType.class), is(request));
+    }
+
+    @Test
+    public void testWriteBoolean() throws IOException {
+        boolean random = new Random().nextBoolean();
+        this.genericProtobufObjectOutput.writeBool(random);
+        this.flushToInput();
+        assertThat(genericProtobufObjectInput.readBool(), is(random));
+    }
+
+    @Test
+    public void testWriteByte() throws IOException {
+        int random = new Random().nextInt();
+        this.genericProtobufObjectOutput.writeByte((byte) random);
+        this.flushToInput();
+        assertThat(genericProtobufObjectInput.readByte(), is((byte) random));
+    }
+
+    @Test
+    public void testWriteShort() throws IOException {
+        int random = new Random().nextInt();
+        this.genericProtobufObjectOutput.writeShort((short) random);
+        this.flushToInput();
+        assertThat(genericProtobufObjectInput.readShort(), is((short) random));
+    }
+
+    @Test
+    public void testWriteInt() throws IOException {
+        int random = new Random().nextInt();
+        this.genericProtobufObjectOutput.writeInt(random);
+        this.flushToInput();
+        assertThat(genericProtobufObjectInput.readInt(), is(random));
+    }
+
+    @Test
+    public void testWriteFloat() throws IOException {
+        float random = new Random().nextFloat();
+        this.genericProtobufObjectOutput.writeFloat(random);
+        this.flushToInput();
+        assertThat(genericProtobufObjectInput.readFloat(), is(random));
+    }
+
+
+    @Test
+    public void testWriteDouble() throws IOException {
+        double random = new Random().nextDouble();
+        this.genericProtobufObjectOutput.writeDouble(random);
+        this.flushToInput();
+        assertThat(genericProtobufObjectInput.readDouble(), is(random));
+    }
+
+
+    @Test
+    public void testWriteString() throws IOException {
+        byte[] bytes = new byte[new Random().nextInt(100)];
+        new Random().nextBytes(bytes);
+
+        this.genericProtobufObjectOutput.writeUTF(new String(bytes));
+        this.flushToInput();
+        assertThat(genericProtobufObjectInput.readUTF(), is(new String(bytes)));
+    }
+
+    @Test
+    public void testWriteBytes() throws IOException {
+        byte[] bytes = new byte[new Random().nextInt(100)];
+        new Random().nextBytes(bytes);
+        this.genericProtobufObjectOutput.writeBytes(bytes);
+        this.flushToInput();
+        final byte[] bytes1 = genericProtobufObjectInput.readBytes();
+        assertThat(bytes1, is(bytes));
+    }
+
+    @Test
+    public void testWriteBytesSpecLength() throws IOException {
+        final int length = new Random().nextInt(100);
+        byte[] bytes = new byte[length];
+        new Random().nextBytes(bytes);
+        this.genericProtobufObjectOutput.writeBytes(bytes, 0, length);
+        this.flushToInput();
+        assertThat(genericProtobufObjectInput.readBytes(), is(bytes));
+    }
+
+    @Test
+    public void testWriteLong() throws IOException {
+        long random = new Random().nextLong();
+        this.genericProtobufObjectOutput.writeLong(random);
+        this.flushToInput();
+        assertThat(genericProtobufObjectInput.readLong(), is(random));
+    }
+
+
+    @Test
+    public void testWriteMap() throws IOException {
+        Map<String, String> map = new HashMap<>();
+        map.put("key", "hello");
+        map.put("value", "dubbo");
+        this.genericProtobufObjectOutput.writeObject(map);
+        this.flushToInput();
+        assertThat(genericProtobufObjectInput.readObject(Map.class), is(map));
+    }
+
+
+    @Test
+    void testWriteMultiType() throws IOException {
+        long random = new Random().nextLong();
+        this.genericProtobufObjectOutput.writeLong(random);
+        Map<String, String> map = new HashMap<>();
+        map.put("key", "hello");
+        map.put("value", "world");
+        this.genericProtobufObjectOutput.writeObject(map);
+        final int length = new Random().nextInt(100);
+        byte[] bytes = new byte[length];
+        new Random().nextBytes(bytes);
+        this.genericProtobufObjectOutput.writeBytes(bytes, 0, length);
+        int randomShort = new Random().nextInt();
+        this.genericProtobufObjectOutput.writeShort((short) randomShort);
+        this.flushToInput();
+        assertThat(genericProtobufObjectInput.readLong(), is(random));
+        assertThat(genericProtobufObjectInput.readObject(Map.class), is(map));
+        assertThat(genericProtobufObjectInput.readBytes(), is(bytes));
+        assertThat(genericProtobufObjectInput.readShort(), is((short) randomShort));
     }
 
     private void flushToInput() {

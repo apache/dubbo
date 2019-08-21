@@ -420,7 +420,7 @@ public class ReflectUtilsTest {
         Assertions.assertEquals("java.util.List<java.lang.String>", types2[1].getTypeName());
     }
 
-    public static interface TypeClass {
+    public interface TypeClass {
 
         CompletableFuture<String> getFuture();
 

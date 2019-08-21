@@ -30,7 +30,8 @@ import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class DubboSwaggerApiListingResourceTest {
 

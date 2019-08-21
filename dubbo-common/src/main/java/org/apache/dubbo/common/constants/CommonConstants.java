@@ -46,13 +46,15 @@ public interface CommonConstants {
 
     Pattern COMMA_SPLIT_PATTERN = Pattern.compile("\\s*[,]+\\s*");
 
-    public final static String PATH_SEPARATOR = "/";
+    String PATH_SEPARATOR = "/";
 
-    public final static String PROTOCOL_SEPARATOR = "://";
+    String PROTOCOL_SEPARATOR = "://";
 
     String REGISTRY_SEPARATOR = "|";
 
     Pattern REGISTRY_SPLIT_PATTERN = Pattern.compile("\\s*[|;]+\\s*");
+
+    Pattern D_REGISTRY_SPLIT_PATTERN = Pattern.compile("\\s*[|]+\\s*");
 
     String SEMICOLON_SEPARATOR = ";";
 
