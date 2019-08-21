@@ -29,15 +29,21 @@ import org.apache.dubbo.config.spring.ApplicationBean;
 import org.apache.dubbo.config.spring.ConfigCenterBean;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.ServiceBean;
+import org.apache.dubbo.config.spring.beans.factory.config.ConfigurableSourceBeanMetadataElement;
 
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
+import org.springframework.beans.factory.xml.ParserContext;
+import org.springframework.context.annotation.AnnotationConfigUtils;
+import org.w3c.dom.Element;
 
 /**
  * DubboNamespaceHandler
  *
  * @export
  */
-public class DubboNamespaceHandler extends NamespaceHandlerSupport {
+public class DubboNamespaceHandler extends NamespaceHandlerSupport implements ConfigurableSourceBeanMetadataElement {
 
     static {
         Version.checkDuplicate(DubboNamespaceHandler.class);
@@ -60,4 +66,28 @@ public class DubboNamespaceHandler extends NamespaceHandlerSupport {
         registerBeanDefinitionParser("annotation", new AnnotationBeanDefinitionParser());
     }
 
+    /**
+     * Override {@link NamespaceHandlerSupport#parse(Element, ParserContext)} method
+     *
+     * @param element       {@link Element}
+     * @param parserContext {@link ParserContext}
+     * @return
+     * @since 2.7.4
+     */
+    @Override
+    public BeanDefinition parse(Element element, ParserContext parserContext) {
+        registerAnnotationConfigProcessors(parserContext);
+        BeanDefinition beanDefinition = super.parse(element, parserContext);
+        setSource(beanDefinition);
+        return beanDefinition;
+    }
+
+    /**
+     * @param parserContext {@link ParserContext}
+     * @since 2.7.4
+     */
+    private void registerAnnotationConfigProcessors(ParserContext parserContext) {
+        BeanDefinitionRegistry registry = parserContext.getRegistry();
+        AnnotationConfigUtils.registerAnnotationConfigProcessors(registry);
+    }
 }

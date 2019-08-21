@@ -18,6 +18,7 @@ package org.apache.dubbo.config.spring.context.annotation;
 
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.spring.beans.factory.annotation.DubboConfigBindingBeanPostProcessor;
+import org.apache.dubbo.config.spring.beans.factory.config.ConfigurableSourceBeanMetadataElement;
 import org.apache.dubbo.config.spring.context.config.NamePropertyDefaultValueDubboConfigBeanCustomizer;
 
 import org.apache.commons.logging.Log;
@@ -56,7 +57,8 @@ import static org.springframework.beans.factory.support.BeanDefinitionReaderUtil
  * @see DubboConfigBindingBeanPostProcessor
  * @since 2.5.8
  */
-public class DubboConfigBindingRegistrar implements ImportBeanDefinitionRegistrar, EnvironmentAware {
+public class DubboConfigBindingRegistrar implements ImportBeanDefinitionRegistrar, EnvironmentAware,
+        ConfigurableSourceBeanMetadataElement {
 
     private final Log log = LogFactory.getLog(getClass());
 
@@ -120,6 +122,11 @@ public class DubboConfigBindingRegistrar implements ImportBeanDefinitionRegistra
         BeanDefinitionBuilder builder = rootBeanDefinition(configClass);
 
         AbstractBeanDefinition beanDefinition = builder.getBeanDefinition();
+
+        /**
+         * @since 2.7.4
+         */
+        setSource(beanDefinition);
 
         registry.registerBeanDefinition(beanName, beanDefinition);
 
