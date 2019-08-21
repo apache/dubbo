@@ -88,4 +88,6 @@ public interface RegistryConstants {
      * The default request size of service instances
      */
     int DEFAULT_INSTANCES_REQUEST_SIZE = 100;
+
+    String ACCEPTS_KEY = "accepts";
 }
