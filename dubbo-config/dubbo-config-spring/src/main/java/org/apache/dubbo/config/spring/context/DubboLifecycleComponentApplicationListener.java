@@ -42,7 +42,7 @@ import static org.springframework.beans.factory.BeanFactoryUtils.beansOfTypeIncl
  * @see SmartApplicationListener
  * @since 2.7.4
  */
-public class DubboLifecycleComponentsApplicationListener implements ApplicationListener {
+public class DubboLifecycleComponentApplicationListener implements ApplicationListener {
 
     private List<Lifecycle> lifecycleComponents = emptyList();
 
