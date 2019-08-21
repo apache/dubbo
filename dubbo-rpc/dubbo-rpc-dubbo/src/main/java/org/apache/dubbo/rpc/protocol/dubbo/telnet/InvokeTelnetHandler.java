@@ -237,7 +237,7 @@ public class InvokeTelnetHandler implements TelnetHandler {
         buf.append("Methods:\r\n");
         for (int i = 0; i < methods.size(); i++) {
             Method method = methods.get(i);
-            buf.append((i + 1) + ". " + method.getName() + "(");
+            buf.append(i + 1).append(". ").append(method.getName()).append("(");
             Class<?>[] parameterTypes = method.getParameterTypes();
             for (int n = 0; n < parameterTypes.length; n++) {
                 buf.append(parameterTypes[n].getSimpleName());
