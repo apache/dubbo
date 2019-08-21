@@ -19,6 +19,7 @@ package org.apache.dubbo.registry.client;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.common.config.configcenter.file.FileSystemDynamicConfiguration;
+import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -45,7 +46,6 @@ import static com.alibaba.fastjson.JSON.toJSONString;
 import static java.lang.String.format;
 import static java.nio.channels.FileChannel.open;
 import static org.apache.dubbo.common.config.configcenter.file.FileSystemDynamicConfiguration.CONFIG_CENTER_DIR_PARAM_NAME;
-import static org.apache.dubbo.config.DubboShutdownHook.getDubboShutdownHook;
 
 /**
  * File System {@link ServiceDiscovery} implementation
@@ -74,8 +74,7 @@ public class FileSystemServiceDiscovery implements ServiceDiscovery, EventListen
     }
 
     private void registerDubboShutdownHook() {
-        getDubboShutdownHook().addCallback(this::destroy);
-        getDubboShutdownHook().register();
+        ShutdownHookCallbacks.INSTANCE.addCallback(this::destroy);
     }
 
     private void registerListener() {

@@ -31,9 +31,9 @@ public interface ThrowableAction {
     /**
      * Executes the action
      *
-     * @throws Exception if met with error
+     * @throws Throwable if met with error
      */
-    void execute() throws Exception;
+    void execute() throws Throwable;
 
     /**
      * Executes {@link ThrowableAction}
@@ -44,7 +44,7 @@ public interface ThrowableAction {
     static void execute(ThrowableAction action) throws RuntimeException {
         try {
             action.execute();
-        } catch (Exception e) {
+        } catch (Throwable e) {
             throw new RuntimeException(e);
         }
     }
