@@ -24,6 +24,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -34,14 +35,14 @@ public class HttpProtocolTest {
 
     @Test
     public void testJsonrpcProtocol() {
-        JsonRpcServiceImpl server = new JsonRpcServiceImpl();
+        HttpServiceImpl server = new HttpServiceImpl();
         assertFalse(server.isCalled());
         ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
-        URL url = URL.valueOf("http://127.0.0.1:5342/" + JsonRpcService.class.getName() + "?version=1.0.0");
-        Exporter<JsonRpcService> exporter = protocol.export(proxyFactory.getInvoker(server, JsonRpcService.class, url));
-        Invoker<JsonRpcService> invoker = protocol.refer(JsonRpcService.class, url);
-        JsonRpcService client = proxyFactory.getProxy(invoker);
+        URL url = URL.valueOf("http://127.0.0.1:5342/" + HttpService.class.getName() + "?version=1.0.0");
+        Exporter<HttpService> exporter = protocol.export(proxyFactory.getInvoker(server, HttpService.class, url));
+        Invoker<HttpService> invoker = protocol.refer(HttpService.class, url);
+        HttpService client = proxyFactory.getProxy(invoker);
         String result = client.sayHello("haha");
         assertTrue(server.isCalled());
         assertEquals("Hello, haha", result);
@@ -51,32 +52,17 @@ public class HttpProtocolTest {
 
     @Test
     public void testJsonrpcProtocolForServerJetty() {
-        JsonRpcServiceImpl server = new JsonRpcServiceImpl();
+        HttpServiceImpl server = new HttpServiceImpl();
         assertFalse(server.isCalled());
         ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
-        URL url = URL.valueOf("http://127.0.0.1:5342/" + JsonRpcService.class.getName() + "?version=1.0.0&server=jetty");
-        Exporter<JsonRpcService> exporter = protocol.export(proxyFactory.getInvoker(server, JsonRpcService.class, url));
-        Invoker<JsonRpcService> invoker = protocol.refer(JsonRpcService.class, url);
-        JsonRpcService client = proxyFactory.getProxy(invoker);
-        String result = client.sayHello("haha");
-        assertTrue(server.isCalled());
-        assertEquals("Hello, haha", result);
-        invoker.destroy();
-        exporter.unexport();
-    }
-
-    @Test
-    public void testRemoteApplicationName() {
-        HttpServiceImpl server = new HttpServiceImpl();
-        ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
-        Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
-        URL url = URL.valueOf("http://127.0.0.1:5342/" + HttpService.class.getName() + "?release=2.7.0").addParameter("application", "consumer");
+        URL url = URL.valueOf("http://127.0.0.1:5342/" + HttpService.class.getName() + "?version=1.0.0&server=jetty");
         Exporter<HttpService> exporter = protocol.export(proxyFactory.getInvoker(server, HttpService.class, url));
         Invoker<HttpService> invoker = protocol.refer(HttpService.class, url);
         HttpService client = proxyFactory.getProxy(invoker);
-        String result = client.getRemoteApplicationName();
-        Assertions.assertEquals("consumer", result);
+        String result = client.sayHello("haha");
+        assertTrue(server.isCalled());
+        assertEquals("Hello, haha", result);
         invoker.destroy();
         exporter.unexport();
     }
