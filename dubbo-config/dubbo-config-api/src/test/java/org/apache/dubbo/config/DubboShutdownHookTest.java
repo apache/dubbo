@@ -21,9 +21,6 @@ import org.apache.dubbo.event.EventDispatcher;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * {@link DubboShutdownHook} Test
@@ -47,13 +44,13 @@ public class DubboShutdownHookTest implements ShutdownHookCallback {
         eventDispatcher.removeAllEventListeners();
         dubboShutdownHook.clear();
     }
-
-    @Test
-    public void testCallback() {
-        assertEquals(this.getClass(), dubboShutdownHook.getCallbacks().iterator().next().getClass());
-        dubboShutdownHook.addCallback(this);
-        assertEquals(2, dubboShutdownHook.getCallbacks().size());
-    }
+//
+//    @Test
+//    public void testCallback() {
+//        assertEquals(this.getClass(), dubboShutdownHook.getCallbacks().iterator().next().getClass());
+//        dubboShutdownHook.addCallback(this);
+//        assertEquals(2, dubboShutdownHook.getCallbacks().size());
+//    }
 
     @Override
     public void callback() throws Throwable {
