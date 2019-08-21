@@ -79,12 +79,12 @@ public class ThriftProtocol extends AbstractProxyProtocol {
 
     private <T> Runnable exportThreadedSelectorServer(T impl, Class<T> type, URL url) throws RpcException {
 
+
         final TServer thriftServer = getTServer(impl, type, url);
         if (thriftServer == null) {
             return null;
         }
         serverMap.put(url.getAddress(), thriftServer);
-
         new Thread(() -> {
             logger.info("Start Thrift ThreadedSelectorServer");
             thriftServer.serve();
