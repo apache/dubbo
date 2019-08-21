@@ -27,9 +27,9 @@ import org.apache.dubbo.registry.client.ServiceDiscovery;
  */
 public class ServiceDiscoveryExceptionEvent extends ServiceDiscoveryEvent {
 
-    private final Exception cause;
+    private final Throwable cause;
 
-    public ServiceDiscoveryExceptionEvent(ServiceDiscovery source, ServiceDiscovery original, Exception cause) {
+    public ServiceDiscoveryExceptionEvent(ServiceDiscovery source, ServiceDiscovery original, Throwable cause) {
         super(source, original);
         if (cause == null) {
             throw new NullPointerException("The cause of Exception must not null");
@@ -38,11 +38,11 @@ public class ServiceDiscoveryExceptionEvent extends ServiceDiscoveryEvent {
     }
 
     /**
-     * The cause of {@link Exception}
+     * The cause of {@link Throwable}
      *
      * @return non-nul
      */
-    public Exception getCause() {
+    public Throwable getCause() {
         return cause;
     }
 }

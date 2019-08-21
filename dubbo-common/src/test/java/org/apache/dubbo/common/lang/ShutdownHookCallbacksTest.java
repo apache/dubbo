@@ -14,38 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.function;
-
-import java.util.function.Function;
+package org.apache.dubbo.common.lang;
 
 /**
- * A function interface for action with {@link Throwable}
+ * {@link ShutdownHookCallbacks}
  *
- * @see Function
- * @see Throwable
  * @since 2.7.4
  */
-@FunctionalInterface
-public interface ThrowableAction {
-
-    /**
-     * Executes the action
-     *
-     * @throws Throwable if met with error
-     */
-    void execute() throws Throwable;
-
-    /**
-     * Executes {@link ThrowableAction}
-     *
-     * @param action {@link ThrowableAction}
-     * @throws RuntimeException wrap {@link Exception} to {@link RuntimeException}
-     */
-    static void execute(ThrowableAction action) throws RuntimeException {
-        try {
-            action.execute();
-        } catch (Throwable e) {
-            throw new RuntimeException(e);
-        }
-    }
+public class ShutdownHookCallbacksTest {
 }

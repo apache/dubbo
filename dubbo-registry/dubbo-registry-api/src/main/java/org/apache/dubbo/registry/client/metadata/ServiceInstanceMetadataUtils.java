@@ -17,8 +17,6 @@
 package org.apache.dubbo.registry.client.metadata;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.client.ServiceInstance;
@@ -189,10 +187,10 @@ public class ServiceInstanceMetadataUtils {
      *
      * @param registryURL the {@link URL} to connect the registry
      * @return if not found in {@link URL#getParameters() parameters} of {@link URL registry URL}, return
-     * {@link #getDefaultMetadataStorageType()}
+     * {@link WritableMetadataService#DEFAULT_METADATA_STORAGE_TYPE}
      */
     public static String getMetadataStorageType(URL registryURL) {
-        return registryURL.getParameter(METADATA_STORAGE_TYPE_KEY, getDefaultMetadataStorageType());
+        return registryURL.getParameter(METADATA_STORAGE_TYPE_KEY, DEFAULT_METADATA_STORAGE_TYPE);
     }
 
     /**
@@ -200,23 +198,11 @@ public class ServiceInstanceMetadataUtils {
      *
      * @param serviceInstance the specified {@link ServiceInstance}
      * @return if not found in {@link ServiceInstance#getMetadata() metadata} of {@link ServiceInstance}, return
-     * {@link #getDefaultMetadataStorageType()}
+     * {@link WritableMetadataService#DEFAULT_METADATA_STORAGE_TYPE}
      */
     public static String getMetadataStorageType(ServiceInstance serviceInstance) {
         Map<String, String> metadata = serviceInstance.getMetadata();
-        return metadata.getOrDefault(METADATA_STORAGE_TYPE_KEY, getDefaultMetadataStorageType());
-    }
-
-    /**
-     * Get the default Metadata storage type from {@link ApplicationConfig} if present, or
-     * {@link WritableMetadataService#DEFAULT_METADATA_STORAGE_TYPE "default"}
-     *
-     * @return non-null
-     */
-    public static String getDefaultMetadataStorageType() {
-        return ConfigManager.getInstance().getApplication()
-                .map(ApplicationConfig::getMetadataStorageType)
-                .orElse(DEFAULT_METADATA_STORAGE_TYPE);
+        return metadata.getOrDefault(METADATA_STORAGE_TYPE_KEY, DEFAULT_METADATA_STORAGE_TYPE);
     }
 
     /**

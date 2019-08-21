@@ -17,7 +17,7 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.lang.ShutdownHookCallback;
+import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.event.DubboServiceDestroyedEvent;
@@ -28,13 +28,7 @@ import org.apache.dubbo.event.EventDispatcher;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 import org.apache.dubbo.rpc.Protocol;
 
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import static java.util.Collections.sort;
-import static org.apache.dubbo.common.utils.DubboServiceLoader.load;
 
 /**
  * The shutdown hook thread to do the clean up stuff.
@@ -48,6 +42,8 @@ public class DubboShutdownHook extends Thread {
 
     private static final DubboShutdownHook DUBBO_SHUTDOWN_HOOK = new DubboShutdownHook("DubboShutdownHook");
 
+    private final ShutdownHookCallbacks callbacks = ShutdownHookCallbacks.INSTANCE;
+
     /**
      * Has it already been registered or not?
      */
@@ -60,16 +56,8 @@ public class DubboShutdownHook extends Thread {
 
     private final EventDispatcher eventDispatcher = EventDispatcher.getDefaultExtension();
 
-    private final List<ShutdownHookCallback> callbacks = new LinkedList<>();
-
     private DubboShutdownHook(String name) {
         super(name);
-        loadCallbacks();
-    }
-
-    public DubboShutdownHook addCallback(ShutdownHookCallback callback) {
-        this.callbacks.add(callback);
-        return this;
     }
 
     public static DubboShutdownHook getDubboShutdownHook() {
@@ -88,32 +76,12 @@ public class DubboShutdownHook extends Thread {
     /**
      * For testing purpose
      */
-    Collection<ShutdownHookCallback> getCallbacks() {
-        sort(callbacks);
-        return callbacks;
-    }
-
-    /**
-     * For testing purpose
-     */
     void clear() {
         callbacks.clear();
     }
 
-    private void loadCallbacks() {
-        load(ShutdownHookCallback.class).forEach(callbacks::add);
-    }
-
     private void callback() {
-        getCallbacks().forEach(callback -> {
-            try {
-                callback.callback();
-            } catch (Throwable e) {
-                if (logger.isErrorEnabled()) {
-                    logger.error(e.getMessage(), e);
-                }
-            }
-        });
+        callbacks.callback();
     }
 
     /**
