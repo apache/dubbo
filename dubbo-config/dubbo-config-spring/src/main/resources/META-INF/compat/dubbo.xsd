@@ -397,9 +397,14 @@
                 <xsd:documentation><![CDATA[ Is default. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-        <xsd:attribute name="metadata" type="xsd:string">
+        <xsd:attribute name="metadata-type" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The metadta type: local or remote. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="register-consumer" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Register consumer instance or not, default false. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
 
@@ -588,6 +593,17 @@
         <xsd:attribute name="use-as-metadata-center" type="xsd:boolean">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ work as metadata center or not. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="accepts" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation>
+                    <![CDATA[ list of rpc protocols accepted by this registry, separated with ",". ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="preferred" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Is this registry the preferred one. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
     </xsd:complexType>

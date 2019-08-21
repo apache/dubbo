@@ -32,7 +32,6 @@ public class EtcdDubboServiceConsumerBootstrap {
 
         new DubboBootstrap()
                 .application("dubbo-consumer-demo")
-                .defaultMetadataStorageType(true)
                 // Zookeeper
                 .protocol(builder -> builder.port(20887).name("dubbo"))
                 .registry("zookeeper", builder -> builder.address("etcd3://127.0.0.1:2379?registry.type=service&subscribed.services=dubbo-provider-demo"))
@@ -41,7 +40,6 @@ public class EtcdDubboServiceConsumerBootstrap {
 //                .registry("consul", builder -> builder.address("consul://127.0.0.1:8500?registry.type=service&subscribed.services=dubbo-provider-demo").group("namespace1"))
                 .reference("echo", builder -> builder.interfaceClass(EchoService.class).protocol("dubbo"))
                 .reference("user", builder -> builder.interfaceClass(UserService.class).protocol("rest"))
-                .onlyRegisterProvider(true)
                 .start()
                 .await();
 

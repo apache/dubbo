@@ -84,7 +84,6 @@ import static org.apache.dubbo.common.function.ThrowableAction.execute;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
 import static org.apache.dubbo.config.context.ConfigManager.getInstance;
 import static org.apache.dubbo.metadata.WritableMetadataService.getExtension;
-import static org.apache.dubbo.metadata.WritableMetadataService.getMetadataStorageType;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.setMetadataStorageType;
 import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
 
@@ -129,13 +128,6 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
 
     private volatile boolean started = false;
 
-    /**
-     * Only Provider Register
-     */
-    private volatile boolean onlyRegisterProvider = false;
-
-    private volatile boolean defaultMetadataStorageType = true;
-
     private volatile ServiceInstance serviceInstance;
 
     private volatile MetadataService metadataService;
@@ -161,28 +153,13 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
         });
     }
 
-    /**
-     * Set only register provider or not
-     *
-     * @param onlyRegisterProvider if <code>true</code>, only register the provider and reduce the registries' load.
-     * @return {@link DubboBootstrap}
-     */
-    public DubboBootstrap onlyRegisterProvider(boolean onlyRegisterProvider) {
-        this.onlyRegisterProvider = onlyRegisterProvider;
-        return this;
+    private boolean isOnlyRegisterProvider() {
+        Boolean registerConsumer = configManager.getApplicationOrElseThrow().getRegisterConsumer();
+        return registerConsumer == null || !registerConsumer;
     }
 
-    public boolean isOnlyRegisterProvider() {
-        return onlyRegisterProvider;
-    }
-
-    public boolean isDefaultMetadataStorageType() {
-        return defaultMetadataStorageType;
-    }
-
-    public DubboBootstrap defaultMetadataStorageType(boolean defaultMetadataStorageType) {
-        this.defaultMetadataStorageType = defaultMetadataStorageType;
-        return this;
+    private String getMetadataType() {
+        return configManager.getApplicationOrElseThrow().getMetadataType();
     }
 
     public DubboBootstrap metadataReport(MetadataReportConfig metadataReportConfig) {
@@ -456,8 +433,6 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
 
             useRegistryAsConfigCenterIfNecessary();
 
-            initApplicationMetadata();
-
             initMetadataService();
 
             initMetadataServiceExporter();
@@ -473,11 +448,6 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
         }
 
         return this;
-    }
-
-    private void initApplicationMetadata() {
-        String metadataStorageType = getMetadataStorageType(isDefaultMetadataStorageType());
-        getApplication().setMetadataStorageType(metadataStorageType);
     }
 
     private void startConfigCenter() {
@@ -499,7 +469,7 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
                 () -> new IllegalStateException("There's no ApplicationConfig specified.")
         );
 
-        String metadataType = applicationConfig.getMetadataStorageType();
+        String metadataType = applicationConfig.getMetadataType();
         // FIXME, multiple metadata config support.
         Collection<MetadataReportConfig> metadataReportConfigs = configManager.getMetadataConfigs();
         if (CollectionUtils.isEmpty(metadataReportConfigs)) {
@@ -589,7 +559,7 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
      * Initialize {@link MetadataService} from {@link WritableMetadataService}'s extension
      */
     private void initMetadataService() {
-        this.metadataService = getExtension(isDefaultMetadataStorageType());
+        this.metadataService = getExtension(getMetadataType());
     }
 
     /**
@@ -794,7 +764,12 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
         if (cache == null) {
             cache = ReferenceConfigCache.getCache();
         }
-        configManager.getReferences().forEach(cache::get);
+        configManager.getReferences().forEach((rc) -> {
+            // check eager init or not.
+            if (rc.shouldInit()) {
+                cache.get(rc);
+            }
+        });
     }
 
     private void registerServiceInstance() {
@@ -843,7 +818,7 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
 
     private ServiceInstance createServiceInstance(String serviceName, String host, int port) {
         this.serviceInstance = new DefaultServiceInstance(serviceName, host, port);
-        setMetadataStorageType(serviceInstance, isDefaultMetadataStorageType());
+        setMetadataStorageType(serviceInstance, getMetadataType());
         return this.serviceInstance;
     }
 

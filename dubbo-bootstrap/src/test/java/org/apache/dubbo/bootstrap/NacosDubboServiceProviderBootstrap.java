@@ -29,7 +29,6 @@ public class NacosDubboServiceProviderBootstrap {
 
     public static void main(String[] args) {
         new DubboBootstrap()
-                .defaultMetadataStorageType(false)
                 .application("dubbo-provider-demo")
                 // Zookeeper in service registry type
                 .registry("zookeeper", builder -> builder.address("zookeeper://127.0.0.1:2181?registry.type=service"))

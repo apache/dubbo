@@ -106,20 +106,6 @@ public interface WritableMetadataService extends MetadataService {
         return getExtensionLoader(WritableMetadataService.class).getDefaultExtension();
     }
 
-    /**
-     * Get the metadata's storage type
-     *
-     * @param isDefaultStorageType is default storage type or not
-     * @return non-null, {@link #DEFAULT_METADATA_STORAGE_TYPE "default"} or {@link #REMOTE_METADATA_STORAGE_TYPE "remote"}
-     */
-    public static String getMetadataStorageType(boolean isDefaultStorageType) {
-        return isDefaultStorageType ? DEFAULT_METADATA_STORAGE_TYPE : REMOTE_METADATA_STORAGE_TYPE;
-    }
-
-    static WritableMetadataService getExtension(boolean isDefaultStorageType) {
-        return getExtension(getMetadataStorageType(isDefaultStorageType));
-    }
-
     static WritableMetadataService getExtension(String name) {
         return getExtensionLoader(WritableMetadataService.class).getOrDefaultExtension(name);
     }

@@ -215,7 +215,7 @@ public class ServiceInstanceMetadataUtils {
      */
     public static String getDefaultMetadataStorageType() {
         return ConfigManager.getInstance().getApplication()
-                .map(ApplicationConfig::getMetadataStorageType)
+                .map(ApplicationConfig::getMetadataType)
                 .orElse(DEFAULT_METADATA_STORAGE_TYPE);
     }
 
@@ -223,11 +223,11 @@ public class ServiceInstanceMetadataUtils {
      * Set the metadata storage type in specified {@link ServiceInstance service instance}
      *
      * @param serviceInstance      {@link ServiceInstance service instance}
-     * @param isDefaultStorageType is default storage type or not
+     * @param metadataType remote or local
      */
-    public static void setMetadataStorageType(ServiceInstance serviceInstance, boolean isDefaultStorageType) {
+    public static void setMetadataStorageType(ServiceInstance serviceInstance, String metadataType) {
         Map<String, String> metadata = serviceInstance.getMetadata();
-        metadata.put(METADATA_STORAGE_TYPE_KEY, WritableMetadataService.getMetadataStorageType(isDefaultStorageType));
+        metadata.put(METADATA_STORAGE_TYPE_KEY, metadataType);
     }
 
     private static void setProviderHostParam(Map<String, String> params, URL providerURL) {
