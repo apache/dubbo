@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc.protocol.jsonrpc;
+package org.apache.dubbo.rpc.protocol.http;
 
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.dubbo.common.utils.StringUtils;

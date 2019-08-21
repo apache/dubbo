@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc.protocol.jsonrpc;
+package org.apache.dubbo.rpc.protocol.http;
 
 import com.googlecode.jsonrpc4j.spring.JsonProxyFactoryBean;
 import org.aopalliance.intercept.MethodInterceptor;
@@ -39,6 +39,7 @@ public class JsonRpcProxyFactoryBean extends RemoteInvocationBasedAccessor
     public JsonRpcProxyFactoryBean(JsonProxyFactoryBean factoryBean) {
         this.jsonProxyFactoryBean = factoryBean;
     }
+
     @Override
     @SuppressWarnings("unchecked")
     public void afterPropertiesSet() {
