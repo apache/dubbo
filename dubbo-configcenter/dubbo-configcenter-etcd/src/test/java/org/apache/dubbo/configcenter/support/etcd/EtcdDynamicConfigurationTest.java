@@ -18,7 +18,7 @@
 package org.apache.dubbo.configcenter.support.etcd;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.configcenter.ConfigChangeEvent;
+import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 
@@ -104,10 +104,10 @@ public class EtcdDynamicConfigurationTest {
         }
 
         @Override
-        public void process(ConfigChangeEvent event) {
+        public void process(ConfigChangedEvent event) {
             Integer count = countMap.computeIfAbsent(event.getKey(), k -> 0);
             countMap.put(event.getKey(), ++count);
-            value = event.getValue();
+            value = event.getContent();
             latch.countDown();
         }
 

@@ -16,8 +16,11 @@
  */
 package org.apache.dubbo.registry.client.event.listener;
 
+import org.apache.dubbo.event.ConditionalEventListener;
 import org.apache.dubbo.event.EventListener;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
+
+import java.util.Objects;
 
 /**
  * The Service Discovery Changed {@link EventListener Event Listener}
@@ -25,12 +28,35 @@ import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
  * @see ServiceInstancesChangedEvent
  * @since 2.7.4
  */
-public interface ServiceInstancesChangedListener extends EventListener<ServiceInstancesChangedEvent> {
+public abstract class ServiceInstancesChangedListener implements ConditionalEventListener<ServiceInstancesChangedEvent> {
+
+    private final String serviceName;
+
+    protected ServiceInstancesChangedListener(String serviceName) {
+        this.serviceName = serviceName;
+    }
 
     /**
      * On {@link ServiceInstancesChangedEvent the service instances change event}
      *
      * @param event {@link ServiceInstancesChangedEvent}
      */
-    void onEvent(ServiceInstancesChangedEvent event);
+    public abstract void onEvent(ServiceInstancesChangedEvent event);
+
+    /**
+     * Get the correlative service name
+     *
+     * @return the correlative service name
+     */
+    public final String getServiceName() {
+        return serviceName;
+    }
+
+    /**
+     * @param event {@link ServiceInstancesChangedEvent event}
+     * @return If service name matches, return <code>true</code>, or <code>false</code>
+     */
+    public final boolean accept(ServiceInstancesChangedEvent event) {
+        return Objects.equals(getServiceName(), event.getServiceName());
+    }
 }

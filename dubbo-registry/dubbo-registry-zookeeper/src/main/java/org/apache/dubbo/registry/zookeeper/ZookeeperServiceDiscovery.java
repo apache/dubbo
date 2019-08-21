@@ -145,9 +145,9 @@ public class ZookeeperServiceDiscovery implements ServiceDiscovery, EventListene
     }
 
     @Override
-    public void addServiceInstancesChangedListener(String serviceName, ServiceInstancesChangedListener listener)
+    public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener)
             throws NullPointerException, IllegalArgumentException {
-        registerServiceWatcher(serviceName);
+        registerServiceWatcher(listener.getServiceName());
         dispatcher.addEventListener(listener);
     }
 

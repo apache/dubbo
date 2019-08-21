@@ -107,10 +107,10 @@ public class NacosServiceDiscovery implements ServiceDiscovery {
     }
 
     @Override
-    public void addServiceInstancesChangedListener(String serviceName, ServiceInstancesChangedListener listener)
+    public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener)
             throws NullPointerException, IllegalArgumentException {
         execute(namingService, service -> {
-            service.subscribe(serviceName, e -> { // Register Nacos EventListener
+            service.subscribe(listener.getServiceName(), e -> { // Register Nacos EventListener
                 if (e instanceof NamingEvent) {
                     NamingEvent event = (NamingEvent) e;
                     handleEvent(event, listener);

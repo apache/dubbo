@@ -16,8 +16,8 @@
  */
 package org.apache.dubbo.registry.integration;
 
-import org.apache.dubbo.common.config.configcenter.ConfigChangeEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
+import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.extension.ExtensionLoader;
@@ -50,16 +50,16 @@ public abstract class AbstractConfiguratorListener implements ConfigurationListe
     }
 
     @Override
-    public void process(ConfigChangeEvent event) {
+    public void process(ConfigChangedEvent event) {
         if (logger.isInfoEnabled()) {
             logger.info("Notification of overriding rule, change type is: " + event.getChangeType() +
-                    ", raw config content is:\n " + event.getValue());
+                    ", raw config content is:\n " + event.getContent());
         }
 
         if (event.getChangeType().equals(ConfigChangeType.DELETED)) {
             configurators.clear();
         } else {
-            if (!genConfiguratorsFromRawRule(event.getValue())) {
+            if (!genConfiguratorsFromRawRule(event.getContent())) {
                 return;
             }
         }

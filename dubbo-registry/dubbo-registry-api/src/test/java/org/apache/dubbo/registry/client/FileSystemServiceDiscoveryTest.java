@@ -14,46 +14,47 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config;
+package org.apache.dubbo.registry.client;
 
-import org.apache.dubbo.common.lang.ShutdownHookCallback;
-import org.apache.dubbo.event.EventDispatcher;
+import org.apache.dubbo.common.URLBuilder;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.apache.dubbo.registry.client.DefaultServiceInstanceTest.createInstance;
 
 /**
- * {@link DubboShutdownHook} Test
+ * {@link FileSystemServiceDiscovery} Test
  *
  * @since 2.7.4
  */
-public class DubboShutdownHookTest implements ShutdownHookCallback {
+public class FileSystemServiceDiscoveryTest {
 
-    private final DubboShutdownHook dubboShutdownHook = DubboShutdownHook.getDubboShutdownHook();
+    private FileSystemServiceDiscovery serviceDiscovery;
 
-    private final EventDispatcher eventDispatcher = EventDispatcher.getDefaultExtension();
-
+    private ServiceInstance serviceInstance;
 
     @BeforeEach
-    public void before() {
-
+    public void init() throws Exception {
+        serviceDiscovery = new FileSystemServiceDiscovery();
+        serviceDiscovery.initialize(new URLBuilder().build());
+        serviceInstance = createInstance();
     }
 
     @AfterEach
-    public void after() {
-        eventDispatcher.removeAllEventListeners();
-        dubboShutdownHook.clear();
+    public void destroy() throws Exception {
+        serviceDiscovery.destroy();
+        serviceInstance = null;
     }
-//
-//    @Test
-//    public void testCallback() {
-//        assertEquals(this.getClass(), dubboShutdownHook.getCallbacks().iterator().next().getClass());
-//        dubboShutdownHook.addCallback(this);
-//        assertEquals(2, dubboShutdownHook.getCallbacks().size());
-//    }
 
-    @Override
-    public void callback() throws Throwable {
+    @Test
+    public void testRegisterAndUnregister() {
 
+        serviceDiscovery.register(serviceInstance);
+
+        serviceDiscovery.unregister(serviceInstance);
+
+        serviceDiscovery.register(serviceInstance);
     }
 }

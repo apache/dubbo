@@ -49,8 +49,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
-
 /**
  * 2019-07-08
  */
@@ -161,8 +159,8 @@ public class EtcdServiceDiscovery implements ServiceDiscovery, EventListener<Ser
     }
 
     @Override
-    public void addServiceInstancesChangedListener(String serviceName, ServiceInstancesChangedListener listener) throws NullPointerException, IllegalArgumentException {
-        registerServiceWatcher(serviceName);
+    public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener) throws NullPointerException, IllegalArgumentException {
+        registerServiceWatcher(listener.getServiceName());
         dispatcher.addEventListener(listener);
     }
 

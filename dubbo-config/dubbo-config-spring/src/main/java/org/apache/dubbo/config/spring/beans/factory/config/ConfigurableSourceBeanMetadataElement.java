@@ -14,20 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.config.configcenter;
+package org.apache.dubbo.config.spring.beans.factory.config;
 
-import java.util.EventListener;
+import org.springframework.beans.BeanMetadataAttributeAccessor;
+import org.springframework.beans.BeanMetadataElement;
 
 /**
- * Config listener, will get notified when the config it listens on changes.
+ * Configurable the {@link BeanMetadataAttributeAccessor#setSource(Object) source} for {@link BeanMetadataElement}
+ *
+ * @since 2.7.4
  */
-public interface ConfigurationListener extends EventListener {
+public interface ConfigurableSourceBeanMetadataElement {
 
     /**
-     * Listener call back method. Listener gets notified by this method once there's any change happens on the config
-     * the listener listens on.
+     * Set the source into the specified {@link BeanMetadataElement}
      *
-     * @param event config change event
+     * @param beanMetadataElement {@link BeanMetadataElement} instance
      */
-    void process(ConfigChangedEvent event);
+    default void setSource(BeanMetadataElement beanMetadataElement) {
+        if (beanMetadataElement instanceof BeanMetadataAttributeAccessor) {
+            BeanMetadataAttributeAccessor.class.cast(beanMetadataElement).setSource(this);
+        }
+    }
 }

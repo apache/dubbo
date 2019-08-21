@@ -218,8 +218,8 @@ final class EventPublishingServiceDiscovery implements ServiceDiscovery {
     }
 
     @Override
-    public void addServiceInstancesChangedListener(String serviceName, ServiceInstancesChangedListener listener) throws NullPointerException, IllegalArgumentException {
-        serviceDiscovery.addServiceInstancesChangedListener(serviceName, listener);
+    public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener) throws NullPointerException, IllegalArgumentException {
+        serviceDiscovery.addServiceInstancesChangedListener(listener);
     }
 
     @Override
@@ -272,7 +272,7 @@ final class EventPublishingServiceDiscovery implements ServiceDiscovery {
         beforeEvent.ifPresent(this::dispatchEvent);
         try {
             action.execute();
-        } catch (Exception e) {
+        } catch (Throwable e) {
             dispatchEvent(new ServiceDiscoveryExceptionEvent(this, serviceDiscovery, e));
         }
         afterEvent.ifPresent(this::dispatchEvent);

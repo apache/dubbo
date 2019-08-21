@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.bootstrap;
 
-import org.apache.dubbo.bootstrap.rest.UserService;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 
