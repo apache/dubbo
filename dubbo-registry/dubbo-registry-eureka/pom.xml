@@ -27,18 +27,32 @@
         <dependency>
             <groupId>com.netflix.eureka</groupId>
             <artifactId>eureka-client</artifactId>
-            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>javax.inject</groupId>
             <artifactId>javax.inject</artifactId>
             <version>1</version>
-            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>com.netflix.eureka</groupId>
             <artifactId>eureka-core</artifactId>
-            <optional>true</optional>
+        </dependency>
+
+        <!-- Eureka core deps that are now optional -->
+        <dependency>
+            <groupId>com.thoughtworks.xstream</groupId>
+            <artifactId>xstream</artifactId>
+            <version>1.4.10</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.jersey.contribs</groupId>
+            <artifactId>jersey-apache-client4</artifactId>
+            <version>1.19.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.netflix.archaius</groupId>
+            <artifactId>archaius-core</artifactId>
+            <version>0.7.6</version>
         </dependency>
 
     </dependencies>
