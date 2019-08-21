@@ -16,25 +16,24 @@
  */
 package org.apache.dubbo.config.spring.context.annotation;
 
-import org.springframework.context.Lifecycle;
-import org.springframework.context.annotation.Import;
+import org.apache.dubbo.common.context.Lifecycle;
+import org.apache.dubbo.config.spring.context.DubboLifecycleComponentApplicationListener;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
+import org.springframework.core.type.AnnotationMetadata;
+
+import static org.apache.dubbo.config.spring.util.AnnotatedBeanDefinitionRegistryUtils.registerBeans;
 
 /**
- * Enables Dubbo {@link Lifecycle} components
+ * A {@link ImportBeanDefinitionRegistrar register} for the {@link Lifecycle Dubbo Lifecycle} components
  *
  * @since 2.7.4
  */
-@Target({ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-@Inherited
-@Documented
-@Import(DubboLifecycleComponentRegistrar.class)
-public @interface EnableDubboLifecycle {
+public class DubboLifecycleComponentRegistrar implements ImportBeanDefinitionRegistrar {
+
+    @Override
+    public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
+        registerBeans(registry, DubboLifecycleComponentApplicationListener.class);
+    }
 }

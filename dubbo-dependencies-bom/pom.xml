@@ -140,6 +140,9 @@
 
         <embedded_redis_version>0.6</embedded_redis_version>
 
+        <!-- Eureka -->
+        <eureka.version>1.9.12</eureka.version>
+
         <jaxb_version>2.2.7</jaxb_version>
         <activation_version>1.2.0</activation_version>
         <test_container_version>1.11.2</test_container_version>
@@ -255,6 +258,17 @@
                 <groupId>com.pszymczyk.consul</groupId>
                 <artifactId>embedded-consul</artifactId>
                 <version>${consul_process_version}</version>
+            </dependency>
+            <!-- Eureka -->
+            <dependency>
+                <groupId>com.netflix.eureka</groupId>
+                <artifactId>eureka-client</artifactId>
+                <version>${eureka.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.netflix.eureka</groupId>
+                <artifactId>eureka-core</artifactId>
+                <version>${eureka.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.googlecode.xmemcached</groupId>

@@ -30,6 +30,8 @@ import org.apache.dubbo.config.spring.ConfigCenterBean;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.beans.factory.config.ConfigurableSourceBeanMetadataElement;
+import org.apache.dubbo.config.spring.context.DubboLifecycleComponentApplicationListener;
+import org.apache.dubbo.config.spring.util.AnnotatedBeanDefinitionRegistryUtils;
 
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -37,6 +39,8 @@ import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.context.annotation.AnnotationConfigUtils;
 import org.w3c.dom.Element;
+
+import static org.apache.dubbo.config.spring.util.AnnotatedBeanDefinitionRegistryUtils.registerBeans;
 
 /**
  * DubboNamespaceHandler
@@ -76,18 +80,34 @@ public class DubboNamespaceHandler extends NamespaceHandlerSupport implements Co
      */
     @Override
     public BeanDefinition parse(Element element, ParserContext parserContext) {
-        registerAnnotationConfigProcessors(parserContext);
+        BeanDefinitionRegistry registry = parserContext.getRegistry();
+        registerAnnotationConfigProcessors(registry);
+        registerDubboLifecycleComponentApplicationListener(registry);
         BeanDefinition beanDefinition = super.parse(element, parserContext);
         setSource(beanDefinition);
         return beanDefinition;
     }
 
     /**
-     * @param parserContext {@link ParserContext}
+     * Register {@link DubboLifecycleComponentApplicationListener} as a Spring Bean
+     *
+     * @param registry {@link BeanDefinitionRegistry}
+     * @see DubboLifecycleComponentApplicationListener
+     * @see AnnotatedBeanDefinitionRegistryUtils#registerBeans(BeanDefinitionRegistry, Class[])
      * @since 2.7.4
      */
-    private void registerAnnotationConfigProcessors(ParserContext parserContext) {
-        BeanDefinitionRegistry registry = parserContext.getRegistry();
+    private void registerDubboLifecycleComponentApplicationListener(BeanDefinitionRegistry registry) {
+        registerBeans(registry, DubboLifecycleComponentApplicationListener.class);
+    }
+
+    /**
+     * Register the processors for the Spring Annotation-Driven features
+     *
+     * @param registry {@link BeanDefinitionRegistry}
+     * @see AnnotationConfigUtils
+     * @since 2.7.4
+     */
+    private void registerAnnotationConfigProcessors(BeanDefinitionRegistry registry) {
         AnnotationConfigUtils.registerAnnotationConfigProcessors(registry);
     }
 }
