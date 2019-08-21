@@ -30,10 +30,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
-
-import static org.apache.dubbo.config.spring.util.BeanFactoryUtils.addApplicationListener;
 
 /**
  * ServiceFactoryBean
@@ -41,7 +37,7 @@ import static org.apache.dubbo.config.spring.util.BeanFactoryUtils.addApplicatio
  * @export
  */
 public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean, DisposableBean,
-        ApplicationContextAware, ApplicationListener<ContextRefreshedEvent>, BeanNameAware,
+        ApplicationContextAware, BeanNameAware,
         ApplicationEventPublisherAware {
 
 
@@ -52,8 +48,6 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
     private transient ApplicationContext applicationContext;
 
     private transient String beanName;
-
-    private transient boolean supportedApplicationListener;
 
     private ApplicationEventPublisher applicationEventPublisher;
 
@@ -71,7 +65,6 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
     public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
         SpringExtensionFactory.addApplicationContext(applicationContext);
-        supportedApplicationListener = addApplicationListener(applicationContext, this);
     }
 
     @Override
@@ -89,16 +82,6 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
     }
 
     @Override
-    public void onApplicationEvent(ContextRefreshedEvent event) {
-        if (!isExported() && !isUnexported()) {
-            if (logger.isInfoEnabled()) {
-                logger.info("The service ready on spring started. service: " + getInterface());
-            }
-            export();
-        }
-    }
-
-    @Override
     public void afterPropertiesSet() throws Exception {
         if (StringUtils.isEmpty(getPath())) {
             if (StringUtils.isNotEmpty(beanName)
@@ -106,9 +89,6 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
                     && beanName.startsWith(getInterface())) {
                 setPath(beanName);
             }
-        }
-        if (!supportedApplicationListener) {
-            export();
         }
     }
 

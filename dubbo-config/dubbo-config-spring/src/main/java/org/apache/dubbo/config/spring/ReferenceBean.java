@@ -75,6 +75,7 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
             BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ConfigCenterBean.class, false, false);
         }
 
+        // eager init if necessary.
         if (shouldInit()) {
             getObject();
         }

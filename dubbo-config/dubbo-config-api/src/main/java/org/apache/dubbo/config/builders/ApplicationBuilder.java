@@ -177,7 +177,7 @@ public class ApplicationBuilder extends AbstractBuilder<ApplicationConfig, Appli
         super.build(config);
 
         config.setName(name);
-        config.setMetadataStorageType(metadata);
+        config.setMetadataType(metadata);
         config.setVersion(this.version);
         config.setOwner(this.owner);
         config.setOrganization(this.organization);

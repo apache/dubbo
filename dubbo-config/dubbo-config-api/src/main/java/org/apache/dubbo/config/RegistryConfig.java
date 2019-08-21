@@ -160,6 +160,13 @@ public class RegistryConfig extends AbstractConfig {
      */
     private Boolean useAsMetadataCenter;
 
+    /**
+     * list of rpc protocols accepted by this registry, for example, "dubbo,rest"
+     */
+    private String accepts;
+
+    private Boolean preferred;
+
     public RegistryConfig() {
     }
 
@@ -452,6 +459,22 @@ public class RegistryConfig extends AbstractConfig {
 
     public void setUseAsMetadataCenter(Boolean useAsMetadataCenter) {
         this.useAsMetadataCenter = useAsMetadataCenter;
+    }
+
+    public String getAccepts() {
+        return accepts;
+    }
+
+    public void setAccepts(String accepts) {
+        this.accepts = accepts;
+    }
+
+    public Boolean getPreferred() {
+        return preferred;
+    }
+
+    public void setPreferred(Boolean preferred) {
+        this.preferred = preferred;
     }
 
     @Override

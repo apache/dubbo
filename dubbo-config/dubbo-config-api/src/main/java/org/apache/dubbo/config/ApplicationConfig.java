@@ -150,7 +150,9 @@ public class ApplicationConfig extends AbstractConfig {
     /**
      * Metadata type, local or remote, if choose remote, you need to further specify metadata center.
      */
-    private String metadataStorageType;
+    private String metadataType;
+
+    private Boolean registerConsumer;
 
     public ApplicationConfig() {
     }
@@ -388,12 +390,20 @@ public class ApplicationConfig extends AbstractConfig {
         return !StringUtils.isEmpty(name);
     }
 
-    public String getMetadataStorageType() {
-        return metadataStorageType;
+    public String getMetadataType() {
+        return metadataType;
     }
 
-    public void setMetadataStorageType(String metadataStorageType) {
-        this.metadataStorageType = metadataStorageType;
+    public void setMetadataType(String metadataType) {
+        this.metadataType = metadataType;
+    }
+
+    public Boolean getRegisterConsumer() {
+        return registerConsumer;
+    }
+
+    public void setRegisterConsumer(Boolean registerConsumer) {
+        this.registerConsumer = registerConsumer;
     }
 
     @Override

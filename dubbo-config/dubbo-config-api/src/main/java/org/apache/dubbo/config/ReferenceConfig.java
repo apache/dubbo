@@ -490,7 +490,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         return shouldCheck;
     }
 
-    protected boolean shouldInit() {
+    public boolean shouldInit() {
         Boolean shouldInit = isInit();
         if (shouldInit == null && getConsumer() != null) {
             shouldInit = getConsumer().isInit();
