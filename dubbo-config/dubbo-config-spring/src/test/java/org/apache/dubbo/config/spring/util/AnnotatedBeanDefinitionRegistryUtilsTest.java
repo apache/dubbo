@@ -65,6 +65,9 @@ public class AnnotatedBeanDefinitionRegistryUtilsTest {
 
         registerBeans(context, A.class, A.class);
 
+        registerBeans(context, A.class);
+
+
         context.refresh();
 
         A a = context.getBean(A.class);
