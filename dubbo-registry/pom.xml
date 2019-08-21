@@ -40,5 +40,6 @@
         <module>dubbo-registry-nacos</module>
         <module>dubbo-registry-multiple</module>
         <module>dubbo-registry-sofa</module>
+        <module>dubbo-registry-eureka</module>
     </modules>
 </project>
