@@ -29,6 +29,7 @@ import com.alibaba.dubbo.rpc.support.ProtocolUtils;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.remoting.RemoteAccessException;
 import org.springframework.remoting.httpinvoker.HttpComponentsHttpInvokerRequestExecutor;
+import org.springframework.remoting.httpinvoker.HttpInvokerClientConfiguration;
 import org.springframework.remoting.httpinvoker.HttpInvokerProxyFactoryBean;
 import org.springframework.remoting.httpinvoker.HttpInvokerServiceExporter;
 import org.springframework.remoting.httpinvoker.SimpleHttpInvokerRequestExecutor;
@@ -38,7 +39,11 @@ import org.springframework.remoting.support.RemoteInvocationFactory;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
 import java.util.Map;
@@ -139,6 +144,32 @@ public class HttpProtocol extends AbstractProxyProtocol {
                     super.prepareConnection(con, contentLength);
                     con.setReadTimeout(url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT));
                     con.setConnectTimeout(url.getParameter(Constants.CONNECT_TIMEOUT_KEY, Constants.DEFAULT_CONNECT_TIMEOUT));
+                }
+
+                @Override
+                protected void writeRequestBody(HttpInvokerClientConfiguration config, HttpURLConnection con, ByteArrayOutputStream baos) throws IOException {
+                    InputStream inputStream = null;
+                    ObjectInputStream objectInputStream = null;
+                    try {
+                        inputStream = new ByteArrayInputStream(baos.toByteArray());
+                        objectInputStream = new ObjectInputStream(inputStream);
+                        Object o = objectInputStream.readObject();
+                        if (o instanceof RemoteInvocation) {
+                            RemoteInvocation invocation = (RemoteInvocation) o;
+                            String methodName = invocation.getMethodName();
+                            con.setReadTimeout(url.getMethodParameter(methodName, Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT));
+                        }
+                    } catch (ClassNotFoundException e) {
+                        throw new RuntimeException(e.getMessage(), e);
+                    } finally {
+                        if (objectInputStream != null) {
+                            objectInputStream.close();
+                        }
+                        if (inputStream != null) {
+                            inputStream.close();
+                        }
+                    }
+                    super.writeRequestBody(config, con, baos);
                 }
             };
             httpProxyFactoryBean.setHttpInvokerRequestExecutor(httpInvokerRequestExecutor);

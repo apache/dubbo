@@ -178,6 +178,29 @@ public class HttpProtocolTest {
     }
 
     @Test
+    public void testMethodTimeOut() {
+        HttpServiceImpl server = new HttpServiceImpl();
+        ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+        Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+        URL url = URL.valueOf("http://127.0.0.1:5342/" + HttpService.class.getName() + "?version=1.0.0&timeout=10");
+        Exporter<HttpService> exporter = protocol.export(proxyFactory.getInvoker(server, HttpService.class, url));
+        Invoker<HttpService> invoker = protocol.refer(HttpService.class, url.addParameter("timeOut.timeout","8000"));
+        HttpService client = proxyFactory.getProxy(invoker);
+        try {
+            client.timeOut(6000);
+            fail();
+        } catch (RpcException expected) {
+            Assert.assertEquals(true, expected.isTimeout());
+        } finally {
+            invoker.destroy();
+            exporter.unexport();
+        }
+
+    }
+
+
+
+    @Test
     public void testCustomException() {
         HttpServiceImpl server = new HttpServiceImpl();
         ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
