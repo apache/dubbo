@@ -17,7 +17,6 @@
 package org.apache.dubbo.registry.eureka;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
@@ -25,7 +24,6 @@ import org.apache.dubbo.registry.client.ServiceInstance;
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.EurekaInstanceConfig;
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.appinfo.MyDataCenterInstanceConfig;
 import com.netflix.config.ConfigurationManager;
 import com.netflix.discovery.DefaultEurekaClientConfig;
 import com.netflix.discovery.DiscoveryClient;
@@ -42,26 +40,14 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import static java.util.Collections.emptyList;
+
 /**
  * Eureka {@link ServiceDiscovery} implementation based on Eureka API
  */
 public class EurekaServiceDiscovery implements ServiceDiscovery {
 
-    /**
-     * The namespace for {@link EurekaInstanceConfig} is compatible with Spring Cloud
-     */
-    public static final String EUREKA_INSTANCE_NAMESPACE = "eureka.instance.";
-
-    /**
-     * The namespace for {@link EurekaClient} is compatible with Spring Cloud
-     */
-    public static final String EUREKA_CLIENT_NAMESPACE = "eureka.client.";
-
-    private EurekaInstanceConfig eurekaInstanceConfig;
-
     private ApplicationInfoManager applicationInfoManager;
-
-    private EurekaClientConfig eurekaClientConfig;
 
     private EurekaClient eurekaClient;
 
@@ -69,10 +55,6 @@ public class EurekaServiceDiscovery implements ServiceDiscovery {
     public void initialize(URL registryURL) throws Exception {
         Properties eurekaConfigProperties = buildEurekaConfigProperties(registryURL);
         initConfigurationManager(eurekaConfigProperties);
-        initEurekaInstanceConfig();
-        initApplicationInfoManager();
-        initEurekaClientConfig();
-        initEurekaClient();
     }
 
     /**
@@ -89,15 +71,19 @@ public class EurekaServiceDiscovery implements ServiceDiscovery {
         parameters.entrySet().stream()
                 .filter(this::filterEurekaProperty)
                 .forEach(propertyEntry -> {
-                    String rawPropertyName = propertyEntry.getKey();
-                    String propertyValue = propertyEntry.getValue();
-                    properties.setProperty(normalizePropertyName(rawPropertyName), propertyValue);
+                    properties.setProperty(propertyEntry.getKey(), propertyEntry.getValue());
                 });
         return properties;
     }
 
+    private boolean filterEurekaProperty(Map.Entry<String, String> propertyEntry) {
+        String propertyName = propertyEntry.getKey();
+        return propertyName.startsWith("eureka.");
+    }
+
     private void setDefaultProperties(URL registryURL, Properties properties) {
         setDefaultServiceURL(registryURL, properties);
+        setDefaultInitialInstanceInfoReplicationIntervalSeconds(properties);
     }
 
     private void setDefaultServiceURL(URL registryURL, Properties properties) {
@@ -105,19 +91,18 @@ public class EurekaServiceDiscovery implements ServiceDiscovery {
                 .append(registryURL.getHost())
                 .append(":")
                 .append(registryURL.getPort())
-                .append("/")
-                .append(registryURL.getPath());
-        properties.setProperty(EUREKA_CLIENT_NAMESPACE + "serviceUrl.default", defaultServiceURLBuilder.toString());
+                .append("/eureka");
+        properties.setProperty("eureka.serviceUrl.default", defaultServiceURLBuilder.toString());
     }
 
-    private boolean filterEurekaProperty(Map.Entry<String, String> propertyEntry) {
-        String propertyName = propertyEntry.getKey();
-        return propertyName.startsWith(EUREKA_INSTANCE_NAMESPACE) ||
-                propertyName.startsWith(EUREKA_CLIENT_NAMESPACE);
-    }
-
-    private String normalizePropertyName(String rawPropertyName) {
-        return StringUtils.replace(rawPropertyName, "-", ".");
+    /**
+     * Set the default property for {@link EurekaClientConfig#getInitialInstanceInfoReplicationIntervalSeconds()}
+     * which means do register immediately
+     *
+     * @param properties {@link Properties}
+     */
+    private void setDefaultInitialInstanceInfoReplicationIntervalSeconds(Properties properties) {
+        properties.setProperty("eureka.appinfo.initial.replicate.time", "0");
     }
 
     /**
@@ -129,55 +114,53 @@ public class EurekaServiceDiscovery implements ServiceDiscovery {
         ConfigurationManager.loadProperties(eurekaConfigProperties);
     }
 
-    /**
-     * Initialize {@link #eurekaInstanceConfig} property
-     */
-    private void initEurekaInstanceConfig() {
-        this.eurekaInstanceConfig = new MyDataCenterInstanceConfig(EUREKA_INSTANCE_NAMESPACE);
-    }
-
-    /**
-     * Initialize {@link #applicationInfoManager} property
-     */
-    private void initApplicationInfoManager() {
+    private void initApplicationInfoManager(ServiceInstance serviceInstance) {
+        EurekaInstanceConfig eurekaInstanceConfig = buildEurekaInstanceConfig(serviceInstance);
         this.applicationInfoManager = new ApplicationInfoManager(eurekaInstanceConfig, (ApplicationInfoManager.OptionalArgs) null);
     }
 
     /**
      * Initialize {@link #eurekaClient} property
+     *
+     * @param serviceInstance {@link ServiceInstance}
      */
-    private void initEurekaClientConfig() {
-        this.eurekaClientConfig = new DefaultEurekaClientConfig(EUREKA_CLIENT_NAMESPACE);
-    }
-
-    /**
-     * Initialize {@link #eurekaClient} property
-     */
-    private void initEurekaClient() {
+    private void initEurekaClient(ServiceInstance serviceInstance) {
+        if (eurekaClient != null) {
+            return;
+        }
+        initApplicationInfoManager(serviceInstance);
+        EurekaClientConfig eurekaClientConfig = new DefaultEurekaClientConfig();
         this.eurekaClient = new DiscoveryClient(applicationInfoManager, eurekaClientConfig);
     }
 
     @Override
     public void destroy() throws Exception {
-        this.eurekaInstanceConfig = null;
-        this.applicationInfoManager = null;
-        this.eurekaClientConfig = null;
-        this.eurekaClient = null;
+        if (eurekaClient != null) {
+            this.eurekaClient.shutdown();
+        }
     }
 
     @Override
     public void register(ServiceInstance serviceInstance) throws RuntimeException {
-        EurekaInstanceConfig eurekaInstanceConfig = buildEurekaInstanceConfig(serviceInstance);
+        initEurekaClient(serviceInstance);
+        setInstanceStatus(InstanceInfo.InstanceStatus.UP);
+    }
+
+    private void setInstanceStatus(InstanceInfo.InstanceStatus status) {
+        if (applicationInfoManager != null) {
+            this.applicationInfoManager.setInstanceStatus(status);
+        }
     }
 
     @Override
     public void update(ServiceInstance serviceInstance) throws RuntimeException {
-
+        setInstanceStatus(serviceInstance.isHealthy() ? InstanceInfo.InstanceStatus.UP :
+                InstanceInfo.InstanceStatus.UNKNOWN);
     }
 
     @Override
     public void unregister(ServiceInstance serviceInstance) throws RuntimeException {
-
+        setInstanceStatus(InstanceInfo.InstanceStatus.UP);
     }
 
     @Override
@@ -199,7 +182,13 @@ public class EurekaServiceDiscovery implements ServiceDiscovery {
 
     @Override
     public List<ServiceInstance> getInstances(String serviceName) throws NullPointerException {
-        List<InstanceInfo> infos = this.eurekaClient.getInstancesByVipAddress(serviceName, false);
+        Application application = this.eurekaClient.getApplication(serviceName);
+
+        if (application == null) {
+            return emptyList();
+        }
+
+        List<InstanceInfo> infos = application.getInstances();
         List<ServiceInstance> instances = new ArrayList<>();
         for (InstanceInfo info : infos) {
             instances.add(buildServiceInstance(info));
@@ -216,13 +205,12 @@ public class EurekaServiceDiscovery implements ServiceDiscovery {
     }
 
     private EurekaInstanceConfig buildEurekaInstanceConfig(ServiceInstance serviceInstance) {
-        MutableEurekaInstanceConfig eurekaInstanceConfig = new MutableEurekaInstanceConfig();
-        eurekaInstanceConfig.setInstanceId(serviceInstance.getId());
-        eurekaInstanceConfig.setAppname(serviceInstance.getServiceName());
-        eurekaInstanceConfig.setIpAddress(serviceInstance.getHost());
-        eurekaInstanceConfig.setNonSecurePort(serviceInstance.getPort());
-        eurekaInstanceConfig.setInitialStatus(serviceInstance.isHealthy() ? InstanceInfo.InstanceStatus.UP :
-                InstanceInfo.InstanceStatus.UNKNOWN);
+        ConfigurableEurekaInstanceConfig eurekaInstanceConfig = new ConfigurableEurekaInstanceConfig()
+                .setInstanceId(serviceInstance.getId())
+                .setAppname(serviceInstance.getServiceName())
+                .setIpAddress(serviceInstance.getHost())
+                .setNonSecurePort(serviceInstance.getPort())
+                .setMetadataMap(serviceInstance.getMetadata());
         return eurekaInstanceConfig;
     }
 }

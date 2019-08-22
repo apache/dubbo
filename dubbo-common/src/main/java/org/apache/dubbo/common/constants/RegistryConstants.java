@@ -58,7 +58,7 @@ public interface RegistryConstants {
      *
      * @since 2.7.4
      */
-    String REGISTRY_TYPE_KEY = "registry.type";
+    String REGISTRY_TYPE_KEY = "registry-type";
 
     /**
      * The parameter value of Service-Oriented Registry type
@@ -67,6 +67,11 @@ public interface RegistryConstants {
      */
     String SERVICE_REGISTRY_TYPE = "service";
 
+    /**
+     * The protocol for Service Discovery
+     *
+     * @since 2.7.4
+     */
     String SERVICE_REGISTRY_PROTOCOL = "service-discovery-registry";
 
     /**
@@ -74,7 +79,7 @@ public interface RegistryConstants {
      *
      * @since 2.7.4
      */
-    String SUBSCRIBED_SERVICE_NAMES_KEY = "subscribed.services";
+    String SUBSCRIBED_SERVICE_NAMES_KEY = "subscribed-services";
 
 
     /**

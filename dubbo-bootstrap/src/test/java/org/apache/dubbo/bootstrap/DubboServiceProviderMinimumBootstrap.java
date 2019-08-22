@@ -25,7 +25,7 @@ public class DubboServiceProviderMinimumBootstrap {
         new DubboBootstrap()
                 .application("dubbo-provider-demo")
 //                .registry(builder -> builder.address("zookeeper://127.0.0.1:2181?registry.type=service"))
-                .registry(builder -> builder.address("file://?registry.type=service"))
+                .registry(builder -> builder.address("eureka://127.0.0.1:8761?registry-type=service"))
                 .protocol(builder -> builder.port(-1).name("dubbo"))
                 .service(builder -> builder.interfaceClass(EchoService.class).ref(new EchoServiceImpl()))
                 .start()

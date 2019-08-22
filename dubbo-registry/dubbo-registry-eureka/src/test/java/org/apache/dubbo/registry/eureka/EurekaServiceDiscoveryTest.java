@@ -17,6 +17,8 @@
 package org.apache.dubbo.registry.eureka;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.registry.client.DefaultServiceInstance;
+import org.apache.dubbo.registry.client.ServiceInstance;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,12 +35,16 @@ public class EurekaServiceDiscoveryTest {
 
     private EurekaServiceDiscovery serviceDiscovery;
 
+    private ServiceInstance serviceInstance;
+
     private URL registryURL = URL.valueOf("eureka://127.0.0.1:8761/eureka");
 
     @BeforeEach
     public void init() throws Exception {
         serviceDiscovery = new EurekaServiceDiscovery();
         serviceDiscovery.initialize(registryURL);
+        serviceInstance = new DefaultServiceInstance("test", "127.0.0.1", 8080);
+        serviceDiscovery.register(serviceInstance);
     }
 
     @AfterEach

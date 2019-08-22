@@ -25,9 +25,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Mutable {@link EurekaInstanceConfig} implementation
+ * Configurable {@link EurekaInstanceConfig} implementation
  */
-class MutableEurekaInstanceConfig implements EurekaInstanceConfig {
+class ConfigurableEurekaInstanceConfig implements EurekaInstanceConfig {
 
     private String appname;
 
@@ -90,8 +90,9 @@ class MutableEurekaInstanceConfig implements EurekaInstanceConfig {
         return appname;
     }
 
-    public void setAppname(String appname) {
+    public ConfigurableEurekaInstanceConfig setAppname(String appname) {
         this.appname = appname;
+        return this;
     }
 
     @Override
@@ -99,8 +100,9 @@ class MutableEurekaInstanceConfig implements EurekaInstanceConfig {
         return appGroupName;
     }
 
-    public void setAppGroupName(String appGroupName) {
+    public ConfigurableEurekaInstanceConfig setAppGroupName(String appGroupName) {
         this.appGroupName = appGroupName;
+        return this;
     }
 
     @Override
@@ -108,8 +110,9 @@ class MutableEurekaInstanceConfig implements EurekaInstanceConfig {
         return instanceEnabledOnit;
     }
 
-    public void setInstanceEnabledOnit(boolean instanceEnabledOnit) {
+    public ConfigurableEurekaInstanceConfig setInstanceEnabledOnit(boolean instanceEnabledOnit) {
         this.instanceEnabledOnit = instanceEnabledOnit;
+        return this;
     }
 
     @Override
@@ -117,8 +120,9 @@ class MutableEurekaInstanceConfig implements EurekaInstanceConfig {
         return nonSecurePort;
     }
 
-    public void setNonSecurePort(int nonSecurePort) {
+    public ConfigurableEurekaInstanceConfig setNonSecurePort(int nonSecurePort) {
         this.nonSecurePort = nonSecurePort;
+        return this;
     }
 
     @Override
@@ -126,8 +130,9 @@ class MutableEurekaInstanceConfig implements EurekaInstanceConfig {
         return securePort;
     }
 
-    public void setSecurePort(int securePort) {
+    public ConfigurableEurekaInstanceConfig setSecurePort(int securePort) {
         this.securePort = securePort;
+        return this;
     }
 
     @Override
@@ -140,12 +145,14 @@ class MutableEurekaInstanceConfig implements EurekaInstanceConfig {
         return securePortEnabled;
     }
 
-    public void setNonSecurePortEnabled(boolean nonSecurePortEnabled) {
+    public ConfigurableEurekaInstanceConfig setNonSecurePortEnabled(boolean nonSecurePortEnabled) {
         this.nonSecurePortEnabled = nonSecurePortEnabled;
+        return this;
     }
 
-    public void setSecurePortEnabled(boolean securePortEnabled) {
+    public ConfigurableEurekaInstanceConfig setSecurePortEnabled(boolean securePortEnabled) {
         this.securePortEnabled = securePortEnabled;
+        return this;
     }
 
     @Override
@@ -153,8 +160,9 @@ class MutableEurekaInstanceConfig implements EurekaInstanceConfig {
         return leaseRenewalIntervalInSeconds;
     }
 
-    public void setLeaseRenewalIntervalInSeconds(int leaseRenewalIntervalInSeconds) {
+    public ConfigurableEurekaInstanceConfig setLeaseRenewalIntervalInSeconds(int leaseRenewalIntervalInSeconds) {
         this.leaseRenewalIntervalInSeconds = leaseRenewalIntervalInSeconds;
+        return this;
     }
 
     @Override
@@ -162,8 +170,9 @@ class MutableEurekaInstanceConfig implements EurekaInstanceConfig {
         return leaseExpirationDurationInSeconds;
     }
 
-    public void setLeaseExpirationDurationInSeconds(int leaseExpirationDurationInSeconds) {
+    public ConfigurableEurekaInstanceConfig setLeaseExpirationDurationInSeconds(int leaseExpirationDurationInSeconds) {
         this.leaseExpirationDurationInSeconds = leaseExpirationDurationInSeconds;
+        return this;
     }
 
     @Override
@@ -171,8 +180,9 @@ class MutableEurekaInstanceConfig implements EurekaInstanceConfig {
         return virtualHostName;
     }
 
-    public void setVirtualHostName(String virtualHostName) {
+    public ConfigurableEurekaInstanceConfig setVirtualHostName(String virtualHostName) {
         this.virtualHostName = virtualHostName;
+        return this;
     }
 
     @Override
@@ -180,8 +190,9 @@ class MutableEurekaInstanceConfig implements EurekaInstanceConfig {
         return instanceId;
     }
 
-    public void setInstanceId(String instanceId) {
+    public ConfigurableEurekaInstanceConfig setInstanceId(String instanceId) {
         this.instanceId = instanceId;
+        return this;
     }
 
     @Override
@@ -199,12 +210,14 @@ class MutableEurekaInstanceConfig implements EurekaInstanceConfig {
         return null;
     }
 
-    public void setSecureVirtualHostName(String secureVirtualHostName) {
+    public ConfigurableEurekaInstanceConfig setSecureVirtualHostName(String secureVirtualHostName) {
         this.secureVirtualHostName = secureVirtualHostName;
+        return this;
     }
 
-    public void setASGName(String aSGName) {
+    public ConfigurableEurekaInstanceConfig setASGName(String aSGName) {
         this.aSGName = aSGName;
+        return this;
     }
 
     @Override
@@ -212,8 +225,9 @@ class MutableEurekaInstanceConfig implements EurekaInstanceConfig {
         return metadataMap;
     }
 
-    public void setMetadataMap(Map<String, String> metadataMap) {
+    public ConfigurableEurekaInstanceConfig setMetadataMap(Map<String, String> metadataMap) {
         this.metadataMap = metadataMap;
+        return this;
     }
 
     @Override
@@ -221,8 +235,9 @@ class MutableEurekaInstanceConfig implements EurekaInstanceConfig {
         return dataCenterInfo;
     }
 
-    public void setDataCenterInfo(DataCenterInfo dataCenterInfo) {
+    public ConfigurableEurekaInstanceConfig setDataCenterInfo(DataCenterInfo dataCenterInfo) {
         this.dataCenterInfo = dataCenterInfo;
+        return this;
     }
 
     @Override
@@ -230,8 +245,9 @@ class MutableEurekaInstanceConfig implements EurekaInstanceConfig {
         return ipAddress;
     }
 
-    public void setIpAddress(String ipAddress) {
+    public ConfigurableEurekaInstanceConfig setIpAddress(String ipAddress) {
         this.ipAddress = ipAddress;
+        return this;
     }
 
     @Override
@@ -239,8 +255,9 @@ class MutableEurekaInstanceConfig implements EurekaInstanceConfig {
         return statusPageUrlPath;
     }
 
-    public void setStatusPageUrlPath(String statusPageUrlPath) {
+    public ConfigurableEurekaInstanceConfig setStatusPageUrlPath(String statusPageUrlPath) {
         this.statusPageUrlPath = statusPageUrlPath;
+        return this;
     }
 
     @Override
@@ -248,8 +265,9 @@ class MutableEurekaInstanceConfig implements EurekaInstanceConfig {
         return statusPageUrl;
     }
 
-    public void setStatusPageUrl(String statusPageUrl) {
+    public ConfigurableEurekaInstanceConfig setStatusPageUrl(String statusPageUrl) {
         this.statusPageUrl = statusPageUrl;
+        return this;
     }
 
     @Override
@@ -257,8 +275,9 @@ class MutableEurekaInstanceConfig implements EurekaInstanceConfig {
         return homePageUrlPath;
     }
 
-    public void setHomePageUrlPath(String homePageUrlPath) {
+    public ConfigurableEurekaInstanceConfig setHomePageUrlPath(String homePageUrlPath) {
         this.homePageUrlPath = homePageUrlPath;
+        return this;
     }
 
     @Override
@@ -266,8 +285,9 @@ class MutableEurekaInstanceConfig implements EurekaInstanceConfig {
         return homePageUrl;
     }
 
-    public void setHomePageUrl(String homePageUrl) {
+    public ConfigurableEurekaInstanceConfig setHomePageUrl(String homePageUrl) {
         this.homePageUrl = homePageUrl;
+        return this;
     }
 
     @Override
@@ -275,8 +295,9 @@ class MutableEurekaInstanceConfig implements EurekaInstanceConfig {
         return healthCheckUrlPath;
     }
 
-    public void setHealthCheckUrlPath(String healthCheckUrlPath) {
+    public ConfigurableEurekaInstanceConfig setHealthCheckUrlPath(String healthCheckUrlPath) {
         this.healthCheckUrlPath = healthCheckUrlPath;
+        return this;
     }
 
     @Override
@@ -284,8 +305,9 @@ class MutableEurekaInstanceConfig implements EurekaInstanceConfig {
         return healthCheckUrl;
     }
 
-    public void setHealthCheckUrl(String healthCheckUrl) {
+    public ConfigurableEurekaInstanceConfig setHealthCheckUrl(String healthCheckUrl) {
         this.healthCheckUrl = healthCheckUrl;
+        return this;
     }
 
     @Override
@@ -293,8 +315,9 @@ class MutableEurekaInstanceConfig implements EurekaInstanceConfig {
         return secureHealthCheckUrl;
     }
 
-    public void setSecureHealthCheckUrl(String secureHealthCheckUrl) {
+    public ConfigurableEurekaInstanceConfig setSecureHealthCheckUrl(String secureHealthCheckUrl) {
         this.secureHealthCheckUrl = secureHealthCheckUrl;
+        return this;
     }
 
     @Override
@@ -302,32 +325,36 @@ class MutableEurekaInstanceConfig implements EurekaInstanceConfig {
         return namespace;
     }
 
-    public void setNamespace(String namespace) {
+    public ConfigurableEurekaInstanceConfig setNamespace(String namespace) {
         this.namespace = namespace;
+        return this;
     }
 
     public String getHostname() {
         return hostname;
     }
 
-    public void setHostname(String hostname) {
+    public ConfigurableEurekaInstanceConfig setHostname(String hostname) {
         this.hostname = hostname;
+        return this;
     }
 
     public boolean isPreferIpAddress() {
         return preferIpAddress;
     }
 
-    public void setPreferIpAddress(boolean preferIpAddress) {
+    public ConfigurableEurekaInstanceConfig setPreferIpAddress(boolean preferIpAddress) {
         this.preferIpAddress = preferIpAddress;
+        return this;
     }
 
     public InstanceInfo.InstanceStatus getInitialStatus() {
         return initialStatus;
     }
 
-    public void setInitialStatus(InstanceInfo.InstanceStatus initialStatus) {
+    public ConfigurableEurekaInstanceConfig setInitialStatus(InstanceInfo.InstanceStatus initialStatus) {
         this.initialStatus = initialStatus;
+        return this;
     }
 
     @Override
@@ -335,7 +362,8 @@ class MutableEurekaInstanceConfig implements EurekaInstanceConfig {
         return defaultAddressResolutionOrder;
     }
 
-    public void setDefaultAddressResolutionOrder(String[] defaultAddressResolutionOrder) {
+    public ConfigurableEurekaInstanceConfig setDefaultAddressResolutionOrder(String[] defaultAddressResolutionOrder) {
         this.defaultAddressResolutionOrder = defaultAddressResolutionOrder;
+        return this;
     }
 }
