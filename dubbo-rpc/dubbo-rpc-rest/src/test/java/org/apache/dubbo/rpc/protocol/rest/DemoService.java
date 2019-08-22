@@ -38,4 +38,9 @@ public interface DemoService {
     @Path("/say")
     @Consumes({MediaType.TEXT_PLAIN})
     String sayHello(String name);
+
+    @POST
+    @Path("/attach")
+    @Consumes({MediaType.TEXT_PLAIN})
+    String getAttachments(String name);
 }

@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.rest;
 
+import com.alibaba.fastjson.JSON;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.RpcContext;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
@@ -51,15 +52,13 @@ public class RpcContextFilter implements ContainerRequestFilter, ClientRequestFi
 
         RpcContext.getContext().setResponse(ResteasyProviderFactory.getContextData(HttpServletResponse.class));
 
-        String headers = requestContext.getHeaderString(DUBBO_ATTACHMENT_HEADER);
+        String headers = requestContext.getHeaders().getFirst(DUBBO_ATTACHMENT_HEADER);
         if (headers != null) {
-            for (String header : headers.split(",")) {
-                int index = header.indexOf("=");
-                if (index > 0) {
-                    String key = header.substring(0, index);
-                    String value = header.substring(index + 1);
-                    if (!StringUtils.isEmpty(key)) {
-                        RpcContext.getContext().setAttachment(key.trim(), value.trim());
+            Map<String, String> attachments = JSON.parseObject(headers, Map.class);
+            if (attachments != null && attachments.size() > 0) {
+                for (Map.Entry<String, String> entry : attachments.entrySet()) {
+                    if (!StringUtils.isBlank(entry.getKey())) {
+                        RpcContext.getContext().setAttachment(entry.getKey().trim(), entry.getValue().trim());
                     }
                 }
             }
@@ -68,37 +67,10 @@ public class RpcContextFilter implements ContainerRequestFilter, ClientRequestFi
 
     @Override
     public void filter(ClientRequestContext requestContext) throws IOException {
-        int size = 0;
-        for (Map.Entry<String, String> entry : RpcContext.getContext().getAttachments().entrySet()) {
-            String key = entry.getKey();
-            String value = entry.getValue();
-            if (illegalForRest(key) || illegalForRest(value)) {
-                throw new IllegalArgumentException("The attachments of " + RpcContext.class.getSimpleName() + " must not contain ',' or '=' when using rest protocol");
-            }
-
-            // TODO for now we don't consider the differences of encoding and server limit
-            if (value != null) {
-                size += value.getBytes(StandardCharsets.UTF_8).length;
-            }
-            if (size > MAX_HEADER_SIZE) {
-                throw new IllegalArgumentException("The attachments of " + RpcContext.class.getSimpleName() + " is too big");
-            }
-
-            String attachments = key + "=" + value;
-            requestContext.getHeaders().add(DUBBO_ATTACHMENT_HEADER, attachments);
+        String attachments = JSON.toJSONString(RpcContext.getContext().getAttachments());
+        if (attachments.getBytes(StandardCharsets.UTF_8).length > MAX_HEADER_SIZE) {
+            throw new IllegalArgumentException("The attachments of " + RpcContext.class.getSimpleName() + " is too big");
         }
-    }
-
-    /**
-     * If a string value illegal for rest protocol(',' and '=' is illegal for rest protocol).
-     *
-     * @param v string value
-     * @return true for illegal
-     */
-    private boolean illegalForRest(String v) {
-        if (StringUtils.isNotEmpty(v)) {
-            return v.contains(",") || v.contains("=");
-        }
-        return false;
+        requestContext.getHeaders().putSingle(DUBBO_ATTACHMENT_HEADER, attachments);
     }
 }

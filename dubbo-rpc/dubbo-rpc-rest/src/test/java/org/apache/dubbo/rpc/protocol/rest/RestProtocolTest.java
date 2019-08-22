@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.rest;
 
+import com.alibaba.fastjson.JSON;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -35,11 +36,15 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import static org.apache.dubbo.rpc.protocol.rest.Constants.EXTENSION_KEY;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class RestProtocolTest {
     private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension("rest");
@@ -66,7 +71,7 @@ public class RestProtocolTest {
         DemoService client = proxy.getProxy(invoker);
         String result = client.sayHello("haha");
         Assertions.assertTrue(server.isCalled());
-        Assertions.assertEquals("Hello, haha", result);
+        assertEquals("Hello, haha", result);
         invoker.destroy();
         exporter.unexport();
     }
@@ -86,7 +91,7 @@ public class RestProtocolTest {
         DemoService client = proxy.getProxy(invoker);
         String result = client.sayHello("haha");
         Assertions.assertTrue(server.isCalled());
-        Assertions.assertEquals("Hello, haha", result);
+        assertEquals("Hello, haha", result);
         invoker.destroy();
         exporter.unexport();
     }
@@ -202,10 +207,17 @@ public class RestProtocolTest {
         DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));
 
         String value = null;
+
+        Integer result = demoService.hello(1, 2);
         // put a null value into attachment.
         RpcContext.getContext().setAttachment("key", value);
-        Integer result = demoService.hello(1, 2);
-
+        RpcContext.getContext().setAttachment("key=,key", "value");
+        Map<String, String> attachMap = new HashMap<>();
+        attachMap.put("key", value);
+        attachMap.put("key=,key", "value");
+        String attachments = demoService.getAttachments("hello");
+        assertEquals(attachMap.get("key=,key"), JSON.parseObject(attachments, Map.class).get("key=,key"));
+        assertEquals(attachMap.get("key"), JSON.parseObject(attachments, Map.class).get("key"));
         assertThat(result, is(3));
 
         exporter.unexport();
