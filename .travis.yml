@@ -1,15 +1,31 @@
 language: java
-sudo: false # faster builds
+sudo: false
 
-jdk:
-    - oraclejdk8
-    - openjdk7
+matrix:
+  include:
+    - env:
+        - ZULUJDK=8
+    - env:
+        - ZULUJDK=7
+
+before_install:
+  # installing the rpm package
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq rpm
+  # adding $HOME/.sdkman to cache would create an empty directory, which interferes with the initial installation
+  - "[[ -d $HOME/.sdkman/bin/ ]] || rm -rf $HOME/.sdkman/"
+  - curl -sL https://get.sdkman.io | bash
+  - echo sdkman_auto_answer=true > $HOME/.sdkman/etc/config
+  - source "$HOME/.sdkman/bin/sdkman-init.sh"
+
+install:
+  - sdk install java $(sdk list java | grep -o "$ZULUJDK\.[0-9\.]*-zulu" | head -1)
+  - unset JAVA_HOME
 
 cache:
   directories:
-    - $HOME/.m2
-
-install: true
+    - "$HOME/.m2/repository"
+    - "$HOME/.m2/wrapper"
 
 script:
   - travis_wait 30 ./mvnw clean install -DskipTests=false -Dcheckstyle.skip=false -Drat.skip=false -Dmaven.javadoc.skip=true
