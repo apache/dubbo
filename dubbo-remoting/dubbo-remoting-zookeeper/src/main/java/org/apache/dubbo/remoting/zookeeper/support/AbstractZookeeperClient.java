@@ -16,10 +16,10 @@
  */
 package org.apache.dubbo.remoting.zookeeper.support;
 
-import com.google.common.collect.Sets;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.remoting.zookeeper.ChildListener;
 import org.apache.dubbo.remoting.zookeeper.DataListener;
 import org.apache.dubbo.remoting.zookeeper.StateListener;
@@ -46,7 +46,7 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
 
     private volatile boolean closed = false;
 
-    private final Set<String>  persistentExistNodePath = Sets.newConcurrentHashSet();
+    private final Set<String>  persistentExistNodePath = new ConcurrentHashSet<>();
 
     public AbstractZookeeperClient(URL url) {
         this.url = url;
