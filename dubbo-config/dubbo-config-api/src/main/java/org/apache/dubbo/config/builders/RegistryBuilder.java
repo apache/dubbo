@@ -134,6 +134,23 @@ public class RegistryBuilder extends AbstractBuilder<RegistryConfig, RegistryBui
      */
     private String extraKeys;
 
+    /**
+     * the address work as config center or not
+     */
+    private Boolean useAsConfigCenter;
+
+    /**
+     * the address work as remote metadata center or not
+     */
+    private Boolean useAsMetadataCenter;
+
+    /**
+     * list of rpc protocols accepted by this registry, for example, "dubbo,rest"
+     */
+    private String accepts;
+
+    private Boolean preferred;
+
     public static RegistryBuilder newBuilder() {
         return new RegistryBuilder();
     }
@@ -279,6 +296,26 @@ public class RegistryBuilder extends AbstractBuilder<RegistryConfig, RegistryBui
         return getThis();
     }
 
+    public RegistryBuilder useAsConfigCenter(Boolean useAsConfigCenter) {
+        this.useAsConfigCenter = useAsConfigCenter;
+        return getThis();
+    }
+
+    public RegistryBuilder useAsMetadataCenter(Boolean useAsMetadataCenter) {
+        this.useAsMetadataCenter = useAsMetadataCenter;
+        return getThis();
+    }
+
+    public RegistryBuilder preferred(Boolean preferred) {
+        this.preferred = preferred;
+        return getThis();
+    }
+
+    public RegistryBuilder accepts(String accepts) {
+        this.accepts = accepts;
+        return getThis();
+    }
+
     public RegistryConfig build() {
         RegistryConfig registry = new RegistryConfig();
         super.build(registry);
@@ -306,6 +343,10 @@ public class RegistryBuilder extends AbstractBuilder<RegistryConfig, RegistryBui
         registry.setUsername(username);
         registry.setVersion(version);
         registry.setWait(wait);
+        registry.setUseAsConfigCenter(useAsConfigCenter);
+        registry.setUseAsMetadataCenter(useAsMetadataCenter);
+        registry.setAccepts(accepts);
+        registry.setPreferred(preferred);
 
         return registry;
     }

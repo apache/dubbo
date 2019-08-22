@@ -63,7 +63,7 @@ public class DubboServiceProviderBootstrap {
 //        userService.setRegistries(Arrays.asList(interfaceRegistry, serviceRegistry));
 
         ApplicationConfig applicationConfig = new ApplicationConfig("dubbo-provider-demo");
-        applicationConfig.setMetadataStorageType("remote");
+        applicationConfig.setMetadataType("remote");
         new DubboBootstrap()
                 .application(applicationConfig)
                 // Zookeeper in service registry type

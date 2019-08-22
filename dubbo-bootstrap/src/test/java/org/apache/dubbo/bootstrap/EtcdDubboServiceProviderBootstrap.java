@@ -63,10 +63,9 @@ public class EtcdDubboServiceProviderBootstrap {
 //        userService.setRegistries(Arrays.asList(interfaceRegistry, serviceRegistry));
 
         ApplicationConfig applicationConfig = new ApplicationConfig("dubbo-provider-demo");
-        applicationConfig.setMetadataStorageType("remote");
+        applicationConfig.setMetadataType("remote");
         new DubboBootstrap()
                 .application(applicationConfig)
-                .defaultMetadataStorageType(true)
                 // Zookeeper in service registry type
 //                .registry("zookeeper", builder -> builder.address("zookeeper://127.0.0.1:2181?registry.type=service"))
                 // Nacos

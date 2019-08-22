@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.config.spring.context.annotation;
 
-import org.apache.dubbo.config.spring.context.DubboLifecycleComponentsApplicationListener;
-
 import org.springframework.context.Lifecycle;
 import org.springframework.context.annotation.Import;
 
@@ -37,6 +35,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
-@Import(DubboLifecycleComponentsApplicationListener.class)
+@Import(DubboLifecycleComponentRegistrar.class)
 public @interface EnableDubboLifecycle {
 }

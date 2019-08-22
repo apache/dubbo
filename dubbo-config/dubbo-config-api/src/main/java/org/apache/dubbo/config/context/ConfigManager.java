@@ -117,6 +117,10 @@ public class ConfigManager {
         return ofNullable(getConfig(ApplicationConfig.class));
     }
 
+    public ApplicationConfig getApplicationOrElseThrow() {
+        return getApplication().orElseThrow(() -> new IllegalStateException("There's no ApplicationConfig specified."));
+    }
+
     // MonitorConfig correlative methods
 
     public void setMonitor(MonitorConfig monitor) {

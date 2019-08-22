@@ -60,13 +60,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DISABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PREFERRED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.APP_DYNAMIC_CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
@@ -146,9 +146,9 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     private URL turnRegistryUrlToConsumerUrl(URL url) {
         // save any parameter in registry that will be useful to the new url.
-        String isDefault = url.getParameter(DEFAULT_KEY);
+        String isDefault = url.getParameter(PREFERRED_KEY);
         if (StringUtils.isNotEmpty(isDefault)) {
-            queryMap.put(REGISTRY_KEY + "." + DEFAULT_KEY, isDefault);
+            queryMap.put(REGISTRY_KEY + "." + PREFERRED_KEY, isDefault);
         }
         return URLBuilder.from(url)
                 .setPath(url.getServiceInterface())

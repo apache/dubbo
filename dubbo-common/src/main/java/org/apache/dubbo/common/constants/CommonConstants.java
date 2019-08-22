@@ -118,6 +118,8 @@ public interface CommonConstants {
 
     String DEFAULT_KEY = "default";
 
+    String PREFERRED_KEY = "preferred";
+
     /**
      * Default timeout value in milliseconds for server shutdown
      */
