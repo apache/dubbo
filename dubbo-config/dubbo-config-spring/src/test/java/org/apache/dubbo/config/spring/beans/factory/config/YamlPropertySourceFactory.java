@@ -30,7 +30,6 @@ import org.yaml.snakeyaml.resolver.Resolver;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.regex.Pattern;
 
 /**
