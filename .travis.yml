@@ -9,9 +9,6 @@ matrix:
         - ZULUJDK=7
 
 before_install:
-  # installing the rpm package
-  - sudo apt-get update -qq
-  - sudo apt-get install -qq rpm
   # adding $HOME/.sdkman to cache would create an empty directory, which interferes with the initial installation
   - "[[ -d $HOME/.sdkman/bin/ ]] || rm -rf $HOME/.sdkman/"
   - curl -sL https://get.sdkman.io | bash
