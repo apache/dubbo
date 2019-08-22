@@ -18,6 +18,8 @@ package org.apache.dubbo.rpc.protocol.dubbo.telnet;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
@@ -35,6 +37,7 @@ import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.apache.dubbo.config.Constants.TEST_ENVIRONMENT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.given;
@@ -52,12 +55,16 @@ public class InvokerTelnetHandlerTest {
 
     @BeforeEach
     public void setup() {
+        ApplicationConfig application = new ApplicationConfig();
+        application.setEnvironment(TEST_ENVIRONMENT);
+        ConfigManager.getInstance().setApplication(application);
         ApplicationModel.reset();
     }
 
     @AfterEach
     public void after() {
         ProtocolUtils.closeAll();
+        ConfigManager.getInstance().clear();
     }
 
     @SuppressWarnings("unchecked")

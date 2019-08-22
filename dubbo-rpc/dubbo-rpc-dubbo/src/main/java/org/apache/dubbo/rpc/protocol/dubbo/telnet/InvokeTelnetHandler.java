@@ -20,6 +20,7 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import org.apache.dubbo.remoting.telnet.support.Help;
@@ -37,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.apache.dubbo.common.utils.PojoUtils.realize;
+import static org.apache.dubbo.config.Constants.PRODUCTION_ENVIRONMENT;
 
 /**
  * InvokeTelnetHandler
@@ -53,6 +55,9 @@ public class InvokeTelnetHandler implements TelnetHandler {
     @Override
     @SuppressWarnings("unchecked")
     public String telnet(Channel channel, String message) {
+        if (PRODUCTION_ENVIRONMENT.equals(ConfigManager.getInstance().getApplication().get().getEnvironment())) {
+            return "Production environment doesn't approve invoke dubbo service by telnet";
+        }
         if (StringUtils.isEmpty(message)) {
             return "Please input method name, eg: \r\ninvoke xxxMethod(1234, \"abcd\", {\"prop\" : \"value\"})\r\n" +
                     "invoke XxxService.xxxMethod(1234, \"abcd\", {\"prop\" : \"value\"})\r\n" +

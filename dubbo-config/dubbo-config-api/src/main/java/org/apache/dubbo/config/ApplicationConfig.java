@@ -91,7 +91,7 @@ public class ApplicationConfig extends AbstractConfig {
     /**
      * Environment, e.g. dev, test or production
      */
-    private String environment;
+    private String environment = PRODUCTION_ENVIRONMENT;
 
     /**
      * Java compiler
