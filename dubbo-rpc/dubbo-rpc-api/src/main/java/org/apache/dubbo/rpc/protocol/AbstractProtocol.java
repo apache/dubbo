@@ -76,7 +76,10 @@ public abstract class AbstractProtocol implements Protocol {
     }
 
     protected <T> Exporter<T> createExporter(Invoker<T> invoker, Runnable unexportCallback) {
-        String serviceKey = serviceKey(invoker.getUrl());
+        return createExporter(invoker, unexportCallback, serviceKey(invoker.getUrl()));
+    }
+
+    protected <T> Exporter<T> createExporter(Invoker<T> invoker, Runnable unexportCallback, String serviceKey) {
         Exporter<T> exporter = new AbstractExporter<T>(invoker) {
             @Override
             public void unexport() {

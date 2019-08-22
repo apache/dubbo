@@ -60,7 +60,7 @@ public class InjvmProtocol extends AbstractProtocol implements Protocol {
         Exporter<?> result = null;
 
         if (!key.getServiceKey().contains("*")) {
-            result = map.get(serviceKey(key));
+            result = map.get(key.getServiceKey());
         } else {
             if (CollectionUtils.isNotEmptyMap(map)) {
                 for (Exporter<?> exporter : map.values()) {
@@ -89,7 +89,7 @@ public class InjvmProtocol extends AbstractProtocol implements Protocol {
 
     @Override
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
-        return createExporter(invoker);
+        return createExporter(invoker, null, invoker.getUrl().getServiceKey());
     }
 
     @Override
