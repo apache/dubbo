@@ -60,7 +60,7 @@ public class InjvmProtocol extends AbstractProtocol implements Protocol {
         Exporter<?> result = null;
 
         if (!key.getServiceKey().contains("*")) {
-            result = map.get(key.getServiceKey());
+            result = map.get(serviceKey(key));
         } else {
             if (CollectionUtils.isNotEmptyMap(map)) {
                 for (Exporter<?> exporter : map.values()) {
