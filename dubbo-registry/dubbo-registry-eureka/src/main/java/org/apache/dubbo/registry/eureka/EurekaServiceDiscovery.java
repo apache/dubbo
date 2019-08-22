@@ -17,18 +17,22 @@
 package org.apache.dubbo.registry.eureka;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.event.EventDispatcher;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
+import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.EurekaInstanceConfig;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.config.ConfigurationManager;
+import com.netflix.discovery.CacheRefreshedEvent;
 import com.netflix.discovery.DefaultEurekaClientConfig;
 import com.netflix.discovery.DiscoveryClient;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
+import com.netflix.discovery.EurekaEvent;
 import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.Applications;
 
@@ -37,24 +41,37 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
 import static java.util.Collections.emptyList;
+import static org.apache.dubbo.event.EventDispatcher.getDefaultExtension;
+import static org.apache.dubbo.registry.client.ServiceDiscoveryRegistry.getSubscribedServices;
 
 /**
  * Eureka {@link ServiceDiscovery} implementation based on Eureka API
  */
 public class EurekaServiceDiscovery implements ServiceDiscovery {
 
+    private final EventDispatcher eventDispatcher = getDefaultExtension();
+
     private ApplicationInfoManager applicationInfoManager;
 
     private EurekaClient eurekaClient;
+
+    private Set<String> subscribedServices;
+
+    /**
+     * last apps hash code is used to identify the {@link Applications} is changed or not
+     */
+    private String lastAppsHashCode;
 
     @Override
     public void initialize(URL registryURL) throws Exception {
         Properties eurekaConfigProperties = buildEurekaConfigProperties(registryURL);
         initConfigurationManager(eurekaConfigProperties);
+        initSubscribedServices(registryURL);
     }
 
     /**
@@ -74,6 +91,15 @@ public class EurekaServiceDiscovery implements ServiceDiscovery {
                     properties.setProperty(propertyEntry.getKey(), propertyEntry.getValue());
                 });
         return properties;
+    }
+
+    /**
+     * Initialize {@link #subscribedServices} property
+     *
+     * @param registryURL the {@link URL url} to connect Eureka
+     */
+    private void initSubscribedServices(URL registryURL) {
+        this.subscribedServices = getSubscribedServices(registryURL);
     }
 
     private boolean filterEurekaProperty(Map.Entry<String, String> propertyEntry) {
@@ -129,8 +155,44 @@ public class EurekaServiceDiscovery implements ServiceDiscovery {
             return;
         }
         initApplicationInfoManager(serviceInstance);
+        EurekaClient eurekaClient = createEurekaClient();
+        registerEurekaEventListener(eurekaClient);
+        // set eurekaClient
+        this.eurekaClient = eurekaClient;
+    }
+
+    private void registerEurekaEventListener(EurekaClient eurekaClient) {
+        eurekaClient.registerEventListener(this::onEurekaEvent);
+    }
+
+    private void onEurekaEvent(EurekaEvent event) {
+        if (event instanceof CacheRefreshedEvent) {
+            onCacheRefreshedEvent(CacheRefreshedEvent.class.cast(event));
+        }
+    }
+
+    private void onCacheRefreshedEvent(CacheRefreshedEvent event) {
+        synchronized (this) { // Make sure thread-safe in async execution
+            Applications applications = eurekaClient.getApplications();
+            String appsHashCode = applications.getAppsHashCode();
+            if (!Objects.equals(lastAppsHashCode, appsHashCode)) { // Changed
+                // Dispatch Events
+                dispatchServiceInstancesChangedEvent();
+                lastAppsHashCode = appsHashCode; // update current result
+            }
+        }
+    }
+
+    private void dispatchServiceInstancesChangedEvent() {
+        subscribedServices.forEach(serviceName -> {
+            eventDispatcher.dispatch(new ServiceInstancesChangedEvent(serviceName, getInstances(serviceName)));
+        });
+    }
+
+    private EurekaClient createEurekaClient() {
         EurekaClientConfig eurekaClientConfig = new DefaultEurekaClientConfig();
-        this.eurekaClient = new DiscoveryClient(applicationInfoManager, eurekaClientConfig);
+        DiscoveryClient eurekaClient = new DiscoveryClient(applicationInfoManager, eurekaClientConfig);
+        return eurekaClient;
     }
 
     @Override
