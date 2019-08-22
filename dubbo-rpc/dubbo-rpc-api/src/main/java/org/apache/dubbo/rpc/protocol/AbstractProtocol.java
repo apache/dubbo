@@ -28,6 +28,7 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -42,7 +43,9 @@ public abstract class AbstractProtocol implements Protocol {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    protected final Map<String, Exporter<?>> exporterMap = new ConcurrentHashMap<String, Exporter<?>>();
+    private final Map<String, Exporter<?>> exporterMap = new ConcurrentHashMap<String, Exporter<?>>();
+
+    private final static Set<Exporter<?>> ALL_EXPORTERS = new ConcurrentHashSet<>();
 
     //TODO SoftReference
     protected final Set<Invoker<?>> invokers = new ConcurrentHashSet<Invoker<?>>();
@@ -54,6 +57,55 @@ public abstract class AbstractProtocol implements Protocol {
 
     protected static String serviceKey(int port, String serviceName, String serviceVersion, String serviceGroup) {
         return ProtocolUtils.serviceKey(port, serviceName, serviceVersion, serviceGroup);
+    }
+
+    protected Exporter<?> getExporter(URL url) {
+        return exporterMap.get(serviceKey(url));
+    }
+
+    protected Exporter<?> getExporter(String serviceKey) {
+        return exporterMap.get(serviceKey);
+    }
+
+    public Map<String, Exporter<?>> getExporterMap() {
+        return Collections.unmodifiableMap(exporterMap);
+    }
+
+    protected <T> Exporter<T> createExporter(Invoker<T> invoker) {
+        return createExporter(invoker, null);
+    }
+
+    protected <T> Exporter<T> createExporter(Invoker<T> invoker, Runnable unexportCallback) {
+        String serviceKey = serviceKey(invoker.getUrl());
+        Exporter<T> exporter = new AbstractExporter<T>(invoker) {
+            @Override
+            public void unexport() {
+                super.unexport();
+                unregisterExporter(serviceKey);
+                if (unexportCallback != null) {
+                    try {
+                        unexportCallback.run();
+                    } catch (Throwable t) {
+                        logger.warn(t.getMessage(), t);
+                    }
+                }
+            }
+        };
+        exporterMap.put(serviceKey, exporter);
+        ALL_EXPORTERS.add(exporter);
+        return exporter;
+    }
+
+    private Exporter<?> unregisterExporter(String serviceKey) {
+        Exporter<?> exporter = exporterMap.remove(serviceKey);
+        if (exporter != null) {
+            ALL_EXPORTERS.remove(exporter);
+        }
+        return exporter;
+    }
+
+    public static Set<Exporter<?>> getAllExporters() {
+        return ALL_EXPORTERS;
     }
 
     @Override
@@ -72,7 +124,7 @@ public abstract class AbstractProtocol implements Protocol {
             }
         }
         for (String key : new ArrayList<String>(exporterMap.keySet())) {
-            Exporter<?> exporter = exporterMap.remove(key);
+            Exporter<?> exporter = unregisterExporter(key);
             if (exporter != null) {
                 try {
                     if (logger.isInfoEnabled()) {

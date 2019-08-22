@@ -36,7 +36,6 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.AbstractProtocol;
-import org.apache.dubbo.rpc.protocol.dubbo.DubboExporter;
 
 import java.util.ArrayList;
 import java.util.Set;
@@ -71,15 +70,14 @@ public class ThriftProtocol extends AbstractProtocol {
             if (msg instanceof Invocation) {
                 Invocation inv = (Invocation) msg;
                 String path = inv.getAttachments().get(PATH_KEY);
-                String serviceKey = serviceKey(channel.getLocalAddress().getPort(),
-                        path, null, null);
-                DubboExporter<?> exporter = (DubboExporter<?>) exporterMap.get(serviceKey);
+                String serviceKey = serviceKey(channel.getLocalAddress().getPort(), path, null, null);
+                Exporter<?> exporter = getExporter(serviceKey);
                 if (exporter == null) {
                     throw new RemotingException(channel,
                             "Not found exported service: "
                                     + serviceKey
                                     + " in "
-                                    + exporterMap.keySet()
+                                    + getExporterMap().keySet()
                                     + ", may be version or group mismatch "
                                     + ", channel: consumer: "
                                     + channel.getRemoteAddress()
@@ -132,11 +130,7 @@ public class ThriftProtocol extends AbstractProtocol {
             serverMap.put(key, getServer(url));
         }
         // export service.
-        key = serviceKey(url);
-        DubboExporter<T> exporter = new DubboExporter<T>(invoker, key, exporterMap);
-        exporterMap.put(key, exporter);
-
-        return exporter;
+        return createExporter(invoker);
     }
 
     @Override

@@ -16,22 +16,17 @@
  */
 package org.apache.dubbo.rpc.protocol.dubbo.telnet;
 
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
-import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import org.apache.dubbo.remoting.telnet.support.Help;
 import org.apache.dubbo.rpc.AppResponse;
-import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ProviderMethodModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
-import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
 import com.alibaba.fastjson.JSON;
 
@@ -49,7 +44,7 @@ import static org.apache.dubbo.common.utils.PojoUtils.realize;
 @Activate
 @Help(parameter = "[service.]method(args) ", summary = "Invoke the service method.",
         detail = "Invoke the service method.")
-public class InvokeTelnetHandler implements TelnetHandler {
+public class InvokeTelnetHandler extends AbstractTelnetHandler {
 
     public static final String INVOKE_MESSAGE_KEY = "telnet.invoke.method.message";
     public static final String INVOKE_METHOD_LIST_KEY = "telnet.invoke.method.list";
@@ -93,29 +88,27 @@ public class InvokeTelnetHandler implements TelnetHandler {
             selectedProvider = (ProviderModel) channel.getAttribute(INVOKE_METHOD_PROVIDER_KEY);
             invokeMethod = (Method) channel.getAttribute(SelectTelnetHandler.SELECT_METHOD_KEY);
         } else {
-            for (ProviderModel provider : ApplicationModel.allProviderModels()) {
-                if (isServiceMatch(service, provider)) {
-                    selectedProvider = provider;
-                    List<Method> methodList = findSameSignatureMethod(provider.getAllMethods(), method, list);
-                    if (CollectionUtils.isNotEmpty(methodList)) {
-                        if (methodList.size() == 1) {
-                            invokeMethod = methodList.get(0);
-                        } else {
-                            List<Method> matchMethods = findMatchMethods(methodList, list);
-                            if (CollectionUtils.isNotEmpty(matchMethods)) {
-                                if (matchMethods.size() == 1) {
-                                    invokeMethod = matchMethods.get(0);
-                                } else { //exist overridden method
-                                    channel.setAttribute(INVOKE_METHOD_PROVIDER_KEY, provider);
-                                    channel.setAttribute(INVOKE_METHOD_LIST_KEY, matchMethods);
-                                    channel.setAttribute(INVOKE_MESSAGE_KEY, message);
-                                    printSelectMessage(buf, matchMethods);
-                                    return buf.toString();
-                                }
+            ProviderModel provider = findProvider(service);
+            if (provider != null) {
+                selectedProvider = provider;
+                List<Method> methodList = findSameSignatureMethod(provider.getAllMethods(), method, list);
+                if (CollectionUtils.isNotEmpty(methodList)) {
+                    if (methodList.size() == 1) {
+                        invokeMethod = methodList.get(0);
+                    } else {
+                        List<Method> matchMethods = findMatchMethods(methodList, list);
+                        if (CollectionUtils.isNotEmpty(matchMethods)) {
+                            if (matchMethods.size() == 1) {
+                                invokeMethod = matchMethods.get(0);
+                            } else { //exist overridden method
+                                channel.setAttribute(INVOKE_METHOD_PROVIDER_KEY, provider);
+                                channel.setAttribute(INVOKE_METHOD_LIST_KEY, matchMethods);
+                                channel.setAttribute(INVOKE_MESSAGE_KEY, message);
+                                printSelectMessage(buf, matchMethods);
+                                return buf.toString();
                             }
                         }
                     }
-                    break;
                 }
             }
         }
@@ -129,7 +122,7 @@ public class InvokeTelnetHandler implements TelnetHandler {
                 try {
                     Invoker<?> invoker = findInvoker(selectedProvider);
                     if (invoker == null) {
-                        return "No invoker found (dubbo protocol required) for service: " + selectedProvider.getServiceName();
+                        return "No invoker found for service: " + selectedProvider.getServiceName();
                     }
 
                     Object[] array = realize(list.toArray(), invokeMethod.getParameterTypes(),
@@ -161,18 +154,6 @@ public class InvokeTelnetHandler implements TelnetHandler {
             buf.append("\r\nNo such service ").append(service);
         }
         return buf.toString();
-    }
-
-    private Invoker<?> findInvoker(ProviderModel provider) {
-        for (Exporter<?> exporter : DubboProtocol.getDubboProtocol().getExporters()) {
-            Invoker<?> invoker = exporter.getInvoker();
-            URL invokerUrl = invoker.getUrl();
-            String serviceName = URL.buildKey(invokerUrl.getPath(), invokerUrl.getParameter("group"), invokerUrl.getParameter("version"));
-            if (serviceName.equals(provider.getServiceName())) {
-                return invoker;
-            }
-        }
-        return null;
     }
 
     private boolean isServiceMatch(String service, ProviderModel provider) {

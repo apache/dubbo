@@ -18,17 +18,15 @@ package org.apache.dubbo.rpc.protocol.dubbo.telnet;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.remoting.Channel;
-import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import org.apache.dubbo.remoting.telnet.support.Help;
-import org.apache.dubbo.rpc.Exporter;
-import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
+import org.apache.dubbo.rpc.model.ProviderModel;
 
 /**
  * ChangeServiceTelnetHandler
  */
 @Activate
 @Help(parameter = "[service]", summary = "Change default service.", detail = "Change default service.")
-public class ChangeTelnetHandler implements TelnetHandler {
+public class ChangeTelnetHandler extends AbstractTelnetHandler {
 
     public static final String SERVICE_KEY = "telnet.service";
 
@@ -43,16 +41,8 @@ public class ChangeTelnetHandler implements TelnetHandler {
             channel.removeAttribute(SERVICE_KEY);
             buf.append("Cancelled default service ").append(service).append(".");
         } else {
-            boolean found = false;
-            for (Exporter<?> exporter : DubboProtocol.getDubboProtocol().getExporters()) {
-                if (message.equals(exporter.getInvoker().getInterface().getSimpleName())
-                        || message.equals(exporter.getInvoker().getInterface().getName())
-                        || message.equals(exporter.getInvoker().getUrl().getPath())) {
-                    found = true;
-                    break;
-                }
-            }
-            if (found) {
+            ProviderModel provider = findProvider(message);
+            if (provider != null) {
                 channel.setAttribute(SERVICE_KEY, message);
                 buf.append("Used the ").append(message).append(" as default.\r\nYou can cancel default service by command: cd /");
             } else {

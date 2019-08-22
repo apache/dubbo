@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.dubbo.telnet;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
@@ -27,7 +28,10 @@ import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.telnet.TelnetHandler;
+import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.protocol.AbstractProtocol;
+import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoService;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoServiceImpl;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoServiceImpl2;
@@ -58,8 +62,6 @@ public class InvokerTelnetHandlerTest {
 
     @BeforeEach
     public void setup() {
-        ApplicationModel.reset();
-
         ServiceConfig<DemoService> service = new ServiceConfig<>();
         service.setApplication(new ApplicationConfig("app"));
         service.setRegistry(new RegistryConfig("N/A", "mockprotocol2"));
@@ -83,6 +85,7 @@ public class InvokerTelnetHandlerTest {
     public void after() {
         ProtocolUtils.closeAll();
         ConfigManager.getInstance().clear();
+        ApplicationModel.reset();
     }
 
     @SuppressWarnings("unchecked")
@@ -195,6 +198,33 @@ public class InvokerTelnetHandlerTest {
         given(mockChannel.getAttribute("telnet.service")).willReturn(null);
         String result = invoke.telnet(mockChannel, "(");
         assertEquals("Invalid parameters, format: service.method(args)", result);
+    }
+
+    @Test
+    public void testInvokeNonDoubleProtocolService() throws RemotingException {
+        mockChannel = mock(Channel.class);
+        given(mockChannel.getAttribute("telnet.service")).willReturn(null);
+        given(mockChannel.getLocalAddress()).willReturn(NetUtils.toAddress("127.0.0.1:5555"));
+        given(mockChannel.getRemoteAddress()).willReturn(NetUtils.toAddress("127.0.0.1:20886"));
+
+        assertEquals(4, AbstractProtocol.getAllExporters().size());
+
+        after();
+        assertEquals(0, AbstractProtocol.getAllExporters().size());
+
+        ServiceConfig<DemoService> service = new ServiceConfig<>();
+        service.setApplication(new ApplicationConfig("app"));
+        service.setRegistry(new RegistryConfig("N/A", "mockprotocol2"));
+        service.setInterface(DemoService.class);
+        service.setRef(new DemoServiceImpl());
+        service.setProtocol(new ProtocolConfig(Constants.LOCAL_PROTOCOL));
+        service.export();
+
+        assertEquals(0, DubboProtocol.getDubboProtocol().getExporterMap().size());
+
+        String param = "{\"name\":\"Dubbo\",\"age\":8},{\"name\":\"Apache\",\"age\":20}";
+        String result = invoke.telnet(mockChannel, "getPerson(" + param + ")");
+        assertTrue(result.contains("result: 28"));
     }
 
     private Channel getChannelInstance() {
