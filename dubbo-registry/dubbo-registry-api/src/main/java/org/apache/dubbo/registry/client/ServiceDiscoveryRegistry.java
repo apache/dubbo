@@ -105,7 +105,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
     private final WritableMetadataService writableMetadataService;
 
-    private final Set<String> listenedServices = new LinkedHashSet<>();
+    private final Set<String> registeredListeners = new LinkedHashSet<>();
 
     public ServiceDiscoveryRegistry(URL registryURL) {
         super(registryURL);
@@ -287,7 +287,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         subscribeURLs(url, listener, serviceName, serviceInstances);
 
         // register ServiceInstancesChangedListener
-        registerServiceInstancesChangedListener(new ServiceInstancesChangedListener(serviceName) {
+        registerServiceInstancesChangedListener(url, new ServiceInstancesChangedListener(serviceName) {
 
             @Override
             public void onEvent(ServiceInstancesChangedEvent event) {
@@ -299,12 +299,18 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
     /**
      * Register the {@link ServiceInstancesChangedListener} If absent
      *
+     * @param url      {@link URL}
      * @param listener the {@link ServiceInstancesChangedListener}
      */
-    private void registerServiceInstancesChangedListener(ServiceInstancesChangedListener listener) {
-        if (listenedServices.add(listener.getServiceName())) {
+    private void registerServiceInstancesChangedListener(URL url, ServiceInstancesChangedListener listener) {
+        String listenerId = createListenerId(url, listener);
+        if (registeredListeners.add(listenerId)) {
             serviceDiscovery.addServiceInstancesChangedListener(listener);
         }
+    }
+
+    private String createListenerId(URL url, ServiceInstancesChangedListener listener) {
+        return listener.getServiceName() + ":" + url.toString(VERSION_KEY, GROUP_KEY, PROTOCOL_KEY);
     }
 
     protected void subscribeURLs(URL subscribedURL, NotifyListener listener, String serviceName,
