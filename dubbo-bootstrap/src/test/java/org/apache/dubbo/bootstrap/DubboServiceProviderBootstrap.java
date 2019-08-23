@@ -49,7 +49,7 @@ public class DubboServiceProviderBootstrap {
 
         RegistryConfig serviceRegistry = new RegistryConfig();
         serviceRegistry.setId("serviceRegistry");
-        serviceRegistry.setAddress("zookeeper://127.0.0.1:2181?registry.type=service");
+        serviceRegistry.setAddress("zookeeper://127.0.0.1:2181?registry-type=service");
 
         ServiceConfig<EchoService> echoService = new ServiceConfig<>();
         echoService.setInterface(EchoService.class.getName());

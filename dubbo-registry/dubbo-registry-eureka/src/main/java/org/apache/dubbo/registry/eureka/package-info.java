@@ -14,21 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.bootstrap;
-
 /**
- * TODO
+ * The package contains the registry implementations for Netflix Eureka
+ *
+ * @since 2.7.4
  */
-public class DubboServiceProviderMinimumBootstrap {
-
-    public static void main(String[] args) {
-        new DubboBootstrap()
-                .application("dubbo-provider-demo")
-//                .registry(builder -> builder.address("zookeeper://127.0.0.1:2181?registry.type=service"))
-                .registry(builder -> builder.address("eureka://127.0.0.1:8761?registry-type=service"))
-                .protocol(builder -> builder.port(-1).name("dubbo"))
-                .service(builder -> builder.interfaceClass(EchoService.class).ref(new EchoServiceImpl()))
-                .start()
-                .await();
-    }
-}
+package org.apache.dubbo.registry.eureka;

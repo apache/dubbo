@@ -34,33 +34,33 @@ public abstract class ServiceInstanceMetadataCustomizer implements ServiceInstan
 
         Map<String, String> metadata = serviceInstance.getMetadata();
 
-        String key = buildMetadataKey(serviceInstance);
-        String value = buildMetadataValue(serviceInstance);
+        String propertyName = resolveMetadataPropertyName(serviceInstance);
+        String propertyValue = resolveMetadataPropertyValue(serviceInstance);
 
-        if (!isBlank(key) && !isBlank(value)) {
-            String existedValue = metadata.get(key);
+        if (!isBlank(propertyName) && !isBlank(propertyValue)) {
+            String existedValue = metadata.get(propertyName);
             boolean put = existedValue == null || isOverride();
             if (put) {
-                metadata.put(key, value);
+                metadata.put(propertyName, propertyValue);
             }
         }
     }
 
     /**
-     * Build the key of metadata
+     * Resolve the property name of metadata
      *
      * @param serviceInstance the instance of {@link ServiceInstance}
      * @return non-null key
      */
-    protected abstract String buildMetadataKey(ServiceInstance serviceInstance);
+    protected abstract String resolveMetadataPropertyName(ServiceInstance serviceInstance);
 
     /**
-     * Build the value of metadata
+     * Resolve the property value of metadata
      *
      * @param serviceInstance the instance of {@link ServiceInstance}
      * @return non-null value
      */
-    protected abstract String buildMetadataValue(ServiceInstance serviceInstance);
+    protected abstract String resolveMetadataPropertyValue(ServiceInstance serviceInstance);
 
     /**
      * Is override {@link ServiceInstance#getMetadata()}  the service instances' metadata} or not
