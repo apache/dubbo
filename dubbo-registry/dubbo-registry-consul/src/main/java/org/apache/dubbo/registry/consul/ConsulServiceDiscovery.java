@@ -125,7 +125,7 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
     private List<ServiceInstance> convert(List<HealthService> services) {
         return services.stream()
                 .map(HealthService::getService)
-                .filter(service -> Objects.nonNull(service) && service.getMeta().containsKey(ServiceInstanceMetadataUtils.METADATA_SERVICE_URL_PARAMS_KEY))
+                .filter(service -> Objects.nonNull(service) && service.getMeta().containsKey(ServiceInstanceMetadataUtils.METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME))
                 .map(service -> {
                     ServiceInstance instance = new DefaultServiceInstance(
                             service.getService(),
