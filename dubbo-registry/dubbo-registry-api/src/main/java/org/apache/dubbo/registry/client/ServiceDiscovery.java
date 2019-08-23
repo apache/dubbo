@@ -23,6 +23,7 @@ import org.apache.dubbo.common.utils.Page;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.event.EventDispatcher;
 import org.apache.dubbo.event.EventListener;
+import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 
@@ -198,16 +199,22 @@ public interface ServiceDiscovery extends Prioritized {
     /**
      * Add an instance of {@link ServiceInstancesChangedListener} for specified service
      * <p>
-     * Default, the ServiceInstancesChangedListener will be {@link EventDispatcher#addEventListener(EventListener) added}
-     * into {@link EventDispatcher}
+     * Default, Current method will be invoked by {@link ServiceDiscoveryRegistry#subscribe(URL, NotifyListener)
+     * the ServiceDiscoveryRegistry on the subscription}, and it's mandatory to
+     * {@link EventDispatcher#addEventListener(EventListener) add} the {@link ServiceInstancesChangedListener} argument
+     * into {@link EventDispatcher} whether the subclass implements same approach or not, thus this method is used to
+     * trigger or adapt the vendor's change notification mechanism typically, like Zookeeper Watcher,
+     * Nacos EventListener. If the registry observes the change, It's suggested that the implementation could invoke
+     * {@link #dispatchServiceInstancesChangedEvent(String)} method or variants
      *
      * @param listener an instance of {@link ServiceInstancesChangedListener}
      * @throws NullPointerException
      * @throws IllegalArgumentException
+     * @see EventPublishingServiceDiscovery
+     * @see EventDispatcher
      */
     default void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener)
             throws NullPointerException, IllegalArgumentException {
-        getDefaultExtension().addEventListener(listener);
     }
 
     /**
