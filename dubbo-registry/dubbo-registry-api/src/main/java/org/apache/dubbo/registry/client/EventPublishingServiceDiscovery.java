@@ -220,6 +220,7 @@ final class EventPublishingServiceDiscovery implements ServiceDiscovery {
     @Override
     public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener) throws NullPointerException, IllegalArgumentException {
         serviceDiscovery.addServiceInstancesChangedListener(listener);
+        eventDispatcher.addEventListener(listener);
     }
 
     @Override

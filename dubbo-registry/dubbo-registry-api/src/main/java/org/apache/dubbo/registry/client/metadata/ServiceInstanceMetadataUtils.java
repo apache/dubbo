@@ -50,9 +50,9 @@ public class ServiceInstanceMetadataUtils {
     public static final String METADATA_SERVICE_PREFIX = "dubbo.metadata-service.";
 
     /**
-     * The key of metadata JSON of {@link MetadataService}'s {@link URL}
+     * The property name of metadata JSON of {@link MetadataService}'s {@link URL}
      */
-    public static String METADATA_SERVICE_URL_PARAMS_KEY = METADATA_SERVICE_PREFIX + "url-params";
+    public static String METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME = METADATA_SERVICE_PREFIX + "url-params";
 
     /**
      * The {@link URL URLs} property name of {@link MetadataService} :
@@ -62,29 +62,29 @@ public class ServiceInstanceMetadataUtils {
     public static final String METADATA_SERVICE_URLS_PROPERTY_NAME = METADATA_SERVICE_PREFIX + "urls";
 
     /**
-     * The key of The revision for all exported Dubbo services.
+     * The property name of The revision for all exported Dubbo services.
      */
-    public static String EXPORTED_SERVICES_REVISION_KEY = "dubbo.exported-services.revision";
+    public static String EXPORTED_SERVICES_REVISION_PROPERTY_NAME = "dubbo.exported-services.revision";
 
     /**
-     * The key of The revision for all subscribed Dubbo services.
+     * The property name of The revision for all subscribed Dubbo services.
      */
-    public static String SUBSCRIBER_SERVICES_REVISION_KEY = "dubbo.subscribed-services.revision";
+    public static String SUBSCRIBER_SERVICES_REVISION_PROPERTY_NAME = "dubbo.subscribed-services.revision";
 
     /**
-     * The key of metadata storage type.
+     * The property name of metadata storage type.
      */
-    public static String METADATA_STORAGE_TYPE_KEY = "dubbo.metadata.storage-type";
+    public static String METADATA_STORAGE_TYPE_PROPERTY_NAME = "dubbo.metadata.storage-type";
 
     /**
-     * The {@link URL url's} parameter name of Dubbo Provider host
+     * The property name of {@link URL url's} parameter name of Dubbo Provider host
      */
-    public static final String HOST_PARAM_NAME = "provider.host";
+    public static final String PROVIDER_HOST_PROPERTY_NAME = "provider.host";
 
     /**
      * The {@link URL url's} parameter name of Dubbo Provider port
      */
-    public static final String PORT_PARAM_NAME = "provider.port";
+    public static final String PROVIDER_PORT_PROPERTY_NAME = "provider.port";
 
     /**
      * Get the multiple {@link URL urls'} parameters of {@link MetadataService MetadataService's} Metadata
@@ -95,7 +95,7 @@ public class ServiceInstanceMetadataUtils {
      */
     public static Map<String, Map<String, Object>> getMetadataServiceURLsParams(ServiceInstance serviceInstance) {
         Map<String, String> metadata = serviceInstance.getMetadata();
-        String param = metadata.get(METADATA_SERVICE_URL_PARAMS_KEY);
+        String param = metadata.get(METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME);
         return isBlank(param) ? emptyMap() : (Map) JSON.parse(param);
     }
 
@@ -153,11 +153,11 @@ public class ServiceInstanceMetadataUtils {
     }
 
     public static String getProviderHost(Map<String, Object> params) {
-        return valueOf(params.get(HOST_PARAM_NAME));
+        return valueOf(params.get(PROVIDER_HOST_PROPERTY_NAME));
     }
 
     public static Integer getProviderPort(Map<String, Object> params) {
-        return Integer.valueOf(valueOf(params.get(PORT_PARAM_NAME)));
+        return Integer.valueOf(valueOf(params.get(PROVIDER_PORT_PROPERTY_NAME)));
     }
 
     /**
@@ -168,7 +168,7 @@ public class ServiceInstanceMetadataUtils {
      */
     public static String getExportedServicesRevision(ServiceInstance serviceInstance) {
         Map<String, String> metadata = serviceInstance.getMetadata();
-        return metadata.get(EXPORTED_SERVICES_REVISION_KEY);
+        return metadata.get(EXPORTED_SERVICES_REVISION_PROPERTY_NAME);
     }
 
     /**
@@ -179,7 +179,7 @@ public class ServiceInstanceMetadataUtils {
      */
     public static String getSubscribedServicesRevision(ServiceInstance serviceInstance) {
         Map<String, String> metadata = serviceInstance.getMetadata();
-        return metadata.get(SUBSCRIBER_SERVICES_REVISION_KEY);
+        return metadata.get(SUBSCRIBER_SERVICES_REVISION_PROPERTY_NAME);
     }
 
     /**
@@ -190,7 +190,7 @@ public class ServiceInstanceMetadataUtils {
      * {@link WritableMetadataService#DEFAULT_METADATA_STORAGE_TYPE}
      */
     public static String getMetadataStorageType(URL registryURL) {
-        return registryURL.getParameter(METADATA_STORAGE_TYPE_KEY, DEFAULT_METADATA_STORAGE_TYPE);
+        return registryURL.getParameter(METADATA_STORAGE_TYPE_PROPERTY_NAME, DEFAULT_METADATA_STORAGE_TYPE);
     }
 
     /**
@@ -202,26 +202,38 @@ public class ServiceInstanceMetadataUtils {
      */
     public static String getMetadataStorageType(ServiceInstance serviceInstance) {
         Map<String, String> metadata = serviceInstance.getMetadata();
-        return metadata.getOrDefault(METADATA_STORAGE_TYPE_KEY, DEFAULT_METADATA_STORAGE_TYPE);
+        return metadata.getOrDefault(METADATA_STORAGE_TYPE_PROPERTY_NAME, DEFAULT_METADATA_STORAGE_TYPE);
     }
 
     /**
      * Set the metadata storage type in specified {@link ServiceInstance service instance}
      *
-     * @param serviceInstance      {@link ServiceInstance service instance}
-     * @param metadataType remote or local
+     * @param serviceInstance {@link ServiceInstance service instance}
+     * @param metadataType    remote or local
      */
     public static void setMetadataStorageType(ServiceInstance serviceInstance, String metadataType) {
         Map<String, String> metadata = serviceInstance.getMetadata();
-        metadata.put(METADATA_STORAGE_TYPE_KEY, metadataType);
+        metadata.put(METADATA_STORAGE_TYPE_PROPERTY_NAME, metadataType);
+    }
+
+    /**
+     * Is Dubbo Service instance or not
+     *
+     * @param serviceInstance {@link ServiceInstance service instance}
+     * @return if Dubbo Service instance, return <code>true</code>, or <code>false</code>
+     */
+    public static boolean isDubboServiceInstance(ServiceInstance serviceInstance) {
+        Map<String, String> metadata = serviceInstance.getMetadata();
+        return metadata.containsKey(METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME)
+                || metadata.containsKey(METADATA_SERVICE_URLS_PROPERTY_NAME);
     }
 
     private static void setProviderHostParam(Map<String, String> params, URL providerURL) {
-        params.put(HOST_PARAM_NAME, providerURL.getHost());
+        params.put(PROVIDER_HOST_PROPERTY_NAME, providerURL.getHost());
     }
 
     private static void setProviderPortParam(Map<String, String> params, URL providerURL) {
-        params.put(PORT_PARAM_NAME, valueOf(providerURL.getPort()));
+        params.put(PROVIDER_PORT_PROPERTY_NAME, valueOf(providerURL.getPort()));
     }
 
     /**

@@ -29,6 +29,7 @@ import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
+import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 import org.apache.dubbo.registry.client.metadata.proxy.MetadataServiceProxyFactory;
 import org.apache.dubbo.registry.client.selector.ServiceInstanceSelector;
 import org.apache.dubbo.registry.support.FailbackRegistry;
@@ -38,6 +39,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -103,6 +105,8 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
     private final WritableMetadataService writableMetadataService;
 
+    private final Set<String> listenedServices = new LinkedHashSet<>();
+
     public ServiceDiscoveryRegistry(URL registryURL) {
         super(registryURL);
         this.serviceDiscovery = createServiceDiscovery(registryURL);
@@ -112,7 +116,13 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         this.writableMetadataService = WritableMetadataService.getExtension(metadataStorageType);
     }
 
-    protected Set<String> getSubscribedServices(URL registryURL) {
+    /**
+     * Get the subscribed services from the specified registry {@link URL url}
+     *
+     * @param registryURL the specified registry {@link URL url}
+     * @return non-null
+     */
+    public static Set<String> getSubscribedServices(URL registryURL) {
         String subscribedServiceNames = registryURL.getParameter(SUBSCRIBED_SERVICE_NAMES_KEY);
         return isBlank(subscribedServiceNames) ? emptySet() :
                 unmodifiableSet(of(subscribedServiceNames.split(","))
@@ -276,14 +286,25 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
         subscribeURLs(url, listener, serviceName, serviceInstances);
 
-        // Add Listener
-        serviceDiscovery.addServiceInstancesChangedListener(new ServiceInstancesChangedListener(serviceName) {
+        // register ServiceInstancesChangedListener
+        registerServiceInstancesChangedListener(new ServiceInstancesChangedListener(serviceName) {
 
             @Override
             public void onEvent(ServiceInstancesChangedEvent event) {
                 subscribeURLs(url, listener, event.getServiceName(), new ArrayList<>(event.getServiceInstances()));
             }
         });
+    }
+
+    /**
+     * Register the {@link ServiceInstancesChangedListener} If absent
+     *
+     * @param listener the {@link ServiceInstancesChangedListener}
+     */
+    private void registerServiceInstancesChangedListener(ServiceInstancesChangedListener listener) {
+        if (listenedServices.add(listener.getServiceName())) {
+            serviceDiscovery.addServiceInstancesChangedListener(listener);
+        }
     }
 
     protected void subscribeURLs(URL subscribedURL, NotifyListener listener, String serviceName,
@@ -307,6 +328,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         List<ServiceInstance> serviceInstances = instances.stream()
                 .filter(ServiceInstance::isEnabled)
                 .filter(ServiceInstance::isHealthy)
+                .filter(ServiceInstanceMetadataUtils::isDubboServiceInstance)
                 .collect(Collectors.toList());
 
         /**

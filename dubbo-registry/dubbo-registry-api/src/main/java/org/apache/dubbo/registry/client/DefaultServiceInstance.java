@@ -59,7 +59,7 @@ public class DefaultServiceInstance implements ServiceInstance {
     }
 
     public DefaultServiceInstance(String serviceName, String host, Integer port) {
-        this(null, serviceName, host, port);
+        this(host + ":" + port, serviceName, host, port);
     }
 
     public void setId(String id) {
