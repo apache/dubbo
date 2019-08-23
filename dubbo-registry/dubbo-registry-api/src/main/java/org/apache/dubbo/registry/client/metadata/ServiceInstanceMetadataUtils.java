@@ -228,18 +228,6 @@ public class ServiceInstanceMetadataUtils {
                 || metadata.containsKey(METADATA_SERVICE_URLS_PROPERTY_NAME);
     }
 
-    /**
-     * Is Dubbo Service instance or not
-     *
-     * @param serviceInstance {@link ServiceInstance service instance}
-     * @return if Dubbo Service instance, return <code>true</code>, or <code>false</code>
-     */
-    public static boolean isDubboServiceInstance(ServiceInstance serviceInstance) {
-        Map<String, String> metadata = serviceInstance.getMetadata();
-        return metadata.containsKey(METADATA_SERVICE_URL_PARAMS_KEY)
-                || metadata.containsKey(METADATA_SERVICE_URLS_PROPERTY_NAME);
-    }
-
     private static void setProviderHostParam(Map<String, String> params, URL providerURL) {
         params.put(PROVIDER_HOST_PROPERTY_NAME, providerURL.getHost());
     }

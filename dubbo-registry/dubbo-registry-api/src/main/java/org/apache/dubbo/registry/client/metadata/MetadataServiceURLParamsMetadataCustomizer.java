@@ -40,12 +40,12 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
 public class MetadataServiceURLParamsMetadataCustomizer extends ServiceInstanceMetadataCustomizer {
 
     @Override
-    public String buildMetadataKey(ServiceInstance serviceInstance) {
+    public String resolveMetadataPropertyName(ServiceInstance serviceInstance) {
         return METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME;
     }
 
     @Override
-    public String buildMetadataValue(ServiceInstance serviceInstance) {
+    public String resolveMetadataPropertyValue(ServiceInstance serviceInstance) {
 
         String metadataStorageType = getMetadataStorageType(serviceInstance);
 
