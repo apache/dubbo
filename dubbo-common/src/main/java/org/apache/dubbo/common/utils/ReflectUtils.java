@@ -156,6 +156,8 @@ public final class ReflectUtils {
             c = Byte.class;
         } else if (c == short.class) {
             c = Short.class;
+        }else {
+            throw new IllegalArgumentException(c.getName() + " is not a primitive type!");
         }
         return c;
     }
