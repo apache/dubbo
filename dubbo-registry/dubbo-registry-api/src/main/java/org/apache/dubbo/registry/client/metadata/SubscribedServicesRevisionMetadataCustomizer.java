@@ -36,12 +36,12 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
 public class SubscribedServicesRevisionMetadataCustomizer extends ServiceInstanceMetadataCustomizer {
 
     @Override
-    protected String buildMetadataKey(ServiceInstance serviceInstance) {
+    protected String resolveMetadataPropertyName(ServiceInstance serviceInstance) {
         return SUBSCRIBER_SERVICES_REVISION_PROPERTY_NAME;
     }
 
     @Override
-    protected String buildMetadataValue(ServiceInstance serviceInstance) {
+    protected String resolveMetadataPropertyValue(ServiceInstance serviceInstance) {
 
         String metadataStorageType = getMetadataStorageType(serviceInstance);
 
