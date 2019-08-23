@@ -29,6 +29,7 @@ import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
+import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 import org.apache.dubbo.registry.client.metadata.proxy.MetadataServiceProxyFactory;
 import org.apache.dubbo.registry.client.selector.ServiceInstanceSelector;
 import org.apache.dubbo.registry.support.FailbackRegistry;
@@ -112,7 +113,13 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         this.writableMetadataService = WritableMetadataService.getExtension(metadataStorageType);
     }
 
-    protected Set<String> getSubscribedServices(URL registryURL) {
+    /**
+     * Get the subscribed services from the specified registry {@link URL url}
+     *
+     * @param registryURL the specified registry {@link URL url}
+     * @return non-null
+     */
+    public static Set<String> getSubscribedServices(URL registryURL) {
         String subscribedServiceNames = registryURL.getParameter(SUBSCRIBED_SERVICE_NAMES_KEY);
         return isBlank(subscribedServiceNames) ? emptySet() :
                 unmodifiableSet(of(subscribedServiceNames.split(","))
@@ -307,6 +314,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         List<ServiceInstance> serviceInstances = instances.stream()
                 .filter(ServiceInstance::isEnabled)
                 .filter(ServiceInstance::isHealthy)
+                .filter(ServiceInstanceMetadataUtils::isDubboServiceInstance)
                 .collect(Collectors.toList());
 
         /**
