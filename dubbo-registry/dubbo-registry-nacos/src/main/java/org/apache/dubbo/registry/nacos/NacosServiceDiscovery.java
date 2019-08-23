@@ -21,7 +21,6 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
-import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils;
 
@@ -125,6 +124,6 @@ public class NacosServiceDiscovery implements ServiceDiscovery {
                 .stream()
                 .map(NacosNamingServiceUtils::toServiceInstance)
                 .collect(Collectors.toList());
-        listener.onEvent(new ServiceInstancesChangedEvent(serviceName, serviceInstances));
+        dispatchServiceInstancesChangedEvent(serviceName, serviceInstances);
     }
 }

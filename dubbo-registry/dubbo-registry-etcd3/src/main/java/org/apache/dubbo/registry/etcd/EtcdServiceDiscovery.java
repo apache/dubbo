@@ -161,7 +161,6 @@ public class EtcdServiceDiscovery implements ServiceDiscovery, EventListener<Ser
     @Override
     public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener) throws NullPointerException, IllegalArgumentException {
         registerServiceWatcher(listener.getServiceName());
-        dispatcher.addEventListener(listener);
     }
 
     @Override
@@ -190,7 +189,7 @@ public class EtcdServiceDiscovery implements ServiceDiscovery, EventListener<Ser
                         .orElseGet(() -> {
                             ChildListener watchListener, prev;
                             prev = childListenerMap.putIfAbsent(serviceName, watchListener = (parentPath, currentChildren) ->
-                                    dispatcher.dispatch(new ServiceInstancesChangedEvent(serviceName, getInstances(serviceName))));
+                                    dispatchServiceInstancesChangedEvent(serviceName));
                             return prev != null ? prev : watchListener;
                         });
 

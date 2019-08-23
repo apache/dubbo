@@ -16,16 +16,12 @@
  */
 package org.apache.dubbo.registry.zookeeper;
 
-import org.apache.dubbo.event.EventDispatcher;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
-import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 
 import org.apache.curator.framework.api.CuratorWatcher;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
-
-import java.util.Collection;
 
 import static org.apache.zookeeper.Watcher.Event.EventType.NodeChildrenChanged;
 import static org.apache.zookeeper.Watcher.Event.EventType.NodeDataChanged;
@@ -43,13 +39,10 @@ public class ZookeeperServiceDiscoveryChangeWatcher implements CuratorWatcher {
 
     private final String serviceName;
 
-    private final EventDispatcher dispatcher;
-
     public ZookeeperServiceDiscoveryChangeWatcher(ZookeeperServiceDiscovery zookeeperServiceDiscovery,
-                                                  String serviceName, EventDispatcher dispatcher) {
+                                                  String serviceName) {
         this.zookeeperServiceDiscovery = zookeeperServiceDiscovery;
         this.serviceName = serviceName;
-        this.dispatcher = dispatcher;
     }
 
     @Override
@@ -58,11 +51,7 @@ public class ZookeeperServiceDiscoveryChangeWatcher implements CuratorWatcher {
         Watcher.Event.EventType eventType = event.getType();
 
         if (NodeChildrenChanged.equals(eventType) || NodeDataChanged.equals(eventType)) {
-            dispatcher.dispatch(new ServiceInstancesChangedEvent(serviceName, getServiceInstances(serviceName)));
+            zookeeperServiceDiscovery.dispatchServiceInstancesChangedEvent(serviceName);
         }
-    }
-
-    private Collection<ServiceInstance> getServiceInstances(String serviceName) {
-        return zookeeperServiceDiscovery.getInstances(serviceName);
     }
 }

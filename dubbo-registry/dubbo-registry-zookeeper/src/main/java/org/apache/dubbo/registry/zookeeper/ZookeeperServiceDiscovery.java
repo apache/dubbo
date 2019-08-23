@@ -148,7 +148,6 @@ public class ZookeeperServiceDiscovery implements ServiceDiscovery, EventListene
     public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener)
             throws NullPointerException, IllegalArgumentException {
         registerServiceWatcher(listener.getServiceName());
-        dispatcher.addEventListener(listener);
     }
 
     private void doInServiceRegistry(ThrowableConsumer<org.apache.curator.x.discovery.ServiceDiscovery> consumer) {
@@ -164,7 +163,7 @@ public class ZookeeperServiceDiscovery implements ServiceDiscovery, EventListene
     protected void registerServiceWatcher(String serviceName) {
         String path = buildServicePath(serviceName);
         CuratorWatcher watcher = watcherCaches.computeIfAbsent(path, key ->
-                new ZookeeperServiceDiscoveryChangeWatcher(this, serviceName, dispatcher));
+                new ZookeeperServiceDiscoveryChangeWatcher(this, serviceName));
         try {
             curatorFramework.getChildren().usingWatcher(watcher).forPath(path);
         } catch (KeeperException.NoNodeException e) {
