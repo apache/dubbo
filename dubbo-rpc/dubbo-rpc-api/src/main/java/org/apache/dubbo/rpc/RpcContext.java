@@ -105,6 +105,8 @@ public class RpcContext {
     private Object response;
     private AsyncContext asyncContext;
 
+    private boolean remove = true;
+
 
     protected RpcContext() {
     }
@@ -140,6 +142,14 @@ public class RpcContext {
         return LOCAL.get();
     }
 
+    public boolean canRemove() {
+        return remove;
+    }
+
+    public void clearAfterEachInvoke(boolean remove) {
+        this.remove = remove;
+    }
+
     public static void restoreContext(RpcContext oldContext) {
         LOCAL.set(oldContext);
     }
@@ -150,7 +160,9 @@ public class RpcContext {
      * @see org.apache.dubbo.rpc.filter.ContextFilter
      */
     public static void removeContext() {
-        LOCAL.remove();
+        if (LOCAL.get().canRemove()) {
+            LOCAL.remove();
+        }
     }
 
     /**

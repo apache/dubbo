@@ -59,4 +59,17 @@ public abstract class ServiceInstancesChangedListener implements ConditionalEven
     public final boolean accept(ServiceInstancesChangedEvent event) {
         return Objects.equals(getServiceName(), event.getServiceName());
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ServiceInstancesChangedListener)) return false;
+        ServiceInstancesChangedListener that = (ServiceInstancesChangedListener) o;
+        return Objects.equals(getServiceName(), that.getServiceName());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getClass(), getServiceName());
+    }
 }
