@@ -16,21 +16,14 @@
  */
 package org.apache.dubbo.registry.client.metadata;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.compiler.support.ClassUtils;
-import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstanceMetadataCustomizer;
 
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.SortedSet;
 
-import static java.lang.String.valueOf;
-import static java.util.Objects.hash;
 import static org.apache.dubbo.metadata.WritableMetadataService.getExtension;
-import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.SUBSCRIBER_SERVICES_REVISION_KEY;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.SUBSCRIBER_SERVICES_REVISION_PROPERTY_NAME;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getMetadataStorageType;
 
 /**
@@ -44,7 +37,7 @@ public class SubscribedServicesRevisionMetadataCustomizer extends ServiceInstanc
 
     @Override
     protected String buildMetadataKey(ServiceInstance serviceInstance) {
-        return SUBSCRIBER_SERVICES_REVISION_KEY;
+        return SUBSCRIBER_SERVICES_REVISION_PROPERTY_NAME;
     }
 
     @Override
@@ -55,21 +48,10 @@ public class SubscribedServicesRevisionMetadataCustomizer extends ServiceInstanc
         WritableMetadataService writableMetadataService = getExtension(metadataStorageType);
 
         SortedSet<String> subscribedURLs = writableMetadataService.getSubscribedURLs();
-        Object[] data = subscribedURLs.stream()
-                .map(URL::valueOf)                       // String to URL
-                .map(URL::getServiceInterface)           // get the service interface
-                .filter(this::isNotMetadataService)      // filter not MetadataService interface
-                .map(ClassUtils::forName)                // load business interface class
-                .map(Class::getMethods)                  // get all public methods from business interface
-                .map(Arrays::asList)                     // Array to List
-                .flatMap(Collection::stream)             // flat Stream<Stream> to be Stream
-                .map(Object::toString)                   // Method to String
-                .sorted()                                // sort methods marking sure the calculation of reversion is stable
-                .toArray();                              // Stream to Array
-        return valueOf(hash(data));                      // calculate the hash code as reversion
+
+        URLRevisionResolver resolver = new URLRevisionResolver();
+
+        return resolver.resolve(subscribedURLs);
     }
 
-    private boolean isNotMetadataService(String serviceInterface) {
-        return !MetadataService.class.getName().equals(serviceInterface);
-    }
 }
