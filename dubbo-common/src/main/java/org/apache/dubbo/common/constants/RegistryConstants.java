@@ -90,4 +90,8 @@ public interface RegistryConstants {
     int DEFAULT_INSTANCES_REQUEST_SIZE = 100;
 
     String ACCEPTS_KEY = "accepts";
+
+    String REGISTRY_ZONE = "registry_zone";
+    String REGISTRY_ZONE_FORCE = "registry_zone_force";
+    String ZONE_KEY = "zone";
 }

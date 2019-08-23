@@ -76,7 +76,16 @@ public class RegistryConfig extends AbstractConfig {
 
     private String client;
 
+    /**
+     * Affects how traffic distributes among registries, useful when subscribing multiple registries, available options:
+     * 1. zone-aware, a certain type of traffic always goes to one Registry according to where the traffic is originated.
+     */
     private String cluster;
+
+    /**
+     * The region where the registry belongs, usually used to isolate traffics
+     */
+    private String zone;
 
     /**
      * The group the services registry in
@@ -379,6 +388,14 @@ public class RegistryConfig extends AbstractConfig {
 
     public void setCluster(String cluster) {
         this.cluster = cluster;
+    }
+
+    public String getZone() {
+        return zone;
+    }
+
+    public void setZone(String zone) {
+        this.zone = zone;
     }
 
     public String getGroup() {

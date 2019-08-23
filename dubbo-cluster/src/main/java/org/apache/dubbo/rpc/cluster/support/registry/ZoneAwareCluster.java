@@ -14,19 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.support;
+package org.apache.dubbo.rpc.cluster.support.registry;
 
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Directory;
+import org.apache.dubbo.rpc.cluster.support.AbstractCluster;
 
-public class MergeableCluster extends AbstractCluster {
+/**
+ * See {@link ZoneAwareClusterInvoker}
+ */
+public class ZoneAwareCluster extends AbstractCluster {
 
-    public static final String NAME = "mergeable";
+    public final static String NAME = "zone-aware";
 
     @Override
     protected <T> Invoker<T> doJoin(Directory<T> directory) throws RpcException {
-        return new MergeableClusterInvoker<T>(directory);
+        return new ZoneAwareClusterInvoker<T>(directory);
     }
 
 }

@@ -14,19 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.support;
+package org.apache.dubbo.rpc;
 
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.cluster.Directory;
+import org.apache.dubbo.common.extension.SPI;
 
-public class MergeableCluster extends AbstractCluster {
+/**
+ * Extend and provide your owen implementation if you want to distribute traffic around registries.
+ * Please, name it as 'default'
+ */
+@SPI
+public interface ZoneDetector {
 
-    public static final String NAME = "mergeable";
+    String getZoneOfCurrentRequest(Invocation invocation);
 
-    @Override
-    protected <T> Invoker<T> doJoin(Directory<T> directory) throws RpcException {
-        return new MergeableClusterInvoker<T>(directory);
-    }
+    String isZoneForcingEnabled(Invocation invocation, String zone);
 
 }

@@ -512,6 +512,11 @@
                 <xsd:documentation><![CDATA[ The registry cluster type. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="zone" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The registry zone type. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
         <xsd:attribute name="forks" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ ForkingCluster forks. ]]></xsd:documentation>

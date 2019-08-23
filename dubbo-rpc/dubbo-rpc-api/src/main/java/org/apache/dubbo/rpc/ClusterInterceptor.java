@@ -14,19 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.support;
+package org.apache.dubbo.rpc;
 
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.cluster.Directory;
+import org.apache.dubbo.common.extension.SPI;
 
-public class MergeableCluster extends AbstractCluster {
+/**
+ * Different from {@link Filter}, ClusterInterceptor works on the outmost layer, before one specific address/invoker is picked.
+ */
+@SPI
+public interface ClusterInterceptor {
 
-    public static final String NAME = "mergeable";
+    void before(Invoker<?> invoker, Invocation invocation);
 
-    @Override
-    protected <T> Invoker<T> doJoin(Directory<T> directory) throws RpcException {
-        return new MergeableClusterInvoker<T>(directory);
+    void after(Invoker<?> invoker, Invocation invocation);
+
+    default Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
+        return invoker.invoke(invocation);
     }
 
+    interface Listener {
+
+        void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation);
+
+        void onError(Throwable t, Invoker<?> invoker, Invocation invocation);
+    }
 }

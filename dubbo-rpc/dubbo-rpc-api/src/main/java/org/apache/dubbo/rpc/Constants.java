@@ -70,6 +70,8 @@ public interface Constants {
 
     String REFERENCE_FILTER_KEY = "reference.filter";
 
+    String REFERENCE_INTERCEPTOR_KEY = "reference.interceptor";
+
     String INVOKER_LISTENER_KEY = "invoker.listener";
 
     String SERVICE_FILTER_KEY = "service.filter";

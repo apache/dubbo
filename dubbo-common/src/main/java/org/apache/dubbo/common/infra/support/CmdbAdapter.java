@@ -14,19 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.support;
+package org.apache.dubbo.common.infra.support;
 
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.cluster.Directory;
+import org.apache.dubbo.common.infra.InfraAdapter;
 
-public class MergeableCluster extends AbstractCluster {
+import java.util.Map;
 
-    public static final String NAME = "mergeable";
+public class CmdbAdapter implements InfraAdapter {
 
-    @Override
-    protected <T> Invoker<T> doJoin(Directory<T> directory) throws RpcException {
-        return new MergeableClusterInvoker<T>(directory);
+    public CmdbAdapter() {
+        // init;
     }
 
+    @Override
+    public Map<String, String> getExtraAttributes(Map<String, String> params) {
+        return null;
+    }
+
+    @Override
+    public String getAttribute(String key) {
+        return null;
+    }
 }

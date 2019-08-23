@@ -18,19 +18,18 @@ package org.apache.dubbo.rpc.cluster.support;
 
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.Directory;
 
 /**
  * {@link FailsafeClusterInvoker}
  *
  */
-public class FailsafeCluster implements Cluster {
+public class FailsafeCluster extends AbstractCluster {
 
     public final static String NAME = "failsafe";
 
     @Override
-    public <T> Invoker<T> join(Directory<T> directory) throws RpcException {
+    protected <T> Invoker<T> doJoin(Directory<T> directory) throws RpcException {
         return new FailsafeClusterInvoker<T>(directory);
     }
 

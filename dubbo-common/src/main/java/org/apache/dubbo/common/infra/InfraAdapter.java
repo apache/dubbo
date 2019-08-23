@@ -14,19 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.support;
+package org.apache.dubbo.common.infra;
 
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.cluster.Directory;
+import org.apache.dubbo.common.extension.SPI;
 
-public class MergeableCluster extends AbstractCluster {
+import java.util.Map;
 
-    public static final String NAME = "mergeable";
+/**
+ * Used to interact with other systems. Typical use cases:
+ * 1. get extra attributes related to the instance on which Dubbo is deploying from underlying third-party systems or infrastructures.
+ * 2. get configurations from third-party systems which maybe useful for a specific component.
+ */
 
-    @Override
-    protected <T> Invoker<T> doJoin(Directory<T> directory) throws RpcException {
-        return new MergeableClusterInvoker<T>(directory);
-    }
+@SPI
+public interface InfraAdapter {
+
+    /**
+     * get extra attributes
+     *
+     * @param params application name or hostname are most likely to be used as input params.
+     * @return
+     */
+    Map<String, String> getExtraAttributes(Map<String, String> params);
+
+    /**
+     * @param key
+     * @return
+     */
+    String getAttribute(String key);
 
 }
