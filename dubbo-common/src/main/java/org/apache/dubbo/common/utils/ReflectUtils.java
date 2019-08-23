@@ -156,6 +156,8 @@ public final class ReflectUtils {
             c = Byte.class;
         } else if (c == short.class) {
             c = Short.class;
+        }else {
+            throw new IllegalArgumentException(c.getName() + " is not a primitive type!");
         }
         return c;
     }
@@ -715,7 +717,8 @@ public final class ReflectUtils {
             } else if ("short".equals(name)) {
                 sb.append(JVM_SHORT);
             } else {
-                sb.append('L').append(name).append(';'); // "java.lang.Object" ==> "Ljava.lang.Object;"
+                // "java.lang.Object" ==> "Ljava.lang.Object;"
+                sb.append('L').append(name).append(';');
             }
             name = sb.toString();
         } else {
@@ -958,7 +961,7 @@ public final class ReflectUtils {
     }
 
     public static Object getEmptyObject(Class<?> returnType) {
-        return getEmptyObject(returnType, new HashMap<Class<?>, Object>(), 0);
+        return getEmptyObject(returnType, new HashMap<>(), 0);
     }
 
     private static Object getEmptyObject(Class<?> returnType, Map<Class<?>, Object> emptyInstances, int level) {
@@ -996,49 +999,49 @@ public final class ReflectUtils {
             return Array.newInstance(returnType.getComponentType(), 0);
         }
         if (returnType.isAssignableFrom(ArrayList.class)) {
-            return new ArrayList<Object>(0);
+            return new ArrayList<>(0);
         }
         if (returnType.isAssignableFrom(HashSet.class)) {
-            return new HashSet<Object>(0);
+            return new HashSet<>(0);
         }
         if (returnType.isAssignableFrom(HashMap.class)) {
-            return new HashMap<Object, Object>(0);
+            return new HashMap<>(0);
         }
         if (String.class.equals(returnType)) {
             return "";
         }
-        if (!returnType.isInterface()) {
-            try {
-                Object value = emptyInstances.get(returnType);
-                if (value == null) {
-                    value = returnType.newInstance();
-                    emptyInstances.put(returnType, value);
-                }
-                Class<?> cls = value.getClass();
-                while (cls != null && cls != Object.class) {
-                    Field[] fields = cls.getDeclaredFields();
-                    for (Field field : fields) {
-                        if (field.isSynthetic()) {
-                            continue;
-                        }
-                        Object property = getEmptyObject(field.getType(), emptyInstances, level + 1);
-                        if (property != null) {
-                            try {
-                                if (!field.isAccessible()) {
-                                    field.setAccessible(true);
-                                }
-                                field.set(value, property);
-                            } catch (Throwable e) {
+        if (returnType.isInterface()) {
+            return null;
+        }
+
+        try {
+            Object value = emptyInstances.get(returnType);
+            if (value == null) {
+                value = returnType.newInstance();
+                emptyInstances.put(returnType, value);
+            }
+            Class<?> cls = value.getClass();
+            while (cls != null && cls != Object.class) {
+                Field[] fields = cls.getDeclaredFields();
+                for (Field field : fields) {
+                    if (field.isSynthetic()) {
+                        continue;
+                    }
+                    Object property = getEmptyObject(field.getType(), emptyInstances, level + 1);
+                    if (property != null) {
+                        try {
+                            if (!field.isAccessible()) {
+                                field.setAccessible(true);
                             }
+                            field.set(value, property);
+                        } catch (Throwable ignored) {
                         }
                     }
-                    cls = cls.getSuperclass();
                 }
-                return value;
-            } catch (Throwable e) {
-                return null;
+                cls = cls.getSuperclass();
             }
-        } else {
+            return value;
+        } catch (Throwable e) {
             return null;
         }
     }
