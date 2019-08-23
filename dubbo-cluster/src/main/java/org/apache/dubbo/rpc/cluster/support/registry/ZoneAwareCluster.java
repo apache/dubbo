@@ -19,7 +19,7 @@ package org.apache.dubbo.rpc.cluster.support.registry;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Directory;
-import org.apache.dubbo.rpc.cluster.support.AbstractCluster;
+import org.apache.dubbo.rpc.cluster.support.wrapper.AbstractCluster;
 
 /**
  * See {@link ZoneAwareClusterInvoker}

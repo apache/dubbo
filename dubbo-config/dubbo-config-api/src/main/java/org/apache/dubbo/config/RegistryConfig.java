@@ -174,7 +174,16 @@ public class RegistryConfig extends AbstractConfig {
      */
     private String accepts;
 
+    /**
+     * Always use this registry first if set to true, useful when subscribe to multiple registries
+     */
     private Boolean preferred;
+
+    /**
+     * Affects traffic distribution among registries, useful when subscribe to multiple registries
+     * Take effect only when no preferred registry is specified.
+     */
+    private Integer weight;
 
     public RegistryConfig() {
     }
@@ -492,6 +501,14 @@ public class RegistryConfig extends AbstractConfig {
 
     public void setPreferred(Boolean preferred) {
         this.preferred = preferred;
+    }
+
+    public Integer getWeight() {
+        return weight;
+    }
+
+    public void setWeight(Integer weight) {
+        this.weight = weight;
     }
 
     @Override
