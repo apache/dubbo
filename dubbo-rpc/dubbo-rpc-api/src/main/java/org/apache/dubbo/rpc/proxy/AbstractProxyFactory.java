@@ -22,7 +22,7 @@ import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.service.GenericService;
 
-import com.alibaba.dubbo.rpc.service.EchoService;
+import org.apache.dubbo.rpc.service.EchoService;
 
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.rpc.Constants.INTERFACES;
@@ -62,7 +62,7 @@ public abstract class AbstractProxyFactory implements ProxyFactory {
             Class<?>[] temp = interfaces;
             interfaces = new Class<?>[len + 1];
             System.arraycopy(temp, 0, interfaces, 0, len);
-            interfaces[len] = com.alibaba.dubbo.rpc.service.GenericService.class;
+            interfaces[len] = org.apache.dubbo.rpc.service.GenericService.class;
         }
 
         return getProxy(invoker, interfaces);
