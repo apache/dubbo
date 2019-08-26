@@ -33,10 +33,10 @@ public class DubboServiceConsumerBootstrap {
                 .application("dubbo-consumer-demo")
                 .protocol(builder -> builder.port(20887).name("dubbo"))
                 // Eureka
-                .registry(builder -> builder.address("eureka://127.0.0.1:8761?registry-type=service&subscribed-services=dubbo-provider-demo"))
+//                .registry(builder -> builder.address("eureka://127.0.0.1:8761?registry-type=service&subscribed-services=dubbo-provider-demo"))
 
                 // Zookeeper
-                // .registry("zookeeper", builder -> builder.address("zookeeper://127.0.0.1:2181?registry-type=service&subscribed-services=dubbo-provider-demo"))
+                 .registry("zookeeper", builder -> builder.address("zookeeper://127.0.0.1:2181?registry-type=service&subscribed-services=dubbo-provider-demo"))
                 // .metadataReport(new MetadataReportConfig("zookeeper://127.0.0.1:2181"))
 
                 // Nacos
@@ -55,10 +55,16 @@ public class DubboServiceConsumerBootstrap {
 
         EchoService echoService = referenceConfig.get();
 
+//        ReferenceConfig<UserService> referenceConfig2 = configManager.getReference("user");
+
+//        UserService userService = referenceConfig2.get();
+
         for (int i = 0; i < 500; i++) {
             Thread.sleep(2000L);
             System.out.println(echoService.echo("Hello,World"));
+//            System.out.println(userService.getUser(1L));
         }
+
 
     }
 }

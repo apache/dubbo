@@ -149,7 +149,16 @@ public class RegistryBuilder extends AbstractBuilder<RegistryConfig, RegistryBui
      */
     private String accepts;
 
+    /**
+     * Always use this registry first if set to true, useful when subscribe to multiple registries
+     */
     private Boolean preferred;
+
+    /**
+     * Affects traffic distribution among registries, useful when subscribe to multiple registries
+     * Take effect only when no preferred registry is specified.
+     */
+    private Integer weight;
 
     public static RegistryBuilder newBuilder() {
         return new RegistryBuilder();
@@ -316,6 +325,11 @@ public class RegistryBuilder extends AbstractBuilder<RegistryConfig, RegistryBui
         return getThis();
     }
 
+    public RegistryBuilder weight(Integer weight) {
+        this.weight = weight;
+        return getThis();
+    }
+
     public RegistryConfig build() {
         RegistryConfig registry = new RegistryConfig();
         super.build(registry);
@@ -347,6 +361,7 @@ public class RegistryBuilder extends AbstractBuilder<RegistryConfig, RegistryBui
         registry.setUseAsMetadataCenter(useAsMetadataCenter);
         registry.setAccepts(accepts);
         registry.setPreferred(preferred);
+        registry.setWeight(weight);
 
         return registry;
     }

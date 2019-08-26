@@ -14,23 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.support;
+package org.apache.dubbo.common.infra.support;
 
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.cluster.Cluster;
-import org.apache.dubbo.rpc.cluster.Directory;
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.infra.InfraAdapter;
 
-/**
- *
- */
-public class RegistryAwareCluster implements Cluster {
+import java.util.Map;
 
-    public final static String NAME = "registryaware";
+@Activate
+public class KubernetesAdapter implements InfraAdapter {
 
     @Override
-    public <T> Invoker<T> join(Directory<T> directory) throws RpcException {
-        return new RegistryAwareClusterInvoker<T>(directory);
+    public Map<String, String> getExtraAttributes(Map<String, String> params) {
+        return null;
     }
 
+    @Override
+    public String getAttribute(String key) {
+        return null;
+    }
 }

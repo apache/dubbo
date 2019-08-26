@@ -37,7 +37,7 @@ public class RandomServiceInstanceSelector implements ServiceInstanceSelector {
         if (size < 1) {
             return null;
         }
-        int index = selectIndexRandomly(size);
+        int index = size == 1 ? 0 : selectIndexRandomly(size);
         return serviceInstances.get(index);
     }
 

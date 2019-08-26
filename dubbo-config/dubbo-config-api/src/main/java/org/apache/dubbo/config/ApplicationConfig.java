@@ -17,24 +17,25 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.compiler.support.AdaptiveCompiler;
-import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.infra.InfraAdapter;
+import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_ENV_KEYS;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_LABELS;
 import static org.apache.dubbo.common.constants.CommonConstants.DUMP_DIRECTORY;
-import static org.apache.dubbo.common.constants.CommonConstants.EQUAL_SPLIT_PATTERN;
-import static org.apache.dubbo.common.constants.CommonConstants.SEMICOLON_SPLIT_PATTERN;
+import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP_COMPATIBLE;
@@ -58,6 +59,7 @@ import static org.apache.dubbo.config.Constants.TEST_ENVIRONMENT;
  * @export
  */
 public class ApplicationConfig extends AbstractConfig {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationConfig.class);
 
     private static final long serialVersionUID = 5508512956753757169L;
 
@@ -146,6 +148,8 @@ public class ApplicationConfig extends AbstractConfig {
      * Config the shutdown.wait
      */
     private String shutwait;
+
+    private String hostname;
 
     /**
      * Metadata type, local or remote, if choose remote, you need to further specify metadata center.
@@ -384,6 +388,19 @@ public class ApplicationConfig extends AbstractConfig {
         this.shutwait = shutwait;
     }
 
+    @Parameter(excluded = true)
+    public String getHostname() {
+        if (hostname == null) {
+            try {
+                hostname = InetAddress.getLocalHost().getHostName();
+            } catch (UnknownHostException e) {
+                LOGGER.warn("Failed to get the hostname of current instance.", e);
+                hostname = "UNKNOWN";
+            }
+        }
+        return hostname;
+    }
+
     @Override
     @Parameter(excluded = true)
     public boolean isValid() {
@@ -412,38 +429,22 @@ public class ApplicationConfig extends AbstractConfig {
         appendEnvironmentProperties();
     }
 
-    /**
-     * 1. OS Environment: DUBBO_LABELS=tag=pre;key=value
-     * 2. JVM Options: -Denv_keys = DUBBO_KEY1, DUBBO_KEY2
-     */
     private void appendEnvironmentProperties() {
-        String rawLabels = ConfigurationUtils.getProperty(DUBBO_LABELS);
-        if (StringUtils.isNotEmpty(rawLabels)) {
-            String[] labelPairs = SEMICOLON_SPLIT_PATTERN.split(rawLabels);
-            for (String pair : labelPairs) {
-                String[] label = EQUAL_SPLIT_PATTERN.split(pair);
-                if (label.length == 2) {
-                    updateParameters(parameters, label[0], label[1]);
-                }
-            }
-        }
-
-        String rawKeys = ConfigurationUtils.getProperty(DUBBO_ENV_KEYS);
-        if (StringUtils.isNotEmpty(rawKeys)) {
-            String[] keys = COMMA_SPLIT_PATTERN.split(rawKeys);
-            for (String key : keys) {
-                String value = ConfigurationUtils.getProperty(key);
-                if (value != null) {
-                    updateParameters(parameters, key, value);
-                }
-            }
-        }
-    }
-
-    private void updateParameters(Map<String, String> map, String key, String value) {
         if (parameters == null) {
             parameters = new HashMap<>();
         }
-        parameters.put(key, value);
+
+        Set<InfraAdapter> adapters = ExtensionLoader.getExtensionLoader(InfraAdapter.class).getSupportedExtensionInstances();
+        if (CollectionUtils.isNotEmpty(adapters)) {
+            Map<String, String> inputParameters = new HashMap<>();
+            inputParameters.put(APPLICATION_KEY, getName());
+            inputParameters.put(HOST_KEY, getHostname());
+            for (InfraAdapter adapter : adapters) {
+                Map<String, String> extraParameters = adapter.getExtraAttributes(inputParameters);
+                if (CollectionUtils.isNotEmptyMap(extraParameters)) {
+                    parameters.putAll(extraParameters);
+                }
+            }
+        }
     }
 }
