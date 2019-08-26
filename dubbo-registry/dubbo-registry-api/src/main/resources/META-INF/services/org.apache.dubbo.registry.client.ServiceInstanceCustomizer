@@ -2,3 +2,4 @@ org.apache.dubbo.registry.client.metadata.MetadataServiceURLParamsMetadataCustom
 org.apache.dubbo.registry.client.metadata.ExportedServicesRevisionMetadataCustomizer
 org.apache.dubbo.registry.client.metadata.SubscribedServicesRevisionMetadataCustomizer
 org.apache.dubbo.registry.client.metadata.RefreshServiceMetadataCustomizer
+org.apache.dubbo.registry.client.metadata.ProtocolPortsMetadataCustomizer
