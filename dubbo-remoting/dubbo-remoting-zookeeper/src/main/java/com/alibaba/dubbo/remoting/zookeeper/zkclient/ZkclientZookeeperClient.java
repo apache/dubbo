@@ -75,7 +75,7 @@ public class ZkclientZookeeperClient extends AbstractZookeeperClient<IZkChildLis
     }
 
     @Override
-    public void delete(String path) {
+    protected void deletePath(String path) {
         try {
             client.delete(path);
         } catch (ZkNoNodeException e) {

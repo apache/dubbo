@@ -19,6 +19,7 @@ package com.alibaba.dubbo.remoting.zookeeper.support;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.common.utils.ConcurrentHashSet;
 import com.alibaba.dubbo.remoting.zookeeper.ChildListener;
 import com.alibaba.dubbo.remoting.zookeeper.StateListener;
 import com.alibaba.dubbo.remoting.zookeeper.ZookeeperClient;
@@ -41,6 +42,8 @@ public abstract class AbstractZookeeperClient<TargetChildListener> implements Zo
 
     private volatile boolean closed = false;
 
+    private final Set<String>  persistentExistNodePath = new ConcurrentHashSet<String>();
+
     public AbstractZookeeperClient(URL url) {
         this.url = url;
     }
@@ -51,9 +54,20 @@ public abstract class AbstractZookeeperClient<TargetChildListener> implements Zo
     }
 
     @Override
+    public void delete(String path){
+        //never mind if ephemeral
+        persistentExistNodePath.remove(path);
+        deletePath(path);
+    }
+
+    @Override
     public void create(String path, boolean ephemeral) {
         if (!ephemeral) {
+            if(persistentExistNodePath.contains(path)){
+                return;
+            }
             if (checkExists(path)) {
+                persistentExistNodePath.add(path);
                 return;
             }
         }
@@ -65,6 +79,7 @@ public abstract class AbstractZookeeperClient<TargetChildListener> implements Zo
             createEphemeral(path);
         } else {
             createPersistent(path);
+            persistentExistNodePath.add(path);
         }
     }
 
@@ -140,5 +155,11 @@ public abstract class AbstractZookeeperClient<TargetChildListener> implements Zo
     protected abstract List<String> addTargetChildListener(String path, TargetChildListener listener);
 
     protected abstract void removeTargetChildListener(String path, TargetChildListener listener);
+
+    /**
+     * we invoke the zookeeper client to delete the node
+     * @param path the node path
+     */
+    protected abstract void deletePath(String path);
 
 }
