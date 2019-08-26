@@ -22,16 +22,16 @@ import org.apache.dubbo.bootstrap.rest.UserServiceImpl;
 /**
  * TODO
  */
-public class DubboServiceProviderMinimumBootstrap {
+public class ZookeeperDubboServiceProviderBootstrap {
 
     public static void main(String[] args) {
         new DubboBootstrap()
-                .application("dubbo-provider-demo")
+                .application("zookeeper-dubbo-provider")
                 .registry(builder -> builder.address("zookeeper://127.0.0.1:2181?registry-type=service"))
-//                .registry(builder -> builder.address("eureka://127.0.0.1:8761?registry-type=service"))
-                .protocol(builder -> builder.port(-1).name("dubbo"))
-                .service("echo", builder -> builder.interfaceClass(EchoService.class).ref(new EchoServiceImpl()))
-                .service("user", builder -> builder.interfaceClass(UserService.class).ref(new UserServiceImpl()))
+                .protocol("dubbo", builder -> builder.port(-1).name("dubbo"))
+                .protocol("rest", builder -> builder.port(8082).name("rest"))
+                .service("echo", builder -> builder.interfaceClass(EchoService.class).ref(new EchoServiceImpl()).protocolIds("dubbo"))
+                .service("user", builder -> builder.interfaceClass(UserService.class).ref(new UserServiceImpl()).protocolIds("rest"))
                 .start()
                 .await();
     }

@@ -17,8 +17,6 @@
 package org.apache.dubbo.bootstrap;
 
 import org.apache.dubbo.bootstrap.rest.UserService;
-import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 
@@ -27,19 +25,13 @@ import org.apache.dubbo.config.context.ConfigManager;
  *
  * @since 2.7.4
  */
-public class NacosDubboServiceConsumerBootstrap {
+public class ZookeeperDubboServiceConsumerBootstrap {
 
     public static void main(String[] args) throws Exception {
 
-        ApplicationConfig applicationConfig = new ApplicationConfig("dubbo-nacos-consumer-demo");
-//        applicationConfig.setMetadataType("remote");
         new DubboBootstrap()
-                .application(applicationConfig)
-                // Zookeeper
-                .registry("nacos", builder -> builder.address("nacos://127.0.0.1:8848?registry-type=service&subscribed-services=dubbo-nacos-provider-demo"))
-                .metadataReport(new MetadataReportConfig("nacos://127.0.0.1:8848"))
-                // Nacos
-//                .registry("consul", builder -> builder.address("consul://127.0.0.1:8500?registry.type=service&subscribed.services=dubbo-provider-demo").group("namespace1"))
+                .application("zookeeper-dubbo-consumer")
+                .registry("zookeeper", builder -> builder.address("zookeeper://127.0.0.1:2181?registry-type=service&subscribed-services=zookeeper-dubbo-provider"))
                 .reference("echo", builder -> builder.interfaceClass(EchoService.class).protocol("dubbo"))
                 .reference("user", builder -> builder.interfaceClass(UserService.class).protocol("rest"))
                 .start()
@@ -51,10 +43,16 @@ public class NacosDubboServiceConsumerBootstrap {
 
         EchoService echoService = referenceConfig.get();
 
+        ReferenceConfig<UserService> referenceConfig2 = configManager.getReference("user");
+
+        UserService userService = referenceConfig2.get();
+
         for (int i = 0; i < 500; i++) {
             Thread.sleep(2000L);
             System.out.println(echoService.echo("Hello,World"));
+            System.out.println(userService.getUser(i * 1L));
         }
+
 
     }
 }
