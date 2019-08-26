@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import static java.lang.String.valueOf;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getMetadataServiceURLsParams;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getProtocolPort;
 
@@ -50,6 +51,8 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
 
         List<URL> urls = new ArrayList<>(paramsMap.size());
 
+        String serviceName = serviceInstance.getServiceName();
+
         String host = serviceInstance.getHost();
 
         for (Map.Entry<String, Map<String, Object>> entry : paramsMap.entrySet()) {
@@ -63,6 +66,9 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
 
             // add parameters
             entry.getValue().forEach((name, value) -> urlBuilder.addParameter(name, valueOf(value)));
+
+            // add the default parameters
+            urlBuilder.addParameter(GROUP_KEY, serviceName);
 
             urls.add(urlBuilder.build());
         }
