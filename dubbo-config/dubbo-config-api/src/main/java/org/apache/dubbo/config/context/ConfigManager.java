@@ -53,6 +53,7 @@ import static java.util.Optional.ofNullable;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.common.utils.ReflectUtils.getProperty;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
+import static org.apache.dubbo.config.AbstractConfig.getTagName;
 import static org.apache.dubbo.config.Constants.PROTOCOLS_SUFFIX;
 import static org.apache.dubbo.config.Constants.REGISTRIES_SUFFIX;
 
@@ -96,7 +97,7 @@ public class ConfigManager {
 
     private static final ConfigManager CONFIG_MANAGER = new ConfigManager();
 
-    private final Map<Class<? extends AbstractConfig>, Map<String, AbstractConfig>> configsCache = newMap();
+    private final Map<String, Map<String, AbstractConfig>> configsCache = newMap();
 
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
@@ -114,7 +115,7 @@ public class ConfigManager {
     }
 
     public Optional<ApplicationConfig> getApplication() {
-        return ofNullable(getConfig(ApplicationConfig.class));
+        return ofNullable(getConfig(getTagName(ApplicationConfig.class)));
     }
 
     public ApplicationConfig getApplicationOrElseThrow() {
@@ -128,7 +129,7 @@ public class ConfigManager {
     }
 
     public Optional<MonitorConfig> getMonitor() {
-        return ofNullable(getConfig(MonitorConfig.class));
+        return ofNullable(getConfig(getTagName(MonitorConfig.class)));
     }
 
     // ModuleConfig correlative methods
@@ -138,7 +139,7 @@ public class ConfigManager {
     }
 
     public Optional<ModuleConfig> getModule() {
-        return ofNullable(getConfig(ModuleConfig.class));
+        return ofNullable(getConfig(getTagName(ModuleConfig.class)));
     }
 
     public void setMetrics(MetricsConfig metrics) {
@@ -146,7 +147,7 @@ public class ConfigManager {
     }
 
     public Optional<MetricsConfig> getMetrics() {
-        return ofNullable(getConfig(MetricsConfig.class));
+        return ofNullable(getConfig(getTagName(MetricsConfig.class)));
     }
 
     // ConfigCenterConfig correlative methods
@@ -160,11 +161,11 @@ public class ConfigManager {
     }
 
     public ConfigCenterConfig getConfigCenter(String id) {
-        return getConfig(ConfigCenterConfig.class, id);
+        return getConfig(getTagName(ConfigCenterConfig.class), id);
     }
 
     public Collection<ConfigCenterConfig> getConfigCenters() {
-        return getConfigs(ConfigCenterConfig.class);
+        return getConfigs(getTagName(ConfigCenterConfig.class));
     }
 
     // MetadataReportConfig correlative methods
@@ -178,7 +179,7 @@ public class ConfigManager {
     }
 
     public Collection<MetadataReportConfig> getMetadataConfigs() {
-        return getConfigs(MetadataReportConfig.class);
+        return getConfigs(getTagName(MetadataReportConfig.class));
     }
 
     // MetadataReportConfig correlative methods
@@ -192,7 +193,7 @@ public class ConfigManager {
     }
 
     public Optional<ProviderConfig> getProvider(String id) {
-        return ofNullable(getConfig(ProviderConfig.class, id));
+        return ofNullable(getConfig(getTagName(ProviderConfig.class), id));
     }
 
     public Optional<ProviderConfig> getDefaultProvider() {
@@ -200,7 +201,7 @@ public class ConfigManager {
     }
 
     public Collection<ProviderConfig> getProviders() {
-        return getConfigs(ProviderConfig.class);
+        return getConfigs(getTagName(ProviderConfig.class));
     }
 
     // ConsumerConfig correlative methods
@@ -214,7 +215,7 @@ public class ConfigManager {
     }
 
     public Optional<ConsumerConfig> getConsumer(String id) {
-        return ofNullable(getConfig(ConsumerConfig.class, id));
+        return ofNullable(getConfig(getTagName(ConsumerConfig.class), id));
     }
 
     public Optional<ConsumerConfig> getDefaultConsumer() {
@@ -222,7 +223,7 @@ public class ConfigManager {
     }
 
     public Collection<ConsumerConfig> getConsumers() {
-        return getConfigs(ConsumerConfig.class);
+        return getConfigs(getTagName(ConsumerConfig.class));
     }
 
     // ProtocolConfig correlative methods
@@ -238,15 +239,15 @@ public class ConfigManager {
     }
 
     public Optional<ProtocolConfig> getProtocol(String id) {
-        return ofNullable(getConfig(ProtocolConfig.class, id));
+        return ofNullable(getConfig(getTagName(ProtocolConfig.class), id));
     }
 
     public List<ProtocolConfig> getDefaultProtocols() {
-        return getDefaultConfigs(getConfigsMap(ProtocolConfig.class));
+        return getDefaultConfigs(getConfigsMap(getTagName(ProtocolConfig.class)));
     }
 
     public Collection<ProtocolConfig> getProtocols() {
-        return getConfigs(ProtocolConfig.class);
+        return getConfigs(getTagName(ProtocolConfig.class));
     }
 
     public Set<String> getProtocolIds() {
@@ -256,7 +257,7 @@ public class ConfigManager {
         protocolIds.addAll(getSubProperties(Environment.getInstance()
                 .getAppExternalConfigurationMap(), PROTOCOLS_SUFFIX));
 
-        protocolIds.addAll(getConfigIds(ProtocolConfig.class));
+        protocolIds.addAll(getConfigIds(getTagName(ProtocolConfig.class)));
         return unmodifiableSet(protocolIds);
     }
 
@@ -274,15 +275,15 @@ public class ConfigManager {
     }
 
     public Optional<RegistryConfig> getRegistry(String id) {
-        return ofNullable(getConfig(RegistryConfig.class, id));
+        return ofNullable(getConfig(getTagName(RegistryConfig.class), id));
     }
 
     public List<RegistryConfig> getDefaultRegistries() {
-        return getDefaultConfigs(getConfigsMap(RegistryConfig.class));
+        return getDefaultConfigs(getConfigsMap(getTagName(RegistryConfig.class)));
     }
 
     public Collection<RegistryConfig> getRegistries() {
-        return getConfigs(RegistryConfig.class);
+        return getConfigs(getTagName(RegistryConfig.class));
     }
 
     public Set<String> getRegistryIds() {
@@ -292,7 +293,7 @@ public class ConfigManager {
         registryIds.addAll(getSubProperties(Environment.getInstance().getAppExternalConfigurationMap(),
                 REGISTRIES_SUFFIX));
 
-        registryIds.addAll(getConfigIds(RegistryConfig.class));
+        registryIds.addAll(getConfigIds(getTagName(RegistryConfig.class)));
         return unmodifiableSet(registryIds);
     }
 
@@ -307,11 +308,11 @@ public class ConfigManager {
     }
 
     public Collection<ServiceConfig> getServices() {
-        return getConfigs(ServiceConfig.class);
+        return getConfigs(getTagName(ServiceConfig.class));
     }
 
     public <T> ServiceConfig<T> getService(String id) {
-        return getConfig(ServiceConfig.class, id);
+        return getConfig(getTagName(ServiceConfig.class), id);
     }
 
     // ReferenceConfig correlative methods
@@ -325,11 +326,11 @@ public class ConfigManager {
     }
 
     public Collection<ReferenceConfig> getReferences() {
-        return getConfigs(ReferenceConfig.class);
+        return getConfigs(getTagName(ReferenceConfig.class));
     }
 
     public <T> ReferenceConfig<T> getReference(String id) {
-        return getConfig(ReferenceConfig.class, id);
+        return getConfig(getTagName(ReferenceConfig.class), id);
     }
 
     protected static Set<String> getSubProperties(Map<String, String> properties, String prefix) {
@@ -375,29 +376,28 @@ public class ConfigManager {
         if (config == null) {
             return;
         }
-        Class<? extends AbstractConfig> configType = config.getClass();
         write(() -> {
-            Map<String, AbstractConfig> configsMap = configsCache.computeIfAbsent(configType, type -> newMap());
+            Map<String, AbstractConfig> configsMap = configsCache.computeIfAbsent(getTagName(config.getClass()), type -> newMap());
             addIfAbsent(config, configsMap, unique);
         });
     }
 
-    protected <C extends AbstractConfig> Map<String, C> getConfigsMap(Class<? extends C> configType) {
-        return read(() -> (Map) configsCache.getOrDefault(configType, emptyMap()));
+    protected <C extends AbstractConfig> Map<String, C> getConfigsMap(String configType) {
+        return (Map<String, C>) read(() -> configsCache.getOrDefault(configType, emptyMap()));
     }
 
-    protected <C extends AbstractConfig> Collection<C> getConfigs(Class<C> configType) {
-        return read(() -> getConfigsMap(configType).values());
+    protected <C extends AbstractConfig> Collection<C> getConfigs(String configType) {
+        return (Collection<C>) read(() -> getConfigsMap(configType).values());
     }
 
-    protected <C extends AbstractConfig> C getConfig(Class<C> configType, String id) {
+    protected <C extends AbstractConfig> C getConfig(String configType, String id) {
         return read(() -> {
             Map<String, C> configsMap = (Map) configsCache.getOrDefault(configType, emptyMap());
             return configsMap.get(id);
         });
     }
 
-    protected <C extends AbstractConfig> C getConfig(Class<C> configType) throws IllegalStateException {
+    protected <C extends AbstractConfig> C getConfig(String configType) throws IllegalStateException {
         return read(() -> {
             Map<String, C> configsMap = (Map) configsCache.getOrDefault(configType, emptyMap());
             int size = configsMap.size();
@@ -405,14 +405,14 @@ public class ConfigManager {
 //                throw new IllegalStateException("No such " + configType.getName() + " is found");
                 return null;
             } else if (size > 1) {
-                throw new IllegalStateException("The expected single matching " + configType.getName() + " but found " + size + " instances");
+                throw new IllegalStateException("The expected single matching " + configType + " but found " + size + " instances");
             } else {
                 return configsMap.values().iterator().next();
             }
         });
     }
 
-    protected <C extends AbstractConfig> Collection<String> getConfigIds(Class<C> configType) {
+    protected <C extends AbstractConfig> Collection<String> getConfigIds(String configType) {
         return getConfigs(configType)
                 .stream()
                 .map(AbstractConfig::getId)

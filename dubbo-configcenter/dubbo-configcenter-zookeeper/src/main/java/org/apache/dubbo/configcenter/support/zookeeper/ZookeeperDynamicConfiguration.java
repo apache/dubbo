@@ -112,7 +112,7 @@ public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
 
     @Override
     public boolean publishConfig(String key, String group, String content) {
-        String path = getPathKey(key, group);
+        String path = getPathKey(group, key);
         zkClient.create(path, content, true);
         return true;
     }

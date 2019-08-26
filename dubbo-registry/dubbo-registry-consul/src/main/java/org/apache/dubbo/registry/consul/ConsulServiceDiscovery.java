@@ -19,13 +19,14 @@ package org.apache.dubbo.registry.consul;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.event.EventListener;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
-import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 
 import com.ecwid.consul.v1.ConsulClient;
 import com.ecwid.consul.v1.QueryParams;
@@ -34,10 +35,11 @@ import com.ecwid.consul.v1.agent.model.NewService;
 import com.ecwid.consul.v1.health.HealthServicesRequest;
 import com.ecwid.consul.v1.health.model.HealthService;
 
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -48,14 +50,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static java.util.concurrent.Executors.newCachedThreadPool;
+import static org.apache.dubbo.common.constants.CommonConstants.SEMICOLON_SPLIT_PATTERN;
 import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.CHECK_PASS_INTERVAL;
 import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.DEFAULT_CHECK_PASS_INTERVAL;
 import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.DEFAULT_DEREGISTER_TIME;
 import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.DEFAULT_PORT;
 import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.DEFAULT_WATCH_TIMEOUT;
 import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.DEREGISTER_AFTER;
-import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.SERVICE_TAG;
-import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.URL_META_KEY;
 import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.WATCH_TIMEOUT;
 
 /**
@@ -65,6 +66,11 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
 
     private static final Logger logger = LoggerFactory.getLogger(ConsulServiceDiscovery.class);
 
+    private static final String QUERY_TAG = "consul_query_tag";
+    private static final String REGISTER_TAG = "consul_register_tag";
+
+    private List<String> registeringTags = new ArrayList<>();
+    private String tag;
     private ConsulClient client;
     private ExecutorService notifierExecutor = newCachedThreadPool(
             new NamedThreadFactory("dubbo-consul-notifier", true));
@@ -85,7 +91,17 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
         checkPassInterval = url.getParameter(CHECK_PASS_INTERVAL, DEFAULT_CHECK_PASS_INTERVAL);
         client = new ConsulClient(host, port);
         ttlScheduler = new TtlScheduler(checkPassInterval, client);
-        this.url = url;
+        this.tag = registryURL.getParameter(QUERY_TAG);
+        this.registeringTags.addAll(getRegisteringTags(url));
+    }
+
+    private List<String> getRegisteringTags(URL url) {
+        List<String> tags = new ArrayList<>();
+        String rawTag = url.getParameter(REGISTER_TAG);
+        if (StringUtils.isNotEmpty(rawTag)) {
+            tags.addAll(Arrays.asList(SEMICOLON_SPLIT_PATTERN.split(rawTag)));
+        }
+        return tags;
     }
 
     @Override
@@ -125,13 +141,12 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
     private List<ServiceInstance> convert(List<HealthService> services) {
         return services.stream()
                 .map(HealthService::getService)
-                .filter(service -> Objects.nonNull(service) && service.getMeta().containsKey(ServiceInstanceMetadataUtils.METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME))
                 .map(service -> {
                     ServiceInstance instance = new DefaultServiceInstance(
                             service.getService(),
                             service.getAddress(),
                             service.getPort());
-                    instance.getMetadata().putAll(service.getMeta());
+                    instance.getMetadata().putAll(getMetadata(service));
                     return instance;
                 })
                 .collect(Collectors.toList());
@@ -139,11 +154,45 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
 
     private Response<List<HealthService>> getHealthServices(String service, long index, int watchTimeout) {
         HealthServicesRequest request = HealthServicesRequest.newBuilder()
-                .setTag(SERVICE_TAG)
+                .setTag(tag)
                 .setQueryParams(new QueryParams(watchTimeout, index))
                 .setPassing(true)
                 .build();
         return client.getHealthServices(service, request);
+    }
+
+    private Map<String, String> getMetadata(HealthService.Service service) {
+        Map<String, String> metadata = service.getMeta();
+        if (CollectionUtils.isEmptyMap(metadata)) {
+            metadata = getScCompatibleMetadata(service.getTags());
+        }
+        return metadata;
+    }
+
+    private Map<String, String> getScCompatibleMetadata(List<String> tags) {
+        LinkedHashMap<String, String> metadata = new LinkedHashMap<>();
+        if (tags != null) {
+            for (String tag : tags) {
+                String[] parts = StringUtils.delimitedListToStringArray(tag, "=");
+                switch (parts.length) {
+                    case 0:
+                        break;
+                    case 1:
+                        metadata.put(parts[0], parts[0]);
+                        break;
+                    case 2:
+                        metadata.put(parts[0], parts[1]);
+                        break;
+                    default:
+                        String[] end = Arrays.copyOfRange(parts, 1, parts.length);
+                        metadata.put(parts[0], StringUtils.arrayToDelimitedString(end, "="));
+                        break;
+                }
+
+            }
+        }
+
+        return metadata;
     }
 
     private NewService buildService(ServiceInstance serviceInstance) {
@@ -154,7 +203,7 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
         service.setName(serviceInstance.getServiceName());
         service.setCheck(buildCheck(serviceInstance));
         service.setTags(buildTags(serviceInstance));
-        service.setMeta(Collections.singletonMap(URL_META_KEY, serviceInstance.toString()));
+        service.setMeta(buildMetadata(serviceInstance));
         return service;
     }
 
@@ -167,8 +216,17 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
         List<String> tags = params.keySet().stream()
                 .map(k -> k + "=" + params.get(k))
                 .collect(Collectors.toList());
-        tags.add(SERVICE_TAG);
+        tags.addAll(registeringTags);
         return tags;
+    }
+
+    private Map<String, String> buildMetadata(ServiceInstance serviceInstance) {
+        Map<String, String> metadata = new LinkedHashMap<>();
+        metadata.putAll(getScCompatibleMetadata(registeringTags));
+        if (CollectionUtils.isNotEmptyMap(serviceInstance.getMetadata())) {
+            metadata.putAll(serviceInstance.getMetadata());
+        }
+        return metadata;
     }
 
     private NewService.Check buildCheck(ServiceInstance serviceInstance) {
@@ -278,8 +336,8 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
             @Override
             public void run() {
                 TtlScheduler.this.client.agentCheckPass(this.checkId);
-                if (logger.isInfoEnabled()) {
-                    logger.info("Sending consul heartbeat for: " + this.checkId);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Sending consul heartbeat for: " + this.checkId);
                 }
             }
 

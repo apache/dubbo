@@ -22,6 +22,7 @@ import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.metadata.store.InMemoryWritableMetadataService;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import static org.apache.dubbo.common.constants.CommonConstants.METADATA_DEFAULT;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 
 /**
@@ -30,19 +31,8 @@ import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoad
  *
  * @since 2.7.4
  */
-@SPI("default")
+@SPI(METADATA_DEFAULT)
 public interface WritableMetadataService extends MetadataService {
-
-    /**
-     * The default storage type value as the extension name
-     */
-    public static String DEFAULT_METADATA_STORAGE_TYPE = "default";
-
-    /**
-     * The remote storage type value as the extension name
-     */
-    public static String REMOTE_METADATA_STORAGE_TYPE = "remote";
-
     /**
      * Gets the current Dubbo Service name
      *

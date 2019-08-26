@@ -44,7 +44,7 @@ public class ServiceInstancesChangedListenerTest {
 
         AtomicReference<Event> eventRef = new AtomicReference<>();
 
-        eventDispatcher.addEventListener(new ServiceInstancesChangedListener("test") {
+        eventDispatcher.addEventListener(new ServiceInstancesChangedListener("test", "rest") {
             @Override
             public void onEvent(ServiceInstancesChangedEvent event) {
                 eventRef.set(event);

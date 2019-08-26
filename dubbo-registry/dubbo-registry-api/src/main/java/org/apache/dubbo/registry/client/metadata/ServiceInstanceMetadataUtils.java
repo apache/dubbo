@@ -30,8 +30,8 @@ import java.util.Map;
 
 import static java.lang.String.valueOf;
 import static java.util.Collections.emptyMap;
+import static org.apache.dubbo.common.constants.CommonConstants.METADATA_DEFAULT;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
-import static org.apache.dubbo.metadata.WritableMetadataService.DEFAULT_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.registry.integration.RegistryProtocol.DEFAULT_REGISTER_PROVIDER_KEYS;
 
 /**
@@ -187,10 +187,9 @@ public class ServiceInstanceMetadataUtils {
      *
      * @param registryURL the {@link URL} to connect the registry
      * @return if not found in {@link URL#getParameters() parameters} of {@link URL registry URL}, return
-     * {@link WritableMetadataService#DEFAULT_METADATA_STORAGE_TYPE}
      */
     public static String getMetadataStorageType(URL registryURL) {
-        return registryURL.getParameter(METADATA_STORAGE_TYPE_PROPERTY_NAME, DEFAULT_METADATA_STORAGE_TYPE);
+        return registryURL.getParameter(METADATA_STORAGE_TYPE_PROPERTY_NAME, METADATA_DEFAULT);
     }
 
     /**
@@ -198,11 +197,10 @@ public class ServiceInstanceMetadataUtils {
      *
      * @param serviceInstance the specified {@link ServiceInstance}
      * @return if not found in {@link ServiceInstance#getMetadata() metadata} of {@link ServiceInstance}, return
-     * {@link WritableMetadataService#DEFAULT_METADATA_STORAGE_TYPE}
      */
     public static String getMetadataStorageType(ServiceInstance serviceInstance) {
         Map<String, String> metadata = serviceInstance.getMetadata();
-        return metadata.getOrDefault(METADATA_STORAGE_TYPE_PROPERTY_NAME, DEFAULT_METADATA_STORAGE_TYPE);
+        return metadata.getOrDefault(METADATA_STORAGE_TYPE_PROPERTY_NAME, METADATA_DEFAULT);
     }
 
     /**
