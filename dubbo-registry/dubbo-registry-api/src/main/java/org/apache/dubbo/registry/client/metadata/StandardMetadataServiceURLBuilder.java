@@ -27,8 +27,7 @@ import java.util.Map;
 
 import static java.lang.String.valueOf;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getMetadataServiceURLsParams;
-import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getProviderHost;
-import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getProviderPort;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getProtocolPort;
 
 /**
  * The {@link MetadataServiceURLBuilder} implementation for The standard Dubbo scenario
@@ -51,14 +50,13 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
 
         List<URL> urls = new ArrayList<>(paramsMap.size());
 
-        for (Map.Entry<String, Map<String, Object>> entry : paramsMap.entrySet()) {
+        String host = serviceInstance.getHost();
 
-            URLBuilder urlBuilder = new URLBuilder();
+        for (Map.Entry<String, Map<String, Object>> entry : paramsMap.entrySet()) {
             String protocol = entry.getKey();
-            Map<String, Object> urlParams = entry.getValue();
-            String host = getProviderHost(urlParams);
-            Integer port = getProviderPort(urlParams);
-            urlBuilder.setHost(host)
+            Integer port = getProtocolPort(serviceInstance, protocol);
+            URLBuilder urlBuilder = new URLBuilder()
+                    .setHost(host)
                     .setPort(port)
                     .setProtocol(protocol)
                     .setPath(MetadataService.class.getName());
