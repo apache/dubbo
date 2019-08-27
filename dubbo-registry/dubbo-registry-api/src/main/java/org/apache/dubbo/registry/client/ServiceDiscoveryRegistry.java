@@ -39,7 +39,6 @@ import org.apache.dubbo.registry.support.FailbackRegistry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -49,6 +48,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
@@ -76,7 +79,7 @@ import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
 import static org.apache.dubbo.common.utils.CollectionUtils.isNotEmpty;
 import static org.apache.dubbo.common.utils.DubboServiceLoader.loadServices;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
-import static org.apache.dubbo.metadata.WritableMetadataService.DEFAULT_EXTENSION;
+import static org.apache.dubbo.metadata.MetadataService.toURLs;
 import static org.apache.dubbo.registry.client.ServiceDiscoveryFactory.getExtension;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getExportedServicesRevision;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getMetadataStorageType;
@@ -115,12 +118,14 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
     private final List<SubscribedURLsSynthesizer> subscribedURLsSynthesizers;
 
+    private final ReadWriteLock lock = new ReentrantReadWriteLock();
+
     /**
      * A cache for all URLs of services that the subscribed services exported
      * The key is the service name
      * The value is a nested {@link Map} whose key is the revision and value is all URLs of services
      */
-    private final Map<String, Map<String, List<URL>>> serviceExportedURLsCache = new LinkedHashMap<>();
+    private final Map<String, Map<String, List<URL>>> serviceRevisionExportedURLsCache = new LinkedHashMap<>();
 
     public ServiceDiscoveryRegistry(URL registryURL) {
         super(registryURL);
@@ -381,62 +386,100 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
             return emptyList();
         }
 
-        expungeStaleRevisionExportedURLs(serviceInstances);
-
-        initTemplateURLs(subscribedURL, serviceInstances);
+        // Prepare revision exported URLs
+        prepareServiceRevisionExportedURLs(serviceInstances);
 
         // Clone the subscribed URLs from the template URLs
         List<URL> subscribedURLs = cloneExportedURLs(subscribedURL, serviceInstances);
+
         // clear local service instances
         serviceInstances.clear();
+
         return subscribedURLs;
     }
 
-    private void initTemplateURLs(URL subscribedURL, List<ServiceInstance> serviceInstances) {
-        // Try to get the template URLs until success
+    /**
+     * Prepare the {@link #serviceRevisionExportedURLsCache} exclusively
+     *
+     * @param serviceInstances {@link ServiceInstance service instances}
+     * @see #expungeStaleRevisionExportedURLs(List)
+     * @see #initializeRevisionExportedURLs(List)
+     */
+    private void prepareServiceRevisionExportedURLs(List<ServiceInstance> serviceInstances) {
+        executeExclusively(() -> {
+            // 1. expunge stale
+            expungeStaleRevisionExportedURLs(serviceInstances);
+            // 2. Initialize
+            initializeRevisionExportedURLs(serviceInstances);
+        });
+    }
+
+    /**
+     * Initialize the {@link URL URLs} that {@link ServiceInstance service instances} exported into
+     * {@link #serviceRevisionExportedURLsCache the cache}.
+     * <p>
+     *
+     * @param serviceInstances {@link ServiceInstance service instances}
+     */
+    private void initializeRevisionExportedURLs(List<ServiceInstance> serviceInstances) {
+        // initialize the revision exported URLs that the selected service instance exported
+        initializeSelectedRevisionExportedURLs(serviceInstances);
+        // initialize the revision exported URLs that other service instances exported
+        serviceInstances.forEach(this::initializeRevisionExportedURLs);
+    }
+
+    /**
+     * One {@link ServiceInstance} that will be selected in order to avoid hot spot
+     *
+     * @param serviceInstances {@link ServiceInstance service instances}
+     */
+    private void initializeSelectedRevisionExportedURLs(List<ServiceInstance> serviceInstances) {
+        // Try to initialize revision exported URLs until success
         for (int i = 0; i < serviceInstances.size(); i++) {
             // select a instance of {@link ServiceInstance}
             ServiceInstance selectedInstance = selectServiceInstance(serviceInstances);
-            // try to get the template URLs
-            List<URL> templateURLs = getTemplateExportedURLs(subscribedURL, selectedInstance);
-            if (isNotEmpty(templateURLs)) { // If the result is valid
-                break; // break the loop
-            } else {
-                serviceInstances.remove(selectedInstance); // remove if the service instance is not available
-                // There may be one or more service instances from the "serviceInstances"
+            List<URL> revisionExportedURLs = initializeRevisionExportedURLs(selectedInstance);
+            if (isNotEmpty(revisionExportedURLs)) {    // If the result is valid
+                break;
             }
         }
     }
 
+    /**
+     * Expunge the revision exported {@link URL URLs} in {@link #serviceRevisionExportedURLsCache the cache} if
+     * some revisions of {@link ServiceInstance service instance} had been out of date possibly
+     *
+     * @param serviceInstances {@link ServiceInstance service instances}
+     */
     private void expungeStaleRevisionExportedURLs(List<ServiceInstance> serviceInstances) {
 
-        if (isEmpty(serviceInstances)) { // if empty, return immediately
+        String serviceName = serviceInstances.get(0).getServiceName();
+        // revisionExportedURLsMap is mutable
+        Map<String, List<URL>> revisionExportedURLsMap = getRevisionExportedURLsMap(serviceName);
+
+        if (revisionExportedURLsMap.isEmpty()) { // if empty, return immediately
             return;
         }
 
-        String serviceName = serviceInstances.get(0).getServiceName();
-
-        synchronized (this) {
-
-            // revisionExportedURLs is mutable
-            Map<String, List<URL>> revisionExportedURLs = serviceExportedURLsCache.computeIfAbsent(serviceName, s -> new HashMap<>());
-
-            if (revisionExportedURLs.isEmpty()) { // if empty, return immediately
-                return;
-            }
-
-            Set<String> existedRevisions = revisionExportedURLs.keySet(); // read-only
-            Set<String> currentRevisions = serviceInstances.stream()
-                    .map(ServiceInstanceMetadataUtils::getExportedServicesRevision)
-                    .collect(Collectors.toSet());
-            // staleRevisions = existedRevisions(copy) - currentRevisions
-            Set<String> staleRevisions = new HashSet<>(existedRevisions);
-            staleRevisions.removeAll(currentRevisions);
-            // remove exported URLs if staled
-            staleRevisions.forEach(revisionExportedURLs::remove);
-        }
+        Set<String> existedRevisions = revisionExportedURLsMap.keySet(); // read-only
+        Set<String> currentRevisions = serviceInstances.stream()
+                .map(ServiceInstanceMetadataUtils::getExportedServicesRevision)
+                .collect(Collectors.toSet());
+        // staleRevisions = existedRevisions(copy) - currentRevisions
+        Set<String> staleRevisions = new HashSet<>(existedRevisions);
+        staleRevisions.removeAll(currentRevisions);
+        // remove exported URLs if staled
+        staleRevisions.forEach(revisionExportedURLsMap::remove);
     }
 
+    /**
+     * Clone the exported URLs that are based on {@link #getTemplateExportedURLs(URL, ServiceInstance) the template URLs}
+     * from the some of {@link ServiceInstance service instances} with different revisions
+     *
+     * @param subscribedURL    the subscribed {@link URL url}
+     * @param serviceInstances {@link ServiceInstance service instances}
+     * @return non-null
+     */
     private List<URL> cloneExportedURLs(URL subscribedURL, Collection<ServiceInstance> serviceInstances) {
 
         if (isEmpty(serviceInstances)) {
@@ -494,11 +537,11 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
      * Get the template exported {@link URL urls} from the specified {@link ServiceInstance}.
      * <p>
      * First, put the revision {@link ServiceInstance service instance}
-     * associating {@link #getExportedURLs(URL, ServiceInstance) exported URLs} into cache.
+     * associating {@link #getExportedURLs(ServiceInstance) exported URLs} into cache.
      * <p>
      * And then compare a new {@link ServiceInstance service instances'} revision with cached one,If they are equal,
      * return the cached template {@link URL urls} immediately, or to get template {@link URL urls} that the provider
-     * {@link ServiceInstance instance} exported via executing {@link #getExportedURLs(URL, ServiceInstance)}
+     * {@link ServiceInstance instance} exported via executing {@link ##getExportedURLs(ServiceInstance) (ServiceInstance)}
      * method.
      * <p>
      * Eventually, the retrieving result will be cached and returned.
@@ -519,31 +562,84 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         return filterSubscribedURLs(subscribedURL, exportedURLs);
     }
 
-    private List<URL> filterSubscribedURLs(URL subscribedURL, List<URL> exportedURLs) {
-        return exportedURLs.stream()
-                .filter(url -> isSameServiceInterface(subscribedURL, url))
-                .filter(url -> isSameParameter(subscribedURL, url, VERSION_KEY))
-                .filter(url -> isSameParameter(subscribedURL, url, GROUP_KEY))
-                .filter(url -> isCompatibleProtocol(subscribedURL, url))
-                .collect(Collectors.toList());
+    /**
+     * Initialize the URLs that the specified {@link ServiceInstance service instance} exported
+     *
+     * @param providerServiceInstance the {@link ServiceInstance} exports the Dubbo Services
+     * @return the {@link URL URLs} that the {@link ServiceInstance} exported, it's calculated from
+     * The invocation to remote {@link MetadataService}, or get from {@link #serviceRevisionExportedURLsCache cache} if
+     * {@link ServiceInstanceMetadataUtils#getExportedServicesRevision(ServiceInstance) revision} is hit
+     */
+    private List<URL> initializeRevisionExportedURLs(ServiceInstance providerServiceInstance) {
+
+        if (providerServiceInstance == null) {
+            return emptyList();
+        }
+
+        String serviceName = providerServiceInstance.getServiceName();
+        // get the revision from the specified {@link ServiceInstance}
+        String revision = getExportedServicesRevision(providerServiceInstance);
+
+        Map<String, List<URL>> revisionExportedURLsMap = getRevisionExportedURLsMap(serviceName);
+
+        List<URL> revisionExportedURLs = revisionExportedURLsMap.get(revision);
+
+        boolean firstGet = false;
+
+        if (revisionExportedURLs == null) { // The hit is missing in cache
+
+            if (!revisionExportedURLsMap.isEmpty()) { // The case is that current ServiceInstance with the different revision
+                if (logger.isWarnEnabled()) {
+                    logger.warn(format("The ServiceInstance[id: %s, host : %s , port : %s] has different revision : %s" +
+                                    ", please make sure the service [name : %s] is changing or not.",
+                            providerServiceInstance.getId(),
+                            providerServiceInstance.getHost(),
+                            providerServiceInstance.getPort(),
+                            revision,
+                            providerServiceInstance.getServiceName()
+                    ));
+                }
+            } else { // Else, it's the first time to get the exported URLs
+                firstGet = true;
+            }
+
+            revisionExportedURLs = getExportedURLs(providerServiceInstance);
+
+            if (revisionExportedURLs != null) { // just allow the valid result into exportedURLsMap
+
+                revisionExportedURLsMap.put(revision, revisionExportedURLs);
+
+                if (logger.isDebugEnabled()) {
+                    logger.debug(format("Get the exported URLs[size : %s, first : %s] from the target service " +
+                                    "instance [id: %s , service : %s , host : %s , port : %s , revision : %s]",
+                            revisionExportedURLs.size(), firstGet,
+                            providerServiceInstance.getId(),
+                            providerServiceInstance.getServiceName(),
+                            providerServiceInstance.getHost(),
+                            providerServiceInstance.getPort(),
+                            revision
+                    ));
+                }
+            }
+        } else { // Else, The cache is hit
+            if (logger.isDebugEnabled()) {
+                logger.debug(format("Get the exported URLs[size : %s] from cache, the instance" +
+                                "[id: %s , service : %s , host : %s , port : %s , revision : %s]",
+                        revisionExportedURLs.size(),
+                        providerServiceInstance.getId(),
+                        providerServiceInstance.getServiceName(),
+                        providerServiceInstance.getHost(),
+                        providerServiceInstance.getPort(),
+                        revision
+                ));
+            }
+        }
+
+        return revisionExportedURLs;
     }
 
-    private boolean isSameServiceInterface(URL one, URL another) {
-        return Objects.equals(one.getServiceInterface(), another.getServiceInterface());
-    }
-
-    private boolean isSameParameter(URL one, URL another, String key) {
-        return Objects.equals(one.getParameter(key), another.getParameter(key));
-    }
-
-    private boolean isCompatibleProtocol(URL one, URL another) {
-        String protocol = one.getParameter(PROTOCOL_KEY);
-        return isCompatibleProtocol(protocol, another);
-    }
-
-    private boolean isCompatibleProtocol(String protocol, URL targetURL) {
-        return protocol == null || Objects.equals(protocol, targetURL.getParameter(PROTOCOL_KEY))
-                || Objects.equals(protocol, targetURL.getProtocol());
+    private Map<String, List<URL>> getRevisionExportedURLsMap(String serviceName) {
+        return serviceRevisionExportedURLsCache.computeIfAbsent(serviceName, s -> new LinkedHashMap());
     }
 
     /**
@@ -555,7 +651,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
      * contract one by one, the "revision" that is the number is introduced to identify all Dubbo exported interfaces in
      * one {@link ServiceInstance service instance}.
      *
-     * @param providerServiceInstance the {@link ServiceInstance} provides the Dubbo Services
+     * @param providerServiceInstance the {@link ServiceInstance} exports the Dubbo Services
      * @return the same as {@link #getExportedURLs(ServiceInstance)}
      */
     private List<URL> getRevisionExportedURLs(ServiceInstance providerServiceInstance) {
@@ -568,62 +664,23 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         // get the revision from the specified {@link ServiceInstance}
         String revision = getExportedServicesRevision(providerServiceInstance);
 
-        List<URL> exportedURLs = null;
+        return getRevisionExportedURLs(serviceName, revision);
+    }
 
-        synchronized (this) { // It's required to lock here because it may run in the sync or async mode
-
-            Map<String, List<URL>> exportedURLsMap = serviceExportedURLsCache.computeIfAbsent(serviceName, s -> new LinkedHashMap());
-
-            exportedURLs = exportedURLsMap.get(revision);
-
-            boolean firstGet = false;
-
-            if (exportedURLs == null) { // The hit is missing in cache
-
-                if (!exportedURLsMap.isEmpty()) { // The case is that current ServiceInstance with the different revision
-                    if (logger.isWarnEnabled()) {
-                        logger.warn(format("The ServiceInstance[id: %s, host : %s , port : %s] has different revision : %s" +
-                                        ", please make sure the service [name : %s] is changing or not.",
-                                providerServiceInstance.getId(),
-                                providerServiceInstance.getHost(),
-                                providerServiceInstance.getPort(),
-                                revision,
-                                providerServiceInstance.getServiceName()
-                        ));
-                    }
-                } else {// Else, it's the first time to get the exported URLs
-                    firstGet = true;
-                }
-                exportedURLs = getExportedURLs(providerServiceInstance);
-
-                if (exportedURLs != null) { // just allow the valid result into exportedURLsMap
-
-                    exportedURLsMap.put(revision, exportedURLs);
-
-                    if (logger.isDebugEnabled()) {
-                        logger.debug(format("Getting the exported URLs[size : %s, first : %s] from the target service " +
-                                        "instance [id: %s , service : %s , host : %s , port : %s , revision : %s]",
-                                exportedURLs.size(), firstGet,
-                                providerServiceInstance.getId(),
-                                providerServiceInstance.getServiceName(),
-                                providerServiceInstance.getHost(),
-                                providerServiceInstance.getPort(),
-                                revision
-                        ));
-                    }
-                }
-            }
-        }
-
-        // Get a copy from source in order to prevent the caller trying to change the cached data
-        return exportedURLs != null ? new ArrayList<>(exportedURLs) : null;
+    private List<URL> getRevisionExportedURLs(String serviceName, String revision) {
+        return executeShared(() -> {
+            Map<String, List<URL>> revisionExportedURLsMap = getRevisionExportedURLsMap(serviceName);
+            List<URL> exportedURLs = revisionExportedURLsMap.get(revision);
+            // Get a copy from source in order to prevent the caller trying to change the cached data
+            return exportedURLs != null ? new ArrayList<>(exportedURLs) : emptyList();
+        });
     }
 
     /**
      * Get all services {@link URL URLs} that the specified {@link ServiceInstance service instance} exported
      * from {@link MetadataService} proxy
      *
-     * @param providerServiceInstance the {@link ServiceInstance} provides the Dubbo Services
+     * @param providerServiceInstance the {@link ServiceInstance} exported the Dubbo services
      * @return The possible result :
      * <ol>
      * <li>The normal result</li>
@@ -638,11 +695,10 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         String metadataStorageType = getMetadataStorageType(providerServiceInstance);
 
         try {
-            MetadataService metadataService = MetadataServiceProxyFactory
-                    .getExtension(metadataStorageType == null ? DEFAULT_EXTENSION : metadataStorageType)
+            MetadataService metadataService = MetadataServiceProxyFactory.getExtension(metadataStorageType)
                     .getProxy(providerServiceInstance);
             SortedSet<String> urls = metadataService.getExportedURLs();
-            exportedURLs = urls.stream().map(URL::valueOf).collect(Collectors.toList());
+            exportedURLs = toURLs(urls);
         } catch (Throwable e) {
             if (logger.isErrorEnabled()) {
                 logger.error(format("It's failed to get the exported URLs from the target service instance[%s]",
@@ -653,36 +709,24 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         return exportedURLs;
     }
 
-    /**
-     * Get the exported {@link URL urls} from the specified provider {@link ServiceInstance instance}
-     *
-     * @param subscribedURL           the subscribed {@link URL url}
-     * @param providerServiceInstance the target provider {@link ServiceInstance instance}
-     * @return non-null {@link List} of {@link URL urls}
-     */
-    protected List<URL> getExportedURLs(URL subscribedURL, ServiceInstance providerServiceInstance) {
-
-        List<URL> exportedURLs = emptyList();
-
-        String serviceInterface = subscribedURL.getServiceInterface();
-        String group = subscribedURL.getParameter(GROUP_KEY);
-        String version = subscribedURL.getParameter(VERSION_KEY);
-        // The subscribed protocol may be null
-        String protocol = subscribedURL.getParameter(PROTOCOL_KEY);
-        String metadataStorageType = getMetadataStorageType(providerServiceInstance);
-
+    private void executeExclusively(Runnable runnable) {
+        Lock writeLock = lock.writeLock();
+        writeLock.lock();
         try {
-            MetadataService metadataService = MetadataServiceProxyFactory
-                    .getExtension(metadataStorageType == null ? DEFAULT_EXTENSION : metadataStorageType)
-                    .getProxy(providerServiceInstance);
-            SortedSet<String> urls = metadataService.getExportedURLs(serviceInterface, group, version, protocol);
-            exportedURLs = urls.stream().map(URL::valueOf).collect(Collectors.toList());
-        } catch (Throwable e) {
-            if (logger.isErrorEnabled()) {
-                logger.error(e.getMessage(), e);
-            }
+            runnable.run();
+        } finally {
+            writeLock.unlock();
         }
-        return exportedURLs;
+    }
+
+    private <T> T executeShared(Supplier<T> supplier) {
+        Lock readLock = lock.readLock();
+        readLock.lock();
+        try {
+            return supplier.get();
+        } finally {
+            readLock.unlock();
+        }
     }
 
     /**
@@ -699,7 +743,6 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList());
     }
-
 
     protected Set<String> getServices(URL subscribedURL) {
         Set<String> serviceNames = getSubscribedServices();
@@ -750,5 +793,32 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
      */
     public static boolean supports(URL registryURL) {
         return SERVICE_REGISTRY_TYPE.equalsIgnoreCase(registryURL.getParameter(REGISTRY_TYPE_KEY));
+    }
+
+    private static List<URL> filterSubscribedURLs(URL subscribedURL, List<URL> exportedURLs) {
+        return exportedURLs.stream()
+                .filter(url -> isSameServiceInterface(subscribedURL, url))
+                .filter(url -> isSameParameter(subscribedURL, url, VERSION_KEY))
+                .filter(url -> isSameParameter(subscribedURL, url, GROUP_KEY))
+                .filter(url -> isCompatibleProtocol(subscribedURL, url))
+                .collect(Collectors.toList());
+    }
+
+    private static boolean isSameServiceInterface(URL one, URL another) {
+        return Objects.equals(one.getServiceInterface(), another.getServiceInterface());
+    }
+
+    private static boolean isSameParameter(URL one, URL another, String key) {
+        return Objects.equals(one.getParameter(key), another.getParameter(key));
+    }
+
+    private static boolean isCompatibleProtocol(URL one, URL another) {
+        String protocol = one.getParameter(PROTOCOL_KEY);
+        return isCompatibleProtocol(protocol, another);
+    }
+
+    private static boolean isCompatibleProtocol(String protocol, URL targetURL) {
+        return protocol == null || Objects.equals(protocol, targetURL.getParameter(PROTOCOL_KEY))
+                || Objects.equals(protocol, targetURL.getProtocol());
     }
 }
