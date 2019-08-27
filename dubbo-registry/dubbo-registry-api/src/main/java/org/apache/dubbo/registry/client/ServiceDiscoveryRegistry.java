@@ -38,8 +38,8 @@ import org.apache.dubbo.registry.support.FailbackRegistry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -52,8 +52,9 @@ import java.util.stream.Collectors;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Stream.of;
-import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.URLBuilder.from;
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_CHAR_SEPERATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
@@ -365,10 +366,25 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
         expungeStaleRevisionExportedURLs(serviceInstances);
 
-        initTemplateURLs(subscribedURL, serviceInstances);
+        List<URL> subscribedURLs = new LinkedList<>();
+        if (ServiceInstanceMetadataUtils.isDubboServiceInstance(serviceInstances.get(0))) {
+            initTemplateURLs(subscribedURL, serviceInstances);
+            // Clone the subscribed URLs from the template URLs
+            subscribedURLs = cloneSubscribedURLs(subscribedURL, serviceInstances);
+        } else {
+            for (ServiceInstance instance : serviceInstances) {
+                URLBuilder builder = new URLBuilder(
+                        subscribedServices.get(serviceName),
+                        instance.getHost(),
+                        instance.getPort(),
+                        subscribedURL.getServiceInterface(),
+                        instance.getMetadata()
+                );
+                builder.addParameter(APPLICATION_KEY, serviceName);
+                subscribedURLs.add(builder.build());
+            }
+        }
 
-        // Clone the subscribed URLs from the template URLs
-        List<URL> subscribedURLs = cloneSubscribedURLs(subscribedURL, serviceInstances);
         // clear local service instances
         serviceInstances.clear();
         return subscribedURLs;
