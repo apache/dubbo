@@ -76,6 +76,7 @@ import static org.apache.dubbo.common.function.ThrowableAction.execute;
 import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
 import static org.apache.dubbo.common.utils.CollectionUtils.isEmptyMap;
 import static org.apache.dubbo.common.utils.CollectionUtils.isNotEmpty;
+import static org.apache.dubbo.common.utils.DubboServiceLoader.loadServices;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 import static org.apache.dubbo.metadata.WritableMetadataService.DEFAULT_EXTENSION;
 import static org.apache.dubbo.registry.client.ServiceDiscoveryFactory.getExtension;
@@ -399,7 +400,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         if (ServiceInstanceMetadataUtils.isDubboServiceInstance(serviceInstances.get(0))) {
             initTemplateURLs(subscribedURL, serviceInstances);
             // Clone the subscribed URLs from the template URLs
-            subscribedURLs = cloneSubscribedURLs(subscribedURL, serviceInstances);
+            subscribedURLs = cloneExportedURLs(subscribedURL, serviceInstances);
         } else {
             for (ServiceInstance instance : serviceInstances) {
                 URLBuilder builder = new URLBuilder(
