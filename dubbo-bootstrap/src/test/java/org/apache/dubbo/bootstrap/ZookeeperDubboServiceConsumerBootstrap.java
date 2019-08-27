@@ -17,7 +17,6 @@
 package org.apache.dubbo.bootstrap;
 
 import org.apache.dubbo.bootstrap.rest.UserService;
-import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 
@@ -26,18 +25,13 @@ import org.apache.dubbo.config.context.ConfigManager;
  *
  * @since 2.7.4
  */
-public class EtcdDubboServiceConsumerBootstrap {
+public class ZookeeperDubboServiceConsumerBootstrap {
 
     public static void main(String[] args) throws Exception {
 
         new DubboBootstrap()
-                .application("dubbo-consumer-demo")
-                // Zookeeper
-                .protocol(builder -> builder.port(20887).name("dubbo"))
-                .registry("etcd3", builder -> builder.address("etcd3://127.0.0.1:2379?registry-type=service&subscribed-services=dubbo-provider-demo"))
-                .metadataReport(new MetadataReportConfig("etcd://127.0.0.1:2379"))
-                // Nacos
-//                .registry("consul", builder -> builder.address("consul://127.0.0.1:8500?registry.type=service&subscribed.services=dubbo-provider-demo").group("namespace1"))
+                .application("zookeeper-dubbo-consumer")
+                .registry("zookeeper", builder -> builder.address("zookeeper://127.0.0.1:2181?registry-type=service&subscribed-services=zookeeper-dubbo-provider"))
                 .reference("echo", builder -> builder.interfaceClass(EchoService.class).protocol("dubbo"))
                 .reference("user", builder -> builder.interfaceClass(UserService.class).protocol("rest"))
                 .start()
@@ -49,10 +43,16 @@ public class EtcdDubboServiceConsumerBootstrap {
 
         EchoService echoService = referenceConfig.get();
 
+        ReferenceConfig<UserService> referenceConfig2 = configManager.getReference("user");
+
+        UserService userService = referenceConfig2.get();
+
         for (int i = 0; i < 500; i++) {
             Thread.sleep(2000L);
             System.out.println(echoService.echo("Hello,World"));
+            System.out.println(userService.getUser(i * 1L));
         }
+
 
     }
 }

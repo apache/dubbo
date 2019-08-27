@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.client.ServiceInstance;
+import org.apache.dubbo.rpc.Protocol;
 
 import com.alibaba.fastjson.JSON;
 
@@ -28,7 +29,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static java.lang.String.valueOf;
 import static java.util.Collections.emptyMap;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 import static org.apache.dubbo.metadata.WritableMetadataService.DEFAULT_METADATA_STORAGE_TYPE;
@@ -48,6 +48,16 @@ public class ServiceInstanceMetadataUtils {
      * The prefix of {@link MetadataService} : "dubbo.metadata-service."
      */
     public static final String METADATA_SERVICE_PREFIX = "dubbo.metadata-service.";
+
+    /**
+     * The prefix of {@link Protocol} : "dubbo.protocols."
+     */
+    public static final String DUBBO_PROTOCOLS_PREFIX = "dubbo.protocols.";
+
+    /**
+     * The suffix of port : ".port";
+     */
+    public static final String DUBBO_PORT_SUFFIX = ".port";
 
     /**
      * The property name of metadata JSON of {@link MetadataService}'s {@link URL}
@@ -77,16 +87,6 @@ public class ServiceInstanceMetadataUtils {
     public static String METADATA_STORAGE_TYPE_PROPERTY_NAME = "dubbo.metadata.storage-type";
 
     /**
-     * The property name of {@link URL url's} parameter name of Dubbo Provider host
-     */
-    public static final String PROVIDER_HOST_PROPERTY_NAME = "provider.host";
-
-    /**
-     * The {@link URL url's} parameter name of Dubbo Provider port
-     */
-    public static final String PROVIDER_PORT_PROPERTY_NAME = "provider.port";
-
-    /**
      * Get the multiple {@link URL urls'} parameters of {@link MetadataService MetadataService's} Metadata
      *
      * @param serviceInstance the instance of {@link ServiceInstance}
@@ -110,23 +110,6 @@ public class ServiceInstanceMetadataUtils {
         return params.getOrDefault(protocol, emptyMap());
     }
 
-    /**
-     * The provider port from {@link ServiceInstance the specified service instance}
-     *
-     * @param serviceInstance {@link ServiceInstance the specified service instance}
-     * @param protocol        the protocol name
-     * @return The protocol port if found, or <code>null</code>
-     */
-    public static Integer getProviderPort(ServiceInstance serviceInstance, String protocol) {
-        Map<String, Object> params = getMetadataServiceURLParams(serviceInstance, protocol);
-        return getProviderPort(params);
-    }
-
-    public static String getProviderHost(ServiceInstance serviceInstance, String protocol) {
-        Map<String, Object> params = getMetadataServiceURLParams(serviceInstance, protocol);
-        return getProviderHost(params);
-    }
-
     public static String getMetadataServiceParameter(List<URL> urls) {
         Map<String, Map<String, String>> params = new HashMap<>();
 
@@ -145,19 +128,7 @@ public class ServiceInstanceMetadataUtils {
     private static Map<String, String> getParams(URL providerURL) {
         Map<String, String> params = new LinkedHashMap<>();
         setDefaultParams(params, providerURL);
-        // set provider host
-        setProviderHostParam(params, providerURL);
-        // set provider port
-        setProviderPortParam(params, providerURL);
         return params;
-    }
-
-    public static String getProviderHost(Map<String, Object> params) {
-        return valueOf(params.get(PROVIDER_HOST_PROPERTY_NAME));
-    }
-
-    public static Integer getProviderPort(Map<String, Object> params) {
-        return Integer.valueOf(valueOf(params.get(PROVIDER_PORT_PROPERTY_NAME)));
     }
 
     /**
@@ -228,12 +199,42 @@ public class ServiceInstanceMetadataUtils {
                 || metadata.containsKey(METADATA_SERVICE_URLS_PROPERTY_NAME);
     }
 
-    private static void setProviderHostParam(Map<String, String> params, URL providerURL) {
-        params.put(PROVIDER_HOST_PROPERTY_NAME, providerURL.getHost());
+    /**
+     * Create the property name of Dubbo protocol port
+     *
+     * @param protocol the name of protocol, e.g, dubbo, rest, and so on
+     * @return e.g, "dubbo.protocols.dubbo.port"
+     */
+    public static String createProtocolPortPropertyName(String protocol) {
+        return DUBBO_PROTOCOLS_PREFIX + protocol + DUBBO_PORT_SUFFIX;
     }
 
-    private static void setProviderPortParam(Map<String, String> params, URL providerURL) {
-        params.put(PROVIDER_PORT_PROPERTY_NAME, valueOf(providerURL.getPort()));
+    /**
+     * Set the protocol port into {@link ServiceInstance#getMetadata() the metadata of service instance}
+     *
+     * @param serviceInstance {@link ServiceInstance service instance}
+     * @param protocol        the name of protocol, e.g, dubbo, rest, and so on
+     * @param port            the port of protocol
+     */
+    public static void setProtocolPort(ServiceInstance serviceInstance, String protocol, int port) {
+        Map<String, String> metadata = serviceInstance.getMetadata();
+        String propertyName = createProtocolPortPropertyName(protocol);
+        metadata.put(propertyName, Integer.toString(port));
+    }
+
+    /**
+     * Get the property value of port by the specified {@link ServiceInstance#getMetadata() the metadata of
+     * service instance} and protocol
+     *
+     * @param serviceInstance {@link ServiceInstance service instance}
+     * @param protocol        the name of protocol, e.g, dubbo, rest, and so on
+     * @return if not found, return <code>null</code>
+     */
+    public static Integer getProtocolPort(ServiceInstance serviceInstance, String protocol) {
+        Map<String, String> metadata = serviceInstance.getMetadata();
+        String propertyName = createProtocolPortPropertyName(protocol);
+        String propertyValue = metadata.get(propertyName);
+        return propertyValue == null ? null : Integer.valueOf(propertyValue);
     }
 
     /**

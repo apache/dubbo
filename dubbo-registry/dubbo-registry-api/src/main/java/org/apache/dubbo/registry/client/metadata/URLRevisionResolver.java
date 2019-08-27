@@ -22,7 +22,14 @@ import org.apache.dubbo.metadata.MetadataService;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
+import static org.apache.dubbo.common.constants.CommonConstants.PID_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
 
 /**
@@ -46,23 +53,50 @@ public class URLRevisionResolver {
             return NO_REVISION;
         }
 
-        return urls.stream()
-                .map(URL::valueOf)                       // String to URL
-                .map(URL::getServiceInterface)           // get the service interface
-                .filter(this::isNotMetadataService)      // filter not MetadataService interface
-                .map(ClassUtils::forName)                // load business interface class
-                .map(Class::getMethods)                  // get all public methods from business interface
-                .map(Arrays::asList)                     // Array to List
-                .flatMap(Collection::stream)             // flat Stream<Stream> to be Stream
-                .map(Object::toString)                   // Method to String
-                .sorted()                                // sort methods marking sure the calculation of reversion is stable
-                .map(URLRevisionResolver::hashCode)      // generate Long hashCode
+        List<URL> urlsList = toURLsList(urls);
+
+        SortedSet<String> methodSignatures = resolveMethodSignatures(urlsList);
+
+        SortedSet<String> urlParameters = resolveURLParameters(urlsList);
+
+        SortedSet<String> values = new TreeSet<>(methodSignatures);
+
+        values.addAll(urlParameters);
+
+        return values.stream()
+                .map(this::hashCode)                     // generate Long hashCode
                 .reduce(Long::sum)                       // sum hashCode
                 .map(String::valueOf)                    // Long to String
                 .orElse(NO_REVISION);                    // NO_REVISION as default
     }
 
-    private static long hashCode(String value) {
+    private List<URL> toURLsList(Collection<String> urls) {
+        return urls.stream()
+                .map(URL::valueOf)                             // String to URL
+                .filter(url -> isNotMetadataService(url.getServiceInterface())) // filter not MetadataService interface
+                .collect(Collectors.toList());
+    }
+
+    private SortedSet<String> resolveMethodSignatures(List<URL> urls) {
+        return urls.stream()
+                .map(URL::getServiceInterface)                 // get the service interface
+                .map(ClassUtils::forName)                      // load business interface class
+                .map(Class::getMethods)                        // get all public methods from business interface
+                .map(Arrays::asList)                           // Array to List
+                .flatMap(Collection::stream)                   // flat Stream<Stream> to be Stream
+                .map(Object::toString)                         // Method to String
+                .collect(TreeSet::new, Set::add, Set::addAll); // sort and remove the duplicate
+    }
+
+    private SortedSet<String> resolveURLParameters(Collection<URL> urls) {
+        return urls.stream()
+                .map(url -> url.removeParameter(PID_KEY))
+                .map(url -> url.removeParameter(TIMESTAMP_KEY))
+                .map(URL::toParameterString)
+                .collect(TreeSet::new, Set::add, Set::addAll); // sort and remove the duplicate
+    }
+
+    private long hashCode(String value) {
         long h = 0;
         char[] chars = value.toCharArray();
         for (int i = 0; i < chars.length; i++) {

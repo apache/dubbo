@@ -32,12 +32,12 @@ public class NacosDubboServiceConsumerBootstrap {
     public static void main(String[] args) throws Exception {
 
         ApplicationConfig applicationConfig = new ApplicationConfig("dubbo-nacos-consumer-demo");
-        applicationConfig.setMetadataType("remote");
+//        applicationConfig.setMetadataType("remote");
         new DubboBootstrap()
                 .application(applicationConfig)
                 // Zookeeper
-                .registry("nacos", builder -> builder.address("nacos://127.0.0.1:8848?registry.type=service&subscribed.services=dubbo-nacos-provider-demo"))
-//                .metadataReport(new MetadataReportConfig("nacos://127.0.0.1:8848"))
+//                .registry("nacos", builder -> builder.address("nacos://127.0.0.1:8848?registry.type=service&subscribed.services=dubbo-nacos-provider-demo"))
+                .registry("nacos", builder -> builder.address("nacos://127.0.0.1:8848?registry-type=service&subscribed-services=dubbo-nacos-provider-demo"))
                 .metadataReport(new MetadataReportConfig("nacos://127.0.0.1:8848"))
                 // Nacos
 //                .registry("consul", builder -> builder.address("consul://127.0.0.1:8500?registry.type=service&subscribed.services=dubbo-provider-demo").group("namespace1"))

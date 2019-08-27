@@ -30,11 +30,11 @@ public class NacosDubboServiceProviderBootstrap {
 
     public static void main(String[] args) {
         ApplicationConfig applicationConfig = new ApplicationConfig("dubbo-nacos-provider-demo");
-        applicationConfig.setMetadataType("remote");
+//        applicationConfig.setMetadataType("remote");
         new DubboBootstrap()
                 .application(applicationConfig)
                 // Zookeeper in service registry type
-                .registry("nacos", builder -> builder.address("nacos://127.0.0.1:8848?registry.type=service"))
+                .registry("nacos", builder -> builder.address("nacos://127.0.0.1:8848?registry-type=service"))
                 // Nacos
 //                .registry("nacos", builder -> builder.address("nacos://127.0.0.1:8848?registry.type=service"))
 //                .registry(RegistryBuilder.newBuilder().address("etcd3://127.0.0.1:2379?registry.type=service").build())

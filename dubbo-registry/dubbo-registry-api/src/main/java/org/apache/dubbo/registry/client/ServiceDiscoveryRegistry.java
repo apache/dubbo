@@ -76,10 +76,8 @@ import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 import static org.apache.dubbo.metadata.WritableMetadataService.DEFAULT_EXTENSION;
 import static org.apache.dubbo.registry.client.ServiceDiscoveryFactory.getExtension;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getExportedServicesRevision;
-import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getMetadataServiceURLsParams;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getMetadataStorageType;
-import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getProviderHost;
-import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getProviderPort;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getProtocolPort;
 
 /**
  * {@link ServiceDiscoveryRegistry} is the service-oriented {@link Registry} and dislike the traditional one that
@@ -419,33 +417,27 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
         serviceInstances.forEach(serviceInstance -> {
 
-            List<URL> templateURLs = getTemplateURLs(subscribedURL, serviceInstance);
-            // The parameters of URLs that the MetadataService exported
-            Map<String, Map<String, Object>> serviceURLsParams = getMetadataServiceURLsParams(serviceInstance);
+            String host = serviceInstance.getHost();
 
-            serviceURLsParams.forEach((protocol, parametersMap) -> {
-                templateURLs.stream()
-                        .filter(templateURL -> isCompatibleProtocol(protocol, templateURL))
-                        .map(templateURL -> templateURL.removeParameter(TIMESTAMP_KEY))
-                        .map(templateURL -> templateURL.removeParameter(PID_KEY))
-                        .map(templateURL -> {
+            getTemplateURLs(subscribedURL, serviceInstance)
+                    .stream()
+                    .map(templateURL -> templateURL.removeParameter(TIMESTAMP_KEY))
+                    .map(templateURL -> templateURL.removeParameter(PID_KEY))
+                    .map(templateURL -> {
+                        String protocol = templateURL.getProtocol();
+                        int port = getProtocolPort(serviceInstance, protocol);
+                        if (Objects.equals(templateURL.getHost(), host)
+                                && Objects.equals(templateURL.getPort(), port)) { // use templateURL if equals
+                            return templateURL;
+                        }
 
-                            String host = getProviderHost(parametersMap);
-                            Integer port = getProviderPort(parametersMap);
+                        URLBuilder clonedURLBuilder = from(templateURL) // remove the parameters from the template URL
+                                .setHost(host)  // reset the host
+                                .setPort(port); // reset the port
 
-                            if (Objects.equals(templateURL.getHost(), host)
-                                    && Objects.equals(templateURL.getPort(), port)) { // use templateURL if equals
-                                return templateURL;
-                            }
-
-                            URLBuilder clonedURLBuilder = from(templateURL) // remove the parameters from the template URL
-                                    .setHost(host)  // reset the host
-                                    .setPort(port); // reset the port
-
-                            return clonedURLBuilder.build();
-                        })
-                        .forEach(clonedURLs::add);
-            });
+                        return clonedURLBuilder.build();
+                    })
+                    .forEach(clonedURLs::add);
         });
         return clonedURLs;
     }
