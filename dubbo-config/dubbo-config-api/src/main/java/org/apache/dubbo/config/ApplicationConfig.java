@@ -38,11 +38,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.DUMP_DIRECTORY;
 import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
-import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP_COMPATIBLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
-import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE_COMPATIBLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT;
-import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT_COMPATIBLE;
 import static org.apache.dubbo.config.Constants.ARCHITECTURE;
 import static org.apache.dubbo.config.Constants.DEVELOPMENT_ENVIRONMENT;
 import static org.apache.dubbo.config.Constants.ENVIRONMENT;
@@ -343,7 +340,7 @@ public class ApplicationConfig extends AbstractConfig {
      *
      * @return
      */
-    @Parameter(key = QOS_ENABLE_COMPATIBLE, excluded = true)
+    @Parameter(key = "qos-enable", excluded = true)
     public Boolean getQosEnableCompatible() {
         return getQosEnable();
     }
@@ -352,7 +349,7 @@ public class ApplicationConfig extends AbstractConfig {
         setQosEnable(qosEnable);
     }
 
-    @Parameter(key = QOS_PORT_COMPATIBLE, excluded = true)
+    @Parameter(key = "qos-port", excluded = true)
     public Integer getQosPortCompatible() {
         return getQosPort();
     }
@@ -361,7 +358,7 @@ public class ApplicationConfig extends AbstractConfig {
         this.setQosPort(qosPort);
     }
 
-    @Parameter(key = ACCEPT_FOREIGN_IP_COMPATIBLE, excluded = true)
+    @Parameter(key = "qos-accept-foreign-ip", excluded = true)
     public Boolean getQosAcceptForeignIpCompatible() {
         return this.getQosAcceptForeignIp();
     }

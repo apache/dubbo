@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 import static java.util.Arrays.asList;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.utils.NetUtils.getAvailablePort;
 import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkUtils.generateId;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -126,7 +127,7 @@ public class ZookeeperServiceDiscoveryTest {
         CountDownLatch latch = new CountDownLatch(1);
 
         // Add Listener
-        discovery.addServiceInstancesChangedListener(new ServiceInstancesChangedListener(SERVICE_NAME) {
+        discovery.addServiceInstancesChangedListener(new ServiceInstancesChangedListener(SERVICE_NAME, DUBBO) {
             @Override
             public void onEvent(ServiceInstancesChangedEvent event) {
                 serviceInstances.addAll(event.getServiceInstances());

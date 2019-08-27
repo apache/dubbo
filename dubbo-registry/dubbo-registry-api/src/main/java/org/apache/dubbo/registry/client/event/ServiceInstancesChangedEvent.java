@@ -54,6 +54,7 @@ public class ServiceInstancesChangedEvent extends Event {
         return serviceName;
     }
 
+
     /**
      * @return all {@link ServiceInstance service instances}
      */

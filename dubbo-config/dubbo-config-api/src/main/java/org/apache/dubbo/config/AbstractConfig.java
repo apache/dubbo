@@ -137,7 +137,7 @@ public abstract class AbstractConfig implements Serializable {
         return value;
     }
 
-    private static String getTagName(Class<?> cls) {
+    public static String getTagName(Class<?> cls) {
         String tag = cls.getSimpleName();
         for (String suffix : SUFFIXES) {
             if (tag.endsWith(suffix)) {
@@ -203,7 +203,9 @@ public abstract class AbstractConfig implements Serializable {
                     if (map != null && map.size() > 0) {
                         String pre = (prefix != null && prefix.length() > 0 ? prefix + "." : "");
                         for (Map.Entry<String, String> entry : map.entrySet()) {
-                            parameters.put(pre + entry.getKey().replace('-', '.'), entry.getValue());
+                            // TODO, compatibility breaking
+                            // parameters.put(pre + entry.getKey().replace('-', '.'), entry.getValue());
+                            parameters.put(pre + entry.getKey(), entry.getValue());
                         }
                     }
                 }

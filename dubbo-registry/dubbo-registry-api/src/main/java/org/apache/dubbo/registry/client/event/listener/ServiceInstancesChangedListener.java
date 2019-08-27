@@ -31,9 +31,11 @@ import java.util.Objects;
 public abstract class ServiceInstancesChangedListener implements ConditionalEventListener<ServiceInstancesChangedEvent> {
 
     private final String serviceName;
+    private final String protocol;
 
-    protected ServiceInstancesChangedListener(String serviceName) {
+    protected ServiceInstancesChangedListener(String serviceName, String protocol) {
         this.serviceName = serviceName;
+        this.protocol = protocol;
     }
 
     /**
@@ -50,6 +52,10 @@ public abstract class ServiceInstancesChangedListener implements ConditionalEven
      */
     public final String getServiceName() {
         return serviceName;
+    }
+
+    public String getProtocol() {
+        return protocol;
     }
 
     /**

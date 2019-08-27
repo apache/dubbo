@@ -37,25 +37,22 @@ public class NacosDubboServiceConsumerBootstrap {
                 .application(applicationConfig)
                 // Zookeeper
 //                .registry("nacos", builder -> builder.address("nacos://127.0.0.1:8848?registry.type=service&subscribed.services=dubbo-nacos-provider-demo"))
-                .registry("nacos", builder -> builder.address("nacos://127.0.0.1:8848?registry-type=service&subscribed-services=dubbo-nacos-provider-demo"))
+//                .registry("nacos", builder -> builder.address("nacos://127.0.0.1:8848?registry-type=service&subscribed-services=dubbo-nacos-provider-demo"))
+                .registry("nacos", builder -> builder.address("nacos://127.0.0.1:8848?registry-type=service&subscribed-services=service-provider"))
                 .metadataReport(new MetadataReportConfig("nacos://127.0.0.1:8848"))
-                // Nacos
-//                .registry("consul", builder -> builder.address("consul://127.0.0.1:8500?registry.type=service&subscribed.services=dubbo-provider-demo").group("namespace1"))
-                .reference("echo", builder -> builder.interfaceClass(EchoService.class).protocol("dubbo"))
                 .reference("user", builder -> builder.interfaceClass(UserService.class).protocol("rest"))
                 .start()
                 .await();
 
         ConfigManager configManager = ConfigManager.getInstance();
 
-        ReferenceConfig<EchoService> referenceConfig = configManager.getReference("echo");
+        ReferenceConfig<UserService> referenceConfig = configManager.getReference("user");
 
-        EchoService echoService = referenceConfig.get();
+        UserService userService = referenceConfig.get();
 
         for (int i = 0; i < 500; i++) {
             Thread.sleep(2000L);
-            System.out.println(echoService.echo("Hello,World"));
+            System.out.println(userService.getUser(i * 1L));
         }
-
     }
 }
