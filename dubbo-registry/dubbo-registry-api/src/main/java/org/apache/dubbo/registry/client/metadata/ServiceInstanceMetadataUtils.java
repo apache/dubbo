@@ -31,8 +31,8 @@ import java.util.Map;
 
 import static java.util.Collections.emptyMap;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.METADATA_DEFAULT;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 import static org.apache.dubbo.registry.integration.RegistryProtocol.DEFAULT_REGISTER_PROVIDER_KEYS;
@@ -129,9 +129,9 @@ public class ServiceInstanceMetadataUtils {
                 // remove TIMESTAMP_KEY because it's nonsense
                 .map(url -> url.removeParameter(TIMESTAMP_KEY))
                 .forEach(url -> {
-            String protocol = url.getProtocol();
-            params.put(protocol, getParams(url));
-        });
+                    String protocol = url.getProtocol();
+                    params.put(protocol, getParams(url));
+                });
 
         if (params.isEmpty()) {
             return null;
@@ -175,7 +175,7 @@ public class ServiceInstanceMetadataUtils {
      * @return if not found in {@link URL#getParameters() parameters} of {@link URL registry URL}, return
      */
     public static String getMetadataStorageType(URL registryURL) {
-        return registryURL.getParameter(METADATA_STORAGE_TYPE_PROPERTY_NAME, METADATA_DEFAULT);
+        return registryURL.getParameter(METADATA_STORAGE_TYPE_PROPERTY_NAME, DEFAULT_METADATA_STORAGE_TYPE);
     }
 
     /**
@@ -186,7 +186,7 @@ public class ServiceInstanceMetadataUtils {
      */
     public static String getMetadataStorageType(ServiceInstance serviceInstance) {
         Map<String, String> metadata = serviceInstance.getMetadata();
-        return metadata.getOrDefault(METADATA_STORAGE_TYPE_PROPERTY_NAME, METADATA_DEFAULT);
+        return metadata.getOrDefault(METADATA_STORAGE_TYPE_PROPERTY_NAME, DEFAULT_METADATA_STORAGE_TYPE);
     }
 
     /**
