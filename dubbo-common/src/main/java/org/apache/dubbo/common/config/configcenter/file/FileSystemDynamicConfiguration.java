@@ -445,9 +445,14 @@ public class FileSystemDynamicConfiguration extends AbstractDynamicConfiguration
 
     @Override
     public SortedSet<String> getConfigKeys(String group) {
-        return Stream.of(groupDirectory(group).listFiles(File::isFile))
-                .map(File::getName)
-                .collect(TreeSet::new, Set::add, Set::addAll);
+        File[] files = groupDirectory(group).listFiles(File::isFile);
+        if (files == null) {
+            return new TreeSet<>();
+        } else {
+            return Stream.of(files)
+                    .map(File::getName)
+                    .collect(TreeSet::new, Set::add, Set::addAll);
+        }
     }
 
 

@@ -222,7 +222,7 @@ public class RegistryConfig extends AbstractConfig {
                 updateIdIfAbsent(url.getProtocol());
                 updateProtocolIfAbsent(url.getProtocol());
                 updatePortIfAbsent(url.getPort());
-                setParameters(url.getParameters());
+                updateParameters(url.getParameters());
             } catch (Exception ignored) {
             }
         }

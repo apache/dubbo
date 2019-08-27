@@ -44,6 +44,6 @@ public class DefaultServiceDiscoveryFactory extends AbstractServiceDiscoveryFact
     protected ServiceDiscovery createDiscovery(URL registryURL) {
         String protocol = registryURL.getProtocol();
         ExtensionLoader<ServiceDiscovery> loader = getExtensionLoader(ServiceDiscovery.class);
-        return loader.getOrDefaultExtension(protocol);
+        return loader.getExtension(protocol);
     }
 }

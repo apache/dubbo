@@ -167,7 +167,7 @@ public interface CommonConstants {
 
     String METADATA_KEY = "metadata";
 
-    String METADATA_DEFAULT = "default";
+    String METADATA_DEFAULT = "local";
 
     String METADATA_REMOTE = "remote";
 

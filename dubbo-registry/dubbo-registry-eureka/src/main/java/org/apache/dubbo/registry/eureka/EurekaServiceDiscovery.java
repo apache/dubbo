@@ -60,7 +60,7 @@ public class EurekaServiceDiscovery implements ServiceDiscovery {
 
     private EurekaClient eurekaClient;
 
-    private Set<String> subscribedServices;
+    private Map<String, String> subscribedServices;
 
     /**
      * last apps hash code is used to identify the {@link Applications} is changed or not
@@ -184,7 +184,7 @@ public class EurekaServiceDiscovery implements ServiceDiscovery {
     }
 
     private void dispatchServiceInstancesChangedEvent() {
-        subscribedServices.forEach(serviceName -> {
+        subscribedServices.forEach((serviceName, protocol) -> {
             eventDispatcher.dispatch(new ServiceInstancesChangedEvent(serviceName, getInstances(serviceName)));
         });
     }

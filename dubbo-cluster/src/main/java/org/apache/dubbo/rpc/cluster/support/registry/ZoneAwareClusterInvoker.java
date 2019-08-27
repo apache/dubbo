@@ -30,7 +30,7 @@ import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PREFERRED_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_ZONE;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_ZONE_FORCE;
@@ -56,9 +56,9 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
     @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
     public Result doInvoke(Invocation invocation, final List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
-        // First, pick the invoker (XXXClusterInvoker) that comes from the local registry, distinguish by a 'default' key.
+        // First, pick the invoker (XXXClusterInvoker) that comes from the local registry, distinguish by a 'preferred' key.
         for (Invoker<T> invoker : invokers) {
-            if (invoker.isAvailable() && invoker.getUrl().getParameter(REGISTRY_KEY + "." + DEFAULT_KEY, false)) {
+            if (invoker.isAvailable() && invoker.getUrl().getParameter(REGISTRY_KEY + "." + PREFERRED_KEY, false)) {
                 return invoker.invoke(invocation);
             }
         }

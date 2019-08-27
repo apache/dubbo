@@ -18,6 +18,7 @@ package org.apache.dubbo.config.spring.context;
 
 
 import org.apache.dubbo.common.context.Lifecycle;
+import org.apache.dubbo.config.DubboShutdownHook;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
@@ -66,7 +67,7 @@ public class DubboLifecycleComponentApplicationListener implements ApplicationLi
     }
 
     protected void onContextClosedEvent(ContextClosedEvent event) {
-        destroyLifecycleComponents();
+        DubboShutdownHook.getDubboShutdownHook().doDestroy();
     }
 
     private void initLifecycleComponents(ContextRefreshedEvent event) {
@@ -92,9 +93,9 @@ public class DubboLifecycleComponentApplicationListener implements ApplicationLi
         lifecycleComponents.forEach(Lifecycle::start);
     }
 
-    private void destroyLifecycleComponents() {
-        lifecycleComponents.forEach(Lifecycle::destroy);
-    }
+//    private void destroyLifecycleComponents() {
+//        lifecycleComponents.forEach(Lifecycle::destroy);
+//    }
 
     /**
      * the specified {@link ApplicationEvent event} must be {@link ApplicationContextEvent} and
