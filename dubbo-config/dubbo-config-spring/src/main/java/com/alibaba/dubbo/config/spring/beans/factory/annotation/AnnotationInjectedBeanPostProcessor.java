@@ -64,7 +64,7 @@ import static org.springframework.core.annotation.AnnotationUtils.getAnnotation;
 
 /**
  * Abstract generic {@link BeanPostProcessor} implementation for customized annotation that annotated injected-object.
- *
+ * <p>
  * The source code is cloned from https://github.com/alibaba/spring-context-support/blob/1.0.2/src/main/java/com/alibaba/spring/beans/factory/annotation/AnnotationInjectedBeanPostProcessor.java
  *
  * @since 2.6.6
@@ -224,7 +224,7 @@ public abstract class AnnotationInjectedBeanPostProcessor<A extends Annotation> 
 
     }
 
-    private InjectionMetadata findInjectionMetadata(String beanName, Class<?> clazz, PropertyValues pvs) {
+    public InjectionMetadata findInjectionMetadata(String beanName, Class<?> clazz, PropertyValues pvs) {
         // Fall back to class name as cache key, for backwards compatibility with custom callers.
         String cacheKey = (StringUtils.hasLength(beanName) ? beanName : clazz.getName());
         // Quick check on the concurrent map first, with minimal locking.
@@ -314,8 +314,8 @@ public abstract class AnnotationInjectedBeanPostProcessor<A extends Annotation> 
      *
      * @return non-null {@link Collection}
      */
-    protected Collection<Object> getInjectedObjects() {
-        return this.injectedObjectsCache.values();
+    protected Map<String, Object> getInjectedObjects() {
+        return this.injectedObjectsCache;
     }
 
     /**
@@ -402,7 +402,7 @@ public abstract class AnnotationInjectedBeanPostProcessor<A extends Annotation> 
 
             for (AnnotationInjectedBeanPostProcessor.AnnotatedFieldElement fieldElement : fieldElements) {
 
-                injectedElementBeanMap.put(fieldElement, fieldElement.bean);
+                injectedElementBeanMap.put(fieldElement, fieldElement.injectedBean);
 
             }
 
@@ -428,20 +428,19 @@ public abstract class AnnotationInjectedBeanPostProcessor<A extends Annotation> 
 
             for (AnnotationInjectedBeanPostProcessor.AnnotatedMethodElement methodElement : methodElements) {
 
-                injectedElementBeanMap.put(methodElement, methodElement.object);
+                injectedElementBeanMap.put(methodElement, methodElement.injectedBean);
 
             }
 
         }
 
         return Collections.unmodifiableMap(injectedElementBeanMap);
-
     }
 
     /**
      * {@link A} {@link InjectionMetadata} implementation
      */
-    private class AnnotatedInjectionMetadata extends InjectionMetadata {
+    public class AnnotatedInjectionMetadata extends InjectionMetadata {
 
         private final Collection<AnnotationInjectedBeanPostProcessor.AnnotatedFieldElement> fieldElements;
 
@@ -466,13 +465,13 @@ public abstract class AnnotationInjectedBeanPostProcessor<A extends Annotation> 
     /**
      * {@link A} {@link Method} {@link InjectionMetadata.InjectedElement}
      */
-    private class AnnotatedMethodElement extends InjectionMetadata.InjectedElement {
+    public class AnnotatedMethodElement extends InjectionMetadata.InjectedElement {
 
         private final Method method;
 
         private final A annotation;
 
-        private volatile Object object;
+        private volatile Object injectedBean;
 
         protected AnnotatedMethodElement(Method method, PropertyDescriptor pd, A annotation) {
             super(method, pd);
@@ -485,14 +484,29 @@ public abstract class AnnotationInjectedBeanPostProcessor<A extends Annotation> 
 
             Class<?> injectedType = pd.getPropertyType();
 
-            Object injectedObject = getInjectedObject(annotation, bean, beanName, injectedType, this);
+            injectedBean = getInjectedObject(annotation, bean, beanName, injectedType, this);
 
             ReflectionUtils.makeAccessible(method);
 
-            method.invoke(bean, injectedObject);
+            method.invoke(bean, injectedBean);
 
         }
 
+        public Method getMethod() {
+            return method;
+        }
+
+        public A getAnnotation() {
+            return annotation;
+        }
+
+        public Object getInjectedBean() {
+            return injectedBean;
+        }
+
+        public PropertyDescriptor getPd() {
+            return this.pd;
+        }
     }
 
     /**
@@ -504,7 +518,7 @@ public abstract class AnnotationInjectedBeanPostProcessor<A extends Annotation> 
 
         private final A annotation;
 
-        private volatile Object bean;
+        private volatile Object injectedBean;
 
         protected AnnotatedFieldElement(Field field, A annotation) {
             super(field, null);
@@ -517,12 +531,24 @@ public abstract class AnnotationInjectedBeanPostProcessor<A extends Annotation> 
 
             Class<?> injectedType = field.getType();
 
-            Object injectedObject = getInjectedObject(annotation, bean, beanName, injectedType, this);
+            injectedBean = getInjectedObject(annotation, bean, beanName, injectedType, this);
 
             ReflectionUtils.makeAccessible(field);
 
-            field.set(bean, injectedObject);
+            field.set(bean, injectedBean);
 
+        }
+
+        public Field getField() {
+            return field;
+        }
+
+        public A getAnnotation() {
+            return annotation;
+        }
+
+        public Object getInjectedBean() {
+            return injectedBean;
         }
 
     }
