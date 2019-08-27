@@ -31,12 +31,14 @@ import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
+import org.apache.dubbo.registry.client.metadata.SubscribedURLsSynthesizer;
 import org.apache.dubbo.registry.client.metadata.proxy.MetadataServiceProxyFactory;
 import org.apache.dubbo.registry.client.selector.ServiceInstanceSelector;
 import org.apache.dubbo.registry.support.FailbackRegistry;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -112,6 +114,8 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
     private final Set<String> registeredListeners = new LinkedHashSet<>();
 
+    private final List<SubscribedURLsSynthesizer> subscribedURLsSynthesizers;
+
     /**
      * A cache for all URLs of services that the subscribed services exported
      * The key is the service name
@@ -126,6 +130,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         this.serviceNameMapping = ServiceNameMapping.getDefaultExtension();
         String metadataStorageType = getMetadataStorageType(registryURL);
         this.writableMetadataService = WritableMetadataService.getExtension(metadataStorageType);
+        this.subscribedURLsSynthesizers = initSubscribedURLsSynthesizers();
     }
 
     /**
@@ -169,6 +174,10 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
                     .removeParameter(REGISTRY_TYPE_KEY));
         });
         return serviceDiscovery;
+    }
+
+    private List<SubscribedURLsSynthesizer> initSubscribedURLsSynthesizers() {
+        return loadServices(SubscribedURLsSynthesizer.class, this.getClass().getClassLoader());
     }
 
     /**
@@ -345,12 +354,32 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
             return;
         }
 
-        List<URL> subscribedURLs = getSubscribedURLs(subscribedURL, serviceInstances, serviceName);
+        List<URL> subscribedURLs = new LinkedList<>();
+
+        /**
+         * Add the exported URLs from {@link MetadataService}
+         */
+        subscribedURLs.addAll(getExportedURLs(subscribedURL, serviceInstances, serviceName));
+
+        if (subscribedURLs.isEmpty()) { // If empty, try to synthesize
+            /**
+             * Add the subscribed URLs that were synthesized
+             */
+            subscribedURLs.addAll(synthesizeSubscribedURLs(subscribedURL, serviceInstances));
+        }
 
         listener.notify(subscribedURLs);
     }
 
-    private List<URL> getSubscribedURLs(URL subscribedURL, Collection<ServiceInstance> instances, String serviceName) {
+    /**
+     * Get the exported {@link URL URLs} from the  {@link MetadataService} in the specified
+     * {@link ServiceInstance service instances}
+     *
+     * @param subscribedURL the subscribed {@link URL url}
+     * @param instances     {@link ServiceInstance service instances}
+     * @return the exported {@link URL URLs} if present, or <code>{@link Collections#emptyList() empty list}</code>
+     */
+    private List<URL> getExportedURLs(URL subscribedURL, Collection<ServiceInstance> instances, String serviceName) {
 
         // local service instances could be mutable
         List<ServiceInstance> serviceInstances = instances.stream()
@@ -396,7 +425,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
             // select a instance of {@link ServiceInstance}
             ServiceInstance selectedInstance = selectServiceInstance(serviceInstances);
             // try to get the template URLs
-            List<URL> templateURLs = getTemplateURLs(subscribedURL, selectedInstance);
+            List<URL> templateURLs = getTemplateExportedURLs(subscribedURL, selectedInstance);
             if (isNotEmpty(templateURLs)) { // If the result is valid
                 break; // break the loop
             } else {
@@ -435,19 +464,19 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         }
     }
 
-    private List<URL> cloneSubscribedURLs(URL subscribedURL, Collection<ServiceInstance> serviceInstances) {
+    private List<URL> cloneExportedURLs(URL subscribedURL, Collection<ServiceInstance> serviceInstances) {
 
         if (isEmpty(serviceInstances)) {
             return emptyList();
         }
 
-        List<URL> clonedURLs = new LinkedList<>();
+        List<URL> clonedExportedURLs = new LinkedList<>();
 
         serviceInstances.forEach(serviceInstance -> {
 
             String host = serviceInstance.getHost();
 
-            getTemplateURLs(subscribedURL, serviceInstance)
+            getTemplateExportedURLs(subscribedURL, serviceInstance)
                     .stream()
                     .map(templateURL -> templateURL.removeParameter(TIMESTAMP_KEY))
                     .map(templateURL -> templateURL.removeParameter(PID_KEY))
@@ -465,9 +494,9 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
                         return clonedURLBuilder.build();
                     })
-                    .forEach(clonedURLs::add);
+                    .forEach(clonedExportedURLs::add);
         });
-        return clonedURLs;
+        return clonedExportedURLs;
     }
 
 
@@ -489,7 +518,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
     }
 
     /**
-     * Get the template {@link URL urls} from the specified {@link ServiceInstance}.
+     * Get the template exported {@link URL urls} from the specified {@link ServiceInstance}.
      * <p>
      * First, put the revision {@link ServiceInstance service instance}
      * associating {@link #getExportedURLs(URL, ServiceInstance) exported URLs} into cache.
@@ -506,7 +535,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
      *                         associating with the {@link URL urls}
      * @return non-null {@link List} of {@link URL urls}
      */
-    protected List<URL> getTemplateURLs(URL subscribedURL, ServiceInstance selectedInstance) {
+    private List<URL> getTemplateExportedURLs(URL subscribedURL, ServiceInstance selectedInstance) {
 
         List<URL> exportedURLs = getRevisionExportedURLs(selectedInstance);
 
@@ -681,6 +710,21 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
             }
         }
         return exportedURLs;
+    }
+
+    /**
+     * Synthesize new subscribed {@link URL URLs} from old one
+     *
+     * @param subscribedURL
+     * @param serviceInstances
+     * @return non-null
+     */
+    private Collection<? extends URL> synthesizeSubscribedURLs(URL subscribedURL, Collection<ServiceInstance> serviceInstances) {
+        return subscribedURLsSynthesizers.stream()
+                .filter(synthesizer -> synthesizer.supports(subscribedURL))
+                .map(synthesizer -> synthesizer.synthesize(subscribedURL, serviceInstances))
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
     }
 
 
