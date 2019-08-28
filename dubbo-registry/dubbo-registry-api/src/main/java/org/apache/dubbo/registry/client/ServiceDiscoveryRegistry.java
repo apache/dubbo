@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.ServiceNameMapping;
@@ -67,6 +68,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDED_BY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_TYPE;
 import static org.apache.dubbo.common.constants.RegistryConstants.SUBSCRIBED_SERVICE_NAMES_KEY;
@@ -125,26 +127,11 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
     public ServiceDiscoveryRegistry(URL registryURL) {
         super(registryURL);
         this.serviceDiscovery = createServiceDiscovery(registryURL);
-        this.subscribedServices = getSubscribedServices(registryURL);
+        this.subscribedServices = parseServices(registryURL.getParameter(SUBSCRIBED_SERVICE_NAMES_KEY));
         this.serviceNameMapping = ServiceNameMapping.getDefaultExtension();
         String metadataStorageType = getMetadataStorageType(registryURL);
         this.writableMetadataService = WritableMetadataService.getExtension(metadataStorageType);
         this.subscribedURLsSynthesizers = initSubscribedURLsSynthesizers();
-    }
-
-    /**
-     * Get the subscribed services from the specified registry {@link URL url}
-     *
-     * @param registryURL the specified registry {@link URL url}
-     * @return non-null
-     */
-    public static Set<String> getSubscribedServices(URL registryURL) {
-        String subscribedServiceNames = registryURL.getParameter(SUBSCRIBED_SERVICE_NAMES_KEY);
-        return isBlank(subscribedServiceNames) ? emptySet() :
-                unmodifiableSet(of(subscribedServiceNames.split(","))
-                        .map(String::trim)
-                        .filter(StringUtils::isNotEmpty)
-                        .collect(toSet()));
     }
 
     /**
@@ -295,6 +282,9 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         writableMetadataService.subscribeURL(url);
 
         Set<String> serviceNames = getServices(url);
+        if (CollectionUtils.isEmpty(serviceNames)) {
+            throw new IllegalStateException("Should has at least one way to know which services this interface belongs to, subscription url: " + url);
+        }
 
         serviceNames.forEach(serviceName -> subscribeURLs(url, listener, serviceName));
 
@@ -372,7 +362,6 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         List<ServiceInstance> serviceInstances = instances.stream()
                 .filter(ServiceInstance::isEnabled)
                 .filter(ServiceInstance::isHealthy)
-                .filter(ServiceInstanceMetadataUtils::isDubboServiceInstance)
                 .collect(Collectors.toList());
 
         int size = serviceInstances.size();
@@ -461,9 +450,9 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
                             return templateURL;
                         }
 
-                        URLBuilder clonedURLBuilder = from(templateURL) // remove the parameters from the template URL
-                                .setHost(host)  // reset the host
-                                .setPort(port); // reset the port
+                        URLBuilder clonedURLBuilder = from(templateURL); // remove the parameters from the template URL
+//                                .setHost(host)  // reset the host
+//                                .setPort(port); // reset the port
 
                         return clonedURLBuilder.build();
                     })
@@ -641,8 +630,10 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
             MetadataService metadataService = MetadataServiceProxyFactory
                     .getExtension(metadataStorageType == null ? DEFAULT_EXTENSION : metadataStorageType)
                     .getProxy(providerServiceInstance);
-            SortedSet<String> urls = metadataService.getExportedURLs();
-            exportedURLs = urls.stream().map(URL::valueOf).collect(Collectors.toList());
+            if (metadataService != null) {
+                SortedSet<String> urls = metadataService.getExportedURLs();
+                exportedURLs = urls.stream().map(URL::valueOf).collect(Collectors.toList());
+            }
         } catch (Throwable e) {
             if (logger.isErrorEnabled()) {
                 logger.error(format("It's failed to get the exported URLs from the target service instance[%s]",
@@ -675,8 +666,10 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
             MetadataService metadataService = MetadataServiceProxyFactory
                     .getExtension(metadataStorageType == null ? DEFAULT_EXTENSION : metadataStorageType)
                     .getProxy(providerServiceInstance);
-            SortedSet<String> urls = metadataService.getExportedURLs(serviceInterface, group, version, protocol);
-            exportedURLs = urls.stream().map(URL::valueOf).collect(Collectors.toList());
+            if (metadataService != null) {
+                SortedSet<String> urls = metadataService.getExportedURLs(serviceInterface, group, version, protocol);
+                exportedURLs = urls.stream().map(URL::valueOf).collect(Collectors.toList());
+            }
         } catch (Throwable e) {
             if (logger.isErrorEnabled()) {
                 logger.error(e.getMessage(), e);
@@ -700,13 +693,37 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
                 .collect(Collectors.toList());
     }
 
-
+    /**
+     * 1.developer explicitly specifies the application name this interface belongs to
+     * 2.check Interface-App mapping
+     * 3.use the services specified in registry url.
+     *
+     * @param subscribedURL
+     * @return
+     */
     protected Set<String> getServices(URL subscribedURL) {
-        Set<String> serviceNames = getSubscribedServices();
-        if (isEmpty(serviceNames)) {
-            serviceNames = findMappedServices(subscribedURL);
+        Set<String> subscribedServices = new LinkedHashSet<>();
+
+        String serviceNames = subscribedURL.getParameter(PROVIDED_BY);
+        if (StringUtils.isNotEmpty(serviceNames)) {
+            subscribedServices = parseServices(serviceNames);
         }
-        return serviceNames;
+
+        if (isEmpty(subscribedServices)) {
+            subscribedServices = findMappedServices(subscribedURL);
+            if (isEmpty(subscribedServices)) {
+                subscribedServices = getSubscribedServices();
+            }
+        }
+        return subscribedServices;
+    }
+
+    public static Set<String> parseServices(String literalServices) {
+        return isBlank(literalServices) ? emptySet() :
+                unmodifiableSet(of(literalServices.split(","))
+                        .map(String::trim)
+                        .filter(StringUtils::isNotEmpty)
+                        .collect(toSet()));
     }
 
     /**

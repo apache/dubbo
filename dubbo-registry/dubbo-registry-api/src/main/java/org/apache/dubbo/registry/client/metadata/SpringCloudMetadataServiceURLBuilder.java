@@ -32,6 +32,8 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
 /**
  * The {@link MetadataServiceURLBuilder} implementation for The standard Dubbo scenario
  *
+ * Works with Spring Cloud Alibaba
+ *
  * @since 2.7.4
  */
 public class SpringCloudMetadataServiceURLBuilder implements MetadataServiceURLBuilder {

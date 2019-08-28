@@ -20,6 +20,7 @@ import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.ServiceInstance;
 
+import static org.apache.dubbo.common.constants.CommonConstants.METADATA_DEFAULT;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 
 /**
@@ -29,7 +30,7 @@ import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoad
  * @see MetadataService
  * @since 2.7.4
  */
-@SPI("default")
+@SPI(METADATA_DEFAULT)
 public interface MetadataServiceProxyFactory {
 
     /**

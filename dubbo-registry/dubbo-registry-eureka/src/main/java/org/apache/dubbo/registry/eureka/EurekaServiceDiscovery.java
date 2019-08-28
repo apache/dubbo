@@ -46,8 +46,9 @@ import java.util.Properties;
 import java.util.Set;
 
 import static java.util.Collections.emptyList;
+import static org.apache.dubbo.common.constants.RegistryConstants.SUBSCRIBED_SERVICE_NAMES_KEY;
 import static org.apache.dubbo.event.EventDispatcher.getDefaultExtension;
-import static org.apache.dubbo.registry.client.ServiceDiscoveryRegistry.getSubscribedServices;
+import static org.apache.dubbo.registry.client.ServiceDiscoveryRegistry.parseServices;
 
 /**
  * Eureka {@link ServiceDiscovery} implementation based on Eureka API
@@ -60,7 +61,7 @@ public class EurekaServiceDiscovery implements ServiceDiscovery {
 
     private EurekaClient eurekaClient;
 
-    private Map<String, String> subscribedServices;
+    private Set<String> subscribedServices;
 
     /**
      * last apps hash code is used to identify the {@link Applications} is changed or not
@@ -99,7 +100,7 @@ public class EurekaServiceDiscovery implements ServiceDiscovery {
      * @param registryURL the {@link URL url} to connect Eureka
      */
     private void initSubscribedServices(URL registryURL) {
-        this.subscribedServices = getSubscribedServices(registryURL);
+        this.subscribedServices = parseServices(registryURL.getParameter(SUBSCRIBED_SERVICE_NAMES_KEY));
     }
 
     private boolean filterEurekaProperty(Map.Entry<String, String> propertyEntry) {
@@ -184,7 +185,7 @@ public class EurekaServiceDiscovery implements ServiceDiscovery {
     }
 
     private void dispatchServiceInstancesChangedEvent() {
-        subscribedServices.forEach((serviceName, protocol) -> {
+        subscribedServices.forEach((serviceName) -> {
             eventDispatcher.dispatch(new ServiceInstancesChangedEvent(serviceName, getInstances(serviceName)));
         });
     }

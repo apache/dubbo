@@ -18,6 +18,7 @@ package org.apache.dubbo.registry.client.metadata.proxy;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.rpc.Invoker;
@@ -27,9 +28,7 @@ import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.support.AvailableCluster;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.registry.client.metadata.MetadataServiceURLBuilder.composite;
@@ -62,6 +61,10 @@ public class DefaultMetadataServiceProxyFactory extends BaseMetadataServiceProxy
         List<Invoker<MetadataService>> invokers = urls.stream()
                 .map(url -> protocol.refer(MetadataService.class, url))
                 .collect(Collectors.toList());
+
+        if (CollectionUtils.isEmpty(invokers)) {
+            return null;
+        }
 
         Invoker<MetadataService> invoker = cluster.join(new StaticDirectory<>(invokers));
         return proxyFactory.getProxy(invoker);

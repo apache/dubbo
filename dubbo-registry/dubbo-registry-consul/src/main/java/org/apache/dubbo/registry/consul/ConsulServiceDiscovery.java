@@ -37,6 +37,8 @@ import com.ecwid.consul.v1.health.model.HealthService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -163,6 +165,7 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
 
     private Map<String, String> getMetadata(HealthService.Service service) {
         Map<String, String> metadata = service.getMeta();
+        metadata = decodeMetadata(metadata);
         if (CollectionUtils.isEmptyMap(metadata)) {
             metadata = getScCompatibleMetadata(service.getTags());
         }
@@ -203,7 +206,7 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
         service.setName(serviceInstance.getServiceName());
         service.setCheck(buildCheck(serviceInstance));
         service.setTags(buildTags(serviceInstance));
-        service.setMeta(buildMetadata(serviceInstance));
+//        service.setMeta(buildMetadata(serviceInstance));
         return service;
     }
 
@@ -226,7 +229,26 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
         if (CollectionUtils.isNotEmptyMap(serviceInstance.getMetadata())) {
             metadata.putAll(serviceInstance.getMetadata());
         }
+        metadata = encodeMetadata(metadata);
         return metadata;
+    }
+
+    private Map<String, String> encodeMetadata(Map<String, String> metadata) {
+        if (metadata == null) {
+            return metadata;
+        }
+        Map<String, String> encoded = new HashMap<>(metadata.size());
+        metadata.forEach((k, v) -> encoded.put(Base64.getEncoder().encodeToString(k.getBytes()), v));
+        return encoded;
+    }
+
+    private Map<String, String> decodeMetadata(Map<String, String> metadata) {
+        if (metadata == null) {
+            return metadata;
+        }
+        Map<String, String> decoded = new HashMap<>(metadata.size());
+        metadata.forEach((k, v) -> decoded.put(new String(Base64.getDecoder().decode(k)), v));
+        return decoded;
     }
 
     private NewService.Check buildCheck(ServiceInstance serviceInstance) {

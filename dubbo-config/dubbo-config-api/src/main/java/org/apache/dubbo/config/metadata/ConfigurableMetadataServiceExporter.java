@@ -128,8 +128,15 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
     private ProtocolConfig getDefaultProtocol() {
         ProtocolConfig defaultProtocol = new ProtocolConfig();
         defaultProtocol.setName(DUBBO);
-        // auto-increment port
         defaultProtocol.setPort(-1);
+
+        List<ProtocolConfig> defaultProtocols = configManager.getDefaultProtocols();
+        if (defaultProtocols != null) {
+            return defaultProtocols.stream()
+                    .filter(protocolConfig -> DUBBO.equals(protocolConfig.getName()))
+                    .findFirst()
+                    .orElse(defaultProtocol);
+        }
         return defaultProtocol;
     }
 }

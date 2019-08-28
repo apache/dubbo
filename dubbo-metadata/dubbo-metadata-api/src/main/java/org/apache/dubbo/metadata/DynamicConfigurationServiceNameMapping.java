@@ -60,7 +60,7 @@ public class DynamicConfigurationServiceNameMapping implements ServiceNameMappin
             dynamicConfiguration.publishConfig(key, buildGroup(serviceInterface, group, version, protocol), content);
             if (logger.isInfoEnabled()) {
                 logger.info(String.format("The Dubbo service key[%s] mapped to service name[%s] with content : %s",
-                        key, group, content));
+                        key, serviceInterface, content));
             }
         });
     }
@@ -75,6 +75,9 @@ public class DynamicConfigurationServiceNameMapping implements ServiceNameMappin
             Set<String> keys = dynamicConfiguration.getConfigKeys(buildGroup(serviceInterface, group, version, protocol));
             serviceNames.addAll(keys);
         });
+        System.err.println(dynamicConfiguration.getClass());
+        System.err.println(buildGroup(serviceInterface, group, version, protocol));
+        System.err.println(serviceNames);
         return Collections.unmodifiableSet(serviceNames);
     }
 
