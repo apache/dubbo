@@ -18,14 +18,14 @@ package org.apache.dubbo.registry.client;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
+import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.DubboServiceLoader;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.ServiceNameMapping;
 import org.apache.dubbo.metadata.WritableMetadataService;
-import org.apache.dubbo.metadata.store.InMemoryWritableMetadataService;
-import org.apache.dubbo.metadata.store.RemoteWritableMetadataService;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
@@ -86,20 +86,40 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getProtocolPort;
 
 /**
- * {@link ServiceDiscoveryRegistry} is the service-oriented {@link Registry} and dislike the traditional one that
- * {@link #register(URL) registers} to and {@link #subscribe(URL, NotifyListener) discoveries}
- * the Dubbo's {@link URL urls} from the external registry. In the {@link #register(URL) registration}
- * phase, The {@link URL urls} of Dubbo services will be {@link WritableMetadataService#exportURL(URL) exported} into
- * {@link WritableMetadataService} that is either {@link InMemoryWritableMetadataService in-memory} or
- * {@link RemoteWritableMetadataService remote},
+ * Being different to the traditional registry, {@link ServiceDiscoveryRegistry} that is a new service-oriented
+ * {@link Registry} based on {@link ServiceDiscovery}, it will not interact in the external registry directly,
+ * but store the {@link URL urls} that Dubbo services exported and referenced into {@link WritableMetadataService}
+ * when {@link #register(URL)} and {@link #subscribe(URL, NotifyListener)} methods are executed. After that the exported
+ * {@link URL urls} can be get from {@link WritableMetadataService#getExportedURLs()} and its variant methods. In contrast,
+ * {@link WritableMetadataService#getSubscribedURLs()} method offers the subscribed {@link URL URLs}.
  * <p>
- * it's decided by metadata
- * subscribes from the remote proxy of {@link MetadataService}
- *
+ * Every {@link ServiceDiscoveryRegistry} object has its own {@link ServiceDiscovery} instance that was initialized
+ * under {@link #ServiceDiscoveryRegistry(URL) the construction}. As the primary argument of constructor , the
+ * {@link URL} of connection the registry decides what the kind of ServiceDiscovery is. Generally, each
+ * protocol associates with a kind of {@link ServiceDiscovery}'s implementation if present, or the
+ * {@link FileSystemServiceDiscovery} will be the default one. Obviously, it's also allowed to extend
+ * {@link ServiceDiscovery} using {@link SPI the Dubbo SPI}.
+ * <p>
+ * In the {@link #subscribe(URL, NotifyListener) subscription phase}, the {@link ServiceDiscovery} instance will be used
+ * to discovery the {@link ServiceInstance service instances} via the {@link ServiceDiscovery#getInstances(String)}.
+ * However, the argument of this method requires the service name that the subscribed {@link URL} can't find, thus,
+ * {@link ServiceNameMapping} will help to figure out one or more services that exported correlative Dubbo services. If
+ * the service names can be found, the exported {@link URL URLs} will be get from the remote {@link MetadataService}
+ * being deployed on all {@link ServiceInstance instances} of services. The whole process runs under the
+ * {@link #subscribeURLs(URL, NotifyListener, String, Collection)} method. It's very expensive to invoke
+ * {@link MetadataService} for each {@link ServiceInstance service instance}, thus {@link ServiceDiscoveryRegistry}
+ * introduces a cache to optimize the calculation with "revisions". If the revisions of N
+ * {@link ServiceInstance service instances} are same, {@link MetadataService} is invoked just only once, and then it
+ * does return the exported {@link URL URLs} as a template by which others are
+ * {@link #cloneExportedURLs(URL, Collection) cloned}.
+ * <p>
+ * In contrast, current {@link ServiceInstance service instance} will not be registered to the registry whether any
+ * Dubbo service is exported or not.
  * <p>
  *
  * @see ServiceDiscovery
  * @see FailbackRegistry
+ * @see WritableMetadataService
  * @since 2.7.4
  */
 public class ServiceDiscoveryRegistry extends FailbackRegistry {
@@ -168,6 +188,13 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         return serviceDiscovery;
     }
 
+    /**
+     * Initialize {@link SubscribedURLsSynthesizer} instances that are
+     * {@link DubboServiceLoader#loadServices(Class, ClassLoader) loaded} by {@link DubboServiceLoader}
+     *
+     * @return non-null {@link List}
+     * @see DubboServiceLoader#loadServices(Class, ClassLoader)
+     */
     private List<SubscribedURLsSynthesizer> initSubscribedURLsSynthesizers() {
         return loadServices(SubscribedURLsSynthesizer.class, this.getClass().getClassLoader());
     }
@@ -338,6 +365,19 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         return listener.getServiceName() + ":" + url.toString(VERSION_KEY, GROUP_KEY, PROTOCOL_KEY);
     }
 
+    /**
+     * Subscribe the {@link URL URLs} that the specified service exported are
+     * {@link #getExportedURLs(ServiceInstance) get} from {@link MetadataService} if present, or try to
+     * be {@link #synthesizeSubscribedURLs(URL, Collection) synthesized} by
+     * the instances of {@link SubscribedURLsSynthesizer}
+     *
+     * @param subscribedURL    the subscribed {@link URL url}
+     * @param listener         {@link NotifyListener}
+     * @param serviceName
+     * @param serviceInstances
+     * @see #getExportedURLs(URL, Collection)
+     * @see #synthesizeSubscribedURLs(URL, Collection)
+     */
     protected void subscribeURLs(URL subscribedURL, NotifyListener listener, String serviceName,
                                  Collection<ServiceInstance> serviceInstances) {
 
@@ -418,6 +458,17 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
      * Initialize the {@link URL URLs} that {@link ServiceInstance service instances} exported into
      * {@link #serviceRevisionExportedURLsCache the cache}.
      * <p>
+     * Typically, the {@link URL URLs} that one {@link ServiceInstance service instance} exported can be get from
+     * the same instances' {@link MetadataService}, but the cost is very expensive if there are a lot of instances
+     * in this service. Thus, the exported {@link URL URls} should be cached  and stored into
+     * {@link #serviceRevisionExportedURLsCache the cache}.
+     * <p>
+     * In most cases, {@link #serviceRevisionExportedURLsCache the cache} only holds a single list of exported URLs for
+     * each service because there is no difference on the Dubbo services(interfaces) between the service instances.
+     * However, if there are one or more upgrading or increasing Dubbo services that are deploying on the some of
+     * instances, other instances still maintain the previous ones, in this way, there are two versions of the services,
+     * they are called "revisions", in other words, one revision associates a list of exported URLs that can be reused
+     * for other instances with same revision, and one service allows one or more revisions.
      *
      * @param serviceInstances {@link ServiceInstance service instances}
      */
@@ -429,7 +480,8 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
     }
 
     /**
-     * One {@link ServiceInstance} that will be selected in order to avoid hot spot
+     * Initialize the {@link URL URLs} that the {@link #selectServiceInstance(List) selected service instance} exported
+     * into {@link #serviceRevisionExportedURLsCache the cache}.
      *
      * @param serviceInstances {@link ServiceInstance service instances}
      */
@@ -517,10 +569,12 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
 
     /**
-     * Select one {@link ServiceInstance} from the {@link List list}
+     * Select one {@link ServiceInstance} by {@link ServiceInstanceSelector the strategy} if there are more that one
+     * instances in order to avoid the hot spot appearing the some instance
      *
      * @param serviceInstances the {@link List list} of {@link ServiceInstance}
      * @return <code>null</code> if <code>serviceInstances</code> is empty.
+     * @see ServiceInstanceSelector
      */
     private ServiceInstance selectServiceInstance(List<ServiceInstance> serviceInstances) {
         int size = serviceInstances.size();
@@ -565,20 +619,20 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
     /**
      * Initialize the URLs that the specified {@link ServiceInstance service instance} exported
      *
-     * @param providerServiceInstance the {@link ServiceInstance} exports the Dubbo Services
+     * @param serviceInstance the {@link ServiceInstance} exports the Dubbo Services
      * @return the {@link URL URLs} that the {@link ServiceInstance} exported, it's calculated from
      * The invocation to remote {@link MetadataService}, or get from {@link #serviceRevisionExportedURLsCache cache} if
      * {@link ServiceInstanceMetadataUtils#getExportedServicesRevision(ServiceInstance) revision} is hit
      */
-    private List<URL> initializeRevisionExportedURLs(ServiceInstance providerServiceInstance) {
+    private List<URL> initializeRevisionExportedURLs(ServiceInstance serviceInstance) {
 
-        if (providerServiceInstance == null) {
+        if (serviceInstance == null) {
             return emptyList();
         }
 
-        String serviceName = providerServiceInstance.getServiceName();
+        String serviceName = serviceInstance.getServiceName();
         // get the revision from the specified {@link ServiceInstance}
-        String revision = getExportedServicesRevision(providerServiceInstance);
+        String revision = getExportedServicesRevision(serviceInstance);
 
         Map<String, List<URL>> revisionExportedURLsMap = getRevisionExportedURLsMap(serviceName);
 
@@ -592,18 +646,18 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
                 if (logger.isWarnEnabled()) {
                     logger.warn(format("The ServiceInstance[id: %s, host : %s , port : %s] has different revision : %s" +
                                     ", please make sure the service [name : %s] is changing or not.",
-                            providerServiceInstance.getId(),
-                            providerServiceInstance.getHost(),
-                            providerServiceInstance.getPort(),
+                            serviceInstance.getId(),
+                            serviceInstance.getHost(),
+                            serviceInstance.getPort(),
                             revision,
-                            providerServiceInstance.getServiceName()
+                            serviceInstance.getServiceName()
                     ));
                 }
             } else { // Else, it's the first time to get the exported URLs
                 firstGet = true;
             }
 
-            revisionExportedURLs = getExportedURLs(providerServiceInstance);
+            revisionExportedURLs = getExportedURLs(serviceInstance);
 
             if (revisionExportedURLs != null) { // just allow the valid result into exportedURLsMap
 
@@ -613,10 +667,10 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
                     logger.debug(format("Get the exported URLs[size : %s, first : %s] from the target service " +
                                     "instance [id: %s , service : %s , host : %s , port : %s , revision : %s]",
                             revisionExportedURLs.size(), firstGet,
-                            providerServiceInstance.getId(),
-                            providerServiceInstance.getServiceName(),
-                            providerServiceInstance.getHost(),
-                            providerServiceInstance.getPort(),
+                            serviceInstance.getId(),
+                            serviceInstance.getServiceName(),
+                            serviceInstance.getHost(),
+                            serviceInstance.getPort(),
                             revision
                     ));
                 }
@@ -626,10 +680,10 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
                 logger.debug(format("Get the exported URLs[size : %s] from cache, the instance" +
                                 "[id: %s , service : %s , host : %s , port : %s , revision : %s]",
                         revisionExportedURLs.size(),
-                        providerServiceInstance.getId(),
-                        providerServiceInstance.getServiceName(),
-                        providerServiceInstance.getHost(),
-                        providerServiceInstance.getPort(),
+                        serviceInstance.getId(),
+                        serviceInstance.getServiceName(),
+                        serviceInstance.getHost(),
+                        serviceInstance.getPort(),
                         revision
                 ));
             }
@@ -643,26 +697,20 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
     }
 
     /**
-     * Get all services {@link URL URLs} that the specified {@link ServiceInstance service instance} exported with cache
-     * <p>
-     * Typically, the revisions of all {@link ServiceInstance instances} in one service are same. However,
-     * if one service is upgrading one or more Dubbo service interfaces, one of them may have the multiple declarations
-     * is deploying in the different {@link ServiceInstance service instances}, thus, it has to compare the interface
-     * contract one by one, the "revision" that is the number is introduced to identify all Dubbo exported interfaces in
-     * one {@link ServiceInstance service instance}.
+     * Get all services {@link URL URLs} that the specified {@link ServiceInstance service instance} exported from cache
      *
-     * @param providerServiceInstance the {@link ServiceInstance} exports the Dubbo Services
+     * @param serviceInstance the {@link ServiceInstance} exports the Dubbo Services
      * @return the same as {@link #getExportedURLs(ServiceInstance)}
      */
-    private List<URL> getRevisionExportedURLs(ServiceInstance providerServiceInstance) {
+    private List<URL> getRevisionExportedURLs(ServiceInstance serviceInstance) {
 
-        if (providerServiceInstance == null) {
+        if (serviceInstance == null) {
             return emptyList();
         }
 
-        String serviceName = providerServiceInstance.getServiceName();
+        String serviceName = serviceInstance.getServiceName();
         // get the revision from the specified {@link ServiceInstance}
-        String revision = getExportedServicesRevision(providerServiceInstance);
+        String revision = getExportedServicesRevision(serviceInstance);
 
         return getRevisionExportedURLs(serviceName, revision);
     }
@@ -678,7 +726,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
     /**
      * Get all services {@link URL URLs} that the specified {@link ServiceInstance service instance} exported
-     * from {@link MetadataService} proxy
+     * via the proxy to invoke the {@link MetadataService}
      *
      * @param providerServiceInstance the {@link ServiceInstance} exported the Dubbo services
      * @return The possible result :
@@ -687,6 +735,8 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
      * <li>The empty result if the {@link ServiceInstance service instance} did not export yet</li>
      * <li><code>null</code> if there is an invocation error on {@link MetadataService} proxy</li>
      * </ol>
+     * @see MetadataServiceProxyFactory
+     * @see MetadataService
      */
     private List<URL> getExportedURLs(ServiceInstance providerServiceInstance) {
 
