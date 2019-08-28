@@ -284,6 +284,18 @@
             <build>
                 <plugins>
                     <plugin>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>${maven_source_version}</version>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
                         <artifactId>maven-javadoc-plugin</artifactId>
                         <version>${maven_javadoc_version}</version>
                         <executions>
@@ -389,18 +401,6 @@
             </resource>
         </resources>
         <plugins>
-            <plugin>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>${maven_source_version}</version>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
             <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>${maven_jar_version}</version>

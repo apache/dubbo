@@ -18,32 +18,43 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.apache.dubbo</groupId>
-        <artifactId>dubbo-parent</artifactId>
+        <artifactId>dubbo-rpc</artifactId>
         <version>${revision}</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
-    <artifactId>dubbo-rpc</artifactId>
-    <packaging>pom</packaging>
+    <artifactId>dubbo-rpc-grpc</artifactId>
+    <packaging>jar</packaging>
     <name>${project.artifactId}</name>
-    <description>The rpc module of dubbo project</description>
+    <description>The gRPC integration module</description>
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
     </properties>
-    <modules>
-        <module>dubbo-rpc-api</module>
-        <module>dubbo-rpc-dubbo</module>
-        <module>dubbo-rpc-injvm</module>
-        <module>dubbo-rpc-jsonrpc</module>
-        <module>dubbo-rpc-rmi</module>
-        <module>dubbo-rpc-hessian</module>
-        <module>dubbo-rpc-http</module>
-        <module>dubbo-rpc-webservice</module>
-        <module>dubbo-rpc-native-thrift</module>
-        <module>dubbo-rpc-thrift</module>
-        <module>dubbo-rpc-memcached</module>
-        <module>dubbo-rpc-redis</module>
-        <module>dubbo-rpc-rest</module>
-        <module>dubbo-rpc-xml</module>
-        <module>dubbo-rpc-grpc</module>
-    </modules>
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-rpc-api</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-remoting-http</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-netty-shaded</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-protobuf</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-stub</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 </project>
