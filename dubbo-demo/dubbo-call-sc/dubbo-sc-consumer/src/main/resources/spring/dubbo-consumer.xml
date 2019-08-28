@@ -21,10 +21,13 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
        http://dubbo.apache.org/schema/dubbo http://dubbo.apache.org/schema/dubbo/dubbo.xsd">
 
-    <dubbo:application name="demo-consumer"/>
+    <dubbo:application name="dubbo-sc-consumer"/>
 
-    <dubbo:registry address="zookeeper://127.0.0.1:2181?registry-type=service"/>
+    <dubbo:registry address="consul://127.0.0.1:8500">
+        <dubbo:parameter key="registry-type" value="service"/>
+    </dubbo:registry>
 
-    <dubbo:reference id="demoService" check="false" interface="org.apache.dubbo.demo.DemoService"/>
+    <dubbo:reference provided-by="spring-cloud-provider-for-dubbo" id="userService" check="false" protocol="rest"
+                     interface="org.apache.dubbo.samples.microservices.sc.rest.UserService"/>
 
 </beans>

@@ -29,17 +29,18 @@
     <modelVersion>4.0.0</modelVersion>
     <packaging>pom</packaging>
 
-    <modules>
-        <module>dubbo-sc-provider</module>
-        <module>dubbo-sc-consumer</module>
-    </modules>
+    <artifactId>servicediscovery-transfer</artifactId>
 
     <properties>
         <skip_maven_deploy>true</skip_maven_deploy>
         <spring-boot-maven-plugin.version>2.1.4.RELEASE</spring-boot-maven-plugin.version>
     </properties>
 
-    <artifactId>dubbo-call-sc</artifactId>
+    <modules>
+        <module>servicediscovery-transfer-provider</module>
+        <module>servicediscovery-transfer-consumer-old</module>
+        <module>servicediscovery-transfer-consumer</module>
+    </modules>
 
     <build>
         <plugins>

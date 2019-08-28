@@ -30,8 +30,9 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>dubbo-sc-provider</module>
-        <module>dubbo-sc-consumer</module>
+        <module>dubbo-scdubbo-provider</module>
+        <module>dubbo-scdubbo-provider2</module>
+        <module>dubbo-scdubbo-consumer</module>
     </modules>
 
     <properties>
@@ -39,7 +40,7 @@
         <spring-boot-maven-plugin.version>2.1.4.RELEASE</spring-boot-maven-plugin.version>
     </properties>
 
-    <artifactId>dubbo-call-sc</artifactId>
+    <artifactId>dubbo-call-scdubbo</artifactId>
 
     <build>
         <plugins>
