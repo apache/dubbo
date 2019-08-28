@@ -16,11 +16,11 @@
  */
 package com.alibaba.dubbo.remoting.zookeeper.zkclient;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.zookeeper.ChildListener;
 import com.alibaba.dubbo.remoting.zookeeper.StateListener;
 import com.alibaba.dubbo.remoting.zookeeper.support.AbstractZookeeperClient;
-
 import org.I0Itec.zkclient.IZkChildListener;
 import org.I0Itec.zkclient.IZkStateListener;
 import org.I0Itec.zkclient.exception.ZkNoNodeException;
@@ -37,7 +37,8 @@ public class ZkclientZookeeperClient extends AbstractZookeeperClient<IZkChildLis
 
     public ZkclientZookeeperClient(URL url) {
         super(url);
-        client = new ZkClientWrapper(url.getBackupAddress(), 30000);
+        long timeout = url.getParameter(Constants.TIMEOUT_KEY, 30000L);
+        client = new ZkClientWrapper(url.getBackupAddress(), timeout);
         client.addListener(new IZkStateListener() {
             @Override
             public void handleStateChanged(KeeperState state) throws Exception {
