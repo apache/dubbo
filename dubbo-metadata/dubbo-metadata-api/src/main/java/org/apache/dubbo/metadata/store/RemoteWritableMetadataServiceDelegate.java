@@ -1,6 +1,7 @@
 package org.apache.dubbo.metadata.store;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.InmemoryConfiguration;
 import org.apache.dubbo.metadata.WritableMetadataService;
 
 import java.util.SortedSet;
@@ -12,12 +13,12 @@ import java.util.function.BiFunction;
  * @since 2.7.5
  */
 public class RemoteWritableMetadataServiceDelegate implements WritableMetadataService {
-    private WritableMetadataService defaultWritableMetadataService;
-    private RemoteWritableMetadataService remoteWritableMetadataService;
+    InMemoryWritableMetadataService defaultWritableMetadataService;
+    RemoteWritableMetadataService remoteWritableMetadataService;
 
     public RemoteWritableMetadataServiceDelegate() {
-        defaultWritableMetadataService = WritableMetadataService.getDefaultExtension();
-        remoteWritableMetadataService = new RemoteWritableMetadataService();
+        defaultWritableMetadataService = (InMemoryWritableMetadataService) WritableMetadataService.getExtension("local");
+        remoteWritableMetadataService = new RemoteWritableMetadataService(defaultWritableMetadataService);
     }
 
     private WritableMetadataService getDefaultWritableMetadataService() {
@@ -79,9 +80,6 @@ public class RemoteWritableMetadataServiceDelegate implements WritableMetadataSe
     }
 
     private boolean doFunction(BiFunction<WritableMetadataService, URL, Boolean> func, URL url) {
-        boolean result = true;
-        result &= func.apply(defaultWritableMetadataService, url);
-        result &= func.apply(remoteWritableMetadataService, url);
-        return result;
+        return func.apply(defaultWritableMetadataService, url) && func.apply(remoteWritableMetadataService, url);
     }
 }

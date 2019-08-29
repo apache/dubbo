@@ -25,6 +25,7 @@ import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 import org.apache.dubbo.metadata.report.support.AbstractMetadataReport;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -43,7 +44,7 @@ public class JTestMetadataReport4Test extends AbstractMetadataReport {
         super(url);
     }
 
-    public Map<String, String> store = new ConcurrentHashMap<>();
+    public volatile Map<String, String> store = new ConcurrentHashMap<>();
 
 
     private static String getProtocol(URL url) {
@@ -64,22 +65,22 @@ public class JTestMetadataReport4Test extends AbstractMetadataReport {
 
     @Override
     protected void doSaveMetadata(ServiceMetadataIdentifier metadataIdentifier, URL url) {
-        throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
+        store.put(metadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), url.toFullString());
     }
 
     @Override
     protected void doRemoveMetadata(ServiceMetadataIdentifier metadataIdentifier) {
-        throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
+        store.remove(metadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY));
     }
 
     @Override
     protected List<String> doGetExportedURLs(ServiceMetadataIdentifier metadataIdentifier) {
-        throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
+        return Arrays.asList(store.getOrDefault(metadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), ""));
     }
 
     @Override
     protected void doSaveSubscriberData(SubscriberMetadataIdentifier subscriberMetadataIdentifier, String urls) {
-
+        store.put(subscriberMetadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), urls);
     }
 
     @Override
@@ -97,6 +98,6 @@ public class JTestMetadataReport4Test extends AbstractMetadataReport {
 
     @Override
     public String getServiceDefinition(MetadataIdentifier consumerMetadataIdentifier) {
-        return null;
+        return store.get(consumerMetadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY));
     }
 }
