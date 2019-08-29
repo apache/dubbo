@@ -17,7 +17,6 @@ import org.junit.jupiter.api.Test;
 
 import java.util.SortedSet;
 
-import static org.apache.dubbo.common.constants.CommonConstants.METADATA_REMOTE;
 
 /**
  * 2019-08-27
@@ -44,8 +43,8 @@ public class RemoteWritableMetadataServiceDelegateTest {
 
     @Test
     public void testInstance() {
-        WritableMetadataService metadataReportService1 = WritableMetadataService.getExtension(METADATA_REMOTE);
-        WritableMetadataService metadataReportService2 = WritableMetadataService.getExtension(METADATA_REMOTE);
+        WritableMetadataService metadataReportService1 = WritableMetadataService.getExtension("remote");
+        WritableMetadataService metadataReportService2 = WritableMetadataService.getExtension("remote");
         Assertions.assertSame(metadataReportService1, metadataReportService2);
         Assertions.assertTrue(metadataReportService1 instanceof RemoteWritableMetadataServiceDelegate);
     }

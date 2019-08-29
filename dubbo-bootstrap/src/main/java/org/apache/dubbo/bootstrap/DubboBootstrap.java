@@ -83,8 +83,8 @@ import static java.util.Collections.sort;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static org.apache.dubbo.common.config.ConfigurationUtils.parseProperties;
 import static org.apache.dubbo.common.config.configcenter.DynamicConfiguration.getDynamicConfiguration;
-import static org.apache.dubbo.common.constants.CommonConstants.METADATA_DEFAULT;
-import static org.apache.dubbo.common.constants.CommonConstants.METADATA_REMOTE;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
+import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.function.ThrowableAction.execute;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
 import static org.apache.dubbo.config.context.ConfigManager.getInstance;
@@ -175,7 +175,7 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
     private String getMetadataType() {
         String type = configManager.getApplicationOrElseThrow().getMetadataType();
         if (StringUtils.isEmpty(type)) {
-            type = METADATA_DEFAULT;
+            type = DEFAULT_METADATA_STORAGE_TYPE;
         }
         return type;
     }
@@ -489,7 +489,7 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
         // FIXME, multiple metadata config support.
         Collection<MetadataReportConfig> metadataReportConfigs = configManager.getMetadataConfigs();
         if (CollectionUtils.isEmpty(metadataReportConfigs)) {
-            if (METADATA_REMOTE.equals(metadataType)) {
+            if (REMOTE_METADATA_STORAGE_TYPE.equals(metadataType)) {
                 throw new IllegalStateException("No MetadataConfig found, you must specify the remote Metadata Center address when 'metadata=remote' is enabled.");
             }
             return;
