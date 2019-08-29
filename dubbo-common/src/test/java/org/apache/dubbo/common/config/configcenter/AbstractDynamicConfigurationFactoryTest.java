@@ -17,27 +17,36 @@
 package org.apache.dubbo.common.config.configcenter;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.configcenter.nop.NopDynamicConfiguration;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * Abstract {@link DynamicConfigurationFactory} implementation with cache ability
+ * {@link AbstractDynamicConfigurationFactory} Test
  *
- * @see DynamicConfigurationFactory
+ * @see AbstractDynamicConfigurationFactory
  * @since 2.7.4
  */
-public abstract class AbstractDynamicConfigurationFactory implements DynamicConfigurationFactory {
+public class AbstractDynamicConfigurationFactoryTest {
 
-    private volatile Map<String, DynamicConfiguration> dynamicConfigurations = new ConcurrentHashMap<>();
+    private AbstractDynamicConfigurationFactory factory;
 
-    @Override
-    public final DynamicConfiguration getDynamicConfiguration(URL url) {
-        String key = url == null ? DEFAULT_KEY : url.getAddress();
-        return dynamicConfigurations.computeIfAbsent(key, k -> createDynamicConfiguration(url));
+    @BeforeEach
+    public void init() {
+        factory = new AbstractDynamicConfigurationFactory() {
+            @Override
+            protected DynamicConfiguration createDynamicConfiguration(URL url) {
+                return new NopDynamicConfiguration(url);
+            }
+        };
     }
 
-    protected abstract DynamicConfiguration createDynamicConfiguration(URL url);
+    @Test
+    public void testGetDynamicConfiguration() {
+        URL url = URL.valueOf("nop://127.0.0.1");
+        assertEquals(factory.getDynamicConfiguration(url), factory.getDynamicConfiguration(url));
+    }
 }
