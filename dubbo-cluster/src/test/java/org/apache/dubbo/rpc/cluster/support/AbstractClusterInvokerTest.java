@@ -481,6 +481,7 @@ public class AbstractClusterInvokerTest {
                 return false;
             }
 
+            @Override
             public Result invoke(Invocation invocation) throws RpcException {
                 throw new RpcException(RpcException.TIMEOUT_EXCEPTION, "test timeout");
             }

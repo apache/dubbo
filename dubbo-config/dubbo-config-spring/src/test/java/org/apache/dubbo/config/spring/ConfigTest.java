@@ -960,12 +960,7 @@ public class ConfigTest {
         sc.setApplication(ac);
         sc.setRegistry(rc);
         sc.setInterface(DemoService.class.getName());
-        sc.setRef(new GenericService() {
-
-            public Object $invoke(String method, String[] parameterTypes, Object[] args) throws GenericException {
-                return null;
-            }
-        });
+        sc.setRef((method, parameterTypes, args) -> null);
 
         ReferenceConfig<DemoService> ref = new ReferenceConfig<DemoService>();
         ref.setApplication(ac);
@@ -991,12 +986,7 @@ public class ConfigTest {
         service.setRegistry(new RegistryConfig("mock://localhost"));
         service.setInterface(DemoService.class.getName());
         service.setGeneric(GENERIC_SERIALIZATION_BEAN);
-        service.setRef(new GenericService() {
-
-            public Object $invoke(String method, String[] parameterTypes, Object[] args) throws GenericException {
-                return null;
-            }
-        });
+        service.setRef((method, parameterTypes, args) -> null);
         try {
             service.export();
             Collection<Registry> collection = MockRegistryFactory.getCachedRegistry();
