@@ -30,8 +30,8 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>provider</module>
-        <module>consumer</module>
+        <module>dubbo-sc-provider</module>
+        <module>dubbo-sc-consumer</module>
     </modules>
 
     <properties>

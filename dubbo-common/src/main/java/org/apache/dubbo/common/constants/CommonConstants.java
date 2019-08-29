@@ -167,9 +167,9 @@ public interface CommonConstants {
 
     String METADATA_KEY = "metadata";
 
-    String METADATA_DEFAULT = "local";
+    String DEFAULT_METADATA_STORAGE_TYPE = "default";
 
-    String METADATA_REMOTE = "remote";
+    String REMOTE_METADATA_STORAGE_TYPE = "remote";
 
     /**
      * package version in the manifest

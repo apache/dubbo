@@ -30,7 +30,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
-import static org.apache.dubbo.common.constants.CommonConstants.METADATA_REMOTE;
+import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 
 /**
  * 2018/9/14
@@ -41,14 +41,14 @@ public class RemoteWritableMeatadataServiceTest {
 
     @BeforeEach
     public void before() {
-        metadataReportService1 = (RemoteWritableMetadataService) WritableMetadataService.getExtension(METADATA_REMOTE);
+        metadataReportService1 = (RemoteWritableMetadataService) WritableMetadataService.getExtension(REMOTE_METADATA_STORAGE_TYPE);
         MetadataReportInstance.init(url);
     }
 
     @Test
     public void testInstance() {
 
-        RemoteWritableMetadataService metadataReportService2 = (RemoteWritableMetadataService) WritableMetadataService.getExtension(METADATA_REMOTE);
+        RemoteWritableMetadataService metadataReportService2 = (RemoteWritableMetadataService) WritableMetadataService.getExtension(REMOTE_METADATA_STORAGE_TYPE);
         Assertions.assertSame(metadataReportService1, metadataReportService2);
     }
 

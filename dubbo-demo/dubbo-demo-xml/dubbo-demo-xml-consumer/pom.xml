@@ -32,6 +32,10 @@
     <dependencies>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-metadata-report-zookeeper</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-demo-interface</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
