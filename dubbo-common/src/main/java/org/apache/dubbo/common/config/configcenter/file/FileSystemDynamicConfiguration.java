@@ -588,7 +588,7 @@ public class FileSystemDynamicConfiguration extends AbstractDynamicConfiguration
             rootDirectory = new File("/" + directoryPath);
         }
 
-        if (!rootDirectory.exists()) { // If the directory does not exist
+        if (directoryPath == null || !rootDirectory.exists()) { // If the directory does not exist
             rootDirectory = new File(DEFAULT_CONFIG_CENTER_DIR_PATH);
         }
 
