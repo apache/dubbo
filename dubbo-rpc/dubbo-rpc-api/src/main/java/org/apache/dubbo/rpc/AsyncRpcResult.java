@@ -47,6 +47,7 @@ public class AsyncRpcResult extends AbstractResult {
      */
     private RpcContext storedContext;
     private RpcContext storedServerContext;
+    private Executor executor;
 
     private Invocation invocation;
 
@@ -136,6 +137,30 @@ public class AsyncRpcResult extends AbstractResult {
         return new AppResponse();
     }
 
+
+    /**
+     * This method will always return after a maximum 'timeout' waiting:
+     * 1. if value returns before timeout, return normally.
+     * 2. if no value returns after timeout, throw TimeoutException.
+     *
+     * @return
+     * @throws InterruptedException
+     * @throws ExecutionException
+     */
+    @Override
+    public Result get() throws InterruptedException, ExecutionException {
+        if (executor != null) {
+            ThreadlessExecutor threadlessExecutor = (ThreadlessExecutor) executor;
+            threadlessExecutor.waitAndDrain();
+        }
+        return super.get();
+    }
+
+    @Override
+    public Result get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+        return this.get();
+    }
+
     @Override
     public Object recreate() throws Throwable {
         RpcInvocation rpcInvocation = (RpcInvocation) invocation;
@@ -172,32 +197,32 @@ public class AsyncRpcResult extends AbstractResult {
     }
 
     @Override
-    public Map<String, String> getAttachments() {
+    public Map<String, Object> getAttachments() {
         return getAppResponse().getAttachments();
     }
 
     @Override
-    public void setAttachments(Map<String, String> map) {
+    public void setAttachments(Map<String, Object> map) {
         getAppResponse().setAttachments(map);
     }
 
     @Override
-    public void addAttachments(Map<String, String> map) {
+    public void addAttachments(Map<String, Object> map) {
         getAppResponse().addAttachments(map);
     }
 
     @Override
-    public String getAttachment(String key) {
+    public Object getAttachment(String key) {
         return getAppResponse().getAttachment(key);
     }
 
     @Override
-    public String getAttachment(String key, String defaultValue) {
+    public Object getAttachment(String key, Object defaultValue) {
         return getAppResponse().getAttachment(key, defaultValue);
     }
 
     @Override
-    public void setAttachment(String key, String value) {
+    public void setAttachment(String key, Object value) {
         getAppResponse().setAttachment(key, value);
     }
 
@@ -211,6 +236,14 @@ public class AsyncRpcResult extends AbstractResult {
 
     public Invocation getInvocation() {
         return invocation;
+    }
+
+    public Executor getExecutor() {
+        return executor;
+    }
+
+    public void setExecutor(Executor executor) {
+        this.executor = executor;
     }
 
     /**

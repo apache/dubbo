@@ -175,8 +175,8 @@ public class DubboCodec extends ExchangeCodec {
         RpcInvocation inv = (RpcInvocation) data;
 
         out.writeUTF(version);
-        out.writeUTF(inv.getAttachment(PATH_KEY));
-        out.writeUTF(inv.getAttachment(VERSION_KEY));
+        out.writeUTF((String) inv.getAttachment(PATH_KEY));
+        out.writeUTF((String) inv.getAttachment(VERSION_KEY));
 
         out.writeUTF(inv.getMethodName());
         out.writeUTF(ReflectUtils.getDesc(inv.getParameterTypes()));

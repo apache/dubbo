@@ -20,7 +20,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.remoting.Channel;
-import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.Transporter;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
@@ -70,7 +69,7 @@ public class ThriftProtocol extends AbstractProtocol {
 
             if (msg instanceof Invocation) {
                 Invocation inv = (Invocation) msg;
-                String path = inv.getAttachments().get(PATH_KEY);
+                String path = (String) inv.getAttachments().get(PATH_KEY);
                 String serviceKey = serviceKey(channel.getLocalAddress().getPort(),
                         path, null, null);
                 DubboExporter<?> exporter = (DubboExporter<?>) exporterMap.get(serviceKey);

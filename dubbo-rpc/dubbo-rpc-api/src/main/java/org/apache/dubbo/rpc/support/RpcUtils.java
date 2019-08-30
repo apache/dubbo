@@ -91,7 +91,7 @@ public class RpcUtils {
     }
 
     public static Long getInvocationId(Invocation inv) {
-        String id = inv.getAttachment(ID_KEY);
+        String id = (String)inv.getAttachment(ID_KEY);
         return id == null ? null : new Long(id);
     }
 
@@ -168,15 +168,12 @@ public class RpcUtils {
     }
 
     public static boolean isReturnTypeFuture(Invocation inv) {
-        Class<?> clazz;
-        if (inv instanceof RpcInvocation) {
-            clazz = ((RpcInvocation) inv).getReturnType();
-        } else {
-            clazz = getReturnType(inv);
-        }
+        Class<?> clazz = getReturnType(inv);
         return (clazz != null && CompletableFuture.class.isAssignableFrom(clazz)) || isGenericAsync(inv);
     }
 
+    public static boolean isGenericAsync(Invocation inv) {
+        return $INVOKE_ASYNC.equals(inv.getMethodName());
     public static InvokeMode getInvokeMode(URL url, Invocation inv) {
         if (isReturnTypeFuture(inv)) {
             return InvokeMode.FUTURE;
@@ -188,7 +185,7 @@ public class RpcUtils {
     }
 
     public static boolean isGenericAsync(Invocation inv) {
-        return $INVOKE_ASYNC.equals(inv.getMethodName());
+        return Constants.$INVOKE_ASYNC.equals(inv.getMethodName());
     }
 
     public static boolean isOneway(URL url, Invocation inv) {

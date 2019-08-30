@@ -27,6 +27,7 @@ import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoService;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoServiceImpl;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -68,7 +69,7 @@ public class InvokerTelnetHandlerTest {
         given(mockChannel.getLocalAddress()).willReturn(NetUtils.toAddress("127.0.0.1:5555"));
         given(mockChannel.getRemoteAddress()).willReturn(NetUtils.toAddress("127.0.0.1:20886"));
 
-        ProviderModel providerModel = new ProviderModel(DemoService.class.getName(), new DemoServiceImpl(), DemoService.class);
+        ProviderModel providerModel = new ProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", "Dubbo", "1.0.0", new DemoServiceImpl(), DemoService.class);
         ApplicationModel.initProviderModel(DemoService.class.getName(), providerModel);
 
         String result = invoke.telnet(mockChannel, "echo(\"ok\")");
@@ -83,8 +84,8 @@ public class InvokerTelnetHandlerTest {
         given(mockChannel.getLocalAddress()).willReturn(NetUtils.toAddress("127.0.0.1:5555"));
         given(mockChannel.getRemoteAddress()).willReturn(NetUtils.toAddress("127.0.0.1:20886"));
 
-        ProviderModel providerModel = new ProviderModel(DemoService.class.getName(), new DemoServiceImpl(), DemoService.class);
-        ApplicationModel.initProviderModel(DemoService.class.getName(), providerModel);
+        ProviderModel providerModel = new ProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", "Dubbo", "1.0.0", new DemoServiceImpl(), DemoService.class);
+        ApplicationModel.initProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", providerModel);
 
         String result = invoke.telnet(mockChannel, "DemoService.echo(\"ok\")");
         assertTrue(result.contains("result: \"ok\""));
@@ -98,8 +99,9 @@ public class InvokerTelnetHandlerTest {
         given(mockChannel.getLocalAddress()).willReturn(NetUtils.toAddress("127.0.0.1:5555"));
         given(mockChannel.getRemoteAddress()).willReturn(NetUtils.toAddress("127.0.0.1:20886"));
 
-        ProviderModel providerModel = new ProviderModel(DemoService.class.getName(), new DemoServiceImpl(), DemoService.class);
-        ApplicationModel.initProviderModel(DemoService.class.getName(), providerModel);
+        ProviderModel providerModel = new ProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", "Dubbo", "1.0.0", new DemoServiceImpl(), DemoService.class);
+        ApplicationModel.initProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", providerModel);
+
         try {
             invoke.telnet(mockChannel, "sayHello(null)");
         } catch (Exception ex) {
@@ -114,8 +116,8 @@ public class InvokerTelnetHandlerTest {
         given(mockChannel.getLocalAddress()).willReturn(NetUtils.toAddress("127.0.0.1:5555"));
         given(mockChannel.getRemoteAddress()).willReturn(NetUtils.toAddress("127.0.0.1:20886"));
 
-        ProviderModel providerModel = new ProviderModel(DemoService.class.getName(), new DemoServiceImpl(), DemoService.class);
-        ApplicationModel.initProviderModel(DemoService.class.getName(), providerModel);
+        ProviderModel providerModel = new ProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", "Dubbo", "1.0.0", new DemoServiceImpl(), DemoService.class);
+        ApplicationModel.initProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", providerModel);
 
         String result = invoke.telnet(mockChannel, "getType(\"High\")");
         assertTrue(result.contains("result: \"High\""));
@@ -130,8 +132,9 @@ public class InvokerTelnetHandlerTest {
         given(mockChannel.getLocalAddress()).willReturn(NetUtils.toAddress("127.0.0.1:5555"));
         given(mockChannel.getRemoteAddress()).willReturn(NetUtils.toAddress("127.0.0.1:20886"));
 
-        ProviderModel providerModel = new ProviderModel(DemoService.class.getName(), new DemoServiceImpl(), DemoService.class);
-        ApplicationModel.initProviderModel(DemoService.class.getName(), providerModel);
+        ProviderModel providerModel = new ProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", "Dubbo", "1.0.0", new DemoServiceImpl(), DemoService.class);
+        ApplicationModel.initProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", providerModel);
+
         String result = invoke.telnet(mockChannel, "getPerson({\"name\":\"zhangsan\",\"age\":12,\"class\":\"org.apache.dubbo.rpc.protocol.dubbo.support.Person\"})");
         assertTrue(result.contains("result: 12"));
     }
@@ -144,8 +147,9 @@ public class InvokerTelnetHandlerTest {
         given(mockChannel.getLocalAddress()).willReturn(NetUtils.toAddress("127.0.0.1:5555"));
         given(mockChannel.getRemoteAddress()).willReturn(NetUtils.toAddress("127.0.0.1:20886"));
 
-        ProviderModel providerModel = new ProviderModel(DemoService.class.getName(), new DemoServiceImpl(), DemoService.class);
-        ApplicationModel.initProviderModel(DemoService.class.getName(), providerModel);
+        ProviderModel providerModel = new ProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", "Dubbo", "1.0.0", new DemoServiceImpl(), DemoService.class);
+        ApplicationModel.initProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", providerModel);
+
         String param = "{\"name\":\"Dubbo\",\"age\":8}";
         String result = invoke.telnet(mockChannel, "getPerson(" + param + ")");
         assertTrue(result.contains("Please use the select command to select the method you want to invoke. eg: select 1"));
@@ -161,8 +165,9 @@ public class InvokerTelnetHandlerTest {
         given(mockChannel.getLocalAddress()).willReturn(NetUtils.toAddress("127.0.0.1:5555"));
         given(mockChannel.getRemoteAddress()).willReturn(NetUtils.toAddress("127.0.0.1:20886"));
 
-        ProviderModel providerModel = new ProviderModel(DemoService.class.getName(), new DemoServiceImpl(), DemoService.class);
-        ApplicationModel.initProviderModel(DemoService.class.getName(), providerModel);
+        ProviderModel providerModel = new ProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", "Dubbo", "1.0.0", new DemoServiceImpl(), DemoService.class);
+        ApplicationModel.initProviderModel("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", providerModel);
+
         String param = "{\"name\":\"Dubbo\",\"age\":8},{\"name\":\"Apache\",\"age\":20}";
         String result = invoke.telnet(mockChannel, "getPerson(" + param + ")");
         assertTrue(result.contains("result: 28"));

@@ -38,7 +38,9 @@ import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
 import org.apache.dubbo.rpc.cluster.support.RegistryAwareCluster;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ConsumerMethodModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
+import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
@@ -46,7 +48,6 @@ import org.apache.dubbo.rpc.support.ProtocolUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -172,6 +173,8 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
      */
     private transient volatile boolean destroyed;
 
+    private ServiceMetadata serviceMetadata;
+
     @SuppressWarnings("unused")
     private final Object finalizerGuardian = new Object() {
         @Override
@@ -193,9 +196,13 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     };
 
     public ReferenceConfig() {
+        serviceMetadata = new ServiceMetadata();
+        serviceMetadata.addAttribute("ORIGIN_CONFIG", this);
     }
 
     public ReferenceConfig(Reference reference) {
+        serviceMetadata = new ServiceMetadata();
+        serviceMetadata.addAttribute("ORIGIN_CONFIG", this);
         appendAnnotation(Reference.class, reference);
         setMethods(MethodConfig.constructMethodConfig(reference.methods()));
     }
@@ -238,6 +245,13 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         resolveFile();
         checkApplication();
         checkMetadataReport();
+        appendParameters();
+    }
+
+    private void appendParameters() {
+        URL appendParametersUrl = URL.valueOf("appendParameters://");
+        List<AppendParametersComponent> appendParametersComponents = ExtensionLoader.getExtensionLoader(AppendParametersComponent.class).getActivateExtension(appendParametersUrl, (String[]) null);
+        appendParametersComponents.forEach(component -> component.appendReferParameters(this));
     }
 
     public synchronized T get() {
@@ -275,11 +289,18 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         }
         checkStubAndLocal(interfaceClass);
         checkMock(interfaceClass);
+
+        //init serivceMetadata
+        serviceMetadata.setVersion(version);
+        serviceMetadata.setGroup(group);
+        serviceMetadata.setDefaultGroup(group);
+        serviceMetadata.setServiceType(getActualInterface());
+        serviceMetadata.setServiceInterfaceName(interfaceName);
+
         Map<String, String> map = new HashMap<String, String>();
-
         map.put(SIDE_KEY, CONSUMER_SIDE);
-
         appendRuntimeParameters(map);
+
         if (!isGeneric()) {
             String revision = Version.getVersion(interfaceClass, version);
             if (revision != null && revision.length() > 0) {
@@ -326,11 +347,27 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         }
         map.put(REGISTER_IP_KEY, hostToRegistry);
 
+        serviceMetadata.getAttachments().putAll(map);
+
         ref = createProxy(map);
 
         String serviceKey = URL.buildKey(interfaceName, group, version);
-        ApplicationModel.initConsumerModel(serviceKey, buildConsumerModel(serviceKey, attributes));
+        ApplicationModel.initConsumerModel(serviceKey, buildConsumerModel(serviceKey, attributes, serviceMetadata));
+        serviceMetadata.setTarget(ref);
+        consumerModel.getServiceMetadata().addAttribute(Constants.PROXY_CLASS_REF, ref);
         initialized = true;
+    }
+
+    private Class<?> getActualInterface() {
+        Class actualInterface = interfaceClass;
+        if (interfaceClass == GenericService.class) {
+            try {
+                actualInterface = Class.forName(interfaceName);
+            } catch (ClassNotFoundException e) {
+                // ignore
+            }
+        }
+        return actualInterface;
     }
 
     private ConsumerModel buildConsumerModel(String serviceKey, Map<String, Object> attributes) {
@@ -622,6 +659,10 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         return invoker;
     }
 
+    public ServiceMetadata getServiceMetadata() {
+        return serviceMetadata;
+    }
+
     @Override
     @Parameter(excluded = true)
     public String getPrefix() {
@@ -660,5 +701,10 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 }
             }
         }
+    }
+
+    @Parameter(excluded = true)
+    public String getUniqueServiceName() {
+        return URL.buildKey(interfaceName, group, version);
     }
 }

@@ -16,6 +16,16 @@
  */
 package org.apache.dubbo.remoting.exchange;
 
+import org.apache.dubbo.remoting.Channel;
+import org.apache.dubbo.remoting.Codec;
+import org.apache.dubbo.remoting.Decodeable;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Response
  */
@@ -172,5 +182,56 @@ public class Response {
     public String toString() {
         return "Response [id=" + mId + ", version=" + mVersion + ", status=" + mStatus + ", event=" + mEvent
                 + ", error=" + mErrorMsg + ", result=" + (mResult == this ? "this" : mResult) + "]";
+    }
+
+    public static class AppResult {
+
+        protected Map<String, String> attachments = new HashMap<String, String>();
+
+        protected Object result;
+
+        protected Throwable exception;
+
+        public Map<String, String> getAttachments() {
+            return attachments;
+        }
+
+        public void setAttachments(Map<String, String> attachments) {
+            this.attachments = attachments;
+        }
+
+        public Object getResult() {
+            return result;
+        }
+
+        public void setResult(Object result) {
+            this.result = result;
+        }
+
+        public Throwable getException() {
+            return exception;
+        }
+
+        public void setException(Throwable exception) {
+            this.exception = exception;
+        }
+    }
+
+    public static class DecodeableAppResult implements Codec, Decodeable {
+
+        @Override
+        public void decode() throws Exception {
+
+        }
+
+        @Override
+        public void encode(Channel channel, OutputStream output, Object message) throws IOException {
+
+        }
+
+        @Override
+        public Object decode(Channel channel, InputStream input) throws IOException {
+            return null;
+        }
     }
 }

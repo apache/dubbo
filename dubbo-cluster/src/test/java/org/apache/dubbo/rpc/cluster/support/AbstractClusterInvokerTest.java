@@ -150,7 +150,7 @@ public class AbstractClusterInvokerTest {
 
         // setup attachment
         RpcContext.getContext().setAttachment(attachKey, attachValue);
-        Map<String, String> attachments = RpcContext.getContext().getAttachments();
+        Map<String, Object> attachments = RpcContext.getContext().getAttachments();
         Assertions.assertTrue( attachments != null && attachments.size() == 1,"set attachment failed!");
 
         cluster = new AbstractClusterInvoker(dic) {
@@ -158,7 +158,7 @@ public class AbstractClusterInvokerTest {
             protected Result doInvoke(Invocation invocation, List invokers, LoadBalance loadbalance)
                     throws RpcException {
                 // attachment will be bind to invocation
-                String value = invocation.getAttachment(attachKey);
+                String value = (String) invocation.getAttachment(attachKey);
                 Assertions.assertTrue(value != null && value.equals(attachValue),"binding attachment failed!");
                 return null;
             }

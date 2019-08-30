@@ -16,10 +16,9 @@
  */
 package org.apache.dubbo.rpc.model;
 
-import org.apache.dubbo.common.utils.Assert;
-
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,47 +28,31 @@ import java.util.Optional;
  * Consumer Model which is about subscribed services.
  */
 public class ConsumerModel {
-    private final Object proxyObject;
-    private final String serviceName;
-    private final Class<?> serviceInterfaceClass;
-
+    private final ServiceMetadata serviceMetadata;
     private final Map<Method, ConsumerMethodModel> methodModels = new IdentityHashMap<Method, ConsumerMethodModel>();
 
-    /**
-     *  This constructor create an instance of ConsumerModel and passed objects should not be null.
-     *  If service name, service instance, proxy object,methods should not be null. If these are null
-     *  then this constructor will throw {@link IllegalArgumentException}
-     * @param serviceName Name of the service.
-     * @param serviceInterfaceClass Service interface class.
-     * @param proxyObject  Proxy object.
-     * @param methods Methods of service class
-     * @param attributes Attributes of methods.
-     */
-    public ConsumerModel(String serviceName
-            , Class<?> serviceInterfaceClass
-            , Object proxyObject
-            , Method[] methods
-            , Map<String, Object> attributes) {
+    public ConsumerModel(String serviceName, String group, String version, Class<?> interfaceClass) {
+        this.serviceMetadata = new ServiceMetadata(serviceName, group, version, interfaceClass);
 
-        Assert.notEmptyString(serviceName, "Service name can't be null or blank");
-        Assert.notNull(serviceInterfaceClass, "Service interface class can't null");
-        Assert.notNull(proxyObject, "Proxy object can't be null");
-        Assert.notNull(methods, "Methods can't be null");
-
-        this.serviceName = serviceName;
-        this.serviceInterfaceClass = serviceInterfaceClass;
-        this.proxyObject = proxyObject;
+        Method[] methods = interfaceClass.getMethods();
         for (Method method : methods) {
-            methodModels.put(method, new ConsumerMethodModel(method, attributes));
+            methodModels.put(method, new ConsumerMethodModel(method));
+        }
+    }
+
+    public ConsumerModel(ServiceMetadata serviceMetadata) {
+        this.serviceMetadata = serviceMetadata;
+        Method[] methods = serviceMetadata.getServiceType().getMethods();
+        for (Method method : methods) {
+            methodModels.put(method, new ConsumerMethodModel(method));
         }
     }
 
     /**
-     * Return the proxy object used by called while creating instance of ConsumerModel
-     * @return
+     * @return serviceMetadata
      */
-    public Object getProxyObject() {
-        return proxyObject;
+    public ServiceMetadata getServiceMetadata() {
+        return serviceMetadata;
     }
 
     /**
@@ -94,6 +77,27 @@ public class ConsumerModel {
     }
 
     /**
+     * @param method   metodName
+     * @param argsType method arguments type
+     * @return
+     */
+    public ConsumerMethodModel getMethodModel(String method, String[] argsType) {
+        Optional<ConsumerMethodModel> consumerMethodModel = methodModels.entrySet().stream()
+                .filter(entry -> entry.getKey().getName().equals(method))
+                .map(Map.Entry::getValue).filter(methodModel ->  Arrays.equals(argsType, methodModel.getParameterTypes()))
+                .findFirst();
+        return consumerMethodModel.orElse(null);
+    }
+
+
+    /**
+     * @return
+     */
+    public Class<?> getServiceInterfaceClass() {
+        return serviceMetadata.getServiceType();
+    }
+
+    /**
      * Return all method models for the current service
      *
      * @return method model list
@@ -102,11 +106,7 @@ public class ConsumerModel {
         return new ArrayList<ConsumerMethodModel>(methodModels.values());
     }
 
-    public Class<?> getServiceInterfaceClass() {
-        return serviceInterfaceClass;
-    }
-
     public String getServiceName() {
-        return serviceName;
+        return this.serviceMetadata.getServiceKey();
     }
 }

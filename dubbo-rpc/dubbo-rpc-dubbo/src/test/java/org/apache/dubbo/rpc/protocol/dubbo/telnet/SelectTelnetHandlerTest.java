@@ -25,6 +25,7 @@ import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoService;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoServiceImpl;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -71,7 +72,7 @@ public class SelectTelnetHandlerTest {
         given(mockChannel.getLocalAddress()).willReturn(NetUtils.toAddress("127.0.0.1:5555"));
         given(mockChannel.getRemoteAddress()).willReturn(NetUtils.toAddress("127.0.0.1:20886"));
 
-        ProviderModel providerModel = new ProviderModel(DemoService.class.getName(), new DemoServiceImpl(), DemoService.class);
+        ProviderModel providerModel = new ProviderModel(DemoService.class.getName(), "", "", new DemoServiceImpl(), DemoService.class);
         ApplicationModel.initProviderModel(DemoService.class.getName(), providerModel);
 
         String result = select.telnet(mockChannel, "1");
@@ -86,7 +87,7 @@ public class SelectTelnetHandlerTest {
         given(mockChannel.getLocalAddress()).willReturn(NetUtils.toAddress("127.0.0.1:5555"));
         given(mockChannel.getRemoteAddress()).willReturn(NetUtils.toAddress("127.0.0.1:20886"));
 
-        ProviderModel providerModel = new ProviderModel(DemoService.class.getName(), new DemoServiceImpl(), DemoService.class);
+        ProviderModel providerModel = new ProviderModel(DemoService.class.getName(), "", "", new DemoServiceImpl(), DemoService.class);
         ApplicationModel.initProviderModel(DemoService.class.getName(), providerModel);
 
         String result = select.telnet(mockChannel, "index");
@@ -107,7 +108,7 @@ public class SelectTelnetHandlerTest {
         given(mockChannel.getLocalAddress()).willReturn(NetUtils.toAddress("127.0.0.1:5555"));
         given(mockChannel.getRemoteAddress()).willReturn(NetUtils.toAddress("127.0.0.1:20886"));
 
-        ProviderModel providerModel = new ProviderModel(DemoService.class.getName(), new DemoServiceImpl(), DemoService.class);
+        ProviderModel providerModel = new ProviderModel(DemoService.class.getName(), "", "", new DemoServiceImpl(), DemoService.class);
         ApplicationModel.initProviderModel(DemoService.class.getName(), providerModel);
 
         String result = select.telnet(mockChannel, null);

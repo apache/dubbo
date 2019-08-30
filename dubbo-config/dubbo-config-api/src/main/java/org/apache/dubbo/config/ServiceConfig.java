@@ -40,6 +40,7 @@ import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.cluster.ConfiguratorFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
+import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
@@ -112,7 +113,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
      *
      * <li>when the url is dubbo://224.5.6.7:1234/org.apache.dubbo.config.api.DemoService?application=dubbo-sample, then
      * the protocol is <b>DubboProtocol</b></li>
-     * <p>
+     *
      * Actually，when the {@link ExtensionLoader} init the {@link Protocol} instants,it will automatically wraps two
      * layers, and eventually will get a <b>ProtocolFilterWrapper</b> or <b>ProtocolListenerWrapper</b>
      */
@@ -194,10 +195,16 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
      */
     private volatile String generic;
 
+    private ServiceMetadata serviceMetadata;
+
     public ServiceConfig() {
+        serviceMetadata = new ServiceMetadata();
+        serviceMetadata.addAttribute("ORIGIN_CONFIG", this);
     }
 
     public ServiceConfig(Service service) {
+        serviceMetadata = new ServiceMetadata();
+        serviceMetadata.addAttribute("ORIGIN_CONFIG", this);
         appendAnnotation(Service.class, service);
         setMethods(MethodConfig.constructMethodConfig(service.methods()));
     }
@@ -354,6 +361,13 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
         checkStubAndLocal(interfaceClass);
         checkMock(interfaceClass);
+        appendParameters();
+    }
+
+    private void appendParameters() {
+        URL appendParametersUrl = URL.valueOf("appendParameters://");
+        List<AppendParametersComponent> appendParametersComponents = ExtensionLoader.getExtensionLoader(AppendParametersComponent.class).getActivateExtension(appendParametersUrl, (String[]) null);
+        appendParametersComponents.forEach(component -> component.appendExportParameters(this));
     }
 
     /**
@@ -367,6 +381,14 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
     public synchronized void export() {
         checkAndUpdateSubConfigs();
+
+        //init serviceMetadata
+        serviceMetadata.setVersion(version);
+        serviceMetadata.setGroup(group);
+        serviceMetadata.setDefaultGroup(group);
+        serviceMetadata.setServiceType(interfaceClass);
+        serviceMetadata.setServiceInterfaceName(interfaceName);
+        serviceMetadata.setTarget(ref);
 
         if (!shouldExport()) {
             return;
@@ -556,6 +578,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 map.put(TOKEN_KEY, token);
             }
         }
+        //init serviceMetadata attachments
+        serviceMetadata.getAttachments().putAll(map);
+
         // export service
         String host = this.findConfigedHosts(protocolConfig, registryURLs, map);
         Integer port = this.findConfigedPorts(protocolConfig, name, map);
@@ -1032,6 +1057,10 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         return urls;
     }
 
+    public ServiceMetadata getServiceMetadata() {
+        return serviceMetadata;
+    }
+
     /**
      * @deprecated Replace to getProtocols()
      */
@@ -1052,5 +1081,10 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     @Parameter(excluded = true)
     public String getPrefix() {
         return DUBBO + ".service." + interfaceName;
+    }
+
+    @Parameter(excluded = true)
+    public String getUniqueServiceName() {
+        return URL.buildKey(interfaceName, group, version);
     }
 }

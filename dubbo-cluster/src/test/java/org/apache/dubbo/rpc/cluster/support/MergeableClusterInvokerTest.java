@@ -107,7 +107,7 @@ public class MergeableClusterInvokerTest {
         given(invocation.getMethodName()).willReturn("getMenu");
         given(invocation.getParameterTypes()).willReturn(new Class<?>[]{});
         given(invocation.getArguments()).willReturn(new Object[]{});
-        given(invocation.getAttachments()).willReturn(new HashMap<String, String>())
+        given(invocation.getAttachments()).willReturn(new HashMap<String, Object>())
                 ;
         given(invocation.getInvoker()).willReturn(firstInvoker);
 
@@ -190,7 +190,7 @@ public class MergeableClusterInvokerTest {
                 new Class<?>[]{String.class, List.class});
         given(invocation.getArguments()).willReturn(new Object[]{menu, menuItems})
                 ;
-        given(invocation.getAttachments()).willReturn(new HashMap<String, String>())
+        given(invocation.getAttachments()).willReturn(new HashMap<String, Object>())
                 ;
         given(invocation.getInvoker()).willReturn(firstInvoker);
 

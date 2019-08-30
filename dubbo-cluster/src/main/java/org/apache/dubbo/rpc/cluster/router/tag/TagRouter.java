@@ -98,7 +98,7 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
 
         List<Invoker<T>> result = invokers;
         String tag = StringUtils.isEmpty(invocation.getAttachment(Constants.TAG_KEY)) ? url.getParameter(Constants.TAG_KEY) :
-                invocation.getAttachment(Constants.TAG_KEY);
+                (String) invocation.getAttachment(Constants.TAG_KEY);
 
         // if we are requesting for a Provider with a specific tag
         if (StringUtils.isNotEmpty(tag)) {
@@ -164,7 +164,7 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
         List<Invoker<T>> result = invokers;
         // Dynamic param
         String tag = StringUtils.isEmpty(invocation.getAttachment(Constants.TAG_KEY)) ? url.getParameter(Constants.TAG_KEY) :
-                invocation.getAttachment(Constants.TAG_KEY);
+                (String) invocation.getAttachment(Constants.TAG_KEY);
         // Tag request
         if (!StringUtils.isEmpty(tag)) {
             result = filterInvoker(invokers, invoker -> tag.equals(invoker.getUrl().getParameter(TAG_KEY)));
@@ -189,7 +189,7 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
     }
 
     private boolean isForceUseTag(Invocation invocation) {
-        return Boolean.valueOf(invocation.getAttachment(FORCE_USE_TAG, url.getParameter(FORCE_USE_TAG, "false")));
+        return Boolean.valueOf((String) invocation.getAttachment(FORCE_USE_TAG, url.getParameter(FORCE_USE_TAG, "false")));
     }
 
     private <T> List<Invoker<T>> filterInvoker(List<Invoker<T>> invokers, Predicate<Invoker<T>> predicate) {

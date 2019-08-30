@@ -46,7 +46,7 @@ public class RpcUtilsTest {
     @Test
     public void testAttachInvocationIdIfAsync_normal() {
         URL url = URL.valueOf("dubbo://localhost/?test.async=true");
-        Map<String, String> attachments = new HashMap<String, String>();
+        Map<String, Object> attachments = new HashMap<String, Object>();
         attachments.put("aa", "bb");
         Invocation inv = new RpcInvocation("test", new Class[]{}, new String[]{}, attachments);
         RpcUtils.attachInvocationIdIfAsync(url, inv);

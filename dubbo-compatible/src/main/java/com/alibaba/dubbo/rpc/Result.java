@@ -83,32 +83,32 @@ public interface Result extends org.apache.dubbo.rpc.Result {
         }
 
         @Override
-        public Map<String, String> getAttachments() {
+        public Map<String, Object> getAttachments() {
             return delegate.getAttachments();
         }
 
         @Override
-        public void addAttachments(Map<String, String> map) {
+        public void addAttachments(Map<String, Object> map) {
             delegate.addAttachments(map);
         }
 
         @Override
-        public void setAttachments(Map<String, String> map) {
+        public void setAttachments(Map<String, Object> map) {
             delegate.setAttachments(map);
         }
 
         @Override
-        public String getAttachment(String key) {
+        public Object getAttachment(String key) {
             return delegate.getAttachment(key);
         }
 
         @Override
-        public String getAttachment(String key, String defaultValue) {
+        public Object getAttachment(String key, Object defaultValue) {
             return delegate.getAttachment(key, defaultValue);
         }
 
         @Override
-        public void setAttachment(String key, String value) {
+        public void setAttachment(String key, Object value) {
             delegate.setAttachment(key, value);
         }
     }

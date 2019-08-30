@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.model;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,30 +28,35 @@ import java.util.Map;
  * ProviderModel which is about published services
  */
 public class ProviderModel {
-    private final String serviceName;
     private final Object serviceInstance;
-    private final Class<?> serviceInterfaceClass;
+    private final ServiceMetadata serviceMetadata;
+    private final String serivceKey;
     private final Map<String, List<ProviderMethodModel>> methods = new HashMap<String, List<ProviderMethodModel>>();
 
-    public ProviderModel(String serviceName, Object serviceInstance, Class<?> serviceInterfaceClass) {
+    public ProviderModel(String serviceName, String group, String version, Object serviceInstance, Class<?> serviceInterfaceClass) {
         if (null == serviceInstance) {
             throw new IllegalArgumentException("Service[" + serviceName + "]Target is NULL.");
         }
 
-        this.serviceName = serviceName;
         this.serviceInstance = serviceInstance;
-        this.serviceInterfaceClass = serviceInterfaceClass;
-
-        initMethod();
+        this.serviceMetadata = new ServiceMetadata(serviceName, group, version, serviceInterfaceClass);
+        this.serivceKey = serviceMetadata.getServiceKey();
+        initMethod(serviceInterfaceClass);
     }
 
+    public ProviderModel(Object serviceInstance, ServiceMetadata serviceMetadata) {
+        this.serviceInstance = serviceInstance;
+        this.serviceMetadata = serviceMetadata;
+        this.serivceKey = serviceMetadata.getServiceKey();
+        initMethod(serviceMetadata.getServiceType());
+    }
 
     public String getServiceName() {
-        return serviceName;
+        return this.serviceMetadata.getServiceKey();
     }
 
     public Class<?> getServiceInterfaceClass() {
-        return serviceInterfaceClass;
+        return this.serviceMetadata.getServiceType();
     }
 
     public Object getServiceInstance() {
@@ -77,20 +83,32 @@ public class ProviderModel {
         return null;
     }
 
-    private void initMethod() {
-        Method[] methodsToExport = null;
-        methodsToExport = this.serviceInterfaceClass.getMethods();
+    public List<ProviderMethodModel> getMethodModelList(String methodName) {
+        List<ProviderMethodModel> resultList = methods.get(methodName);
+        return resultList == null ? Collections.emptyList() : resultList;
+    }
+
+
+    private void initMethod(Class<?> serviceInterfaceClass) {
+        Method[] methodsToExport;
+        methodsToExport = serviceInterfaceClass.getMethods();
 
         for (Method method : methodsToExport) {
             method.setAccessible(true);
 
             List<ProviderMethodModel> methodModels = methods.get(method.getName());
             if (methodModels == null) {
-                methodModels = new ArrayList<ProviderMethodModel>(1);
+                methodModels = new ArrayList<ProviderMethodModel>();
                 methods.put(method.getName(), methodModels);
             }
-            methodModels.add(new ProviderMethodModel(method, serviceName));
+            methodModels.add(new ProviderMethodModel(method));
         }
     }
 
+    /**
+     * @return serviceMetadata
+     */
+    public ServiceMetadata getServiceMetadata() {
+        return serviceMetadata;
+    }
 }

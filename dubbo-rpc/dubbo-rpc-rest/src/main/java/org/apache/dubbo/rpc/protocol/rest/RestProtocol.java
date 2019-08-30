@@ -137,7 +137,7 @@ public class RestProtocol extends AbstractProxyProtocol {
     }
 
     @Override
-    protected <T> T doRefer(Class<T> serviceType, URL url) throws RpcException {
+    protected <T> T getFrameworkProxy(Class<T> serviceType, URL url) throws RpcException {
 
         // TODO more configs to add
         PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();

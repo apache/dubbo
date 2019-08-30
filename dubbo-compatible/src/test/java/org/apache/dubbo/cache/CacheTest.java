@@ -65,22 +65,37 @@ public class CacheTest {
         }
 
         @Override
-        public Map<String, String> getAttachments() {
+        public Map<String, Object> getAttachments() {
             return null;
         }
 
         @Override
-        public String getAttachment(String key) {
+        public Object getAttachment(String key) {
             return null;
         }
 
         @Override
-        public String getAttachment(String key, String defaultValue) {
+        public Object getAttachment(String key, Object defaultValue) {
             return null;
         }
 
         @Override
         public Invoker<?> getInvoker() {
+            return null;
+        }
+
+        @Override
+        public Object put(Object key, Object value) {
+            return null;
+        }
+
+        @Override
+        public Object get(Object key) {
+            return null;
+        }
+
+        @Override
+        public Map<Object, Object> getAttributes() {
             return null;
         }
     }
