@@ -83,7 +83,9 @@ public class SpringExtensionFactory implements ExtensionFactory {
             }
         }
 
-        logger.warn("No spring extension (bean) named:" + name + ", try to find an extension (bean) of type " + type.getName());
+        if (logger.isDebugEnabled()) {
+            logger.debug("No spring extension (bean) named:" + name + ", try to find an extension (bean) of type " + type.getName());
+        }
 
         if (Object.class == type) {
             return null;
@@ -101,7 +103,9 @@ public class SpringExtensionFactory implements ExtensionFactory {
             }
         }
 
-        logger.warn("No spring extension (bean) named:" + name + ", type:" + type.getName() + " found, stop get bean.");
+        if (logger.isDebugEnabled()) {
+            logger.debug("No spring extension (bean) named:" + name + ", type:" + type.getName() + " found, stop get bean.");
+        }
 
         return null;
     }
