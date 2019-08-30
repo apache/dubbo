@@ -324,7 +324,7 @@ public class NacosRegistry extends FailbackRegistry {
             // (required) segments[1] = serviceInterface
             // (optional) segments[2] = version
             // (optional) segments[3] = group
-            String[] segments = StringUtils.split(serviceName, SERVICE_NAME_SEPARATOR);
+            String[] segments = serviceName.split(SERVICE_NAME_SEPARATOR, -1);
             int length = segments.length;
             if (length != 4) { // must present 4 segments
                 return false;
