@@ -66,7 +66,7 @@ public class NopDynamicConfiguration implements DynamicConfiguration {
      * @since 2.7.4
      */
     @Override
-    public SortedSet<String> getConfigKeys(String group) {
+    public SortedSet<String> getConfigKeys(String group, String key) {
         return null;
     }
 }
