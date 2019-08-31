@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.serialize.kryo.utils;
 
+import com.esotericsoftware.kryo.serializers.JavaSerializer;
 import org.apache.dubbo.common.serialize.kryo.CompatibleKryo;
 import org.apache.dubbo.common.serialize.support.SerializableClassRegistry;
 
@@ -93,6 +94,7 @@ public abstract class AbstractKryoFactory implements KryoFactory {
 //        kryo.setReferences(false);
         kryo.setRegistrationRequired(registrationRequired);
 
+        kryo.addDefaultSerializer(Throwable.class, new JavaSerializer());
         kryo.register(Arrays.asList("").getClass(), new ArraysAsListSerializer());
         kryo.register(GregorianCalendar.class, new GregorianCalendarSerializer());
         kryo.register(InvocationHandler.class, new JdkProxySerializer());
