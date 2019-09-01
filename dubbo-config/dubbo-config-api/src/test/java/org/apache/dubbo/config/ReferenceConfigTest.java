@@ -54,14 +54,14 @@ public class ReferenceConfigTest {
         protocol.setName("mockprotocol");
 
         ServiceConfig<DemoService> demoService;
-        demoService = new ServiceConfig<DemoService>();
+        demoService = new ServiceConfig<>();
         demoService.setInterface(DemoService.class);
         demoService.setRef(new DemoServiceImpl());
         demoService.setApplication(application);
         demoService.setRegistry(registry);
         demoService.setProtocol(protocol);
 
-        ReferenceConfig<DemoService> rc = new ReferenceConfig<DemoService>();
+        ReferenceConfig<DemoService> rc = new ReferenceConfig<>();
         rc.setApplication(application);
         rc.setRegistry(registry);
         rc.setInterface(DemoService.class.getName());
@@ -91,7 +91,7 @@ public class ReferenceConfigTest {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setName("mockprotocol");
 
-        ReferenceConfig<DemoService> rc = new ReferenceConfig<DemoService>();
+        ReferenceConfig<DemoService> rc = new ReferenceConfig<>();
         rc.setApplication(application);
         rc.setRegistry(registry);
         rc.setInterface(DemoService.class.getName());
@@ -107,7 +107,7 @@ public class ReferenceConfigTest {
         Assertions.assertFalse(success);
         Assertions.assertNull(demoService);
 
-        ServiceConfig<DemoService> sc = new ServiceConfig<DemoService>();
+        ServiceConfig<DemoService> sc = new ServiceConfig<>();
         sc.setInterface(DemoService.class);
         sc.setRef(new DemoServiceImpl());
         sc.setApplication(application);

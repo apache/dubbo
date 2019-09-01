@@ -49,7 +49,7 @@ public class AppResponse extends AbstractResult implements Serializable {
 
     private Throwable exception;
 
-    private Map<String, String> attachments = new HashMap<String, String>();
+    private Map<String, String> attachments = new HashMap<>();
 
     public AppResponse() {
     }
@@ -124,7 +124,7 @@ public class AppResponse extends AbstractResult implements Serializable {
      */
     @Override
     public void setAttachments(Map<String, String> map) {
-        this.attachments = map == null ? new HashMap<String, String>() : map;
+        this.attachments = map == null ? new HashMap<>() : map;
     }
 
     @Override
@@ -133,7 +133,7 @@ public class AppResponse extends AbstractResult implements Serializable {
             return;
         }
         if (this.attachments == null) {
-            this.attachments = new HashMap<String, String>();
+            this.attachments = new HashMap<>();
         }
         this.attachments.putAll(map);
     }

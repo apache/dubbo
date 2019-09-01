@@ -281,7 +281,7 @@ public class ReferenceCountExchangeClientTest {
             clientField.setAccessible(true);
             ExchangeClient[] clients = (ExchangeClient[]) clientField.get(dInvoker);
 
-            List<ExchangeClient> clientList = new ArrayList<ExchangeClient>(clients.length);
+            List<ExchangeClient> clientList = new ArrayList<>(clients.length);
             for (ExchangeClient client : clients) {
                 clientList.add(client);
             }

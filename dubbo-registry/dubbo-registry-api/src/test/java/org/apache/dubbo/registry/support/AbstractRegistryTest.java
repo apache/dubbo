@@ -156,7 +156,7 @@ public class AbstractRegistryTest {
     @Test
     public void testSubscribeAndUnsubscribe() throws Exception {
         //test subscribe
-        final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
+        final AtomicReference<Boolean> notified = new AtomicReference<>(false);
         NotifyListener listener = urls -> notified.set(Boolean.TRUE);
         URL url = new URL("dubbo", "192.168.0.1", 2200);
         abstractRegistry.subscribe(url, listener);
@@ -171,7 +171,7 @@ public class AbstractRegistryTest {
     @Test
     public void testSubscribeIfUrlNull() throws Exception {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
+            final AtomicReference<Boolean> notified = new AtomicReference<>(false);
             NotifyListener listener = urls -> notified.set(Boolean.TRUE);
             URL url = new URL("dubbo", "192.168.0.1", 2200);
             abstractRegistry.subscribe(null, listener);
@@ -182,7 +182,7 @@ public class AbstractRegistryTest {
     @Test
     public void testSubscribeIfListenerNull() throws Exception {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
+            final AtomicReference<Boolean> notified = new AtomicReference<>(false);
             NotifyListener listener = urls -> notified.set(Boolean.TRUE);
             URL url = new URL("dubbo", "192.168.0.1", 2200);
             abstractRegistry.subscribe(url, null);
@@ -193,7 +193,7 @@ public class AbstractRegistryTest {
     @Test
     public void testUnsubscribeIfUrlNull() throws Exception {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
+            final AtomicReference<Boolean> notified = new AtomicReference<>(false);
             NotifyListener listener = urls -> notified.set(Boolean.TRUE);
             abstractRegistry.unsubscribe(null, listener);
             Assertions.fail("unsubscribe url == null");
@@ -203,7 +203,7 @@ public class AbstractRegistryTest {
     @Test
     public void testUnsubscribeIfNotifyNull() throws Exception {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
+            final AtomicReference<Boolean> notified = new AtomicReference<>(false);
             URL url = new URL("dubbo", "192.168.0.1", 2200);
             abstractRegistry.unsubscribe(url, null);
             Assertions.fail("unsubscribe listener == null");
@@ -312,7 +312,7 @@ public class AbstractRegistryTest {
      */
     @Test
     public void testNotify() throws Exception {
-        final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
+        final AtomicReference<Boolean> notified = new AtomicReference<>(false);
         NotifyListener listener1 = urls -> notified.set(Boolean.TRUE);
         URL url1 = new URL("dubbo", "192.168.0.1", 2200, parametersConsumer);
         abstractRegistry.subscribe(url1, listener1);
@@ -338,7 +338,7 @@ public class AbstractRegistryTest {
      */
     @Test
     public void testNotifyList() throws Exception {
-        final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
+        final AtomicReference<Boolean> notified = new AtomicReference<>(false);
         NotifyListener listener1 = urls -> notified.set(Boolean.TRUE);
         URL url1 = new URL("dubbo", "192.168.0.1", 2200, parametersConsumer);
         abstractRegistry.subscribe(url1, listener1);
@@ -362,7 +362,7 @@ public class AbstractRegistryTest {
     @Test
     public void testNotifyIfURLNull() throws Exception {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
+            final AtomicReference<Boolean> notified = new AtomicReference<>(false);
             NotifyListener listener1 = urls -> notified.set(Boolean.TRUE);
             URL url1 = new URL("dubbo", "192.168.0.1", 2200, parametersConsumer);
             abstractRegistry.subscribe(url1, listener1);
@@ -384,7 +384,7 @@ public class AbstractRegistryTest {
     @Test
     public void testNotifyIfNotifyNull() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
+            final AtomicReference<Boolean> notified = new AtomicReference<>(false);
             NotifyListener listener1 = urls -> notified.set(Boolean.TRUE);
             URL url1 = new URL("dubbo", "192.168.0.1", 2200, parametersConsumer);
             abstractRegistry.subscribe(url1, listener1);

@@ -41,19 +41,19 @@ public abstract class AbstractRegistryService implements RegistryService {
 
     // Registered services
     // Map<serviceName, Map<url, queryString>>
-    private final ConcurrentMap<String, List<URL>> registered = new ConcurrentHashMap<String, List<URL>>();
+    private final ConcurrentMap<String, List<URL>> registered = new ConcurrentHashMap<>();
 
     // Subscribed services
     // Map<serviceName, queryString>
-    private final ConcurrentMap<String, Map<String, String>> subscribed = new ConcurrentHashMap<String, Map<String, String>>();
+    private final ConcurrentMap<String, Map<String, String>> subscribed = new ConcurrentHashMap<>();
 
     // Notified services
     // Map<serviceName, Map<url, queryString>>
-    private final ConcurrentMap<String, List<URL>> notified = new ConcurrentHashMap<String, List<URL>>();
+    private final ConcurrentMap<String, List<URL>> notified = new ConcurrentHashMap<>();
 
     // Listeners list for subscribed services
     // Map<serviceName, List<notificationListener>>
-    private final ConcurrentMap<String, List<NotifyListener>> notifyListeners = new ConcurrentHashMap<String, List<NotifyListener>>();
+    private final ConcurrentMap<String, List<NotifyListener>> notifyListeners = new ConcurrentHashMap<>();
 
     @Override
     public void register(URL url) {
@@ -101,7 +101,7 @@ public abstract class AbstractRegistryService implements RegistryService {
         }
         List<URL> urls = registered.get(service);
         if (urls == null) {
-            registered.putIfAbsent(service, new CopyOnWriteArrayList<URL>());
+            registered.putIfAbsent(service, new CopyOnWriteArrayList<>());
             urls = registered.get(service);
         }
         if (!urls.contains(url)) {
@@ -166,7 +166,7 @@ public abstract class AbstractRegistryService implements RegistryService {
         }
         List<NotifyListener> listeners = notifyListeners.get(service);
         if (listeners == null) {
-            notifyListeners.putIfAbsent(service, new CopyOnWriteArrayList<NotifyListener>());
+            notifyListeners.putIfAbsent(service, new CopyOnWriteArrayList<>());
             listeners = notifyListeners.get(service);
         }
         if (listeners != null && !listeners.contains(listener)) {
@@ -203,7 +203,7 @@ public abstract class AbstractRegistryService implements RegistryService {
     }
 
     protected final void forbid(String service) {
-        doNotify(service, new ArrayList<URL>(0));
+        doNotify(service, new ArrayList<>(0));
     }
 
     protected final void notify(String service, List<URL> urls) {

@@ -42,7 +42,7 @@ public class DelegateProviderMetaDataInvokerTest {
     @Test
     public void testDelegate() throws Exception {
         DelegateProviderMetaDataInvoker<Greeting> delegate =
-                new DelegateProviderMetaDataInvoker<Greeting>(invoker, service);
+                new DelegateProviderMetaDataInvoker<>(invoker, service);
         delegate.getInterface();
         Mockito.verify(invoker).getInterface();
         delegate.getUrl();

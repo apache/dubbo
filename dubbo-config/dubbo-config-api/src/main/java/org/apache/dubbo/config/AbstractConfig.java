@@ -99,7 +99,7 @@ public abstract class AbstractConfig implements Serializable {
     /**
      * The legacy properties container
      */
-    private static final Map<String, String> LEGACY_PROPERTIES = new HashMap<String, String>();
+    private static final Map<String, String> LEGACY_PROPERTIES = new HashMap<>();
 
     /**
      * The suffix container

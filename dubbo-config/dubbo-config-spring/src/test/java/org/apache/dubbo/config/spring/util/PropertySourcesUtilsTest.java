@@ -38,8 +38,8 @@ public class PropertySourcesUtilsTest {
 
         MutablePropertySources propertySources = new MutablePropertySources();
 
-        Map<String, Object> source = new HashMap<String, Object>();
-        Map<String, Object> source2 = new HashMap<String, Object>();
+        Map<String, Object> source = new HashMap<>();
+        Map<String, Object> source2 = new HashMap<>();
 
         MapPropertySource propertySource = new MapPropertySource("propertySource", source);
         MapPropertySource propertySource2 = new MapPropertySource("propertySource2", source2);
@@ -58,7 +58,7 @@ public class PropertySourcesUtilsTest {
         source2.put("user.name", "mercyblitz");
         source2.put("user.age", "32");
 
-        Map<String, Object> expected = new HashMap<String, Object>();
+        Map<String, Object> expected = new HashMap<>();
         expected.put("name", "Mercy");
         expected.put("age", "31");
 

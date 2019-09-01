@@ -35,7 +35,7 @@ public class TLadder implements TComponent {
     // indent length
     private static final int INDENT_STEP = 2;
 
-    private final List<String> items = new ArrayList<String>();
+    private final List<String> items = new ArrayList<>();
 
 
     @Override

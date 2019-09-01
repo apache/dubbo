@@ -26,7 +26,7 @@ import java.util.Map;
 
 public class MockRegistryFactory implements RegistryFactory {
 
-    private static final Map<URL, Registry> registries = new HashMap<URL, Registry>();
+    private static final Map<URL, Registry> registries = new HashMap<>();
 
     public static Collection<Registry> getCachedRegistry() {
         return registries.values();

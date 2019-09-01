@@ -101,7 +101,7 @@ public class JEtcdClientWrapper {
     private final ScheduledExecutorService retryExecutor = Executors.newScheduledThreadPool(1,
             new NamedThreadFactory("Etcd3RegistryKeepAliveFailedRetryTimer", true));
 
-    private final Set<String> failedRegistered = new ConcurrentHashSet<String>();
+    private final Set<String> failedRegistered = new ConcurrentHashSet<>();
 
     private final Set<String> registeredPaths = new ConcurrentHashSet<>();
     private volatile CloseableClient keepAlive = null;
@@ -431,7 +431,7 @@ public class JEtcdClientWrapper {
 
             cancelKeepAlive();
 
-            Set<String> ephemeralPaths = new HashSet<String>(registeredPaths);
+            Set<String> ephemeralPaths = new HashSet<>(registeredPaths);
             if (!ephemeralPaths.isEmpty()) {
                 for (String path : ephemeralPaths) {
                     try {
@@ -669,7 +669,7 @@ public class JEtcdClientWrapper {
 
     private void retry() {
         if (!failedRegistered.isEmpty()) {
-            Set<String> failed = new HashSet<String>(failedRegistered);
+            Set<String> failed = new HashSet<>(failedRegistered);
             if (!failed.isEmpty()) {
 
                 if (cancelKeepAlive) {

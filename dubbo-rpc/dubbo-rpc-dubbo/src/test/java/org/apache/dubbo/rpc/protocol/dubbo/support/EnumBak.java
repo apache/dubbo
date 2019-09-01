@@ -142,7 +142,7 @@ public class EnumBak {
         Invoker<GenericService> reference = protocol.refer(GenericService.class, consumerurl);
 
         GenericService demoProxy = (GenericService) proxy.getProxy(reference);
-        Map<String, Object> arg = new HashMap<String, Object>();
+        Map<String, Object> arg = new HashMap<>();
         arg.put("type", "High");
         arg.put("name", "hi");
 

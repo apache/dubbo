@@ -79,7 +79,7 @@ public abstract class AbstractSerializationTest {
         bigPerson.setEmail("sm@1.com");
         bigPerson.setPenName("pname");
 
-        ArrayList<Phone> phones = new ArrayList<Phone>();
+        ArrayList<Phone> phones = new ArrayList<>();
         Phone phone1 = new Phone("86", "0571", "87654321", "001");
         Phone phone2 = new Phone("86", "0571", "87654322", "002");
         phones.add(phone1);
@@ -111,7 +111,7 @@ public abstract class AbstractSerializationTest {
         media.setDuration(93419235);
         media.setSize(3477897);
         media.setBitrate(94523);
-        List<String> persons = new ArrayList<String>();
+        List<String> persons = new ArrayList<>();
         persons.add("jerry");
         persons.add("tom");
         persons.add("lucy");
@@ -119,7 +119,7 @@ public abstract class AbstractSerializationTest {
         media.setCopyright("1999-2011");
         media.setPlayer(Media.Player.FLASH);
 
-        List<Image> images = new ArrayList<Image>();
+        List<Image> images = new ArrayList<>();
         for (int i = 0; i < 10; ++i) {
             Image image = new Image();
             image.setUri("url" + i);
@@ -937,14 +937,14 @@ public abstract class AbstractSerializationTest {
 
     @Test
     public void test_StringArrayList() throws Exception {
-        List<String> args = new ArrayList<String>(Arrays.asList(new String[]{"1", "b"}));
+        List<String> args = new ArrayList<>(Arrays.asList(new String[]{"1", "b"}));
 
         assertObject(args);
     }
 
     @Test
     public void test_StringSet() throws Exception {
-        Set<String> args = new HashSet<String>();
+        Set<String> args = new HashSet<>();
         args.add("1");
 
         assertObject(args);
@@ -952,7 +952,7 @@ public abstract class AbstractSerializationTest {
 
     @Test
     public void test_LinkedHashMap() throws Exception {
-        LinkedHashMap<String, String> data = new LinkedHashMap<String, String>();
+        LinkedHashMap<String, String> data = new LinkedHashMap<>();
         data.put("1", "a");
         data.put("2", "b");
 
@@ -983,7 +983,7 @@ public abstract class AbstractSerializationTest {
 
     @Test
     public void test_SPersonList() throws Exception {
-        List<SerializablePerson> args = new ArrayList<SerializablePerson>();
+        List<SerializablePerson> args = new ArrayList<>();
         args.add(new SerializablePerson());
 
         assertObject(args);
@@ -991,7 +991,7 @@ public abstract class AbstractSerializationTest {
 
     @Test
     public void test_SPersonSet() throws Exception {
-        Set<SerializablePerson> args = new HashSet<SerializablePerson>();
+        Set<SerializablePerson> args = new HashSet<>();
         args.add(new SerializablePerson());
 
         assertObject(args);
@@ -1001,7 +1001,7 @@ public abstract class AbstractSerializationTest {
 
     @Test
     public void test_IntSPersonMap() throws Exception {
-        Map<Integer, SerializablePerson> args = new HashMap<Integer, SerializablePerson>();
+        Map<Integer, SerializablePerson> args = new HashMap<>();
         args.put(1, new SerializablePerson());
 
         assertObject(args);
@@ -1009,7 +1009,7 @@ public abstract class AbstractSerializationTest {
 
     @Test
     public void test_StringSPersonMap() throws Exception {
-        Map<String, SerializablePerson> args = new HashMap<String, SerializablePerson>();
+        Map<String, SerializablePerson> args = new HashMap<>();
         args.put("1", new SerializablePerson());
 
         assertObject(args);
@@ -1017,9 +1017,9 @@ public abstract class AbstractSerializationTest {
 
     @Test
     public void test_StringSPersonListMap() throws Exception {
-        Map<String, List<SerializablePerson>> args = new HashMap<String, List<SerializablePerson>>();
+        Map<String, List<SerializablePerson>> args = new HashMap<>();
 
-        List<SerializablePerson> sublist = new ArrayList<SerializablePerson>();
+        List<SerializablePerson> sublist = new ArrayList<>();
         sublist.add(new SerializablePerson());
         args.put("1", sublist);
 
@@ -1028,8 +1028,8 @@ public abstract class AbstractSerializationTest {
 
     @Test
     public void test_SPersonListList() throws Exception {
-        List<List<SerializablePerson>> args = new ArrayList<List<SerializablePerson>>();
-        List<SerializablePerson> sublist = new ArrayList<SerializablePerson>();
+        List<List<SerializablePerson>> args = new ArrayList<>();
+        List<SerializablePerson> sublist = new ArrayList<>();
         sublist.add(new SerializablePerson());
         args.add(sublist);
 
@@ -1165,7 +1165,7 @@ public abstract class AbstractSerializationTest {
     @Test
     public void test_LoopReference() throws Exception {
         assertTimeout(ofMillis(3000), () -> {
-            Map<String, Object> map = new HashMap<String, Object>();
+            Map<String, Object> map = new HashMap<>();
             map.put("k1", "v1");
             map.put("self", map);
 

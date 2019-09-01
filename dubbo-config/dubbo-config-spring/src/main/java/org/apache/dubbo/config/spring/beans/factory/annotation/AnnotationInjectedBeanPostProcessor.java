@@ -81,7 +81,7 @@ public abstract class AnnotationInjectedBeanPostProcessor extends
     private final Class<? extends Annotation>[] annotationTypes;
 
     private final ConcurrentMap<String, AnnotationInjectedBeanPostProcessor.AnnotatedInjectionMetadata> injectionMetadataCache =
-            new ConcurrentHashMap<String, AnnotationInjectedBeanPostProcessor.AnnotatedInjectionMetadata>(CACHE_SIZE);
+            new ConcurrentHashMap<>(CACHE_SIZE);
 
     private final ConcurrentMap<String, Object> injectedObjectsCache = new ConcurrentHashMap<>(CACHE_SIZE);
 
@@ -163,7 +163,7 @@ public abstract class AnnotationInjectedBeanPostProcessor extends
      */
     private List<AnnotationInjectedBeanPostProcessor.AnnotatedFieldElement> findFieldAnnotationMetadata(final Class<?> beanClass) {
 
-        final List<AnnotationInjectedBeanPostProcessor.AnnotatedFieldElement> elements = new LinkedList<AnnotationInjectedBeanPostProcessor.AnnotatedFieldElement>();
+        final List<AnnotationInjectedBeanPostProcessor.AnnotatedFieldElement> elements = new LinkedList<>();
 
         ReflectionUtils.doWithFields(beanClass, field -> {
 
@@ -197,7 +197,7 @@ public abstract class AnnotationInjectedBeanPostProcessor extends
      */
     private List<AnnotationInjectedBeanPostProcessor.AnnotatedMethodElement> findAnnotatedMethodMetadata(final Class<?> beanClass) {
 
-        final List<AnnotationInjectedBeanPostProcessor.AnnotatedMethodElement> elements = new LinkedList<AnnotationInjectedBeanPostProcessor.AnnotatedMethodElement>();
+        final List<AnnotationInjectedBeanPostProcessor.AnnotatedMethodElement> elements = new LinkedList<>();
 
         ReflectionUtils.doWithMethods(beanClass, method -> {
 
@@ -414,7 +414,7 @@ public abstract class AnnotationInjectedBeanPostProcessor extends
     protected Map<InjectionMetadata.InjectedElement, Object> getInjectedFieldObjectsMap() {
 
         Map<InjectionMetadata.InjectedElement, Object> injectedElementBeanMap =
-                new LinkedHashMap<InjectionMetadata.InjectedElement, Object>();
+                new LinkedHashMap<>();
 
         for (AnnotationInjectedBeanPostProcessor.AnnotatedInjectionMetadata metadata : injectionMetadataCache.values()) {
 
@@ -440,7 +440,7 @@ public abstract class AnnotationInjectedBeanPostProcessor extends
     protected Map<InjectionMetadata.InjectedElement, Object> getInjectedMethodObjectsMap() {
 
         Map<InjectionMetadata.InjectedElement, Object> injectedElementBeanMap =
-                new LinkedHashMap<InjectionMetadata.InjectedElement, Object>();
+                new LinkedHashMap<>();
 
         for (AnnotationInjectedBeanPostProcessor.AnnotatedInjectionMetadata metadata : injectionMetadataCache.values()) {
 

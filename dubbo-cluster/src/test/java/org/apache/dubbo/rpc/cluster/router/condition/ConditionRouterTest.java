@@ -86,12 +86,12 @@ public class ConditionRouterTest {
 
     @Test
     public void testRoute_matchFilter() {
-        List<Invoker<String>> invokers = new ArrayList<Invoker<String>>();
-        Invoker<String> invoker1 = new MockInvoker<String>(URL.valueOf(
+        List<Invoker<String>> invokers = new ArrayList<>();
+        Invoker<String> invoker1 = new MockInvoker<>(URL.valueOf(
                 "dubbo://10.20.3.3:20880/com.foo.BarService?default.serialization=fastjson"));
-        Invoker<String> invoker2 = new MockInvoker<String>(URL.valueOf("dubbo://" + LOCAL_HOST
+        Invoker<String> invoker2 = new MockInvoker<>(URL.valueOf("dubbo://" + LOCAL_HOST
                 + ":20880/com.foo.BarService"));
-        Invoker<String> invoker3 = new MockInvoker<String>(URL.valueOf("dubbo://" + LOCAL_HOST
+        Invoker<String> invoker3 = new MockInvoker<>(URL.valueOf("dubbo://" + LOCAL_HOST
                 + ":20880/com.foo.BarService"));
         invokers.add(invoker1);
         invokers.add(invoker2);
@@ -160,11 +160,11 @@ public class ConditionRouterTest {
                 URL.valueOf("consumer://1.1.1.1/com.foo.BarService?methods=getFoo"), invocation);
         Assertions.assertTrue(matchWhen);
         // Test filter condition
-        List<Invoker<String>> invokers = new ArrayList<Invoker<String>>();
-        Invoker<String> invoker1 = new MockInvoker<String>(URL.valueOf("dubbo://10.20.3.3:20880/com.foo.BarService"));
-        Invoker<String> invoker2 = new MockInvoker<String>(URL.valueOf("dubbo://" + LOCAL_HOST
+        List<Invoker<String>> invokers = new ArrayList<>();
+        Invoker<String> invoker1 = new MockInvoker<>(URL.valueOf("dubbo://10.20.3.3:20880/com.foo.BarService"));
+        Invoker<String> invoker2 = new MockInvoker<>(URL.valueOf("dubbo://" + LOCAL_HOST
                 + ":20880/com.foo.BarService"));
-        Invoker<String> invoker3 = new MockInvoker<String>(URL.valueOf("dubbo://" + LOCAL_HOST
+        Invoker<String> invoker3 = new MockInvoker<>(URL.valueOf("dubbo://" + LOCAL_HOST
                 + ":20880/com.foo.BarService"));
         invokers.add(invoker1);
         invokers.add(invoker2);
@@ -189,10 +189,10 @@ public class ConditionRouterTest {
     @Test
     public void testRoute_ReturnFalse() {
         Router router = new ConditionRouterFactory().getRouter(getRouteUrl("host = " + LOCAL_HOST + " => false"));
-        List<Invoker<String>> invokers = new ArrayList<Invoker<String>>();
-        invokers.add(new MockInvoker<String>());
-        invokers.add(new MockInvoker<String>());
-        invokers.add(new MockInvoker<String>());
+        List<Invoker<String>> invokers = new ArrayList<>();
+        invokers.add(new MockInvoker<>());
+        invokers.add(new MockInvoker<>());
+        invokers.add(new MockInvoker<>());
         List<Invoker<String>> filteredInvokers = router.route(invokers, URL.valueOf("consumer://" + LOCAL_HOST + "/com.foo.BarService"), new RpcInvocation());
         Assertions.assertEquals(0, filteredInvokers.size());
     }
@@ -200,10 +200,10 @@ public class ConditionRouterTest {
     @Test
     public void testRoute_ReturnEmpty() {
         Router router = new ConditionRouterFactory().getRouter(getRouteUrl("host = " + LOCAL_HOST + " => "));
-        List<Invoker<String>> invokers = new ArrayList<Invoker<String>>();
-        invokers.add(new MockInvoker<String>());
-        invokers.add(new MockInvoker<String>());
-        invokers.add(new MockInvoker<String>());
+        List<Invoker<String>> invokers = new ArrayList<>();
+        invokers.add(new MockInvoker<>());
+        invokers.add(new MockInvoker<>());
+        invokers.add(new MockInvoker<>());
         List<Invoker<String>> filteredInvokers = router.route(invokers, URL.valueOf("consumer://" + LOCAL_HOST + "/com.foo.BarService"), new RpcInvocation());
         Assertions.assertEquals(0, filteredInvokers.size());
     }
@@ -211,10 +211,10 @@ public class ConditionRouterTest {
     @Test
     public void testRoute_ReturnAll() {
         Router router = new ConditionRouterFactory().getRouter(getRouteUrl("host = " + LOCAL_HOST + " => " + " host = " + LOCAL_HOST));
-        List<Invoker<String>> invokers = new ArrayList<Invoker<String>>();
-        invokers.add(new MockInvoker<String>(URL.valueOf("dubbo://" + LOCAL_HOST + ":20880/com.foo.BarService")));
-        invokers.add(new MockInvoker<String>(URL.valueOf("dubbo://" + LOCAL_HOST + ":20880/com.foo.BarService")));
-        invokers.add(new MockInvoker<String>(URL.valueOf("dubbo://" + LOCAL_HOST + ":20880/com.foo.BarService")));
+        List<Invoker<String>> invokers = new ArrayList<>();
+        invokers.add(new MockInvoker<>(URL.valueOf("dubbo://" + LOCAL_HOST + ":20880/com.foo.BarService")));
+        invokers.add(new MockInvoker<>(URL.valueOf("dubbo://" + LOCAL_HOST + ":20880/com.foo.BarService")));
+        invokers.add(new MockInvoker<>(URL.valueOf("dubbo://" + LOCAL_HOST + ":20880/com.foo.BarService")));
         List<Invoker<String>> filteredInvokers = router.route(invokers, URL.valueOf("consumer://" + LOCAL_HOST + "/com.foo.BarService"), new RpcInvocation());
         Assertions.assertEquals(invokers, filteredInvokers);
     }
@@ -222,10 +222,10 @@ public class ConditionRouterTest {
     @Test
     public void testRoute_HostFilter() {
         Router router = new ConditionRouterFactory().getRouter(getRouteUrl("host = " + LOCAL_HOST + " => " + " host = " + LOCAL_HOST));
-        List<Invoker<String>> invokers = new ArrayList<Invoker<String>>();
-        Invoker<String> invoker1 = new MockInvoker<String>(URL.valueOf("dubbo://10.20.3.3:20880/com.foo.BarService"));
-        Invoker<String> invoker2 = new MockInvoker<String>(URL.valueOf("dubbo://" + LOCAL_HOST + ":20880/com.foo.BarService"));
-        Invoker<String> invoker3 = new MockInvoker<String>(URL.valueOf("dubbo://" + LOCAL_HOST + ":20880/com.foo.BarService"));
+        List<Invoker<String>> invokers = new ArrayList<>();
+        Invoker<String> invoker1 = new MockInvoker<>(URL.valueOf("dubbo://10.20.3.3:20880/com.foo.BarService"));
+        Invoker<String> invoker2 = new MockInvoker<>(URL.valueOf("dubbo://" + LOCAL_HOST + ":20880/com.foo.BarService"));
+        Invoker<String> invoker3 = new MockInvoker<>(URL.valueOf("dubbo://" + LOCAL_HOST + ":20880/com.foo.BarService"));
         invokers.add(invoker1);
         invokers.add(invoker2);
         invokers.add(invoker3);
@@ -238,10 +238,10 @@ public class ConditionRouterTest {
     @Test
     public void testRoute_Empty_HostFilter() {
         Router router = new ConditionRouterFactory().getRouter(getRouteUrl(" => " + " host = " + LOCAL_HOST));
-        List<Invoker<String>> invokers = new ArrayList<Invoker<String>>();
-        Invoker<String> invoker1 = new MockInvoker<String>(URL.valueOf("dubbo://10.20.3.3:20880/com.foo.BarService"));
-        Invoker<String> invoker2 = new MockInvoker<String>(URL.valueOf("dubbo://" + LOCAL_HOST + ":20880/com.foo.BarService"));
-        Invoker<String> invoker3 = new MockInvoker<String>(URL.valueOf("dubbo://" + LOCAL_HOST + ":20880/com.foo.BarService"));
+        List<Invoker<String>> invokers = new ArrayList<>();
+        Invoker<String> invoker1 = new MockInvoker<>(URL.valueOf("dubbo://10.20.3.3:20880/com.foo.BarService"));
+        Invoker<String> invoker2 = new MockInvoker<>(URL.valueOf("dubbo://" + LOCAL_HOST + ":20880/com.foo.BarService"));
+        Invoker<String> invoker3 = new MockInvoker<>(URL.valueOf("dubbo://" + LOCAL_HOST + ":20880/com.foo.BarService"));
         invokers.add(invoker1);
         invokers.add(invoker2);
         invokers.add(invoker3);
@@ -254,10 +254,10 @@ public class ConditionRouterTest {
     @Test
     public void testRoute_False_HostFilter() {
         Router router = new ConditionRouterFactory().getRouter(getRouteUrl("true => " + " host = " + LOCAL_HOST));
-        List<Invoker<String>> invokers = new ArrayList<Invoker<String>>();
-        Invoker<String> invoker1 = new MockInvoker<String>(URL.valueOf("dubbo://10.20.3.3:20880/com.foo.BarService"));
-        Invoker<String> invoker2 = new MockInvoker<String>(URL.valueOf("dubbo://" + LOCAL_HOST + ":20880/com.foo.BarService"));
-        Invoker<String> invoker3 = new MockInvoker<String>(URL.valueOf("dubbo://" + LOCAL_HOST + ":20880/com.foo.BarService"));
+        List<Invoker<String>> invokers = new ArrayList<>();
+        Invoker<String> invoker1 = new MockInvoker<>(URL.valueOf("dubbo://10.20.3.3:20880/com.foo.BarService"));
+        Invoker<String> invoker2 = new MockInvoker<>(URL.valueOf("dubbo://" + LOCAL_HOST + ":20880/com.foo.BarService"));
+        Invoker<String> invoker3 = new MockInvoker<>(URL.valueOf("dubbo://" + LOCAL_HOST + ":20880/com.foo.BarService"));
         invokers.add(invoker1);
         invokers.add(invoker2);
         invokers.add(invoker3);
@@ -270,10 +270,10 @@ public class ConditionRouterTest {
     @Test
     public void testRoute_Placeholder() {
         Router router = new ConditionRouterFactory().getRouter(getRouteUrl("host = " + LOCAL_HOST + " => " + " host = $host"));
-        List<Invoker<String>> invokers = new ArrayList<Invoker<String>>();
-        Invoker<String> invoker1 = new MockInvoker<String>(URL.valueOf("dubbo://10.20.3.3:20880/com.foo.BarService"));
-        Invoker<String> invoker2 = new MockInvoker<String>(URL.valueOf("dubbo://" + LOCAL_HOST + ":20880/com.foo.BarService"));
-        Invoker<String> invoker3 = new MockInvoker<String>(URL.valueOf("dubbo://" + LOCAL_HOST + ":20880/com.foo.BarService"));
+        List<Invoker<String>> invokers = new ArrayList<>();
+        Invoker<String> invoker1 = new MockInvoker<>(URL.valueOf("dubbo://10.20.3.3:20880/com.foo.BarService"));
+        Invoker<String> invoker2 = new MockInvoker<>(URL.valueOf("dubbo://" + LOCAL_HOST + ":20880/com.foo.BarService"));
+        Invoker<String> invoker3 = new MockInvoker<>(URL.valueOf("dubbo://" + LOCAL_HOST + ":20880/com.foo.BarService"));
         invokers.add(invoker1);
         invokers.add(invoker2);
         invokers.add(invoker3);
@@ -286,10 +286,10 @@ public class ConditionRouterTest {
     @Test
     public void testRoute_NoForce() {
         Router router = new ConditionRouterFactory().getRouter(getRouteUrl("host = " + LOCAL_HOST + " => " + " host = 1.2.3.4"));
-        List<Invoker<String>> invokers = new ArrayList<Invoker<String>>();
-        Invoker<String> invoker1 = new MockInvoker<String>(URL.valueOf("dubbo://10.20.3.3:20880/com.foo.BarService"));
-        Invoker<String> invoker2 = new MockInvoker<String>(URL.valueOf("dubbo://" + LOCAL_HOST + ":20880/com.foo.BarService"));
-        Invoker<String> invoker3 = new MockInvoker<String>(URL.valueOf("dubbo://" + LOCAL_HOST + ":20880/com.foo.BarService"));
+        List<Invoker<String>> invokers = new ArrayList<>();
+        Invoker<String> invoker1 = new MockInvoker<>(URL.valueOf("dubbo://10.20.3.3:20880/com.foo.BarService"));
+        Invoker<String> invoker2 = new MockInvoker<>(URL.valueOf("dubbo://" + LOCAL_HOST + ":20880/com.foo.BarService"));
+        Invoker<String> invoker3 = new MockInvoker<>(URL.valueOf("dubbo://" + LOCAL_HOST + ":20880/com.foo.BarService"));
         invokers.add(invoker1);
         invokers.add(invoker2);
         invokers.add(invoker3);
@@ -300,10 +300,10 @@ public class ConditionRouterTest {
     @Test
     public void testRoute_Force() {
         Router router = new ConditionRouterFactory().getRouter(getRouteUrl("host = " + LOCAL_HOST + " => " + " host = 1.2.3.4").addParameter(FORCE_KEY, String.valueOf(true)));
-        List<Invoker<String>> invokers = new ArrayList<Invoker<String>>();
-        Invoker<String> invoker1 = new MockInvoker<String>(URL.valueOf("dubbo://10.20.3.3:20880/com.foo.BarService"));
-        Invoker<String> invoker2 = new MockInvoker<String>(URL.valueOf("dubbo://" + LOCAL_HOST + ":20880/com.foo.BarService"));
-        Invoker<String> invoker3 = new MockInvoker<String>(URL.valueOf("dubbo://" + LOCAL_HOST + ":20880/com.foo.BarService"));
+        List<Invoker<String>> invokers = new ArrayList<>();
+        Invoker<String> invoker1 = new MockInvoker<>(URL.valueOf("dubbo://10.20.3.3:20880/com.foo.BarService"));
+        Invoker<String> invoker2 = new MockInvoker<>(URL.valueOf("dubbo://" + LOCAL_HOST + ":20880/com.foo.BarService"));
+        Invoker<String> invoker3 = new MockInvoker<>(URL.valueOf("dubbo://" + LOCAL_HOST + ":20880/com.foo.BarService"));
         invokers.add(invoker1);
         invokers.add(invoker2);
         invokers.add(invoker3);

@@ -115,7 +115,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     /**
      * The url of the reference service
      */
-    private final List<URL> urls = new ArrayList<URL>();
+    private final List<URL> urls = new ArrayList<>();
 
     /**
      * The interface name of the reference service
@@ -275,7 +275,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         }
         checkStubAndLocal(interfaceClass);
         checkMock(interfaceClass);
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
 
         map.put(SIDE_KEY, CONSUMER_SIDE);
 
@@ -291,7 +291,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 logger.warn("No method found in service interface " + interfaceClass.getName());
                 map.put(METHODS_KEY, ANY_VALUE);
             } else {
-                map.put(METHODS_KEY, StringUtils.join(new HashSet<String>(Arrays.asList(methods)), COMMA_SEPARATOR));
+                map.put(METHODS_KEY, StringUtils.join(new HashSet<>(Arrays.asList(methods)), COMMA_SEPARATOR));
             }
         }
         map.put(INTERFACE_KEY, interfaceName);
@@ -304,7 +304,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         appendParameters(map, this);
         Map<String, Object> attributes = null;
         if (CollectionUtils.isNotEmpty(methods)) {
-            attributes = new HashMap<String, Object>();
+            attributes = new HashMap<>();
             for (MethodConfig methodConfig : methods) {
                 appendParameters(map, methodConfig, methodConfig.getName());
                 String retryKey = methodConfig.getName() + ".retry";
@@ -395,7 +395,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             if (urls.size() == 1) {
                 invoker = REF_PROTOCOL.refer(interfaceClass, urls.get(0));
             } else {
-                List<Invoker<?>> invokers = new ArrayList<Invoker<?>>();
+                List<Invoker<?>> invokers = new ArrayList<>();
                 URL registryURL = null;
                 for (URL url : urls) {
                     invokers.add(REF_PROTOCOL.refer(interfaceClass, url));

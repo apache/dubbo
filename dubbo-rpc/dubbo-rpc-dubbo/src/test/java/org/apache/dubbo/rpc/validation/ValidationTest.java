@@ -60,7 +60,7 @@ public class ValidationTest {
 
     @Test
     public void testValidation() {
-        ServiceConfig<ValidationService> service = new ServiceConfig<ValidationService>();
+        ServiceConfig<ValidationService> service = new ServiceConfig<>();
         service.setApplication(application);
         service.setRegistry(registryNA);
         service.setProtocol(protocolDubo29582);
@@ -69,7 +69,7 @@ public class ValidationTest {
         service.setValidation(String.valueOf(true));
         service.export();
         try {
-            ReferenceConfig<ValidationService> reference = new ReferenceConfig<ValidationService>();
+            ReferenceConfig<ValidationService> reference = new ReferenceConfig<>();
             reference.setApplication(application);
             reference.setInterface(ValidationService.class);
             reference.setUrl("dubbo://127.0.0.1:29582?scope=remote&validation=true");
@@ -186,7 +186,7 @@ public class ValidationTest {
 
     @Test
     public void testProviderValidation() {
-        ServiceConfig<ValidationService> service = new ServiceConfig<ValidationService>();
+        ServiceConfig<ValidationService> service = new ServiceConfig<>();
         service.setApplication(application);
         service.setRegistry(registryNA);
         service.setProtocol(protocolDubo29582);
@@ -195,7 +195,7 @@ public class ValidationTest {
         service.setValidation(String.valueOf(true));
         service.export();
         try {
-            ReferenceConfig<ValidationService> reference = new ReferenceConfig<ValidationService>();
+            ReferenceConfig<ValidationService> reference = new ReferenceConfig<>();
             reference.setApplication(application);
             reference.setInterface(ValidationService.class);
             reference.setUrl("dubbo://127.0.0.1:29582");
@@ -251,7 +251,7 @@ public class ValidationTest {
 
     @Test
     public void testGenericValidation() {
-        ServiceConfig<ValidationService> service = new ServiceConfig<ValidationService>();
+        ServiceConfig<ValidationService> service = new ServiceConfig<>();
         service.setApplication(application);
         service.setRegistry(registryNA);
         service.setProtocol(protocolDubo29582);
@@ -260,7 +260,7 @@ public class ValidationTest {
         service.setValidation(String.valueOf(true));
         service.export();
         try {
-            ReferenceConfig<GenericService> reference = new ReferenceConfig<GenericService>();
+            ReferenceConfig<GenericService> reference = new ReferenceConfig<>();
             reference.setApplication(application);
             reference.setInterface(ValidationService.class.getName());
             reference.setUrl("dubbo://127.0.0.1:29582?scope=remote&validation=true&timeout=9000000");
@@ -268,7 +268,7 @@ public class ValidationTest {
             GenericService validationService = reference.get();
             try {
                 // Save OK
-                Map<String, Object> parameter = new HashMap<String, Object>();
+                Map<String, Object> parameter = new HashMap<>();
                 parameter.put("name", "liangfei");
                 parameter.put("Email", "liangfei@liang.fei");
                 parameter.put("Age", 50);
@@ -278,7 +278,7 @@ public class ValidationTest {
 
                 // Save Error
                 try {
-                    parameter = new HashMap<String, Object>();
+                    parameter = new HashMap<>();
                     validationService.$invoke("save", new String[]{ValidationParameter.class.getName()}, new Object[]{parameter});
                     Assertions.fail();
                 } catch (GenericException e) {

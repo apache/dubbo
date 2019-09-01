@@ -146,7 +146,7 @@ public class MethodConfig extends AbstractMethodConfig {
         }
 
         if (method.arguments() != null && method.arguments().length != 0) {
-            List<ArgumentConfig> argumentConfigs = new ArrayList<ArgumentConfig>(method.arguments().length);
+            List<ArgumentConfig> argumentConfigs = new ArrayList<>(method.arguments().length);
             this.setArguments(argumentConfigs);
             for (int i = 0; i < method.arguments().length; i++) {
                 ArgumentConfig argumentConfig = new ArgumentConfig(method.arguments()[i]);
@@ -157,7 +157,7 @@ public class MethodConfig extends AbstractMethodConfig {
 
     public static List<MethodConfig> constructMethodConfig(Method[] methods) {
         if (methods != null && methods.length != 0) {
-            List<MethodConfig> methodConfigs = new ArrayList<MethodConfig>(methods.length);
+            List<MethodConfig> methodConfigs = new ArrayList<>(methods.length);
             for (int i = 0; i < methods.length; i++) {
                 MethodConfig methodConfig = new MethodConfig(methods[i]);
                 methodConfigs.add(methodConfig);

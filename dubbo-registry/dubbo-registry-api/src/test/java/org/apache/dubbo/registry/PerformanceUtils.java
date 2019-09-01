@@ -56,7 +56,7 @@ public class PerformanceUtils {
     }
 
     public static List<String> getEnvironment() {
-        List<String> environment = new ArrayList<String>();
+        List<String> environment = new ArrayList<>();
         environment.add("OS: " + System.getProperty("os.name") + " " + System.getProperty("os.version") + " " + System.getProperty("os.arch", ""));
         environment.add("CPU: " + Runtime.getRuntime().availableProcessors() + " cores");
         environment.add("JVM: " + System.getProperty("java.vm.name") + " " + System.getProperty("java.runtime.version"));

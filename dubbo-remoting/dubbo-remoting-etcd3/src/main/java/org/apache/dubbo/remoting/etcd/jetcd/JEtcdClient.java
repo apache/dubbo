@@ -102,7 +102,7 @@ public class JEtcdClient extends AbstractEtcdClient<JEtcdClient.EtcdWatcher> {
                     , url.getParameter(ETCD3_NOTIFY_MAXTHREADS_KEYS, DEFAULT_ETCD3_NOTIFY_THREADS)
                     , DEFAULT_SESSION_TIMEOUT
                     , TimeUnit.MILLISECONDS
-                    , new LinkedBlockingQueue<Runnable>(url.getParameter(DEFAULT_ETCD3_NOTIFY_QUEUES_KEY, DEFAULT_GRPC_QUEUES * 3))
+                    , new LinkedBlockingQueue<>(url.getParameter(DEFAULT_ETCD3_NOTIFY_QUEUES_KEY, DEFAULT_GRPC_QUEUES * 3))
                     , new NamedThreadFactory("etcd3-notify", true));
 
             clientWrapper.start();

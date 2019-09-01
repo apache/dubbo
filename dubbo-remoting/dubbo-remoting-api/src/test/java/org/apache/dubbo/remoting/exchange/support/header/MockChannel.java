@@ -31,11 +31,11 @@ import java.util.Map;
 
 public class MockChannel implements Channel {
 
-    private Map<String, Object> attributes = new HashMap<String, Object>();
+    private Map<String, Object> attributes = new HashMap<>();
 
     private volatile boolean closed = false;
     private volatile boolean closing = false;
-    private List<Object> sentObjects = new ArrayList<Object>();
+    private List<Object> sentObjects = new ArrayList<>();
 
     @Override
     public InetSocketAddress getRemoteAddress() {

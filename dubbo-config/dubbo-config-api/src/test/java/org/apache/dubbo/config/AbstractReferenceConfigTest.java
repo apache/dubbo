@@ -55,7 +55,7 @@ public class AbstractReferenceConfigTest {
         ReferenceConfig referenceConfig = new ReferenceConfig();
         referenceConfig.setGeneric(true);
         assertThat(referenceConfig.isGeneric(), is(true));
-        Map<String, String> parameters = new HashMap<String, String>();
+        Map<String, String> parameters = new HashMap<>();
         AbstractInterfaceConfig.appendParameters(parameters, referenceConfig);
         // FIXME: not sure why AbstractReferenceConfig has both isGeneric and getGeneric
         assertThat(parameters, hasKey("generic"));
@@ -73,7 +73,7 @@ public class AbstractReferenceConfigTest {
         ReferenceConfig referenceConfig = new ReferenceConfig();
         referenceConfig.setFilter("mockfilter");
         assertThat(referenceConfig.getFilter(), equalTo("mockfilter"));
-        Map<String, String> parameters = new HashMap<String, String>();
+        Map<String, String> parameters = new HashMap<>();
         parameters.put(REFERENCE_FILTER_KEY, "prefilter");
         AbstractInterfaceConfig.appendParameters(parameters, referenceConfig);
         assertThat(parameters, hasValue("prefilter,mockfilter"));
@@ -84,7 +84,7 @@ public class AbstractReferenceConfigTest {
         ReferenceConfig referenceConfig = new ReferenceConfig();
         referenceConfig.setListener("mockinvokerlistener");
         assertThat(referenceConfig.getListener(), equalTo("mockinvokerlistener"));
-        Map<String, String> parameters = new HashMap<String, String>();
+        Map<String, String> parameters = new HashMap<>();
         parameters.put(INVOKER_LISTENER_KEY, "prelistener");
         AbstractInterfaceConfig.appendParameters(parameters, referenceConfig);
         assertThat(parameters, hasValue("prelistener,mockinvokerlistener"));
@@ -117,7 +117,7 @@ public class AbstractReferenceConfigTest {
     public void testStubevent() throws Exception {
         ReferenceConfig referenceConfig = new ReferenceConfig();
         referenceConfig.setOnconnect("onConnect");
-        Map<String, String> parameters = new HashMap<String, String>();
+        Map<String, String> parameters = new HashMap<>();
         AbstractInterfaceConfig.appendParameters(parameters, referenceConfig);
         assertThat(parameters, hasKey(STUB_EVENT_KEY));
     }
@@ -126,7 +126,7 @@ public class AbstractReferenceConfigTest {
     public void testReconnect() throws Exception {
         ReferenceConfig referenceConfig = new ReferenceConfig();
         referenceConfig.setReconnect("reconnect");
-        Map<String, String> parameters = new HashMap<String, String>();
+        Map<String, String> parameters = new HashMap<>();
         AbstractInterfaceConfig.appendParameters(parameters, referenceConfig);
         assertThat(referenceConfig.getReconnect(), equalTo("reconnect"));
         assertThat(parameters, hasKey(Constants.RECONNECT_KEY));
@@ -136,7 +136,7 @@ public class AbstractReferenceConfigTest {
     public void testSticky() throws Exception {
         ReferenceConfig referenceConfig = new ReferenceConfig();
         referenceConfig.setSticky(true);
-        Map<String, String> parameters = new HashMap<String, String>();
+        Map<String, String> parameters = new HashMap<>();
         AbstractInterfaceConfig.appendParameters(parameters, referenceConfig);
         assertThat(referenceConfig.getSticky(), is(true));
         assertThat(parameters, hasKey(CLUSTER_STICKY_KEY));

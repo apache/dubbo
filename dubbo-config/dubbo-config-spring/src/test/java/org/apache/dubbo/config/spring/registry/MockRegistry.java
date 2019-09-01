@@ -27,9 +27,9 @@ public class MockRegistry implements Registry {
 
     private URL url;
 
-    private List<URL> registered = new ArrayList<URL>();
+    private List<URL> registered = new ArrayList<>();
 
-    private List<URL> subscribered = new ArrayList<URL>();
+    private List<URL> subscribered = new ArrayList<>();
 
     public MockRegistry(URL url) {
         if (url == null) {

@@ -32,7 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class DispatcherServlet extends HttpServlet {
 
     private static final long serialVersionUID = 5766349180380479888L;
-    private static final Map<Integer, HttpHandler> handlers = new ConcurrentHashMap<Integer, HttpHandler>();
+    private static final Map<Integer, HttpHandler> handlers = new ConcurrentHashMap<>();
     private static DispatcherServlet INSTANCE;
 
     public DispatcherServlet() {

@@ -77,7 +77,7 @@ public class ProtostuffObjectOutputTest {
 
     @Test
     public void testObjectList() throws IOException, ClassNotFoundException {
-        List<SerializablePerson> args = new ArrayList<SerializablePerson>();
+        List<SerializablePerson> args = new ArrayList<>();
         args.add(new SerializablePerson());
 
         this.protostuffObjectOutput.writeObject(args);
@@ -108,7 +108,7 @@ public class ProtostuffObjectOutputTest {
     @Test
     public void testCustomizeTimeList() throws IOException, ClassNotFoundException {
 
-        List<LocalTime> list = new ArrayList<LocalTime>();
+        List<LocalTime> list = new ArrayList<>();
 
         LocalTime localTime = LocalTime.parse("12:00:00");
         LocalTime localSecondTime = LocalTime.parse("13:00:00");
@@ -128,7 +128,7 @@ public class ProtostuffObjectOutputTest {
     @Test
     public void testListObject() throws IOException, ClassNotFoundException {
 
-        List<SerializablePerson> list = new ArrayList<SerializablePerson>();
+        List<SerializablePerson> list = new ArrayList<>();
 
         list.add(new SerializablePerson());
         list.add(new SerializablePerson());

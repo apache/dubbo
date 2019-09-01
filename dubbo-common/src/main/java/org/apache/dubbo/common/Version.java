@@ -53,7 +53,7 @@ public final class Version {
      * performance than string.
      */
     private static final int LOWEST_VERSION_FOR_RESPONSE_ATTACHMENT = 2000200; // 2.0.2
-    private static final Map<String, Integer> VERSION2INT = new HashMap<String, Integer>();
+    private static final Map<String, Integer> VERSION2INT = new HashMap<>();
 
     static {
         // check if there's duplicated jar
@@ -255,7 +255,7 @@ public final class Version {
      */
     private static Set<String> getResources(String path) throws IOException {
         Enumeration<URL> urls = ClassUtils.getCallerClassLoader(Version.class).getResources(path);
-        Set<String> files = new HashSet<String>();
+        Set<String> files = new HashSet<>();
         while (urls.hasMoreElements()) {
             URL url = urls.nextElement();
             if (url != null) {

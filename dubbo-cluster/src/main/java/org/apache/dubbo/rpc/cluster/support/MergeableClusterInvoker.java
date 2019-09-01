@@ -98,7 +98,7 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
         Object result = null;
 
-        List<Result> resultList = new ArrayList<Result>(results.size());
+        List<Result> resultList = new ArrayList<>(results.size());
 
         for (Map.Entry<String, Result> entry : results.entrySet()) {
             Result asyncResult = entry.getValue();
@@ -161,7 +161,7 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
                 resultMerger = ExtensionLoader.getExtensionLoader(Merger.class).getExtension(merger);
             }
             if (resultMerger != null) {
-                List<Object> rets = new ArrayList<Object>(resultList.size());
+                List<Object> rets = new ArrayList<>(resultList.size());
                 for (Result r : resultList) {
                     rets.add(r.getValue());
                 }

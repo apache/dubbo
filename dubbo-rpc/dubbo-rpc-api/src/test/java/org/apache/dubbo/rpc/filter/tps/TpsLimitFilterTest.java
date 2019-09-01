@@ -40,7 +40,7 @@ public class TpsLimitFilterTest {
         URL url = URL.valueOf("test://test");
         url = url.addParameter(INTERFACE_KEY, "org.apache.dubbo.rpc.file.TpsService");
         url = url.addParameter(TPS_LIMIT_RATE_KEY, 5);
-        Invoker<TpsLimitFilterTest> invoker = new MyInvoker<TpsLimitFilterTest>(url);
+        Invoker<TpsLimitFilterTest> invoker = new MyInvoker<>(url);
         Invocation invocation = new MockInvocation();
         filter.invoke(invoker, invocation);
     }
@@ -51,7 +51,7 @@ public class TpsLimitFilterTest {
             URL url = URL.valueOf("test://test");
             url = url.addParameter(INTERFACE_KEY, "org.apache.dubbo.rpc.file.TpsService");
             url = url.addParameter(TPS_LIMIT_RATE_KEY, 5);
-            Invoker<TpsLimitFilterTest> invoker = new MyInvoker<TpsLimitFilterTest>(url);
+            Invoker<TpsLimitFilterTest> invoker = new MyInvoker<>(url);
             Invocation invocation = new MockInvocation();
             for (int i = 0; i < 10; i++) {
                 try {

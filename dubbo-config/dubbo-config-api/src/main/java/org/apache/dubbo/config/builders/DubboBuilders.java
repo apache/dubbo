@@ -59,7 +59,7 @@ public class DubboBuilders {
     }
 
     public static <T> ReferenceBuilder<T> referenceBuilder() {
-        return new ReferenceBuilder<T>();
+        return new ReferenceBuilder<>();
     }
 
     public static RegistryBuilder registryBuilder() {

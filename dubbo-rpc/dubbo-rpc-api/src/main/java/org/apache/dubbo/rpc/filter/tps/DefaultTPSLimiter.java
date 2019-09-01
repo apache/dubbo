@@ -34,7 +34,7 @@ import static org.apache.dubbo.rpc.Constants.DEFAULT_TPS_LIMIT_INTERVAL;
  */
 public class DefaultTPSLimiter implements TPSLimiter {
 
-    private final ConcurrentMap<String, StatItem> stats = new ConcurrentHashMap<String, StatItem>();
+    private final ConcurrentMap<String, StatItem> stats = new ConcurrentHashMap<>();
 
     @Override
     public boolean isAllowable(URL url, Invocation invocation) {

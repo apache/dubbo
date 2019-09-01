@@ -31,7 +31,7 @@ public class FailsafeCluster implements Cluster {
 
     @Override
     public <T> Invoker<T> join(Directory<T> directory) throws RpcException {
-        return new FailsafeClusterInvoker<T>(directory);
+        return new FailsafeClusterInvoker<>(directory);
     }
 
 }

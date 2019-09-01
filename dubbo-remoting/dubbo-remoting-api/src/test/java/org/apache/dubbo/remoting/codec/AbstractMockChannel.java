@@ -36,7 +36,7 @@ public class AbstractMockChannel implements Channel {
     private ChannelHandler handler;
     private boolean isClosed;
     private volatile boolean closing;
-    private Map<String, Object> attributes = new HashMap<String, Object>(1);
+    private Map<String, Object> attributes = new HashMap<>(1);
     private volatile Object receivedMessage = null;
 
     public AbstractMockChannel() {

@@ -40,7 +40,7 @@ public class ConsumerContextFilterTest {
     @Test
     public void testSetContext() {
         URL url = URL.valueOf("test://test:11/test?group=dubbo&version=1.1");
-        Invoker<DemoService> invoker = new MyInvoker<DemoService>(url);
+        Invoker<DemoService> invoker = new MyInvoker<>(url);
         Invocation invocation = new MockInvocation();
         Result asyncResult = consumerContextFilter.invoke(invoker, invocation);
         asyncResult.whenCompleteWithContext((result, t) -> {

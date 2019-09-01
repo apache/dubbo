@@ -25,7 +25,7 @@ import java.util.Map;
 
 public class MyCache implements Cache {
 
-    private Map<Object, Object> map = new HashMap<Object, Object>();
+    private Map<Object, Object> map = new HashMap<>();
 
     public MyCache(URL url) {
     }

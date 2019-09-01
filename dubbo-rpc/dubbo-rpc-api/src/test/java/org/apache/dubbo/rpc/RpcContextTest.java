@@ -86,7 +86,7 @@ public class RpcContextTest {
     public void testAttachments() {
 
         RpcContext context = RpcContext.getContext();
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         map.put("_11", "1111");
         map.put("_22", "2222");
         map.put(".33", "3333");
@@ -114,7 +114,7 @@ public class RpcContextTest {
     public void testObject() {
 
         RpcContext context = RpcContext.getContext();
-        Map<String, Object> map = new HashMap<String, Object>();
+        Map<String, Object> map = new HashMap<>();
         map.put("_11", "1111");
         map.put("_22", "2222");
         map.put(".33", "3333");

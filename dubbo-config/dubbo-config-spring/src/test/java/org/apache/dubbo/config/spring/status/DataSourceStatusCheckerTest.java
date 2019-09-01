@@ -52,7 +52,7 @@ public class DataSourceStatusCheckerTest {
         SpringExtensionFactory.clearContexts();
         initMocks(this);
         this.dataSourceStatusChecker = new DataSourceStatusChecker();
-        new ServiceBean<Object>().setApplicationContext(applicationContext);
+        new ServiceBean<>().setApplicationContext(applicationContext);
     }
 
     @AfterEach
@@ -69,7 +69,7 @@ public class DataSourceStatusCheckerTest {
 
     @Test
     public void testWithoutDatasource() {
-        Map<String, DataSource> map = new HashMap<String, DataSource>();
+        Map<String, DataSource> map = new HashMap<>();
         given(applicationContext.getBeansOfType(eq(DataSource.class), anyBoolean(), anyBoolean())).willReturn(map);
 
         Status status = dataSourceStatusChecker.check();
@@ -79,7 +79,7 @@ public class DataSourceStatusCheckerTest {
 
     @Test
     public void testWithDatasourceHasNextResult() throws SQLException {
-        Map<String, DataSource> map = new HashMap<String, DataSource>();
+        Map<String, DataSource> map = new HashMap<>();
         DataSource dataSource = mock(DataSource.class);
         Connection connection = mock(Connection.class, Answers.RETURNS_DEEP_STUBS);
         given(dataSource.getConnection()).willReturn(connection);
@@ -94,7 +94,7 @@ public class DataSourceStatusCheckerTest {
 
     @Test
     public void testWithDatasourceNotHasNextResult() throws SQLException {
-        Map<String, DataSource> map = new HashMap<String, DataSource>();
+        Map<String, DataSource> map = new HashMap<>();
         DataSource dataSource = mock(DataSource.class);
         Connection connection = mock(Connection.class, Answers.RETURNS_DEEP_STUBS);
         given(dataSource.getConnection()).willReturn(connection);

@@ -138,7 +138,7 @@ public class EtcdRegistryTest {
 
         registry.register(serviceUrl);
 
-        final AtomicReference<URL> notifiedUrl = new AtomicReference<URL>();
+        final AtomicReference<URL> notifiedUrl = new AtomicReference<>();
         registry.subscribe(consumerUrl, new NotifyListener() {
             public void notify(List<URL> urls) {
                 notifiedUrl.set(urls.get(0));
@@ -157,7 +157,7 @@ public class EtcdRegistryTest {
 
         CountDownLatch notNotified = new CountDownLatch(2);
 
-        final AtomicReference<URL> notifiedUrl = new AtomicReference<URL>();
+        final AtomicReference<URL> notifiedUrl = new AtomicReference<>();
         registry.subscribe(consumerUrl, new NotifyListener() {
             public void notify(List<URL> urls) {
                 notifiedUrl.set(urls.get(0));
@@ -215,7 +215,7 @@ public class EtcdRegistryTest {
 
         CountDownLatch notNotified = new CountDownLatch(2);
 
-        final AtomicReference<URL> notifiedUrls = new AtomicReference<URL>();
+        final AtomicReference<URL> notifiedUrls = new AtomicReference<>();
         registry.subscribe(consumerUrl, new NotifyListener() {
             public void notify(List<URL> urls) {
                 notifiedUrls.set(urls.get(0));
@@ -277,7 +277,7 @@ public class EtcdRegistryTest {
 
         CountDownLatch notNotified = new CountDownLatch(2);
 
-        final AtomicReference<URL> notifiedUrl = new AtomicReference<URL>();
+        final AtomicReference<URL> notifiedUrl = new AtomicReference<>();
 
         NotifyListener listener = new NotifyListener() {
             public void notify(List<URL> urls) {

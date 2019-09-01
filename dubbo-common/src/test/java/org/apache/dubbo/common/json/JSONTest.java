@@ -55,7 +55,7 @@ public class JSONTest {
     @Test
     @SuppressWarnings("unchecked")
     public void testMap() throws Exception {
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         map.put("aaa", "bbb");
 
         StringWriter writer = new StringWriter();
@@ -71,7 +71,7 @@ public class JSONTest {
     @Test
     @SuppressWarnings("unchecked")
     public void testMapArray() throws Exception {
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         map.put("aaa", "bbb");
 
         StringWriter writer = new StringWriter();
@@ -88,7 +88,7 @@ public class JSONTest {
     @Test
     @SuppressWarnings("unchecked")
     public void testLinkedMap() throws Exception {
-        LinkedHashMap<String, String> map = new LinkedHashMap<String, String>();
+        LinkedHashMap<String, String> map = new LinkedHashMap<>();
         map.put("aaa", "bbb");
 
         StringWriter writer = new StringWriter();

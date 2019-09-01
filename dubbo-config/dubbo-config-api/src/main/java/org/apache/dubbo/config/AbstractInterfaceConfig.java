@@ -326,7 +326,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
      */
     protected List<URL> loadRegistries(boolean provider) {
         // check && override if necessary
-        List<URL> registryList = new ArrayList<URL>();
+        List<URL> registryList = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(registries)) {
             for (RegistryConfig config : registries) {
                 String address = config.getAddress();
@@ -334,7 +334,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                     address = ANYHOST_VALUE;
                 }
                 if (!RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(address)) {
-                    Map<String, String> map = new HashMap<String, String>();
+                    Map<String, String> map = new HashMap<>();
                     appendParameters(map, application);
                     appendParameters(map, config);
                     map.put(PATH_KEY, RegistryService.class.getName());
@@ -369,7 +369,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
      */
     protected URL loadMonitor(URL registryURL) {
         checkMonitor();
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         map.put(INTERFACE_KEY, MonitorService.class.getName());
         appendRuntimeParameters(map);
         //set ip
@@ -421,7 +421,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         if (StringUtils.isEmpty(address)) {
             return null;
         }
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         appendParameters(map, metadataReportConfig);
         return UrlUtils.parseURL(address, map);
     }
@@ -597,7 +597,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         if (registries == null || registries.isEmpty()) {
             String address = ConfigUtils.getProperty("dubbo.registry.address");
             if (address != null && address.length() > 0) {
-                List<RegistryConfig> tmpRegistries = new ArrayList<RegistryConfig>();
+                List<RegistryConfig> tmpRegistries = new ArrayList<>();
                 String[] as = D_REGISTRY_SPLIT_PATTERN.split(address);
                 for (String a : as) {
                     RegistryConfig registryConfig = new RegistryConfig();
@@ -775,7 +775,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public void setRegistry(RegistryConfig registry) {
-        List<RegistryConfig> registries = new ArrayList<RegistryConfig>(1);
+        List<RegistryConfig> registries = new ArrayList<>(1);
         registries.add(registry);
         setRegistries(registries);
     }

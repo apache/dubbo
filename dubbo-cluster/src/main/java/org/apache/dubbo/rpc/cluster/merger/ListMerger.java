@@ -31,7 +31,7 @@ public class ListMerger implements Merger<List<?>> {
         if (ArrayUtils.isEmpty(items)) {
             return Collections.emptyList();
         }
-        List<Object> result = new ArrayList<Object>();
+        List<Object> result = new ArrayList<>();
         for (List<?> item : items) {
             if (item != null) {
                 result.addAll(item);

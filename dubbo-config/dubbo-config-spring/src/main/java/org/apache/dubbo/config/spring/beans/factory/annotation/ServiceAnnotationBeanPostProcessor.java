@@ -348,7 +348,7 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
     }
 
     private Set<String> resolvePackagesToScan(Set<String> packagesToScan) {
-        Set<String> resolvedPackagesToScan = new LinkedHashSet<String>(packagesToScan.size());
+        Set<String> resolvedPackagesToScan = new LinkedHashSet<>(packagesToScan.size());
         for (String packageToScan : packagesToScan) {
             if (StringUtils.hasText(packageToScan)) {
                 String resolvedPackageToScan = environment.resolvePlaceholders(packageToScan.trim());

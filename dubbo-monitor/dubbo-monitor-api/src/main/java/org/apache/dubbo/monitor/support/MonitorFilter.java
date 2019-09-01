@@ -63,7 +63,7 @@ public class MonitorFilter extends ListenableFilter {
     /**
      * The Concurrent counter
      */
-    private final ConcurrentMap<String, AtomicInteger> concurrents = new ConcurrentHashMap<String, AtomicInteger>();
+    private final ConcurrentMap<String, AtomicInteger> concurrents = new ConcurrentHashMap<>();
 
     /**
      * The MonitorFactory

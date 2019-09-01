@@ -77,7 +77,7 @@ public class AbstractServiceConfigTest {
         ServiceConfig serviceConfig = new ServiceConfig();
         serviceConfig.setDocument("http://dubbo.io");
         assertThat(serviceConfig.getDocument(), equalTo("http://dubbo.io"));
-        Map<String, String> parameters = new HashMap<String, String>();
+        Map<String, String> parameters = new HashMap<>();
         AbstractServiceConfig.appendParameters(parameters, serviceConfig);
         assertThat(parameters, hasEntry("document", "http%3A%2F%2Fdubbo.io"));
     }
@@ -140,7 +140,7 @@ public class AbstractServiceConfigTest {
         ServiceConfig serviceConfig = new ServiceConfig();
         serviceConfig.setFilter("mockfilter");
         assertThat(serviceConfig.getFilter(), equalTo("mockfilter"));
-        Map<String, String> parameters = new HashMap<String, String>();
+        Map<String, String> parameters = new HashMap<>();
         parameters.put(SERVICE_FILTER_KEY, "prefilter");
         AbstractServiceConfig.appendParameters(parameters, serviceConfig);
         assertThat(parameters, hasEntry(SERVICE_FILTER_KEY, "prefilter,mockfilter"));
@@ -151,7 +151,7 @@ public class AbstractServiceConfigTest {
         ServiceConfig serviceConfig = new ServiceConfig();
         serviceConfig.setListener("mockexporterlistener");
         assertThat(serviceConfig.getListener(), equalTo("mockexporterlistener"));
-        Map<String, String> parameters = new HashMap<String, String>();
+        Map<String, String> parameters = new HashMap<>();
         parameters.put(EXPORTER_LISTENER_KEY, "prelistener");
         AbstractServiceConfig.appendParameters(parameters, serviceConfig);
         assertThat(parameters, hasEntry(EXPORTER_LISTENER_KEY, "prelistener,mockexporterlistener"));

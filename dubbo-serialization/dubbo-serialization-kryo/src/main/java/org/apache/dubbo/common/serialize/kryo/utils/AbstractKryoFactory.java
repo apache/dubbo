@@ -59,7 +59,7 @@ import java.util.regex.Pattern;
 
 public abstract class AbstractKryoFactory implements KryoFactory {
 
-    private final Set<Class> registrations = new LinkedHashSet<Class>();
+    private final Set<Class> registrations = new LinkedHashSet<>();
 
     private boolean registrationRequired;
 

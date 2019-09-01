@@ -80,7 +80,7 @@ public class ConfigUtils {
      * @return result extension list
      */
     public static List<String> mergeValues(Class<?> type, String cfg, List<String> def) {
-        List<String> defaults = new ArrayList<String>();
+        List<String> defaults = new ArrayList<>();
         if (def != null) {
             for (String name : def) {
                 if (ExtensionLoader.getExtensionLoader(type).hasExtension(name)) {
@@ -89,7 +89,7 @@ public class ConfigUtils {
             }
         }
 
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
 
         // add initial values
         String[] configs = (cfg == null || cfg.trim().length() == 0) ? new String[0] : COMMA_SPLIT_PATTERN.split(cfg);
@@ -114,7 +114,7 @@ public class ConfigUtils {
         }
 
         // merge - configuration
-        for (String name : new ArrayList<String>(names)) {
+        for (String name : new ArrayList<>(names)) {
             if (name.startsWith(REMOVE_VALUE_PREFIX)) {
                 names.remove(name);
                 names.remove(name.substring(1));
@@ -237,10 +237,10 @@ public class ConfigUtils {
             return properties;
         }
 
-        List<java.net.URL> list = new ArrayList<java.net.URL>();
+        List<java.net.URL> list = new ArrayList<>();
         try {
             Enumeration<java.net.URL> urls = ClassUtils.getClassLoader().getResources(fileName);
-            list = new ArrayList<java.net.URL>();
+            list = new ArrayList<>();
             while (urls.hasMoreElements()) {
                 list.add(urls.nextElement());
             }

@@ -34,7 +34,7 @@ public class Java8TimeSerializer<T> extends AbstractSerializer {
     }
 
     public static <T> Java8TimeSerializer<T> create(Class<T> handleType) {
-        return new Java8TimeSerializer<T>(handleType);
+        return new Java8TimeSerializer<>(handleType);
     }
 
     @Override

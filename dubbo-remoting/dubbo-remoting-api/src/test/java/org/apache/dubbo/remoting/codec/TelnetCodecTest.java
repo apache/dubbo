@@ -229,7 +229,7 @@ public class TelnetCodecTest {
 
     @Test
     public void testDecode_WithExitByte() throws IOException {
-        HashMap<byte[], Boolean> exitbytes = new HashMap<byte[], Boolean>();
+        HashMap<byte[], Boolean> exitbytes = new HashMap<>();
         exitbytes.put(new byte[]{3}, true); /* Windows Ctrl+C */
         exitbytes.put(new byte[]{1, 3}, false); //must equal the bytes
         exitbytes.put(new byte[]{-1, -12, -1, -3, 6}, true); /* Linux Ctrl+C */

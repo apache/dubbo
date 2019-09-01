@@ -40,7 +40,7 @@ import static org.apache.dubbo.rpc.Constants.MOCK_KEY;
 
 public class MockProviderRpcExceptionTest {
 
-    List<Invoker<IHelloRpcService>> invokers = new ArrayList<Invoker<IHelloRpcService>>();
+    List<Invoker<IHelloRpcService>> invokers = new ArrayList<>();
 
     @BeforeEach
     public void beforeMethod() {
@@ -74,7 +74,7 @@ public class MockProviderRpcExceptionTest {
             invokers.add(mockInvoker);
         }
 
-        StaticDirectory<IHelloRpcService> dic = new StaticDirectory<IHelloRpcService>(durl, invokers, null);
+        StaticDirectory<IHelloRpcService> dic = new StaticDirectory<>(durl, invokers, null);
         dic.buildRouterChain();
         AbstractClusterInvoker<IHelloRpcService> cluster = new AbstractClusterInvoker(dic) {
             @Override
@@ -87,7 +87,7 @@ public class MockProviderRpcExceptionTest {
                 }
             }
         };
-        return new MockClusterInvoker<IHelloRpcService>(dic, cluster);
+        return new MockClusterInvoker<>(dic, cluster);
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})

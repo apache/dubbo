@@ -58,7 +58,7 @@ public class RedisMetadataReport extends AbstractMetadataReport {
         timeout = url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT);
         password = url.getPassword();
         if (url.getParameter(CLUSTER_KEY, false)) {
-            jedisClusterNodes = new HashSet<HostAndPort>();
+            jedisClusterNodes = new HashSet<>();
             List<URL> urls = url.getBackupUrls();
             for (URL tmpUrl : urls) {
                 jedisClusterNodes.add(new HostAndPort(tmpUrl.getHost(), tmpUrl.getPort()));

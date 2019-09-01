@@ -61,7 +61,7 @@ public class CacheTest {
         ApplicationConfig applicationConfig = new ApplicationConfig("cache-test");
         RegistryConfig registryConfig = new RegistryConfig("N/A");
         ProtocolConfig protocolConfig = new ProtocolConfig("injvm");
-        ServiceConfig<CacheService> service = new ServiceConfig<CacheService>();
+        ServiceConfig<CacheService> service = new ServiceConfig<>();
         service.setApplication(applicationConfig);
         service.setRegistry(registryConfig);
         service.setProtocol(protocolConfig);
@@ -69,7 +69,7 @@ public class CacheTest {
         service.setRef(new CacheServiceImpl());
         service.export();
         try {
-            ReferenceConfig<CacheService> reference = new ReferenceConfig<CacheService>();
+            ReferenceConfig<CacheService> reference = new ReferenceConfig<>();
             reference.setApplication(applicationConfig);
             reference.setInterface(CacheService.class);
             reference.setUrl("injvm://127.0.0.1?scope=remote&cache=true");
@@ -128,7 +128,7 @@ public class CacheTest {
     public void testCacheProvider() throws Exception {
         CacheFactory cacheFactory = ExtensionLoader.getExtensionLoader(CacheFactory.class).getAdaptiveExtension();
 
-        Map<String, String> parameters = new HashMap<String, String>();
+        Map<String, String> parameters = new HashMap<>();
         parameters.put("findCache.cache", "threadlocal");
         URL url = new URL("dubbo", "127.0.0.1", 29582, "org.apache.dubbo.config.cache.CacheService", parameters);
 

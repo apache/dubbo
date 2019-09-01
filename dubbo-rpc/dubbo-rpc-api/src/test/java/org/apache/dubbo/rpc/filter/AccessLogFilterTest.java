@@ -44,7 +44,7 @@ public class AccessLogFilterTest {
     // Test filter won't throw an exception
     @Test
     public void testInvokeException() {
-        Invoker<AccessLogFilterTest> invoker = new MyInvoker<AccessLogFilterTest>(null);
+        Invoker<AccessLogFilterTest> invoker = new MyInvoker<>(null);
         Invocation invocation = new MockInvocation();
         LogUtil.start();
         accessLogFilter.invoke(invoker, invocation);
@@ -57,7 +57,7 @@ public class AccessLogFilterTest {
     @SuppressWarnings("unchecked")
     public void testDefault() throws NoSuchFieldException, IllegalAccessException {
         URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1");
-        Invoker<AccessLogFilterTest> invoker = new MyInvoker<AccessLogFilterTest>(url);
+        Invoker<AccessLogFilterTest> invoker = new MyInvoker<>(url);
         Invocation invocation = new MockInvocation();
 
         Field field = AccessLogFilter.class.getDeclaredField("LOG_ENTRIES");
@@ -76,7 +76,7 @@ public class AccessLogFilterTest {
     @Test
     public void testCustom() {
         URL url = URL.valueOf("test://test:11/test?accesslog=custom-access.log");
-        Invoker<AccessLogFilterTest> invoker = new MyInvoker<AccessLogFilterTest>(url);
+        Invoker<AccessLogFilterTest> invoker = new MyInvoker<>(url);
         Invocation invocation = new MockInvocation();
         accessLogFilter.invoke(invoker, invocation);
     }

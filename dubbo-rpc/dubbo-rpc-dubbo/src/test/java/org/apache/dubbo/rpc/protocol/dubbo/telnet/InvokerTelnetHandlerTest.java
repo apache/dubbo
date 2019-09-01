@@ -188,7 +188,7 @@ public class InvokerTelnetHandlerTest {
 
     private Channel getChannelInstance() {
         return new Channel() {
-            private final Map<String, Object> attributes = new ConcurrentHashMap<String, Object>();
+            private final Map<String, Object> attributes = new ConcurrentHashMap<>();
 
             @Override
             public InetSocketAddress getRemoteAddress() {

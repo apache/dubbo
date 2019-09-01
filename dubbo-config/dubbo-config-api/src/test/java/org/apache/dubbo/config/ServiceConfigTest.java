@@ -71,9 +71,9 @@ public class ServiceConfigTest {
     private Protocol protocolDelegate = Mockito.mock(Protocol.class);
     private Registry registryDelegate = Mockito.mock(Registry.class);
     private Exporter exporter = Mockito.mock(Exporter.class);
-    private ServiceConfig<DemoServiceImpl> service = new ServiceConfig<DemoServiceImpl>();
-    private ServiceConfig<DemoServiceImpl> service2 = new ServiceConfig<DemoServiceImpl>();
-    private ServiceConfig<DemoServiceImpl> delayService = new ServiceConfig<DemoServiceImpl>();
+    private ServiceConfig<DemoServiceImpl> service = new ServiceConfig<>();
+    private ServiceConfig<DemoServiceImpl> service2 = new ServiceConfig<>();
+    private ServiceConfig<DemoServiceImpl> delayService = new ServiceConfig<>();
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -189,11 +189,11 @@ public class ServiceConfigTest {
 
     @Test
     public void testInterfaceClass() throws Exception {
-        ServiceConfig<Greeting> service = new ServiceConfig<Greeting>();
+        ServiceConfig<Greeting> service = new ServiceConfig<>();
         service.setInterface(Greeting.class.getName());
         service.setRef(Mockito.mock(Greeting.class));
         assertThat(service.getInterfaceClass() == Greeting.class, is(true));
-        service = new ServiceConfig<Greeting>();
+        service = new ServiceConfig<>();
         service.setRef(Mockito.mock(Greeting.class, withSettings().extraInterfaces(GenericService.class)));
         assertThat(service.getInterfaceClass() == GenericService.class, is(true));
     }
@@ -201,14 +201,14 @@ public class ServiceConfigTest {
     @Test
     public void testInterface1() throws Exception {
         Assertions.assertThrows(IllegalStateException.class, () -> {
-            ServiceConfig<DemoService> service = new ServiceConfig<DemoService>();
+            ServiceConfig<DemoService> service = new ServiceConfig<>();
             service.setInterface(DemoServiceImpl.class);
         });
     }
 
     @Test
     public void testInterface2() throws Exception {
-        ServiceConfig<DemoService> service = new ServiceConfig<DemoService>();
+        ServiceConfig<DemoService> service = new ServiceConfig<>();
         service.setInterface(DemoService.class);
         assertThat(service.getInterface(), equalTo(DemoService.class.getName()));
     }

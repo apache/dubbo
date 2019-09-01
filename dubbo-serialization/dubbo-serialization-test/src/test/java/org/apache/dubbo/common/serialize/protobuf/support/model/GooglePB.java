@@ -348,7 +348,7 @@ public final class GooglePB {
             }
             case 66: {
               if (!((mutable_bitField0_ & 0x00000080) == 0x00000080)) {
-                phone_ = new java.util.ArrayList<PhoneNumber>();
+                phone_ = new java.util.ArrayList<>();
                 mutable_bitField0_ |= 0x00000080;
               }
               phone_.add(
@@ -1505,7 +1505,7 @@ public final class GooglePB {
         java.util.Collections.emptyList();
       private void ensurePhoneIsMutable() {
         if (!((bitField0_ & 0x00000080) == 0x00000080)) {
-          phone_ = new java.util.ArrayList<PhoneNumber>(phone_);
+          phone_ = new java.util.ArrayList<>(phone_);
           bitField0_ |= 0x00000080;
          }
       }
@@ -1730,8 +1730,7 @@ public final class GooglePB {
           PhoneNumber, PhoneNumber.Builder, PhoneNumberOrBuilder>
           getPhoneFieldBuilder() {
         if (phoneBuilder_ == null) {
-          phoneBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-              PhoneNumber, PhoneNumber.Builder, PhoneNumberOrBuilder>(
+          phoneBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<>(
                   phone_,
                   ((bitField0_ & 0x00000080) == 0x00000080),
                   getParentForChildren(),
@@ -2619,8 +2618,7 @@ public final class GooglePB {
           PBRequestType, PBRequestType.Builder, PBRequestTypeOrBuilder>
           getCDubboPBRequestTypeFieldBuilder() {
         if (cDubboPBRequestTypeBuilder_ == null) {
-          cDubboPBRequestTypeBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              PBRequestType, PBRequestType.Builder, PBRequestTypeOrBuilder>(
+          cDubboPBRequestTypeBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<>(
                   getCDubboPBRequestType(),
                   getParentForChildren(),
                   isClean());

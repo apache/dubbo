@@ -43,13 +43,13 @@ final class NettyChannel extends AbstractChannel {
     /**
      * the cache for netty channel and dubbo channel
      */
-    private static final ConcurrentMap<Channel, NettyChannel> CHANNEL_MAP = new ConcurrentHashMap<Channel, NettyChannel>();
+    private static final ConcurrentMap<Channel, NettyChannel> CHANNEL_MAP = new ConcurrentHashMap<>();
     /**
      * netty channel
      */
     private final Channel channel;
 
-    private final Map<String, Object> attributes = new ConcurrentHashMap<String, Object>();
+    private final Map<String, Object> attributes = new ConcurrentHashMap<>();
     /**
      * The constructor of NettyChannel.
      * It is private so NettyChannel usually create by {@link NettyChannel#getOrAddChannel(Channel, URL, ChannelHandler)}

@@ -142,7 +142,7 @@ public class MultipleRegistry2S2RTest {
 
         Assertions.assertNotNull(MultipleRegistryTestUtil.getRedisHashContent(redisServerPort, path, serviceUrl.toFullString()));
 
-        final List<URL> list = new ArrayList<URL>();
+        final List<URL> list = new ArrayList<>();
         multipleRegistry.subscribe(serviceUrl, new NotifyListener() {
             @Override
             public void notify(List<URL> urls) {
@@ -175,7 +175,7 @@ public class MultipleRegistry2S2RTest {
 
         Assertions.assertNotNull(MultipleRegistryTestUtil.getRedisHashContent(redisServerPort, path, serviceUrl.toFullString()));
 
-        final List<URL> list = new ArrayList<URL>();
+        final List<URL> list = new ArrayList<>();
         multipleRegistry.subscribe(serviceUrl, new NotifyListener() {
             @Override
             public void notify(List<URL> urls) {
@@ -187,7 +187,7 @@ public class MultipleRegistry2S2RTest {
         Thread.sleep(1500);
         Assertions.assertEquals(2, list.size());
 
-        List<Registry> serviceRegistries = new ArrayList<Registry>(multipleRegistry.getServiceRegistries().values());
+        List<Registry> serviceRegistries = new ArrayList<>(multipleRegistry.getServiceRegistries().values());
         serviceRegistries.get(0).unregister(serviceUrl);
         Thread.sleep(1500);
         Assertions.assertEquals(1, list.size());

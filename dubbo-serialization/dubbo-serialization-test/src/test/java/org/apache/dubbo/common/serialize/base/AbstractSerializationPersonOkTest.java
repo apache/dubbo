@@ -39,7 +39,7 @@ public abstract class AbstractSerializationPersonOkTest extends AbstractSerializ
 
     @Test
     public void test_PersonList() throws Exception {
-        List<Phone> args = new ArrayList<Phone>();
+        List<Phone> args = new ArrayList<>();
         args.add(new Phone());
 
         assertObject(args);
@@ -47,7 +47,7 @@ public abstract class AbstractSerializationPersonOkTest extends AbstractSerializ
 
     @Test
     public void test_PersonSet() throws Exception {
-        Set<Phone> args = new HashSet<Phone>();
+        Set<Phone> args = new HashSet<>();
         args.add(new Phone());
 
         assertObject(args);
@@ -55,7 +55,7 @@ public abstract class AbstractSerializationPersonOkTest extends AbstractSerializ
 
     @Test
     public void test_IntPersonMap() throws Exception {
-        Map<Integer, Phone> args = new HashMap<Integer, Phone>();
+        Map<Integer, Phone> args = new HashMap<>();
         args.put(1, new Phone());
 
         assertObject(args);
@@ -63,7 +63,7 @@ public abstract class AbstractSerializationPersonOkTest extends AbstractSerializ
 
     @Test
     public void test_StringPersonMap() throws Exception {
-        Map<String, Phone> args = new HashMap<String, Phone>();
+        Map<String, Phone> args = new HashMap<>();
         args.put("1", new Phone());
 
         assertObject(args);
@@ -71,9 +71,9 @@ public abstract class AbstractSerializationPersonOkTest extends AbstractSerializ
 
     @Test
     public void test_StringPersonListMap() throws Exception {
-        Map<String, List<Phone>> args = new HashMap<String, List<Phone>>();
+        Map<String, List<Phone>> args = new HashMap<>();
 
-        List<Phone> sublist = new ArrayList<Phone>();
+        List<Phone> sublist = new ArrayList<>();
         sublist.add(new Phone());
         args.put("1", sublist);
 
@@ -82,8 +82,8 @@ public abstract class AbstractSerializationPersonOkTest extends AbstractSerializ
 
     @Test
     public void test_PersonListList() throws Exception {
-        List<List<Phone>> args = new ArrayList<List<Phone>>();
-        List<Phone> sublist = new ArrayList<Phone>();
+        List<List<Phone>> args = new ArrayList<>();
+        List<Phone> sublist = new ArrayList<>();
         sublist.add(new Phone());
         args.add(sublist);
 

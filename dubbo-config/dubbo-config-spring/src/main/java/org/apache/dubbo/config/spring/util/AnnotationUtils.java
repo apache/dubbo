@@ -230,7 +230,7 @@ public class AnnotationUtils {
             return Collections.emptyMap();
         }
 
-        Map<ElementType, List<A>> annotationsMap = new LinkedHashMap<ElementType, List<A>>();
+        Map<ElementType, List<A>> annotationsMap = new LinkedHashMap<>();
 
         Target target = annotationClass.getAnnotation(Target.class);
 
@@ -239,7 +239,7 @@ public class AnnotationUtils {
 
         for (ElementType elementType : elementTypes) {
 
-            List<A> annotationsList = new LinkedList<A>();
+            List<A> annotationsList = new LinkedList<>();
 
             switch (elementType) {
 

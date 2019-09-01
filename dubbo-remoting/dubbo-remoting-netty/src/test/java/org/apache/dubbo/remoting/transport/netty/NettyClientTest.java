@@ -58,7 +58,7 @@ public class NettyClientTest {
 
     @Test
     public void testClientClose() throws Exception {
-        List<ExchangeChannel> clients = new ArrayList<ExchangeChannel>(100);
+        List<ExchangeChannel> clients = new ArrayList<>(100);
         for (int i = 0; i < 100; i++) {
             ExchangeChannel client = Exchangers.connect(URL.valueOf("exchange://localhost:10001?client=netty3"));
             Thread.sleep(5);

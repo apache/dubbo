@@ -28,7 +28,7 @@ public final class InternalThreadLocalMap {
 
     private Object[] indexedVariables;
 
-    private static ThreadLocal<InternalThreadLocalMap> slowThreadLocalMap = new ThreadLocal<InternalThreadLocalMap>();
+    private static ThreadLocal<InternalThreadLocalMap> slowThreadLocalMap = new ThreadLocal<>();
 
     private static final AtomicInteger NEXT_INDEX = new AtomicInteger();
 

@@ -37,11 +37,11 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
 
     private final URL url;
 
-    private final Set<StateListener> stateListeners = new CopyOnWriteArraySet<StateListener>();
+    private final Set<StateListener> stateListeners = new CopyOnWriteArraySet<>();
 
-    private final ConcurrentMap<String, ConcurrentMap<ChildListener, TargetChildListener>> childListeners = new ConcurrentHashMap<String, ConcurrentMap<ChildListener, TargetChildListener>>();
+    private final ConcurrentMap<String, ConcurrentMap<ChildListener, TargetChildListener>> childListeners = new ConcurrentHashMap<>();
 
-    private final ConcurrentMap<String, ConcurrentMap<DataListener, TargetDataListener>> listeners = new ConcurrentHashMap<String, ConcurrentMap<DataListener, TargetDataListener>>();
+    private final ConcurrentMap<String, ConcurrentMap<DataListener, TargetDataListener>> listeners = new ConcurrentHashMap<>();
 
     private volatile boolean closed = false;
 
@@ -90,7 +90,7 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
     public List<String> addChildListener(String path, final ChildListener listener) {
         ConcurrentMap<ChildListener, TargetChildListener> listeners = childListeners.get(path);
         if (listeners == null) {
-            childListeners.putIfAbsent(path, new ConcurrentHashMap<ChildListener, TargetChildListener>());
+            childListeners.putIfAbsent(path, new ConcurrentHashMap<>());
             listeners = childListeners.get(path);
         }
         TargetChildListener targetListener = listeners.get(listener);
@@ -110,7 +110,7 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
     public void addDataListener(String path, DataListener listener, Executor executor) {
         ConcurrentMap<DataListener, TargetDataListener> dataListenerMap = listeners.get(path);
         if (dataListenerMap == null) {
-            listeners.putIfAbsent(path, new ConcurrentHashMap<DataListener, TargetDataListener>());
+            listeners.putIfAbsent(path, new ConcurrentHashMap<>());
             dataListenerMap = listeners.get(path);
         }
         TargetDataListener targetListener = dataListenerMap.get(listener);

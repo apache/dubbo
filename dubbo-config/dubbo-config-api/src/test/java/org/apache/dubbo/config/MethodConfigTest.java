@@ -97,7 +97,7 @@ public class MethodConfigTest {
         MethodConfig method = new MethodConfig();
         method.setName("hello");
         assertThat(method.getName(), equalTo("hello"));
-        Map<String, String> parameters = new HashMap<String, String>();
+        Map<String, String> parameters = new HashMap<>();
         MethodConfig.appendParameters(parameters, method);
         assertThat(parameters, not(hasKey("name")));
     }
@@ -158,10 +158,10 @@ public class MethodConfigTest {
         MethodConfig method = new MethodConfig();
         method.setOnreturn("on-return-object");
         assertThat(method.getOnreturn(), equalTo((Object) "on-return-object"));
-        Map<String, Object> attribute = new HashMap<String, Object>();
+        Map<String, Object> attribute = new HashMap<>();
         MethodConfig.appendAttributes(attribute, method);
         assertThat(attribute, hasEntry((Object) ON_RETURN_INSTANCE_KEY, (Object) "on-return-object"));
-        Map<String, String> parameters = new HashMap<String, String>();
+        Map<String, String> parameters = new HashMap<>();
         MethodConfig.appendParameters(parameters, method);
         assertThat(parameters.size(), is(0));
     }
@@ -171,10 +171,10 @@ public class MethodConfigTest {
         MethodConfig method = new MethodConfig();
         method.setOnreturnMethod("on-return-method");
         assertThat(method.getOnreturnMethod(), equalTo("on-return-method"));
-        Map<String, Object> attribute = new HashMap<String, Object>();
+        Map<String, Object> attribute = new HashMap<>();
         MethodConfig.appendAttributes(attribute, method);
         assertThat(attribute, hasEntry((Object) ON_RETURN_METHOD_KEY, (Object) "on-return-method"));
-        Map<String, String> parameters = new HashMap<String, String>();
+        Map<String, String> parameters = new HashMap<>();
         MethodConfig.appendParameters(parameters, method);
         assertThat(parameters.size(), is(0));
     }
@@ -184,10 +184,10 @@ public class MethodConfigTest {
         MethodConfig method = new MethodConfig();
         method.setOnthrow("on-throw-object");
         assertThat(method.getOnthrow(), equalTo((Object) "on-throw-object"));
-        Map<String, Object> attribute = new HashMap<String, Object>();
+        Map<String, Object> attribute = new HashMap<>();
         MethodConfig.appendAttributes(attribute, method);
         assertThat(attribute, hasEntry((Object) ON_THROW_INSTANCE_KEY, (Object) "on-throw-object"));
-        Map<String, String> parameters = new HashMap<String, String>();
+        Map<String, String> parameters = new HashMap<>();
         MethodConfig.appendParameters(parameters, method);
         assertThat(parameters.size(), is(0));
     }
@@ -197,10 +197,10 @@ public class MethodConfigTest {
         MethodConfig method = new MethodConfig();
         method.setOnthrowMethod("on-throw-method");
         assertThat(method.getOnthrowMethod(), equalTo("on-throw-method"));
-        Map<String, Object> attribute = new HashMap<String, Object>();
+        Map<String, Object> attribute = new HashMap<>();
         MethodConfig.appendAttributes(attribute, method);
         assertThat(attribute, hasEntry((Object) ON_THROW_METHOD_KEY, (Object) "on-throw-method"));
-        Map<String, String> parameters = new HashMap<String, String>();
+        Map<String, String> parameters = new HashMap<>();
         MethodConfig.appendParameters(parameters, method);
         assertThat(parameters.size(), is(0));
     }
@@ -210,10 +210,10 @@ public class MethodConfigTest {
         MethodConfig method = new MethodConfig();
         method.setOninvoke("on-invoke-object");
         assertThat(method.getOninvoke(), equalTo((Object) "on-invoke-object"));
-        Map<String, Object> attribute = new HashMap<String, Object>();
+        Map<String, Object> attribute = new HashMap<>();
         MethodConfig.appendAttributes(attribute, method);
         assertThat(attribute, hasEntry((Object) ON_INVOKE_INSTANCE_KEY, (Object) "on-invoke-object"));
-        Map<String, String> parameters = new HashMap<String, String>();
+        Map<String, String> parameters = new HashMap<>();
         MethodConfig.appendParameters(parameters, method);
         assertThat(parameters.size(), is(0));
     }
@@ -223,10 +223,10 @@ public class MethodConfigTest {
         MethodConfig method = new MethodConfig();
         method.setOninvokeMethod("on-invoke-method");
         assertThat(method.getOninvokeMethod(), equalTo("on-invoke-method"));
-        Map<String, Object> attribute = new HashMap<String, Object>();
+        Map<String, Object> attribute = new HashMap<>();
         MethodConfig.appendAttributes(attribute, method);
         assertThat(attribute, hasEntry((Object) ON_INVOKE_METHOD_KEY, (Object) "on-invoke-method"));
-        Map<String, String> parameters = new HashMap<String, String>();
+        Map<String, String> parameters = new HashMap<>();
         MethodConfig.appendParameters(parameters, method);
         assertThat(parameters.size(), is(0));
     }

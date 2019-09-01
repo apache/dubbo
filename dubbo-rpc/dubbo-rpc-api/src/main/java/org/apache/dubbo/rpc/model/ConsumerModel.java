@@ -33,7 +33,7 @@ public class ConsumerModel {
     private final String serviceName;
     private final Class<?> serviceInterfaceClass;
 
-    private final Map<Method, ConsumerMethodModel> methodModels = new IdentityHashMap<Method, ConsumerMethodModel>();
+    private final Map<Method, ConsumerMethodModel> methodModels = new IdentityHashMap<>();
 
     /**
      *  This constructor create an instance of ConsumerModel and passed objects should not be null.
@@ -99,7 +99,7 @@ public class ConsumerModel {
      * @return method model list
      */
     public List<ConsumerMethodModel> getAllMethods() {
-        return new ArrayList<ConsumerMethodModel>(methodModels.values());
+        return new ArrayList<>(methodModels.values());
     }
 
     public Class<?> getServiceInterfaceClass() {

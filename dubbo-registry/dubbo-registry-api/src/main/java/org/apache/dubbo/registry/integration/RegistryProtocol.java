@@ -282,7 +282,7 @@ public class RegistryProtocol implements Protocol {
         if (exporter == null) {
             logger.warn(new IllegalStateException("error state, exporter should not be null"));
         } else {
-            final Invoker<T> invokerDelegate = new InvokerDelegate<T>(originInvoker, newInvokerUrl);
+            final Invoker<T> invokerDelegate = new InvokerDelegate<>(originInvoker, newInvokerUrl);
             exporter.setExporter(protocol.export(invokerDelegate));
         }
         return exporter;
@@ -398,11 +398,11 @@ public class RegistryProtocol implements Protocol {
     }
 
     private <T> Invoker<T> doRefer(Cluster cluster, Registry registry, Class<T> type, URL url) {
-        RegistryDirectory<T> directory = new RegistryDirectory<T>(type, url);
+        RegistryDirectory<T> directory = new RegistryDirectory<>(type, url);
         directory.setRegistry(registry);
         directory.setProtocol(protocol);
         // all attributes of REFER_KEY
-        Map<String, String> parameters = new HashMap<String, String>(directory.getUrl().getParameters());
+        Map<String, String> parameters = new HashMap<>(directory.getUrl().getParameters());
         URL subscribeUrl = new URL(CONSUMER_PROTOCOL, parameters.remove(REGISTER_IP_KEY), 0, type.getName(), parameters);
         if (!ANY_VALUE.equals(url.getServiceInterface()) && url.getParameter(REGISTER_KEY, true)) {
             directory.setRegisteredConsumerUrl(getRegisteredConsumerUrl(subscribeUrl, url));
@@ -438,7 +438,7 @@ public class RegistryProtocol implements Protocol {
 
     @Override
     public void destroy() {
-        List<Exporter<?>> exporters = new ArrayList<Exporter<?>>(bounds.values());
+        List<Exporter<?>> exporters = new ArrayList<>(bounds.values());
         for (Exporter<?> exporter : exporters) {
             exporter.unexport();
         }
@@ -569,7 +569,7 @@ public class RegistryProtocol implements Protocol {
         }
 
         private List<URL> getMatchedUrls(List<URL> configuratorUrls, URL currentSubscribe) {
-            List<URL> result = new ArrayList<URL>();
+            List<URL> result = new ArrayList<>();
             for (URL url : configuratorUrls) {
                 URL overrideUrl = url;
                 // Compatible with the old version

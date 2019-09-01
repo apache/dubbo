@@ -30,7 +30,7 @@ public class MockedChannel implements Channel {
     private volatile boolean closing = false;
     private URL url;
     private ChannelHandler handler;
-    private Map<String, Object> map = new HashMap<String, Object>();
+    private Map<String, Object> map = new HashMap<>();
 
     public MockedChannel() {
         super();

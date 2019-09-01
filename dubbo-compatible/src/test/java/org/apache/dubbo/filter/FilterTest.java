@@ -36,7 +36,7 @@ public class FilterTest {
     @Test
     public void testInvokeException() {
         try {
-            Invoker<FilterTest> invoker = new LegacyInvoker<FilterTest>(null);
+            Invoker<FilterTest> invoker = new LegacyInvoker<>(null);
             Invocation invocation = new LegacyInvocation("aa");
             myFilter.invoke(invoker, invocation);
             fail();
@@ -47,7 +47,7 @@ public class FilterTest {
 
     @Test
     public void testDefault() {
-        Invoker<FilterTest> invoker = new LegacyInvoker<FilterTest>(null);
+        Invoker<FilterTest> invoker = new LegacyInvoker<>(null);
         Invocation invocation = new LegacyInvocation("bbb");
         Result res = myFilter.invoke(invoker, invocation);
         System.out.println(res);

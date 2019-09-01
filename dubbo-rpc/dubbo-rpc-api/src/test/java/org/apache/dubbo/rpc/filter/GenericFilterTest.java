@@ -50,7 +50,7 @@ public class GenericFilterTest {
 
         Method genericInvoke = GenericService.class.getMethods()[0];
 
-        Map<String, Object> person = new HashMap<String, Object>();
+        Map<String, Object> person = new HashMap<>();
         person.put("name", "dubbo");
         person.put("age", 10);
 
@@ -78,7 +78,7 @@ public class GenericFilterTest {
         Assertions.assertThrows(RpcException.class, () -> {
             Method genericInvoke = GenericService.class.getMethods()[0];
 
-            Map<String, Object> person = new HashMap<String, Object>();
+            Map<String, Object> person = new HashMap<>();
             person.put("name", "dubbo");
             person.put("age", 10);
 
@@ -102,7 +102,7 @@ public class GenericFilterTest {
 
         Method genericInvoke = GenericService.class.getMethods()[0];
 
-        Map<String, Object> person = new HashMap<String, Object>();
+        Map<String, Object> person = new HashMap<>();
         person.put("name", "dubbo");
         person.put("age", 10);
 
@@ -126,7 +126,7 @@ public class GenericFilterTest {
 
         Method genericInvoke = GenericService.class.getMethods()[0];
 
-        Map<String, Object> person = new HashMap<String, Object>();
+        Map<String, Object> person = new HashMap<>();
         person.put("name", "dubbo");
         person.put("age", 10);
 

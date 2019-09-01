@@ -48,8 +48,8 @@ public class StatusTelnetHandler implements TelnetHandler {
         if ("-l".equals(message)) {
             List<StatusChecker> checkers = extensionLoader.getActivateExtension(channel.getUrl(), "status");
             String[] header = new String[]{"resource", "status", "message"};
-            List<List<String>> table = new ArrayList<List<String>>();
-            Map<String, Status> statuses = new HashMap<String, Status>();
+            List<List<String>> table = new ArrayList<>();
+            Map<String, Status> statuses = new HashMap<>();
             if (CollectionUtils.isNotEmpty(checkers)) {
                 for (StatusChecker checker : checkers) {
                     String name = extensionLoader.getExtensionName(checker);
@@ -61,7 +61,7 @@ public class StatusTelnetHandler implements TelnetHandler {
                     }
                     statuses.put(name, stat);
                     if (stat.getLevel() != null && stat.getLevel() != Status.Level.UNKNOWN) {
-                        List<String> row = new ArrayList<String>();
+                        List<String> row = new ArrayList<>();
                         row.add(name);
                         row.add(String.valueOf(stat.getLevel()));
                         row.add(stat.getMessage() == null ? "" : stat.getMessage());
@@ -70,7 +70,7 @@ public class StatusTelnetHandler implements TelnetHandler {
                 }
             }
             Status stat = StatusUtils.getSummaryStatus(statuses);
-            List<String> row = new ArrayList<String>();
+            List<String> row = new ArrayList<>();
             row.add("summary");
             row.add(String.valueOf(stat.getLevel()));
             row.add(stat.getMessage());
@@ -80,7 +80,7 @@ public class StatusTelnetHandler implements TelnetHandler {
             return "Unsupported parameter " + message + " for status.";
         }
         String status = channel.getUrl().getParameter("status");
-        Map<String, Status> statuses = new HashMap<String, Status>();
+        Map<String, Status> statuses = new HashMap<>();
         if (CollectionUtils.isNotEmptyMap(statuses)) {
             String[] ss = COMMA_SPLIT_PATTERN.split(status);
             for (String s : ss) {

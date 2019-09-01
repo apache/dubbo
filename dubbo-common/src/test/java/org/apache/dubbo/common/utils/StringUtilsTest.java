@@ -193,7 +193,7 @@ public class StringUtilsTest {
 
     @Test
     public void testGetServiceKey() throws Exception {
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         map.put(GROUP_KEY, "dubbo");
         map.put(INTERFACE_KEY, "a.b.c.Foo");
         map.put(VERSION_KEY, "1.0.0");
@@ -202,7 +202,7 @@ public class StringUtilsTest {
 
     @Test
     public void testToQueryString() throws Exception {
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         map.put("key1", "value1");
         map.put("key2", "value2");
         String queryString = StringUtils.toQueryString(map);
@@ -261,7 +261,7 @@ public class StringUtilsTest {
 
     @Test
     public void testJoinCollectionString() throws Exception {
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         assertEquals("", StringUtils.join(list, ","));
 
         list.add("v1");

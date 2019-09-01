@@ -48,8 +48,8 @@ import static org.apache.dubbo.rpc.Constants.RETURN_KEY;
 
 final public class MockInvoker<T> implements Invoker<T> {
     private final static ProxyFactory PROXY_FACTORY = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
-    private final static Map<String, Invoker<?>> MOCK_MAP = new ConcurrentHashMap<String, Invoker<?>>();
-    private final static Map<String, Throwable> THROWABLE_MAP = new ConcurrentHashMap<String, Throwable>();
+    private final static Map<String, Invoker<?>> MOCK_MAP = new ConcurrentHashMap<>();
+    private final static Map<String, Throwable> THROWABLE_MAP = new ConcurrentHashMap<>();
 
     private final URL url;
     private final Class<T> type;

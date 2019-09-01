@@ -89,7 +89,7 @@ public class InternalThreadLocal<V> {
         Object v = threadLocalMap.indexedVariable(VARIABLES_TO_REMOVE_INDEX);
         Set<InternalThreadLocal<?>> variablesToRemove;
         if (v == InternalThreadLocalMap.UNSET || v == null) {
-            variablesToRemove = Collections.newSetFromMap(new IdentityHashMap<InternalThreadLocal<?>, Boolean>());
+            variablesToRemove = Collections.newSetFromMap(new IdentityHashMap<>());
             threadLocalMap.setIndexedVariable(VARIABLES_TO_REMOVE_INDEX, variablesToRemove);
         } else {
             variablesToRemove = (Set<InternalThreadLocal<?>>) v;

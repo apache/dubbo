@@ -238,7 +238,7 @@ public class $__DemoStub {
         private static final int __ARG_ISSET_ID = 0;
 
         static {
-            Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+            Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<>(_Fields.class);
             tmpMap.put(_Fields.ARG, new org.apache.thrift.meta_data.FieldMetaData("arg", org.apache.thrift.TFieldRequirementType.REQUIRED,
                     new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
             metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -473,7 +473,7 @@ public class $__DemoStub {
         public enum _Fields implements org.apache.thrift.TFieldIdEnum {
             ARG((short) 1, "arg");
 
-            private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+            private static final Map<String, _Fields> byName = new HashMap<>();
 
             static {
                 for (_Fields field : EnumSet.allOf(_Fields.class)) {
@@ -537,7 +537,7 @@ public class $__DemoStub {
         private static final int __SUCCESS_ISSET_ID = 0;
 
         static {
-            Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+            Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<>(_Fields.class);
             tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
                     new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
             metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -769,7 +769,7 @@ public class $__DemoStub {
         public enum _Fields implements org.apache.thrift.TFieldIdEnum {
             SUCCESS((short) 0, "success");
 
-            private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+            private static final Map<String, _Fields> byName = new HashMap<>();
 
             static {
                 for (_Fields field : EnumSet.allOf(_Fields.class)) {
@@ -833,7 +833,7 @@ public class $__DemoStub {
         private static final int __ARG_ISSET_ID = 0;
 
         static {
-            Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+            Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<>(_Fields.class);
             tmpMap.put(_Fields.ARG, new org.apache.thrift.meta_data.FieldMetaData("arg", org.apache.thrift.TFieldRequirementType.REQUIRED,
                     new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BYTE)));
             metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -1068,7 +1068,7 @@ public class $__DemoStub {
         public enum _Fields implements org.apache.thrift.TFieldIdEnum {
             ARG((short) 1, "arg");
 
-            private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+            private static final Map<String, _Fields> byName = new HashMap<>();
 
             static {
                 for (_Fields field : EnumSet.allOf(_Fields.class)) {
@@ -1132,7 +1132,7 @@ public class $__DemoStub {
         private static final int __SUCCESS_ISSET_ID = 0;
 
         static {
-            Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+            Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<>(_Fields.class);
             tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
                     new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BYTE)));
             metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -1364,7 +1364,7 @@ public class $__DemoStub {
         public enum _Fields implements org.apache.thrift.TFieldIdEnum {
             SUCCESS((short) 0, "success");
 
-            private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+            private static final Map<String, _Fields> byName = new HashMap<>();
 
             static {
                 for (_Fields field : EnumSet.allOf(_Fields.class)) {
@@ -1428,7 +1428,7 @@ public class $__DemoStub {
         private static final int __ARG_ISSET_ID = 0;
 
         static {
-            Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+            Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<>(_Fields.class);
             tmpMap.put(_Fields.ARG, new org.apache.thrift.meta_data.FieldMetaData("arg", org.apache.thrift.TFieldRequirementType.REQUIRED,
                     new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I16)));
             metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -1661,7 +1661,7 @@ public class $__DemoStub {
         public enum _Fields implements org.apache.thrift.TFieldIdEnum {
             ARG((short) 1, "arg");
 
-            private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+            private static final Map<String, _Fields> byName = new HashMap<>();
 
             static {
                 for (_Fields field : EnumSet.allOf(_Fields.class)) {
@@ -1725,7 +1725,7 @@ public class $__DemoStub {
         private static final int __SUCCESS_ISSET_ID = 0;
 
         static {
-            Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+            Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<>(_Fields.class);
             tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
                     new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I16)));
             metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -1953,7 +1953,7 @@ public class $__DemoStub {
         public enum _Fields implements org.apache.thrift.TFieldIdEnum {
             SUCCESS((short) 0, "success");
 
-            private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+            private static final Map<String, _Fields> byName = new HashMap<>();
 
             static {
                 for (_Fields field : EnumSet.allOf(_Fields.class)) {
@@ -2017,7 +2017,7 @@ public class $__DemoStub {
         private static final int __ARG_ISSET_ID = 0;
 
         static {
-            Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+            Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<>(_Fields.class);
             tmpMap.put(_Fields.ARG, new org.apache.thrift.meta_data.FieldMetaData("arg", org.apache.thrift.TFieldRequirementType.REQUIRED,
                     new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
             metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -2248,7 +2248,7 @@ public class $__DemoStub {
         public enum _Fields implements org.apache.thrift.TFieldIdEnum {
             ARG((short) 1, "arg");
 
-            private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+            private static final Map<String, _Fields> byName = new HashMap<>();
 
             static {
                 for (_Fields field : EnumSet.allOf(_Fields.class)) {
@@ -2312,7 +2312,7 @@ public class $__DemoStub {
         private static final int __SUCCESS_ISSET_ID = 0;
 
         static {
-            Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+            Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<>(_Fields.class);
             tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
                     new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
             metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -2538,7 +2538,7 @@ public class $__DemoStub {
         public enum _Fields implements org.apache.thrift.TFieldIdEnum {
             SUCCESS((short) 0, "success");
 
-            private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+            private static final Map<String, _Fields> byName = new HashMap<>();
 
             static {
                 for (_Fields field : EnumSet.allOf(_Fields.class)) {
@@ -2602,7 +2602,7 @@ public class $__DemoStub {
         private static final int __ARG_ISSET_ID = 0;
 
         static {
-            Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+            Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<>(_Fields.class);
             tmpMap.put(_Fields.ARG, new org.apache.thrift.meta_data.FieldMetaData("arg", org.apache.thrift.TFieldRequirementType.REQUIRED,
                     new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
             metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -2831,7 +2831,7 @@ public class $__DemoStub {
         public enum _Fields implements org.apache.thrift.TFieldIdEnum {
             ARG((short) 1, "arg");
 
-            private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+            private static final Map<String, _Fields> byName = new HashMap<>();
 
             static {
                 for (_Fields field : EnumSet.allOf(_Fields.class)) {
@@ -2895,7 +2895,7 @@ public class $__DemoStub {
         private static final int __SUCCESS_ISSET_ID = 0;
 
         static {
-            Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+            Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<>(_Fields.class);
             tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
                     new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
             metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -3121,7 +3121,7 @@ public class $__DemoStub {
         public enum _Fields implements org.apache.thrift.TFieldIdEnum {
             SUCCESS((short) 0, "success");
 
-            private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+            private static final Map<String, _Fields> byName = new HashMap<>();
 
             static {
                 for (_Fields field : EnumSet.allOf(_Fields.class)) {
@@ -3185,7 +3185,7 @@ public class $__DemoStub {
         private static final int __ARG_ISSET_ID = 0;
 
         static {
-            Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+            Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<>(_Fields.class);
             tmpMap.put(_Fields.ARG, new org.apache.thrift.meta_data.FieldMetaData("arg", org.apache.thrift.TFieldRequirementType.REQUIRED,
                     new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.DOUBLE)));
             metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -3414,7 +3414,7 @@ public class $__DemoStub {
         public enum _Fields implements org.apache.thrift.TFieldIdEnum {
             ARG((short) 1, "arg");
 
-            private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+            private static final Map<String, _Fields> byName = new HashMap<>();
 
             static {
                 for (_Fields field : EnumSet.allOf(_Fields.class)) {
@@ -3478,7 +3478,7 @@ public class $__DemoStub {
         private static final int __SUCCESS_ISSET_ID = 0;
 
         static {
-            Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+            Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<>(_Fields.class);
             tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
                     new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.DOUBLE)));
             metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -3704,7 +3704,7 @@ public class $__DemoStub {
         public enum _Fields implements org.apache.thrift.TFieldIdEnum {
             SUCCESS((short) 0, "success");
 
-            private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+            private static final Map<String, _Fields> byName = new HashMap<>();
 
             static {
                 for (_Fields field : EnumSet.allOf(_Fields.class)) {
@@ -3766,7 +3766,7 @@ public class $__DemoStub {
         private static final org.apache.thrift.protocol.TField ARG_FIELD_DESC = new org.apache.thrift.protocol.TField("arg", org.apache.thrift.protocol.TType.STRING, (short) 1);
 
         static {
-            Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+            Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<>(_Fields.class);
             tmpMap.put(_Fields.ARG, new org.apache.thrift.meta_data.FieldMetaData("arg", org.apache.thrift.TFieldRequirementType.REQUIRED,
                     new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
             metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -3997,7 +3997,7 @@ public class $__DemoStub {
         public enum _Fields implements org.apache.thrift.TFieldIdEnum {
             ARG((short) 1, "arg");
 
-            private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+            private static final Map<String, _Fields> byName = new HashMap<>();
 
             static {
                 for (_Fields field : EnumSet.allOf(_Fields.class)) {
@@ -4059,7 +4059,7 @@ public class $__DemoStub {
         private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.STRING, (short) 0);
 
         static {
-            Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+            Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<>(_Fields.class);
             tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
                     new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
             metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -4288,7 +4288,7 @@ public class $__DemoStub {
         public enum _Fields implements org.apache.thrift.TFieldIdEnum {
             SUCCESS((short) 0, "success");
 
-            private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+            private static final Map<String, _Fields> byName = new HashMap<>();
 
             static {
                 for (_Fields field : EnumSet.allOf(_Fields.class)) {

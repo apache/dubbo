@@ -30,7 +30,7 @@ public class RegistryAwareCluster implements Cluster {
 
     @Override
     public <T> Invoker<T> join(Directory<T> directory) throws RpcException {
-        return new RegistryAwareClusterInvoker<T>(directory);
+        return new RegistryAwareClusterInvoker<>(directory);
     }
 
 }

@@ -265,7 +265,7 @@ public class ConsulRegistry extends FailbackRegistry {
                 .setProtocol(EMPTY_PROTOCOL)
                 .removeParameter(CATEGORY_KEY)
                 .build();
-        List<URL> result = new ArrayList<URL>();
+        List<URL> result = new ArrayList<>();
         result.add(empty);
         return result;
     }

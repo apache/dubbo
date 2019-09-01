@@ -46,7 +46,7 @@ public class HttpCommandDecoder {
                         commandContext = CommandContextFactory.newInstance(name);
                         commandContext.setHttp(true);
                     } else {
-                        List<String> valueList = new ArrayList<String>();
+                        List<String> valueList = new ArrayList<>();
                         for (List<String> values : queryStringDecoder.parameters().values()) {
                             valueList.addAll(values);
                         }
@@ -54,7 +54,7 @@ public class HttpCommandDecoder {
                     }
                 } else if (request.getMethod() == HttpMethod.POST) {
                     HttpPostRequestDecoder httpPostRequestDecoder = new HttpPostRequestDecoder(request);
-                    List<String> valueList = new ArrayList<String>();
+                    List<String> valueList = new ArrayList<>();
                     for (InterfaceHttpData interfaceHttpData : httpPostRequestDecoder.getBodyHttpDatas()) {
                         if (interfaceHttpData.getHttpDataType() == InterfaceHttpData.HttpDataType.Attribute) {
                             Attribute attribute = (Attribute) interfaceHttpData;

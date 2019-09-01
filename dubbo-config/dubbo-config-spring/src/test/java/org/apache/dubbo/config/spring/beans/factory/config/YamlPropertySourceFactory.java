@@ -62,7 +62,7 @@ public class YamlPropertySourceFactory extends YamlProcessor implements Property
     }
 
     public Map<String, Object> process() {
-        final Map<String, Object> result = new LinkedHashMap<String, Object>();
+        final Map<String, Object> result = new LinkedHashMap<>();
         process((properties, map) -> result.putAll(getFlattenedMap(map)));
         return result;
     }

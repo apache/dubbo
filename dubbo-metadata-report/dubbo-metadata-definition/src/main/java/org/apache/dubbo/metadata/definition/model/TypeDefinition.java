@@ -49,7 +49,7 @@ public class TypeDefinition {
 
     public List<String> getEnums() {
         if (enums == null) {
-            enums = new ArrayList<String>();
+            enums = new ArrayList<>();
         }
         return enums;
     }

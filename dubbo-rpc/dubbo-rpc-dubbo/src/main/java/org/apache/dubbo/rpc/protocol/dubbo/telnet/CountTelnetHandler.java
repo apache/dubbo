@@ -119,8 +119,8 @@ public class CountTelnetHandler implements TelnetHandler {
 
     private String count(Invoker<?> invoker, String method) {
         URL url = invoker.getUrl();
-        List<List<String>> table = new ArrayList<List<String>>();
-        List<String> header = new ArrayList<String>();
+        List<List<String>> table = new ArrayList<>();
+        List<String> header = new ArrayList<>();
         header.add("method");
         header.add("total");
         header.add("failed");
@@ -130,7 +130,7 @@ public class CountTelnetHandler implements TelnetHandler {
         if (method == null || method.length() == 0) {
             for (Method m : invoker.getInterface().getMethods()) {
                 RpcStatus count = RpcStatus.getStatus(url, m.getName());
-                List<String> row = new ArrayList<String>();
+                List<String> row = new ArrayList<>();
                 row.add(m.getName());
                 row.add(String.valueOf(count.getTotal()));
                 row.add(String.valueOf(count.getFailed()));
@@ -149,7 +149,7 @@ public class CountTelnetHandler implements TelnetHandler {
             }
             if (found) {
                 RpcStatus count = RpcStatus.getStatus(url, method);
-                List<String> row = new ArrayList<String>();
+                List<String> row = new ArrayList<>();
                 row.add(method);
                 row.add(String.valueOf(count.getTotal()));
                 row.add(String.valueOf(count.getFailed()));
