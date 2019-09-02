@@ -33,11 +33,13 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Apollo dynamic configuration mock test.
- * Notice: EmbeddedApollo(apollo mock server) only support < junit5, please not upgrade the junit version, the junit
- * version in the test is junit4, and the dependency comes from apollo-mockserver.
+ * Notice: EmbeddedApollo(apollo mock server) only support < junit5, please not upgrade the junit version in this UT,
+ * the junit version in this UT is junit4, and the dependency comes from apollo-mockserver.
  */
 public class ApolloDynamicConfigurationTest {
     private static final String SESSION_TIMEOUT_KEY = "session";
@@ -71,6 +73,9 @@ public class ApolloDynamicConfigurationTest {
         putMockRuleData(mockKey, mockValue, DEFAULT_NAMESPACE);
         apolloDynamicConfiguration = new ApolloDynamicConfiguration(url);
         assertEquals(mockValue, apolloDynamicConfiguration.getRule(mockKey, DEFAULT_NAMESPACE, 3000L));
+
+        mockKey = "notExistKey";
+        assertNull(apolloDynamicConfiguration.getRule(mockKey, DEFAULT_NAMESPACE, 3000L));
     }
 
     /**
@@ -90,6 +95,9 @@ public class ApolloDynamicConfigurationTest {
         mockValue = "mockValue2";
         System.setProperty(mockKey, mockValue);
         assertEquals(mockValue, apolloDynamicConfiguration.getInternalProperty(mockKey));
+
+        mockKey = "notExistKey";
+        assertNull(apolloDynamicConfiguration.getInternalProperty(mockKey));
     }
 
     /**
@@ -137,13 +145,14 @@ public class ApolloDynamicConfigurationTest {
             pro.setProperty(key, value);
             pro.store(oFile, "put mock data");
         } catch (IOException exx) {
-            exx.printStackTrace();
+            fail(exx.getMessage());
 
         } finally {
             if (null != oFile) {
                 try {
                     oFile.close();
                 } catch (IOException e) {
+                    fail(e.getMessage());
                 }
             }
         }
