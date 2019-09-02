@@ -288,11 +288,12 @@ public class DubboProtocol extends AbstractProtocol {
                 synchronized (this) {
                     server = serverMap.get(key);
                     if (server == null) {
-                        //创建服务器实例
+                        //创建服务器实例 createServer
                         serverMap.put(key, createServer(url));
                     }
                 }
             } else {
+                // 多个 Service 共用同一个 Protocol ，服务器是同一个对象
                 // server supports reset, use together with override
                 server.reset(url);
             }
@@ -308,18 +309,19 @@ public class DubboProtocol extends AbstractProtocol {
      * @return
      */
     private ExchangeServer createServer(URL url) {
+        // 默认开启 server 关闭时发送 READ_ONLY 事件
         // send readonly event when server closes, it's enabled by default
         url = url.addParameterIfAbsent(Constants.CHANNEL_READONLYEVENT_SENT_KEY, Boolean.TRUE.toString());
         // enable heartbeat by default
         //添加心跳检测配置到url中
         url = url.addParameterIfAbsent(Constants.HEARTBEAT_KEY, String.valueOf(Constants.DEFAULT_HEARTBEAT));
-        // 获取server参数，默认为netty
+        // 获取server参数，默认为netty 校验 Server 的 Dubbo SPI 拓展是否存在
         String str = url.getParameter(Constants.SERVER_KEY, Constants.DEFAULT_REMOTING_SERVER);
         // 通过 SPI 检测是否存在 server 参数所代表的 Transporter 拓展，不存在则抛出异常
         if (str != null && str.length() > 0 && !ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(str)) {
             throw new RpcException("Unsupported server type: " + str + ", url: " + url);
         }
-        //编码解释器
+        //编码解释器 为dubbo  DubboCountCodec
         url = url.addParameter(Constants.CODEC_KEY, DubboCodec.NAME);
         ExchangeServer server;
         try {
@@ -378,7 +380,9 @@ public class DubboProtocol extends AbstractProtocol {
 
     @Override
     public <T> Invoker<T> refer(Class<T> serviceType, URL url) throws RpcException {
+        // 初始化序列化优化器
         optimizeSerialization(url);
+        // 获得远程通信客户端数组
         // create rpc invoker.
         DubboInvoker<T> invoker = new DubboInvoker<T>(serviceType, url, getClients(url), invokers);
         invokers.add(invoker);
@@ -423,16 +427,18 @@ public class DubboProtocol extends AbstractProtocol {
         // 获取带有“引用计数”功能的 ExchangeClient
         ReferenceCountExchangeClient client = referenceClientMap.get(key);
         if (client != null) {
+            // 若未关闭，增加指向该 Client 的数量，并返回它
             if (!client.isClosed()) {
                 // 增加计数引用
                 client.incrementAndGetCount();
                 return client;
-            } else {
+            } else { // 若已关闭，则移除
                 referenceClientMap.remove(key);
             }
         }
 
         locks.putIfAbsent(key, new Object());
+        // 同步创建 ExchangeClient
         synchronized (locks.get(key)) {
             if (referenceClientMap.containsKey(key)) {
                 return referenceClientMap.get(key);

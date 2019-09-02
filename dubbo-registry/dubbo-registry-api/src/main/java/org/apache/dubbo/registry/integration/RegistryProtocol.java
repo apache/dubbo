@@ -94,11 +94,15 @@ import static org.apache.dubbo.common.utils.UrlUtils.classifyUrls;
 public class RegistryProtocol implements Protocol {
 
     private final static Logger logger = LoggerFactory.getLogger(RegistryProtocol.class);
+    /**
+     * 单例
+     */
     private static RegistryProtocol INSTANCE;
     private final Map<URL, NotifyListener> overrideListeners = new ConcurrentHashMap<>();
     private final Map<String, ServiceConfigurationListener> serviceConfigurationListeners = new ConcurrentHashMap<>();
     private final ProviderConfigurationListener providerConfigurationListener = new ProviderConfigurationListener();
     //To solve the problem of RMI repeated exposure port conflicts, the services that have been exposed are no longer exposed.
+    // 用于解决rmi重复暴露端口冲突的问题，已经暴露过的服务不再重新暴露
     //providerurl <--> exporter
     private final Map<String, ExporterChangeableWrapper<?>> bounds = new ConcurrentHashMap<>();
     private Cluster cluster;
@@ -186,19 +190,21 @@ public class RegistryProtocol implements Protocol {
 
         providerUrl = overrideUrlWithConfig(providerUrl, overrideSubscribeListener);
         //export invoker
-        // 导出服务
+        // 导出服务 本地
         final ExporterChangeableWrapper<T> exporter = doLocalExport(originInvoker, providerUrl);
 
-        // url to registry
+        // url to registry 获得注册中心对象
         // 根据 URL 加载 Registry 实现类，比如 ZookeeperRegistry
         final Registry registry = getRegistry(originInvoker);
         // 获取已注册的服务提供者url,比如
         // dubbo://172.17.48.52:20880/com.alibaba.dubbo.demo.DemoService?anyhost=true&application=demo-provider&dubbo=2.0.2&generic=false&interface=com.alibaba.dubbo.demo.DemoService&methods=sayHello
         final URL registeredProviderUrl = getRegisteredProviderUrl(providerUrl, registryUrl);
+        // 向本地注册，注册服务提供者
         ProviderInvokerWrapper<T> providerInvokerWrapper = ProviderConsumerRegTable.registerProvider(originInvoker,
                 registryUrl, registeredProviderUrl);
         //to judge if we need to delay publish
         boolean register = registeredProviderUrl.getParameter("register", true);
+        // 想注册中心注册 服务提供者
         if (register) {
             // 注册服务
             register(registryUrl, registeredProviderUrl);
@@ -228,8 +234,9 @@ public class RegistryProtocol implements Protocol {
         if (exporter == null) {
             synchronized (bounds) {
                 exporter = (ExporterChangeableWrapper<T>) bounds.get(key);
+                // 未暴漏过服务
                 if (exporter == null) {
-
+                    // 暴漏服务 创建 Exporter 对象
                     final Invoker<?> invokerDelegete = new InvokerDelegate<T>(originInvoker, providerUrl);
                     exporter = new ExporterChangeableWrapper<T>((Exporter<T>) protocol.export(invokerDelegete), originInvoker);
                     bounds.put(key, exporter);
@@ -310,6 +317,7 @@ public class RegistryProtocol implements Protocol {
     private URL getRegisteredProviderUrl(final URL providerUrl, final URL registryUrl) {
         //The address you see at the registry
         if (!registryUrl.getParameter(SIMPLE_PROVIDER_CONFIG_KEY, false)) {
+            // 移出无用的参数
             return providerUrl.removeParameters(getFilteredKeys(providerUrl)).removeParameters(
                     MONITOR_KEY, BIND_IP_KEY, BIND_PORT_KEY, QOS_ENABLE, QOS_PORT, ACCEPT_FOREIGN_IP, VALIDATION_KEY,
                     INTERFACES);
@@ -371,6 +379,7 @@ public class RegistryProtocol implements Protocol {
                 return doRefer(getMergeableCluster(), registry, type, url);
             }
         }
+        // 追星服务调用
         return doRefer(cluster, registry, type, url);
     }
 

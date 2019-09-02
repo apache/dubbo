@@ -113,6 +113,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
     /**
      * The url for peer-to-peer invocation
+     *  直连服务提供地址
      */
     private String url;
 
@@ -256,6 +257,10 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         ref = null;
     }
 
+    /**
+     * <dubbo:service scope="local" /> 本地应用的配置方式
+     *
+     */
     private void init() {
         //避免重复初始化
         if (initialized) {
@@ -330,7 +335,9 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     @SuppressWarnings({"unchecked", "rawtypes", "deprecation"})
     private T createProxy(Map<String, String> map) {
         URL tmpUrl = new URL("temp", "localhost", 0, map);
+        // 是否本地引用
         final boolean isJvmRefer;
+        // injvm 属性为空，不通过该属性判断
         if (isInjvm() == null) {
             // 如果url指定则不做本地引用
             if (url != null && url.length() > 0) { // if a url is specified, don't do local reference
@@ -350,6 +357,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             // 生成本地引用 URL，协议为 injvm
             URL url = new URL(Constants.LOCAL_PROTOCOL, Constants.LOCALHOST_VALUE, 0, interfaceClass.getName()).addParameters(map);
             // 调用 refer 方法构建 InjvmInvoker 实例
+            // 调用链 Protocol$Adaptive => ProtocolFilterWrapper => ProtocolListenerWrapper => InjvmProtocol
             invoker = refprotocol.refer(interfaceClass, url);
             if (logger.isInfoEnabled()) {
                 logger.info("Using injvm service " + interfaceClass.getName());
@@ -397,6 +405,15 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                     throw new IllegalStateException("No such any registry to reference " + interfaceName + " on the consumer " + NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion() + ", please config <dubbo:registry address=\"...\" /> to your spring config.");
                 }
             }
+            /**
+             * RegistryProtocol#refer(...) {
+             *
+             *     // 1. 获取服务提供者列表 【并且订阅】
+             *     // 2. 创建调用连接服务提供者的客户端
+             *     DubboProtocol#refer(...);
+             *     // ps：实际这个过程中，还有别的代码，详细见下文。
+             * }
+             */
             // 单个注册中心或服务提供者(服务直连，下同)
             if (urls.size() == 1) {
                 invoker = refprotocol.refer(interfaceClass, urls.get(0));

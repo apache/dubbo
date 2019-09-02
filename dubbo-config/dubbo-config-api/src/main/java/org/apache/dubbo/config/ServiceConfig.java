@@ -625,6 +625,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 }
                 if (registryURLs != null && !registryURLs.isEmpty()) {
                     for (URL registryURL : registryURLs) {
+                        // "dynamic" ：服务是否动态注册，如果设为false，注册后将显示后disable状态，需人工启用，并且服务提供者停止时，也不会自动取消册，需人工禁用
                         url = url.addParameterIfAbsent(Constants.DYNAMIC_KEY, registryURL.getParameter(Constants.DYNAMIC_KEY));
                         // 加载监视器链接
                         URL monitorUrl = loadMonitor(registryURL);
@@ -645,7 +646,10 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                         Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, registryURL.addParameterAndEncoded(Constants.EXPORT_KEY, url.toFullString()));
                         // DelegateProviderMetaDataInvoker 用于持有 invoker 和serviceConfig
                         DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
-                        //导出服务，并生成对应的Exporter
+                        //导出服务，并生成对应的Exporter 根据invoker.url自动获得其对应的拓展实现
+                        // 这里获得是 Protocol$Adaptive 获取到的是 RegistryProtocol 对象 RegistryProtocol.export()  使用服务提供者 URL( 即注册中心的 URL 的 export 参数值)，再次调用 Protocol$Adaptive 获取到的是 DubboProtocol 对象，进行服务暴露
+                        // 调用顺序  Protocol$Adaptive => ProtocolFilterWrapper => ProtocolListenerWrapper => RegistryProtocol =>
+                        //          Protocol$Adaptive => ProtocolFilterWrapper => ProtocolListenerWrapper => DubboProtocol
                         Exporter<?> exporter = protocol.export(wrapperInvoker);
                         // 将exporter添加到集合中
                         exporters.add(exporter);
