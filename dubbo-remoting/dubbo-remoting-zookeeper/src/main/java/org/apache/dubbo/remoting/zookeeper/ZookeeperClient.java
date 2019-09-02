@@ -20,14 +20,37 @@ import org.apache.dubbo.common.URL;
 
 import java.util.List;
 
+/**
+ * 客户端接口 默认不配置zkclient的情况下 使用 curator
+ */
 public interface ZookeeperClient {
 
+    /**
+     * 创建节点
+     * @param path
+     * @param ephemeral
+     */
     void create(String path, boolean ephemeral);
 
+    /**
+     * 删除节点
+     * @param path
+     */
     void delete(String path);
 
+    /**
+     *
+     * @param path
+     * @return
+     */
     List<String> getChildren(String path);
 
+    /**
+     * 添加 ChildListener
+     * @param path
+     * @param listener
+     * @return
+     */
     List<String> addChildListener(String path, ChildListener listener);
 
     void removeChildListener(String path, ChildListener listener);
@@ -36,10 +59,21 @@ public interface ZookeeperClient {
 
     void removeStateListener(StateListener listener);
 
+    /**
+     * 是否链接
+     * @return
+     */
     boolean isConnected();
 
+    /**
+     * 关闭
+     */
     void close();
 
+    /**
+     * 注册中心的url
+     * @return
+     */
     URL getUrl();
 
     void create(String path, String content, boolean ephemeral);

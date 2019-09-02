@@ -33,12 +33,21 @@ public abstract class AbstractZookeeperClient<TargetChildListener> implements Zo
 
     protected static final Logger logger = LoggerFactory.getLogger(AbstractZookeeperClient.class);
 
+    /**
+     * 注册中心的url
+     */
     private final URL url;
 
+    /**
+     * StateListener 集合
+     */
     private final Set<StateListener> stateListeners = new CopyOnWriteArraySet<StateListener>();
 
     private final ConcurrentMap<String, ConcurrentMap<ChildListener, TargetChildListener>> childListeners = new ConcurrentHashMap<String, ConcurrentMap<ChildListener, TargetChildListener>>();
 
+    /**
+     * 是否关闭
+     */
     private volatile boolean closed = false;
 
     public AbstractZookeeperClient(URL url) {
@@ -66,7 +75,7 @@ public abstract class AbstractZookeeperClient<TargetChildListener> implements Zo
         // 根据 ephemeral 的值创建临时或持久节点
         if (ephemeral) {
             createEphemeral(path);
-        } else {
+        } else { //持久节点
             createPersistent(path);
         }
     }
@@ -87,16 +96,19 @@ public abstract class AbstractZookeeperClient<TargetChildListener> implements Zo
 
     @Override
     public List<String> addChildListener(String path, final ChildListener listener) {
+        // 获得路径下的监听数组
         ConcurrentMap<ChildListener, TargetChildListener> listeners = childListeners.get(path);
         if (listeners == null) {
             childListeners.putIfAbsent(path, new ConcurrentHashMap<ChildListener, TargetChildListener>());
             listeners = childListeners.get(path);
         }
+        // 获取是否已经有该监听器
         TargetChildListener targetListener = listeners.get(listener);
         if (targetListener == null) {
             listeners.putIfAbsent(listener, createTargetChildListener(path, listener));
             targetListener = listeners.get(listener);
         }
+        // 发起订阅
         return addTargetChildListener(path, targetListener);
     }
 
@@ -153,7 +165,7 @@ public abstract class AbstractZookeeperClient<TargetChildListener> implements Zo
         }
         return doGetContent(path);
     }
-
+    /*** 模版方法 ******/
     protected abstract void doClose();
 
     protected abstract void createPersistent(String path);
@@ -164,6 +176,11 @@ public abstract class AbstractZookeeperClient<TargetChildListener> implements Zo
 
     protected abstract void createEphemeral(String path, String data);
 
+    /**
+     * 节点是否存在
+     * @param path
+     * @return
+     */
     protected abstract boolean checkExists(String path);
 
     protected abstract TargetChildListener createTargetChildListener(String path, ChildListener listener);
