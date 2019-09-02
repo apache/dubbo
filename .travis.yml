@@ -1,28 +1,16 @@
 language: java
 sudo: false
 
-matrix:
-  include:
-    - env:
-        - ZULUJDK=8
-    - env:
-        - ZULUJDK=7
-
-before_install:
-  # adding $HOME/.sdkman to cache would create an empty directory, which interferes with the initial installation
-  - "[[ -d $HOME/.sdkman/bin/ ]] || rm -rf $HOME/.sdkman/"
-  - curl -sL https://get.sdkman.io | bash
-  - echo sdkman_auto_answer=true > $HOME/.sdkman/etc/config
-  - source "$HOME/.sdkman/bin/sdkman-init.sh"
-
-install:
-  - sdk install java $(sdk list java | grep -o "$ZULUJDK\.[0-9\.]*-zulu" | head -1)
-  - unset JAVA_HOME
+jdk:
+  - oraclejdk8
+  - openjdk7
 
 cache:
   directories:
-    - "$HOME/.m2/repository"
-    - "$HOME/.m2/wrapper"
+    - $HOME/.m2
+    - $HOME/.m2/wrapper
+
+install: true
 
 script:
   - travis_wait 30 ./mvnw --batch-mode --no-transfer-progress clean install -DskipTests=false -Dcheckstyle.skip=false -Drat.skip=false -Dmaven.javadoc.skip=true
