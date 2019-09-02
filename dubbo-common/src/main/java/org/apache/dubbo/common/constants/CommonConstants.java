@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.common.constants;
 
+import java.util.concurrent.ExecutorService;
 import java.util.regex.Pattern;
 
 public interface CommonConstants {
@@ -162,6 +163,13 @@ public interface CommonConstants {
     String VERSION_KEY = "version";
 
     String REVISION_KEY = "revision";
+
+    String EXECUTOR_SERVICE_COMPONENT_KEY = ExecutorService.class.getName();
+
+    /**
+     * Consumer side 's proxy class
+     */
+    String PROXY_CLASS_REF = "refClass";
 
     /**
      * package version in the manifest

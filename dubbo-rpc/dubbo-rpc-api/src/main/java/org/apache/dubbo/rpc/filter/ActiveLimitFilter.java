@@ -115,7 +115,7 @@ public class ActiveLimitFilter extends ListenableFilter {
         }
 
         private long getElapsed(Invocation invocation) {
-            String beginTime = invocation.getAttachment(ACTIVELIMIT_FILTER_START_TIME);
+            String beginTime = (String) invocation.getAttachment(ACTIVELIMIT_FILTER_START_TIME);
             return StringUtils.isNotEmpty(beginTime) ? System.currentTimeMillis() - Long.parseLong(beginTime) : 0;
         }
 

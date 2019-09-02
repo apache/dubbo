@@ -174,6 +174,8 @@ public class RpcUtils {
 
     public static boolean isGenericAsync(Invocation inv) {
         return $INVOKE_ASYNC.equals(inv.getMethodName());
+    }
+
     public static InvokeMode getInvokeMode(URL url, Invocation inv) {
         if (isReturnTypeFuture(inv)) {
             return InvokeMode.FUTURE;
@@ -182,10 +184,6 @@ public class RpcUtils {
         } else {
             return InvokeMode.SYNC;
         }
-    }
-
-    public static boolean isGenericAsync(Invocation inv) {
-        return Constants.$INVOKE_ASYNC.equals(inv.getMethodName());
     }
 
     public static boolean isOneway(URL url, Invocation inv) {

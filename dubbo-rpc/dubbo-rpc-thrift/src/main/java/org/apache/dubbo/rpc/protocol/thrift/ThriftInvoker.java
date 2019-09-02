@@ -39,6 +39,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.remoting.Constants.CHANNEL_ATTRIBUTE_READONLY_KEY;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 
 
@@ -115,7 +116,7 @@ public class ThriftInvoker<T> extends AbstractInvoker<T> {
 
         for (ExchangeClient client : clients) {
             if (client.isConnected()
-                    && !client.hasAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY)) {
+                    && !client.hasAttribute(CHANNEL_ATTRIBUTE_READONLY_KEY)) {
                 //cannot write == not Available ?
                 return true;
             }

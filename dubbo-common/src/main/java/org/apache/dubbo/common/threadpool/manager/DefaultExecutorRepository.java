@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.threadpool.manager;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
@@ -31,6 +30,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
+
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 
 /**
  * Consider implementing {@link Licycle} to enable executors shutdown when the process stops.
@@ -58,9 +62,9 @@ public class DefaultExecutorRepository implements ExecutorRepository {
     }
 
     public ExecutorService createExecutorIfAbsent(URL url) {
-        String componentKey = Constants.EXECUTOR_SERVICE_COMPONENT_KEY;
-        if (Constants.CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(Constants.SIDE_KEY))) {
-            componentKey = Constants.CONSUMER_SIDE;
+        String componentKey = EXECUTOR_SERVICE_COMPONENT_KEY;
+        if (CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY))) {
+            componentKey = CONSUMER_SIDE;
         }
         Map<String, ExecutorService> executors = data.computeIfAbsent(componentKey, k -> new ConcurrentHashMap<>());
         return executors.computeIfAbsent(Integer.toString(url.getPort()), k -> (ExecutorService) ExtensionLoader.getExtensionLoader(ThreadPool.class).getAdaptiveExtension().getExecutor(url));
@@ -69,10 +73,10 @@ public class DefaultExecutorRepository implements ExecutorRepository {
     @Override
     public void updateThreadpool(URL url, ExecutorService executor) {
         try {
-            if (url.hasParameter(Constants.THREADS_KEY)
+            if (url.hasParameter(THREADS_KEY)
                     && executor instanceof ThreadPoolExecutor && !executor.isShutdown()) {
                 ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) executor;
-                int threads = url.getParameter(Constants.THREADS_KEY, 0);
+                int threads = url.getParameter(THREADS_KEY, 0);
                 int max = threadPoolExecutor.getMaximumPoolSize();
                 int core = threadPoolExecutor.getCorePoolSize();
                 if (threads > 0 && (threads != max || threads != core)) {

@@ -97,7 +97,7 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
         }
 
         List<Invoker<T>> result = invokers;
-        String tag = StringUtils.isEmpty(invocation.getAttachment(Constants.TAG_KEY)) ? url.getParameter(Constants.TAG_KEY) :
+        String tag = StringUtils.isEmpty((String) invocation.getAttachment(Constants.TAG_KEY)) ? url.getParameter(Constants.TAG_KEY) :
                 (String) invocation.getAttachment(Constants.TAG_KEY);
 
         // if we are requesting for a Provider with a specific tag
@@ -163,7 +163,7 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
     private <T> List<Invoker<T>> filterUsingStaticTag(List<Invoker<T>> invokers, URL url, Invocation invocation) {
         List<Invoker<T>> result = invokers;
         // Dynamic param
-        String tag = StringUtils.isEmpty(invocation.getAttachment(Constants.TAG_KEY)) ? url.getParameter(Constants.TAG_KEY) :
+        String tag = StringUtils.isEmpty((String) invocation.getAttachment(Constants.TAG_KEY)) ? url.getParameter(Constants.TAG_KEY) :
                 (String) invocation.getAttachment(Constants.TAG_KEY);
         // Tag request
         if (!StringUtils.isEmpty(tag)) {

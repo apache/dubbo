@@ -38,7 +38,6 @@ import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
 import org.apache.dubbo.rpc.cluster.support.RegistryAwareCluster;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ConsumerMethodModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
@@ -48,6 +47,7 @@ import org.apache.dubbo.rpc.support.ProtocolUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -57,24 +57,25 @@ import java.util.Map;
 import java.util.Properties;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PROXY_CLASS_REF;
 import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SEMICOLON_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
-import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
-import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
-import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
-import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
-import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 import static org.apache.dubbo.common.utils.NetUtils.isInvalidLocalHost;
+import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
+import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
+import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
+import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
+import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 
 /**
  * ReferenceConfig
@@ -296,6 +297,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         serviceMetadata.setDefaultGroup(group);
         serviceMetadata.setServiceType(getActualInterface());
         serviceMetadata.setServiceInterfaceName(interfaceName);
+        serviceMetadata.setServiceKey(URL.buildKey(interfaceName, group, version));
 
         Map<String, String> map = new HashMap<String, String>();
         map.put(SIDE_KEY, CONSUMER_SIDE);
@@ -351,10 +353,9 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
         ref = createProxy(map);
 
-        String serviceKey = URL.buildKey(interfaceName, group, version);
-        ApplicationModel.initConsumerModel(serviceKey, buildConsumerModel(serviceKey, attributes, serviceMetadata));
+        ApplicationModel.initConsumerModel(serviceMetadata.getServiceKey(), buildConsumerModel(attributes, serviceMetadata));
         serviceMetadata.setTarget(ref);
-        consumerModel.getServiceMetadata().addAttribute(Constants.PROXY_CLASS_REF, ref);
+        serviceMetadata.addAttribute(PROXY_CLASS_REF, ref);
         initialized = true;
     }
 
@@ -370,7 +371,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         return actualInterface;
     }
 
-    private ConsumerModel buildConsumerModel(String serviceKey, Map<String, Object> attributes) {
+    private ConsumerModel buildConsumerModel(Map<String, Object> attributes, ServiceMetadata metadata) {
         Method[] methods = interfaceClass.getMethods();
         Class serviceInterface = interfaceClass;
         if (interfaceClass == GenericService.class) {
@@ -381,7 +382,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 methods = interfaceClass.getMethods();
             }
         }
-        return new ConsumerModel(serviceKey, serviceInterface, ref, methods, attributes);
+        return new ConsumerModel(attributes, metadata);
     }
 
     @SuppressWarnings({"unchecked", "rawtypes", "deprecation"})

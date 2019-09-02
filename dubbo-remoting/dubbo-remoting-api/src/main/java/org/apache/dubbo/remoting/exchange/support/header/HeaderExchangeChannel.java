@@ -33,6 +33,9 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+
 /**
  * ExchangeReceiver
  */
@@ -108,7 +111,7 @@ final class HeaderExchangeChannel implements ExchangeChannel {
 
     @Override
     public CompletableFuture<Object> request(Object request, ExecutorService executor) throws RemotingException {
-        return request(request, channel.getUrl().getPositiveParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT), executor);
+        return request(request, channel.getUrl().getPositiveParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT), executor);
     }
 
     @Override

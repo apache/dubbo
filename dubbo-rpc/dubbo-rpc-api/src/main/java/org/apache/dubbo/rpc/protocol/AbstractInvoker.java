@@ -27,7 +27,6 @@ import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.AsyncRpcResult;
-import org.apache.dubbo.rpc.FutureAdapter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.InvokeMode;
 import org.apache.dubbo.rpc.Invoker;
@@ -35,6 +34,7 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.protocol.dubbo.FutureAdapter;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -179,7 +179,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         } catch (Throwable e) {
             asyncResult = AsyncRpcResult.newDefaultAsyncResult(null, e, invocation);
         }
-        RpcContext.getContext().setFuture(new FutureAdapter(asyncResult, inv));
+        RpcContext.getContext().setFuture(new FutureAdapter(asyncResult));
         return asyncResult;
     }
 

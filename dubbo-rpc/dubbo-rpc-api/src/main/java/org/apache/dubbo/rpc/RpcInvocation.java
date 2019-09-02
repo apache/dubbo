@@ -62,7 +62,7 @@ public class RpcInvocation implements Invocation, Serializable {
 
     public RpcInvocation(Invocation invocation, Invoker<?> invoker) {
         this(invocation.getMethodName(), invocation.getParameterTypes(),
-                invocation.getArguments(), new HashMap<String, Object>(invocation.getAttachments()),
+                invocation.getArguments(), new HashMap<>(invocation.getAttachments()),
                 invocation.getInvoker());
         if (invoker != null) {
             URL url = invoker.getUrl();
@@ -94,7 +94,7 @@ public class RpcInvocation implements Invocation, Serializable {
     }
 
     public RpcInvocation(Method method, Object[] arguments) {
-        this(method, arguments, null);
+        this(method.getName(), method.getParameterTypes(), arguments, null, null);
     }
 
     public RpcInvocation(Method method, Object[] arguments, Map<String, Object> attachment, Map<Object, Object> attributes) {

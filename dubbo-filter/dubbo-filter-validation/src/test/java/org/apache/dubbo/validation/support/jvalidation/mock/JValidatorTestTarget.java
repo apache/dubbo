@@ -35,12 +35,6 @@ public interface JValidatorTestTarget {
 
     void someMethod5(Map<String, String> map);
 
-    public void someMethod3(ValidationParameter[] parameters);
-
-    public void someMethod4(List<String> strings);
-
-    public void someMethod5(Map<String, String> map);
-
     @interface Test2 {
     }
 

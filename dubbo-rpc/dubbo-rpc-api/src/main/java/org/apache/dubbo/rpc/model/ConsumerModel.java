@@ -31,20 +31,18 @@ public class ConsumerModel {
     private final ServiceMetadata serviceMetadata;
     private final Map<Method, ConsumerMethodModel> methodModels = new IdentityHashMap<Method, ConsumerMethodModel>();
 
-    public ConsumerModel(String serviceName, String group, String version, Class<?> interfaceClass) {
-        this.serviceMetadata = new ServiceMetadata(serviceName, group, version, interfaceClass);
-
-        Method[] methods = interfaceClass.getMethods();
-        for (Method method : methods) {
-            methodModels.put(method, new ConsumerMethodModel(method));
-        }
-    }
-
-    public ConsumerModel(ServiceMetadata serviceMetadata) {
-        this.serviceMetadata = serviceMetadata;
-        Method[] methods = serviceMetadata.getServiceType().getMethods();
-        for (Method method : methods) {
-            methodModels.put(method, new ConsumerMethodModel(method));
+    /**
+     * This constructor create an instance of ConsumerModel and passed objects should not be null.
+     * If service name, service instance, proxy object,methods should not be null. If these are null
+     * then this constructor will throw {@link IllegalArgumentException}
+     *
+     * @param attributes Attributes of methods.
+     * @param metadata
+     */
+    public ConsumerModel(Map<String, Object> attributes, ServiceMetadata metadata) {
+        this.serviceMetadata = metadata;
+        for (Method method : metadata.getServiceType().getMethods()) {
+            methodModels.put(method, new ConsumerMethodModel(method, attributes));
         }
     }
 
@@ -104,6 +102,15 @@ public class ConsumerModel {
      */
     public List<ConsumerMethodModel> getAllMethods() {
         return new ArrayList<ConsumerMethodModel>(methodModels.values());
+    }
+
+    /**
+     * Return the proxy object used by called while creating instance of ConsumerModel
+     *
+     * @return
+     */
+    public Object getProxyObject() {
+        return this.serviceMetadata.getTarget();
     }
 
     public String getServiceName() {

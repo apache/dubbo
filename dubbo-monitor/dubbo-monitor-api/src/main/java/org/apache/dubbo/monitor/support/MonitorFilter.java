@@ -40,12 +40,12 @@ import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.monitor.Constants.COUNT_PROTOCOL;
-import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.apache.dubbo.rpc.Constants.INPUT_KEY;
 import static org.apache.dubbo.rpc.Constants.OUTPUT_KEY;
 /**
@@ -108,7 +108,7 @@ public class MonitorFilter extends ListenableFilter {
         @Override
         public void onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
             if (invoker.getUrl().hasParameter(MONITOR_KEY)) {
-                collect(invoker, invocation, result, RpcContext.getContext().getRemoteHost(), Long.valueOf(invocation.getAttachment(MONITOR_FILTER_START_TIME)), false);
+                collect(invoker, invocation, result, RpcContext.getContext().getRemoteHost(), Long.valueOf((String) invocation.getAttachment(MONITOR_FILTER_START_TIME)), false);
                 getConcurrent(invoker, invocation).decrementAndGet(); // count down
             }
         }
@@ -116,7 +116,7 @@ public class MonitorFilter extends ListenableFilter {
         @Override
         public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
             if (invoker.getUrl().hasParameter(MONITOR_KEY)) {
-                collect(invoker, invocation, null, RpcContext.getContext().getRemoteHost(), Long.valueOf(invocation.getAttachment(MONITOR_FILTER_START_TIME)), true);
+                collect(invoker, invocation, null, RpcContext.getContext().getRemoteHost(), Long.valueOf((String) invocation.getAttachment(MONITOR_FILTER_START_TIME)), true);
                 getConcurrent(invoker, invocation).decrementAndGet(); // count down
             }
         }
@@ -181,10 +181,10 @@ public class MonitorFilter extends ListenableFilter {
             }
             String input = "", output = "";
             if (invocation.getAttachment(INPUT_KEY) != null) {
-                input = invocation.getAttachment(INPUT_KEY);
+                input = (String) invocation.getAttachment(INPUT_KEY);
             }
             if (result != null && result.getAttachment(OUTPUT_KEY) != null) {
-                output = result.getAttachment(OUTPUT_KEY);
+                output = (String) result.getAttachment(OUTPUT_KEY);
             }
 
             return new URL(COUNT_PROTOCOL, NetUtils.getLocalHost(), localPort, service + PATH_SEPARATOR + method, MonitorService.APPLICATION, application, MonitorService.INTERFACE, service, MonitorService.METHOD, method, remoteKey, remoteValue, error ? MonitorService.FAILURE : MonitorService.SUCCESS, "1", MonitorService.ELAPSED, String.valueOf(elapsed), MonitorService.CONCURRENT, String.valueOf(concurrent), INPUT_KEY, input, OUTPUT_KEY, output, GROUP_KEY, group, VERSION_KEY, version);

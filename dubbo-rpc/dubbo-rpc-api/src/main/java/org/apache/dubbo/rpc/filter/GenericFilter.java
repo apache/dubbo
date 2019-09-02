@@ -74,10 +74,10 @@ public class GenericFilter extends ListenableFilter {
                 if (args == null) {
                     args = new Object[params.length];
                 }
-                String generic = inv.getAttachment(GENERIC_KEY);
+                String generic = (String) inv.getAttachment(GENERIC_KEY);
 
                 if (StringUtils.isBlank(generic)) {
-                    generic = RpcContext.getContext().getAttachment(GENERIC_KEY);
+                    generic = (String) RpcContext.getContext().getAttachment(GENERIC_KEY);
                 }
 
                 if (StringUtils.isEmpty(generic)
@@ -138,7 +138,7 @@ public class GenericFilter extends ListenableFilter {
                                         args[0].getClass().getName());
                     }
                 }
-                return invoker.invoke(new RpcInvocation(method, args, inv.getAttachments()));
+                return invoker.invoke(new RpcInvocation(method, args, inv.getAttachments(), inv.getAttributes()));
             } catch (NoSuchMethodException e) {
                 throw new RpcException(e.getMessage(), e);
             } catch (ClassNotFoundException e) {
@@ -157,9 +157,9 @@ public class GenericFilter extends ListenableFilter {
                     && inv.getArguments().length == 3
                     && !GenericService.class.isAssignableFrom(invoker.getInterface())) {
 
-                String generic = inv.getAttachment(GENERIC_KEY);
+                String generic = (String) inv.getAttachment(GENERIC_KEY);
                 if (StringUtils.isBlank(generic)) {
-                    generic = RpcContext.getContext().getAttachment(GENERIC_KEY);
+                    generic = (String) RpcContext.getContext().getAttachment(GENERIC_KEY);
                 }
 
                 if (appResponse.hasException() && !(appResponse.getException() instanceof GenericException)) {

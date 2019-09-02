@@ -88,7 +88,7 @@ public class ExecuteLimitFilter extends ListenableFilter {
         }
 
         private long getElapsed(Invocation invocation) {
-            String beginTime = invocation.getAttachment(EXECUTELIMIT_FILTER_START_TIME);
+            String beginTime = (String) invocation.getAttachment(EXECUTELIMIT_FILTER_START_TIME);
             return StringUtils.isNotEmpty(beginTime) ? System.currentTimeMillis() - Long.parseLong(beginTime) : 0;
         }
     }

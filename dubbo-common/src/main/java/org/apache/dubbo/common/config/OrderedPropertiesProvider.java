@@ -14,28 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.rsocket;
+package org.apache.dubbo.common.config;
 
-import java.io.Serializable;
 
-public class ResourceInfo implements Serializable {
+import org.apache.dubbo.common.extension.SPI;
 
-    public  static final byte RESOURCE_TYPE_MONO = 1;
-    public static final byte RESOURCE_TYPE_FLUX = 2;
+import java.util.Properties;
 
-    private final long id;
-    private final byte type;
+@SPI
+public interface OrderedPropertiesProvider {
+    /**
+     * order
+     *
+     * @return
+     */
+    int priority();
 
-    public ResourceInfo(long id, byte type) {
-        this.id = id;
-        this.type = type;
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    public byte getType() {
-        return type;
-    }
+    /**
+     * load the properties
+     *
+     * @return
+     */
+    Properties initProperties();
 }

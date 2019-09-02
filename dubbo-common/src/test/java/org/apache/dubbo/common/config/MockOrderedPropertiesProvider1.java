@@ -14,16 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.rsocket;
+package org.apache.dubbo.common.config;
 
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import java.util.Properties;
 
-public class ProviderDemo {
-
-    public static void main(String[] args) throws Exception {
-        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[]{"spring/dubbo-rsocket-provider.xml"});
-        context.start();
-        System.in.read(); // press any key to exit
+public class MockOrderedPropertiesProvider1 implements OrderedPropertiesProvider {
+    @Override
+    public int priority() {
+        return 3;
     }
 
+    @Override
+    public Properties initProperties() {
+        Properties properties = new Properties();
+        properties.put("testKey", "333");
+        return properties;
+    }
 }
