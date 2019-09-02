@@ -22,6 +22,8 @@ import org.apache.dubbo.common.URL;
 /**
  * Registry. (SPI, Prototype, ThreadSafe)
  *
+ * 注册中心接口
+ *
  * @see org.apache.dubbo.registry.RegistryFactory#getRegistry(URL)
  * @see org.apache.dubbo.registry.support.AbstractRegistry
  */

@@ -23,6 +23,8 @@ import java.util.List;
 /**
  * RegistryService. (SPI, Prototype, ThreadSafe)
  *
+ * 注册中心服务接口
+ *
  * @see org.apache.dubbo.registry.Registry
  * @see org.apache.dubbo.registry.RegistryFactory#getRegistry(URL)
  */
