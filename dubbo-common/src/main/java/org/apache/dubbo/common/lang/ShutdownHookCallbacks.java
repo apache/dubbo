@@ -35,7 +35,7 @@ public class ShutdownHookCallbacks {
 
     private final List<ShutdownHookCallback> callbacks = new LinkedList<>();
 
-    public ShutdownHookCallbacks() {
+    ShutdownHookCallbacks() {
         loadCallbacks();
     }
 
