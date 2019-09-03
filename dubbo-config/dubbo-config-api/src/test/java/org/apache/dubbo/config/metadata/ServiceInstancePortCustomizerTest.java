@@ -16,36 +16,45 @@
  */
 package org.apache.dubbo.config.metadata;
 
+import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
-import org.apache.dubbo.registry.client.ServiceInstance;
-import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * The {@link ServiceInstanceCustomizer} to customize the {@link ServiceInstance#getPort() port} of service instance.
+ * {@link ServiceInstancePortCustomizer} Test
  *
  * @since 2.7.4
  */
-public class ServiceInstancePortCustomizer implements ServiceInstanceCustomizer {
+public class ServiceInstancePortCustomizerTest {
 
-    @Override
-    public void customize(ServiceInstance serviceInstance) {
+    private ServiceInstancePortCustomizer customizer;
 
-        if (serviceInstance.getPort() != null) {
-            return;
-        }
+    private DefaultServiceInstance serviceInstance;
 
+    @BeforeEach
+
+    public void init() {
+        customizer = new ServiceInstancePortCustomizer();
+        serviceInstance = new DefaultServiceInstance();
         ConfigManager.getInstance()
-                .getProtocols()
-                .stream()
-                .findFirst()
-                .ifPresent(protocolConfig -> {
-                    if (serviceInstance instanceof DefaultServiceInstance) {
-                        DefaultServiceInstance instance = (DefaultServiceInstance) serviceInstance;
-                        if (protocolConfig.getPort() != null) {
-                            instance.setPort(protocolConfig.getPort());
-                        }
-                    }
-                });
+                .addProtocol(new ProtocolConfig("rest", 9090));
+    }
+
+    @Test
+    public void testCustomizeWithoutSet() {
+        serviceInstance.setPort(8080);
+        customizer.customize(serviceInstance);
+        assertEquals(8080, serviceInstance.getPort());
+    }
+
+    @Test
+    public void testCustomize() {
+        customizer.customize(serviceInstance);
+        assertEquals(9090, serviceInstance.getPort());
     }
 }
