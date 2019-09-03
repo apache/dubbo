@@ -609,13 +609,6 @@
                 <artifactId>nacos-client</artifactId>
                 <version>${nacos_version}</version>
             </dependency>
-            <!--for dubbo-configcenter-apollo-->
-            <dependency>
-                <groupId>com.ctrip.framework.apollo</groupId>
-                <artifactId>apollo-mockserver</artifactId>
-                <version>${apollo_client_version}</version>
-                <scope>test</scope>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 

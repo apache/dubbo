@@ -27,6 +27,7 @@
     <description>The Apollo implementation of the configcenter api</description>
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
+        <apollo_mock_server_version>1.1.1</apollo_mock_server_version>
     </properties>
 
     <dependencies>
@@ -42,6 +43,8 @@
         <dependency>
             <groupId>com.ctrip.framework.apollo</groupId>
             <artifactId>apollo-mockserver</artifactId>
+            <version>${apollo_mock_server_version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>
