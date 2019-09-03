@@ -41,6 +41,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -73,6 +74,7 @@ public class ReflectUtilsTest {
         assertThat(ReflectUtils.getBoxedClass(char.class), sameInstance(Character.class));
         assertThat(ReflectUtils.getBoxedClass(byte.class), sameInstance(Byte.class));
         assertThat(ReflectUtils.getBoxedClass(short.class), sameInstance(Short.class));
+        assertThat(ReflectUtils.getBoxedClass(String.class), sameInstance(String.class));
     }
 
     @Test
@@ -378,13 +380,13 @@ public class ReflectUtilsTest {
         assertTrue(ReflectUtils.getEmptyObject(Map.class) instanceof Map);
         assertTrue(ReflectUtils.getEmptyObject(Object[].class) instanceof Object[]);
         assertEquals(ReflectUtils.getEmptyObject(String.class), "");
-        assertEquals(ReflectUtils.getEmptyObject(short.class), Short.valueOf((short) 0));
-        assertEquals(ReflectUtils.getEmptyObject(byte.class), Byte.valueOf((byte) 0));
-        assertEquals(ReflectUtils.getEmptyObject(int.class), Integer.valueOf(0));
-        assertEquals(ReflectUtils.getEmptyObject(long.class), Long.valueOf(0));
-        assertEquals(ReflectUtils.getEmptyObject(float.class), Float.valueOf(0));
-        assertEquals(ReflectUtils.getEmptyObject(double.class), Double.valueOf(0));
-        assertEquals(ReflectUtils.getEmptyObject(char.class), Character.valueOf('\0'));
+        assertEquals(ReflectUtils.getEmptyObject(short.class), (short) 0);
+        assertEquals(ReflectUtils.getEmptyObject(byte.class), (byte) 0);
+        assertEquals(ReflectUtils.getEmptyObject(int.class), 0);
+        assertEquals(ReflectUtils.getEmptyObject(long.class), 0L);
+        assertEquals(ReflectUtils.getEmptyObject(float.class), (float) 0);
+        assertEquals(ReflectUtils.getEmptyObject(double.class), (double) 0);
+        assertEquals(ReflectUtils.getEmptyObject(char.class), '\0');
         assertEquals(ReflectUtils.getEmptyObject(boolean.class), Boolean.FALSE);
         EmptyClass object = (EmptyClass) ReflectUtils.getEmptyObject(EmptyClass.class);
         assertNotNull(object);
