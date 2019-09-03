@@ -30,8 +30,8 @@ import java.lang.reflect.Type;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static org.apache.dubbo.rpc.Constants.$INVOKE;
-import static org.apache.dubbo.rpc.Constants.$INVOKE_ASYNC;
+import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
+import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE_ASYNC;
 import static org.apache.dubbo.rpc.Constants.ASYNC_KEY;
 import static org.apache.dubbo.rpc.Constants.AUTO_ATTACH_INVOCATIONID_KEY;
 import static org.apache.dubbo.rpc.Constants.ID_KEY;
@@ -168,7 +168,12 @@ public class RpcUtils {
     }
 
     public static boolean isReturnTypeFuture(Invocation inv) {
-        Class<?> clazz = getReturnType(inv);
+        Class<?> clazz;
+        if (inv instanceof RpcInvocation) {
+            clazz = ((RpcInvocation) inv).getReturnType();
+        } else {
+            clazz = getReturnType(inv);
+        }
         return (clazz != null && CompletableFuture.class.isAssignableFrom(clazz)) || isGenericAsync(inv);
     }
 

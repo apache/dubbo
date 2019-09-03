@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
-import org.apache.dubbo.rpc.protocol.dubbo.FutureAdapter;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -27,7 +26,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * This class represents an unfinished RPC call, it will hold some context information for this call, for example RpcContext and Invocation,
@@ -56,16 +55,13 @@ public class AsyncRpcResult extends AbstractResult {
 
     private Invocation invocation;
 
-    public AsyncRpcResult(Invocation invocation) {
+    private CompletableFuture<AppResponse> responseFuture;
+
+    public AsyncRpcResult(CompletableFuture<AppResponse> future, Invocation invocation) {
+        this.responseFuture = future;
         this.invocation = invocation;
         this.storedContext = RpcContext.getContext();
         this.storedServerContext = RpcContext.getServerContext();
-    }
-
-    public AsyncRpcResult(AsyncRpcResult asyncRpcResult) {
-        this.invocation = asyncRpcResult.getInvocation();
-        this.storedContext = asyncRpcResult.getStoredContext();
-        this.storedServerContext = asyncRpcResult.getStoredServerContext();
     }
 
     /**
@@ -91,12 +87,12 @@ public class AsyncRpcResult extends AbstractResult {
     @Override
     public void setValue(Object value) {
         try {
-            if (this.isDone()) {
-                this.get().setValue(value);
+            if (responseFuture.isDone()) {
+                responseFuture.get().setValue(value);
             } else {
                 AppResponse appResponse = new AppResponse();
                 appResponse.setValue(value);
-                this.complete(appResponse);
+                responseFuture.complete(appResponse);
             }
         } catch (Exception e) {
             // This should never happen;
@@ -112,12 +108,12 @@ public class AsyncRpcResult extends AbstractResult {
     @Override
     public void setException(Throwable t) {
         try {
-            if (this.isDone()) {
-                this.get().setException(t);
+            if (responseFuture.isDone()) {
+                responseFuture.get().setException(t);
             } else {
                 AppResponse appResponse = new AppResponse();
                 appResponse.setException(t);
-                this.complete(appResponse);
+                responseFuture.complete(appResponse);
             }
         } catch (Exception e) {
             // This should never happen;
@@ -130,10 +126,18 @@ public class AsyncRpcResult extends AbstractResult {
         return getAppResponse().hasException();
     }
 
+    public CompletableFuture<AppResponse> getResponseFuture() {
+        return responseFuture;
+    }
+
+    public void setResponseFuture(CompletableFuture<AppResponse> responseFuture) {
+        this.responseFuture = responseFuture;
+    }
+
     public Result getAppResponse() {
         try {
-            if (this.isDone()) {
-                return this.get();
+            if (responseFuture.isDone()) {
+                return responseFuture.get();
             }
         } catch (Exception e) {
             // This should never happen;
@@ -141,7 +145,6 @@ public class AsyncRpcResult extends AbstractResult {
         }
         return new AppResponse();
     }
-
 
     /**
      * This method will always return after a maximum 'timeout' waiting:
@@ -158,12 +161,12 @@ public class AsyncRpcResult extends AbstractResult {
             ThreadlessExecutor threadlessExecutor = (ThreadlessExecutor) executor;
             threadlessExecutor.waitAndDrain();
         }
-        return super.get();
+        return responseFuture.get();
     }
 
     @Override
     public Result get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-        return this.get();
+        return responseFuture.get(timeout, unit);
     }
 
     @Override
@@ -178,27 +181,14 @@ public class AsyncRpcResult extends AbstractResult {
         return getAppResponse().recreate();
     }
 
-    @Override
-    public Result whenCompleteWithContext(BiConsumer<Result, Throwable> fn) {
-        CompletableFuture<Result> future = this.whenComplete((v, t) -> {
-            beforeContext.accept(v, t);
-            fn.accept(v, t);
-            afterContext.accept(v, t);
-        });
-
-        AsyncRpcResult nextStage = new AsyncRpcResult(this);
-        nextStage.subscribeTo(future);
-        return nextStage;
+    public Result thenApplyWithContext(Function<AppResponse, AppResponse> fn) {
+        this.responseFuture = responseFuture.thenApply(fn.compose(beforeContext).andThen(afterContext));
+        return this;
     }
 
-    public void subscribeTo(CompletableFuture<?> future) {
-        future.whenComplete((obj, t) -> {
-            if (t != null) {
-                this.completeExceptionally(t);
-            } else {
-                this.complete((Result) obj);
-            }
-        });
+    @Override
+    public <U> CompletableFuture<U> thenApply(Function<Result,? extends U> fn) {
+        return this.responseFuture.thenApply(fn);
     }
 
     @Override
@@ -231,18 +221,6 @@ public class AsyncRpcResult extends AbstractResult {
         getAppResponse().setAttachment(key, value);
     }
 
-    public RpcContext getStoredContext() {
-        return storedContext;
-    }
-
-    public RpcContext getStoredServerContext() {
-        return storedServerContext;
-    }
-
-    public Invocation getInvocation() {
-        return invocation;
-    }
-
     public Executor getExecutor() {
         return executor;
     }
@@ -257,25 +235,25 @@ public class AsyncRpcResult extends AbstractResult {
     private RpcContext tmpContext;
     private RpcContext tmpServerContext;
 
-    private BiConsumer<Result, Throwable> beforeContext = (appResponse, t) -> {
+    private Function<AppResponse, AppResponse> beforeContext = (appResponse) -> {
         tmpContext = RpcContext.getContext();
         tmpServerContext = RpcContext.getServerContext();
         RpcContext.restoreContext(storedContext);
         RpcContext.restoreServerContext(storedServerContext);
+        return appResponse;
     };
 
-    private BiConsumer<Result, Throwable> afterContext = (appResponse, t) -> {
+    private Function<AppResponse, AppResponse> afterContext = (appResponse) -> {
         RpcContext.restoreContext(tmpContext);
         RpcContext.restoreServerContext(tmpServerContext);
+        return appResponse;
     };
 
     /**
      * Some utility methods used to quickly generate default AsyncRpcResult instance.
      */
     public static AsyncRpcResult newDefaultAsyncResult(AppResponse appResponse, Invocation invocation) {
-        AsyncRpcResult asyncRpcResult = new AsyncRpcResult(invocation);
-        asyncRpcResult.complete(appResponse);
-        return asyncRpcResult;
+        return new AsyncRpcResult(CompletableFuture.completedFuture(appResponse), invocation);
     }
 
     public static AsyncRpcResult newDefaultAsyncResult(Invocation invocation) {
@@ -291,15 +269,15 @@ public class AsyncRpcResult extends AbstractResult {
     }
 
     public static AsyncRpcResult newDefaultAsyncResult(Object value, Throwable t, Invocation invocation) {
-        AsyncRpcResult asyncRpcResult = new AsyncRpcResult(invocation);
-        AppResponse appResponse = new AppResponse();
+        CompletableFuture<AppResponse> future = new CompletableFuture<>();
+        AppResponse result = new AppResponse();
         if (t != null) {
-            appResponse.setException(t);
+            result.setException(t);
         } else {
-            appResponse.setValue(value);
+            result.setValue(value);
         }
-        asyncRpcResult.complete(appResponse);
-        return asyncRpcResult;
+        future.complete(result);
+        return new AsyncRpcResult(future, invocation);
     }
 }
 

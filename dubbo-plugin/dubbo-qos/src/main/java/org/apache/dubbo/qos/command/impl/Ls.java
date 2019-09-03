@@ -57,7 +57,7 @@ public class Ls implements BaseCommand {
 
         //Content
         for (ProviderModel providerModel : providerModelList) {
-            tTable.addRow(providerModel.getServiceName(), isRegistered(providerModel.getServiceName()) ? "Y" : "N");
+            tTable.addRow(providerModel.getServiceKey(), isRegistered(providerModel.getServiceKey()) ? "Y" : "N");
         }
         stringBuilder.append(tTable.rendering());
 
@@ -80,7 +80,7 @@ public class Ls implements BaseCommand {
         //Content
         //TODO to calculate consumerAddressNum
         for (ConsumerModel consumerModel : consumerModelList) {
-            tTable.addRow(consumerModel.getServiceName(), getConsumerAddressNum(consumerModel.getServiceName()));
+            tTable.addRow(consumerModel.getServiceKey(), getConsumerAddressNum(consumerModel.getServiceKey()));
         }
 
         stringBuilder.append(tTable.rendering());

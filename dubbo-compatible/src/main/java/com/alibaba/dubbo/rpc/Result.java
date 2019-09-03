@@ -17,8 +17,14 @@
 
 package com.alibaba.dubbo.rpc;
 
+import org.apache.dubbo.rpc.AppResponse;
+
 import java.util.Map;
-import java.util.function.BiConsumer;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.function.Function;
 
 @Deprecated
 public interface Result extends org.apache.dubbo.rpc.Result {
@@ -36,7 +42,27 @@ public interface Result extends org.apache.dubbo.rpc.Result {
     abstract class AbstractResult extends org.apache.dubbo.rpc.AbstractResult implements Result {
 
         @Override
-        public org.apache.dubbo.rpc.Result whenCompleteWithContext(BiConsumer<org.apache.dubbo.rpc.Result, Throwable> fn) {
+        public void setValue(Object value) {
+
+        }
+
+        @Override
+        public org.apache.dubbo.rpc.Result thenApplyWithContext(Function<AppResponse, AppResponse> fn) {
+            return null;
+        }
+
+        @Override
+        public <U> CompletableFuture<U> thenApply(Function<org.apache.dubbo.rpc.Result, ? extends U> fn) {
+            return null;
+        }
+
+        @Override
+        public org.apache.dubbo.rpc.Result get() throws InterruptedException, ExecutionException {
+            return null;
+        }
+
+        @Override
+        public org.apache.dubbo.rpc.Result get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
             return null;
         }
     }
@@ -83,32 +109,32 @@ public interface Result extends org.apache.dubbo.rpc.Result {
         }
 
         @Override
-        public Map<String, Object> getAttachments() {
+        public Map<String, String> getAttachments() {
             return delegate.getAttachments();
         }
 
         @Override
-        public void addAttachments(Map<String, Object> map) {
+        public void addAttachments(Map<String, String> map) {
             delegate.addAttachments(map);
         }
 
         @Override
-        public void setAttachments(Map<String, Object> map) {
+        public void setAttachments(Map<String, String> map) {
             delegate.setAttachments(map);
         }
 
         @Override
-        public Object getAttachment(String key) {
+        public String getAttachment(String key) {
             return delegate.getAttachment(key);
         }
 
         @Override
-        public Object getAttachment(String key, Object defaultValue) {
+        public String getAttachment(String key, String defaultValue) {
             return delegate.getAttachment(key, defaultValue);
         }
 
         @Override
-        public void setAttachment(String key, Object value) {
+        public void setAttachment(String key, String value) {
             delegate.setAttachment(key, value);
         }
     }

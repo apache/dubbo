@@ -94,7 +94,7 @@ public class ThriftProtocol extends AbstractProtocol {
                 RpcContext.getContext().setRemoteAddress(channel.getRemoteAddress());
 
                 Result result = exporter.getInvoker().invoke(inv);
-                return result.completionFuture().thenApply(Function.identity());
+                return result.thenApply(Function.identity());
             }
 
             throw new RemotingException(channel,

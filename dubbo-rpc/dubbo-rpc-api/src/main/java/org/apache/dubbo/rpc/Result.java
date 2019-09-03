@@ -20,8 +20,11 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.function.BiConsumer;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.function.Function;
 
 
 /**
@@ -38,7 +41,7 @@ import java.util.function.BiConsumer;
  * @see org.apache.dubbo.rpc.Invoker#invoke(Invocation)
  * @see AppResponse
  */
-public interface Result extends CompletionStage<Result>, Future<Result>, Serializable {
+public interface Result extends Serializable {
 
     /**
      * Get invoke result.
@@ -119,14 +122,6 @@ public interface Result extends CompletionStage<Result>, Future<Result>, Seriali
     void setAttachment(String key, Object value);
 
     /**
-     * Returns the specified {@code valueIfAbsent} when not complete, or
-     * returns the result value or throws an exception when complete.
-     *
-     * @see CompletableFuture#getNow(Object)
-     */
-    Result getNow(Result valueIfAbsent);
-
-    /**
      * Add a callback which can be triggered when the RPC call finishes.
      * <p>
      * Just as the method name implies, this method will guarantee the callback being triggered under the same context as when the call was started,
@@ -135,9 +130,11 @@ public interface Result extends CompletionStage<Result>, Future<Result>, Seriali
      * @param fn
      * @return
      */
-    Result whenCompleteWithContext(BiConsumer<Result, Throwable> fn);
+    Result thenApplyWithContext(Function<AppResponse, AppResponse> fn);
 
-    default CompletableFuture<Result> completionFuture() {
-        return toCompletableFuture();
-    }
+    <U> CompletableFuture<U> thenApply(Function<Result, ? extends U> fn);
+
+    Result get() throws InterruptedException, ExecutionException;
+
+    Result get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException;
 }

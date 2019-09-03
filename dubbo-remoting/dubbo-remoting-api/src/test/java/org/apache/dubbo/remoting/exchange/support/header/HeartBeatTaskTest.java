@@ -21,6 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.exchange.Request;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -63,10 +64,8 @@ public class HeartBeatTaskTest {
         long now = System.currentTimeMillis();
 
         url = url.addParameter(DUBBO_VERSION_KEY, "2.1.1");
-        channel.setAttribute(
-                HeaderExchangeHandler.KEY_READ_TIMESTAMP, now);
-        channel.setAttribute(
-                HeaderExchangeHandler.KEY_WRITE_TIMESTAMP, now);
+        channel.setAttribute(HeartbeatHandler.KEY_READ_TIMESTAMP, now);
+        channel.setAttribute(HeartbeatHandler.KEY_WRITE_TIMESTAMP, now);
 
         heartbeatTimer.newTimeout(heartbeatTimerTask, 250, TimeUnit.MILLISECONDS);
 

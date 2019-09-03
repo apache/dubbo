@@ -55,11 +55,7 @@ public class NettyClientHandler extends ChannelDuplexHandler {
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
-        try {
-            handler.connected(channel);
-        } finally {
-            NettyChannel.removeChannelIfDisconnected(ctx.channel());
-        }
+        handler.connected(channel);
     }
 
     @Override
@@ -68,18 +64,14 @@ public class NettyClientHandler extends ChannelDuplexHandler {
         try {
             handler.disconnected(channel);
         } finally {
-            NettyChannel.removeChannelIfDisconnected(ctx.channel());
+            NettyChannel.removeChannel(ctx.channel());
         }
     }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
-        try {
-            handler.received(channel, msg);
-        } finally {
-            NettyChannel.removeChannelIfDisconnected(ctx.channel());
-        }
+        handler.received(channel, msg);
     }
 
     @Override
@@ -92,21 +84,17 @@ public class NettyClientHandler extends ChannelDuplexHandler {
         // If our out bound event has an error (in most cases the encoder fails),
         // we need to have the request return directly instead of blocking the invoke process.
         promise.addListener(future -> {
-            try {
-                if (future.isSuccess()) {
-                    // if our future is success, mark the future to sent.
-                    handler.sent(channel, msg);
-                    return;
-                }
+            if (future.isSuccess()) {
+                // if our future is success, mark the future to sent.
+                handler.sent(channel, msg);
+                return;
+            }
 
-                Throwable t = future.cause();
-                if (t != null && isRequest) {
-                    Request request = (Request) msg;
-                    Response response = buildErrorResponse(request, t);
-                    handler.received(channel, response);
-                }
-            } finally {
-                NettyChannel.removeChannelIfDisconnected(ctx.channel());
+            Throwable t = future.cause();
+            if (t != null && isRequest) {
+                Request request = (Request) msg;
+                Response response = buildErrorResponse(request, t);
+                handler.received(channel, response);
             }
         });
     }

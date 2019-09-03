@@ -40,9 +40,9 @@ import io.netty.handler.proxy.Socks5ProxyHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.DefaultThreadFactory;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-
 import java.net.InetSocketAddress;
+
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 /**
  * NettyClient.
@@ -192,7 +192,7 @@ public class NettyClient extends AbstractClient {
     @Override
     protected org.apache.dubbo.remoting.Channel getChannel() {
         Channel c = channel;
-        if (c == null || !c.isActive()) {
+        if (c == null) {
             return null;
         }
         return NettyChannel.getOrAddChannel(c, getUrl(), this);

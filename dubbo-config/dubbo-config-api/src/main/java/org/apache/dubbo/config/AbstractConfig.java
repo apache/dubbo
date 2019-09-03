@@ -179,11 +179,7 @@ public abstract class AbstractConfig implements Serializable {
                             str = URL.encode(str);
                         }
                         if (parameter != null && parameter.append()) {
-                            String pre = parameters.get(DEFAULT_KEY + "." + key);
-                            if (pre != null && pre.length() > 0) {
-                                str = pre + "," + str;
-                            }
-                            pre = parameters.get(key);
+                            String pre = parameters.get(key);
                             if (pre != null && pre.length() > 0) {
                                 str = pre + "," + str;
                             }

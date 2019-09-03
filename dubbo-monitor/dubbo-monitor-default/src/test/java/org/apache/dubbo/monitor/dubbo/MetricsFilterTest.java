@@ -118,7 +118,7 @@ public class MetricsFilterTest {
         IMetricManager metricManager = MetricManager.getIMetricManager();
         metricManager.clear();
         MetricsFilter metricsFilter = new MetricsFilter();
-        Invocation invocation = new RpcInvocation("sayName", new Class<?>[]{Integer.class}, new Object[0]);
+        Invocation invocation = new RpcInvocation("sayName", DemoService.class.getName(), new Class<?>[]{Integer.class}, new Object[0]);
         RpcContext.getContext().setRemoteAddress(NetUtils.getLocalHost(), 20880).setLocalAddress(NetUtils.getLocalHost(), 2345);
         RpcContext.getContext().setUrl(serviceInvoker.getUrl().addParameter(SIDE_KEY, CONSUMER_SIDE));
         AppResponse response = AppResponseBuilder.create()
@@ -146,7 +146,7 @@ public class MetricsFilterTest {
         IMetricManager metricManager = MetricManager.getIMetricManager();
         metricManager.clear();
         MetricsFilter metricsFilter = new MetricsFilter();
-        Invocation invocation = new RpcInvocation("timeoutException", null, null);
+        Invocation invocation = new RpcInvocation("timeoutException", DemoService.class.getName(), null, null);
         RpcContext.getContext().setRemoteAddress(NetUtils.getLocalHost(), 20880).setLocalAddress(NetUtils.getLocalHost(), 2345);
         RpcContext.getContext().setUrl(timeoutInvoker.getUrl().addParameter(SIDE_KEY, CONSUMER_SIDE)
             .addParameter(TIMEOUT_KEY, 300));
@@ -179,7 +179,7 @@ public class MetricsFilterTest {
         IMetricManager metricManager = MetricManager.getIMetricManager();
         metricManager.clear();
         MetricsFilter metricsFilter = new MetricsFilter();
-        Invocation invocation = new RpcInvocation("sayName", new Class<?>[0], new Object[0]);
+        Invocation invocation = new RpcInvocation("sayName", DemoService.class.getName(), new Class<?>[0], new Object[0]);
         RpcContext.getContext().setRemoteAddress(NetUtils.getLocalHost(), 20880).setLocalAddress(NetUtils.getLocalHost(), 2345);
         RpcContext.getContext().setUrl(serviceInvoker.getUrl().addParameter(SIDE_KEY, PROVIDER));
         AppResponse response = AppResponseBuilder.create()
@@ -206,7 +206,7 @@ public class MetricsFilterTest {
         IMetricManager metricManager = MetricManager.getIMetricManager();
         metricManager.clear();
         MetricsFilter metricsFilter = new MetricsFilter();
-        Invocation invocation = new RpcInvocation("sayName", new Class<?>[0], new Object[0]);
+        Invocation invocation = new RpcInvocation("sayName", DemoService.class.getName(), new Class<?>[0], new Object[0]);
         RpcContext.getContext().setRemoteAddress(NetUtils.getLocalHost(), 20880).setLocalAddress(NetUtils.getLocalHost(), 2345);
         RpcContext.getContext().setUrl(serviceInvoker.getUrl().addParameter(SIDE_KEY, PROVIDER_SIDE)
             .addParameter(TIMEOUT_KEY, 300));
@@ -224,7 +224,7 @@ public class MetricsFilterTest {
         Protocol protocol = new DubboProtocol();
         URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":20880/" + MetricsService.class.getName());
         Invoker<MetricsService> invoker = protocol.refer(MetricsService.class, url);
-        invocation = new RpcInvocation("getMetricsByGroup", new Class<?>[]{String.class}, new Object[]{DUBBO_GROUP});
+        invocation = new RpcInvocation("getMetricsByGroup", DemoService.class.getName(), new Class<?>[]{String.class}, new Object[]{DUBBO_GROUP});
         try {
             Thread.sleep(5000);
         } catch (Exception e) {
@@ -253,8 +253,8 @@ public class MetricsFilterTest {
         IMetricManager metricManager = MetricManager.getIMetricManager();
         metricManager.clear();
         MetricsFilter metricsFilter = new MetricsFilter();
-        Invocation sayNameInvocation = new RpcInvocation("sayName", new Class<?>[0], new Object[0]);
-        Invocation echoInvocation = new RpcInvocation("echo", new Class<?>[]{Integer.class}, new Integer[]{1});
+        Invocation sayNameInvocation = new RpcInvocation("sayName", DemoService.class.getName(), new Class<?>[0], new Object[0]);
+        Invocation echoInvocation = new RpcInvocation("echo", DemoService.class.getName(), new Class<?>[]{Integer.class}, new Integer[]{1});
         RpcContext.getContext().setRemoteAddress(NetUtils.getLocalHost(), 20880).setLocalAddress(NetUtils.getLocalHost(), 2345);
         RpcContext.getContext().setUrl(serviceInvoker.getUrl().addParameter(SIDE_KEY, PROVIDER_SIDE)
             .addParameter(TIMEOUT_KEY, 300));
@@ -279,7 +279,7 @@ public class MetricsFilterTest {
         Protocol protocol = new DubboProtocol();
         URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":20880/" + MetricsService.class.getName());
         Invoker<MetricsService> invoker = protocol.refer(MetricsService.class, url);
-        Invocation invocation = new RpcInvocation("getMetricsByGroup", new Class<?>[]{String.class}, new Object[]{DUBBO_GROUP});
+        Invocation invocation = new RpcInvocation("getMetricsByGroup", DemoService.class.getName(), new Class<?>[]{String.class}, new Object[]{DUBBO_GROUP});
         try {
             Thread.sleep(15000);
         } catch (Exception e) {

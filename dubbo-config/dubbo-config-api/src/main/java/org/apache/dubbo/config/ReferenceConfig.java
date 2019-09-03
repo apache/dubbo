@@ -47,7 +47,6 @@ import org.apache.dubbo.rpc.support.ProtocolUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -327,7 +326,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         appendParameters(map, this);
         Map<String, Object> attributes = null;
         if (CollectionUtils.isNotEmpty(methods)) {
-            attributes = new HashMap<String, Object>();
+            attributes = new HashMap<>();
             for (MethodConfig methodConfig : methods) {
                 appendParameters(map, methodConfig, methodConfig.getName());
                 String retryKey = methodConfig.getName() + ".retry";
@@ -383,6 +382,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             }
         }
         return new ConsumerModel(attributes, metadata);
+        return new ConsumerModel(serviceKey, interfaceClass, ref, ApplicationModel.registerServiceModel(interfaceClass), attributes);
     }
 
     @SuppressWarnings({"unchecked", "rawtypes", "deprecation"})

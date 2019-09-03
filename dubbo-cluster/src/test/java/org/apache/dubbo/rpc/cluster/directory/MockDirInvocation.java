@@ -38,6 +38,11 @@ public class MockDirInvocation implements Invocation {
         return "echo";
     }
 
+    @Override
+    public String getServiceName() {
+        return "DemoService";
+    }
+
     public Class<?>[] getParameterTypes() {
         return new Class[]{String.class};
     }

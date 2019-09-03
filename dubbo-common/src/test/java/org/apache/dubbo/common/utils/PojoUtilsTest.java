@@ -16,14 +16,15 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.apache.dubbo.common.model.Person;
-import org.apache.dubbo.common.model.SerializablePerson;
-import org.apache.dubbo.common.model.User;
-import org.apache.dubbo.common.model.person.BigPerson;
-import org.apache.dubbo.common.model.person.FullAddress;
-import org.apache.dubbo.common.model.person.PersonInfo;
-import org.apache.dubbo.common.model.person.PersonStatus;
-import org.apache.dubbo.common.model.person.Phone;
+import org.apache.dubbo.rpc.model.Person;
+import org.apache.dubbo.rpc.model.SerializablePerson;
+import org.apache.dubbo.rpc.model.User;
+import org.apache.dubbo.rpc.model.person.BigPerson;
+import org.apache.dubbo.rpc.model.person.FullAddress;
+import org.apache.dubbo.rpc.model.person.PersonInfo;
+import org.apache.dubbo.rpc.model.person.PersonStatus;
+import org.apache.dubbo.rpc.model.person.Phone;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -41,13 +42,13 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class PojoUtilsTest {
@@ -696,7 +697,7 @@ public class PojoUtilsTest {
         assertTrue(personInfo.isMale());
         assertFalse(personInfo.isFemale());
     }
-  
+
     @Test
     public void testRealizeCollectionWithNullElement() {
         LinkedList<String> listStr = new LinkedList<>();

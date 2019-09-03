@@ -77,6 +77,8 @@ public interface CommonConstants {
 
     int DEFAULT_THREADS = 200;
 
+    String EXECUTOR_SERVICE_COMPONENT_KEY = ExecutorService.class.getName();
+
     String THREADPOOL_KEY = "threadpool";
 
     String THREAD_NAME_KEY = "threadname";
@@ -170,6 +172,12 @@ public interface CommonConstants {
      * Consumer side 's proxy class
      */
     String PROXY_CLASS_REF = "refClass";
+
+    /**
+     * generic call
+     */
+    String $INVOKE = "$invoke";
+    String $INVOKE_ASYNC = "$invokeAsync";
 
     /**
      * package version in the manifest

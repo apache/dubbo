@@ -38,6 +38,11 @@ public interface Invocation extends org.apache.dubbo.rpc.Invocation {
 
     }
 
+    @Override
+    default String getServiceName() {
+        return null;
+    }
+
     class CompatibleInvocation implements Invocation {
 
         private org.apache.dubbo.rpc.Invocation delegate;

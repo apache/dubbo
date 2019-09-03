@@ -93,12 +93,11 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
                 currentClient.send(inv, isSent);
                 return AsyncRpcResult.newDefaultAsyncResult(invocation);
             } else {
-                AsyncRpcResult asyncRpcResult = new AsyncRpcResult(inv);
-                CompletableFuture<Object> responseFuture = currentClient.request(inv, timeout);
-                asyncRpcResult.subscribeTo(responseFuture);
+                CompletableFuture<AppResponse> appResponseFuture = currentClient.request(inv, timeout).thenApply(obj -> (AppResponse) obj);
+                RpcContext.getContext().setFuture(new FutureAdapter(appResponseFuture));
                 // save for 2.6.x compatibility, for example, TraceFilter in Zipkin uses com.alibaba.xxx.FutureAdapter
                 FutureContext.getContext().setCompatibleFuture(responseFuture);
-                return asyncRpcResult;
+                return new AsyncRpcResult(appResponseFuture, inv);
             }
         } catch (TimeoutException e) {
             throw new RpcException(RpcException.TIMEOUT_EXCEPTION, "Invoke remote method timeout. method: " + invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage(), e);

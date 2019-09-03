@@ -14,10 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc;
+package org.apache.dubbo.rpc.model.person;
 
-/**
- *
- */
-public abstract class AbstractResult implements Result {
+public enum PersonStatus {
+    ENABLED,
+    DISABLED
 }

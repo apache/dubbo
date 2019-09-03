@@ -18,7 +18,6 @@ package org.apache.dubbo.registry.integration;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
-import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -35,7 +34,6 @@ import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
-import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.Configurator;
 import org.apache.dubbo.rpc.cluster.Router;
@@ -571,43 +569,44 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     @Override
     public List<Invoker<T>> doList(Invocation invocation) {
-        if (forbidden) {
-            // 1. No service provider 2. Service providers are disabled
-            throw new RpcException(RpcException.FORBIDDEN_EXCEPTION, "No provider available from registry " +
-                    getUrl().getAddress() + " for service " + getConsumerUrl().getServiceKey() + " on consumer " +
-                    NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion() +
-                    ", please check status of providers(disabled, not registered or in blacklist).");
-        }
-
-        if (multiGroup) {
-            return this.invokers == null ? Collections.emptyList() : this.invokers;
-        }
-
-        List<Invoker<T>> invokers = null;
-        try {
-            // Get invokers from cache, only runtime routers will be executed.
-            invokers = routerChain.route(getConsumerUrl(), invocation);
-        } catch (Throwable t) {
-            logger.error("Failed to execute router: " + getUrl() + ", cause: " + t.getMessage(), t);
-        }
-
-
-        // FIXME Is there any need of failing back to Constants.ANY_VALUE or the first available method invokers when invokers is null?
-        /*Map<String, List<Invoker<T>>> localMethodInvokerMap = this.methodInvokerMap; // local reference
-        if (localMethodInvokerMap != null && localMethodInvokerMap.size() > 0) {
-            String methodName = RpcUtils.getMethodName(invocation);
-            invokers = localMethodInvokerMap.get(methodName);
-            if (invokers == null) {
-                invokers = localMethodInvokerMap.get(Constants.ANY_VALUE);
-            }
-            if (invokers == null) {
-                Iterator<List<Invoker<T>>> iterator = localMethodInvokerMap.values().iterator();
-                if (iterator.hasNext()) {
-                    invokers = iterator.next();
-                }
-            }
-        }*/
-        return invokers == null ? Collections.emptyList() : invokers;
+//        if (forbidden) {
+//            // 1. No service provider 2. Service providers are disabled
+//            throw new RpcException(RpcException.FORBIDDEN_EXCEPTION, "No provider available from registry " +
+//                    getUrl().getAddress() + " for service " + getConsumerUrl().getServiceKey() + " on consumer " +
+//                    NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion() +
+//                    ", please check status of providers(disabled, not registered or in blacklist).");
+//        }
+//
+//        if (multiGroup) {
+//            return this.invokers == null ? Collections.emptyList() : this.invokers;
+//        }
+//
+//        List<Invoker<T>> invokers = null;
+//        try {
+//            // Get invokers from cache, only runtime routers will be executed.
+//            invokers = routerChain.route(getConsumerUrl(), invocation);
+//        } catch (Throwable t) {
+//            logger.error("Failed to execute router: " + getUrl() + ", cause: " + t.getMessage(), t);
+//        }
+//
+//
+//        // FIXME Is there any need of failing back to Constants.ANY_VALUE or the first available method invokers when invokers is null?
+//        /*Map<String, List<Invoker<T>>> localMethodInvokerMap = this.methodInvokerMap; // local reference
+//        if (localMethodInvokerMap != null && localMethodInvokerMap.size() > 0) {
+//            String methodName = RpcUtils.getMethodName(invocation);
+//            invokers = localMethodInvokerMap.get(methodName);
+//            if (invokers == null) {
+//                invokers = localMethodInvokerMap.get(Constants.ANY_VALUE);
+//            }
+//            if (invokers == null) {
+//                Iterator<List<Invoker<T>>> iterator = localMethodInvokerMap.values().iterator();
+//                if (iterator.hasNext()) {
+//                    invokers = iterator.next();
+//                }
+//            }
+//        }*/
+//        return invokers == null ? Collections.emptyList() : invokers;
+        return invokers;
     }
 
     @Override

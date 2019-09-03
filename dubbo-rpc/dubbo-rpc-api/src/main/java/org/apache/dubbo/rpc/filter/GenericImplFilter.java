@@ -40,8 +40,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
-import static org.apache.dubbo.rpc.Constants.$INVOKE;
-import static org.apache.dubbo.rpc.Constants.$INVOKE_ASYNC;
+import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
+import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE_ASYNC;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 
 /**
@@ -53,6 +53,8 @@ public class GenericImplFilter extends ListenableFilter {
     private static final Logger logger = LoggerFactory.getLogger(GenericImplFilter.class);
 
     private static final Class<?>[] GENERIC_PARAMETER_TYPES = new Class<?>[]{String.class, String[].class, Object[].class};
+
+    private static final String GENERIC_PARAMETER_DESC = "Ljava/lang/String;[Ljava/lang/String;[Ljava/lang/Object;";
 
     public GenericImplFilter() {
         super.listener = new GenericImplListener();
@@ -90,6 +92,7 @@ public class GenericImplFilter extends ListenableFilter {
                 invocation2.setMethodName($INVOKE);
             }
             invocation2.setParameterTypes(GENERIC_PARAMETER_TYPES);
+            invocation2.setParameterTypesDesc(GENERIC_PARAMETER_DESC);
             invocation2.setArguments(new Object[]{methodName, types, args});
             return invoker.invoke(invocation2);
         } else if ((invocation.getMethodName().equals($INVOKE) || invocation.getMethodName().equals($INVOKE_ASYNC))

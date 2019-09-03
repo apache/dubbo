@@ -21,6 +21,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -36,17 +37,23 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * adjust project structure in order to fully utilize the methods introduced here.
  */
 public class ApplicationModel {
-
     protected static final Logger LOGGER = LoggerFactory.getLogger(ApplicationModel.class);
 
     /**
-     * full qualified class name -> provided service
+     * serviceKey -> exported service
+     * each service may has different group, version, path, instance and so on, but they point to the same {@link ServiceModel}
      */
     private static final ConcurrentMap<String, ProviderModel> PROVIDED_SERVICES = new ConcurrentHashMap<>();
     /**
-     * full qualified class name -> subscribe service
+     * serviceKey -> referred service
+     * each service may has different group, version, path, instance and so on, but they point to the same {@link ServiceModel}
      */
     private static final ConcurrentMap<String, ConsumerModel> CONSUMED_SERVICES = new ConcurrentHashMap<>();
+
+    /**
+     * The description of a unique service (interface definition in Dubbo)
+     */
+    private static final ConcurrentHashMap<String, ServiceModel> SERVICES = new ConcurrentHashMap<>();
 
     private static String application;
 
@@ -60,12 +67,12 @@ public class ApplicationModel {
         return PROVIDED_SERVICES.values();
     }
 
-    public static ProviderModel getProviderModel(String serviceName) {
-        return PROVIDED_SERVICES.get(serviceName);
+    public static ProviderModel getProviderModel(String serviceKey) {
+        return PROVIDED_SERVICES.get(serviceKey);
     }
 
-    public static ConsumerModel getConsumerModel(String serviceName) {
-        return CONSUMED_SERVICES.get(serviceName);
+    public static ConsumerModel getConsumerModel(String serviceKey) {
+        return CONSUMED_SERVICES.get(serviceKey);
     }
 
     public static void init() {
@@ -90,6 +97,38 @@ public class ApplicationModel {
         }
     }
 
+    public static ServiceModel registerServiceModel(Class<?> interfaceClass) {
+        return SERVICES.computeIfAbsent(interfaceClass.getName(), (k) -> new ServiceModel(interfaceClass));
+    }
+
+    /**
+     * See {@link #registerServiceModel(Class)}
+     *
+     * we assume:
+     * 1. services with different interface are not allowed to have the same path.
+     * 2. services with the same interface but different group/version can share the same path.
+     * 3. path's default value is the name of the interface.
+     * @param path
+     * @param interfaceClass
+     * @return
+     */
+    public static ServiceModel registerServiceModel(String path, Class<?> interfaceClass) {
+        ServiceModel serviceModel = registerServiceModel(interfaceClass);
+        // register path
+        if (!interfaceClass.getName().equals(path)) {
+            SERVICES.putIfAbsent(path, serviceModel);
+        }
+        return serviceModel;
+    }
+
+    public static Optional<ServiceModel> getServiceModel (String interfaceName) {
+        return Optional.ofNullable(SERVICES.get(interfaceName));
+    }
+
+    public static Optional<ServiceModel> getServiceModel (Class<?> interfaceClass) {
+        return Optional.ofNullable(SERVICES.get(interfaceClass.getName()));
+    }
+
     public static String getApplication() {
         return application;
     }
@@ -105,4 +144,5 @@ public class ApplicationModel {
         PROVIDED_SERVICES.clear();
         CONSUMED_SERVICES.clear();
     }
+
 }
