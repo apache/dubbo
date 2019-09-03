@@ -74,6 +74,9 @@ public class GenericFilter extends ListenableFilter {
                 if (args == null) {
                     args = new Object[params.length];
                 }
+                if (args.length != types.length) {
+                    throw new RpcException("args.length != types.length");
+                }
                 String generic = inv.getAttachment(GENERIC_KEY);
 
                 if (StringUtils.isBlank(generic)) {
@@ -123,7 +126,7 @@ public class GenericFilter extends ListenableFilter {
                         try (UnsafeByteArrayInputStream is =
                                      new UnsafeByteArrayInputStream(((String) args[0]).getBytes())) {
                             args[0] = ExtensionLoader.getExtensionLoader(Serialization.class)
-                                    .getExtension("" + GENERIC_SERIALIZATION_PROTOBUF)
+                                    .getExtension(GENERIC_SERIALIZATION_PROTOBUF)
                                     .deserialize(null, is).readObject(method.getParameterTypes()[0]);
                         } catch (Exception e) {
                             throw new RpcException("Deserialize argument failed.", e);
@@ -132,16 +135,14 @@ public class GenericFilter extends ListenableFilter {
                         throw new RpcException(
                                 "Generic serialization [" +
                                         GENERIC_SERIALIZATION_PROTOBUF +
-                                        "] only support one" + String.class.getName() +
+                                        "] only support one " + String.class.getName() +
                                         " argument and your message size is " +
                                         args.length + " and type is" +
                                         args[0].getClass().getName());
                     }
                 }
                 return invoker.invoke(new RpcInvocation(method, args, inv.getAttachments()));
-            } catch (NoSuchMethodException e) {
-                throw new RpcException(e.getMessage(), e);
-            } catch (ClassNotFoundException e) {
+            } catch (NoSuchMethodException | ClassNotFoundException e) {
                 throw new RpcException(e.getMessage(), e);
             }
         }
