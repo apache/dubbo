@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import static java.util.Collections.emptyMap;
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.CLASSIFIER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
@@ -50,9 +51,11 @@ import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL
 import static org.apache.dubbo.common.constants.RegistryConstants.OVERRIDE_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.ROUTE_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_PROTOCOL;
+import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_TYPE;
 
 public class UrlUtils {
 
@@ -491,6 +494,31 @@ public class UrlUtils {
     }
 
     /**
+     * The specified {@link URL} is service discovery registry type or not
+     *
+     * @param url the {@link URL} connects to the registry
+     * @return If it is, return <code>true</code>, or <code>false</code>
+     * @since 2.7.4
+     */
+    public static boolean isServiceDiscoveryRegistryType(URL url) {
+        return isServiceDiscoveryRegistryType(url == null ? emptyMap() : url.getParameters());
+    }
+
+    /**
+     * The specified parameters of {@link URL} is service discovery registry type or not
+     *
+     * @param parameters the parameters of {@link URL} that connects to the registry
+     * @return If it is, return <code>true</code>, or <code>false</code>
+     * @since 2.7.4
+     */
+    public static boolean isServiceDiscoveryRegistryType(Map<String, String> parameters) {
+        if (parameters == null || parameters.isEmpty()) {
+            return false;
+        }
+        return SERVICE_REGISTRY_TYPE.equals(parameters.get(REGISTRY_TYPE_KEY));
+    }
+
+    /**
      * Check if the given value matches the given pattern. The pattern supports wildcard "*".
      *
      * @param pattern pattern
@@ -507,7 +535,7 @@ public class UrlUtils {
 
     /**
      * @param serviceKey, {group}/{interfaceName}:{version}
-     * @return  [group, interfaceName, version]
+     * @return [group, interfaceName, version]
      */
     public static String[] parseServiceKey(String serviceKey) {
         String[] arr = new String[3];

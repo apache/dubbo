@@ -59,10 +59,9 @@ import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_SE
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_PROTOCOL;
-import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_TYPE;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
+import static org.apache.dubbo.common.utils.UrlUtils.isServiceDiscoveryRegistryType;
 import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
 import static org.apache.dubbo.config.Constants.LAYER_KEY;
 import static org.apache.dubbo.config.Constants.LISTENER_KEY;
@@ -308,9 +307,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     private String extractRegistryType(URL url) {
-        boolean isServiceRegistry = url.getParameter(REGISTRY_TYPE_KEY) != null
-                && SERVICE_REGISTRY_TYPE.equals(url.getParameter(REGISTRY_TYPE_KEY));
-        return isServiceRegistry ? SERVICE_REGISTRY_PROTOCOL : REGISTRY_PROTOCOL;
+        return isServiceDiscoveryRegistryType(url) ? SERVICE_REGISTRY_PROTOCOL : REGISTRY_PROTOCOL;
     }
 
     /**
