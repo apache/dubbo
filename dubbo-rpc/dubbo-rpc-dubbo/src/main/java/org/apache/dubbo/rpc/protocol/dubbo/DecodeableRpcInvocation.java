@@ -101,6 +101,15 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
         setAttachment(VERSION_KEY, in.readUTF());
 
         setMethodName(in.readUTF());
+        
+        /**
+         * 兼容dubbox 和dubbo
+         * 如果发现consumer是dubbox 则采取dubbox的编码格式
+         */
+        if (!Version.DEFAULT_DUBBO_PROTOCOL_VERSION.equals(dubboVersion)) {
+            in.readInt();
+        }
+        
         try {
             Object[] args;
             Class<?>[] pts;
