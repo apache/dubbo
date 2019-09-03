@@ -39,6 +39,9 @@ public class TypeDefinition {
     private Map<String, TypeDefinition> properties;
     private String typeBuilderName;
 
+    public TypeDefinition() {
+    }
+
     public TypeDefinition(String type) {
         this.type = type;
     }
