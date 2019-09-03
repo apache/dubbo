@@ -179,6 +179,16 @@ public class DubboCodec extends ExchangeCodec {
         out.writeUTF(inv.getAttachment(VERSION_KEY));
 
         out.writeUTF(inv.getMethodName());
+        
+        /**
+         * 兼容dubbox 和dubbo
+         * 如果发现provider是dubbox 则采取dubbox的编码格式
+         */
+        String dubbo = channel.getUrl().getParameter("dubbo");
+        if (!Version.DEFAULT_DUBBO_PROTOCOL_VERSION.equals(dubbo)) {
+            out.writeInt(-1);
+        }
+        
         out.writeUTF(ReflectUtils.getDesc(inv.getParameterTypes()));
         Object[] args = inv.getArguments();
         if (args != null) {
