@@ -61,8 +61,14 @@ public class RedisRegistry extends FailbackRegistry {
 
     private static final int DEFAULT_REDIS_PORT = 6379;
 
+    /**
+     * 默认节点
+     */
     private final static String DEFAULT_ROOT = "dubbo";
 
+    /**
+     * 过期机制执行器
+     */
     private final ScheduledExecutorService expireExecutor = Executors.newScheduledThreadPool(1, new NamedThreadFactory("DubboRegistryExpireTimer", true));
 
     private final ScheduledFuture<?> expireFuture;
@@ -71,12 +77,20 @@ public class RedisRegistry extends FailbackRegistry {
 
     private final Map<String, JedisPool> jedisPools = new ConcurrentHashMap<>();
 
+    /**
+     * 通知器集合
+     *
+     * key：Root + Service ，例如 `/dubbo/com.alibaba.dubbo.demo.DemoService`
+     */
     private final ConcurrentMap<String, Notifier> notifiers = new ConcurrentHashMap<String, Notifier>();
 
     private final int reconnectPeriod;
 
     private final int expirePeriod;
 
+    /**
+     * 是否监控中心
+     */
     private volatile boolean admin = false;
 
     private boolean replicate;
@@ -144,6 +158,7 @@ public class RedisRegistry extends FailbackRegistry {
                     url.getParameter("db.index", 0)));
         }
 
+        //解析重连周期
         this.reconnectPeriod = url.getParameter(Constants.REGISTRY_RECONNECT_PERIOD_KEY, Constants.DEFAULT_REGISTRY_RECONNECT_PERIOD);
         String group = url.getParameter(Constants.GROUP_KEY, DEFAULT_ROOT);
         if (!group.startsWith(Constants.PATH_SEPARATOR)) {

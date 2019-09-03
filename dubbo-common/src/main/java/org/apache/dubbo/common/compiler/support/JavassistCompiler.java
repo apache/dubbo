@@ -49,8 +49,10 @@ public class JavassistCompiler extends AbstractCompiler {
 
     @Override
     public Class<?> doCompile(String name, String source) throws Throwable {
+        // 获得类名
         int i = name.lastIndexOf('.');
         String className = i < 0 ? name : name.substring(i + 1);
+        // 创建 ClassPool 对象
         ClassPool pool = new ClassPool(true);
         pool.appendClassPath(new LoaderClassPath(ClassHelper.getCallerClassLoader(getClass())));
         Matcher matcher = IMPORT_PATTERN.matcher(source);
