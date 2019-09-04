@@ -91,16 +91,12 @@ public class DubboProtocol extends AbstractProtocol {
 
         @Override
         public CompletableFuture<Object> reply(ExchangeChannel channel, Object message) throws RemotingException {
-
-            if (!(message instanceof Invocation)) {
-                throw new RemotingException(channel, "Unsupported request: "
-                        + (message == null ? null : (message.getClass().getName() + ": " + message))
-                        + ", channel: consumer: " + channel.getRemoteAddress() + " --> provider: " + channel.getLocalAddress());
+            if (!(message instanceof Invocation)) {//消息类型不是RPC回话调用类型
+                throw new RemotingException(channel, "Unsupported request: ");
             }
 
             Invocation inv = (Invocation) message;
-            Invoker<?> invoker = getInvoker(channel, inv);
-            // need to consider backward-compatibility if it's a callback
+            Invoker<?> invoker = getInvoker(channel, inv);//获取暴露服务的invoker，从暴露缓存exportMap中获取
             if (Boolean.TRUE.toString().equals(inv.getAttachments().get(IS_CALLBACK_SERVICE_INVOKE))) {
                 String methodsStr = invoker.getUrl().getParameters().get("methods");
                 boolean hasMethod = false;
@@ -116,16 +112,16 @@ public class DubboProtocol extends AbstractProtocol {
                     }
                 }
                 if (!hasMethod) {
-                    logger.warn(new IllegalStateException("The methodName " + inv.getMethodName()
-                            + " not found in callback service interface ,invoke will be ignored."
-                            + " please update the api interface. url is:"
-                            + invoker.getUrl()) + " ,invocation is :" + inv);
+                    logger.warn(new IllegalStateException("The methodName not found in callback service interface"));
                     return null;
                 }
             }
             RpcContext rpcContext = RpcContext.getContext();
             rpcContext.setRemoteAddress(channel.getRemoteAddress());
+            //KKEY invoke调用，走各种Filter/listener/...，走到暴露时JavassistProxyFactory.getInvoker中匿名类的doInvoke
+            // 最后会执行到javassist生成的代理类的逻辑，执行目标方法，获取返回值进行封装
             Result result = invoker.invoke(inv);
+
 
             if (result instanceof AsyncRpcResult) {
                 return ((AsyncRpcResult) result).getResultFuture().thenApply(r -> (Object) r);
@@ -385,7 +381,7 @@ public class DubboProtocol extends AbstractProtocol {
     public <T> Invoker<T> refer(Class<T> serviceType, URL url) throws RpcException {
         optimizeSerialization(url);
 
-        // create rpc invoker.
+        // getClients(url)创建或获取连接
         DubboInvoker<T> invoker = new DubboInvoker<T>(serviceType, url, getClients(url), invokers);
         invokers.add(invoker);
 
@@ -393,30 +389,25 @@ public class DubboProtocol extends AbstractProtocol {
     }
 
     private ExchangeClient[] getClients(URL url) {
-        // whether to share connection
-
         boolean useShareConnect = false;
-
+        //获取连接数connections配置，没配则默认0
         int connections = url.getParameter(Constants.CONNECTIONS_KEY, 0);
         List<ReferenceCountExchangeClient> shareClients = null;
-        // if not configured, connection is shared, otherwise, one connection for one service
-        if (connections == 0) {
-            useShareConnect = true;
 
-            /**
-             * The xml configuration should have a higher priority than properties.
-             */
+        if (connections == 0) {
+            useShareConnect = true;//如果url中没有connections参数，则默认共用连接
             String shareConnectionsStr = url.getParameter(Constants.SHARE_CONNECTIONS_KEY, (String) null);
             connections = Integer.parseInt(StringUtils.isBlank(shareConnectionsStr) ? ConfigUtils.getProperty(Constants.SHARE_CONNECTIONS_KEY,
                     Constants.DEFAULT_SHARE_CONNECTIONS) : shareConnectionsStr);
-            shareClients = getSharedClient(url, connections);
+            //这里根据 connections 数量决定是获取共享客户端还是创建新的客户端实例，默认情况下，使用共享客户端实例。
+            //getSharedClient 方法中也会调用 initClient 方法进行连接初始化。
+            shareClients = getSharedClient(url, connections);//公共连接
         }
 
         ExchangeClient[] clients = new ExchangeClient[connections];
         for (int i = 0; i < clients.length; i++) {
             if (useShareConnect) {
                 clients[i] = shareClients.get(i);
-
             } else {
                 clients[i] = initClient(url);
             }
@@ -433,48 +424,40 @@ public class DubboProtocol extends AbstractProtocol {
      */
     private List<ReferenceCountExchangeClient> getSharedClient(URL url, int connectNum) {
         String key = url.getAddress();
+        //根据地址从本地缓存Map中获取连接
         List<ReferenceCountExchangeClient> clients = referenceClientMap.get(key);
 
-        if (checkClientCanUse(clients)) {
-            batchClientRefIncr(clients);
-            return clients;
+        if (checkClientCanUse(clients)) {//校验缓存连接数量和连接的状态等
+            batchClientRefIncr(clients);//增加当前连接的引用数量
+            return clients;//可用直接返回则可
         }
 
         locks.putIfAbsent(key, new Object());
         synchronized (locks.get(key)) {
+            //加锁之后，再次获取和再次校验，控制并发情况
             clients = referenceClientMap.get(key);
-            // dubbo check
             if (checkClientCanUse(clients)) {
-                batchClientRefIncr(clients);
-                return clients;
+                batchClientRefIncr(clients);//增加当前连接的引用数量
+                return clients;//可用直接返回则可
             }
-
-            // connectNum must be greater than or equal to 1
             connectNum = Math.max(connectNum, 1);
 
-            // If the clients is empty, then the first initialization is
             if (CollectionUtils.isEmpty(clients)) {
-                clients = buildReferenceCountExchangeClientList(url, connectNum);
-                referenceClientMap.put(key, clients);
-
+                clients = buildReferenceCountExchangeClientList(url, connectNum);//本地没有缓存则建立连接
+                referenceClientMap.put(key, clients);//并放入本地缓存
             } else {
                 for (int i = 0; i < clients.size(); i++) {
                     ReferenceCountExchangeClient referenceCountExchangeClient = clients.get(i);
-                    // If there is a client in the list that is no longer available, create a new one to replace him.
                     if (referenceCountExchangeClient == null || referenceCountExchangeClient.isClosed()) {
-                        clients.set(i, buildReferenceCountExchangeClient(url));
+                        clients.set(i, buildReferenceCountExchangeClient(url));//重新建立连接
                         continue;
                     }
 
-                    referenceCountExchangeClient.incrementAndGetCount();
+                    referenceCountExchangeClient.incrementAndGetCount();//增加连接引用数
                 }
             }
 
-            /**
-             * I understand that the purpose of the remove operation here is to avoid the expired url key
-             * always occupying this memory space.
-             */
-            locks.remove(key);
+            locks.remove(key);//释放锁
 
             return clients;
         }

@@ -69,43 +69,41 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
     @Override
     protected Result doInvoke(final Invocation invocation) throws Throwable {
         RpcInvocation inv = (RpcInvocation) invocation;
-        final String methodName = RpcUtils.getMethodName(invocation);
-        inv.setAttachment(Constants.PATH_KEY, getUrl().getPath());
-        inv.setAttachment(Constants.VERSION_KEY, version);
+        final String methodName = RpcUtils.getMethodName(invocation);//调用方法
+        inv.setAttachment(Constants.PATH_KEY, getUrl().getPath());//全路径名
+        inv.setAttachment(Constants.VERSION_KEY, version);//版本
 
         ExchangeClient currentClient;
         if (clients.length == 1) {
-            currentClient = clients[0];
+            currentClient = clients[0];//如果缓存只有一个连接，直接取则可
         } else {
-            currentClient = clients[index.getAndIncrement() % clients.length];
+            currentClient = clients[index.getAndIncrement() % clients.length];//如果多个连接则轮询
         }
         try {
-            boolean isAsync = RpcUtils.isAsync(getUrl(), invocation);
-            boolean isAsyncFuture = RpcUtils.isReturnTypeFuture(inv);
-            boolean isOneway = RpcUtils.isOneway(getUrl(), invocation);
+            boolean isAsync = RpcUtils.isAsync(getUrl(), invocation);//请求模式是否异步
+            boolean isAsyncFuture = RpcUtils.isReturnTypeFuture(inv);//是否有返回值
+            boolean isOneway = RpcUtils.isOneway(getUrl(), invocation);//是否单向请求
             int timeout = getUrl().getMethodParameter(methodName, Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
-            if (isOneway) {
+            if (isOneway) {//KKEY 单向RPC请求，只负责发，不管结果
                 boolean isSent = getUrl().getMethodParameter(methodName, Constants.SENT_KEY, false);
-                currentClient.send(inv, isSent);
+                currentClient.send(inv, isSent);//发送RPC请求
                 RpcContext.getContext().setFuture(null);
                 return new RpcResult();
-            } else if (isAsync) {
-                ResponseFuture future = currentClient.request(inv, timeout);
-                // For compatibility
+            } else if (isAsync) {//KKEY 异步有返回结果
+                ResponseFuture future = currentClient.request(inv, timeout);//发送RPC请求返回Future
                 FutureAdapter<Object> futureAdapter = new FutureAdapter<>(future);
                 RpcContext.getContext().setFuture(futureAdapter);
 
-                Result result;
+                Result result;//异步AsyncRpcResult包装，等待future.whenComplete
                 if (isAsyncFuture) {
-                    // register resultCallback, sometimes we need the async result being processed by the filter chain.
                     result = new AsyncRpcResult(futureAdapter, futureAdapter.getResultFuture(), false);
                 } else {
                     result = new SimpleAsyncRpcResult(futureAdapter, futureAdapter.getResultFuture(), false);
                 }
                 return result;
-            } else {
+            } else {//KKEY 同步有返回值
                 RpcContext.getContext().setFuture(null);
-                return (Result) currentClient.request(inv, timeout).get();
+                return (Result) currentClient.request(inv, timeout).get();//KKEY 发送RPC请求并阻塞等待结果返回唤醒
             }
         } catch (TimeoutException e) {
             throw new RpcException(RpcException.TIMEOUT_EXCEPTION, "Invoke remote method timeout. method: " + invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage(), e);
