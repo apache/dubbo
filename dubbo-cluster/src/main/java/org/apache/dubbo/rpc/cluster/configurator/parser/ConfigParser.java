@@ -84,9 +84,7 @@ public class ConfigParser {
 
             List<String> apps = item.getApplications();
             if (apps != null && apps.size() > 0) {
-                apps.forEach(app -> {
-                    urls.add(URL.valueOf(urlBuilder.append("&application=").append(app).toString()));
-                });
+                apps.forEach(app -> urls.add(URL.valueOf(urlBuilder.append("&application=").append(app).toString())));
             } else {
                 urls.add(URL.valueOf(urlBuilder.toString()));
             }
