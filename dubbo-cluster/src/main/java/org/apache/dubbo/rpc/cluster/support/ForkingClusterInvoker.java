@@ -83,17 +83,14 @@ public class ForkingClusterInvoker<T> extends AbstractClusterInvoker<T> {
             final AtomicInteger count = new AtomicInteger();
             final BlockingQueue<Object> ref = new LinkedBlockingQueue<>();
             for (final Invoker<T> invoker : selected) {
-                executor.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            Result result = invoker.invoke(invocation);
-                            ref.offer(result);
-                        } catch (Throwable e) {
-                            int value = count.incrementAndGet();
-                            if (value >= selected.size()) {
-                                ref.offer(e);
-                            }
+                executor.execute(() -> {
+                    try {
+                        Result result = invoker.invoke(invocation);
+                        ref.offer(result);
+                    } catch (Throwable e) {
+                        int value = count.incrementAndGet();
+                        if (value >= selected.size()) {
+                            ref.offer(e);
                         }
                     }
                 });
