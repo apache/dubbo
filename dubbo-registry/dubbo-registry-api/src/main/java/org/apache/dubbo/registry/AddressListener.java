@@ -18,6 +18,7 @@ package org.apache.dubbo.registry;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.rpc.cluster.Directory;
 
 import java.util.List;
 
@@ -29,7 +30,8 @@ public interface AddressListener {
      *
      * @param addresses            provider address list
      * @param registryDirectoryUrl
+     * @param registryDirectory
      */
-    List<URL> notify(List<URL> addresses, URL registryDirectoryUrl);
+    List<URL> notify(List<URL> addresses, URL registryDirectoryUrl, Directory registryDirectory);
 
 }

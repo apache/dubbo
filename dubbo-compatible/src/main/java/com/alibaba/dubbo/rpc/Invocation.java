@@ -47,6 +47,11 @@ public interface Invocation extends org.apache.dubbo.rpc.Invocation {
         }
 
         @Override
+        public String getTargetServiceUniqueName() {
+            return delegate.getTargetServiceUniqueName();
+        }
+
+        @Override
         public String getMethodName() {
             return delegate.getMethodName();
         }

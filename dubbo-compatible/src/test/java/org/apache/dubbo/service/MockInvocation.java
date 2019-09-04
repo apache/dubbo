@@ -40,6 +40,11 @@ public class MockInvocation implements Invocation {
         this.arg0 = arg0;
     }
 
+    @Override
+    public String getTargetServiceUniqueName() {
+        return null;
+    }
+
     public String getMethodName() {
         return "echo";
     }

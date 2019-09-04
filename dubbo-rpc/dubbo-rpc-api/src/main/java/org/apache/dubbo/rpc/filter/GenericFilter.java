@@ -138,7 +138,10 @@ public class GenericFilter extends ListenableFilter {
                                         args[0].getClass().getName());
                     }
                 }
-                return invoker.invoke(new RpcInvocation(method, args, inv.getAttachments(), inv.getAttributes()));
+                RpcInvocation rpcInvocation = new RpcInvocation(method, args, inv.getAttachments(), inv.getAttributes());
+                rpcInvocation.setTargetServiceUniqueName(inv.getTargetServiceUniqueName());
+
+                return invoker.invoke(rpcInvocation);
             } catch (NoSuchMethodException e) {
                 throw new RpcException(e.getMessage(), e);
             } catch (ClassNotFoundException e) {

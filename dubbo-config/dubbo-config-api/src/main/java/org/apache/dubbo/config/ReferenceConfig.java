@@ -356,9 +356,11 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
         serviceMetadata.getAttachments().putAll(map);
 
+        ApplicationModel.initConsumerModel(URL.buildKey(interfaceName, group, version), buildConsumerModel(attributes, serviceMetadata));
+
         ref = createProxy(map);
 
-        ApplicationModel.initConsumerModel(serviceMetadata.getServiceKey(), buildConsumerModel(attributes, serviceMetadata));
+
         serviceMetadata.setTarget(ref);
         serviceMetadata.addAttribute(PROXY_CLASS_REF, ref);
         initialized = true;
@@ -417,7 +419,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 }
             } else { // assemble URL from register center's configuration
                 // if protocols not injvm checkRegistry
-                if (!LOCAL_PROTOCOL.equalsIgnoreCase(getProtocol())){
+                if (!LOCAL_PROTOCOL.equalsIgnoreCase(getProtocol())) {
                     checkRegistry();
                     List<URL> us = loadRegistries(false);
                     if (CollectionUtils.isNotEmpty(us)) {
