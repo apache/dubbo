@@ -139,6 +139,7 @@ public class GenericFilter extends ListenableFilter {
                     }
                 }
                 RpcInvocation rpcInvocation = new RpcInvocation(method, args, inv.getAttachments(), inv.getAttributes());
+                rpcInvocation.setInvoker(inv.getInvoker());
                 rpcInvocation.setTargetServiceUniqueName(inv.getTargetServiceUniqueName());
 
                 return invoker.invoke(rpcInvocation);
