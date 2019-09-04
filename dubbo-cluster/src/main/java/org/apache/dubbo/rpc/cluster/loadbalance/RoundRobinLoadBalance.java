@@ -126,13 +126,7 @@ public class RoundRobinLoadBalance extends AbstractLoadBalance {
                     // copy -> modify -> update reference
                     ConcurrentMap<String, WeightedRoundRobin> newMap = new ConcurrentHashMap<String, WeightedRoundRobin>();
                     newMap.putAll(map);
-                    Iterator<Entry<String, WeightedRoundRobin>> it = newMap.entrySet().iterator();
-                    while (it.hasNext()) {
-                        Entry<String, WeightedRoundRobin> item = it.next();
-                        if (now - item.getValue().getLastUpdate() > RECYCLE_PERIOD) {
-                            it.remove();
-                        }
-                    }
+                    newMap.entrySet().removeIf(item -> now - item.getValue().getLastUpdate() > RECYCLE_PERIOD);
                     methodWeightMap.put(key, newMap);
                 } finally {
                     updateLock.set(false);

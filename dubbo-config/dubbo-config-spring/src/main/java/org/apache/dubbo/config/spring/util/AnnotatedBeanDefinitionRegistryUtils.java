@@ -95,14 +95,8 @@ public abstract class AnnotatedBeanDefinitionRegistryUtils {
         }
 
         // Remove all annotated-classes that have been registered
-        Iterator<Class<?>> iterator = new ArrayList<>(asList(annotatedClasses)).iterator();
 
-        while (iterator.hasNext()) {
-            Class<?> annotatedClass = iterator.next();
-            if (isPresentBean(registry, annotatedClass)) {
-                iterator.remove();
-            }
-        }
+        new ArrayList<>(asList(annotatedClasses)).removeIf(annotatedClass -> isPresentBean(registry, annotatedClass));
 
         AnnotatedBeanDefinitionReader reader = new AnnotatedBeanDefinitionReader(registry);
 

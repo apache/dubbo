@@ -192,11 +192,7 @@ public class UrlUtils {
                     if (version != null && version.length() > 0) {
                         name = name + ":" + version;
                     }
-                    Map<String, String> newUrls = newRegister.get(name);
-                    if (newUrls == null) {
-                        newUrls = new HashMap<String, String>();
-                        newRegister.put(name, newUrls);
-                    }
+                    Map<String, String> newUrls = newRegister.computeIfAbsent(name, k -> new HashMap<String, String>());
                     newUrls.put(serviceUrl, StringUtils.toQueryString(params));
                 }
             } else {
@@ -253,11 +249,7 @@ public class UrlUtils {
                         params.put("version", name.substring(i + 1));
                         name = name.substring(0, i);
                     }
-                    Map<String, String> newUrls = newRegister.get(name);
-                    if (newUrls == null) {
-                        newUrls = new HashMap<String, String>();
-                        newRegister.put(name, newUrls);
-                    }
+                    Map<String, String> newUrls = newRegister.computeIfAbsent(name, k -> new HashMap<String, String>());
                     newUrls.put(serviceUrl, StringUtils.toQueryString(params));
                 }
             } else {
@@ -316,11 +308,7 @@ public class UrlUtils {
                             if (version != null && version.length() > 0) {
                                 name = name + ":" + version;
                             }
-                            Map<String, String> newUrls = newNotify.get(name);
-                            if (newUrls == null) {
-                                newUrls = new HashMap<String, String>();
-                                newNotify.put(name, newUrls);
-                            }
+                            Map<String, String> newUrls = newNotify.computeIfAbsent(name, k -> new HashMap<String, String>());
                             newUrls.put(url, StringUtils.toQueryString(params));
                         }
                     }
