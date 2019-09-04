@@ -57,11 +57,11 @@ public class InternalThreadLocalTest {
 
     @Test
     public void testRemoveAll() throws InterruptedException {
-        final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<Integer>();
+        final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<>();
         internalThreadLocal.set(1);
         Assertions.assertEquals(1, (int)internalThreadLocal.get(), "set failed");
 
-        final InternalThreadLocal<String> internalThreadLocalString = new InternalThreadLocal<String>();
+        final InternalThreadLocal<String> internalThreadLocalString = new InternalThreadLocal<>();
         internalThreadLocalString.set("value");
         Assertions.assertEquals("value", internalThreadLocalString.get(), "set failed");
 
@@ -72,11 +72,11 @@ public class InternalThreadLocalTest {
 
     @Test
     public void testSize() throws InterruptedException {
-        final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<Integer>();
+        final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<>();
         internalThreadLocal.set(1);
         Assertions.assertEquals(1, InternalThreadLocal.size(), "size method is wrong!");
 
-        final InternalThreadLocal<String> internalThreadLocalString = new InternalThreadLocal<String>();
+        final InternalThreadLocal<String> internalThreadLocalString = new InternalThreadLocal<>();
         internalThreadLocalString.set("value");
         Assertions.assertEquals(2, InternalThreadLocal.size(), "size method is wrong!");
     }
@@ -84,14 +84,14 @@ public class InternalThreadLocalTest {
     @Test
     public void testSetAndGet() {
         final Integer testVal = 10;
-        final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<Integer>();
+        final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<>();
         internalThreadLocal.set(testVal);
         Assertions.assertEquals(testVal, internalThreadLocal.get(), "set is not equals get");
     }
 
     @Test
     public void testRemove() {
-        final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<Integer>();
+        final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<>();
         internalThreadLocal.set(1);
         Assertions.assertEquals(1, (int)internalThreadLocal.get(), "get method false!");
 
@@ -120,26 +120,20 @@ public class InternalThreadLocalTest {
     public void testMultiThreadSetAndGet() throws InterruptedException {
         final Integer testVal1 = 10;
         final Integer testVal2 = 20;
-        final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<Integer>();
+        final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<>();
         final CountDownLatch countDownLatch = new CountDownLatch(2);
-        Thread t1 = new Thread(new Runnable() {
-            @Override
-            public void run() {
+        Thread t1 = new Thread(() -> {
 
-                internalThreadLocal.set(testVal1);
-                Assertions.assertEquals(testVal1, internalThreadLocal.get(), "set is not equals get");
-                countDownLatch.countDown();
-            }
+            internalThreadLocal.set(testVal1);
+            Assertions.assertEquals(testVal1, internalThreadLocal.get(), "set is not equals get");
+            countDownLatch.countDown();
         });
         t1.start();
 
-        Thread t2 = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                internalThreadLocal.set(testVal2);
-                Assertions.assertEquals(testVal2, internalThreadLocal.get(), "set is not equals get");
-                countDownLatch.countDown();
-            }
+        Thread t2 = new Thread(() -> {
+            internalThreadLocal.set(testVal2);
+            Assertions.assertEquals(testVal2, internalThreadLocal.get(), "set is not equals get");
+            countDownLatch.countDown();
         });
         t2.start();
         countDownLatch.await();
@@ -156,25 +150,22 @@ public class InternalThreadLocalTest {
         final ThreadLocal<String>[] caches1 = new ThreadLocal[PERFORMANCE_THREAD_COUNT];
         final Thread mainThread = Thread.currentThread();
         for (int i = 0; i < PERFORMANCE_THREAD_COUNT; i++) {
-            caches1[i] = new ThreadLocal<String>();
+            caches1[i] = new ThreadLocal<>();
         }
-        Thread t1 = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                for (int i = 0; i < PERFORMANCE_THREAD_COUNT; i++) {
-                    caches1[i].set("float.lu");
-                }
-                long start = System.nanoTime();
-                for (int i = 0; i < PERFORMANCE_THREAD_COUNT; i++) {
-                    for (int j = 0; j < GET_COUNT; j++) {
-                        caches1[i].get();
-                    }
-                }
-                long end = System.nanoTime();
-                System.out.println("take[" + TimeUnit.NANOSECONDS.toMillis(end - start) +
-                        "]ms");
-                LockSupport.unpark(mainThread);
+        Thread t1 = new Thread(() -> {
+            for (int i = 0; i < PERFORMANCE_THREAD_COUNT; i++) {
+                caches1[i].set("float.lu");
             }
+            long start = System.nanoTime();
+            for (int i = 0; i < PERFORMANCE_THREAD_COUNT; i++) {
+                for (int j = 0; j < GET_COUNT; j++) {
+                    caches1[i].get();
+                }
+            }
+            long end = System.nanoTime();
+            System.out.println("take[" + TimeUnit.NANOSECONDS.toMillis(end - start) +
+                    "]ms");
+            LockSupport.unpark(mainThread);
         });
         t1.start();
         LockSupport.park(mainThread);
@@ -191,25 +182,22 @@ public class InternalThreadLocalTest {
         final InternalThreadLocal<String>[] caches = new InternalThreadLocal[PERFORMANCE_THREAD_COUNT];
         final Thread mainThread = Thread.currentThread();
         for (int i = 0; i < PERFORMANCE_THREAD_COUNT; i++) {
-            caches[i] = new InternalThreadLocal<String>();
+            caches[i] = new InternalThreadLocal<>();
         }
-        Thread t = new InternalThread(new Runnable() {
-            @Override
-            public void run() {
-                for (int i = 0; i < PERFORMANCE_THREAD_COUNT; i++) {
-                    caches[i].set("float.lu");
-                }
-                long start = System.nanoTime();
-                for (int i = 0; i < PERFORMANCE_THREAD_COUNT; i++) {
-                    for (int j = 0; j < GET_COUNT; j++) {
-                        caches[i].get();
-                    }
-                }
-                long end = System.nanoTime();
-                System.out.println("take[" + TimeUnit.NANOSECONDS.toMillis(end - start) +
-                        "]ms");
-                LockSupport.unpark(mainThread);
+        Thread t = new InternalThread(() -> {
+            for (int i = 0; i < PERFORMANCE_THREAD_COUNT; i++) {
+                caches[i].set("float.lu");
             }
+            long start = System.nanoTime();
+            for (int i = 0; i < PERFORMANCE_THREAD_COUNT; i++) {
+                for (int j = 0; j < GET_COUNT; j++) {
+                    caches[i].get();
+                }
+            }
+            long end = System.nanoTime();
+            System.out.println("take[" + TimeUnit.NANOSECONDS.toMillis(end - start) +
+                    "]ms");
+            LockSupport.unpark(mainThread);
         });
         t.start();
         LockSupport.park(mainThread);

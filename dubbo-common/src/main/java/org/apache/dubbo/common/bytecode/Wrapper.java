@@ -36,7 +36,7 @@ import java.util.regex.Matcher;
  * Wrapper.
  */
 public abstract class Wrapper {
-    private static final Map<Class<?>, Wrapper> WRAPPER_MAP = new ConcurrentHashMap<Class<?>, Wrapper>(); //class wrapper map
+    private static final Map<Class<?>, Wrapper> WRAPPER_MAP = new ConcurrentHashMap<>(); //class wrapper map
     private static final String[] EMPTY_STRING_ARRAY = new String[0];
     private static final String[] OBJECT_METHODS = new String[]{"getClass", "hashCode", "toString", "equals"};
     private static final Wrapper OBJECT_WRAPPER = new Wrapper() {

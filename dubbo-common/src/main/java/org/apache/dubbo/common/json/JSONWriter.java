@@ -42,7 +42,7 @@ public class JSONWriter {
 
     private State mState = new State(UNKNOWN);
 
-    private Stack<State> mStack = new Stack<State>();
+    private Stack<State> mStack = new Stack<>();
 
     public JSONWriter(Writer writer) {
         mWriter = writer;

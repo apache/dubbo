@@ -27,7 +27,7 @@ public class ParametersTest {
     final String LoadBalance = "lcr";
 
     public void testMap2Parameters() throws Exception {
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         map.put("name", "org.apache.dubbo.rpc.service.GenericService");
         map.put("version", "1.0.15");
         map.put("lb", "lcr");

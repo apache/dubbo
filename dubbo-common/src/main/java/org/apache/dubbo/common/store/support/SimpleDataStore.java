@@ -27,17 +27,16 @@ import java.util.concurrent.ConcurrentMap;
 public class SimpleDataStore implements DataStore {
 
     // <component name or id, <data-name, data-value>>
-    private ConcurrentMap<String, ConcurrentMap<String, Object>> data =
-            new ConcurrentHashMap<String, ConcurrentMap<String, Object>>();
+    private ConcurrentMap<String, ConcurrentMap<String, Object>> data = new ConcurrentHashMap<>();
 
     @Override
     public Map<String, Object> get(String componentName) {
         ConcurrentMap<String, Object> value = data.get(componentName);
         if (value == null) {
-            return new HashMap<String, Object>();
+            return new HashMap<>();
         }
 
-        return new HashMap<String, Object>(value);
+        return new HashMap<>(value);
     }
 
     @Override
@@ -52,7 +51,7 @@ public class SimpleDataStore implements DataStore {
     public void put(String componentName, String key, Object value) {
         Map<String, Object> componentData = data.get(componentName);
         if (null == componentData) {
-            data.putIfAbsent(componentName, new ConcurrentHashMap<String, Object>());
+            data.putIfAbsent(componentName, new ConcurrentHashMap<>());
             componentData = data.get(componentName);
         }
         componentData.put(key, value);

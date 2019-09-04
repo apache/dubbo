@@ -98,7 +98,7 @@ public class CIDRUtils {
 
     private byte[] toBytes(byte[] array, int targetSize) {
         int counter = 0;
-        List<Byte> newArr = new ArrayList<Byte>();
+        List<Byte> newArr = new ArrayList<>();
         while (counter < targetSize && (array.length - 1 - counter >= 0)) {
             newArr.add(0, array[array.length - 1 - counter]);
             counter++;

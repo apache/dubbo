@@ -57,7 +57,7 @@ public class ExtensionLoader_Adaptive_Test {
         {
             SimpleExt ext = ExtensionLoader.getExtensionLoader(SimpleExt.class).getAdaptiveExtension();
 
-            Map<String, String> map = new HashMap<String, String>();
+            Map<String, String> map = new HashMap<>();
             URL url = new URL("p1", "1.2.3.4", 1010, "path1", map);
 
             String echo = ext.echo(url, "haha");
@@ -67,7 +67,7 @@ public class ExtensionLoader_Adaptive_Test {
         {
             SimpleExt ext = ExtensionLoader.getExtensionLoader(SimpleExt.class).getAdaptiveExtension();
 
-            Map<String, String> map = new HashMap<String, String>();
+            Map<String, String> map = new HashMap<>();
             map.put("simple.ext", "impl2");
             URL url = new URL("p1", "1.2.3.4", 1010, "path1", map);
 
@@ -80,7 +80,7 @@ public class ExtensionLoader_Adaptive_Test {
     public void test_getAdaptiveExtension_customizeAdaptiveKey() throws Exception {
         SimpleExt ext = ExtensionLoader.getExtensionLoader(SimpleExt.class).getAdaptiveExtension();
 
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         map.put("key2", "impl2");
         URL url = new URL("p1", "1.2.3.4", 1010, "path1", map);
 
@@ -100,7 +100,7 @@ public class ExtensionLoader_Adaptive_Test {
             String echo = ext.echo(URL.valueOf("1.2.3.4:20880"), "s");
             assertEquals("Ext3Impl1-echo", echo); // default value
 
-            Map<String, String> map = new HashMap<String, String>();
+            Map<String, String> map = new HashMap<>();
             URL url = new URL("impl3", "1.2.3.4", 1010, "path1", map);
 
             echo = ext.echo(url, "s");
@@ -113,7 +113,7 @@ public class ExtensionLoader_Adaptive_Test {
 
         {
 
-            Map<String, String> map = new HashMap<String, String>();
+            Map<String, String> map = new HashMap<>();
             URL url = new URL(null, "1.2.3.4", 1010, "path1", map);
             String yell = ext.yell(url, "s");
             assertEquals("Ext3Impl1-yell", yell); // default value
@@ -165,7 +165,7 @@ public class ExtensionLoader_Adaptive_Test {
     public void test_getAdaptiveExtension_ExceptionWhenNotAdaptiveMethod() throws Exception {
         SimpleExt ext = ExtensionLoader.getExtensionLoader(SimpleExt.class).getAdaptiveExtension();
 
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         URL url = new URL("p1", "1.2.3.4", 1010, "path1", map);
 
         try {
@@ -194,7 +194,7 @@ public class ExtensionLoader_Adaptive_Test {
     public void test_urlHolder_getAdaptiveExtension() throws Exception {
         Ext2 ext = ExtensionLoader.getExtensionLoader(Ext2.class).getAdaptiveExtension();
 
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         map.put("ext2", "impl1");
         URL url = new URL("p1", "1.2.3.4", 1010, "path1", map);
 
@@ -254,7 +254,7 @@ public class ExtensionLoader_Adaptive_Test {
     public void test_urlHolder_getAdaptiveExtension_ExceptionWhenNotAdativeMethod() throws Exception {
         Ext2 ext = ExtensionLoader.getExtensionLoader(Ext2.class).getAdaptiveExtension();
 
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         URL url = new URL("p1", "1.2.3.4", 1010, "path1", map);
 
         try {
