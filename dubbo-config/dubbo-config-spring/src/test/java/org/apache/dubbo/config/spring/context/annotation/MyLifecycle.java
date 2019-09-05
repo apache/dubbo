@@ -18,24 +18,41 @@ package org.apache.dubbo.config.spring.context.annotation;
 
 import org.apache.dubbo.common.context.Lifecycle;
 
-import org.springframework.context.annotation.Import;
-
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
 /**
- * Enables Dubbo {@link Lifecycle} components
- *
- * @since 2.7.4
+ * {@link Lifecycle}
  */
-@Target({ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-@Inherited
-@Documented
-@Import(DubboLifecycleComponentRegistrar.class)
-public @interface EnableDubboLifecycle {
+public class MyLifecycle implements Lifecycle {
+
+    @Override
+    public Lifecycle initialize() throws IllegalStateException {
+        EnableDubboLifecycleTest.initialized = true;
+        return this;
+    }
+
+    @Override
+    public boolean isInitialized() {
+        return true;
+    }
+
+    @Override
+    public Lifecycle start() throws IllegalStateException {
+        initialize();
+        EnableDubboLifecycleTest.started = true;
+        return this;
+    }
+
+    @Override
+    public boolean isStarted() {
+        return true;
+    }
+
+    @Override
+    public Lifecycle stop() throws IllegalStateException {
+        return this;
+    }
+
+    @Override
+    public void destroy() throws IllegalStateException {
+
+    }
 }
