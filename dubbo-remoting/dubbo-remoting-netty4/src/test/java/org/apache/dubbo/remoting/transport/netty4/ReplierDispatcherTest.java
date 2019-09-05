@@ -17,6 +17,7 @@
 package org.apache.dubbo.remoting.transport.netty4;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.ExchangeServer;
@@ -29,6 +30,8 @@ import org.junit.jupiter.api.Test;
 import java.io.Serializable;
 import java.util.Random;
 import java.util.concurrent.*;
+
+import static org.junit.jupiter.api.Assertions.fail;
 
 
 /**
@@ -45,14 +48,13 @@ public class ReplierDispatcherTest {
 
     @BeforeEach
     public void startServer() throws RemotingException {
-        port = (int) (1000 * Math.random() + 10000);
+        port = NetUtils.getAvailablePort();
         ReplierDispatcher dispatcher = new ReplierDispatcher();
         dispatcher.addReplier(RpcMessage.class, new RpcMessageHandler());
         dispatcher.addReplier(Object.class, (channel, msg) -> {
             for (int i = 0; i < 10000; i++) {
                 System.currentTimeMillis();
             }
-            System.out.println("handle:" + msg + ";thread:" + Thread.currentThread().getName());
             return new StringMessage("hello world");
         });
         exchangeServer = Exchangers.bind(URL.valueOf("dubbo://localhost:" + port), dispatcher);
@@ -76,7 +78,7 @@ public class ReplierDispatcherTest {
 
 
     @Test
-    public void testMutliThread() throws Exception {
+    public void testMultiThread() throws Exception {
         int tc = 10;
         ExecutorService exec = Executors.newFixedThreadPool(tc);
         for (int i = 0; i < tc; i++)
@@ -84,7 +86,7 @@ public class ReplierDispatcherTest {
                 try {
                     clientExchangeInfo(port);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    fail();
                 }
             });
         exec.shutdown();
