@@ -55,5 +55,4 @@ public class RpcMessage implements Serializable {
     public Object[] getArguments() {
         return mArguments;
     }
-
 }
