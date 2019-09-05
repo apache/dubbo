@@ -114,4 +114,6 @@ public interface Constants {
     String REGISTRIES_SUFFIX = "dubbo.registries.";
 
     String ZOOKEEPER_PROTOCOL = "zookeeper";
+
+    String REGISTER_KEY = "register";
 }
