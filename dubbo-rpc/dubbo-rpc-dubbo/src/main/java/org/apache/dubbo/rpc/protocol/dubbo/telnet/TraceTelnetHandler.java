@@ -19,11 +19,8 @@ package org.apache.dubbo.rpc.protocol.dubbo.telnet;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
-import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import org.apache.dubbo.remoting.telnet.support.Help;
-import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 import org.apache.dubbo.rpc.protocol.dubbo.filter.TraceFilter;
 
 import java.lang.reflect.Method;
@@ -33,7 +30,7 @@ import java.lang.reflect.Method;
  */
 @Activate
 @Help(parameter = "[service] [method] [times]", summary = "Trace the service.", detail = "Trace the service.")
-public class TraceTelnetHandler implements TelnetHandler {
+public class TraceTelnetHandler extends AbstractTelnetHandler {
 
     @Override
     public String telnet(Channel channel, String message) {
@@ -61,15 +58,7 @@ public class TraceTelnetHandler implements TelnetHandler {
         if (!StringUtils.isInteger(times)) {
             return "Illegal times " + times + ", must be integer.";
         }
-        Invoker<?> invoker = null;
-        for (Exporter<?> exporter : DubboProtocol.getDubboProtocol().getExporters()) {
-            if (service.equals(exporter.getInvoker().getInterface().getSimpleName())
-                    || service.equals(exporter.getInvoker().getInterface().getName())
-                    || service.equals(exporter.getInvoker().getUrl().getPath())) {
-                invoker = exporter.getInvoker();
-                break;
-            }
-        }
+        Invoker<?> invoker = findInvoker(findProvider(service));
         if (invoker != null) {
             if (method != null && method.length() > 0) {
                 boolean found = false;

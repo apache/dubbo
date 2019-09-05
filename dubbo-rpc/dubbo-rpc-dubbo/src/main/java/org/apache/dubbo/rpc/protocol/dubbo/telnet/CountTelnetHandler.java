@@ -27,7 +27,7 @@ import org.apache.dubbo.remoting.telnet.support.TelnetUtils;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcStatus;
-import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
+import org.apache.dubbo.rpc.protocol.AbstractProtocol;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -71,7 +71,7 @@ public class CountTelnetHandler implements TelnetHandler {
         }
         final int t = Integer.parseInt(times);
         Invoker<?> invoker = null;
-        for (Exporter<?> exporter : DubboProtocol.getDubboProtocol().getExporters()) {
+        for (Exporter<?> exporter : AbstractProtocol.getAllExporters()) {
             if (service.equals(exporter.getInvoker().getInterface().getSimpleName())
                     || service.equals(exporter.getInvoker().getInterface().getName())
                     || service.equals(exporter.getInvoker().getUrl().getPath())) {

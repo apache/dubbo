@@ -45,7 +45,7 @@ class InjvmInvoker<T> extends AbstractInvoker<T> {
 
     @Override
     public boolean isAvailable() {
-        InjvmExporter<?> exporter = (InjvmExporter<?>) exporterMap.get(key);
+        Exporter<?> exporter = exporterMap.get(key);
         if (exporter == null) {
             return false;
         } else {
