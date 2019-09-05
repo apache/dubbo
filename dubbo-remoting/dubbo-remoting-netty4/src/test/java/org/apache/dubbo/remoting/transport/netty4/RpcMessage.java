@@ -38,7 +38,6 @@ public class RpcMessage implements Serializable {
         mMethodDesc = desc;
         mParameterTypes = parameterTypes;
         mArguments = args;
-
     }
 
     public String getClassName() {
