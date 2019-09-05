@@ -70,6 +70,7 @@ public class DubboMonitorTest {
             return false;
         }
 
+        @Override
         public Result invoke(Invocation invocation) throws RpcException {
             return null;
         }

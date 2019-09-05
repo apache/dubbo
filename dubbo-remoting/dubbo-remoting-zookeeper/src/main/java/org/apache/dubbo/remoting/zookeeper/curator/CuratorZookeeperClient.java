@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 
@@ -84,6 +85,10 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
                 }
             });
             client.start();
+            boolean connected = client.blockUntilConnected(timeout, TimeUnit.MILLISECONDS);
+            if (!connected) {
+                throw new IllegalStateException("zookeeper not connected");
+            }
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
