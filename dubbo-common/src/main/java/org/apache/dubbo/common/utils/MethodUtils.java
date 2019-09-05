@@ -18,8 +18,6 @@ package org.apache.dubbo.common.utils;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.ParameterizedType;
-import java.util.Map;
 
 public class MethodUtils {
 
@@ -29,37 +27,6 @@ public class MethodUtils {
                 && Modifier.isPublic(method.getModifiers())
                 && method.getParameterCount() == 1
                 && ClassUtils.isPrimitive(method.getParameterTypes()[0]);
-    }
-
-    /**
-     * test if method is a setter if Map<String, String>
-     */
-    public static boolean isStringMapSetter(Method method) {
-        return method.getName().startsWith("set")
-                && !"set".equals(method.getName())
-                && Modifier.isPublic(method.getModifiers())
-                && method.getParameterCount() == 1
-                && Map.class == method.getParameterTypes()[0]
-                && Map.class != method.getGenericParameterTypes()[0]
-                && ((ParameterizedType)method.getGenericParameterTypes()[0]).getActualTypeArguments()[0] == String.class
-                && ((ParameterizedType)method.getGenericParameterTypes()[0]).getActualTypeArguments()[1] == String.class;
-    }
-
-
-    public static Method findGetterBySetter(Class<?> clazz, Method setterMethod) {
-        String propertyName = setterMethod.getName().substring("set".length());
-        try {
-            return clazz.getMethod("get"+propertyName);
-        } catch (NoSuchMethodException e) {
-            if (setterMethod.getParameterTypes()[0] == boolean.class || setterMethod.getParameterTypes()[0] == Boolean.class) {
-                try {
-                    return clazz.getMethod("is"+propertyName);
-                } catch (NoSuchMethodException ex) {
-                    return null;
-                }
-            }
-        }
-        return null;
     }
 
     public static boolean isGetter(Method method) {
