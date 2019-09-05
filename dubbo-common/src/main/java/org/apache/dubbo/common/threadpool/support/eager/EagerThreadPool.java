@@ -30,6 +30,11 @@ import java.util.concurrent.TimeUnit;
  * EagerThreadPool
  * When the core threads are all in busy,
  * create new thread instead of putting task into blocking queue.
+ * 线程池ThreadPoolExecutor只有在核心线程数量都在工作，且任务缓冲队列满了之后才会在最大线程限制下增加线程数量
+ * EagerThreadPoolExecutor集成自ThreadPoolExecutor，但是重写了execute方法，通过自定义TaskQueue作为workQueue
+ * 修改了逻辑，逻辑如下：
+ *
+ *
  */
 public class EagerThreadPool implements ThreadPool {
 
@@ -42,7 +47,7 @@ public class EagerThreadPool implements ThreadPool {
         int alive = url.getParameter(Constants.ALIVE_KEY, Constants.DEFAULT_ALIVE);
 
         // init queue and executor
-        TaskQueue<Runnable> taskQueue = new TaskQueue<Runnable>(queues <= 0 ? 1 : queues);
+        TaskQueue<Runnable> taskQueue = new TaskQueue<>(queues <= 0 ? 1 : queues);
         EagerThreadPoolExecutor executor = new EagerThreadPoolExecutor(cores,
                 threads,
                 alive,

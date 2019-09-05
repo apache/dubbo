@@ -46,7 +46,13 @@ import java.util.Map;
 /**
  * ReferenceFactoryBean
  */
-public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean, ApplicationContextAware, InitializingBean, DisposableBean {
+public class ReferenceBean<T> extends
+    ReferenceConfig<T> implements //配置类
+    FactoryBean,//生产bean的工厂，实现该接口通过其实现的getObject()方法生产服务引用的代理类，spring FactoryBean请自行查阅。
+    ApplicationContextAware,//实现该接口，bean实例化之后将通过实现的setApplicationContext方法将spring容器set到bean中，直接获取spring容器。
+    InitializingBean,//实现InitializingBean接口，在当前bean实例化的时候执行Init-method之前将执行实现的afterPropertiesSet方法。请参阅AbstractAutowiredCapableBeanFactory::invokeInitMethods
+    DisposableBean//实现该接口，在当前bean在销毁的时候回执行实现的destroy方法
+    {
 
     private static final long serialVersionUID = 213195494150089726L;
 

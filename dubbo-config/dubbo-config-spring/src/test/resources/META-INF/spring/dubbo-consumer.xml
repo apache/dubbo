@@ -26,5 +26,4 @@
 
     <!-- 连接注册中心配置 -->
     <dubbo:registry address="N/A"/>
-
 </beans>
