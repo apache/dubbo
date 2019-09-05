@@ -46,6 +46,7 @@ public class Application {
         param.put("_name", "kobe");
         param.put("_description", "lakers");
         param.put("extra", extraMap);
+        param.put("lValue","1123");
 
         // 基本类型以及Date,List,Map等不需要转换，直接调用
         Map<String, Object> result = (Map<String, Object>) genericService.$invoke("forGeneric", new String[]{"org.apache.dubbo.demo.provider.RequestDemo"}, new Object[]{param});

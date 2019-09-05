@@ -29,13 +29,18 @@ import java.lang.annotation.Target;
  * <p>
  *     sometimes you receive json string which contains non-camelcase key name,e.g. order_id,
  *     but the java bean needs camelcase name,e.g orderId, you should convert manually each other,
- *     basing GenericAlias annotation it could be converted automatically.
+ *     basing GenericFeature annotation it could be converted automatically.
  * </p>
  *
  */
 @Target({ElementType.METHOD,ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface GenericAlias {
-    String value();
+public @interface GenericFeature {
+    String alias();
+    boolean ignore() default false;
+    boolean numberAsString() default false;
+    String  dateFormatter() default "";
+    boolean nullNotRealize() default false;
+    boolean nullNotGeneralize() default false;
 }

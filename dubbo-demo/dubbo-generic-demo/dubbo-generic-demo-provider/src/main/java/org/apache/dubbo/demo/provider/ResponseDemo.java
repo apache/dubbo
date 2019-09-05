@@ -1,7 +1,8 @@
 package org.apache.dubbo.demo.provider;
 
-import org.apache.dubbo.common.annotations.GenericAlias;
+import org.apache.dubbo.common.annotations.GenericFeature;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 
 /**
@@ -11,13 +12,22 @@ import java.util.Map;
 public class ResponseDemo {
     private int statusCode;
 
-    @GenericAlias("_msg")
+    @GenericFeature(alias = "_msg")
     private String msg;
-    @GenericAlias("_desc")
+    @GenericFeature(alias = "_desc")
     private String desc;
 
+    @GenericFeature(alias = "lValue",longAsString = true)
+    private long lValue;
 
-    @GenericAlias("_extraInfo")
+    @GenericFeature(alias = "ignore", ignore = true)
+    private String ignore = "ignore";
+
+    @GenericFeature(alias = "dateTime", dateFormatter = "yyyy-MM-dd hh:mm:ss")
+    private LocalDateTime dateTime = LocalDateTime.now();
+
+
+    @GenericFeature(alias = "_extraInfo")
     public Map<String, String> getExtra() {
         return extra;
     }
@@ -52,5 +62,13 @@ public class ResponseDemo {
 
     public void setExtra(Map<String, String> extra) {
         this.extra = extra;
+    }
+
+    public long getlValue() {
+        return lValue;
+    }
+
+    public void setlValue(long lValue) {
+        this.lValue = lValue;
     }
 }

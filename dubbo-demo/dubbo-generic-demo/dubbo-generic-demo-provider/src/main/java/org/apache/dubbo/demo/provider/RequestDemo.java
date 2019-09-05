@@ -1,6 +1,6 @@
 package org.apache.dubbo.demo.provider;
 
-import org.apache.dubbo.common.annotations.GenericAlias;
+import org.apache.dubbo.common.annotations.GenericFeature;
 
 import java.util.Map;
 
@@ -9,13 +9,16 @@ import java.util.Map;
  * @date 2019/6/11下午7:46
  */
 public class RequestDemo {
-    @GenericAlias("_name")
+    @GenericFeature(alias = "_name")
     private String name;
-    @GenericAlias("_description")
+    @GenericFeature(alias = "_description", ignore = true)
     private String desc;
 
-    @GenericAlias("_extra")
+    @GenericFeature(alias = "_extra")
     private Map<String,String> extra;
+
+    @GenericFeature(alias = "lValue",longAsString = true)
+    private long lValue;
 
 
     public String getName() {
@@ -40,5 +43,13 @@ public class RequestDemo {
 
     public void setExtra(Map<String, String> extra) {
         this.extra = extra;
+    }
+
+    public long getlValue() {
+        return lValue;
+    }
+
+    public void setlValue(long lValue) {
+        this.lValue = lValue;
     }
 }

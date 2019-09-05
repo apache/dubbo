@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.apache.dubbo.common.annotations.GenericAlias;
+import org.apache.dubbo.common.annotations.GenericFeature;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
@@ -30,10 +30,18 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -168,12 +176,18 @@ public class PojoUtils {
         history.put(pojo, map);
         map.put("class", pojo.getClass().getName());
         Set<String> annoFieldSet = new HashSet<>();
-        for (Field field : pojo.getClass().getDeclaredFields()) {
-            GenericAlias genericAlias = field.getAnnotation(GenericAlias.class);
-            if (ReflectUtils.isSpecialInstanceField(field) &&  genericAlias != null) {
-                String fieldAliasName = genericAlias.value();
+        List<Field> allFieldList = getClassAllFields(pojo.getClass());
+        for (Field field : allFieldList) {
+            GenericFeature genericFeature = field.getAnnotation(GenericFeature.class);
+            if (ReflectUtils.isSpecialInstanceField(field) &&  genericFeature != null) {
+                String fieldAliasName = genericFeature.alias();
+                if (genericFeature.ignore()) {
+                    annoFieldSet.add(field.getName());
+                    annoFieldSet.add(fieldAliasName);
+                    continue;
+                }
                 try {
-                    Object fieldValue = forceGetFieldValue(field,pojo);
+
                     if (history.containsKey(pojo)) {
                         Object pojoGeneralizedValue = history.get(pojo);
                         if (pojoGeneralizedValue instanceof Map
@@ -181,7 +195,14 @@ public class PojoUtils {
                             continue;
                         }
                     }
+                    Object rawValue = forceGetFieldValue(field,pojo);
+                    if(genericFeature.nullNotGeneralize() && rawValue == null) {
                         annoFieldSet.add(field.getName());
+                        annoFieldSet.add(fieldAliasName);
+                        continue;
+                    }
+                    Object fieldValue = toValueType(rawValue,field.getType(),genericFeature);
+                    annoFieldSet.add(field.getName());
                     annoFieldSet.add(fieldAliasName);
                     map.put(fieldAliasName, generalize(fieldValue, history));
                 } catch (Exception e) {
@@ -193,11 +214,22 @@ public class PojoUtils {
         for (Method method : pojo.getClass().getMethods()) {
             if (ReflectUtils.isBeanPropertyReadMethod(method)) {
                 try {
-                    String methodAlias = getGenericNameFromMethod(method);
+                    GenericFeature genericFeature = method.getAnnotation(GenericFeature.class);
+                    String methodAlias = genericFeature==null?null:genericFeature.alias();
                     String propertyName = ReflectUtils.getPropertyNameFromBeanReadMethod(method);
                     String uniqName = methodAlias == null?propertyName : methodAlias;
                     if(!annoFieldSet.contains(propertyName) && (methodAlias == null || !annoFieldSet.contains(methodAlias))) {
-                        map.put(uniqName, generalize(method.invoke(pojo), history));
+                        if(genericFeature != null && genericFeature.ignore()) {
+                            methodNameSet.add(propertyName);
+                            continue;
+                        }
+                        Object rawMethodValue = method.invoke(pojo);
+                        if(genericFeature != null && genericFeature.nullNotGeneralize() && rawMethodValue == null) {
+                            methodNameSet.add(propertyName);
+                            continue;
+                        }
+                        Object mVal = toValueType(rawMethodValue,method.getReturnType(),genericFeature);
+                        map.put(uniqName, generalize(mVal, history));
                         methodNameSet.add(propertyName);
                     }
                 } catch (Exception e) {
@@ -230,25 +262,167 @@ public class PojoUtils {
         }
         return map;
     }
+    private static Object toValueType(Object val, Class type, GenericFeature genericFeature) {
+        if(genericFeature == null){
+            return val;
+        }
+
+        if((type == Boolean.class || type == boolean.class) && genericFeature.numberAsString()) {
+            return val == null?"":val.toString();
+        }
+
+        if((type == Byte.class || type == byte.class) && genericFeature.numberAsString()) {
+            return val == null?"":val.toString();
+        }
+
+        if((type == Short.class || type == short.class) && genericFeature.numberAsString()) {
+            return val == null?"":val.toString();
+        }
+        if((type == Integer.class || type == int.class) && genericFeature.numberAsString()) {
+            return val == null?"":val.toString();
+        }
+        if((type == Long.class || type == long.class) && genericFeature.numberAsString()) {
+            return val == null?"":val.toString();
+        }
+
+        if((type == Float.class || type == float.class) && genericFeature.numberAsString()) {
+            return val == null?"":val.toString();
+        }
+
+        if((type == Double.class || type == double.class) && genericFeature.numberAsString()) {
+            return val == null?"":val.toString();
+        }
+
+        if(type == BigDecimal.class && genericFeature.numberAsString()) {
+            return val == null?"":((BigDecimal)val).toPlainString();
+        }
+
+        if(type == BigInteger.class && genericFeature.numberAsString()) {
+            return val == null?"":val.toString();
+        }
+
+
+
+        if(type == LocalDateTime.class  && genericFeature.dateFormatter().length() > 0) {
+            LocalDateTime dateTime = (LocalDateTime)val;
+            return dateTime==null?"":dateTime.format(DateTimeFormatter.ofPattern(genericFeature.dateFormatter()));
+        }
+
+        if(type == LocalDate.class  && genericFeature.dateFormatter().length() > 0) {
+            LocalDate date = (LocalDate)val;
+            return date==null?"":date.format(DateTimeFormatter.ofPattern(genericFeature.dateFormatter()));
+        }
+        if(type == Date.class  && genericFeature.dateFormatter().length() > 0) {
+            Date date = (Date) val;
+            SimpleDateFormat format = new SimpleDateFormat(genericFeature.dateFormatter());
+            return date==null?"":format.format(date);
+        }
+        return val;
+    }
+
+    private static Object fromValueType(Object val, Class type, GenericFeature genericFeature) {
+        if(genericFeature == null || val.getClass() != String.class){
+            return val;
+        }
+        String strValue = (String)val;
+        boolean isEmpty = strValue == null || strValue.length() == 0;
+
+        if (type == boolean.class && genericFeature.numberAsString()) {
+            return isEmpty ? false : Boolean.parseBoolean(strValue);
+        }
+
+        if (type == Boolean.class && genericFeature.numberAsString()) {
+            return isEmpty ? null : Boolean.parseBoolean(strValue);
+        }
+
+        if(type == byte.class && genericFeature.numberAsString()) {
+            return isEmpty?0:Byte.parseByte(strValue);
+        }
+
+        if(type == Byte.class && genericFeature.numberAsString()) {
+            return isEmpty?null:Byte.parseByte(strValue);
+        }
+
+        if(type == short.class && genericFeature.numberAsString()) {
+            return isEmpty?0:Short.parseShort(strValue);
+        }
+
+        if(type == Short.class && genericFeature.numberAsString()) {
+            return isEmpty?null:Short.parseShort(strValue);
+        }
+
+
+        if(type == int.class && genericFeature.numberAsString()) {
+            return isEmpty?0:Integer.parseInt(strValue);
+        }
+
+        if(type == Integer.class && genericFeature.numberAsString()) {
+            return isEmpty?null:Integer.parseInt(strValue);
+        }
+
+        if(type == long.class && genericFeature.numberAsString()) {
+            return isEmpty?0L:Long.parseLong(strValue);
+        }
+        if(type == Long.class && genericFeature.numberAsString()) {
+            return isEmpty?null:Long.parseLong(strValue);
+        }
+
+        if(type == float.class && genericFeature.numberAsString()) {
+            return isEmpty?0.0F:Float.parseFloat(strValue);
+        }
+
+        if(type == Float.class && genericFeature.numberAsString()) {
+            return isEmpty?null:Float.parseFloat(strValue);
+        }
+
+        if(type == double.class && genericFeature.numberAsString()) {
+            return isEmpty?0.0D:Double.parseDouble(strValue);
+        }
+
+        if(type == Double.class && genericFeature.numberAsString()) {
+            return isEmpty?null:Double.parseDouble(strValue);
+        }
+
+        if(type == BigInteger.class && genericFeature.numberAsString()) {
+            return isEmpty?null: new BigInteger(strValue);
+        }
+
+        if(type == BigDecimal.class && genericFeature.numberAsString()) {
+            return isEmpty?null: new BigDecimal(strValue);
+        }
+
+
+
+        if(type == LocalDateTime.class  && genericFeature.dateFormatter().length() > 0) {
+            return isEmpty?null:LocalDateTime.parse(strValue,DateTimeFormatter.ofPattern(genericFeature.dateFormatter()));
+        }
+
+        if(type == LocalDate.class  && genericFeature.dateFormatter().length() > 0) {
+            return isEmpty?null:LocalDate.parse(strValue,DateTimeFormatter.ofPattern(genericFeature.dateFormatter()));
+        }
+        if(type == Date.class  && genericFeature.dateFormatter().length() > 0) {
+            SimpleDateFormat format = new SimpleDateFormat(genericFeature.dateFormatter());
+            try {
+                return isEmpty?null:format.parse(strValue);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return val;
+    }
+
     private static Object forceGetFieldValue(Field field,Object pojo) throws IllegalAccessException {
         boolean isPublic = Modifier.isPublic(field.getModifiers());
         if(!isPublic) {
             field.setAccessible(true);
         }
         try{
-            return field.get(pojo);
+            return   field.get(pojo);
         } finally {
             if(!isPublic) {
                 field.setAccessible(false);
             }
         }
-    }
-    private static String getGenericNameFromMethod(Method method ) {
-        GenericAlias genericAlias = method.getAnnotation(GenericAlias.class);
-        if(genericAlias == null) {
-            return null;
-        }
-        return genericAlias.value();
     }
 
     public static Object realize(Object pojo, Class<?> type) {
@@ -507,14 +681,18 @@ public class PojoUtils {
                         if (value != null) {
                             Method method = getSetterMethod(dest.getClass(), name, value.getClass());
                             Field field = getField(dest.getClass(), name);
+                            if(realizeGenericFeatures(method,field,value,dest,name,history)) {
+                                continue;
+                            }
                             if (method != null) {
                                 if (!method.isAccessible()) {
                                     method.setAccessible(true);
                                 }
                                 Type ptype = method.getGenericParameterTypes()[0];
                                 value = realize0(value, method.getParameterTypes()[0], ptype, history);
+
                                 try {
-                                    method.invoke(dest, value);
+                                    method.invoke(dest, fromValueType(value, method.getParameterTypes()[0], null));
                                 } catch (Exception e) {
                                     String exceptionDescription = "Failed to set pojo " + dest.getClass().getSimpleName() + " property " + name
                                             + " value " + value + "(" + value.getClass() + "), cause: " + e.getMessage();
@@ -524,7 +702,7 @@ public class PojoUtils {
                             } else if (field != null) {
                                 value = realize0(value, field.getType(), field.getGenericType(), history);
                                 try {
-                                    forceSetFieldValue(field,dest,value);
+                                    forceSetFieldValue(field, dest, fromValueType(value, field.getType(), null));
                                 } catch (IllegalAccessException e) {
                                     throw new RuntimeException("Failed to set field " + name + " of pojo " + dest.getClass().getName() + " : " + e.getMessage(), e);
                                 }
@@ -550,6 +728,59 @@ public class PojoUtils {
         }
         return pojo;
     }
+
+    private static boolean realizeGenericFeatures(Method method,Field field,Object value,Object dest ,String name,final Map<Object, Object> history ) {
+        if(field != null) {
+            GenericFeature genericFeature = field.getAnnotation(GenericFeature.class);
+            if (genericFeature != null && genericFeature.ignore()) {
+                return true;
+            }
+
+            if(genericFeature != null) {
+                value = realize0(value, field.getType(), field.getGenericType(), history);
+                if(genericFeature.nullNotRealize() && value == null) {
+                    return true;
+                }
+                try {
+                    forceSetFieldValue(field, dest, fromValueType(value, field.getType(), genericFeature));
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException("Failed to set field " + name + " of pojo " + dest.getClass().getName() + " : " + e.getMessage(), e);
+                }
+                return true;
+            }
+        }
+        if(method == null) {
+            return false;
+        }
+        GenericFeature genericFeature = method.getAnnotation(GenericFeature.class);
+        if(genericFeature == null) {
+            return false;
+        }
+        if (genericFeature.ignore()) {
+            return true;
+        }
+
+        if (!method.isAccessible()) {
+            method.setAccessible(true);
+        }
+        Type ptype = method.getGenericParameterTypes()[0];
+        value = realize0(value, method.getParameterTypes()[0], ptype, history);
+        if(genericFeature.nullNotRealize() && value == null) {
+            return true;
+        }
+
+        try {
+            method.invoke(dest, fromValueType(value, method.getParameterTypes()[0], genericFeature));
+        } catch (Exception e) {
+            String exceptionDescription = "Failed to set pojo " + dest.getClass().getSimpleName() + " property " + name
+                    + " value " + value + "(" + value.getClass() + "), cause: " + e.getMessage();
+            logger.error(exceptionDescription, e);
+            throw new RuntimeException(exceptionDescription, e);
+        }
+        return true;
+
+    }
+
     private static void forceSetFieldValue(Field field,Object dest,Object value) throws IllegalAccessException {
         boolean isNotPublic = Modifier.isPublic(field.getModifiers());
         if(!isNotPublic) {
@@ -643,8 +874,8 @@ public class PojoUtils {
         if (method == null) {
                 for (Method m : cls.getMethods()) {
 
-                    GenericAlias genericAlias = m.getAnnotation(GenericAlias.class);
-                    if(genericAlias != null && genericAlias.value().equals(name)) {
+                    GenericFeature genericFeature = m.getAnnotation(GenericFeature.class);
+                    if(genericFeature != null && genericFeature.alias().equals(name)) {
                         method = m;
                         break;
                     }
@@ -664,9 +895,10 @@ public class PojoUtils {
         if (CLASS_FIELD_CACHE.containsKey(cls) && CLASS_FIELD_CACHE.get(cls).containsKey(fieldName)) {
             return CLASS_FIELD_CACHE.get(cls).get(fieldName);
         }
-        for (Field field : cls.getDeclaredFields()) {
-            GenericAlias genericAlias = field.getAnnotation(GenericAlias.class);
-            if(genericAlias != null && genericAlias.value().equals(fieldName)) {
+        List<Field> fieldList = getClassAllFields(cls);
+        for (Field field : fieldList) {
+            GenericFeature genericFeature = field.getAnnotation(GenericFeature.class);
+            if(genericFeature != null && genericFeature.alias().equals(fieldName)) {
                     result = field;
                     break;
                 }
@@ -686,6 +918,22 @@ public class PojoUtils {
             fields.putIfAbsent(fieldName, result);
         }
         return result;
+    }
+
+    private static List<Field> getClassAllFields(Class cls) {
+        List<Field> allFields = new ArrayList<Field>();
+        Class<?> currentClass = cls;
+        while (currentClass != null) {
+            final Field[] declaredFields = currentClass.getDeclaredFields();
+            for (Field f : declaredFields) {
+                if(Modifier.isStatic(f.getModifiers()) || Modifier.isNative(f.getModifiers())) {
+                    continue;
+                }
+                allFields.add(f);
+            }
+            currentClass = currentClass.getSuperclass();
+        }
+        return allFields;
     }
 
     public static boolean isPojo(Class<?> cls) {

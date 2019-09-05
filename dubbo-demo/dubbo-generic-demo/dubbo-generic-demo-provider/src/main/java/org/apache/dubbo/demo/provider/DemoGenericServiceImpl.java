@@ -6,6 +6,7 @@ public class DemoGenericServiceImpl implements DemoGenericService {
         ResponseDemo responseDemo =  new ResponseDemo();
         responseDemo.setMsg(requestDemo.getName());
         responseDemo.setDesc(requestDemo.getDesc());
+        responseDemo.setlValue(requestDemo.getlValue());
         responseDemo.setExtra(requestDemo.getExtra());
         responseDemo.setStatusCode(1);
         return responseDemo;
