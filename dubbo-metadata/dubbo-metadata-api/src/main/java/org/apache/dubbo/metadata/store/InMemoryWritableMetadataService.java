@@ -17,6 +17,8 @@
 package org.apache.dubbo.metadata.store;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.WritableMetadataService;
@@ -25,11 +27,14 @@ import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
 
 import com.google.gson.Gson;
 
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentNavigableMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -46,19 +51,42 @@ import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
  *
  * @see MetadataService
  * @see WritableMetadataService
- * @since 2.7.4
+ * @since 2.7.5
  */
-public class InMemoryWritableMetadataService extends BaseWritableMetadataService implements WritableMetadataService {
+public class InMemoryWritableMetadataService implements WritableMetadataService {
 
-
+    final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final Lock lock = new ReentrantLock();
 
+    // =================================== Registration =================================== //
+
+    /**
+     * All exported {@link URL urls} {@link Map} whose key is the return value of {@link URL#getServiceKey()} method
+     * and value is the {@link SortedSet sorted set} of the {@link URL URLs}
+     */
+    ConcurrentNavigableMap<String, SortedSet<URL>> exportedServiceURLs = new ConcurrentSkipListMap<>();
+
     // ==================================================================================== //
+
+    // =================================== Subscription =================================== //
+
+    /**
+     * The subscribed {@link URL urls} {@link Map} of {@link MetadataService},
+     * whose key is the return value of {@link URL#getServiceKey()} method and value is
+     * the {@link SortedSet sorted set} of the {@link URL URLs}
+     */
+    ConcurrentNavigableMap<String, SortedSet<URL>> subscribedServiceURLs = new ConcurrentSkipListMap<>();
+
+    ConcurrentNavigableMap<String, String> serviceDefinitions = new ConcurrentSkipListMap<>();
 
     @Override
     public SortedSet<String> getSubscribedURLs() {
-        return super.getSubscribedURLs();
+        return getAllUnmodifiableServiceURLs(subscribedServiceURLs);
+    }
+
+    SortedSet<String> getAllUnmodifiableServiceURLs(Map<String, SortedSet<URL>> serviceURLs) {
+        return MetadataService.toSortedStrings(serviceURLs.values().stream().flatMap(Collection::stream));
     }
 
     @Override
@@ -129,8 +157,14 @@ public class InMemoryWritableMetadataService extends BaseWritableMetadataService
 
     boolean removeURL(Map<String, SortedSet<URL>> serviceURLs, URL url) {
         return executeMutually(() -> {
-            SortedSet<URL> urls = serviceURLs.getOrDefault(url.getServiceKey(), emptySortedSet());
-            return urls.remove(url);
+            String key = url.getServiceKey();
+            SortedSet<URL> urls = serviceURLs.getOrDefault(key, emptySortedSet());
+            boolean r = urls.remove(url);
+            // if it is empty
+            if (urls.isEmpty()) {
+                serviceURLs.remove(key);
+            }
+            return r;
         });
     }
 
@@ -155,8 +189,8 @@ public class InMemoryWritableMetadataService extends BaseWritableMetadataService
         return success;
     }
 
-    private static SortedSet<String> getServiceURLs(Map<String, SortedSet<URL>> exportedServiceURLs, String serviceKey,
-                                                    String protocol) {
+    private SortedSet<String> getServiceURLs(Map<String, SortedSet<URL>> exportedServiceURLs, String serviceKey,
+                                             String protocol) {
 
         SortedSet<URL> serviceURLs = exportedServiceURLs.get(serviceKey);
 
@@ -167,7 +201,7 @@ public class InMemoryWritableMetadataService extends BaseWritableMetadataService
         return MetadataService.toSortedStrings(serviceURLs.stream().filter(url -> isAcceptableProtocol(protocol, url)));
     }
 
-    private static boolean isAcceptableProtocol(String protocol, URL url) {
+    private boolean isAcceptableProtocol(String protocol, URL url) {
         return protocol == null
                 || protocol.equals(url.getParameter(PROTOCOL_KEY))
                 || protocol.equals(url.getProtocol());

@@ -122,12 +122,12 @@ public class EtcdMetadataReport extends AbstractMetadataReport {
 
     @Override
     protected String doGetSubscribedURLs(SubscriberMetadataIdentifier subscriberMetadataIdentifier) {
-        throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
+        return etcdClient.getKVValue(getNodeKey(subscriberMetadataIdentifier));
     }
 
     @Override
-    public String getServiceDefinition(MetadataIdentifier consumerMetadataIdentifier) {
-        throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
+    public String getServiceDefinition(MetadataIdentifier metadataIdentifier) {
+        return etcdClient.getKVValue(getNodeKey(metadataIdentifier));
     }
 
     private void storeMetadata(MetadataIdentifier identifier, String v) {

@@ -21,7 +21,11 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
+import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
+import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
+import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 import org.apache.dubbo.metadata.test.JTestMetadataReport4Test;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import com.google.gson.Gson;
 import org.junit.jupiter.api.Assertions;
@@ -38,24 +42,17 @@ import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_
 public class RemoteWritableMeatadataServiceTest {
     URL url = URL.valueOf("JTest://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic");
     RemoteWritableMetadataService metadataReportService1;
+    InMemoryWritableMetadataService inMemoryWritableMetadataService;
 
     @BeforeEach
     public void before() {
-        metadataReportService1 = (RemoteWritableMetadataService) WritableMetadataService.getExtension(REMOTE_METADATA_STORAGE_TYPE);
+        inMemoryWritableMetadataService = new InMemoryWritableMetadataService();
+        metadataReportService1 = new RemoteWritableMetadataService(inMemoryWritableMetadataService);
         MetadataReportInstance.init(url);
     }
 
     @Test
-    public void testInstance() {
-
-        RemoteWritableMetadataService metadataReportService2 = (RemoteWritableMetadataService) WritableMetadataService.getExtension(REMOTE_METADATA_STORAGE_TYPE);
-        Assertions.assertSame(metadataReportService1, metadataReportService2);
-    }
-
-    @Test
     public void testPublishProviderNoInterfaceName() {
-
-
         URL publishUrl = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vicpubprovder&side=provider");
         metadataReportService1.publishProvider(publishUrl);
 
@@ -93,7 +90,7 @@ public class RemoteWritableMeatadataServiceTest {
 
         String value = jTestMetadataReport4Test.store.get(JTestMetadataReport4Test.getProviderKey(publishUrl));
         FullServiceDefinition fullServiceDefinition = toServiceDefinition(value);
-        Map<String,String> map = fullServiceDefinition.getParameters();
+        Map<String, String> map = fullServiceDefinition.getParameters();
         Assertions.assertEquals(map.get("application"), "vicpubp");
         Assertions.assertEquals(map.get("version"), "1.0.3");
         Assertions.assertEquals(map.get("interface"), "org.apache.dubbo.metadata.store.InterfaceNameTestService");
@@ -117,6 +114,75 @@ public class RemoteWritableMeatadataServiceTest {
         Assertions.assertEquals(map.get("application"), "vicpubconsumer");
         Assertions.assertEquals(map.get("version"), "1.0.x");
 
+    }
+
+    @Test
+    public void testPublishServiceDefinition() {
+        URL publishUrl = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vicpubprovder&side=provider");
+        metadataReportService1.publishServiceDefinition(publishUrl);
+
+        Assertions.assertTrue(metadataReportService1.getMetadataReport() instanceof JTestMetadataReport4Test);
+
+        JTestMetadataReport4Test jTestMetadataReport4Test = (JTestMetadataReport4Test) metadataReportService1.getMetadataReport();
+        Assertions.assertTrue(!jTestMetadataReport4Test.store.containsKey(JTestMetadataReport4Test.getProviderKey(publishUrl)));
+
+    }
+
+    @Test
+    public void testUnexportURL() {
+
+    }
+
+    @Test
+    public void testRefreshMetadataService() throws InterruptedException {
+        URL publishUrl = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestRefreshMetadataService?version=1.0.8&application=vicpubprovder&side=provider");
+        URL publishUrl2 = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestRefreshMetadata2Service?version=1.0.5&application=vicpubprovder&side=provider");
+        inMemoryWritableMetadataService.exportURL(publishUrl);
+        inMemoryWritableMetadataService.exportURL(publishUrl2);
+        String exportedRevision = "9999";
+        JTestMetadataReport4Test jTestMetadataReport4Test = (JTestMetadataReport4Test) metadataReportService1.getMetadataReport();
+        int origSize = jTestMetadataReport4Test.store.size();
+        Assertions.assertTrue(metadataReportService1.refreshMetadata(exportedRevision, "1109"));
+        Thread.sleep(200);
+        int size = jTestMetadataReport4Test.store.size();
+        Assertions.assertTrue(size - origSize == 2);
+        Assertions.assertEquals(jTestMetadataReport4Test.store.get(getServiceMetadataIdentifier(publishUrl, exportedRevision).getUniqueKey(KeyTypeEnum.UNIQUE_KEY)), publishUrl.toFullString());
+        Assertions.assertEquals(jTestMetadataReport4Test.store.get(getServiceMetadataIdentifier(publishUrl2, exportedRevision).getUniqueKey(KeyTypeEnum.UNIQUE_KEY)), publishUrl2.toFullString());
+    }
+
+    @Test
+    public void testRefreshMetadataSubscription() throws InterruptedException {
+        URL subscriberUrl1 = URL.valueOf("subscriber://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestRefreshMetadata00Service?version=1.0.8&application=vicpubprovder&side=provider");
+        URL subscriberUrl2 = URL.valueOf("subscriber://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestRefreshMetadata09Service?version=1.0.5&application=vicpubprovder&side=provider");
+        inMemoryWritableMetadataService.subscribeURL(subscriberUrl1);
+        inMemoryWritableMetadataService.subscribeURL(subscriberUrl2);
+        String exportedRevision = "9999";
+        String subscriberRevision = "2099";
+        String applicationName = "wriableMetadataService";
+        JTestMetadataReport4Test jTestMetadataReport4Test = (JTestMetadataReport4Test) metadataReportService1.getMetadataReport();
+        int origSize = jTestMetadataReport4Test.store.size();
+        ApplicationModel.setApplication(applicationName);
+        Assertions.assertTrue(metadataReportService1.refreshMetadata(exportedRevision, subscriberRevision));
+        Thread.sleep(200);
+        int size = jTestMetadataReport4Test.store.size();
+        Assertions.assertTrue(size - origSize == 1);
+        String r = jTestMetadataReport4Test.store.get(getSubscriberMetadataIdentifier(
+                subscriberRevision).getUniqueKey(KeyTypeEnum.UNIQUE_KEY));
+        Assertions.assertNotNull(r);
+    }
+
+    private ServiceMetadataIdentifier getServiceMetadataIdentifier(URL publishUrl, String exportedRevision) {
+        ServiceMetadataIdentifier serviceMetadataIdentifier = new ServiceMetadataIdentifier(publishUrl);
+        serviceMetadataIdentifier.setRevision(exportedRevision);
+        serviceMetadataIdentifier.setProtocol(publishUrl.getProtocol());
+        return serviceMetadataIdentifier;
+    }
+
+    private SubscriberMetadataIdentifier getSubscriberMetadataIdentifier(String subscriberRevision) {
+        SubscriberMetadataIdentifier subscriberMetadataIdentifier = new SubscriberMetadataIdentifier();
+        subscriberMetadataIdentifier.setRevision(subscriberRevision);
+        subscriberMetadataIdentifier.setApplication(ApplicationModel.getApplication());
+        return subscriberMetadataIdentifier;
     }
 
     private FullServiceDefinition toServiceDefinition(String urlQuery) {
