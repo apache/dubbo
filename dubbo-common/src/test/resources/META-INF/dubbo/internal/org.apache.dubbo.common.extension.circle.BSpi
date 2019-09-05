@@ -1,0 +1,2 @@
+a=org.apache.dubbo.common.extension.circle.adaptive.BSpiAdaptive
+s=org.apache.dubbo.common.extension.circle.support.BSpiSupport

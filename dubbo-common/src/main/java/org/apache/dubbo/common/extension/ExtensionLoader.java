@@ -91,6 +91,7 @@ public class ExtensionLoader<T> {
     private final Map<String, Object> cachedActivates = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, Holder<Object>> cachedInstances = new ConcurrentHashMap<>();
     private final Holder<Object> cachedAdaptiveInstance = new Holder<>();
+    private Object earlyAdaptiveInstance = null;
     private volatile Class<?> cachedAdaptiveClass = null;
     private String cachedDefaultName;
     private volatile Throwable createAdaptiveInstanceError;
@@ -466,7 +467,7 @@ public class ExtensionLoader<T> {
     }
 
     @SuppressWarnings("unchecked")
-    public T getAdaptiveExtension() {
+    public T getAdaptiveExtension(boolean allowEarly) {
         Object instance = cachedAdaptiveInstance.get();
         if (instance == null) {
             if (createAdaptiveInstanceError != null) {
@@ -475,11 +476,19 @@ public class ExtensionLoader<T> {
                         createAdaptiveInstanceError);
             }
 
+            if (allowEarly) {
+                if (earlyAdaptiveInstance != null) {
+                    return (T) earlyAdaptiveInstance;
+                }
+            }
+
             synchronized (cachedAdaptiveInstance) {
                 instance = cachedAdaptiveInstance.get();
                 if (instance == null) {
                     try {
                         instance = createAdaptiveExtension();
+                        earlyAdaptiveInstance = instance;
+                        injectExtension((T) instance);
                         cachedAdaptiveInstance.set(instance);
                     } catch (Throwable t) {
                         createAdaptiveInstanceError = t;
@@ -490,6 +499,10 @@ public class ExtensionLoader<T> {
         }
 
         return (T) instance;
+    }
+
+    public T getAdaptiveExtension() {
+        return getAdaptiveExtension(false);
     }
 
     private IllegalStateException findException(String name) {
@@ -850,7 +863,7 @@ public class ExtensionLoader<T> {
     @SuppressWarnings("unchecked")
     private T createAdaptiveExtension() {
         try {
-            return injectExtension((T) getAdaptiveExtensionClass().newInstance());
+            return (T) getAdaptiveExtensionClass().newInstance();
         } catch (Exception e) {
             throw new IllegalStateException("Can't create adaptive extension " + type + ", cause: " + e.getMessage(), e);
         }
