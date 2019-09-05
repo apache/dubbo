@@ -32,9 +32,8 @@ import java.util.concurrent.TimeUnit;
  * create new thread instead of putting task into blocking queue.
  * 线程池ThreadPoolExecutor只有在核心线程数量都在工作，且任务缓冲队列满了之后才会在最大线程限制下增加线程数量
  * EagerThreadPoolExecutor集成自ThreadPoolExecutor，但是重写了execute方法，通过自定义TaskQueue作为workQueue
- * 修改了逻辑，逻辑如下：
- *
- *
+ * 修改了逻辑，任务堆积数量>当前线程数量，且当前线程数量<最大线程数量，则在taskQueue的offer时返回false，
+ * 触发线程池去addWork添加线程，和名字相符迫切线程池，哈哈。
  */
 public class EagerThreadPool implements ThreadPool {
 

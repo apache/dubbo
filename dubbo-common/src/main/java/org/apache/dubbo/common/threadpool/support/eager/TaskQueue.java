@@ -43,23 +43,28 @@ public class TaskQueue<R extends Runnable> extends LinkedBlockingQueue<Runnable>
     }
 
     @Override
+    /**
+     * TaskQueue设置了线程池的引用，主要用于获取线程池的任务提交数量
+     */
     public boolean offer(Runnable runnable) {
         if (executor == null) {
             throw new RejectedExecutionException("The task queue does not have executor!");
         }
 
-        int currentPoolThreadSize = executor.getPoolSize();
+        int currentPoolThreadSize = executor.getPoolSize();//线程池当前线程数量
         // have free worker. put task into queue to let the worker deal with task.
+        //提交的任务数<当前线程数量，线程数量足够处理，继续添加队列
         if (executor.getSubmittedTaskCount() < currentPoolThreadSize) {
             return super.offer(runnable);
         }
 
         // return false to let executor create new worker.
+        //当前线程数量<线程池允许最大时，返回false，此时线程池的execute会走到addWork,要线程池继续增加线程
         if (currentPoolThreadSize < executor.getMaximumPoolSize()) {
             return false;
         }
 
-        // currentPoolThreadSize >= max
+        // currentPoolThreadSize >= max //线程数到达最大线程数大小，继续入队
         return super.offer(runnable);
     }
 
