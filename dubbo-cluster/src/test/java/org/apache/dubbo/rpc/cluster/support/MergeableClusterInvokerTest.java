@@ -111,36 +111,30 @@ public class MergeableClusterInvokerTest {
                 ;
         given(invocation.getInvoker()).willReturn(firstInvoker);
 
-        firstInvoker = (Invoker) Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[]{Invoker.class}, new InvocationHandler() {
-
-            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                if ("getUrl".equals(method.getName())) {
-                    return url.addParameter(GROUP_KEY, "first");
-                }
-                if ("getInterface".equals(method.getName())) {
-                    return MenuService.class;
-                }
-                if ("invoke".equals(method.getName())) {
-                    return AsyncRpcResult.newDefaultAsyncResult(firstMenu, invocation);
-                }
-                return null;
+        firstInvoker = (Invoker) Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[]{Invoker.class}, (proxy, method, args) -> {
+            if ("getUrl".equals(method.getName())) {
+                return url.addParameter(GROUP_KEY, "first");
             }
+            if ("getInterface".equals(method.getName())) {
+                return MenuService.class;
+            }
+            if ("invoke".equals(method.getName())) {
+                return AsyncRpcResult.newDefaultAsyncResult(firstMenu, invocation);
+            }
+            return null;
         });
 
-        secondInvoker = (Invoker) Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[]{Invoker.class}, new InvocationHandler() {
-
-            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                if ("getUrl".equals(method.getName())) {
-                    return url.addParameter(GROUP_KEY, "second");
-                }
-                if ("getInterface".equals(method.getName())) {
-                    return MenuService.class;
-                }
-                if ("invoke".equals(method.getName())) {
-                    return AsyncRpcResult.newDefaultAsyncResult(secondMenu, invocation);
-                }
-                return null;
+        secondInvoker = (Invoker) Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[]{Invoker.class}, (proxy, method, args) -> {
+            if ("getUrl".equals(method.getName())) {
+                return url.addParameter(GROUP_KEY, "second");
             }
+            if ("getInterface".equals(method.getName())) {
+                return MenuService.class;
+            }
+            if ("invoke".equals(method.getName())) {
+                return AsyncRpcResult.newDefaultAsyncResult(secondMenu, invocation);
+            }
+            return null;
         });
 
         given(directory.list(invocation)).willReturn(new ArrayList() {
