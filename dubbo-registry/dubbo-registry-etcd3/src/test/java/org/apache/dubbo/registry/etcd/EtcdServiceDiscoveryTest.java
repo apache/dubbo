@@ -72,7 +72,7 @@ public class EtcdServiceDiscoveryTest {
 
     @Test
     public void testUpdate() throws Exception {
-        DefaultServiceInstance serviceInstance = new DefaultServiceInstance(valueOf(System.nanoTime()), "EtcdTest2Service", "127.0.0.1", 8080);
+        DefaultServiceInstance serviceInstance = new DefaultServiceInstance(valueOf(System.nanoTime()), "EtcdTest34Service", "127.0.0.1", 8080);
         Assertions.assertNull(etcdServiceDiscovery.etcdClient.getKVValue(etcdServiceDiscovery.toPath(serviceInstance)));
         etcdServiceDiscovery.register(serviceInstance);
         Assertions.assertNotNull(etcdServiceDiscovery.etcdClient.getKVValue(etcdServiceDiscovery.toPath(serviceInstance)));
