@@ -14,28 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring.context.annotation;
+package org.apache.dubbo.common.function;
 
-import org.apache.dubbo.common.context.Lifecycle;
+import org.junit.jupiter.api.Test;
 
-import org.springframework.context.annotation.Import;
-
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import static org.apache.dubbo.common.function.ThrowableConsumer.execute;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
- * Enables Dubbo {@link Lifecycle} components
+ * {@link ThrowableConsumer} Test
  *
  * @since 2.7.4
  */
-@Target({ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-@Inherited
-@Documented
-@Import(DubboLifecycleComponentRegistrar.class)
-public @interface EnableDubboLifecycle {
+public class ThrowableConsumerTest {
+
+    @Test
+    public void testExecute() {
+        assertThrows(RuntimeException.class, () -> execute("Hello,World", m -> {
+            throw new Exception(m);
+        }), "Hello,World");
+    }
 }

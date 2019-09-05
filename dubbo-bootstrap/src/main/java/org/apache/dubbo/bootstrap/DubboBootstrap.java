@@ -27,6 +27,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.config.ConsumerConfig;
@@ -602,6 +603,11 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
      */
     @Override
     public DubboBootstrap start() {
+
+        if (!shouldStart()) {
+            return this;
+        }
+
         if (!isInitialized()) {
             initialize();
         }
@@ -631,6 +637,22 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
         }
         return this;
     }
+
+    /**
+     * Should Start current bootstrap
+     *
+     * @return If there is not any service discovery registry in the {@link ConfigManager#getRegistries()}, it will not
+     * start current bootstrap
+     */
+    private boolean shouldStart() {
+        return configManager.getRegistries()
+                .stream()
+                .map(RegistryConfig::getAddress)
+                .map(URL::valueOf)
+                .filter(UrlUtils::isServiceDiscoveryRegistryType)
+                .count() > 0;
+    }
+
 
     private boolean hasExportedServices() {
         return !metadataService.getExportedURLs().isEmpty();

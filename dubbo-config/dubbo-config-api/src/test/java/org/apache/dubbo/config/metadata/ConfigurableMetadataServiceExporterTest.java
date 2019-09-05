@@ -81,7 +81,7 @@ public class ConfigurableMetadataServiceExporterTest {
         assertEquals(MetadataService.class.getName(), url.getServiceInterface());
         assertEquals("test", url.getParameter(GROUP_KEY));
         assertEquals(MetadataService.VERSION, url.getParameter(VERSION_KEY));
-        assertEquals("mockprotocol", url.getProtocol());
+        assertEquals("dubbo", url.getProtocol());
 
         exporter.unexport();
     }

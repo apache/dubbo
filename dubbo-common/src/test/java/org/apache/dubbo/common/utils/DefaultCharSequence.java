@@ -14,28 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring.context.annotation;
+package org.apache.dubbo.common.utils;
 
-import org.apache.dubbo.common.context.Lifecycle;
-
-import org.springframework.context.annotation.Import;
-
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.apache.dubbo.common.lang.Prioritized;
 
 /**
- * Enables Dubbo {@link Lifecycle} components
+ * Default {@link CharSequence}
  *
  * @since 2.7.4
  */
-@Target({ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-@Inherited
-@Documented
-@Import(DubboLifecycleComponentRegistrar.class)
-public @interface EnableDubboLifecycle {
+public class DefaultCharSequence implements CharSequence, Prioritized {
+    @Override
+    public int length() {
+        return 0;
+    }
+
+    @Override
+    public char charAt(int index) {
+        return 0;
+    }
+
+    @Override
+    public CharSequence subSequence(int start, int end) {
+        return null;
+    }
+
+    public int getPriority() {
+        return MAX_PRIORITY;
+    }
 }

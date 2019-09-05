@@ -14,44 +14,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.lang;
+package org.apache.dubbo.config.event;
 
-import org.junit.jupiter.api.AfterEach;
+import org.apache.dubbo.config.DubboShutdownHook;
+import org.apache.dubbo.event.EventDispatcher;
+import org.apache.dubbo.event.EventListener;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * {@link ShutdownHookCallbacks}
+ * {@link DubboServiceDestroyedEvent} Test
  *
  * @since 2.7.4
  */
-public class ShutdownHookCallbacksTest {
+public class DubboServiceDestroyedEventTest implements EventListener<DubboServiceDestroyedEvent> {
 
-    private ShutdownHookCallbacks callbacks;
+    private DubboServiceDestroyedEvent event;
+
+    private EventDispatcher eventDispatcher = EventDispatcher.getDefaultExtension();
+
+    private DubboShutdownHook dubboShutdownHook;
 
     @BeforeEach
     public void init() {
-        callbacks = new ShutdownHookCallbacks();
+        eventDispatcher.removeAllEventListeners();
+        eventDispatcher.addEventListener(this);
+        dubboShutdownHook = DubboShutdownHook.getDubboShutdownHook();
     }
 
     @Test
-    public void testSingleton() {
-        assertNotNull(callbacks);
+    public void testOnEvent() {
+        dubboShutdownHook.doDestroy();
+        assertEquals(dubboShutdownHook, event.getSource());
     }
 
-    @Test
-    public void testCallback() {
-        callbacks.callback();
-        DefaultShutdownHookCallback callback = (DefaultShutdownHookCallback) callbacks.getCallbacks().iterator().next();
-        assertTrue(callback.isExecuted());
-    }
-
-    @AfterEach
-    public void destroy() {
-        callbacks.clear();
-        assertTrue(callbacks.getCallbacks().isEmpty());
+    @Override
+    public void onEvent(DubboServiceDestroyedEvent event) {
+        this.event = event;
     }
 }

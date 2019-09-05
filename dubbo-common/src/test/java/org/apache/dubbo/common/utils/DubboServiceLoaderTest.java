@@ -14,28 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring.context.annotation;
+package org.apache.dubbo.common.utils;
 
-import org.apache.dubbo.common.context.Lifecycle;
+import org.junit.jupiter.api.Test;
 
-import org.springframework.context.annotation.Import;
+import java.util.List;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import static org.apache.dubbo.common.utils.DubboServiceLoader.loadServices;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * Enables Dubbo {@link Lifecycle} components
+ * {@link DubboServiceLoader} Test
  *
  * @since 2.7.4
  */
-@Target({ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-@Inherited
-@Documented
-@Import(DubboLifecycleComponentRegistrar.class)
-public @interface EnableDubboLifecycle {
+public class DubboServiceLoaderTest {
+
+    @Test
+    public void testLoad() {
+        List<CharSequence> charSequences = loadServices(CharSequence.class);
+        assertEquals(DefaultCharSequence.class, charSequences.get(0).getClass());
+        assertEquals(String.class, charSequences.get(1).getClass());
+        assertEquals(StringBuilder.class, charSequences.get(2).getClass());
+    }
 }

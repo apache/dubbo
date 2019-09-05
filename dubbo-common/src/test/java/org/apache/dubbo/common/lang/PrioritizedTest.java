@@ -41,7 +41,7 @@ public class PrioritizedTest {
 
     @Test
     public void testGetPriority() {
-        assertEquals(Prioritized.MIN_PRIORITY, new Prioritized() {
+        assertEquals(Prioritized.NORMAL_PRIORITY, new Prioritized() {
         }.getPriority());
     }
 

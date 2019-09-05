@@ -39,7 +39,7 @@ public class ConfigChangedEvent extends EventObject {
     }
 
     public ConfigChangedEvent(String key, String group, String content, ConfigChangeType changeType) {
-        super(key + "=" + content);
+        super(key + "," + group);
         this.key = key;
         this.group = group;
         this.content = content;
@@ -63,22 +63,6 @@ public class ConfigChangedEvent extends EventObject {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ConfigChangedEvent)) return false;
-        ConfigChangedEvent that = (ConfigChangedEvent) o;
-        return Objects.equals(getKey(), that.getKey()) &&
-                Objects.equals(group, that.group) &&
-                Objects.equals(getContent(), that.getContent()) &&
-                getChangeType() == that.getChangeType();
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(getKey(), group, getContent(), getChangeType());
-    }
-
-    @Override
     public String toString() {
         return "ConfigChangedEvent{" +
                 "key='" + key + '\'' +
@@ -86,5 +70,21 @@ public class ConfigChangedEvent extends EventObject {
                 ", content='" + content + '\'' +
                 ", changeType=" + changeType +
                 "} " + super.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ConfigChangedEvent)) return false;
+        ConfigChangedEvent that = (ConfigChangedEvent) o;
+        return Objects.equals(getKey(), that.getKey()) &&
+                Objects.equals(getGroup(), that.getGroup()) &&
+                Objects.equals(getContent(), that.getContent()) &&
+                getChangeType() == that.getChangeType();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getKey(), getGroup(), getContent(), getChangeType());
     }
 }

@@ -14,30 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.config.configcenter;
+package org.apache.dubbo.common.config.configcenter.file;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import org.junit.jupiter.api.Test;
 
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * Abstract {@link DynamicConfigurationFactory} implementation with cache ability
+ * {@link FileSystemDynamicConfigurationFactory} Test
  *
- * @see DynamicConfigurationFactory
  * @since 2.7.4
  */
-public abstract class AbstractDynamicConfigurationFactory implements DynamicConfigurationFactory {
+public class FileSystemDynamicConfigurationFactoryTest {
 
-    private volatile Map<String, DynamicConfiguration> dynamicConfigurations = new ConcurrentHashMap<>();
-
-    @Override
-    public final DynamicConfiguration getDynamicConfiguration(URL url) {
-        String key = url == null ? DEFAULT_KEY : url.getAddress();
-        return dynamicConfigurations.computeIfAbsent(key, k -> createDynamicConfiguration(url));
+    @Test
+    public void testGetFactory() {
+        DynamicConfigurationFactory factory = DynamicConfigurationFactory.getDynamicConfigurationFactory("not-exists");
+        assertEquals(factory, DynamicConfigurationFactory.getDynamicConfigurationFactory("file"));
+        assertEquals(factory.getDynamicConfiguration(URL.valueOf("dummy")), factory.getDynamicConfiguration(URL.valueOf("dummy")));
+        assertEquals(FileSystemDynamicConfiguration.class, factory.getDynamicConfiguration(URL.valueOf("dummy")).getClass());
     }
-
-    protected abstract DynamicConfiguration createDynamicConfiguration(URL url);
 }

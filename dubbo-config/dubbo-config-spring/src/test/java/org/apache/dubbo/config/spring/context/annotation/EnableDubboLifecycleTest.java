@@ -16,26 +16,40 @@
  */
 package org.apache.dubbo.config.spring.context.annotation;
 
-import org.apache.dubbo.common.context.Lifecycle;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
-import org.springframework.context.annotation.Import;
-
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Enables Dubbo {@link Lifecycle} components
+ * {@link EnableDubboLifecycle} Test
  *
  * @since 2.7.4
  */
-@Target({ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-@Inherited
-@Documented
-@Import(DubboLifecycleComponentRegistrar.class)
-public @interface EnableDubboLifecycle {
+@EnableDubboLifecycle
+public class EnableDubboLifecycleTest {
+
+    private AnnotationConfigApplicationContext context;
+
+    static boolean initialized = false;
+
+    static boolean started = false;
+
+    @BeforeEach
+    public void init() {
+        context = new AnnotationConfigApplicationContext(EnableDubboLifecycleTest.class);
+    }
+
+    @AfterEach
+    public void destroy() {
+        context.close();
+    }
+
+    @Test
+    public void test() {
+        assertTrue(initialized);
+        assertTrue(started);
+    }
 }

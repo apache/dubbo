@@ -14,44 +14,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.lang;
+package org.apache.dubbo.common.config.configcenter;
 
-import org.junit.jupiter.api.AfterEach;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.configcenter.nop.NopDynamicConfiguration;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * {@link ShutdownHookCallbacks}
+ * {@link AbstractDynamicConfigurationFactory} Test
  *
+ * @see AbstractDynamicConfigurationFactory
  * @since 2.7.4
  */
-public class ShutdownHookCallbacksTest {
+public class AbstractDynamicConfigurationFactoryTest {
 
-    private ShutdownHookCallbacks callbacks;
+    private AbstractDynamicConfigurationFactory factory;
 
     @BeforeEach
     public void init() {
-        callbacks = new ShutdownHookCallbacks();
+        factory = new AbstractDynamicConfigurationFactory() {
+            @Override
+            protected DynamicConfiguration createDynamicConfiguration(URL url) {
+                return new NopDynamicConfiguration(url);
+            }
+        };
     }
 
     @Test
-    public void testSingleton() {
-        assertNotNull(callbacks);
-    }
-
-    @Test
-    public void testCallback() {
-        callbacks.callback();
-        DefaultShutdownHookCallback callback = (DefaultShutdownHookCallback) callbacks.getCallbacks().iterator().next();
-        assertTrue(callback.isExecuted());
-    }
-
-    @AfterEach
-    public void destroy() {
-        callbacks.clear();
-        assertTrue(callbacks.getCallbacks().isEmpty());
+    public void testGetDynamicConfiguration() {
+        URL url = URL.valueOf("nop://127.0.0.1");
+        assertEquals(factory.getDynamicConfiguration(url), factory.getDynamicConfiguration(url));
     }
 }

@@ -14,28 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring.context.annotation;
-
-import org.apache.dubbo.common.context.Lifecycle;
-
-import org.springframework.context.annotation.Import;
-
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+package org.apache.dubbo.common.lang;
 
 /**
- * Enables Dubbo {@link Lifecycle} components
+ * Default {@link ShutdownHookCallback}
  *
  * @since 2.7.4
  */
-@Target({ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-@Inherited
-@Documented
-@Import(DubboLifecycleComponentRegistrar.class)
-public @interface EnableDubboLifecycle {
+public class DefaultShutdownHookCallback implements ShutdownHookCallback {
+
+    private boolean executed = false;
+
+    @Override
+    public void callback() throws Throwable {
+        executed = true;
+    }
+
+    public boolean isExecuted() {
+        return executed;
+    }
 }

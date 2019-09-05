@@ -14,28 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring.context.annotation;
+package org.apache.dubbo.common.config.configcenter;
 
-import org.apache.dubbo.common.context.Lifecycle;
+import org.junit.jupiter.api.Test;
 
-import org.springframework.context.annotation.Import;
-
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import static org.apache.dubbo.common.config.configcenter.ConfigChangeType.ADDED;
+import static org.apache.dubbo.common.config.configcenter.ConfigChangeType.DELETED;
+import static org.apache.dubbo.common.config.configcenter.ConfigChangeType.MODIFIED;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 /**
- * Enables Dubbo {@link Lifecycle} components
+ * {@link ConfigChangeType} Test
  *
+ * @see ConfigChangeType
  * @since 2.7.4
  */
-@Target({ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-@Inherited
-@Documented
-@Import(DubboLifecycleComponentRegistrar.class)
-public @interface EnableDubboLifecycle {
+public class ConfigChangeTypeTest {
+
+    @Test
+    public void testMembers() {
+        assertArrayEquals(new ConfigChangeType[]{ADDED, MODIFIED, DELETED}, ConfigChangeType.values());
+    }
 }
