@@ -83,7 +83,7 @@ public class InvokeTelnetHandler implements TelnetHandler {
         StringBuilder buf = new StringBuilder();
         Method invokeMethod = null;
         ProviderModel selectedProvider = null;
-        if (isInvokedSelectCommand(channel)) {
+         if (isInvokedSelectCommand(channel)) {
             selectedProvider = (ProviderModel) channel.getAttribute(INVOKE_METHOD_PROVIDER_KEY);
             invokeMethod = (Method) channel.getAttribute(SelectTelnetHandler.SELECT_METHOD_KEY);
         } else {

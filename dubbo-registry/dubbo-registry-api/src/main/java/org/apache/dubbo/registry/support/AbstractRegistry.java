@@ -77,23 +77,27 @@ public abstract class AbstractRegistry implements Registry {
     private File file;
 
     public AbstractRegistry(URL url) {
-        setUrl(url);
+        setUrl(url);//设置registryUrl
         // Start file save timer
+        //同步存储文件标志
         syncSaveFile = url.getParameter(Constants.REGISTRY_FILESAVE_SYNC_KEY, false);
+        //看URL中是否有配置注册中心缓存文件内容，没有则从user.home目录下缓存文件，例如dubbo-registry-10.0.4.101.cache，缓存服务列表，就是注册中心的URL
         String filename = url.getParameter(Constants.FILE_KEY, System.getProperty("user.home") + "/.dubbo/dubbo-registry-" + url.getParameter(Constants.APPLICATION_KEY) + "-" + url.getAddress() + ".cache");
         File file = null;
         if (ConfigUtils.isNotEmpty(filename)) {
+            //文件不存在，需要新创建
             file = new File(filename);
             if (!file.exists() && file.getParentFile() != null && !file.getParentFile().exists()) {
-                if (!file.getParentFile().mkdirs()) {
+                if (!file.getParentFile().mkdirs()) {//创建父路径，创建失败则直接抛异常
                     throw new IllegalArgumentException("Invalid registry cache file " + file + ", cause: Failed to create directory " + file.getParentFile() + "!");
                 }
             }
         }
-        this.file = file;
+        this.file = file;//保存缓存文件引用
         // When starting the subscription center,
         // we need to read the local cache file for future Registry fault tolerance processing.
-        loadProperties();
+        loadProperties();//加载原始文件到缓存properties
+        //一般是zookeeper://127.0.0.1:2081?backup=127.0.0.1:2082,127.0.0.1:2082这种，通知订阅url匹配的客户端
         notify(url.getBackupUrls());
     }
 
@@ -337,10 +341,12 @@ public abstract class AbstractRegistry implements Registry {
             return;
         }
 
+        //订阅列表
         for (Map.Entry<URL, Set<NotifyListener>> entry : getSubscribed().entrySet()) {
             URL url = entry.getKey();
 
             if (!UrlUtils.isMatch(url, urls.get(0))) {
+                //订阅的URL和当前的URL不匹配则不需要通知
                 continue;
             }
 
@@ -348,7 +354,7 @@ public abstract class AbstractRegistry implements Registry {
             if (listeners != null) {
                 for (NotifyListener listener : listeners) {
                     try {
-                        notify(url, listener, filterEmpty(url, urls));
+                        notify(url, listener, filterEmpty(url, urls));//通知
                     } catch (Throwable t) {
                         logger.error("Failed to notify registry event, urls: " + urls + ", cause: " + t.getMessage(), t);
                     }

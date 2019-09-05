@@ -63,16 +63,17 @@ public class ZookeeperRegistry extends FailbackRegistry {
         if (url.isAnyHost()) {
             throw new IllegalStateException("registry address == null");
         }
-        String group = url.getParameter(Constants.GROUP_KEY, DEFAULT_ROOT);
+        String group = url.getParameter(Constants.GROUP_KEY, DEFAULT_ROOT);//获取group配置
         if (!group.startsWith(Constants.PATH_SEPARATOR)) {
-            group = Constants.PATH_SEPARATOR + group;
+            group = Constants.PATH_SEPARATOR + group;//格式化
         }
-        this.root = group;
-        zkClient = zookeeperTransporter.connect(url);
+        this.root = group;//根目录
+        zkClient = zookeeperTransporter.connect(url);//创建zk连接客户端
+        //添加状态监听器
         zkClient.addStateListener(state -> {
             if (state == StateListener.RECONNECTED) {
                 try {
-                    recover();
+                    recover();//重连需要执行恢复操作
                 } catch (Exception e) {
                     logger.error(e.getMessage(), e);
                 }
@@ -98,6 +99,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
     @Override
     public void doRegister(URL url) {
         try {
+            //创建节点
             zkClient.create(toUrlPath(url), url.getParameter(Constants.DYNAMIC_KEY, true));
         } catch (Throwable e) {
             throw new RpcException("Failed to register " + url + " to zookeeper " + getUrl() + ", cause: " + e.getMessage(), e);
@@ -107,7 +109,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
     @Override
     public void doUnregister(URL url) {
         try {
-            zkClient.delete(toUrlPath(url));
+            zkClient.delete(toUrlPath(url));//删除节点
         } catch (Throwable e) {
             throw new RpcException("Failed to unregister " + url + " to zookeeper " + getUrl() + ", cause: " + e.getMessage(), e);
         }
@@ -150,18 +152,22 @@ public class ZookeeperRegistry extends FailbackRegistry {
             } else {
                 List<URL> urls = new ArrayList<>();
                 for (String path : toCategoriesPath(url)) {
+                    //url缓存对应的listener，证明同一个url是公用一个listener
                     ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.get(url);
                     if (listeners == null) {
-                        zkListeners.putIfAbsent(url, new ConcurrentHashMap<>());
+                        zkListeners.putIfAbsent(url, new ConcurrentHashMap<>());//缓存没有就构造
                         listeners = zkListeners.get(url);
                     }
+                    //将zkClient的事件IZkChildListener转换到registry事件NotifyListener
                     ChildListener zkListener = listeners.get(listener);
                     if (zkListener == null) {
-                        listeners.putIfAbsent(listener, (parentPath, currentChilds) -> ZookeeperRegistry.this.notify(url, listener, toUrlsWithEmpty(url, parentPath, currentChilds)));
+                        //缓存没有继续构造，构造监听器
+                        listeners.putIfAbsent(listener, (parentPath, currentChilds) ->
+                                ZookeeperRegistry.this.notify(url, listener, toUrlsWithEmpty(url, parentPath, currentChilds)));
                         zkListener = listeners.get(listener);
                     }
-                    zkClient.create(path, false);
-                    List<String> children = zkClient.addChildListener(path, zkListener);
+                    zkClient.create(path, false);//创建path节点
+                    List<String> children = zkClient.addChildListener(path, zkListener);//添加监听器
                     if (children != null) {
                         urls.addAll(toUrlsWithEmpty(url, path, children));
                     }

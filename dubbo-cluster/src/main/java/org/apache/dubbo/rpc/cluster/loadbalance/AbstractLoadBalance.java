@@ -30,13 +30,12 @@ import java.util.List;
  */
 public abstract class AbstractLoadBalance implements LoadBalance {
     /**
-     * Calculate the weight according to the uptime proportion of warmup time
-     * the new weight will be within 1(inclusive) to weight(inclusive)
-     *
-     * @param uptime the uptime in milliseconds
-     * @param warmup the warmup time in milliseconds
-     * @param weight the weight of an invoker
-     * @return weight which takes warmup into account
+     * 根据服务预热和在线时长，以及配置权重重新计算权重
+     * @param uptime 服务实际在线运行时长
+     * @param warmup 服务配置预热时长
+     * @param weight 服务配置的权重
+     * @return 随着运行时长的增加，当运行时长 >= 预热配置时长，则取配置或默认权重，
+     * 否则按比例计算并返回ww = (uptime / warmup) * weight
      */
     static int calculateWarmupWeight(int uptime, int warmup, int weight) {
         int ww = (int) ((float) uptime / ((float) warmup / (float) weight));
@@ -45,13 +44,13 @@ public abstract class AbstractLoadBalance implements LoadBalance {
 
     @Override
     public <T> Invoker<T> select(List<Invoker<T>> invokers, URL url, Invocation invocation) {
-        if (CollectionUtils.isEmpty(invokers)) {
+        if (CollectionUtils.isEmpty(invokers)) {//如果服务列表为空，直接没法负载返回null
             return null;
         }
-        if (invokers.size() == 1) {
+        if (invokers.size() == 1) {//只有一个服务，也没法负载，直接返回这一个
             return invokers.get(0);
         }
-        return doSelect(invokers, url, invocation);
+        return doSelect(invokers, url, invocation);//执行负载策略逻辑，子类自己实现
     }
 
     protected abstract <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation);
@@ -66,13 +65,16 @@ public abstract class AbstractLoadBalance implements LoadBalance {
      * @return weight
      */
     protected int getWeight(Invoker<?> invoker, Invocation invocation) {
+        //从URL中获取权重配置，默认100
         int weight = invoker.getUrl().getMethodParameter(invocation.getMethodName(), Constants.WEIGHT_KEY, Constants.DEFAULT_WEIGHT);
-        if (weight > 0) {
+        if (weight > 0) {//如果配置了权重，获取服务提供者启动时间戳
             long timestamp = invoker.getUrl().getParameter(Constants.REMOTE_TIMESTAMP_KEY, 0L);
             if (timestamp > 0L) {
-                int uptime = (int) (System.currentTimeMillis() - timestamp);
+                int uptime = (int) (System.currentTimeMillis() - timestamp);//实际在线运行时长
+                //从URL中获取服务预热时间配置（毫秒），默认10分钟
                 int warmup = invoker.getUrl().getParameter(Constants.WARMUP_KEY, Constants.DEFAULT_WARMUP);
                 if (uptime > 0 && uptime < warmup) {
+                    // 如果服务运行时间小于预热时间，则重新计算服务权重，即降权
                     weight = calculateWarmupWeight(uptime, warmup, weight);
                 }
             }
