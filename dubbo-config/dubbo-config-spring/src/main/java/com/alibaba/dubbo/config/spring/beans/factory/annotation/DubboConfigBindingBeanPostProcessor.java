@@ -66,6 +66,13 @@ public class DubboConfigBindingBeanPostProcessor implements BeanPostProcessor, A
 
     private ApplicationContext applicationContext;
 
+<<<<<<< HEAD
+=======
+    private boolean ignoreUnknownFields = true;
+
+    private boolean ignoreInvalidFields = true;
+
+>>>>>>> upstream/2.6.x
     private List<DubboConfigBeanCustomizer> configBeanCustomizers = Collections.emptyList();
 
     /**
@@ -114,6 +121,25 @@ public class DubboConfigBindingBeanPostProcessor implements BeanPostProcessor, A
 
     }
 
+<<<<<<< HEAD
+=======
+    public boolean isIgnoreUnknownFields() {
+        return ignoreUnknownFields;
+    }
+
+    public void setIgnoreUnknownFields(boolean ignoreUnknownFields) {
+        this.ignoreUnknownFields = ignoreUnknownFields;
+    }
+
+    public boolean isIgnoreInvalidFields() {
+        return ignoreInvalidFields;
+    }
+
+    public void setIgnoreInvalidFields(boolean ignoreInvalidFields) {
+        this.ignoreInvalidFields = ignoreInvalidFields;
+    }
+
+>>>>>>> upstream/2.6.x
     public DubboConfigBinder getDubboConfigBinder() {
         return dubboConfigBinder;
     }
@@ -155,6 +181,12 @@ public class DubboConfigBindingBeanPostProcessor implements BeanPostProcessor, A
             }
         }
 
+<<<<<<< HEAD
+=======
+        dubboConfigBinder.setIgnoreUnknownFields(ignoreUnknownFields);
+        dubboConfigBinder.setIgnoreInvalidFields(ignoreInvalidFields);
+
+>>>>>>> upstream/2.6.x
     }
 
     private void initConfigBeanCustomizers() {
@@ -176,6 +208,7 @@ public class DubboConfigBindingBeanPostProcessor implements BeanPostProcessor, A
     protected DubboConfigBinder createDubboConfigBinder(Environment environment) {
         DefaultDubboConfigBinder defaultDubboConfigBinder = new DefaultDubboConfigBinder();
         defaultDubboConfigBinder.setEnvironment(environment);
+<<<<<<< HEAD
 
         defaultDubboConfigBinder.setIgnoreUnknownFields(true);
         defaultDubboConfigBinder.setIgnoreInvalidFields(true);
@@ -184,3 +217,9 @@ public class DubboConfigBindingBeanPostProcessor implements BeanPostProcessor, A
     }
 
 }
+=======
+        return defaultDubboConfigBinder;
+    }
+
+}
+>>>>>>> upstream/2.6.x

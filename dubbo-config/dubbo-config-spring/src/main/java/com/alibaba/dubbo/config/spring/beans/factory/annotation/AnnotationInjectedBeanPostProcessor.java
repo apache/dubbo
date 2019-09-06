@@ -64,7 +64,11 @@ import static org.springframework.core.annotation.AnnotationUtils.getAnnotation;
 
 /**
  * Abstract generic {@link BeanPostProcessor} implementation for customized annotation that annotated injected-object.
+<<<<<<< HEAD
  * <p>
+=======
+ *
+>>>>>>> upstream/2.6.x
  * The source code is cloned from https://github.com/alibaba/spring-context-support/blob/1.0.2/src/main/java/com/alibaba/spring/beans/factory/annotation/AnnotationInjectedBeanPostProcessor.java
  *
  * @since 2.6.6
@@ -224,7 +228,11 @@ public abstract class AnnotationInjectedBeanPostProcessor<A extends Annotation> 
 
     }
 
+<<<<<<< HEAD
     public InjectionMetadata findInjectionMetadata(String beanName, Class<?> clazz, PropertyValues pvs) {
+=======
+    private InjectionMetadata findInjectionMetadata(String beanName, Class<?> clazz, PropertyValues pvs) {
+>>>>>>> upstream/2.6.x
         // Fall back to class name as cache key, for backwards compatibility with custom callers.
         String cacheKey = (StringUtils.hasLength(beanName) ? beanName : clazz.getName());
         // Quick check on the concurrent map first, with minimal locking.
@@ -314,8 +322,13 @@ public abstract class AnnotationInjectedBeanPostProcessor<A extends Annotation> 
      *
      * @return non-null {@link Collection}
      */
+<<<<<<< HEAD
     protected Map<String, Object> getInjectedObjects() {
         return this.injectedObjectsCache;
+=======
+    protected Collection<Object> getInjectedObjects() {
+        return this.injectedObjectsCache.values();
+>>>>>>> upstream/2.6.x
     }
 
     /**
@@ -402,7 +415,11 @@ public abstract class AnnotationInjectedBeanPostProcessor<A extends Annotation> 
 
             for (AnnotationInjectedBeanPostProcessor.AnnotatedFieldElement fieldElement : fieldElements) {
 
+<<<<<<< HEAD
                 injectedElementBeanMap.put(fieldElement, fieldElement.injectedBean);
+=======
+                injectedElementBeanMap.put(fieldElement, fieldElement.bean);
+>>>>>>> upstream/2.6.x
 
             }
 
@@ -428,19 +445,31 @@ public abstract class AnnotationInjectedBeanPostProcessor<A extends Annotation> 
 
             for (AnnotationInjectedBeanPostProcessor.AnnotatedMethodElement methodElement : methodElements) {
 
+<<<<<<< HEAD
                 injectedElementBeanMap.put(methodElement, methodElement.injectedBean);
+=======
+                injectedElementBeanMap.put(methodElement, methodElement.object);
+>>>>>>> upstream/2.6.x
 
             }
 
         }
 
         return Collections.unmodifiableMap(injectedElementBeanMap);
+<<<<<<< HEAD
+=======
+
+>>>>>>> upstream/2.6.x
     }
 
     /**
      * {@link A} {@link InjectionMetadata} implementation
      */
+<<<<<<< HEAD
     public class AnnotatedInjectionMetadata extends InjectionMetadata {
+=======
+    private class AnnotatedInjectionMetadata extends InjectionMetadata {
+>>>>>>> upstream/2.6.x
 
         private final Collection<AnnotationInjectedBeanPostProcessor.AnnotatedFieldElement> fieldElements;
 
@@ -465,13 +494,21 @@ public abstract class AnnotationInjectedBeanPostProcessor<A extends Annotation> 
     /**
      * {@link A} {@link Method} {@link InjectionMetadata.InjectedElement}
      */
+<<<<<<< HEAD
     public class AnnotatedMethodElement extends InjectionMetadata.InjectedElement {
+=======
+    private class AnnotatedMethodElement extends InjectionMetadata.InjectedElement {
+>>>>>>> upstream/2.6.x
 
         private final Method method;
 
         private final A annotation;
 
+<<<<<<< HEAD
         private volatile Object injectedBean;
+=======
+        private volatile Object object;
+>>>>>>> upstream/2.6.x
 
         protected AnnotatedMethodElement(Method method, PropertyDescriptor pd, A annotation) {
             super(method, pd);
@@ -484,6 +521,7 @@ public abstract class AnnotationInjectedBeanPostProcessor<A extends Annotation> 
 
             Class<?> injectedType = pd.getPropertyType();
 
+<<<<<<< HEAD
             injectedBean = getInjectedObject(annotation, bean, beanName, injectedType, this);
 
             ReflectionUtils.makeAccessible(method);
@@ -507,6 +545,16 @@ public abstract class AnnotationInjectedBeanPostProcessor<A extends Annotation> 
         public PropertyDescriptor getPd() {
             return this.pd;
         }
+=======
+            Object injectedObject = getInjectedObject(annotation, bean, beanName, injectedType, this);
+
+            ReflectionUtils.makeAccessible(method);
+
+            method.invoke(bean, injectedObject);
+
+        }
+
+>>>>>>> upstream/2.6.x
     }
 
     /**
@@ -518,7 +566,11 @@ public abstract class AnnotationInjectedBeanPostProcessor<A extends Annotation> 
 
         private final A annotation;
 
+<<<<<<< HEAD
         private volatile Object injectedBean;
+=======
+        private volatile Object bean;
+>>>>>>> upstream/2.6.x
 
         protected AnnotatedFieldElement(Field field, A annotation) {
             super(field, null);
@@ -531,6 +583,7 @@ public abstract class AnnotationInjectedBeanPostProcessor<A extends Annotation> 
 
             Class<?> injectedType = field.getType();
 
+<<<<<<< HEAD
             injectedBean = getInjectedObject(annotation, bean, beanName, injectedType, this);
 
             ReflectionUtils.makeAccessible(field);
@@ -549,6 +602,14 @@ public abstract class AnnotationInjectedBeanPostProcessor<A extends Annotation> 
 
         public Object getInjectedBean() {
             return injectedBean;
+=======
+            Object injectedObject = getInjectedObject(annotation, bean, beanName, injectedType, this);
+
+            ReflectionUtils.makeAccessible(field);
+
+            field.set(bean, injectedObject);
+
+>>>>>>> upstream/2.6.x
         }
 
     }
