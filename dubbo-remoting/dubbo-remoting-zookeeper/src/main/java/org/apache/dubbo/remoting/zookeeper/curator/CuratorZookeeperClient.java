@@ -48,6 +48,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CONFIG_TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 
 public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZookeeperClient.CuratorWatcherImpl, CuratorZookeeperClient.CuratorWatcherImpl> {
@@ -62,7 +63,14 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
     public CuratorZookeeperClient(URL url) {
         super(url);
         try {
-            int timeout = url.getParameter(TIMEOUT_KEY, 5000);
+            int timeout = 0;
+            if (StringUtils.isNotEmpty(url.getParameter(TIMEOUT_KEY))) {
+                timeout = url.getParameter(TIMEOUT_KEY, 5000);
+            } else {
+                timeout = url.getParameter(CONFIG_TIMEOUT_KEY, 5000);
+            }
+
+
             CuratorFrameworkFactory.Builder builder = CuratorFrameworkFactory.builder()
                     .connectString(url.getBackupAddress())
                     .retryPolicy(new RetryNTimes(1, 1000))

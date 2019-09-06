@@ -1247,6 +1247,7 @@ class URL implements Serializable {
 
     /**
      * The format is "{interface}:[version]:[group]"
+     *
      * @return
      */
     public String getColonSeparatedKey() {
@@ -1271,6 +1272,7 @@ class URL implements Serializable {
 
     /**
      * The format of return value is '{group}/{interfaceName}:{version}'
+     *
      * @return
      */
     public String getServiceKey() {
@@ -1283,6 +1285,7 @@ class URL implements Serializable {
 
     /**
      * The format of return value is '{group}/{path/interfaceName}:{version}'
+     *
      * @return
      */
     public String getPathKey() {

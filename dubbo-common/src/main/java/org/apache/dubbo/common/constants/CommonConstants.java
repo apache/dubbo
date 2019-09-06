@@ -100,6 +100,8 @@ public interface CommonConstants {
 
     String TIMEOUT_KEY = "timeout";
 
+    String CONFIG_TIMEOUT_KEY = "config.timeout";
+
     int DEFAULT_TIMEOUT = 1000;
 
     String REMOVE_VALUE_PREFIX = "-";
