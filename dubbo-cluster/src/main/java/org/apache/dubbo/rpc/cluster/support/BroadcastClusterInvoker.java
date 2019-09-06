@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.cluster.support;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
@@ -26,15 +27,23 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 
+import java.io.Serializable;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * BroadcastClusterInvoker
- *
  */
 public class BroadcastClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
     private static final Logger logger = LoggerFactory.getLogger(BroadcastClusterInvoker.class);
+
+    private ExecutorService pool = new ThreadPoolExecutor(10, 10,
+            0L, TimeUnit.MILLISECONDS,
+            new LinkedBlockingQueue<>(), new NamedThreadFactory("BroadcastClusterInvoker pool"));
 
     public BroadcastClusterInvoker(Directory<T> directory) {
         super(directory);
@@ -45,23 +54,30 @@ public class BroadcastClusterInvoker<T> extends AbstractClusterInvoker<T> {
     public Result doInvoke(final Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
         checkInvokers(invokers, invocation);
         RpcContext.getContext().setInvokers((List) invokers);
-        RpcException exception = null;
-        Result result = null;
-        for (Invoker<T> invoker : invokers) {
-            try {
-                result = invoker.invoke(invocation);
-            } catch (RpcException e) {
-                exception = e;
-                logger.warn(e.getMessage(), e);
-            } catch (Throwable e) {
-                exception = new RpcException(e.getMessage(), e);
-                logger.warn(e.getMessage(), e);
-            }
+
+        List<Callable<Result>> tasks = IntStream.range(0, invokers.size()).mapToObj(index -> {
+            Callable<Result> callable = () -> invokers.get(index).invoke(invocation);
+            return callable;
+        }).collect(Collectors.toList());
+        try {
+            List<Future<Result>> futureList = pool.invokeAll(tasks);
+            futureList.stream().map(it -> {
+                try {
+                    return it.get();
+                } catch (Throwable e) {
+                    return e;
+                }
+            }).filter(it -> it instanceof Throwable).findFirst().ifPresent(it -> {
+                Throwable ex = (Throwable) it;
+                logger.warn(ex.getMessage(), ex);
+                throw new RpcException(ex.getMessage(), ex);
+            });
+            int index = futureList.size() - 1 > 0 ? futureList.size() : 0;
+            return futureList.get(index).get();
+        } catch (Throwable e) {
+            logger.warn(e.getMessage(), e);
+            throw new RpcException(e.getMessage(), e);
         }
-        if (exception != null) {
-            throw exception;
-        }
-        return result;
     }
 
 }
