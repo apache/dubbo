@@ -19,6 +19,7 @@ package org.apache.dubbo.metadata.store;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
@@ -54,13 +55,15 @@ import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
  *
  * @since 2.7.5
  */
-public class RemoteWritableMetadataService extends BaseWritableMetadataService implements WritableMetadataService {
+public class RemoteWritableMetadataService implements WritableMetadataService {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
     private volatile String exportedRevision;
     private volatile String subscribedRevision;
+    private InMemoryWritableMetadataService writableMetadataService;
 
-    public RemoteWritableMetadataService() {
+    public RemoteWritableMetadataService(InMemoryWritableMetadataService writableMetadataService) {
+        this.writableMetadataService = writableMetadataService;
     }
 
     public MetadataReport getMetadataReport() {
@@ -93,13 +96,15 @@ public class RemoteWritableMetadataService extends BaseWritableMetadataService i
     public void publishProvider(URL providerUrl) throws RpcException {
         //first add into the list
         // remove the individul param
-        providerUrl = providerUrl.removeParameters(PID_KEY, TIMESTAMP_KEY, Constants.BIND_IP_KEY, Constants.BIND_PORT_KEY, TIMESTAMP_KEY);
+        providerUrl = providerUrl.removeParameters(PID_KEY, TIMESTAMP_KEY, Constants.BIND_IP_KEY,
+                Constants.BIND_PORT_KEY, TIMESTAMP_KEY);
 
         try {
             String interfaceName = providerUrl.getParameter(INTERFACE_KEY);
             if (StringUtils.isNotEmpty(interfaceName)) {
                 Class interfaceClass = Class.forName(interfaceName);
-                FullServiceDefinition fullServiceDefinition = ServiceDefinitionBuilder.buildFullDefinition(interfaceClass, providerUrl.getParameters());
+                FullServiceDefinition fullServiceDefinition = ServiceDefinitionBuilder.buildFullDefinition(interfaceClass,
+                        providerUrl.getParameters());
                 getMetadataReport().storeProviderMetadata(new MetadataIdentifier(providerUrl.getServiceInterface(),
                         providerUrl.getParameter(VERSION_KEY), providerUrl.getParameter(GROUP_KEY),
                         PROVIDER_SIDE, providerUrl.getParameter(APPLICATION_KEY)), fullServiceDefinition);
@@ -114,7 +119,8 @@ public class RemoteWritableMetadataService extends BaseWritableMetadataService i
 
     @Deprecated
     public void publishConsumer(URL consumerURL) throws RpcException {
-        consumerURL = consumerURL.removeParameters(PID_KEY, TIMESTAMP_KEY, Constants.BIND_IP_KEY, Constants.BIND_PORT_KEY, TIMESTAMP_KEY);
+        consumerURL = consumerURL.removeParameters(PID_KEY, TIMESTAMP_KEY, Constants.BIND_IP_KEY,
+                Constants.BIND_PORT_KEY, TIMESTAMP_KEY);
         getMetadataReport().storeConsumerMetadata(new MetadataIdentifier(consumerURL.getServiceInterface(),
                 consumerURL.getParameter(VERSION_KEY), consumerURL.getParameter(GROUP_KEY), CONSUMER_SIDE,
                 consumerURL.getParameter(APPLICATION_KEY)), consumerURL.getParameters());
@@ -153,12 +159,14 @@ public class RemoteWritableMetadataService extends BaseWritableMetadataService i
                 result = false;
             }
         }
-        if (!StringUtils.isEmpty(subscribedRevision) && !subscribedRevision.equals(this.subscribedRevision)) {
+        if (!StringUtils.isEmpty(subscribedRevision) && !subscribedRevision.equals(this.subscribedRevision)
+                && CollectionUtils.isNotEmpty(writableMetadataService.getSubscribedURLs())) {
             this.subscribedRevision = subscribedRevision;
             SubscriberMetadataIdentifier metadataIdentifier = new SubscriberMetadataIdentifier();
             metadataIdentifier.setApplication(serviceName());
             metadataIdentifier.setRevision(subscribedRevision);
-            boolean executeResult = throwableAction(getMetadataReport()::saveSubscribedData, metadataIdentifier, super.getSubscribedURLs());
+            boolean executeResult = throwableAction(getMetadataReport()::saveSubscribedData, metadataIdentifier,
+                    writableMetadataService.getSubscribedURLs());
             if (!executeResult) {
                 result = false;
             }
@@ -168,7 +176,7 @@ public class RemoteWritableMetadataService extends BaseWritableMetadataService i
 
     private boolean saveServiceMetadata() {
         boolean result = true;
-        for (SortedSet<URL> urls : exportedServiceURLs.values()) {
+        for (SortedSet<URL> urls : writableMetadataService.exportedServiceURLs.values()) {
             Iterator<URL> iterator = urls.iterator();
             while (iterator.hasNext()) {
                 URL url = iterator.next();
@@ -200,7 +208,8 @@ public class RemoteWritableMetadataService extends BaseWritableMetadataService i
         return null;
     }
 
-    boolean throwableAction(BiConsumer<ServiceMetadataIdentifier, URL> consumer, ServiceMetadataIdentifier metadataIdentifier, URL url) {
+    boolean throwableAction(BiConsumer<ServiceMetadataIdentifier, URL> consumer,
+                            ServiceMetadataIdentifier metadataIdentifier, URL url) {
         try {
             consumer.accept(metadataIdentifier, url);
         } catch (Exception e) {
@@ -210,7 +219,8 @@ public class RemoteWritableMetadataService extends BaseWritableMetadataService i
         return true;
     }
 
-    boolean throwableAction(BiConsumer<SubscriberMetadataIdentifier, Set<String>> consumer, SubscriberMetadataIdentifier metadataIdentifier, Set<String> urls) {
+    boolean throwableAction(BiConsumer<SubscriberMetadataIdentifier, Set<String>> consumer,
+                            SubscriberMetadataIdentifier metadataIdentifier, Set<String> urls) {
         try {
             consumer.accept(metadataIdentifier, urls);
         } catch (Exception e) {

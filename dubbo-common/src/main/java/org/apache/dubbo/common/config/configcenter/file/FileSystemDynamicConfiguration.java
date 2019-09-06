@@ -582,13 +582,13 @@ public class FileSystemDynamicConfiguration extends AbstractDynamicConfiguration
     }
 
     protected static File initDirectory(URL url) {
-        String directoryPath = url.getParameter(CONFIG_CENTER_DIR_PARAM_NAME, url.getPath());
+        String directoryPath = getParameter(url, CONFIG_CENTER_DIR_PARAM_NAME, url == null ? null : url.getPath());
         File rootDirectory = null;
         if (!StringUtils.isBlank(directoryPath)) {
             rootDirectory = new File("/" + directoryPath);
         }
 
-        if (!rootDirectory.exists()) { // If the directory does not exist
+        if (directoryPath == null || !rootDirectory.exists()) { // If the directory does not exist
             rootDirectory = new File(DEFAULT_CONFIG_CENTER_DIR_PATH);
         }
 

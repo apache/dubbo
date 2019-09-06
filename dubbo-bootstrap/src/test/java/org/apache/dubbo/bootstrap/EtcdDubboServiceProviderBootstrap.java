@@ -49,7 +49,7 @@ public class EtcdDubboServiceProviderBootstrap {
 
         RegistryConfig serviceRegistry = new RegistryConfig();
         serviceRegistry.setId("serviceRegistry");
-        serviceRegistry.setAddress("etcd3://127.0.0.1:2379?registry.type=service");
+        serviceRegistry.setAddress("etcd3://127.0.0.1:2379?registry-type=service");
 
         ServiceConfig<EchoService> echoService = new ServiceConfig<>();
         echoService.setInterface(EchoService.class.getName());
@@ -63,7 +63,7 @@ public class EtcdDubboServiceProviderBootstrap {
 //        userService.setRegistries(Arrays.asList(interfaceRegistry, serviceRegistry));
 
         ApplicationConfig applicationConfig = new ApplicationConfig("dubbo-provider-demo");
-        applicationConfig.setMetadataType("remote");
+//        applicationConfig.setMetadataType("remote");
         new DubboBootstrap()
                 .application(applicationConfig)
                 // Zookeeper in service registry type
@@ -73,7 +73,7 @@ public class EtcdDubboServiceProviderBootstrap {
                 .registries(Arrays.asList(interfaceRegistry, serviceRegistry))
 //                .registry(RegistryBuilder.newBuilder().address("consul://127.0.0.1:8500?registry.type=service").build())
                 .protocol(builder -> builder.port(-1).name("dubbo"))
-                .metadataReport(new MetadataReportConfig("etcd://127.0.0.1:2379"))
+//                .metadataReport(new MetadataReportConfig("etcd://127.0.0.1:2379"))
                 .service(echoService)
                 .service(userService)
                 .start()

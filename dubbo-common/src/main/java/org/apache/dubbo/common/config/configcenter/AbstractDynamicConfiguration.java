@@ -189,14 +189,28 @@ public abstract class AbstractDynamicConfiguration implements DynamicConfigurati
     }
 
     protected static int getThreadPoolSize(URL url) {
-        return url.getParameter(THREAD_POOL_SIZE_PARAM_NAME, DEFAULT_THREAD_POOL_SIZE);
+        return getParameter(url, THREAD_POOL_SIZE_PARAM_NAME, DEFAULT_THREAD_POOL_SIZE);
     }
 
     protected static long getThreadPoolKeepAliveTime(URL url) {
-        return url.getParameter(THREAD_POOL_KEEP_ALIVE_TIME_PARAM_NAME, DEFAULT_THREAD_POOL_KEEP_ALIVE_TIME);
+        return getParameter(url, THREAD_POOL_KEEP_ALIVE_TIME_PARAM_NAME, DEFAULT_THREAD_POOL_KEEP_ALIVE_TIME);
     }
 
     protected static String getParameter(URL url, String name, String defaultValue) {
+        if (url != null) {
+            return url.getParameter(name, defaultValue);
+        }
+        return defaultValue;
+    }
+
+    protected static int getParameter(URL url, String name, int defaultValue) {
+        if (url != null) {
+            return url.getParameter(name, defaultValue);
+        }
+        return defaultValue;
+    }
+
+    protected static long getParameter(URL url, String name, long defaultValue) {
         if (url != null) {
             return url.getParameter(name, defaultValue);
         }

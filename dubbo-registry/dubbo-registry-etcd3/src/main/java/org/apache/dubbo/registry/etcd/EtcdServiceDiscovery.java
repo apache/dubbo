@@ -63,9 +63,9 @@ public class EtcdServiceDiscovery implements ServiceDiscovery, EventListener<Ser
 
     private final ConcurrentMap<URL, ConcurrentMap<NotifyListener, ChildListener>> etcdListeners = new ConcurrentHashMap<>();
 
-    private EtcdClient etcdClient;
-    private EventDispatcher dispatcher;
-    private ServiceInstance serviceInstance;
+    EtcdClient etcdClient;
+    EventDispatcher dispatcher;
+    ServiceInstance serviceInstance;
 
     @Override
     public void onEvent(ServiceInstancesChangedEvent event) {
@@ -99,7 +99,9 @@ public class EtcdServiceDiscovery implements ServiceDiscovery, EventListener<Ser
 
     @Override
     public void destroy() {
-
+        if (etcdClient != null && etcdClient.isConnected()) {
+            etcdClient.close();
+        }
     }
 
     @Override
@@ -131,7 +133,7 @@ public class EtcdServiceDiscovery implements ServiceDiscovery, EventListener<Ser
     public void update(ServiceInstance serviceInstance) throws RuntimeException {
         try {
             String path = toPath(serviceInstance);
-            etcdClient.put(path, new Gson().toJson(serviceInstance));
+            etcdClient.putEphemeral(path, new Gson().toJson(serviceInstance));
             services.add(serviceInstance.getServiceName());
         } catch (Throwable e) {
             throw new RpcException("Failed to register " + serviceInstance + " to etcd " + etcdClient.getUrl()

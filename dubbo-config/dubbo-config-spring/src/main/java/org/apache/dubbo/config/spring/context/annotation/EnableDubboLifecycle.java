@@ -16,7 +16,8 @@
  */
 package org.apache.dubbo.config.spring.context.annotation;
 
-import org.springframework.context.Lifecycle;
+import org.apache.dubbo.common.context.Lifecycle;
+
 import org.springframework.context.annotation.Import;
 
 import java.lang.annotation.Documented;

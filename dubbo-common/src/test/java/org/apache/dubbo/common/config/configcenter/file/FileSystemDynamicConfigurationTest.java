@@ -19,6 +19,7 @@ package org.apache.dubbo.common.config.configcenter.file;
 import org.apache.dubbo.common.URL;
 
 import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -49,10 +50,16 @@ public class FileSystemDynamicConfigurationTest {
 
     @BeforeEach
     public void init() {
-        String classPath = getClassPath();
-        URL url = valueOf("dubbo://127.0.0.1:20880").addParameter(CONFIG_CENTER_DIR_PARAM_NAME, classPath + File.separator + "config-center");
+        File rootDirectory = new File(getClassPath(), "config-center");
+        rootDirectory.mkdirs();
+        URL url = valueOf("dubbo://127.0.0.1:20880").addParameter(CONFIG_CENTER_DIR_PARAM_NAME, rootDirectory.getAbsolutePath());
         configuration = new FileSystemDynamicConfiguration(url);
         deleteQuietly(configuration.getRootDirectory());
+    }
+
+    @AfterEach
+    public void destroy() throws Exception {
+        configuration.close();
     }
 
     private String getClassPath() {

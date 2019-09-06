@@ -34,7 +34,7 @@ public class EtcdDubboServiceConsumerBootstrap {
                 .application("dubbo-consumer-demo")
                 // Zookeeper
                 .protocol(builder -> builder.port(20887).name("dubbo"))
-                .registry("etcd3", builder -> builder.address("etcd3://127.0.0.1:2379?registry.type=service&subscribed.services=dubbo-provider-demo"))
+                .registry("etcd3", builder -> builder.address("etcd3://127.0.0.1:2379?registry-type=service&subscribed-services=dubbo-provider-demo"))
                 .metadataReport(new MetadataReportConfig("etcd://127.0.0.1:2379"))
                 // Nacos
 //                .registry("consul", builder -> builder.address("consul://127.0.0.1:8500?registry.type=service&subscribed.services=dubbo-provider-demo").group("namespace1"))

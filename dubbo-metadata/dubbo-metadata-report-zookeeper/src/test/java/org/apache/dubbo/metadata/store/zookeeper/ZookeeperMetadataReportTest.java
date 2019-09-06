@@ -22,6 +22,8 @@ import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
+import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
+import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 import org.apache.dubbo.remoting.zookeeper.curator.CuratorZookeeperTransporter;
 
 import com.google.gson.Gson;
@@ -31,8 +33,11 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
@@ -120,6 +125,112 @@ public class ZookeeperMetadataReportTest {
         Assertions.assertEquals(fileContent, "{\"paramConsumerTest\":\"zkCm\"}");
     }
 
+    @Test
+    public void testDoSaveMetadata() throws ExecutionException, InterruptedException {
+        String interfaceName = "org.apache.dubbo.metadata.store.zookeeper.ZookeeperMetadataReport4TstService";
+        String version = "1.0.0";
+        String group = null;
+        String application = "etc-metadata-report-consumer-test";
+        String revision = "90980";
+        String protocol = "xxx";
+        URL url = generateURL(interfaceName, version, group, application);
+        ServiceMetadataIdentifier serviceMetadataIdentifier = new ServiceMetadataIdentifier(interfaceName, version,
+                group, "provider", revision, protocol);
+        zookeeperMetadataReport.doSaveMetadata(serviceMetadataIdentifier, url);
+
+        String fileContent = zookeeperMetadataReport.zkClient.getContent(zookeeperMetadataReport.getNodePath(serviceMetadataIdentifier));
+        Assertions.assertNotNull(fileContent);
+
+        Assertions.assertEquals(fileContent, URL.encode(url.toFullString()));
+    }
+
+    @Test
+    public void testDoRemoveMetadata() throws ExecutionException, InterruptedException {
+        String interfaceName = "org.apache.dubbo.metadata.store.zookeeper.ZookeeperMetadataReport4TstService";
+        String version = "1.0.0";
+        String group = null;
+        String application = "etc-metadata-report-consumer-test";
+        String revision = "90980";
+        String protocol = "xxx";
+        URL url = generateURL(interfaceName, version, group, application);
+        ServiceMetadataIdentifier serviceMetadataIdentifier = new ServiceMetadataIdentifier(interfaceName, version,
+                group, "provider", revision, protocol);
+        zookeeperMetadataReport.doSaveMetadata(serviceMetadataIdentifier, url);
+        String fileContent = zookeeperMetadataReport.zkClient.getContent(zookeeperMetadataReport.getNodePath(serviceMetadataIdentifier));
+
+        Assertions.assertNotNull(fileContent);
+
+
+        zookeeperMetadataReport.doRemoveMetadata(serviceMetadataIdentifier);
+
+        fileContent = zookeeperMetadataReport.zkClient.getContent(zookeeperMetadataReport.getNodePath(serviceMetadataIdentifier));
+        Assertions.assertNull(fileContent);
+    }
+
+    @Test
+    public void testDoGetExportedURLs() throws ExecutionException, InterruptedException {
+        String interfaceName = "org.apache.dubbo.metadata.store.zookeeper.ZookeeperMetadataReport4TstService";
+        String version = "1.0.0";
+        String group = null;
+        String application = "etc-metadata-report-consumer-test";
+        String revision = "90980";
+        String protocol = "xxx";
+        URL url = generateURL(interfaceName, version, group, application);
+        ServiceMetadataIdentifier serviceMetadataIdentifier = new ServiceMetadataIdentifier(interfaceName, version,
+                group, "provider", revision, protocol);
+        zookeeperMetadataReport.doSaveMetadata(serviceMetadataIdentifier, url);
+
+        List<String> r = zookeeperMetadataReport.doGetExportedURLs(serviceMetadataIdentifier);
+        Assertions.assertTrue(r.size() == 1);
+
+        String fileContent = r.get(0);
+        Assertions.assertNotNull(fileContent);
+
+        Assertions.assertEquals(fileContent, url.toFullString());
+    }
+
+    @Test
+    public void testDoSaveSubscriberData() throws ExecutionException, InterruptedException {
+        String interfaceName = "org.apache.dubbo.metadata.store.zookeeper.ZookeeperMetadataReport4TstService";
+        String version = "1.0.0";
+        String group = null;
+        String application = "etc-metadata-report-consumer-test";
+        String revision = "90980";
+        String protocol = "xxx";
+        URL url = generateURL(interfaceName, version, group, application);
+        SubscriberMetadataIdentifier subscriberMetadataIdentifier = new SubscriberMetadataIdentifier(application, revision);
+        Gson gson = new Gson();
+        String r = gson.toJson(Arrays.asList(url));
+        zookeeperMetadataReport.doSaveSubscriberData(subscriberMetadataIdentifier, r);
+
+        String fileContent = zookeeperMetadataReport.zkClient.getContent(zookeeperMetadataReport.getNodePath(subscriberMetadataIdentifier));
+
+        Assertions.assertNotNull(fileContent);
+
+        Assertions.assertEquals(fileContent, r);
+    }
+
+    @Test
+    public void testDoGetSubscribedURLs() throws ExecutionException, InterruptedException {
+        String interfaceName = "org.apache.dubbo.metadata.store.zookeeper.ZookeeperMetadataReport4TstService";
+        String version = "1.0.0";
+        String group = null;
+        String application = "etc-metadata-report-consumer-test";
+        String revision = "90980";
+        String protocol = "xxx";
+        URL url = generateURL(interfaceName, version, group, application);
+        SubscriberMetadataIdentifier subscriberMetadataIdentifier = new SubscriberMetadataIdentifier(application, revision);
+        Gson gson = new Gson();
+        String r = gson.toJson(Arrays.asList(url));
+        zookeeperMetadataReport.doSaveSubscriberData(subscriberMetadataIdentifier, r);
+
+        String fileContent = zookeeperMetadataReport.zkClient.getContent(zookeeperMetadataReport.getNodePath(subscriberMetadataIdentifier));
+
+        Assertions.assertNotNull(fileContent);
+
+        Assertions.assertEquals(fileContent, r);
+    }
+
 
     private MetadataIdentifier storePrivider(ZookeeperMetadataReport zookeeperMetadataReport, String interfaceName, String version, String group, String application) throws ClassNotFoundException, InterruptedException {
         URL url = URL.valueOf("xxx://" + NetUtils.getLocalAddress().getHostName() + ":4444/" + interfaceName + "?paramTest=zkTest&version=" + version + "&application="
@@ -155,5 +266,12 @@ public class ZookeeperMetadataReportTest {
             return zookeeperMetadataReport.zkClient.getContent(path);
         }
         return value;
+    }
+
+    private URL generateURL(String interfaceName, String version, String group, String application) {
+        URL url = URL.valueOf("xxx://" + NetUtils.getLocalAddress().getHostName() + ":8989/" + interfaceName +
+                "?paramTest=etcdTest&version=" + version + "&application="
+                + application + (group == null ? "" : "&group=" + group));
+        return url;
     }
 }

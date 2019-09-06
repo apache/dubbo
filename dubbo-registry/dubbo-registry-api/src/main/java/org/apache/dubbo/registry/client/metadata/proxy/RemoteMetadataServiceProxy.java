@@ -25,12 +25,12 @@ public class RemoteMetadataServiceProxy implements MetadataService {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     private String serviceName;
-    // FIXME this is provider revison. it also need consumer revison.
     private String revision;
 
 
     public RemoteMetadataServiceProxy(ServiceInstance serviceInstance) {
         this.serviceName = serviceInstance.getServiceName();
+        // this is ServiceInstance of registry(Provider)
         this.revision = serviceInstance.getMetadata()
                 .getOrDefault(ServiceInstanceMetadataUtils.EXPORTED_SERVICES_REVISION_PROPERTY_NAME, "");
     }
@@ -40,7 +40,6 @@ public class RemoteMetadataServiceProxy implements MetadataService {
         return serviceName;
     }
 
-    // TODO, protocol should be used
     @Override
     public SortedSet<String> getExportedURLs(String serviceInterface, String group, String version, String protocol) {
         return toSortedStrings(getMetadataReport().getExportedURLs(
@@ -60,8 +59,18 @@ public class RemoteMetadataServiceProxy implements MetadataService {
     @Override
     public String getServiceDefinition(String serviceKey) {
         String[] services = UrlUtils.parseServiceKey(serviceKey);
-        return getMetadataReport().getServiceDefinition(new MetadataIdentifier(services[1],
-                services[0], services[2], PROVIDER_SIDE, serviceName));
+        String serviceInterface = services[0];
+        // if version or group is not exist
+        String version = null;
+        if (services.length > 1) {
+            version = services[1];
+        }
+        String group = null;
+        if (services.length > 2) {
+            group = services[2];
+        }
+        return getMetadataReport().getServiceDefinition(new MetadataIdentifier(serviceInterface,
+                version, group, PROVIDER_SIDE, serviceName));
     }
 
     MetadataReport getMetadataReport() {

@@ -31,8 +31,7 @@ public class ServiceInstancePortCustomizer implements ServiceInstanceCustomizer 
     @Override
     public void customize(ServiceInstance serviceInstance) {
 
-        if (serviceInstance.getPort() != null
-                || serviceInstance.getPort().intValue() < 1) {
+        if (serviceInstance.getPort() != null) {
             return;
         }
 
