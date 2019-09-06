@@ -16,31 +16,29 @@
  */
 package org.apache.dubbo.remoting.transport.netty4;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.ExecutorUtil;
-import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.remoting.Channel;
-import org.apache.dubbo.remoting.ChannelHandler;
-import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.Server;
-import org.apache.dubbo.remoting.transport.AbstractServer;
-import org.apache.dubbo.remoting.transport.dispatcher.ChannelHandlers;
-import org.apache.dubbo.remoting.utils.UrlUtils;
-
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.epoll.Epoll;
+import io.netty.channel.epoll.EpollEventLoopGroup;
+import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.DefaultThreadFactory;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ExecutorUtil;
+import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.remoting.*;
+import org.apache.dubbo.remoting.transport.AbstractServer;
+import org.apache.dubbo.remoting.transport.dispatcher.ChannelHandlers;
+import org.apache.dubbo.remoting.utils.UrlUtils;
 
 import java.net.InetSocketAddress;
 import java.util.Collection;
@@ -68,7 +66,7 @@ public class NettyServer extends AbstractServer implements Server {
     /**
      * the boss channel that receive connections and dispatch these to worker channel.
      */
-	private io.netty.channel.Channel channel;
+    private io.netty.channel.Channel channel;
 
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
@@ -77,6 +75,12 @@ public class NettyServer extends AbstractServer implements Server {
         // you can customize name and type of client thread pool by THREAD_NAME_KEY and THREADPOOL_KEY in CommonConstants.
         // the handler will be warped: MultiMessageHandler->HeartbeatHandler->handler
         super(url, ChannelHandlers.wrap(handler, ExecutorUtil.setThreadName(url, SERVER_THREAD_POOL_NAME)));
+    }
+
+
+    private boolean useEpoll() {
+        String osName = System.getProperty("os.name");
+        return (osName != null && osName.toLowerCase().indexOf("linux") >= 0) && Epoll.isAvailable();
     }
 
     /**
@@ -88,15 +92,22 @@ public class NettyServer extends AbstractServer implements Server {
     protected void doOpen() throws Throwable {
         bootstrap = new ServerBootstrap();
 
-        bossGroup = new NioEventLoopGroup(1, new DefaultThreadFactory("NettyServerBoss", true));
-        workerGroup = new NioEventLoopGroup(getUrl().getPositiveParameter(IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS),
-                new DefaultThreadFactory("NettyServerWorker", true));
+        boolean useEpoll = useEpoll();
+
+        bossGroup = useEpoll ?
+                new EpollEventLoopGroup(1, new DefaultThreadFactory("EpollNettyServerBoss", true)) :
+                new NioEventLoopGroup(1, new DefaultThreadFactory("NettyServerBoss", true));
+
+        int ioThreads = getUrl().getPositiveParameter(IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS);
+        workerGroup = useEpoll ?
+                new EpollEventLoopGroup(ioThreads, new DefaultThreadFactory("EpollNettyServerWorker", true)) :
+                new NioEventLoopGroup(ioThreads, new DefaultThreadFactory("NettyServerWorker", true));
 
         final NettyServerHandler nettyServerHandler = new NettyServerHandler(getUrl(), this);
         channels = nettyServerHandler.getChannels();
 
         bootstrap.group(bossGroup, workerGroup)
-                .channel(NioServerSocketChannel.class)
+                .channel(useEpoll ? EpollServerSocketChannel.class : NioServerSocketChannel.class)
                 .childOption(ChannelOption.TCP_NODELAY, Boolean.TRUE)
                 .childOption(ChannelOption.SO_REUSEADDR, Boolean.TRUE)
                 .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
