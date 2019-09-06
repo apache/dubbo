@@ -81,10 +81,16 @@ public class ClusterUtils {
 
         if (localMap != null && localMap.size() > 0) {
             Map<String, String> copyOfLocalMap = new HashMap<>(localMap);
-            copyOfLocalMap.remove(GROUP_KEY);
+
+            if(map.containsKey(GROUP_KEY)){
+                copyOfLocalMap.remove(GROUP_KEY);
+            }
+            if(map.containsKey(VERSION_KEY)){
+                copyOfLocalMap.remove(VERSION_KEY);
+            }
+
             copyOfLocalMap.remove(RELEASE_KEY);
             copyOfLocalMap.remove(DUBBO_VERSION_KEY);
-            copyOfLocalMap.remove(VERSION_KEY);
             copyOfLocalMap.remove(METHODS_KEY);
             copyOfLocalMap.remove(TIMESTAMP_KEY);
             copyOfLocalMap.remove(TAG_KEY);
