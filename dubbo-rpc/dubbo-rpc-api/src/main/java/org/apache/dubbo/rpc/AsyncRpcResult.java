@@ -26,6 +26,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 /**
@@ -42,7 +43,7 @@ import java.util.function.Function;
  * {@link #getValue()} and {@link #getException()} are all inherited from {@link Result} interface, implementing them are mainly
  * for compatibility consideration. Because many legacy {@link Filter} implementation are most possibly to call getValue directly.
  */
-public class AsyncRpcResult extends AbstractResult {
+public class AsyncRpcResult implements Result {
     private static final Logger logger = LoggerFactory.getLogger(AsyncRpcResult.class);
 
     /**
@@ -172,17 +173,19 @@ public class AsyncRpcResult extends AbstractResult {
     @Override
     public Object recreate() throws Throwable {
         RpcInvocation rpcInvocation = (RpcInvocation) invocation;
-        FutureAdapter future = new FutureAdapter(this);
-        RpcContext.getContext().setFuture(future);
         if (InvokeMode.FUTURE == rpcInvocation.getInvokeMode()) {
-            return future;
+            return RpcContext.getContext().getFuture();
         }
 
         return getAppResponse().recreate();
     }
 
-    public Result thenApplyWithContext(Function<AppResponse, AppResponse> fn) {
-        this.responseFuture = responseFuture.thenApply(fn.compose(beforeContext).andThen(afterContext));
+    public Result whenCompleteWithContext(BiConsumer<Result, Throwable> fn) {
+        this.responseFuture.whenComplete((v, t) -> {
+            beforeContext.accept(v, t);
+            fn.accept(v, t);
+            afterContext.accept(v, t);
+        });
         return this;
     }
 
@@ -235,18 +238,16 @@ public class AsyncRpcResult extends AbstractResult {
     private RpcContext tmpContext;
     private RpcContext tmpServerContext;
 
-    private Function<AppResponse, AppResponse> beforeContext = (appResponse) -> {
+    private BiConsumer<Result, Throwable> beforeContext = (appResponse, t) -> {
         tmpContext = RpcContext.getContext();
         tmpServerContext = RpcContext.getServerContext();
         RpcContext.restoreContext(storedContext);
         RpcContext.restoreServerContext(storedServerContext);
-        return appResponse;
     };
 
-    private Function<AppResponse, AppResponse> afterContext = (appResponse) -> {
+    private BiConsumer<Result, Throwable> afterContext = (appResponse, t) -> {
         RpcContext.restoreContext(tmpContext);
         RpcContext.restoreServerContext(tmpServerContext);
-        return appResponse;
     };
 
     /**

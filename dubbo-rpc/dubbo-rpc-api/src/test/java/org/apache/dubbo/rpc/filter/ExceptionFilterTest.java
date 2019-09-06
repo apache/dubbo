@@ -60,8 +60,7 @@ public class ExceptionFilterTest {
             exceptionFilter.invoke(invoker, invocation);
         } catch (RpcException e) {
             assertEquals("TestRpcException", e.getMessage());
-            ((ExceptionFilter.ExceptionListener) exceptionFilter.listener()).setLogger(logger);
-            exceptionFilter.listener().onError(e, invoker, invocation);
+            exceptionFilter.onError(e, invoker, invocation);
         }
 
         Mockito.verify(logger).error(eq("Got unchecked and undeclared exception which called by 127.0.0.1. service: "
@@ -129,7 +128,7 @@ public class ExceptionFilterTest {
         Result asyncResult = exceptionFilter.invoke(invoker, invocation);
 
         AppResponse appResponse = (AppResponse) asyncResult.get();
-        exceptionFilter.listener().onResponse(appResponse, invoker, invocation);
+        exceptionFilter.onMessage(appResponse, invoker, invocation);
 
         Assertions.assertFalse(appResponse.getException() instanceof HessianException);
 

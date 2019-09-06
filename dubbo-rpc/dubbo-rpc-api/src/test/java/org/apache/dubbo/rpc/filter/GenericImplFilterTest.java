@@ -67,7 +67,7 @@ public class GenericImplFilterTest {
 
         Result asyncResult = genericImplFilter.invoke(invoker, invocation);
         Result result = asyncResult.get();
-        genericImplFilter.listener().onResponse(result, invoker, invocation);
+        genericImplFilter.onMessage(result, invoker, invocation);
 
         Assertions.assertEquals(Person.class, result.getValue().getClass());
         Assertions.assertEquals(10, ((Person) result.getValue()).getAge());
@@ -90,7 +90,7 @@ public class GenericImplFilterTest {
 
         Result asyncResult = genericImplFilter.invoke(invoker, invocation);
         Result result = asyncResult.get();
-        genericImplFilter.listener().onResponse(result, invoker, invocation);
+        genericImplFilter.onMessage(result, invoker, invocation);
         Assertions.assertEquals(RuntimeException.class, result.getException().getClass());
 
     }

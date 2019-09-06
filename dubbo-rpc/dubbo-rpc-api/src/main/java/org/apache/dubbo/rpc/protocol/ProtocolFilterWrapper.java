@@ -81,16 +81,38 @@ public class ProtocolFilterWrapper implements Protocol {
                         try {
                             asyncResult = filter.invoke(next, invocation);
                         } catch (Exception e) {
-                            // onError callback
-                            if (filter instanceof ListenableFilter) {
+                            if (filter instanceof ListenableFilter) {// Deprecated!
                                 Filter.Listener listener = ((ListenableFilter) filter).listener();
                                 if (listener != null) {
                                     listener.onError(e, invoker, invocation);
                                 }
+                            } else if (filter instanceof Filter.Listener) {
+                                Filter.Listener listener = (Filter.Listener) filter;
+                                listener.onError(e, invoker, invocation);
                             }
                             throw e;
                         }
-                        return asyncResult;
+                        return asyncResult.whenCompleteWithContext((r, t) -> {
+                            if (filter instanceof ListenableFilter) {// Deprecated!
+                                Filter.Listener listener = ((ListenableFilter) filter).listener();
+                                if (listener != null) {
+                                    if (t == null) {
+                                        listener.onMessage(r, invoker, invocation);
+                                    } else {
+                                        listener.onError(t, invoker, invocation);
+                                    }
+                                }
+                            } else if (filter instanceof Filter.Listener) {
+                                Filter.Listener listener = (Filter.Listener) filter;
+                                if (t == null) {
+                                    listener.onMessage(r, invoker, invocation);
+                                } else {
+                                    listener.onError(t, invoker, invocation);
+                                }
+                            } else {
+                                filter.onResponse(r, invoker, invocation);
+                            }
+                        });
                     }
 
                     @Override
@@ -106,7 +128,7 @@ public class ProtocolFilterWrapper implements Protocol {
             }
         }
 
-        return new CallbackRegistrationInvoker<>(last, filters);
+        return last;
     }
 
     @Override
@@ -135,66 +157,4 @@ public class ProtocolFilterWrapper implements Protocol {
         protocol.destroy();
     }
 
-    /**
-     * Register callback for each filter may be better, just like {@link java.util.concurrent.CompletionStage}, each callback
-     * registration generates a new CompletionStage whose status is determined by the original CompletionStage.
-     *
-     * If bridging status between filters is proved to not has significant performance drop, consider revert to the following commit:
-     * https://github.com/apache/dubbo/pull/4127
-     */
-    static class CallbackRegistrationInvoker<T> implements Invoker<T> {
-
-        private final Invoker<T> filterInvoker;
-        private final List<Filter> filters;
-
-        public CallbackRegistrationInvoker(Invoker<T> filterInvoker, List<Filter> filters) {
-            this.filterInvoker = filterInvoker;
-            this.filters = filters;
-        }
-
-        @Override
-        public Result invoke(Invocation invocation) throws RpcException {
-            Result asyncResult = filterInvoker.invoke(invocation);
-
-            asyncResult = asyncResult.whenCompleteWithContext((r, t) -> {
-                for (int i = filters.size() - 1; i >= 0; i--) {
-                    Filter filter = filters.get(i);
-                    // onResponse callback
-                    if (filter instanceof ListenableFilter) {
-                        Filter.Listener listener = ((ListenableFilter) filter).listener();
-                        if (listener != null) {
-                            if (t == null) {
-                                listener.onResponse(r, filterInvoker, invocation);
-                            } else {
-                                listener.onError(t, filterInvoker, invocation);
-                            }
-                        }
-                    } else {
-                        filter.onResponse(r, filterInvoker, invocation);
-                    }
-                }
-            });
-            return asyncResult;
-        }
-
-        @Override
-        public Class<T> getInterface() {
-            return filterInvoker.getInterface();
-        }
-
-        @Override
-        public URL getUrl() {
-            return filterInvoker.getUrl();
-        }
-
-        @Override
-        public boolean isAvailable() {
-            return filterInvoker.isAvailable();
-        }
-
-        @Override
-        public void destroy() {
-            filterInvoker.destroy();
-        }
-    }
 }

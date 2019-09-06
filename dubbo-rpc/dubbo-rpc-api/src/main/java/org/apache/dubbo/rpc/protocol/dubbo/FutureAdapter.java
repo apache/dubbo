@@ -14,7 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc;
+package org.apache.dubbo.rpc.protocol.dubbo;
+
+import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.rpc.RpcException;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;

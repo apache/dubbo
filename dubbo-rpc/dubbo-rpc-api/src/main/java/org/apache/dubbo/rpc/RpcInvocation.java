@@ -101,7 +101,7 @@ public class RpcInvocation implements Invocation, Serializable {
     }
 
     public RpcInvocation(Method method, String serviceName, Object[] arguments) {
-        this(method, serviceName, arguments, null);
+        this(method, serviceName, arguments, null, null);
     }
 
     public RpcInvocation(Method method, String serviceName, Object[] arguments, Map<String, Object> attachment, Map<Object, Object> attributes) {

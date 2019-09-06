@@ -40,6 +40,7 @@ import org.apache.dubbo.rpc.cluster.support.RegistryAwareCluster;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
+import org.apache.dubbo.rpc.model.ServiceModel;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
@@ -336,7 +337,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                         map.put(methodConfig.getName() + ".retries", "0");
                     }
                 }
-                attributes.put(methodConfig.getName(), convertMethodConfig2AsyncInfo(methodConfig));
+                attributes.put(methodConfig.getName(), convertMethodConfig2AyncInfo(methodConfig));
             }
         }
 
@@ -352,7 +353,8 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
         ref = createProxy(map);
 
-        ApplicationModel.initConsumerModel(serviceMetadata.getServiceKey(), buildConsumerModel(attributes, serviceMetadata));
+        ServiceModel serviceModel = ApplicationModel.registerServiceModel(interfaceClass);
+        ApplicationModel.initConsumerModel(serviceMetadata.getServiceKey(), buildConsumerModel(attributes, serviceModel));
         serviceMetadata.setTarget(ref);
         serviceMetadata.addAttribute(PROXY_CLASS_REF, ref);
         initialized = true;
@@ -370,19 +372,14 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         return actualInterface;
     }
 
-    private ConsumerModel buildConsumerModel(Map<String, Object> attributes, ServiceMetadata metadata) {
-        Method[] methods = interfaceClass.getMethods();
-        Class serviceInterface = interfaceClass;
-        if (interfaceClass == GenericService.class) {
-            try {
-                serviceInterface = Class.forName(interfaceName);
-                methods = serviceInterface.getMethods();
-            } catch (ClassNotFoundException e) {
-                methods = interfaceClass.getMethods();
-            }
-        }
-        return new ConsumerModel(attributes, metadata);
-        return new ConsumerModel(serviceKey, interfaceClass, ref, ApplicationModel.registerServiceModel(interfaceClass), attributes);
+    private ConsumerModel buildConsumerModel(Map<String, Object> attributes, ServiceModel serviceModel) {
+        return new ConsumerModel(serviceMetadata.getServiceKey(),
+                interfaceClass,
+                ref,
+                serviceModel,
+                attributes,
+                serviceMetadata
+        );
     }
 
     @SuppressWarnings({"unchecked", "rawtypes", "deprecation"})

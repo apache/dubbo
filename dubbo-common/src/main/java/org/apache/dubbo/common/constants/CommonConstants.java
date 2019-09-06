@@ -166,8 +166,6 @@ public interface CommonConstants {
 
     String REVISION_KEY = "revision";
 
-    String EXECUTOR_SERVICE_COMPONENT_KEY = ExecutorService.class.getName();
-
     /**
      * Consumer side 's proxy class
      */

@@ -30,7 +30,7 @@ public interface ExecutorRepository {
 
     /**
      * Called by both Client and Server. TODO, consider separate these two parts.
-     * When the Client or Server starts for the first time, generate a new threadpool according to the parameters passed in usr.
+     * When the Client or Server starts for the first time, generate a new threadpool according to the parameters specified.
      *
      * @param url
      * @return

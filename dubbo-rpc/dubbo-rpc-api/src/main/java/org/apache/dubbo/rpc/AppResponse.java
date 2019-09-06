@@ -16,13 +16,14 @@
  */
 package org.apache.dubbo.rpc;
 
-import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 /**
@@ -44,7 +45,7 @@ import java.util.function.Function;
  *
  * @serial Do not change the class name and properties.
  */
-public class AppResponse extends AbstractResult implements Serializable {
+public class AppResponse implements Result {
 
     private static final long serialVersionUID = -6925924956850004727L;
 
@@ -158,7 +159,7 @@ public class AppResponse extends AbstractResult implements Serializable {
     }
 
     @Override
-    public Result thenApplyWithContext(Function<AppResponse, AppResponse> fn) {
+    public Result whenCompleteWithContext(BiConsumer<Result, Throwable> fn) {
         throw new UnsupportedOperationException("AppResponse represents an concrete business response, there will be no status changes, you should get internal values directly.");
     }
 

@@ -26,6 +26,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+/**
+ * ServiceModel and ServiceMetadata are to some extend duplicated with each other.
+ * We should merge them in the future.
+ */
 public class ServiceModel {
     private final String serviceName;
     private final Class<?> serviceInterfaceClass;

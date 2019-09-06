@@ -17,9 +17,9 @@
 package org.apache.dubbo.rpc.filter;
 
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.ListenableFilter;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
@@ -48,12 +48,8 @@ import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
  * @see RpcContext
  */
 @Activate(group = PROVIDER, order = -10000)
-public class ContextFilter extends ListenableFilter {
+public class ContextFilter implements Filter, Filter.Listener {
     private static final String TAG_KEY = "dubbo.tag";
-
-    public ContextFilter() {
-        super.listener = new ContextListener();
-    }
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
@@ -101,16 +97,14 @@ public class ContextFilter extends ListenableFilter {
         }
     }
 
-    static class ContextListener implements Listener {
-        @Override
-        public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
-            // pass attachments to result
-            appResponse.addAttachments(RpcContext.getServerContext().getAttachments());
-        }
+    @Override
+    public void onMessage(Result appResponse, Invoker<?> invoker, Invocation invocation) {
+        // pass attachments to result
+        appResponse.addAttachments(RpcContext.getServerContext().getAttachments());
+    }
 
-        @Override
-        public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
+    @Override
+    public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
 
-        }
     }
 }

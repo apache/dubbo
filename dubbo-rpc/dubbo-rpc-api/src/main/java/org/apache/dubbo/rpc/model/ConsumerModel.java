@@ -20,8 +20,13 @@ import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.CollectionUtils;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -31,6 +36,7 @@ public class ConsumerModel {
     private final String serviceKey;
     private final Object proxyObject;
     private final ServiceModel serviceModel;
+
     private final Map<String, AsyncMethodInfo> methodConfigs = new HashMap<>();
 
     /**
@@ -163,4 +169,80 @@ public class ConsumerModel {
             this.onthrowMethod = onthrowMethod;
         }
     }
+
+
+    /* *************** Start, metadata compatible **************** */
+
+    private ServiceMetadata serviceMetadata;
+    private final Map<Method, ConsumerMethodModel> methodModels = new IdentityHashMap<Method, ConsumerMethodModel>();
+
+    public ConsumerModel(String serviceKey
+            , Class<?> serviceInterfaceClass
+            , Object proxyObject
+            , ServiceModel serviceModel
+            , Map<String, Object> attributes
+            , ServiceMetadata metadata) {
+
+        this(serviceKey, serviceInterfaceClass, proxyObject, serviceModel, attributes);
+
+        for (Method method : metadata.getServiceType().getMethods()) {
+            methodModels.put(method, new ConsumerMethodModel(method, attributes));
+        }
+    }
+
+    /**
+     * @return serviceMetadata
+     */
+    public ServiceMetadata getServiceMetadata() {
+        return serviceMetadata;
+    }
+
+    /**
+     * Return method model for the given method on consumer side
+     *
+     * @param method method object
+     * @return method model
+     */
+    public ConsumerMethodModel getMethodModel(Method method) {
+        return methodModels.get(method);
+    }
+
+    /**
+     * Return method model for the given method on consumer side
+     *
+     * @param method method object
+     * @return method model
+     */
+    public ConsumerMethodModel getMethodModel(String method) {
+        Optional<Map.Entry<Method, ConsumerMethodModel>> consumerMethodModelEntry = methodModels.entrySet().stream().filter(entry -> entry.getKey().getName().equals(method)).findFirst();
+        return consumerMethodModelEntry.map(Map.Entry::getValue).orElse(null);
+    }
+
+    /**
+     * @param method   metodName
+     * @param argsType method arguments type
+     * @return
+     */
+    public ConsumerMethodModel getMethodModel(String method, String[] argsType) {
+        Optional<ConsumerMethodModel> consumerMethodModel = methodModels.entrySet().stream()
+                .filter(entry -> entry.getKey().getName().equals(method))
+                .map(Map.Entry::getValue).filter(methodModel -> Arrays.equals(argsType, methodModel.getParameterTypes()))
+                .findFirst();
+        return consumerMethodModel.orElse(null);
+    }
+
+    /**
+     * Return all method models for the current service
+     *
+     * @return method model list
+     */
+    public List<ConsumerMethodModel> getAllMethodModels() {
+        return new ArrayList<>(methodModels.values());
+    }
+
+    public String getServiceName() {
+        return this.serviceMetadata.getServiceKey();
+    }
+
+
 }

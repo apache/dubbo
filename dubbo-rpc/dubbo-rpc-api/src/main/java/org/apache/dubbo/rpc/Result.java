@@ -24,6 +24,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 
@@ -130,7 +131,7 @@ public interface Result extends Serializable {
      * @param fn
      * @return
      */
-    Result thenApplyWithContext(Function<AppResponse, AppResponse> fn);
+    Result whenCompleteWithContext(BiConsumer<Result, Throwable> fn);
 
     <U> CompletableFuture<U> thenApply(Function<Result, ? extends U> fn);
 

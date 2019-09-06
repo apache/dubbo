@@ -14,10 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc;
 
 /**
- *
+ * {@link org.apache.dubbo.rpc.protocol.dubbo.FutureAdapter} was in dubbo-rpc-dubbo module,
+ * considering some users will use this class directly, keep the package not changed.
  */
-public abstract class AbstractResult implements Result {
-}
+package org.apache.dubbo.rpc.protocol.dubbo;
