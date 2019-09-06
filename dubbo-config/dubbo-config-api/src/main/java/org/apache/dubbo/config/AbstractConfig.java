@@ -454,7 +454,7 @@ public abstract class AbstractConfig implements Serializable {
                 && Modifier.isPublic(method.getModifiers())
                 && method.getParameterCount() == 1
                 && Map.class == method.getParameterTypes()[0]
-                && method.getReturnType() == Void.class);
+                && method.getReturnType() == void.class);
     }
 
     private static Map<String, String> convert(Map<String, String> parameters, String prefix) {
