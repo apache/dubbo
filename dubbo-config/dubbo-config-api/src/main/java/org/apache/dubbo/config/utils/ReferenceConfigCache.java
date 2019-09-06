@@ -45,20 +45,29 @@ public class ReferenceConfigCache {
             Class<?> clazz = referenceConfig.getInterfaceClass();
             iName = clazz.getName();
         }
-        if (StringUtils.isBlank(iName)) {
-            throw new IllegalArgumentException("No interface info in ReferenceConfig" + referenceConfig);
-        }
-
-        StringBuilder ret = new StringBuilder();
-        if (!StringUtils.isBlank(referenceConfig.getGroup())) {
-            ret.append(referenceConfig.getGroup()).append("/");
-        }
-        ret.append(iName);
-        if (!StringUtils.isBlank(referenceConfig.getVersion())) {
-            ret.append(":").append(referenceConfig.getVersion());
-        }
-        return ret.toString();
+        return getKey(iName, referenceConfig.getGroup(), referenceConfig.getVersion());
     };
+
+
+
+    public static final String getKey(String iName, String group, String version) {
+        if (StringUtils.isBlank(iName)) {
+            throw new IllegalArgumentException("No interface info in ReferenceConfig" + iName);
+        } else {
+            StringBuilder ret = new StringBuilder();
+            if (!StringUtils.isBlank(group)) {
+                ret.append(group).append("/");
+            }
+            ret.append(iName);
+            if (!StringUtils.isBlank(version)) {
+                ret.append(":").append(version);
+            }
+            return ret.toString();
+        }
+    }
+
+
+
     static final ConcurrentMap<String, ReferenceConfigCache> CACHE_HOLDER = new ConcurrentHashMap<String, ReferenceConfigCache>();
     private final String name;
     private final KeyGenerator generator;
