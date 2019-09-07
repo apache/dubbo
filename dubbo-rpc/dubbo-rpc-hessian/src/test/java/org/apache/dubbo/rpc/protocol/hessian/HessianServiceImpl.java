@@ -67,4 +67,9 @@ public class HessianServiceImpl implements HessianService {
             super(message);
         }
     }
+
+    @Override
+    public String getRemoteApplicationName() {
+        return RpcContext.getContext().getRemoteApplicationName();
+    }
 }

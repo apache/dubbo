@@ -16,7 +16,9 @@
  */
 package org.apache.dubbo.rpc.protocol.http;
 
-public class JsonRpcServiceImpl implements JsonRpcService {
+import org.apache.dubbo.rpc.RpcContext;
+
+public class HttpServiceImpl implements HttpService {
     private boolean called;
 
     public String sayHello(String name) {
@@ -47,5 +49,10 @@ public class JsonRpcServiceImpl implements JsonRpcService {
         public MyException(String message) {
             super(message);
         }
+    }
+
+    @Override
+    public String getRemoteApplicationName() {
+        return RpcContext.getContext().getRemoteApplicationName();
     }
 }
