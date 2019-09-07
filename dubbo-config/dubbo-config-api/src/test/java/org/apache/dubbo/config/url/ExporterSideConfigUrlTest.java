@@ -19,11 +19,12 @@ package org.apache.dubbo.config.url;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.config.context.ConfigManager;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -35,18 +36,20 @@ public class ExporterSideConfigUrlTest extends UrlTestBase {
     // ======================================================
     //   tests start
     // ======================================================  
-    @BeforeClass
+    @BeforeAll
     public static void start() {
     }
 
 
-    @Before
+    @BeforeEach
     public void setUp() {
         initServConf();
+        ConfigManager.getInstance().clear();
     }
 
-    @After()
+    @AfterEach()
     public void teardown() {
+        ConfigManager.getInstance().clear();
     }
 
     @Test

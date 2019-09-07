@@ -22,25 +22,34 @@ import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoService;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoServiceImpl;
+import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 import org.apache.dubbo.rpc.service.EchoService;
 
-import junit.framework.TestCase;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-public class RpcFilterTest extends TestCase {
+public class RpcFilterTest {
     private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
     private ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
 
+    @AfterEach
+    public void after() {
+        ProtocolUtils.closeAll();
+    }
+
+    @Test
     public void testRpcFilter() throws Exception {
         DemoService service = new DemoServiceImpl();
         URL url = URL.valueOf("dubbo://127.0.0.1:9010/org.apache.dubbo.rpc.DemoService?service.filter=echo");
         protocol.export(proxy.getInvoker(service, DemoService.class, url));
         service = proxy.getProxy(protocol.refer(DemoService.class, url));
-        assertEquals("123", service.echo("123"));
+        Assertions.assertEquals("123", service.echo("123"));
         // cast to EchoService
         EchoService echo = proxy.getProxy(protocol.refer(EchoService.class, url));
-        assertEquals(echo.$echo("test"), "test");
-        assertEquals(echo.$echo("abcdefg"), "abcdefg");
-        assertEquals(echo.$echo(1234), 1234);
+        Assertions.assertEquals(echo.$echo("test"), "test");
+        Assertions.assertEquals(echo.$echo("abcdefg"), "abcdefg");
+        Assertions.assertEquals(echo.$echo(1234), 1234);
     }
 
 }

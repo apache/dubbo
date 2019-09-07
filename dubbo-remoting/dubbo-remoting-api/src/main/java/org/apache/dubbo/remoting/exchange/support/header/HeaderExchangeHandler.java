@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.exchange.support.header;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -24,6 +23,7 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.ExecutionException;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
@@ -34,7 +34,7 @@ import org.apache.dubbo.remoting.exchange.support.DefaultFuture;
 import org.apache.dubbo.remoting.transport.ChannelHandlerDelegate;
 
 import java.net.InetSocketAddress;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 
 /**
@@ -44,9 +44,9 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
 
     protected static final Logger logger = LoggerFactory.getLogger(HeaderExchangeHandler.class);
 
-    public static String KEY_READ_TIMESTAMP = HeartbeatHandler.KEY_READ_TIMESTAMP;
+    public static final String KEY_READ_TIMESTAMP = HeartbeatHandler.KEY_READ_TIMESTAMP;
 
-    public static String KEY_WRITE_TIMESTAMP = HeartbeatHandler.KEY_WRITE_TIMESTAMP;
+    public static final String KEY_WRITE_TIMESTAMP = HeartbeatHandler.KEY_WRITE_TIMESTAMP;
 
     private final ExchangeHandler handler;
 
@@ -83,9 +83,13 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
             Object data = req.getData();
 
             String msg;
-            if (data == null) msg = null;
-            else if (data instanceof Throwable) msg = StringUtils.toString((Throwable) data);
-            else msg = data.toString();
+            if (data == null) {
+                msg = null;
+            } else if (data instanceof Throwable) {
+                msg = StringUtils.toString((Throwable) data);
+            } else {
+                msg = data.toString();
+            }
             res.setErrorMessage("Fail to decode request due to: " + msg);
             res.setStatus(Response.BAD_REQUEST);
 
@@ -95,19 +99,12 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
         // find handler by message class.
         Object msg = req.getData();
         try {
-            // handle data.
-            CompletableFuture<Object> future = handler.reply(channel, msg);
-            if (future.isDone()) {
-                res.setStatus(Response.OK);
-                res.setResult(future.get());
-                channel.send(res);
-                return;
-            }
-            future.whenComplete((result, t) -> {
+            CompletionStage<Object> future = handler.reply(channel, msg);
+            future.whenComplete((appResult, t) -> {
                 try {
                     if (t == null) {
                         res.setStatus(Response.OK);
-                        res.setResult(result);
+                        res.setResult(appResult);
                     } else {
                         res.setStatus(Response.SERVICE_ERROR);
                         res.setErrorMessage(StringUtils.toString(t));
@@ -146,6 +143,7 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
         try {
             handler.disconnected(exchangeChannel);
         } finally {
+            DefaultFuture.closeChannel(channel);
             HeaderExchangeChannel.removeChannelIfDisconnected(channel);
         }
     }

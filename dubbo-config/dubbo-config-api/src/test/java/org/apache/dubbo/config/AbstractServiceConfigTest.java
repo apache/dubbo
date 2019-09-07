@@ -17,9 +17,10 @@
 
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.Constants;
-import org.junit.Test;
 
+import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,7 +31,10 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+
+import static org.apache.dubbo.rpc.Constants.SERVICE_FILTER_KEY;
+import static org.apache.dubbo.rpc.Constants.EXPORTER_LISTENER_KEY;
 
 public class AbstractServiceConfigTest {
     @Test
@@ -109,7 +113,7 @@ public class AbstractServiceConfigTest {
         assertThat(serviceConfig.getProtocol(), nullValue());
         serviceConfig.setProtocol(new ProtocolConfig());
         assertThat(serviceConfig.getProtocol(), notNullValue());
-        serviceConfig.setProtocols(Collections.singletonList(new ProtocolConfig()));
+        serviceConfig.setProtocols(new ArrayList<>(Collections.singletonList(new ProtocolConfig())));
         assertThat(serviceConfig.getProtocols(), hasSize(1));
     }
 
@@ -137,9 +141,9 @@ public class AbstractServiceConfigTest {
         serviceConfig.setFilter("mockfilter");
         assertThat(serviceConfig.getFilter(), equalTo("mockfilter"));
         Map<String, String> parameters = new HashMap<String, String>();
-        parameters.put(Constants.SERVICE_FILTER_KEY, "prefilter");
+        parameters.put(SERVICE_FILTER_KEY, "prefilter");
         AbstractServiceConfig.appendParameters(parameters, serviceConfig);
-        assertThat(parameters, hasEntry(Constants.SERVICE_FILTER_KEY, "prefilter,mockfilter"));
+        assertThat(parameters, hasEntry(SERVICE_FILTER_KEY, "prefilter,mockfilter"));
     }
 
     @Test
@@ -148,9 +152,9 @@ public class AbstractServiceConfigTest {
         serviceConfig.setListener("mockexporterlistener");
         assertThat(serviceConfig.getListener(), equalTo("mockexporterlistener"));
         Map<String, String> parameters = new HashMap<String, String>();
-        parameters.put(Constants.EXPORTER_LISTENER_KEY, "prelistener");
+        parameters.put(EXPORTER_LISTENER_KEY, "prelistener");
         AbstractServiceConfig.appendParameters(parameters, serviceConfig);
-        assertThat(parameters, hasEntry(Constants.EXPORTER_LISTENER_KEY, "prelistener,mockexporterlistener"));
+        assertThat(parameters, hasEntry(EXPORTER_LISTENER_KEY, "prelistener,mockexporterlistener"));
     }
 
     @Test

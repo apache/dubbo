@@ -19,12 +19,12 @@
     <parent>
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-serialization</artifactId>
-        <version>2.7.0-SNAPSHOT</version>
+        <version>${revision}</version>
     </parent>
     <artifactId>dubbo-serialization-fst</artifactId>
     <packaging>jar</packaging>
     <name>${project.artifactId}</name>
-    <description>The common module of dubbo project</description>
+    <description>The fst serialization module of dubbo project</description>
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
     </properties>

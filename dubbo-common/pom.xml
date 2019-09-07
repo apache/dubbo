@@ -20,7 +20,7 @@
     <parent>
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-parent</artifactId>
-        <version>2.7.0-SNAPSHOT</version>
+        <version>${revision}</version>
     </parent>
     <artifactId>dubbo-common</artifactId>
     <packaging>jar</packaging>
@@ -42,6 +42,16 @@
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.javassist</groupId>

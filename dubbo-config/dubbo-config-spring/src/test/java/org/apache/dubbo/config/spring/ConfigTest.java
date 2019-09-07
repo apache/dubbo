@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config.spring;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -33,6 +32,7 @@ import org.apache.dubbo.config.spring.action.DemoActionBySetter;
 import org.apache.dubbo.config.spring.annotation.consumer.AnnotationAction;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.api.HelloService;
+import org.apache.dubbo.config.spring.context.annotation.provider.ProviderConfiguration;
 import org.apache.dubbo.config.spring.filter.MockFilter;
 import org.apache.dubbo.config.spring.impl.DemoServiceImpl;
 import org.apache.dubbo.config.spring.impl.HelloServiceImpl;
@@ -44,12 +44,13 @@ import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.service.GenericException;
 import org.apache.dubbo.rpc.service.GenericService;
+
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.BeanCreationException;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.util.Collection;
@@ -62,6 +63,9 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.matchers.JUnitMatchers.containsString;
+
+import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_BEAN;
+import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 
 
 /**
@@ -96,13 +100,30 @@ public class ConfigTest {
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/service-class.xml");
         ctx.start();
         try {
-            DemoService demoService = refer("dubbo://127.0.0.1:20887");
+            DemoService demoService = refer("dubbo://127.0.0.1:30887");
             String hello = demoService.sayName("hello");
             assertEquals("welcome:hello", hello);
         } finally {
             ctx.stop();
             ctx.close();
         }
+    }
+
+    @Test
+    public void testServiceAnnotation() {
+        AnnotationConfigApplicationContext providerContext = new AnnotationConfigApplicationContext();
+        providerContext.register(ProviderConfiguration.class);
+
+        providerContext.refresh();
+
+        ReferenceConfig<HelloService> reference = new ReferenceConfig<HelloService>();
+        reference.setApplication(new ApplicationConfig("consumer"));
+        reference.setRegistry(new RegistryConfig(RegistryConfig.NO_AVAILABLE));
+        reference.setInterface(HelloService.class);
+        reference.setUrl("dubbo://127.0.0.1:12345");
+        String hello = reference.get().sayHello("hello");
+        assertEquals("Hello, hello", hello);
+
     }
 
     @Test
@@ -145,6 +166,20 @@ public class ConfigTest {
         assertTrue(str.contains(" url=\"dubbo://127.0.0.1:20881\" "));
         assertTrue(str.contains(" interface=\"org.apache.dubbo.config.spring.api.DemoService\" "));
         assertTrue(str.endsWith(" />"));
+    }
+
+    @Test
+    public void testForks() {
+        ReferenceConfig<DemoService> reference = new ReferenceConfig<DemoService>();
+        reference.setApplication(new ApplicationConfig("consumer"));
+        reference.setRegistry(new RegistryConfig(RegistryConfig.NO_AVAILABLE));
+        reference.setInterface(DemoService.class);
+        reference.setUrl("dubbo://127.0.0.1:20881");
+
+        int forks = 10;
+        reference.setForks(forks);
+        String str = reference.toString();
+        assertTrue(str.contains("forks=\"" + forks + "\""));
     }
 
     @Test
@@ -244,7 +279,7 @@ public class ConfigTest {
             }
             assertNotNull(urls);
             assertEquals(1, urls.size());
-            assertEquals("dubbo://" + NetUtils.getLocalHost() + ":20883/org.apache.dubbo.config.spring.api.DemoService", urls.get(0).toIdentityString());
+            assertEquals("dubbo://" + NetUtils.getLocalHost() + ":20888/org.apache.dubbo.config.spring.api.DemoService", urls.get(0).toIdentityString());
         } finally {
             ctx.stop();
             ctx.close();
@@ -262,7 +297,7 @@ public class ConfigTest {
             List<URL> urls = registryService.getRegistered().get("org.apache.dubbo.config.spring.api.DemoService");
             assertNotNull(urls);
             assertEquals(1, urls.size());
-            assertEquals("dubbo://" + NetUtils.getLocalHost() + ":20883/org.apache.dubbo.config.spring.api.DemoService", urls.get(0).toIdentityString());
+            assertEquals("dubbo://" + NetUtils.getLocalHost() + ":20888/org.apache.dubbo.config.spring.api.DemoService", urls.get(0).toIdentityString());
         } finally {
             ctx.stop();
             ctx.close();
@@ -924,12 +959,7 @@ public class ConfigTest {
         sc.setApplication(ac);
         sc.setRegistry(rc);
         sc.setInterface(DemoService.class.getName());
-        sc.setRef(new GenericService() {
-
-            public Object $invoke(String method, String[] parameterTypes, Object[] args) throws GenericException {
-                return null;
-            }
-        });
+        sc.setRef((method, parameterTypes, args) -> null);
 
         ReferenceConfig<DemoService> ref = new ReferenceConfig<DemoService>();
         ref.setApplication(ac);
@@ -954,19 +984,14 @@ public class ConfigTest {
         service.setApplication(new ApplicationConfig("test"));
         service.setRegistry(new RegistryConfig("mock://localhost"));
         service.setInterface(DemoService.class.getName());
-        service.setGeneric(Constants.GENERIC_SERIALIZATION_BEAN);
-        service.setRef(new GenericService() {
-
-            public Object $invoke(String method, String[] parameterTypes, Object[] args) throws GenericException {
-                return null;
-            }
-        });
+        service.setGeneric(GENERIC_SERIALIZATION_BEAN);
+        service.setRef((method, parameterTypes, args) -> null);
         try {
             service.export();
             Collection<Registry> collection = MockRegistryFactory.getCachedRegistry();
             MockRegistry registry = (MockRegistry) collection.iterator().next();
             URL url = registry.getRegistered().get(0);
-            Assert.assertEquals(Constants.GENERIC_SERIALIZATION_BEAN, url.getParameter(Constants.GENERIC_KEY));
+            Assert.assertEquals(GENERIC_SERIALIZATION_BEAN, url.getParameter(GENERIC_KEY));
         } finally {
             MockRegistryFactory.cleanCachedRegistry();
             service.unexport();
@@ -980,7 +1005,7 @@ public class ConfigTest {
             ctx.start();
             ServiceConfig serviceConfig = (ServiceConfig) ctx.getBean("dubboDemoService");
             URL url = (URL) serviceConfig.getExportedUrls().get(0);
-            Assert.assertEquals(Constants.GENERIC_SERIALIZATION_BEAN, url.getParameter(Constants.GENERIC_KEY));
+            Assert.assertEquals(GENERIC_SERIALIZATION_BEAN, url.getParameter(GENERIC_KEY));
         } finally {
             ctx.destroy();
         }

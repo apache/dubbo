@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.exchange.support.header;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.logger.Logger;
@@ -28,10 +27,13 @@ import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.ExchangeHandler;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
-import org.apache.dubbo.remoting.exchange.ResponseFuture;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture;
 
 import java.net.InetSocketAddress;
+import java.util.concurrent.CompletableFuture;
+
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 
 /**
  * ExchangeReceiver
@@ -97,12 +99,12 @@ final class HeaderExchangeChannel implements ExchangeChannel {
     }
 
     @Override
-    public ResponseFuture request(Object request) throws RemotingException {
-        return request(request, channel.getUrl().getPositiveParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT));
+    public CompletableFuture<Object> request(Object request) throws RemotingException {
+        return request(request, channel.getUrl().getPositiveParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT));
     }
 
     @Override
-    public ResponseFuture request(Object request, int timeout) throws RemotingException {
+    public CompletableFuture<Object> request(Object request, int timeout) throws RemotingException {
         if (closed) {
             throw new RemotingException(this.getLocalAddress(), null, "Failed to send request " + request + ", cause: The channel " + this + " is closed!");
         }
@@ -111,7 +113,7 @@ final class HeaderExchangeChannel implements ExchangeChannel {
         req.setVersion(Version.getProtocolVersion());
         req.setTwoWay(true);
         req.setData(request);
-        DefaultFuture future = new DefaultFuture(channel, req, timeout);
+        DefaultFuture future = DefaultFuture.newFuture(channel, req, timeout);
         try {
             channel.send(req);
         } catch (RemotingException e) {
@@ -221,13 +223,23 @@ final class HeaderExchangeChannel implements ExchangeChannel {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null) return false;
-        if (getClass() != obj.getClass()) return false;
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
         HeaderExchangeChannel other = (HeaderExchangeChannel) obj;
         if (channel == null) {
-            if (other.channel != null) return false;
-        } else if (!channel.equals(other.channel)) return false;
+            if (other.channel != null) {
+                return false;
+            }
+        } else if (!channel.equals(other.channel)) {
+            return false;
+        }
         return true;
     }
 

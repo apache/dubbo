@@ -21,6 +21,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.api.DemoService;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -66,19 +67,9 @@ public class AnnotationPropertyValuesAdapterTest {
 
         DefaultConversionService conversionService = new DefaultConversionService();
 
-        conversionService.addConverter(new Converter<String[], String>() {
-            @Override
-            public String convert(String[] source) {
-                return arrayToCommaDelimitedString(source);
-            }
-        });
+        conversionService.addConverter((Converter<String[], String>) source -> arrayToCommaDelimitedString(source));
 
-        conversionService.addConverter(new Converter<String[], Map<String, String>>() {
-            @Override
-            public Map<String, String> convert(String[] source) {
-                return CollectionUtils.toStringMap(source);
-            }
-        });
+        conversionService.addConverter((Converter<String[], Map<String, String>>) source -> CollectionUtils.toStringMap(source));
 
 
         dataBinder.setConversionService(conversionService);
@@ -95,7 +86,7 @@ public class AnnotationPropertyValuesAdapterTest {
         Assert.assertEquals("dubbo://localhost:12345", referenceBean.getUrl());
         Assert.assertEquals("client", referenceBean.getClient());
         Assert.assertEquals(true, referenceBean.isGeneric());
-        Assert.assertEquals(true, referenceBean.isInjvm());
+        Assert.assertNull(referenceBean.isInjvm());
         Assert.assertEquals(false, referenceBean.isCheck());
         Assert.assertEquals(true, referenceBean.isInit());
         Assert.assertEquals(true, referenceBean.getLazy());
@@ -113,7 +104,7 @@ public class AnnotationPropertyValuesAdapterTest {
         Assert.assertEquals("ondisconnect", referenceBean.getOndisconnect());
         Assert.assertEquals("owner", referenceBean.getOwner());
         Assert.assertEquals("layer", referenceBean.getLayer());
-        Assert.assertEquals(Integer.valueOf(2), referenceBean.getRetries());
+        Assert.assertEquals(Integer.valueOf(1), referenceBean.getRetries());
         Assert.assertEquals("random", referenceBean.getLoadbalance());
         Assert.assertEquals(true, referenceBean.isAsync());
         Assert.assertEquals(Integer.valueOf(1), referenceBean.getActives());
@@ -124,34 +115,33 @@ public class AnnotationPropertyValuesAdapterTest {
         Assert.assertEquals("cache", referenceBean.getCache());
         Assert.assertEquals("default,default", referenceBean.getFilter());
         Assert.assertEquals("default,default", referenceBean.getListener());
-        Assert.assertEquals("protocol", referenceBean.getProtocol());
 
         Map<String, String> data = new LinkedHashMap<String, String>();
         data.put("key1", "value1");
 
         Assert.assertEquals(data, referenceBean.getParameters());
         // Bean compare
-        Assert.assertEquals(null, referenceBean.getApplication());
-        Assert.assertEquals(null, referenceBean.getModule());
-        Assert.assertEquals(null, referenceBean.getConsumer());
-        Assert.assertEquals(null, referenceBean.getMonitor());
-        Assert.assertEquals(null, referenceBean.getRegistry());
+        Assert.assertNull(referenceBean.getApplication());
+        Assert.assertNull(referenceBean.getModule());
+        Assert.assertNull(referenceBean.getConsumer());
+        Assert.assertNull(referenceBean.getMonitor());
+        Assert.assertNull(referenceBean.getRegistry());
 
     }
 
     private static class TestBean {
 
         @Reference(
-                interfaceClass = DemoService.class, interfaceName = "org.apache.dubbo.config.spring.api.DemoService", version = "${version}", group = "group",
+                interfaceClass = DemoService.class, interfaceName = "com.alibaba.dubbo.config.spring.api.DemoService", version = "${version}", group = "group",
                 url = "${url}  ", client = "client", generic = true, injvm = true,
                 check = false, init = true, lazy = true, stubevent = true,
                 reconnect = "reconnect", sticky = true, proxy = "javassist", stub = "stub",
                 cluster = "failover", connections = 1, callbacks = 1, onconnect = "onconnect",
-                ondisconnect = "ondisconnect", owner = "owner", layer = "layer", retries = 2,
+                ondisconnect = "ondisconnect", owner = "owner", layer = "layer", retries = 1,
                 loadbalance = "random", async = true, actives = 1, sent = true,
                 mock = "mock", validation = "validation", timeout = 2, cache = "cache",
                 filter = {"default", "default"}, listener = {"default", "default"}, parameters = {"key1", "value1"}, application = "application",
-                module = "module", consumer = "consumer", monitor = "monitor", registry = {"registry1", "registry2"}, protocol = "protocol"
+                module = "module", consumer = "consumer", monitor = "monitor", registry = {"registry1", "registry2"}
         )
         private DemoService demoService;
 

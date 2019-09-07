@@ -26,12 +26,12 @@ import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoService;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
@@ -41,11 +41,11 @@ import static org.mockito.Mockito.mock;
 public class PortTelnetHandlerTest {
 
     private static TelnetHandler port = new PortTelnetHandler();
-    private Invoker<DemoService> mockInvoker;
+    private static Invoker<DemoService> mockInvoker;
 
     @SuppressWarnings("unchecked")
-    @Before
-    public void before() {
+    @BeforeAll
+    public static void before() {
         mockInvoker = mock(Invoker.class);
         given(mockInvoker.getInterface()).willReturn(DemoService.class);
         given(mockInvoker.getUrl()).willReturn(URL.valueOf("dubbo://127.0.0.1:20887/demo"));
@@ -53,8 +53,8 @@ public class PortTelnetHandlerTest {
         DubboProtocol.getDubboProtocol().export(mockInvoker);
     }
 
-    @After
-    public void after() {
+    @AfterAll
+    public static void after() {
         ProtocolUtils.closeAll();
     }
 

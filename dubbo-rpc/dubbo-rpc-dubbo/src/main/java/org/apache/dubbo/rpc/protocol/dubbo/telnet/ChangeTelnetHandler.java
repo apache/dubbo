@@ -38,10 +38,10 @@ public class ChangeTelnetHandler implements TelnetHandler {
             return "Please input service name, eg: \r\ncd XxxService\r\ncd com.xxx.XxxService";
         }
         StringBuilder buf = new StringBuilder();
-        if (message.equals("/") || message.equals("..")) {
+        if ("/".equals(message) || "..".equals(message)) {
             String service = (String) channel.getAttribute(SERVICE_KEY);
             channel.removeAttribute(SERVICE_KEY);
-            buf.append("Cancelled default service " + service + ".");
+            buf.append("Cancelled default service ").append(service).append(".");
         } else {
             boolean found = false;
             for (Exporter<?> exporter : DubboProtocol.getDubboProtocol().getExporters()) {
@@ -54,9 +54,9 @@ public class ChangeTelnetHandler implements TelnetHandler {
             }
             if (found) {
                 channel.setAttribute(SERVICE_KEY, message);
-                buf.append("Used the " + message + " as default.\r\nYou can cancel default service by command: cd /");
+                buf.append("Used the ").append(message).append(" as default.\r\nYou can cancel default service by command: cd /");
             } else {
-                buf.append("No such service " + message);
+                buf.append("No such service ").append(message);
             }
         }
         return buf.toString();

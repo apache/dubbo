@@ -16,9 +16,7 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.apache.dubbo.common.Constants;
-import org.hamcrest.Matchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,15 +24,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertFalse;
-import static junit.framework.TestCase.assertTrue;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class StringUtilsTest {
     @Test
@@ -112,6 +113,30 @@ public class StringUtilsTest {
     }
 
     @Test
+    public void testIsNoneEmpty() throws Exception {
+        assertFalse(StringUtils.isNoneEmpty(null));
+        assertFalse(StringUtils.isNoneEmpty(""));
+        assertTrue(StringUtils.isNoneEmpty(" "));
+        assertTrue(StringUtils.isNoneEmpty("abc"));
+        assertTrue(StringUtils.isNoneEmpty("abc", "def"));
+        assertFalse(StringUtils.isNoneEmpty("abc", null));
+        assertFalse(StringUtils.isNoneEmpty("abc", ""));
+        assertTrue(StringUtils.isNoneEmpty("abc", " "));
+    }
+
+    @Test
+    public void testIsAnyEmpty() throws Exception {
+        assertTrue(StringUtils.isAnyEmpty(null));
+        assertTrue(StringUtils.isAnyEmpty(""));
+        assertFalse(StringUtils.isAnyEmpty(" "));
+        assertFalse(StringUtils.isAnyEmpty("abc"));
+        assertFalse(StringUtils.isAnyEmpty("abc", "def"));
+        assertTrue(StringUtils.isAnyEmpty("abc", null));
+        assertTrue(StringUtils.isAnyEmpty("abc", ""));
+        assertFalse(StringUtils.isAnyEmpty("abc", " "));
+    }
+
+    @Test
     public void testIsNotEmpty() throws Exception {
         assertFalse(StringUtils.isNotEmpty(null));
         assertFalse(StringUtils.isNotEmpty(""));
@@ -169,9 +194,9 @@ public class StringUtilsTest {
     @Test
     public void testGetServiceKey() throws Exception {
         Map<String, String> map = new HashMap<String, String>();
-        map.put(Constants.GROUP_KEY, "dubbo");
-        map.put(Constants.INTERFACE_KEY, "a.b.c.Foo");
-        map.put(Constants.VERSION_KEY, "1.0.0");
+        map.put(GROUP_KEY, "dubbo");
+        map.put(INTERFACE_KEY, "a.b.c.Foo");
+        map.put(VERSION_KEY, "1.0.0");
         assertThat(StringUtils.getServiceKey(map), equalTo("dubbo/a.b.c.Foo:1.0.0"));
     }
 
@@ -200,10 +225,10 @@ public class StringUtilsTest {
     }
 
     @Test
-    public void testTranslat() throws Exception {
+    public void testTranslate() throws Exception {
         String s = "16314";
-        assertEquals(StringUtils.translat(s, "123456", "abcdef"), "afcad");
-        assertEquals(StringUtils.translat(s, "123456", "abcd"), "acad");
+        assertEquals(StringUtils.translate(s, "123456", "abcdef"), "afcad");
+        assertEquals(StringUtils.translate(s, "123456", "abcd"), "acad");
     }
 
     @Test
@@ -216,9 +241,22 @@ public class StringUtilsTest {
 
     @Test
     public void testIsNumeric() throws Exception {
-        assertThat(StringUtils.isNumeric("123"), is(true));
-        assertThat(StringUtils.isNumeric("1a3"), is(false));
-        assertThat(StringUtils.isNumeric(null), is(false));
+        assertThat(StringUtils.isNumeric("123", false), is(true));
+        assertThat(StringUtils.isNumeric("1a3", false), is(false));
+        assertThat(StringUtils.isNumeric(null, false), is(false));
+
+        assertThat(StringUtils.isNumeric("0", true), is(true));
+        assertThat(StringUtils.isNumeric("0.1", true), is(true));
+        assertThat(StringUtils.isNumeric("DUBBO", true), is(false));
+        assertThat(StringUtils.isNumeric("", true), is(false));
+        assertThat(StringUtils.isNumeric(" ", true), is(false));
+        assertThat(StringUtils.isNumeric("   ", true), is(false));
+
+        assertThat(StringUtils.isNumeric("123.3.3", true), is(false));
+        assertThat(StringUtils.isNumeric("123.", true), is(true));
+        assertThat(StringUtils.isNumeric(".123", true), is(true));
+        assertThat(StringUtils.isNumeric("..123", true), is(false));
+
     }
 
     @Test
@@ -250,4 +288,26 @@ public class StringUtilsTest {
         assertThat(s, containsString("0,"));
         assertThat(s, containsString("{\"enabled\":true}"));
     }
+
+    @Test
+    public void testTrim() {
+        assertEquals("left blank", StringUtils.trim(" left blank"));
+        assertEquals("right blank", StringUtils.trim("right blank "));
+        assertEquals("bi-side blank", StringUtils.trim(" bi-side blank "));
+    }
+
+    @Test
+    public void testToURLKey() {
+        assertEquals("dubbo.tag1", StringUtils.toURLKey("dubbo_tag1"));
+        assertEquals("dubbo.tag1.tag11", StringUtils.toURLKey("dubbo-tag1_tag11"));
+    }
+
+    @Test
+    public void testToOSStyleKey() {
+        assertEquals("DUBBO_TAG1", StringUtils.toOSStyleKey("dubbo_tag1"));
+        assertEquals("DUBBO_TAG1", StringUtils.toOSStyleKey("dubbo.tag1"));
+        assertEquals("DUBBO_TAG1_TAG11", StringUtils.toOSStyleKey("dubbo.tag1.tag11"));
+        assertEquals("DUBBO_TAG1", StringUtils.toOSStyleKey("tag1"));
+    }
+
 }

@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.http.tomcat;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -30,6 +29,10 @@ import org.apache.catalina.LifecycleException;
 import org.apache.catalina.startup.Tomcat;
 
 import java.io.File;
+
+import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_THREADS;
+import static org.apache.dubbo.remoting.Constants.ACCEPTS_KEY;
 
 public class TomcatHttpServer extends AbstractHttpServer {
 
@@ -49,12 +52,12 @@ public class TomcatHttpServer extends AbstractHttpServer {
         tomcat.setBaseDir(baseDir);
         tomcat.setPort(url.getPort());
         tomcat.getConnector().setProperty(
-                "maxThreads", String.valueOf(url.getParameter(Constants.THREADS_KEY, Constants.DEFAULT_THREADS)));
+                "maxThreads", String.valueOf(url.getParameter(THREADS_KEY, DEFAULT_THREADS)));
 //        tomcat.getConnector().setProperty(
 //                "minSpareThreads", String.valueOf(url.getParameter(Constants.THREADS_KEY, Constants.DEFAULT_THREADS)));
 
         tomcat.getConnector().setProperty(
-                "maxConnections", String.valueOf(url.getParameter(Constants.ACCEPTS_KEY, -1)));
+                "maxConnections", String.valueOf(url.getParameter(ACCEPTS_KEY, -1)));
 
         tomcat.getConnector().setProperty("URIEncoding", "UTF-8");
         tomcat.getConnector().setProperty("connectionTimeout", "60000");
@@ -66,6 +69,9 @@ public class TomcatHttpServer extends AbstractHttpServer {
         Tomcat.addServlet(context, "dispatcher", new DispatcherServlet());
         context.addServletMapping("/*", "dispatcher");
         ServletManager.getInstance().addServletContext(url.getPort(), context.getServletContext());
+
+        // tell tomcat to fail on startup failures.
+        System.setProperty("org.apache.catalina.startup.EXIT_ON_INIT_FAILURE", "true");
 
         try {
             tomcat.start();

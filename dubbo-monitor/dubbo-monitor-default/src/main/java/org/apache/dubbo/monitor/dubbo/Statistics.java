@@ -140,48 +140,65 @@ public class Statistics implements Serializable {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         Statistics other = (Statistics) obj;
         if (application == null) {
-            if (other.application != null)
+            if (other.application != null) {
                 return false;
-        } else if (!application.equals(other.application))
+            }
+        } else if (!application.equals(other.application)) {
             return false;
+        }
         if (client == null) {
-            if (other.client != null)
+            if (other.client != null) {
                 return false;
-        } else if (!client.equals(other.client))
+            }
+        } else if (!client.equals(other.client)) {
             return false;
+        }
         if (group == null) {
-            if (other.group != null)
+            if (other.group != null) {
                 return false;
-        } else if (!group.equals(other.group))
+            }
+        } else if (!group.equals(other.group)) {
             return false;
+        }
         if (method == null) {
-            if (other.method != null)
+            if (other.method != null) {
                 return false;
-        } else if (!method.equals(other.method))
+            }
+        } else if (!method.equals(other.method)) {
             return false;
+        }
         if (server == null) {
-            if (other.server != null)
+            if (other.server != null) {
                 return false;
-        } else if (!server.equals(other.server))
+            }
+        } else if (!server.equals(other.server)) {
             return false;
+        }
         if (service == null) {
-            if (other.service != null)
+            if (other.service != null) {
                 return false;
-        } else if (!service.equals(other.service))
+            }
+        } else if (!service.equals(other.service)) {
             return false;
+        }
         if (version == null) {
-            if (other.version != null)
+            if (other.version != null) {
                 return false;
-        } else if (!version.equals(other.version))
+            }
+        } else if (!version.equals(other.version)) {
             return false;
+        }
         return true;
     }
 

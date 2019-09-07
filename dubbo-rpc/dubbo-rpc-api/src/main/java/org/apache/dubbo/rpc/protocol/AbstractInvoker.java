@@ -16,19 +16,20 @@
  */
 package org.apache.dubbo.rpc.protocol;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ArrayUtils;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -63,17 +64,19 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
     }
 
     public AbstractInvoker(Class<T> type, URL url, Map<String, String> attachment) {
-        if (type == null)
+        if (type == null) {
             throw new IllegalArgumentException("service type == null");
-        if (url == null)
+        }
+        if (url == null) {
             throw new IllegalArgumentException("service url == null");
+        }
         this.type = type;
         this.url = url;
         this.attachment = attachment == null ? null : Collections.unmodifiableMap(attachment);
     }
 
     private static Map<String, String> convertAttachment(URL url, String[] keys) {
-        if (keys == null || keys.length == 0) {
+        if (ArrayUtils.isEmpty(keys)) {
             return null;
         }
         Map<String, String> attachment = new HashMap<String, String>();
@@ -124,18 +127,18 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
 
     @Override
     public Result invoke(Invocation inv) throws RpcException {
+        // if invoker is destroyed due to address refresh from registry, let's allow the current invoke to proceed
         if (destroyed.get()) {
-            throw new RpcException("Rpc invoker for service " + this + " on consumer " + NetUtils.getLocalHost()
-                    + " use dubbo version " + Version.getVersion()
-                    + " is DESTROYED, can not be invoked any more!");
+            logger.warn("Invoker for service " + this + " on consumer " + NetUtils.getLocalHost() + " is destroyed, "
+                    + ", dubbo version is " + Version.getVersion() + ", this invoker should not be used any longer");
         }
         RpcInvocation invocation = (RpcInvocation) inv;
         invocation.setInvoker(this);
-        if (attachment != null && attachment.size() > 0) {
+        if (CollectionUtils.isNotEmptyMap(attachment)) {
             invocation.addAttachmentsIfAbsent(attachment);
         }
         Map<String, String> contextAttachments = RpcContext.getContext().getAttachments();
-        if (contextAttachments != null && contextAttachments.size() != 0) {
+        if (CollectionUtils.isNotEmptyMap(contextAttachments)) {
             /**
              * invocation.addAttachmentsIfAbsent(context){@link RpcInvocation#addAttachmentsIfAbsent(Map)}should not be used here,
              * because the {@link RpcContext#setAttachment(String, String)} is passed in the Filter when the call is triggered
@@ -144,32 +147,30 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
              */
             invocation.addAttachments(contextAttachments);
         }
-        if (getUrl().getMethodParameter(invocation.getMethodName(), Constants.ASYNC_KEY, false)) {
-            invocation.setAttachment(Constants.ASYNC_KEY, Boolean.TRUE.toString());
-        }
-        RpcUtils.attachInvocationIdIfAsync(getUrl(), invocation);
 
+        invocation.setInvokeMode(RpcUtils.getInvokeMode(url, invocation));
+        RpcUtils.attachInvocationIdIfAsync(getUrl(), invocation);
 
         try {
             return doInvoke(invocation);
         } catch (InvocationTargetException e) { // biz exception
             Throwable te = e.getTargetException();
             if (te == null) {
-                return new RpcResult(e);
+                return AsyncRpcResult.newDefaultAsyncResult(null, e, invocation);
             } else {
                 if (te instanceof RpcException) {
                     ((RpcException) te).setCode(RpcException.BIZ_EXCEPTION);
                 }
-                return new RpcResult(te);
+                return AsyncRpcResult.newDefaultAsyncResult(null, te, invocation);
             }
         } catch (RpcException e) {
             if (e.isBiz()) {
-                return new RpcResult(e);
+                return AsyncRpcResult.newDefaultAsyncResult(null, e, invocation);
             } else {
                 throw e;
             }
         } catch (Throwable e) {
-            return new RpcResult(e);
+            return AsyncRpcResult.newDefaultAsyncResult(null, e, invocation);
         }
     }
 

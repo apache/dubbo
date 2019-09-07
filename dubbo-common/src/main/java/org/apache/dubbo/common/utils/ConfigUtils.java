@@ -16,11 +16,12 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
@@ -32,6 +33,10 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REMOVE_VALUE_PREFIX;
 
 public class ConfigUtils {
 
@@ -49,7 +54,7 @@ public class ConfigUtils {
     }
 
     public static boolean isEmpty(String value) {
-        return value == null || value.length() == 0
+        return StringUtils.isEmpty(value)
                 || "false".equalsIgnoreCase(value)
                 || "0".equalsIgnoreCase(value)
                 || "null".equalsIgnoreCase(value)
@@ -87,7 +92,7 @@ public class ConfigUtils {
         List<String> names = new ArrayList<String>();
 
         // add initial values
-        String[] configs = (cfg == null || cfg.trim().length() == 0) ? new String[0] : Constants.COMMA_SPLIT_PATTERN.split(cfg);
+        String[] configs = (cfg == null || cfg.trim().length() == 0) ? new String[0] : COMMA_SPLIT_PATTERN.split(cfg);
         for (String config : configs) {
             if (config != null && config.trim().length() > 0) {
                 names.add(config);
@@ -95,22 +100,22 @@ public class ConfigUtils {
         }
 
         // -default is not included
-        if (!names.contains(Constants.REMOVE_VALUE_PREFIX + Constants.DEFAULT_KEY)) {
+        if (!names.contains(REMOVE_VALUE_PREFIX + DEFAULT_KEY)) {
             // add default extension
-            int i = names.indexOf(Constants.DEFAULT_KEY);
+            int i = names.indexOf(DEFAULT_KEY);
             if (i > 0) {
                 names.addAll(i, defaults);
             } else {
                 names.addAll(0, defaults);
             }
-            names.remove(Constants.DEFAULT_KEY);
+            names.remove(DEFAULT_KEY);
         } else {
-            names.remove(Constants.DEFAULT_KEY);
+            names.remove(DEFAULT_KEY);
         }
 
         // merge - configuration
         for (String name : new ArrayList<String>(names)) {
-            if (name.startsWith(Constants.REMOVE_VALUE_PREFIX)) {
+            if (name.startsWith(REMOVE_VALUE_PREFIX)) {
                 names.remove(name);
                 names.remove(name.substring(1));
             }
@@ -143,11 +148,11 @@ public class ConfigUtils {
         if (PROPERTIES == null) {
             synchronized (ConfigUtils.class) {
                 if (PROPERTIES == null) {
-                    String path = System.getProperty(Constants.DUBBO_PROPERTIES_KEY);
+                    String path = System.getProperty(CommonConstants.DUBBO_PROPERTIES_KEY);
                     if (path == null || path.length() == 0) {
-                        path = System.getenv(Constants.DUBBO_PROPERTIES_KEY);
+                        path = System.getenv(CommonConstants.DUBBO_PROPERTIES_KEY);
                         if (path == null || path.length() == 0) {
-                            path = Constants.DEFAULT_DUBBO_PROPERTIES;
+                            path = CommonConstants.DEFAULT_DUBBO_PROPERTIES;
                         }
                     }
                     PROPERTIES = ConfigUtils.loadProperties(path, false, true);
@@ -189,7 +194,7 @@ public class ConfigUtils {
      */
     public static String getSystemProperty(String key) {
         String value = System.getenv(key);
-        if (value == null || value.length() == 0) {
+        if (StringUtils.isEmpty(value)) {
             value = System.getProperty(key);
         }
         return value;
@@ -213,11 +218,12 @@ public class ConfigUtils {
      * <li>return empty Properties if no file found.
      * <li>merge multi properties file if found multi file
      * </ul>
-     * @throws IllegalStateException not allow multi-file, but multi-file exsit on class path.
+     * @throws IllegalStateException not allow multi-file, but multi-file exist on class path.
      */
     public static Properties loadProperties(String fileName, boolean allowMultiFile, boolean optional) {
         Properties properties = new Properties();
-        if (fileName.startsWith("/")) {
+        // add scene judgement in windows environment Fix 2557
+        if (checkFileNameExist(fileName)) {
             try {
                 FileInputStream input = new FileInputStream(fileName);
                 try {
@@ -233,7 +239,7 @@ public class ConfigUtils {
 
         List<java.net.URL> list = new ArrayList<java.net.URL>();
         try {
-            Enumeration<java.net.URL> urls = ClassHelper.getClassLoader().getResources(fileName);
+            Enumeration<java.net.URL> urls = ClassUtils.getClassLoader().getResources(fileName);
             list = new ArrayList<java.net.URL>();
             while (urls.hasMoreElements()) {
                 list.add(urls.nextElement());
@@ -259,7 +265,7 @@ public class ConfigUtils {
 
             // fall back to use method getResourceAsStream
             try {
-                properties.load(ClassHelper.getClassLoader().getResourceAsStream(fileName));
+                properties.load(ClassUtils.getClassLoader().getResourceAsStream(fileName));
             } catch (Throwable e) {
                 logger.warn("Failed to load " + fileName + " file from " + fileName + "(ignore this file): " + e.getMessage(), e);
             }
@@ -291,6 +297,18 @@ public class ConfigUtils {
         return properties;
     }
 
+    /**
+     * check if the fileName can be found in filesystem
+     *
+     * @param fileName
+     * @return
+     */
+    private static boolean checkFileNameExist(String fileName) {
+        File file = new File(fileName);
+        return file.exists();
+    }
+
+
     public static int getPid() {
         if (PID < 0) {
             try {
@@ -303,29 +321,4 @@ public class ConfigUtils {
         }
         return PID;
     }
-
-    @SuppressWarnings("deprecation")
-    public static int getServerShutdownTimeout() {
-        int timeout = Constants.DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
-        String value = ConfigUtils.getProperty(Constants.SHUTDOWN_WAIT_KEY);
-        if (value != null && value.length() > 0) {
-            try {
-                timeout = Integer.parseInt(value);
-            } catch (Exception e) {
-                // ignore
-            }
-        } else {
-            value = ConfigUtils.getProperty(Constants.SHUTDOWN_WAIT_SECONDS_KEY);
-            if (value != null && value.length() > 0) {
-                try {
-                    timeout = Integer.parseInt(value) * 1000;
-                } catch (Exception e) {
-                    // ignore
-                }
-            }
-        }
-
-        return timeout;
-    }
-
 }

@@ -18,6 +18,7 @@ package org.apache.dubbo.remoting.transport;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 
@@ -42,7 +43,7 @@ public class ChannelHandlerDispatcher implements ChannelHandler {
     }
 
     public ChannelHandlerDispatcher(Collection<ChannelHandler> handlers) {
-        if (handlers != null && !handlers.isEmpty()) {
+        if (CollectionUtils.isNotEmpty(handlers)) {
             this.channelHandlers.addAll(handlers);
         }
     }

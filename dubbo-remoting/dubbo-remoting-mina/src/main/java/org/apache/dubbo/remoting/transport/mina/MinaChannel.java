@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.transport.mina;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -28,6 +27,9 @@ import org.apache.mina.common.IoSession;
 import org.apache.mina.common.WriteFuture;
 
 import java.net.InetSocketAddress;
+
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 
 /**
  * MinaChannel
@@ -96,7 +98,7 @@ final class MinaChannel extends AbstractChannel {
         try {
             WriteFuture future = session.write(message);
             if (sent) {
-                timeout = getUrl().getPositiveParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
+                timeout = getUrl().getPositiveParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT);
                 success = future.join(timeout);
             }
         } catch (Throwable e) {
@@ -161,13 +163,23 @@ final class MinaChannel extends AbstractChannel {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null) return false;
-        if (getClass() != obj.getClass()) return false;
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
         MinaChannel other = (MinaChannel) obj;
         if (session == null) {
-            if (other.session != null) return false;
-        } else if (!session.equals(other.session)) return false;
+            if (other.session != null) {
+                return false;
+            }
+        } else if (!session.equals(other.session)) {
+            return false;
+        }
         return true;
     }
 

@@ -25,6 +25,9 @@ import org.nustaq.serialization.FSTObjectOutput;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+/**
+ * Fst object input/output factory
+ */
 public class FstFactory {
 
     private static final FstFactory factory = new FstFactory();
@@ -37,9 +40,7 @@ public class FstFactory {
     }
 
     public FstFactory() {
-        for (Class clazz : SerializableClassRegistry.getRegisteredClasses()) {
-            conf.registerClass(clazz);
-        }
+        SerializableClassRegistry.getRegisteredClasses().keySet().forEach(conf::registerClass);
     }
 
     public FSTObjectOutput getObjectOutput(OutputStream outputStream) {

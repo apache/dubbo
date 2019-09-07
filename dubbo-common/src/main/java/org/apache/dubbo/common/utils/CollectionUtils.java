@@ -55,7 +55,7 @@ public class CollectionUtils {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     public static <T> List<T> sort(List<T> list) {
-        if (list != null && !list.isEmpty()) {
+        if (isNotEmpty(list)) {
             Collections.sort((List) list);
         }
         return list;
@@ -72,7 +72,7 @@ public class CollectionUtils {
         if (list == null) {
             return null;
         }
-        Map<String, Map<String, String>> result = new HashMap<String, Map<String, String>>();
+        Map<String, Map<String, String>> result = new HashMap<>();
         for (Map.Entry<String, List<String>> entry : list.entrySet()) {
             result.put(entry.getKey(), split(entry.getValue(), separator));
         }
@@ -83,7 +83,7 @@ public class CollectionUtils {
         if (map == null) {
             return null;
         }
-        Map<String, List<String>> result = new HashMap<String, List<String>>();
+        Map<String, List<String>> result = new HashMap<>();
         for (Map.Entry<String, Map<String, String>> entry : map.entrySet()) {
             result.put(entry.getKey(), join(entry.getValue(), separator));
         }
@@ -94,7 +94,7 @@ public class CollectionUtils {
         if (list == null) {
             return null;
         }
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         if (list.isEmpty()) {
             return map;
         }
@@ -113,14 +113,14 @@ public class CollectionUtils {
         if (map == null) {
             return null;
         }
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         if (map.size() == 0) {
             return list;
         }
         for (Map.Entry<String, String> entry : map.entrySet()) {
             String key = entry.getKey();
             String value = entry.getValue();
-            if (value == null || value.length() == 0) {
+            if (StringUtils.isEmpty(value)) {
                 list.add(key);
             } else {
                 list.add(key + separator + value);
@@ -172,7 +172,7 @@ public class CollectionUtils {
     }
 
     public static Map<String, String> toStringMap(String... pairs) {
-        Map<String, String> parameters = new HashMap<String, String>();
+        Map<String, String> parameters = new HashMap<>();
         if (pairs.length > 0) {
             if (pairs.length % 2 != 0) {
                 throw new IllegalArgumentException("pairs must be even.");
@@ -186,8 +186,10 @@ public class CollectionUtils {
 
     @SuppressWarnings("unchecked")
     public static <K, V> Map<K, V> toMap(Object... pairs) {
-        Map<K, V> ret = new HashMap<K, V>();
-        if (pairs == null || pairs.length == 0) return ret;
+        Map<K, V> ret = new HashMap<>();
+        if (pairs == null || pairs.length == 0) {
+            return ret;
+        }
 
         if (pairs.length % 2 != 0) {
             throw new IllegalArgumentException("Map pairs can not be odd number.");
@@ -204,7 +206,15 @@ public class CollectionUtils {
     }
 
     public static boolean isNotEmpty(Collection<?> collection) {
-        return collection != null && !collection.isEmpty();
+        return !isEmpty(collection);
+    }
+
+    public static boolean isEmptyMap(Map map) {
+        return map == null || map.size() == 0;
+    }
+
+    public static boolean isNotEmptyMap(Map map) {
+        return !isEmptyMap(map);
     }
 
 }

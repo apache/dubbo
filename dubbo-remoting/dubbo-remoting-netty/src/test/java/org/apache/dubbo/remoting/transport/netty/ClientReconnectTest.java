@@ -16,31 +16,26 @@
  */
 package org.apache.dubbo.remoting.transport.netty;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.utils.DubboAppender;
-import org.apache.dubbo.common.utils.LogUtil;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.Client;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.Server;
 import org.apache.dubbo.remoting.exchange.Exchangers;
 import org.apache.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
 
-import org.apache.log4j.Level;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Client reconnect test
  */
 public class ClientReconnectTest {
-    public static void main(String[] args) {
-        System.out.println(3 % 1);
-    }
 
-    @Before
+    @BeforeEach
     public void clear() {
         DubboAppender.clear();
     }
@@ -50,54 +45,32 @@ public class ClientReconnectTest {
         {
             int port = NetUtils.getAvailablePort();
             Client client = startClient(port, 200);
-            Assert.assertEquals(false, client.isConnected());
+            Assertions.assertFalse(client.isConnected());
             Server server = startServer(port);
             for (int i = 0; i < 100 && !client.isConnected(); i++) {
                 Thread.sleep(10);
             }
-            Assert.assertEquals(true, client.isConnected());
+            Assertions.assertTrue(client.isConnected());
             client.close(2000);
             server.close(2000);
         }
         {
             int port = NetUtils.getAvailablePort();
             Client client = startClient(port, 20000);
-            Assert.assertEquals(false, client.isConnected());
+            Assertions.assertFalse(client.isConnected());
             Server server = startServer(port);
             for (int i = 0; i < 5; i++) {
                 Thread.sleep(200);
             }
-            Assert.assertEquals(false, client.isConnected());
+            Assertions.assertFalse(client.isConnected());
             client.close(2000);
             server.close(2000);
         }
     }
 
-    /**
-     * Reconnect log check, when the time is not enough for shutdown time, there is no error log, but there must be a warn log
-     */
-    @Test
-    public void testReconnectWarnLog() throws RemotingException, InterruptedException {
-        int port = NetUtils.getAvailablePort();
-        DubboAppender.doStart();
-        String url = "exchange://127.0.0.2:" + port + "/client.reconnect.test?check=false&client=netty3&"
-                + Constants.RECONNECT_KEY + "=" + 1; //1ms reconnect, ensure that there is enough frequency to reconnect
-        try {
-            Exchangers.connect(url);
-        } catch (Exception e) {
 
-            //do nothing
-        }
-        Thread.sleep(1500);
-        //Time is not long enough to produce a error log
-        Assert.assertEquals("no error message ", 0, LogUtil.findMessage(Level.ERROR, "client reconnect to "));
-        //The first reconnection failed to have a warn log
-        Assert.assertEquals("must have one warn message ", 1, LogUtil.findMessage(Level.WARN, "client reconnect to "));
-        DubboAppender.doStop();
-    }
-
-    public Client startClient(int port, int reconnectPeriod) throws RemotingException {
-        final String url = "exchange://127.0.0.1:" + port + "/client.reconnect.test?check=false&client=netty3&" + Constants.RECONNECT_KEY + "=" + reconnectPeriod;
+    public Client startClient(int port, int heartbeat) throws RemotingException {
+        final String url = "exchange://127.0.0.1:" + port + "/client.reconnect.test?check=false&client=netty3&" + Constants.HEARTBEAT_KEY + "=" + heartbeat;
         return Exchangers.connect(url);
     }
 
