@@ -48,8 +48,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.REMOVE_VALUE_PRE
 
 /**
  * Utility methods and public methods for parsing configuration
- *
- * @export
  */
 public abstract class AbstractConfig implements Serializable {
 
@@ -99,12 +97,18 @@ public abstract class AbstractConfig implements Serializable {
     /**
      * The legacy properties container
      */
-    private static final Map<String, String> LEGACY_PROPERTIES = new HashMap<String, String>();
+    private static final Map<String, String> LEGACY_PROPERTIES = new HashMap<>();
 
     /**
      * The suffix container
      */
     private static final String[] SUFFIXES = new String[]{"Config", "Bean"};
+
+    /**
+     * The config id
+     */
+    protected String id;
+    protected String prefix;
 
     static {
         LEGACY_PROPERTIES.put("dubbo.protocol.name", "dubbo.service.protocol");
@@ -118,23 +122,6 @@ public abstract class AbstractConfig implements Serializable {
 
         // this is only for compatibility
         DubboShutdownHook.getDubboShutdownHook().register();
-    }
-
-    /**
-     * The config id
-     */
-    protected String id;
-    protected String prefix;
-
-    private static String convertLegacyValue(String key, String value) {
-        if (value != null && value.length() > 0) {
-            if ("dubbo.service.max.retry.providers".equals(key)) {
-                return String.valueOf(Integer.parseInt(value) - 1);
-            } else if ("dubbo.service.allow.no.provider".equals(key)) {
-                return String.valueOf(!Boolean.parseBoolean(value));
-            }
-        }
-        return value;
     }
 
     private static String getTagName(Class<?> cls) {
@@ -630,21 +617,24 @@ public abstract class AbstractConfig implements Serializable {
 
         Method[] methods = this.getClass().getMethods();
         for (Method method1 : methods) {
-            if (MethodUtils.isGetter(method1)) {
-                Parameter parameter = method1.getAnnotation(Parameter.class);
-                if (parameter != null && parameter.excluded()) {
-                    continue;
+            if (!MethodUtils.isGetter(method1)) {
+                continue;
+            }
+
+            Parameter parameter = method1.getAnnotation(Parameter.class);
+            if (parameter != null && parameter.excluded()) {
+                continue;
+            }
+
+            try {
+                Method method2 = obj.getClass().getMethod(method1.getName(), method1.getParameterTypes());
+                Object value1 = method1.invoke(this);
+                Object value2 = method2.invoke(obj, new Object());
+                if (!(value1 == null || value2 == null || value1.equals(value2))) {
+                    return false;
                 }
-                try {
-                    Method method2 = obj.getClass().getMethod(method1.getName(), method1.getParameterTypes());
-                    Object value1 = method1.invoke(this, new Object[]{});
-                    Object value2 = method2.invoke(obj, new Object[]{});
-                    if ((value1 != null && value2 != null) && !value1.equals(value2)) {
-                        return false;
-                    }
-                } catch (Exception e) {
-                    return true;
-                }
+            } catch (Exception e) {
+                return true;
             }
         }
         return true;

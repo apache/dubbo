@@ -178,15 +178,17 @@ public class RegistryConfig extends AbstractConfig {
 
     public void setAddress(String address) {
         this.address = address;
-        if (address != null) {
-            int i = address.indexOf("://");
-            if (i > 0) {
-                this.updateIdIfAbsent(address.substring(0, i));
-                this.updateProtocolIfAbsent(address.substring(0, i));
-                int port = address.lastIndexOf(":");
-                if (port > 0) {
-                    this.updatePortIfAbsent(StringUtils.parseInteger(address.substring(port + 1)));
-                }
+        if (address == null) {
+            return;
+        }
+
+        int i = address.indexOf("://");
+        if (i > 0) {
+            this.updateIdIfAbsent(address.substring(0, i));
+            this.updateProtocolIfAbsent(address.substring(0, i));
+            int port = address.lastIndexOf(":");
+            if (port > 0) {
+                this.updatePortIfAbsent(StringUtils.parseInteger(address.substring(port + 1)));
             }
         }
     }
@@ -284,9 +286,6 @@ public class RegistryConfig extends AbstractConfig {
 
     public void setTransporter(String transporter) {
         checkName(Constants.TRANSPORTER_KEY, transporter);
-        /*if(transporter != null && transporter.length() > 0 && ! ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(transporter)){
-            throw new IllegalStateException("No such transporter type : " + transporter);
-        }*/
         this.transporter = transporter;
     }
 
@@ -296,9 +295,6 @@ public class RegistryConfig extends AbstractConfig {
 
     public void setServer(String server) {
         checkName(Constants.SERVER_KEY, server);
-        /*if(server != null && server.length() > 0 && ! ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(server)){
-            throw new IllegalStateException("No such server type : " + server);
-        }*/
         this.server = server;
     }
 
@@ -308,9 +304,6 @@ public class RegistryConfig extends AbstractConfig {
 
     public void setClient(String client) {
         checkName(Constants.CLIENT_KEY, client);
-        /*if(client != null && client.length() > 0 && ! ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(client)){
-            throw new IllegalStateException("No such client type : " + client);
-        }*/
         this.client = client;
     }
 
