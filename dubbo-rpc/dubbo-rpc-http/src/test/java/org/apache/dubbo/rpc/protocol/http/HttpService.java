@@ -16,10 +16,12 @@
  */
 package org.apache.dubbo.rpc.protocol.http;
 
-public interface JsonRpcService {
+public interface HttpService {
     String sayHello(String name);
 
     void timeOut(int millis);
 
     String customException();
+
+    String getRemoteApplicationName();
 }
