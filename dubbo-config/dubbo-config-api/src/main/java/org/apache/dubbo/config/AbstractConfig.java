@@ -493,13 +493,12 @@ public abstract class AbstractConfig implements Serializable {
             try {
                 String name = method.getName();
                 if (MethodUtils.isMetaMethod(method)) {
-                    String prop = calculateAttributeFromGetter(name);
                     String key;
                     Parameter parameter = method.getAnnotation(Parameter.class);
                     if (parameter != null && parameter.key().length() > 0 && parameter.useKeyAsProperty()) {
                         key = parameter.key();
                     } else {
-                        key = prop;
+                        key = calculateAttributeFromGetter(name);
                     }
                     // treat url and configuration differently, the value should always present in configuration though it may not need to present in url.
                     //if (method.getReturnType() == Object.class || parameter != null && parameter.excluded()) {
@@ -507,6 +506,14 @@ public abstract class AbstractConfig implements Serializable {
                         metaData.put(key, null);
                         continue;
                     }
+
+                    /**
+                     * Attributes annotated as deprecated should not override newly added replacement.
+                     */
+                    if (MethodUtils.isDeprecated(method) && metaData.get(key) != null) {
+                        continue;
+                    }
+
                     Object value = method.invoke(this);
                     String str = String.valueOf(value).trim();
                     if (value != null && str.length() > 0) {

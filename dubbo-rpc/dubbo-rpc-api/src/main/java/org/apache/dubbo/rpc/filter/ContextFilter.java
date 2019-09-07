@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.filter;
 
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ListenableFilter;
@@ -72,12 +73,20 @@ public class ContextFilter extends ListenableFilter {
             attachments.remove(TAG_KEY);
             attachments.remove(FORCE_USE_TAG);
         }
-        RpcContext.getContext()
-                .setInvoker(invoker)
+        RpcContext context = RpcContext.getContext();
+
+        context.setInvoker(invoker)
                 .setInvocation(invocation)
 //                .setAttachments(attachments)  // merged from dubbox
-                .setLocalAddress(invoker.getUrl().getHost(), invoker.getUrl().getPort())
-                .setRemoteApplicationName(invoker.getUrl().getParameter(REMOTE_APPLICATION_KEY));
+                .setLocalAddress(invoker.getUrl().getHost(), invoker.getUrl().getPort());
+        String remoteApplication = invocation.getAttachment(REMOTE_APPLICATION_KEY);
+        if (StringUtils.isNotEmpty(remoteApplication)) {
+            context.setRemoteApplicationName(remoteApplication);
+        } else {
+            context.setRemoteApplicationName(RpcContext.getContext().getAttachment(REMOTE_APPLICATION_KEY));
+
+        }
+
 
         // merged from dubbox
         // we may already added some attachments into RpcContext before this filter (e.g. in rest protocol)
