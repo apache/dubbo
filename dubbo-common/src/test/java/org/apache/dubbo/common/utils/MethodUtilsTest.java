@@ -47,6 +47,12 @@ public class MethodUtilsTest {
         Assertions.assertEquals("setValue", setMethod.getName());
     }
 
+    @Test
+    public void testIsDeprecated() throws Exception {
+        Assertions.assertTrue(MethodUtils.isDeprecated(MethodTestClazz.class.getMethod("deprecatedMethod")));
+        Assertions.assertFalse(MethodUtils.isDeprecated(MethodTestClazz.class.getMethod("getValue")));
+    }
+
     public class MethodTestClazz {
         private String value;
 
@@ -56,6 +62,11 @@ public class MethodUtilsTest {
 
         public void setValue(String value) {
             this.value = value;
+        }
+
+        @Deprecated
+        public Boolean deprecatedMethod() {
+            return true;
         }
     }
 

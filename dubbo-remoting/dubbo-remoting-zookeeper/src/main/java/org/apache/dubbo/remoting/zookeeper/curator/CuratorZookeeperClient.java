@@ -147,7 +147,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
     }
 
     @Override
-    public void delete(String path) {
+    protected void deletePath(String path) {
         try {
             client.delete().forPath(path);
         } catch (NoNodeException e) {
