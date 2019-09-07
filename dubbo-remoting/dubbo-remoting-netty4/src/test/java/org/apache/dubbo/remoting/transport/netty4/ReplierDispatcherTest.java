@@ -17,6 +17,7 @@
 package org.apache.dubbo.remoting.transport.netty4;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
@@ -95,7 +96,7 @@ public class ReplierDispatcherTest {
     }
 
     void clientExchangeInfo(int port) throws Exception {
-        ExchangeChannel client = Exchangers.connect(URL.valueOf("dubbo://localhost:" + port +"?timeout=5000"));
+        ExchangeChannel client = Exchangers.connect(URL.valueOf("dubbo://localhost:" + port + "?" + CommonConstants.TIMEOUT_KEY + "=5000"));
         clients.put(Thread.currentThread().getName(), client);
         MockResult result = (MockResult) client.request(new RpcMessage(DemoService.class.getName(), "plus", new Class<?>[]{int.class, int.class}, new Object[]{55, 25})).get();
         Assertions.assertEquals(result.getResult(), 80);
