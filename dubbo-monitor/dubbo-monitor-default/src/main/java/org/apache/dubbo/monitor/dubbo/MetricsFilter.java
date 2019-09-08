@@ -16,6 +16,11 @@
  */
 package org.apache.dubbo.monitor.dubbo;
 
+import com.alibaba.metrics.MetricRegistry;
+import com.alibaba.metrics.FastCompass;
+import com.alibaba.metrics.MetricLevel;
+import com.alibaba.metrics.MetricManager;
+import com.alibaba.metrics.MetricName;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
@@ -23,6 +28,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.store.DataStore;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.monitor.MetricsService;
+import org.apache.dubbo.monitor.support.AggregationMetrics;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
@@ -34,11 +40,6 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.metrics.FastCompass;
-import com.alibaba.metrics.MetricLevel;
-import com.alibaba.metrics.MetricManager;
-import com.alibaba.metrics.MetricName;
-import com.alibaba.metrics.MetricRegistry;
 import com.alibaba.metrics.common.CollectLevel;
 import com.alibaba.metrics.common.MetricObject;
 import com.alibaba.metrics.common.MetricsCollector;
@@ -57,6 +58,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_PROTOCOL;
 import static org.apache.dubbo.monitor.Constants.DUBBO_CONSUMER;
+import static org.apache.dubbo.monitor.Constants.DUBBO_IP;
+import static org.apache.dubbo.monitor.Constants.IP;
 import static org.apache.dubbo.monitor.Constants.DUBBO_CONSUMER_METHOD;
 import static org.apache.dubbo.monitor.Constants.DUBBO_GROUP;
 import static org.apache.dubbo.monitor.Constants.DUBBO_PROVIDER;
@@ -99,13 +102,17 @@ public class MetricsFilter implements Filter {
         boolean isProvider = context.isProviderSide();
         long start = System.currentTimeMillis();
         try {
+            addMetricsResultToAggregationMetrics();
             Result result = invoker.invoke(invocation); // proceed invocation chain
             long duration = System.currentTimeMillis() - start;
+            // todo 开关
+            reportMetricsByIp(result, invoker, duration);
             reportMetrics(invoker, invocation, duration, "success", isProvider);
             return result;
         } catch (RpcException e) {
             long duration = System.currentTimeMillis() - start;
             String result = "error";
+            reportMetricsByIp(invoker, duration, result);
             if (e.isTimeout()) {
                 result = "timeoutError";
             }
@@ -120,6 +127,46 @@ public class MetricsFilter implements Filter {
             }
             reportMetrics(invoker, invocation, duration, result, isProvider);
             throw e;
+        }
+    }
+
+    private void reportMetricsByIp(Invoker invoker, long duration, String res) {
+        String targetIp = invoker.getUrl().getIp();
+        MetricName metricByIp = new MetricName(DUBBO_IP, new HashMap<String, String>(4) {
+            {
+                put(IP, targetIp);
+            }
+        }, MetricLevel.NORMAL);
+        FastCompass compass = MetricManager.getFastCompass(DUBBO_GROUP, metricByIp);
+
+        compass.record(duration, res);
+    }
+
+    private void reportMetricsByIp(Result result, Invoker invoker, long duration) {
+        String res = "success";
+        if (result.hasException()) {
+            res = "error";
+        }
+        reportMetricsByIp(invoker, duration, res);
+    }
+
+    private void addMetricsResultToAggregationMetrics() {
+        MetricRegistry registry = MetricManager.getIMetricManager().getMetricRegistryByGroup(DUBBO_GROUP);
+
+        SortedMap<MetricName, FastCompass> fastCompasses = registry.getFastCompasses();
+
+        MetricsCollector collector = getNormalCollector();
+        for (Map.Entry<MetricName, FastCompass> entry : fastCompasses.entrySet()) {
+            String ip = entry.getKey().getTags().get(IP);
+            if (ip != null) {
+                collector.collect(entry.getKey(), entry.getValue(), System.currentTimeMillis());
+                List<MetricObject> res = new ArrayList<>(collector.build());
+                collector.clear();
+
+                for (MetricObject metricObject : res) {
+                    AggregationMetrics.putMetrics(ip, metricObject.getMetric(), metricObject);
+                }
+            }
         }
     }
 
@@ -223,16 +270,13 @@ public class MetricsFilter implements Filter {
 
                 SortedMap<MetricName, FastCompass> fastCompasses = registry.getFastCompasses();
 
-                long timestamp = System.currentTimeMillis();
-                double rateFactor = TimeUnit.SECONDS.toSeconds(1);
-                double durationFactor = 1.0 / TimeUnit.MILLISECONDS.toNanos(1);
-
-
-                MetricsCollector collector = MetricsCollectorFactory.createNew(
-                        CollectLevel.NORMAL, Collections.EMPTY_MAP, rateFactor, durationFactor, null);
-
+                MetricsCollector collector = getNormalCollector();
                 for (Map.Entry<MetricName, FastCompass> entry : fastCompasses.entrySet()) {
-                    collector.collect(entry.getKey(), entry.getValue(), timestamp);
+                    if (entry.getKey().getTags().get(DUBBO_IP) != null) {
+                        System.out.println(entry.getKey().getTags().get(DUBBO_IP));
+                        continue;
+                    }
+                    collector.collect(entry.getKey(), entry.getValue(), System.currentTimeMillis());
                 }
 
                 List res = collector.build();
@@ -257,5 +301,16 @@ public class MetricsFilter implements Filter {
         };
 
         return metricsInvoker;
+    }
+
+    private MetricsCollector getNormalCollector() {
+        double rateFactor = TimeUnit.SECONDS.toSeconds(1);
+        double durationFactor = 1.0 / TimeUnit.MILLISECONDS.toNanos(1);
+
+
+        MetricsCollector collector = MetricsCollectorFactory.createNew(
+                CollectLevel.NORMAL, Collections.EMPTY_MAP, rateFactor, durationFactor, null);
+
+        return collector;
     }
 }

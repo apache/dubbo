@@ -21,6 +21,8 @@ public interface Constants {
     String DUBBO_CONSUMER = "dubbo.consumer";
     String DUBBO_PROVIDER_METHOD = "dubbo.provider.method";
     String DUBBO_CONSUMER_METHOD = "dubbo.consumer.method";
+    String IP = "ip";
+    String DUBBO_IP = "dubbo.consumer.ip";
     String SERVICE = "service";
     String METHOD = "method";
     String DUBBO_GROUP = "dubbo";
