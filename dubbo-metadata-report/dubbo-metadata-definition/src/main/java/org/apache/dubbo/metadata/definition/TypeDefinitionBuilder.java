@@ -46,6 +46,8 @@ public class TypeDefinitionBuilder {
     }
 
     public static TypeDefinition build(Type type, Class<?> clazz, Map<Class<?>, TypeDefinition> typeCache) {
+
+
         TypeBuilder builder = getGenericTypeBuilder(type, clazz);
         TypeDefinition td;
         if (builder != null) {
@@ -54,6 +56,9 @@ public class TypeDefinitionBuilder {
         } else {
             td = DefaultTypeBuilder.build(clazz, typeCache);
             td.setTypeBuilderName(DefaultTypeBuilder.class.getName());
+        }
+        if (clazz.equals(String.class)) {
+            td.setProperties(null);
         }
         return td;
     }
