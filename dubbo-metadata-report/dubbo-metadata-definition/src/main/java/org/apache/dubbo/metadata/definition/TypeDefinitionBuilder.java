@@ -46,8 +46,6 @@ public class TypeDefinitionBuilder {
     }
 
     public static TypeDefinition build(Type type, Class<?> clazz, Map<Class<?>, TypeDefinition> typeCache) {
-
-
         TypeBuilder builder = getGenericTypeBuilder(type, clazz);
         TypeDefinition td;
         if (builder != null) {
