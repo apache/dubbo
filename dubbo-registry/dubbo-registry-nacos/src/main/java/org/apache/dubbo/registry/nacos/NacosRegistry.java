@@ -18,6 +18,7 @@ package org.apache.dubbo.registry.nacos;
 
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -29,7 +30,6 @@ import org.apache.dubbo.registry.support.FailbackRegistry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -60,6 +60,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGORY;
 import static org.apache.dubbo.registry.Constants.ADMIN_PROTOCOL;
@@ -370,15 +371,26 @@ public class NacosRegistry extends FailbackRegistry {
         return serviceNames;
     }
 
-    private List<URL> buildURLs(URL consumerURL, Collection<Instance> instances) {
-        if (instances.isEmpty()) {
-            return Collections.emptyList();
+    private List<URL> toUrlWithEmpty(URL consumerURL, Collection<Instance> instances) {
+        List<URL> urls = buildURLs(consumerURL, instances);
+        if (urls.size() == 0) {
+            URL empty = URLBuilder.from(consumerURL)
+                    .setProtocol(EMPTY_PROTOCOL)
+                    .addParameter(CATEGORY_KEY, DEFAULT_CATEGORY)
+                    .build();
+            urls.add(empty);
         }
+        return urls;
+    }
+
+    private List<URL> buildURLs(URL consumerURL, Collection<Instance> instances) {
         List<URL> urls = new LinkedList<>();
-        for (Instance instance : instances) {
-            URL url = buildURL(instance);
-            if (UrlUtils.isMatch(consumerURL, url)) {
-                urls.add(url);
+        if (instances != null && !instances.isEmpty()) {
+            for (Instance instance : instances) {
+                URL url = buildURL(instance);
+                if (UrlUtils.isMatch(consumerURL, url)) {
+                    urls.add(url);
+                }
             }
         }
         return urls;
@@ -407,9 +419,11 @@ public class NacosRegistry extends FailbackRegistry {
      */
     private void notifySubscriber(URL url, NotifyListener listener, Collection<Instance> instances) {
         List<Instance> healthyInstances = new LinkedList<>(instances);
-        // Healthy Instances
-        filterHealthyInstances(healthyInstances);
-        List<URL> urls = buildURLs(url, healthyInstances);
+        if (healthyInstances.size() > 0) {
+            // Healthy Instances
+            filterHealthyInstances(healthyInstances);
+        }
+        List<URL> urls = toUrlWithEmpty(url, healthyInstances);
         NacosRegistry.this.notify(url, listener, urls);
     }
 
