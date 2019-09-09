@@ -32,7 +32,7 @@ import static org.springframework.util.ReflectionUtils.setField;
 /**
  * {@link ReferenceConfigDestroyedEvent} Test
  *
- * @since 2.7.4
+ * @since 2.7.5
  */
 public class ReferenceConfigDestroyedEventTest implements EventListener<ReferenceConfigDestroyedEvent> {
 

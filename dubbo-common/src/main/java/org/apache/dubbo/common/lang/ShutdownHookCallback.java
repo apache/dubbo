@@ -19,7 +19,7 @@ package org.apache.dubbo.common.lang;
 /**
  * Dubbo ShutdownHook callback interface
  *
- * @since 2.7.4
+ * @since 2.7.5
  */
 public interface ShutdownHookCallback extends Prioritized {
 

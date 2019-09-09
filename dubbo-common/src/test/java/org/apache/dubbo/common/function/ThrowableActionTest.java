@@ -24,7 +24,7 @@ import static org.apache.dubbo.common.function.ThrowableAction.execute;
 /**
  * {@link ThrowableAction} Test
  *
- * @since 2.7.4
+ * @since 2.7.5
  */
 public class ThrowableActionTest {
 

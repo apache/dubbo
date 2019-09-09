@@ -96,7 +96,7 @@ import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
 /**
  * The bootstrap class of Dubbo
  *
- * @since 2.7.4
+ * @since 2.7.5
  */
 public class DubboBootstrap extends GenericEventListener implements Lifecycle {
 

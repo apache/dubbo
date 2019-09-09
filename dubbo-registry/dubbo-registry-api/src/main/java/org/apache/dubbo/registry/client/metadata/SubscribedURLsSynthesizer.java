@@ -28,7 +28,7 @@ import java.util.List;
 /**
  * The inteface to synthesize the subscribed {@link URL URLs}
  *
- * @since 2.7.4
+ * @since 2.7.5
  */
 public interface SubscribedURLsSynthesizer extends Prioritized {
 

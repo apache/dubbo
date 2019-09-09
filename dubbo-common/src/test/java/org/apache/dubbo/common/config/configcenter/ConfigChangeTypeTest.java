@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
  * {@link ConfigChangeType} Test
  *
  * @see ConfigChangeType
- * @since 2.7.4
+ * @since 2.7.5
  */
 public class ConfigChangeTypeTest {
 

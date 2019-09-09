@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * The abstract implementation of {@link DynamicConfiguration}
  *
- * @since 2.7.4
+ * @since 2.7.5
  */
 public abstract class AbstractDynamicConfiguration implements DynamicConfiguration {
 

@@ -19,7 +19,7 @@ package org.apache.dubbo.common.lang;
 /**
  * Default {@link ShutdownHookCallback}
  *
- * @since 2.7.4
+ * @since 2.7.5
  */
 public class DefaultShutdownHookCallback implements ShutdownHookCallback {
 

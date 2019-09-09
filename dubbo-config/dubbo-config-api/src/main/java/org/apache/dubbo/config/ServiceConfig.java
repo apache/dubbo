@@ -199,7 +199,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     private volatile String generic;
 
     /**
-     * @since 2.7.4
+     * @since 2.7.5
      */
     private final EventDispatcher eventDispatcher = EventDispatcher.getDefaultExtension();
 
@@ -422,7 +422,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
         doExportUrls();
 
-        // dispatch a ServiceConfigExportedEvent since 2.7.4
+        // dispatch a ServiceConfigExportedEvent since 2.7.5
         dispatch(new ServiceConfigExportedEvent(this));
     }
 
@@ -457,7 +457,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
         unexported = true;
 
-        // dispatch a ServiceConfigUnExportedEvent since 2.7.4
+        // dispatch a ServiceConfigUnExportedEvent since 2.7.5
         dispatch(new ServiceConfigUnexportedEvent(this));
     }
 
@@ -1056,7 +1056,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
      * Dispatch an {@link Event event}
      *
      * @param event an {@link Event event}
-     * @since 2.7.4
+     * @since 2.7.5
      */
     protected void dispatch(Event event) {
         eventDispatcher.dispatch(event);

@@ -29,7 +29,7 @@ import java.util.ServiceLoader;
  * whose building {@link URL URLs} will be aggregated
  *
  * @see CompositeMetadataServiceURLBuilder
- * @since 2.7.4
+ * @since 2.7.5
  */
 public interface MetadataServiceURLBuilder {
 

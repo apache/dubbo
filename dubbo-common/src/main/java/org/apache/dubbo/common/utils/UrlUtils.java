@@ -498,7 +498,7 @@ public class UrlUtils {
      *
      * @param url the {@link URL} connects to the registry
      * @return If it is, return <code>true</code>, or <code>false</code>
-     * @since 2.7.4
+     * @since 2.7.5
      */
     public static boolean isServiceDiscoveryRegistryType(URL url) {
         return isServiceDiscoveryRegistryType(url == null ? emptyMap() : url.getParameters());
@@ -509,7 +509,7 @@ public class UrlUtils {
      *
      * @param parameters the parameters of {@link URL} that connects to the registry
      * @return If it is, return <code>true</code>, or <code>false</code>
-     * @since 2.7.4
+     * @since 2.7.5
      */
     public static boolean isServiceDiscoveryRegistryType(Map<String, String> parameters) {
         if (parameters == null || parameters.isEmpty()) {

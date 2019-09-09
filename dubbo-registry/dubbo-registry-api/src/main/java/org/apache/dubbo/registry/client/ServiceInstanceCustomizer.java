@@ -26,7 +26,7 @@ import org.apache.dubbo.registry.client.event.listener.CustomizableServiceInstan
  * @see CustomizableServiceInstanceListener
  * @see ServiceInstancePreRegisteredEvent
  * @see ServiceInstance#getMetadata()
- * @since 2.7.4
+ * @since 2.7.5
  */
 public interface ServiceInstanceCustomizer extends Prioritized {
 
