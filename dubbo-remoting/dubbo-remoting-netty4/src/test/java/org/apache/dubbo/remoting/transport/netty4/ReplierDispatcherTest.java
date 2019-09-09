@@ -53,12 +53,7 @@ public class ReplierDispatcherTest {
         port = NetUtils.getAvailablePort();
         ReplierDispatcher dispatcher = new ReplierDispatcher();
         dispatcher.addReplier(RpcMessage.class, new RpcMessageHandler());
-        dispatcher.addReplier(Data.class, (channel, msg) -> {
-            for (int i = 0; i < 10000; i++) {
-                System.currentTimeMillis();
-            }
-            return new StringMessage("hello world");
-        });
+        dispatcher.addReplier(Data.class, (channel, msg) -> new StringMessage("hello world"));
         exchangeServer = Exchangers.bind(URL.valueOf("dubbo://localhost:" + port), dispatcher);
     }
 
@@ -102,9 +97,6 @@ public class ReplierDispatcherTest {
         Assertions.assertEquals(result.getResult(), 80);
         for (int i = 0; i < 100; i++) {
             client.request(new RpcMessage(DemoService.class.getName(), "sayHello", new Class<?>[]{String.class}, new Object[]{"qianlei" + i}));
-        }
-        for (int i = 0; i < 100; i++) {
-            client.request(new Data());
         }
         for (int i = 0; i < 100; i++) {
             CompletableFuture<Object> future = client.request(new Data());
