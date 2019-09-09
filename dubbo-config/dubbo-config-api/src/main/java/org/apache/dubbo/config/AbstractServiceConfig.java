@@ -104,7 +104,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     /**
      * Whether to register
      */
-    private Boolean register = true;
+    private Boolean register;
 
     /**
      * Warm up period

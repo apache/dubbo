@@ -61,4 +61,8 @@ public class MethodUtils {
         }
         return true;
     }
+
+    public static boolean isDeprecated(Method method) {
+        return method.getAnnotation(Deprecated.class) != null;
+    }
 }
