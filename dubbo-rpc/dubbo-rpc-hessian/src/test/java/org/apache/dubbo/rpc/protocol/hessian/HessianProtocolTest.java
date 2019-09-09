@@ -220,4 +220,20 @@ public class HessianProtocolTest {
         exporter.unexport();
     }
 
+
+    @Test
+    public void testRemoteApplicationName() {
+        HessianServiceImpl server = new HessianServiceImpl();
+        ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+        Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+        URL url = URL.valueOf("hessian://127.0.0.1:5342/" + HessianService.class.getName() + "?version=1.0.0&hessian.overload.method=true").addParameter("application", "consumer");
+        Exporter<HessianService> exporter = protocol.export(proxyFactory.getInvoker(server, HessianService.class, url));
+        Invoker<HessianService> invoker = protocol.refer(HessianService.class, url);
+        HessianService client = proxyFactory.getProxy(invoker);
+        String result = client.getRemoteApplicationName();
+        Assertions.assertEquals("consumer", result);
+        invoker.destroy();
+        exporter.unexport();
+    }
+
 }
