@@ -31,7 +31,7 @@ import static java.util.stream.StreamSupport.stream;
  *
  * @see ServiceLoader
  * @see Prioritized
- * @since 2.7.4
+ * @since 2.7.5
  */
 public class DubboServiceLoader {
 

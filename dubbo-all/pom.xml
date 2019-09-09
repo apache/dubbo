@@ -537,7 +537,7 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- 2.7.4 new modules -->
+        <!-- 2.7.5 new modules -->
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-event</artifactId>
@@ -818,7 +818,7 @@
                                     <resource>META-INF/dubbo/internal/org.apache.dubbo.metadata.report.MetadataReportFactory
                                     </resource>
                                 </transformer>
-                                <!-- @since 2.7.4 -->
+                                <!-- @since 2.7.5 -->
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>META-INF/dubbo/internal/org.apache.dubbo.event.EventDispatcher
                                     </resource>

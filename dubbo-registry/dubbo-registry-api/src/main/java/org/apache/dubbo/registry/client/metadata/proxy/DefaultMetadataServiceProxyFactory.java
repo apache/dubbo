@@ -27,9 +27,7 @@ import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.support.AvailableCluster;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.registry.client.metadata.MetadataServiceURLBuilder.composite;
@@ -37,7 +35,7 @@ import static org.apache.dubbo.registry.client.metadata.MetadataServiceURLBuilde
 /**
  * The default {@link MetadataServiceProxyFactory} to get the proxy of {@link MetadataService}
  *
- * @since 2.7.4
+ * @since 2.7.5
  */
 public class DefaultMetadataServiceProxyFactory extends BaseMetadataServiceProxyFactory implements MetadataServiceProxyFactory {
 

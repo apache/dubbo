@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * {@link DubboShutdownHookUnregisteredEvent} Test
  *
- * @since 2.7.4
+ * @since 2.7.5
  */
 public class DubboShutdownHookUnregisteredEventTest implements EventListener<DubboShutdownHookUnregisteredEvent> {
 

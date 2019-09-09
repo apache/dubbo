@@ -105,7 +105,7 @@ import static java.util.Optional.of;
  * @see ServiceInstanceRegisteredEvent
  * @see ServiceDiscoveryDestroyingEvent
  * @see ServiceDiscoveryDestroyedEvent
- * @since 2.7.4
+ * @since 2.7.5
  */
 final class EventPublishingServiceDiscovery implements ServiceDiscovery {
 

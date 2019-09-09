@@ -39,7 +39,7 @@ import static org.apache.dubbo.common.utils.CollectionUtils.isNotEmpty;
  * @see MetadataService
  * @see URL
  * @see ServiceLoader
- * @since 2.7.4
+ * @since 2.7.5
  */
 class CompositeMetadataServiceURLBuilder implements MetadataServiceURLBuilder {
 

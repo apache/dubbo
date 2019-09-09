@@ -33,7 +33,7 @@ import static org.apache.dubbo.common.utils.DubboServiceLoader.load;
  * @see EventListener
  * @see ServiceInstancePreRegisteredEvent
  * @see ServiceInstanceCustomizer
- * @since 2.7.4
+ * @since 2.7.5
  */
 public class CustomizableServiceInstanceListener implements EventListener<ServiceInstancePreRegisteredEvent> {
 

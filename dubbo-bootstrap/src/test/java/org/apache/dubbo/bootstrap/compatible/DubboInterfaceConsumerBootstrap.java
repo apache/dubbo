@@ -26,7 +26,7 @@ import org.apache.dubbo.config.context.ConfigManager;
 /**
  * Dubbo Provider Bootstrap
  *
- * @since 2.7.4
+ * @since 2.7.5
  */
 public class DubboInterfaceConsumerBootstrap {
 

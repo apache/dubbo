@@ -29,7 +29,7 @@ import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoad
  * Local {@link MetadataService} that extends {@link MetadataService} and provides the modification, which is used for
  * Dubbo's consumers and providers.
  *
- * @since 2.7.4
+ * @since 2.7.5
  */
 @SPI(DEFAULT_METADATA_STORAGE_TYPE)
 public interface WritableMetadataService extends MetadataService {
