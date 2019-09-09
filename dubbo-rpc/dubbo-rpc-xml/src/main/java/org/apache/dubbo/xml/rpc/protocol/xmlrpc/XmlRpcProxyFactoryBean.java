@@ -80,7 +80,7 @@ public class XmlRpcProxyFactoryBean extends UrlBasedRemoteAccessor
 
         // handle toString()
         Method method = invocation.getMethod();
-        if (method.getDeclaringClass() == Object.class && method.getName().equals("toString")) {
+        if (method.getDeclaringClass() == Object.class && "toString".equals(method.getName())) {
             return proxyObject.getClass().getName() + "@" + System.identityHashCode(proxyObject);
         }
 

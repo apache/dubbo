@@ -58,10 +58,10 @@ public class ZookeeperDynamicConfigurationTest {
 
         try {
             setData("/dubbo/config/dubbo/dubbo.properties", "The content from dubbo.properties");
-            setData("/dubbo/config/group*service:version/configurators", "The content from configurators");
+            setData("/dubbo/config/dubbo/service:version:group.configurators", "The content from configurators");
             setData("/dubbo/config/appname", "The content from higer level node");
-            setData("/dubbo/config/appname/tagrouters", "The content from appname tagrouters");
-            setData("/dubbo/config/never.change.DemoService/configurators", "Never change value from configurators");
+            setData("/dubbo/config/dubbo/appname.tag-router", "The content from appname tagrouters");
+            setData("/dubbo/config/dubbo/never.change.DemoService.configurators", "Never change value from configurators");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -86,8 +86,7 @@ public class ZookeeperDynamicConfigurationTest {
 
     @Test
     public void testGetConfig() throws Exception {
-        Assertions.assertEquals("Never change value from configurators", configuration.getConfig("never.change.DemoService.configurators"));
-        Assertions.assertEquals("The content from dubbo.properties", configuration.getConfigs("dubbo.properties", "dubbo"));
+        Assertions.assertEquals("The content from dubbo.properties", configuration.getProperties("dubbo.properties", "dubbo"));
     }
 
     @Test
@@ -97,24 +96,24 @@ public class ZookeeperDynamicConfigurationTest {
         TestListener listener2 = new TestListener(latch);
         TestListener listener3 = new TestListener(latch);
         TestListener listener4 = new TestListener(latch);
-        configuration.addListener("group*service:version.configurators", listener1);
-        configuration.addListener("group*service:version.configurators", listener2);
-        configuration.addListener("appname.tagrouters", listener3);
-        configuration.addListener("appname.tagrouters", listener4);
+        configuration.addListener("service:version:group.configurators", listener1);
+        configuration.addListener("service:version:group.configurators", listener2);
+        configuration.addListener("appname.tag-router", listener3);
+        configuration.addListener("appname.tag-router", listener4);
 
-        setData("/dubbo/config/group*service:version/configurators", "new value1");
+        setData("/dubbo/config/dubbo/service:version:group.configurators", "new value1");
         Thread.sleep(100);
-        setData("/dubbo/config/appname/tagrouters", "new value2");
+        setData("/dubbo/config/dubbo/appname.tag-router", "new value2");
         Thread.sleep(100);
         setData("/dubbo/config/appname", "new value3");
 
         Thread.sleep(5000);
 
         latch.await();
-        Assertions.assertEquals(1, listener1.getCount("group*service:version.configurators"));
-        Assertions.assertEquals(1, listener2.getCount("group*service:version.configurators"));
-        Assertions.assertEquals(1, listener3.getCount("appname.tagrouters"));
-        Assertions.assertEquals(1, listener4.getCount("appname.tagrouters"));
+        Assertions.assertEquals(1, listener1.getCount("service:version:group.configurators"));
+        Assertions.assertEquals(1, listener2.getCount("service:version:group.configurators"));
+        Assertions.assertEquals(1, listener3.getCount("appname.tag-router"));
+        Assertions.assertEquals(1, listener4.getCount("appname.tag-router"));
 
         Assertions.assertEquals("new value1", listener1.getValue());
         Assertions.assertEquals("new value1", listener2.getValue());

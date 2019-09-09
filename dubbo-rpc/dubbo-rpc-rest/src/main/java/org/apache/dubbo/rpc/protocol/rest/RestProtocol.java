@@ -161,6 +161,7 @@ public class RestProtocol extends AbstractProxyProtocol {
                 .build();
 
         CloseableHttpClient httpClient = HttpClientBuilder.create()
+                .setConnectionManager(connectionManager)
                 .setKeepAliveStrategy((response, context) -> {
                     HeaderElementIterator it = new BasicHeaderElementIterator(response.headerIterator(HTTP.CONN_KEEP_ALIVE));
                     while (it.hasNext()) {
