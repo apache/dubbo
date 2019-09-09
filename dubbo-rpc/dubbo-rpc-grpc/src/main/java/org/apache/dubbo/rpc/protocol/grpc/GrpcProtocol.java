@@ -54,15 +54,7 @@ public class GrpcProtocol extends AbstractProxyProtocol {
 
     private final Map<String, ManagedChannel> channelMap = new ConcurrentHashMap<>();
 
-    /**
-     * 传进来的impl implements DubboInterface, DubboInterface包含特定的3个通用方法就可以了
-     * @param impl
-     * @param type
-     * @param url
-     * @param <T>
-     * @return
-     * @throws RpcException
-     */
+
     @Override
     protected <T> Runnable doExport(T impl, Class<T> type, URL url) throws RpcException {
         String key = url.getAddress();
@@ -86,14 +78,6 @@ public class GrpcProtocol extends AbstractProxyProtocol {
         return super.export(new GrpcInvoker<>(invoker));
     }
 
-    /**
-     * 这里返回的impl必须要有所有的方法, Stub BlockingStube FutureStub
-     * @param type
-     * @param url
-     * @param <T>
-     * @return
-     * @throws RpcException
-     */
     @Override
     protected <T> T doRefer(Class<T> type, URL url) throws RpcException {
         Class<?> enclosingClass = type.getEnclosingClass();
@@ -130,7 +114,8 @@ public class GrpcProtocol extends AbstractProxyProtocol {
 
     @Override
     public void destroy() {
-        // FIXME
+        serverMap.values().forEach(GrpcServer::stop);
+        channelMap.values().forEach(ManagedChannel::shutdown);
     }
 
     private class GrpcServer {
@@ -153,6 +138,10 @@ public class GrpcProtocol extends AbstractProxyProtocol {
 
         public DubboHandlerRegistry getRegistry() {
             return registry;
+        }
+
+        public void stop() {
+            this.server.shutdown();
         }
     }
 
