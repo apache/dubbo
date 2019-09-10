@@ -113,12 +113,7 @@ public abstract class Wrapper {
             return OBJECT_WRAPPER;
         }
 
-        Wrapper ret = WRAPPER_MAP.get(c);
-        if (ret == null) {
-            ret = makeWrapper(c);
-            WRAPPER_MAP.put(c, ret);
-        }
-        return ret;
+        return WRAPPER_MAP.computeIfAbsent(c, key -> makeWrapper(key));
     }
 
     private static Wrapper makeWrapper(Class<?> c) {
