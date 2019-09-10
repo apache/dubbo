@@ -310,15 +310,15 @@ public class ImplicitCallBackTest {
     }
 
     interface Nofify {
-        public void onreturn(Person msg, Integer id);
+        void onreturn(Person msg, Integer id);
 
-        public void onthrow(Throwable ex, Integer id);
+        void onthrow(Throwable ex, Integer id);
 
-        public void oninvoke(Integer id);
+        void oninvoke(Integer id);
     }
 
     interface IDemoService {
-        public Person get(int id);
+        Person get(int id);
     }
 
     public static class Person implements Serializable {

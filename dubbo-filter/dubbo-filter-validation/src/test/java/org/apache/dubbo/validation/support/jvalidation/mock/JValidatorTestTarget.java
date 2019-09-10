@@ -24,16 +24,16 @@ import java.util.Map;
 
 public interface JValidatorTestTarget {
     @MethodValidated
-    public void someMethod1(String anything);
+    void someMethod1(String anything);
 
     @MethodValidated(Test2.class)
-    public void someMethod2(@NotNull ValidationParameter validationParameter);
+    void someMethod2(@NotNull ValidationParameter validationParameter);
 
-    public void someMethod3(ValidationParameter[] parameters);
+    void someMethod3(ValidationParameter[] parameters);
 
-    public void someMethod4(List<String> strings);
+    void someMethod4(List<String> strings);
 
-    public void someMethod5(Map<String, String> map);
+    void someMethod5(Map<String, String> map);
 
     @interface Test2 {
     }

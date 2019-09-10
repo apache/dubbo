@@ -119,7 +119,7 @@ public abstract class ListenableRouter extends AbstractRouter implements Configu
         }
         String routerKey = ruleKey + RULE_SUFFIX;
         configuration.addListener(routerKey, this);
-        String rule = configuration.getConfig(routerKey);
+        String rule = configuration.getRule(routerKey, DynamicConfiguration.DEFAULT_GROUP);
         if (StringUtils.isNotEmpty(rule)) {
             this.process(new ConfigChangeEvent(routerKey, rule));
         }

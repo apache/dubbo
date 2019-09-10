@@ -179,17 +179,15 @@ public class FailoverClusterInvokerTest {
         invokers.add(invoker1);
         invokers.add(invoker2);
 
-        Callable<Object> callable = new Callable<Object>() {
-            public Object call() throws Exception {
-                //Simulation: all invokers are destroyed
-                for (Invoker<Demo> invoker : invokers) {
-                    invoker.destroy();
-                }
-                invokers.clear();
-                MockInvoker<Demo> invoker3 = new MockInvoker<Demo>(Demo.class, url);
-                invokers.add(invoker3);
-                return null;
+        Callable<Object> callable = () -> {
+            //Simulation: all invokers are destroyed
+            for (Invoker<Demo> invoker : invokers) {
+                invoker.destroy();
             }
+            invokers.clear();
+            MockInvoker<Demo> invoker3 = new MockInvoker<Demo>(Demo.class, url);
+            invokers.add(invoker3);
+            return null;
         };
         invoker1.setCallable(callable);
         invoker2.setCallable(callable);
@@ -203,7 +201,7 @@ public class FailoverClusterInvokerTest {
         clusterinvoker.invoke(inv);
     }
 
-    public static interface Demo {
+    public interface Demo {
     }
 
     public static class MockInvoker<T> extends AbstractInvoker<T> {

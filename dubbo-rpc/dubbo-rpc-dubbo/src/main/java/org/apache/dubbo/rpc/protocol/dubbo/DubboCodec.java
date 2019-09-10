@@ -120,10 +120,11 @@ public class DubboCodec extends ExchangeCodec {
             }
             try {
                 Object data;
-                ObjectInput in = CodecSupport.deserialize(channel.getUrl(), is, proto);
                 if (req.isHeartbeat()) {
+                    ObjectInput in = CodecSupport.deserialize(channel.getUrl(), is, proto);
                     data = decodeHeartbeatData(channel, in);
                 } else if (req.isEvent()) {
+                    ObjectInput in = CodecSupport.deserialize(channel.getUrl(), is, proto);
                     data = decodeEventData(channel, in);
                 } else {
                     DecodeableRpcInvocation inv;

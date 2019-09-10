@@ -16,9 +16,12 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
+import java.util.Collections;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ArrayUtils;
+import org.apache.dubbo.config.MethodConfig;
+import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.context.annotation.DubboClassPathBeanDefinitionScanner;
@@ -43,15 +46,15 @@ import org.springframework.context.annotation.AnnotationBeanNameGenerator;
 import org.springframework.context.annotation.AnnotationConfigUtils;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
 import org.springframework.context.annotation.ConfigurationClassPostProcessor;
+import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
-import org.springframework.util.Assert;
-import org.springframework.util.ClassUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
+import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -61,10 +64,12 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.apache.dubbo.config.spring.beans.factory.annotation.ServiceBeanNameBuilder.create;
+import static org.apache.dubbo.config.spring.util.AnnotationUtils.resolveServiceInterfaceClass;
 import static org.apache.dubbo.config.spring.util.ObjectUtils.of;
 import static org.springframework.beans.factory.support.BeanDefinitionBuilder.rootBeanDefinition;
 import static org.springframework.context.annotation.AnnotationConfigUtils.CONFIGURATION_BEAN_NAME_GENERATOR;
 import static org.springframework.core.annotation.AnnotatedElementUtils.findMergedAnnotation;
+import static org.springframework.core.annotation.AnnotationUtils.getAnnotationAttributes;
 import static org.springframework.util.ClassUtils.resolveClassName;
 
 /**
@@ -131,6 +136,14 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
         scanner.setBeanNameGenerator(beanNameGenerator);
 
         scanner.addIncludeFilter(new AnnotationTypeFilter(Service.class));
+
+        /**
+         * Add the compatibility for legacy Dubbo's @Service
+         *
+         * The issue : https://github.com/apache/dubbo/issues/4330
+         * @since 2.7.3
+         */
+        scanner.addIncludeFilter(new AnnotationTypeFilter(com.alibaba.dubbo.config.annotation.Service.class));
 
         for (String packageToScan : packagesToScan) {
 
@@ -250,17 +263,22 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
 
         Class<?> beanClass = resolveClass(beanDefinitionHolder);
 
-        Service service = findMergedAnnotation(beanClass, Service.class);
+        Annotation service = findServiceAnnotation(beanClass);
 
-        Class<?> interfaceClass = resolveServiceInterfaceClass(beanClass, service);
+        /**
+         * The {@link AnnotationAttributes} of @Service annotation
+         */
+        AnnotationAttributes serviceAnnotationAttributes = getAnnotationAttributes(service, false, false);
+
+        Class<?> interfaceClass = resolveServiceInterfaceClass(serviceAnnotationAttributes, beanClass);
 
         String annotatedServiceBeanName = beanDefinitionHolder.getBeanName();
 
         AbstractBeanDefinition serviceBeanDefinition =
-                buildServiceBeanDefinition(service, interfaceClass, annotatedServiceBeanName);
+                buildServiceBeanDefinition(service, serviceAnnotationAttributes, interfaceClass, annotatedServiceBeanName);
 
         // ServiceBean Bean name
-        String beanName = generateServiceBeanName(service, interfaceClass);
+        String beanName = generateServiceBeanName(serviceAnnotationAttributes, interfaceClass);
 
         if (scanner.checkCandidate(beanName, serviceBeanDefinition)) { // check duplicated candidate bean
             registry.registerBeanDefinition(beanName, serviceBeanDefinition);
@@ -282,56 +300,35 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
 
     }
 
+
+    /**
+     * Find the {@link Annotation annotation} of @Service
+     *
+     * @param beanClass the {@link Class class} of Bean
+     * @return <code>null</code> if not found
+     * @since 2.7.3
+     */
+    private Annotation findServiceAnnotation(Class<?> beanClass) {
+        Annotation service = findMergedAnnotation(beanClass, Service.class);
+        if (service == null) {
+            service = findMergedAnnotation(beanClass, com.alibaba.dubbo.config.annotation.Service.class);
+        }
+        return service;
+    }
+
     /**
      * Generates the bean name of {@link ServiceBean}
      *
-     * @param service
-     * @param interfaceClass the class of interface annotated {@link Service}
+     * @param serviceAnnotationAttributes
+     * @param interfaceClass              the class of interface annotated {@link Service}
      * @return ServiceBean@interfaceClassName#annotatedServiceBeanName
-     * @since 2.5.9
+     * @since 2.7.3
      */
-    private String generateServiceBeanName(Service service, Class<?> interfaceClass) {
-        ServiceBeanNameBuilder builder = create(service, interfaceClass, environment);
-
+    private String generateServiceBeanName(AnnotationAttributes serviceAnnotationAttributes, Class<?> interfaceClass) {
+        ServiceBeanNameBuilder builder = create(interfaceClass, environment)
+                .group(serviceAnnotationAttributes.getString("group"))
+                .version(serviceAnnotationAttributes.getString("version"));
         return builder.build();
-    }
-
-    private Class<?> resolveServiceInterfaceClass(Class<?> annotatedServiceBeanClass, Service service) {
-
-        Class<?> interfaceClass = service.interfaceClass();
-
-        if (void.class.equals(interfaceClass)) {
-
-            interfaceClass = null;
-
-            String interfaceClassName = service.interfaceName();
-
-            if (StringUtils.hasText(interfaceClassName)) {
-                if (ClassUtils.isPresent(interfaceClassName, classLoader)) {
-                    interfaceClass = resolveClassName(interfaceClassName, classLoader);
-                }
-            }
-
-        }
-
-        if (interfaceClass == null) {
-            // Find all interfaces from the annotated class
-            // To resolve an issue : https://github.com/apache/dubbo/issues/3251
-            Class<?>[] allInterfaces = ClassUtils.getAllInterfacesForClass(annotatedServiceBeanClass);
-
-            if (allInterfaces.length > 0) {
-                interfaceClass = allInterfaces[0];
-            }
-
-        }
-
-        Assert.notNull(interfaceClass,
-                "@Service interfaceClass() or interfaceName() or interface class must be present!");
-
-        Assert.isTrue(interfaceClass.isInterface(),
-                "The type that was annotated @Service is not an interface!");
-
-        return interfaceClass;
     }
 
     private Class<?> resolveClass(BeanDefinitionHolder beanDefinitionHolder) {
@@ -361,7 +358,19 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
         return resolvedPackagesToScan;
     }
 
-    private AbstractBeanDefinition buildServiceBeanDefinition(Service service, Class<?> interfaceClass,
+    /**
+     * Build the {@link AbstractBeanDefinition Bean Definition}
+     *
+     * @param serviceAnnotation
+     * @param serviceAnnotationAttributes
+     * @param interfaceClass
+     * @param annotatedServiceBeanName
+     * @return
+     * @since 2.7.3
+     */
+    private AbstractBeanDefinition buildServiceBeanDefinition(Annotation serviceAnnotation,
+                                                              AnnotationAttributes serviceAnnotationAttributes,
+                                                              Class<?> interfaceClass,
                                                               String annotatedServiceBeanName) {
 
         BeanDefinitionBuilder builder = rootBeanDefinition(ServiceBean.class);
@@ -373,19 +382,24 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
         String[] ignoreAttributeNames = of("provider", "monitor", "application", "module", "registry", "protocol",
                 "interface", "interfaceName", "parameters");
 
-        propertyValues.addPropertyValues(new AnnotationPropertyValuesAdapter(service, environment, ignoreAttributeNames));
+        propertyValues.addPropertyValues(new AnnotationPropertyValuesAdapter(serviceAnnotation, environment, ignoreAttributeNames));
 
         // References "ref" property to annotated-@Service Bean
         addPropertyReference(builder, "ref", annotatedServiceBeanName);
         // Set interface
         builder.addPropertyValue("interface", interfaceClass.getName());
         // Convert parameters into map
-        builder.addPropertyValue("parameters", convertParameters(service.parameters()));
+        builder.addPropertyValue("parameters", convertParameters(serviceAnnotationAttributes.getStringArray("parameters")));
+        // Add methods parameters
+        List<MethodConfig> methodConfigs = convertMethodConfigs(serviceAnnotationAttributes.get("methods"));
+        if (!methodConfigs.isEmpty()) {
+            builder.addPropertyValue("methods", methodConfigs);
+        }
 
         /**
          * Add {@link org.apache.dubbo.config.ProviderConfig} Bean reference
          */
-        String providerConfigBeanName = service.provider();
+        String providerConfigBeanName = serviceAnnotationAttributes.getString("provider");
         if (StringUtils.hasText(providerConfigBeanName)) {
             addPropertyReference(builder, "provider", providerConfigBeanName);
         }
@@ -393,7 +407,7 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
         /**
          * Add {@link org.apache.dubbo.config.MonitorConfig} Bean reference
          */
-        String monitorConfigBeanName = service.monitor();
+        String monitorConfigBeanName = serviceAnnotationAttributes.getString("monitor");
         if (StringUtils.hasText(monitorConfigBeanName)) {
             addPropertyReference(builder, "monitor", monitorConfigBeanName);
         }
@@ -401,7 +415,7 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
         /**
          * Add {@link org.apache.dubbo.config.ApplicationConfig} Bean reference
          */
-        String applicationConfigBeanName = service.application();
+        String applicationConfigBeanName = serviceAnnotationAttributes.getString("application");
         if (StringUtils.hasText(applicationConfigBeanName)) {
             addPropertyReference(builder, "application", applicationConfigBeanName);
         }
@@ -409,7 +423,7 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
         /**
          * Add {@link org.apache.dubbo.config.ModuleConfig} Bean reference
          */
-        String moduleConfigBeanName = service.module();
+        String moduleConfigBeanName = serviceAnnotationAttributes.getString("module");
         if (StringUtils.hasText(moduleConfigBeanName)) {
             addPropertyReference(builder, "module", moduleConfigBeanName);
         }
@@ -418,7 +432,7 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
         /**
          * Add {@link org.apache.dubbo.config.RegistryConfig} Bean reference
          */
-        String[] registryConfigBeanNames = service.registry();
+        String[] registryConfigBeanNames = serviceAnnotationAttributes.getStringArray("registry");
 
         List<RuntimeBeanReference> registryRuntimeBeanReferences = toRuntimeBeanReferences(registryConfigBeanNames);
 
@@ -429,7 +443,7 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
         /**
          * Add {@link org.apache.dubbo.config.ProtocolConfig} Bean reference
          */
-        String[] protocolConfigBeanNames = service.protocol();
+        String[] protocolConfigBeanNames = serviceAnnotationAttributes.getStringArray("protocol");
 
         List<RuntimeBeanReference> protocolRuntimeBeanReferences = toRuntimeBeanReferences(protocolConfigBeanNames);
 
@@ -441,6 +455,12 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
 
     }
 
+    private List convertMethodConfigs(Object methodsAnnotation) {
+        if (methodsAnnotation == null){
+            return Collections.EMPTY_LIST;
+        }
+        return MethodConfig.constructMethodConfig((Method[])methodsAnnotation);
+    }
 
     private ManagedList<RuntimeBeanReference> toRuntimeBeanReferences(String... beanNames) {
 

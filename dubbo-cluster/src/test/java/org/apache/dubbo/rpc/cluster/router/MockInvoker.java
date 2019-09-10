@@ -52,6 +52,7 @@ public class MockInvoker<T> implements Invoker<T> {
         return available;
     }
 
+    @Override
     public Result invoke(Invocation invocation) throws RpcException {
         return null;
     }
