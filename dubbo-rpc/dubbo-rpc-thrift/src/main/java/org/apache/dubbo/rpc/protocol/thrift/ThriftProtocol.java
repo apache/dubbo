@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.thrift;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
@@ -208,9 +209,9 @@ public class ThriftProtocol extends AbstractProtocol {
         url = url.addParameterIfAbsent(Constants.CHANNEL_READONLYEVENT_SENT_KEY, Boolean.TRUE.toString());
         String str = url.getParameter(Constants.SERVER_KEY, org.apache.dubbo.rpc.Constants.DEFAULT_REMOTING_SERVER);
 
-        if (str != null && str.length() > 0 && !ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(str)) {
-            throw new RpcException("Unsupported server type: " + str + ", url: " + url);
-        }
+		if (StringUtils.isLengthGreaterThanZero(str) && !ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(str)) {
+			throw new RpcException("Unsupported server type: " + str + ", url: " + url);
+		}
 
         ExchangeServer server;
         try {
@@ -219,7 +220,7 @@ public class ThriftProtocol extends AbstractProtocol {
             throw new RpcException("Fail to start server(url: " + url + ") " + e.getMessage(), e);
         }
         str = url.getParameter(Constants.CLIENT_KEY);
-        if (str != null && str.length() > 0) {
+		if (StringUtils.isLengthGreaterThanZero(str)) {
             Set<String> supportedTypes = ExtensionLoader.getExtensionLoader(Transporter.class).getSupportedExtensions();
             if (!supportedTypes.contains(str)) {
                 throw new RpcException("Unsupported client type: " + str);

@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -839,4 +840,11 @@ public final class StringUtils {
             return false;
         }
     }
+
+	public static boolean isLengthGreaterThanZero(String str) {
+		if (isEmpty(str)) {
+			return false;
+		}
+		return str.length() > 0 ? true : false;
+	}
 }
