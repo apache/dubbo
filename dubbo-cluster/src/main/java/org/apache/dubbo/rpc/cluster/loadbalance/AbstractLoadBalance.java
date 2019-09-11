@@ -18,11 +18,16 @@ package org.apache.dubbo.rpc.cluster.loadbalance;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.cluster.Constants;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_WARMUP;
@@ -56,8 +61,38 @@ public abstract class AbstractLoadBalance implements LoadBalance {
         if (invokers.size() == 1) {
             return invokers.get(0);
         }
-        return doSelect(invokers, url, invocation);
+        Optional<List<Invoker<T>>> optional = selectIntraDomain(invokers, url);
+        return optional.isPresent() ? doSelect(optional.get(), url, invocation) : doSelect(invokers, url, invocation);
     }
+
+
+    /**
+     * supports giving higher priority to intra-domain invocation
+     *
+     * @param invokers
+     * @param url
+     * @param <T>
+     * @return
+     */
+    private <T> Optional<List<Invoker<T>>> selectIntraDomain(List<Invoker<T>> invokers, URL url) {
+        String consumerRegion = url.getParameter(Constants.CONSUMER_REGION, "");
+        if (StringUtils.isNotEmpty(consumerRegion)) {
+            List<Invoker<T>> invokerList = invokers
+                    .stream()
+                    .filter(it -> sameRegion(it, consumerRegion))
+                    .collect(Collectors.toList());
+            if (invokerList.size() > 0) {
+                return Optional.of(invokerList);
+            }
+        }
+        return Optional.empty();
+    }
+
+
+    private static boolean sameRegion(Invoker invoker, String consumerRegion) {
+        return invoker.getUrl().getParameter(Constants.PROVIDER_REGION, "").equals(consumerRegion);
+    }
+
 
     protected abstract <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation);
 

@@ -110,4 +110,10 @@ public interface Constants {
      * The key name for export URL in register center
      */
     String EXPORT_KEY = "export";
+
+    String PROVIDER_REGION = "provider.region";
+
+    String CONSUMER_REGION = "consumer.region";
+
+
 }
