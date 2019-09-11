@@ -16,11 +16,7 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.apache.dubbo.common.io.UnsafeStringWriter;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-
-import com.alibaba.fastjson.JSON;
+import static org.apache.dubbo.common.constants.CommonConstants.*;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -28,20 +24,14 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
-import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
-import static org.apache.dubbo.common.constants.CommonConstants.DOT_REGEX;
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.HIDE_KEY_PREFIX;
-import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.SEPARATOR_REGEX;
-import static org.apache.dubbo.common.constants.CommonConstants.UNDERLINE_SEPARATOR;
-import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import com.alibaba.fastjson.JSON;
+import org.apache.dubbo.common.io.UnsafeStringWriter;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 
 /**
  * StringUtils
