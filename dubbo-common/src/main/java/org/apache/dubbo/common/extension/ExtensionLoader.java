@@ -266,9 +266,9 @@ public class ExtensionLoader<T> {
             return true;
         }
 
-        return url.getParameters().entrySet().stream().anyMatch(k ->
+        return url.getParameters().entrySet().stream().anyMatch(entry ->
                 Stream.of(keys).anyMatch(key ->
-                        (k.getKey().equals(key) || k.getKey().endsWith("." + key)) && ConfigUtils.isNotEmpty(k.getValue())));
+                        (entry.getKey().equals(key) || entry.getKey().endsWith("." + key)) && ConfigUtils.isNotEmpty(entry.getValue())));
     }
 
     /**
