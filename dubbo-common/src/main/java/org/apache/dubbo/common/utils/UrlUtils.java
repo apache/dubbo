@@ -484,7 +484,6 @@ public class UrlUtils {
                 PROVIDERS_CATEGORY.equals(url.getParameter(CATEGORY_KEY, PROVIDERS_CATEGORY));
     }
 
-
     /**
      * Check if the given value matches the given pattern. The pattern supports wildcard "*".
      *
