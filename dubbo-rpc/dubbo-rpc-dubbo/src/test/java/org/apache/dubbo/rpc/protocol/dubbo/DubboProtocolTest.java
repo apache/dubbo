@@ -210,4 +210,11 @@ public class DubboProtocolTest {
         service = proxy.getProxy(protocol.refer(DemoService.class, url));
         assertEquals(service.getRemoteApplicationName(), "consumer");
     }
+
+    @Test
+	public void testLengthGreaterThanZero() {
+		DemoService service = new DemoServiceImpl();
+		protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("dubbo://127.0.0.1:20880/" + DemoService.class.getName())));
+	}
+
 }
