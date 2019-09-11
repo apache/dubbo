@@ -27,6 +27,8 @@ import org.apache.dubbo.rpc.cluster.Directory;
  */
 public class BroadcastCluster implements Cluster {
 
+    public static final String NAME = "broadcast";
+
     @Override
     public <T> Invoker<T> join(Directory<T> directory) throws RpcException {
         return new BroadcastClusterInvoker<T>(directory);
