@@ -17,6 +17,7 @@
 package org.apache.dubbo.registry.nacos;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
@@ -32,6 +33,7 @@ import java.util.Properties;
 import static com.alibaba.nacos.api.PropertyKeyConst.ACCESS_KEY;
 import static com.alibaba.nacos.api.PropertyKeyConst.CLUSTER_NAME;
 import static com.alibaba.nacos.api.PropertyKeyConst.ENDPOINT;
+import static com.alibaba.nacos.api.PropertyKeyConst.ENDPOINT_PORT;
 import static com.alibaba.nacos.api.PropertyKeyConst.NAMESPACE;
 import static com.alibaba.nacos.api.PropertyKeyConst.SECRET_KEY;
 import static com.alibaba.nacos.api.PropertyKeyConst.SERVER_ADDR;
@@ -92,7 +94,18 @@ public class NacosRegistryFactory extends AbstractRegistryFactory {
     private void setProperties(URL url, Properties properties) {
         putPropertyIfAbsent(url, properties, NAMESPACE);
         putPropertyIfAbsent(url, properties, NACOS_NAMING_LOG_NAME);
-        putPropertyIfAbsent(url, properties, ENDPOINT);
+
+        String endpoint = url.getParameter(ENDPOINT);
+        if (StringUtils.isNotEmpty(endpoint)) {
+            if (endpoint.contains(":")) {
+                int index = endpoint.lastIndexOf(":");
+                properties.put(ENDPOINT, endpoint.substring(0, index));
+                properties.put(ENDPOINT_PORT, endpoint.substring(index + 1));
+            }else{
+                putPropertyIfAbsent(url, properties, ENDPOINT);
+            }
+        }
+
         putPropertyIfAbsent(url, properties, ACCESS_KEY);
         putPropertyIfAbsent(url, properties, SECRET_KEY);
         putPropertyIfAbsent(url, properties, CLUSTER_NAME);
