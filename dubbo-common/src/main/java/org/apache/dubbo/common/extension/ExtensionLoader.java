@@ -490,10 +490,13 @@ public class ExtensionLoader<T> {
         }
 
         StringBuilder buf = new StringBuilder("No such extension " + type.getName() + " by name " + name);
-        buf.append(", possible causes: ");
-
+        
         int i = 1;
         for (Map.Entry<String, IllegalStateException> entry : exceptions.entrySet()) {
+            if (i == 1) {
+                buf.append(", possible causes: ");
+            }
+
             buf.append("\r\n(");
             buf.append(i++);
             buf.append(") ");
