@@ -42,7 +42,7 @@ public class LogTelnetHandler implements TelnetHandler {
 
     @Override
     public String telnet(Channel channel, String message) {
-        long size = 0;
+        long size;
         File file = LoggerFactory.getFile();
         StringBuffer buf = new StringBuffer();
         if (message == null || message.trim().length() == 0) {
@@ -79,7 +79,6 @@ public class LogTelnetHandler implements TelnetHandler {
                         buf.append(e.getMessage());
                     }
                 } else {
-                    size = 0;
                     buf.append("\r\nMESSAGE: log file not exists or log appender is console .");
                 }
             }
