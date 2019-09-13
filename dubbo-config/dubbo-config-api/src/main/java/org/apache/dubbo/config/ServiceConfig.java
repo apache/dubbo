@@ -435,17 +435,20 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (unexported) {
             return;
         }
-        if (!exporters.isEmpty()) {
-            for (Exporter<?> exporter : exporters) {
-                try {
-                    exporter.unexport();
-                } catch (Throwable t) {
-                    logger.warn("Unexpected error occured when unexport " + exporter, t);
-                }
-            }
-            exporters.clear();
+
+        if (exporters.isEmpty()) {
+            unexported = true;
+            return;
         }
-        unexported = true;
+
+        for (Exporter<?> exporter : exporters) {
+            try {
+                exporter.unexport();
+            } catch (Throwable t) {
+                logger.warn("Unexpected error occured when unexport " + exporter, t);
+            }
+        }
+        exporters.clear();
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})

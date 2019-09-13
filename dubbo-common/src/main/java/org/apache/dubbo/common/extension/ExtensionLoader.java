@@ -455,17 +455,7 @@ public class ExtensionLoader<T> {
 
     @SuppressWarnings("unchecked")
     public T getAdaptiveExtension() {
-        Object instance = cachedAdaptiveInstance.get();
-        if (instance == null) {
-            if (createAdaptiveInstanceError != null) {
-                throw new IllegalStateException("Failed to create adaptive instance: " +
-                        createAdaptiveInstanceError.toString(),
-                        createAdaptiveInstanceError);
-            }
-
-            synchronized (cachedAdaptiveInstance) {
-                instance = cachedAdaptiveInstance.get();
-                if (instance == null) {
+        Object instance = cachedAdaptive
                     try {
                         instance = createAdaptiveExtension();
                         cachedAdaptiveInstance.set(instance);

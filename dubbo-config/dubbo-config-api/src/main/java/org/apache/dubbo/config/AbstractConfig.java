@@ -636,7 +636,7 @@ public abstract class AbstractConfig implements Serializable {
             try {
                 Method method2 = obj.getClass().getMethod(method1.getName(), method1.getParameterTypes());
                 Object value1 = method1.invoke(this);
-                Object value2 = method2.invoke(obj,  new Object[]{});
+                Object value2 = method2.invoke(obj, new Object[]{});
                 if (!(value1 == null || value2 == null || value1.equals(value2))) {
                     return false;
                 }

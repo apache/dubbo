@@ -326,36 +326,37 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
      */
     protected List<URL> loadRegistries(boolean provider) {
         // check && override if necessary
-        List<URL> registryList = new ArrayList<URL>();
-        if (CollectionUtils.isNotEmpty(registries)) {
-            for (RegistryConfig config : registries) {
-                String address = config.getAddress();
-                if (StringUtils.isEmpty(address)) {
-                    address = ANYHOST_VALUE;
-                }
-                if (!RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(address)) {
-                    Map<String, String> map = new HashMap<String, String>();
-                    appendParameters(map, application);
-                    appendParameters(map, config);
-                    map.put(PATH_KEY, RegistryService.class.getName());
-                    appendRuntimeParameters(map);
-                    if (!map.containsKey(PROTOCOL_KEY)) {
-                        map.put(PROTOCOL_KEY, DUBBO_PROTOCOL);
-                    }
-                    List<URL> urls = UrlUtils.parseURLs(address, map);
+        List<URL> registryList = new ArrayList<>();
+        if (CollectionUtils.isEmpty(registries)) {
+            return registryList;
+        }
 
-                    for (URL url : urls) {
-                        url = URLBuilder.from(url)
-                                .addParameter(REGISTRY_KEY, url.getProtocol())
-                                .setProtocol(REGISTRY_PROTOCOL)
-                                .build();
-                        if ((provider && url.getParameter(REGISTER_KEY, true))
-                                || (!provider && url.getParameter(SUBSCRIBE_KEY, true))) {
-                            registryList.add(url);
-                        }
-                    }
-                }
+        for (RegistryConfig config : registries) {
+            String address = config.getAddress();
+            if (StringUtils.isEmpty(address)) {
+                address = ANYHOST_VALUE;
             }
+
+            if (RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(address)) {
+                continue;
+            }
+
+            Map<String, String> map = new HashMap<>();
+            appendParameters(map, application);
+            appendParameters(map, config);
+
+            map.put(PATH_KEY, RegistryService.class.getName());
+            appendRuntimeParameters(map);
+            if (!map.containsKey(PROTOCOL_KEY)) {
+                map.put(PROTOCOL_KEY, DUBBO_PROTOCOL);
+            }
+            List<URL> urls = UrlUtils.parseURLs(address, map);
+
+            urls.stream()
+                    .map(url -> URLBuilder.from(url).addParameter(REGISTRY_KEY, url.getProtocol()).setProtocol(REGISTRY_PROTOCOL).build())
+                    .filter(url -> (provider && url.getParameter(REGISTER_KEY, true))
+                            || (!provider && url.getParameter(SUBSCRIBE_KEY, true)))
+                    .forEach(registryList::add);
         }
         return registryList;
     }
@@ -380,6 +381,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             throw new IllegalArgumentException("Specified invalid registry ip from property:" +
                     DUBBO_IP_TO_REGISTRY + ", value:" + hostToRegistry);
         }
+
         map.put(REGISTER_IP_KEY, hostToRegistry);
         appendParameters(map, monitor);
         appendParameters(map, application);
@@ -388,6 +390,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         if (sysaddress != null && sysaddress.length() > 0) {
             address = sysaddress;
         }
+
         if (ConfigUtils.isNotEmpty(address)) {
             if (!map.containsKey(PROTOCOL_KEY)) {
                 if (getExtensionLoader(MonitorFactory.class).hasExtension(LOGSTAT_PROTOCOL)) {
@@ -397,7 +400,9 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 }
             }
             return UrlUtils.parseURL(address, map);
-        } else if (REGISTRY_PROTOCOL.equals(monitor.getProtocol()) && registryURL != null) {
+        }
+
+        if (REGISTRY_PROTOCOL.equals(monitor.getProtocol()) && registryURL != null) {
             return URLBuilder.from(registryURL)
                     .setProtocol(DUBBO_PROTOCOL)
                     .addParameter(PROTOCOL_KEY, REGISTRY_PROTOCOL)
