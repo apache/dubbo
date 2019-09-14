@@ -104,8 +104,8 @@ public abstract class Wrapper {
      * @return Wrapper instance(not null).
      */
     public static Wrapper getWrapper(Class<?> c) {
-        while (ClassGenerator.isDynamicClass(c)) // can not wrapper on dynamic class.
-        {
+        // can not wrapper on dynamic class.
+        while (ClassGenerator.isDynamicClass(c)) {
             c = c.getSuperclass();
         }
 

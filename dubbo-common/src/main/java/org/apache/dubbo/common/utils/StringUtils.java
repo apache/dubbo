@@ -643,14 +643,14 @@ public final class StringUtils {
         if (ArrayUtils.isEmpty(array)) {
             return EMPTY;
         }
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < array.length; i++) {
-            if (i > 0) {
-                sb.append(split);
-            }
-            sb.append(array[i]);
+
+         StringBuilder sb = new StringBuilder();
+        for (String s: array) {
+            sb.append(s);
+            sb.append(split);
         }
-        return sb.toString();
+
+        return sb.substring(0, sb.length()-1);
     }
 
     /**
@@ -664,14 +664,14 @@ public final class StringUtils {
         if (ArrayUtils.isEmpty(array)) {
             return EMPTY;
         }
+
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < array.length; i++) {
-            if (i > 0) {
-                sb.append(split);
-            }
-            sb.append(array[i]);
+        for (String s: array) {
+            sb.append(s);
+            sb.append(split);
         }
-        return sb.toString();
+
+        return sb.substring(0, sb.length()-1);
     }
 
     public static String join(Collection<String> coll, String split) {
@@ -680,16 +680,12 @@ public final class StringUtils {
         }
 
         StringBuilder sb = new StringBuilder();
-        boolean isFirst = true;
         for (String s : coll) {
-            if (isFirst) {
-                isFirst = false;
-            } else {
-                sb.append(split);
-            }
             sb.append(s);
+            sb.append(split);
         }
-        return sb.toString();
+
+        return sb.substring(0, sb.length()-1);
     }
 
     /**

@@ -145,7 +145,7 @@ public class MethodConfig extends AbstractMethodConfig {
             this.setOnthrow(method.onthrow());
         }
 
-        if (method.arguments() != null && method.arguments().length != 0) {
+        if (method.arguments().length != 0) {
             List<ArgumentConfig> argumentConfigs = new ArrayList<ArgumentConfig>(method.arguments().length);
             this.setArguments(argumentConfigs);
             for (int i = 0; i < method.arguments().length; i++) {

@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.CLASSIFIER_KEY;
@@ -157,18 +158,17 @@ public class UrlUtils {
     }
 
     public static List<URL> parseURLs(String address, Map<String, String> defaults) {
-        if (address == null || address.length() == 0) {
+        if (StringUtils.isEmpty(address)) {
             return null;
         }
+
         String[] addresses = REGISTRY_SPLIT_PATTERN.split(address);
-        if (addresses == null || addresses.length == 0) {
-            return null; //here won't be empty
+        if (ArrayUtils.isEmpty(addresses)) {
+            //here won't be empty
+            return null;
         }
-        List<URL> registries = new ArrayList<URL>();
-        for (String addr : addresses) {
-            registries.add(parseURL(addr, defaults));
-        }
-        return registries;
+
+        return Stream.of(addresses).map(item -> parseURL(item, defaults)).collect(Collectors.toList());
     }
 
     public static Map<String, Map<String, String>> convertRegister(Map<String, Map<String, String>> register) {

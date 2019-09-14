@@ -51,6 +51,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.apache.dubbo.common.config.ConfigurationUtils.parseProperties;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
@@ -295,7 +297,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             if (StringUtils.isNotEmpty(appGroup)) {
                 appConfigContent = dynamicConfiguration.getProperties
                         (StringUtils.isNotEmpty(configCenter.getAppConfigFile()) ? configCenter.getAppConfigFile() : configCenter.getConfigFile(),
-                         appGroup
+                                appGroup
                         );
             }
             try {
@@ -318,7 +320,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     /**
-     *
      * Load the registry and conversion it to {@link URL}, the priority order is: system property > dubbo registry config
      *
      * @param provider whether it is the provider side
@@ -331,38 +332,29 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             return registryList;
         }
 
-        for (RegistryConfig config : registries) {
-            String address = config.getAddress();
-            if (StringUtils.isEmpty(address)) {
-                address = ANYHOST_VALUE;
-            }
+        Map<String, String> map = new HashMap<>();
+        appendParameters(map, application);
+        appendRuntimeParameters(map);
+        map.put(PATH_KEY, RegistryService.class.getName());
+        map.putIfAbsent(PROTOCOL_KEY, DUBBO_PROTOCOL);
 
-            if (RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(address)) {
-                continue;
-            }
-
-            Map<String, String> map = new HashMap<>();
-            appendParameters(map, application);
-            appendParameters(map, config);
-
-            map.put(PATH_KEY, RegistryService.class.getName());
-            appendRuntimeParameters(map);
-            if (!map.containsKey(PROTOCOL_KEY)) {
-                map.put(PROTOCOL_KEY, DUBBO_PROTOCOL);
-            }
-            List<URL> urls = UrlUtils.parseURLs(address, map);
-
-            urls.stream()
-                    .map(url -> URLBuilder.from(url).addParameter(REGISTRY_KEY, url.getProtocol()).setProtocol(REGISTRY_PROTOCOL).build())
-                    .filter(url -> (provider && url.getParameter(REGISTER_KEY, true))
-                            || (!provider && url.getParameter(SUBSCRIBE_KEY, true)))
-                    .forEach(registryList::add);
-        }
+        registries.stream()
+                .filter(config -> !RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(config.getAddress()))
+                .flatMap(config -> {
+                    String address = StringUtils.isNotEmpty(config.getAddress()) ? config.getAddress() : ANYHOST_VALUE;
+                    Map<String, String> mapWithConfig = new HashMap<>(map);
+                    appendParameters(mapWithConfig, config);
+                    List<URL> urls = UrlUtils.parseURLs(address, mapWithConfig);
+                    return urls != null ? urls.stream() : Stream.empty();
+                })
+                .map(url -> URLBuilder.from(url).addParameter(REGISTRY_KEY, url.getProtocol()).setProtocol(REGISTRY_PROTOCOL).build())
+                .filter(url -> (provider && url.getParameter(REGISTER_KEY, true))
+                        || (!provider && url.getParameter(SUBSCRIBE_KEY, true)))
+                .forEach(registryList::add);
         return registryList;
     }
 
     /**
-     *
      * Load the monitor config from the system properties and conversation it to {@link URL}
      *
      * @param registryURL
@@ -444,7 +436,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
      * methods configured in the configuration file are included in the interface of remote service
      *
      * @param interfaceClass the interface of remote service
-     * @param methods the methods configured
+     * @param methods        the methods configured
      */
     protected void checkInterfaceAndMethods(Class<?> interfaceClass, List<MethodConfig> methods) {
         // interface cannot be null
@@ -564,12 +556,12 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             if (CollectionUtils.isEmpty(registries)) {
                 setRegistries(
                         ConfigManager.getInstance().getDefaultRegistries()
-                        .filter(CollectionUtils::isNotEmpty)
-                        .orElseGet(() -> {
-                            RegistryConfig registryConfig = new RegistryConfig();
-                            registryConfig.refresh();
-                            return Arrays.asList(registryConfig);
-                        })
+                                .filter(CollectionUtils::isNotEmpty)
+                                .orElseGet(() -> {
+                                    RegistryConfig registryConfig = new RegistryConfig();
+                                    registryConfig.refresh();
+                                    return Arrays.asList(registryConfig);
+                                })
                 );
             }
         } else {
@@ -626,7 +618,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 ConfigManager configManager = ConfigManager.getInstance();
                 ConfigCenterConfig cc = configManager.getConfigCenter().orElse(new ConfigCenterConfig());
                 cc.setParameters(new HashMap<>());
-                cc.getParameters().put(org.apache.dubbo.remoting.Constants.CLIENT_KEY,rc.getClient());
+                cc.getParameters().put(org.apache.dubbo.remoting.Constants.CLIENT_KEY, rc.getClient());
                 cc.setProtocol(rc.getProtocol());
                 cc.setAddress(rc.getAddress());
                 cc.setHighestPriority(false);

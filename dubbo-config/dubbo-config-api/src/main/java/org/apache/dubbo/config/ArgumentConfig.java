@@ -24,7 +24,6 @@ import java.io.Serializable;
 /**
  * The method arguments configuration
  *
- * @export
  */
 public class ArgumentConfig implements Serializable {
 
@@ -66,6 +65,11 @@ public class ArgumentConfig implements Serializable {
     @Parameter(excluded = true)
     public String getType() {
         return type;
+    }
+
+    @Parameter(excluded = true)
+    public boolean notEmptySet() {
+        return index != -1;
     }
 
     public void setType(String type) {

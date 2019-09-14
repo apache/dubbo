@@ -60,6 +60,7 @@ import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
@@ -138,12 +139,12 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     /**
      * The urls of the services exported
      */
-    private final List<URL> urls = new ArrayList<URL>();
+    private final List<URL> urls = new ArrayList<>();
 
     /**
      * The exported services
      */
-    private final List<Exporter<?>> exporters = new ArrayList<Exporter<?>>();
+    private final List<Exporter<?>> exporters = new ArrayList<>();
 
     /**
      * The interface name of the exported service
@@ -468,70 +469,82 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             name = DUBBO;
         }
 
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         map.put(SIDE_KEY, PROVIDER_SIDE);
 
         appendRuntimeParameters(map);
         appendParameters(map, metrics);
         appendParameters(map, application);
         appendParameters(map, module);
-        // remove 'default.' prefix for configs from ProviderConfig
-        // appendParameters(map, provider, Constants.DEFAULT_KEY);
         appendParameters(map, provider);
         appendParameters(map, protocolConfig);
         appendParameters(map, this);
+
         if (CollectionUtils.isNotEmpty(methods)) {
+            Method[] interfaceMethods = interfaceClass.getMethods();
+
             for (MethodConfig method : methods) {
-                appendParameters(map, method, method.getName());
-                String retryKey = method.getName() + ".retry";
+                String methodName = method.getName();
+                appendParameters(map, method, methodName);
+
+                String retryKey = methodName + ".retry";
                 if (map.containsKey(retryKey)) {
                     String retryValue = map.remove(retryKey);
                     if (Boolean.FALSE.toString().equals(retryValue)) {
-                        map.put(method.getName() + ".retries", "0");
+                        map.put(methodName + ".retries", "0");
                     }
                 }
+
+                if (interfaceMethods.length <= 0) {
+                    continue;
+                }
+
                 List<ArgumentConfig> arguments = method.getArguments();
-                if (CollectionUtils.isNotEmpty(arguments)) {
-                    for (ArgumentConfig argument : arguments) {
-                        // convert argument type
-                        if (argument.getType() != null && argument.getType().length() > 0) {
-                            Method[] methods = interfaceClass.getMethods();
-                            // visit all methods
-                            if (methods != null && methods.length > 0) {
-                                for (int i = 0; i < methods.length; i++) {
-                                    String methodName = methods[i].getName();
-                                    // target the method, and get its signature
-                                    if (methodName.equals(method.getName())) {
-                                        Class<?>[] argtypes = methods[i].getParameterTypes();
-                                        // one callback in the method
-                                        if (argument.getIndex() != -1) {
-                                            if (argtypes[argument.getIndex()].getName().equals(argument.getType())) {
-                                                appendParameters(map, argument, method.getName() + "." + argument.getIndex());
+                if (CollectionUtils.isEmpty(arguments)) {
+                    continue;
+                }
+
+                for (ArgumentConfig argument : arguments) {
+                    // convert argument type
+                    if (StringUtils.isNotEmpty(argument.getType())) {
+                        Arrays.stream(interfaceMethods)
+                                .filter(interfaceMethod -> interfaceMethod.getName().equals(methodName))
+                                .map(Method::getParameterTypes)
+                                .forEach(parameterTypes -> {
+                                            // one callback in the method
+                                            if (argument.notEmptySet()) {
+                                                if (!parameterTypes[argument.getIndex()].getName().equals(argument.getType())) {
+                                                    throw new IllegalArgumentException("Argument config error : the index attribute and type attribute not match :index :"
+                                                            + argument.getIndex()
+                                                            + ", type:"
+                                                            + argument.getType());
+                                                }
+                                                appendParameters(map, argument, methodName + "." + argument.getIndex());
                                             } else {
-                                                throw new IllegalArgumentException("Argument config error : the index attribute and type attribute not match :index :" + argument.getIndex() + ", type:" + argument.getType());
-                                            }
-                                        } else {
-                                            // multiple callbacks in the method
-                                            for (int j = 0; j < argtypes.length; j++) {
-                                                Class<?> argclazz = argtypes[j];
-                                                if (argclazz.getName().equals(argument.getType())) {
-                                                    appendParameters(map, argument, method.getName() + "." + j);
-                                                    if (argument.getIndex() != -1 && argument.getIndex() != j) {
-                                                        throw new IllegalArgumentException("Argument config error : the index attribute and type attribute not match :index :" + argument.getIndex() + ", type:" + argument.getType());
+                                                // multiple callbacks in the method
+                                                for (int i = 0; i < parameterTypes.length; i++) {
+                                                    if (parameterTypes[i].getName().equals(argument.getType())) {
+                                                        appendParameters(map, argument, methodName + "." + i);
+                                                        if (argument.notEmptySet() && argument.getIndex() != i) {
+                                                            throw new IllegalArgumentException("Argument config error : the index attribute and type attribute not match :index :"
+                                                                    + argument.getIndex()
+                                                                    + ", type:"
+                                                                    + argument.getType());
+                                                        }
                                                     }
                                                 }
                                             }
                                         }
-                                    }
-                                }
-                            }
-                        } else if (argument.getIndex() != -1) {
-                            appendParameters(map, argument, method.getName() + "." + argument.getIndex());
-                        } else {
-                            throw new IllegalArgumentException("Argument config must set index or type attribute.eg: <dubbo:argument index='0' .../> or <dubbo:argument type=xxx .../>");
-                        }
-
+                                );
+                        continue;
                     }
+
+                    if (argument.notEmptySet()) {
+                        appendParameters(map, argument, methodName + "." + argument.getIndex());
+                        continue;
+                    }
+
+                    throw new IllegalArgumentException("Argument config must set index or type attribute.eg: <dubbo:argument index='0' .../> or <dubbo:argument type=xxx .../>");
                 }
             } // end of methods for
         }
@@ -541,7 +554,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             map.put(METHODS_KEY, ANY_VALUE);
         } else {
             String revision = Version.getVersion(interfaceClass, version);
-            if (revision != null && revision.length() > 0) {
+            if (StringUtils.isNotEmpty(revision)) {
                 map.put(REVISION_KEY, revision);
             }
 
@@ -550,103 +563,114 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 logger.warn("No method found in service interface " + interfaceClass.getName());
                 map.put(METHODS_KEY, ANY_VALUE);
             } else {
-                map.put(METHODS_KEY, StringUtils.join(new HashSet<String>(Arrays.asList(methods)), ","));
+                map.put(METHODS_KEY, StringUtils.join(new HashSet<>(Arrays.asList(methods)), ","));
             }
         }
-        if (!ConfigUtils.isEmpty(token)) {
+
+        if (ConfigUtils.isNotEmpty(token)) {
             if (ConfigUtils.isDefault(token)) {
                 map.put(TOKEN_KEY, UUID.randomUUID().toString());
             } else {
                 map.put(TOKEN_KEY, token);
             }
         }
+
         // export service
         String host = this.findConfigedHosts(protocolConfig, registryURLs, map);
         Integer port = this.findConfigedPorts(protocolConfig, name, map);
         URL url = new URL(name, host, port, getContextPath(protocolConfig).map(p -> p + "/" + path).orElse(path), map);
 
-        if (ExtensionLoader.getExtensionLoader(ConfiguratorFactory.class)
-                .hasExtension(url.getProtocol())) {
+        if (ExtensionLoader.getExtensionLoader(ConfiguratorFactory.class).hasExtension(url.getProtocol())) {
             url = ExtensionLoader.getExtensionLoader(ConfiguratorFactory.class)
                     .getExtension(url.getProtocol()).getConfigurator(url).configure(url);
         }
 
         String scope = url.getParameter(SCOPE_KEY);
         // don't export when none is configured
-        if (!SCOPE_NONE.equalsIgnoreCase(scope)) {
-
-            // export to local if the config is not remote (export to remote only when config is remote)
-            if (!SCOPE_REMOTE.equalsIgnoreCase(scope)) {
-                exportLocal(url);
-            }
-            // export to remote if the config is not local (export to local only when config is local)
-            if (!SCOPE_LOCAL.equalsIgnoreCase(scope)) {
-                if (CollectionUtils.isNotEmpty(registryURLs)) {
-                    for (URL registryURL : registryURLs) {
-                        //if protocol is only injvm ,not register
-                        if (LOCAL_PROTOCOL.equalsIgnoreCase(url.getProtocol())) {
-                            continue;
-                        }
-                        url = url.addParameterIfAbsent(DYNAMIC_KEY, registryURL.getParameter(DYNAMIC_KEY));
-                        URL monitorUrl = loadMonitor(registryURL);
-                        if (monitorUrl != null) {
-                            url = url.addParameterAndEncoded(MONITOR_KEY, monitorUrl.toFullString());
-                        }
-                        if (logger.isInfoEnabled()) {
-                            if (url.getParameter(REGISTER_KEY, true)) {
-                                logger.info("Register dubbo service " + interfaceClass.getName() + " url " + url + " to registry " + registryURL);
-                            } else {
-                                logger.info("Export dubbo service " + interfaceClass.getName() + " to url " + url);
-                            }
-                        }
-
-                        // For providers, this is used to enable custom proxy to generate invoker
-                        String proxy = url.getParameter(PROXY_KEY);
-                        if (StringUtils.isNotEmpty(proxy)) {
-                            registryURL = registryURL.addParameter(PROXY_KEY, proxy);
-                        }
-
-                        Invoker<?> invoker = PROXY_FACTORY.getInvoker(ref, (Class) interfaceClass, registryURL.addParameterAndEncoded(EXPORT_KEY, url.toFullString()));
-                        DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
-
-                        Exporter<?> exporter = protocol.export(wrapperInvoker);
-                        exporters.add(exporter);
-                    }
-                } else {
-                    if (logger.isInfoEnabled()) {
-                        logger.info("Export dubbo service " + interfaceClass.getName() + " to url " + url);
-                    }
-                    Invoker<?> invoker = PROXY_FACTORY.getInvoker(ref, (Class) interfaceClass, url);
-                    DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
-
-                    Exporter<?> exporter = protocol.export(wrapperInvoker);
-                    exporters.add(exporter);
-                }
-                /**
-                 * @since 2.7.0
-                 * ServiceData Store
-                 */
-                MetadataReportService metadataReportService = null;
-                if ((metadataReportService = getMetadataReportService()) != null) {
-                    metadataReportService.publishProvider(url);
-                }
-            }
+        if (SCOPE_NONE.equalsIgnoreCase(scope)) {
+            this.urls.add(url);
+            return;
         }
+        // export to local if the config is not remote (export to remote only when config is remote)
+        if (!SCOPE_REMOTE.equalsIgnoreCase(scope)) {
+            exportLocal(url);
+        }
+        // export to remote if the config is not local (export to local only when config is local)
+        if (SCOPE_LOCAL.equalsIgnoreCase(scope)) {
+            this.urls.add(url);
+            return;
+        }
+
+        if (CollectionUtils.isNotEmpty(registryURLs)) {
+            // if protocol is not injvm , register
+            if (!LOCAL_PROTOCOL.equalsIgnoreCase(url.getProtocol())) {
+                for (URL registryURL : registryURLs) {
+                    url = url.addParameterIfAbsent(DYNAMIC_KEY, registryURL.getParameter(DYNAMIC_KEY));
+                    URL monitorUrl = loadMonitor(registryURL);
+                    if (monitorUrl != null) {
+                        url = url.addParameterAndEncoded(MONITOR_KEY, monitorUrl.toFullString());
+                    }
+
+                    if (logger.isInfoEnabled()) {
+                        if (url.getParameter(REGISTER_KEY, true)) {
+                            logger.info("Register dubbo service " + interfaceClass.getName() + " url " + url + " to registry " + registryURL);
+                        } else {
+                            logger.info("Export dubbo service " + interfaceClass.getName() + " to url " + url);
+                        }
+                    }
+
+                    // For providers, this is used to enable custom proxy to generate invoker
+                    String proxy = url.getParameter(PROXY_KEY);
+                    if (StringUtils.isNotEmpty(proxy)) {
+                        registryURL = registryURL.addParameter(PROXY_KEY, proxy);
+                    }
+
+                    exportProvider(registryURL.addParameterAndEncoded(EXPORT_KEY, url.toFullString()));
+                }
+            }
+        } else {
+            if (logger.isInfoEnabled()) {
+                logger.info("Export dubbo service " + interfaceClass.getName() + " to url " + url);
+            }
+
+            exportProvider(url);
+        }
+
+        /*
+         * @since 2.7.0
+         * ServiceData Store
+         */
+        MetadataReportService metadataReportService = getMetadataReportService();
+        if (metadataReportService != null) {
+            metadataReportService.publishProvider(url);
+        }
+
         this.urls.add(url);
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings("unchecked")
+    private void exportProvider(URL url) {
+        Invoker<?> invoker = PROXY_FACTORY.getInvoker(ref, (Class) interfaceClass, url);
+        DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
+
+        Exporter<?> exporter = protocol.export(wrapperInvoker);
+        exporters.add(exporter);
+    }
+
+
     /**
      * always export injvm
+     *
+     * @param url {@link URL}
      */
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private void exportLocal(URL url) {
         URL local = URLBuilder.from(url)
                 .setProtocol(LOCAL_PROTOCOL)
                 .setHost(LOCALHOST_VALUE)
                 .setPort(0)
                 .build();
-        Exporter<?> exporter = protocol.export(
-                PROXY_FACTORY.getInvoker(ref, (Class) interfaceClass, local));
+        Exporter<?> exporter = protocol.export(PROXY_FACTORY.getInvoker(ref, (Class) interfaceClass, local));
         exporters.add(exporter);
         logger.info("Export dubbo service " + interfaceClass.getName() + " to local registry url : " + local);
     }
@@ -690,7 +714,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             if (isInvalidLocalHost(hostToBind)) {
                 anyhost = true;
                 try {
-                    logger.info( "No valid ip found from environment, try to find valid host from DNS.");
+                    logger.info("No valid ip found from environment, try to find valid host from DNS.");
                     hostToBind = InetAddress.getLocalHost().getHostAddress();
                 } catch (UnknownHostException e) {
                     logger.warn(e.getMessage(), e);
@@ -712,6 +736,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                             }
                         }
                     }
+
                     if (isInvalidLocalHost(hostToBind)) {
                         hostToBind = getLocalHost();
                     }
@@ -746,11 +771,10 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
      * @return
      */
     private Integer findConfigedPorts(ProtocolConfig protocolConfig, String name, Map<String, String> map) {
-        Integer portToBind = null;
 
         // parse bind port from environment
         String port = getValueFromConfig(protocolConfig, DUBBO_PORT_TO_BIND);
-        portToBind = parsePort(port);
+        Integer portToBind = parsePort(port);
 
         // if there's no bind port found from environment, keep looking up.
         if (portToBind == null) {
