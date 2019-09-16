@@ -215,7 +215,7 @@ public class RegistryProtocol implements Protocol {
         ProviderInvokerWrapper<T> providerInvokerWrapper = ProviderConsumerRegTable.registerProvider(originInvoker,
                 registryUrl, registeredProviderUrl);
         //to judge if we need to delay publish
-        boolean register = registeredProviderUrl.getParameter("register", true);
+        boolean register = providerUrl.getParameter(REGISTER_KEY, true);
         if (register) {
             register(registryUrl, registeredProviderUrl);
             providerInvokerWrapper.setReg(true);

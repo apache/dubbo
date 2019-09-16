@@ -82,7 +82,7 @@ public class CacheFilter implements Filter {
 
     /**
      * If cache is configured, dubbo will invoke method on each method call. If cache value is returned by cache store
-     * then it will return otherwise call the remote method and return value. If remote method's return valeu has error
+     * then it will return otherwise call the remote method and return value. If remote method's return value has error
      * then it will not cache the value.
      * @param invoker    service
      * @param invocation invocation.
