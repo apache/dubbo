@@ -20,12 +20,14 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ListenableFilter;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcStatus;
+import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import static org.apache.dubbo.rpc.Constants.EXECUTES_KEY;
 
@@ -40,7 +42,7 @@ import static org.apache.dubbo.rpc.Constants.EXECUTES_KEY;
 @Activate(group = CommonConstants.PROVIDER, value = EXECUTES_KEY)
 public class ExecuteLimitFilter extends ListenableFilter {
 
-    private static final String EXECUTELIMIT_FILTER_START_TIME = "execugtelimit_filter_start_time";
+    private static final String EXECUTELIMIT_FILTER_START_TIME = "executelimit_filter_start_time";
 
     public ExecuteLimitFilter() {
         super.listener = new ExecuteLimitListener();
@@ -73,23 +75,33 @@ public class ExecuteLimitFilter extends ListenableFilter {
     static class ExecuteLimitListener implements Listener {
         @Override
         public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
-            RpcStatus.endCount(invoker.getUrl(), invocation.getMethodName(), getElapsed(invocation), true);
+            RpcStatus.endCount(invoker.getUrl(), getGenericOriginMethod(invocation), getElapsed(invocation), true);
         }
 
         @Override
         public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
             if (t instanceof RpcException) {
-                RpcException rpcException = (RpcException)t;
+                RpcException rpcException = (RpcException) t;
                 if (rpcException.isLimitExceed()) {
                     return;
                 }
             }
-            RpcStatus.endCount(invoker.getUrl(), invocation.getMethodName(), getElapsed(invocation), false);
+            RpcStatus.endCount(invoker.getUrl(), getGenericOriginMethod(invocation), getElapsed(invocation), false);
         }
 
         private long getElapsed(Invocation invocation) {
             String beginTime = invocation.getAttachment(EXECUTELIMIT_FILTER_START_TIME);
             return StringUtils.isNotEmpty(beginTime) ? System.currentTimeMillis() - Long.parseLong(beginTime) : 0;
+        }
+
+        private String getGenericOriginMethod(Invocation invocation) {
+            String originMethodName = null;
+            if (ProtocolUtils.isGeneric(invocation.getAttachment(Constants.GENERIC_KEY, "false"))) {
+                originMethodName = invocation.getArguments() != null && invocation.getArguments().length > 0 ?
+                        (String) invocation.getArguments()[0] : invocation.getMethodName();
+            }
+            originMethodName = originMethodName == null ? invocation.getMethodName() : originMethodName;
+            return originMethodName;
         }
     }
 }
