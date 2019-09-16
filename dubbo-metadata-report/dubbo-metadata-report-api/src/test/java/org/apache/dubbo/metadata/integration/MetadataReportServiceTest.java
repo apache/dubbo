@@ -121,6 +121,30 @@ public class MetadataReportServiceTest {
 
     }
 
+    @Test
+    public void testIgnorePublishProvider() throws InterruptedException {
+        URL publishUrl = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.3&application=vicpubp&generic=true&interface=org.apache.dubbo.metadata.integration.XXXX&side=provider");
+        metadataReportService1.publishProvider(publishUrl);
+        Thread.sleep(300);
+
+        JTestMetadataReport4Test jTestMetadataReport4Test = (JTestMetadataReport4Test) metadataReportService1.metadataReport;
+
+        String value = jTestMetadataReport4Test.store.get(JTestMetadataReport4Test.getProviderKey(publishUrl));
+        Assertions.assertNull(value);
+    }
+
+    @Test
+    public void testIgnorePublishConsumer() throws InterruptedException {
+        URL publishUrl = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.XXXService?version=1.0.x&application=vicpubconsumer&generic=true&side=consumer");
+        metadataReportService1.publishConsumer(publishUrl);
+        Thread.sleep(300);
+
+        JTestMetadataReport4Test jTestMetadataReport4Test = (JTestMetadataReport4Test) metadataReportService1.metadataReport;
+
+        String value = jTestMetadataReport4Test.store.get(JTestMetadataReport4Test.getConsumerKey(publishUrl));
+        Assertions.assertNull(value);
+    }
+
     private FullServiceDefinition toServiceDefinition(String urlQuery) {
         Gson gson = new Gson();
         return gson.fromJson(urlQuery, FullServiceDefinition.class);
