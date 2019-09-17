@@ -492,12 +492,15 @@ public class ExtensionLoader<T> {
         return (T) instance;
     }
 
-    private IllegalStateException findException(String name) {
+    private void findException(String name) {
         for (Map.Entry<String, IllegalStateException> entry : exceptions.entrySet()) {
             if (entry.getKey().toLowerCase().contains(name.toLowerCase())) {
-                return entry.getValue();
+                throw entry.getValue();
             }
         }
+    }
+
+    private IllegalStateException noExtensionException(String name) {
         StringBuilder buf = new StringBuilder("No such extension " + type.getName() + " by name " + name);
 
 
@@ -519,9 +522,11 @@ public class ExtensionLoader<T> {
 
     @SuppressWarnings("unchecked")
     private T createExtension(String name) {
+        // throws any possible exception in loading period.
+        findException(name);
         Class<?> clazz = getExtensionClasses().get(name);
         if (clazz == null) {
-            throw findException(name);
+            throw noExtensionException(name);
         }
         try {
             T instance = (T) EXTENSION_INSTANCES.get(clazz);
