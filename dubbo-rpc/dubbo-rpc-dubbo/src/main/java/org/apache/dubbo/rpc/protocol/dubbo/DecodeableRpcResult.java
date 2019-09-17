@@ -127,6 +127,7 @@ public class DecodeableRpcResult extends AppResponse implements Codec, Decodeabl
             Type[] returnTypes = RpcUtils.getReturnTypes(invocation);
             Object value = null;
             if (ArrayUtils.isEmpty(returnTypes)) {
+                // This almost never happens?
                 value = in.readObject();
             } else if (returnTypes.length == 1) {
                 value = in.readObject((Class<?>) returnTypes[0]);
@@ -141,7 +142,7 @@ public class DecodeableRpcResult extends AppResponse implements Codec, Decodeabl
 
     private void handleException(ObjectInput in) throws IOException {
         try {
-            Object obj = in.readObject();
+            Object obj = in.readThrowable();
             if (!(obj instanceof Throwable)) {
                 throw new IOException("Response data error, expect Throwable, but get " + obj);
             }

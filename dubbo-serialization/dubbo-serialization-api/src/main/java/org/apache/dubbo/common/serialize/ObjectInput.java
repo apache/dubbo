@@ -25,13 +25,18 @@ import java.lang.reflect.Type;
 public interface ObjectInput extends DataInput {
 
     /**
-     * read object
+     * Consider use {@link #readObject(Class)} or {@link #readObject(Class, Type)} where possible
      *
      * @return object
      * @throws IOException if an I/O error occurs
      * @throws ClassNotFoundException if an ClassNotFoundException occurs
      */
+    @Deprecated
     Object readObject() throws IOException, ClassNotFoundException;
+
+    default Object readThrowable() throws IOException, ClassNotFoundException {
+        return readObject();
+    }
 
     /**
      * read object

@@ -51,7 +51,7 @@
                 <exclude>**/*.jar</exclude>
                 <exclude>**/mvnw*</exclude>
                 <exclude>**/.flattened-pom.xml</exclude>
-                <exclude>**/dubbo-rpc-grpc/compiler/**</exclude>
+                <exclude>**/compiler/**</exclude>
             </excludes>
         </fileSet>
     </fileSets>

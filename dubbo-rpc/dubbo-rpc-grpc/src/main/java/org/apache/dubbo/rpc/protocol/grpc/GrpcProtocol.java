@@ -60,6 +60,7 @@ public class GrpcProtocol extends AbstractProxyProtocol {
         String key = url.getAddress();
         GrpcServer grpcServer = serverMap.computeIfAbsent(key, k -> {
             DubboHandlerRegistry registry = new DubboHandlerRegistry();
+
             Server originalServer = ServerBuilder
                     .forPort(url.getPort())
                     .fallbackHandlerRegistry(registry)

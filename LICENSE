@@ -227,4 +227,4 @@ This product contains a modified portion of 'edazdarevic.commons.net.CIDRUtils',
 
 This product contains a modified portion of 'proto-gen-grpc-java' - a protobuf plugin used to generate grpc-java stubs,
  under a "Apache License 2.0" license, see https://github.com/grpc/grpc-java/blob/v1.22.1/NOTICE.txt. All files are placed
- under '/dubbo/dubbo-rpc/dubbo-rpc-grpc/compiler'
+ under '/dubbo/compiler'

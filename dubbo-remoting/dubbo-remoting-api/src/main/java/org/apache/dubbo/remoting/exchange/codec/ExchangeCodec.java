@@ -278,7 +278,7 @@ public class ExchangeCodec extends TelnetCodec {
             // encode response data or error message.
             if (status == Response.OK) {
                 if (res.isHeartbeat()) {
-                    encodeHeartbeatData(channel, out, res.getResult());
+                    encodeEventData(channel, out, res.getResult());
                 } else {
                     encodeResponseData(channel, out, res.getResult(), res.getVersion());
                 }
@@ -401,9 +401,9 @@ public class ExchangeCodec extends TelnetCodec {
 
     protected Object decodeEventData(Channel channel, ObjectInput in) throws IOException {
         try {
-            return in.readObject();
-        } catch (ClassNotFoundException e) {
-            throw new IOException(StringUtils.toString("Read object failed.", e));
+            return in.readUTF();
+        } catch (IOException e) {
+            throw new IOException(StringUtils.toString("Decode dubbo protocol event failed.", e));
         }
     }
 

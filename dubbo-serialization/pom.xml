@@ -40,7 +40,7 @@
         <module>dubbo-serialization-avro</module>
         <module>dubbo-serialization-test</module>
         <module>dubbo-serialization-gson</module>
-        <module>dubbo-serialization-protobuf-json</module>
+        <module>dubbo-serialization-protobuf</module>
         <module>dubbo-serialization-native-hession</module>
     </modules>
 </project>

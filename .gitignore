@@ -37,5 +37,5 @@ Thumbs.db
 license-list.txt
 
 # grpc compiler
-dubbo-rpc/dubbo-rpc-grpc/compiler/gradle.properties
-dubbo-rpc/dubbo-rpc-grpc/compiler/build/*
+compiler/gradle.properties
+compiler/build/*
