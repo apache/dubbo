@@ -131,6 +131,8 @@ final class HeaderExchangeChannel implements ExchangeChannel {
     @Override
     public void close() {
         try {
+            // graceful close
+            DefaultFuture.closeChannel(channel);
             channel.close();
         } catch (Throwable e) {
             logger.warn(e.getMessage(), e);
