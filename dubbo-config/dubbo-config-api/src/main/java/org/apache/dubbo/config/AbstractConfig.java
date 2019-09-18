@@ -606,7 +606,7 @@ public abstract class AbstractConfig implements Serializable {
                     if (StringUtils.isNotEmpty(value)) {
                         Map<String, String> map = invokeGetParameters(getClass(), this);
                         map = map == null ? new HashMap<>() : map;
-                        map.putAll(convert(URL.valueOf("config://localhost?" + value).getParameters(), ""));
+                        map.putAll(convert(StringUtils.parseParameters(value), ""));
                         invokeSetParameters(getClass(), this, map);
                     }
                 }
