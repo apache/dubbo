@@ -44,10 +44,10 @@ import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
-import static org.apache.dubbo.configcenter.Constants.CONFIG_CHECK_KEY;
-import static org.apache.dubbo.configcenter.Constants.CONFIG_CLUSTER_KEY;
-import static org.apache.dubbo.configcenter.Constants.CONFIG_NAMESPACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.CONFIG_NAMESPACE_KEY;
 
 /**
  * Apollo implementation, https://github.com/ctripcorp/apollo
@@ -70,7 +70,7 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
         // Instead of using Dubbo's configuration, I would suggest use the original configuration method Apollo provides.
         String configEnv = url.getParameter(APOLLO_ENV_KEY);
         String configAddr = getAddressWithProtocolPrefix(url);
-        String configCluster = url.getParameter(CONFIG_CLUSTER_KEY);
+        String configCluster = url.getParameter(CLUSTER_KEY);
         if (configEnv != null) {
             System.setProperty(APOLLO_ENV_KEY, configEnv);
         }
@@ -84,7 +84,7 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
         dubboConfig = ConfigService.getConfig(url.getParameter(CONFIG_NAMESPACE_KEY, DEFAULT_GROUP));
         dubboConfigFile = ConfigService.getConfigFile(url.getParameter(CONFIG_NAMESPACE_KEY, DEFAULT_GROUP), ConfigFileFormat.Properties);
         // Decide to fail or to continue when failed to connect to remote server.
-        boolean check = url.getParameter(CONFIG_CHECK_KEY, true);
+        boolean check = url.getParameter(CHECK_KEY, true);
         if (dubboConfig.getSourceType() != ConfigSourceType.REMOTE) {
             if (check) {
                 throw new IllegalStateException("Failed to connect to config center, the config center is Apollo, " +
