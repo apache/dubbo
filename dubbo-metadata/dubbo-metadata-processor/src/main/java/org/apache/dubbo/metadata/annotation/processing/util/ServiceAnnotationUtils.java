@@ -1,0 +1,118 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.dubbo.metadata.annotation.processing.util;
+
+import org.apache.dubbo.config.annotation.Service;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.TypeElement;
+import java.util.Set;
+
+import static java.lang.String.valueOf;
+import static org.apache.dubbo.common.utils.CollectionUtils.asHashSet;
+import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationProcessorUtils.getAttribute;
+
+/**
+ * The utilities class for {@link Service} annotation
+ *
+ * @see Service
+ * @since 2.7.5
+ */
+public interface ServiceAnnotationUtils {
+
+    /**
+     * The class name of {@link Service @Service}
+     */
+    String SERVICE_ANNOTATION_TYPE = "org.apache.dubbo.config.annotation.Service";
+
+    /**
+     * The class name of the legacy {@link com.alibaba.dubbo.config.annotation.Service @Service}
+     */
+    @Deprecated
+    String LEGACY_SERVICE_ANNOTATION_TYPE = "com.alibaba.dubbo.config.annotation.Service";
+
+    /**
+     * the attribute name of {@link Service#interfaceClass()}
+     */
+    String INTERFACE_CLASS_ATTRIBUTE_NAME = "interfaceClass";
+
+    /**
+     * the attribute name of {@link Service#interfaceName()}
+     */
+    String INTERFACE_NAME_ATTRIBUTE_NAME = "interfaceName";
+
+    /**
+     * the attribute name of {@link Service#group()}
+     */
+    String GROUP_ATTRIBUTE_NAME = "group";
+
+    /**
+     * the attribute name of {@link Service#version()}
+     */
+    String VERSION_ATTRIBUTE_NAME = "version";
+
+    Set<String> SUPPORTED_ANNOTATION_TYPES = asHashSet(
+            SERVICE_ANNOTATION_TYPE,
+            LEGACY_SERVICE_ANNOTATION_TYPE
+    );
+
+    static AnnotationMirror getAnnotation(TypeElement annotatedClass) {
+        return getAnnotation(annotatedClass.getAnnotationMirrors());
+    }
+
+    static AnnotationMirror getAnnotation(Iterable<? extends AnnotationMirror> annotationMirrors) {
+        AnnotationMirror matchedAnnotationMirror = null;
+        for (AnnotationMirror annotationMirror : annotationMirrors) {
+            String annotationType = annotationMirror.getAnnotationType().toString();
+            if (SERVICE_ANNOTATION_TYPE.equals(annotationType)) {
+                matchedAnnotationMirror = annotationMirror;
+                break;
+            } else if (LEGACY_SERVICE_ANNOTATION_TYPE.equals(annotationType)) {
+                matchedAnnotationMirror = annotationMirror;
+            }
+        }
+
+        if (matchedAnnotationMirror == null) {
+            throw new IllegalArgumentException(" must be ");
+        }
+
+        return matchedAnnotationMirror;
+    }
+
+    static String resolveServiceInterfaceName(TypeElement annotatedClass, AnnotationMirror serviceAnnotation) {
+        Object interfaceClass = getAttribute(serviceAnnotation, INTERFACE_CLASS_ATTRIBUTE_NAME);
+
+        if (interfaceClass == null) { // try to find the "interfaceName" attribute
+            interfaceClass = getAttribute(serviceAnnotation, INTERFACE_NAME_ATTRIBUTE_NAME);
+        }
+
+        if (interfaceClass == null) {
+            // last, get the interface class from first one
+            interfaceClass = ((TypeElement) annotatedClass).getInterfaces().get(0);
+        }
+
+        return valueOf(interfaceClass);
+    }
+
+    static String getGroup(AnnotationMirror serviceAnnotation) {
+        return valueOf(getAttribute(serviceAnnotation, GROUP_ATTRIBUTE_NAME));
+    }
+
+    static String getVersion(AnnotationMirror serviceAnnotation) {
+        return valueOf(getAttribute(serviceAnnotation, VERSION_ATTRIBUTE_NAME));
+    }
+}

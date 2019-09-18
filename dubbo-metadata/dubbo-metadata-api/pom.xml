@@ -50,6 +50,11 @@
             <artifactId>gson</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>javax.ws.rs</groupId>
+            <artifactId>javax.ws.rs-api</artifactId>
+        </dependency>
+
         <!-- Test dependencies -->
         <dependency>
             <groupId>org.apache.dubbo</groupId>

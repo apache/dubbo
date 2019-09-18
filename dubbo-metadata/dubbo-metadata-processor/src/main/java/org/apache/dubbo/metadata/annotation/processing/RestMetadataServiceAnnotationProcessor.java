@@ -1,0 +1,96 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.dubbo.metadata.annotation.processing;
+
+import org.apache.dubbo.config.annotation.Service;
+
+import javax.annotation.processing.Processor;
+import javax.annotation.processing.RoundEnvironment;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+
+import static javax.lang.model.util.ElementFilter.typesIn;
+import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationProcessorUtils.getOverrideMethod;
+import static org.apache.dubbo.metadata.annotation.processing.util.ServiceAnnotationUtils.getAnnotation;
+
+/**
+ * The {@link Processor} class to generate the metadata of REST from the classes that are annotated by Dubbo's
+ * {@link Service @Service}
+ *
+ * @see Processor
+ * @see Service
+ * @since 2.7.5
+ */
+public class RestMetadataServiceAnnotationProcessor extends AbstractServiceAnnotationProcessor {
+
+    private Set<ExecutableElement> methods = new LinkedHashSet<>();
+
+    private Set<String> classes = new LinkedHashSet<>();
+
+    @Override
+    public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+
+        typesIn(roundEnv.getRootElements()).forEach(this::process);
+
+        if (roundEnv.processingOver()) {
+        }
+
+        return false;
+    }
+
+    private void process(TypeElement annotatedClass) {
+        List<? extends AnnotationMirror> annotationMirrors = annotatedClass.getAnnotationMirrors();
+        AnnotationMirror annotationMirror = getAnnotation(annotationMirrors);
+        TypeElement interfaceClass = resolveServiceInterface(annotatedClass, annotationMirror);
+        List<? extends ExecutableElement> interfaceMethods = getActualMethods(interfaceClass);
+        processMethods(annotatedClass, interfaceMethods);
+    }
+
+    private void processMethods(TypeElement annotatedClass, List<? extends ExecutableElement> interfaceMethods) {
+        interfaceMethods.forEach(method -> processMethod(annotatedClass, method));
+    }
+
+    private void processMethod(TypeElement annotatedClass, ExecutableElement interfaceMethod) {
+
+        String interfaceClass = interfaceMethod.getEnclosingElement().toString();
+
+        ExecutableElement classMethod = getOverrideMethod(processingEnv, annotatedClass, interfaceMethod);
+
+//        PackageElement packageElement = getPackageElement(annotatedClass);
+
+        String methodName = classMethod.getSimpleName().toString();
+        StringBuilder restMetadata = new StringBuilder("/")
+                .append(annotatedClass.toString().replace('.', '/'))
+                .append("/")
+                .append(methodName);
+
+        List<? extends VariableElement> parameters = classMethod.getParameters();
+
+        for (VariableElement parameter : parameters) {
+            restMetadata.append("/{").append(parameter.getSimpleName()).append("}/");
+        }
+
+        methods.add(interfaceMethod);
+
+        System.out.println(restMetadata);
+    }
+}
