@@ -39,7 +39,7 @@ public class SimpleRegistryExporter {
 
     private static final Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
 
-    private static final ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+    private static final ProxyFactory PROXY_FACTORY = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
 
     public synchronized static Exporter<RegistryService> exportIfAbsent(int port) {
         try {
@@ -55,7 +55,7 @@ public class SimpleRegistryExporter {
     }
 
     public static Exporter<RegistryService> export(int port, RegistryService registryService) {
-        return protocol.export(proxyFactory.getInvoker(registryService, RegistryService.class,
+        return protocol.export(PROXY_FACTORY.getInvoker(registryService, RegistryService.class,
                 new URLBuilder(DUBBO_PROTOCOL, NetUtils.getLocalHost(), port, RegistryService.class.getName())
                         .setPath(RegistryService.class.getName())
                         .addParameter(INTERFACE_KEY, RegistryService.class.getName())

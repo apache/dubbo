@@ -32,6 +32,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -47,7 +48,7 @@ public class IOUtilsTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        is = new ByteArrayInputStream(TEXT.getBytes("UTF-8"));
+        is = new ByteArrayInputStream(TEXT.getBytes(StandardCharsets.UTF_8));
         os = new ByteArrayOutputStream();
         reader = new StringReader(TEXT);
         writer = new StringWriter();

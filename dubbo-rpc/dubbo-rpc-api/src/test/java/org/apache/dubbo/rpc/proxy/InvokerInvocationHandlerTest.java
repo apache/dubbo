@@ -26,7 +26,7 @@ import org.mockito.MockitoAnnotations;
 
 import java.lang.reflect.Method;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 public class InvokerInvocationHandlerTest {
 

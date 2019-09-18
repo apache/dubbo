@@ -40,7 +40,7 @@ public class BlockMyInvoker<T> extends MyInvoker<T> {
     @Override
     public Result invoke(Invocation invocation) throws RpcException {
         AppResponse result = new AppResponse();
-        if (hasException == false) {
+        if (!hasException) {
             try {
                 Thread.sleep(blockTime);
             } catch (InterruptedException e) {

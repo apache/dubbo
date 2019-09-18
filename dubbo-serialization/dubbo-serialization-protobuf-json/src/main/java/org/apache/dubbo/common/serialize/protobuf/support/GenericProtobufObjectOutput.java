@@ -18,10 +18,20 @@ package org.apache.dubbo.common.serialize.protobuf.support;
 
 import org.apache.dubbo.common.serialize.ObjectOutput;
 
+import com.google.protobuf.BoolValue;
+import com.google.protobuf.ByteString;
+import com.google.protobuf.BytesValue;
+import com.google.protobuf.DoubleValue;
+import com.google.protobuf.FloatValue;
+import com.google.protobuf.Int32Value;
+import com.google.protobuf.Int64Value;
+import com.google.protobuf.StringValue;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.util.Map;
 
 /**
  * GenericGoogleProtobuf object output implementation
@@ -36,61 +46,65 @@ public class GenericProtobufObjectOutput implements ObjectOutput {
 
     @Override
     public void writeBool(boolean v) throws IOException {
-        writeObject(v);
+
+        writeObject(BoolValue.newBuilder().setValue(v).build());
     }
 
     @Override
     public void writeByte(byte v) throws IOException {
-        writeObject(v);
+        writeObject(Int32Value.newBuilder().setValue((v)).build());
     }
 
     @Override
     public void writeShort(short v) throws IOException {
-        writeObject(v);
+        writeObject(Int32Value.newBuilder().setValue(v).build());
     }
 
     @Override
     public void writeInt(int v) throws IOException {
-        writeObject(v);
+        writeObject(Int32Value.newBuilder().setValue(v).build());
     }
 
     @Override
     public void writeLong(long v) throws IOException {
-        writeObject(v);
+        writeObject(Int64Value.newBuilder().setValue(v).build());
     }
 
     @Override
     public void writeFloat(float v) throws IOException {
-        writeObject(v);
+        writeObject(FloatValue.newBuilder().setValue(v).build());
     }
 
     @Override
     public void writeDouble(double v) throws IOException {
-        writeObject(v);
+        writeObject(DoubleValue.newBuilder().setValue(v).build());
     }
 
     @Override
     public void writeUTF(String v) throws IOException {
-        writeObject(v);
+        writeObject(StringValue.newBuilder().setValue(v).build());
     }
 
     @Override
-    public void writeBytes(byte[] b) {
-        writer.println(new String(b));
+    public void writeBytes(byte[] b) throws IOException {
+        writeObject(BytesValue.newBuilder().setValue(ByteString.copyFrom(b)).build());
     }
 
     @Override
-    public void writeBytes(byte[] b, int off, int len) {
-        writer.println(new String(b, off, len));
+    public void writeBytes(byte[] b, int off, int len) throws IOException {
+        writeObject(BytesValue.newBuilder().setValue(ByteString.copyFrom(b, off, len)).build());
     }
+
 
     @Override
     public void writeObject(Object obj) throws IOException {
         if (obj == null) {
             throw new IllegalArgumentException("This serialization only support google protobuf object, the object is : null");
         }
-
-        if (!ProtobufUtils.isSupported(obj.getClass())) {
+        if (obj instanceof Map) {
+            // only for attachment
+            obj = MapValue.Map.newBuilder().putAllAttachments((Map) obj).build();
+        } else if (!ProtobufUtils.isSupported(obj.getClass())) {
             throw new IllegalArgumentException("This serialization only support google protobuf object, the object class is: " + obj.getClass().getName());
         }
 

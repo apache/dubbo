@@ -102,11 +102,13 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
         this.init = init;
     }
 
+    @Deprecated
     @Parameter(excluded = true)
     public Boolean isGeneric() {
-        return ProtocolUtils.isGeneric(generic);
+        return this.generic != null ? ProtocolUtils.isGeneric(generic) : null;
     }
 
+    @Deprecated
     public void setGeneric(Boolean generic) {
         if (generic != null) {
             this.generic = generic.toString();

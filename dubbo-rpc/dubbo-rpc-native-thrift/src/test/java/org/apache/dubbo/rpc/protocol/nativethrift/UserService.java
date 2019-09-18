@@ -11,13 +11,13 @@ public class UserService {
 
   public interface Iface {
 
-    public String find(int id) throws org.apache.thrift.TException;
+    String find(int id) throws org.apache.thrift.TException;
 
   }
 
   public interface AsyncIface {
 
-    public void find(int id, org.apache.thrift.async.AsyncMethodCallback<String> resultHandler) throws org.apache.thrift.TException;
+    void find(int id, org.apache.thrift.async.AsyncMethodCallback<String> resultHandler) throws org.apache.thrift.TException;
 
   }
 

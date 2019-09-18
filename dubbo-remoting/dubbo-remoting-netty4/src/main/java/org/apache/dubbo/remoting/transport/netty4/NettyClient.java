@@ -96,12 +96,7 @@ public class NettyClient extends AbstractClient {
                 //.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, getTimeout())
                 .channel(NioSocketChannel.class);
 
-        if (getConnectTimeout() < 3000) {
-            bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 3000);
-        } else {
-            bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, getConnectTimeout());
-        }
-
+        bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, Math.max(3000, getConnectTimeout()));
         bootstrap.handler(new ChannelInitializer() {
 
             @Override
@@ -201,6 +196,10 @@ public class NettyClient extends AbstractClient {
             return null;
         }
         return NettyChannel.getOrAddChannel(c, getUrl(), this);
+    }
+
+    Channel getNettyChannel() {
+        return channel;
     }
 
     @Override
