@@ -65,7 +65,7 @@ public class ProtocolUtils {
     }
 
     public static boolean isValidGenericValue(String generic) {
-        return isGeneric(generic) || Boolean.FALSE.toString().equals(generic);
+        return isGeneric(generic) || Boolean.FALSE.toString().equalsIgnoreCase(generic);
 
     }
 
