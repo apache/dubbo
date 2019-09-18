@@ -14,15 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.rest;
-
+package org.apache.dubbo.rpc.protocol.http;
 
 import org.apache.dubbo.rpc.RpcContext;
 
-import java.util.Map;
-
-public class DemoServiceImpl implements DemoService {
-    private static Map<String, String> context;
+public class HttpServiceImpl implements HttpService {
     private boolean called;
 
     public String sayHello(String name) {
@@ -30,24 +26,29 @@ public class DemoServiceImpl implements DemoService {
         return "Hello, " + name;
     }
 
-
     public boolean isCalled() {
         return called;
     }
 
-    @Override
-    public Integer hello(Integer a, Integer b) {
-        context = RpcContext.getContext().getAttachments();
-        return a + b;
+    public void timeOut(int millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
-    @Override
-    public String error() {
-        throw new RuntimeException();
+    public String customException() {
+        throw new MyException("custom exception");
     }
 
-    public static Map<String, String> getAttachments() {
-        return context;
+    static class MyException extends RuntimeException{
+
+        private static final long serialVersionUID = -3051041116483629056L;
+
+        public MyException(String message) {
+            super(message);
+        }
     }
 
     @Override

@@ -19,11 +19,13 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.remoting.Constants;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_NATIVE_JAVA;
 import static org.apache.dubbo.rpc.cluster.Constants.CLUSTER_STICKY_KEY;
 import static org.apache.dubbo.rpc.Constants.INVOKER_LISTENER_KEY;
 import static org.apache.dubbo.rpc.Constants.REFERENCE_FILTER_KEY;
@@ -154,6 +156,25 @@ public class AbstractReferenceConfigTest {
         ReferenceConfig referenceConfig = new ReferenceConfig();
         referenceConfig.setGroup("group");
         assertThat(referenceConfig.getGroup(), equalTo("group"));
+    }
+
+    @Test
+    public void testGenericOverride() {
+        ReferenceConfig referenceConfig = new ReferenceConfig();
+        referenceConfig.setGeneric("false");
+        referenceConfig.refresh();
+        Assertions.assertFalse(referenceConfig.isGeneric());
+        Assertions.assertEquals("false", referenceConfig.getGeneric());
+
+        ReferenceConfig referenceConfig1 = new ReferenceConfig();
+        referenceConfig1.setGeneric(GENERIC_SERIALIZATION_NATIVE_JAVA);
+        referenceConfig1.refresh();
+        Assertions.assertEquals(GENERIC_SERIALIZATION_NATIVE_JAVA, referenceConfig1.getGeneric());
+        Assertions.assertTrue(referenceConfig1.isGeneric());
+
+        ReferenceConfig referenceConfig2 = new ReferenceConfig();
+        referenceConfig2.refresh();
+        Assertions.assertNull(referenceConfig2.getGeneric());
     }
 
     private static class ReferenceConfig extends AbstractReferenceConfig {

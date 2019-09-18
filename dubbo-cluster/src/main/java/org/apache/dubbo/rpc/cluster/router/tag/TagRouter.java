@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.rpc.Constants.FORCE_USE_TAG;
 import static org.apache.dubbo.rpc.cluster.Constants.TAG_KEY;
 
@@ -51,6 +52,7 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
     private static final int TAG_ROUTER_DEFAULT_PRIORITY = 100;
     private static final Logger logger = LoggerFactory.getLogger(TagRouter.class);
     private static final String RULE_SUFFIX = ".tag-router";
+
 
     private TagRouterRule tagRouterRule;
     private String application;
@@ -210,6 +212,9 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
         for (String address : addresses) {
             try {
                 if (NetUtils.matchIpExpression(address, host, port)) {
+                    return true;
+                }
+                if ((ANYHOST_VALUE + ":" + port).equals(address)) {
                     return true;
                 }
             } catch (UnknownHostException e) {
