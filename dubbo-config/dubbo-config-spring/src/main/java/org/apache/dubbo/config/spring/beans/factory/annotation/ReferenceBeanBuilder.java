@@ -22,11 +22,10 @@ import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.spring.ReferenceBean;
-
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.context.ApplicationContext;
+import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.util.Assert;
-import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.DataBinder;
 
@@ -34,8 +33,12 @@ import java.beans.PropertyEditorSupport;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.dubbo.config.spring.util.AnnotationUtils.getAttribute;
+import static org.apache.dubbo.config.spring.util.AnnotationUtils.getAttributes;
+import static org.apache.dubbo.config.spring.util.AnnotationUtils.resolveServiceInterfaceClass;
 import static org.apache.dubbo.config.spring.util.BeanFactoryUtils.getOptionalBean;
 import static org.apache.dubbo.config.spring.util.ObjectUtils.of;
+import static org.springframework.core.annotation.AnnotationAttributes.fromMap;
 import static org.springframework.util.StringUtils.commaDelimitedListToStringArray;
 
 /**
@@ -43,48 +46,39 @@ import static org.springframework.util.StringUtils.commaDelimitedListToStringArr
  *
  * @since 2.5.7
  */
-class ReferenceBeanBuilder extends AbstractAnnotationConfigBeanBuilder<Reference, ReferenceBean> {
+class ReferenceBeanBuilder extends AnnotatedInterfaceConfigBeanBuilder<ReferenceBean> {
 
     // Ignore those fields
     static final String[] IGNORE_FIELD_NAMES = of("application", "module", "consumer", "monitor", "registry");
 
-    private ReferenceBeanBuilder(Reference annotation, ClassLoader classLoader, ApplicationContext applicationContext) {
-        super(annotation, classLoader, applicationContext);
+    private ReferenceBeanBuilder(AnnotationAttributes attributes, ApplicationContext applicationContext) {
+        super(attributes, applicationContext);
     }
 
-    private void configureInterface(Reference reference, ReferenceBean referenceBean) {
-
-        Class<?> interfaceClass = reference.interfaceClass();
-
-        if (void.class.equals(interfaceClass)) {
-
-            interfaceClass = null;
-
-            String interfaceClassName = reference.interfaceName();
-
-            if (StringUtils.hasText(interfaceClassName)) {
-                if (ClassUtils.isPresent(interfaceClassName, classLoader)) {
-                    interfaceClass = ClassUtils.resolveClassName(interfaceClassName, classLoader);
-                }
-            }
-
+    private void configureInterface(AnnotationAttributes attributes, ReferenceBean referenceBean) {
+        Boolean generic = getAttribute(attributes, "generic");
+        if (generic != null && generic) {
+            // it's a generic reference
+            String interfaceClassName = getAttribute(attributes, "interfaceName");
+            Assert.hasText(interfaceClassName,
+                    "@Reference interfaceName() must be present when reference a generic service!");
+            referenceBean.setInterface(interfaceClassName);
+            return;
         }
 
-        if (interfaceClass == null) {
-            interfaceClass = this.interfaceClass;
-        }
+        Class<?> serviceInterfaceClass = resolveServiceInterfaceClass(attributes, interfaceClass);
 
-        Assert.isTrue(interfaceClass.isInterface(),
+        Assert.isTrue(serviceInterfaceClass.isInterface(),
                 "The class of field or method that was annotated @Reference is not an interface!");
 
-        referenceBean.setInterface(interfaceClass);
+        referenceBean.setInterface(serviceInterfaceClass);
 
     }
 
 
-    private void configureConsumerConfig(Reference reference, ReferenceBean<?> referenceBean) {
+    private void configureConsumerConfig(AnnotationAttributes attributes, ReferenceBean<?> referenceBean) {
 
-        String consumerBeanName = reference.consumer();
+        String consumerBeanName = getAttribute(attributes, "consumer");
 
         ConsumerConfig consumerConfig = getOptionalBean(applicationContext, consumerBeanName, ConsumerConfig.class);
 
@@ -92,10 +86,10 @@ class ReferenceBeanBuilder extends AbstractAnnotationConfigBeanBuilder<Reference
 
     }
 
-    void configureMethodConfig(Reference reference, ReferenceBean<?> referenceBean){
-        Method[] methods = reference.methods();
+    void configureMethodConfig(AnnotationAttributes attributes, ReferenceBean<?> referenceBean) {
+        Method[] methods = (Method[]) attributes.get("methods");
         List<MethodConfig> methodConfigs = MethodConfig.constructMethodConfig(methods);
-        if(!methodConfigs.isEmpty()){
+        if (!methodConfigs.isEmpty()) {
             referenceBean.setMethods(methodConfigs);
         }
     }
@@ -106,7 +100,7 @@ class ReferenceBeanBuilder extends AbstractAnnotationConfigBeanBuilder<Reference
     }
 
     @Override
-    protected void preConfigureBean(Reference reference, ReferenceBean referenceBean) {
+    protected void preConfigureBean(AnnotationAttributes attributes, ReferenceBean referenceBean) {
         Assert.notNull(interfaceClass, "The interface class must set first!");
         DataBinder dataBinder = new DataBinder(referenceBean);
         // Register CustomEditors for special fields
@@ -131,49 +125,53 @@ class ReferenceBeanBuilder extends AbstractAnnotationConfigBeanBuilder<Reference
         });
 
         // Bind annotation attributes
-        dataBinder.bind(new AnnotationPropertyValuesAdapter(reference, applicationContext.getEnvironment(), IGNORE_FIELD_NAMES));
+        dataBinder.bind(new AnnotationPropertyValuesAdapter(attributes, applicationContext.getEnvironment(), IGNORE_FIELD_NAMES));
 
     }
 
 
     @Override
-    protected String resolveModuleConfigBeanName(Reference annotation) {
-        return annotation.module();
+    protected String resolveModuleConfigBeanName(AnnotationAttributes attributes) {
+        return getAttribute(attributes, "module");
     }
 
     @Override
-    protected String resolveApplicationConfigBeanName(Reference annotation) {
-        return annotation.application();
+    protected String resolveApplicationConfigBeanName(AnnotationAttributes attributes) {
+        return getAttribute(attributes, "application");
     }
 
     @Override
-    protected String[] resolveRegistryConfigBeanNames(Reference annotation) {
-        return annotation.registry();
+    protected String[] resolveRegistryConfigBeanNames(AnnotationAttributes attributes) {
+        return getAttribute(attributes, "registry");
     }
 
     @Override
-    protected String resolveMonitorConfigBeanName(Reference annotation) {
-        return annotation.monitor();
+    protected String resolveMonitorConfigBeanName(AnnotationAttributes attributes) {
+        return getAttribute(attributes, "monitor");
     }
 
     @Override
-    protected void postConfigureBean(Reference annotation, ReferenceBean bean) throws Exception {
+    protected void postConfigureBean(AnnotationAttributes attributes, ReferenceBean bean) throws Exception {
 
         bean.setApplicationContext(applicationContext);
 
-        configureInterface(annotation, bean);
+        configureInterface(attributes, bean);
 
-        configureConsumerConfig(annotation, bean);
+        configureConsumerConfig(attributes, bean);
 
-        configureMethodConfig(annotation, bean);
+        configureMethodConfig(attributes, bean);
 
         bean.afterPropertiesSet();
 
     }
 
-    public static ReferenceBeanBuilder create(Reference annotation, ClassLoader classLoader,
+    @Deprecated
+    public static ReferenceBeanBuilder create(Reference reference, ClassLoader classLoader,
                                               ApplicationContext applicationContext) {
-        return new ReferenceBeanBuilder(annotation, classLoader, applicationContext);
+        return create(fromMap(getAttributes(reference, applicationContext.getEnvironment(), true)), applicationContext);
     }
 
+    public static ReferenceBeanBuilder create(AnnotationAttributes attributes, ApplicationContext applicationContext) {
+        return new ReferenceBeanBuilder(attributes, applicationContext);
+    }
 }

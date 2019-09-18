@@ -192,6 +192,9 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
         return client.isClosed();
     }
 
+    /**
+     * The reference count of current ExchangeClient, connection will be closed if all invokers destroyed.
+     */
     public void incrementAndGetCount() {
         referenceCount.incrementAndGet();
     }

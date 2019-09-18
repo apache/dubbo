@@ -18,5 +18,5 @@ package org.apache.dubbo.metadata.definition.common;
 
 public enum ColorEnum {
 
-    RED, YELLOW, BLUE;
+    RED, YELLOW, BLUE
 }

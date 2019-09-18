@@ -218,6 +218,13 @@ final class NettyChannel extends AbstractChannel {
         if (obj == null) {
             return false;
         }
+
+        // FIXME: a hack to make org.apache.dubbo.remoting.exchange.support.DefaultFuture.closeChannel work
+        if (obj instanceof NettyClient) {
+            NettyClient client = (NettyClient) obj;
+            return channel.equals(client.getNettyChannel());
+        }
+
         if (getClass() != obj.getClass()) {
             return false;
         }

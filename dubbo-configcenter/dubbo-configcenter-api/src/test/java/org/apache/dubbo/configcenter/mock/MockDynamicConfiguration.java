@@ -43,12 +43,12 @@ public class MockDynamicConfiguration implements DynamicConfiguration {
     }
 
     @Override
-    public String getConfig(String key, String group, long timeout) throws IllegalStateException {
+    public String getRule(String key, String group, long timeout) throws IllegalStateException {
         return null;
     }
 
     @Override
-    public String getConfigs(String key, String group, long timeout) throws IllegalStateException {
+    public String getProperties(String key, String group, long timeout) throws IllegalStateException {
         return null;
     }
 }

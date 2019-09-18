@@ -40,8 +40,9 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import static org.apache.dubbo.rpc.cluster.Constants.TAG_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.rpc.Constants.FORCE_USE_TAG;
+import static org.apache.dubbo.rpc.cluster.Constants.TAG_KEY;
 
 /**
  * TagRouter, "application.tag-router"
@@ -51,6 +52,7 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
     private static final int TAG_ROUTER_DEFAULT_PRIORITY = 100;
     private static final Logger logger = LoggerFactory.getLogger(TagRouter.class);
     private static final String RULE_SUFFIX = ".tag-router";
+
 
     private TagRouterRule tagRouterRule;
     private String application;
@@ -212,6 +214,9 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
                 if (NetUtils.matchIpExpression(address, host, port)) {
                     return true;
                 }
+                if ((ANYHOST_VALUE + ":" + port).equals(address)) {
+                    return true;
+                }
             } catch (UnknownHostException e) {
                 logger.error("The format of ip address is invalid in tag route. Address :" + address, e);
             } catch (Exception e) {
@@ -249,7 +254,7 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
                 String key = providerApplication + RULE_SUFFIX;
                 configuration.addListener(key, this);
                 application = providerApplication;
-                String rawRule = configuration.getConfig(key);
+                String rawRule = configuration.getRule(key, DynamicConfiguration.DEFAULT_GROUP);
                 if (StringUtils.isNotEmpty(rawRule)) {
                     this.process(new ConfigChangeEvent(key, rawRule));
                 }

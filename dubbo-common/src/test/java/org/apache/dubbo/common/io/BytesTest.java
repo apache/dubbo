@@ -57,6 +57,12 @@ public class BytesTest {
 
         byte[] bytesWithC64 = Bytes.base642bytes(str, C64);
         assertThat(bytesWithC64, is(bytes));
+
+        byte[] emptyBytes = Bytes.base642bytes("dubbo", 0, 0);
+        assertThat(emptyBytes, is("".getBytes()));
+
+        assertThat(Bytes.base642bytes("dubbo", 0, 0, ""), is("".getBytes()));
+        assertThat(Bytes.base642bytes("dubbo", 0, 0, new char[0]), is("".getBytes()));
     }
 
     @Test
@@ -88,6 +94,14 @@ public class BytesTest {
         String s2 = Bytes.bytes2base64(bytes2);
         byte[] out2 = Bytes.base642bytes(s2);
         assertThat(bytes2, is(out2));
+    }
+
+    @Test
+    public void testBase642bCharArrCall() {
+        byte[] stringCall = Bytes.base642bytes("ZHViYm8=", C64);
+        byte[] charArrCall = Bytes.base642bytes("ZHViYm8=", C64.toCharArray());
+
+        assertThat(stringCall, is(charArrCall));
     }
 
     @Test

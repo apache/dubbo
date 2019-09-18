@@ -139,38 +139,12 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
         return configListener;
     }
 
-
-    /**
-     * FIXME: 2019-05-30 to remove this function
-     * Nacos server does not support * as valid character of data-id.
-     * If a Dubbo service specifies group. For example:
-     *
-     *  <dubbo:service interface="org.apache.dubbo.demo.DemoService" ref="demoService"
-     *      version="1.0.0.test" group="test"/>
-     *
-     * The key passed to NacosDynamicConfiguration will be sth. like:
-     *   test*org.apache.dubbo.demo.DemoService:1.0.0.test.configurators
-     *
-     * See logic in org.apache.dubbo.common.URL#getEncodedServiceKey()
-     *
-     * The purpose of this function is to convert the * into :, to keep align with
-     * the implementation in NacosRegistry.
-     *
-     * In the future this logic should be removed if Dubbo core can handle this.
-     * @param key
-     * @return
-     */
-    private String normalizedKey(String key) {
-        return key.replaceFirst("\\*", ":");
-    }
-
     @Override
     public void addListener(String key, String group, ConfigurationListener listener) {
-        String normalizedKey = normalizedKey(key);
-        NacosConfigListener nacosConfigListener = watchListenerMap.computeIfAbsent(normalizedKey, k -> createTargetListener(normalizedKey, group));
+        NacosConfigListener nacosConfigListener = watchListenerMap.computeIfAbsent(key, k -> createTargetListener(key, group));
         nacosConfigListener.addListener(listener);
         try {
-            configService.addListener(normalizedKey, group, nacosConfigListener);
+            configService.addListener(key, group, nacosConfigListener);
         } catch (NacosException e) {
             logger.error(e.getMessage());
         }
@@ -178,27 +152,20 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
 
     @Override
     public void removeListener(String key, String group, ConfigurationListener listener) {
-        String normalizedKey = normalizedKey(key);
-        NacosConfigListener eventListener = watchListenerMap.get(normalizedKey);
+        NacosConfigListener eventListener = watchListenerMap.get(key);
         if (eventListener != null) {
             eventListener.removeListener(listener);
         }
     }
 
-    /**
-     * FIXME the model of Zookeeper and Nacos is inconsistent, need to remove this function in next release.
-     */
     @Override
-    public String getConfig(String key) {
-        return getConfig(key, DEFAULT_GROUP, -1L);
-    }
-
-    @Override
-    public String getConfig(String key, String group, long timeout) throws IllegalStateException {
+    public String getRule(String key, String group, long timeout) throws IllegalStateException {
         try {
-            String normalizedKey = normalizedKey(key);
             long nacosTimeout = timeout < 0 ?  DEFAULT_TIMEOUT : timeout;
-            return configService.getConfig(normalizedKey, group, nacosTimeout);
+            if (StringUtils.isEmpty(group)) {
+                group = DEFAULT_GROUP;
+            }
+            return configService.getConfig(key, group, nacosTimeout);
         } catch (NacosException e) {
             logger.error(e.getMessage());
         }
@@ -206,15 +173,14 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     }
 
     @Override
-    public String getConfigs(String key, String group, long timeout) throws IllegalStateException {
-        return getConfig(key, group, timeout);
+    public String getProperties(String key, String group, long timeout) throws IllegalStateException {
+        return getRule(key, group, timeout);
     }
 
     @Override
     public Object getInternalProperty(String key) {
         try {
-            String normalizedKey = normalizedKey(key);
-            return configService.getConfig(normalizedKey, DEFAULT_GROUP, DEFAULT_TIMEOUT);
+            return configService.getConfig(key, DEFAULT_GROUP, DEFAULT_TIMEOUT);
         } catch (NacosException e) {
             logger.error(e.getMessage());
         }

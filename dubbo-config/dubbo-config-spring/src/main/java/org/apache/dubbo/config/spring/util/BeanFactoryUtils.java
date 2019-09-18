@@ -29,9 +29,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Collections.emptyList;
 import static org.springframework.beans.factory.BeanFactoryUtils.beanNamesForTypeIncludingAncestors;
 import static org.springframework.beans.factory.BeanFactoryUtils.beansOfTypeIncludingAncestors;
 import static org.springframework.util.ObjectUtils.containsElement;
+import static org.springframework.util.ObjectUtils.isEmpty;
 
 /**
  * {@link BeanFactory} Utilities class
@@ -103,6 +105,10 @@ public class BeanFactoryUtils {
      * @since 2.6.6
      */
     public static <T> List<T> getBeans(ListableBeanFactory beanFactory, String[] beanNames, Class<T> beanType) {
+
+        if (isEmpty(beanNames)) {
+            return emptyList();
+        }
 
         String[] allBeanNames = beanNamesForTypeIncludingAncestors(beanFactory, beanType);
 

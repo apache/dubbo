@@ -132,7 +132,21 @@ public class RmiProtocolTest {
         exporter.unexport();
     }
 
-    public static interface NonStdRmiInterface {
+
+    @Test
+    public void testRemoteApplicationName() throws Exception {
+        DemoService service = new DemoServiceImpl();
+        URL url = URL.valueOf("rmi://127.0.0.1:9001/TestService?release=2.7.0").addParameter("application", "consumer");
+        Exporter<?> rpcExporter = protocol.export(proxy.getInvoker(service, DemoService.class, url));
+
+        service = proxy.getProxy(protocol.refer(DemoService.class, url));
+        assertEquals(service.getRemoteApplicationName(), "consumer");
+
+        rpcExporter.unexport();
+
+    }
+
+    public interface NonStdRmiInterface {
         void bark();
     }
 
