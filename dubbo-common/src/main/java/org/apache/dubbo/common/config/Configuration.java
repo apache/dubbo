@@ -105,10 +105,6 @@ public interface Configuration {
             return cls.cast(value);
         }
 
-        if (String.class.equals(cls)) {
-            return cls.cast(value);
-        }
-
         if (Boolean.class.equals(cls) || Boolean.TYPE.equals(cls)) {
             obj = Boolean.valueOf(value);
         } else if (Number.class.isAssignableFrom(cls) || cls.isPrimitive()) {

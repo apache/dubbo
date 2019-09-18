@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc.protocol.dubbo;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.serialize.support.SerializableClassRegistry;
 import org.apache.dubbo.common.serialize.support.SerializationOptimizer;
@@ -37,7 +36,6 @@ import org.apache.dubbo.remoting.exchange.ExchangeHandler;
 import org.apache.dubbo.remoting.exchange.ExchangeServer;
 import org.apache.dubbo.remoting.exchange.Exchangers;
 import org.apache.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
-import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -58,24 +56,34 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Function;
 
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.LAZY_CONNECT_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.ON_CONNECT_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.ON_DISCONNECT_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.CALLBACK_SERVICE_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.CONNECTIONS_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.DEFAULT_SHARE_CONNECTIONS;
-import static org.apache.dubbo.common.constants.RpcConstants.DEFAULT_STUB_EVENT;
-import static org.apache.dubbo.common.constants.RpcConstants.IS_CALLBACK_SERVICE;
-import static org.apache.dubbo.common.constants.RpcConstants.IS_SERVER_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.OPTIMIZER_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.SHARE_CONNECTIONS_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.STUB_EVENT_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.STUB_EVENT_METHODS_KEY;
+import static org.apache.dubbo.rpc.Constants.LAZY_CONNECT_KEY;
+import static org.apache.dubbo.rpc.protocol.dubbo.Constants.ON_CONNECT_KEY;
+import static org.apache.dubbo.rpc.protocol.dubbo.Constants.ON_DISCONNECT_KEY;
+import static org.apache.dubbo.remoting.Constants.DEFAULT_HEARTBEAT;
+import static org.apache.dubbo.remoting.Constants.HEARTBEAT_KEY;
+import static org.apache.dubbo.remoting.Constants.CHANNEL_READONLYEVENT_SENT_KEY;
+import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
+import static org.apache.dubbo.remoting.Constants.CODEC_KEY;
+import static org.apache.dubbo.remoting.Constants.DEFAULT_REMOTING_CLIENT;
+import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
+import static org.apache.dubbo.rpc.Constants.DEFAULT_REMOTING_SERVER;
+import static org.apache.dubbo.rpc.protocol.dubbo.Constants.CALLBACK_SERVICE_KEY;
+import static org.apache.dubbo.remoting.Constants.CONNECTIONS_KEY;
+import static org.apache.dubbo.rpc.Constants.DEFAULT_STUB_EVENT;
+import static org.apache.dubbo.rpc.protocol.dubbo.Constants.IS_CALLBACK_SERVICE;
+import static org.apache.dubbo.rpc.Constants.IS_SERVER_KEY;
+import static org.apache.dubbo.rpc.protocol.dubbo.Constants.OPTIMIZER_KEY;
+import static org.apache.dubbo.rpc.Constants.STUB_EVENT_KEY;
+import static org.apache.dubbo.rpc.Constants.STUB_EVENT_METHODS_KEY;
+import static org.apache.dubbo.rpc.protocol.dubbo.Constants.SHARE_CONNECTIONS_KEY;
+import static org.apache.dubbo.rpc.protocol.dubbo.Constants.DEFAULT_SHARE_CONNECTIONS;
+
 
 /**
  * dubbo protocol support.
@@ -140,16 +148,9 @@ public class DubboProtocol extends AbstractProtocol {
                     return null;
                 }
             }
-            RpcContext rpcContext = RpcContext.getContext();
-            rpcContext.setRemoteAddress(channel.getRemoteAddress());
+            RpcContext.getContext().setRemoteAddress(channel.getRemoteAddress());
             Result result = invoker.invoke(inv);
-
-            if (result instanceof AsyncRpcResult) {
-                return ((AsyncRpcResult) result).getResultFuture().thenApply(r -> (Object) r);
-
-            } else {
-                return CompletableFuture.completedFuture(result);
-            }
+            return result.completionFuture().thenApply(Function.identity());
         }
 
         @Override
@@ -332,12 +333,12 @@ public class DubboProtocol extends AbstractProtocol {
     private ExchangeServer createServer(URL url) {
         url = URLBuilder.from(url)
                 // send readonly event when server closes, it's enabled by default
-                .addParameterIfAbsent(RemotingConstants.CHANNEL_READONLYEVENT_SENT_KEY, Boolean.TRUE.toString())
+                .addParameterIfAbsent(CHANNEL_READONLYEVENT_SENT_KEY, Boolean.TRUE.toString())
                 // enable heartbeat by default
-                .addParameterIfAbsent(RemotingConstants.HEARTBEAT_KEY, String.valueOf(RemotingConstants.DEFAULT_HEARTBEAT))
-                .addParameter(RemotingConstants.CODEC_KEY, DubboCodec.NAME)
+                .addParameterIfAbsent(HEARTBEAT_KEY, String.valueOf(DEFAULT_HEARTBEAT))
+                .addParameter(CODEC_KEY, DubboCodec.NAME)
                 .build();
-        String str = url.getParameter(RemotingConstants.SERVER_KEY, RemotingConstants.DEFAULT_REMOTING_SERVER);
+        String str = url.getParameter(SERVER_KEY, DEFAULT_REMOTING_SERVER);
 
         if (str != null && str.length() > 0 && !ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(str)) {
             throw new RpcException("Unsupported server type: " + str + ", url: " + url);
@@ -350,7 +351,7 @@ public class DubboProtocol extends AbstractProtocol {
             throw new RpcException("Fail to start server(url: " + url + ") " + e.getMessage(), e);
         }
 
-        str = url.getParameter(RemotingConstants.CLIENT_KEY);
+        str = url.getParameter(CLIENT_KEY);
         if (str != null && str.length() > 0) {
             Set<String> supportedTypes = ExtensionLoader.getExtensionLoader(Transporter.class).getSupportedExtensions();
             if (!supportedTypes.contains(str)) {
@@ -399,7 +400,7 @@ public class DubboProtocol extends AbstractProtocol {
     }
 
     @Override
-    public <T> Invoker<T> refer(Class<T> serviceType, URL url) throws RpcException {
+    public <T> Invoker<T> protocolBindingRefer(Class<T> serviceType, URL url) throws RpcException {
         optimizeSerialization(url);
 
         // create rpc invoker.
@@ -519,7 +520,7 @@ public class DubboProtocol extends AbstractProtocol {
     }
 
     /**
-     * Add client references in bulk
+     * Increase the reference Count if we create new invoker shares same connection, the connection will be closed without any reference.
      *
      * @param referenceCountExchangeClients
      */
@@ -572,11 +573,11 @@ public class DubboProtocol extends AbstractProtocol {
     private ExchangeClient initClient(URL url) {
 
         // client type setting.
-        String str = url.getParameter(RemotingConstants.CLIENT_KEY, url.getParameter(RemotingConstants.SERVER_KEY, RemotingConstants.DEFAULT_REMOTING_CLIENT));
+        String str = url.getParameter(CLIENT_KEY, url.getParameter(SERVER_KEY, DEFAULT_REMOTING_CLIENT));
 
-        url = url.addParameter(RemotingConstants.CODEC_KEY, DubboCodec.NAME);
+        url = url.addParameter(CODEC_KEY, DubboCodec.NAME);
         // enable heartbeat by default
-        url = url.addParameterIfAbsent(RemotingConstants.HEARTBEAT_KEY, String.valueOf(RemotingConstants.DEFAULT_HEARTBEAT));
+        url = url.addParameterIfAbsent(HEARTBEAT_KEY, String.valueOf(DEFAULT_HEARTBEAT));
 
         // BIO is not allowed since it has severe performance issue.
         if (str != null && str.length() > 0 && !ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(str)) {

@@ -74,9 +74,9 @@ public class WrapperTest {
     @Test
     public void testWrapperObject() throws Exception {
         Wrapper w = Wrapper.getWrapper(Object.class);
-        Assertions.assertTrue(w.getMethodNames().length == 4);
-        Assertions.assertTrue(w.getPropertyNames().length == 0);
-        Assertions.assertEquals(null, w.getPropertyType(null));
+        Assertions.assertEquals(4, w.getMethodNames().length);
+        Assertions.assertEquals(0, w.getPropertyNames().length);
+        Assertions.assertNull(w.getPropertyType(null));
     }
 
     @Test
@@ -102,7 +102,7 @@ public class WrapperTest {
         Assertions.assertEquals(instance.getClass(), (Class<?>) w.invokeMethod(instance, "getClass", null, null));
         Assertions.assertEquals(instance.hashCode(), (int) w.invokeMethod(instance, "hashCode", null, null));
         Assertions.assertEquals(instance.toString(), (String) w.invokeMethod(instance, "toString", null, null));
-        Assertions.assertEquals(true, (boolean) w.invokeMethod(instance, "equals", null, new Object[]{instance}));
+        Assertions.assertTrue((boolean)w.invokeMethod(instance, "equals", null, new Object[] {instance}));
     }
 
     @Test
@@ -131,11 +131,11 @@ public class WrapperTest {
         assertArrayEquals(new String[]{"hello", "world"}, Wrapper.getWrapper(Son.class).getMethodNames());
     }
 
-    public static interface I0 {
+    public interface I0 {
         String getName();
     }
 
-    public static interface I1 extends I0 {
+    public interface I1 extends I0 {
         void setName(String name);
 
         void hello(String name);
@@ -147,19 +147,19 @@ public class WrapperTest {
         void setFloat(float f);
     }
 
-    public static interface EmptyService {
+    public interface EmptyService {
     }
 
-    public static interface Parent1 {
+    public interface Parent1 {
         void hello();
     }
 
 
-    public static interface Parent2 {
+    public interface Parent2 {
         void world();
     }
 
-    public static interface Son extends Parent1, Parent2 {
+    public interface Son extends Parent1, Parent2 {
 
     }
 

@@ -22,7 +22,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.jboss.resteasy.spi.ResteasyDeployment;
 
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
-import static org.apache.dubbo.common.constants.RpcConstants.EXTENSION_KEY;
+import static org.apache.dubbo.rpc.protocol.rest.Constants.EXTENSION_KEY;
 
 public abstract class BaseRestServer implements RestServer {
 

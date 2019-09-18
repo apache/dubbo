@@ -17,17 +17,17 @@
 package org.apache.dubbo.rpc.cluster.configurator;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.cluster.Configurator;
 
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static org.apache.dubbo.common.constants.ClusterConstants.CONFIG_VERSION_KEY;
-import static org.apache.dubbo.common.constants.ClusterConstants.OVERRIDE_PROVIDERS_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.CONFIG_VERSION_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.OVERRIDE_PROVIDERS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
@@ -38,6 +38,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.COMPATIBLE_CONFIG_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
 
 /**
@@ -118,7 +119,7 @@ public abstract class AbstractConfigurator implements Configurator {
                         || configApplication.equals(currentApplication)) {
                     Set<String> conditionKeys = new HashSet<String>();
                     conditionKeys.add(CATEGORY_KEY);
-                    conditionKeys.add(RemotingConstants.CHECK_KEY);
+                    conditionKeys.add(Constants.CHECK_KEY);
                     conditionKeys.add(DYNAMIC_KEY);
                     conditionKeys.add(ENABLED_KEY);
                     conditionKeys.add(GROUP_KEY);
@@ -126,6 +127,7 @@ public abstract class AbstractConfigurator implements Configurator {
                     conditionKeys.add(APPLICATION_KEY);
                     conditionKeys.add(SIDE_KEY);
                     conditionKeys.add(CONFIG_VERSION_KEY);
+                    conditionKeys.add(COMPATIBLE_CONFIG_KEY);
                     for (Map.Entry<String, String> entry : configuratorUrl.getParameters().entrySet()) {
                         String key = entry.getKey();
                         String value = entry.getValue();

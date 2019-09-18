@@ -20,6 +20,7 @@ package org.apache.dubbo.configcenter.support.etcd;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.configcenter.ConfigChangeEvent;
 import org.apache.dubbo.configcenter.ConfigurationListener;
+import org.apache.dubbo.configcenter.DynamicConfiguration;
 
 import io.etcd.jetcd.ByteSequence;
 import io.etcd.jetcd.Client;
@@ -38,7 +39,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.dubbo.common.constants.RegistryConstants.SESSION_TIMEOUT_KEY;
+import static org.apache.dubbo.remoting.etcd.Constants.SESSION_TIMEOUT_KEY;
 
 /**
  * Unit test for etcd config center support
@@ -57,8 +58,8 @@ public class EtcdDynamicConfigurationTest {
 
         put("/dubbo/config/org.apache.dubbo.etcd.testService/configurators", "hello");
         put("/dubbo/config/test/dubbo.properties", "aaa=bbb");
-        Assert.assertEquals("hello", config.getConfig("org.apache.dubbo.etcd.testService.configurators"));
-        Assert.assertEquals("aaa=bbb", config.getConfig("dubbo.properties", "test"));
+        Assert.assertEquals("hello", config.getRule("org.apache.dubbo.etcd.testService.configurators", DynamicConfiguration.DEFAULT_GROUP));
+        Assert.assertEquals("aaa=bbb", config.getRule("dubbo.properties", "test"));
     }
 
     @Test

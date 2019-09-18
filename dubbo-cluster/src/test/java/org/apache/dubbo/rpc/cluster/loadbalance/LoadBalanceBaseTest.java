@@ -37,8 +37,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static org.apache.dubbo.common.constants.ClusterConstants.DEFAULT_WARMUP;
-import static org.apache.dubbo.common.constants.ClusterConstants.DEFAULT_WEIGHT;
+import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_WARMUP;
+import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_WEIGHT;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 

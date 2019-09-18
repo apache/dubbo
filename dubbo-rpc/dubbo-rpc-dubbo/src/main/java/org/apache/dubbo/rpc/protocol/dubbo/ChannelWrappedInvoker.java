@@ -17,7 +17,6 @@
 package org.apache.dubbo.rpc.protocol.dubbo;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
@@ -25,24 +24,27 @@ import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.remoting.exchange.support.header.HeaderExchangeClient;
 import org.apache.dubbo.remoting.transport.ClientDelegate;
+import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
+import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.net.InetSocketAddress;
+import java.util.concurrent.CompletableFuture;
 
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.CALLBACK_SERVICE_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.ASYNC_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.TOKEN_KEY;
+import static org.apache.dubbo.remoting.Constants.SENT_KEY;
+import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
+import static org.apache.dubbo.rpc.protocol.dubbo.Constants.CALLBACK_SERVICE_KEY;
 
 /**
+ * Server push uses this Invoker to continuously push data to client.
  * Wrap the existing invoker on the channel.
  */
 class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
@@ -66,15 +68,20 @@ class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
         inv.setAttachment(CALLBACK_SERVICE_KEY, serviceKey);
 
         try {
-            if (getUrl().getMethodParameter(invocation.getMethodName(), ASYNC_KEY, false)) { // may have concurrency issue
-                currentClient.send(inv, getUrl().getMethodParameter(invocation.getMethodName(), RemotingConstants.SENT_KEY, false));
-                return new RpcResult();
-            }
-            int timeout = getUrl().getMethodParameter(invocation.getMethodName(), TIMEOUT_KEY, DEFAULT_TIMEOUT);
-            if (timeout > 0) {
-                return (Result) currentClient.request(inv, timeout).get();
+            if (RpcUtils.isOneway(getUrl(), inv)) { // may have concurrency issue
+                currentClient.send(inv, getUrl().getMethodParameter(invocation.getMethodName(), SENT_KEY, false));
+                return AsyncRpcResult.newDefaultAsyncResult(invocation);
             } else {
-                return (Result) currentClient.request(inv).get();
+                CompletableFuture<Object> responseFuture = currentClient.request(inv);
+                AsyncRpcResult asyncRpcResult = new AsyncRpcResult(inv);
+                responseFuture.whenComplete((appResponse, t) -> {
+                    if (t != null) {
+                        asyncRpcResult.completeExceptionally(t);
+                    } else {
+                        asyncRpcResult.complete((AppResponse) appResponse);
+                    }
+                });
+                return asyncRpcResult;
             }
         } catch (RpcException e) {
             throw e;

@@ -18,7 +18,6 @@ package org.apache.dubbo.metadata.integration;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -28,7 +27,9 @@ import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 import org.apache.dubbo.metadata.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.store.MetadataReport;
 import org.apache.dubbo.metadata.store.MetadataReportFactory;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import java.util.function.Supplier;
 
@@ -87,14 +88,18 @@ public class MetadataReportService {
     }
 
     public void publishProvider(URL providerUrl) throws RpcException {
+        if (!needStore(providerUrl)) {
+            return;
+        }
         //first add into the list
         // remove the individul param
-        providerUrl = providerUrl.removeParameters(PID_KEY, TIMESTAMP_KEY, RemotingConstants.BIND_IP_KEY, RemotingConstants.BIND_PORT_KEY, TIMESTAMP_KEY);
+        providerUrl = providerUrl.removeParameters(PID_KEY, TIMESTAMP_KEY, Constants.BIND_IP_KEY, Constants.BIND_PORT_KEY, TIMESTAMP_KEY);
 
         try {
             String interfaceName = providerUrl.getParameter(INTERFACE_KEY);
             if (StringUtils.isNotEmpty(interfaceName)) {
-                Class interfaceClass = Class.forName(interfaceName);
+                ClassLoader classLoader = null == Thread.currentThread().getContextClassLoader() ? this.getClass().getClassLoader() : Thread.currentThread().getContextClassLoader();
+                Class interfaceClass = Class.forName(interfaceName, true, classLoader);
                 FullServiceDefinition fullServiceDefinition = ServiceDefinitionBuilder.buildFullDefinition(interfaceClass, providerUrl.getParameters());
                 metadataReport.storeProviderMetadata(new MetadataIdentifier(providerUrl.getServiceInterface(),
                         providerUrl.getParameter(VERSION_KEY), providerUrl.getParameter(GROUP_KEY),
@@ -109,10 +114,21 @@ public class MetadataReportService {
     }
 
     public void publishConsumer(URL consumerURL) throws RpcException {
-        consumerURL = consumerURL.removeParameters(PID_KEY, TIMESTAMP_KEY, RemotingConstants.BIND_IP_KEY, RemotingConstants.BIND_PORT_KEY, TIMESTAMP_KEY);
+        if (!needStore(consumerURL)) {
+            return;
+        }
+        consumerURL = consumerURL.removeParameters(PID_KEY, TIMESTAMP_KEY, Constants.BIND_IP_KEY, Constants.BIND_PORT_KEY, TIMESTAMP_KEY);
         metadataReport.storeConsumerMetadata(new MetadataIdentifier(consumerURL.getServiceInterface(),
                 consumerURL.getParameter(VERSION_KEY), consumerURL.getParameter(GROUP_KEY), CONSUMER_SIDE,
                 consumerURL.getParameter(APPLICATION_KEY)), consumerURL.getParameters());
+    }
+
+    private boolean needStore(URL url) {
+        if (!ProtocolUtils.isGeneric(url.getParameter(org.apache.dubbo.rpc.Constants.GENERIC_KEY))) {
+            logger.debug("The metadata is ignored for this service is generic. The service is: " + url.getParameter(INTERFACE_KEY, ""));
+            return true;
+        }
+        return false;
     }
 
 }

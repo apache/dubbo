@@ -26,7 +26,6 @@ import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.support.AccessLogData;
 
@@ -47,7 +46,7 @@ import java.util.concurrent.TimeUnit;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.ACCESS_LOG_KEY;
+import static org.apache.dubbo.rpc.Constants.ACCESS_LOG_KEY;
 
 /**
  * Record access log for the service.
@@ -68,7 +67,7 @@ public class AccessLogFilter implements Filter {
 
     private static final Logger logger = LoggerFactory.getLogger(AccessLogFilter.class);
 
-    private static final String ACCESS_LOG_KEY = "dubbo.accesslog";
+    private static final String LOG_KEY = "dubbo.accesslog";
 
     private static final int LOG_MAX_BUFFER = 5000;
 
@@ -155,14 +154,13 @@ public class AccessLogFilter implements Filter {
                  iterator.hasNext();
                  iterator.remove()) {
                 writer.write(iterator.next().getLogMessage());
-                writer.write("\r\n");
+                writer.write(System.getProperty("line.separator"));
             }
             writer.flush();
         }
     }
 
     private AccessLogData buildAccessLogData(Invoker<?> invoker, Invocation inv) {
-        RpcContext context = RpcContext.getContext();
         AccessLogData logData = AccessLogData.newLogData();
         logData.setServiceName(invoker.getInterface().getName());
         logData.setMethodName(inv.getMethodName());
@@ -179,7 +177,7 @@ public class AccessLogFilter implements Filter {
              iterator.hasNext();
              iterator.remove()) {
             AccessLogData logData = iterator.next();
-            LoggerFactory.getLogger(ACCESS_LOG_KEY + "." + logData.getServiceName()).info(logData.getLogMessage());
+            LoggerFactory.getLogger(LOG_KEY + "." + logData.getServiceName()).info(logData.getLogMessage());
         }
     }
 

@@ -16,20 +16,20 @@
  */
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.remoting.Constants;
 
 import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.FILE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PASSWORD_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.PASSWORD_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.REGISTRIES_SUFFIX;
-import static org.apache.dubbo.common.constants.ConfigConstants.SHUTDOWN_WAIT_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.USERNAME_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.ZOOKEEPER_PROTOCOL;
-import static org.apache.dubbo.common.constants.RegistryConstants.EXTRA_KEYS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.USERNAME_KEY;
+import static org.apache.dubbo.config.Constants.REGISTRIES_SUFFIX;
+import static org.apache.dubbo.config.Constants.ZOOKEEPER_PROTOCOL;
+import static org.apache.dubbo.registry.Constants.EXTRA_KEYS_KEY;
 
 /**
  * RegistryConfig
@@ -182,6 +182,11 @@ public class RegistryConfig extends AbstractConfig {
             int i = address.indexOf("://");
             if (i > 0) {
                 this.updateIdIfAbsent(address.substring(0, i));
+                this.updateProtocolIfAbsent(address.substring(0, i));
+                int port = address.lastIndexOf(":");
+                if (port > 0) {
+                    this.updatePortIfAbsent(StringUtils.parseInteger(address.substring(port + 1)));
+                }
             }
         }
     }
@@ -278,7 +283,7 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     public void setTransporter(String transporter) {
-        checkName(RemotingConstants.TRANSPORTER_KEY, transporter);
+        checkName(Constants.TRANSPORTER_KEY, transporter);
         /*if(transporter != null && transporter.length() > 0 && ! ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(transporter)){
             throw new IllegalStateException("No such transporter type : " + transporter);
         }*/
@@ -290,7 +295,7 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     public void setServer(String server) {
-        checkName(RemotingConstants.SERVER_KEY, server);
+        checkName(Constants.SERVER_KEY, server);
         /*if(server != null && server.length() > 0 && ! ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(server)){
             throw new IllegalStateException("No such server type : " + server);
         }*/
@@ -302,7 +307,7 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     public void setClient(String client) {
-        checkName(RemotingConstants.CLIENT_KEY, client);
+        checkName(Constants.CLIENT_KEY, client);
         /*if(client != null && client.length() > 0 && ! ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(client)){
             throw new IllegalStateException("No such client type : " + client);
         }*/
@@ -432,4 +437,15 @@ public class RegistryConfig extends AbstractConfig {
         return !StringUtils.isEmpty(address) && !NO_AVAILABLE.equals(address);
     }
 
+    protected void updatePortIfAbsent(Integer value) {
+        if (value != null && value > 0 && port == null) {
+            this.port = value;
+        }
+    }
+
+    protected void updateProtocolIfAbsent(String value) {
+        if (StringUtils.isNotEmpty(value) && StringUtils.isEmpty(protocol)) {
+            this.protocol = value;
+        }
+    }
 }

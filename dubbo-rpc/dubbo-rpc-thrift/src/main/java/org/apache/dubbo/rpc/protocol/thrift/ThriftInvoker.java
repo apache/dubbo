@@ -17,20 +17,22 @@
 package org.apache.dubbo.rpc.protocol.thrift;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.utils.AtomicPositiveInteger;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
+import org.apache.dubbo.rpc.AsyncRpcResult;
+import org.apache.dubbo.rpc.FutureContext;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
@@ -38,7 +40,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.TOKEN_KEY;
+import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 
 
 /**
@@ -91,10 +93,12 @@ public class ThriftInvoker<T> extends AbstractInvoker<T> {
         try {
             int timeout = getUrl().getMethodParameter(methodName, TIMEOUT_KEY, DEFAULT_TIMEOUT);
 
-            RpcContext.getContext().setFuture(null);
-
-            return (Result) currentClient.request(inv, timeout).get();
-
+            AsyncRpcResult asyncRpcResult = new AsyncRpcResult(invocation);
+            CompletableFuture<Object> responseFuture = currentClient.request(inv, timeout);
+            asyncRpcResult.subscribeTo(responseFuture);
+            // save for 2.6.x compatibility, for example, TraceFilter in Zipkin uses com.alibaba.xxx.FutureAdapter
+            FutureContext.getContext().setCompatibleFuture(responseFuture);
+            return asyncRpcResult;
         } catch (TimeoutException e) {
             throw new RpcException(RpcException.TIMEOUT_EXCEPTION, e.getMessage(), e);
         } catch (RemotingException e) {
@@ -112,7 +116,7 @@ public class ThriftInvoker<T> extends AbstractInvoker<T> {
 
         for (ExchangeClient client : clients) {
             if (client.isConnected()
-                    && !client.hasAttribute(RemotingConstants.CHANNEL_ATTRIBUTE_READONLY_KEY)) {
+                    && !client.hasAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY)) {
                 //cannot write == not Available ?
                 return true;
             }

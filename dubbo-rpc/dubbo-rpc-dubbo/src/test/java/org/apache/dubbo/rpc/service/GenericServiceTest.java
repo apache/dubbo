@@ -42,8 +42,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.apache.dubbo.common.constants.RpcConstants.GENERIC_SERIALIZATION_NATIVE_JAVA;
-import static org.apache.dubbo.common.constants.RpcConstants.GENERIC_SERIALIZATION_BEAN;
+import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_NATIVE_JAVA;
+import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_BEAN;
 
 /**
  * GenericServiceTest

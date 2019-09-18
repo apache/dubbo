@@ -23,7 +23,6 @@ import org.apache.dubbo.remoting.zookeeper.ChildListener;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.recipes.cache.TreeCacheEvent;
-import org.apache.curator.framework.recipes.cache.TreeCacheListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.curator.test.TestingServer;
 import org.apache.zookeeper.WatchedEvent;
@@ -189,8 +188,8 @@ public class CuratorZookeeperClientTest {
         curatorClient.delete(path);
         valueFromCache = curatorClient.getContent(path + "/d.json");
         Assertions.assertNull(valueFromCache);
-        Thread.sleep(2000l);
-        Assertions.assertTrue(9l >= atomicInteger.get());
-        Assertions.assertTrue(2l <= atomicInteger.get());
+        Thread.sleep(2000L);
+        Assertions.assertTrue(9L >= atomicInteger.get());
+        Assertions.assertTrue(2L <= atomicInteger.get());
     }
 }

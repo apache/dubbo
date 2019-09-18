@@ -25,6 +25,7 @@ import org.apache.dubbo.common.serialize.ObjectInput;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -83,7 +84,7 @@ public class AvroObjectInput implements ObjectInput {
     @Override
     public byte[] readBytes() throws IOException {
         String resultStr = decoder.readString();
-        return resultStr.getBytes("utf8");
+        return resultStr.getBytes(StandardCharsets.UTF_8);
     }
 
     /**

@@ -17,7 +17,6 @@
 package org.apache.dubbo.remoting.transport;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -26,6 +25,7 @@ import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.Server;
 
@@ -59,8 +59,8 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
         super(url, handler);
         localAddress = getUrl().toInetSocketAddress();
 
-        String bindIp = getUrl().getParameter(RemotingConstants.BIND_IP_KEY, getUrl().getHost());
-        int bindPort = getUrl().getParameter(RemotingConstants.BIND_PORT_KEY, getUrl().getPort());
+        String bindIp = getUrl().getParameter(Constants.BIND_IP_KEY, getUrl().getHost());
+        int bindPort = getUrl().getParameter(Constants.BIND_PORT_KEY, getUrl().getPort());
         if (url.getParameter(ANYHOST_KEY, false) || NetUtils.isInvalidLocalHost(bindIp)) {
             bindIp = ANYHOST_VALUE;
         }
@@ -78,7 +78,7 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
         }
         //fixme replace this with better method
         DataStore dataStore = ExtensionLoader.getExtensionLoader(DataStore.class).getDefaultExtension();
-        executor = (ExecutorService) dataStore.get(RemotingConstants.EXECUTOR_SERVICE_COMPONENT_KEY, Integer.toString(url.getPort()));
+        executor = (ExecutorService) dataStore.get(Constants.EXECUTOR_SERVICE_COMPONENT_KEY, Integer.toString(url.getPort()));
     }
 
     protected abstract void doOpen() throws Throwable;

@@ -18,16 +18,15 @@ package org.apache.dubbo.remoting.exchange.support.header;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
-import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.Server;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
@@ -41,10 +40,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.Collections.unmodifiableCollection;
-
 import static org.apache.dubbo.remoting.Constants.HEARTBEAT_CHECK_TICK;
 import static org.apache.dubbo.remoting.Constants.LEAST_HEARTBEAT_DURATION;
 import static org.apache.dubbo.remoting.Constants.TICKS_PER_WHEEL;
+import static org.apache.dubbo.remoting.utils.UrlUtils.getHeartbeat;
+import static org.apache.dubbo.remoting.utils.UrlUtils.getIdleTimeout;
 
 /**
  * ExchangeServerImpl
@@ -104,7 +104,7 @@ public class HeaderExchangeServer implements ExchangeServer {
         if (timeout > 0) {
             final long max = (long) timeout;
             final long start = System.currentTimeMillis();
-            if (getUrl().getParameter(RemotingConstants.CHANNEL_SEND_READONLYEVENT_KEY, true)) {
+            if (getUrl().getParameter(Constants.CHANNEL_SEND_READONLYEVENT_KEY, true)) {
                 sendChannelReadOnlyEvent();
             }
             while (HeaderExchangeServer.this.isRunning()
@@ -135,7 +135,7 @@ public class HeaderExchangeServer implements ExchangeServer {
         for (Channel channel : channels) {
             try {
                 if (channel.isConnected()) {
-                    channel.send(request, getUrl().getParameter(RemotingConstants.CHANNEL_READONLYEVENT_SENT_KEY, true));
+                    channel.send(request, getUrl().getParameter(Constants.CHANNEL_READONLYEVENT_SENT_KEY, true));
                 }
             } catch (RemotingException e) {
                 logger.warn("send cannot write message error.", e);
@@ -209,10 +209,10 @@ public class HeaderExchangeServer implements ExchangeServer {
     public void reset(URL url) {
         server.reset(url);
         try {
-            int currHeartbeat = UrlUtils.getHeartbeat(getUrl());
-            int currIdleTimeout = UrlUtils.getIdleTimeout(getUrl());
-            int heartbeat = UrlUtils.getHeartbeat(url);
-            int idleTimeout = UrlUtils.getIdleTimeout(url);
+            int currHeartbeat = getHeartbeat(getUrl());
+            int currIdleTimeout = getIdleTimeout(getUrl());
+            int heartbeat = getHeartbeat(url);
+            int idleTimeout = getIdleTimeout(url);
             if (currHeartbeat != heartbeat || currIdleTimeout != idleTimeout) {
                 cancelCloseTask();
                 startIdleCheckTask(url);
@@ -260,7 +260,7 @@ public class HeaderExchangeServer implements ExchangeServer {
     private void startIdleCheckTask(URL url) {
         if (!server.canHandleIdle()) {
             AbstractTimerTask.ChannelProvider cp = () -> unmodifiableCollection(HeaderExchangeServer.this.getChannels());
-            int idleTimeout = UrlUtils.getIdleTimeout(url);
+            int idleTimeout = getIdleTimeout(url);
             long idleTimeoutTick = calculateLeastDuration(idleTimeout);
             CloseTimerTask closeTimerTask = new CloseTimerTask(cp, idleTimeoutTick, idleTimeout);
             this.closeTimerTask = closeTimerTask;

@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.dubbo.common.constants.ClusterConstants.OVERRIDE_PROVIDERS_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.OVERRIDE_PROVIDERS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.RegistryConstants.APP_DYNAMIC_CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_CONFIGURATORS_CATEGORY;
@@ -84,9 +84,7 @@ public class ConfigParser {
 
             List<String> apps = item.getApplications();
             if (apps != null && apps.size() > 0) {
-                apps.forEach(app -> {
-                    urls.add(URL.valueOf(urlBuilder.append("&application=").append(app).toString()));
-                });
+                apps.forEach(app -> urls.add(URL.valueOf(urlBuilder.append("&application=").append(app).toString())));
             } else {
                 urls.add(URL.valueOf(urlBuilder.toString()));
             }

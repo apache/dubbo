@@ -18,8 +18,8 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.CompositeConfiguration;
+import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.Environment;
-import org.apache.dubbo.common.config.InmemoryConfiguration;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
@@ -29,6 +29,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.MethodUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.context.ConfigConfigurationAdapter;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ConsumerMethodModel;
 
@@ -212,10 +213,12 @@ public abstract class AbstractConfig implements Serializable {
         }
     }
 
+    @Deprecated
     protected static void appendAttributes(Map<String, Object> parameters, Object config) {
         appendAttributes(parameters, config, null);
     }
 
+    @Deprecated
     protected static void appendAttributes(Map<String, Object> parameters, Object config, String prefix) {
         if (config == null) {
             return;
@@ -249,7 +252,7 @@ public abstract class AbstractConfig implements Serializable {
         }
     }
 
-    protected static ConsumerMethodModel.AsyncMethodInfo convertMethodConfig2AyncInfo(MethodConfig methodConfig) {
+    protected static ConsumerMethodModel.AsyncMethodInfo convertMethodConfig2AsyncInfo(MethodConfig methodConfig) {
         if (methodConfig == null || (methodConfig.getOninvoke() == null && methodConfig.getOnreturn() == null && methodConfig.getOnthrow() == null)) {
             return null;
         }
@@ -489,14 +492,13 @@ public abstract class AbstractConfig implements Serializable {
         for (Method method : methods) {
             try {
                 String name = method.getName();
-                if (isMetaMethod(method)) {
-                    String prop = calculateAttributeFromGetter(name);
+                if (MethodUtils.isMetaMethod(method)) {
                     String key;
                     Parameter parameter = method.getAnnotation(Parameter.class);
                     if (parameter != null && parameter.key().length() > 0 && parameter.useKeyAsProperty()) {
                         key = parameter.key();
                     } else {
-                        key = prop;
+                        key = calculateAttributeFromGetter(name);
                     }
                     // treat url and configuration differently, the value should always present in configuration though it may not need to present in url.
                     //if (method.getReturnType() == Object.class || parameter != null && parameter.excluded()) {
@@ -504,6 +506,14 @@ public abstract class AbstractConfig implements Serializable {
                         metaData.put(key, null);
                         continue;
                     }
+
+                    /**
+                     * Attributes annotated as deprecated should not override newly added replacement.
+                     */
+                    if (MethodUtils.isDeprecated(method) && metaData.get(key) != null) {
+                        continue;
+                    }
+
                     Object value = method.invoke(this);
                     String str = String.valueOf(value).trim();
                     if (value != null && str.length() > 0) {
@@ -546,14 +556,13 @@ public abstract class AbstractConfig implements Serializable {
     public void refresh() {
         try {
             CompositeConfiguration compositeConfiguration = Environment.getInstance().getConfiguration(getPrefix(), getId());
-            InmemoryConfiguration config = new InmemoryConfiguration(getPrefix(), getId());
-            config.addProperties(getMetaData());
+            Configuration config = new ConfigConfigurationAdapter(this);
             if (Environment.getInstance().isConfigCenterFirst()) {
                 // The sequence would be: SystemConfiguration -> AppExternalConfiguration -> ExternalConfiguration -> AbstractConfig -> PropertiesConfiguration
-                compositeConfiguration.addConfiguration(3, config);
+                compositeConfiguration.addConfiguration(4, config);
             } else {
                 // The sequence would be: SystemConfiguration -> AbstractConfig -> AppExternalConfiguration -> ExternalConfiguration -> PropertiesConfiguration
-                compositeConfiguration.addConfiguration(1, config);
+                compositeConfiguration.addConfiguration(2, config);
             }
 
             // loop methods, get override value and set the new value back to method
@@ -619,28 +628,6 @@ public abstract class AbstractConfig implements Serializable {
         return true;
     }
 
-    private boolean isMetaMethod(Method method) {
-        String name = method.getName();
-        if (!(name.startsWith("get") || name.startsWith("is"))) {
-            return false;
-        }
-        if ("get".equals(name)) {
-            return false;
-        }
-        if ("getClass".equals(name)) {
-            return false;
-        }
-        if (!Modifier.isPublic(method.getModifiers())) {
-            return false;
-        }
-        if (method.getParameterTypes().length != 0) {
-            return false;
-        }
-        if (!ClassUtils.isPrimitive(method.getReturnType())) {
-            return false;
-        }
-        return true;
-    }
 
     @Override
     public boolean equals(Object obj) {
@@ -650,7 +637,7 @@ public abstract class AbstractConfig implements Serializable {
 
         Method[] methods = this.getClass().getMethods();
         for (Method method1 : methods) {
-            if (MethodUtils.isGetter(method1) && ClassUtils.isPrimitive(method1.getReturnType())) {
+            if (MethodUtils.isGetter(method1)) {
                 Parameter parameter = method1.getAnnotation(Parameter.class);
                 if (parameter != null && parameter.excluded()) {
                     continue;

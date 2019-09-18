@@ -18,8 +18,8 @@
 package org.apache.dubbo.rpc.protocol;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -95,13 +95,14 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
     }
 
     @Override
-    public <T> Invoker<T> refer(final Class<T> type, final URL url) throws RpcException {
+    protected <T> Invoker<T> protocolBindingRefer(final Class<T> type, final URL url) throws RpcException {
         final Invoker<T> target = proxyFactory.getInvoker(doRefer(type, url), type, url);
         Invoker<T> invoker = new AbstractInvoker<T>(type, url) {
             @Override
             protected Result doInvoke(Invocation invocation) throws Throwable {
                 try {
                     Result result = target.invoke(invocation);
+                    // FIXME result is an AsyncRpcResult instance.
                     Throwable e = result.getException();
                     if (e != null) {
                         for (Class<?> rpcException : rpcExceptions) {
@@ -133,11 +134,11 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
     }
 
     protected String getAddr(URL url) {
-        String bindIp = url.getParameter(RemotingConstants.BIND_IP_KEY, url.getHost());
+        String bindIp = url.getParameter(Constants.BIND_IP_KEY, url.getHost());
         if (url.getParameter(ANYHOST_KEY, false)) {
             bindIp = ANYHOST_VALUE;
         }
-        return NetUtils.getIpByHost(bindIp) + ":" + url.getParameter(RemotingConstants.BIND_PORT_KEY, url.getPort());
+        return NetUtils.getIpByHost(bindIp) + ":" + url.getParameter(Constants.BIND_PORT_KEY, url.getPort());
     }
 
     protected int getErrorCode(Throwable e) {

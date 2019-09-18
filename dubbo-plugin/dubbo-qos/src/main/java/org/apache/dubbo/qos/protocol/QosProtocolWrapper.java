@@ -28,9 +28,10 @@ import org.apache.dubbo.rpc.RpcException;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.apache.dubbo.common.constants.ConfigConstants.ACCEPT_FOREIGN_IP;
-import static org.apache.dubbo.common.constants.ConfigConstants.QOS_ENABLE;
-import static org.apache.dubbo.common.constants.ConfigConstants.QOS_PORT;
+import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
+import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
+import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST;
+import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
 
 
@@ -92,9 +93,11 @@ public class QosProtocolWrapper implements Protocol {
                 return;
             }
 
+            String host = url.getParameter(QOS_HOST);
             int port = url.getParameter(QOS_PORT, QosConstants.DEFAULT_PORT);
             boolean acceptForeignIp = Boolean.parseBoolean(url.getParameter(ACCEPT_FOREIGN_IP, "false"));
             Server server = Server.getInstance();
+            server.setHost(host);
             server.setPort(port);
             server.setAcceptForeignIp(acceptForeignIp);
             server.start();

@@ -18,7 +18,6 @@ package org.apache.dubbo.registry.zookeeper;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -26,6 +25,7 @@ import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.support.FailbackRegistry;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.zookeeper.ChildListener;
 import org.apache.dubbo.remoting.zookeeper.StateListener;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
@@ -59,8 +59,6 @@ import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGO
 public class ZookeeperRegistry extends FailbackRegistry {
 
     private final static Logger logger = LoggerFactory.getLogger(ZookeeperRegistry.class);
-
-    private final static int DEFAULT_ZOOKEEPER_PORT = 2181;
 
     private final static String DEFAULT_ROOT = "dubbo";
 
@@ -145,7 +143,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
                             if (!anyServices.contains(child)) {
                                 anyServices.add(child);
                                 subscribe(url.setPath(child).addParameters(INTERFACE_KEY, child,
-                                        RemotingConstants.CHECK_KEY, String.valueOf(false)), listener);
+                                        Constants.CHECK_KEY, String.valueOf(false)), listener);
                             }
                         }
                     });
@@ -158,7 +156,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
                         service = URL.decode(service);
                         anyServices.add(service);
                         subscribe(url.setPath(service).addParameters(INTERFACE_KEY, service,
-                                RemotingConstants.CHECK_KEY, String.valueOf(false)), listener);
+                                Constants.CHECK_KEY, String.valueOf(false)), listener);
                     }
                 }
             } else {

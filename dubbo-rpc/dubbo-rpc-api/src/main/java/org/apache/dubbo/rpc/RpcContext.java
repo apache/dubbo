@@ -38,8 +38,8 @@ import java.util.concurrent.TimeoutException;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.ASYNC_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.RETURN_KEY;
+import static org.apache.dubbo.rpc.Constants.ASYNC_KEY;
+import static org.apache.dubbo.rpc.Constants.RETURN_KEY;
 
 
 /**
@@ -75,7 +75,6 @@ public class RpcContext {
 
     private final Map<String, String> attachments = new HashMap<String, String>();
     private final Map<String, Object> values = new HashMap<String, Object>();
-    private Future<?> future;
 
     private List<URL> urls;
 
@@ -105,6 +104,7 @@ public class RpcContext {
     private Object request;
     private Object response;
     private AsyncContext asyncContext;
+
 
     protected RpcContext() {
     }
@@ -143,32 +143,6 @@ public class RpcContext {
     public static void restoreContext(RpcContext oldContext) {
         LOCAL.set(oldContext);
     }
-
-
-    public RpcContext copyOf() {
-        RpcContext copy = new RpcContext();
-        copy.attachments.putAll(this.attachments);
-        copy.values.putAll(this.values);
-        copy.future = this.future;
-        copy.urls = this.urls;
-        copy.url = this.url;
-        copy.methodName = this.methodName;
-        copy.parameterTypes = this.parameterTypes;
-        copy.arguments = this.arguments;
-        copy.localAddress = this.localAddress;
-        copy.remoteAddress = this.remoteAddress;
-        copy.remoteApplicationName = this.remoteApplicationName;
-        copy.invokers = this.invokers;
-        copy.invoker = this.invoker;
-        copy.invocation = this.invocation;
-
-        copy.request = this.request;
-        copy.response = this.response;
-        copy.asyncContext = this.asyncContext;
-
-        return copy;
-    }
-
 
     /**
      * remove context.
@@ -251,7 +225,7 @@ public class RpcContext {
      */
     @SuppressWarnings("unchecked")
     public <T> CompletableFuture<T> getCompletableFuture() {
-        return (CompletableFuture<T>) future;
+        return FutureContext.getContext().getCompletableFuture();
     }
 
     /**
@@ -262,7 +236,7 @@ public class RpcContext {
      */
     @SuppressWarnings("unchecked")
     public <T> Future<T> getFuture() {
-        return (Future<T>) future;
+        return FutureContext.getContext().getCompletableFuture();
     }
 
     /**
@@ -270,8 +244,8 @@ public class RpcContext {
      *
      * @param future
      */
-    public void setFuture(Future<?> future) {
-        this.future = future;
+    public void setFuture(CompletableFuture<?> future) {
+        FutureContext.getContext().setFuture(future);
     }
 
     public List<URL> getUrls() {
@@ -756,6 +730,10 @@ public class RpcContext {
         }
         currentContext.asyncContext.start();
         return currentContext.asyncContext;
+    }
+
+    protected void setAsyncContext(AsyncContext asyncContext) {
+        this.asyncContext = asyncContext;
     }
 
     public boolean isAsyncStarted() {

@@ -19,7 +19,6 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.bytecode.Wrapper;
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -30,6 +29,7 @@ import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.metadata.integration.MetadataReportService;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
@@ -56,24 +56,24 @@ import java.util.Map;
 import java.util.Properties;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SEMICOLON_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.CLUSTER_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.DUBBO_IP_TO_REGISTRY;
-import static org.apache.dubbo.common.constants.ConfigConstants.REFER_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.REGISTER_IP_KEY;
-import static org.apache.dubbo.common.constants.MonitorConstants.MONITOR_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMER_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
-import static org.apache.dubbo.common.constants.RpcConstants.LOCAL_PROTOCOL;
 import static org.apache.dubbo.common.utils.NetUtils.isInvalidLocalHost;
+import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
+import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
+import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
+import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
+import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 
 /**
  * ReferenceConfig
@@ -273,7 +273,6 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         if (initialized) {
             return;
         }
-        initialized = true;
         checkStubAndLocal(interfaceClass);
         checkMock(interfaceClass);
         Map<String, String> map = new HashMap<String, String>();
@@ -281,7 +280,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         map.put(SIDE_KEY, CONSUMER_SIDE);
 
         appendRuntimeParameters(map);
-        if (!isGeneric()) {
+        if (!ProtocolUtils.isGeneric(getGeneric())) {
             String revision = Version.getVersion(interfaceClass, version);
             if (revision != null && revision.length() > 0) {
                 map.put(REVISION_KEY, revision);
@@ -315,7 +314,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                         map.put(methodConfig.getName() + ".retries", "0");
                     }
                 }
-                attributes.put(methodConfig.getName(), convertMethodConfig2AyncInfo(methodConfig));
+                attributes.put(methodConfig.getName(), convertMethodConfig2AsyncInfo(methodConfig));
             }
         }
 
@@ -331,6 +330,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
         String serviceKey = URL.buildKey(interfaceName, group, version);
         ApplicationModel.initConsumerModel(serviceKey, buildConsumerModel(serviceKey, attributes));
+        initialized = true;
     }
 
     private ConsumerModel buildConsumerModel(String serviceKey, Map<String, Object> attributes) {
@@ -356,6 +356,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 logger.info("Using injvm service " + interfaceClass.getName());
             }
         } else {
+            urls.clear(); // reference retry init will add url to urls, lead to OOM
             if (url != null && url.length() > 0) { // user specified URL, could be peer-to-peer address, or register center's address.
                 String[] us = SEMICOLON_SPLIT_PATTERN.split(url);
                 if (us != null && us.length > 0) {
@@ -414,8 +415,6 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         }
 
         if (shouldCheck() && !invoker.isAvailable()) {
-            // make it possible for consumer to retry later if provider is temporarily unavailable
-            initialized = false;
             throw new IllegalStateException("Failed to check the status of the service " + interfaceName + ". No provider available for the service " + (group == null ? "" : group + "/") + interfaceName + (version == null ? "" : ":" + version) + " from the url " + invoker.getUrl() + " to the consumer " + NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion());
         }
         if (logger.isInfoEnabled()) {
@@ -531,8 +530,8 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         if (interfaceClass != null) {
             return interfaceClass;
         }
-        if (isGeneric()
-                || (getConsumer() != null && getConsumer().isGeneric())) {
+        if (ProtocolUtils.isGeneric(getGeneric())
+                || (getConsumer() != null && ProtocolUtils.isGeneric(getConsumer().getGeneric()))) {
             return GenericService.class;
         }
         try {
@@ -579,7 +578,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     }
 
     public void setClient(String client) {
-        checkName(RemotingConstants.CLIENT_KEY, client);
+        checkName(Constants.CLIENT_KEY, client);
         this.client = client;
     }
 

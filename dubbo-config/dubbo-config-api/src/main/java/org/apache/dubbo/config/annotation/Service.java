@@ -16,10 +16,9 @@
  */
 package org.apache.dubbo.config.annotation;
 
-import org.apache.dubbo.common.constants.ClusterConstants;
-import org.apache.dubbo.common.constants.RpcConstants;
 import org.apache.dubbo.rpc.ExporterListener;
 import org.apache.dubbo.rpc.Filter;
+import org.apache.dubbo.rpc.cluster.Constants;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -28,8 +27,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import static org.apache.dubbo.common.constants.ClusterConstants.DEFAULT_LOADBALANCE;
-import static org.apache.dubbo.common.constants.ClusterConstants.DEFAULT_RETRIES;
+import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_LOADBALANCE;
+import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_RETRIES;
 
 /**
  * Service annotation
@@ -146,9 +145,9 @@ public @interface Service {
     /**
      * The callback instance limit peer connection
      *
-     * @see RpcConstants#DEFAULT_CALLBACK_INSTANCES
+     * @see org.apache.dubbo.rpc.Constants#DEFAULT_CALLBACK_INSTANCES
      */
-    int callbacks() default RpcConstants.DEFAULT_CALLBACK_INSTANCES;
+    int callbacks() default org.apache.dubbo.rpc.Constants.DEFAULT_CALLBACK_INSTANCES;
 
     /**
      * Callback method name when connected, default value is empty string
@@ -173,14 +172,14 @@ public @interface Service {
     /**
      * Service invocation retry times
      *
-     * @see ClusterConstants#DEFAULT_RETRIES
+     * @see Constants#DEFAULT_RETRIES
      */
     int retries() default DEFAULT_RETRIES;
 
     /**
      * Load balance strategy, legal values include: random, roundrobin, leastactive
      *
-     * @see ClusterConstants#DEFAULT_LOADBALANCE
+     * @see Constants#DEFAULT_LOADBALANCE
      */
     String loadbalance() default DEFAULT_LOADBALANCE;
 

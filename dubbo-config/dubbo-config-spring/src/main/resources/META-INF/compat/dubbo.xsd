@@ -632,6 +632,11 @@
                 <xsd:documentation><![CDATA[ Sync or Async report. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="cluster" type="xsd:boolean" use="optional">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Need cluster support, default false. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
     </xsd:complexType>
 
     <xsd:complexType name="configCenterType">
@@ -650,18 +655,19 @@
         </xsd:attribute>
         <xsd:attribute name="cluster" type="xsd:string" use="optional">
             <xsd:annotation>
-                <xsd:documentation><![CDATA[ The config center cluster. ]]></xsd:documentation>
+                <xsd:documentation><![CDATA[ The config center cluster, it's real meaning may very on different Config Center products. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="namespace" type="xsd:string" use="optional">
             <xsd:annotation>
                 <xsd:documentation>
-                    <![CDATA[ The group of the config center, an isolated space for config items in the same config center. ]]></xsd:documentation>
+                    <![CDATA[ The namespace of the config center, generally it's used for multi-tenant, but it's real meaning depends on the actual Config Center you use. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-        <xsd:attribute name="app-name" type="xsd:string" use="optional">
+        <xsd:attribute name="group" type="xsd:string" use="optional">
             <xsd:annotation>
-                <xsd:documentation><![CDATA[ The group of the config center. ]]></xsd:documentation>
+                <xsd:documentation>
+                    <![CDATA[ The group of the config center, generally it's used to identify an isolated space for a batch of config items, but it's real meaning depends on the actual Config Center you use.. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="config-file" type="xsd:string" use="optional">
