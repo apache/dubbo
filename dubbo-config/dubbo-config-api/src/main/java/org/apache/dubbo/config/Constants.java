@@ -73,9 +73,6 @@ public interface Constants {
      */
     String PRODUCTION_ENVIRONMENT = "product";
 
-    String CONFIG_CONFIGFILE_KEY = "config-file";
-    String CONFIG_ENABLE_KEY = "highest-priority";
-
     String MULTICAST = "multicast";
 
 

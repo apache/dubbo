@@ -28,10 +28,10 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.CONFIG_CONFIGFILE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.CONFIG_ENABLE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
-import static org.apache.dubbo.config.Constants.CONFIG_CONFIGFILE_KEY;
-import static org.apache.dubbo.config.Constants.CONFIG_ENABLE_KEY;
 import static org.apache.dubbo.config.Constants.ZOOKEEPER_PROTOCOL;
 
 /**
