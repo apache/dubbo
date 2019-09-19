@@ -257,4 +257,14 @@ public class ConfigUtilsTest {
     public void testGetPid() throws Exception {
         assertThat(ConfigUtils.getPid(), greaterThan(0));
     }
+
+    @Test
+    public void testPropertiesWithStructedValue() throws Exception {
+        Properties p = ConfigUtils.loadProperties("parameters.properties", false);
+
+        Properties expected = new Properties();
+        expected.put("dubbo.parameters", "[{a:b},{c_.d: r*}]");
+
+        assertEquals(expected, p);
+    }
 }

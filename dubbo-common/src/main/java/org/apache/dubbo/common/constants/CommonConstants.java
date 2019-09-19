@@ -184,4 +184,9 @@ public interface CommonConstants {
 
     String DUBBO_LABELS = "dubbo.labels";
     String DUBBO_ENV_KEYS = "dubbo.env.keys";
+
+    String CONFIG_CONFIGFILE_KEY = "config-file";
+    String CONFIG_ENABLE_KEY = "highest-priority";
+    String CONFIG_NAMESPACE_KEY = "namespace";
+    String CHECK_KEY = "check";
 }
