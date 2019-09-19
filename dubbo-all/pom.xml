@@ -144,7 +144,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-rpc-jsonrpc</artifactId>
+            <artifactId>dubbo-rpc-http</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
             <optional>true</optional>
@@ -165,7 +165,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-rpc-http</artifactId>
+            <artifactId>dubbo-rpc-http-invoker</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
             <optional>true</optional>
@@ -581,10 +581,10 @@
                                     <include>org.apache.dubbo:dubbo-rpc-api</include>
                                     <include>org.apache.dubbo:dubbo-rpc-dubbo</include>
                                     <include>org.apache.dubbo:dubbo-rpc-injvm</include>
-                                    <include>org.apache.dubbo:dubbo-rpc-jsonrpc</include>
+                                    <include>org.apache.dubbo:dubbo-rpc-http</include>
                                     <include>org.apache.dubbo:dubbo-rpc-rmi</include>
                                     <include>org.apache.dubbo:dubbo-rpc-hessian</include>
-                                    <include>org.apache.dubbo:dubbo-rpc-http</include>
+                                    <include>org.apache.dubbo:dubbo-rpc-http-invoker</include>
                                     <include>org.apache.dubbo:dubbo-rpc-webservice</include>
                                     <include>org.apache.dubbo:dubbo-rpc-thrift</include>
                                     <include>org.apache.dubbo:dubbo-rpc-memcached</include>
@@ -622,7 +622,7 @@
                                     <include>org.apache.dubbo:dubbo-serialization-jdk</include>
                                     <include>org.apache.dubbo:dubbo-serialization-protostuff</include>
                                     <include>org.apache.dubbo:dubbo-serialization-gson</include>
-                                    <include>org.apache.dubbo:dubbo-serialization-googlePb</include>
+                                    <include>org.apache.dubbo:dubbo-serialization-protobuf-json</include>
                                     <include>org.apache.dubbo:dubbo-configcenter-api</include>
                                     <include>org.apache.dubbo:dubbo-configcenter-definition</include>
                                     <include>org.apache.dubbo:dubbo-configcenter-apollo</include>
@@ -762,6 +762,10 @@
                                 </transformer>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>META-INF/dubbo/internal/org.apache.dubbo.metadata.store.MetadataReportFactory
+                                    </resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/dubbo/internal/org.apache.dubbo.metadata.definition.builder.TypeBuilder
                                     </resource>
                                 </transformer>
                             </transformers>

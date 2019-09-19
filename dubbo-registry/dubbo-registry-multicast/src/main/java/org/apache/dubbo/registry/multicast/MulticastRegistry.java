@@ -150,7 +150,7 @@ public class MulticastRegistry extends FailbackRegistry {
     private void checkMulticastAddress(InetAddress multicastAddress) {
         if (!multicastAddress.isMulticastAddress()) {
             String message = "Invalid multicast address " + multicastAddress;
-            if (!(multicastAddress instanceof Inet4Address)) {
+            if (multicastAddress instanceof Inet4Address) {
                 throw new IllegalArgumentException(message + ", " +
                         "ipv4 multicast address scope: 224.0.0.0 - 239.255.255.255.");
             } else {
@@ -263,7 +263,7 @@ public class MulticastRegistry extends FailbackRegistry {
     }
 
     @Override
-    public void doSubscribe(URL url, NotifyListener listener) {
+    public void doSubscribe(URL url, final NotifyListener listener) {
         if (ANY_VALUE.equals(url.getServiceInterface())) {
             admin = true;
         }
@@ -324,7 +324,7 @@ public class MulticastRegistry extends FailbackRegistry {
                 }
                 urls.add(url);
                 List<URL> list = toList(urls);
-                for (NotifyListener listener : entry.getValue()) {
+                for (final NotifyListener listener : entry.getValue()) {
                     notify(key, listener, list);
                     synchronized (listener) {
                         listener.notify();

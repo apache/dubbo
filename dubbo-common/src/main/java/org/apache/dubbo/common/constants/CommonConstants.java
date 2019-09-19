@@ -42,19 +42,25 @@ public interface CommonConstants {
 
     String COMMA_SEPARATOR = ",";
 
+    String DOT_SEPARATOR = ".";
+
     Pattern COMMA_SPLIT_PATTERN = Pattern.compile("\\s*[,]+\\s*");
 
-    public final static String PATH_SEPARATOR = "/";
+    String PATH_SEPARATOR = "/";
 
-    public final static String PROTOCOL_SEPARATOR = "://";
+    String PROTOCOL_SEPARATOR = "://";
 
     String REGISTRY_SEPARATOR = "|";
 
     Pattern REGISTRY_SPLIT_PATTERN = Pattern.compile("\\s*[|;]+\\s*");
 
+    Pattern D_REGISTRY_SPLIT_PATTERN = Pattern.compile("\\s*[|]+\\s*");
+
     String SEMICOLON_SEPARATOR = ";";
 
     Pattern SEMICOLON_SPLIT_PATTERN = Pattern.compile("\\s*[;]+\\s*");
+
+    Pattern EQUAL_SPLIT_PATTERN = Pattern.compile("\\s*[=]+\\s*");
 
     String DEFAULT_PROXY = "javassist";
 
@@ -100,9 +106,15 @@ public interface CommonConstants {
 
     String PROPERTIES_CHAR_SEPERATOR = "-";
 
+    String UNDERLINE_SEPARATOR = "_";
+
+    String SEPARATOR_REGEX = "_|-";
+
     String GROUP_CHAR_SEPERATOR = ":";
 
     String HIDE_KEY_PREFIX = ".";
+
+    String DOT_REGEX = "\\.";
 
     String DEFAULT_KEY_PREFIX = "default.";
 
@@ -169,4 +181,12 @@ public interface CommonConstants {
     String SHUTDOWN_WAIT_SECONDS_KEY = "dubbo.service.shutdown.wait.seconds";
     String SHUTDOWN_WAIT_KEY = "dubbo.service.shutdown.wait";
     String DUBBO_PROTOCOL = "dubbo";
+
+    String DUBBO_LABELS = "dubbo.labels";
+    String DUBBO_ENV_KEYS = "dubbo.env.keys";
+
+    String CONFIG_CONFIGFILE_KEY = "config-file";
+    String CONFIG_ENABLE_KEY = "highest-priority";
+    String CONFIG_NAMESPACE_KEY = "namespace";
+    String CHECK_KEY = "check";
 }

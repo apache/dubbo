@@ -125,7 +125,7 @@
         <arguments />
         <checkstyle.skip>true</checkstyle.skip>
         <rat.skip>true</rat.skip>
-        <revision>2.7.3-SNAPSHOT</revision>
+        <revision>2.7.4-SNAPSHOT</revision>
     </properties>
 
     <modules>
@@ -289,6 +289,7 @@
                                 <id>attach-javadoc</id>
                                 <goals>
                                     <goal>jar</goal>
+                                    <goal>aggregate</goal>
                                 </goals>
                                 <configuration>
                                     <additionalDependencies>
@@ -315,6 +316,11 @@
                                 <link>http://docs.oracle.com/javase/8/docs/api</link>
                             </links>
                             <doclint>none</doclint>
+                            <excludePackageNames>
+                                org.apache.dubbo.demo,org.apache.dubbo.demo.*
+                            </excludePackageNames>
+                            <doctitle>Apache Dubbo ${project.version} API</doctitle>
+                            <windowtitle>Apache Dubbo ${project.version} API</windowtitle>
                         </configuration>
                     </plugin>
                     <plugin>
@@ -517,9 +523,15 @@
                                 <exclude>Jenkinsfile</exclude>
                                 <exclude>**/codestyle/*</exclude>
                                 <exclude>**/resources/META-INF/**</exclude>
-                                <!-- exclude the internal threadlocal files -->
+                                <!-- exclude the netty files -->
                                 <exclude>**/org/apache/dubbo/common/threadlocal/InternalThreadLocal.java</exclude>
                                 <exclude>**/org/apache/dubbo/common/threadlocal/InternalThreadLocalMap.java</exclude>
+                                <exclude>**/org/apache/dubbo/common/timer/TimerTask.java</exclude>
+                                <exclude>**/org/apache/dubbo/common/timer/Timer.java</exclude>
+                                <exclude>**/org/apache/dubbo/common/timer/Timeout.java</exclude>
+                                <exclude>**/org/apache/dubbo/common/timer/HashedWheelTimer.java</exclude>
+                                <!-- exclude the edazdarevic files -->
+                                <exclude>**/org/apache/dubbo/common/utils/CIDRUtils.java</exclude>
                             </excludes>
                         </configuration>
                     </execution>

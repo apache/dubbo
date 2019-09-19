@@ -366,7 +366,7 @@ public class PojoUtils {
                 history.put(pojo, dest);
                 for (Object obj : src) {
                     Type keyType = getGenericClassByIndex(genericType, 0);
-                    Class<?> keyClazz = obj.getClass();
+                    Class<?> keyClazz = obj == null ? null : obj.getClass();
                     if (keyType instanceof Class) {
                         keyClazz = (Class<?>) keyType;
                     }
@@ -561,10 +561,10 @@ public class PojoUtils {
      * @return
      */
     private static Object getDefaultValue(Class<?> parameterType) {
-        if (parameterType.getName().equals("char")) {
+        if ("char".equals(parameterType.getName())) {
             return Character.MIN_VALUE;
         }
-        if (parameterType.getName().equals("bool")) {
+        if ("bool".equals(parameterType.getName())) {
             return false;
         }
         return parameterType.isPrimitive() ? 0 : null;
@@ -580,6 +580,7 @@ public class PojoUtils {
                 for (Method m : cls.getMethods()) {
                     if (ReflectUtils.isBeanPropertyWriteMethod(m) && m.getName().equals(name)) {
                         method = m;
+                        break;
                     }
                 }
             }

@@ -60,8 +60,6 @@ public class ZookeeperRegistry extends FailbackRegistry {
 
     private final static Logger logger = LoggerFactory.getLogger(ZookeeperRegistry.class);
 
-    private final static int DEFAULT_ZOOKEEPER_PORT = 2181;
-
     private final static String DEFAULT_ROOT = "dubbo";
 
     private final String root;

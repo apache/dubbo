@@ -80,7 +80,7 @@ public class PerformanceClientFixedTest  {
             } catch (Throwable t) {
                 t.printStackTrace();
             } finally {
-                if (client != null && client.isConnected() == false) {
+                if (client != null && !client.isConnected()) {
                     f++;
                     System.out.println("open client failed, try again " + f);
                     client.close();
