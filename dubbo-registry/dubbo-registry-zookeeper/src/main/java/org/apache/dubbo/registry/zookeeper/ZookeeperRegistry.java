@@ -33,6 +33,7 @@ import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 import org.apache.dubbo.rpc.RpcException;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -138,14 +139,18 @@ public class ZookeeperRegistry extends FailbackRegistry {
                 ChildListener zkListener = listeners.get(listener);
                 if (zkListener == null) {
                     listeners.putIfAbsent(listener, (parentPath, currentChilds) -> {
+                        List<String> copy = new LinkedList<>(anyServices);
                         for (String child : currentChilds) {
                             child = URL.decode(child);
                             if (!anyServices.contains(child)) {
                                 anyServices.add(child);
                                 subscribe(url.setPath(child).addParameters(INTERFACE_KEY, child,
                                         Constants.CHECK_KEY, String.valueOf(false)), listener);
+                            } else {
+                                copy.remove(child);
                             }
                         }
+                        anyServices.removeAll(copy);
                     });
                     zkListener = listeners.get(listener);
                 }
