@@ -84,11 +84,7 @@ public class ProviderModel {
         for (Method method : methodsToExport) {
             method.setAccessible(true);
 
-            List<ProviderMethodModel> methodModels = methods.get(method.getName());
-            if (methodModels == null) {
-                methodModels = new ArrayList<ProviderMethodModel>(1);
-                methods.put(method.getName(), methodModels);
-            }
+            List<ProviderMethodModel> methodModels = methods.computeIfAbsent(method.getName(), k -> new ArrayList<ProviderMethodModel>(1));
             methodModels.add(new ProviderMethodModel(method, serviceName));
         }
     }

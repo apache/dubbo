@@ -228,7 +228,7 @@ public final class MapValue {
       if (key == null) { throw new NullPointerException(); }
       java.util.Map<String, String> map =
           internalGetAttachments().getMap();
-      return map.containsKey(key) ? map.get(key) : defaultValue;
+      return map.getOrDefault(key, defaultValue);
     }
     /**
      * <code>map&lt;string, string&gt; attachments = 1;</code>
@@ -657,7 +657,7 @@ public final class MapValue {
         if (key == null) { throw new NullPointerException(); }
         java.util.Map<String, String> map =
             internalGetAttachments().getMap();
-        return map.containsKey(key) ? map.get(key) : defaultValue;
+        return map.getOrDefault(key, defaultValue);
       }
       /**
        * <code>map&lt;string, string&gt; attachments = 1;</code>
