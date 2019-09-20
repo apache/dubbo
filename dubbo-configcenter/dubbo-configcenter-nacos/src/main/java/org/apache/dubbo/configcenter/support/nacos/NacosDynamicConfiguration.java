@@ -20,6 +20,7 @@ package org.apache.dubbo.configcenter.support.nacos;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.configcenter.ConfigChangeEvent;
 import org.apache.dubbo.configcenter.ConfigChangeType;
@@ -116,14 +117,12 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
         putPropertyIfAbsent(url, properties, NACOS_NAMING_LOG_NAME);
 
         String endpoint = url.getParameter(ENDPOINT);
-        if (StringUtils.isNotEmpty(endpoint)) {
-            if (endpoint.contains(":")) {
-                int index = endpoint.lastIndexOf(":");
-                properties.put(ENDPOINT, endpoint.substring(0, index));
-                properties.put(ENDPOINT_PORT, endpoint.substring(index + 1));
-            }else{
-                putPropertyIfAbsent(url, properties, ENDPOINT);
-            }
+        String[] hostAndPort = NetUtils.getHostAndPort(endpoint);
+        if (hostAndPort[1] == null) {
+            properties.put(ENDPOINT, hostAndPort[0]);
+        }else{
+            properties.put(ENDPOINT, hostAndPort[0]);
+            properties.put(ENDPOINT_PORT,  hostAndPort[1]);
         }
 
         putPropertyIfAbsent(url, properties, ACCESS_KEY);

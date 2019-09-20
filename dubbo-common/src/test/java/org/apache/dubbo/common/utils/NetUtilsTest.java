@@ -300,4 +300,28 @@ public class NetUtilsTest {
         assertFalse(NetUtils.matchIpRange("192.168.1.1-61:90", "192.168.1.62", 90));
         assertFalse(NetUtils.matchIpRange("192.168.1.62:90", "192.168.1.63", 90));
     }
+
+    @Test
+    public void testGetHostAndPort() {
+        assertEquals(NetUtils.getHostAndPort(null)[0],null);
+
+        assertEquals(NetUtils.getHostAndPort("http://dubbo.io")[0],"dubbo.io");
+        assertEquals(NetUtils.getHostAndPort("http://dubbo.io")[1],null);
+
+        assertEquals(NetUtils.getHostAndPort("http://dubbo.io:9012")[0], "dubbo.io");
+        assertEquals(NetUtils.getHostAndPort("http://dubbo.io:9012")[1],"9012");
+
+        assertEquals(NetUtils.getHostAndPort("http://dubbo.io:9012/demo")[0],"dubbo.io");
+        assertEquals(NetUtils.getHostAndPort("http://dubbo.io:9012/demo")[1],"9012");
+
+
+        assertEquals(NetUtils.getHostAndPort("dubbo.io")[0],"dubbo.io");
+        assertEquals(NetUtils.getHostAndPort("dubbo.io")[1],null);
+
+        assertEquals(NetUtils.getHostAndPort("dubbo.io:9012")[0],"dubbo.io");
+        assertEquals(NetUtils.getHostAndPort("dubbo.io:9012")[1],"9012");
+
+        assertEquals(NetUtils.getHostAndPort("dubbo.io:9012/demo")[0],"dubbo.io");
+        assertEquals(NetUtils.getHostAndPort("dubbo.io:9012/demo")[1],"9012");
+    }
 }

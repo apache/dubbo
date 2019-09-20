@@ -480,6 +480,26 @@ public class NetUtils {
         return true;
     }
 
+    public static String[] getHostAndPort(String url) {
+        String[] result = new String[2];
+        if (url == null) {
+            return result;
+        }
+        if(url.contains("://")){
+            url = url.substring(url.indexOf("://") + 3);
+        }
+        if (url.contains(":")) {
+            int index = url.lastIndexOf(":");
+            int end = url.indexOf("/", index) > 0 ? url.indexOf("/", index) : url.length();
+            result[0] = url.substring(0, index);
+            result[1] = url.substring(index + 1, end);
+        }else{
+            result[0] = url;
+            result[1] = null;
+        }
+        return result;
+    }
+
     private static boolean ipPatternContainExpression(String pattern) {
         return pattern.contains("*") || pattern.contains("-");
     }
