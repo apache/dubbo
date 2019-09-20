@@ -28,12 +28,14 @@ import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.ServiceBean;
+import org.apache.dubbo.config.spring.beans.factory.annotation.DubboConfigAliasPostProcessor;
 
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.config.TypedStringValue;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.support.ManagedMap;
 import org.springframework.beans.factory.support.RootBeanDefinition;
@@ -52,6 +54,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import static org.apache.dubbo.common.constants.CommonConstants.HIDE_KEY_PREFIX;
+import static org.apache.dubbo.config.spring.util.BeanRegistrar.registerInfrastructureBean;
 
 /**
  * AbstractBeanDefinitionParser
@@ -194,7 +197,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                                         value = null;
                                     }
                                     reference = value;
-                                } else if(ONRETURN.equals(property) || ONTHROW.equals(property) || ONINVOKE.equals(property)) {
+                                } else if (ONRETURN.equals(property) || ONTHROW.equals(property) || ONINVOKE.equals(property)) {
                                     int index = value.lastIndexOf(".");
                                     String ref = value.substring(0, index);
                                     String method = value.substring(index + 1);
@@ -390,7 +393,19 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
 
     @Override
     public BeanDefinition parse(Element element, ParserContext parserContext) {
+        // Register DubboConfigAliasPostProcessor
+        registerDubboConfigAliasPostProcessor(parserContext.getRegistry());
+
         return parse(element, parserContext, beanClass, required);
     }
 
+    /**
+     * Register {@link DubboConfigAliasPostProcessor}
+     *
+     * @param registry {@link BeanDefinitionRegistry}
+     * @since 2.7.4 [Feature] https://github.com/apache/dubbo/issues/5093
+     */
+    private void registerDubboConfigAliasPostProcessor(BeanDefinitionRegistry registry) {
+        registerInfrastructureBean(registry, DubboConfigAliasPostProcessor.BEAN_NAME, DubboConfigAliasPostProcessor.class);
+    }
 }
