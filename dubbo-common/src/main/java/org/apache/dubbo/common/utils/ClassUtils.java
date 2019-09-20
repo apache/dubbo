@@ -37,12 +37,12 @@ public class ClassUtils {
      * Map with primitive type name as key and corresponding primitive type as
      * value, for example: "int" -> "int.class".
      */
-    private static final Map<String, Class<?>> PRIMITIVE_TYPE_NAME_MAP = new HashMap<String, Class<?>>(16);
+    private static final Map<String, Class<?>> PRIMITIVE_TYPE_NAME_MAP = new HashMap<String, Class<?>>(32);
     /**
      * Map with primitive wrapper type as key and corresponding primitive type
      * as value, for example: Integer.class -> int.class.
      */
-    private static final Map<Class<?>, Class<?>> PRIMITIVE_WRAPPER_TYPE_MAP = new HashMap<Class<?>, Class<?>>(8);
+    private static final Map<Class<?>, Class<?>> PRIMITIVE_WRAPPER_TYPE_MAP = new HashMap<Class<?>, Class<?>>(16);
 
     private static final char PACKAGE_SEPARATOR_CHAR = '.';
 
@@ -56,7 +56,7 @@ public class ClassUtils {
         PRIMITIVE_WRAPPER_TYPE_MAP.put(Long.class, long.class);
         PRIMITIVE_WRAPPER_TYPE_MAP.put(Short.class, short.class);
 
-        Set<Class<?>> primitiveTypeNames = new HashSet<>(16);
+        Set<Class<?>> primitiveTypeNames = new HashSet<>(32);
         primitiveTypeNames.addAll(PRIMITIVE_WRAPPER_TYPE_MAP.values());
         primitiveTypeNames.addAll(Arrays
                 .asList(boolean[].class, byte[].class, char[].class, double[].class,

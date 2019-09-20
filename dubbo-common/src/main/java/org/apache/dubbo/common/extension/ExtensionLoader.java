@@ -772,7 +772,9 @@ public class ExtensionLoader<T> {
         if (c == null) {
             extensionClasses.put(name, clazz);
         } else if (c != clazz) {
-            throw new IllegalStateException("Duplicate extension " + type.getName() + " name " + name + " on " + c.getName() + " and " + clazz.getName());
+            String duplicateMsg = "Duplicate extension " + type.getName() + " name " + name + " on " + c.getName() + " and " + clazz.getName();
+            logger.error(duplicateMsg);
+            throw new IllegalStateException(duplicateMsg);
         }
     }
 
