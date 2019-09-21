@@ -153,6 +153,7 @@
         <mortbay_jetty_version>6.1.26</mortbay_jetty_version>
         <portlet_version>2.0</portlet_version>
         <maven_flatten_version>1.1.0</maven_flatten_version>
+        <jackson_dataformat_msgpac_version>0.8.18</jackson_dataformat_msgpac_version>
         <revision>2.7.4-SNAPSHOT</revision>
     </properties>
 
@@ -576,6 +577,11 @@
                 <groupId>com.google.code.gson</groupId>
                 <artifactId>gson</artifactId>
                 <version>${gson_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.msgpack</groupId>
+                <artifactId>jackson-dataformat-msgpack</artifactId>
+                <version>${jackson_dataformat_msgpac_version}</version>
             </dependency>
             <dependency>
                 <groupId>com.github.briandilley.jsonrpc4j</groupId>

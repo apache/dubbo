@@ -528,6 +528,10 @@
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.msgpack</groupId>
+            <artifactId>jackson-dataformat-msgpack</artifactId>
+        </dependency>
 
         <!-- Temporarily add this part to exclude transitive dependency -->
         <dependency>
@@ -623,6 +627,7 @@
                                     <include>org.apache.dubbo:dubbo-serialization-protostuff</include>
                                     <include>org.apache.dubbo:dubbo-serialization-gson</include>
                                     <include>org.apache.dubbo:dubbo-serialization-protobuf-json</include>
+                                    <include>org.apache.dubbo:dubbo-serialization-msgpack</include>
                                     <include>org.apache.dubbo:dubbo-configcenter-api</include>
                                     <include>org.apache.dubbo:dubbo-configcenter-definition</include>
                                     <include>org.apache.dubbo:dubbo-configcenter-apollo</include>

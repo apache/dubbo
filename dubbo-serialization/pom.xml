@@ -41,5 +41,6 @@
         <module>dubbo-serialization-gson</module>
         <module>dubbo-serialization-protobuf-json</module>
         <module>dubbo-serialization-native-hession</module>
+        <module>dubbo-serialization-msgpack</module>
     </modules>
 </project>
