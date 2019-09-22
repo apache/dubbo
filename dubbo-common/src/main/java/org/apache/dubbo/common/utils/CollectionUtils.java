@@ -173,6 +173,10 @@ public class CollectionUtils {
 
     public static Map<String, String> toStringMap(String... pairs) {
         Map<String, String> parameters = new HashMap<>();
+        if (pairs == null || pairs.length == 0) {
+            return parameters;
+        }
+
         if (pairs.length > 0) {
             if (pairs.length % 2 != 0) {
                 throw new IllegalArgumentException("pairs must be even.");
