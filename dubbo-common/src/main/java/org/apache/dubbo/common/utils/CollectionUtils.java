@@ -173,7 +173,7 @@ public class CollectionUtils {
 
     public static Map<String, String> toStringMap(String... pairs) {
         Map<String, String> parameters = new HashMap<>();
-        if (pairs == null || pairs.length == 0) {
+        if(ArrayUtils.isEmpty(pairs)){
             return parameters;
         }
 
