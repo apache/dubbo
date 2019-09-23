@@ -17,7 +17,6 @@
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
 import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.spring.context.config.NamePropertyDefaultValueDubboConfigBeanCustomizer;
 import org.apache.dubbo.config.spring.context.properties.DefaultDubboConfigBinder;
 
@@ -53,14 +52,6 @@ public class DubboConfigBindingBeanPostProcessorTest {
         return new ApplicationConfig();
     }
 
-    @Bean("dubbo-demo-protocol")
-    public ProtocolConfig protocolConfig() {
-        ProtocolConfig protocolConfig = new ProtocolConfig();
-        protocolConfig.setName("dubbo");
-        protocolConfig.setId("customConfigAlias");
-        return protocolConfig;
-    }
-
     @Bean
     public DubboConfigBindingBeanPostProcessor bindingBeanPostProcessor() {
         return new DubboConfigBindingBeanPostProcessor("dubbo.application", "dubbo-demo-application");
@@ -74,15 +65,8 @@ public class DubboConfigBindingBeanPostProcessorTest {
 
         ApplicationConfig applicationConfig = applicationContext.getBean(ApplicationConfig.class);
 
-        String[] aliases = applicationContext.getAliases("dubbo-demo-protocol");
-        ProtocolConfig protocolConfigByName = applicationContext.getBean("dubbo-demo-protocol", ProtocolConfig.class);
-        ProtocolConfig protocolConfigById = applicationContext.getBean(protocolConfigByName.getId(), ProtocolConfig.class);
-
         Assert.assertEquals("dubbo-demo-application", applicationConfig.getName());
         Assert.assertEquals("mercyblitz", applicationConfig.getOwner());
         Assert.assertEquals("Apache", applicationConfig.getOrganization());
-
-        Assert.assertArrayEquals(new String[]{"customConfigAlias"}, aliases);
-        Assert.assertEquals(protocolConfigByName, protocolConfigById);
     }
 }
