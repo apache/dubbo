@@ -730,6 +730,7 @@ public class PojoUtils {
     }
 
     private static boolean realizeGenericFeatures(Method method,Field field,Object value,Object dest ,String name,final Map<Object, Object> history ) {
+        Object rawValue = value;
         if(field != null) {
             GenericFeature genericFeature = field.getAnnotation(GenericFeature.class);
             if (genericFeature != null && genericFeature.ignore()) {
@@ -737,12 +738,18 @@ public class PojoUtils {
             }
 
             if(genericFeature != null) {
-                value = realize0(value, field.getType(), field.getGenericType(), history);
                 if(genericFeature.nullNotRealize() && value == null) {
                     return true;
                 }
+                if(value instanceof String) {
+                    value = fromValueType(value, field.getType(), genericFeature);
+                }
+                if(rawValue == value) {
+                    value = realize0(value, field.getType(), field.getGenericType(), history);
+                }
+
                 try {
-                    forceSetFieldValue(field, dest, fromValueType(value, field.getType(), genericFeature));
+                    forceSetFieldValue(field, dest, value);
                 } catch (IllegalAccessException e) {
                     throw new RuntimeException("Failed to set field " + name + " of pojo " + dest.getClass().getName() + " : " + e.getMessage(), e);
                 }
@@ -763,14 +770,19 @@ public class PojoUtils {
         if (!method.isAccessible()) {
             method.setAccessible(true);
         }
-        Type ptype = method.getGenericParameterTypes()[0];
-        value = realize0(value, method.getParameterTypes()[0], ptype, history);
         if(genericFeature.nullNotRealize() && value == null) {
             return true;
         }
+        if (value instanceof String) {
+            value = fromValueType(value, method.getParameterTypes()[0], genericFeature);
+        }
+        if(rawValue == value) {
+            Type ptype = method.getGenericParameterTypes()[0];
+            value = realize0(value, method.getParameterTypes()[0], ptype, history);
+        }
 
         try {
-            method.invoke(dest, fromValueType(value, method.getParameterTypes()[0], genericFeature));
+            method.invoke(dest, value);
         } catch (Exception e) {
             String exceptionDescription = "Failed to set pojo " + dest.getClass().getSimpleName() + " property " + name
                     + " value " + value + "(" + value.getClass() + "), cause: " + e.getMessage();
