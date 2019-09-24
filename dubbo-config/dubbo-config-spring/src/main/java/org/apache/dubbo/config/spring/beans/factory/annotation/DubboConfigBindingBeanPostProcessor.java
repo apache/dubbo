@@ -212,4 +212,6 @@ public class DubboConfigBindingBeanPostProcessor implements BeanPostProcessor, A
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
         //do nothing here
     }
+    
 }
+
