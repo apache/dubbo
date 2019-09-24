@@ -141,7 +141,7 @@ public class DecodeableRpcResult extends AppResponse implements Codec, Decodeabl
 
     private void handleException(ObjectInput in) throws IOException {
         try {
-            Object obj = in.readObject();
+            Object obj = in.readObject(Throwable.class);
             if (!(obj instanceof Throwable)) {
                 throw new IOException("Response data error, expect Throwable, but get " + obj);
             }
