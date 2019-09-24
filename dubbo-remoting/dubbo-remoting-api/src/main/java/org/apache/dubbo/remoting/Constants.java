@@ -85,6 +85,8 @@ public interface Constants {
 
     String CODEC_KEY = "codec";
 
+    String CODEC_VERSION_KEY = "codec.version";
+
     String SERVER_KEY = "server";
 
     String CLIENT_KEY = "client";

@@ -30,6 +30,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.timeout.IdleStateEvent;
 
+import static org.apache.dubbo.common.constants.CommonConstants.HEARTBEAT_EVENT;
+
 /**
  * NettyClientHandler
  */
@@ -123,7 +125,7 @@ public class NettyClientHandler extends ChannelDuplexHandler {
                 Request req = new Request();
                 req.setVersion(Version.getProtocolVersion());
                 req.setTwoWay(true);
-                req.setEvent(Request.HEARTBEAT_EVENT);
+                req.setEvent(HEARTBEAT_EVENT);
                 channel.send(req);
             } finally {
                 NettyChannel.removeChannelIfDisconnected(ctx.channel());

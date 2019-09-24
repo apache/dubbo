@@ -33,6 +33,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.CommonConstants.HEARTBEAT_EVENT;
+import static org.apache.dubbo.common.constants.CommonConstants.MOCK_HEARTBEAT_EVENT;
+
 /**
  * GenericGoogleProtobuf object output implementation
  */
@@ -99,7 +102,7 @@ public class GenericProtobufObjectOutput implements ObjectOutput {
     @Override
     public void writeObject(Object obj) throws IOException {
         /**
-         * Protobuf does not allow writing of non-protobuf generated message, including null value.
+         * Protobuf does not allow writing of non-protobuf generated messages, including null value.
          * Writing of null value from developers should be denied immediately by throwing exception.
          */
         if (obj == null) {
@@ -107,10 +110,7 @@ public class GenericProtobufObjectOutput implements ObjectOutput {
                     "please use com.google.protobuf.Empty instead if you want to transmit null values.");
             // obj = ProtobufUtils.convertNullToEmpty();
         }
-        if (obj instanceof Map) {
-            // only for attachment
-            obj = MapValue.Map.newBuilder().putAllAttachments((Map) obj).build();
-        } else if (!ProtobufUtils.isSupported(obj.getClass())) {
+        if (!ProtobufUtils.isSupported(obj.getClass())) {
             throw new IllegalArgumentException("This serialization only supports google protobuf objects, current object class is: " + obj.getClass().getName());
         }
 
@@ -119,11 +119,11 @@ public class GenericProtobufObjectOutput implements ObjectOutput {
     }
 
     @Override
-    public void writeEvent(String data) throws IOException {
-        if (data == null) {
-            data = "H";
+    public void writeEvent(Object data) throws IOException {
+        if (data == HEARTBEAT_EVENT) {
+            data = MOCK_HEARTBEAT_EVENT;
         }
-        writeUTF(data);
+        writeUTF((String) data);
     }
 
     @Override
@@ -131,6 +131,14 @@ public class GenericProtobufObjectOutput implements ObjectOutput {
         if (obj instanceof Throwable && !(obj instanceof MessageLite)) {
             obj = ProtobufUtils.convertToThrowableProto((Throwable) obj);
         }
+        ProtobufUtils.serialize(obj, os);
+        os.flush();
+    }
+
+    @Override
+    public void writeAttachments(Map<String, String> attachments) throws IOException {
+        ProtobufUtils.serialize(MapValue.Map.newBuilder().putAllAttachments(attachments).build(), os);
+        os.flush();
     }
 
     @Override

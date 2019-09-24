@@ -23,7 +23,6 @@ import org.apache.dubbo.common.serialize.protobuf.support.wrapper.ThrowablePB;
 import com.google.protobuf.BoolValue;
 import com.google.protobuf.BytesValue;
 import com.google.protobuf.DoubleValue;
-import com.google.protobuf.Empty;
 import com.google.protobuf.FloatValue;
 import com.google.protobuf.Int32Value;
 import com.google.protobuf.Int64Value;
@@ -36,6 +35,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
 import java.util.Map;
+
+import static org.apache.dubbo.common.constants.CommonConstants.HEARTBEAT_EVENT;
+import static org.apache.dubbo.common.constants.CommonConstants.MOCK_HEARTBEAT_EVENT;
 
 /**
  * GenericGoogleProtobuf object input implementation
@@ -94,17 +96,7 @@ public class GenericProtobufJsonObjectInput implements ObjectInput {
 
     @Override
     public Object readObject() {
-        try {
-            read(Empty.class);
-            return null;
-        } catch (Exception e) {
-            throw new UnsupportedOperationException("Provide the protobuf message type you want to read.");
-        }
-    }
-
-    @Override
-    public Object readThrowable() throws IOException, ClassNotFoundException {
-        return read(Throwable.class);
+        throw new UnsupportedOperationException("Provide the protobuf message type you want to read.");
     }
 
     @Override
@@ -127,19 +119,33 @@ public class GenericProtobufJsonObjectInput implements ObjectInput {
     }
 
     private <T> T read(Class<T> cls) throws IOException {
-        if (cls.equals(Map.class)) {
-            // only for attachments
-            String json = readLine();
-            return (T) ProtobufUtils.deserializeJson(json, MapValue.Map.class).getAttachmentsMap();
-        } else if (getClass().isAssignableFrom(Throwable.class)) {
-            String json = readLine();
-            ThrowablePB.ThrowableProto throwableProto = ProtobufUtils.deserializeJson(json, ThrowablePB.ThrowableProto.class);
-            return (T) ProtobufUtils.convertToException(throwableProto);
-        } else if (!ProtobufUtils.isSupported(cls)) {
+        if (!ProtobufUtils.isSupported(cls)) {
             throw new IllegalArgumentException("This serialization only support google protobuf entity, the class is :" + cls.getName());
         }
 
         String json = readLine();
         return ProtobufUtils.deserializeJson(json, cls);
+    }
+
+    @Override
+    public Throwable readThrowable() throws IOException {
+        String json = readLine();
+        ThrowablePB.ThrowableProto throwableProto = ProtobufUtils.deserializeJson(json, ThrowablePB.ThrowableProto.class);
+        return ProtobufUtils.convertToException(throwableProto);
+    }
+
+    @Override
+    public Map<String, String> readAttachments() throws IOException, ClassNotFoundException {
+        String json = readLine();
+        return ProtobufUtils.deserializeJson(json, MapValue.Map.class).getAttachmentsMap();
+    }
+
+    @Override
+    public Object readEvent() throws IOException, ClassNotFoundException {
+        String eventData = readUTF();
+        if (eventData.equals(MOCK_HEARTBEAT_EVENT)) {
+            eventData = HEARTBEAT_EVENT;
+        }
+        return eventData;
     }
 }

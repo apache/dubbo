@@ -40,6 +40,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.Collections.unmodifiableCollection;
+import static org.apache.dubbo.common.constants.CommonConstants.READONLY_EVENT;
 import static org.apache.dubbo.remoting.Constants.HEARTBEAT_CHECK_TICK;
 import static org.apache.dubbo.remoting.Constants.LEAST_HEARTBEAT_DURATION;
 import static org.apache.dubbo.remoting.Constants.TICKS_PER_WHEEL;
@@ -127,7 +128,7 @@ public class HeaderExchangeServer implements ExchangeServer {
 
     private void sendChannelReadOnlyEvent() {
         Request request = new Request();
-        request.setEvent(Request.READONLY_EVENT);
+        request.setEvent(READONLY_EVENT);
         request.setTwoWay(false);
         request.setVersion(Version.getProtocolVersion());
 

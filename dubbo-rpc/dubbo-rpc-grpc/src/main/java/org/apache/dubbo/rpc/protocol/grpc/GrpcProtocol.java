@@ -27,9 +27,9 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.AbstractProxyProtocol;
 
 import io.grpc.BindableService;
+import io.grpc.CallOptions;
 import io.grpc.Channel;
 import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 
@@ -54,19 +54,20 @@ public class GrpcProtocol extends AbstractProxyProtocol {
 
     private final Map<String, ManagedChannel> channelMap = new ConcurrentHashMap<>();
 
-
     @Override
     protected <T> Runnable doExport(T impl, Class<T> type, URL url) throws RpcException {
         String key = url.getAddress();
         GrpcServer grpcServer = serverMap.computeIfAbsent(key, k -> {
             DubboHandlerRegistry registry = new DubboHandlerRegistry();
 
-            Server originalServer = ServerBuilder
+            ServerBuilder builder =
+                    ServerBuilder
                     .forPort(url.getPort())
-                    .fallbackHandlerRegistry(registry)
-                    .build();
-            GrpcServer server = new GrpcServer(originalServer, registry);
-            return server;
+                            .fallbackHandlerRegistry(registry);
+
+            Server originalServer = GrpcOptionsUtils.buildServerBuilder(url, builder);
+
+            return new GrpcServer(originalServer, registry);
         });
 
         grpcServer.getRegistry().addService((BindableService) impl, url.getServiceKey());
@@ -90,18 +91,20 @@ public class GrpcProtocol extends AbstractProxyProtocol {
 
         final Method dubboStubMethod;
         try {
-            dubboStubMethod = enclosingClass.getDeclaredMethod("getDubboStub", Channel.class);
+            dubboStubMethod = enclosingClass.getDeclaredMethod("getDubboStub", Channel.class, CallOptions.class);
+//            dubboStubMethod.setAccessible(true);
         } catch (NoSuchMethodException e) {
             throw new IllegalArgumentException("Does not find getDubboStub in " + enclosingClass.getName() + ", please use the customized protoc-gen-grpc-dubbo-java to update the generated classes.");
         }
 
+        // Channel
         Channel channel = channelMap.computeIfAbsent(url.getServiceKey(),
-                k -> ManagedChannelBuilder.forAddress(url.getHost(), url.getPort()).usePlaintext(true).build()
+                k -> GrpcOptionsUtils.buildManagedChannel(url)
         );
 
+        // CallOptions
         try {
-            @SuppressWarnings("unchecked")
-            final T stub = (T) dubboStubMethod.invoke(null, channel);
+            @SuppressWarnings("unchecked") final T stub = (T) dubboStubMethod.invoke(null, channel, GrpcOptionsUtils.buildCallOptions(url));
             return stub;
         } catch (IllegalAccessException | InvocationTargetException e) {
             throw new IllegalStateException("Could not create stub through reflection.", e);

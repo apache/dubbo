@@ -192,4 +192,9 @@ public interface CommonConstants {
 
     String DUBBO_LABELS = "dubbo.labels";
     String DUBBO_ENV_KEYS = "dubbo.env.keys";
+
+    String HEARTBEAT_EVENT = null;
+    String MOCK_HEARTBEAT_EVENT = "H";
+    String READONLY_EVENT = "R";
+
 }

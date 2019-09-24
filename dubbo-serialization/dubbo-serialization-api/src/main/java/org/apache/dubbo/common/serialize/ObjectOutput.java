@@ -17,6 +17,7 @@
 package org.apache.dubbo.common.serialize;
 
 import java.io.IOException;
+import java.util.Map;
 
 /**
  * Object output interface.
@@ -48,12 +49,12 @@ public interface ObjectOutput extends DataOutput {
         writeObject(obj);
     }
 
-    default void writeEvent(String data) throws IOException {
+    default void writeEvent(Object data) throws IOException {
         writeObject(data);
     }
 
-    default void writeAttachments(Object obj) throws IOException {
-
+    default void writeAttachments(Map<String, String> attachments) throws IOException {
+        writeObject(attachments);
     }
 
 }

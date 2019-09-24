@@ -36,7 +36,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Type;
-import java.util.Map;
 
 public class DecodeableRpcResult extends AppResponse implements Codec, Decodeable {
 
@@ -142,11 +141,7 @@ public class DecodeableRpcResult extends AppResponse implements Codec, Decodeabl
 
     private void handleException(ObjectInput in) throws IOException {
         try {
-            Object obj = in.readThrowable();
-            if (!(obj instanceof Throwable)) {
-                throw new IOException("Response data error, expect Throwable, but get " + obj);
-            }
-            setException((Throwable) obj);
+            setException(in.readThrowable());
         } catch (ClassNotFoundException e) {
             rethrow(e);
         }
@@ -154,7 +149,7 @@ public class DecodeableRpcResult extends AppResponse implements Codec, Decodeabl
 
     private void handleAttachment(ObjectInput in) throws IOException {
         try {
-            setAttachments((Map<String, String>) in.readObject(Map.class));
+            setAttachments(in.readAttachments());
         } catch (ClassNotFoundException e) {
             rethrow(e);
         }

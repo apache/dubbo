@@ -34,6 +34,9 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.CommonConstants.HEARTBEAT_EVENT;
+import static org.apache.dubbo.common.constants.CommonConstants.MOCK_HEARTBEAT_EVENT;
+
 /**
  * GenericGoogleProtobuf object output implementation
  */
@@ -102,16 +105,37 @@ public class GenericProtobufJsonObjectOutput implements ObjectOutput {
         if (obj == null) {
             throw new IllegalArgumentException("This serialization only support google protobuf object, the object is : null");
         }
-        if (obj instanceof Map) {
-            // only for attachment
-            obj = MapValue.Map.newBuilder().putAllAttachments((Map) obj).build();
-        } else if (obj instanceof Throwable && !ProtobufUtils.isSupported(obj.getClass())) {
-            obj = ProtobufUtils.serializeJson(ProtobufUtils.convertToThrowableProto((Throwable) obj));
-        } else if (!ProtobufUtils.isSupported(obj.getClass())) {
+        if (!ProtobufUtils.isSupported(obj.getClass())) {
             throw new IllegalArgumentException("This serialization only support google protobuf object, the object class is: " + obj.getClass().getName());
         }
 
         writer.write(ProtobufUtils.serializeJson(obj));
+        writer.println();
+        writer.flush();
+    }
+
+    @Override
+    public void writeThrowable(Object th) throws IOException {
+        if (th instanceof Throwable && !ProtobufUtils.isSupported(th.getClass())) {
+            th = ProtobufUtils.convertToThrowableProto((Throwable) th);
+        }
+        writer.write(ProtobufUtils.serializeJson(th));
+        writer.println();
+        writer.flush();
+    }
+
+    @Override
+    public void writeEvent(Object data) throws IOException {
+        if (data == HEARTBEAT_EVENT) {
+            data = MOCK_HEARTBEAT_EVENT;
+        }
+        writeUTF((String) data);
+    }
+
+    @Override
+    public void writeAttachments(Map<String, String> attachments) throws IOException {
+        MapValue.Map proto = MapValue.Map.newBuilder().putAllAttachments(attachments).build();
+        writer.write(ProtobufUtils.serializeJson(proto));
         writer.println();
         writer.flush();
     }

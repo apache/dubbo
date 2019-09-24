@@ -18,6 +18,7 @@ package org.apache.dubbo.common.serialize;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.util.Map;
 
 /**
  * Object input interface.
@@ -70,7 +71,19 @@ public interface ObjectInput extends DataInput {
      * restricting the content of headers / attachments to Ascii strings and uses ISO_8859_1 to encode them.
      * https://tools.ietf.org/html/rfc7540#section-8.1.2
      */
-    default Object readThrowable() throws IOException, ClassNotFoundException {
+    default Throwable readThrowable() throws IOException, ClassNotFoundException {
+        Object obj = readObject();
+        if (!(obj instanceof Throwable)) {
+            throw new IOException("Response data error, expect Throwable, but get " + obj);
+        }
+        return (Throwable) obj;
+    }
+
+    default Object readEvent() throws IOException, ClassNotFoundException {
         return readObject();
+    }
+
+    default Map<String, String> readAttachments() throws IOException, ClassNotFoundException {
+        return readObject(Map.class);
     }
 }

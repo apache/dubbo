@@ -23,7 +23,6 @@ import org.apache.dubbo.common.serialize.protobuf.support.wrapper.ThrowablePB;
 import com.google.protobuf.BoolValue;
 import com.google.protobuf.BytesValue;
 import com.google.protobuf.DoubleValue;
-import com.google.protobuf.Empty;
 import com.google.protobuf.FloatValue;
 import com.google.protobuf.Int32Value;
 import com.google.protobuf.Int64Value;
@@ -33,6 +32,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.util.Map;
+
+import static org.apache.dubbo.common.constants.CommonConstants.HEARTBEAT_EVENT;
+import static org.apache.dubbo.common.constants.CommonConstants.MOCK_HEARTBEAT_EVENT;
 
 public class GenericProtobufObjectInput implements ObjectInput {
     private final InputStream is;
@@ -87,27 +89,13 @@ public class GenericProtobufObjectInput implements ObjectInput {
     }
 
     /**
-     * FIXME assume this method only has the following single entry point:
-     * DecodeableRpcResult#readValue, decode empty value for heart beat event.
-     * <p>
      * Avoid using readObject, always try to pass the target class type for the data you want to read.
      *
      * @return
      */
-    @Deprecated
     @Override
     public Object readObject() {
-        try {
-            read(Empty.class);
-            return null;
-        } catch (Exception e) {
-            throw new UnsupportedOperationException("Provide the protobuf message type you want to read.");
-        }
-    }
-
-    @Override
-    public Object readThrowable() throws IOException, ClassNotFoundException {
-        return read(Throwable.class);
+        throw new UnsupportedOperationException("Provide the protobuf message type you want to read.");
     }
 
     @Override
@@ -122,16 +110,30 @@ public class GenericProtobufObjectInput implements ObjectInput {
 
     @SuppressWarnings("unchecked")
     private <T> T read(Class<T> cls) throws IOException {
-        if (cls.isAssignableFrom(Map.class)) {
-            // only for attachments
-            return (T) ProtobufUtils.deserialize(is, MapValue.Map.class).getAttachmentsMap();
-        } else if (getClass().isAssignableFrom(Throwable.class)) {
-            ThrowablePB.ThrowableProto throwableProto = ProtobufUtils.deserialize(is, ThrowablePB.ThrowableProto.class);
-            return (T) ProtobufUtils.convertToException(throwableProto);
-        } else if (!ProtobufUtils.isSupported(cls)) {
-            throw new IllegalArgumentException("This serialization only support google protobuf entity, the class is :" + cls.getName());
+        if (!ProtobufUtils.isSupported(cls)) {
+            throw new IllegalArgumentException("This serialization only support google protobuf messages, but the actual input type is :" + cls.getName());
         }
 
         return ProtobufUtils.deserialize(is, cls);
+    }
+
+    @Override
+    public Throwable readThrowable() throws IOException {
+        ThrowablePB.ThrowableProto throwableProto = ProtobufUtils.deserialize(is, ThrowablePB.ThrowableProto.class);
+        return ProtobufUtils.convertToException(throwableProto);
+    }
+
+    @Override
+    public Object readEvent() throws IOException {
+        String eventData = readUTF();
+        if (eventData.equals(MOCK_HEARTBEAT_EVENT)) {
+            eventData = HEARTBEAT_EVENT;
+        }
+        return eventData;
+    }
+
+    @Override
+    public Map<String, String> readAttachments() throws IOException {
+        return ProtobufUtils.deserialize(is, MapValue.Map.class).getAttachmentsMap();
     }
 }

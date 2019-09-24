@@ -36,6 +36,8 @@ import org.apache.dubbo.remoting.transport.ChannelHandlerDelegate;
 import java.net.InetSocketAddress;
 import java.util.concurrent.CompletionStage;
 
+import static org.apache.dubbo.common.constants.CommonConstants.READONLY_EVENT;
+
 
 /**
  * ExchangeReceiver
@@ -72,7 +74,7 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
     }
 
     void handlerEvent(Channel channel, Request req) throws RemotingException {
-        if (req.getData() != null && req.getData().equals(Request.READONLY_EVENT)) {
+        if (req.getData() != null && req.getData().equals(READONLY_EVENT)) {
             channel.setAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY, Boolean.TRUE);
         }
     }

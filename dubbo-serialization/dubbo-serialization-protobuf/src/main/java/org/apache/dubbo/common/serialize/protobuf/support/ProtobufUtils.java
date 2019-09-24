@@ -24,7 +24,6 @@ import com.google.common.base.Strings;
 import com.google.protobuf.CodedInputStream;
 import com.google.protobuf.Empty;
 import com.google.protobuf.ExtensionRegistryLite;
-import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.GeneratedMessageV3.Builder;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.MessageLite;
@@ -47,7 +46,7 @@ public class ProtobufUtils {
             return false;
         }
 
-        if (GeneratedMessageV3.class.isAssignableFrom(clazz)) {
+        if (MessageLite.class.isAssignableFrom(clazz)) {
             return true;
         }
         return false;
@@ -159,7 +158,6 @@ public class ProtobufUtils {
             this.defaultInstance = defaultInstance;
             parser = (Parser<T>) defaultInstance.getParserForType();
         }
-
 
         @SuppressWarnings("unchecked")
         public Class<T> getMessageClass() {

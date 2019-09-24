@@ -16,21 +16,15 @@
  */
 package org.apache.dubbo.rpc.protocol.grpc;
 
-import org.apache.dubbo.common.URL;
-
-import io.grpc.ManagedChannelBuilder;
-import io.grpc.ServerBuilder;
+import java.util.concurrent.Executor;
 
 /**
- * Support gRPC configs in the Dubbo specific way.
+ *
  */
-public class GrpcServerUtils {
+public class GrpcContext {
 
-    public static void configureServer(URL url, ServerBuilder builder) {
-
-    }
-
-    public static void configureChannel(URL url, ManagedChannelBuilder builder) {
+    public void executor(Executor executor) {
 
     }
+
 }

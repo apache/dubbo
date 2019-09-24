@@ -180,7 +180,7 @@ public class DubboCodec extends ExchangeCodec {
                 out.writeObject(encodeInvocationArgument(channel, inv, i));
             }
         }
-        out.writeObject(inv.getAttachments());
+        out.writeAttachments(inv.getAttachments());
     }
 
     @Override
@@ -205,7 +205,7 @@ public class DubboCodec extends ExchangeCodec {
         if (attach) {
             // returns current version of Response to consumer side.
             result.getAttachments().put(DUBBO_VERSION_KEY, Version.getProtocolVersion());
-            out.writeObject(result.getAttachments());
+            out.writeAttachments(result.getAttachments());
         }
     }
 }

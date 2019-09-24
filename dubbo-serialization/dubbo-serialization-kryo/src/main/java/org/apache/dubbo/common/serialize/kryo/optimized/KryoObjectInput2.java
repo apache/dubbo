@@ -129,25 +129,23 @@ public class KryoObjectInput2 implements ObjectInput, Cleanable {
         }
     }
 
-    /**
-     * works as the only endpoint
-     *
-     * @return
-     * @throws IOException
-     * @throws ClassNotFoundException
-     */
     @Override
     public Object readObject() throws IOException, ClassNotFoundException {
         try {
             return kryo.readObjectOrNull(input, String.class);
         } catch (KryoException e) {
-            throw new IOException(e);
+            throw new UnsupportedOperationException("Kryo serialization must know the input type when deserialize.", e);
         }
     }
 
     @Override
-    public Object readThrowable() throws IOException, ClassNotFoundException {
-        return kryo.readClassAndObject(input);
+    public Throwable readThrowable() throws IOException, ClassNotFoundException {
+        return (Throwable) kryo.readClassAndObject(input);
+    }
+
+    @Override
+    public Object readEvent() throws IOException, ClassNotFoundException {
+        return kryo.readObjectOrNull(input, String.class);
     }
 
     @Override
