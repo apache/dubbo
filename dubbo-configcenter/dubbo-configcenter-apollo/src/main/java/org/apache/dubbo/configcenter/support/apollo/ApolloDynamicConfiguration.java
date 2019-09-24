@@ -148,16 +148,9 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
 
     @Override
     public String getProperties(String key, String group, long timeout) throws IllegalStateException {
-        if(StringUtils.isEmpty(group)) {
-            return dubboConfigFile.getContent();
-        }
-        if (group.equals(url.getParameter(APPLICATION_KEY))) {
-            return ConfigService.getConfigFile(APOLLO_APPLICATION_KEY, ConfigFileFormat.Properties).getContent();
-        }
-
-        ConfigFile configFile = ConfigService.getConfigFile(group, ConfigFileFormat.Properties);
+        ConfigFile configFile = ConfigService.getConfigFile(key, ConfigFileFormat.Properties);
         if (configFile == null) {
-            throw new IllegalStateException("There is no namespace named " + group + " in Apollo.");
+            throw new IllegalStateException("There is no namespace named " + key + " in Apollo.");
         }
         return configFile.getContent();
     }
