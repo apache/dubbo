@@ -81,8 +81,11 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
             System.setProperty(APOLLO_CLUSTER_KEY, configCluster);
         }
 
-        dubboConfig = ConfigService.getConfig(url.getParameter(GROUP_KEY, DEFAULT_GROUP));
-        dubboConfigFile = ConfigService.getConfigFile(url.getParameter(GROUP_KEY, DEFAULT_GROUP), ConfigFileFormat.Properties);
+        String namespace = url.getParameter(CONFIG_NAMESPACE_KEY, DEFAULT_GROUP);
+        String apolloNamespace = StringUtils.isEmpty(namespace) ? url.getParameter(GROUP_KEY, DEFAULT_GROUP) : namespace;
+        dubboConfig = ConfigService.getConfig(apolloNamespace);
+        dubboConfigFile = ConfigService.getConfigFile(apolloNamespace, ConfigFileFormat.Properties);
+
         // Decide to fail or to continue when failed to connect to remote server.
         boolean check = url.getParameter(CHECK_KEY, true);
         if (dubboConfig.getSourceType() != ConfigSourceType.REMOTE) {
