@@ -148,7 +148,7 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
 
     @Override
     public String getProperties(String key, String group, long timeout) throws IllegalStateException {
-        if(StringUtils.isEmpty(group)) {
+        if (StringUtils.isEmpty(group)) {
             return dubboConfigFile.getContent();
         }
         if (group.equals(url.getParameter(APPLICATION_KEY))) {
