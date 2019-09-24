@@ -32,6 +32,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class RmiProtocolTest {
     private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
@@ -54,8 +55,8 @@ public class RmiProtocolTest {
             try {
                 service.throwTimeout();
             } catch (RpcException e) {
-                assertEquals(true, e.isTimeout());
-                assertEquals(true, e.getMessage().contains("Read timed out"));
+                assertTrue(e.isTimeout());
+                assertTrue(e.getMessage().contains("Read timed out"));
             }
         } finally {
             rpcExporter.unexport();
@@ -131,7 +132,21 @@ public class RmiProtocolTest {
         exporter.unexport();
     }
 
-    public static interface NonStdRmiInterface {
+
+    @Test
+    public void testRemoteApplicationName() throws Exception {
+        DemoService service = new DemoServiceImpl();
+        URL url = URL.valueOf("rmi://127.0.0.1:9001/TestService?release=2.7.0").addParameter("application", "consumer");
+        Exporter<?> rpcExporter = protocol.export(proxy.getInvoker(service, DemoService.class, url));
+
+        service = proxy.getProxy(protocol.refer(DemoService.class, url));
+        assertEquals(service.getRemoteApplicationName(), "consumer");
+
+        rpcExporter.unexport();
+
+    }
+
+    public interface NonStdRmiInterface {
         void bark();
     }
 

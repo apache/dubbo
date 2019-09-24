@@ -25,7 +25,6 @@ import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.etcd.RetryPolicy;
 import org.apache.dubbo.remoting.etcd.StateListener;
-import org.apache.dubbo.remoting.etcd.option.Constants;
 
 import io.etcd.jetcd.ByteSequence;
 import io.etcd.jetcd.Client;
@@ -68,11 +67,13 @@ import java.util.function.Consumer;
 import static java.util.stream.Collectors.toList;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
-import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_REGISTRY_RECONNECT_PERIOD;
-import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_REGISTRY_RETRY_PERIOD;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_RETRY_PERIOD_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.SESSION_TIMEOUT_KEY;
-import static org.apache.dubbo.remoting.etcd.option.Constants.DEFAULT_KEEPALIVE_TIMEOUT;
+import static org.apache.dubbo.remoting.etcd.Constants.DEFAULT_KEEPALIVE_TIMEOUT;
+import static org.apache.dubbo.remoting.etcd.Constants.DEFAULT_RECONNECT_PERIOD;
+import static org.apache.dubbo.remoting.etcd.Constants.DEFAULT_RETRY_PERIOD;
+import static org.apache.dubbo.remoting.etcd.Constants.HTTP_KEY;
+import static org.apache.dubbo.remoting.etcd.Constants.HTTP_SUBFIX_KEY;
+import static org.apache.dubbo.remoting.etcd.Constants.RETRY_PERIOD_KEY;
+import static org.apache.dubbo.remoting.etcd.Constants.SESSION_TIMEOUT_KEY;
 
 public class JEtcdClientWrapper {
 
@@ -127,7 +128,7 @@ public class JEtcdClientWrapper {
         this.retryPolicy = new RetryNTimes(1, 1000, TimeUnit.MILLISECONDS);
 
         this.failed = new IllegalStateException("Etcd3 registry is not connected yet, url:" + url);
-        int retryPeriod = url.getParameter(REGISTRY_RETRY_PERIOD_KEY, DEFAULT_REGISTRY_RETRY_PERIOD);
+        int retryPeriod = url.getParameter(RETRY_PERIOD_KEY, DEFAULT_RETRY_PERIOD);
 
         this.retryFuture = retryExecutor.scheduleWithFixedDelay(() -> {
             try {
@@ -488,9 +489,9 @@ public class JEtcdClientWrapper {
     public String[] endPoints(String backupAddress) {
         String[] endpoints = backupAddress.split(COMMA_SEPARATOR);
         List<String> addresses = Arrays.stream(endpoints)
-                .map(address -> address.contains(Constants.HTTP_SUBFIX_KEY)
+                .map(address -> address.contains(HTTP_SUBFIX_KEY)
                         ? address
-                        : Constants.HTTP_KEY + address)
+                        : HTTP_KEY + address)
                 .collect(toList());
         Collections.shuffle(addresses);
         return addresses.toArray(new String[0]);
@@ -536,7 +537,7 @@ public class JEtcdClientWrapper {
                         }
                         connectState = connected;
                     }
-                }, DEFAULT_REGISTRY_RECONNECT_PERIOD, DEFAULT_REGISTRY_RECONNECT_PERIOD, TimeUnit.MILLISECONDS);
+                }, DEFAULT_RECONNECT_PERIOD, DEFAULT_RECONNECT_PERIOD, TimeUnit.MILLISECONDS);
             } catch (Throwable t) {
                 logger.error("monitor reconnect status failed.", t);
             }

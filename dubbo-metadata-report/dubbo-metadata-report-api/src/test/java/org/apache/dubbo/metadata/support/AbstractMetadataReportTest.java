@@ -113,7 +113,7 @@ public class AbstractMetadataReportTest {
         retryReport.metadataReportRetry.retryPeriod = 400L;
         URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic");
         Assertions.assertNull(retryReport.metadataReportRetry.retryScheduledFuture);
-        Assertions.assertTrue(retryReport.metadataReportRetry.retryCounter.get() == 0);
+        Assertions.assertEquals(0,retryReport.metadataReportRetry.retryCounter.get());
         Assertions.assertTrue(retryReport.store.isEmpty());
         Assertions.assertTrue(retryReport.failedReports.isEmpty());
 
@@ -207,16 +207,16 @@ public class AbstractMetadataReportTest {
         Map tmpMapResult = (Map) abstractMetadataReport.allMetadataReports.get(consumerMetadataIdentifier);
         Assertions.assertEquals(tmpMapResult.get("testPKey"), "9090");
         Assertions.assertEquals(tmpMapResult.get("testKey"), "value");
-        Assertions.assertTrue(abstractMetadataReport.store.size() == 3);
+        Assertions.assertEquals(3,abstractMetadataReport.store.size());
 
         abstractMetadataReport.store.clear();
 
-        Assertions.assertTrue(abstractMetadataReport.store.size() == 0);
+        Assertions.assertEquals(0,abstractMetadataReport.store.size());
 
         abstractMetadataReport.publishAll();
         Thread.sleep(200);
 
-        Assertions.assertTrue(abstractMetadataReport.store.size() == 3);
+        Assertions.assertEquals(3,abstractMetadataReport.store.size());
 
         String v = abstractMetadataReport.store.get(providerMetadataIdentifier1.getUniqueKey(MetadataIdentifier.KeyTypeEnum.UNIQUE_KEY));
         Gson gson = new Gson();

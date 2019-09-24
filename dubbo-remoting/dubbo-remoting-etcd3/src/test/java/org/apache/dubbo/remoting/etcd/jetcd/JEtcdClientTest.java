@@ -64,7 +64,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.dubbo.common.constants.RegistryConstants.SESSION_TIMEOUT_KEY;
+import static org.apache.dubbo.remoting.etcd.Constants.SESSION_TIMEOUT_KEY;
 
 @Disabled
 public class JEtcdClientTest {
@@ -337,12 +337,12 @@ public class JEtcdClientTest {
             switch (notified.increaseAndGet()) {
                 case 1: {
                     notNotified.countDown();
-                    Assertions.assertTrue(children.size() == 1);
+                    Assertions.assertEquals(1, children.size());
                     Assertions.assertEquals(child.substring(child.lastIndexOf("/") + 1), children.get(0));
                     break;
                 }
                 case 2: {
-                    Assertions.assertTrue(children.size() == 0);
+                    Assertions.assertEquals(0, children.size());
                     Assertions.assertEquals(path, parent);
                     break;
                 }

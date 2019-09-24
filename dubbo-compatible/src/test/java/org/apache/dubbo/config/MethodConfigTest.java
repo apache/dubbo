@@ -42,6 +42,7 @@ import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MethodConfigTest {
@@ -107,14 +108,14 @@ public class MethodConfigTest {
     }
 
     @Test
-    public void testConverMethodConfig2AsyncInfo() throws Exception{
+    public void testConvertMethodConfig2AsyncInfo() throws Exception{
         org.apache.dubbo.config.MethodConfig methodConfig = new org.apache.dubbo.config.MethodConfig();
         methodConfig.setOninvokeMethod("setName");
         methodConfig.setOninvoke(new Person());
 
-        ConsumerMethodModel.AsyncMethodInfo methodInfo = org.apache.dubbo.config.MethodConfig.convertMethodConfig2AyncInfo(methodConfig);
+        ConsumerMethodModel.AsyncMethodInfo methodInfo = org.apache.dubbo.config.MethodConfig.convertMethodConfig2AsyncInfo(methodConfig);
 
-        assertTrue(methodInfo.getOninvokeMethod().equals( Person.class.getMethod("setName", String.class)));
+        assertEquals(methodInfo.getOninvokeMethod(), Person.class.getMethod("setName", String.class));
     }
 
     @Test

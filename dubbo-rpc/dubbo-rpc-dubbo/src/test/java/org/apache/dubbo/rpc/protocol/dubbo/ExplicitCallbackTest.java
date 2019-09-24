@@ -35,7 +35,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static org.apache.dubbo.common.constants.RpcConstants.CALLBACK_INSTANCES_LIMIT_KEY;
+import static org.apache.dubbo.rpc.Constants.CALLBACK_INSTANCES_LIMIT_KEY;
 
 public class ExplicitCallbackTest {
 
@@ -253,19 +253,19 @@ public class ExplicitCallbackTest {
     }
 
     interface IHelloService {
-        public String sayHello();
+        String sayHello();
     }
 
     interface IDemoService {
-        public String get();
+        String get();
 
-        public int getCallbackCount();
+        int getCallbackCount();
 
-        public void xxx(IDemoCallback callback, String arg1, int runs, int sleep);
+        void xxx(IDemoCallback callback, String arg1, int runs, int sleep);
 
-        public void xxx2(IDemoCallback callback);
+        void xxx2(IDemoCallback callback);
 
-        public void unxxx2(IDemoCallback callback);
+        void unxxx2(IDemoCallback callback);
     }
 
     class HelloServiceImpl implements IHelloService {

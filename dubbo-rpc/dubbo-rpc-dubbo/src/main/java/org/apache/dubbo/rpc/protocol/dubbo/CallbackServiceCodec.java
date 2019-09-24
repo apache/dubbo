@@ -30,6 +30,7 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.protocol.AsyncToSyncInvoker;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -41,8 +42,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.rpc.protocol.dubbo.Constants.CALLBACK_SERVICE_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.CALLBACK_INSTANCES_LIMIT_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.DEFAULT_CALLBACK_INSTANCES;
+import static org.apache.dubbo.rpc.Constants.CALLBACK_INSTANCES_LIMIT_KEY;
+import static org.apache.dubbo.rpc.Constants.DEFAULT_CALLBACK_INSTANCES;
 import static org.apache.dubbo.rpc.protocol.dubbo.Constants.CALLBACK_SERVICE_PROXY_KEY;
 import static org.apache.dubbo.rpc.protocol.dubbo.Constants.IS_CALLBACK_SERVICE;
 import static org.apache.dubbo.rpc.protocol.dubbo.Constants.CHANNEL_CALLBACK_KEY;
@@ -67,9 +68,9 @@ class CallbackServiceCodec {
         if (url != null) {
             String callback = url.getParameter(methodName + "." + argIndex + ".callback");
             if (callback != null) {
-                if (callback.equalsIgnoreCase("true")) {
+                if ("true".equalsIgnoreCase(callback)) {
                     isCallback = CALLBACK_CREATE;
-                } else if (callback.equalsIgnoreCase("false")) {
+                } else if ("false".equalsIgnoreCase(callback)) {
                     isCallback = CALLBACK_DESTROY;
                 }
             }
@@ -143,7 +144,7 @@ class CallbackServiceCodec {
      */
     @SuppressWarnings("unchecked")
     private static Object referOrDestroyCallbackService(Channel channel, URL url, Class<?> clazz, Invocation inv, int instid, boolean isRefer) {
-        Object proxy = null;
+        Object proxy;
         String invokerCacheKey = getServerSideCallbackInvokerCacheKey(channel, clazz.getName(), instid);
         String proxyCacheKey = getServerSideCallbackServiceCacheKey(channel, clazz.getName(), instid);
         proxy = channel.getAttribute(proxyCacheKey);
@@ -155,7 +156,7 @@ class CallbackServiceCodec {
                 if (!isInstancesOverLimit(channel, referurl, clazz.getName(), instid, true)) {
                     @SuppressWarnings("rawtypes")
                     Invoker<?> invoker = new ChannelWrappedInvoker(clazz, channel, referurl, String.valueOf(instid));
-                    proxy = PROXY_FACTORY.getProxy(invoker);
+                    proxy = PROXY_FACTORY.getProxy(new AsyncToSyncInvoker<>(invoker));
                     channel.setAttribute(proxyCacheKey, proxy);
                     channel.setAttribute(invokerCacheKey, invoker);
                     increaseInstanceCount(channel, countkey);
@@ -164,7 +165,7 @@ class CallbackServiceCodec {
                     //ignore concurrent problem.
                     Set<Invoker<?>> callbackInvokers = (Set<Invoker<?>>) channel.getAttribute(CHANNEL_CALLBACK_KEY);
                     if (callbackInvokers == null) {
-                        callbackInvokers = new ConcurrentHashSet<Invoker<?>>(1);
+                        callbackInvokers = new ConcurrentHashSet<>(1);
                         callbackInvokers.add(invoker);
                         channel.setAttribute(CHANNEL_CALLBACK_KEY, callbackInvokers);
                     }
@@ -260,8 +261,6 @@ class CallbackServiceCodec {
         Object[] args = inv.getArguments();
         Class<?>[] pts = inv.getParameterTypes();
         switch (callbackStatus) {
-            case CallbackServiceCodec.CALLBACK_NONE:
-                return args[paraIndex];
             case CallbackServiceCodec.CALLBACK_CREATE:
                 inv.setAttachment(INV_ATT_CALLBACK_KEY + paraIndex, exportOrUnexportCallbackService(channel, url, pts[paraIndex], args[paraIndex], true));
                 return null;
@@ -287,8 +286,6 @@ class CallbackServiceCodec {
         }
         byte callbackstatus = isCallBack(url, inv.getMethodName(), paraIndex);
         switch (callbackstatus) {
-            case CallbackServiceCodec.CALLBACK_NONE:
-                return inObject;
             case CallbackServiceCodec.CALLBACK_CREATE:
                 try {
                     return referOrDestroyCallbackService(channel, url, pts[paraIndex], inv, Integer.parseInt(inv.getAttachment(INV_ATT_CALLBACK_KEY + paraIndex)), true);

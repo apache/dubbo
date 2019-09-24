@@ -40,6 +40,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 
 /**
+ * NOTICE! This implementation does not work well with async call.
+ *
  * Invoke a specific number of invokers concurrently, usually used for demanding real-time operations, but need to waste more service resources.
  *
  * <a href="http://en.wikipedia.org/wiki/Fork_(topology)">Fork</a>
@@ -70,7 +72,6 @@ public class ForkingClusterInvoker<T> extends AbstractClusterInvoker<T> {
             } else {
                 selected = new ArrayList<>();
                 for (int i = 0; i < forks; i++) {
-                    // TODO. Add some comment here, refer chinese version for more details.
                     Invoker<T> invoker = select(loadbalance, invocation, invokers, selected);
                     if (!selected.contains(invoker)) {
                         //Avoid add the same invoker several times.
@@ -82,17 +83,14 @@ public class ForkingClusterInvoker<T> extends AbstractClusterInvoker<T> {
             final AtomicInteger count = new AtomicInteger();
             final BlockingQueue<Object> ref = new LinkedBlockingQueue<>();
             for (final Invoker<T> invoker : selected) {
-                executor.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            Result result = invoker.invoke(invocation);
-                            ref.offer(result);
-                        } catch (Throwable e) {
-                            int value = count.incrementAndGet();
-                            if (value >= selected.size()) {
-                                ref.offer(e);
-                            }
+                executor.execute(() -> {
+                    try {
+                        Result result = invoker.invoke(invocation);
+                        ref.offer(result);
+                    } catch (Throwable e) {
+                        int value = count.incrementAndGet();
+                        if (value >= selected.size()) {
+                            ref.offer(e);
                         }
                     }
                 });

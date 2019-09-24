@@ -34,6 +34,12 @@ public class VersionTest {
         Assertions.assertTrue(Version.isSupportResponseAttachment("2.0.2"));
         Assertions.assertTrue(Version.isSupportResponseAttachment("2.0.3"));
         Assertions.assertFalse(Version.isSupportResponseAttachment("2.0.0"));
+        Assertions.assertFalse(Version.isSupportResponseAttachment("1.0.0"));
+        Assertions.assertTrue(Version.isSupportResponseAttachment("2.6.6-stable"));
+
+        Assertions.assertFalse(Version.isSupportResponseAttachment("2.0.contains"));
+        Assertions.assertFalse(Version.isSupportResponseAttachment("version.string"));
+        Assertions.assertFalse(Version.isSupportResponseAttachment("prefix2.0"));
     }
 
     @Test
@@ -60,6 +66,7 @@ public class VersionTest {
         Assertions.assertTrue(Version.isRelease263OrHigher("2.7.0.1"));
         Assertions.assertTrue(Version.isRelease263OrHigher("2.6.4"));
         Assertions.assertFalse(Version.isRelease263OrHigher("2.6.2"));
+        Assertions.assertFalse(Version.isRelease263OrHigher("2.6.2.1"));
         Assertions.assertFalse(Version.isRelease263OrHigher("2.6.1.1"));
         Assertions.assertTrue(Version.isRelease263OrHigher("2.6.3"));
     }

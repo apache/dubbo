@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config.annotation;
 
-import org.apache.dubbo.common.constants.RpcConstants;
 import org.apache.dubbo.rpc.ExporterListener;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.cluster.Constants;
@@ -31,6 +30,7 @@ import java.lang.annotation.Target;
  * Reference
  *
  * @export
+ * @since 2.7.0
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
@@ -136,7 +136,7 @@ public @interface Reference {
     /**
      * The callback instance limit peer connection
      *
-     * @see RpcConstants#DEFAULT_CALLBACK_INSTANCES
+     * @see org.apache.dubbo.rpc.Constants#DEFAULT_CALLBACK_INSTANCES
      */
     int callbacks() default 0;
 
@@ -229,32 +229,35 @@ public @interface Reference {
     String[] parameters() default {};
 
     /**
-     * Application spring bean name
+     * Application associated name
      */
     String application() default "";
 
     /**
-     * Module spring bean name
+     * Module associated name
      */
     String module() default "";
 
     /**
-     * Consumer spring bean name
+     * Consumer associated name
      */
     String consumer() default "";
 
     /**
-     * Monitor spring bean name
+     * Monitor associated name
      */
     String monitor() default "";
 
     /**
-     * Registry spring bean name
+     * Registry associated name
      */
     String[] registry() default {};
 
     /**
-     * Protocol spring bean names
+     * The communication protocol of Dubbo Service
+     *
+     * @return the default value is ""
+     * @since 2.6.6
      */
     String protocol() default "";
 
@@ -265,7 +268,16 @@ public @interface Reference {
 
     /**
      * methods support
+     *
      * @return
      */
     Method[] methods() default {};
+
+    /**
+     * The id
+     *
+     * @return default value is empty
+     * @since 2.7.3
+     */
+    String id() default "";
 }

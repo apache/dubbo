@@ -28,7 +28,7 @@ import java.util.Random;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.CONNECTIONS_KEY;
+import static org.apache.dubbo.remoting.Constants.CONNECTIONS_KEY;
 
 public class PerformanceClientFixedTest  {
 
@@ -80,7 +80,7 @@ public class PerformanceClientFixedTest  {
             } catch (Throwable t) {
                 t.printStackTrace();
             } finally {
-                if (client != null && client.isConnected() == false) {
+                if (client != null && !client.isConnected()) {
                     f++;
                     System.out.println("open client failed, try again " + f);
                     client.close();
