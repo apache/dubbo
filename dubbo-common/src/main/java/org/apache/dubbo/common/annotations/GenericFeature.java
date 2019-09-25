@@ -44,4 +44,5 @@ public @interface GenericFeature {
     String  dateFormatter() default "";
     boolean nullNotRealize() default false;
     boolean nullNotGeneralize() default false;
+    boolean nullDateAsZeroGeneralize() default false;
 }

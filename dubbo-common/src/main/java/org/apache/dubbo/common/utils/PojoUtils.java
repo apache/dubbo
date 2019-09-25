@@ -38,6 +38,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -196,6 +197,12 @@ public class PojoUtils {
                         }
                     }
                     Object rawValue = forceGetFieldValue(field,pojo);
+                    if(isNullDateAsZero(field.getType(),genericFeature,rawValue)){
+                        annoFieldSet.add(field.getName());
+                        annoFieldSet.add(fieldAliasName);
+                        map.put(fieldAliasName, isNullDateAsZero(field.getType(),genericFeature.dateFormatter()));
+                        continue;
+                    }
                     if(genericFeature.nullNotGeneralize() && rawValue == null) {
                         annoFieldSet.add(field.getName());
                         annoFieldSet.add(fieldAliasName);
@@ -224,6 +231,11 @@ public class PojoUtils {
                             continue;
                         }
                         Object rawMethodValue = method.invoke(pojo);
+                        if (isNullDateAsZero(method.getReturnType(), genericFeature, rawMethodValue)) {
+                            methodNameSet.add(propertyName);
+                            map.put(uniqName, isNullDateAsZero(method.getReturnType(), genericFeature.dateFormatter()));
+                            continue;
+                        }
                         if(genericFeature != null && genericFeature.nullNotGeneralize() && rawMethodValue == null) {
                             methodNameSet.add(propertyName);
                             continue;
@@ -261,6 +273,49 @@ public class PojoUtils {
             }
         }
         return map;
+    }
+    private static boolean isNullDateAsZero(Class type,GenericFeature genericFeature, Object value) {
+        if (value != null || genericFeature == null || !genericFeature.nullDateAsZeroGeneralize()
+                || genericFeature.dateFormatter().length() == 0) {
+            return false;
+        }
+        if (type.equals(Date.class)) {
+            return true;
+        }
+        if (type.equals(LocalDateTime.class)) {
+            return true;
+        }
+        if (type.equals(LocalDate.class)) {
+            return true;
+        }
+        return false;
+    }
+    private static String isNullDateAsZero(Class type, String formatter) {
+        String dateZero = null;
+        if (type.equals(Date.class)) {
+            Calendar calendar = Calendar.getInstance();
+            calendar.set(1971, 0, 2, 3, 4, 5);
+            SimpleDateFormat dateFormat = new SimpleDateFormat(formatter);
+            dateZero = dateFormat.format(calendar.getTime());
+        }
+        if (type.equals(LocalDateTime.class)) {
+            LocalDateTime localDateTime = LocalDateTime.of(1971, 1, 2, 3, 4, 5);
+            dateZero = localDateTime.format(DateTimeFormatter.ofPattern(formatter));
+        }
+        if (type.equals(LocalDate.class)) {
+            LocalDate localDate = LocalDate.of(1971, 1, 2);
+            dateZero = localDate.format(DateTimeFormatter.ofPattern(formatter));
+        }
+        if (dateZero == null) {
+            throw new RuntimeException(type.getName() + " is not support");
+        }
+        dateZero = dateZero.replace("1971", "0000")
+                .replace("01", "00")
+                .replace("02", "00")
+                .replace("03", "00")
+                .replace("04", "00")
+                .replace("05", "00");
+        return dateZero;
     }
     private static Object toValueType(Object val, Class type, GenericFeature genericFeature) {
         if(genericFeature == null){
