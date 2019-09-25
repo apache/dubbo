@@ -14,24 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.tools;
-
-import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
+package org.apache.dubbo.metadata.annotation.processing.model;
 
 /**
- * The Compiler test case
+ * Array Type Model
+ *
+ * @since 2.7.5
  */
-public class CompilerTest {
+public class ArrayTypeModel {
 
-    @Test
-    public void testCompile() throws IOException {
-        Compiler compiler = new Compiler();
-        compiler.compile(
-                TestServiceImpl.class,
-                DefaultTestService.class,
-                GenericTestService.class);
-    }
+    private int[] integers;                           // Primitive type array
+
+    private String[] strings;                         // Simple type array
+
+    private PrimitiveTypeModel[] primitiveTypeModels; // Complex type array
+
+    private Model[] models;                           // Hierarchical Complex type array
+
+    private Color[] colors;                           // Enum type array
+
 }
-

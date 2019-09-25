@@ -89,6 +89,16 @@
     </issueManagement>
 
     <properties>
+        <!-- Java Extension Libs -->
+        <servlet_version>3.1.0</servlet_version>
+        <annotation_version>1.3.1</annotation_version>
+        <validation_version>1.1.0.Final</validation_version>
+        <rs_api_version>2.0</rs_api_version>
+        <jcache_version>1.0.0</jcache_version>
+        <jaxb_version>2.2.7</jaxb_version>
+        <activation_version>1.2.0</activation_version>
+        <portlet_version>2.0</portlet_version>
+
         <!-- Common libs -->
         <spring_version>4.3.16.RELEASE</spring_version>
         <javassist_version>3.20.0-GA</javassist_version>
@@ -110,12 +120,10 @@
         <thrift_version>0.12.0</thrift_version>
         <hessian_version>4.0.38</hessian_version>
         <protobuf-java_version>3.6.0</protobuf-java_version>
-        <servlet_version>3.1.0</servlet_version>
+
         <jetty_version>9.4.11.v20180605</jetty_version>
-        <validation_version>1.1.0.Final</validation_version>
         <hibernate_validator_version>5.4.1.Final</hibernate_validator_version>
         <jel_version>3.0.1-b08</jel_version>
-        <jcache_version>1.0.0</jcache_version>
         <kryo_version>4.0.1</kryo_version>
         <kryo_serializers_version>0.42</kryo_serializers_version>
         <fst_version>2.48-jdk-6</fst_version>
@@ -125,7 +133,6 @@
         <commons_lang3_version>3.8.1</commons_lang3_version>
         <protostuff_version>1.5.9</protostuff_version>
 
-        <rs_api_version>2.0</rs_api_version>
         <resteasy_version>3.0.19.Final</resteasy_version>
         <tomcat_embed_version>8.5.31</tomcat_embed_version>
         <jetcd_version>0.3.0</jetcd_version>
@@ -144,8 +151,6 @@
         <!-- Eureka -->
         <eureka.version>1.9.12</eureka.version>
 
-        <jaxb_version>2.2.7</jaxb_version>
-        <activation_version>1.2.0</activation_version>
         <test_container_version>1.11.2</test_container_version>
         <etcd_launcher_version>0.3.0</etcd_launcher_version>
         <hessian_lite_version>3.2.5</hessian_lite_version>
@@ -157,13 +162,62 @@
         <gson_version>2.8.5</gson_version>
         <jsonrpc_version>1.2.0</jsonrpc_version>
         <mortbay_jetty_version>6.1.26</mortbay_jetty_version>
-        <portlet_version>2.0</portlet_version>
         <maven_flatten_version>1.1.0</maven_flatten_version>
         <revision>2.7.5-cloudnative-SNAPSHOT</revision>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+
+            <!-- Java Extension Libs -->
+            <dependency>
+                <groupId>javax.servlet</groupId>
+                <artifactId>javax.servlet-api</artifactId>
+                <version>${servlet_version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>javax.annotation</groupId>
+                <artifactId>javax.annotation-api</artifactId>
+                <version>${annotation_version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>javax.validation</groupId>
+                <artifactId>validation-api</artifactId>
+                <version>${validation_version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>javax.cache</groupId>
+                <artifactId>cache-api</artifactId>
+                <version>${jcache_version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>javax.ws.rs</groupId>
+                <artifactId>javax.ws.rs-api</artifactId>
+                <version>${rs_api_version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>javax.xml.bind</groupId>
+                <artifactId>jaxb-api</artifactId>
+                <version>${jaxb_version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>javax.activation</groupId>
+                <artifactId>javax.activation-api</artifactId>
+                <version>${activation_version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>javax.portlet</groupId>
+                <artifactId>portlet-api</artifactId>
+                <version>${portlet_version}</version>
+            </dependency>
+
             <!-- Common libs -->
             <dependency>
                 <groupId>org.springframework</groupId>
@@ -311,11 +365,7 @@
                 <artifactId>protobuf-java-util</artifactId>
                 <version>${protobuf-java_version}</version>
             </dependency>
-            <dependency>
-                <groupId>javax.servlet</groupId>
-                <artifactId>javax.servlet-api</artifactId>
-                <version>${servlet_version}</version>
-            </dependency>
+
             <dependency>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-server</artifactId>
@@ -332,11 +382,7 @@
                 <version>${mortbay_jetty_version}</version>
                 <optional>true</optional>
             </dependency>
-            <dependency>
-                <groupId>javax.validation</groupId>
-                <artifactId>validation-api</artifactId>
-                <version>${validation_version}</version>
-            </dependency>
+
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-validator</artifactId>
@@ -346,11 +392,6 @@
                 <groupId>org.glassfish</groupId>
                 <artifactId>javax.el</artifactId>
                 <version>${jel_version}</version>
-            </dependency>
-            <dependency>
-                <groupId>javax.cache</groupId>
-                <artifactId>cache-api</artifactId>
-                <version>${jcache_version}</version>
             </dependency>
             <dependency>
                 <groupId>com.esotericsoftware</groupId>
@@ -381,11 +422,6 @@
                 <groupId>io.protostuff</groupId>
                 <artifactId>protostuff-runtime</artifactId>
                 <version>${protostuff_version}</version>
-            </dependency>
-            <dependency>
-                <groupId>javax.ws.rs</groupId>
-                <artifactId>javax.ws.rs-api</artifactId>
-                <version>${rs_api_version}</version>
             </dependency>
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
@@ -513,11 +549,6 @@
 
             <!-- for dubbo-rpc-webservice -->
             <dependency>
-                <groupId>javax.xml.bind</groupId>
-                <artifactId>jaxb-api</artifactId>
-                <version>${jaxb_version}</version>
-            </dependency>
-            <dependency>
                 <groupId>com.sun.xml.bind</groupId>
                 <artifactId>jaxb-impl</artifactId>
                 <version>${jaxb_version}</version>
@@ -527,11 +558,7 @@
                 <artifactId>jaxb-core</artifactId>
                 <version>${jaxb_version}</version>
             </dependency>
-            <dependency>
-                <groupId>javax.activation</groupId>
-                <artifactId>javax.activation-api</artifactId>
-                <version>${activation_version}</version>
-            </dependency>
+
             <dependency>
                 <groupId>com.sun.activation</groupId>
                 <artifactId>javax.activation</artifactId>
@@ -619,11 +646,6 @@
                 <groupId>com.github.briandilley.jsonrpc4j</groupId>
                 <artifactId>jsonrpc4j</artifactId>
                 <version>${jsonrpc_version}</version>
-            </dependency>
-            <dependency>
-                <groupId>javax.portlet</groupId>
-                <artifactId>portlet-api</artifactId>
-                <version>${portlet_version}</version>
             </dependency>
             <!-- for dubbo-configcenter-etcd -->
             <dependency>

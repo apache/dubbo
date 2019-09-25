@@ -16,18 +16,38 @@
  */
 package org.apache.dubbo.metadata.tools;
 
+import org.apache.dubbo.metadata.annotation.processing.model.Model;
+
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import java.util.concurrent.TimeUnit;
 
 /**
- * Echo Service
+ * Test Service
  *
  * @since 2.7.5
  */
 @Path("/echo")
-public interface EchoService {
+public interface TestService {
 
     @GET
     String echo(@PathParam("message") String message);
+
+    @POST
+    Model model(@PathParam("model") Model model);
+
+    // Test primitive
+    @PUT
+    String testPrimitive(boolean z, int i);
+
+    // Test enumeration
+    @PUT
+    Model testEnum(TimeUnit timeUnit);
+
+    // Test Array
+    @GET
+    String testArray(String[] strArray, int[] intArray, Model[] modelArray);
 }

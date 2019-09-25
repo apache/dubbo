@@ -16,11 +16,12 @@
  */
 package org.apache.dubbo.metadata.annotation.processing.rest;
 
-import org.apache.dubbo.metadata.rest.MethodRestMetadata;
-
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * {@link ServiceRestMetadataProcessor}
@@ -30,8 +31,38 @@ import javax.lang.model.element.TypeElement;
 public class SpringMvcServiceRestMetadataProcessor extends AbstractServiceRestMetadataProcessor {
 
     @Override
-    protected void processMethod(ProcessingEnvironment processingEnv, TypeElement serviceType, ExecutableElement method,
-                                 MethodRestMetadata metadata) {
+    protected String resolveRequestPath(ProcessingEnvironment processingEnv, TypeElement serviceType,
+                                        ExecutableElement method) {
+        return null;
+    }
+
+    @Override
+    protected String resolveRequestMethod(ProcessingEnvironment processingEnv, TypeElement serviceType,
+                                          ExecutableElement method) {
+        return null;
+    }
+
+    @Override
+    protected void processRequestParameters(ProcessingEnvironment processingEnv, TypeElement serviceType,
+                                            ExecutableElement method, Map<String, List<String>> parameters) {
+
+    }
+
+    @Override
+    protected void processRequestHeaders(ProcessingEnvironment processingEnv, TypeElement serviceType,
+                                         ExecutableElement method, Map<String, List<String>> headers) {
+
+    }
+
+    @Override
+    protected void processProduces(ProcessingEnvironment processingEnv, TypeElement serviceType,
+                                   ExecutableElement method, Set<String> produces) {
+
+    }
+
+    @Override
+    protected void processConsumes(ProcessingEnvironment processingEnv, TypeElement serviceType,
+                                   ExecutableElement method, Set<String> consumes) {
 
     }
 }

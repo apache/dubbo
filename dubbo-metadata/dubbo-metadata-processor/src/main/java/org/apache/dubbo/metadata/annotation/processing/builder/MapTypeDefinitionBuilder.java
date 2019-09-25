@@ -14,31 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.tools;
+package org.apache.dubbo.metadata.annotation.processing.builder;
 
+import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 
-import org.apache.dubbo.config.annotation.Service;
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.type.TypeMirror;
+import java.util.Map;
 
 /**
- * Test {@link EchoService} Implementation
+ * {@link TypeDefinitionBuilder} for Java {@link Map}
  *
  * @since 2.7.5
  */
-@com.alibaba.dubbo.config.annotation.Service(
-        interfaceName = "org.apache.dubbo.metadata.tools.EchoService",
-        interfaceClass = EchoService.class,
-        version = "3.0.0",
-        group = "test"
-)
-@Service(
-        interfaceName = "org.apache.dubbo.metadata.tools.EchoService",
-        interfaceClass = EchoService.class,
-        version = "3.0.0",
-        group = "test"
-)
-public class TestEchoService extends GenericEchoService implements EchoService {
+public class MapTypeDefinitionBuilder implements TypeDefinitionBuilder {
+
     @Override
-    public String echo(String message) {
-        return "[ECHO] " + message;
+    public boolean accept(ProcessingEnvironment processingEnv, TypeMirror type) {
+        return false;
+    }
+
+    @Override
+    public void build(ProcessingEnvironment processingEnv, TypeMirror type, TypeDefinition typeDefinition) {
+
     }
 }

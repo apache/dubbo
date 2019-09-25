@@ -16,22 +16,48 @@
  */
 package org.apache.dubbo.metadata.tools;
 
-import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
-
 /**
- * The Compiler test case
+ * Parent
  */
-public class CompilerTest {
+public class Parent extends Ancestor {
 
-    @Test
-    public void testCompile() throws IOException {
-        Compiler compiler = new Compiler();
-        compiler.compile(
-                TestServiceImpl.class,
-                DefaultTestService.class,
-                GenericTestService.class);
+    private byte b;
+
+    private short s;
+
+    private int i;
+
+    private long l;
+
+    public byte getB() {
+        return b;
+    }
+
+    public void setB(byte b) {
+        this.b = b;
+    }
+
+    public short getS() {
+        return s;
+    }
+
+    public void setS(short s) {
+        this.s = s;
+    }
+
+    public int getI() {
+        return i;
+    }
+
+    public void setI(int i) {
+        this.i = i;
+    }
+
+    public long getL() {
+        return l;
+    }
+
+    public void setL(long l) {
+        this.l = l;
     }
 }
-

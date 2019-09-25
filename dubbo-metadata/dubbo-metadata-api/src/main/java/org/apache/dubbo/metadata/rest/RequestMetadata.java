@@ -16,14 +16,16 @@
  */
 package org.apache.dubbo.metadata.rest;
 
+
+import org.apache.dubbo.common.utils.CollectionUtils;
+
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -32,6 +34,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static java.util.Collections.unmodifiableMap;
 import static javax.ws.rs.core.MediaType.MEDIA_TYPE_WILDCARD;
 import static org.apache.dubbo.metadata.util.HttpUtils.normalizePath;
 
@@ -48,9 +51,9 @@ public class RequestMetadata implements Serializable {
 
     private String path;
 
-    private MultivaluedMap<String, String> params = new MultivaluedHashMap<>();
+    private Map<String, List<String>> params = new LinkedHashMap<>();
 
-    private MultivaluedMap<String, String> headers = new MultivaluedHashMap<>();
+    private Map<String, List<String>> headers = new LinkedHashMap<>();
 
     private Set<String> consumes = new LinkedHashSet<>();
 
@@ -62,22 +65,7 @@ public class RequestMetadata implements Serializable {
     public RequestMetadata() {
     }
 
-    private static void add(String key, String value,
-                            MultivaluedMap<String, String> destination) {
-        destination.add(key, value);
-    }
-
-    private static <T extends Collection<String>> void addAll(Map<String, T> source,
-                                                              MultivaluedMap<String, String> destination) {
-        for (Map.Entry<String, T> entry : source.entrySet()) {
-            String key = entry.getKey();
-            for (String value : entry.getValue()) {
-                add(key, value, destination);
-            }
-        }
-    }
-
-    private static void mediaTypes(MultivaluedMap<String, String> httpHeaders, String headerName,
+    private static void mediaTypes(Map<String, List<String>> httpHeaders, String headerName,
                                    Collection<String> destination) {
         List<String> value = httpHeaders.get(headerName);
         List<MediaType> mediaTypes = parseMediaTypes(value);
@@ -110,7 +98,7 @@ public class RequestMetadata implements Serializable {
     }
 
     public void setMethod(String method) {
-        this.method = method.toUpperCase();
+        this.method = method == null ? null : method.toUpperCase();
     }
 
     public String getPath() {
@@ -122,15 +110,43 @@ public class RequestMetadata implements Serializable {
     }
 
     public Map<String, List<String>> getParams() {
-        return params;
+        return unmodifiableMap(params);
     }
 
     public void setParams(Map<String, List<String>> params) {
         params(params);
     }
 
+    private static void add(Map<String, List<String>> multiValueMap, String key, String value) {
+        List<String> values = get(multiValueMap, key, true);
+        values.add(value);
+    }
+
+    private static <T extends Collection<String>> void addAll(Map<String, List<String>> multiValueMap,
+                                                              Map<String, T> source) {
+        for (Map.Entry<String, T> entry : source.entrySet()) {
+            String key = entry.getKey();
+            for (String value : entry.getValue()) {
+                add(multiValueMap, key, value);
+            }
+        }
+    }
+
+    private static String getFirst(Map<String, List<String>> multiValueMap, String key) {
+        List<String> values = get(multiValueMap, key);
+        return CollectionUtils.isNotEmpty(values) ? values.get(0) : null;
+    }
+
+    private static List<String> get(Map<String, List<String>> multiValueMap, String key) {
+        return get(multiValueMap, key, false);
+    }
+
+    private static List<String> get(Map<String, List<String>> multiValueMap, String key, boolean createIfAbsent) {
+        return createIfAbsent ? multiValueMap.computeIfAbsent(key, k -> new LinkedList<>()) : multiValueMap.get(key);
+    }
+
     public Map<String, List<String>> getHeaders() {
-        return Collections.unmodifiableMap(headers);
+        return unmodifiableMap(headers);
     }
 
     public void setHeaders(Map<String, List<String>> headers) {
@@ -170,31 +186,31 @@ public class RequestMetadata implements Serializable {
     }
 
     public String getParameter(String name) {
-        return this.params.getFirst(name);
+        return this.getFirst(params, name);
     }
 
     public String getHeader(String name) {
-        return this.headers.getFirst(name);
+        return this.getFirst(headers, name);
     }
 
     public RequestMetadata addParam(String name, String value) {
-        add(name, value, this.params);
+        add(params, name, value);
         return this;
     }
 
     public RequestMetadata addHeader(String name, String value) {
-        add(name, value, this.headers);
+        add(headers, name, value);
         return this;
     }
 
     private <T extends Collection<String>> RequestMetadata params(Map<String, T> params) {
-        addAll(params, this.params);
+        addAll(this.params, params);
         return this;
     }
 
     private <T extends Collection<String>> RequestMetadata headers(Map<String, List<String>> headers) {
         if (headers != null && !headers.isEmpty()) {
-            MultivaluedMap httpHeaders = new MultivaluedHashMap();
+            Map<String, List<String>> httpHeaders = new LinkedHashMap<>();
             // Add all headers
             addAll(headers, httpHeaders);
             // Handles "Content-Type" and "Accept" headers if present

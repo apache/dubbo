@@ -14,24 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.tools;
+package org.apache.dubbo.metadata.annotation.processing.model;
 
-import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
+import java.util.Collection;
+import java.util.Deque;
+import java.util.List;
+import java.util.Queue;
+import java.util.Set;
 
 /**
- * The Compiler test case
+ * {@link Collection} Type Model
+ *
+ * @since 2.7.5
  */
-public class CompilerTest {
+public class CollectionTypeModel {
 
-    @Test
-    public void testCompile() throws IOException {
-        Compiler compiler = new Compiler();
-        compiler.compile(
-                TestServiceImpl.class,
-                DefaultTestService.class,
-                GenericTestService.class);
-    }
+    private Collection<String> strings; // The composite element is simple type
+
+    private List<Color> colors;     // The composite element is Enum type
+
+    private Queue<PrimitiveTypeModel> primitiveTypeModels;  // The composite element is POJO type
+
+    private Deque<Model> models;  // The composite element is hierarchical POJO type
+
+    private Set<Model[]> modelArrays; // The composite element is hierarchical POJO type
+
 }
-

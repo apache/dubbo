@@ -16,23 +16,28 @@
 package org.apache.dubbo.metadata.util;
 
 
+import org.apache.dubbo.common.utils.StringUtils;
+
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.unmodifiableSet;
 import static org.apache.dubbo.common.utils.StringUtils.AND;
 import static org.apache.dubbo.common.utils.StringUtils.AND_CHAR;
 import static org.apache.dubbo.common.utils.StringUtils.EMPTY_VALUE;
 import static org.apache.dubbo.common.utils.StringUtils.EQUAL;
 import static org.apache.dubbo.common.utils.StringUtils.EQUAL_CHAR;
 import static org.apache.dubbo.common.utils.StringUtils.QUESTION_MASK;
+import static org.apache.dubbo.common.utils.StringUtils.SLASH;
 import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
 import static org.apache.dubbo.common.utils.StringUtils.replace;
 import static org.apache.dubbo.common.utils.StringUtils.split;
@@ -48,6 +53,50 @@ public abstract class HttpUtils {
     private static final String UTF_8 = "UTF-8";
 
     /**
+     * HTTP GET method.
+     */
+    public static final String GET = "GET";
+    /**
+     * HTTP POST method.
+     */
+    public static final String POST = "POST";
+    /**
+     * HTTP PUT method.
+     */
+    public static final String PUT = "PUT";
+    /**
+     * HTTP DELETE method.
+     */
+    public static final String DELETE = "DELETE";
+    /**
+     * HTTP HEAD method.
+     */
+    public static final String HEAD = "HEAD";
+    /**
+     * HTTP OPTIONS method.
+     */
+    public static final String OPTIONS = "OPTIONS";
+
+    /**
+     * The HTTP methods to support
+     */
+    public static final Set<String> HTTP_METHODS = unmodifiableSet(new LinkedHashSet<>(asList(
+            GET, POST, POST, PUT, DELETE, HEAD, OPTIONS
+    )));
+
+
+    public static String buildPath(String rootPath, String... subPaths) {
+
+        Set<String> paths = new LinkedHashSet<>();
+        paths.add(rootPath);
+        paths.addAll(asList(subPaths));
+
+        return normalizePath(paths.stream()
+                .filter(StringUtils::isNotEmpty)
+                .collect(Collectors.joining(SLASH)));
+    }
+
+    /**
      * Normalize path:
      * <ol>
      * <li>To remove query string if presents</li>
@@ -59,7 +108,7 @@ public abstract class HttpUtils {
      */
     public static String normalizePath(String path) {
         if (isEmpty(path)) {
-            return path;
+            return SLASH;
         }
         String normalizedPath = path;
         int index = normalizedPath.indexOf(QUESTION_MASK);
@@ -109,7 +158,7 @@ public abstract class HttpUtils {
      * @return The query parameters
      */
     public static MultivaluedMap<String, String> getParameters(String... pairs) {
-        return getParameters(Arrays.asList(pairs));
+        return getParameters(asList(pairs));
     }
 
     // /**

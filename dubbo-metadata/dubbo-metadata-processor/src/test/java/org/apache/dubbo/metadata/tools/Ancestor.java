@@ -16,22 +16,20 @@
  */
 package org.apache.dubbo.metadata.tools;
 
-import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
+import java.io.Serializable;
 
 /**
- * The Compiler test case
+ * Ancestor
  */
-public class CompilerTest {
+public class Ancestor implements Serializable {
 
-    @Test
-    public void testCompile() throws IOException {
-        Compiler compiler = new Compiler();
-        compiler.compile(
-                TestServiceImpl.class,
-                DefaultTestService.class,
-                GenericTestService.class);
+    private boolean z;
+
+    public boolean isZ() {
+        return z;
+    }
+
+    public void setZ(boolean z) {
+        this.z = z;
     }
 }
-

@@ -18,9 +18,12 @@ package org.apache.dubbo.metadata.tools;
 
 
 import org.apache.dubbo.config.annotation.Service;
+import org.apache.dubbo.metadata.annotation.processing.model.Model;
+
+import java.util.concurrent.TimeUnit;
 
 /**
- * {@link EchoService} Implementation
+ * {@link TestService} Implementation
  *
  * @since 2.7.5
  */
@@ -29,9 +32,30 @@ import org.apache.dubbo.config.annotation.Service;
         version = "1.0.0",
         group = "default"
 )
-public class DefaultEchoService implements EchoService {
+public class DefaultTestService implements TestService {
+
     @Override
     public String echo(String message) {
         return "[ECHO] " + message;
+    }
+
+    @Override
+    public Model model(Model model) {
+        return model;
+    }
+
+    @Override
+    public String testPrimitive(boolean z, int i) {
+        return null;
+    }
+
+    @Override
+    public Model testEnum(TimeUnit timeUnit) {
+        return null;
+    }
+
+    @Override
+    public String testArray(String[] strArray, int[] intArray, Model[] modelArray) {
+        return null;
     }
 }

@@ -16,45 +16,63 @@
  */
 package org.apache.dubbo.metadata.annotation.processing;
 
-import org.apache.dubbo.config.annotation.Service;
+import org.apache.dubbo.metadata.annotation.processing.rest.ServiceRestMetadataProcessor;
+import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
 
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import static java.util.ServiceLoader.load;
+import static java.util.stream.StreamSupport.stream;
 import static javax.lang.model.util.ElementFilter.typesIn;
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationProcessorUtils.getOverrideMethod;
 import static org.apache.dubbo.metadata.annotation.processing.util.ServiceAnnotationUtils.getAnnotation;
 
 /**
  * The {@link Processor} class to generate the metadata of REST from the classes that are annotated by Dubbo's
- * {@link Service @Service}
+ * @Service
  *
  * @see Processor
- * @see Service
  * @since 2.7.5
  */
 public class RestMetadataServiceAnnotationProcessor extends AbstractServiceAnnotationProcessor {
 
-    private Set<ExecutableElement> methods = new LinkedHashSet<>();
+    private Iterable<ServiceRestMetadataProcessor> metadataProcessors;
 
-    private Set<String> classes = new LinkedHashSet<>();
+    private Collection<ServiceRestMetadata> serviceRestMetadata;
+
+    @Override
+    public synchronized void init(ProcessingEnvironment processingEnv) {
+        super.init(processingEnv);
+        this.metadataProcessors = load(ServiceRestMetadataProcessor.class);
+        this.serviceRestMetadata = new LinkedHashSet<>();
+    }
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
 
-        typesIn(roundEnv.getRootElements()).forEach(this::process);
+        typesIn(roundEnv.getRootElements()).forEach(serviceType -> process(processingEnv, serviceType, annotations));
 
         if (roundEnv.processingOver()) {
         }
 
         return false;
+    }
+
+    private void process(ProcessingEnvironment processingEnv, TypeElement serviceType,
+                         Set<? extends TypeElement> annotations) {
+        stream(metadataProcessors.spliterator(), false)
+                .map(processor -> processor.process(processingEnv, serviceType, annotations))
+                .forEach(serviceRestMetadata::add);
     }
 
     private void process(TypeElement annotatedClass) {
@@ -89,8 +107,5 @@ public class RestMetadataServiceAnnotationProcessor extends AbstractServiceAnnot
             restMetadata.append("/{").append(parameter.getSimpleName()).append("}/");
         }
 
-        methods.add(interfaceMethod);
-
-        System.out.println(restMetadata);
     }
 }

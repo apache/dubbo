@@ -14,24 +14,60 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.tools;
-
-import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
+package org.apache.dubbo.metadata.annotation.processing.model;
 
 /**
- * The Compiler test case
+ * Primitive Type model
+ *
+ * @since 2.7.5
  */
-public class CompilerTest {
+public class PrimitiveTypeModel {
 
-    @Test
-    public void testCompile() throws IOException {
-        Compiler compiler = new Compiler();
-        compiler.compile(
-                TestServiceImpl.class,
-                DefaultTestService.class,
-                GenericTestService.class);
+    private boolean z;
+
+    private byte b;
+
+    private char c;
+
+    private short s;
+
+    private int i;
+
+    private long l;
+
+    private float f;
+
+    private double d;
+
+    public boolean isZ() {
+        return z;
+    }
+
+    public byte getB() {
+        return b;
+    }
+
+    public char getC() {
+        return c;
+    }
+
+    public short getS() {
+        return s;
+    }
+
+    public int getI() {
+        return i;
+    }
+
+    public long getL() {
+        return l;
+    }
+
+    public float getF() {
+        return f;
+    }
+
+    public double getD() {
+        return d;
     }
 }
-

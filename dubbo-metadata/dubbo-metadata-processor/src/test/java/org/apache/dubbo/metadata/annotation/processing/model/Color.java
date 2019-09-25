@@ -14,24 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.tools;
-
-import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
+package org.apache.dubbo.metadata.annotation.processing.model;
 
 /**
- * The Compiler test case
+ * Color enumeration
+ *
+ * @since 2.7.5
  */
-public class CompilerTest {
+public enum Color {
 
-    @Test
-    public void testCompile() throws IOException {
-        Compiler compiler = new Compiler();
-        compiler.compile(
-                TestServiceImpl.class,
-                DefaultTestService.class,
-                GenericTestService.class);
+    RED(1),
+    YELLOW(2),
+    BLUE(3);
+
+    private final int value;
+
+    Color(int value) {
+        this.value = value;
+    }
+
+    @Override
+    public String toString() {
+        return "Color{" +
+                "value=" + value +
+                "} " + super.toString();
+    }
+
+    public int getValue() {
+        return value;
     }
 }
-

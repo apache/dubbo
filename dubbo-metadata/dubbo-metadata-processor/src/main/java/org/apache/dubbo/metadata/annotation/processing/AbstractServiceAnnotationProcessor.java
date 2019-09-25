@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.metadata.annotation.processing;
 
-import org.apache.dubbo.config.annotation.Service;
-
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.Processor;
@@ -40,10 +38,8 @@ import static org.apache.dubbo.metadata.annotation.processing.util.ServiceAnnota
 import static org.apache.dubbo.metadata.annotation.processing.util.ServiceAnnotationUtils.resolveServiceInterfaceName;
 
 /**
- * Abstract {@link Processor} for the classes that were annotated by Dubbo's {@link Service @Service}
+ * Abstract {@link Processor} for the classes that were annotated by Dubbo's @Service
  *
- * @see Service
- * @see com.alibaba.dubbo.config.annotation.Service
  * @since 2.7.5
  */
 public abstract class AbstractServiceAnnotationProcessor extends AbstractProcessor {

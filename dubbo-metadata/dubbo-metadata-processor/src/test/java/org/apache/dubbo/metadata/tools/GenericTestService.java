@@ -16,22 +16,21 @@
  */
 package org.apache.dubbo.metadata.tools;
 
-import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
+import org.apache.dubbo.config.annotation.Service;
 
 /**
- * The Compiler test case
+ * {@link TestService} Implementation
+ *
+ * @since 2.7.5
  */
-public class CompilerTest {
-
-    @Test
-    public void testCompile() throws IOException {
-        Compiler compiler = new Compiler();
-        compiler.compile(
-                TestServiceImpl.class,
-                DefaultTestService.class,
-                GenericTestService.class);
+@Service(
+        version = "2.0.0",
+        group = "generic"
+)
+public class GenericTestService extends DefaultTestService implements TestService {
+    @Override
+    public String echo(String message) {
+        return "[ECHO] " + message;
     }
 }
-

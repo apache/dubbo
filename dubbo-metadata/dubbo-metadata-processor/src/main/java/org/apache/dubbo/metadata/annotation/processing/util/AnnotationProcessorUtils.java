@@ -24,23 +24,32 @@ import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.NoType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Stream.of;
 import static java.util.stream.StreamSupport.stream;
+import static javax.lang.model.element.Modifier.STATIC;
+import static javax.lang.model.util.ElementFilter.fieldsIn;
 import static javax.lang.model.util.ElementFilter.methodsIn;
+import static org.apache.dubbo.common.function.Predicates.and;
+import static org.apache.dubbo.common.function.Predicates.filterAll;
+import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.asType;
 
 /**
  * An utilities class for {@link Processor}
@@ -49,95 +58,239 @@ import static javax.lang.model.util.ElementFilter.methodsIn;
  */
 public interface AnnotationProcessorUtils {
 
-    static Object getAttribute(AnnotationMirror annotation, String attributeName) {
-        return getAttribute(annotation.getElementValues(), attributeName);
+    static <T> T getAttribute(AnnotationMirror annotation, String attributeName) {
+        return annotation == null ? null : getAttribute(annotation.getElementValues(), attributeName);
     }
 
-    static Object getAttribute(Map<? extends ExecutableElement, ? extends AnnotationValue> attributesMap,
-                               String attributeName) {
-        Object attributeValue = null;
+    static <T> T getAttribute(Map<? extends ExecutableElement, ? extends AnnotationValue> attributesMap,
+                              String attributeName) {
+        T attributeValue = null;
         for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : attributesMap.entrySet()) {
             ExecutableElement executableElement = entry.getKey();
             if (attributeName.equals(executableElement.getSimpleName().toString())) {
-                attributeValue = entry.getValue().getValue();
+                attributeValue = (T) entry.getValue().getValue();
                 break;
             }
         }
         return attributeValue;
     }
 
-    static Object getValue(AnnotationMirror annotation) {
-        return getAttribute(annotation, "value");
+    static <T> T getValue(AnnotationMirror annotation) {
+        return (T) getAttribute(annotation, "value");
     }
 
-    static List<? extends Element> getMembers(ProcessingEnvironment processingEnv, TypeElement type,
-                                              Type... excludedTypes) {
-        Elements elements = processingEnv.getElementUtils();
-        List<? extends Element> members = new LinkedList<>(elements.getAllMembers(type));
-
-        Stream.of(excludedTypes)
-                .map(Type::getTypeName)        // class names to exclude
-                .map(elements::getTypeElement) // class names to TypeElements
-                .map(elements::getAllMembers)  // TypeElements to Elements
-                .flatMap(Collection::stream)   // flat map
-                .forEach(members::remove);     // remove objects' methods
-
-        return members;
+    static List<VariableElement> getFields(ProcessingEnvironment processingEnv, TypeElement type,
+                                           Predicate<VariableElement>... elementToFilters) {
+        return filterAll(fieldsIn(getMembers(processingEnv, type)), elementToFilters);
     }
 
-    static List<? extends ExecutableElement> getMethods(ProcessingEnvironment processingEnv, Class<?> type,
-                                                        Type... excludedTypes) {
-        return getMethods(processingEnv, type.getTypeName(), excludedTypes);
-    }
-
-    static List<? extends ExecutableElement> getMethods(ProcessingEnvironment processingEnv, CharSequence typeName,
-                                                        Type... excludedTypes) {
-        Elements elements = processingEnv.getElementUtils();
-        return getMethods(processingEnv, elements.getTypeElement(typeName), excludedTypes);
-    }
-
-    static List<? extends ExecutableElement> getMethods(ProcessingEnvironment processingEnv, TypeElement type,
-                                                        Type... excludedTypes) {
-        return methodsIn(getMembers(processingEnv, type, excludedTypes));
-    }
-
-    static ExecutableElement getOverrideMethod(ProcessingEnvironment processingEnv, TypeElement type,
-                                               ExecutableElement declaringMethod) {
-        return getMethods(processingEnv, type)
+    static List<VariableElement> getAlDeclaredFields(ProcessingEnvironment processingEnv, TypeElement type) {
+        return getHierarchicalTypes(processingEnv, type)
                 .stream()
-                .filter(method -> processingEnv.getElementUtils().overrides(method, declaringMethod, type))
+                .map(t -> getFields(processingEnv, t))
+                .flatMap(Collection::stream)
+                .collect(toList());
+    }
+
+    static List<VariableElement> getNonStaticFields(ProcessingEnvironment processingEnv, TypeElement type) {
+        return filterAll(getAlDeclaredFields(processingEnv, type), element -> !element.getModifiers().contains(STATIC));
+    }
+
+    static VariableElement getField(ProcessingEnvironment processingEnv, TypeElement type, CharSequence fieldName) {
+        return getAlDeclaredFields(processingEnv, type)
+                .stream()
+                .filter(field -> Objects.equals(fieldName, field.getSimpleName().toString()))
                 .findFirst()
                 .orElse(null);
     }
 
-    static Set<TypeElement> getHierarchicalTypes(ProcessingEnvironment processingEnv, TypeElement type) {
+    static List<ExecutableElement> getMethods(ProcessingEnvironment processingEnv, Class<?> type,
+                                              Type... excludedTypes) {
+        return getMethods(processingEnv, type.getTypeName(), excludedTypes);
+    }
 
-        Set<TypeElement> hierarchicalTypes = new LinkedHashSet<>();
-        // add current type
-        hierarchicalTypes.add(type);
-        // add all hierarchical types
+    static List<ExecutableElement> getMethods(ProcessingEnvironment processingEnv, CharSequence typeName,
+                                              Type... excludedTypes) {
+        Elements elements = processingEnv.getElementUtils();
+        return getMethods(processingEnv, elements.getTypeElement(typeName), excludedTypes);
+    }
 
-        TypeMirror superClass = type.getSuperclass();
+    static List<ExecutableElement> getMethods(ProcessingEnvironment processingEnv, TypeElement type,
+                                              Type... excludedTypes) {
+        return methodsIn(getMembers(processingEnv, type, excludedTypes));
+    }
+
+    static Set<ExecutableElement> getAllDeclaredMethods(ProcessingEnvironment processingEnv, TypeElement type,
+                                                        Type... excludedTypes) {
+        return getHierarchicalTypes(processingEnv, type)
+                .stream()
+                .map(t -> getMethods(processingEnv, t, excludedTypes))
+                .flatMap(Collection::stream)
+                .collect(Collectors.toSet());
+    }
+
+    static ExecutableElement findMethod(ProcessingEnvironment processingEnv, TypeElement type,
+                                        Predicate<ExecutableElement>... elementToFilters) {
+        return getMethods(processingEnv, type)
+                .stream()
+                .filter(and(elementToFilters))
+                .findFirst()
+                .orElse(null);
+    }
+
+    static ExecutableElement findMethod(ProcessingEnvironment processingEnv, TypeElement type, String methodName,
+                                        Class<?>... parameterTypes) {
+        return findMethod(processingEnv, type,
+                method -> Objects.equals(methodName, method.getSimpleName().toString()),
+                method -> {
+                    List<String> expectedParameterTypes = getMethodParameterTypes(method);
+                    List<String> actualParameterTypes = of(parameterTypes).map(Class::getTypeName).collect(toList());
+                    return Objects.equals(expectedParameterTypes, actualParameterTypes);
+                }
+        );
+    }
+
+    static ExecutableElement getOverrideMethod(ProcessingEnvironment processingEnv, TypeElement type,
+                                               ExecutableElement declaringMethod) {
+        return findMethod(processingEnv, type,
+                method -> processingEnv.getElementUtils().overrides(method, declaringMethod, type));
+    }
+
+    static Set<ExecutableElement> getHierarchicalMethods(ProcessingEnvironment processingEnv, ExecutableElement method) {
+        if (method == null) {
+            return Collections.emptySet();
+        }
+
+        Set<ExecutableElement> hierarchicalMethods = new LinkedHashSet<>();
 
         Elements elements = processingEnv.getElementUtils();
+        // add current method
+        hierarchicalMethods.add(method);
 
-        while (!(superClass instanceof NoType)) {
+        TypeElement currentType = asType(method.getEnclosingElement());
 
-            TypeElement superType = elements.getTypeElement(superClass.toString());
-            hierarchicalTypes.add(superType);
+        getHierarchicalTypes(processingEnv, currentType)
+                .stream()
+                .map(superType -> findMethod(processingEnv, superType,
+                        overridden -> elements.overrides(method, overridden, currentType)
+                ))
+                .filter(Objects::nonNull)
+                .forEach(hierarchicalMethods::add);
 
-            List<? extends TypeMirror> superInterfaces = superType.getInterfaces();
+        return hierarchicalMethods;
+    }
 
-            superInterfaces.stream()
-                    .map(TypeMirror::toString)
-                    .map(elements::getTypeElement)
-                    .forEach(hierarchicalTypes::add);
+    static List<? extends Element> getMembers(ProcessingEnvironment processingEnv, TypeElement type,
+                                              Type... excludedTypes) {
+        return getMembers(processingEnv, type, of(excludedTypes).map(Type::getTypeName).toArray(String[]::new));
+    }
 
-            superClass = superType.getSuperclass();
+    static List<? extends Element> getMembers(ProcessingEnvironment processingEnv, TypeElement type,
+                                              String... excludedTypeNames) {
+        Elements elements = processingEnv.getElementUtils();
+
+        List<Element> excludedElements = of(excludedTypeNames)
+                .map(elements::getTypeElement)
+                .map(elements::getAllMembers)
+                .flatMap(Collection::stream)
+                .collect(toList());
+
+        return getMembers(processingEnv, type, element -> !excludedElements.contains(element));
+    }
+
+    static List<? extends Element> getMembers(ProcessingEnvironment processingEnv, TypeElement type,
+                                              Predicate<Element>... elementToFilters) {
+        return filterAll((List<Element>) getMembers(processingEnv, type), elementToFilters);
+    }
+
+    static List<? extends Element> getMembers(ProcessingEnvironment processingEnv, TypeElement type) {
+        Elements elements = processingEnv.getElementUtils();
+        return elements.getAllMembers(type);
+    }
+
+    static List<String> getMethodParameterTypes(ExecutableElement method) {
+        return method.getParameters()
+                .stream()
+                .map(Element::asType)
+                .map(TypeMirror::toString)
+                .collect(toList());
+    }
+
+    static Set<TypeElement> getHierarchicalTypes(ProcessingEnvironment processingEnv, TypeElement type) {
+        return getHierarchicalTypes(processingEnv, type, true, true, true);
+    }
+
+    static Set<TypeElement> getHierarchicalTypes(ProcessingEnvironment processingEnv, TypeElement type,
+                                                 boolean includeSelf, boolean includeSuperType,
+                                                 boolean includeSuperInterfaces) {
+
+        Set<TypeElement> hierarchicalTypes = new LinkedHashSet<>();
+
+        if (includeSelf) {
+            // add current type if included
+            hierarchicalTypes.add(type);
         }
+
+        TypeElement superType = getSuperType(processingEnv, type);
+
+        if (includeSuperInterfaces) {
+            // Add super interfaces if present
+            hierarchicalTypes.addAll(getInterfaces(processingEnv, type));
+        }
+
+        if (superType == null) {
+            return hierarchicalTypes;
+        }
+
+        if (includeSuperType) {
+            // Add super type if present
+            hierarchicalTypes.add(superType);
+        }
+
+        // add all hierarchical types
+        hierarchicalTypes.addAll(getHierarchicalTypes(processingEnv, superType, includeSelf, includeSuperType,
+                includeSuperInterfaces));
 
         return hierarchicalTypes;
     }
+
+    static Set<TypeElement> getInterfaces(ProcessingEnvironment processingEnv, TypeElement type) {
+        return type.getInterfaces()
+                .stream()
+                .map(interfaceType -> getType(processingEnv, interfaceType))
+                .collect(Collectors.toSet());
+    }
+
+    static Set<TypeElement> getAllInterfaces(ProcessingEnvironment processingEnv, TypeElement type) {
+        return getHierarchicalTypes(processingEnv, type, false, false, true);
+    }
+
+    static TypeElement getSuperType(ProcessingEnvironment processingEnv, Element element) {
+        TypeElement currentType = asType(element);
+        return currentType == null ? null : getSuperType(processingEnv, currentType);
+    }
+
+    static TypeElement getSuperType(ProcessingEnvironment processingEnv, TypeElement currentType) {
+        TypeMirror superClass = currentType.getSuperclass();
+        if (superClass instanceof NoType) {
+            return null;
+        }
+        return getType(processingEnv, superClass);
+    }
+
+    static TypeElement getType(ProcessingEnvironment processingEnv, Class<?> type) {
+        return getType(processingEnv, type.getTypeName());
+    }
+
+    static TypeElement getType(ProcessingEnvironment processingEnv, TypeMirror type) {
+        return getType(processingEnv, type.toString());
+    }
+
+    static TypeElement getType(ProcessingEnvironment processingEnv, CharSequence typeName) {
+        Elements elements = processingEnv.getElementUtils();
+        return elements.getTypeElement(typeName);
+    }
+
 
     static List<AnnotationMirror> getAllAnnotations(ProcessingEnvironment processingEnv, Class<? extends Annotation> annotationClass) {
         return getAllAnnotations(processingEnv, annotationClass.getTypeName());
@@ -156,7 +309,7 @@ public interface AnnotationProcessorUtils {
         return stream(annotatedConstructs.spliterator(), false)
                 .map(AnnotatedConstruct::getAnnotationMirrors)
                 .flatMap(Collection::stream)
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     static List<AnnotationMirror> getAnnotations(ProcessingEnvironment processingEnv, TypeElement type,
@@ -173,7 +326,7 @@ public interface AnnotationProcessorUtils {
                                                  CharSequence annotationClassName) {
         return stream(annotationMirrors.spliterator(), false)
                 .filter(annotation -> Objects.equals(annotationClassName, annotation.getAnnotationType().toString()))
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
 
@@ -192,5 +345,37 @@ public interface AnnotationProcessorUtils {
                                           CharSequence annotationClassName) {
         List<AnnotationMirror> annotations = getAnnotations(annotationMirrors, annotationClassName);
         return annotations.isEmpty() ? null : annotations.get(0);
+    }
+
+    static AnnotationMirror findAnnotation(ProcessingEnvironment processingEnv, ExecutableElement method,
+                                           Class<? extends Annotation> annotationClass) {
+        return findAnnotation(processingEnv, method, annotationClass.getTypeName());
+    }
+
+    static AnnotationMirror findAnnotation(ProcessingEnvironment processingEnv, ExecutableElement method,
+                                           CharSequence annotationClassName) {
+        return getAllAnnotations(getHierarchicalMethods(processingEnv, method))
+                .stream()
+                .filter(annotation -> Objects.equals(annotation.getAnnotationType().toString(), annotationClassName))
+                .findFirst()
+                .orElse(null);
+    }
+
+    static AnnotationMirror findMetaAnnotation(ProcessingEnvironment processingEnv, ExecutableElement method,
+                                               Class<? extends Annotation> metaAnnotationClass) {
+        return findMetaAnnotation(processingEnv, method, metaAnnotationClass.getTypeName());
+    }
+
+    static AnnotationMirror findMetaAnnotation(ProcessingEnvironment processingEnv, ExecutableElement method,
+                                               CharSequence metaAnnotationClassName) {
+        return getAllAnnotations(getHierarchicalMethods(processingEnv, method))
+                .stream()
+                .map(AnnotationMirror::getAnnotationType)
+                .map(DeclaredType::asElement)
+                .map(Element::getAnnotationMirrors)
+                .flatMap(Collection::stream)
+                .filter(metaAnnotation -> Objects.equals(metaAnnotationClassName, metaAnnotation.getAnnotationType().toString()))
+                .findFirst()
+                .orElse(null);
     }
 }

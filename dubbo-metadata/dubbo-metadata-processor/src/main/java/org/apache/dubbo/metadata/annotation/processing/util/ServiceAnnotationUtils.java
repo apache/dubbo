@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.metadata.annotation.processing.util;
 
-import org.apache.dubbo.config.annotation.Service;
-
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 import java.util.Set;
@@ -27,41 +25,40 @@ import static org.apache.dubbo.common.utils.CollectionUtils.asHashSet;
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationProcessorUtils.getAttribute;
 
 /**
- * The utilities class for {@link Service} annotation
+ * The utilities class for @Service annotation
  *
- * @see Service
  * @since 2.7.5
  */
 public interface ServiceAnnotationUtils {
 
     /**
-     * The class name of {@link Service @Service}
+     * The class name of @Service
      */
     String SERVICE_ANNOTATION_TYPE = "org.apache.dubbo.config.annotation.Service";
 
     /**
-     * The class name of the legacy {@link com.alibaba.dubbo.config.annotation.Service @Service}
+     * The class name of the legacy @Service
      */
     @Deprecated
     String LEGACY_SERVICE_ANNOTATION_TYPE = "com.alibaba.dubbo.config.annotation.Service";
 
     /**
-     * the attribute name of {@link Service#interfaceClass()}
+     * the attribute name of @Service.interfaceClass()
      */
     String INTERFACE_CLASS_ATTRIBUTE_NAME = "interfaceClass";
 
     /**
-     * the attribute name of {@link Service#interfaceName()}
+     * the attribute name of @Service.interfaceName()
      */
     String INTERFACE_NAME_ATTRIBUTE_NAME = "interfaceName";
 
     /**
-     * the attribute name of {@link Service#group()}
+     * the attribute name of @Service.group()
      */
     String GROUP_ATTRIBUTE_NAME = "group";
 
     /**
-     * the attribute name of {@link Service#version()}
+     * the attribute name of @Service.version()
      */
     String VERSION_ATTRIBUTE_NAME = "version";
 
@@ -109,10 +106,10 @@ public interface ServiceAnnotationUtils {
     }
 
     static String getGroup(AnnotationMirror serviceAnnotation) {
-        return valueOf(getAttribute(serviceAnnotation, GROUP_ATTRIBUTE_NAME));
+        return getAttribute(serviceAnnotation, GROUP_ATTRIBUTE_NAME);
     }
 
     static String getVersion(AnnotationMirror serviceAnnotation) {
-        return valueOf(getAttribute(serviceAnnotation, VERSION_ATTRIBUTE_NAME));
+        return getAttribute(serviceAnnotation, VERSION_ATTRIBUTE_NAME);
     }
 }

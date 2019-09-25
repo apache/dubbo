@@ -14,23 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.tools;
+package org.apache.dubbo.metadata.annotation.processing.builder;
 
+import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 
-import org.apache.dubbo.config.annotation.Service;
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.type.PrimitiveType;
+import javax.lang.model.type.TypeMirror;
 
 /**
- * {@link EchoService} Implementation
+ * {@link TypeDefinitionBuilder} for Java {@link PrimitiveType primitve type}
  *
  * @since 2.7.5
  */
-@Service(
-        version = "2.0.0",
-        group = "generic"
-)
-public class GenericEchoService extends DefaultEchoService implements EchoService {
+public class PrimitiveTypeDefinitionBuilder implements TypeDefinitionBuilder {
+
     @Override
-    public String echo(String message) {
-        return "[ECHO] " + message;
+    public boolean accept(ProcessingEnvironment processingEnv, TypeMirror type) {
+        return type.getKind().isPrimitive();
+    }
+
+    @Override
+    public void build(ProcessingEnvironment processingEnv, TypeMirror type, TypeDefinition typeDefinition) {
+        // DO NOTHING
     }
 }

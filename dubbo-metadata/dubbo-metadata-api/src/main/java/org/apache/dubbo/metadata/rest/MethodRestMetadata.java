@@ -53,6 +53,9 @@ public class MethodRestMetadata implements Serializable {
     private Map<Integer, Boolean> indexToEncoded;
 
     public MethodDefinition getMethod() {
+        if (method == null) {
+            method = new MethodDefinition();
+        }
         return method;
     }
 
@@ -61,6 +64,9 @@ public class MethodRestMetadata implements Serializable {
     }
 
     public RequestMetadata getRequest() {
+        if (request == null) {
+            request = new RequestMetadata();
+        }
         return request;
     }
 
