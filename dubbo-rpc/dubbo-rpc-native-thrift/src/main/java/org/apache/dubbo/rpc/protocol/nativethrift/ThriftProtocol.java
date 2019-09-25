@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.nativethrift;
 
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.AbstractProxyProtocol;
 
@@ -39,6 +40,9 @@ import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
+
 /**
  * native thrift protocol
  */
@@ -54,13 +58,17 @@ public class ThriftProtocol extends AbstractProxyProtocol {
     private static final Map<String, TServer> serverMap = new HashMap<>();
     private TMultiplexedProcessor processor = new TMultiplexedProcessor();
 
+    public ThriftProtocol() {
+        super(TException.class, RpcException.class);
+    }
+
+    public ThriftProtocol(Class<?>... exceptions) {
+        super(exceptions);
+    }
+
     @Override
     public int getDefaultPort() {
         return DEFAULT_PORT;
-    }
-
-    public ThriftProtocol() {
-        super(TException.class, RpcException.class);
     }
 
     @Override
@@ -71,10 +79,6 @@ public class ThriftProtocol extends AbstractProxyProtocol {
     @Override
     protected <T> T doRefer(Class<T> type, URL url) throws RpcException {
         return doReferFrameAndCompact(type, url);
-    }
-
-    public ThriftProtocol(Class<?>... exceptions) {
-        super(exceptions);
     }
 
     private <T> Runnable exportThreadedSelectorServer(T impl, Class<T> type, URL url) throws RpcException {
@@ -152,7 +156,12 @@ public class ThriftProtocol extends AbstractProxyProtocol {
                     TNonblockingServerSocket.NonblockingAbstractServerSocketArgs args = new TNonblockingServerSocket.NonblockingAbstractServerSocketArgs();
                     /**1000 connections*/
                     args.backlog(1000);
-                    args.bindAddr(new InetSocketAddress(url.getHost(), url.getPort()));
+                    String bindIp = url.getParameter(Constants.BIND_IP_KEY, url.getHost());
+                    if (url.getParameter(ANYHOST_KEY, false)) {
+                        bindIp = ANYHOST_VALUE;
+                    }
+                    int bindPort = url.getParameter(Constants.BIND_PORT_KEY, url.getPort());
+                    args.bindAddr(new InetSocketAddress(bindIp, bindPort));
                     /**timeout: 10s */
                     args.clientTimeout(10000);
 

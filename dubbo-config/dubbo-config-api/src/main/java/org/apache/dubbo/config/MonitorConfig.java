@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.common.constants.RegistryConstants;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 
@@ -154,7 +155,7 @@ public class MonitorConfig extends AbstractConfig {
     @Override
     @Parameter(excluded = true)
     public boolean isValid() {
-        return StringUtils.isNotEmpty(address);
+        return StringUtils.isNotEmpty(address) || RegistryConstants.REGISTRY_PROTOCOL.equals(protocol);
     }
 
 }

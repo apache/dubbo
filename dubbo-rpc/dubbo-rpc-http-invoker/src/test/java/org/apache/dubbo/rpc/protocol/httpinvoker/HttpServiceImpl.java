@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.rpc.protocol.httpinvoker;
 
+import org.apache.dubbo.rpc.RpcContext;
+
 /**
  * HttpServiceImpl
  */
@@ -47,6 +49,11 @@ public class HttpServiceImpl implements HttpService {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public String getRemoteApplicationName() {
+        return RpcContext.getContext().getRemoteApplicationName();
     }
 
     public String customException() {

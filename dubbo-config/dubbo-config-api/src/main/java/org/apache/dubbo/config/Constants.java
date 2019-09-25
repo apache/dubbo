@@ -73,11 +73,6 @@ public interface Constants {
      */
     String PRODUCTION_ENVIRONMENT = "product";
 
-    String CONFIG_CONFIGFILE_KEY = "config.config-file";
-    String CONFIG_ENABLE_KEY = "config.highest-priority";
-    String CONFIG_TIMEOUT_KEY = "config.timeout";
-    String CONFIG_APPNAME_KEY = "config.app-name";
-
     String MULTICAST = "multicast";
 
 
@@ -114,4 +109,6 @@ public interface Constants {
     String REGISTRIES_SUFFIX = "dubbo.registries.";
 
     String ZOOKEEPER_PROTOCOL = "zookeeper";
+
+    String REGISTER_KEY = "register";
 }

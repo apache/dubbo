@@ -28,16 +28,11 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.CONFIG_CONFIGFILE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.CONFIG_ENABLE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
-import static org.apache.dubbo.config.Constants.CONFIG_CONFIGFILE_KEY;
-import static org.apache.dubbo.config.Constants.CONFIG_ENABLE_KEY;
-import static org.apache.dubbo.config.Constants.CONFIG_TIMEOUT_KEY;
 import static org.apache.dubbo.config.Constants.ZOOKEEPER_PROTOCOL;
-import static org.apache.dubbo.configcenter.Constants.CONFIG_CHECK_KEY;
-import static org.apache.dubbo.configcenter.Constants.CONFIG_CLUSTER_KEY;
-import static org.apache.dubbo.configcenter.Constants.CONFIG_GROUP_KEY;
-import static org.apache.dubbo.configcenter.Constants.CONFIG_NAMESPACE_KEY;
 
 /**
  * ConfigCenterConfig
@@ -82,7 +77,7 @@ public class ConfigCenterConfig extends AbstractConfig {
     /* If the Config Center product you use have some special parameters that is not covered by this class, you can add it to here.
     For example, with XML:
       <dubbo:config-center>
-           <dubbo:parameter key="config.{your key}" value="{your value}" />
+           <dubbo:parameter key="{your key}" value="{your value}" />
       </dubbo:config-center>
      */
     private Map<String, String> parameters;
@@ -133,7 +128,6 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.address = address;
     }
 
-    @Parameter(key = CONFIG_CLUSTER_KEY)
     public String getCluster() {
         return cluster;
     }
@@ -142,7 +136,6 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.cluster = cluster;
     }
 
-    @Parameter(key = CONFIG_NAMESPACE_KEY)
     public String getNamespace() {
         return namespace;
     }
@@ -151,7 +144,6 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.namespace = namespace;
     }
 
-    @Parameter(key = CONFIG_GROUP_KEY)
     public String getGroup() {
         return group;
     }
@@ -160,7 +152,6 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.group = group;
     }
 
-    @Parameter(key = CONFIG_CHECK_KEY)
     public Boolean isCheck() {
         return check;
     }
@@ -194,7 +185,6 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.password = password;
     }
 
-    @Parameter(key = CONFIG_TIMEOUT_KEY)
     public Long getTimeout() {
         return timeout;
     }
