@@ -14,10 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting;
+package org.apache.dubbo.remoting.transport.netty4;
 
 import org.apache.dubbo.common.bytecode.NoSuchMethodException;
 import org.apache.dubbo.common.bytecode.Wrapper;
+import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.support.Replier;
 

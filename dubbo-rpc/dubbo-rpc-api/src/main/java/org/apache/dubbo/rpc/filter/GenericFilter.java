@@ -81,7 +81,8 @@ public class GenericFilter extends ListenableFilter {
                 }
 
                 if (StringUtils.isEmpty(generic)
-                        || ProtocolUtils.isDefaultGenericSerialization(generic)) {
+                        || ProtocolUtils.isDefaultGenericSerialization(generic)
+                        || ProtocolUtils.isGenericReturnRawResult(generic)) {
                     args = PojoUtils.realize(args, params, method.getGenericParameterTypes());
                 } else if (ProtocolUtils.isJavaGenericSerialization(generic)) {
                     for (int i = 0; i < args.length; i++) {
@@ -190,6 +191,8 @@ public class GenericFilter extends ListenableFilter {
                                 GENERIC_SERIALIZATION_PROTOBUF +
                                 "] serialize result failed.", e);
                     }
+                } else if(ProtocolUtils.isGenericReturnRawResult(generic)) {
+                    return;
                 } else {
                     appResponse.setValue(PojoUtils.generalize(appResponse.getValue()));
                 }
