@@ -339,7 +339,7 @@ public final class URLBuilder {
 
     public boolean hasParameter(String key) {
         String value = getParameter(key);
-        return value != null && value.length() > 0;
+        return StringUtils.isNotEmpty(value);
     }
 
     public String getParameter(String key) {

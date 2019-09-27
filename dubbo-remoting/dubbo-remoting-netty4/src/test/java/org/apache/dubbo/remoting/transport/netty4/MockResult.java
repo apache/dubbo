@@ -14,18 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting;
+package org.apache.dubbo.remoting.transport.netty4;
+
+import java.io.Serializable;
 
 /**
- * <code>TestServiceImpl</code>
+ * AppResponse.
  */
 
-public class DemoServiceImpl implements DemoService {
-    public void sayHello(String name) {
-        System.out.println("hello " + name);
+public class MockResult implements Serializable {
+    private static final long serialVersionUID = -3630485157441794463L;
+
+    private final Object mResult;
+
+    public MockResult(Object result) {
+        mResult = result;
     }
 
-    public int plus(int a, int b) {
-        return a + b;
+    public Object getResult() {
+        return mResult;
     }
 }

@@ -125,7 +125,7 @@
         <arguments />
         <checkstyle.skip>true</checkstyle.skip>
         <rat.skip>true</rat.skip>
-        <revision>2.7.4-SNAPSHOT</revision>
+        <revision>2.7.5-SNAPSHOT</revision>
     </properties>
 
     <modules>
@@ -289,6 +289,7 @@
                                 <id>attach-javadoc</id>
                                 <goals>
                                     <goal>jar</goal>
+                                    <goal>aggregate</goal>
                                 </goals>
                                 <configuration>
                                     <additionalDependencies>
@@ -315,6 +316,11 @@
                                 <link>http://docs.oracle.com/javase/8/docs/api</link>
                             </links>
                             <doclint>none</doclint>
+                            <excludePackageNames>
+                                org.apache.dubbo.demo,org.apache.dubbo.demo.*
+                            </excludePackageNames>
+                            <doctitle>Apache Dubbo ${project.version} API</doctitle>
+                            <windowtitle>Apache Dubbo ${project.version} API</windowtitle>
                         </configuration>
                     </plugin>
                     <plugin>

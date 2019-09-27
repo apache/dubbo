@@ -14,24 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting;
+package org.apache.dubbo.rpc.protocol.http;
 
-import java.io.Serializable;
+public interface HttpService {
+    String sayHello(String name);
 
-/**
- * AppResponse.
- */
+    void timeOut(int millis);
 
-public class MockResult implements Serializable {
-    private static final long serialVersionUID = -3630485157441794463L;
+    String customException();
 
-    private final Object mResult;
-
-    public MockResult(Object result) {
-        mResult = result;
-    }
-
-    public Object getResult() {
-        return mResult;
-    }
+    String getRemoteApplicationName();
 }

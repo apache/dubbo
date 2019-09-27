@@ -209,7 +209,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
 
                 if (registryConfigs.isEmpty()) {
                     for (RegistryConfig config : registryConfigMap.values()) {
-                        if (StringUtils.isEmpty(registryIds)) {
+                        if (StringUtils.isEmpty(registryIds) && (config.isDefault() == null || config.isDefault().booleanValue())) {
                             registryConfigs.add(config);
                         }
                     }
