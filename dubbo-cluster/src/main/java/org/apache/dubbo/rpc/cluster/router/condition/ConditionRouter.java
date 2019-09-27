@@ -133,8 +133,7 @@ public class ConditionRouter extends AbstractRouter {
                             + content + "\".", matcher.start());
                 }
 
-                values = pair.matches;
-                values.add(content);
+                pair.matches.add(content);
             }
             // The Value in the KV part.
             else if ("!=".equals(separator)) {
@@ -145,8 +144,7 @@ public class ConditionRouter extends AbstractRouter {
                             + content + "\".", matcher.start());
                 }
 
-                values = pair.mismatches;
-                values.add(content);
+                pair.mismatches.add(content);
             }
             // The Value in the KV part, if Value have more than one items.
             else if (",".equals(separator)) { // Should be separated by ','
