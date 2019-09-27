@@ -87,6 +87,7 @@ public interface AnnotationProcessorUtils {
     static List<VariableElement> getAlDeclaredFields(ProcessingEnvironment processingEnv, TypeElement type) {
         return getHierarchicalTypes(processingEnv, type)
                 .stream()
+                .filter(Objects::nonNull)
                 .map(t -> getFields(processingEnv, t))
                 .flatMap(Collection::stream)
                 .collect(toList());

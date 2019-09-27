@@ -16,33 +16,36 @@
  */
 package org.apache.dubbo.metadata.annotation.processing.builder;
 
-import org.apache.dubbo.metadata.annotation.processing.util.TypeUtils;
-import org.apache.dubbo.metadata.definition.model.TypeDefinition;
-
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import java.util.Objects;
 
-import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.isSimpleType;
+import static javax.lang.model.type.TypeKind.DECLARED;
 
 /**
- * {@link TypeDefinitionBuilder} for {@link TypeUtils#SIMPLE_TYPES Java Simple Type}
+ * An interface of {@link TypeDefinitionBuilder} for {@link DeclaredType}
  *
  * @since 2.7.5
  */
-public class SimpleTypeDefinitionBuilder implements DeclaredTypeDefinitionBuilder {
+public interface DeclaredTypeDefinitionBuilder extends TypeDefinitionBuilder<DeclaredType> {
 
     @Override
-    public boolean accept(ProcessingEnvironment processingEnv, DeclaredType type) {
-        return isSimpleType(type);
+    default boolean accept(ProcessingEnvironment processingEnv, TypeMirror type) {
+        TypeKind kind = type.getKind();
+        if (!Objects.equals(DECLARED, kind)) {
+            return false;
+        }
+        return accept(processingEnv, (DeclaredType) type);
     }
 
-    @Override
-    public void build(ProcessingEnvironment processingEnv, DeclaredType type, TypeDefinition typeDefinition) {
-        //  DO NOTHING
-    }
-
-    @Override
-    public int getPriority() {
-        return MIN_PRIORITY - 1;
-    }
+    /**
+     * Test the specified {@link DeclaredType type} is accepted or not
+     *
+     * @param processingEnv {@link ProcessingEnvironment}
+     * @param type          {@link DeclaredType type}
+     * @return <code>true</code> if accepted
+     */
+    boolean accept(ProcessingEnvironment processingEnv, DeclaredType type);
 }

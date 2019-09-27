@@ -27,7 +27,7 @@ import javax.lang.model.type.TypeMirror;
  *
  * @since 2.7.5
  */
-public class PrimitiveTypeDefinitionBuilder implements TypeDefinitionBuilder {
+public class PrimitiveTypeDefinitionBuilder implements TypeDefinitionBuilder<PrimitiveType> {
 
     @Override
     public boolean accept(ProcessingEnvironment processingEnv, TypeMirror type) {
@@ -35,7 +35,12 @@ public class PrimitiveTypeDefinitionBuilder implements TypeDefinitionBuilder {
     }
 
     @Override
-    public void build(ProcessingEnvironment processingEnv, TypeMirror type, TypeDefinition typeDefinition) {
+    public void build(ProcessingEnvironment processingEnv, PrimitiveType type, TypeDefinition typeDefinition) {
         // DO NOTHING
+    }
+
+    @Override
+    public int getPriority() {
+        return MIN_PRIORITY - 3;
     }
 }

@@ -29,7 +29,7 @@ import java.lang.reflect.Array;
  *
  * @since 2.7.5
  */
-public class ArrayTypeDefinitionBuilder implements TypeDefinitionBuilder {
+public class ArrayTypeDefinitionBuilder implements TypeDefinitionBuilder<ArrayType> {
 
     @Override
     public boolean accept(ProcessingEnvironment processingEnv, TypeMirror type) {
@@ -37,11 +37,13 @@ public class ArrayTypeDefinitionBuilder implements TypeDefinitionBuilder {
     }
 
     @Override
-    public void build(ProcessingEnvironment processingEnv, TypeMirror type, TypeDefinition typeDefinition) {
-        if (type instanceof ArrayType) {
-            ArrayType arrayType = (ArrayType) type;
-            TypeMirror componentType = arrayType.getComponentType();
-            typeDefinition.getItems().add(TypeDefinitionBuilder.build(processingEnv, componentType));
-        }
+    public void build(ProcessingEnvironment processingEnv, ArrayType type, TypeDefinition typeDefinition) {
+        TypeMirror componentType = type.getComponentType();
+        typeDefinition.getItems().add(TypeDefinitionBuilder.build(processingEnv, componentType));
+    }
+
+    @Override
+    public int getPriority() {
+        return MIN_PRIORITY - 4;
     }
 }

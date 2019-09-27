@@ -19,7 +19,6 @@ package org.apache.dubbo.metadata.annotation.processing.builder;
 import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
@@ -33,10 +32,10 @@ import java.util.Objects;
  *
  * @since 2.7.5
  */
-public class CollectionTypeDefinitionBuilder implements TypeDefinitionBuilder {
+public class CollectionTypeDefinitionBuilder implements DeclaredTypeDefinitionBuilder {
 
     @Override
-    public boolean accept(ProcessingEnvironment processingEnv, TypeMirror type) {
+    public boolean accept(ProcessingEnvironment processingEnv, DeclaredType type) {
         Elements elements = processingEnv.getElementUtils();
         TypeElement collectionTypeElement = elements.getTypeElement(Collection.class.getTypeName());
         TypeMirror collectionType = collectionTypeElement.asType();
@@ -46,24 +45,17 @@ public class CollectionTypeDefinitionBuilder implements TypeDefinitionBuilder {
     }
 
     @Override
-    public void build(ProcessingEnvironment processingEnv, TypeMirror type, TypeDefinition typeDefinition) {
-        if (type instanceof DeclaredType) {
-            DeclaredType declaredType = (DeclaredType) type;
-            // Generic Type arguments
-            declaredType.getTypeArguments()
-                    .stream()
-                    .map(typeArgument -> buildTypeDefinition(processingEnv, typeArgument)) // build the TypeDefinition from typeArgument
-                    .filter(Objects::nonNull)
-                    .forEach(typeDefinition.getItems()::add);                              // Add into the declared TypeDefinition
-        }
+    public void build(ProcessingEnvironment processingEnv, DeclaredType type, TypeDefinition typeDefinition) {
+        // Generic Type arguments
+        type.getTypeArguments()
+                .stream()
+                .map(typeArgument -> TypeDefinitionBuilder.build(processingEnv, typeArgument)) // build the TypeDefinition from typeArgument
+                .filter(Objects::nonNull)
+                .forEach(typeDefinition.getItems()::add);                              // Add into the declared TypeDefinition
     }
 
-    private TypeDefinition buildTypeDefinition(ProcessingEnvironment processingEnv, TypeMirror typeArgument) {
-        Types types = processingEnv.getTypeUtils();
-        Element typeArgumentElement = types.asElement(typeArgument);
-        if (typeArgumentElement != null) {
-            return TypeDefinitionBuilder.build(processingEnv, typeArgumentElement);
-        }
-        return null;
+    @Override
+    public int getPriority() {
+        return MIN_PRIORITY - 5;
     }
 }

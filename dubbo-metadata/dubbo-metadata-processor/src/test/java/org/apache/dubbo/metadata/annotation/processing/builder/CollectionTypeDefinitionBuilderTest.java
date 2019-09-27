@@ -23,10 +23,10 @@ import org.junit.jupiter.api.Test;
 
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import java.util.List;
 import java.util.Set;
 
-import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationProcessorUtils.getFields;
+import static org.apache.dubbo.metadata.annotation.processing.builder.ArrayTypeDefinitionBuilderTest.buildAndAssertTypeDefinition;
+import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationProcessorUtils.getField;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -39,9 +39,15 @@ public class CollectionTypeDefinitionBuilderTest extends AbstractAnnotationProce
 
     private CollectionTypeDefinitionBuilder builder;
 
-    private List<VariableElement> fields;
+    private VariableElement stringsField;
 
-    private TypeElement testType;
+    private VariableElement colorsField;
+
+    private VariableElement primitiveTypeModelsField;
+
+    private VariableElement modelsField;
+
+    private VariableElement modelArraysField;
 
     @Override
     protected void addCompiledClasses(Set<Class<?>> classesToBeCompiled) {
@@ -51,20 +57,49 @@ public class CollectionTypeDefinitionBuilderTest extends AbstractAnnotationProce
     @Override
     protected void beforeEach() {
         builder = new CollectionTypeDefinitionBuilder();
-        fields = getFields(processingEnv, getType(CollectionTypeModel.class));
-        assertEquals(5, fields.size());
-        testType = getType(CollectionTypeModel.class);
+        TypeElement testType = getType(CollectionTypeModel.class);
+        stringsField = getField(processingEnv, testType, "strings");
+        colorsField = getField(processingEnv, testType, "colors");
+        primitiveTypeModelsField = getField(processingEnv, testType, "primitiveTypeModels");
+        modelsField = getField(processingEnv, testType, "models");
+        modelArraysField = getField(processingEnv, testType, "modelArrays");
+
+        assertEquals("strings", stringsField.getSimpleName().toString());
+        assertEquals("colors", colorsField.getSimpleName().toString());
+        assertEquals("primitiveTypeModels", primitiveTypeModelsField.getSimpleName().toString());
+        assertEquals("models", modelsField.getSimpleName().toString());
+        assertEquals("modelArrays", modelArraysField.getSimpleName().toString());
     }
 
     @Test
     public void testAccept() {
-        fields.forEach(field -> {
-            assertTrue(builder.accept(processingEnv, field.asType()));
-        });
+        assertTrue(builder.accept(processingEnv, stringsField.asType()));
+        assertTrue(builder.accept(processingEnv, colorsField.asType()));
+        assertTrue(builder.accept(processingEnv, primitiveTypeModelsField.asType()));
+        assertTrue(builder.accept(processingEnv, modelsField.asType()));
+        assertTrue(builder.accept(processingEnv, modelArraysField.asType()));
     }
 
     @Test
     public void testBuild() {
+
+        buildAndAssertTypeDefinition(processingEnv, stringsField, "java.util.Collection<java.lang.String>", "java.lang.String", builder);
+
+        buildAndAssertTypeDefinition(processingEnv, colorsField, "java.util.List<org.apache.dubbo.metadata.annotation.processing.model.Color>",
+                "org.apache.dubbo.metadata.annotation.processing.model.Color", builder);
+
+        buildAndAssertTypeDefinition(processingEnv, primitiveTypeModelsField,
+                "java.util.Queue<org.apache.dubbo.metadata.annotation.processing.model.PrimitiveTypeModel>",
+                "org.apache.dubbo.metadata.annotation.processing.model.PrimitiveTypeModel", builder);
+
+        buildAndAssertTypeDefinition(processingEnv, modelsField,
+                "java.util.Deque<org.apache.dubbo.metadata.annotation.processing.model.Model>",
+                "org.apache.dubbo.metadata.annotation.processing.model.Model", builder);
+
+        buildAndAssertTypeDefinition(processingEnv, modelArraysField,
+                "java.util.Set<org.apache.dubbo.metadata.annotation.processing.model.Model[]>",
+                "org.apache.dubbo.metadata.annotation.processing.model.Model[]", builder);
+
 
     }
 }

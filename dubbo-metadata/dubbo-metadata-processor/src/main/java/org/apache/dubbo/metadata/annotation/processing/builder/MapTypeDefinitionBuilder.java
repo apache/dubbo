@@ -19,23 +19,44 @@ package org.apache.dubbo.metadata.annotation.processing.builder;
 import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * {@link TypeDefinitionBuilder} for Java {@link Map}
  *
  * @since 2.7.5
  */
-public class MapTypeDefinitionBuilder implements TypeDefinitionBuilder {
+public class MapTypeDefinitionBuilder implements DeclaredTypeDefinitionBuilder {
 
     @Override
-    public boolean accept(ProcessingEnvironment processingEnv, TypeMirror type) {
-        return false;
+    public boolean accept(ProcessingEnvironment processingEnv, DeclaredType type) {
+        Elements elements = processingEnv.getElementUtils();
+        TypeElement mapTypeElement = elements.getTypeElement(Map.class.getTypeName());
+        TypeMirror mapType = mapTypeElement.asType();
+        Types types = processingEnv.getTypeUtils();
+        TypeMirror erasedType = types.erasure(type);
+        return types.isAssignable(erasedType, mapType);
     }
 
     @Override
-    public void build(ProcessingEnvironment processingEnv, TypeMirror type, TypeDefinition typeDefinition) {
+    public void build(ProcessingEnvironment processingEnv, DeclaredType type, TypeDefinition typeDefinition) {
+        // Generic Type arguments
+        type.getTypeArguments()
+                .stream()
+                .map(typeArgument -> TypeDefinitionBuilder.build(processingEnv, typeArgument)) // build the TypeDefinition from typeArgument
+                .filter(Objects::nonNull)
+                .forEach(typeDefinition.getItems()::add);                              // Add into the declared TypeDefinition
 
+    }
+
+    @Override
+    public int getPriority() {
+        return MIN_PRIORITY - 6;
     }
 }

@@ -22,9 +22,13 @@ import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 
 import org.junit.jupiter.api.Test;
 
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.stream.Stream;
 
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationProcessorUtils.getField;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -79,33 +83,39 @@ public class ArrayTypeDefinitionBuilderTest extends AbstractAnnotationProcessing
     @Test
     public void testBuild() {
 
-        TypeDefinition typeDefinition = TypeDefinitionBuilder.build(processingEnv, integersField);
+        buildAndAssertTypeDefinition(processingEnv, integersField, "int[]", "int", builder);
+
+        buildAndAssertTypeDefinition(processingEnv, stringsField, "java.lang.String[]", "java.lang.String", builder);
+
+        buildAndAssertTypeDefinition(processingEnv, primitiveTypeModelsField,
+                "org.apache.dubbo.metadata.annotation.processing.model.PrimitiveTypeModel[]",
+                "org.apache.dubbo.metadata.annotation.processing.model.PrimitiveTypeModel", builder);
+
+        buildAndAssertTypeDefinition(processingEnv, modelsField,
+                "org.apache.dubbo.metadata.annotation.processing.model.Model[]",
+                "org.apache.dubbo.metadata.annotation.processing.model.Model", builder, (def, subDef) -> {
+                    TypeElement subType = elements.getTypeElement(subDef.getType());
+                    assertEquals(ElementKind.CLASS, subType.getKind());
+                });
+
+        buildAndAssertTypeDefinition(processingEnv, colorsField,
+                "org.apache.dubbo.metadata.annotation.processing.model.Color[]",
+                "org.apache.dubbo.metadata.annotation.processing.model.Color", builder, (def, subDef) -> {
+                    TypeElement subType = elements.getTypeElement(subDef.getType());
+                    assertEquals(ElementKind.ENUM, subType.getKind());
+                });
+
+    }
+
+    static void buildAndAssertTypeDefinition(ProcessingEnvironment processingEnv, VariableElement field,
+                                             String expectedType, String compositeType, TypeDefinitionBuilder builder,
+                                             BiConsumer<TypeDefinition, TypeDefinition>... assertions) {
+        TypeDefinition typeDefinition = TypeDefinitionBuilder.build(processingEnv, field);
         TypeDefinition subTypeDefinition = typeDefinition.getItems().get(0);
-        assertEquals("int[]", typeDefinition.getType());
-        assertEquals("int", subTypeDefinition.getType());
-
-        typeDefinition = TypeDefinitionBuilder.build(processingEnv, stringsField);
-        subTypeDefinition = typeDefinition.getItems().get(0);
-        assertEquals("java.lang.String[]", typeDefinition.getType());
-        assertEquals("java.lang.String", subTypeDefinition.getType());
-
-        typeDefinition = TypeDefinitionBuilder.build(processingEnv, primitiveTypeModelsField);
-        subTypeDefinition = typeDefinition.getItems().get(0);
-        assertEquals("org.apache.dubbo.metadata.annotation.processing.model.PrimitiveTypeModel[]", typeDefinition.getType());
-        assertEquals("org.apache.dubbo.metadata.annotation.processing.model.PrimitiveTypeModel", subTypeDefinition.getType());
-
-        subTypeDefinition.getItems().forEach(def -> {
-            
-        });
-
-        typeDefinition = TypeDefinitionBuilder.build(processingEnv, modelsField);
-        subTypeDefinition = typeDefinition.getItems().get(0);
-        assertEquals("org.apache.dubbo.metadata.annotation.processing.model.Model[]", typeDefinition.getType());
-        assertEquals("org.apache.dubbo.metadata.annotation.processing.model.Model", subTypeDefinition.getType());
-
-        typeDefinition = TypeDefinitionBuilder.build(processingEnv, colorsField);
-        subTypeDefinition = typeDefinition.getItems().get(0);
-        assertEquals("org.apache.dubbo.metadata.annotation.processing.model.Color[]", typeDefinition.getType());
-        assertEquals("org.apache.dubbo.metadata.annotation.processing.model.Color", subTypeDefinition.getType());
+        assertEquals(expectedType, typeDefinition.getType());
+        assertEquals(field.getSimpleName().toString(), typeDefinition.get$ref());
+        assertEquals(compositeType, subTypeDefinition.getType());
+        assertEquals(builder.getClass().getName(), typeDefinition.getTypeBuilderName());
+        Stream.of(assertions).forEach(assertion -> assertion.accept(typeDefinition, subTypeDefinition));
     }
 }

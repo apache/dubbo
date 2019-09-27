@@ -1,6 +1,7 @@
 org.apache.dubbo.metadata.annotation.processing.builder.ArrayTypeDefinitionBuilder
 org.apache.dubbo.metadata.annotation.processing.builder.CollectionTypeDefinitionBuilder
 org.apache.dubbo.metadata.annotation.processing.builder.EnumTypeDefinitionBuilder
+org.apache.dubbo.metadata.annotation.processing.builder.GeneralTypeDefinitionBuilder
 org.apache.dubbo.metadata.annotation.processing.builder.MapTypeDefinitionBuilder
 org.apache.dubbo.metadata.annotation.processing.builder.PrimitiveTypeDefinitionBuilder
 org.apache.dubbo.metadata.annotation.processing.builder.SimpleTypeDefinitionBuilder

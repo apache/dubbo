@@ -21,53 +21,55 @@ import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.Name;
-import javax.lang.model.element.VariableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
-import java.util.Set;
 
-import static javax.lang.model.element.Modifier.FINAL;
-import static javax.lang.model.element.Modifier.PUBLIC;
-import static javax.lang.model.element.Modifier.STATIC;
-import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationProcessorUtils.getFields;
+import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationProcessorUtils.getNonStaticFields;
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationProcessorUtils.getType;
 
 /**
- * {@link TypeDefinitionBuilder} for Java {@link Enum}
+ * {@link TypeDefinitionBuilder} for General Object
  *
  * @since 2.7.5
  */
-public class EnumTypeDefinitionBuilder implements DeclaredTypeDefinitionBuilder {
+public class GeneralTypeDefinitionBuilder implements DeclaredTypeDefinitionBuilder {
 
     @Override
     public boolean accept(ProcessingEnvironment processingEnv, DeclaredType type) {
         Element element = type.asElement();
-        return ElementKind.ENUM.equals(element.getKind());
+        return ElementKind.CLASS.equals(element.getKind());
     }
 
     @Override
     public void build(ProcessingEnvironment processingEnv, DeclaredType type, TypeDefinition typeDefinition) {
-        getFields(processingEnv, getType(processingEnv, type), this::isEnumMember)
-                .stream()
-                .map(Element::getSimpleName)
-                .map(Name::toString)
-                .forEach(typeDefinition.getEnums()::add);
+
+        String typeName = type.toString();
+
+        TypeElement typeElement = getType(processingEnv, typeName);
+
+        buildProperties(processingEnv, typeElement, typeDefinition);
     }
 
-    /**
-     * Enum's members must be public static final fields
-     *
-     * @param field {@link VariableElement}
-     * @return
-     */
-    private boolean isEnumMember(VariableElement field) {
-        Set<Modifier> modifiers = field.getModifiers();
-        return modifiers.contains(PUBLIC) && modifiers.contains(STATIC) && modifiers.contains(FINAL);
+//    protected void buildSuperTypes(ProcessingEnvironment processingEnv, TypeElement type, TypeDefinition definition) {
+//        getHierarchicalTypes(processingEnv, type, false, true, true)
+//                .stream()
+//                .map(superType -> TypeDefinitionBuilder.build(processingEnv, superType))
+//                .filter(Objects::nonNull)
+//                .forEach(definition.getItems()::add);
+//    }
+
+    protected void buildProperties(ProcessingEnvironment processingEnv, TypeElement type, TypeDefinition definition) {
+        getNonStaticFields(processingEnv, type).forEach(field -> {
+            String fieldName = field.getSimpleName().toString();
+            TypeDefinition propertyType = TypeDefinitionBuilder.build(processingEnv, field);
+            if (propertyType != null) {
+                definition.getProperties().put(fieldName, propertyType);
+            }
+        });
     }
 
     @Override
     public int getPriority() {
-        return MIN_PRIORITY - 2;
+        return MIN_PRIORITY;
     }
 }

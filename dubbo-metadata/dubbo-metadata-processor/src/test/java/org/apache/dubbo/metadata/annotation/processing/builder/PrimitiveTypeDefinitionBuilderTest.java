@@ -113,19 +113,18 @@ public class PrimitiveTypeDefinitionBuilderTest extends AbstractAnnotationProces
         buildAndAssertTypeDefinition(processingEnv, dField, builder);
     }
 
-
     static void buildAndAssertTypeDefinition(ProcessingEnvironment processingEnv, VariableElement field, TypeDefinitionBuilder builder) {
         TypeDefinition typeDefinition = TypeDefinitionBuilder.build(processingEnv, field);
-        assertBasicTypeDefinition(typeDefinition, field, builder);
+        assertBasicTypeDefinition(typeDefinition, field.asType().toString(), builder);
+        assertEquals(field.getSimpleName().toString(), typeDefinition.get$ref());
     }
 
-    static void assertBasicTypeDefinition(TypeDefinition typeDefinition, VariableElement field, TypeDefinitionBuilder builder) {
-        assertEquals(field.asType().toString(), typeDefinition.getType());
+    static void assertBasicTypeDefinition(TypeDefinition typeDefinition, String type, TypeDefinitionBuilder builder) {
+        assertEquals(type, typeDefinition.getType());
         assertEquals(builder.getClass().getName(), typeDefinition.getTypeBuilderName());
         assertTrue(typeDefinition.getProperties().isEmpty());
         assertTrue(typeDefinition.getItems().isEmpty());
         assertTrue(typeDefinition.getEnums().isEmpty());
         assertNull(typeDefinition.getId());
-        assertNull(typeDefinition.get$ref());
     }
 }

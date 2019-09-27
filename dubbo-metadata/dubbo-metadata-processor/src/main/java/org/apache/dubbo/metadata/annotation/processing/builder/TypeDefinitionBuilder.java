@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.metadata.annotation.processing.builder;
 
+import org.apache.dubbo.common.lang.Prioritized;
 import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 
 import javax.annotation.processing.ProcessingEnvironment;
@@ -26,8 +27,10 @@ import static org.apache.dubbo.common.utils.DubboServiceLoader.load;
 
 /**
  * A class builds the instance of {@link TypeDefinition}
+ *
+ * @since 2.7.5
  */
-public interface TypeDefinitionBuilder {
+public interface TypeDefinitionBuilder<T extends TypeMirror> extends Prioritized {
 
     /**
      * Test the specified {@link TypeMirror type} is accepted or not
@@ -42,22 +45,23 @@ public interface TypeDefinitionBuilder {
      * Build the instance of {@link TypeDefinition}
      *
      * @param processingEnv  {@link ProcessingEnvironment}
-     * @param type           {@link TypeMirror type}
+     * @param type           {@link T type}
      * @param typeDefinition {@link TypeDefinition} to be built
      * @return an instance of {@link TypeDefinition}
      */
-    void build(ProcessingEnvironment processingEnv, TypeMirror type, TypeDefinition typeDefinition);
+    void build(ProcessingEnvironment processingEnv, T type, TypeDefinition typeDefinition);
 
     /**
      * Build the instance of {@link TypeDefinition} from the specified {@link Element element}
      *
      * @param processingEnv {@link ProcessingEnvironment}
      * @param element       {@link Element source element}
-     * @return null if {@link TypeMirror type} is not {@code DeclaredType} or {@code TypeVariable}
+     * @return non-null
      */
     static TypeDefinition build(ProcessingEnvironment processingEnv, Element element) {
-        TypeMirror type = element.asType();
-        return type == null ? null : build(processingEnv, type);
+        TypeDefinition typeDefinition = build(processingEnv, element.asType());
+        typeDefinition.set$ref(element.toString());
+        return typeDefinition;
     }
 
     /**
@@ -74,7 +78,8 @@ public interface TypeDefinitionBuilder {
         // Build by all instances of TypeDefinitionBuilder that were loaded By Java SPI
         load(TypeDefinitionBuilder.class, TypeDefinitionBuilder.class.getClassLoader())
                 .filter(builder -> builder.accept(processingEnv, type))
-                .forEachOrdered(builder -> {
+                .findFirst()
+                .ifPresent(builder -> {
                     builder.build(processingEnv, type, typeDefinition);
                     typeDefinition.setTypeBuilderName(builder.getClass().getName());
                 });
