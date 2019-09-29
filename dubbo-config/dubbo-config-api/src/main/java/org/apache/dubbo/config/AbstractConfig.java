@@ -42,6 +42,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -125,6 +126,8 @@ public abstract class AbstractConfig implements Serializable {
      */
     protected String id;
     protected String prefix;
+
+    protected final AtomicBoolean refreshed = new AtomicBoolean(false);
 
     private static String convertLegacyValue(String key, String value) {
         if (value != null && value.length() > 0) {
@@ -549,6 +552,10 @@ public abstract class AbstractConfig implements Serializable {
      * overriding of customized parameters stored in 'parameters'.
      */
     public void refresh() {
+        if (!refreshed.compareAndSet(false, true)) {
+            logger.info("Will not refresh " + this.getClass().getName() + ", already update to date.");
+            return;
+        }
         try {
             CompositeConfiguration compositeConfiguration = Environment.getInstance().getConfiguration(getPrefix(), getId());
             Configuration config = new ConfigConfigurationAdapter(this);

@@ -14,11 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.protobuf;
+package org.apache.dubbo.rpc.protocol.grpc;
 
-/**
- * proto-gen-dubbo-java
- */
-public interface ProtobufService {
+public class GrpcConfig {
 
 }

@@ -22,6 +22,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.AbstractProxyProtocol;
@@ -31,13 +32,12 @@ import io.grpc.CallOptions;
 import io.grpc.Channel;
 import io.grpc.ManagedChannel;
 import io.grpc.Server;
-import io.grpc.ServerBuilder;
+import io.grpc.netty.NettyServerBuilder;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import static org.apache.dubbo.rpc.Constants.INTERFACES;
 
@@ -50,26 +50,26 @@ public class GrpcProtocol extends AbstractProxyProtocol {
 
     public final static int DEFAULT_PORT = 50051;
 
-    private final Map<String, GrpcServer> serverMap = new ConcurrentHashMap<>();
-
-    private final Map<String, ManagedChannel> channelMap = new ConcurrentHashMap<>();
+    /* <address, gRPC channel> */
+    private final ConcurrentMap<String, ManagedChannel> channelMap = new ConcurrentHashMap<>();
 
     @Override
     protected <T> Runnable doExport(T impl, Class<T> type, URL url) throws RpcException {
         String key = url.getAddress();
-        GrpcServer grpcServer = serverMap.computeIfAbsent(key, k -> {
+        ProtocolServer protocolServer = serverMap.computeIfAbsent(key, k -> {
             DubboHandlerRegistry registry = new DubboHandlerRegistry();
 
-            ServerBuilder builder =
-                    ServerBuilder
+            NettyServerBuilder builder =
+                    NettyServerBuilder
                     .forPort(url.getPort())
                             .fallbackHandlerRegistry(registry);
 
-            Server originalServer = GrpcOptionsUtils.buildServerBuilder(url, builder);
-
-            return new GrpcServer(originalServer, registry);
+            Server originalServer = GrpcOptionsUtils.buildServerBuilder(url, builder).build();
+            GrpcRemotingServer remotingServer = new GrpcRemotingServer(originalServer, registry);
+            return new ProxyProtocolServer(remotingServer);
         });
 
+        GrpcRemotingServer grpcServer = (GrpcRemotingServer) protocolServer.getRemotingServer();
         grpcServer.getRegistry().addService((BindableService) impl, url.getServiceKey());
 
         return () -> grpcServer.getRegistry().removeService(url.getServiceKey());
@@ -77,11 +77,11 @@ public class GrpcProtocol extends AbstractProxyProtocol {
 
     @Override
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
-        return super.export(new GrpcInvoker<>(invoker));
+        return super.export(new GrpcServerProxyInvoker<>(invoker));
     }
 
     @Override
-    protected <T> T doRefer(Class<T> type, URL url) throws RpcException {
+    protected <T> Invoker<T> protocolBindingRefer(final Class<T> type, final URL url) throws RpcException {
         Class<?> enclosingClass = type.getEnclosingClass();
 
         if (enclosingClass == null) {
@@ -92,23 +92,39 @@ public class GrpcProtocol extends AbstractProxyProtocol {
         final Method dubboStubMethod;
         try {
             dubboStubMethod = enclosingClass.getDeclaredMethod("getDubboStub", Channel.class, CallOptions.class);
-//            dubboStubMethod.setAccessible(true);
         } catch (NoSuchMethodException e) {
-            throw new IllegalArgumentException("Does not find getDubboStub in " + enclosingClass.getName() + ", please use the customized protoc-gen-grpc-dubbo-java to update the generated classes.");
+            throw new IllegalArgumentException("Does not find getDubboStub in " + enclosingClass.getName() + ", please use the customized protoc-gen-dubbo-java to update the generated classes.");
         }
 
         // Channel
-        Channel channel = channelMap.computeIfAbsent(url.getServiceKey(),
+        ManagedChannel channel = channelMap.computeIfAbsent(url.getAddress(),
                 k -> GrpcOptionsUtils.buildManagedChannel(url)
         );
 
         // CallOptions
         try {
             @SuppressWarnings("unchecked") final T stub = (T) dubboStubMethod.invoke(null, channel, GrpcOptionsUtils.buildCallOptions(url));
-            return stub;
+            final Invoker<T> target = proxyFactory.getInvoker(stub, type, url);
+            GrpcInvoker<T> grpcInvoker = new GrpcInvoker<>(type, url, target, channel);
+            invokers.add(grpcInvoker);
+            return grpcInvoker;
         } catch (IllegalAccessException | InvocationTargetException e) {
             throw new IllegalStateException("Could not create stub through reflection.", e);
         }
+    }
+
+    /**
+     * not used
+     *
+     * @param type
+     * @param url
+     * @param <T>
+     * @return
+     * @throws RpcException
+     */
+    @Override
+    protected <T> T doRefer(Class<T> type, URL url) throws RpcException {
+        throw new UnsupportedOperationException("not used");
     }
 
     @Override
@@ -118,42 +134,45 @@ public class GrpcProtocol extends AbstractProxyProtocol {
 
     @Override
     public void destroy() {
-        serverMap.values().forEach(GrpcServer::stop);
+        serverMap.values().forEach(ProtocolServer::close);
         channelMap.values().forEach(ManagedChannel::shutdown);
     }
 
-    private class GrpcServer {
-        private Server server;
-        private DubboHandlerRegistry registry;
+    public class GrpcRemotingServer extends RemotingServerAdapter {
 
-        public GrpcServer(Server server, DubboHandlerRegistry registry) {
-            try {
-                server.start();
-            } catch (IOException e) {
-                throw new IllegalStateException("Failed to start gRPC server.", e);
-            }
-            this.server = server;
-            this.registry = registry;
-        }
+        private Server originalServer;
+        private DubboHandlerRegistry handlerRegistry;
 
-        public Server getServer() {
-            return server;
+        public GrpcRemotingServer(Server server, DubboHandlerRegistry handlerRegistry) {
+            this.originalServer = server;
+            this.handlerRegistry = handlerRegistry;
         }
 
         public DubboHandlerRegistry getRegistry() {
-            return registry;
+            return handlerRegistry;
         }
 
-        public void stop() {
-            this.server.shutdown();
+        @Override
+        public Object getDelegateServer() {
+            return originalServer;
+        }
+
+        @Override
+        public void close() {
+            originalServer.shutdown();
         }
     }
 
-    private class GrpcInvoker<T> implements Invoker<T> {
+    /**
+     * TODO, If IGreeter extends BindableService we can avoid the existence of this wrapper invoker.
+     *
+     * @param <T>
+     */
+    private class GrpcServerProxyInvoker<T> implements Invoker<T> {
 
         private Invoker<T> invoker;
 
-        public GrpcInvoker(Invoker<T> invoker) {
+        public GrpcServerProxyInvoker(Invoker<T> invoker) {
             this.invoker = invoker;
         }
 

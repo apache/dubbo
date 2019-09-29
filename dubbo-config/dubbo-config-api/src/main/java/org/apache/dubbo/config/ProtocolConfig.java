@@ -207,6 +207,8 @@ public class ProtocolConfig extends AbstractConfig {
      */
     private Boolean isDefault;
 
+    private Boolean sslEnabled;
+
     public ProtocolConfig() {
     }
 
@@ -508,6 +510,14 @@ public class ProtocolConfig extends AbstractConfig {
 
     public void setDefault(Boolean isDefault) {
         this.isDefault = isDefault;
+    }
+
+    public Boolean getSslEnabled() {
+        return sslEnabled;
+    }
+
+    public void setSslEnabled(Boolean sslEnabled) {
+        this.sslEnabled = sslEnabled;
     }
 
     public Boolean getKeepAlive() {

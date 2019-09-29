@@ -49,6 +49,7 @@ import java.util.Map;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.dubbo.common.constants.CommonConstants.IO_THREADS_KEY;
+import static org.apache.dubbo.remoting.Constants.SSL_ENABLED_KEY;
 
 /**
  * NettyServer.
@@ -106,7 +107,11 @@ public class NettyServer extends AbstractServer implements RemotingServer {
                         // FIXME: should we use getTimeout()?
                         int idleTimeout = UrlUtils.getIdleTimeout(getUrl());
                         NettyCodecAdapter adapter = new NettyCodecAdapter(getCodec(), getUrl(), NettyServer.this);
-                        ch.pipeline()//.addLast("logging",new LoggingHandler(LogLevel.INFO))//for debug
+                        if (getUrl().getParameter(SSL_ENABLED_KEY, false)) {
+                            ch.pipeline().addLast("negotiation",
+                                    SslHandlerInitializer.sslServerHandler(getUrl(), nettyServerHandler));
+                        }
+                        ch.pipeline()
                                 .addLast("decoder", adapter.getDecoder())
                                 .addLast("encoder", adapter.getEncoder())
                                 .addLast("server-idle-handler", new IdleStateHandler(0, 0, idleTimeout, MILLISECONDS))
