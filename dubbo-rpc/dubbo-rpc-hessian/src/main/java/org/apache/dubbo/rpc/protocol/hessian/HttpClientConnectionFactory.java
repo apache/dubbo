@@ -30,6 +30,7 @@ import java.net.URL;
 
 /**
  * HttpClientConnectionFactory
+ * TODO, Consider using connection pool
  */
 public class HttpClientConnectionFactory implements HessianConnectionFactory {
 

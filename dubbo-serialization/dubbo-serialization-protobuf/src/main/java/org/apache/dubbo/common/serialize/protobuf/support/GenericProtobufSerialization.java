@@ -54,11 +54,11 @@ public class GenericProtobufSerialization implements Serialization {
 
     @Override
     public ObjectOutput serialize(URL url, OutputStream output) {
-        return new GenericProtobufJsonObjectOutput(output);
+        return new GenericProtobufObjectOutput(output);
     }
 
     @Override
     public ObjectInput deserialize(URL url, InputStream input) {
-        return new GenericProtobufJsonObjectInput(input);
+        return new GenericProtobufObjectInput(input);
     }
 }
