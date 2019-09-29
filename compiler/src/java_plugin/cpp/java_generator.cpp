@@ -989,10 +989,10 @@ static void PrintDubboInterface(
         p->Print("private "); p->Print(service_name.c_str()); p->Print("Stub stub;\n\n");
 
         // Consustor
-        p->Print(*vars, "public $dubbo_stub$($Channel$ channel) {\n"
-        "   blockingStub = $service_class_name$.newBlockingStub(channel);\n"
-        "   futureStub = $service_class_name$.newFutureStub(channel);\n"
-        "   stub = $service_class_name$.newStub(channel);\n"
+        p->Print(*vars, "public $dubbo_stub$($Channel$ channel, $CallOptions$ callOptions) {\n"
+        "   blockingStub = $service_class_name$.newBlockingStub(channel)..build(channel, callOptions);\n"
+        "   futureStub = $service_class_name$.newFutureStub(channel).build(channel, callOptions);\n"
+        "   stub = $service_class_name$.newStub(channel).build(channel, callOptions);\n"
         "}\n\n");
 
         for (int i = 0; i < service->method_count(); ++i) {
@@ -1055,8 +1055,8 @@ static void PrintDubboInterface(
         p->Outdent();
         p->Print("}\n\n");
 
-        p->Print(*vars, "public static $dubbo_stub$ getDubboStub($Channel$ channel) {\n\n");
-        p->Print(*vars, "  return new $dubbo_stub$(channel);");
+        p->Print(*vars, "public static $dubbo_stub$ getDubboStub($Channel$ channel, $CallOptions$ callOptions) {\n\n");
+        p->Print(*vars, "  return new $dubbo_stub$(channel, callOptions);\n");
         p->Print("}\n\n");
     }
     p->Outdent();
