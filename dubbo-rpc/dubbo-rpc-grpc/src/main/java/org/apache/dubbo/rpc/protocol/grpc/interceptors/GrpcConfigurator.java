@@ -14,17 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.grpc;
+package org.apache.dubbo.rpc.protocol.grpc.interceptors;
 
-import java.util.concurrent.Executor;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.SPI;
 
-/**
- *
- */
-public class GrpcContext {
+import io.grpc.CallOptions;
+import io.grpc.netty.NettyChannelBuilder;
+import io.grpc.netty.NettyServerBuilder;
 
-    public void executor(Executor executor) {
+@SPI
+public interface GrpcConfigurator {
 
-    }
+    NettyServerBuilder configureServerBuilder(NettyServerBuilder builder, URL url);
+
+    NettyChannelBuilder configureChannelBuilder(NettyChannelBuilder builder, URL url);
+
+    CallOptions configureCallOptions(CallOptions options, URL url);
 
 }

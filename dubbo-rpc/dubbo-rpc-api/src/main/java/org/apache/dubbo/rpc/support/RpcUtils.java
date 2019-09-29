@@ -23,6 +23,7 @@ import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.InvokeMode;
+import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 
 import java.lang.reflect.Method;
@@ -199,5 +200,16 @@ public class RpcUtils {
             isOneway = !url.getMethodParameter(getMethodName(inv), RETURN_KEY, true);
         }
         return isOneway;
+    }
+
+    public static RpcException getRpcException(Class<?> type, URL url, Invocation invocation, Throwable e) {
+        RpcException re = new RpcException("Failed to invoke remote service: " + type + ", method: "
+                + invocation.getMethodName() + ", cause: " + e.getMessage(), e);
+        re.setCode(getErrorCode(e));
+        return re;
+    }
+
+    public static int getErrorCode(Throwable e) {
+        return RpcException.UNKNOWN_EXCEPTION;
     }
 }

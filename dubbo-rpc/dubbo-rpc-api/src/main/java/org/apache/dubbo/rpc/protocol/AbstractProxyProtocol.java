@@ -17,10 +17,14 @@
 
 package org.apache.dubbo.rpc.protocol;
 
+import org.apache.dubbo.common.Parameters;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.remoting.Channel;
+import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.RemotingServer;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invocation;
@@ -30,12 +34,16 @@ import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 
+import java.net.InetSocketAddress;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
+import static org.apache.dubbo.rpc.support.RpcUtils.getErrorCode;
+import static org.apache.dubbo.rpc.support.RpcUtils.getRpcException;
 
 /**
  * AbstractProxyProtocol
@@ -44,7 +52,7 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
 
     private final List<Class<?>> rpcExceptions = new CopyOnWriteArrayList<Class<?>>();
 
-    private ProxyFactory proxyFactory;
+    protected ProxyFactory proxyFactory;
 
     public AbstractProxyProtocol() {
     }
@@ -129,23 +137,12 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
         return invoker;
     }
 
-    protected RpcException getRpcException(Class<?> type, URL url, Invocation invocation, Throwable e) {
-        RpcException re = new RpcException("Failed to invoke remote service: " + type + ", method: "
-                + invocation.getMethodName() + ", cause: " + e.getMessage(), e);
-        re.setCode(getErrorCode(e));
-        return re;
-    }
-
     protected String getAddr(URL url) {
         String bindIp = url.getParameter(Constants.BIND_IP_KEY, url.getHost());
         if (url.getParameter(ANYHOST_KEY, false)) {
             bindIp = ANYHOST_VALUE;
         }
         return NetUtils.getIpByHost(bindIp) + ":" + url.getParameter(Constants.BIND_PORT_KEY, url.getPort());
-    }
-
-    protected int getErrorCode(Throwable e) {
-        return RpcException.UNKNOWN_EXCEPTION;
     }
 
     protected abstract <T> Runnable doExport(T impl, Class<T> type, URL url) throws RpcException;
@@ -186,5 +183,84 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
             server.close();
         }
     }
+
+    protected abstract class RemotingServerAdapter implements RemotingServer {
+
+        public abstract Object getDelegateServer();
+
+        /**
+         * @return
+         */
+        @Override
+        public boolean isBound() {
+            return false;
+        }
+
+        @Override
+        public Collection<Channel> getChannels() {
+            return null;
+        }
+
+        @Override
+        public Channel getChannel(InetSocketAddress remoteAddress) {
+            return null;
+        }
+
+        @Override
+        public void reset(Parameters parameters) {
+
+        }
+
+        @Override
+        public void reset(URL url) {
+
+        }
+
+        @Override
+        public URL getUrl() {
+            return null;
+        }
+
+        @Override
+        public ChannelHandler getChannelHandler() {
+            return null;
+        }
+
+        @Override
+        public InetSocketAddress getLocalAddress() {
+            return null;
+        }
+
+        @Override
+        public void send(Object message) throws RemotingException {
+
+        }
+
+        @Override
+        public void send(Object message, boolean sent) throws RemotingException {
+
+        }
+
+        @Override
+        public void close() {
+
+        }
+
+        @Override
+        public void close(int timeout) {
+
+        }
+
+        @Override
+        public void startClose() {
+
+        }
+
+        @Override
+        public boolean isClosed() {
+            return false;
+        }
+    }
+
 
 }
