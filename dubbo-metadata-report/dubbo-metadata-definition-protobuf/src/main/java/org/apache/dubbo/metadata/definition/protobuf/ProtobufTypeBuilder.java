@@ -102,17 +102,20 @@ public class ProtobufTypeBuilder implements TypeBuilder {
                 String fieldName = generateMapFieldName(methodName);
                 validateMapType(fieldName, type.toString());
                 properties.put(fieldName, TypeDefinitionBuilder.build(type, method.getParameterTypes()[0], typeCache));
-            } else if (isListPropertySettingMethod(method)) {
+            } else if (isListPropertyGettingMethod(method)) {
                 // property of list
                 Type type = method.getGenericReturnType();
                 String fieldName = generateListFieldName(methodName);
-                validateListType(fieldName, type.toString());
                 TypeDefinition td;
                 if (ProtocolStringList.class.isAssignableFrom(method.getReturnType())) {
                     // property defined as "repeated string" transform to ProtocolStringList,
                     // should be build as List<String>.
                     td = TypeDefinitionBuilder.build(STRING_LIST_TYPE, List.class, typeCache);
                 } else {
+                    // property without generic type should not be build ex method return List
+                    if (!LIST_PATTERN.matcher(type.toString()).matches()) {
+                        continue;
+                    }
                     td = TypeDefinitionBuilder.build(type, method.getReturnType(), typeCache);
                 }
                 properties.put(fieldName, td);
@@ -124,29 +127,7 @@ public class ProtobufTypeBuilder implements TypeBuilder {
     }
 
     /**
-     * 1. Unsupported List with value type is Bytes <br/>
-     * Bytes is a primitive type in Proto, transform to ByteString.class in java<br/>
-     *
-     * @param fieldName
-     * @param typeName
-     * @return
-     */
-    private void validateListType(String fieldName, String typeName) {
-        Matcher matcher = LIST_PATTERN.matcher(typeName);
-        if (!matcher.matches()) {
-            throw new IllegalArgumentException("List protobuf property " + fieldName + "of Type " +
-                    typeName + " can't be parsed.The type name should mathch[" + LIST_PATTERN.toString() + "].");
-        }
-
-        if (ByteString.class.getName().equals(matcher.group(1))) {
-            throw new IllegalArgumentException("List protobuf property " + fieldName + "of Type " +
-                    typeName + " can't be parsed.List of ByteString is not supported.");
-        }
-    }
-
-    /**
-     * 1. Unsupported Map with value type is Bytes <br/>
-     * 2. Unsupported Map with key type is not String <br/>
+     * 1. Unsupported Map with key type is not String <br/>
      * Bytes is a primitive type in Proto, transform to ByteString.class in java<br/>
      *
      * @param fieldName
@@ -158,11 +139,6 @@ public class ProtobufTypeBuilder implements TypeBuilder {
         if (!matcher.matches()) {
             throw new IllegalArgumentException("Map protobuf property " + fieldName + "of Type " +
                     typeName + " can't be parsed.The type name should mathch[" + MAP_PATTERN.toString() + "].");
-        }
-
-        if (!String.class.getName().equals(matcher.group(1)) || ByteString.class.getName().equals(matcher.group(2))) {
-            throw new IllegalArgumentException("Map protobuf property " + fieldName + "of Type " +
-                    typeName + " can't be parsed.Map with unString key or ByteString value is not supported.");
         }
     }
 
@@ -210,7 +186,7 @@ public class ProtobufTypeBuilder implements TypeBuilder {
      * judge custom type or primitive type property<br/>
      * 1. proto3 grammar ex: string name = 1 <br/>
      * 2. proto3 grammar ex: optional string name =1 <br/>
-     * generated setting method setNameValue(String name);
+     * generated setting method ex: setNameValue(String name);
      *
      * @param method
      * @return
@@ -248,7 +224,7 @@ public class ProtobufTypeBuilder implements TypeBuilder {
         }
 
         // Enum property has two setting method.
-        // skip setXXX(int value)
+        // skip setXXXValue(int value)
         // parse setXXX(SomeEnum value)
         if (methodName.endsWith("Value") && types[0] == int.class) {
             return false;
@@ -261,12 +237,12 @@ public class ProtobufTypeBuilder implements TypeBuilder {
     /**
      * judge List property</br>
      * proto3 grammar ex: repeated string names; </br>
-     * generated setting method：List<String> getNamesList()
+     * generated getting method：List<String> getNamesList()
      *
      * @param method
      * @return
      */
-    boolean isListPropertySettingMethod(Method method) {
+    boolean isListPropertyGettingMethod(Method method) {
         String methodName = method.getName();
         Class<?> type = method.getReturnType();
 
