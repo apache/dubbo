@@ -34,6 +34,8 @@ import java.util.concurrent.TimeUnit;
 )
 public class DefaultTestService implements TestService {
 
+    private String name;
+
     @Override
     public String echo(String message) {
         return "[ECHO] " + message;

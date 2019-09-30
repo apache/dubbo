@@ -22,7 +22,7 @@ import java.util.Set;
 
 import static java.lang.String.valueOf;
 import static org.apache.dubbo.common.utils.CollectionUtils.asHashSet;
-import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationProcessorUtils.getAttribute;
+import static org.apache.dubbo.metadata.annotation.processing.util.ModelUtils.getAttribute;
 
 /**
  * The utilities class for @Service annotation

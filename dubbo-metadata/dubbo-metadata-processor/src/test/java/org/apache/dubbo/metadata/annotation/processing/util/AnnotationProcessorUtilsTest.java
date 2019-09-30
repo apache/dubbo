@@ -41,14 +41,14 @@ import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationPro
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationProcessorUtils.getAllDeclaredMethods;
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationProcessorUtils.getAnnotation;
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationProcessorUtils.getAnnotations;
-import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationProcessorUtils.getAttribute;
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationProcessorUtils.getField;
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationProcessorUtils.getHierarchicalMethods;
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationProcessorUtils.getHierarchicalTypes;
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationProcessorUtils.getInterfaces;
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationProcessorUtils.getMethods;
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationProcessorUtils.getOverrideMethod;
-import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationProcessorUtils.getValue;
+import static org.apache.dubbo.metadata.annotation.processing.util.ModelUtils.getAttribute;
+import static org.apache.dubbo.metadata.annotation.processing.util.ModelUtils.getValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;

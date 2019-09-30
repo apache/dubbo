@@ -20,7 +20,6 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.Processor;
 import javax.lang.model.AnnotatedConstruct;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -35,7 +34,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -49,7 +47,6 @@ import static javax.lang.model.util.ElementFilter.fieldsIn;
 import static javax.lang.model.util.ElementFilter.methodsIn;
 import static org.apache.dubbo.common.function.Predicates.and;
 import static org.apache.dubbo.common.function.Predicates.filterAll;
-import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.asType;
 
 /**
  * An utilities class for {@link Processor}
@@ -57,27 +54,6 @@ import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.asT
  * @since 2.7.5
  */
 public interface AnnotationProcessorUtils {
-
-    static <T> T getAttribute(AnnotationMirror annotation, String attributeName) {
-        return annotation == null ? null : getAttribute(annotation.getElementValues(), attributeName);
-    }
-
-    static <T> T getAttribute(Map<? extends ExecutableElement, ? extends AnnotationValue> attributesMap,
-                              String attributeName) {
-        T attributeValue = null;
-        for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : attributesMap.entrySet()) {
-            ExecutableElement executableElement = entry.getKey();
-            if (attributeName.equals(executableElement.getSimpleName().toString())) {
-                attributeValue = (T) entry.getValue().getValue();
-                break;
-            }
-        }
-        return attributeValue;
-    }
-
-    static <T> T getValue(AnnotationMirror annotation) {
-        return (T) getAttribute(annotation, "value");
-    }
 
     static List<VariableElement> getFields(ProcessingEnvironment processingEnv, TypeElement type,
                                            Predicate<VariableElement>... elementToFilters) {
@@ -168,7 +144,7 @@ public interface AnnotationProcessorUtils {
         // add current method
         hierarchicalMethods.add(method);
 
-        TypeElement currentType = asType(method.getEnclosingElement());
+        TypeElement currentType = ModelUtils.ofTypeElement(method.getEnclosingElement());
 
         getHierarchicalTypes(processingEnv, currentType)
                 .stream()
@@ -267,7 +243,7 @@ public interface AnnotationProcessorUtils {
     }
 
     static TypeElement getSuperType(ProcessingEnvironment processingEnv, Element element) {
-        TypeElement currentType = asType(element);
+        TypeElement currentType = ModelUtils.ofTypeElement(element);
         return currentType == null ? null : getSuperType(processingEnv, currentType);
     }
 

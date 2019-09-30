@@ -16,16 +16,17 @@
  */
 package org.apache.dubbo.metadata.annotation.processing.builder;
 
-import org.apache.dubbo.metadata.annotation.processing.util.TypeUtils;
+import org.apache.dubbo.metadata.annotation.processing.util.ModelUtils;
 import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.type.DeclaredType;
 
-import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.isSimpleType;
+import static org.apache.dubbo.metadata.annotation.processing.util.ModelUtils.isSimpleType;
+
 
 /**
- * {@link TypeDefinitionBuilder} for {@link TypeUtils#SIMPLE_TYPES Java Simple Type}
+ * {@link TypeDefinitionBuilder} for {@link ModelUtils#SIMPLE_TYPES Java Simple Type}
  *
  * @since 2.7.5
  */

@@ -19,6 +19,8 @@ package org.apache.dubbo.metadata.tools;
 
 import org.apache.dubbo.config.annotation.Service;
 
+import java.util.EventListener;
+
 /**
  * {@link TestService} Implementation
  *
@@ -28,7 +30,7 @@ import org.apache.dubbo.config.annotation.Service;
         version = "2.0.0",
         group = "generic"
 )
-public class GenericTestService extends DefaultTestService implements TestService {
+public class GenericTestService extends DefaultTestService implements TestService, EventListener {
     @Override
     public String echo(String message) {
         return "[ECHO] " + message;

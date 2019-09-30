@@ -19,6 +19,8 @@ package org.apache.dubbo.metadata.tools;
 
 import org.apache.dubbo.config.annotation.Service;
 
+import java.io.Serializable;
+
 /**
  * {@link TestService} Implementation
  *
@@ -36,10 +38,14 @@ import org.apache.dubbo.config.annotation.Service;
         version = "3.0.0",
         group = "test"
 )
-public class TestServiceImpl extends GenericTestService implements TestService {
+public class TestServiceImpl extends GenericTestService implements TestService, AutoCloseable, Serializable {
 
     @Override
     public String echo(String message) {
         return "[ECHO] " + message;
+    }
+
+    @Override
+    public void close() throws Exception {
     }
 }
