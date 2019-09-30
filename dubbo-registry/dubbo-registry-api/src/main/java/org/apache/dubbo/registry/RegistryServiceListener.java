@@ -22,7 +22,20 @@ import org.apache.dubbo.common.extension.SPI;
 
 @SPI
 public interface RegistryServiceListener {
-    void onRegister(URL url);
+    default void onRegister(URL url) {
 
-    void onUnregister(URL url);
+    }
+
+
+    default void onUnregister(URL url) {
+
+    }
+
+    default void onSubscribe(URL url) {
+
+    }
+
+    default void onUnsubscribe(URL url) {
+
+    }
 }

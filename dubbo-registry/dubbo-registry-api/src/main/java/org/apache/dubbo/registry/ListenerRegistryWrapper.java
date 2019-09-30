@@ -101,12 +101,50 @@ public class ListenerRegistryWrapper implements Registry {
 
     @Override
     public void subscribe(URL url, NotifyListener listener) {
-        registry.subscribe(url, listener);
+        try {
+            registry.subscribe(url, listener);
+        } finally {
+            if (CollectionUtils.isNotEmpty(listeners)) {
+                RuntimeException exception = null;
+                for (RegistryServiceListener registryListener : listeners) {
+                    if (registryListener != null) {
+                        try {
+                            registryListener.onSubscribe(url);
+                        } catch (RuntimeException t) {
+                            logger.error(t.getMessage(), t);
+                            exception = t;
+                        }
+                    }
+                }
+                if (exception != null) {
+                    throw exception;
+                }
+            }
+        }
     }
 
     @Override
     public void unsubscribe(URL url, NotifyListener listener) {
-        registry.unsubscribe(url, listener);
+        try {
+            registry.unsubscribe(url, listener);
+        } finally {
+            if (CollectionUtils.isNotEmpty(listeners)) {
+                RuntimeException exception = null;
+                for (RegistryServiceListener registryListener : listeners) {
+                    if (registryListener != null) {
+                        try {
+                            registryListener.onUnsubscribe(url);
+                        } catch (RuntimeException t) {
+                            logger.error(t.getMessage(), t);
+                            exception = t;
+                        }
+                    }
+                }
+                if (exception != null) {
+                    throw exception;
+                }
+            }
+        }
     }
 
     @Override

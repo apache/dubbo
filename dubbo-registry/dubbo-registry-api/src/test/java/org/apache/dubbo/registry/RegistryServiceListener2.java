@@ -33,4 +33,14 @@ public class RegistryServiceListener2 implements RegistryServiceListener {
     public void onUnregister(URL url) {
         delegate.onUnregister(url);
     }
+
+    @Override
+    public void onSubscribe(URL url) {
+        delegate.onSubscribe(url);
+    }
+
+    @Override
+    public void onUnsubscribe(URL url) {
+        delegate.onUnsubscribe(url);
+    }
 }

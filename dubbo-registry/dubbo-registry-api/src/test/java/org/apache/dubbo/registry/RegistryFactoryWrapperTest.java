@@ -42,6 +42,14 @@ public class RegistryFactoryWrapperTest {
         registry.unregister(url);
         Mockito.verify(listener1, Mockito.times(1)).onUnregister(url);
         Mockito.verify(listener2, Mockito.times(1)).onUnregister(url);
+
+        registry.subscribe(url, Mockito.mock(NotifyListener.class));
+        Mockito.verify(listener1, Mockito.times(1)).onSubscribe(url);
+        Mockito.verify(listener2, Mockito.times(1)).onSubscribe(url);
+
+        registry.unsubscribe(url, Mockito.mock(NotifyListener.class));
+        Mockito.verify(listener1, Mockito.times(1)).onUnsubscribe(url);
+        Mockito.verify(listener2, Mockito.times(1)).onUnsubscribe(url);
     }
 
 }
