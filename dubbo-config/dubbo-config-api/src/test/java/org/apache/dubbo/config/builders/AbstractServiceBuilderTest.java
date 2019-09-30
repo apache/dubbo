@@ -75,8 +75,8 @@ class AbstractServiceBuilderTest {
     @Test
     void document() {
         ServiceBuilder builder = new ServiceBuilder();
-        builder.document("http://dubbo.io");
-        Assertions.assertEquals("http://dubbo.io", builder.build().getDocument());
+        builder.document("http://dubbo.apache.org");
+        Assertions.assertEquals("http://dubbo.apache.org", builder.build().getDocument());
     }
 
     @Test
