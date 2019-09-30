@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.builders;
+package org.apache.dubbo.bootstrap.builders;
 
 import org.apache.dubbo.config.RegistryConfig;
 
@@ -251,7 +251,7 @@ public class RegistryBuilder extends AbstractBuilder<RegistryConfig, RegistryBui
 
     /**
      * @param wait
-     * @see org.apache.dubbo.config.builders.ProviderBuilder#wait(Integer)
+     * @see ProviderBuilder#wait(Integer)
      * @deprecated
      */
     @Deprecated

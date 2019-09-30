@@ -16,6 +16,13 @@
  */
 package org.apache.dubbo.bootstrap;
 
+import org.apache.dubbo.bootstrap.builders.ApplicationBuilder;
+import org.apache.dubbo.bootstrap.builders.ConsumerBuilder;
+import org.apache.dubbo.bootstrap.builders.ProtocolBuilder;
+import org.apache.dubbo.bootstrap.builders.ProviderBuilder;
+import org.apache.dubbo.bootstrap.builders.ReferenceBuilder;
+import org.apache.dubbo.bootstrap.builders.RegistryBuilder;
+import org.apache.dubbo.bootstrap.builders.ServiceBuilder;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
@@ -41,13 +48,6 @@ import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
-import org.apache.dubbo.config.builders.ApplicationBuilder;
-import org.apache.dubbo.config.builders.ConsumerBuilder;
-import org.apache.dubbo.config.builders.ProtocolBuilder;
-import org.apache.dubbo.config.builders.ProviderBuilder;
-import org.apache.dubbo.config.builders.ReferenceBuilder;
-import org.apache.dubbo.config.builders.RegistryBuilder;
-import org.apache.dubbo.config.builders.ServiceBuilder;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.metadata.ConfigurableMetadataServiceExporter;
 import org.apache.dubbo.config.utils.ReferenceConfigCache;

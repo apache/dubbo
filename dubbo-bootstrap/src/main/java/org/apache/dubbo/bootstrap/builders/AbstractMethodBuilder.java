@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.builders;
+package org.apache.dubbo.bootstrap.builders;
 
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.AbstractMethodConfig;
@@ -27,7 +27,7 @@ import java.util.Map;
  * @since 2.7
  */
 public abstract class AbstractMethodBuilder<T extends AbstractMethodConfig, B extends AbstractMethodBuilder<T, B>>
-        extends AbstractBuilder<T, B>{
+        extends AbstractBuilder<T, B> {
     /**
      * The timeout for remote invocation in milliseconds
      */

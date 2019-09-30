@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.builders;
+package org.apache.dubbo.bootstrap.builders;
 
 import org.apache.dubbo.config.ProtocolConfig;
 
@@ -216,7 +216,7 @@ public class ProtocolBuilder extends AbstractBuilder<ProtocolConfig, ProtocolBui
     /**
      * @param path
      * @return ProtocolBuilder
-     * @see org.apache.dubbo.config.builders.ProtocolBuilder#contextpath(String)
+     * @see ProtocolBuilder#contextpath(String)
      */
     @Deprecated
     public ProtocolBuilder path(String path) {
@@ -307,7 +307,7 @@ public class ProtocolBuilder extends AbstractBuilder<ProtocolConfig, ProtocolBui
     /**
      * @param dispather
      * @return ProtocolBuilder
-     * @see org.apache.dubbo.config.builders.ProtocolBuilder#dispatcher(String)
+     * @see ProtocolBuilder#dispatcher(String)
      */
     @Deprecated
     public ProtocolBuilder dispather(String dispather) {

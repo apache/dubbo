@@ -54,6 +54,7 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
 
     @Override
     public Object getObject() {
+        // FIXME, When using spring, is it possible for user to specify a different ReferenceConfigCache instance?
         return ReferenceConfigCache.getCache().get(this);
     }
 

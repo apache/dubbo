@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.builders;
-
-import java.util.Map;
+package org.apache.dubbo.bootstrap.builders;
 
 import org.apache.dubbo.config.MonitorConfig;
+
+import java.util.Map;
 
 /**
  * This is a builder for build {@link MonitorConfig}.

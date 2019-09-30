@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.builders;
+package org.apache.dubbo.bootstrap.builders;
 
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.AbstractInterfaceConfig;
@@ -125,7 +125,7 @@ public abstract class AbstractInterfaceBuilder<T extends AbstractInterfaceConfig
 
     /**
      * @param local
-     * @see org.apache.dubbo.config.builders.AbstractInterfaceBuilder#stub(String)
+     * @see AbstractInterfaceBuilder#stub(String)
      * @deprecated Replace to <code>stub(String)</code>
      */
     @Deprecated
@@ -136,7 +136,7 @@ public abstract class AbstractInterfaceBuilder<T extends AbstractInterfaceConfig
 
     /**
      * @param local
-     * @see org.apache.dubbo.config.builders.AbstractInterfaceBuilder#stub(Boolean)
+     * @see AbstractInterfaceBuilder#stub(Boolean)
      * @deprecated Replace to <code>stub(Boolean)</code>
      */
     @Deprecated

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.builders;
+package org.apache.dubbo.bootstrap.builders;
 
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.AbstractReferenceConfig;
@@ -92,7 +92,7 @@ public abstract class AbstractReferenceBuilder<T extends AbstractReferenceConfig
 
     /**
      * @param injvm
-     * @see org.apache.dubbo.config.builders.AbstractInterfaceBuilder#scope(String)
+     * @see AbstractInterfaceBuilder#scope(String)
      * @deprecated instead, use the parameter <b>scope</b> to judge if it's in jvm, scope=local
      */
     @Deprecated
