@@ -81,13 +81,24 @@ public class ZookeeperRegistry extends FailbackRegistry {
         }
         this.root = group;
         zkClient = zookeeperTransporter.connect(url);
-        zkClient.addStateListener(state -> {
+        zkClient.addStateListener((state) -> {
             if (state == StateListener.RECONNECTED) {
+                logger.warn("Since ephemeral ZNode will not get deleted for a connection lose," +
+                        "there's no need to re-register url of this instance.");
+            } else if (state == StateListener.NEW_SESSION_CREATED) {
+                logger.warn("Trying to re-register url of this instance to registry...");
                 try {
-                    recover();
+                    ZookeeperRegistry.this.recover();
                 } catch (Exception e) {
                     logger.error(e.getMessage(), e);
                 }
+            } else if (state == StateListener.SESSION_LOST) {
+                logger.warn("Url of this instance will be deleted from registry soon. " +
+                        "Dubbo client will try to re-register once a new session is created.");
+            } else if (state == StateListener.SUSPENDED) {
+
+            } else if (state == StateListener.CONNECTED) {
+
             }
         });
     }
