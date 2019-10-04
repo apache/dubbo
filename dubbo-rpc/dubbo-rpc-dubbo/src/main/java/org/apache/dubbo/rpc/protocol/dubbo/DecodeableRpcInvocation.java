@@ -38,7 +38,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
@@ -114,11 +113,11 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
             Class<?>[] pts = DubboCodec.EMPTY_CLASS_ARRAY;
             if (desc.length() > 0) {
                 // TODO, lambda function requires variables to be final.
-                Optional<ServiceModel> serviceModel = ApplicationModel.getServiceModel(path);
-                if (serviceModel.isPresent()) {
-                    Optional<MethodModel> methodOptional = serviceModel.get().getMethod(getMethodName(), desc);
-                    if (methodOptional.isPresent()) {
-                        pts = methodOptional.get().getParameterClasses();
+                ServiceModel serviceModel = ApplicationModel.getServiceModel(path);
+                if (serviceModel != null) {
+                    MethodModel methodModel = serviceModel.getMethod(getMethodName(), desc);
+                    if (methodModel != null) {
+                        pts = methodModel.getParameterClasses();
                         args = new Object[pts.length];
                         for (int i = 0; i < args.length; i++) {
                             try {
@@ -130,7 +129,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
                             }
                         }
 
-                        this.setReturnTypes(methodOptional.get().getReturnTypes());
+                        this.setReturnTypes(methodModel.getReturnTypes());
                     }
                 }
             }

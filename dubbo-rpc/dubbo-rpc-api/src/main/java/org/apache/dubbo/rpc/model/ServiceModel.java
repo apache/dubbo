@@ -23,30 +23,31 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Optional;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Set;
 
 public class ServiceModel {
     private final String serviceName;
     private final Class<?> serviceInterfaceClass;
     // to accelarate search
-    private final Map<String, Set<MethodModel>> methods = new HashMap<>();
+    private final Map<String, List<MethodModel>> methods = new HashMap<>();
     private final Map<String, Map<String, MethodModel>> descToMethods = new HashMap<>();
 
-    public ServiceModel (Class<?> interfaceClass) {
+    public ServiceModel(Class<?> interfaceClass) {
         this.serviceInterfaceClass = interfaceClass;
         this.serviceName = interfaceClass.getName();
         initMethods();
     }
 
     private void initMethods() {
-        Method[] methodsToExport = null;
-        methodsToExport = this.serviceInterfaceClass.getMethods();
+        Method[] methodsToExport = this.serviceInterfaceClass.getMethods();
 
         for (Method method : methodsToExport) {
             method.setAccessible(true);
 
-            Set<MethodModel> methodModels = methods.computeIfAbsent(method.getName(), (k) ->new HashSet<>(1));
+            List<MethodModel> methodModels = methods.computeIfAbsent(method.getName(), (k) -> new ArrayList<>(1));
             methodModels.add(new MethodModel(method));
         }
 
@@ -67,34 +68,37 @@ public class ServiceModel {
         return serviceInterfaceClass;
     }
 
-    public Set<MethodModel> getAllMethods () {
+    public Set<MethodModel> getAllMethods() {
         Set<MethodModel> methodModels = new HashSet<>();
         methods.forEach((k, v) -> methodModels.addAll(v));
         return methodModels;
     }
 
-    public Optional<MethodModel> getMethod (String methodName, String params) {
+    public MethodModel getMethod(String methodName, String params) {
         Map<String, MethodModel> methods = descToMethods.get(methodName);
         if (CollectionUtils.isNotEmptyMap(methods)) {
-            return Optional.ofNullable(methods.get(params));
+            return methods.get(params);
         }
-        return Optional.empty();
+        return null;
     }
 
-    public Optional<MethodModel> getMethod (String methodName, Class<?>[] paramTypes) {
-        Set<MethodModel> methodModels = methods.get(methodName);
-        if (CollectionUtils.isNotEmpty(methodModels)) {
-            for (MethodModel methodModel : methodModels) {
-                if (Arrays.equals(paramTypes, methodModel.getParameterClasses())) {
-                    return Optional.of(methodModel);
-                }
+    public MethodModel getMethod(String methodName, Class<?>[] paramTypes) {
+        List<MethodModel> methodModels = methods.get(methodName);
+        if (CollectionUtils.isEmpty(methodModels)) {
+            return null;
+        }
+
+        for (int i = 0; i < methodModels.size(); i++) {
+            MethodModel methodModel = methodModels.get(i);
+            if (Arrays.equals(paramTypes, methodModel.getParameterClasses())) {
+                return methodModel;
             }
         }
-        return Optional.empty();
+        return null;
     }
 
-    public Set<MethodModel> getMethods (String methodName) {
-        return methods.get(methodName);
+    public List<MethodModel> getMethods(String methodName) {
+        return Collections.unmodifiableList(methods.get(methodName));
     }
 
 }

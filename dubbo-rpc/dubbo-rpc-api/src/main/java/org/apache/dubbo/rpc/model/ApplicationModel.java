@@ -110,12 +110,12 @@ public class ApplicationModel {
         return serviceModel;
     }
 
-    public static Optional<ServiceModel> getServiceModel (String interfaceName) {
-        return Optional.ofNullable(SERVICES.get(interfaceName));
+    public static ServiceModel getServiceModel(String interfaceName) {
+        return SERVICES.get(interfaceName);
     }
 
-    public static Optional<ServiceModel> getServiceModel (Class<?> interfaceClass) {
-        return Optional.ofNullable(SERVICES.get(interfaceClass.getName()));
+    public static ServiceModel getServiceModel(Class<?> interfaceClass) {
+        return SERVICES.get(interfaceClass.getName());
     }
 
     public static String getApplication() {

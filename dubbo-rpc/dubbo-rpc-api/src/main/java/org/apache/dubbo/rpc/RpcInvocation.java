@@ -19,6 +19,8 @@ package org.apache.dubbo.rpc;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.MethodModel;
+import org.apache.dubbo.rpc.model.ServiceModel;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -119,17 +121,26 @@ public class RpcInvocation implements Invocation, Serializable {
         this.methodName = methodName;
         this.parameterTypes = parameterTypes == null ? new Class<?>[0] : parameterTypes;
         this.arguments = arguments == null ? new Object[0] : arguments;
-        this.attachments = attachments == null ? new HashMap<String, String>() : attachments;
+        this.attachments = attachments == null ? new HashMap<>() : attachments;
         this.invoker = invoker;
-        if (StringUtils.isNotEmpty(serviceName)) {
-            ApplicationModel.getServiceModel(serviceName).ifPresent(serviceModel ->
-                    serviceModel.getMethod(methodName, parameterTypes)
-                            .ifPresent(methodModel -> {
-                                this.parameterTypesDesc = methodModel.getParamDesc();
-                                this.returnTypes = methodModel.getReturnTypes();
-                            })
-            );
+
+        MethodModel methodModel = getMethodModel(serviceName, methodName, parameterTypes);
+        if (methodModel != null) {
+            this.parameterTypesDesc = methodModel.getParamDesc();
+            this.returnTypes = methodModel.getReturnTypes();
         }
+    }
+
+    private MethodModel getMethodModel(String serviceName, String methodName, Class<?>[] parameterTypes) {
+        if (StringUtils.isEmpty(serviceName)) {
+            return null;
+        }
+
+        ServiceModel serviceModel = ApplicationModel.getServiceModel(serviceName);
+        if (serviceModel != null) {
+            return serviceModel.getMethod(methodName, parameterTypes);
+        }
+        return null;
     }
 
     @Override
