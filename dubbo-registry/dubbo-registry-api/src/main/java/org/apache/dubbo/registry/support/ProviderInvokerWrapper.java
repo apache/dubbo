@@ -22,6 +22,8 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 
+import java.util.Objects;
+
 /**
  * @date 2017/11/23
  */
@@ -95,5 +97,10 @@ public class ProviderInvokerWrapper<T> implements Invoker {
         }
         ProviderInvokerWrapper other = (ProviderInvokerWrapper) o;
         return other.getInvoker().equals(this.getInvoker());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(invoker);
     }
 }

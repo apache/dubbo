@@ -35,6 +35,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -535,15 +537,18 @@ public class AbstractConfigTest {
     }
 
     @Test
-    public void testEquals() {
+    public void testEqualsAndHashCode() {
         ApplicationConfig application1 = new ApplicationConfig();
         ApplicationConfig application2 = new ApplicationConfig();
         application1.setName("app1");
         application2.setName("app2");
-        Assertions.assertNotEquals(application1, application2);
+        assertThat(application1.equals(application2), is(false));
+        assertThat(application1.hashCode(), not(application2.hashCode()));
+
         application1.setName("sameName");
         application2.setName("sameName");
-        Assertions.assertEquals(application1, application2);
+        assertThat(application1.equals(application2), is(true));
+        assertThat(application1.hashCode(), is(application2.hashCode()));
 
         ProtocolConfig protocol1 = new ProtocolConfig();
         protocol1.setHost("127.0.0.1");// excluded
@@ -552,6 +557,7 @@ public class AbstractConfigTest {
         protocol2.setHost("127.0.0.2");// excluded
         protocol2.setName("dubbo");
         Assertions.assertEquals(protocol1, protocol2);
+        assertThat(protocol1.hashCode(), is(protocol2.hashCode()));
     }
 
     @Retention(RetentionPolicy.RUNTIME)

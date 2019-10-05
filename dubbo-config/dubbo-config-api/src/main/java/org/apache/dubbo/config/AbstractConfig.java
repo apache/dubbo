@@ -692,4 +692,31 @@ public abstract class AbstractConfig implements Serializable {
         }
         return true;
     }
+
+    @Override
+    public int hashCode() {
+        int hashCode = 1;
+
+        Method[] methods = this.getClass().getMethods();
+        for (Method method : methods) {
+            if (MethodUtils.isGetter(method)) {
+                Parameter parameter = method.getAnnotation(Parameter.class);
+                if (parameter != null && parameter.excluded()) {
+                    continue;
+                }
+                try {
+                    Object value = method.invoke(this, new Object[]{});
+                    hashCode = 31 * hashCode + value.hashCode();
+                } catch (Exception ignored) {
+                    //ignored
+                }
+            }
+        }
+
+        if (hashCode == 0) {
+            hashCode = 1;
+        }
+
+        return hashCode;
+    }
 }
