@@ -20,7 +20,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 
@@ -111,19 +110,7 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
      */
     List<String> getURLBackupAddress(URL url) {
         List<String> addressList = new ArrayList<String>();
-
-        StringBuilder buf = new StringBuilder();
-        if (StringUtils.isNotEmpty(url.getUsername())) {
-            buf.append(url.getUsername());
-            if (StringUtils.isNotEmpty(url.getPassword())) {
-                buf.append(":");
-                buf.append(url.getPassword());
-            }
-            buf.append("@");
-        }
-        buf.append(url.getAddress());
-
-        addressList.add(buf.toString());
+        addressList.add(url.getAddress());
 
         addressList.addAll(url.getParameter(RemotingConstants.BACKUP_KEY, Collections.EMPTY_LIST));
         return addressList;
