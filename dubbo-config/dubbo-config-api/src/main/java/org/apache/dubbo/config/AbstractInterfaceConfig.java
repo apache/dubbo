@@ -624,6 +624,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 cc.getParameters().put(org.apache.dubbo.remoting.Constants.CLIENT_KEY,rc.getClient());
                 cc.setProtocol(rc.getProtocol());
                 cc.setAddress(rc.getAddress());
+                cc.setUsername(rc.getUsername());
+                cc.setPassword(rc.getPassword());
                 cc.setHighestPriority(false);
                 setConfigCenter(cc);
                 startConfigCenter();
