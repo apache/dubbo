@@ -16,62 +16,56 @@
  */
 package org.apache.dubbo.remoting.exchange.support.header;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.timer.HashedWheelTimer;
+import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
-import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Client;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.remoting.exchange.ExchangeHandler;
-import org.apache.dubbo.remoting.exchange.ResponseFuture;
 
 import java.net.InetSocketAddress;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+
+import static org.apache.dubbo.remoting.utils.UrlUtils.getHeartbeat;
+import static org.apache.dubbo.remoting.utils.UrlUtils.getIdleTimeout;
+import static org.apache.dubbo.remoting.Constants.HEARTBEAT_CHECK_TICK;
+import static org.apache.dubbo.remoting.Constants.LEAST_HEARTBEAT_DURATION;
+import static org.apache.dubbo.remoting.Constants.TICKS_PER_WHEEL;
 
 /**
  * DefaultMessageClient
  */
 public class HeaderExchangeClient implements ExchangeClient {
 
-    private static final Logger logger = LoggerFactory.getLogger(HeaderExchangeClient.class);
-
-    private static final ScheduledThreadPoolExecutor scheduled = new ScheduledThreadPoolExecutor(2, new NamedThreadFactory("dubbo-remoting-client-heartbeat", true));
     private final Client client;
     private final ExchangeChannel channel;
-    // heartbeat timer
-    private ScheduledFuture<?> heartbeatTimer;
-    // heartbeat(ms), default value is 0 , won't execute a heartbeat.
-    private int heartbeat;
-    private int heartbeatTimeout;
 
-    public HeaderExchangeClient(Client client, boolean needHeartbeat) {
-        if (client == null) {
-            throw new IllegalArgumentException("client == null");
-        }
+    private static final HashedWheelTimer IDLE_CHECK_TIMER = new HashedWheelTimer(
+            new NamedThreadFactory("dubbo-client-idleCheck", true), 1, TimeUnit.SECONDS, TICKS_PER_WHEEL);
+    private HeartbeatTimerTask heartBeatTimerTask;
+    private ReconnectTimerTask reconnectTimerTask;
+
+    public HeaderExchangeClient(Client client, boolean startTimer) {
+        Assert.notNull(client, "Client can't be null");
         this.client = client;
         this.channel = new HeaderExchangeChannel(client);
-        String dubbo = client.getUrl().getParameter(Constants.DUBBO_VERSION_KEY);
-        this.heartbeat = client.getUrl().getParameter(Constants.HEARTBEAT_KEY, dubbo != null && dubbo.startsWith("1.0.") ? Constants.DEFAULT_HEARTBEAT : 0);
-        this.heartbeatTimeout = client.getUrl().getParameter(Constants.HEARTBEAT_TIMEOUT_KEY, heartbeat * 3);
-        if (heartbeatTimeout < heartbeat * 2) {
-            throw new IllegalStateException("heartbeatTimeout < heartbeatInterval * 2");
-        }
-        if (needHeartbeat) {
-            startHeartbeatTimer();
+
+        if (startTimer) {
+            URL url = client.getUrl();
+            startReconnectTask(url);
+            startHeartBeatTask(url);
         }
     }
 
     @Override
-    public ResponseFuture request(Object request) throws RemotingException {
+    public CompletableFuture<Object> request(Object request) throws RemotingException {
         return channel.request(request);
     }
 
@@ -86,7 +80,7 @@ public class HeaderExchangeClient implements ExchangeClient {
     }
 
     @Override
-    public ResponseFuture request(Object request, int timeout) throws RemotingException {
+    public CompletableFuture<Object> request(Object request, int timeout) throws RemotingException {
         return channel.request(request, timeout);
     }
 
@@ -147,6 +141,7 @@ public class HeaderExchangeClient implements ExchangeClient {
     @Override
     public void reset(URL url) {
         client.reset(url);
+        // FIXME, should cancel and restart timer tasks if parameters in the new URL are different?
     }
 
     @Override
@@ -180,36 +175,49 @@ public class HeaderExchangeClient implements ExchangeClient {
         return channel.hasAttribute(key);
     }
 
-    private void startHeartbeatTimer() {
-        stopHeartbeatTimer();
-        if (heartbeat > 0) {
-            heartbeatTimer = scheduled.scheduleWithFixedDelay(
-                    new HeartBeatTask(new HeartBeatTask.ChannelProvider() {
-                        @Override
-                        public Collection<Channel> getChannels() {
-                            return Collections.<Channel>singletonList(HeaderExchangeClient.this);
-                        }
-                    }, heartbeat, heartbeatTimeout),
-                    heartbeat, heartbeat, TimeUnit.MILLISECONDS);
+    private void startHeartBeatTask(URL url) {
+        if (!client.canHandleIdle()) {
+            AbstractTimerTask.ChannelProvider cp = () -> Collections.singletonList(HeaderExchangeClient.this);
+            int heartbeat = getHeartbeat(url);
+            long heartbeatTick = calculateLeastDuration(heartbeat);
+            this.heartBeatTimerTask = new HeartbeatTimerTask(cp, heartbeatTick, heartbeat);
+            IDLE_CHECK_TIMER.newTimeout(heartBeatTimerTask, heartbeatTick, TimeUnit.MILLISECONDS);
         }
     }
 
-    private void stopHeartbeatTimer() {
-        if (heartbeatTimer != null && !heartbeatTimer.isCancelled()) {
-            try {
-                heartbeatTimer.cancel(true);
-                scheduled.purge();
-            } catch (Throwable e) {
-                if (logger.isWarnEnabled()) {
-                    logger.warn(e.getMessage(), e);
-                }
-            }
+    private void startReconnectTask(URL url) {
+        if (shouldReconnect(url)) {
+            AbstractTimerTask.ChannelProvider cp = () -> Collections.singletonList(HeaderExchangeClient.this);
+            int idleTimeout = getIdleTimeout(url);
+            long heartbeatTimeoutTick = calculateLeastDuration(idleTimeout);
+            this.reconnectTimerTask = new ReconnectTimerTask(cp, heartbeatTimeoutTick, idleTimeout);
+            IDLE_CHECK_TIMER.newTimeout(reconnectTimerTask, heartbeatTimeoutTick, TimeUnit.MILLISECONDS);
         }
-        heartbeatTimer = null;
     }
 
     private void doClose() {
-        stopHeartbeatTimer();
+        if (heartBeatTimerTask != null) {
+            heartBeatTimerTask.cancel();
+        }
+
+        if (reconnectTimerTask != null) {
+            reconnectTimerTask.cancel();
+        }
+    }
+
+    /**
+     * Each interval cannot be less than 1000ms.
+     */
+    private long calculateLeastDuration(int time) {
+        if (time / HEARTBEAT_CHECK_TICK <= 0) {
+            return LEAST_HEARTBEAT_DURATION;
+        } else {
+            return time / HEARTBEAT_CHECK_TICK;
+        }
+    }
+
+    private boolean shouldReconnect(URL url) {
+        return url.getParameter(Constants.RECONNECT_KEY, true);
     }
 
     @Override

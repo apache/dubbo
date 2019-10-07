@@ -18,25 +18,52 @@ package org.apache.dubbo.rpc.cluster.loadbalance;
 
 import org.apache.dubbo.rpc.Invoker;
 
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class LeastActiveBalanceTest extends LoadBalanceBaseTest {
-    @Ignore
+    @Disabled
     @Test
     public void testLeastActiveLoadBalance_select() {
         int runs = 10000;
         Map<Invoker, AtomicLong> counter = getInvokeCounter(runs, LeastActiveLoadBalance.NAME);
-        for (Invoker minvoker : counter.keySet()) {
-            Long count = counter.get(minvoker).get();
+        for (Map.Entry<Invoker, AtomicLong> entry : counter.entrySet()) {
+            Long count = entry.getValue().get();
             //            System.out.println(count);
-            Assert.assertTrue("abs diff shoud < avg",
-                    Math.abs(count - runs / (0f + invokers.size())) < runs / (0f + invokers.size()));
+            Assertions.assertTrue(
+                    Math.abs(count - runs / (0f + invokers.size())) < runs / (0f + invokers.size()), "abs diff should < avg");
         }
     }
 
+    @Test
+    public void testSelectByWeight() {
+        int sumInvoker1 = 0;
+        int sumInvoker2 = 0;
+        int loop = 10000;
+
+        LeastActiveLoadBalance lb = new LeastActiveLoadBalance();
+        for (int i = 0; i < loop; i++) {
+            Invoker selected = lb.select(weightInvokers, null, weightTestInvocation);
+
+            if (selected.getUrl().getProtocol().equals("test1")) {
+                sumInvoker1++;
+            }
+
+            if (selected.getUrl().getProtocol().equals("test2")) {
+                sumInvoker2++;
+            }
+            // never select invoker3 because it's active is more than invoker1 and invoker2
+            Assertions.assertTrue(!selected.getUrl().getProtocol().equals("test3"), "select is not the least active one");
+        }
+
+        // the sumInvoker1 : sumInvoker2 approximately equal to 1: 9
+        System.out.println(sumInvoker1);
+        System.out.println(sumInvoker2);
+
+        Assertions.assertEquals(sumInvoker1 + sumInvoker2, loop, "select failed!");
+    }
 }

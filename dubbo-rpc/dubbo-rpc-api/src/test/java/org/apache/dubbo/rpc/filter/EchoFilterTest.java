@@ -17,16 +17,16 @@
 package org.apache.dubbo.rpc.filter;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.support.DemoService;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
@@ -46,7 +46,7 @@ public class EchoFilterTest {
         Invoker<DemoService> invoker = mock(Invoker.class);
         given(invoker.isAvailable()).willReturn(true);
         given(invoker.getInterface()).willReturn(DemoService.class);
-        RpcResult result = new RpcResult();
+        AppResponse result = new AppResponse();
         result.setValue("High");
         given(invoker.invoke(invocation)).willReturn(result);
         URL url = URL.valueOf("test://test:11/test?group=dubbo&version=1.1");
@@ -68,7 +68,7 @@ public class EchoFilterTest {
         Invoker<DemoService> invoker = mock(Invoker.class);
         given(invoker.isAvailable()).willReturn(true);
         given(invoker.getInterface()).willReturn(DemoService.class);
-        RpcResult result = new RpcResult();
+        AppResponse result = new AppResponse();
         result.setValue("High");
         given(invoker.invoke(invocation)).willReturn(result);
         URL url = URL.valueOf("test://test:11/test?group=dubbo&version=1.1");

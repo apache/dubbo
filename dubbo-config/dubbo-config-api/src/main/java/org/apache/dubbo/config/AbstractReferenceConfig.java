@@ -16,10 +16,19 @@
  */
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.InvokerListener;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
+
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.rpc.Constants.INVOKER_LISTENER_KEY;
+import static org.apache.dubbo.rpc.Constants.LAZY_CONNECT_KEY;
+import static org.apache.dubbo.rpc.Constants.REFERENCE_FILTER_KEY;
+import static org.apache.dubbo.rpc.Constants.STUB_EVENT_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.CLUSTER_STICKY_KEY;
 
 /**
  * AbstractConsumerConfig
@@ -33,32 +42,49 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
 
     // ======== Reference config default values, will take effect if reference's attribute is not set  ========
 
-    // check if service provider exists
+    /**
+     * Check if service provider exists, if not exists, it will be fast fail
+     */
     protected Boolean check;
 
-    // whether to eagle-init
+    /**
+     * Whether to eagle-init
+     */
     protected Boolean init;
 
-    // whether to use generic interface
+    /**
+     * Whether to use generic interface
+     */
     protected String generic;
 
-    // whether to find reference's instance from the current JVM
+    /**
+     * Whether to find reference's instance from the current JVM
+     */
     protected Boolean injvm;
 
-    // lazy create connection
-    protected Boolean lazy;
+    /**
+     * Lazy create connection
+     */
+    protected Boolean lazy = false;
 
     protected String reconnect;
 
-    protected Boolean sticky;
+    protected Boolean sticky = false;
 
-    // whether to support event in stub. //TODO solve merge problem
+    /**
+     * Whether to support event in stub.
+     */
+    //TODO solve merge problem
     protected Boolean stubevent;//= Constants.DEFAULT_STUB_EVENT;
 
-    // version
+    /**
+     * The remote service version the customer side will reference
+     */
     protected String version;
 
-    // group
+    /**
+     * The remote service group the customer side will reference
+     */
     protected String group;
 
     public Boolean isCheck() {
@@ -77,11 +103,13 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
         this.init = init;
     }
 
+    @Deprecated
     @Parameter(excluded = true)
     public Boolean isGeneric() {
-        return ProtocolUtils.isGeneric(generic);
+        return this.generic != null ? ProtocolUtils.isGeneric(generic) : null;
     }
 
+    @Deprecated
     public void setGeneric(Boolean generic) {
         if (generic != null) {
             this.generic = generic.toString();
@@ -93,12 +121,19 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
     }
 
     public void setGeneric(String generic) {
-        this.generic = generic;
+        if (StringUtils.isEmpty(generic)) {
+            return;
+        }
+        if (ProtocolUtils.isValidGenericValue(generic)) {
+            this.generic = generic;
+        } else {
+            throw new IllegalArgumentException("Unsupported generic type " + generic);
+        }
     }
 
     /**
      * @return
-     * @deprecated instead, use scope to judge if it's in jvm, scope=local
+     * @deprecated instead, use the parameter <b>scope</> to judge if it's in jvm, scope=local
      */
     @Deprecated
     public Boolean isInjvm() {
@@ -107,7 +142,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
 
     /**
      * @param injvm
-     * @deprecated instead, use scope to judge if it's in jvm, scope=local
+     * @deprecated instead, use the parameter <b>scope</b> to judge if it's in jvm, scope=local
      */
     @Deprecated
     public void setInjvm(Boolean injvm) {
@@ -115,13 +150,13 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
     }
 
     @Override
-    @Parameter(key = Constants.REFERENCE_FILTER_KEY, append = true)
+    @Parameter(key = REFERENCE_FILTER_KEY, append = true)
     public String getFilter() {
         return super.getFilter();
     }
 
     @Override
-    @Parameter(key = Constants.INVOKER_LISTENER_KEY, append = true)
+    @Parameter(key = INVOKER_LISTENER_KEY, append = true)
     public String getListener() {
         return super.getListener();
     }
@@ -132,7 +167,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
         super.setListener(listener);
     }
 
-    @Parameter(key = Constants.LAZY_CONNECT_KEY)
+    @Parameter(key = LAZY_CONNECT_KEY)
     public Boolean getLazy() {
         return lazy;
     }
@@ -157,7 +192,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
         super.setOndisconnect(ondisconnect);
     }
 
-    @Parameter(key = Constants.STUB_EVENT_KEY)
+    @Parameter(key = STUB_EVENT_KEY)
     public Boolean getStubevent() {
         return stubevent;
     }
@@ -171,7 +206,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
         this.reconnect = reconnect;
     }
 
-    @Parameter(key = Constants.CLUSTER_STICKY_KEY)
+    @Parameter(key = CLUSTER_STICKY_KEY)
     public Boolean getSticky() {
         return sticky;
     }
@@ -185,7 +220,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
     }
 
     public void setVersion(String version) {
-        checkKey("version", version);
+        checkKey(VERSION_KEY, version);
         this.version = version;
     }
 
@@ -194,7 +229,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
     }
 
     public void setGroup(String group) {
-        checkKey("group", group);
+        checkKey(GROUP_KEY, group);
         this.group = group;
     }
 }

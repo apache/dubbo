@@ -22,13 +22,23 @@ import java.util.Map;
 @Deprecated
 public interface Invocation extends org.apache.dubbo.rpc.Invocation {
 
+    @Override
     Invoker<?> getInvoker();
 
     default org.apache.dubbo.rpc.Invocation getOriginal() {
         return null;
     }
 
-    class CompatibleInvocation implements Invocation {
+    @Override
+    default void setAttachmentIfAbsent(String key, String value) {
+    }
+
+    @Override
+    default void setAttachment(String key, String value) {
+
+    }
+
+    class CompatibleInvocation implements Invocation, org.apache.dubbo.rpc.Invocation {
 
         private org.apache.dubbo.rpc.Invocation delegate;
 
@@ -71,6 +81,7 @@ public interface Invocation extends org.apache.dubbo.rpc.Invocation {
             return new Invoker.CompatibleInvoker(delegate.getInvoker());
         }
 
+        @Override
         public org.apache.dubbo.rpc.Invocation getOriginal() {
             return delegate;
         }

@@ -16,7 +16,8 @@
  */
 package org.apache.dubbo.common.io;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.io.IOException;
@@ -24,16 +25,16 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 
 public class UnsafeByteArrayOutputStreamTest {
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testWrongSize() {
-        new UnsafeByteArrayOutputStream(-1);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> new UnsafeByteArrayOutputStream(-1));
     }
 
     @Test

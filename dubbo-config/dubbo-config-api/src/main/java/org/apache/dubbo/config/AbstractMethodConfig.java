@@ -16,11 +16,17 @@
  */
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 
 import java.util.Map;
+
+import static org.apache.dubbo.rpc.cluster.Constants.LOADBALANCE_KEY;
+import static org.apache.dubbo.rpc.Constants.FAIL_PREFIX;
+import static org.apache.dubbo.rpc.Constants.FORCE_PREFIX;
+import static org.apache.dubbo.rpc.Constants.MOCK_KEY;
+import static org.apache.dubbo.rpc.Constants.RETURN_PREFIX;
+import static org.apache.dubbo.rpc.Constants.THROW_PREFIX;
 
 /**
  * AbstractMethodConfig
@@ -31,38 +37,79 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
 
     private static final long serialVersionUID = 1L;
 
-    // timeout for remote invocation in milliseconds
+    /**
+     * The timeout for remote invocation in milliseconds
+     */
     protected Integer timeout;
 
-    // retry times
+    /**
+     * The retry times
+     */
     protected Integer retries;
 
-    // max concurrent invocations
+    /**
+     * max concurrent invocations
+     */
     protected Integer actives;
 
-    // load balance
+    /**
+     * The load balance
+     */
     protected String loadbalance;
 
-    // whether to async
+    /**
+     * Whether to async
+     * note that: it is an unreliable asynchronism that ignores return values and does not block threads.
+     */
     protected Boolean async;
 
-    // whether to ack async-sent
+    /**
+     * Whether to ack async-sent
+     */
     protected Boolean sent;
 
-    // the name of mock class which gets called when a service fails to execute
+    /**
+     * The name of mock class which gets called when a service fails to execute
+     *
+     * note that: the mock doesn't support on the provider side，and the mock is executed when a non-business exception
+     * occurs after a remote service call
+     */
     protected String mock;
 
-    // merger
+    /**
+     * Merger
+     */
     protected String merger;
 
-    // cache
+    /**
+     * Cache the return result with the call parameter as key, the following options are available: lru, threadlocal,
+     * jcache, etc.
+     */
     protected String cache;
 
-    // validation
+    /**
+     * Whether JSR303 standard annotation validation is enabled or not, if enabled, annotations on method parameters will
+     * be validated
+     */
     protected String validation;
 
-    // customized parameters
+    /**
+     * The customized parameters
+     */
     protected Map<String, String> parameters;
+
+    /**
+     * Forks for forking cluster
+     */
+    protected Integer forks;
+
+    public Integer getForks() {
+        return forks;
+    }
+
+    public void setForks(Integer forks) {
+        this.forks = forks;
+    }
 
     public Integer getTimeout() {
         return timeout;
@@ -85,7 +132,7 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
     }
 
     public void setLoadbalance(String loadbalance) {
-        checkExtension(LoadBalance.class, "loadbalance", loadbalance);
+        checkExtension(LoadBalance.class, LOADBALANCE_KEY, loadbalance);
         this.loadbalance = loadbalance;
     }
 
@@ -118,21 +165,27 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
         return mock;
     }
 
+    public void setMock(String mock) {
+        if (mock == null) {
+            return;
+        }
+
+        if (mock.startsWith(RETURN_PREFIX) || mock.startsWith(THROW_PREFIX + " ")) {
+            checkLength(MOCK_KEY, mock);
+        } else if (mock.startsWith(FAIL_PREFIX) || mock.startsWith(FORCE_PREFIX)) {
+            checkNameHasSymbol(MOCK_KEY, mock);
+        } else {
+            checkName(MOCK_KEY, mock);
+        }
+        this.mock = mock;
+    }
+
     public void setMock(Boolean mock) {
         if (mock == null) {
             setMock((String) null);
         } else {
-            setMock(String.valueOf(mock));
+            setMock(mock.toString());
         }
-    }
-
-    public void setMock(String mock) {
-        if (mock != null && mock.startsWith(Constants.RETURN_PREFIX)) {
-            checkLength("mock", mock);
-        } else {
-            checkName("mock", mock);
-        }
-        this.mock = mock;
     }
 
     public String getMerger() {

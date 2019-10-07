@@ -31,6 +31,10 @@ public class DemoServiceImpl implements DemoService {
         System.out.println("hello " + name);
     }
 
+    public String sayHi(String name) {
+        return "Hi, " + name;
+    }
+
     public String echo(String text) {
         return text;
     }
@@ -75,5 +79,11 @@ public class DemoServiceImpl implements DemoService {
             Thread.sleep(6000);
         } catch (InterruptedException e) {
         }
+    }
+
+
+    @Override
+    public String getRemoteApplicationName() {
+        return RpcContext.getContext().getRemoteApplicationName();
     }
 }

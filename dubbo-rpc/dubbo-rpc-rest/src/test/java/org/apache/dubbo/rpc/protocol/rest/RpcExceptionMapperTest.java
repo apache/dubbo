@@ -17,8 +17,8 @@
 package org.apache.dubbo.rpc.protocol.rest;
 
 import org.apache.dubbo.rpc.RpcException;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Answers;
 import org.mockito.internal.util.collections.Sets;
 
@@ -29,7 +29,7 @@ import javax.ws.rs.core.Response;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
@@ -37,7 +37,7 @@ public class RpcExceptionMapperTest {
 
     private RpcExceptionMapper exceptionMapper;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         this.exceptionMapper = new RpcExceptionMapper();
     }

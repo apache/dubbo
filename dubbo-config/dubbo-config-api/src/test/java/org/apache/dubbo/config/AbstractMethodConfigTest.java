@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.config;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,7 +25,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.hamcrest.Matchers.sameInstance;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class AbstractMethodConfigTest {
     @Test
@@ -33,6 +33,13 @@ public class AbstractMethodConfigTest {
         MethodConfig methodConfig = new MethodConfig();
         methodConfig.setTimeout(10);
         assertThat(methodConfig.getTimeout(), equalTo(10));
+    }
+
+    @Test
+    public void testForks() throws Exception {
+        MethodConfig methodConfig = new MethodConfig();
+        methodConfig.setForks(10);
+        assertThat(methodConfig.getForks(), equalTo(10));
     }
 
     @Test

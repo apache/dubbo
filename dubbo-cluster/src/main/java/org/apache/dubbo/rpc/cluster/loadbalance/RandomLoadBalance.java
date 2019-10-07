@@ -24,23 +24,45 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * random load balance.
- *
+ * This class select one provider from multiple providers randomly.
+ * You can define weights for each provider:
+ * If the weights are all the same then it will use random.nextInt(number of invokers).
+ * If the weights are different then it will use random.nextInt(w1 + w2 + ... + wn)
+ * Note that if the performance of the machine is better than others, you can set a larger weight.
+ * If the performance is not so good, you can set a smaller weight.
  */
 public class RandomLoadBalance extends AbstractLoadBalance {
 
     public static final String NAME = "random";
 
+    /**
+     * Select one invoker between a list using a random criteria
+     * @param invokers List of possible invokers
+     * @param url URL
+     * @param invocation Invocation
+     * @param <T>
+     * @return The selected invoker
+     */
     @Override
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
-        int length = invokers.size(); // Number of invokers
-        int totalWeight = 0; // The sum of weights
-        boolean sameWeight = true; // Every invoker has the same weight?
-        for (int i = 0; i < length; i++) {
+        // Number of invokers
+        int length = invokers.size();
+        // Every invoker has the same weight?
+        boolean sameWeight = true;
+        // the weight of every invokers
+        int[] weights = new int[length];
+        // the first invoker's weight
+        int firstWeight = getWeight(invokers.get(0), invocation);
+        weights[0] = firstWeight;
+        // The sum of weights
+        int totalWeight = firstWeight;
+        for (int i = 1; i < length; i++) {
             int weight = getWeight(invokers.get(i), invocation);
-            totalWeight += weight; // Sum
-            if (sameWeight && i > 0
-                    && weight != getWeight(invokers.get(i - 1), invocation)) {
+            // save for later use
+            weights[i] = weight;
+            // Sum
+            totalWeight += weight;
+            if (sameWeight && weight != firstWeight) {
                 sameWeight = false;
             }
         }
@@ -49,7 +71,7 @@ public class RandomLoadBalance extends AbstractLoadBalance {
             int offset = ThreadLocalRandom.current().nextInt(totalWeight);
             // Return a invoker based on the random value.
             for (int i = 0; i < length; i++) {
-                offset -= getWeight(invokers.get(i), invocation);
+                offset -= weights[i];
                 if (offset < 0) {
                     return invokers.get(i);
                 }

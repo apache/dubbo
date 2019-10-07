@@ -17,10 +17,10 @@
 
 package org.apache.dubbo.common.extension;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class ExtensionTest {
 
@@ -28,13 +28,13 @@ public class ExtensionTest {
     public void testExtensionFactory() {
         try {
             ExtensionFactory factory = ExtensionLoader.getExtensionLoader(ExtensionFactory.class).getExtension("myfactory");
-            Assert.assertTrue(factory instanceof ExtensionFactory);
-            Assert.assertTrue(factory instanceof com.alibaba.dubbo.common.extension.ExtensionFactory);
-            Assert.assertTrue(factory instanceof MyExtensionFactory);
+            Assertions.assertTrue(factory instanceof ExtensionFactory);
+            Assertions.assertTrue(factory instanceof com.alibaba.dubbo.common.extension.ExtensionFactory);
+            Assertions.assertTrue(factory instanceof MyExtensionFactory);
 
             ExtensionFactory spring = ExtensionLoader.getExtensionLoader(ExtensionFactory.class).getExtension("spring");
-            Assert.assertTrue(spring instanceof ExtensionFactory);
-            Assert.assertFalse(spring instanceof com.alibaba.dubbo.common.extension.ExtensionFactory);
+            Assertions.assertTrue(spring instanceof ExtensionFactory);
+            Assertions.assertFalse(spring instanceof com.alibaba.dubbo.common.extension.ExtensionFactory);
         } catch (IllegalArgumentException expected) {
             fail();
         }

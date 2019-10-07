@@ -57,7 +57,9 @@ public class Request {
     }
 
     private static String safeToString(Object data) {
-        if (data == null) return null;
+        if (data == null) {
+            return null;
+        }
         String dataStr;
         try {
             dataStr = data.toString();
@@ -93,8 +95,12 @@ public class Request {
     }
 
     public void setEvent(String event) {
-        mEvent = true;
-        mData = event;
+        this.mEvent = true;
+        this.mData = event;
+    }
+
+    public void setEvent(boolean mEvent) {
+        this.mEvent = mEvent;
     }
 
     public boolean isBroken() {

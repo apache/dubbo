@@ -1,0 +1,1 @@
+injection=org.apache.dubbo.common.extension.injection.impl.InjectExtImpl
