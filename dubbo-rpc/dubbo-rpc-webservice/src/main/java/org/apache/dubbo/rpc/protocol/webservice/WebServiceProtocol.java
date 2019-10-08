@@ -165,8 +165,8 @@ public class WebServiceProtocol extends AbstractProxyProtocol {
                             server = WebServiceProtocol.this.serverFactoryBean.getServer();
                         }
                         Destination d = WebServiceProtocol.this.transportFactory.getDestination(server.getEndpoint().getEndpointInfo(),bus);
-
                         destinationRegistry.addDestination((AbstractHTTPDestination) d);
+                        this.servletController = new ServletController(destinationRegistry, httpServlet.getServletConfig(), httpServlet);
                     }
                 }
             }
