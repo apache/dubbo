@@ -29,6 +29,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.configcenter.DynamicConfiguration;
 import org.apache.dubbo.registry.NotifyListener;
+import org.apache.dubbo.registry.ProviderChangedListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.Invocation;
@@ -126,6 +127,8 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     private static final ConsumerConfigurationListener CONSUMER_CONFIGURATION_LISTENER = new ConsumerConfigurationListener();
     private ReferenceConfigurationListener serviceConfigurationListener;
 
+    private List<ProviderChangedListener> providerChangedListeners;
+
 
     public RegistryDirectory(Class<T> serviceType, URL url) {
         super(url);
@@ -141,6 +144,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         this.overrideDirectoryUrl = this.directoryUrl = turnRegistryUrlToConsumerUrl(url);
         String group = directoryUrl.getParameter(GROUP_KEY, "");
         this.multiGroup = group != null && (ANY_VALUE.equals(group) || group.contains(","));
+        providerChangedListeners = ExtensionLoader.getExtensionLoader(ProviderChangedListener.class).getActivateExtension(url, (String[]) null);
     }
 
     private URL turnRegistryUrlToConsumerUrl(URL url) {
@@ -254,7 +258,13 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     // TODO: 2017/8/31 FIXME The thread pool should be used to refresh the address, otherwise the task may be accumulated.
     private void refreshInvoker(List<URL> invokerUrls) {
         Assert.notNull(invokerUrls, "invokerUrls should not be null");
-
+        List<URL> oldProviderUrlList;
+        if (this.urlInvokerMap == null) {
+            oldProviderUrlList = new ArrayList<>();
+        } else {
+            oldProviderUrlList = urlInvokerMap.values().stream().map(Invoker::getUrl).collect(Collectors.toList());
+        }
+        List<URL> newProviderUrlList;
         if (invokerUrls.size() == 1
                 && invokerUrls.get(0) != null
                 && EMPTY_PROTOCOL.equals(invokerUrls.get(0).getProtocol())) {
@@ -262,6 +272,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             this.invokers = Collections.emptyList();
             routerChain.setInvokers(this.invokers);
             destroyAllInvokers(); // Close all invokers
+            newProviderUrlList = Collections.emptyList();
         } else {
             this.forbidden = false; // Allow to access
             Map<String, Invoker<T>> oldUrlInvokerMap = this.urlInvokerMap; // local reference
@@ -299,13 +310,20 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             routerChain.setInvokers(newInvokers);
             this.invokers = multiGroup ? toMergeInvokerList(newInvokers) : newInvokers;
             this.urlInvokerMap = newUrlInvokerMap;
-
             try {
                 destroyUnusedInvokers(oldUrlInvokerMap, newUrlInvokerMap); // Close the unused Invoker
             } catch (Exception e) {
                 logger.warn("destroyUnusedInvokers error. ", e);
             }
+            newProviderUrlList = newUrlInvokerMap.values().stream().map(Invoker::getUrl).collect(Collectors.toList());
         }
+        if (CollectionUtils.isNotEmpty(providerChangedListeners)) {
+            fireOnProviderChanged(oldProviderUrlList, newProviderUrlList);
+        }
+    }
+
+    private <T> void fireOnProviderChanged(List<URL> oldProviderUrlList, List<URL> newProviderUrlList) {
+        this.providerChangedListeners.forEach(providerChangedListener -> providerChangedListener.onProviderChanged(oldProviderUrlList, newProviderUrlList));
     }
 
     private List<Invoker<T>> toMergeInvokerList(List<Invoker<T>> invokers) {
@@ -615,6 +633,14 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     public void setRegisteredConsumerUrl(URL registeredConsumerUrl) {
         this.registeredConsumerUrl = registeredConsumerUrl;
+    }
+
+    public List<ProviderChangedListener> getProviderChangedListeners() {
+        return providerChangedListeners;
+    }
+
+    public void setProviderChangedListeners(List<ProviderChangedListener> providerChangedListeners) {
+        this.providerChangedListeners = providerChangedListeners;
     }
 
     @Override
