@@ -433,6 +433,7 @@ public class NacosRegistry extends FailbackRegistry {
         Instance instance = new Instance();
         instance.setIp(ip);
         instance.setPort(port);
+        instance.setWeight(newURL.getParameter(Constants.WEIGHT_KEY, Constants.DEFAULT_WEIGHT));
         instance.setMetadata(new HashMap<String, String>(newURL.getParameters()));
         return instance;
     }
