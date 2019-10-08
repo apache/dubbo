@@ -49,6 +49,7 @@ import com.alibaba.nacos.api.naming.listener.EventListener;
 import com.alibaba.nacos.api.naming.listener.NamingEvent;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.api.naming.pojo.ListView;
+import org.apache.dubbo.rpc.cluster.Constants;
 
 import static java.util.Collections.singleton;
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
@@ -460,6 +461,7 @@ public class NacosRegistry extends FailbackRegistry {
         Instance instance = new Instance();
         instance.setIp(ip);
         instance.setPort(port);
+        instance.setWeight(newURL.getParameter(Constants.WEIGHT_KEY, Constants.DEFAULT_WEIGHT));
         instance.setMetadata(new HashMap<>(newURL.getParameters()));
         return instance;
     }
