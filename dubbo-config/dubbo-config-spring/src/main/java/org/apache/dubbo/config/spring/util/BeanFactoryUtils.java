@@ -27,12 +27,8 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import static java.util.Collections.emptyList;
-import static org.springframework.beans.factory.BeanFactoryUtils.beanNamesForTypeIncludingAncestors;
-import static org.springframework.beans.factory.BeanFactoryUtils.beansOfTypeIncludingAncestors;
-import static org.springframework.util.ObjectUtils.containsElement;
 import static org.springframework.util.ObjectUtils.isEmpty;
 
 /**
@@ -70,27 +66,22 @@ public class BeanFactoryUtils {
     }
 
     /**
-     * Get optional Bean
+     * Get nullable Bean
      *
      * @param beanFactory {@link ListableBeanFactory}
      * @param beanName    the name of Bean
      * @param beanType    the {@link Class type} of Bean
      * @param <T>         the {@link Class type} of Bean
      * @return A bean if present , or <code>null</code>
-     * @since 2.6.6
      */
-    public static <T> T getOptionalBean(ListableBeanFactory beanFactory, String beanName, Class<T> beanType) {
-
-        String[] allBeanNames = beanNamesForTypeIncludingAncestors(beanFactory, beanType);
-
-        if (!containsElement(allBeanNames, beanName)) {
-            return null;
+    public static <T> T getNullableBean(ListableBeanFactory beanFactory, String beanName, Class<T> beanType) {
+        T bean = null;
+        try {
+            bean = beanFactory.getBean(beanName, beanType);
+        } catch (Throwable ignored) {
+            // Any exception will be ignored to handle
         }
-
-        Map<String, T> beansOfType = beansOfTypeIncludingAncestors(beanFactory, beanType);
-
-        return beansOfType.get(beanName);
-
+        return bean;
     }
 
 
@@ -102,7 +93,6 @@ public class BeanFactoryUtils {
      * @param beanType    the {@link Class type} of Bean
      * @param <T>         the {@link Class type} of Bean
      * @return the read-only and non-null {@link List} of Bean names
-     * @since 2.6.6
      */
     public static <T> List<T> getBeans(ListableBeanFactory beanFactory, String[] beanNames, Class<T> beanType) {
 
@@ -110,13 +100,12 @@ public class BeanFactoryUtils {
             return emptyList();
         }
 
-        String[] allBeanNames = beanNamesForTypeIncludingAncestors(beanFactory, beanType);
-
         List<T> beans = new ArrayList<T>(beanNames.length);
 
         for (String beanName : beanNames) {
-            if (containsElement(allBeanNames, beanName)) {
-                beans.add(beanFactory.getBean(beanName, beanType));
+            T bean = getNullableBean(beanFactory, beanName, beanType);
+            if (bean != null) {
+                beans.add(bean);
             }
         }
 

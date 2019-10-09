@@ -34,7 +34,7 @@ import java.util.Map;
 public class PropertySourcesUtilsTest {
 
     @Test
-    public void testGetSubProperties() {
+    public void testGetPrefixedProperties() {
 
         MutablePropertySources propertySources = new MutablePropertySources();
 
@@ -47,7 +47,7 @@ public class PropertySourcesUtilsTest {
         propertySources.addLast(propertySource);
         propertySources.addLast(propertySource2);
 
-        Map<String, Object> result = PropertySourcesUtils.getSubProperties(propertySources, "user");
+        Map<String, Object> result = PropertySourcesUtils.getPrefixedProperties(propertySources, "user");
 
         Assertions.assertEquals(Collections.emptyMap(), result);
 
@@ -62,14 +62,14 @@ public class PropertySourcesUtilsTest {
         expected.put("name", "Mercy");
         expected.put("age", "31");
 
-        result = PropertySourcesUtils.getSubProperties(propertySources, "user");
+        result = PropertySourcesUtils.getPrefixedProperties(propertySources, "user");
         Assertions.assertEquals(expected, result);
 
-        result = PropertySourcesUtils.getSubProperties(propertySources, "");
+        result = PropertySourcesUtils.getPrefixedProperties(propertySources, "");
 
         Assertions.assertEquals(Collections.emptyMap(), result);
 
-        result = PropertySourcesUtils.getSubProperties(propertySources, "no-exists");
+        result = PropertySourcesUtils.getPrefixedProperties(propertySources, "no-exists");
 
         Assertions.assertEquals(Collections.emptyMap(), result);
 
