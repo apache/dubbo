@@ -225,11 +225,11 @@ public class DefaultFuture extends CompletableFuture<Object> {
                 + (sent > 0 ? " client elapsed: " + (sent - start)
                 + " ms, server elapsed: " + (nowTimestamp - sent)
                 : " elapsed: " + (nowTimestamp - start)) + " ms, timeout: "
-                + timeout + " ms, request: " + getTimeoutRequest() + ", channel: " + channel.getLocalAddress()
+                + timeout + " ms, request: " + (logger.isDebugEnabled() ? request : getRequestWithoutData()) + ", channel: " + channel.getLocalAddress()
                 + " -> " + channel.getRemoteAddress();
     }
 
-    private Request getTimeoutRequest() {
+    private Request getRequestWithoutData() {
         Request newRequest = request;
         newRequest.setData(null);
         return newRequest;
