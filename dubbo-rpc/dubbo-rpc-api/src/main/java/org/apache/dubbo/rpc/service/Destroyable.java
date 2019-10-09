@@ -14,7 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.bootstrap;
+package org.apache.dubbo.rpc.service;
 
-public class ReferenceRefer {
+/**
+ *
+ */
+public interface Destroyable {
+
+    void $destroy();
+
 }

@@ -183,7 +183,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     /**
      * Check whether the registry config is exists, and then conversion it to {@link RegistryConfig}
      */
-    protected void checkRegistry() {
+    public void checkRegistry() {
         loadRegistriesFromBackwardConfig();
 
         convertRegistryIdsToRegistries();
@@ -197,7 +197,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     @SuppressWarnings("deprecation")
-    protected void checkApplication() {
+    public void checkApplication() {
         // for backward compatibility
         createApplicationIfAbsent();
 
@@ -220,7 +220,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         }
     }
 
-    protected void checkMonitor() {
+    public void checkMonitor() {
         createMonitorIfAbsent();
         if (!monitor.isValid()) {
             logger.info("There's no valid monitor config found, if you want to open monitor statistics for Dubbo, " +
@@ -244,7 +244,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         );
     }
 
-    protected void checkMetadataReport() {
+    public void checkMetadataReport() {
         // TODO get from ConfigManager first, only create if absent.
         if (metadataReportConfig == null) {
             ConfigManager configManager = ConfigManager.getInstance();
@@ -357,7 +357,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         return null;
     }
 
-    static void appendRuntimeParameters(Map<String, String> map) {
+    public static void appendRuntimeParameters(Map<String, String> map) {
         map.put(DUBBO_VERSION_KEY, Version.getProtocolVersion());
         map.put(RELEASE_KEY, Version.getVersion());
         map.put(TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));
@@ -373,7 +373,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
      * @param interfaceClass the interface of remote service
      * @param methods        the methods configured
      */
-    protected void checkInterfaceAndMethods(Class<?> interfaceClass, List<MethodConfig> methods) {
+    public void checkInterfaceAndMethods(Class<?> interfaceClass, List<MethodConfig> methods) {
         // interface cannot be null
         Assert.notNull(interfaceClass, new IllegalStateException("interface not allow null!"));
 
@@ -410,7 +410,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
      * @param interfaceClass for provider side, it is the {@link Class} of the service that will be exported; for consumer
      *                       side, it is the {@link Class} of the remote service interface that will be referenced
      */
-    void checkMock(Class<?> interfaceClass) {
+    public void checkMock(Class<?> interfaceClass) {
         if (ConfigUtils.isEmpty(mock)) {
             return;
         }
@@ -448,7 +448,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
      * @param interfaceClass for provider side, it is the {@link Class} of the service that will be exported; for consumer
      *                       side, it is the {@link Class} of the remote service interface
      */
-    void checkStubAndLocal(Class<?> interfaceClass) {
+    public void checkStubAndLocal(Class<?> interfaceClass) {
         if (ConfigUtils.isNotEmpty(local)) {
             Class<?> localClass = ConfigUtils.isDefault(local) ?
                     ReflectUtils.forName(interfaceClass.getName() + "Local") : ReflectUtils.forName(local);

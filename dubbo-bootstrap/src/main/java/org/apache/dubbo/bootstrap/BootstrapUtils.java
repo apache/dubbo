@@ -17,18 +17,19 @@
 package org.apache.dubbo.bootstrap;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.Version;
-import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.URLBuilder;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
+import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.AbstractInterfaceConfig;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.monitor.MonitorFactory;
 import org.apache.dubbo.monitor.MonitorService;
-import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.registry.RegistryService;
 
 import java.util.ArrayList;
@@ -36,46 +37,58 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
+import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_PROTOCOL;
+import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
+import static org.apache.dubbo.common.utils.UrlUtils.isServiceDiscoveryRegistryType;
+import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
+import static org.apache.dubbo.monitor.Constants.LOGSTAT_PROTOCOL;
+import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
+import static org.apache.dubbo.registry.Constants.REGISTER_KEY;
+import static org.apache.dubbo.registry.Constants.SUBSCRIBE_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
+
 /**
  *
  */
 public class BootstrapUtils {
+
     public static List<URL> loadRegistries(AbstractInterfaceConfig interfaceConfig, boolean provider) {
-        List<URL> registryList = new ArrayList<>();
+        // check && override if necessary
+        List<URL> registryList = new ArrayList<URL>();
         ApplicationConfig application = interfaceConfig.getApplication();
         List<RegistryConfig> registries = interfaceConfig.getRegistries();
-        if (registries != null && !registries.isEmpty()) {
-            for (RegistryConfig registryConfig : registries) {
-                Map<String, String> map = new HashMap<>();
-                map.putAll(ConfigConverter.configToMap(application, null));
-                map.putAll(ConfigConverter.configToMap(registryConfig, null));
-                map.put("path", RegistryService.class.getName());
-                map.put("dubbo", Version.getProtocolVersion());
-                map.put(Constants.TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));
-                if (ConfigUtils.getPid() > 0) {
-                    map.put(Constants.PID_KEY, String.valueOf(ConfigUtils.getPid()));
-                }
-                if (!map.containsKey("protocol")) {
-                    if (ExtensionLoader.getExtensionLoader(RegistryFactory.class).hasExtension("remote")) {
-                        map.put("protocol", "remote");
-                    } else {
-                        map.put("protocol", "zookeeper");
-                    }
-                }
-
-                String address = map.get("address");
-
+        if (CollectionUtils.isNotEmpty(registries)) {
+            for (RegistryConfig config : registries) {
+                String address = config.getAddress();
                 if (StringUtils.isEmpty(address)) {
-                    throw new IllegalStateException("Please specify address for your Registry. For example, <dubbo:registry address=\"...\" /> to your spring config. If you want unregister, please set <dubbo:service registry=\"N/A\" />");
+                    address = ANYHOST_VALUE;
                 }
-
-                if (address.length() > 0 && !RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(address)) {
+                if (!RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(address)) {
+                    Map<String, String> map = new HashMap<String, String>();
+                    AbstractConfig.appendParameters(map, application);
+                    AbstractConfig.appendParameters(map, config);
+                    map.put(PATH_KEY, RegistryService.class.getName());
+                    AbstractInterfaceConfig.appendRuntimeParameters(map);
+                    if (!map.containsKey(PROTOCOL_KEY)) {
+                        map.put(PROTOCOL_KEY, DUBBO_PROTOCOL);
+                    }
                     List<URL> urls = UrlUtils.parseURLs(address, map);
+
                     for (URL url : urls) {
-                        url = url.addParameter(Constants.REGISTRY_KEY, url.getProtocol());
-                        url = url.setProtocol(Constants.REGISTRY_PROTOCOL);
-                        if ((provider && url.getParameter(Constants.REGISTER_KEY, true))
-                                || (!provider && url.getParameter(Constants.SUBSCRIBE_KEY, true))) {
+
+                        url = URLBuilder.from(url)
+                                .addParameter(REGISTRY_KEY, url.getProtocol())
+                                .setProtocol(extractRegistryType(url))
+                                .build();
+                        if ((provider && url.getParameter(REGISTER_KEY, true))
+                                || (!provider && url.getParameter(SUBSCRIBE_KEY, true))) {
                             registryList.add(url);
                         }
                     }
@@ -86,29 +99,50 @@ public class BootstrapUtils {
     }
 
     public static URL loadMonitor(AbstractInterfaceConfig interfaceConfig, URL registryURL) {
-        MonitorConfig monitor = interfaceConfig.getMonitor();
-        Map<String, String> map = new HashMap<>();
-        map.put(Constants.INTERFACE_KEY, MonitorService.class.getName());
-        map.put("dubbo", Version.getProtocolVersion());
-        map.put(Constants.TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));
-        if (ConfigUtils.getPid() > 0) {
-            map.put(Constants.PID_KEY, String.valueOf(ConfigUtils.getPid()));
+        interfaceConfig.checkMonitor();
+        Map<String, String> map = new HashMap<String, String>();
+        map.put(INTERFACE_KEY, MonitorService.class.getName());
+        AbstractInterfaceConfig.appendRuntimeParameters(map);
+        //set ip
+        String hostToRegistry = ConfigUtils.getSystemProperty(DUBBO_IP_TO_REGISTRY);
+        if (StringUtils.isEmpty(hostToRegistry)) {
+            hostToRegistry = NetUtils.getLocalHost();
+        } else if (NetUtils.isInvalidLocalHost(hostToRegistry)) {
+            throw new IllegalArgumentException("Specified invalid registry ip from property:" +
+                    DUBBO_IP_TO_REGISTRY + ", value:" + hostToRegistry);
         }
-        map.putAll(ConfigConverter.configToMap(monitor, null));
+        map.put(REGISTER_IP_KEY, hostToRegistry);
 
-        String address = map.get("address");
+        MonitorConfig monitor = interfaceConfig.getMonitor();
+        ApplicationConfig application = interfaceConfig.getApplication();
+        AbstractConfig.appendParameters(map, monitor);
+        AbstractConfig.appendParameters(map, application);
+        String address = monitor.getAddress();
+        String sysaddress = System.getProperty("dubbo.monitor.address");
+        if (sysaddress != null && sysaddress.length() > 0) {
+            address = sysaddress;
+        }
         if (ConfigUtils.isNotEmpty(address)) {
-            if (!map.containsKey(Constants.PROTOCOL_KEY)) {
-                if (ExtensionLoader.getExtensionLoader(MonitorFactory.class).hasExtension("logstat")) {
-                    map.put(Constants.PROTOCOL_KEY, "logstat");
+            if (!map.containsKey(PROTOCOL_KEY)) {
+                if (getExtensionLoader(MonitorFactory.class).hasExtension(LOGSTAT_PROTOCOL)) {
+                    map.put(PROTOCOL_KEY, LOGSTAT_PROTOCOL);
                 } else {
-                    map.put(Constants.PROTOCOL_KEY, "dubbo");
+                    map.put(PROTOCOL_KEY, DUBBO_PROTOCOL);
                 }
             }
             return UrlUtils.parseURL(address, map);
-        } else if (Constants.REGISTRY_PROTOCOL.equals(monitor.getProtocol()) && registryURL != null) {
-            return registryURL.setProtocol("dubbo").addParameter(Constants.PROTOCOL_KEY, "registry").addParameterAndEncoded(Constants.REFER_KEY, StringUtils.toQueryString(map));
+        } else if ((REGISTRY_PROTOCOL.equals(monitor.getProtocol()) || SERVICE_REGISTRY_PROTOCOL.equals(monitor.getProtocol()))
+                && registryURL != null) {
+            return URLBuilder.from(registryURL)
+                    .setProtocol(DUBBO_PROTOCOL)
+                    .addParameter(PROTOCOL_KEY, monitor.getProtocol())
+                    .addParameterAndEncoded(REFER_KEY, StringUtils.toQueryString(map))
+                    .build();
         }
         return null;
+    }
+
+    private static String extractRegistryType(URL url) {
+        return isServiceDiscoveryRegistryType(url) ? SERVICE_REGISTRY_PROTOCOL : REGISTRY_PROTOCOL;
     }
 }

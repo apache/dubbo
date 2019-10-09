@@ -19,6 +19,7 @@ package org.apache.dubbo.config.context;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
@@ -355,6 +356,21 @@ public class ConfigManager {
 
     }
 
+    /**
+     * In some scenario,  we may nee to add and remove ServiceConfig or ReferenceConfig dynamically.
+     *
+     * @param config the config instance to remove.
+     */
+    public void removeConfig(AbstractConfig config) {
+        if (config == null) {
+            return;
+        }
+
+        Map<String, AbstractConfig> configs = configsCache.get(getTagName(config.getClass()));
+        if (CollectionUtils.isNotEmptyMap(configs)) {
+            configs.remove(getId(config));
+        }
+    }
 
     // For test purpose
     public void clear() {

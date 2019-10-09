@@ -369,7 +369,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
      *
      * @return
      */
-    private boolean isOnlyInJvm() {
+    public boolean isOnlyInJvm() {
         return getProtocols().size() == 1 && LOCAL_PROTOCOL.equalsIgnoreCase(getProtocols().get(0).getName());
     }
 
@@ -387,7 +387,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
     }
 
-    private boolean shouldExport() {
+    public boolean shouldExport() {
         Boolean export = getExport();
         // default value is true
         return export == null ? true : export;
@@ -398,7 +398,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         return (export == null && provider != null) ? provider.getExport() : export;
     }
 
-    private boolean shouldDelay() {
+    public boolean shouldDelay() {
         Integer delay = getDelay();
         return delay != null && delay > 0;
     }
@@ -426,7 +426,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         dispatch(new ServiceConfigExportedEvent(this));
     }
 
-    private void checkRef() {
+    public void checkRef() {
         // reference should not be null, and is the implementation of the given interface
         if (ref == null) {
             throw new IllegalStateException("ref not allow null!");
@@ -658,7 +658,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         logger.info("Export dubbo service " + interfaceClass.getName() + " to local registry url : " + local);
     }
 
-    private Optional<String> getContextPath(ProtocolConfig protocolConfig) {
+    public Optional<String> getContextPath(ProtocolConfig protocolConfig) {
         String contextPath = protocolConfig.getContextpath();
         if (StringUtils.isEmpty(contextPath) && provider != null) {
             contextPath = provider.getContextpath();
@@ -680,7 +680,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
      * @param map
      * @return
      */
-    private String findConfigedHosts(ProtocolConfig protocolConfig, List<URL> registryURLs, Map<String, String> map) {
+    public String findConfigedHosts(ProtocolConfig protocolConfig, List<URL> registryURLs, Map<String, String> map) {
         boolean anyhost = false;
 
         String hostToBind = getValueFromConfig(protocolConfig, DUBBO_IP_TO_BIND);
@@ -750,7 +750,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
      * @param name
      * @return
      */
-    private Integer findConfigedPorts(ProtocolConfig protocolConfig, String name, Map<String, String> map) {
+    public Integer findConfigedPorts(ProtocolConfig protocolConfig, String name, Map<String, String> map) {
         Integer portToBind = null;
 
         // parse bind port from environment
@@ -814,7 +814,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         return port;
     }
 
-    private void completeCompoundConfigs() {
+    public void completeCompoundConfigs() {
         if (provider != null) {
             if (application == null) {
                 setApplication(provider.getApplication());
@@ -853,7 +853,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
     }
 
-    private void checkDefault() {
+    public void checkDefault() {
         createProviderIfAbsent();
     }
 
@@ -872,7 +872,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         );
     }
 
-    private void checkProtocol() {
+    public void checkProtocol() {
         if (CollectionUtils.isEmpty(protocols) && provider != null) {
             setProtocols(provider.getProtocols());
         }

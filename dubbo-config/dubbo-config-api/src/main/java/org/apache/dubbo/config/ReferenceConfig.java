@@ -352,7 +352,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         dispatch(new ReferenceConfigInitializedEvent(this, invoker));
     }
 
-    private ConsumerModel buildConsumerModel(String serviceKey, Map<String, Object> attributes) {
+    public ConsumerModel buildConsumerModel(String serviceKey, Map<String, Object> attributes) {
         Method[] methods = interfaceClass.getMethods();
         Class serviceInterface = interfaceClass;
         if (interfaceClass == GenericService.class) {
@@ -478,7 +478,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         return isJvmRefer;
     }
 
-    protected boolean shouldCheck() {
+    public boolean shouldCheck() {
         Boolean shouldCheck = isCheck();
         if (shouldCheck == null && getConsumer() != null) {
             shouldCheck = getConsumer().isCheck();
@@ -502,7 +502,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         return shouldInit;
     }
 
-    private void checkDefault() {
+    public void checkDefault() {
         if (consumer != null) {
             return;
         }
@@ -513,7 +513,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         }));
     }
 
-    private void completeCompoundConfigs() {
+    public void completeCompoundConfigs() {
         if (consumer != null) {
             if (application == null) {
                 setApplication(consumer.getApplication());
@@ -647,7 +647,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         return DUBBO + ".reference." + interfaceName;
     }
 
-    private void resolveFile() {
+    public void resolveFile() {
         String resolve = System.getProperty(interfaceName);
         String resolveFile = null;
         if (StringUtils.isEmpty(resolve)) {

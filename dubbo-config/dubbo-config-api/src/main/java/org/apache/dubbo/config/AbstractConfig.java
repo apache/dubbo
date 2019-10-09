@@ -151,12 +151,12 @@ public abstract class AbstractConfig implements Serializable {
         return StringUtils.camelToSplitName(tag, "-");
     }
 
-    protected static void appendParameters(Map<String, String> parameters, Object config) {
+    public static void appendParameters(Map<String, String> parameters, Object config) {
         appendParameters(parameters, config, null);
     }
 
     @SuppressWarnings("unchecked")
-    protected static void appendParameters(Map<String, String> parameters, Object config, String prefix) {
+    public static void appendParameters(Map<String, String> parameters, Object config, String prefix) {
         if (config == null) {
             return;
         }
@@ -257,7 +257,7 @@ public abstract class AbstractConfig implements Serializable {
         }
     }
 
-    protected static ConsumerMethodModel.AsyncMethodInfo convertMethodConfig2AsyncInfo(MethodConfig methodConfig) {
+    public static ConsumerMethodModel.AsyncMethodInfo convertMethodConfig2AsyncInfo(MethodConfig methodConfig) {
         if (methodConfig == null || (methodConfig.getOninvoke() == null && methodConfig.getOnreturn() == null && methodConfig.getOnthrow() == null)) {
             return null;
         }
