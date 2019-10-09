@@ -64,11 +64,11 @@ public class WebServiceProtocol extends AbstractProxyProtocol {
 
     private final ExtensionManagerBus bus = new ExtensionManagerBus();
 
-    private final SoapTransportFactory transportFactory = new SoapTransportFactory();
+    private SoapTransportFactory transportFactory = null;
 
     private ServerFactoryBean serverFactoryBean = null;
 
-    private DestinationRegistry destinationRegistry = new DestinationRegistryImpl();
+    private DestinationRegistry destinationRegistry=null;
 
     private HttpBinder httpBinder;
 
@@ -88,8 +88,11 @@ public class WebServiceProtocol extends AbstractProxyProtocol {
         return DEFAULT_PORT;
     }
 
+
     @Override
     protected <T> Runnable doExport(T impl, Class<T> type, URL url) throws RpcException {
+        transportFactory = new SoapTransportFactory();
+        destinationRegistry  = new DestinationRegistryImpl();
         String addr = getAddr(url);
         HttpServer httpServer = serverMap.get(addr);
         if (httpServer == null) {
@@ -111,6 +114,11 @@ public class WebServiceProtocol extends AbstractProxyProtocol {
                 }
                 if(serverFactoryBean.getBus()!=null) {
                     serverFactoryBean.getBus().shutdown(true);
+                }
+                HttpServer httpServer = serverMap.get(addr);
+                if(httpServer != null){
+                    httpServer.close();
+                    serverMap.remove(addr);
                 }
             }
         };
