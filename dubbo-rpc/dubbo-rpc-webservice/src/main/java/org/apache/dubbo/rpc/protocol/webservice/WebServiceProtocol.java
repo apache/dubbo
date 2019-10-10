@@ -17,10 +17,14 @@
 package org.apache.dubbo.rpc.protocol.webservice;
 
 import org.apache.cxf.binding.soap.SoapTransportFactory;
-import org.apache.cxf.endpoint.Endpoint;
 import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.transport.Destination;
-import org.apache.cxf.transport.http.*;
+
+import org.apache.cxf.transport.http.HTTPConduit;
+import org.apache.cxf.transport.http.AbstractHTTPDestination;
+import org.apache.cxf.transport.http.DestinationRegistry;
+import org.apache.cxf.transport.http.DestinationRegistryImpl;
+import org.apache.cxf.transport.http.HttpDestinationFactory;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.http.HttpBinder;
