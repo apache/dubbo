@@ -23,6 +23,7 @@ import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.ExchangeServer;
 import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import org.apache.dubbo.remoting.telnet.support.Help;
+import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
 import java.util.Collection;
@@ -53,7 +54,7 @@ public class PortTelnetHandler implements TelnetHandler {
             }
         }
         if (port == null || port.length() == 0) {
-            for (ExchangeServer server : DubboProtocol.getDubboProtocol().getServers()) {
+            for (ProtocolServer server : DubboProtocol.getDubboProtocol().getServers()) {
                 if (buf.length() > 0) {
                     buf.append("\r\n");
                 }
@@ -65,14 +66,15 @@ public class PortTelnetHandler implements TelnetHandler {
             }
         } else {
             int p = Integer.parseInt(port);
-            ExchangeServer server = null;
-            for (ExchangeServer s : DubboProtocol.getDubboProtocol().getServers()) {
+            ProtocolServer protocolServer = null;
+            for (ProtocolServer s : DubboProtocol.getDubboProtocol().getServers()) {
                 if (p == s.getUrl().getPort()) {
-                    server = s;
+                    protocolServer = s;
                     break;
                 }
             }
-            if (server != null) {
+            if (protocolServer != null) {
+                ExchangeServer server = (ExchangeServer) protocolServer.getRemotingServer();
                 Collection<ExchangeChannel> channels = server.getExchangeChannels();
                 for (ExchangeChannel c : channels) {
                     if (buf.length() > 0) {

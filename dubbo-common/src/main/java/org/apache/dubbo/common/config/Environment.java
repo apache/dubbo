@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.config;
 
+import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.StringUtils;
 
@@ -41,10 +42,7 @@ public class Environment {
 
     private boolean configCenterFirst = true;
 
-    /**
-     * FIXME, this instance will always be a type of DynamicConfiguration, ConfigCenterConfig will load the instance at startup and assign it to here.
-     */
-    private Configuration dynamicConfiguration;
+    private DynamicConfiguration dynamicConfiguration;
 
     public static Environment getInstance() {
         return INSTANCE;
@@ -153,11 +151,11 @@ public class Environment {
         this.configCenterFirst = configCenterFirst;
     }
 
-    public Optional<Configuration> getDynamicConfiguration() {
+    public Optional<DynamicConfiguration> getDynamicConfiguration() {
         return Optional.ofNullable(dynamicConfiguration);
     }
 
-    public void setDynamicConfiguration(Configuration dynamicConfiguration) {
+    public void setDynamicConfiguration(DynamicConfiguration dynamicConfiguration) {
         this.dynamicConfiguration = dynamicConfiguration;
     }
 

@@ -16,14 +16,14 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.apache.dubbo.rpc.model.Person;
-import org.apache.dubbo.rpc.model.SerializablePerson;
-import org.apache.dubbo.rpc.model.User;
-import org.apache.dubbo.rpc.model.person.BigPerson;
-import org.apache.dubbo.rpc.model.person.FullAddress;
-import org.apache.dubbo.rpc.model.person.PersonInfo;
-import org.apache.dubbo.rpc.model.person.PersonStatus;
-import org.apache.dubbo.rpc.model.person.Phone;
+import org.apache.dubbo.common.model.Person;
+import org.apache.dubbo.common.model.SerializablePerson;
+import org.apache.dubbo.common.model.User;
+import org.apache.dubbo.common.model.person.BigPerson;
+import org.apache.dubbo.common.model.person.FullAddress;
+import org.apache.dubbo.common.model.person.PersonInfo;
+import org.apache.dubbo.common.model.person.PersonStatus;
+import org.apache.dubbo.common.model.person.Phone;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -35,10 +35,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
 

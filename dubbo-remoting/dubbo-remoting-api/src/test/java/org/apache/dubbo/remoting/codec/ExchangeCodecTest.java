@@ -42,6 +42,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.CommonConstants.READONLY_EVENT;
 import static org.junit.jupiter.api.Assertions.fail;
 
 /**
@@ -243,7 +244,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
     public void test_Decode_Return_Request_Event_String() throws IOException {
         //|10011111|20-stats=ok|id=0|length=0
         byte[] header = new byte[]{MAGIC_HIGH, MAGIC_LOW, (byte) 0xe2, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-        String event = Request.READONLY_EVENT;
+        String event = READONLY_EVENT;
         byte[] request = getRequestBytes(event, header);
 
         Request obj = (Request) decode(request);

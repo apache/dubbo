@@ -21,20 +21,30 @@ import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.context.ConfigManager;
+import org.apache.dubbo.config.event.ReferenceConfigDestroyedEvent;
+import org.apache.dubbo.config.event.ReferenceConfigInitializedEvent;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
+import org.apache.dubbo.event.EventDispatcher;
+import org.apache.dubbo.event.EventListener;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ReferenceConfigTest {
+
+    private final EventDispatcher eventDispatcher = EventDispatcher.getDefaultExtension();
 
     @BeforeEach
     public void setUp() {
         ConfigManager.getInstance().clear();
+        eventDispatcher.removeAllEventListeners();
     }
 
     @AfterEach
@@ -67,12 +77,38 @@ public class ReferenceConfigTest {
         rc.setInterface(DemoService.class.getName());
         rc.setInjvm(false);
 
+        AtomicReference<ReferenceConfig> reference = new AtomicReference<>();
+
+        eventDispatcher.addEventListener(new EventListener<ReferenceConfigInitializedEvent>() {
+            @Override
+            public void onEvent(ReferenceConfigInitializedEvent event) {
+                reference.set(event.getReferenceConfig());
+            }
+        });
+
         try {
             System.setProperty("java.net.preferIPv4Stack", "true");
             demoService.export();
             rc.get();
+
+            assertEquals(rc, reference.get());
+
+            reference.compareAndSet(rc, null);
+
             Assertions.assertTrue(!LOCAL_PROTOCOL.equalsIgnoreCase(
                     rc.getInvoker().getUrl().getProtocol()));
+
+            eventDispatcher.addEventListener(new EventListener<ReferenceConfigDestroyedEvent>() {
+                @Override
+                public void onEvent(ReferenceConfigDestroyedEvent event) {
+                    reference.set(event.getReferenceConfig());
+                }
+            });
+
+            rc.destroy();
+
+            assertEquals(rc, reference.get());
+
         } finally {
             System.clearProperty("java.net.preferIPv4Stack");
             demoService.unexport();

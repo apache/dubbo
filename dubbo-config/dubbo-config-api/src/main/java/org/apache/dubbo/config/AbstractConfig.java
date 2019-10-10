@@ -30,15 +30,19 @@ import org.apache.dubbo.common.utils.MethodUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.context.ConfigConfigurationAdapter;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.support.Parameter;
-import org.apache.dubbo.rpc.model.ConsumerModel;
+import org.apache.dubbo.rpc.model.ConsumerMethodModel;
 
+import javax.annotation.PostConstruct;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -115,9 +119,6 @@ public abstract class AbstractConfig implements Serializable {
         LEGACY_PROPERTIES.put("dubbo.consumer.retries", "dubbo.service.max.retry.providers");
         LEGACY_PROPERTIES.put("dubbo.consumer.check", "dubbo.service.allow.no.provider");
         LEGACY_PROPERTIES.put("dubbo.service.url", "dubbo.service.address");
-
-        // this is only for compatibility
-        DubboShutdownHook.getDubboShutdownHook().register();
     }
 
     /**
@@ -125,6 +126,8 @@ public abstract class AbstractConfig implements Serializable {
      */
     protected String id;
     protected String prefix;
+
+    protected final AtomicBoolean refreshed = new AtomicBoolean(false);
 
     private static String convertLegacyValue(String key, String value) {
         if (value != null && value.length() > 0) {
@@ -137,7 +140,7 @@ public abstract class AbstractConfig implements Serializable {
         return value;
     }
 
-    private static String getTagName(Class<?> cls) {
+    public static String getTagName(Class<?> cls) {
         String tag = cls.getSimpleName();
         for (String suffix : SUFFIXES) {
             if (tag.endsWith(suffix)) {
@@ -148,12 +151,12 @@ public abstract class AbstractConfig implements Serializable {
         return StringUtils.camelToSplitName(tag, "-");
     }
 
-    protected static void appendParameters(Map<String, String> parameters, Object config) {
+    public static void appendParameters(Map<String, String> parameters, Object config) {
         appendParameters(parameters, config, null);
     }
 
     @SuppressWarnings("unchecked")
-    protected static void appendParameters(Map<String, String> parameters, Object config, String prefix) {
+    public static void appendParameters(Map<String, String> parameters, Object config, String prefix) {
         if (config == null) {
             return;
         }
@@ -248,7 +251,7 @@ public abstract class AbstractConfig implements Serializable {
         }
     }
 
-    protected static ConsumerModel.AsyncMethodInfo convertMethodConfig2AsyncInfo(MethodConfig methodConfig) {
+    public static ConsumerMethodModel.AsyncMethodInfo convertMethodConfig2AsyncInfo(MethodConfig methodConfig) {
         if (methodConfig == null || (methodConfig.getOninvoke() == null && methodConfig.getOnreturn() == null && methodConfig.getOnthrow() == null)) {
             return null;
         }
@@ -258,7 +261,7 @@ public abstract class AbstractConfig implements Serializable {
             throw new IllegalStateException("method config error : return attribute must be set true when onreturn or onthrow has been set.");
         }
 
-        ConsumerModel.AsyncMethodInfo asyncMethodInfo = new ConsumerModel.AsyncMethodInfo();
+        ConsumerMethodModel.AsyncMethodInfo asyncMethodInfo = new ConsumerMethodModel.AsyncMethodInfo();
 
         asyncMethodInfo.setOninvokeInstance(methodConfig.getOninvoke());
         asyncMethodInfo.setOnreturnInstance(methodConfig.getOnreturn());
@@ -543,6 +546,10 @@ public abstract class AbstractConfig implements Serializable {
      * overriding of customized parameters stored in 'parameters'.
      */
     public void refresh() {
+        if (!refreshed.compareAndSet(false, true)) {
+            logger.info("Will not refresh " + this.getClass().getName() + ", already update to date.");
+            return;
+        }
         try {
             CompositeConfiguration compositeConfiguration = Environment.getInstance().getConfiguration(getPrefix(), getId());
             Configuration config = new ConfigConfigurationAdapter(this);
@@ -635,7 +642,7 @@ public abstract class AbstractConfig implements Serializable {
                     Method method2 = obj.getClass().getMethod(method1.getName(), method1.getParameterTypes());
                     Object value1 = method1.invoke(this, new Object[]{});
                     Object value2 = method2.invoke(obj, new Object[]{});
-                    if ((value1 != null && value2 != null) && !value1.equals(value2)) {
+                    if (!Objects.equals(value1, value2)) {
                         return false;
                     }
                 } catch (Exception e) {
@@ -644,5 +651,18 @@ public abstract class AbstractConfig implements Serializable {
             }
         }
         return true;
+    }
+
+    /**
+     * Add {@link AbstractConfig current instance} into {@link ConfigManager}
+     * <p>
+     * Current method will invoked by Spring or Java EE container automatically, or should be triggered manually.
+     *
+     * @see ConfigManager#addConfig(AbstractConfig)
+     * @since 2.7.4
+     */
+    @PostConstruct
+    public void addIntoConfigManager() {
+        ConfigManager.getInstance().addConfig(this);
     }
 }

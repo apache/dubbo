@@ -99,6 +99,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
         try {
             client.create().forPath(path);
         } catch (NodeExistsException e) {
+
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -149,7 +150,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
     @Override
     public void delete(String path) {
         try {
-            client.delete().forPath(path);
+            client.delete().deletingChildrenIfNeeded().forPath(path);
         } catch (NoNodeException e) {
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);

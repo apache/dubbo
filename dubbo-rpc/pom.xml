@@ -20,6 +20,7 @@
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-parent</artifactId>
         <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>dubbo-rpc</artifactId>
     <packaging>pom</packaging>
@@ -43,5 +44,6 @@
         <module>dubbo-rpc-redis</module>
         <module>dubbo-rpc-rest</module>
         <module>dubbo-rpc-xml</module>
+        <module>dubbo-rpc-grpc</module>
     </modules>
 </project>

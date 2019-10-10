@@ -22,6 +22,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
+import org.apache.dubbo.remoting.transport.netty4.SslHandlerInitializer.HandshakeCompletionEvent;
 
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -121,5 +122,9 @@ public class NettyServerHandler extends ChannelDuplexHandler {
         } finally {
             NettyChannel.removeChannelIfDisconnected(ctx.channel());
         }
+    }
+
+    public void handshakeCompleted(HandshakeCompletionEvent evt) {
+        // TODO
     }
 }

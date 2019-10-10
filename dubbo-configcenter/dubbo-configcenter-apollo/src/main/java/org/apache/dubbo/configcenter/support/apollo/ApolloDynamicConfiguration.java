@@ -17,13 +17,13 @@
 package org.apache.dubbo.configcenter.support.apollo;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
+import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
+import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
+import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.configcenter.ConfigChangeEvent;
-import org.apache.dubbo.configcenter.ConfigChangeType;
-import org.apache.dubbo.configcenter.ConfigurationListener;
-import org.apache.dubbo.configcenter.DynamicConfiguration;
 
 import com.ctrip.framework.apollo.Config;
 import com.ctrip.framework.apollo.ConfigChangeListener;
@@ -42,12 +42,12 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.stream.Collectors;
 
+import static org.apache.dubbo.common.config.configcenter.Constants.CONFIG_CHECK_KEY;
+import static org.apache.dubbo.common.config.configcenter.Constants.CONFIG_CLUSTER_KEY;
+import static org.apache.dubbo.common.config.configcenter.Constants.CONFIG_NAMESPACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
-import static org.apache.dubbo.configcenter.Constants.CONFIG_CHECK_KEY;
-import static org.apache.dubbo.configcenter.Constants.CONFIG_CLUSTER_KEY;
-import static org.apache.dubbo.configcenter.Constants.CONFIG_NAMESPACE_KEY;
 
 /**
  * Apollo implementation, https://github.com/ctripcorp/apollo
@@ -97,11 +97,11 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
         }
     }
 
-    private String getAddressWithProtocolPrefix (URL url) {
+    private String getAddressWithProtocolPrefix(URL url) {
         String address = url.getBackupAddress();
         if (StringUtils.isNotEmpty(address)) {
             address = Arrays.stream(COMMA_SPLIT_PATTERN.split(address))
-                    .map(addr ->  {
+                    .map(addr -> {
                         if (addr.startsWith(APOLLO_PROTOCOL_PREFIX)) {
                             return addr;
                         }
@@ -135,7 +135,7 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
     }
 
     @Override
-    public String getRule(String key, String group, long timeout) throws IllegalStateException {
+    public String getConfig(String key, String group, long timeout) throws IllegalStateException {
         if (StringUtils.isNotEmpty(group)) {
             if (group.equals(url.getParameter(APPLICATION_KEY))) {
                 return ConfigService.getAppConfig().getProperty(key, null);
@@ -148,7 +148,7 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
 
     @Override
     public String getProperties(String key, String group, long timeout) throws IllegalStateException {
-        if(StringUtils.isEmpty(group)) {
+        if (StringUtils.isEmpty(group)) {
             return dubboConfigFile.getContent();
         }
         if (group.equals(url.getParameter(APPLICATION_KEY))) {
@@ -200,7 +200,7 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
                     return;
                 }
 
-                ConfigChangeEvent event = new ConfigChangeEvent(key, change.getNewValue(), getChangeType(change));
+                ConfigChangedEvent event = new ConfigChangedEvent(key, change.getNamespace(), change.getNewValue(), getChangeType(change));
                 listeners.forEach(listener -> listener.process(event));
             }
         }

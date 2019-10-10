@@ -25,10 +25,15 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.context.ConfigManager;
+import org.apache.dubbo.config.event.ReferenceConfigDestroyedEvent;
+import org.apache.dubbo.config.event.ReferenceConfigInitializedEvent;
 import org.apache.dubbo.config.support.Parameter;
-import org.apache.dubbo.metadata.integration.MetadataReportService;
+import org.apache.dubbo.event.Event;
+import org.apache.dubbo.event.EventDispatcher;
+import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -36,7 +41,7 @@ import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
-import org.apache.dubbo.rpc.cluster.support.RegistryAwareCluster;
+import org.apache.dubbo.rpc.cluster.support.registry.ZoneAwareCluster;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
@@ -60,16 +65,16 @@ import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.METADATA_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.PROXY_CLASS_REF;
 import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SEMICOLON_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
 import static org.apache.dubbo.common.utils.NetUtils.isInvalidLocalHost;
 import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
 import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
@@ -176,6 +181,13 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
     private ServiceMetadata serviceMetadata;
 
+    /**
+     * The {@link EventDispatcher}
+     *
+     * @since 2.7.4
+     */
+    private final EventDispatcher eventDispatcher = EventDispatcher.getDefaultExtension();
+
     @SuppressWarnings("unused")
     private final Object finalizerGuardian = new Object() {
         @Override
@@ -225,7 +237,6 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             throw new IllegalStateException("<dubbo:reference interface=\"\" /> interface not allow null!");
         }
         completeCompoundConfigs();
-        startConfigCenter();
         // get consumer's global configuration
         checkDefault();
         this.refresh();
@@ -282,6 +293,9 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         }
         invoker = null;
         ref = null;
+
+        // dispatch a ReferenceConfigDestroyedEvent since 2.7.4
+        dispatch(new ReferenceConfigDestroyedEvent(this));
     }
 
     private void init() {
@@ -364,6 +378,9 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         ApplicationModel.initConsumerModel(serviceMetadata.getServiceKey(), buildConsumerModel(attributes, serviceModel));
 
         initialized = true;
+
+        // dispatch a ReferenceConfigInitializedEvent since 2.7.4
+        dispatch(new ReferenceConfigInitializedEvent(this, invoker));
     }
 
     private Class<?> getActualInterface() {
@@ -406,7 +423,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                         if (StringUtils.isEmpty(url.getPath())) {
                             url = url.setPath(interfaceName);
                         }
-                        if (REGISTRY_PROTOCOL.equals(url.getProtocol())) {
+                        if (UrlUtils.isRegistry(url)) {
                             urls.add(url.addParameterAndEncoded(REFER_KEY, StringUtils.toQueryString(map)));
                         } else {
                             urls.add(ClusterUtils.mergeUrl(url, map));
@@ -440,14 +457,14 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 URL registryURL = null;
                 for (URL url : urls) {
                     invokers.add(REF_PROTOCOL.refer(interfaceClass, url));
-                    if (REGISTRY_PROTOCOL.equals(url.getProtocol())) {
+                    if (UrlUtils.isRegistry(url)) {
                         registryURL = url; // use last registry url
                     }
                 }
                 if (registryURL != null) { // registry url is available
-                    // use RegistryAwareCluster only when register's CLUSTER is available
-                    URL u = registryURL.addParameter(CLUSTER_KEY, RegistryAwareCluster.NAME);
-                    // The invoker wrap relation would be: RegistryAwareClusterInvoker(StaticDirectory) -> FailoverClusterInvoker(RegistryDirectory, will execute route) -> Invoker
+                    // for multi-subscription scenario, use 'zone-aware' policy by default
+                    URL u = registryURL.addParameterIfAbsent(CLUSTER_KEY, ZoneAwareCluster.NAME);
+                    // The invoker wrap relation would be like: ZoneAwareClusterInvoker(StaticDirectory) -> FailoverClusterInvoker(RegistryDirectory, routing happens here) -> Invoker
                     invoker = CLUSTER.join(new StaticDirectory(u, invokers));
                 } else { // not a registry url, must be direct invoke.
                     invoker = CLUSTER.join(new StaticDirectory(invokers));
@@ -465,10 +482,11 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
          * @since 2.7.0
          * ServiceData Store
          */
-        MetadataReportService metadataReportService = null;
-        if ((metadataReportService = getMetadataReportService()) != null) {
+        String metadata = map.get(METADATA_KEY);
+        WritableMetadataService metadataService = WritableMetadataService.getExtension(metadata == null ? DEFAULT_METADATA_STORAGE_TYPE : metadata);
+        if (metadataService != null) {
             URL consumerURL = new URL(CONSUMER_PROTOCOL, map.remove(REGISTER_IP_KEY), 0, map.get(INTERFACE_KEY), map);
-            metadataReportService.publishConsumer(consumerURL);
+            metadataService.publishServiceDefinition(consumerURL);
         }
         // create service proxy
         return (T) PROXY_FACTORY.getProxy(invoker);
@@ -499,7 +517,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         return isJvmRefer;
     }
 
-    protected boolean shouldCheck() {
+    public boolean shouldCheck() {
         Boolean shouldCheck = isCheck();
         if (shouldCheck == null && getConsumer() != null) {
             shouldCheck = getConsumer().isCheck();
@@ -511,7 +529,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         return shouldCheck;
     }
 
-    protected boolean shouldInit() {
+    public boolean shouldInit() {
         Boolean shouldInit = isInit();
         if (shouldInit == null && getConsumer() != null) {
             shouldInit = getConsumer().isInit();
@@ -523,7 +541,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         return shouldInit;
     }
 
-    private void checkDefault() {
+    public void checkDefault() {
         if (consumer != null) {
             return;
         }
@@ -534,7 +552,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         }));
     }
 
-    private void completeCompoundConfigs() {
+    public void completeCompoundConfigs() {
         if (consumer != null) {
             if (application == null) {
                 setApplication(consumer.getApplication());
@@ -646,7 +664,6 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     }
 
     public void setConsumer(ConsumerConfig consumer) {
-        ConfigManager.getInstance().addConsumer(consumer);
         this.consumer = consumer;
     }
 
@@ -673,7 +690,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         return DUBBO + ".reference." + interfaceName;
     }
 
-    private void resolveFile() {
+    public void resolveFile() {
         String resolve = System.getProperty(interfaceName);
         String resolveFile = null;
         if (StringUtils.isEmpty(resolve)) {
@@ -703,6 +720,26 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 } else {
                     logger.warn("Using -D" + interfaceName + "=" + resolve + " to p2p invoke remote service.");
                 }
+            }
+        }
+    }
+
+    /**
+     * Dispatch an {@link Event event}
+     *
+     * @param event an {@link Event event}
+     * @since 2.7.4
+     */
+    protected void dispatch(Event event) {
+        eventDispatcher.dispatch(event);
+    }
+
+    @Override
+    protected void computeValidRegistryIds() {
+        super.computeValidRegistryIds();
+        if (StringUtils.isEmpty(getRegistryIds())) {
+            if (getConsumer() != null && StringUtils.isNotEmpty(getConsumer().getRegistryIds())) {
+                setRegistryIds(getConsumer().getRegistryIds());
             }
         }
     }

@@ -18,6 +18,8 @@ package org.apache.dubbo.registry.integration;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
+import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -41,6 +43,7 @@ import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.cluster.RouterFactory;
 import org.apache.dubbo.rpc.cluster.directory.AbstractDirectory;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
+import org.apache.dubbo.rpc.cluster.governance.GovernanceRuleRepository;
 import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.protocol.InvokerWrapper;
@@ -58,13 +61,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DISABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PREFERRED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.APP_DYNAMIC_CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
@@ -144,9 +147,9 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     private URL turnRegistryUrlToConsumerUrl(URL url) {
         // save any parameter in registry that will be useful to the new url.
-        String isDefault = url.getParameter(DEFAULT_KEY);
+        String isDefault = url.getParameter(PREFERRED_KEY);
         if (StringUtils.isNotEmpty(isDefault)) {
-            queryMap.put(REGISTRY_KEY + "." + DEFAULT_KEY, isDefault);
+            queryMap.put(REGISTRY_KEY + "." + PREFERRED_KEY, isDefault);
         }
         return URLBuilder.from(url)
                 .setPath(url.getServiceInterface())
@@ -191,7 +194,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             if (getConsumerUrl() != null && registry != null && registry.isAvailable()) {
                 registry.unsubscribe(getConsumerUrl(), this);
             }
-            DynamicConfiguration.getDynamicConfiguration()
+            ExtensionLoader.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension()
                     .removeListener(ApplicationModel.getApplication(), CONSUMER_CONFIGURATION_LISTENER);
         } catch (Throwable t) {
             logger.warn("unexpected error when unsubscribe service " + serviceKey + "from registry" + registry.getUrl(), t);
@@ -612,6 +615,11 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     @Override
     public Class<T> getInterface() {
         return serviceType;
+    }
+
+    @Override
+    public List<Invoker<T>> getAllInvokers() {
+        return invokers;
     }
 
     @Override

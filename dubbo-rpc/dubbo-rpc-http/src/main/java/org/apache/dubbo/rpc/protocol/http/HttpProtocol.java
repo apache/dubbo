@@ -19,7 +19,7 @@ package org.apache.dubbo.rpc.protocol.http;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.http.HttpBinder;
 import org.apache.dubbo.remoting.http.HttpHandler;
-import org.apache.dubbo.remoting.http.HttpServer;
+import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.AbstractProxyProtocol;
@@ -100,12 +100,12 @@ public class HttpProtocol extends AbstractProxyProtocol {
     }
 
     @Override
-    protected <T> Runnable doExport(T impl, Class<T> type, URL url) throws RpcException {
-        String addr = url.getIp() + ":" + url.getPort();
-        HttpServer server = serverMap.get(addr);
-        if (server == null) {
-            server = httpBinder.bind(url, new InternalHandler(url.getParameter("cors", false)));
-            serverMap.put(addr, server);
+    protected <T> Runnable doExport(final T impl, Class<T> type, URL url) throws RpcException {
+        String addr = getAddr(url);
+        ProtocolServer protocolServer = serverMap.get(addr);
+        if (protocolServer == null) {
+            RemotingServer remotingServer = httpBinder.bind(url, new InternalHandler());
+            serverMap.put(addr, new ProxyProtocolServer(remotingServer));
         }
         final String path = url.getAbsolutePath();
         JsonRpcServer skeleton = new JsonRpcServer(impl, type);

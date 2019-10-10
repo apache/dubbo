@@ -38,7 +38,6 @@ import com.alibaba.metrics.MetricName;
 import com.alibaba.metrics.common.MetricObject;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -60,7 +59,6 @@ import static org.apache.dubbo.monitor.Constants.DUBBO_PROVIDER;
 import static org.apache.dubbo.monitor.Constants.DUBBO_PROVIDER_METHOD;
 import static org.apache.dubbo.monitor.Constants.METHOD;
 import static org.apache.dubbo.monitor.Constants.SERVICE;
-
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;

@@ -1,1 +1,2 @@
+service-discovery-registry=org.apache.dubbo.registry.client.ServiceDiscoveryRegistryFactory
 wrapper=org.apache.dubbo.registry.RegistryFactoryWrapper

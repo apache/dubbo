@@ -89,8 +89,10 @@ public class ContextFilter implements Filter, Filter.Listener {
             ((RpcInvocation) invocation).setInvoker(invoker);
         }
         try {
+            RpcContext.getContext().clearAfterEachInvoke(false);
             return invoker.invoke(invocation);
         } finally {
+            RpcContext.getContext().clearAfterEachInvoke(true);
             // IMPORTANT! For async scenario, we must remove context from current thread, so we always create a new RpcContext for the next invoke for the same thread.
             RpcContext.removeContext();
             RpcContext.removeServerContext();

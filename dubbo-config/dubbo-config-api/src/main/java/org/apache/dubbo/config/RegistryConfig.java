@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.remoting.Constants;
@@ -28,7 +30,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.USERNAME_KEY;
 import static org.apache.dubbo.config.Constants.REGISTRIES_SUFFIX;
-import static org.apache.dubbo.config.Constants.ZOOKEEPER_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.EXTRA_KEYS_KEY;
 
 /**
@@ -75,7 +76,16 @@ public class RegistryConfig extends AbstractConfig {
 
     private String client;
 
+    /**
+     * Affects how traffic distributes among registries, useful when subscribing multiple registries, available options:
+     * 1. zone-aware, a certain type of traffic always goes to one Registry according to where the traffic is originated.
+     */
     private String cluster;
+
+    /**
+     * The region where the registry belongs, usually used to isolate traffics
+     */
+    private String zone;
 
     /**
      * The group the services registry in
@@ -149,6 +159,32 @@ public class RegistryConfig extends AbstractConfig {
      */
     private String extraKeys;
 
+    /**
+     * the address work as config center or not
+     */
+    private Boolean useAsConfigCenter;
+
+    /**
+     * the address work as remote metadata center or not
+     */
+    private Boolean useAsMetadataCenter;
+
+    /**
+     * list of rpc protocols accepted by this registry, for example, "dubbo,rest"
+     */
+    private String accepts;
+
+    /**
+     * Always use this registry first if set to true, useful when subscribe to multiple registries
+     */
+    private Boolean preferred;
+
+    /**
+     * Affects traffic distribution among registries, useful when subscribe to multiple registries
+     * Take effect only when no preferred registry is specified.
+     */
+    private Integer weight;
+
     public RegistryConfig() {
     }
 
@@ -179,14 +215,15 @@ public class RegistryConfig extends AbstractConfig {
     public void setAddress(String address) {
         this.address = address;
         if (address != null) {
-            int i = address.indexOf("://");
-            if (i > 0) {
-                this.updateIdIfAbsent(address.substring(0, i));
-                this.updateProtocolIfAbsent(address.substring(0, i));
-                int port = address.lastIndexOf(":");
-                if (port > 0) {
-                    this.updatePortIfAbsent(StringUtils.parseInteger(address.substring(port + 1)));
-                }
+            try {
+                URL url = URL.valueOf(address);
+                setUsername(url.getUsername());
+                setPassword(url.getPassword());
+                updateIdIfAbsent(url.getProtocol());
+                updateProtocolIfAbsent(url.getProtocol());
+                updatePortIfAbsent(url.getPort());
+                updateParameters(url.getParameters());
+            } catch (Exception ignored) {
             }
         }
     }
@@ -362,6 +399,14 @@ public class RegistryConfig extends AbstractConfig {
         this.cluster = cluster;
     }
 
+    public String getZone() {
+        return zone;
+    }
+
+    public void setZone(String zone) {
+        this.zone = zone;
+    }
+
     public String getGroup() {
         return group;
     }
@@ -385,6 +430,18 @@ public class RegistryConfig extends AbstractConfig {
     public void setParameters(Map<String, String> parameters) {
         checkParameterName(parameters);
         this.parameters = parameters;
+    }
+
+    public void updateParameters(Map<String, String> parameters) {
+        checkParameterName(parameters);
+        if (CollectionUtils.isEmptyMap(parameters)) {
+            return;
+        }
+        if (this.parameters == null) {
+            this.parameters = parameters;
+        } else {
+            this.parameters.putAll(parameters);
+        }
     }
 
     public Boolean isDefault() {
@@ -413,12 +470,45 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     @Parameter(excluded = true)
-    public boolean isZookeeperProtocol() {
-        if (!isValid()) {
-            return false;
-        }
-        return ZOOKEEPER_PROTOCOL.equals(getProtocol())
-                || getAddress().startsWith(ZOOKEEPER_PROTOCOL);
+    public Boolean getUseAsConfigCenter() {
+        return useAsConfigCenter;
+    }
+
+    public void setUseAsConfigCenter(Boolean useAsConfigCenter) {
+        this.useAsConfigCenter = useAsConfigCenter;
+    }
+
+    @Parameter(excluded = true)
+    public Boolean getUseAsMetadataCenter() {
+        return useAsMetadataCenter;
+    }
+
+    public void setUseAsMetadataCenter(Boolean useAsMetadataCenter) {
+        this.useAsMetadataCenter = useAsMetadataCenter;
+    }
+
+    public String getAccepts() {
+        return accepts;
+    }
+
+    public void setAccepts(String accepts) {
+        this.accepts = accepts;
+    }
+
+    public Boolean getPreferred() {
+        return preferred;
+    }
+
+    public void setPreferred(Boolean preferred) {
+        this.preferred = preferred;
+    }
+
+    public Integer getWeight() {
+        return weight;
+    }
+
+    public void setWeight(Integer weight) {
+        this.weight = weight;
     }
 
     @Override

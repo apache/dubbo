@@ -407,6 +407,30 @@ class URL implements Serializable {
         }
     }
 
+    static String appendDefaultPort(String address, int defaultPort) {
+        if (address != null && address.length() > 0 && defaultPort > 0) {
+            int i = address.indexOf(':');
+            if (i < 0) {
+                return address + ":" + defaultPort;
+            } else if (Integer.parseInt(address.substring(i + 1)) == 0) {
+                return address.substring(0, i + 1) + defaultPort;
+            }
+        }
+        return address;
+    }
+
+    public static String buildKey(String path, String group, String version) {
+        StringBuilder buf = new StringBuilder();
+        if (group != null && group.length() > 0) {
+            buf.append(group).append("/");
+        }
+        buf.append(path);
+        if (version != null && version.length() > 0) {
+            buf.append(":").append(version);
+        }
+        return buf.toString();
+    }
+
     public String getProtocol() {
         return protocol;
     }
@@ -518,18 +542,6 @@ class URL implements Serializable {
             }
         }
         return urls;
-    }
-
-    static String appendDefaultPort(String address, int defaultPort) {
-        if (address != null && address.length() > 0 && defaultPort > 0) {
-            int i = address.indexOf(':');
-            if (i < 0) {
-                return address + ":" + defaultPort;
-            } else if (Integer.parseInt(address.substring(i + 1)) == 0) {
-                return address.substring(0, i + 1) + defaultPort;
-            }
-        }
-        return address;
     }
 
     public String getPath() {
@@ -1381,6 +1393,7 @@ class URL implements Serializable {
 
     /**
      * The format is "{interface}:[version]:[group]"
+     *
      * @return
      */
     public String getColonSeparatedKey() {
@@ -1405,6 +1418,7 @@ class URL implements Serializable {
 
     /**
      * The format of return value is '{group}/{interfaceName}:{version}'
+     *
      * @return
      */
     public String getServiceKey() {
@@ -1413,6 +1427,7 @@ class URL implements Serializable {
 
     /**
      * The format of return value is '{group}/{path/interfaceName}:{version}'
+     *
      * @return
      */
     public String getPathKey() {
@@ -1421,18 +1436,6 @@ class URL implements Serializable {
             return null;
         }
         return buildKey(inf, getParameter(GROUP_KEY), getParameter(VERSION_KEY));
-    }
-
-    public static String buildKey(String path, String group, String version) {
-        StringBuilder buf = new StringBuilder();
-        if (group != null && group.length() > 0) {
-            buf.append(group).append("/");
-        }
-        buf.append(path);
-        if (version != null && version.length() > 0) {
-            buf.append(":").append(version);
-        }
-        return buf.toString();
     }
 
     public String toServiceStringWithoutResolving() {

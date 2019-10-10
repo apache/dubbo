@@ -25,13 +25,11 @@ import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.command.annotation.Cmd;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
-import org.apache.dubbo.registry.support.ProviderConsumerRegTable;
-import org.apache.dubbo.registry.support.ProviderInvokerWrapper;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
+import org.apache.dubbo.rpc.model.invoker.ProviderInvokerWrapper;
 
 import java.util.Collection;
-import java.util.Set;
 
 @Cmd(name = "online", summary = "online dubbo", example = {
         "online dubbo",
@@ -53,9 +51,9 @@ public class Online implements BaseCommand {
 
         Collection<ProviderModel> providerModelList = ApplicationModel.allProviderModels();
         for (ProviderModel providerModel : providerModelList) {
-            if (providerModel.getServiceKey().matches(servicePattern)) {
+            if (providerModel.getServiceName().matches(servicePattern)) {
                 hasService = true;
-                Set<ProviderInvokerWrapper> providerInvokerWrapperSet = ProviderConsumerRegTable.getProviderInvoker(providerModel.getServiceKey());
+                Collection<ProviderInvokerWrapper> providerInvokerWrapperSet = ApplicationModel.getProviderInvokers(providerModel.getServiceKey());
                 for (ProviderInvokerWrapper providerInvokerWrapper : providerInvokerWrapperSet) {
                     if (providerInvokerWrapper.isReg()) {
                         continue;

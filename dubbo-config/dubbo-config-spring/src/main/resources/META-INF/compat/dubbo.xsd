@@ -397,6 +397,16 @@
                 <xsd:documentation><![CDATA[ Is default. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="metadata-type" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The metadta type: local or remote. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="register-consumer" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Register consumer instance or not, default false. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
 
     </xsd:complexType>
 
@@ -502,6 +512,11 @@
                 <xsd:documentation><![CDATA[ The registry cluster type. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="zone" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The registry zone type. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
         <xsd:attribute name="forks" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ ForkingCluster forks. ]]></xsd:documentation>
@@ -573,6 +588,27 @@
         <xsd:attribute name="extra-keys" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ Extra Parameter Keys. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="use-as-config-center" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ work as config center or not. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="use-as-metadata-center" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ work as metadata center or not. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="accepts" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation>
+                    <![CDATA[ list of rpc protocols accepted by this registry, separated with ",". ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="preferred" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Is this registry the preferred one. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
     </xsd:complexType>
@@ -1136,6 +1172,11 @@
         <xsd:attribute name="default" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ Is default. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="ssl-enabled" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Is SSL enabled. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:anyAttribute namespace="##other" processContents="lax"/>

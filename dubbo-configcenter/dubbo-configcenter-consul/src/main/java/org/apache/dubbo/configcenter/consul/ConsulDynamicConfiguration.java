@@ -18,14 +18,14 @@
 package org.apache.dubbo.configcenter.consul;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
+import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
+import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
+import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.configcenter.ConfigChangeEvent;
-import org.apache.dubbo.configcenter.ConfigChangeType;
-import org.apache.dubbo.configcenter.ConfigurationListener;
-import org.apache.dubbo.configcenter.DynamicConfiguration;
 
 import com.ecwid.consul.v1.ConsulClient;
 import com.ecwid.consul.v1.QueryParams;
@@ -39,9 +39,9 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 
 import static java.util.concurrent.Executors.newCachedThreadPool;
+import static org.apache.dubbo.common.config.configcenter.ConfigChangeType.ADDED;
+import static org.apache.dubbo.common.config.configcenter.Constants.CONFIG_NAMESPACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
-import static org.apache.dubbo.configcenter.ConfigChangeType.ADDED;
-import static org.apache.dubbo.configcenter.Constants.CONFIG_NAMESPACE_KEY;
 
 /**
  * config center implementation for consul
@@ -75,7 +75,7 @@ public class ConsulDynamicConfiguration implements DynamicConfiguration {
     public void addListener(String key, String group, ConfigurationListener listener) {
         logger.info("register listener " + listener.getClass() + " for config with key: " + key + ", group: " + group);
         String normalizedKey = convertKey(group, key);
-        ConsulKVWatcher watcher = watchers.putIfAbsent(normalizedKey, new ConsulKVWatcher(normalizedKey));
+        ConsulKVWatcher watcher = watchers.putIfAbsent(normalizedKey, new ConsulKVWatcher(key, group));
         if (watcher == null) {
             watcher = watchers.get(normalizedKey);
             watcherService.submit(watcher);
@@ -93,15 +93,7 @@ public class ConsulDynamicConfiguration implements DynamicConfiguration {
     }
 
     @Override
-    public String getRule(String key, String group, long timeout) throws IllegalStateException {
-        return (String) getInternalProperty(convertKey(group, key));
-    }
-
-    @Override
-    public String getProperties(String key, String group, long timeout) throws IllegalStateException {
-        if (StringUtils.isEmpty(group)) {
-            group = DEFAULT_GROUP;
-        }
+    public String getConfig(String key, String group, long timeout) throws IllegalStateException {
         return (String) getInternalProperty(convertKey(group, key));
     }
 
@@ -127,8 +119,13 @@ public class ConsulDynamicConfiguration implements DynamicConfiguration {
         return null;
     }
 
+    private String buildPath(String group) {
+        String actualGroup = StringUtils.isEmpty(group) ? DEFAULT_GROUP : group;
+        return rootPath + PATH_SEPARATOR + actualGroup;
+    }
+
     private String convertKey(String group, String key) {
-        return rootPath + PATH_SEPARATOR + group + PATH_SEPARATOR + key;
+        return buildPath(group) + PATH_SEPARATOR + key;
     }
 
     private int buildWatchTimeout(URL url) {
@@ -136,21 +133,25 @@ public class ConsulDynamicConfiguration implements DynamicConfiguration {
     }
 
     private class ConsulKVWatcher implements Runnable {
-        private String key;
+        private final String key;
+        private final String group;
+        private final String normalizedKey;
         private Set<ConfigurationListener> listeners;
         private boolean running = true;
         private boolean existing = false;
 
-        public ConsulKVWatcher(String key) {
+        public ConsulKVWatcher(String key, String group) {
             this.key = key;
+            this.group = group;
+            this.normalizedKey = convertKey(group, key);
             this.listeners = new HashSet<>();
         }
 
         @Override
         public void run() {
             while (running) {
-                Long lastIndex = consulIndexes.computeIfAbsent(key, k -> -1L);
-                Response<GetValue> response = getValue(key);
+                Long lastIndex = consulIndexes.computeIfAbsent(normalizedKey, k -> -1L);
+                Response<GetValue> response = getValue(normalizedKey);
                 if (response == null) {
                     try {
                         Thread.sleep(watchTimeout);
@@ -167,20 +168,20 @@ public class ConsulDynamicConfiguration implements DynamicConfiguration {
                 }
 
                 consulIndexes.put(key, currentIndex);
-                ConfigChangeEvent event = null;
+                ConfigChangedEvent event = null;
                 if (getValue != null) {
                     String value = getValue.getDecodedValue();
                     if (existing) {
-                        logger.info("notify change for key: " + key + ", the changed value is: " + value);
-                        event = new ConfigChangeEvent(key, value);
+                        logger.info("notify change for key: " + normalizedKey + ", the changed value is: " + value);
+                        event = new ConfigChangedEvent(key, group, value);
                     } else {
-                        logger.info("notify change for key: " + key + ", the added value is: " + value);
-                        event = new ConfigChangeEvent(key, value, ADDED);
+                        logger.info("notify change for key: " + normalizedKey + ", the added value is: " + value);
+                        event = new ConfigChangedEvent(key, group, value, ADDED);
                     }
                 } else {
                     if (existing) {
-                        logger.info("notify change for key: " + key + ", the value is deleted");
-                        event = new ConfigChangeEvent(key, null, ConfigChangeType.DELETED);
+                        logger.info("notify change for key: " + normalizedKey + ", the value is deleted");
+                        event = new ConfigChangedEvent(key, group, null, ConfigChangeType.DELETED);
                     }
                 }
 

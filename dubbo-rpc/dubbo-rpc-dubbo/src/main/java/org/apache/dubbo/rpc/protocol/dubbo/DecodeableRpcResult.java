@@ -37,8 +37,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Type;
-import java.util.Map;
-
 
 public class DecodeableRpcResult extends AppResponse implements Codec, Decodeable {
 
@@ -135,6 +133,7 @@ public class DecodeableRpcResult extends AppResponse implements Codec, Decodeabl
             }
             Object value = null;
             if (ArrayUtils.isEmpty(returnTypes)) {
+                // This almost never happens?
                 value = in.readObject();
             } else if (returnTypes.length == 1) {
                 value = in.readObject((Class<?>) returnTypes[0]);
@@ -149,11 +148,7 @@ public class DecodeableRpcResult extends AppResponse implements Codec, Decodeabl
 
     private void handleException(ObjectInput in) throws IOException {
         try {
-            Object obj = in.readObject();
-            if (!(obj instanceof Throwable)) {
-                throw new IOException("Response data error, expect Throwable, but get " + obj);
-            }
-            setException((Throwable) obj);
+            setException(in.readThrowable());
         } catch (ClassNotFoundException e) {
             rethrow(e);
         }
@@ -161,7 +156,7 @@ public class DecodeableRpcResult extends AppResponse implements Codec, Decodeabl
 
     private void handleAttachment(ObjectInput in) throws IOException {
         try {
-            setAttachments((Map<String, Object>) in.readObject(Map.class));
+            setAttachments(in.readAttachments());
         } catch (ClassNotFoundException e) {
             rethrow(e);
         }

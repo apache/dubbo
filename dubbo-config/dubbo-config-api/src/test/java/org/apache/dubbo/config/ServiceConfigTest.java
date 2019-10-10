@@ -21,10 +21,14 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.api.Greeting;
 import org.apache.dubbo.config.context.ConfigManager;
+import org.apache.dubbo.config.event.ServiceConfigExportedEvent;
+import org.apache.dubbo.config.event.ServiceConfigUnexportedEvent;
 import org.apache.dubbo.config.mock.MockProtocol2;
 import org.apache.dubbo.config.mock.MockRegistryFactory2;
 import org.apache.dubbo.config.mock.TestProxyFactory;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
+import org.apache.dubbo.event.EventDispatcher;
+import org.apache.dubbo.event.EventListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
@@ -40,22 +44,23 @@ import org.mockito.Mockito;
 
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
-import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
-import static org.apache.dubbo.config.Constants.SHUTDOWN_TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+import static org.apache.dubbo.config.Constants.SHUTDOWN_TIMEOUT_KEY;
 import static org.apache.dubbo.remoting.Constants.BIND_IP_KEY;
 import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_BEAN;
 import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_DEFAULT;
 import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_NATIVE_JAVA;
+import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -74,6 +79,8 @@ public class ServiceConfigTest {
     private ServiceConfig<DemoServiceImpl> service = new ServiceConfig<DemoServiceImpl>();
     private ServiceConfig<DemoServiceImpl> service2 = new ServiceConfig<DemoServiceImpl>();
     private ServiceConfig<DemoServiceImpl> delayService = new ServiceConfig<DemoServiceImpl>();
+
+    private final EventDispatcher eventDispatcher = EventDispatcher.getDefaultExtension();
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -135,7 +142,19 @@ public class ServiceConfigTest {
 
     @Test
     public void testExport() throws Exception {
+
+        AtomicReference reference = new AtomicReference();
+
+        eventDispatcher.addEventListener(new EventListener<ServiceConfigExportedEvent>() {
+            @Override
+            public void onEvent(ServiceConfigExportedEvent event) {
+                reference.set(event.getServiceConfig());
+            }
+        });
+
         service.export();
+
+        assertEquals(service, reference.get());
 
         assertThat(service.getExportedUrls(), hasSize(1));
         URL url = service.toUrl();
@@ -178,8 +197,32 @@ public class ServiceConfigTest {
     public void testUnexport() throws Exception {
         System.setProperty(SHUTDOWN_WAIT_KEY, "0");
         try {
+            AtomicReference reference = new AtomicReference();
+
+            eventDispatcher.addEventListener(new EventListener<ServiceConfigExportedEvent>() {
+                @Override
+                public void onEvent(ServiceConfigExportedEvent event) {
+                    reference.set(event.getServiceConfig());
+                }
+            });
+
             service.export();
+
+            assertEquals(service, reference.get());
+
+            assertTrue(reference.compareAndSet(service, null));
+
+            eventDispatcher.addEventListener(new EventListener<ServiceConfigUnexportedEvent>() {
+                @Override
+                public void onEvent(ServiceConfigUnexportedEvent event) {
+                    reference.set(event.getServiceConfig());
+                }
+            });
+
             service.unexport();
+
+            assertEquals(service, reference.get());
+
             Thread.sleep(1000);
             Mockito.verify(exporter, Mockito.atLeastOnce()).unexport();
         } finally {

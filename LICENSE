@@ -225,3 +225,6 @@ For the org.apache.dubbo.common.utils.CIDRUtils :
 This product contains a modified portion of 'edazdarevic.commons.net.CIDRUtils',
  under a "MIT License" license, see https://github.com/edazdarevic/CIDRUtils/blob/master/CIDRUtils.java
 
+This product contains a modified portion of 'proto-gen-grpc-java' - a protobuf plugin used to generate grpc-java stubs,
+ under a "Apache License 2.0" license, see https://github.com/grpc/grpc-java/blob/v1.22.1/NOTICE.txt. All files are placed
+ under '/dubbo/compiler'

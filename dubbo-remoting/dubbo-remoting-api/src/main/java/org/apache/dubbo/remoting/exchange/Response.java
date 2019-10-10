@@ -31,10 +31,6 @@ import java.util.Map;
  */
 public class Response {
 
-    public static final String HEARTBEAT_EVENT = null;
-
-    public static final String READONLY_EVENT = "R";
-
     /**
      * ok.
      */

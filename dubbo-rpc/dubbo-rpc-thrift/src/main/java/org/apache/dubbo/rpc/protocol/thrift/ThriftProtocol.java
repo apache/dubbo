@@ -19,8 +19,10 @@ package org.apache.dubbo.rpc.protocol.thrift;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.remoting.RemotingServer;
 import org.apache.dubbo.remoting.Transporter;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
@@ -31,6 +33,7 @@ import org.apache.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
@@ -40,8 +43,6 @@ import org.apache.dubbo.rpc.protocol.dubbo.DubboExporter;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
@@ -61,10 +62,6 @@ public class ThriftProtocol extends AbstractProtocol {
     public static final int DEFAULT_PORT = 40880;
 
     public static final String NAME = "thrift";
-
-    // ip:port -> ExchangeServer
-    private final ConcurrentMap<String, ExchangeServer> serverMap =
-            new ConcurrentHashMap<String, ExchangeServer>();
 
     private ExchangeHandler handler = new ExchangeHandlerAdapter() {
 
@@ -149,9 +146,10 @@ public class ThriftProtocol extends AbstractProtocol {
 
         for (String key : new ArrayList<String>(serverMap.keySet())) {
 
-            ExchangeServer server = serverMap.remove(key);
+            ProtocolServer protocolServer = serverMap.remove(key);
 
-            if (server != null) {
+            if (protocolServer != null) {
+                RemotingServer server = protocolServer.getRemotingServer();
                 try {
                     if (logger.isInfoEnabled()) {
                         logger.info("Close dubbo server: " + server.getLocalAddress());
@@ -206,7 +204,7 @@ public class ThriftProtocol extends AbstractProtocol {
 
     }
 
-    private ExchangeServer getServer(URL url) {
+    private ProtocolServer getServer(URL url) {
         // enable sending readonly event when server closes by default
         url = url.addParameterIfAbsent(CHANNEL_READONLYEVENT_SENT_KEY, Boolean.TRUE.toString());
         String str = url.getParameter(SERVER_KEY, org.apache.dubbo.rpc.Constants.DEFAULT_REMOTING_SERVER);
@@ -228,7 +226,47 @@ public class ThriftProtocol extends AbstractProtocol {
                 throw new RpcException("Unsupported client type: " + str);
             }
         }
-        return server;
+        return new ThriftProtocolServer(server);
+    }
+
+    private class ThriftProtocolServer implements ProtocolServer {
+
+        private ExchangeServer server;
+        private String address;
+
+        public ThriftProtocolServer(ExchangeServer server) {
+            this.server = server;
+        }
+
+        @Override
+        public RemotingServer getRemotingServer() {
+            return server;
+        }
+
+        @Override
+        public String getAddress() {
+            return StringUtils.isNotEmpty(address) ? address : server.getUrl().getAddress();
+        }
+
+        @Override
+        public void setAddress(String address) {
+            this.address = address;
+        }
+
+        @Override
+        public URL getUrl() {
+            return server.getUrl();
+        }
+
+        @Override
+        public void reset(URL url) {
+            server.reset(url);
+        }
+
+        @Override
+        public void close() {
+            server.close();
+        }
     }
 
 }

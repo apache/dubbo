@@ -27,6 +27,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.apache.dubbo.common.config.configcenter.Constants.CONFIG_CHECK_KEY;
+import static org.apache.dubbo.common.config.configcenter.Constants.CONFIG_CLUSTER_KEY;
+import static org.apache.dubbo.common.config.configcenter.Constants.CONFIG_GROUP_KEY;
+import static org.apache.dubbo.common.config.configcenter.Constants.CONFIG_NAMESPACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
@@ -34,10 +38,6 @@ import static org.apache.dubbo.config.Constants.CONFIG_CONFIGFILE_KEY;
 import static org.apache.dubbo.config.Constants.CONFIG_ENABLE_KEY;
 import static org.apache.dubbo.config.Constants.CONFIG_TIMEOUT_KEY;
 import static org.apache.dubbo.config.Constants.ZOOKEEPER_PROTOCOL;
-import static org.apache.dubbo.configcenter.Constants.CONFIG_CHECK_KEY;
-import static org.apache.dubbo.configcenter.Constants.CONFIG_CLUSTER_KEY;
-import static org.apache.dubbo.configcenter.Constants.CONFIG_GROUP_KEY;
-import static org.apache.dubbo.configcenter.Constants.CONFIG_NAMESPACE_KEY;
 
 /**
  * ConfigCenterConfig

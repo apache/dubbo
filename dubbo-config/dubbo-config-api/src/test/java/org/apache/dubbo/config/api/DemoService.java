@@ -34,4 +34,7 @@ public interface DemoService {
 
     int echo(int i);
 
+//    default String name() {
+//        return getClass().getSimpleName();
+//    }
 }

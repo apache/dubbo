@@ -39,6 +39,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -272,11 +273,19 @@ public class ExtensionLoader<T> {
             return true;
         }
         for (String key : keys) {
+            // @Active(value="key1:value1, key2:value2")
+            String keyValue = null;
+            if (key.contains(":")) {
+                String[] arr = key.split(":");
+                key = arr[0];
+                keyValue = arr[1];
+            }
+
             for (Map.Entry<String, String> entry : url.getParameters().entrySet()) {
                 String k = entry.getKey();
                 String v = entry.getValue();
                 if ((k.equals(key) || k.endsWith("." + key))
-                        && ConfigUtils.isNotEmpty(v)) {
+                        && ((keyValue != null && keyValue.equals(v)) || (keyValue == null && ConfigUtils.isNotEmpty(v)))) {
                     return true;
                 }
             }
@@ -352,6 +361,16 @@ public class ExtensionLoader<T> {
     }
 
     /**
+     * Get the extension by specified name if found, or {@link #getDefaultExtension() returns the default one}
+     *
+     * @param name the name of extension
+     * @return non-null
+     */
+    public T getOrDefaultExtension(String name) {
+        return containsExtension(name)  ? getExtension(name) : getDefaultExtension();
+    }
+
+    /**
      * Return default extension, return <code>null</code> if it's not configured.
      */
     public T getDefaultExtension() {
@@ -373,6 +392,17 @@ public class ExtensionLoader<T> {
     public Set<String> getSupportedExtensions() {
         Map<String, Class<?>> clazzes = getExtensionClasses();
         return Collections.unmodifiableSet(new TreeSet<>(clazzes.keySet()));
+    }
+
+    public Set<T> getSupportedExtensionInstances() {
+        Set<T> instances = new HashSet<>();
+        Set<String> supportedExtensions = getSupportedExtensions();
+        if (CollectionUtils.isNotEmpty(supportedExtensions)) {
+            for (String name : supportedExtensions) {
+                instances.add(getExtension(name));
+            }
+        }
+        return instances;
     }
 
     /**
@@ -539,6 +569,10 @@ public class ExtensionLoader<T> {
             throw new IllegalStateException("Extension instance (name: " + name + ", class: " +
                     type + ") couldn't be instantiated: " + t.getMessage(), t);
         }
+    }
+
+    private boolean containsExtension(String name) {
+        return getExtensionClasses().containsKey(name);
     }
 
     private T injectExtension(T instance) {

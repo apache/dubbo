@@ -123,6 +123,8 @@ public interface CommonConstants {
 
     String DEFAULT_KEY = "default";
 
+    String PREFERRED_KEY = "preferred";
+
     /**
      * Default timeout value in milliseconds for server shutdown
      */
@@ -166,6 +168,14 @@ public interface CommonConstants {
 
     String REVISION_KEY = "revision";
 
+    String METADATA_REVISION = "metadata.revision";
+
+    String METADATA_KEY = "metadata";
+
+    String DEFAULT_METADATA_STORAGE_TYPE = "default";
+
+    String REMOTE_METADATA_STORAGE_TYPE = "remote";
+
     /**
      * Consumer side 's proxy class
      */
@@ -198,4 +208,9 @@ public interface CommonConstants {
 
     String DUBBO_LABELS = "dubbo.labels";
     String DUBBO_ENV_KEYS = "dubbo.env.keys";
+
+    String HEARTBEAT_EVENT = null;
+    String MOCK_HEARTBEAT_EVENT = "H";
+    String READONLY_EVENT = "R";
+
 }
