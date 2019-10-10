@@ -14,24 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.dubbo.registry;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.rpc.cluster.Directory;
+import org.mockito.Mockito;
 
-import java.util.List;
-
-@SPI
-public interface AddressListener {
-
-    /**
-     * processing when receiving the address list
-     *
-     * @param addresses            provider address list
-     * @param registryDirectoryUrl
-     * @param registryDirectory
-     */
-    List<URL> notify(List<URL> addresses, URL registryDirectoryUrl, Directory registryDirectory);
-
+public class SimpleRegistryFactory implements RegistryFactory {
+    @Override
+    public Registry getRegistry(URL url) {
+        return Mockito.mock(Registry.class);
+    }
 }

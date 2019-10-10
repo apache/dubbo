@@ -867,6 +867,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public void setMetadataReportConfig(MetadataReportConfig metadataReportConfig) {
+        ConfigManager.getInstance().setMetadataReportConfig(metadataReportConfig);
         this.metadataReportConfig = metadataReportConfig;
     }
 

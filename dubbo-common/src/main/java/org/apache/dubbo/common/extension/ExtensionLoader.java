@@ -668,6 +668,13 @@ public class ExtensionLoader<T> {
                 urls = ClassLoader.getSystemResources(fileName);
             }
             if (urls != null) {
+                if (!urls.hasMoreElements()) {
+                    // try to load from ExtensionLoader's ClassLoader
+                    ClassLoader extensionLoaderClassLoader = this.getClass().getClassLoader();
+                    if (ClassLoader.getSystemClassLoader() != extensionLoaderClassLoader) {
+                        urls = extensionLoaderClassLoader.getResources(fileName);
+                    }
+                }
                 while (urls.hasMoreElements()) {
                     java.net.URL resourceURL = urls.nextElement();
                     loadResource(extensionClasses, classLoader, resourceURL);

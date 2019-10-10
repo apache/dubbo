@@ -14,24 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.dubbo.registry;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.rpc.cluster.Directory;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 
-import java.util.List;
+import java.util.Collections;
 
-@SPI
-public interface AddressListener {
+public class RegistryFactoryWrapper implements RegistryFactory {
+    private RegistryFactory registryFactory;
 
-    /**
-     * processing when receiving the address list
-     *
-     * @param addresses            provider address list
-     * @param registryDirectoryUrl
-     * @param registryDirectory
-     */
-    List<URL> notify(List<URL> addresses, URL registryDirectoryUrl, Directory registryDirectory);
+    public RegistryFactoryWrapper(RegistryFactory registryFactory) {
+        this.registryFactory = registryFactory;
+    }
 
+    @Override
+    public Registry getRegistry(URL url) {
+        return new ListenerRegistryWrapper(registryFactory.getRegistry(url),
+                Collections.unmodifiableList(ExtensionLoader.getExtensionLoader(RegistryServiceListener.class)
+                        .getActivateExtension(url, "registry.listeners")));
+    }
 }

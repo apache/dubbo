@@ -44,7 +44,6 @@ import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.service.GenericException;
 import org.apache.dubbo.rpc.service.GenericService;
 
 import org.junit.Assert;
@@ -57,6 +56,8 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import java.util.Collection;
 import java.util.List;
 
+import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
+import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_BEAN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -64,9 +65,6 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.matchers.JUnitMatchers.containsString;
-
-import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_BEAN;
-import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 
 
 /**

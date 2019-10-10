@@ -40,6 +40,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import static org.apache.dubbo.common.URL.buildKey;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.remoting.Constants.DUBBO_VERSION_KEY;
@@ -152,7 +154,10 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
             }
 
             setArguments(args);
-
+            String targetServiceName = buildKey((String) getAttachment(PATH_KEY),
+                    (String) getAttachment(GROUP_KEY),
+                    (String) getAttachment(VERSION_KEY));
+            setTargetServiceUniqueName(targetServiceName);
         } catch (ClassNotFoundException e) {
             throw new IOException(StringUtils.toString("Read invocation data failed.", e));
         } finally {

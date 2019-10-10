@@ -41,6 +41,11 @@ public class LegacyInvocation implements Invocation {
         this.arg0 = arg0;
     }
 
+    @Override
+    public String getTargetServiceUniqueName() {
+        return null;
+    }
+
     public String getMethodName() {
         return "echo";
     }
