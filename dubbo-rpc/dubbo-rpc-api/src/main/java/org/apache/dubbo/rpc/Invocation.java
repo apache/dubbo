@@ -27,6 +27,8 @@ import java.util.Map;
  */
 public interface Invocation {
 
+    String getTargetServiceUniqueName();
+
     /**
      * get method name.
      *

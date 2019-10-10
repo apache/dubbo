@@ -134,7 +134,11 @@ public class GenericFilter implements Filter, Filter.Listener {
                                         args[0].getClass().getName());
                     }
                 }
-                return invoker.invoke(new RpcInvocation(method, invoker.getInterface().getName(), args, inv.getAttachments(), inv.getAttributes()));
+                RpcInvocation rpcInvocation = new RpcInvocation(method, invoker.getInterface().getName(), args, inv.getAttachments(), inv.getAttributes());
+                rpcInvocation.setInvoker(inv.getInvoker());
+                rpcInvocation.setTargetServiceUniqueName(inv.getTargetServiceUniqueName());
+
+                return invoker.invoke(rpcInvocation);
             } catch (NoSuchMethodException e) {
                 throw new RpcException(e.getMessage(), e);
             } catch (ClassNotFoundException e) {

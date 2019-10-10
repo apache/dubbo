@@ -337,7 +337,11 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                         map.put(methodConfig.getName() + ".retries", "0");
                     }
                 }
-                attributes.put(methodConfig.getName(), convertMethodConfig2AyncInfo(methodConfig));
+                ConsumerModel.AsyncMethodInfo asyncMethodInfo = convertMethodConfig2AsyncInfo(methodConfig);
+                if (asyncMethodInfo != null) {
+//                    consumerModel.getMethodModel(methodConfig.getName()).addAttribute(ASYNC_KEY, asyncMethodInfo);
+                    attributes.put(methodConfig.getName(), asyncMethodInfo);
+                }
             }
         }
 
@@ -351,10 +355,11 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
         serviceMetadata.getAttachments().putAll(map);
 
-        ref = createProxy(map);
-
         ServiceModel serviceModel = ApplicationModel.registerServiceModel(interfaceClass);
         ApplicationModel.initConsumerModel(serviceMetadata.getServiceKey(), buildConsumerModel(attributes, serviceModel));
+
+        ref = createProxy(map);
+
         serviceMetadata.setTarget(ref);
         serviceMetadata.addAttribute(PROXY_CLASS_REF, ref);
         initialized = true;
@@ -409,7 +414,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 }
             } else { // assemble URL from register center's configuration
                 // if protocols not injvm checkRegistry
-                if (!LOCAL_PROTOCOL.equalsIgnoreCase(getProtocol())){
+                if (!LOCAL_PROTOCOL.equalsIgnoreCase(getProtocol())) {
                     checkRegistry();
                     List<URL> us = loadRegistries(false);
                     if (CollectionUtils.isNotEmpty(us)) {

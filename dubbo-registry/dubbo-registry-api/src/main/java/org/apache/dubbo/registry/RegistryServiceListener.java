@@ -14,24 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.dubbo.registry;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.rpc.cluster.Directory;
-
-import java.util.List;
 
 @SPI
-public interface AddressListener {
+public interface RegistryServiceListener {
+    default void onRegister(URL url) {
 
-    /**
-     * processing when receiving the address list
-     *
-     * @param addresses            provider address list
-     * @param registryDirectoryUrl
-     * @param registryDirectory
-     */
-    List<URL> notify(List<URL> addresses, URL registryDirectoryUrl, Directory registryDirectory);
+    }
 
+
+    default void onUnregister(URL url) {
+
+    }
+
+    default void onSubscribe(URL url) {
+
+    }
+
+    default void onUnsubscribe(URL url) {
+
+    }
 }

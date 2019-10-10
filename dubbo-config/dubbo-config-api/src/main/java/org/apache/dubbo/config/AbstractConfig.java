@@ -248,7 +248,7 @@ public abstract class AbstractConfig implements Serializable {
         }
     }
 
-    protected static ConsumerModel.AsyncMethodInfo convertMethodConfig2AyncInfo(MethodConfig methodConfig) {
+    protected static ConsumerModel.AsyncMethodInfo convertMethodConfig2AsyncInfo(MethodConfig methodConfig) {
         if (methodConfig == null || (methodConfig.getOninvoke() == null && methodConfig.getOnreturn() == null && methodConfig.getOnthrow() == null)) {
             return null;
         }

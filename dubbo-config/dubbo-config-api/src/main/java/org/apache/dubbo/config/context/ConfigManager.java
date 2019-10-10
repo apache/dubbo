@@ -23,6 +23,7 @@ import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.config.ConsumerConfig;
+import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
@@ -79,6 +80,7 @@ public class ConfigManager {
     private MonitorConfig monitor;
     private ModuleConfig module;
     private ConfigCenterConfig configCenter;
+    private MetadataReportConfig metadataReportConfig;
 
     private Map<String, ProtocolConfig> protocols = new ConcurrentHashMap<>();
     private Map<String, RegistryConfig> registries = new ConcurrentHashMap<>();
@@ -134,6 +136,17 @@ public class ConfigManager {
         if (configCenter != null) {
             checkDuplicate(this.configCenter, configCenter);
             this.configCenter = configCenter;
+        }
+    }
+
+    public Optional<MetadataReportConfig> getMetadataReportConfig() {
+        return Optional.ofNullable(metadataReportConfig);
+    }
+
+    public void setMetadataReportConfig(MetadataReportConfig metadataReportConfig) {
+        if (metadataReportConfig != null) {
+            checkDuplicate(this.metadataReportConfig, metadataReportConfig);
+            this.metadataReportConfig = metadataReportConfig;
         }
     }
 

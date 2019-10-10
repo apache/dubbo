@@ -44,6 +44,8 @@ public class RpcInvocation implements Invocation, Serializable {
 
     private static final long serialVersionUID = -4355285085441097045L;
 
+    private String targetServiceUniqueName;
+
     private String methodName;
     private String serviceName;
 
@@ -93,11 +95,13 @@ public class RpcInvocation implements Invocation, Serializable {
                 setAttachment(APPLICATION_KEY, url.getParameter(APPLICATION_KEY));
             }
         }
+        this.targetServiceUniqueName = invocation.getTargetServiceUniqueName();
     }
 
     public RpcInvocation(Invocation invocation) {
         this(invocation.getMethodName(), invocation.getServiceName(), invocation.getParameterTypes(),
                 invocation.getArguments(), invocation.getAttachments(), invocation.getInvoker());
+        this.targetServiceUniqueName = invocation.getTargetServiceUniqueName();
     }
 
     public RpcInvocation(Method method, String serviceName, Object[] arguments) {
@@ -155,6 +159,15 @@ public class RpcInvocation implements Invocation, Serializable {
     @Override
     public Map<Object, Object> getAttributes() {
         return attributes;
+    }
+
+    @Override
+    public String getTargetServiceUniqueName() {
+        return targetServiceUniqueName;
+    }
+
+    public void setTargetServiceUniqueName(String targetServiceUniqueName) {
+        this.targetServiceUniqueName = targetServiceUniqueName;
     }
 
     @Override

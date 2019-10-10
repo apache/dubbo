@@ -34,6 +34,11 @@ import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
  */
 public class MockInvocation implements Invocation {
 
+    @Override
+    public String getTargetServiceUniqueName() {
+        return null;
+    }
+
     public String getMethodName() {
         return "echo";
     }
