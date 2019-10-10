@@ -39,7 +39,7 @@ import java.util.Set;
 })
 public class Online implements BaseCommand {
     private Logger logger = LoggerFactory.getLogger(Online.class);
-    private RegistryFactory registryFactory = ExtensionLoader.getExtensionLoader(RegistryFactory.class).getAdaptiveExtension();
+    private static RegistryFactory registryFactory = ExtensionLoader.getExtensionLoader(RegistryFactory.class).getAdaptiveExtension();
 
     @Override
     public String execute(CommandContext commandContext, String[] args) {
@@ -49,13 +49,23 @@ public class Online implements BaseCommand {
             servicePattern = args[0];
         }
 
-        boolean hasService = false;
+        boolean hasService = online(servicePattern);
 
+        if (hasService) {
+            return "OK";
+        } else {
+            return "service not found";
+        }
+
+    }
+
+    public static boolean online(String servicePattern){
+        boolean hasService = false;
         Collection<ProviderModel> providerModelList = ApplicationModel.allProviderModels();
         for (ProviderModel providerModel : providerModelList) {
             if (providerModel.getServiceName().matches(servicePattern)) {
                 hasService = true;
-                Set<ProviderInvokerWrapper> providerInvokerWrapperSet = ProviderConsumerRegTable.getProviderInvoker(providerModel.getServiceName());
+                Set<ProviderInvokerWrapper> providerInvokerWrapperSet = ProviderConsumerRegTable.getProviderInvoker(providerModel.getServiceMetadata().getServiceKey());
                 for (ProviderInvokerWrapper providerInvokerWrapper : providerInvokerWrapperSet) {
                     if (providerInvokerWrapper.isReg()) {
                         continue;
@@ -66,12 +76,6 @@ public class Online implements BaseCommand {
                 }
             }
         }
-
-        if (hasService) {
-            return "OK";
-        } else {
-            return "service not found";
-        }
-
+        return hasService;
     }
 }

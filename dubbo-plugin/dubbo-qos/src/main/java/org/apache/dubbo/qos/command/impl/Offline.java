@@ -38,7 +38,7 @@ import java.util.Set;
 })
 public class Offline implements BaseCommand {
     private Logger logger = LoggerFactory.getLogger(Offline.class);
-    private RegistryFactory registryFactory = ExtensionLoader.getExtensionLoader(RegistryFactory.class).getAdaptiveExtension();
+    private static RegistryFactory registryFactory = ExtensionLoader.getExtensionLoader(RegistryFactory.class).getAdaptiveExtension();
 
     @Override
     public String execute(CommandContext commandContext, String[] args) {
@@ -47,13 +47,23 @@ public class Offline implements BaseCommand {
         if (args != null && args.length > 0) {
             servicePattern = args[0];
         }
-        boolean hasService = false;
+        boolean hasService = offline(servicePattern);
 
+        if (hasService) {
+            return "OK";
+        } else {
+            return "service not found";
+        }
+    }
+
+    public static boolean offline(String servicePattern) {
+        boolean hasService = false;
         Collection<ProviderModel> providerModelList = ApplicationModel.allProviderModels();
         for (ProviderModel providerModel : providerModelList) {
             if (providerModel.getServiceName().matches(servicePattern)) {
                 hasService = true;
-                Set<ProviderInvokerWrapper> providerInvokerWrapperSet = ProviderConsumerRegTable.getProviderInvoker(providerModel.getServiceName());
+                Set<ProviderInvokerWrapper> providerInvokerWrapperSet = ProviderConsumerRegTable
+                        .getProviderInvoker(providerModel.getServiceMetadata().getServiceKey());
                 for (ProviderInvokerWrapper providerInvokerWrapper : providerInvokerWrapperSet) {
                     if (!providerInvokerWrapper.isReg()) {
                         continue;
@@ -64,11 +74,6 @@ public class Offline implements BaseCommand {
                 }
             }
         }
-
-        if (hasService) {
-            return "OK";
-        } else {
-            return "service not found";
-        }
+        return hasService;
     }
 }

@@ -16,6 +16,9 @@
  */
 package org.apache.dubbo.rpc.model;
 
+import org.apache.dubbo.common.ServiceDescriptor;
+import org.apache.dubbo.common.URL;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -23,15 +26,10 @@ import java.util.concurrent.ConcurrentHashMap;
  * data related to service level such as name, version, classloader of business service,
  * security info, etc. Also with a AttributeMap for extension.
  */
-public class ServiceMetadata {
+public class ServiceMetadata extends ServiceDescriptor {
 
-    private String serviceKey;
-    private String serviceInterfaceName;
     private String defaultGroup;
-    private String version;
     private Class<?> serviceType;
-
-    private volatile String group;
 
     private Object target;
 
@@ -45,7 +43,7 @@ public class ServiceMetadata {
         this.defaultGroup = group;
         this.group = group;
         this.version = version;
-        this.serviceKey = serviceInterfaceName + ":" + version;
+        this.serviceKey = URL.buildKey(serviceInterfaceName, group, version);
         this.serviceType = serviceType;
     }
 
@@ -53,7 +51,7 @@ public class ServiceMetadata {
     }
 
     public String getServiceKey() {
-        return serviceInterfaceName + ":" + version;
+        return serviceKey;
     }
 
     public Map<String, Object> getAttachments() {
@@ -80,44 +78,16 @@ public class ServiceMetadata {
         return serviceType;
     }
 
-    public String getServiceInterfaceName() {
-        return serviceInterfaceName;
-    }
-
     public String getDefaultGroup() {
         return defaultGroup;
-    }
-
-    public String getVersion() {
-        return version;
-    }
-
-    public String getGroup() {
-        return group;
-    }
-
-    public void setGroup(String group) {
-        this.group = group;
-    }
-
-    public void setServiceInterfaceName(String serviceInterfaceName) {
-        this.serviceInterfaceName = serviceInterfaceName;
     }
 
     public void setDefaultGroup(String defaultGroup) {
         this.defaultGroup = defaultGroup;
     }
 
-    public void setVersion(String version) {
-        this.version = version;
-    }
-
     public void setServiceType(Class<?> serviceType) {
         this.serviceType = serviceType;
-    }
-
-    public void setServiceKey(String serviceKey) {
-        this.serviceKey = serviceKey;
     }
 
     public Object getTarget() {
