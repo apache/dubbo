@@ -91,7 +91,7 @@ public class GsonJsonObjectInput implements ObjectInput {
     @Override
     public Object readObject() throws IOException, ClassNotFoundException {
         String json = readLine();
-        return gson.fromJson(json, String.class);
+        return gson.fromJson(json, Object.class);
     }
 
     @Override
