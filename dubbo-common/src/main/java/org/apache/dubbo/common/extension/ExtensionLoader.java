@@ -492,15 +492,12 @@ public class ExtensionLoader<T> {
         return (T) instance;
     }
 
-    private void findException(String name) {
+    private IllegalStateException findException(String name) {
         for (Map.Entry<String, IllegalStateException> entry : exceptions.entrySet()) {
             if (entry.getKey().toLowerCase().contains(name.toLowerCase())) {
-                throw entry.getValue();
+                return entry.getValue();
             }
         }
-    }
-
-    private IllegalStateException noExtensionException(String name) {
         StringBuilder buf = new StringBuilder("No such extension " + type.getName() + " by name " + name);
 
 
@@ -522,11 +519,9 @@ public class ExtensionLoader<T> {
 
     @SuppressWarnings("unchecked")
     private T createExtension(String name) {
-        // throws any possible exception in loading period.
-        findException(name);
         Class<?> clazz = getExtensionClasses().get(name);
         if (clazz == null) {
-            throw noExtensionException(name);
+            throw findException(name);
         }
         try {
             T instance = (T) EXTENSION_INSTANCES.get(clazz);
@@ -777,7 +772,9 @@ public class ExtensionLoader<T> {
         if (c == null) {
             extensionClasses.put(name, clazz);
         } else if (c != clazz) {
-            throw new IllegalStateException("Duplicate extension " + type.getName() + " name " + name + " on " + c.getName() + " and " + clazz.getName());
+            String duplicateMsg = "Duplicate extension " + type.getName() + " name " + name + " on " + c.getName() + " and " + clazz.getName();
+            logger.error(duplicateMsg);
+            throw new IllegalStateException(duplicateMsg);
         }
     }
 
