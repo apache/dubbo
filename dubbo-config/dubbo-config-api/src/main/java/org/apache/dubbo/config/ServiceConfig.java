@@ -475,7 +475,12 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         for (ProtocolConfig protocolConfig : protocols) {
             String pathKey = URL.buildKey(getContextPath(protocolConfig).map(p -> p + "/" + path).orElse(path), group, version);
             serviceMetadata.setServiceKey(pathKey);
-            ProviderModel providerModel = new ProviderModel(pathKey, ref, ApplicationModel.registerServiceModel(interfaceClass));
+            ProviderModel providerModel = new ProviderModel(
+                    pathKey,
+                    ref,
+                    ApplicationModel.registerServiceModel(interfaceClass),
+                    serviceMetadata
+            );
             ApplicationModel.initProviderModel(pathKey, providerModel);
             doExportUrlsFor1Protocol(protocolConfig, registryURLs);
         }

@@ -355,13 +355,14 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
         serviceMetadata.getAttachments().putAll(map);
 
-        ServiceModel serviceModel = ApplicationModel.registerServiceModel(interfaceClass);
-        ApplicationModel.initConsumerModel(serviceMetadata.getServiceKey(), buildConsumerModel(attributes, serviceModel));
-
         ref = createProxy(map);
 
         serviceMetadata.setTarget(ref);
         serviceMetadata.addAttribute(PROXY_CLASS_REF, ref);
+
+        ServiceModel serviceModel = ApplicationModel.registerServiceModel(interfaceClass);
+        ApplicationModel.initConsumerModel(serviceMetadata.getServiceKey(), buildConsumerModel(attributes, serviceModel));
+
         initialized = true;
     }
 
