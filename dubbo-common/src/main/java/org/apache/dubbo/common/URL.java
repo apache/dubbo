@@ -1294,15 +1294,7 @@ class URL implements Serializable {
     }
 
     public static String buildKey(String path, String group, String version) {
-        StringBuilder buf = new StringBuilder();
-        if (group != null && group.length() > 0) {
-            buf.append(group).append("/");
-        }
-        buf.append(path);
-        if (version != null && version.length() > 0) {
-            buf.append(":").append(version);
-        }
-        return buf.toString();
+        return ServiceDescriptor.buildServiceKey(path, group, version);
     }
 
     public String toServiceStringWithoutResolving() {
