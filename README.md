@@ -66,7 +66,7 @@ There's a [README](https://github.com/apache/dubbo-samples/tree/master/dubbo-sam
 package org.apache.dubbo.samples.api;
 
 public interface GreetingService {
-    String sayHello(String name);
+    String sayHi(String name);
 }
 ```
 
