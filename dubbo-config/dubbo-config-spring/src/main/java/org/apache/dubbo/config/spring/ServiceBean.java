@@ -106,8 +106,8 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
      * @since 2.6.5
      */
     @Override
-    public void export() {
-        super.export();
+    public void exported() {
+        super.exported();
         // Publish ServiceBeanExportedEvent
         publishExportEvent();
     }

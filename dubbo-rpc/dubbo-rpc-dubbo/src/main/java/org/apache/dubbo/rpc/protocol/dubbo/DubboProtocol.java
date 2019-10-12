@@ -230,10 +230,6 @@ public class DubboProtocol extends AbstractProtocol {
         return Collections.unmodifiableCollection(exporterMap.values());
     }
 
-    Map<String, Exporter<?>> getExporterMap() {
-        return exporterMap;
-    }
-
     private boolean isClientSide(Channel channel) {
         InetSocketAddress address = channel.getRemoteAddress();
         URL url = channel.getUrl();

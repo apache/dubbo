@@ -30,7 +30,6 @@
         <skip_maven_deploy>false</skip_maven_deploy>
     </properties>
     <modules>
-        <module>dubbo-config-api</module>
         <module>dubbo-config-spring</module>
     </modules>
 </project>

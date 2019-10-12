@@ -61,12 +61,6 @@
 
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-event</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-metadata-api</artifactId>
             <version>${project.parent.version}</version>
         </dependency>

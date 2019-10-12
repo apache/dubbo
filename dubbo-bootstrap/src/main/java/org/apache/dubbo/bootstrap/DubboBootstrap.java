@@ -62,7 +62,6 @@ import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.event.ServiceConfigExportedEvent;
 import org.apache.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
 import org.apache.dubbo.config.metadata.ConfigurableMetadataServiceExporter;
-import org.apache.dubbo.config.utils.ReferenceConfigCache;
 import org.apache.dubbo.event.Event;
 import org.apache.dubbo.event.EventDispatcher;
 import org.apache.dubbo.event.EventListener;
@@ -83,11 +82,18 @@ import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.cluster.ConfiguratorFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
+import org.apache.dubbo.rpc.model.ServiceMetadata;
+import org.apache.dubbo.rpc.model.ServiceRepository;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.SocketAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -116,9 +122,11 @@ import static java.util.Collections.sort;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static org.apache.dubbo.common.config.ConfigurationUtils.parseProperties;
 import static org.apache.dubbo.common.config.configcenter.DynamicConfiguration.getDynamicConfiguration;
+import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_IP_TO_BIND;
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
@@ -129,11 +137,21 @@ import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
 import static org.apache.dubbo.common.function.ThrowableAction.execute;
+import static org.apache.dubbo.common.utils.NetUtils.getAvailablePort;
+import static org.apache.dubbo.common.utils.NetUtils.getLocalHost;
+import static org.apache.dubbo.common.utils.NetUtils.isInvalidLocalHost;
+import static org.apache.dubbo.common.utils.NetUtils.isInvalidPort;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
+import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
+import static org.apache.dubbo.config.Constants.DUBBO_PORT_TO_BIND;
+import static org.apache.dubbo.config.Constants.DUBBO_PORT_TO_REGISTRY;
+import static org.apache.dubbo.config.Constants.MULTICAST;
 import static org.apache.dubbo.config.Constants.SCOPE_NONE;
 import static org.apache.dubbo.config.context.ConfigManager.getInstance;
 import static org.apache.dubbo.metadata.WritableMetadataService.getExtension;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.setMetadataStorageType;
+import static org.apache.dubbo.remoting.Constants.BIND_IP_KEY;
+import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
 import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
@@ -501,6 +519,8 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
 
             startMetadataReport();
 
+            loadServiceRepository();
+
             loadRemoteConfigs();
 
             useRegistryAsConfigCenterIfNecessary();
@@ -554,6 +574,10 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
         }
 
         MetadataReportInstance.init(metadataReportConfig.toUrl());
+    }
+
+    public void loadServiceRepository() {
+        ServiceRepository.init(getApplication().getRepository());
     }
 
     /**
@@ -945,7 +969,9 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
     }
 
     private void destroyProtocols() {
-        configManager.getProtocols().forEach(ProtocolConfig::destroy);
+        configManager.getProtocols().forEach(protocolConfig -> {
+            ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(protocolConfig.getName()).destroy();
+        });
         if (logger.isDebugEnabled()) {
             logger.debug(NAME + "'s all ProtocolConfigs have been destroyed.");
         }
@@ -1020,17 +1046,18 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
     }
 
     public static class Helper {
-        public static final Logger logger = LoggerFactory.getLogger(Helper.class);
 
-        /**
-         * A delayed exposure service timer
-         */
-        private static final ScheduledExecutorService DELAY_EXPORT_EXECUTOR = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("DubboServiceDelayExporter", true));
+        public static final Logger logger = LoggerFactory.getLogger(Helper.class);
 
         /**
          * A random port cache, the different protocols who has no port specified have different random port
          */
         private static final Map<String, Integer> RANDOM_PORT_MAP = new HashMap<String, Integer>();
+
+        /**
+         * A delayed exposure service timer
+         */
+        private static final ScheduledExecutorService DELAY_EXPORT_EXECUTOR = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("DubboServiceDelayExporter", true));
 
         private static final Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
 
@@ -1047,7 +1074,7 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
             sc.checkProtocol();
             sc.checkApplication();
             // if protocol is not injvm checkRegistry
-            if (!sc.isOnlyInJvm()) {
+            if (!isOnlyInJvm(sc)) {
                 sc.checkRegistry();
             }
             sc.refresh();
@@ -1103,12 +1130,29 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
                     throw new IllegalStateException("The stub implementation class " + stubClass.getName() + " not implement interface " + interfaceName);
                 }
             }
+            sc.setInterface(interfaceClass);
             sc.checkStubAndLocal(interfaceClass);
-            sc.checkMock(interfaceClass);
+            BootstrapUtils.checkMock(interfaceClass, sc);
+            sc.appendParameters();
+        }
+
+        public static List<Exporter<?>> export(ServiceConfig<?> sc) {
+            List<Exporter<?>> exporters = new ArrayList<>();
+            export(sc, exporters);
+            return exporters;
         }
 
         public static void export(ServiceConfig<?> sc, List<Exporter<?>> exporters) {
             checkAndUpdateSubConfigs(sc);
+
+            ServiceMetadata serviceMetadata = sc.getServiceMetadata();
+            //init serviceMetadata
+            serviceMetadata.setVersion(sc.getVersion());
+            serviceMetadata.setGroup(sc.getGroup());
+            serviceMetadata.setDefaultGroup(sc.getGroup());
+            serviceMetadata.setServiceType(sc.getInterfaceClass());
+            serviceMetadata.setServiceInterfaceName(sc.getInterface());
+            serviceMetadata.setTarget(sc.getRef());
 
             if (!sc.shouldExport()) {
                 return;
@@ -1139,7 +1183,14 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
             List<URL> registryURLs = BootstrapUtils.loadRegistries(sc, true);
             for (ProtocolConfig protocolConfig : sc.getProtocols()) {
                 String pathKey = URL.buildKey(sc.getContextPath(protocolConfig).map(p -> p + "/" + sc.getPath()).orElse(sc.getPath()), sc.getGroup(), sc.getVersion());
-                ProviderModel providerModel = new ProviderModel(pathKey, sc.getRef(), sc.getInterfaceClass());
+                sc.getServiceMetadata().setServiceKey(pathKey);
+                ProviderModel providerModel = new ProviderModel(
+                        pathKey,
+                        sc.getRef(),
+                        ApplicationModel.registerServiceModel(sc.getInterfaceClass()),
+                        sc,
+                        sc.getServiceMetadata()
+                );
                 ApplicationModel.initProviderModel(pathKey, providerModel);
                 doExportUrlsFor1Protocol(sc, protocolConfig, registryURLs, exporters);
             }
@@ -1248,9 +1299,12 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
                     map.put(TOKEN_KEY, sc.getToken());
                 }
             }
+            //init serviceMetadata attachments
+            sc.getServiceMetadata().getAttachments().putAll(map);
+
             // export service
-            String host = sc.findConfigedHosts(protocolConfig, registryURLs, map);
-            Integer port = sc.findConfigedPorts(protocolConfig, name, map);
+            String host = findConfigedHosts(sc, protocolConfig, registryURLs, map);
+            Integer port = findConfigedPorts(sc, protocolConfig, name, map);
             URL url = new URL(name, host, port, sc.getContextPath(protocolConfig).map(p -> p + "/" + sc.getPath()).orElse(sc.getPath()), map);
 
             // You can customize Configurator to append extra parameters
@@ -1270,7 +1324,7 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
                 }
                 // export to remote if the config is not local (export to local only when config is local)
                 if (!SCOPE_LOCAL.equalsIgnoreCase(scope)) {
-                    if (!sc.isOnlyInJvm() && logger.isInfoEnabled()) {
+                    if (!isOnlyInJvm(sc) && logger.isInfoEnabled()) {
                         logger.info("Export dubbo service " + interfaceClass.getName() + " to url " + url);
                     }
                     if (CollectionUtils.isNotEmpty(registryURLs)) {
@@ -1336,12 +1390,187 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
         }
 
         /**
+         * Determine if it is injvm
+         *
+         * @return
+         */
+        private static boolean isOnlyInJvm(ServiceConfig<?> sc) {
+            return sc.getProtocols().size() == 1
+                    && LOCAL_PROTOCOL.equalsIgnoreCase(sc.getProtocols().get(0).getName());
+        }
+
+        /**
+         * Register & bind IP address for service provider, can be configured separately.
+         * Configuration priority: environment variables -> java system properties -> host property in config file ->
+         * /etc/hosts -> default network address -> first available network address
+         *
+         * @param protocolConfig
+         * @param registryURLs
+         * @param map
+         * @return
+         */
+        private static String findConfigedHosts(ServiceConfig<?> sc,
+                                                ProtocolConfig protocolConfig,
+                                                List<URL> registryURLs,
+                                                Map<String, String> map) {
+            boolean anyhost = false;
+
+            String hostToBind = getValueFromConfig(protocolConfig, DUBBO_IP_TO_BIND);
+            if (hostToBind != null && hostToBind.length() > 0 && isInvalidLocalHost(hostToBind)) {
+                throw new IllegalArgumentException("Specified invalid bind ip from property:" + DUBBO_IP_TO_BIND + ", value:" + hostToBind);
+            }
+
+            // if bind ip is not found in environment, keep looking up
+            if (StringUtils.isEmpty(hostToBind)) {
+                hostToBind = protocolConfig.getHost();
+                if (sc.getProvider() != null && StringUtils.isEmpty(hostToBind)) {
+                    hostToBind = sc.getProvider().getHost();
+                }
+                if (isInvalidLocalHost(hostToBind)) {
+                    anyhost = true;
+                    try {
+                        logger.info("No valid ip found from environment, try to find valid host from DNS.");
+                        hostToBind = InetAddress.getLocalHost().getHostAddress();
+                    } catch (UnknownHostException e) {
+                        logger.warn(e.getMessage(), e);
+                    }
+                    if (isInvalidLocalHost(hostToBind)) {
+                        if (CollectionUtils.isNotEmpty(registryURLs)) {
+                            for (URL registryURL : registryURLs) {
+                                if (MULTICAST.equalsIgnoreCase(registryURL.getParameter("registry"))) {
+                                    // skip multicast registry since we cannot connect to it via Socket
+                                    continue;
+                                }
+                                try (Socket socket = new Socket()) {
+                                    SocketAddress addr = new InetSocketAddress(registryURL.getHost(), registryURL.getPort());
+                                    socket.connect(addr, 1000);
+                                    hostToBind = socket.getLocalAddress().getHostAddress();
+                                    break;
+                                } catch (Exception e) {
+                                    logger.warn(e.getMessage(), e);
+                                }
+                            }
+                        }
+                        if (isInvalidLocalHost(hostToBind)) {
+                            hostToBind = getLocalHost();
+                        }
+                    }
+                }
+            }
+
+            map.put(BIND_IP_KEY, hostToBind);
+
+            // registry ip is not used for bind ip by default
+            String hostToRegistry = getValueFromConfig(protocolConfig, DUBBO_IP_TO_REGISTRY);
+            if (hostToRegistry != null && hostToRegistry.length() > 0 && isInvalidLocalHost(hostToRegistry)) {
+                throw new IllegalArgumentException("Specified invalid registry ip from property:" + DUBBO_IP_TO_REGISTRY + ", value:" + hostToRegistry);
+            } else if (StringUtils.isEmpty(hostToRegistry)) {
+                // bind ip is used as registry ip by default
+                hostToRegistry = hostToBind;
+            }
+
+            map.put(ANYHOST_KEY, String.valueOf(anyhost));
+
+            return hostToRegistry;
+        }
+
+
+        /**
+         * Register port and bind port for the provider, can be configured separately
+         * Configuration priority: environment variable -> java system properties -> port property in protocol config file
+         * -> protocol default port
+         *
+         * @param protocolConfig
+         * @param name
+         * @return
+         */
+        private static Integer findConfigedPorts(ServiceConfig<?> sc,
+                                                 ProtocolConfig protocolConfig,
+                                                 String name,
+                                                 Map<String, String> map) {
+            Integer portToBind = null;
+
+            // parse bind port from environment
+            String port = getValueFromConfig(protocolConfig, DUBBO_PORT_TO_BIND);
+            portToBind = parsePort(port);
+
+            // if there's no bind port found from environment, keep looking up.
+            if (portToBind == null) {
+                portToBind = protocolConfig.getPort();
+                if (sc.getProvider() != null && (portToBind == null || portToBind == 0)) {
+                    portToBind = sc.getProvider().getPort();
+                }
+                final int defaultPort = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(name).getDefaultPort();
+                if (portToBind == null || portToBind == 0) {
+                    portToBind = defaultPort;
+                }
+                if (portToBind == null || portToBind <= 0) {
+                    portToBind = getRandomPort(name);
+                    if (portToBind == null || portToBind < 0) {
+                        portToBind = getAvailablePort(defaultPort);
+                        putRandomPort(name, portToBind);
+                    }
+                }
+            }
+
+            // save bind port, used as url's key later
+            map.put(BIND_PORT_KEY, String.valueOf(portToBind));
+
+            // registry port, not used as bind port by default
+            String portToRegistryStr = getValueFromConfig(protocolConfig, DUBBO_PORT_TO_REGISTRY);
+            Integer portToRegistry = parsePort(portToRegistryStr);
+            if (portToRegistry == null) {
+                portToRegistry = portToBind;
+            }
+
+            return portToRegistry;
+        }
+
+        private static Integer parsePort(String configPort) {
+            Integer port = null;
+            if (configPort != null && configPort.length() > 0) {
+                try {
+                    Integer intPort = Integer.parseInt(configPort);
+                    if (isInvalidPort(intPort)) {
+                        throw new IllegalArgumentException("Specified invalid port from env value:" + configPort);
+                    }
+                    port = intPort;
+                } catch (Exception e) {
+                    throw new IllegalArgumentException("Specified invalid port from env value:" + configPort);
+                }
+            }
+            return port;
+        }
+
+        private static String getValueFromConfig(ProtocolConfig protocolConfig, String key) {
+            String protocolPrefix = protocolConfig.getName().toUpperCase() + "_";
+            String port = ConfigUtils.getSystemProperty(protocolPrefix + key);
+            if (StringUtils.isEmpty(port)) {
+                port = ConfigUtils.getSystemProperty(key);
+            }
+            return port;
+        }
+
+        private static Integer getRandomPort(String protocol) {
+            protocol = protocol.toLowerCase();
+            return RANDOM_PORT_MAP.getOrDefault(protocol, Integer.MIN_VALUE);
+        }
+
+        private static void putRandomPort(String protocol, Integer port) {
+            protocol = protocol.toLowerCase();
+            if (!RANDOM_PORT_MAP.containsKey(protocol)) {
+                RANDOM_PORT_MAP.put(protocol, port);
+                logger.warn("Use random available port(" + port + ") for protocol " + protocol);
+            }
+        }
+
+        /**
          * Dispatch an {@link Event event}
          *
          * @param event an {@link Event event}
          * @since 2.7.4
          */
-        protected static void dispatch(Event event) {
+        private static void dispatch(Event event) {
             EventDispatcher.getDefaultExtension().dispatch(event);
         }
     }

@@ -133,7 +133,6 @@ public interface Constants {
     int DEFAULT_HEARTBEAT = 60 * 1000;
     String HEARTBEAT_TIMEOUT_KEY = "heartbeat.timeout";
     String CONNECTIONS_KEY = "connections";
-    String DUBBO_VERSION_KEY = "dubbo";
 
     String SSL_ENABLED_KEY = "ssl-enabled";
 

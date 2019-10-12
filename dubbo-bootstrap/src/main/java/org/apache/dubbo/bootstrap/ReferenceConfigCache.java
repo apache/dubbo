@@ -43,6 +43,9 @@ import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
 import org.apache.dubbo.rpc.cluster.support.registry.ZoneAwareCluster;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ConsumerModel;
+import org.apache.dubbo.rpc.model.ServiceMetadata;
+import org.apache.dubbo.rpc.model.ServiceModel;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
 import org.apache.dubbo.rpc.service.Destroyable;
 import org.apache.dubbo.rpc.service.GenericService;
@@ -69,6 +72,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PROXY_CLASS_REF;
 import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SEMICOLON_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
@@ -313,51 +317,20 @@ public class ReferenceConfigCache {
          */
         private static final ProxyFactory PROXY_FACTORY = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
 
-
-        /**
-         * This method should be called right after the creation of this class's instance, before any property in other config modules is used.
-         * Check each config modules are created properly and override their properties if necessary.
-         */
-        public void checkAndUpdateSubConfigs(ReferenceConfig<?> rc) {
-            if (StringUtils.isEmpty(rc.getInterface())) {
-                throw new IllegalStateException("<dubbo:reference interface=\"\" /> interface not allow null!");
-            }
-            rc.completeCompoundConfigs();
-            // get consumer's global configuration
-            rc.checkDefault();
-            rc.refresh();
-            if (rc.getGeneric() == null && rc.getConsumer() != null) {
-                rc.setGeneric(rc.getConsumer().getGeneric());
-            }
-            Class<?> interfaceClass = null;
-            if (ProtocolUtils.isGeneric(rc.getGeneric())) {
-                interfaceClass = GenericService.class;
-            } else {
-                try {
-                    interfaceClass = Class.forName(rc.getInterface(), true, Thread.currentThread()
-                            .getContextClassLoader());
-                } catch (ClassNotFoundException e) {
-                    throw new IllegalStateException(e.getMessage(), e);
-                }
-                rc.checkInterfaceAndMethods(interfaceClass, rc.getMethods());
-            }
-            rc.resolveFile();
-            rc.checkApplication();
-            rc.checkMetadataReport();
-        }
-
         public static <T> T refer(ReferenceConfig<T> rc) {
+            checkAndUpdateSubConfigs(rc);
+
             Class<?> interfaceClass = rc.getInterfaceClass();
             String interfaceName = rc.getInterface();
 
             rc.checkStubAndLocal(interfaceClass);
-            rc.checkMock(interfaceClass);
+            BootstrapUtils.checkMock(interfaceClass, rc);
             Map<String, String> map = new HashMap<String, String>();
 
             map.put(SIDE_KEY, CONSUMER_SIDE);
 
             ReferenceConfig.appendRuntimeParameters(map);
-            if (!rc.isGeneric()) {
+            if (!ProtocolUtils.isGeneric(rc.getGeneric())) {
                 String revision = Version.getVersion(interfaceClass, rc.getVersion());
                 if (revision != null && revision.length() > 0) {
                     map.put(REVISION_KEY, revision);
@@ -381,7 +354,7 @@ public class ReferenceConfigCache {
             AbstractConfig.appendParameters(map, rc);
             Map<String, Object> attributes = null;
             if (CollectionUtils.isNotEmpty(rc.getMethods())) {
-                attributes = new HashMap<String, Object>();
+                attributes = new HashMap<>();
                 for (MethodConfig methodConfig : rc.getMethods()) {
                     AbstractConfig.appendParameters(map, methodConfig, methodConfig.getName());
                     String retryKey = methodConfig.getName() + ".retry";
@@ -391,7 +364,11 @@ public class ReferenceConfigCache {
                             map.put(methodConfig.getName() + ".retries", "0");
                         }
                     }
-                    attributes.put(methodConfig.getName(), AbstractConfig.convertMethodConfig2AsyncInfo(methodConfig));
+                    ConsumerModel.AsyncMethodInfo asyncMethodInfo = AbstractConfig.convertMethodConfig2AsyncInfo(methodConfig);
+                    if (asyncMethodInfo != null) {
+//                    consumerModel.getMethodModel(methodConfig.getName()).addAttribute(ASYNC_KEY, asyncMethodInfo);
+                        attributes.put(methodConfig.getName(), asyncMethodInfo);
+                    }
                 }
             }
 
@@ -403,10 +380,17 @@ public class ReferenceConfigCache {
             }
             map.put(REGISTER_IP_KEY, hostToRegistry);
 
-            String serviceKey = URL.buildKey(interfaceName, rc.getGroup(), rc.getVersion());
-            ApplicationModel.initConsumerModel(serviceKey, rc.buildConsumerModel(serviceKey, attributes));
+            ServiceMetadata serviceMetadata = rc.getServiceMetadata();
+            serviceMetadata.getAttachments().putAll(map);
+
             T proxy = createProxy(map, rc);
-            ApplicationModel.getConsumerModel(serviceKey).setProxyObject(proxy);
+
+            serviceMetadata.setTarget(proxy);
+            serviceMetadata.addAttribute(PROXY_CLASS_REF, proxy);
+
+            ServiceModel serviceModel = ApplicationModel.registerServiceModel(interfaceClass);
+            ApplicationModel.initConsumerModel(serviceMetadata.getServiceKey(),
+                    rc.buildConsumerModel(attributes, serviceModel, rc, proxy));
 
             // dispatch a ReferenceConfigDestroyedEvent since 2.7.4
             dispatch(new ReferenceConfigDestroyedEvent(rc));
@@ -512,6 +496,41 @@ public class ReferenceConfigCache {
             // create service proxy
             return (T) PROXY_FACTORY.getProxy(invoker);
         }
+
+        /**
+         * This method should be called right after the creation of this class's instance, before any property in other config modules is used.
+         * Check each config modules are created properly and override their properties if necessary.
+         */
+        public static void checkAndUpdateSubConfigs(ReferenceConfig<?> rc) {
+            if (StringUtils.isEmpty(rc.getInterface())) {
+                throw new IllegalStateException("<dubbo:reference interface=\"\" /> interface not allow null!");
+            }
+            rc.completeCompoundConfigs();
+            // get consumer's global configuration
+            rc.checkDefault();
+            rc.refresh();
+            if (rc.getGeneric() == null && rc.getConsumer() != null) {
+                rc.setGeneric(rc.getConsumer().getGeneric());
+            }
+            Class<?> interfaceClass = null;
+            if (ProtocolUtils.isGeneric(rc.getGeneric())) {
+                interfaceClass = GenericService.class;
+            } else {
+                try {
+                    interfaceClass = Class.forName(rc.getInterface(), true, Thread.currentThread()
+                            .getContextClassLoader());
+                } catch (ClassNotFoundException e) {
+                    throw new IllegalStateException(e.getMessage(), e);
+                }
+                rc.checkInterfaceAndMethods(interfaceClass, rc.getMethods());
+            }
+            rc.setInterface(interfaceClass);
+            rc.resolveFile();
+            rc.checkApplication();
+            rc.checkMetadataReport();
+            rc.appendParameters();
+        }
+
 
         /**
          * Figure out should refer the service in the same JVM from configurations. The default behavior is true

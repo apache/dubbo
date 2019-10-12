@@ -672,6 +672,11 @@
                 <artifactId>grpc-stub</artifactId>
                 <version>${grpc.version}</version>
             </dependency>
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-grpclb</artifactId>
+                <version>${grpc.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

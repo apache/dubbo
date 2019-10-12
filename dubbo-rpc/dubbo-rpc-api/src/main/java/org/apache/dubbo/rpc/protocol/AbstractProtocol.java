@@ -29,6 +29,7 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;

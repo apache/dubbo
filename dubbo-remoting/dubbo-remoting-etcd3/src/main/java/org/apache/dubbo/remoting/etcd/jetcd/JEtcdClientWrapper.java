@@ -43,7 +43,6 @@ import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
-import io.grpc.util.RoundRobinLoadBalancerFactory;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -146,8 +145,8 @@ public class JEtcdClientWrapper {
             maxInboundSize = Integer.valueOf(System.getProperty(GRPC_MAX_INBOUND_SIZE_KEY));
         }
 
+        // TODO, uses default pick-first round robin.
         ClientBuilder clientBuilder = Client.builder()
-                .loadBalancerFactory(RoundRobinLoadBalancerFactory.getInstance())
                 .endpoints(endPoints(url.getBackupAddress()))
                 .maxInboundMessageSize(maxInboundSize);
 

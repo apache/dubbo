@@ -25,9 +25,10 @@ import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.command.annotation.Cmd;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.registry.support.AbstractRegistry;
+import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 import org.apache.dubbo.rpc.model.ProviderModel;
-import org.apache.dubbo.rpc.model.invoker.ProviderInvokerWrapper;
+import org.apache.dubbo.rpc.model.ServiceRepository;
 
 import java.util.Collection;
 
@@ -38,6 +39,7 @@ import java.util.Collection;
 public class Online implements BaseCommand {
     private Logger logger = LoggerFactory.getLogger(Online.class);
     private RegistryFactory registryFactory = ExtensionLoader.getExtensionLoader(RegistryFactory.class).getAdaptiveExtension();
+    private ServiceRepository serviceRepository = ServiceRepository.getLoadedInstance();
 
     @Override
     public String execute(CommandContext commandContext, String[] args) {
@@ -49,19 +51,20 @@ public class Online implements BaseCommand {
 
         boolean hasService = false;
 
-        Collection<ProviderModel> providerModelList = ApplicationModel.allProviderModels();
+        Collection<ProviderModel> providerModelList = serviceRepository.getExportedServices();
         for (ProviderModel providerModel : providerModelList) {
             if (providerModel.getServiceName().matches(servicePattern)) {
                 hasService = true;
-                Collection<ProviderInvokerWrapper> providerInvokerWrapperSet = ApplicationModel.getProviderInvokers(providerModel.getServiceKey());
-                for (ProviderInvokerWrapper providerInvokerWrapper : providerInvokerWrapperSet) {
-                    if (providerInvokerWrapper.isReg()) {
-                        continue;
-                    }
-                    Registry registry = registryFactory.getRegistry(providerInvokerWrapper.getRegistryUrl());
-                    registry.register(providerInvokerWrapper.getProviderUrl());
-                    providerInvokerWrapper.setReg(true);
-                }
+                Collection<Registry> registries = AbstractRegistryFactory.getRegistries();
+                registries.forEach(registry -> {
+                    // TODO, consider abstract the method to interface to avoid type cast
+                    AbstractRegistry abstractRegistry = (AbstractRegistry) registry;
+                    abstractRegistry.getRegisterStatedUrls().values().forEach(registerStatedURL -> {
+                        if (!registerStatedURL.isRegistered()) {
+                            abstractRegistry.register(registerStatedURL.getProviderUrl());
+                        }
+                    });
+                });
             }
         }
 
@@ -70,6 +73,5 @@ public class Online implements BaseCommand {
         } else {
             return "service not found";
         }
-
     }
 }

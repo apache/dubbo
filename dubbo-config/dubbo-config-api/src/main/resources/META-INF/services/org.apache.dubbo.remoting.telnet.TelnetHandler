@@ -1,1 +1,0 @@
-shutdown=org.apache.dubbo.rpc.protocol.dubbo.telnet.ShutdownTelnetHandler

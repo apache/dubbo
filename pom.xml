@@ -148,7 +148,6 @@
         <module>dubbo-distribution</module>
         <module>dubbo-configcenter</module>
         <module>dubbo-dependencies</module>
-        <module>dubbo-event</module>
         <module>dubbo-metadata</module>
         <module>dubbo-bootstrap</module>
     </modules>

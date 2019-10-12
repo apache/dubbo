@@ -49,6 +49,26 @@
             <groupId>io.etcd</groupId>
             <artifactId>jetcd-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-netty</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-protobuf</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-stub</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-grpclb</artifactId>
+        </dependency>
         <!-- https://mvnrepository.com/artifact/io.etcd/jetcd-launcher -->
         <dependency>
             <groupId>io.etcd</groupId>

@@ -32,8 +32,8 @@ import org.apache.dubbo.rpc.listener.ListenerInvokerWrapper;
 import java.util.Collections;
 import java.util.List;
 
-import static org.apache.dubbo.rpc.Constants.EXPORTER_LISTENER_KEY;
-import static org.apache.dubbo.rpc.Constants.INVOKER_LISTENER_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.EXPORTER_LISTENER_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INVOKER_LISTENER_KEY;
 
 /**
  * ListenerProtocol

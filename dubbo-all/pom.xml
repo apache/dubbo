@@ -46,13 +46,6 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-config-api</artifactId>
-            <version>${project.version}</version>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-config-spring</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
@@ -537,15 +530,6 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- 2.7.4 new modules -->
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-event</artifactId>
-            <version>${project.version}</version>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
-
         <!-- Transitive dependencies -->
         <dependency>
             <groupId>org.springframework</groupId>
@@ -646,7 +630,6 @@
                                     <include>org.apache.dubbo:dubbo-registry-multiple</include>
                                     <include>org.apache.dubbo:dubbo-monitor-api</include>
                                     <include>org.apache.dubbo:dubbo-monitor-default</include>
-                                    <include>org.apache.dubbo:dubbo-config-api</include>
                                     <include>org.apache.dubbo:dubbo-config-spring</include>
                                     <include>org.apache.dubbo:dubbo-container-api</include>
                                     <include>org.apache.dubbo:dubbo-container-spring</include>
@@ -678,7 +661,6 @@
                                     <include>org.apache.dubbo:dubbo-metadata-report-nacos</include>
                                     <include>org.apache.dubbo:dubbo-serialization-native-hession</include>
                                     <include>org.apache.dubbo:dubbo-rpc-native-thrift</include>
-                                    <include>org.apache.dubbo:dubbo-event</include>
                                 </includes>
                             </artifactSet>
                             <transformers>

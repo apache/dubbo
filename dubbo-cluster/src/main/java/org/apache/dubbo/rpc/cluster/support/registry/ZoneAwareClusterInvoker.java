@@ -64,14 +64,14 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
         }
 
         // providers in the registry with the same
-        String zone = invocation.getAttachment(REGISTRY_ZONE);
+        String zone = (String) invocation.getAttachment(REGISTRY_ZONE);
         if (StringUtils.isNotEmpty(zone)) {
             for (Invoker<T> invoker : invokers) {
                 if (invoker.isAvailable() && zone.equals(invoker.getUrl().getParameter(REGISTRY_KEY + "." + ZONE_KEY))) {
                     return invoker.invoke(invocation);
                 }
             }
-            String force = invocation.getAttachment(REGISTRY_ZONE_FORCE);
+            String force = (String) invocation.getAttachment(REGISTRY_ZONE_FORCE);
             if (StringUtils.isNotEmpty(force) && "true".equalsIgnoreCase(force)) {
                 throw new IllegalStateException("No registry instance in zone or no available providers in the registry, zone: "
                         + zone

@@ -330,9 +330,26 @@ public class ExtensionLoader<T> {
         return Collections.unmodifiableSet(new TreeSet<>(cachedInstances.keySet()));
     }
 
+    public Set<Object> getLoadedExtensionInstances() {
+        Set<Object> instances = new TreeSet<>();
+        cachedInstances.values().forEach(Holder::get);
+        return instances;
+    }
+
     public Object getLoadedAdaptiveExtensionInstances() {
         return cachedAdaptiveInstance.get();
     }
+
+//    public T getPrioritizedExtensionInstance() {
+//        Set<String> supported = getSupportedExtensions();
+//
+//        Set<T> instances = new HashSet<>();
+//        Set<T> prioritized = new HashSet<>();
+//        for (String s : supported) {
+//
+//        }
+//
+//    }
 
     /**
      * Find the extension with the given name. If the specified name is not found, then {@link IllegalStateException}
