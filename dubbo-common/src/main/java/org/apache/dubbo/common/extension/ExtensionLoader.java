@@ -660,21 +660,24 @@ public class ExtensionLoader<T> {
     private void loadDirectory(Map<String, Class<?>> extensionClasses, String dir, String type) {
         String fileName = dir + type;
         try {
-            Enumeration<java.net.URL> urls;
+            Enumeration<java.net.URL> urls = null;
             ClassLoader classLoader = findClassLoader();
-            if (classLoader != null) {
-                urls = classLoader.getResources(fileName);
-            } else {
-                urls = ClassLoader.getSystemResources(fileName);
+            
+            // try to load from ExtensionLoader's ClassLoader first
+            ClassLoader extensionLoaderClassLoader = ExtensionLoader.class.getClassLoader();
+            if (ClassLoader.getSystemClassLoader() != extensionLoaderClassLoader) {
+                urls = extensionLoaderClassLoader.getResources(fileName);
             }
-            if (urls != null) {
-                if (!urls.hasMoreElements()) {
-                    // try to load from ExtensionLoader's ClassLoader
-                    ClassLoader extensionLoaderClassLoader = this.getClass().getClassLoader();
-                    if (ClassLoader.getSystemClassLoader() != extensionLoaderClassLoader) {
-                        urls = extensionLoaderClassLoader.getResources(fileName);
-                    }
+            
+            if(urls == null || !urls.hasMoreElements()) {
+                if (classLoader != null) {
+                    urls = classLoader.getResources(fileName);
+                } else {
+                    urls = ClassLoader.getSystemResources(fileName);
                 }
+            }
+
+            if (urls != null) {
                 while (urls.hasMoreElements()) {
                     java.net.URL resourceURL = urls.nextElement();
                     loadResource(extensionClasses, classLoader, resourceURL);
