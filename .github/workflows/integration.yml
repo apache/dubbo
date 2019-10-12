@@ -27,6 +27,6 @@ jobs:
         run: cd dubbo-samples && ./mvnw -U --batch-mode --no-transfer-progress --settings .mvn/settings.xml clean install -pl dubbo-maven-address-plugin -Ddubbo.version=PR-${{ github.sha	}}
 
       - name: Run integration test
-        run: ./mvnw -U --batch-mode --no-transfer-progress --settings .mvn/settings.xml clean verify -Pdubbo-integration-test -Djava-image.name=openjdk:8 -Ddubbo.version=PR-${{ github.sha }}
+        run: cd dubbo-samples && ./mvnw -U --batch-mode --no-transfer-progress --settings .mvn/settings.xml clean verify -Pdubbo-integration-test -Djava-image.name=openjdk:8 -Ddubbo.version=PR-${{ github.sha }}
 
 
