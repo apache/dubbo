@@ -1,4 +1,4 @@
-package org.apache.dubbo.config.spring.extension;
+package org.apache.dubbo.rpc;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -18,7 +18,7 @@ package org.apache.dubbo.config.spring.extension;
  */
 /**
  * this interface is used to enable grace shutdown
- * any class implements this interface should be a spring bean
+ * any class implements this interface should be a spring bean or add spi extension config
  * @since 2.7.3
  */
 public interface GraceFulShutDown {

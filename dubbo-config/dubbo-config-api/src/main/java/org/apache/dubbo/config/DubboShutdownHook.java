@@ -20,9 +20,13 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
+import org.apache.dubbo.rpc.GraceFulShutDown;
 import org.apache.dubbo.rpc.Protocol;
 
+import java.util.Collection;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 /**
  * The shutdown hook thread to do the clean up stuff.
@@ -84,8 +88,25 @@ public class DubboShutdownHook extends Thread {
     public void doDestroy() {
 
         destroyRegistries();
+        ExtensionLoader<GraceFulShutDown> loader = ExtensionLoader.getExtensionLoader(GraceFulShutDown.class);
+        extensionLoop(loader,GraceFulShutDown::afterRegistriesDestroyed);
         // destroy all the protocols
         destroyProtocols();
+        extensionLoop(loader,GraceFulShutDown::afterProtocolDestroyed);
+    }
+
+    private void extensionLoop(ExtensionLoader<GraceFulShutDown> loader, Consumer<GraceFulShutDown> consumer){
+
+        for (String extensionName : loader.getLoadedExtensions()){
+            try {
+                GraceFulShutDown shutDown = loader.getLoadedExtension(extensionName);
+                if (null != shutDown){
+                    consumer.accept(shutDown);
+                }
+            }catch (Throwable t){
+                logger.warn(t.getMessage(),t);
+            }
+        }
     }
 
     public void destroyRegistries(){

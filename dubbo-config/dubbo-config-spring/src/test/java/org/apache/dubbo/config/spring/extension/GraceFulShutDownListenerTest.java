@@ -2,6 +2,7 @@ package org.apache.dubbo.config.spring.extension;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.rpc.GraceFulShutDown;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,7 +32,7 @@ import java.util.Set;
  * @description
  * @sine 2.7.3
  */
-public class GraceFulShutDownTest {
+public class GraceFulShutDownListenerTest {
 
 
     private static final Logger logger = LoggerFactory.getLogger(SpringExtensionFactory.class);
