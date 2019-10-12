@@ -24,6 +24,8 @@ import org.apache.dubbo.registry.support.ProviderInvokerWrapper;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
+import org.apache.dubbo.rpc.model.ServiceMetadata;
+
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -38,18 +40,21 @@ public class OfflineTest {
     @Test
     public void testExecute() throws Exception {
         ProviderModel providerModel = mock(ProviderModel.class);
-        when(providerModel.getServiceName()).thenReturn("org.apache.dubbo.BarService");
-        ApplicationModel.initProviderModel("org.apache.dubbo.BarService", providerModel);
+        when(providerModel.getServiceMetadata()).thenReturn(new ServiceMetadata("org.apache.dubbo.qos.command.impl.TestInterface2", "ddd", "1.2.3.offline", TestInterface2.class));
+        when(providerModel.getServiceName()).thenReturn("org.apache.dubbo.qos.command.impl.TestInterface2");
+        ApplicationModel.initProviderModel("org.apache.dubbo.qos.command.impl.TestInterface2", providerModel);
 
         Invoker providerInvoker = mock(Invoker.class);
         URL registryUrl = mock(URL.class);
         when(registryUrl.toFullString()).thenReturn("test://localhost:8080");
         URL providerUrl = mock(URL.class);
-        when(providerUrl.getServiceKey()).thenReturn("org.apache.dubbo.BarService");
-        when(providerUrl.toFullString()).thenReturn("dubbo://localhost:8888/org.apache.dubbo.BarService");
+        String serviceKey = "ddd/org.apache.dubbo.qos.command.impl.TestInterface2:1.2.3.offline";
+        when(providerUrl.getServiceKey()).thenReturn(serviceKey);
+        when(providerUrl.toFullString()).thenReturn("dubbo://localhost:8888/org.apache.dubbo.qos.command.impl.TestInterface2?version=1.2.3.offline&group=ddd");
         when(providerInvoker.getUrl()).thenReturn(providerUrl);
+
         ProviderConsumerRegTable.registerProvider(providerInvoker, registryUrl, providerUrl);
-        for (ProviderInvokerWrapper wrapper : getProviderInvoker("org.apache.dubbo.BarService")) {
+        for (ProviderInvokerWrapper wrapper : getProviderInvoker(serviceKey)) {
             wrapper.setReg(true);
         }
 
@@ -57,10 +62,11 @@ public class OfflineTest {
         TestRegistryFactory.registry = registry;
 
         Offline offline = new Offline();
-        String output = offline.execute(mock(CommandContext.class), new String[]{"org.apache.dubbo.BarService"});
+        String output = offline.execute(mock(CommandContext.class), new String[]{"org.apache.dubbo.qos.command.impl.TestInterface2"});
         assertThat(output, containsString("OK"));
+
         Mockito.verify(registry).unregister(providerUrl);
-        for (ProviderInvokerWrapper wrapper : getProviderInvoker("org.apache.dubbo.BarService")) {
+        for (ProviderInvokerWrapper wrapper : getProviderInvoker(serviceKey)) {
             assertThat(wrapper.isReg(), is(false));
         }
 

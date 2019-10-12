@@ -72,6 +72,6 @@ public class LsTest {
         Ls ls = new Ls();
         String output = ls.execute(mock(CommandContext.class), null);
         assertThat(output, containsString("org.apache.dubbo.FooService|100"));
-        assertThat(output, containsString("org.apache.dubbo.BarService| Y"));
+        assertThat(output, containsString("org.apache.dubbo.BarService"));
     }
 }
