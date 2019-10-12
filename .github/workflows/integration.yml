@@ -18,7 +18,7 @@ jobs:
         run: ./mvnw clean install -DskipTests=true -Drevision=PR-${{ github.sha	}}
 
       - name: Clean workspace
-        run: rm -rf ./
+        run: rm -rf dubbo-samples
 
       - name: Checkout dubbo-samples
         run: git clone https://github.com/apache/dubbo-samples.git
