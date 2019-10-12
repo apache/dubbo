@@ -136,6 +136,4 @@ public interface Constants {
     String HEARTBEAT_TIMEOUT_KEY = "heartbeat.timeout";
     String CONNECTIONS_KEY = "connections";
     String DUBBO_VERSION_KEY = "dubbo";
-
-    String ZK_SESSION_EXPIRE_KEY = "session.expire";
 }
