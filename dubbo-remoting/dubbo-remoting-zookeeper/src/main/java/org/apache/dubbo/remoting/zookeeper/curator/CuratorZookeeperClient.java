@@ -134,11 +134,12 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
         try {
             client.create().withMode(CreateMode.EPHEMERAL).forPath(path, dataBytes);
         } catch (NodeExistsException e) {
-            try {
-                client.setData().forPath(path, dataBytes);
-            } catch (Exception e1) {
-                throw new IllegalStateException(e.getMessage(), e1);
-            }
+            logger.warn("ZNode " + path + " already exists, since we will only try to recreate a node on a session expiration" +
+                    ", this duplication might be caused by a delete delay from the zk server, which means the old expired session" +
+                    " may still holds this ZNode and the server just hasn't got time to do the deletion. In this case, " +
+                    "we can just try to delete and create again.", e);
+            deletePath(path);
+            createEphemeral(path, data);
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
