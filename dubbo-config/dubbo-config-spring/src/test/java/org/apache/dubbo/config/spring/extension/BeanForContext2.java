@@ -21,6 +21,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.impl.DemoServiceImpl;
 
+import org.apache.dubbo.rpc.GraceFulShutDown;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

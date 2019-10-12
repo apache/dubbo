@@ -1,0 +1,1 @@
+shutdown=org.apache.dubbo.config.spring.extension.KafkaGraceFulShutDown
