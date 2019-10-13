@@ -17,7 +17,9 @@
 package org.apache.dubbo.rpc.protocol.webservice;
 
 import org.apache.cxf.binding.soap.SoapTransportFactory;
+import org.apache.cxf.common.util.StringUtils;
 import org.apache.cxf.endpoint.Server;
+import org.apache.cxf.service.model.OperationInfo;
 import org.apache.cxf.transport.Destination;
 
 import org.apache.cxf.transport.http.HTTPConduit;
@@ -25,6 +27,7 @@ import org.apache.cxf.transport.http.AbstractHTTPDestination;
 import org.apache.cxf.transport.http.DestinationRegistry;
 import org.apache.cxf.transport.http.DestinationRegistryImpl;
 import org.apache.cxf.transport.http.HttpDestinationFactory;
+import org.apache.cxf.wsdl.service.factory.AbstractServiceConfiguration;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.http.HttpBinder;
@@ -50,6 +53,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.SocketTimeoutException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -109,6 +113,7 @@ public class WebServiceProtocol extends AbstractProxyProtocol {
         serverFactoryBean.setServiceBean(impl);
         serverFactoryBean.setBus(bus);
         serverFactoryBean.setDestinationFactory(transportFactory);
+        serverFactoryBean.getServiceFactory().getConfigurations().add(new URLSharpMethodNameSoapActionServiceConfiguration());
         server = serverFactoryBean.create();
         return new Runnable() {
             @Override
@@ -186,6 +191,17 @@ public class WebServiceProtocol extends AbstractProxyProtocol {
             servletController.invoke(request, response);
         }
 
+    }
+
+    private class URLSharpMethodNameSoapActionServiceConfiguration extends AbstractServiceConfiguration {
+        public String getAction(OperationInfo op, Method method) {
+            String uri = op.getName().getNamespaceURI();
+            String action = op.getName().getLocalPart();
+            if (StringUtils.isEmpty(action)) {
+                action = method.getName();
+            }
+            return uri+"#"+action;
+        }
     }
 
 }
