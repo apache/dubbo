@@ -29,7 +29,7 @@ import java.util.Set;
 
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationProcessorUtils.findMetaAnnotation;
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationProcessorUtils.getAnnotation;
-import static org.apache.dubbo.metadata.annotation.processing.util.ModelUtils.getValue;
+import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.getValue;
 import static org.apache.dubbo.metadata.util.HttpUtils.HTTP_METHODS;
 import static org.apache.dubbo.metadata.util.HttpUtils.buildPath;
 

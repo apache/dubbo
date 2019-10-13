@@ -47,8 +47,8 @@ import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationPro
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationProcessorUtils.getInterfaces;
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationProcessorUtils.getMethods;
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationProcessorUtils.getOverrideMethod;
-import static org.apache.dubbo.metadata.annotation.processing.util.ModelUtils.getAttribute;
-import static org.apache.dubbo.metadata.annotation.processing.util.ModelUtils.getValue;
+import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.getAttribute;
+import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.getValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;

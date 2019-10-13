@@ -47,6 +47,7 @@ import static javax.lang.model.util.ElementFilter.fieldsIn;
 import static javax.lang.model.util.ElementFilter.methodsIn;
 import static org.apache.dubbo.common.function.Predicates.and;
 import static org.apache.dubbo.common.function.Predicates.filterAll;
+import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.ofTypeElement;
 
 /**
  * An utilities class for {@link Processor}
@@ -144,7 +145,7 @@ public interface AnnotationProcessorUtils {
         // add current method
         hierarchicalMethods.add(method);
 
-        TypeElement currentType = ModelUtils.ofTypeElement(method.getEnclosingElement());
+        TypeElement currentType = ofTypeElement(method.getEnclosingElement());
 
         getHierarchicalTypes(processingEnv, currentType)
                 .stream()
@@ -243,7 +244,7 @@ public interface AnnotationProcessorUtils {
     }
 
     static TypeElement getSuperType(ProcessingEnvironment processingEnv, Element element) {
-        TypeElement currentType = ModelUtils.ofTypeElement(element);
+        TypeElement currentType = ofTypeElement(element);
         return currentType == null ? null : getSuperType(processingEnv, currentType);
     }
 
