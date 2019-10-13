@@ -113,7 +113,7 @@ public class WebServiceProtocol extends AbstractProxyProtocol {
         serverFactoryBean.setServiceBean(impl);
         serverFactoryBean.setBus(bus);
         serverFactoryBean.setDestinationFactory(transportFactory);
-        serverFactoryBean.getServiceFactory().getConfigurations().add(new URLSharpMethodNameSoapActionServiceConfiguration());
+        serverFactoryBean.getServiceFactory().getConfigurations().add(new URLHashMethodNameSoapActionServiceConfiguration());
         server = serverFactoryBean.create();
         return new Runnable() {
             @Override
@@ -193,7 +193,7 @@ public class WebServiceProtocol extends AbstractProxyProtocol {
 
     }
 
-    private class URLSharpMethodNameSoapActionServiceConfiguration extends AbstractServiceConfiguration {
+    private class URLHashMethodNameSoapActionServiceConfiguration extends AbstractServiceConfiguration {
         public String getAction(OperationInfo op, Method method) {
             String uri = op.getName().getNamespaceURI();
             String action = op.getName().getLocalPart();
