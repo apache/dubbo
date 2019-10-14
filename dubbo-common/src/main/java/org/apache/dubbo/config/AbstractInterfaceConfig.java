@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -148,6 +149,19 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     private String scope;
 
     protected String tag;
+
+    /**
+     * The url of the reference service
+     */
+    private final List<URL> urls = new ArrayList<URL>();
+
+    public List<URL> getExportedUrls() {
+        return urls;
+    }
+
+    public void updateUrls(List<URL> urls) {
+        this.urls.addAll(urls);
+    }
 
     /**
      * Check whether the registry config is exists, and then conversion it to {@link RegistryConfig}

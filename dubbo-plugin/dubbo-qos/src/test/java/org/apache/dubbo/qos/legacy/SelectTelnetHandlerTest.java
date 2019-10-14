@@ -17,14 +17,13 @@
 package org.apache.dubbo.qos.legacy;
 
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.qos.legacy.service.DemoService;
+import org.apache.dubbo.qos.legacy.service.DemoServiceImpl;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
-import org.apache.dubbo.rpc.protocol.dubbo.support.DemoService;
-import org.apache.dubbo.rpc.protocol.dubbo.support.DemoServiceImpl;
-import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -72,7 +71,11 @@ public class SelectTelnetHandlerTest {
         given(mockChannel.getLocalAddress()).willReturn(NetUtils.toAddress("127.0.0.1:5555"));
         given(mockChannel.getRemoteAddress()).willReturn(NetUtils.toAddress("127.0.0.1:20886"));
 
-        ProviderModel providerModel = new ProviderModel(DemoService.class.getName(), new DemoServiceImpl(), ApplicationModel.registerServiceModel(DemoService.class));
+        ProviderModel providerModel = new ProviderModel(DemoService.class.getName(),
+                new DemoServiceImpl(),
+                ApplicationModel.registerServiceModel(DemoService.class),
+                null
+        );
         ApplicationModel.initProviderModel(DemoService.class.getName(), providerModel);
 
         String result = select.telnet(mockChannel, "1");
@@ -87,7 +90,10 @@ public class SelectTelnetHandlerTest {
         given(mockChannel.getLocalAddress()).willReturn(NetUtils.toAddress("127.0.0.1:5555"));
         given(mockChannel.getRemoteAddress()).willReturn(NetUtils.toAddress("127.0.0.1:20886"));
 
-        ProviderModel providerModel = new ProviderModel(DemoService.class.getName(), new DemoServiceImpl(), ApplicationModel.registerServiceModel(DemoService.class));
+        ProviderModel providerModel = new ProviderModel(DemoService.class.getName(),
+                new DemoServiceImpl(),
+                ApplicationModel.registerServiceModel(DemoService.class),
+                null);
         ApplicationModel.initProviderModel(DemoService.class.getName(), providerModel);
 
         String result = select.telnet(mockChannel, "index");
@@ -108,7 +114,10 @@ public class SelectTelnetHandlerTest {
         given(mockChannel.getLocalAddress()).willReturn(NetUtils.toAddress("127.0.0.1:5555"));
         given(mockChannel.getRemoteAddress()).willReturn(NetUtils.toAddress("127.0.0.1:20886"));
 
-        ProviderModel providerModel = new ProviderModel(DemoService.class.getName(), new DemoServiceImpl(), ApplicationModel.registerServiceModel(DemoService.class));
+        ProviderModel providerModel = new ProviderModel(DemoService.class.getName(),
+                new DemoServiceImpl(),
+                ApplicationModel.registerServiceModel(DemoService.class),
+                null);
         ApplicationModel.initProviderModel(DemoService.class.getName(), providerModel);
 
         String result = select.telnet(mockChannel, null);

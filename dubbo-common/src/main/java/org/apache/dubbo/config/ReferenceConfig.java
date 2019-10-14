@@ -33,6 +33,7 @@ import org.apache.dubbo.rpc.service.GenericService;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -67,6 +68,11 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
      * The url for peer-to-peer invocation
      */
     private String url;
+
+    /**
+     * The url of the reference service
+     */
+    private final List<URL> urls = new ArrayList<URL>();
 
     /**
      * The consumer config (default)

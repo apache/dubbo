@@ -17,13 +17,12 @@
 package org.apache.dubbo.qos.legacy;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.qos.legacy.service.DemoService;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
-import org.apache.dubbo.rpc.protocol.dubbo.support.DemoService;
-import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;

@@ -55,7 +55,11 @@ public class RestProtocolTest {
     public void testRestProtocol() {
         URL url = URL.valueOf("rest://127.0.0.1:5342/rest/say?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.DemoService");
         DemoServiceImpl server = new DemoServiceImpl();
-        ProviderModel providerModel = new ProviderModel(url.getPathKey(), server, ApplicationModel.registerServiceModel(DemoService.class));
+        ProviderModel providerModel = new ProviderModel(url.getPathKey(),
+                server,
+                ApplicationModel.registerServiceModel(DemoService.class),
+                null
+        );
         ApplicationModel.initProviderModel(url.getPathKey(), providerModel);
 
         Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, url));
@@ -75,7 +79,11 @@ public class RestProtocolTest {
         DemoServiceImpl server = new DemoServiceImpl();
         Assertions.assertFalse(server.isCalled());
         URL url = URL.valueOf("rest://127.0.0.1:5341/a/b/c?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.DemoService");
-        ProviderModel providerModel = new ProviderModel(url.getPathKey(), server, ApplicationModel.registerServiceModel(DemoService.class));
+        ProviderModel providerModel = new ProviderModel(url.getPathKey(),
+                server,
+                ApplicationModel.registerServiceModel(DemoService.class),
+                null
+        );
         ApplicationModel.initProviderModel(url.getPathKey(), providerModel);
 
         Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, url));
@@ -93,7 +101,11 @@ public class RestProtocolTest {
     @Test
     public void testExport() {
         DemoService server = new DemoServiceImpl();
-        ProviderModel providerModel = new ProviderModel(exportUrl.getServiceKey(), server, ApplicationModel.registerServiceModel(DemoService.class));
+        ProviderModel providerModel = new ProviderModel(exportUrl.getServiceKey(),
+                server,
+                ApplicationModel.registerServiceModel(DemoService.class),
+                null
+        );
         ApplicationModel.initProviderModel(exportUrl.getServiceKey(), providerModel);
 
         RpcContext.getContext().setAttachment("timeout", "200");
@@ -110,7 +122,11 @@ public class RestProtocolTest {
     @Test
     public void testNettyServer() {
         DemoService server = new DemoServiceImpl();
-        ProviderModel providerModel = new ProviderModel(exportUrl.getServiceKey(), server, ApplicationModel.registerServiceModel(DemoService.class));
+        ProviderModel providerModel = new ProviderModel(exportUrl.getServiceKey(),
+                server,
+                ApplicationModel.registerServiceModel(DemoService.class),
+                null
+        );
         ApplicationModel.initProviderModel(exportUrl.getServiceKey(), providerModel);
 
         URL nettyUrl = exportUrl.addParameter(SERVER_KEY, "netty");
@@ -128,7 +144,11 @@ public class RestProtocolTest {
     public void testServletWithoutWebConfig() {
         Assertions.assertThrows(RpcException.class, () -> {
             DemoService server = new DemoServiceImpl();
-            ProviderModel providerModel = new ProviderModel(exportUrl.getServiceKey(), server, ApplicationModel.registerServiceModel(DemoService.class));
+            ProviderModel providerModel = new ProviderModel(exportUrl.getServiceKey(),
+                    server,
+                    ApplicationModel.registerServiceModel(DemoService.class),
+                    null
+            );
             ApplicationModel.initProviderModel(exportUrl.getPathKey(), providerModel);
 
             URL servletUrl = exportUrl.addParameter(SERVER_KEY, "servlet");
@@ -141,7 +161,11 @@ public class RestProtocolTest {
     public void testErrorHandler() {
         Assertions.assertThrows(RpcException.class, () -> {
             DemoService server = new DemoServiceImpl();
-            ProviderModel providerModel = new ProviderModel(exportUrl.getServiceKey(), server, ApplicationModel.registerServiceModel(DemoService.class));
+            ProviderModel providerModel = new ProviderModel(exportUrl.getServiceKey(),
+                    server,
+                    ApplicationModel.registerServiceModel(DemoService.class),
+                    null
+            );
             ApplicationModel.initProviderModel(exportUrl.getServiceKey(), providerModel);
 
             URL nettyUrl = exportUrl.addParameter(SERVER_KEY, "netty");
@@ -156,7 +180,11 @@ public class RestProtocolTest {
     @Test
     public void testInvoke() {
         DemoService server = new DemoServiceImpl();
-        ProviderModel providerModel = new ProviderModel(exportUrl.getServiceKey(), server, ApplicationModel.registerServiceModel(DemoService.class));
+        ProviderModel providerModel = new ProviderModel(exportUrl.getServiceKey(),
+                server,
+                ApplicationModel.registerServiceModel(DemoService.class),
+                null
+        );
         ApplicationModel.initProviderModel(exportUrl.getServiceKey(), providerModel);
 
 
@@ -171,7 +199,11 @@ public class RestProtocolTest {
     @Test
     public void testFilter() {
         DemoService server = new DemoServiceImpl();
-        ProviderModel providerModel = new ProviderModel(exportUrl.getServiceKey(), server, ApplicationModel.registerServiceModel(DemoService.class));
+        ProviderModel providerModel = new ProviderModel(exportUrl.getServiceKey(),
+                server,
+                ApplicationModel.registerServiceModel(DemoService.class),
+                null
+        );
         ApplicationModel.initProviderModel(exportUrl.getServiceKey(), providerModel);
 
         URL nettyUrl = exportUrl.addParameter(SERVER_KEY, "netty")
@@ -190,7 +222,11 @@ public class RestProtocolTest {
     @Test
     public void testRpcContextFilter() {
         DemoService server = new DemoServiceImpl();
-        ProviderModel providerModel = new ProviderModel(exportUrl.getServiceKey(), server, ApplicationModel.registerServiceModel(DemoService.class));
+        ProviderModel providerModel = new ProviderModel(exportUrl.getServiceKey(),
+                server,
+                ApplicationModel.registerServiceModel(DemoService.class),
+                null
+        );
         ApplicationModel.initProviderModel(exportUrl.getServiceKey(), providerModel);
 
         // use RpcContextFilter
@@ -214,7 +250,11 @@ public class RestProtocolTest {
     public void testRegFail() {
         Assertions.assertThrows(RuntimeException.class, () -> {
             DemoService server = new DemoServiceImpl();
-            ProviderModel providerModel = new ProviderModel(exportUrl.getServiceKey(), server, ApplicationModel.registerServiceModel(DemoService.class));
+            ProviderModel providerModel = new ProviderModel(exportUrl.getServiceKey(),
+                    server,
+                    ApplicationModel.registerServiceModel(DemoService.class),
+                    null
+            );
             ApplicationModel.initProviderModel(exportUrl.getServiceKey(), providerModel);
 
             URL nettyUrl = exportUrl.addParameter(EXTENSION_KEY, "com.not.existing.Filter");

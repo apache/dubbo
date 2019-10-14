@@ -47,11 +47,6 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     private static final long serialVersionUID = 3033787999037024738L;
 
     /**
-     * The urls of the services exported
-     */
-    private final List<URL> urls = new ArrayList<URL>();
-
-    /**
      * The interface name of the exported service
      */
     private String interfaceName;
@@ -163,14 +158,6 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         provider.setThreads(protocol.getThreads());
         provider.setParameters(protocol.getParameters());
         return provider;
-    }
-
-    public URL toUrl() {
-        return urls.isEmpty() ? null : urls.iterator().next();
-    }
-
-    public List<URL> toUrls() {
-        return urls;
     }
 
     public void appendParameters() {
@@ -422,10 +409,6 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     @Override
     public void setMock(String mock) {
         throw new IllegalArgumentException("mock doesn't support on provider side");
-    }
-
-    public List<URL> getExportedUrls() {
-        return urls;
     }
 
     public ServiceMetadata getServiceMetadata() {
