@@ -18,11 +18,9 @@ package org.apache.dubbo.metadata.annotation.processing.builder;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import java.util.Objects;
 
-import static javax.lang.model.type.TypeKind.DECLARED;
+import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.ofDeclaredType;
 
 /**
  * An interface of {@link TypeDefinitionBuilder} for {@link DeclaredType}
@@ -33,11 +31,11 @@ public interface DeclaredTypeDefinitionBuilder extends TypeDefinitionBuilder<Dec
 
     @Override
     default boolean accept(ProcessingEnvironment processingEnv, TypeMirror type) {
-        TypeKind kind = type.getKind();
-        if (!Objects.equals(DECLARED, kind)) {
+        DeclaredType declaredType = ofDeclaredType(type);
+        if (declaredType == null) {
             return false;
         }
-        return accept(processingEnv, (DeclaredType) type);
+        return accept(processingEnv, declaredType);
     }
 
     /**

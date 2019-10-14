@@ -17,6 +17,9 @@
 package org.apache.dubbo.metadata.annotation.processing.util;
 
 import org.apache.dubbo.metadata.annotation.processing.AbstractAnnotationProcessingTest;
+import org.apache.dubbo.metadata.annotation.processing.model.ArrayTypeModel;
+import org.apache.dubbo.metadata.annotation.processing.model.Color;
+import org.apache.dubbo.metadata.annotation.processing.model.Model;
 import org.apache.dubbo.metadata.tools.DefaultTestService;
 import org.apache.dubbo.metadata.tools.GenericTestService;
 import org.apache.dubbo.metadata.tools.TestServiceImpl;
@@ -36,12 +39,18 @@ import java.util.List;
 import java.util.Set;
 
 import static java.util.Arrays.asList;
+import static org.apache.dubbo.metadata.annotation.processing.util.FieldUtils.findField;
 import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.getAllInterfaces;
 import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.getAllSuperTypes;
 import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.getHierarchicalTypes;
 import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.getInterfaces;
 import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.getSuperType;
+import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.isAnnotationType;
+import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.isArrayType;
+import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.isClassType;
 import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.isDeclaredType;
+import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.isEnumType;
+import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.isInterfaceType;
 import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.isSameType;
 import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.isSimpleType;
 import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.isTypeElement;
@@ -65,7 +74,8 @@ public class TypeUtilsTest extends AbstractAnnotationProcessingTest {
 
     @Override
     protected void addCompiledClasses(Set<Class<?>> classesToBeCompiled) {
-
+        classesToBeCompiled.add(ArrayTypeModel.class);
+        classesToBeCompiled.add(Color.class);
     }
 
     @Override
@@ -98,6 +108,61 @@ public class TypeUtilsTest extends AbstractAnnotationProcessingTest {
         assertTrue(isSameType(getType(Void.class).asType(), "java.lang.Void"));
         assertFalse(isSameType(getType(String.class).asType(), "java.lang.Void"));
     }
+
+    @Test
+    public void testIsArrayType() {
+        TypeElement type = getType(ArrayTypeModel.class);
+        assertTrue(isArrayType(findField(type.asType(), "integers").asType()));
+        assertTrue(isArrayType(findField(type.asType(), "strings").asType()));
+        assertTrue(isArrayType(findField(type.asType(), "primitiveTypeModels").asType()));
+        assertTrue(isArrayType(findField(type.asType(), "models").asType()));
+        assertTrue(isArrayType(findField(type.asType(), "colors").asType()));
+
+        assertFalse(isArrayType(null));
+    }
+
+    @Test
+    public void testIsEnumType() {
+        TypeElement type = getType(Color.class);
+        assertTrue(isEnumType(type.asType()));
+
+        type = getType(ArrayTypeModel.class);
+        assertFalse(isEnumType(type.asType()));
+
+        assertFalse(isEnumType(null));
+    }
+
+    @Test
+    public void testIsClassType() {
+        TypeElement type = getType(ArrayTypeModel.class);
+        assertTrue(isClassType(type.asType()));
+
+        type = getType(Model.class);
+        assertTrue(isClassType(type.asType()));
+
+        assertFalse(isClassType(null));
+    }
+
+    @Test
+    public void testIsInterfaceType() {
+        TypeElement type = getType(CharSequence.class);
+        assertTrue(isInterfaceType(type.asType()));
+
+        type = getType(Model.class);
+        assertFalse(isInterfaceType(type.asType()));
+
+        assertFalse(isInterfaceType(null));
+    }
+
+    @Test
+    public void testIsAnnotationType() {
+        TypeElement type = getType(Override.class);
+
+        assertTrue(isAnnotationType(type.asType()));
+
+        assertFalse(isAnnotationType(null));
+    }
+
 
     @Test
     public void testDeclaredType() {

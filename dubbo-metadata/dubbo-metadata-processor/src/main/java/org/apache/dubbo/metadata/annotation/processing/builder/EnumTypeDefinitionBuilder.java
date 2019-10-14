@@ -20,7 +20,6 @@ import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.VariableElement;
@@ -32,6 +31,7 @@ import static javax.lang.model.element.Modifier.PUBLIC;
 import static javax.lang.model.element.Modifier.STATIC;
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationProcessorUtils.getFields;
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationProcessorUtils.getType;
+import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.isEnumType;
 
 /**
  * {@link TypeDefinitionBuilder} for Java {@link Enum}
@@ -42,8 +42,7 @@ public class EnumTypeDefinitionBuilder implements DeclaredTypeDefinitionBuilder 
 
     @Override
     public boolean accept(ProcessingEnvironment processingEnv, DeclaredType type) {
-        Element element = type.asElement();
-        return ElementKind.ENUM.equals(element.getKind());
+        return isEnumType(type);
     }
 
     @Override

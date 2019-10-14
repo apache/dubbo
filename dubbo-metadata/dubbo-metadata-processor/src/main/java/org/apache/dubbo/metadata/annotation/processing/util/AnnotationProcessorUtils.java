@@ -239,15 +239,6 @@ public interface AnnotationProcessorUtils {
                 .collect(Collectors.toSet());
     }
 
-    static Set<TypeElement> getAllInterfaces(ProcessingEnvironment processingEnv, TypeElement type) {
-        return getHierarchicalTypes(processingEnv, type, false, false, true);
-    }
-
-    static TypeElement getSuperType(ProcessingEnvironment processingEnv, Element element) {
-        TypeElement currentType = ofTypeElement(element);
-        return currentType == null ? null : getSuperType(processingEnv, currentType);
-    }
-
     static TypeElement getSuperType(ProcessingEnvironment processingEnv, TypeElement currentType) {
         TypeMirror superClass = currentType.getSuperclass();
         if (superClass instanceof NoType) {

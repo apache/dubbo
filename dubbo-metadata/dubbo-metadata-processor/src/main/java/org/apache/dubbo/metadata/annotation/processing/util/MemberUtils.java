@@ -17,31 +17,24 @@
 package org.apache.dubbo.metadata.annotation.processing.util;
 
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
-import java.lang.reflect.Type;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static javax.lang.model.util.ElementFilter.fieldsIn;
-import static javax.lang.model.util.ElementFilter.methodsIn;
-import static org.apache.dubbo.common.function.Predicates.filterFirst;
 import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.getHierarchicalTypes;
 import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.ofTypeElement;
 
 /**
- * The utilities class for "javax.lang.model."
+ * The utilities class for the members in the package "javax.lang.model.", such as "field", "method", "constructor"
  *
  * @since 2.7.5
  */
-public interface ModelUtils {
+public interface MemberUtils {
 
 
     static List<? extends Element> getDeclaredMembers(TypeMirror type) {
@@ -52,47 +45,9 @@ public interface ModelUtils {
     static List<? extends Element> getAllDeclaredMembers(TypeMirror type) {
         return getHierarchicalTypes(type)
                 .stream()
-                .map(ModelUtils::getDeclaredMembers)
+                .map(MemberUtils::getDeclaredMembers)
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList());
-    }
-
-    static List<VariableElement> getDeclaredFields(TypeMirror type) {
-        return fieldsIn(getDeclaredMembers(type));
-    }
-
-    static List<VariableElement> getAllDeclaredFields(TypeMirror type) {
-        return getHierarchicalTypes(type)
-                .stream()
-                .map(ModelUtils::getDeclaredFields)
-                .flatMap(Collection::stream)
-                .collect(Collectors.toList());
-    }
-
-    static List<ExecutableElement> getDeclaredMethods(TypeMirror type) {
-        return methodsIn(getDeclaredMembers(type));
-    }
-
-    static List<ExecutableElement> getAllDeclaredMethods(TypeMirror type) {
-        return getHierarchicalTypes(type)
-                .stream()
-                .map(ModelUtils::getDeclaredMethods)
-                .flatMap(Collection::stream)
-                .collect(Collectors.toList());
-    }
-
-    static ExecutableElement findMethod(TypeMirror type, String methodName, Type oneParameterType, Type... otherParameterTypes) {
-        List<Type> parameterTypes = new LinkedList<>();
-        parameterTypes.add(oneParameterType);
-        parameterTypes.addAll(asList(otherParameterTypes));
-        return findMethod(type, methodName, parameterTypes.stream().map(Type::getTypeName).toArray(String[]::new));
-    }
-
-    static ExecutableElement findMethod(TypeMirror type, String methodName, CharSequence... parameterTypes) {
-        return filterFirst(getAllDeclaredMethods(type),
-                method -> methodName.equals(method.getSimpleName().toString()),
-                method -> matchParameterTypes(method.getParameters(), parameterTypes)
-        );
     }
 
     static boolean matchParameterTypes(List<? extends VariableElement> parameters, CharSequence... parameterTypes) {

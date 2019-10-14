@@ -34,6 +34,11 @@ import java.util.Set;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.stream.StreamSupport.stream;
+import static javax.lang.model.element.ElementKind.ANNOTATION_TYPE;
+import static javax.lang.model.element.ElementKind.CLASS;
+import static javax.lang.model.element.ElementKind.ENUM;
+import static javax.lang.model.element.ElementKind.INTERFACE;
+import static javax.lang.model.type.TypeKind.DECLARED;
 
 /**
  * The utilities class for type in the package "javax.lang.model.*"
@@ -68,6 +73,34 @@ public interface TypeUtils {
 
     static boolean isSameType(TypeMirror type, CharSequence typeName) {
         return Objects.equals(type.toString(), typeName);
+    }
+
+    static boolean isArrayType(TypeMirror type) {
+        return type != null && TypeKind.ARRAY.equals(type.getKind());
+    }
+
+    static boolean isEnumType(TypeMirror type) {
+        DeclaredType declaredType = ofDeclaredType(type);
+        return declaredType != null && ENUM.equals(declaredType.asElement().getKind());
+    }
+
+    static boolean isClassType(TypeMirror type) {
+        DeclaredType declaredType = ofDeclaredType(type);
+        return declaredType != null && CLASS.equals(declaredType.asElement().getKind());
+    }
+
+    static boolean isPrimitiveType(TypeMirror type) {
+        return type != null && type.getKind().isPrimitive();
+    }
+
+    static boolean isInterfaceType(TypeMirror type) {
+        DeclaredType declaredType = ofDeclaredType(type);
+        return declaredType == null ? false : INTERFACE.equals(declaredType.asElement().getKind());
+    }
+
+    static boolean isAnnotationType(TypeMirror type) {
+        DeclaredType declaredType = ofDeclaredType(type);
+        return declaredType == null ? false : ANNOTATION_TYPE.equals(declaredType.asElement().getKind());
     }
 
     static Set<TypeElement> getHierarchicalTypes(TypeElement type) {
@@ -164,7 +197,8 @@ public interface TypeUtils {
     }
 
     static boolean isDeclaredType(TypeMirror type) {
-        return type == null ? false : TypeKind.DECLARED.equals(type.getKind());
+        return type == null ? false :
+                type instanceof DeclaredType ? true : DECLARED.equals(type.getKind());
     }
 
     static DeclaredType ofDeclaredType(Element element) {

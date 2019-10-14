@@ -20,9 +20,10 @@ import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.type.ArrayType;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import java.lang.reflect.Array;
+
+import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.isArrayType;
 
 /**
  * {@link TypeDefinitionBuilder} for Java {@link Array}
@@ -33,7 +34,7 @@ public class ArrayTypeDefinitionBuilder implements TypeDefinitionBuilder<ArrayTy
 
     @Override
     public boolean accept(ProcessingEnvironment processingEnv, TypeMirror type) {
-        return TypeKind.ARRAY.equals(type.getKind());
+        return isArrayType(type);
     }
 
     @Override

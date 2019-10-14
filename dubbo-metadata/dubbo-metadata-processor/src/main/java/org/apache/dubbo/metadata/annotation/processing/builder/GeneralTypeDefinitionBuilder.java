@@ -19,13 +19,12 @@ package org.apache.dubbo.metadata.annotation.processing.builder;
 import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationProcessorUtils.getNonStaticFields;
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationProcessorUtils.getType;
+import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.isClassType;
 
 /**
  * {@link TypeDefinitionBuilder} for General Object
@@ -36,8 +35,7 @@ public class GeneralTypeDefinitionBuilder implements DeclaredTypeDefinitionBuild
 
     @Override
     public boolean accept(ProcessingEnvironment processingEnv, DeclaredType type) {
-        Element element = type.asElement();
-        return ElementKind.CLASS.equals(element.getKind());
+        return isClassType(type);
     }
 
     @Override
@@ -49,14 +47,6 @@ public class GeneralTypeDefinitionBuilder implements DeclaredTypeDefinitionBuild
 
         buildProperties(processingEnv, typeElement, typeDefinition);
     }
-
-//    protected void buildSuperTypes(ProcessingEnvironment processingEnv, TypeElement type, TypeDefinition definition) {
-//        getHierarchicalTypes(processingEnv, type, false, true, true)
-//                .stream()
-//                .map(superType -> TypeDefinitionBuilder.build(processingEnv, superType))
-//                .filter(Objects::nonNull)
-//                .forEach(definition.getItems()::add);
-//    }
 
     protected void buildProperties(ProcessingEnvironment processingEnv, TypeElement type, TypeDefinition definition) {
         getNonStaticFields(processingEnv, type).forEach(field -> {

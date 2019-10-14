@@ -22,6 +22,8 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeMirror;
 
+import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.isPrimitiveType;
+
 /**
  * {@link TypeDefinitionBuilder} for Java {@link PrimitiveType primitve type}
  *
@@ -31,7 +33,7 @@ public class PrimitiveTypeDefinitionBuilder implements TypeDefinitionBuilder<Pri
 
     @Override
     public boolean accept(ProcessingEnvironment processingEnv, TypeMirror type) {
-        return type.getKind().isPrimitive();
+        return isPrimitiveType(type);
     }
 
     @Override
