@@ -83,7 +83,7 @@ public interface ObjectInput extends DataInput {
         return readObject();
     }
 
-    default Map<String, String> readAttachments() throws IOException, ClassNotFoundException {
+    default Map<String, Object> readAttachments() throws IOException, ClassNotFoundException {
         return readObject(Map.class);
     }
 }

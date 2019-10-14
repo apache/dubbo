@@ -31,8 +31,8 @@
 
     <!-- Annotation 注册 -->
     <dubbo:annotation id="doubleServiceAnnotationBeanPostProcessor"
-                      package="org.apache.dubbo.config.spring.context.annotation.provider ,
-             org.apache.dubbo.config.spring.context.annotation.provider"/>
+                      package="org.apache.dubbo.config.spring.context.com.alibaba.dubbo.config.annotation.provider ,
+             org.apache.dubbo.config.spring.context.com.alibaba.dubbo.config.annotation.provider"/>
 
     <dubbo:annotation id="emptyServiceAnnotationBeanPostProcessor"
                       package="    "/>

@@ -25,7 +25,6 @@ import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.protocol.AbstractProxyProtocol;
-import org.apache.dubbo.rpc.support.RpcUtils;
 
 import org.apache.http.HeaderElement;
 import org.apache.http.HeaderElementIterator;
@@ -199,9 +198,10 @@ public class RestProtocol extends AbstractProxyProtocol {
         return target.proxy(serviceType);
     }
 
+    @Override
     protected int getErrorCode(Throwable e) {
         // TODO
-        return RpcUtils.getErrorCode(e);
+        return super.getErrorCode(e);
     }
 
     @Override

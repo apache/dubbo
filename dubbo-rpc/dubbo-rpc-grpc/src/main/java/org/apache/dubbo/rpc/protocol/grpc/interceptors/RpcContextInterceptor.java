@@ -44,9 +44,9 @@ public class RpcContextInterceptor implements ClientInterceptor, ServerIntercept
     @Override
     public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(MethodDescriptor<ReqT, RespT> method, CallOptions callOptions, Channel next) {
         RpcContext rpcContext = RpcContext.getContext();
-        Map<String, String> attachments = rpcContext.getAttachments();
+        Map<String, Object> attachments = rpcContext.getAttachments();
         if (attachments != null) {
-            for (Map.Entry<String, String> entry : attachments.entrySet()) {
+            for (Map.Entry<String, Object> entry : attachments.entrySet()) {
                 callOptions = callOptions.withOption(CallOptions.Key.create(DUBBO + entry.getKey()), entry.getValue());
             }
         }

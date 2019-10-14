@@ -163,7 +163,7 @@ public class GrpcOptionsUtils {
         return configurator.configureCallOptions(callOptions, url);
     }
 
-    static SslContext buildServerSslContext(URL url) {
+    private static SslContext buildServerSslContext(URL url) {
         SslContextBuilder sslClientContextBuilder = null;
         try {
             String password = url.getParameter(SSL_SERVER_KEY_PASSWORD_KEY);
@@ -190,7 +190,7 @@ public class GrpcOptionsUtils {
         }
     }
 
-    static SslContext buildClientSslContext(URL url) {
+    private static SslContext buildClientSslContext(URL url) {
         SslContextBuilder builder = GrpcSslContexts.forClient();
         String trustCertCollectionFilePath = url.getParameter(SSL_CLIENT_TRUST_CERT_PATH_KEY);
         try {

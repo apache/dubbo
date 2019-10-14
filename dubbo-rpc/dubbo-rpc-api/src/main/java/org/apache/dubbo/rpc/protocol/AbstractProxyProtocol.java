@@ -42,8 +42,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
-import static org.apache.dubbo.rpc.support.RpcUtils.getErrorCode;
-import static org.apache.dubbo.rpc.support.RpcUtils.getRpcException;
 
 /**
  * AbstractProxyProtocol
@@ -137,12 +135,23 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
         return invoker;
     }
 
+    protected RpcException getRpcException(Class<?> type, URL url, Invocation invocation, Throwable e) {
+        RpcException re = new RpcException("Failed to invoke remote service: " + type + ", method: "
+                + invocation.getMethodName() + ", cause: " + e.getMessage(), e);
+        re.setCode(getErrorCode(e));
+        return re;
+    }
+
     protected String getAddr(URL url) {
         String bindIp = url.getParameter(Constants.BIND_IP_KEY, url.getHost());
         if (url.getParameter(ANYHOST_KEY, false)) {
             bindIp = ANYHOST_VALUE;
         }
         return NetUtils.getIpByHost(bindIp) + ":" + url.getParameter(Constants.BIND_PORT_KEY, url.getPort());
+    }
+
+    protected int getErrorCode(Throwable e) {
+        return RpcException.UNKNOWN_EXCEPTION;
     }
 
     protected abstract <T> Runnable doExport(T impl, Class<T> type, URL url) throws RpcException;

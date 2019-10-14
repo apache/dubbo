@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
+import org.apache.dubbo.bootstrap.ReferenceConfigCache;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.ServiceBean;
@@ -266,7 +267,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AnnotationInjectedBean
         }
 
         private void init() {
-            this.bean = referenceBean.get();
+            this.bean = ReferenceConfigCache.ReferHelper.refer(referenceBean);
         }
     }
 

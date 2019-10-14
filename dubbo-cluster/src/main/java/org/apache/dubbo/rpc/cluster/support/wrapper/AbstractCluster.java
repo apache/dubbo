@@ -28,7 +28,7 @@ import org.apache.dubbo.rpc.cluster.Directory;
 
 import java.util.List;
 
-import static org.apache.dubbo.rpc.Constants.REFERENCE_INTERCEPTOR_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_INTERCEPTOR_KEY;
 
 public abstract class AbstractCluster implements Cluster {
 

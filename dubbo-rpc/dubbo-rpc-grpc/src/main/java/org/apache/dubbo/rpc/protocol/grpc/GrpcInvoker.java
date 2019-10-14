@@ -24,9 +24,8 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 
 import io.grpc.ManagedChannel;
-
-import static org.apache.dubbo.rpc.support.RpcUtils.getErrorCode;
-import static org.apache.dubbo.rpc.support.RpcUtils.getRpcException;
+import io.grpc.Status;
+import io.grpc.StatusException;
 
 public class GrpcInvoker<T> extends AbstractInvoker<T> {
 
@@ -78,5 +77,31 @@ public class GrpcInvoker<T> extends AbstractInvoker<T> {
     public void destroy() {
         super.destroy();
         channel.shutdown();
+    }
+
+    private RpcException getRpcException(Class<?> type, URL url, Invocation invocation, Throwable e) {
+        RpcException re = new RpcException("Failed to invoke remote service: " + type + ", method: "
+                + invocation.getMethodName() + ", cause: " + e.getMessage(), e);
+        re.setCode(getErrorCode(e));
+        return re;
+    }
+
+    /**
+     * FIXME, convert gRPC exceptions to equivalent Dubbo exceptions.
+     *
+     * @param e
+     * @return
+     */
+    private int getErrorCode(Throwable e) {
+        if (e instanceof StatusException) {
+            StatusException statusException = (StatusException) e;
+            Status status = statusException.getStatus();
+            if (status.getCode() == Status.Code.DEADLINE_EXCEEDED) {
+                return RpcException.TIMEOUT_EXCEPTION;
+            } else if (status.getCode() == Status.Code.DEADLINE_EXCEEDED) {
+                //
+            }
+        }
+        return RpcException.UNKNOWN_EXCEPTION;
     }
 }
