@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
+import org.apache.dubbo.bootstrap.ReferenceConfigCache;
 import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.spring.ReferenceBean;
@@ -140,7 +141,7 @@ public class ReferenceAnnotationBeanPostProcessorTest {
 
         ReferenceBean<?> referenceBean = referenceBeans.iterator().next();
 
-        Assert.assertNotNull(referenceBean.get());
+        Assert.assertNotNull(ReferenceConfigCache.getCache().get(referenceBean));
 
     }
 

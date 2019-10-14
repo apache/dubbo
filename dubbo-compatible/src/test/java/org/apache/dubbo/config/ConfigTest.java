@@ -17,13 +17,13 @@
 
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.service.DemoService;
 import org.apache.dubbo.service.DemoServiceImpl;
 
 import com.alibaba.dubbo.config.ReferenceConfig;
 import com.alibaba.dubbo.config.ServiceConfig;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -52,13 +52,20 @@ public class ConfigTest {
         service.setRegistry(registryConfig);
         service.setInterface(DemoService.class);
         service.setRef(new DemoServiceImpl());
-        service.export();
 
         com.alibaba.dubbo.config.ReferenceConfig<DemoService> reference = new ReferenceConfig<>();
         reference.setApplication(applicationConfig);
         reference.setRegistry(registryConfig);
         reference.setInterface(DemoService.class);
-        DemoService demoService = reference.get();
+
+        DubboBootstrap bootstrap = new DubboBootstrap()
+                .application(applicationConfig)
+                .registry(registryConfig)
+                .service(service)
+                .reference(reference)
+                .start();
+
+        DemoService demoService = bootstrap.getCache().get(reference);
         String message = demoService.sayHello("dubbo");
         Assertions.assertEquals("hello dubbo", message);
     }

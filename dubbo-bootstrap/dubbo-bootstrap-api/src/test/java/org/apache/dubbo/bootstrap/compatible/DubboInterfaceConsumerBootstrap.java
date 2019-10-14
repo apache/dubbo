@@ -19,9 +19,7 @@ package org.apache.dubbo.bootstrap.compatible;
 import org.apache.dubbo.bootstrap.DubboBootstrap;
 import org.apache.dubbo.bootstrap.EchoService;
 import org.apache.dubbo.bootstrap.rest.UserService;
-import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
-import org.apache.dubbo.config.context.ConfigManager;
 
 /**
  * Dubbo Provider Bootstrap
@@ -35,7 +33,7 @@ public class DubboInterfaceConsumerBootstrap {
         interfaceRegistry.setId("interfaceRegistry");
         interfaceRegistry.setAddress("zookeeper://127.0.0.1:2181");
 
-        new DubboBootstrap()
+        DubboBootstrap bootstrap = new DubboBootstrap()
                 .application("dubbo-consumer-demo")
                 // Zookeeper
                 .registry(interfaceRegistry)
@@ -46,13 +44,8 @@ public class DubboInterfaceConsumerBootstrap {
                 .start()
                 .await();
 
-        ConfigManager configManager = ConfigManager.getInstance();
-
-        ReferenceConfig<EchoService> referenceConfig = configManager.getReference("echo");
-        EchoService echoService = referenceConfig.get();
-
-        ReferenceConfig<UserService> referenceConfig1 = configManager.getReference("user");
-        UserService userService = referenceConfig1.get();
+        EchoService echoService = bootstrap.getCache().get(EchoService.class).get(0);
+        UserService userService = bootstrap.getCache().get(UserService.class).get(0);
 
         for (int i = 0; i < 500; i++) {
             Thread.sleep(2000L);

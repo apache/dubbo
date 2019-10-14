@@ -85,7 +85,7 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
             serviceConfig.setVersion(metadataService.version());
 
             // export
-            exporters = DubboBootstrap.Helper.export(serviceConfig);
+            exporters = DubboBootstrap.Helper.exportSync(serviceConfig);
             exported = true;
 
             if (logger.isInfoEnabled()) {

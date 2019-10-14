@@ -58,7 +58,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -208,13 +207,13 @@ public class ReferenceConfigCache {
     }
 
     @SuppressWarnings("unchecked")
-    public <T> Set<T> get(Class<T> type) {
+    public <T> List<T> get(Class<T> type) {
         Map<String, Object> proxiesOfType = proxies.get(type);
         if (CollectionUtils.isEmptyMap(proxiesOfType)) {
-            return Collections.emptySet();
+            return Collections.emptyList();
         }
 
-        Set<T> proxySet = new HashSet<>();
+        List<T> proxySet = new ArrayList<>();
         proxiesOfType.values().forEach(obj -> proxySet.add((T) obj));
         return proxySet;
     }

@@ -36,6 +36,7 @@ import org.apache.dubbo.common.lang.ShutdownHookCallback;
 import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadpool.concurrent.ScheduledCompletableFuture;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
@@ -96,6 +97,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -104,6 +106,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
@@ -211,6 +214,8 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
     private volatile List<ServiceDiscovery> serviceDiscoveries = new LinkedList<>();
 
     private ConcurrentMap<ServiceConfig<?>, List<Exporter<?>>> exporters = new ConcurrentHashMap<>();
+
+    private List<CompletableFuture<List<Exporter<?>>>> delayedExportingFutures = new ArrayList<>();
 
     public static DubboBootstrap newInstance() {
         return new DubboBootstrap();
@@ -760,10 +765,10 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
      * @return {@link DubboBootstrap}
      */
     public DubboBootstrap await() {
-        // has been waited, return immediately
+        // if has been waited, no need to wait again, return immediately
         if (!awaited.get()) {
             if (!executorService.isShutdown()) {
-                executorService.execute(() -> executeMutually(() -> {
+                executeMutually(() -> {
                     while (!awaited.get()) {
                         if (logger.isInfoEnabled()) {
                             logger.info(NAME + " is awaiting...");
@@ -774,9 +779,15 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
                             Thread.currentThread().interrupt();
                         }
                     }
-                }));
+                });
             }
         }
+        return this;
+    }
+
+    public DubboBootstrap awaitFinish() throws Exception {
+        CompletableFuture future = CompletableFuture.allOf(delayedExportingFutures.toArray(new CompletableFuture[0]));
+        future.get();
         return this;
     }
 
@@ -886,11 +897,18 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
 
     private void exportServices() {
         configManager.getServices().forEach(sc -> {
-            exporters.computeIfAbsent(sc, _k -> {
-                List<Exporter<?>> exportersOfService = new ArrayList<>();
-                Helper.export(sc, exportersOfService);
-                return exportersOfService;
+            CompletableFuture<List<Exporter<?>>> future = Helper.export(sc);
+            if (future == null) {
+                return;
+            }
+            future.whenComplete((v, t) -> {
+                if (t != null) {
+                    throw new RuntimeException(t);
+                } else {
+                    exporters.put(sc, v);
+                }
             });
+            delayedExportingFutures.add(future);
         });
     }
 
@@ -1151,13 +1169,19 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
             sc.appendParameters();
         }
 
-        public static List<Exporter<?>> export(ServiceConfig<?> sc) {
-            List<Exporter<?>> exporters = new ArrayList<>();
-            export(sc, exporters);
-            return exporters;
+        public static List<Exporter<?>> exportSync(ServiceConfig<?> sc) {
+            CompletableFuture<List<Exporter<?>>> future = export(sc);
+            if (future == null) {
+                return Collections.emptyList();
+            }
+            try {
+                return future.get();
+            } catch (Exception e) {
+                throw new RuntimeException("Error happened when waiting for delayed services to finish exporting.", e);
+            }
         }
 
-        public static void export(ServiceConfig<?> sc, List<Exporter<?>> exporters) {
+        public static CompletableFuture<List<Exporter<?>>> export(ServiceConfig<?> sc) {
             checkAndUpdateSubConfigs(sc);
 
             ServiceMetadata serviceMetadata = sc.getServiceMetadata();
@@ -1170,32 +1194,41 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
             serviceMetadata.setTarget(sc.getRef());
 
             if (!sc.shouldExport()) {
-                return;
+                return null;
             }
 
-            if (sc.shouldDelay()) {
-                DELAY_EXPORT_EXECUTOR.schedule(() -> {
-                    doExport(sc, exporters);
-                }, sc.getDelay(), TimeUnit.MILLISECONDS);
-            } else {
-                doExport(sc, exporters);
+            CompletableFuture<List<Exporter<?>>> future = ScheduledCompletableFuture.schedule(
+                    DELAY_EXPORT_EXECUTOR,
+                    () -> doExport(sc),
+                    sc.getDelay(),
+                    TimeUnit.MILLISECONDS);
+
+            if (!sc.shouldDelay()) {
+                try {
+                    future.get();
+                } catch (Exception e) {
+                    throw new RuntimeException("Error happened when waiting for delayed services to finish exporting.", e);
+                }
             }
+            return future;
         }
 
-        protected static synchronized void doExport(ServiceConfig<?> sc, List<Exporter<?>> exporters) {
+        protected static synchronized List<Exporter<?>> doExport(ServiceConfig<?> sc) {
             if (StringUtils.isEmpty(sc.getPath())) {
                 sc.setPath(sc.getInterface());
             }
-            doExportUrls(sc, exporters);
+            List<Exporter<?>> exporters = doExportUrls(sc);
 
             // dispatch a ServiceConfigExportedEvent since 2.7.4
             dispatch(new ServiceConfigExportedEvent(sc));
-
+            return exporters;
         }
 
         @SuppressWarnings({"unchecked", "rawtypes"})
-        private static void doExportUrls(ServiceConfig<?> sc, List<Exporter<?>> exporters) {
+        private static List<Exporter<?>> doExportUrls(ServiceConfig<?> sc) {
             List<URL> registryURLs = BootstrapUtils.loadRegistries(sc, true);
+
+            List<Exporter<?>> exporters = new ArrayList<>();
             for (ProtocolConfig protocolConfig : sc.getProtocols()) {
                 String pathKey = URL.buildKey(sc.getContextPath(protocolConfig).map(p -> p + "/" + sc.getPath()).orElse(sc.getPath()), sc.getGroup(), sc.getVersion());
                 sc.getServiceMetadata().setServiceKey(pathKey);
@@ -1207,14 +1240,15 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
                         sc.getServiceMetadata()
                 );
                 ApplicationModel.initProviderModel(pathKey, providerModel);
-                doExportUrlsFor1Protocol(sc, protocolConfig, registryURLs, exporters);
+                exporters.addAll(doExportUrlsFor1Protocol(sc, protocolConfig, registryURLs));
             }
+            return exporters;
         }
 
-        private static void doExportUrlsFor1Protocol(ServiceConfig<?> sc,
-                                                     ProtocolConfig protocolConfig,
-                                                     List<URL> registryURLs,
-                                                     List<Exporter<?>> exporters) {
+        private static List<Exporter<?>> doExportUrlsFor1Protocol(ServiceConfig<?> sc,
+                                                                  ProtocolConfig protocolConfig,
+                                                                  List<URL> registryURLs) {
+            List<Exporter<?>> exporters = new ArrayList<>();
             String name = protocolConfig.getName();
             if (StringUtils.isEmpty(name)) {
                 name = DUBBO;
@@ -1387,6 +1421,7 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
                 }
             }
             sc.updateUrls(Arrays.asList(url));
+            return exporters;
         }
 
         @SuppressWarnings({"unchecked", "rawtypes"})

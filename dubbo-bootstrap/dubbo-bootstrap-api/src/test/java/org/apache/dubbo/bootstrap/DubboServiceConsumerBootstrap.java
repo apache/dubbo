@@ -18,8 +18,6 @@ package org.apache.dubbo.bootstrap;
 
 import org.apache.dubbo.bootstrap.rest.UserService;
 import org.apache.dubbo.config.MetadataReportConfig;
-import org.apache.dubbo.config.ReferenceConfig;
-import org.apache.dubbo.config.context.ConfigManager;
 
 /**
  * Dubbo Provider Bootstrap
@@ -30,7 +28,7 @@ public class DubboServiceConsumerBootstrap {
 
     public static void main(String[] args) throws Exception {
 
-        new DubboBootstrap()
+        DubboBootstrap bootstrap = new DubboBootstrap()
                 .application("dubbo-consumer-demo")
                 .protocol(builder -> builder.port(20887).name("dubbo"))
                 // Eureka
@@ -47,14 +45,9 @@ public class DubboServiceConsumerBootstrap {
                 // .registry("consul", builder -> builder.address("consul://127.0.0.1:8500?registry.type=service&subscribed.services=dubbo-provider-demo").group("namespace1"))
                 .reference("echo", builder -> builder.interfaceClass(EchoService.class).protocol("dubbo"))
                 .reference("user", builder -> builder.interfaceClass(UserService.class).protocol("rest"))
-                .start()
-                .await();
+                .start();
 
-        ConfigManager configManager = ConfigManager.getInstance();
-
-        ReferenceConfig<EchoService> referenceConfig = configManager.getReference("echo");
-
-        EchoService echoService = referenceConfig.get();
+        EchoService echoService = bootstrap.getCache().get(EchoService.class).get(0);
 
         for (int i = 0; i < 500; i++) {
             Thread.sleep(2000L);

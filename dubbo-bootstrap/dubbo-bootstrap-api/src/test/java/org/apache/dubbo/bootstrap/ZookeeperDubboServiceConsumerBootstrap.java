@@ -17,8 +17,6 @@
 package org.apache.dubbo.bootstrap;
 
 import org.apache.dubbo.bootstrap.rest.UserService;
-import org.apache.dubbo.config.ReferenceConfig;
-import org.apache.dubbo.config.context.ConfigManager;
 
 /**
  * Dubbo Provider Bootstrap
@@ -29,7 +27,7 @@ public class ZookeeperDubboServiceConsumerBootstrap {
 
     public static void main(String[] args) throws Exception {
 
-        new DubboBootstrap()
+        DubboBootstrap bootstrap = new DubboBootstrap()
                 .application("zookeeper-dubbo-consumer")
                 .registry("zookeeper", builder -> builder.address("zookeeper://127.0.0.1:2181?registry-type=service&subscribed-services=zookeeper-dubbo-provider"))
                 .reference("echo", builder -> builder.interfaceClass(EchoService.class).protocol("dubbo"))
@@ -37,15 +35,8 @@ public class ZookeeperDubboServiceConsumerBootstrap {
                 .start()
                 .await();
 
-        ConfigManager configManager = ConfigManager.getInstance();
-
-        ReferenceConfig<EchoService> referenceConfig = configManager.getReference("echo");
-
-        EchoService echoService = referenceConfig.get();
-
-        ReferenceConfig<UserService> referenceConfig2 = configManager.getReference("user");
-
-        UserService userService = referenceConfig2.get();
+        EchoService echoService = bootstrap.getCache().get(EchoService.class).get(0);
+        UserService userService = bootstrap.getCache().get(UserService.class).get(0);
 
         for (int i = 0; i < 500; i++) {
             Thread.sleep(2000L);
