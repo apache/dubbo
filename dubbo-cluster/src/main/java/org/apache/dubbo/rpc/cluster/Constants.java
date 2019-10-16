@@ -89,8 +89,6 @@ public interface Constants {
 
     String RUNTIME_KEY = "runtime";
 
-    String REMOTE_TIMESTAMP_KEY = "remote.timestamp";
-
     String WARMUP_KEY = "warmup";
 
     int DEFAULT_WARMUP = 10 * 60 * 1000;

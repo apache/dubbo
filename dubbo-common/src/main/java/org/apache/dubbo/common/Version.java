@@ -162,12 +162,12 @@ public final class Version {
             String version = null;
             if (pkg != null) {
                 version = pkg.getImplementationVersion();
-                if (!StringUtils.isEmpty(version)) {
+                if (StringUtils.isNotEmpty(version)) {
                     return version;
                 }
 
                 version = pkg.getSpecificationVersion();
-                if (!StringUtils.isEmpty(version)) {
+                if (StringUtils.isNotEmpty(version)) {
                     return version;
                 }
             }
@@ -260,7 +260,7 @@ public final class Version {
             URL url = urls.nextElement();
             if (url != null) {
                 String file = url.getFile();
-                if (file != null && file.length() > 0) {
+                if (StringUtils.isNotEmpty(file)) {
                     files.add(file);
                 }
             }

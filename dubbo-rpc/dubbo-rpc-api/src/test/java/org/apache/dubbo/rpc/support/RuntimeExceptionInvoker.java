@@ -28,6 +28,7 @@ public class RuntimeExceptionInvoker extends MyInvoker {
         super(url);
     }
 
+    @Override
     public Result invoke(Invocation invocation) throws RpcException {
         throw new RuntimeException("Runtime exception");
     }

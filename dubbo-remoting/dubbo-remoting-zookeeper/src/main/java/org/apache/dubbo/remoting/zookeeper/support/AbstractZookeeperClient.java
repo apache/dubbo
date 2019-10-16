@@ -19,6 +19,7 @@ package org.apache.dubbo.remoting.zookeeper.support;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.remoting.zookeeper.ChildListener;
 import org.apache.dubbo.remoting.zookeeper.DataListener;
 import org.apache.dubbo.remoting.zookeeper.StateListener;
@@ -45,6 +46,8 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
 
     private volatile boolean closed = false;
 
+    private final Set<String>  persistentExistNodePath = new ConcurrentHashSet<>();
+
     public AbstractZookeeperClient(URL url) {
         this.url = url;
     }
@@ -55,9 +58,21 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
     }
 
     @Override
+    public void delete(String path){
+        //never mind if ephemeral
+        persistentExistNodePath.remove(path);
+        deletePath(path);
+    }
+
+
+    @Override
     public void create(String path, boolean ephemeral) {
         if (!ephemeral) {
+            if(persistentExistNodePath.contains(path)){
+                return;
+            }
             if (checkExists(path)) {
+                persistentExistNodePath.add(path);
                 return;
             }
         }
@@ -69,6 +84,7 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
             createEphemeral(path);
         } else {
             createPersistent(path);
+            persistentExistNodePath.add(path);
         }
     }
 
@@ -213,5 +229,11 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
     protected abstract void removeTargetChildListener(String path, TargetChildListener listener);
 
     protected abstract String doGetContent(String path);
+
+    /**
+     * we invoke the zookeeper client to delete the node
+     * @param path the node path
+     */
+    protected abstract void deletePath(String path);
 
 }

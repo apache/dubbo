@@ -55,6 +55,9 @@ public class TypeDefinitionBuilder {
             td = DefaultTypeBuilder.build(clazz, typeCache);
             td.setTypeBuilderName(DefaultTypeBuilder.class.getName());
         }
+        if (clazz.equals(String.class)) {
+            td.setProperties(null);
+        }
         return td;
     }
 

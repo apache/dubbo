@@ -21,6 +21,8 @@ import org.apache.dubbo.config.AbstractReferenceConfig;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_BEAN;
+
 class AbstractReferenceBuilderTest {
 
     @Test
@@ -53,8 +55,8 @@ class AbstractReferenceBuilderTest {
     @Test
     void generic1() {
         ReferenceBuilder builder = new ReferenceBuilder();
-        builder.generic("generic");
-        Assertions.assertEquals("generic", builder.build().getGeneric());
+        builder.generic(GENERIC_SERIALIZATION_BEAN);
+        Assertions.assertEquals(GENERIC_SERIALIZATION_BEAN, builder.build().getGeneric());
     }
 
     @Test

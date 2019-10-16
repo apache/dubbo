@@ -25,6 +25,7 @@ import com.alibaba.fastjson.JSON;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -336,7 +337,7 @@ public final class StringUtils {
         increase *= max < 0 ? 16 : max > 64 ? 64 : max;
         final StringBuilder buf = new StringBuilder(text.length() + increase);
         while (end != INDEX_NOT_FOUND) {
-            buf.append(text.substring(start, end)).append(replacement);
+            buf.append(text, start, end).append(replacement);
             start = end + replLength;
             if (--max == 0) {
                 break;
@@ -347,8 +348,17 @@ public final class StringUtils {
         return buf.toString();
     }
 
-    public static boolean isBlank(String str) {
-        return isEmpty(str);
+    public static boolean isBlank(CharSequence cs) {
+        int strLen;
+        if (cs == null || (strLen = cs.length()) == 0) {
+            return true;
+        }
+        for (int i = 0; i < strLen; i++) {
+            if (!Character.isWhitespace(cs.charAt(i))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -765,7 +775,7 @@ public final class StringUtils {
                 if (buf == null) {
                     buf = new StringBuilder();
                     if (i > 0) {
-                        buf.append(camelName.substring(0, i));
+                        buf.append(camelName, 0, i);
                     }
                 }
                 if (i > 0) {
@@ -829,5 +839,31 @@ public final class StringUtils {
         } else {
             return false;
         }
+    }
+
+    /**
+     * @param rawParameters format like '[{a:b},{c:d}]'
+     * @return
+     */
+    public static Map<String, String> parseParameters(String rawParameters) {
+        Pattern pattern = Pattern.compile("^\\[((\\s*\\{\\s*[\\w_\\-\\.]+\\s*:\\s*.+?\\s*\\}\\s*,?\\s*)+)\\s*\\]$");
+        Pattern pairPattern = Pattern.compile("^\\{\\s*([\\w-_\\.]+)\\s*:\\s*(.+)\\s*\\}$");
+
+        Matcher matcher = pattern.matcher(rawParameters);
+        if (!matcher.matches()) {
+            return Collections.emptyMap();
+        }
+
+        String pairs = matcher.group(1);
+        String[] pairArr = pairs.split("\\s*,\\s*");
+
+        Map<String, String> parameters = new HashMap<>();
+        for (String pair : pairArr) {
+            Matcher pairMatcher = pairPattern.matcher(pair);
+            if (pairMatcher.matches()) {
+                parameters.put(pairMatcher.group(1), pairMatcher.group(2));
+            }
+        }
+        return parameters;
     }
 }

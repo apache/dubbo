@@ -21,9 +21,10 @@ import org.apache.dubbo.common.utils.StringUtils;
 
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_NATIVE_JAVA;
-import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_DEFAULT;
+import static org.apache.dubbo.rpc.Constants.GENERIC_RAW_RETURN;
 import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_BEAN;
+import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_DEFAULT;
+import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_NATIVE_JAVA;
 import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_PROTOBUF;
 
 public class ProtocolUtils {
@@ -58,7 +59,14 @@ public class ProtocolUtils {
                 && (GENERIC_SERIALIZATION_DEFAULT.equalsIgnoreCase(generic)  /* Normal generalization cal */
                 || GENERIC_SERIALIZATION_NATIVE_JAVA.equalsIgnoreCase(generic) /* Streaming generalization call supporting jdk serialization */
                 || GENERIC_SERIALIZATION_BEAN.equalsIgnoreCase(generic)
-                || GENERIC_SERIALIZATION_PROTOBUF.equalsIgnoreCase(generic));
+                || GENERIC_SERIALIZATION_PROTOBUF.equalsIgnoreCase(generic)
+                || GENERIC_RAW_RETURN.equalsIgnoreCase(generic));
+
+    }
+
+    public static boolean isValidGenericValue(String generic) {
+        return isGeneric(generic) || Boolean.FALSE.toString().equalsIgnoreCase(generic);
+
     }
 
     public static boolean isDefaultGenericSerialization(String generic) {
@@ -77,5 +85,9 @@ public class ProtocolUtils {
 
     public static boolean isProtobufGenericSerialization(String generic) {
         return isGeneric(generic) && GENERIC_SERIALIZATION_PROTOBUF.equals(generic);
+    }
+
+    public static boolean isGenericReturnRawResult(String generic) {
+        return GENERIC_RAW_RETURN.equals(generic);
     }
 }
