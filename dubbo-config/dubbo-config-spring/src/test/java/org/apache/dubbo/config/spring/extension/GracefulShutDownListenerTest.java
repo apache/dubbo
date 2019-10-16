@@ -2,7 +2,7 @@ package org.apache.dubbo.config.spring.extension;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.rpc.GraceFulShutDown;
+import org.apache.dubbo.rpc.GracefulShutDown;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,7 +32,7 @@ import java.util.Set;
  * @description
  * @sine 2.7.3
  */
-public class GraceFulShutDownListenerTest {
+public class GracefulShutDownListenerTest {
 
 
     private static final Logger logger = LoggerFactory.getLogger(SpringExtensionFactory.class);
@@ -40,17 +40,17 @@ public class GraceFulShutDownListenerTest {
     private AnnotationConfigApplicationContext context1;
     private AnnotationConfigApplicationContext context2;
     @Test
-    public void testGraceFulShutDown() {
+    public void testGracefulShutDown() {
         Set<ApplicationContext> contexts = SpringExtensionFactory.getContexts();
         for (ApplicationContext context : contexts){
             if (context instanceof ConfigurableApplicationContext) {
                 ConfigurableApplicationContext configurableApplicationContext = (ConfigurableApplicationContext) context;
                 boolean active = configurableApplicationContext.isActive();
                 if (active) {
-                    String[] beanNames = context.getBeanNamesForType(GraceFulShutDown.class);
+                    String[] beanNames = context.getBeanNamesForType(GracefulShutDown.class);
                     try {
                         for (String beanName : beanNames) {
-                            GraceFulShutDown bean = context.getBean(beanName, GraceFulShutDown.class);
+                            GracefulShutDown bean = context.getBean(beanName, GracefulShutDown.class);
                             if (null != bean) {
                                 bean.afterRegistriesDestroyed();
                                 bean.afterProtocolDestroyed();

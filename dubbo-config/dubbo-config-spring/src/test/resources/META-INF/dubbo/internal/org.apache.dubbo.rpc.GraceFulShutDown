@@ -1,1 +1,0 @@
-graceful=org.apache.dubbo.config.spring.extension.GraceFulShutDownDemo

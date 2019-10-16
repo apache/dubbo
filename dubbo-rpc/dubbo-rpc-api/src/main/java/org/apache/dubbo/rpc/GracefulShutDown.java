@@ -23,17 +23,17 @@ import org.apache.dubbo.common.extension.SPI;
  * this interface is used to enable grace shutdown
  * any class implements this interface should be a spring bean or add spi extension config
  * if you use spring ,ShutdownHookListener will use it and flush resources in ContextClosedEvent
- * Without spring,please add a file under META-INFO/dubbo/internal which named org.apache.dubbo.rpc.GraceFulShutDown
- * and then write graceful=xxx.xxx.xxx.Xxx which implement GraceFulShutDown into it
+ * Without spring,please add a file under META-INFO/dubbo/internal which named org.apache.dubbo.rpc.GracefulShutDown
+ * and then write graceful=xxx.xxx.xxx.Xxx which implement GracefulShutDown into it
  * application will use DubboShutdownHook to invoke afterRegistriesDestroyed and afterProtocolDestroyed
  * to flush resources in closed stage
  * @since 2.7.3
  */
 @SPI
-public interface GraceFulShutDown {
+public interface GracefulShutDown {
 
     /**
-     * SPI name which should be write in META-INFO/dubbo/internal/org.apache.dubbo.rpc.GraceFulShutDown without spring
+     * SPI name which should be write in META-INFO/dubbo/internal/org.apache.dubbo.rpc.GracefulShutDown without spring
      */
     public static final String MARK = "graceful";
 

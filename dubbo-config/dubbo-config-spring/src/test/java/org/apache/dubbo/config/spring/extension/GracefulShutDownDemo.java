@@ -2,7 +2,7 @@ package org.apache.dubbo.config.spring.extension;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.rpc.GraceFulShutDown;
+import org.apache.dubbo.rpc.GracefulShutDown;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -24,9 +24,9 @@ import org.apache.dubbo.rpc.GraceFulShutDown;
  * this interface is used to enable grace shutdown test
  * @since 2.7.3
  */
-public class GraceFulShutDownDemo implements GraceFulShutDown {
+public class GracefulShutDownDemo implements GracefulShutDown {
 
-    private static final Logger logger = LoggerFactory.getLogger(GraceFulShutDownDemo.class);
+    private static final Logger logger = LoggerFactory.getLogger(GracefulShutDownDemo.class);
 
     @Override
     public void afterRegistriesDestroyed() {

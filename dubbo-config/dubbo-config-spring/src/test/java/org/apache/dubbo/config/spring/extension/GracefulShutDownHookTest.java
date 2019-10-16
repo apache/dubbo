@@ -20,10 +20,10 @@ import org.apache.dubbo.config.DubboShutdownHook;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class GraceFulShutDownHookTest {
+public class GracefulShutDownHookTest {
 
     @Test
-    public void testGraceFulShutDownHook(){
+    public void testGracefulShutDownHook(){
         DubboShutdownHook hook = DubboShutdownHook.getDubboShutdownHook();
         try {
             hook.doDestroy();
