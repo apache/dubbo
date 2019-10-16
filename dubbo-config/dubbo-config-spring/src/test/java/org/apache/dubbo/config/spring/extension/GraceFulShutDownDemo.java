@@ -24,9 +24,9 @@ import org.apache.dubbo.rpc.GraceFulShutDown;
  * this interface is used to enable grace shutdown test
  * @since 2.7.3
  */
-public class KafkaGraceFulShutDown implements GraceFulShutDown {
+public class GraceFulShutDownDemo implements GraceFulShutDown {
 
-    private static final Logger logger = LoggerFactory.getLogger(KafkaGraceFulShutDown.class);
+    private static final Logger logger = LoggerFactory.getLogger(GraceFulShutDownDemo.class);
 
     @Override
     public void afterRegistriesDestroyed() {
