@@ -48,7 +48,7 @@ public class SpringExtensionFactory implements ExtensionFactory {
         CONTEXTS.add(context);
         if (context instanceof ConfigurableApplicationContext) {
             ((ConfigurableApplicationContext) context).registerShutdownHook();
-            DubboShutdownHook.getDubboShutdownHook().unregister();
+          /*  DubboShutdownHook.getDubboShutdownHook().unregister()*/;
         }
         BeanFactoryUtils.addApplicationListener(context, SHUTDOWN_HOOK_LISTENER);
     }

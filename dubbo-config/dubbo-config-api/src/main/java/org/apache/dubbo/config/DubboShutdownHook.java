@@ -23,8 +23,6 @@ import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 import org.apache.dubbo.rpc.GraceFulShutDown;
 import org.apache.dubbo.rpc.Protocol;
 
-import java.util.Collection;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
@@ -88,25 +86,30 @@ public class DubboShutdownHook extends Thread {
     public void doDestroy() {
 
         destroyRegistries();
+
         ExtensionLoader<GraceFulShutDown> loader = ExtensionLoader.getExtensionLoader(GraceFulShutDown.class);
-        extensionLoop(loader,GraceFulShutDown::afterRegistriesDestroyed);
+        cleanResources(loader, GraceFulShutDown::afterRegistriesDestroyed);
         // destroy all the protocols
         destroyProtocols();
-        extensionLoop(loader,GraceFulShutDown::afterProtocolDestroyed);
+        cleanResources(loader, GraceFulShutDown::afterProtocolDestroyed);
     }
 
-    private void extensionLoop(ExtensionLoader<GraceFulShutDown> loader, Consumer<GraceFulShutDown> consumer){
+    /**
+     * clean resources in different stage
+     *
+     * @param loader   the spi loader
+     * @param consumer a lamda expression  you want do
+     */
+    private void cleanResources(ExtensionLoader<GraceFulShutDown> loader, Consumer<GraceFulShutDown> consumer) {
 
-        for (String extensionName : loader.getLoadedExtensions()){
-            try {
-                GraceFulShutDown shutDown = loader.getLoadedExtension(extensionName);
+        try {
+            GraceFulShutDown shutDown = loader.getExtension(GraceFulShutDown.MARK);
                 if (null != shutDown){
                     consumer.accept(shutDown);
                 }
             }catch (Throwable t){
                 logger.warn(t.getMessage(),t);
             }
-        }
     }
 
     public void destroyRegistries(){
