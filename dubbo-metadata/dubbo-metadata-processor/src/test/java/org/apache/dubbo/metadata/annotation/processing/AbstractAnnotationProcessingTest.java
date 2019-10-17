@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.metadata.annotation.processing;
 
-import org.apache.dubbo.metadata.annotation.processing.util.AnnotationProcessorUtils;
+import org.apache.dubbo.metadata.annotation.processing.util.TypeUtils;
 import org.apache.dubbo.metadata.tools.Compiler;
 import org.apache.dubbo.metadata.tools.TestProcessor;
 
@@ -64,6 +64,6 @@ public abstract class AbstractAnnotationProcessingTest {
     protected abstract void beforeEach();
 
     protected TypeElement getType(Class<?> type) {
-        return AnnotationProcessorUtils.getType(processingEnv, type.getTypeName());
+        return TypeUtils.getType(processingEnv, type);
     }
 }

@@ -16,20 +16,29 @@
  */
 package org.apache.dubbo.metadata.annotation.processing.util;
 
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Elements;
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static javax.lang.model.util.ElementFilter.methodsIn;
-import static org.apache.dubbo.common.function.Predicates.filterFirst;
+import static org.apache.dubbo.common.function.Predicates.EMPTY_ARRAY;
+import static org.apache.dubbo.common.function.Streams.filterAll;
+import static org.apache.dubbo.common.function.Streams.filterFirst;
 import static org.apache.dubbo.metadata.annotation.processing.util.MemberUtils.getDeclaredMembers;
 import static org.apache.dubbo.metadata.annotation.processing.util.MemberUtils.matchParameterTypes;
 import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.getHierarchicalTypes;
+import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.ofDeclaredType;
 
 /**
  * The utilities class for method in the package "javax.lang.model."
@@ -38,16 +47,48 @@ import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.get
  */
 public interface MethodUtils {
 
-    static List<ExecutableElement> getDeclaredMethods(TypeMirror type) {
-        return methodsIn(getDeclaredMembers(type));
+    static List<ExecutableElement> getDeclaredMethods(TypeElement type, Predicate<ExecutableElement>... methodFilters) {
+        return type == null ? emptyList() : getDeclaredMethods(type.asType(), methodFilters);
+    }
+
+    static List<ExecutableElement> getDeclaredMethods(TypeMirror type, Predicate<ExecutableElement>... methodFilters) {
+        return filterAll(methodsIn(getDeclaredMembers(type)), methodFilters);
+    }
+
+    static List<ExecutableElement> getAllDeclaredMethods(TypeElement type, Predicate<ExecutableElement>... methodFilters) {
+        return type == null ? emptyList() : getAllDeclaredMethods(type.asType(), methodFilters);
+    }
+
+    static List<ExecutableElement> getAllDeclaredMethods(TypeElement type) {
+        return getAllDeclaredMethods(type, EMPTY_ARRAY);
+    }
+
+    static List<ExecutableElement> getAllDeclaredMethods(TypeMirror type, Predicate<ExecutableElement>... methodFilters) {
+        return getHierarchicalTypes(type)
+                .stream()
+                .map(t -> getDeclaredMethods(t, methodFilters))
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
     }
 
     static List<ExecutableElement> getAllDeclaredMethods(TypeMirror type) {
-        return getHierarchicalTypes(type)
+        return getAllDeclaredMethods(type, EMPTY_ARRAY);
+    }
+
+    static List<ExecutableElement> getAllDeclaredMethods(TypeElement type, Type... excludedTypes) {
+        return getAllDeclaredMethods(ofDeclaredType(type), excludedTypes);
+    }
+
+    static List<ExecutableElement> getAllDeclaredMethods(TypeMirror type, Type... excludedTypes) {
+        return getHierarchicalTypes(type, excludedTypes)
                 .stream()
-                .map(MethodUtils::getDeclaredMethods)
+                .map(t -> getDeclaredMethods(t))
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList());
+    }
+
+    static ExecutableElement findMethod(TypeElement type, String methodName, Type oneParameterType, Type... otherParameterTypes) {
+        return type == null ? null : findMethod(type.asType(), methodName, oneParameterType, otherParameterTypes);
     }
 
     static ExecutableElement findMethod(TypeMirror type, String methodName, Type oneParameterType, Type... otherParameterTypes) {
@@ -57,10 +98,36 @@ public interface MethodUtils {
         return findMethod(type, methodName, parameterTypes.stream().map(Type::getTypeName).toArray(String[]::new));
     }
 
+    static ExecutableElement findMethod(TypeElement type, String methodName, CharSequence... parameterTypes) {
+        return type == null ? null : findMethod(type.asType(), methodName, parameterTypes);
+    }
+
     static ExecutableElement findMethod(TypeMirror type, String methodName, CharSequence... parameterTypes) {
         return filterFirst(getAllDeclaredMethods(type),
                 method -> methodName.equals(method.getSimpleName().toString()),
                 method -> matchParameterTypes(method.getParameters(), parameterTypes)
         );
+    }
+
+    static ExecutableElement getOverrideMethod(ProcessingEnvironment processingEnv, TypeElement type,
+                                               ExecutableElement declaringMethod) {
+        Elements elements = processingEnv.getElementUtils();
+        return filterFirst(getAllDeclaredMethods(type), method -> elements.overrides(method, declaringMethod, type));
+    }
+
+//    static List<String> getMethodParameterTypes(ExecutableElement method) {
+//        return method.getParameters()
+//                .stream()
+//                .map(Element::asType)
+//                .map(TypeMirror::toString)
+//                .collect(toList());
+//    }
+
+    static boolean isEnclosingMethod(Type type, ExecutableElement method) {
+        return isEnclosingMethod(type.getTypeName(), method);
+    }
+
+    static boolean isEnclosingMethod(CharSequence type, ExecutableElement method) {
+        return Objects.equals(type, method.getEnclosingElement().asType().toString());
     }
 }

@@ -27,7 +27,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import java.util.Set;
 
-import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationProcessorUtils.getField;
+import static org.apache.dubbo.metadata.annotation.processing.util.FieldUtils.findField;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -69,14 +69,14 @@ public class PrimitiveTypeDefinitionBuilderTest extends AbstractAnnotationProces
 
         TypeElement testType = getType(PrimitiveTypeModel.class);
 
-        zField = getField(processingEnv, testType, "z");
-        bField = getField(processingEnv, testType, "b");
-        cField = getField(processingEnv, testType, "c");
-        sField = getField(processingEnv, testType, "s");
-        iField = getField(processingEnv, testType, "i");
-        lField = getField(processingEnv, testType, "l");
-        fField = getField(processingEnv, testType, "f");
-        dField = getField(processingEnv, testType, "d");
+        zField = findField( testType, "z");
+        bField = findField( testType, "b");
+        cField = findField( testType, "c");
+        sField = findField( testType, "s");
+        iField = findField( testType, "i");
+        lField = findField( testType, "l");
+        fField = findField( testType, "f");
+        dField = findField( testType, "d");
 
         assertEquals("boolean", zField.asType().toString());
         assertEquals("byte", bField.asType().toString());

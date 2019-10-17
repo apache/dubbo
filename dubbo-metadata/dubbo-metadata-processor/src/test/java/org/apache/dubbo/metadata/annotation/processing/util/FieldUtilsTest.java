@@ -17,6 +17,7 @@
 package org.apache.dubbo.metadata.annotation.processing.util;
 
 import org.apache.dubbo.metadata.annotation.processing.AbstractAnnotationProcessingTest;
+import org.apache.dubbo.metadata.annotation.processing.model.Color;
 import org.apache.dubbo.metadata.annotation.processing.model.Model;
 import org.apache.dubbo.metadata.tools.TestServiceImpl;
 
@@ -35,8 +36,10 @@ import static org.apache.dubbo.metadata.annotation.processing.util.FieldUtils.fi
 import static org.apache.dubbo.metadata.annotation.processing.util.FieldUtils.getAllDeclaredFields;
 import static org.apache.dubbo.metadata.annotation.processing.util.FieldUtils.getDeclaredField;
 import static org.apache.dubbo.metadata.annotation.processing.util.FieldUtils.getDeclaredFields;
+import static org.apache.dubbo.metadata.annotation.processing.util.FieldUtils.isEnumMemberField;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * {@link FieldUtils} Test
@@ -59,7 +62,7 @@ public class FieldUtilsTest extends AbstractAnnotationProcessingTest {
     @Test
     public void testDeclaredFields() {
         TypeElement type = getType(Model.class);
-        List<VariableElement> fields = getDeclaredFields(type.asType());
+        List<VariableElement> fields = getDeclaredFields(type);
         assertEquals(6, fields.size());
         assertEquals("f", fields.get(0).getSimpleName().toString());
         assertEquals("d", fields.get(1).getSimpleName().toString());
@@ -68,7 +71,7 @@ public class FieldUtilsTest extends AbstractAnnotationProcessingTest {
         assertEquals("bi", fields.get(4).getSimpleName().toString());
         assertEquals("bd", fields.get(5).getSimpleName().toString());
 
-        fields = getAllDeclaredFields(type.asType());
+        fields = getAllDeclaredFields(type);
         assertEquals(11, fields.size());
         assertEquals("f", fields.get(0).getSimpleName().toString());
         assertEquals("d", fields.get(1).getSimpleName().toString());
@@ -93,11 +96,11 @@ public class FieldUtilsTest extends AbstractAnnotationProcessingTest {
         testGetDeclaredField(type, "bi", BigInteger.class);
         testGetDeclaredField(type, "bd", BigDecimal.class);
 
-        assertNull(getDeclaredField(type.asType(), "b"));
-        assertNull(getDeclaredField(type.asType(), "s"));
-        assertNull(getDeclaredField(type.asType(), "i"));
-        assertNull(getDeclaredField(type.asType(), "l"));
-        assertNull(getDeclaredField(type.asType(), "z"));
+        assertNull(getDeclaredField(type, "b"));
+        assertNull(getDeclaredField(type, "s"));
+        assertNull(getDeclaredField(type, "i"));
+        assertNull(getDeclaredField(type, "l"));
+        assertNull(getDeclaredField(type, "z"));
     }
 
     @Test
@@ -116,13 +119,26 @@ public class FieldUtilsTest extends AbstractAnnotationProcessingTest {
         testFindField(type, "z", boolean.class);
     }
 
+    @Test
+    public void testIsEnumField() {
+        TypeElement type = getType(Color.class);
+        VariableElement field = findField(type, "RED");
+        assertTrue(isEnumMemberField(field));
+
+        field = findField(type, "YELLOW");
+        assertTrue(isEnumMemberField(field));
+
+        field = findField(type, "BLUE");
+        assertTrue(isEnumMemberField(field));
+    }
+
     private void testGetDeclaredField(TypeElement type, String fieldName, Type fieldType) {
-        VariableElement field = getDeclaredField(type.asType(), fieldName);
+        VariableElement field = getDeclaredField(type, fieldName);
         assertField(field, fieldName, fieldType);
     }
 
     private void testFindField(TypeElement type, String fieldName, Type fieldType) {
-        VariableElement field = findField(type.asType(), fieldName);
+        VariableElement field = findField(type, fieldName);
         assertField(field, fieldName, fieldType);
     }
 

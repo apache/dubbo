@@ -27,8 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationProcessorUtils.findMetaAnnotation;
-import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationProcessorUtils.getAnnotation;
+import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.getAnnotation;
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.getValue;
 import static org.apache.dubbo.metadata.util.HttpUtils.HTTP_METHODS;
 import static org.apache.dubbo.metadata.util.HttpUtils.buildPath;
@@ -82,18 +81,18 @@ public class JAXRSServiceRestMetadataProcessor extends AbstractServiceRestMetada
     }
 
     private String getPathValue(ProcessingEnvironment processingEnv, TypeElement serviceType) {
-        AnnotationMirror annotation = getAnnotation(processingEnv, serviceType, PATH_ANNOTATION_NAME);
+        AnnotationMirror annotation = getAnnotation(serviceType, PATH_ANNOTATION_NAME);
         return getValue(annotation);
     }
 
     private String getPathValue(AnnotatedConstruct annotatedConstruct) {
-        AnnotationMirror annotation = getAnnotation(annotatedConstruct.getAnnotationMirrors(), PATH_ANNOTATION_NAME);
+        AnnotationMirror annotation = getAnnotation(annotatedConstruct, PATH_ANNOTATION_NAME);
         return getValue(annotation);
     }
 
     @Override
     protected String resolveRequestMethod(ProcessingEnvironment processingEnv, TypeElement serviceType, ExecutableElement method) {
-        AnnotationMirror annotation = findMetaAnnotation(processingEnv, method, HTTP_METHOD_ANNOTATION_NAME);
+        AnnotationMirror annotation = getAnnotation(method, HTTP_METHOD_ANNOTATION_NAME);
         return getValue(annotation);
     }
 

@@ -26,7 +26,7 @@ import javax.lang.model.element.VariableElement;
 import java.util.Set;
 
 import static org.apache.dubbo.metadata.annotation.processing.builder.ArrayTypeDefinitionBuilderTest.buildAndAssertTypeDefinition;
-import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationProcessorUtils.getField;
+import static org.apache.dubbo.metadata.annotation.processing.util.FieldUtils.findField;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -58,11 +58,11 @@ public class CollectionTypeDefinitionBuilderTest extends AbstractAnnotationProce
     protected void beforeEach() {
         builder = new CollectionTypeDefinitionBuilder();
         TypeElement testType = getType(CollectionTypeModel.class);
-        stringsField = getField(processingEnv, testType, "strings");
-        colorsField = getField(processingEnv, testType, "colors");
-        primitiveTypeModelsField = getField(processingEnv, testType, "primitiveTypeModels");
-        modelsField = getField(processingEnv, testType, "models");
-        modelArraysField = getField(processingEnv, testType, "modelArrays");
+        stringsField = findField( testType, "strings");
+        colorsField = findField( testType, "colors");
+        primitiveTypeModelsField = findField( testType, "primitiveTypeModels");
+        modelsField = findField( testType, "models");
+        modelArraysField = findField( testType, "modelArrays");
 
         assertEquals("strings", stringsField.getSimpleName().toString());
         assertEquals("colors", colorsField.getSimpleName().toString());

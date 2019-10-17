@@ -30,7 +30,7 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
-import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationProcessorUtils.getField;
+import static org.apache.dubbo.metadata.annotation.processing.util.FieldUtils.findField;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -64,11 +64,11 @@ public class ArrayTypeDefinitionBuilderTest extends AbstractAnnotationProcessing
     protected void beforeEach() {
         builder = new ArrayTypeDefinitionBuilder();
         testType = getType(ArrayTypeModel.class);
-        integersField = getField(processingEnv, testType, "integers");
-        stringsField = getField(processingEnv, testType, "strings");
-        primitiveTypeModelsField = getField(processingEnv, testType, "primitiveTypeModels");
-        modelsField = getField(processingEnv, testType, "models");
-        colorsField = getField(processingEnv, testType, "colors");
+        integersField = findField(testType, "integers");
+        stringsField = findField(testType, "strings");
+        primitiveTypeModelsField = findField(testType, "primitiveTypeModels");
+        modelsField = findField(testType, "models");
+        colorsField = findField(testType, "colors");
     }
 
     @Test

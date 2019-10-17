@@ -34,7 +34,7 @@ import java.util.Set;
 import static java.util.ServiceLoader.load;
 import static java.util.stream.StreamSupport.stream;
 import static javax.lang.model.util.ElementFilter.typesIn;
-import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationProcessorUtils.getOverrideMethod;
+import static org.apache.dubbo.metadata.annotation.processing.util.MethodUtils.getOverrideMethod;
 import static org.apache.dubbo.metadata.annotation.processing.util.ServiceAnnotationUtils.getAnnotation;
 
 /**

@@ -26,9 +26,12 @@ import org.junit.jupiter.api.Test;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 import javax.ws.rs.Path;
+import java.util.List;
 import java.util.Set;
 
+import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.getAllAnnotations;
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.getAnnotation;
+import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.getAnnotations;
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.getAttribute;
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.getValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -63,5 +66,26 @@ public class AnnotationUtilsTest extends AbstractAnnotationProcessingTest {
     public void testGetValue() {
         AnnotationMirror pathAnnotation = getAnnotation(getType(TestService.class), Path.class);
         assertEquals("/echo", getValue(pathAnnotation));
+    }
+
+    @Test
+    public void testGetAllAnnotations() {
+        List<AnnotationMirror> annotations = getAllAnnotations(testType);
+        List<AnnotationMirror> legacyAnnotations = getAllAnnotations(processingEnv, com.alibaba.dubbo.config.annotation.Service.class);
+        assertEquals(5, annotations.size());
+        assertEquals(5, legacyAnnotations.size());
+    }
+
+    @Test
+    public void testGetAnnotations() {
+        List<AnnotationMirror> serviceAnnotations = getAnnotations(testType, Service.class);
+        assertEquals(3, serviceAnnotations.size());
+
+        serviceAnnotations = getAnnotations(testType, Override.class);
+        assertEquals(0, serviceAnnotations.size());
+
+        List<AnnotationMirror> legacyServiceAnnotations = getAnnotations(testType,
+                com.alibaba.dubbo.config.annotation.Service.class);
+        assertEquals(1, legacyServiceAnnotations.size());
     }
 }

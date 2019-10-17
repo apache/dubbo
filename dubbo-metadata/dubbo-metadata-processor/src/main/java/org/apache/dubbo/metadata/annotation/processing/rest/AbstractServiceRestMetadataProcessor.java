@@ -17,6 +17,7 @@
 package org.apache.dubbo.metadata.annotation.processing.rest;
 
 import org.apache.dubbo.metadata.annotation.processing.builder.TypeDefinitionBuilder;
+import org.apache.dubbo.metadata.annotation.processing.util.MethodUtils;
 import org.apache.dubbo.metadata.definition.model.MethodDefinition;
 import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 import org.apache.dubbo.metadata.rest.MethodRestMetadata;
@@ -40,7 +41,6 @@ import java.util.stream.Collectors;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
-import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationProcessorUtils.getMethods;
 import static org.apache.dubbo.metadata.annotation.processing.util.ServiceAnnotationUtils.getAnnotation;
 import static org.apache.dubbo.metadata.annotation.processing.util.ServiceAnnotationUtils.getGroup;
 import static org.apache.dubbo.metadata.annotation.processing.util.ServiceAnnotationUtils.getVersion;
@@ -66,7 +66,7 @@ public abstract class AbstractServiceRestMetadataProcessor implements ServiceRes
         serviceRestMetadata.setVersion(getVersion(serviceAnnotation));
         serviceRestMetadata.setMeta(new HashSet<>());
 
-        List<? extends ExecutableElement> methods = getMethods(processingEnv, serviceType, Object.class);
+        List<? extends ExecutableElement> methods = MethodUtils.getAllDeclaredMethods(serviceType, Object.class);
 
         methods.forEach(method -> {
             processMethod(processingEnv, serviceType, method)

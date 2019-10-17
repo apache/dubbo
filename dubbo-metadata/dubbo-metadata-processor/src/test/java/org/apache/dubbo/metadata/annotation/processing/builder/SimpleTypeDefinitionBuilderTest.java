@@ -26,7 +26,7 @@ import javax.lang.model.element.VariableElement;
 import java.util.Set;
 
 import static org.apache.dubbo.metadata.annotation.processing.builder.PrimitiveTypeDefinitionBuilderTest.buildAndAssertTypeDefinition;
-import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationProcessorUtils.getField;
+import static org.apache.dubbo.metadata.annotation.processing.util.FieldUtils.findField;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -78,20 +78,20 @@ public class SimpleTypeDefinitionBuilderTest extends AbstractAnnotationProcessin
     protected void beforeEach() {
         builder = new SimpleTypeDefinitionBuilder();
         TypeElement testType = getType(SimpleTypeModel.class);
-        vField = getField(processingEnv, testType, "v");
-        zField = getField(processingEnv, testType, "z");
-        cField = getField(processingEnv, testType, "c");
-        bField = getField(processingEnv, testType, "b");
-        sField = getField(processingEnv, testType, "s");
-        iField = getField(processingEnv, testType, "i");
-        lField = getField(processingEnv, testType, "l");
-        fField = getField(processingEnv, testType, "f");
-        dField = getField(processingEnv, testType, "d");
-        strField = getField(processingEnv, testType, "str");
-        bdField = getField(processingEnv, testType, "bd");
-        biField = getField(processingEnv, testType, "bi");
-        dtField = getField(processingEnv, testType, "dt");
-        invalidField = getField(processingEnv, testType, "invalid");
+        vField = findField(testType, "v");
+        zField = findField(testType, "z");
+        cField = findField(testType, "c");
+        bField = findField(testType, "b");
+        sField = findField(testType, "s");
+        iField = findField(testType, "i");
+        lField = findField(testType, "l");
+        fField = findField(testType, "f");
+        dField = findField(testType, "d");
+        strField = findField(testType, "str");
+        bdField = findField(testType, "bd");
+        biField = findField(testType, "bi");
+        dtField = findField(testType, "dt");
+        invalidField = findField(testType, "invalid");
 
         assertEquals("java.lang.Void", vField.asType().toString());
         assertEquals("java.lang.Boolean", zField.asType().toString());

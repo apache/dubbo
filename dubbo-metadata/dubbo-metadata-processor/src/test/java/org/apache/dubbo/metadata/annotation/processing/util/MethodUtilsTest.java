@@ -18,19 +18,24 @@ package org.apache.dubbo.metadata.annotation.processing.util;
 
 import org.apache.dubbo.metadata.annotation.processing.AbstractAnnotationProcessingTest;
 import org.apache.dubbo.metadata.annotation.processing.model.Model;
+import org.apache.dubbo.metadata.tools.TestService;
 import org.apache.dubbo.metadata.tools.TestServiceImpl;
 
 import org.junit.jupiter.api.Test;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 import java.util.List;
 import java.util.Set;
 
 import static org.apache.dubbo.metadata.annotation.processing.util.MethodUtils.findMethod;
 import static org.apache.dubbo.metadata.annotation.processing.util.MethodUtils.getAllDeclaredMethods;
 import static org.apache.dubbo.metadata.annotation.processing.util.MethodUtils.getDeclaredMethods;
+import static org.apache.dubbo.metadata.annotation.processing.util.MethodUtils.getOverrideMethod;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * {@link MethodUtils} Test
@@ -53,11 +58,29 @@ public class MethodUtilsTest extends AbstractAnnotationProcessingTest {
     @Test
     public void testDeclaredMethods() {
         TypeElement type = getType(Model.class);
-        List<ExecutableElement> methods = getDeclaredMethods(type.asType());
+        List<ExecutableElement> methods = getDeclaredMethods(type);
         assertEquals(12, methods.size());
 
-        methods = getAllDeclaredMethods(type.asType());
+        methods = getAllDeclaredMethods(type);
         assertEquals(34, methods.size());
+
+        assertTrue(getAllDeclaredMethods((TypeElement) null).isEmpty());
+        assertTrue(getAllDeclaredMethods((TypeMirror) null).isEmpty());
+    }
+
+    @Test
+    public void testGetAllDeclaredMethods() {
+
+        List<? extends ExecutableElement> methods = getAllDeclaredMethods(testType, Object.class);
+        assertEquals(14, methods.size());
+
+        ExecutableElement overrideMethod = getOverrideMethod(processingEnv, testType, methods.get(0));
+        assertNull(overrideMethod);
+
+        ExecutableElement declaringMethod = findMethod(getType(TestService.class), "echo", "java.lang.String");
+
+        overrideMethod = getOverrideMethod(processingEnv, testType, declaringMethod);
+        assertEquals(methods.get(0), overrideMethod);
     }
 
     @Test

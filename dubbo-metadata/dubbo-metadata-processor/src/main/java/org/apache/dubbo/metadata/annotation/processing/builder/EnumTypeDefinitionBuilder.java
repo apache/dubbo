@@ -16,21 +16,15 @@
  */
 package org.apache.dubbo.metadata.annotation.processing.builder;
 
+import org.apache.dubbo.metadata.annotation.processing.util.FieldUtils;
 import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
-import java.util.Set;
 
-import static javax.lang.model.element.Modifier.FINAL;
-import static javax.lang.model.element.Modifier.PUBLIC;
-import static javax.lang.model.element.Modifier.STATIC;
-import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationProcessorUtils.getFields;
-import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationProcessorUtils.getType;
+import static org.apache.dubbo.metadata.annotation.processing.util.FieldUtils.getDeclaredFields;
 import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.isEnumType;
 
 /**
@@ -47,22 +41,11 @@ public class EnumTypeDefinitionBuilder implements DeclaredTypeDefinitionBuilder 
 
     @Override
     public void build(ProcessingEnvironment processingEnv, DeclaredType type, TypeDefinition typeDefinition) {
-        getFields(processingEnv, getType(processingEnv, type), this::isEnumMember)
+        getDeclaredFields(type, FieldUtils::isEnumMemberField)
                 .stream()
                 .map(Element::getSimpleName)
                 .map(Name::toString)
                 .forEach(typeDefinition.getEnums()::add);
-    }
-
-    /**
-     * Enum's members must be public static final fields
-     *
-     * @param field {@link VariableElement}
-     * @return
-     */
-    private boolean isEnumMember(VariableElement field) {
-        Set<Modifier> modifiers = field.getModifiers();
-        return modifiers.contains(PUBLIC) && modifiers.contains(STATIC) && modifiers.contains(FINAL);
     }
 
     @Override

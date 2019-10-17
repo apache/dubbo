@@ -29,7 +29,7 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
-import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationProcessorUtils.getField;
+import static org.apache.dubbo.metadata.annotation.processing.util.FieldUtils.findField;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -61,11 +61,11 @@ public class MapTypeDefinitionBuilderTest extends AbstractAnnotationProcessingTe
     protected void beforeEach() {
         builder = new MapTypeDefinitionBuilder();
         TypeElement testType = getType(MapTypeModel.class);
-        stringsField = getField(processingEnv, testType, "strings");
-        colorsField = getField(processingEnv, testType, "colors");
-        primitiveTypeModelsField = getField(processingEnv, testType, "primitiveTypeModels");
-        modelsField = getField(processingEnv, testType, "models");
-        modelArraysField = getField(processingEnv, testType, "modelArrays");
+        stringsField = findField( testType, "strings");
+        colorsField = findField( testType, "colors");
+        primitiveTypeModelsField = findField( testType, "primitiveTypeModels");
+        modelsField = findField( testType, "models");
+        modelArraysField = findField( testType, "modelArrays");
 
         assertEquals("strings", stringsField.getSimpleName().toString());
         assertEquals("colors", colorsField.getSimpleName().toString());

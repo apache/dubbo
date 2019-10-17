@@ -22,8 +22,8 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 
-import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationProcessorUtils.getNonStaticFields;
-import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationProcessorUtils.getType;
+import static org.apache.dubbo.metadata.annotation.processing.util.FieldUtils.getNonStaticFields;
+import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.getType;
 import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.isClassType;
 
 /**
@@ -49,7 +49,7 @@ public class GeneralTypeDefinitionBuilder implements DeclaredTypeDefinitionBuild
     }
 
     protected void buildProperties(ProcessingEnvironment processingEnv, TypeElement type, TypeDefinition definition) {
-        getNonStaticFields(processingEnv, type).forEach(field -> {
+        getNonStaticFields(type).forEach(field -> {
             String fieldName = field.getSimpleName().toString();
             TypeDefinition propertyType = TypeDefinitionBuilder.build(processingEnv, field);
             if (propertyType != null) {
