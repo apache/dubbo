@@ -29,7 +29,6 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -46,7 +45,6 @@ import static javax.lang.model.element.ElementKind.ANNOTATION_TYPE;
 import static javax.lang.model.element.ElementKind.CLASS;
 import static javax.lang.model.element.ElementKind.ENUM;
 import static javax.lang.model.element.ElementKind.INTERFACE;
-import static javax.lang.model.type.TypeKind.DECLARED;
 import static org.apache.dubbo.common.function.Predicates.EMPTY_ARRAY;
 import static org.apache.dubbo.common.function.Streams.filterAll;
 
@@ -234,14 +232,17 @@ public interface TypeUtils {
     }
 
     static TypeElement getType(ProcessingEnvironment processingEnv, Type type) {
-        return getType(processingEnv, type.getTypeName());
+        return type == null ? null : getType(processingEnv, type.getTypeName());
     }
 
     static TypeElement getType(ProcessingEnvironment processingEnv, TypeMirror type) {
-        return getType(processingEnv, type.toString());
+        return type == null ? null : getType(processingEnv, type.toString());
     }
 
     static TypeElement getType(ProcessingEnvironment processingEnv, CharSequence typeName) {
+        if (processingEnv == null || typeName == null) {
+            return null;
+        }
         Elements elements = processingEnv.getElementUtils();
         return elements.getTypeElement(typeName);
     }
@@ -252,18 +253,20 @@ public interface TypeUtils {
     }
 
     static DeclaredType getSuperType(TypeMirror type) {
-        return ofDeclaredType(getSuperType(ofTypeElement(type)).asType());
+        TypeElement superType = getSuperType(ofTypeElement(type));
+        return superType == null ? null : ofDeclaredType(superType.asType());
     }
 
-    static List<TypeElement> getAllSuperTypes(Element element) {
+    static Set<TypeElement> getAllSuperTypes(Element element) {
         return getAllSuperTypes(element, EMPTY_ARRAY);
     }
 
-    static List<TypeElement> getAllSuperTypes(Element element, Predicate<TypeElement>... typeFilters) {
+    static Set<TypeElement> getAllSuperTypes(Element element, Predicate<TypeElement>... typeFilters) {
         if (element == null) {
-            return emptyList();
+            return emptySet();
         }
-        List<TypeElement> allSuperTypes = new LinkedList<>();
+
+        Set<TypeElement> allSuperTypes = new LinkedHashSet<>();
         TypeElement superType = getSuperType(element);
         if (superType != null) {
             // add super type
@@ -282,9 +285,12 @@ public interface TypeUtils {
         return filterAll(ofDeclaredTypes(getAllSuperTypes(ofTypeElement(type))), typeFilters);
     }
 
+    static boolean isDeclaredType(Element element) {
+        return element != null && isDeclaredType(element.asType());
+    }
+
     static boolean isDeclaredType(TypeMirror type) {
-        return type == null ? false :
-                type instanceof DeclaredType ? true : DECLARED.equals(type.getKind());
+        return type instanceof DeclaredType;
     }
 
     static DeclaredType ofDeclaredType(Element element) {
@@ -297,6 +303,11 @@ public interface TypeUtils {
 
     static boolean isTypeElement(Element element) {
         return element instanceof TypeElement;
+    }
+
+    static boolean isTypeElement(TypeMirror type) {
+        DeclaredType declaredType = ofDeclaredType(type);
+        return declaredType != null && isTypeElement(declaredType.asElement());
     }
 
     static TypeElement ofTypeElement(Element element) {

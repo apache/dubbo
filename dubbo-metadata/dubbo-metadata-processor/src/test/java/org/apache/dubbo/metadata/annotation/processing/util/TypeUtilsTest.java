@@ -62,6 +62,7 @@ import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.isT
 import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.listDeclaredTypes;
 import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.listTypeElements;
 import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.ofDeclaredType;
+import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.ofDeclaredTypes;
 import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.ofTypeElement;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -295,24 +296,123 @@ public class TypeUtilsTest extends AbstractAnnotationProcessingTest {
     }
 
     @Test
-    public void testDeclaredType() {
-        TypeMirror type = testType.asType();
-        assertTrue(isDeclaredType(type));
-        assertEquals(type, ofDeclaredType(type));
-        assertEquals(ofDeclaredType(type), ofDeclaredType(testType));
+    public void testGetAllInterfaces() {
+        Set<? extends TypeMirror> interfaces = getAllInterfaces(testType.asType());
+        assertEquals(4, interfaces.size());
+        Iterator<? extends TypeMirror> iterator = interfaces.iterator();
+        assertEquals("org.apache.dubbo.metadata.tools.TestService", iterator.next().toString());
+        assertEquals("java.lang.AutoCloseable", iterator.next().toString());
+        assertEquals("java.io.Serializable", iterator.next().toString());
+        assertEquals("java.util.EventListener", iterator.next().toString());
 
-        assertFalse(isDeclaredType(null));
-        assertFalse(isDeclaredType(types.getNullType()));
-        assertFalse(isDeclaredType(types.getPrimitiveType(TypeKind.BYTE)));
-        assertFalse(isDeclaredType(types.getArrayType(types.getPrimitiveType(TypeKind.BYTE))));
-        assertNull(ofDeclaredType((Element) null));
+        Set<TypeElement> allInterfaces = getAllInterfaces(testType);
+        assertEquals(4, interfaces.size());
+
+        Iterator<TypeElement> allIterator = allInterfaces.iterator();
+        assertEquals("org.apache.dubbo.metadata.tools.TestService", allIterator.next().toString());
+        assertEquals("java.lang.AutoCloseable", allIterator.next().toString());
+        assertEquals("java.io.Serializable", allIterator.next().toString());
+        assertEquals("java.util.EventListener", allIterator.next().toString());
+
+        assertTrue(getAllInterfaces((TypeElement) null).isEmpty());
+        assertTrue(getAllInterfaces((TypeMirror) null).isEmpty());
     }
 
     @Test
-    public void testTypeElement() {
+    public void testGetType() {
+        TypeElement element = TypeUtils.getType(processingEnv, String.class);
+        assertEquals(element, TypeUtils.getType(processingEnv, element.asType()));
+        assertEquals(element, TypeUtils.getType(processingEnv, "java.lang.String"));
+
+        assertNull(TypeUtils.getType(processingEnv, (Type) null));
+        assertNull(TypeUtils.getType(processingEnv, (TypeMirror) null));
+        assertNull(TypeUtils.getType(processingEnv, (CharSequence) null));
+        assertNull(TypeUtils.getType(null, (CharSequence) null));
+    }
+
+    @Test
+    public void testGetSuperType() {
+        TypeElement gtsTypeElement = getSuperType(testType);
+        assertEquals(gtsTypeElement, getType(GenericTestService.class));
+        TypeElement dtsTypeElement = getSuperType(gtsTypeElement);
+        assertEquals(dtsTypeElement, getType(DefaultTestService.class));
+
+        TypeMirror gtsType = getSuperType(testType.asType());
+        assertEquals(gtsType, getType(GenericTestService.class).asType());
+        TypeMirror dtsType = getSuperType(gtsType);
+        assertEquals(dtsType, getType(DefaultTestService.class).asType());
+
+        assertNull(getSuperType((Element) null));
+        assertNull(getSuperType((TypeMirror) null));
+    }
+
+    @Test
+    public void testGetAllSuperTypes() {
+        Set<?> allSuperTypes = getAllSuperTypes(testType);
+        Iterator<?> iterator = allSuperTypes.iterator();
+        assertEquals(3, allSuperTypes.size());
+        assertEquals(iterator.next(), getType(GenericTestService.class));
+        assertEquals(iterator.next(), getType(DefaultTestService.class));
+        assertEquals(iterator.next(), getType(Object.class));
+
+        allSuperTypes = getAllSuperTypes(testType);
+        iterator = allSuperTypes.iterator();
+        assertEquals(3, allSuperTypes.size());
+        assertEquals(iterator.next(), getType(GenericTestService.class));
+        assertEquals(iterator.next(), getType(DefaultTestService.class));
+        assertEquals(iterator.next(), getType(Object.class));
+
+        assertTrue(getAllSuperTypes((TypeElement) null).isEmpty());
+        assertTrue(getAllSuperTypes((TypeMirror) null).isEmpty());
+    }
+
+    @Test
+    public void testIsDeclaredType() {
+        assertTrue(isDeclaredType(testType));
+        assertTrue(isDeclaredType(testType.asType()));
+        assertFalse(isDeclaredType((Element) null));
+        assertFalse(isDeclaredType((TypeMirror) null));
+        assertFalse(isDeclaredType(types.getNullType()));
+        assertFalse(isDeclaredType(types.getPrimitiveType(TypeKind.BYTE)));
+        assertFalse(isDeclaredType(types.getArrayType(types.getPrimitiveType(TypeKind.BYTE))));
+    }
+
+    @Test
+    public void testOfDeclaredType() {
+        assertEquals(testType.asType(), ofDeclaredType(testType));
+        assertEquals(testType.asType(), ofDeclaredType(testType.asType()));
+        assertEquals(ofDeclaredType(testType), ofDeclaredType(testType.asType()));
+
+        assertNull(ofDeclaredType((Element) null));
+        assertNull(ofDeclaredType((TypeMirror) null));
+    }
+
+    @Test
+    public void testIsTypeElement() {
         assertTrue(isTypeElement(testType));
+        assertTrue(isTypeElement(testType.asType()));
+
+        assertFalse(isTypeElement((Element) null));
+        assertFalse(isTypeElement((TypeMirror) null));
+    }
+
+    @Test
+    public void testOfTypeElement() {
         assertEquals(testType, ofTypeElement(testType));
         assertEquals(testType, ofTypeElement(testType.asType()));
+
+        assertNull(ofTypeElement((Element) null));
+        assertNull(ofTypeElement((TypeMirror) null));
+    }
+
+    @Test
+    public void testOfDeclaredTypes() {
+        Set<DeclaredType> declaredTypes = ofDeclaredTypes(asList(getType(String.class), getType(TestServiceImpl.class), getType(Color.class)));
+        assertTrue(declaredTypes.contains(getType(String.class).asType()));
+        assertTrue(declaredTypes.contains(getType(TestServiceImpl.class).asType()));
+        assertTrue(declaredTypes.contains(getType(Color.class).asType()));
+
+        assertTrue(ofDeclaredTypes(null).isEmpty());
     }
 
     @Test
@@ -326,7 +426,7 @@ public class TypeUtilsTest extends AbstractAnnotationProcessingTest {
     }
 
     @Test
-    public void testOfTypeElements() {
+    public void testListTypeElements() {
         List<TypeElement> typeElements = listTypeElements(asList(testType.asType(), ofDeclaredType(testType)));
         assertEquals(1, typeElements.size());
         assertEquals(testType, typeElements.get(0));
@@ -336,39 +436,8 @@ public class TypeUtilsTest extends AbstractAnnotationProcessingTest {
 
         typeElements = listTypeElements(asList(new TypeMirror[]{null}));
         assertTrue(typeElements.isEmpty());
-    }
 
-
-    @Test
-    public void testGetSuperType() {
-        TypeElement gtsTypeElement = getSuperType(testType);
-        assertEquals(gtsTypeElement, getType(GenericTestService.class));
-        TypeElement dtsTypeElement = getSuperType(gtsTypeElement);
-        assertEquals(dtsTypeElement, getType(DefaultTestService.class));
-
-        TypeMirror gtsType = getSuperType(testType.asType());
-        assertEquals(gtsType, getType(GenericTestService.class).asType());
-        TypeMirror dtsType = getSuperType(gtsType);
-        assertEquals(dtsType, getType(DefaultTestService.class).asType());
-    }
-
-    @Test
-    public void testGetAllSuperTypes() {
-        List<TypeElement> allSuperTypes = getAllSuperTypes(testType);
-        assertEquals(3, allSuperTypes.size());
-        assertEquals(allSuperTypes.get(0), getType(GenericTestService.class));
-        assertEquals(allSuperTypes.get(1), getType(DefaultTestService.class));
-        assertEquals(allSuperTypes.get(2), getType(Object.class));
-    }
-
-    @Test
-    public void testGetAllInterfaces() {
-        Set<? extends TypeMirror> interfaces = getAllInterfaces(testType.asType());
-        assertEquals(4, interfaces.size());
-        Iterator<? extends TypeMirror> iterator = interfaces.iterator();
-        assertEquals("org.apache.dubbo.metadata.tools.TestService", iterator.next().toString());
-        assertEquals("java.lang.AutoCloseable", iterator.next().toString());
-        assertEquals("java.io.Serializable", iterator.next().toString());
-        assertEquals("java.util.EventListener", iterator.next().toString());
+        typeElements = listTypeElements(null);
+        assertTrue(typeElements.isEmpty());
     }
 }
