@@ -620,12 +620,13 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             Environment.getInstance().getDynamicConfiguration().orElseGet(() -> {
                 ConfigManager configManager = ConfigManager.getInstance();
                 ConfigCenterConfig cc = configManager.getConfigCenter().orElse(new ConfigCenterConfig());
-                if (rc.getParameters() != null) {
-                    Map<String, String> configParams = cc.getParameters() == null ? new HashMap<>() : cc.getParameters();
-                    configParams.putAll(rc.getParameters());
-                    cc.setParameters(configParams);
+                if (cc.getParameters() == null) {
+                    cc.setParameters(new HashMap<>());
                 }
-                cc.getParameters().put(org.apache.dubbo.remoting.Constants.CLIENT_KEY,rc.getClient());
+                if (rc.getParameters() != null) {
+                    cc.getParameters().putAll(rc.getParameters());
+                }
+                cc.getParameters().put(org.apache.dubbo.remoting.Constants.CLIENT_KEY, rc.getClient());
                 cc.setProtocol(rc.getProtocol());
                 cc.setAddress(rc.getAddress());
                 cc.setUsername(rc.getUsername());
