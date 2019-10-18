@@ -94,7 +94,7 @@ public interface FieldUtils {
     }
 
     static VariableElement findField(TypeMirror type, String fieldName) {
-        return filterFirst(getAllDeclaredFields(type, field -> fieldName.equals(field.getSimpleName().toString())));
+        return filterFirst(getAllDeclaredFields(type, field -> equals(field, fieldName)));
     }
 
     /**
@@ -104,7 +104,7 @@ public interface FieldUtils {
      * @return if field is public static final, return <code>true</code>, or <code>false</code>
      */
     static boolean isEnumMemberField(VariableElement field) {
-        if (!isEnumType(field.getEnclosingElement())) {
+        if (field == null || !isEnumType(field.getEnclosingElement())) {
             return false;
         }
         return isField(field, PUBLIC, STATIC, FINAL);
@@ -115,8 +115,7 @@ public interface FieldUtils {
     }
 
     static boolean isField(VariableElement field, Modifier... modifiers) {
-        List<Modifier> modifiersList = asList(modifiers);
-        return field == null ? false : field.getModifiers().containsAll(modifiersList);
+        return field == null ? false : field.getModifiers().containsAll(asList(modifiers));
     }
 
     static List<VariableElement> getNonStaticFields(TypeMirror type) {
@@ -134,4 +133,9 @@ public interface FieldUtils {
     static List<VariableElement> getAllNonStaticFields(Element element) {
         return element == null ? emptyList() : getAllNonStaticFields(element.asType());
     }
+
+    static boolean equals(VariableElement field, CharSequence fieldName) {
+        return field != null && fieldName != null && field.getSimpleName().toString().equals(fieldName.toString());
+    }
+
 }
