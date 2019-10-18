@@ -101,14 +101,13 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
 
         Set<String> resolvedPackagesToScan = resolvePackagesToScan(packagesToScan);
 
-        if (!CollectionUtils.isEmpty(resolvedPackagesToScan)) {
-            registerServiceBeans(resolvedPackagesToScan, registry);
-        } else {
+        if (CollectionUtils.isEmpty(resolvedPackagesToScan)) {
             if (logger.isWarnEnabled()) {
                 logger.warn("packagesToScan is empty , ServiceBean registry will be ignored!");
             }
+            return;
         }
-
+        registerServiceBeans(resolvedPackagesToScan, registry);
     }
 
 
