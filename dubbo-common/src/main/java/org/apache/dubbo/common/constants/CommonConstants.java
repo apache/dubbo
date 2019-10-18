@@ -189,4 +189,6 @@ public interface CommonConstants {
     String CONFIG_ENABLE_KEY = "highest-priority";
     String CONFIG_NAMESPACE_KEY = "namespace";
     String CHECK_KEY = "check";
+
+    String BACKLOG_KEY = "backlog";
 }
