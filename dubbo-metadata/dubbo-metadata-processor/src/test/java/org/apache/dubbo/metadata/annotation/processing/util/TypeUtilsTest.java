@@ -205,8 +205,8 @@ public class TypeUtilsTest extends AbstractAnnotationProcessingTest {
 
     @Test
     public void testGetHierarchicalTypes() {
-        Set<DeclaredType> hierarchicalTypes = getHierarchicalTypes(testType.asType(), true, true, true);
-        Iterator<? extends TypeMirror> iterator = hierarchicalTypes.iterator();
+        Set hierarchicalTypes = getHierarchicalTypes(testType.asType(), true, true, true);
+        Iterator iterator = hierarchicalTypes.iterator();
         assertEquals(8, hierarchicalTypes.size());
         assertEquals("org.apache.dubbo.metadata.tools.TestServiceImpl", iterator.next().toString());
         assertEquals("org.apache.dubbo.metadata.tools.GenericTestService", iterator.next().toString());
@@ -217,7 +217,7 @@ public class TypeUtilsTest extends AbstractAnnotationProcessingTest {
         assertEquals("java.io.Serializable", iterator.next().toString());
         assertEquals("java.util.EventListener", iterator.next().toString());
 
-        hierarchicalTypes = getHierarchicalTypes(testType.asType());
+        hierarchicalTypes = getHierarchicalTypes(testType);
         iterator = hierarchicalTypes.iterator();
         assertEquals(8, hierarchicalTypes.size());
         assertEquals("org.apache.dubbo.metadata.tools.TestServiceImpl", iterator.next().toString());
