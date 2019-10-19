@@ -89,6 +89,18 @@ public class AbstractInterfaceConfigTest {
     }
 
     @Test
+    public void testCheckRegistry3() {
+        System.setProperty("dubbo.registry.address", "zookeeper://127.0.0.1:2181");
+        try {
+            InterfaceConfig interfaceConfig = new InterfaceConfig();
+            interfaceConfig.checkRegistry();
+            Assertions.assertEquals(1, interfaceConfig.getRegistries().size());
+        } finally {
+            System.clearProperty("dubbo.registry.address");
+        }
+    }
+
+    @Test
     public void checkApplication1() {
         try {
             ConfigUtils.setProperties(null);
