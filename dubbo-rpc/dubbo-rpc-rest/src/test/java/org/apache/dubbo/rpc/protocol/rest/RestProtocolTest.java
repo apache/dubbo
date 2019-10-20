@@ -273,10 +273,10 @@ public class RestProtocolTest {
 
         ProtocolConfig protocolConfig = new ProtocolConfig();
         protocolConfig.setName("rest");
+        protocolConfig.setPort(5343);
 
         RegistryConfig registry = new RegistryConfig();
         registry.setAddress("N/A");
-        registry.setProtocol("rest");
 
         ProviderConfig provider = new ProviderConfig();
         provider.setExport(true);
@@ -296,7 +296,7 @@ public class RestProtocolTest {
 
         DemoServiceImpl server = service.getRef();
 
-        URL url = URL.valueOf("rest://127.0.0.1:80/rest/say?interface=org.apache.dubbo.rpc.protocol.rest.DemoService");
+        URL url = URL.valueOf("rest://127.0.0.1:5343/rest/say?interface=org.apache.dubbo.rpc.protocol.rest.DemoService");
 
         Invoker<DemoService> invoker = protocol.refer(DemoService.class, url);
         Assertions.assertFalse(server.isCalled());
