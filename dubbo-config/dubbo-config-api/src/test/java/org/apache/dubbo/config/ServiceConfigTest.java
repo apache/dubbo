@@ -29,6 +29,7 @@ import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.service.GenericService;
 
 import org.junit.jupiter.api.AfterEach;
@@ -64,6 +65,7 @@ import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.withSettings;
 
@@ -254,5 +256,33 @@ public class ServiceConfigTest {
             ServiceConfig service = new ServiceConfig();
             service.setMock(true);
         });
+    }
+
+    @Test
+    public void testProviderGroup() throws Exception {
+        String group = "test";
+        ProtocolConfig protocolConfig = new ProtocolConfig();
+        protocolConfig.setName("mockprotocol2");
+        ProviderConfig provider = new ProviderConfig();
+        provider.setExport(true);
+        provider.setProtocol(protocolConfig);
+        provider.setGroup(group);
+        service.setProvider(provider);
+        service.export();
+        assertNotNull(ApplicationModel.getProviderModel(URL.buildKey(service.getPath(), group, null)));
+    }
+
+    @Test
+    public void testProviderVersion() throws Exception {
+        String version = "1.0.0";
+        ProtocolConfig protocolConfig = new ProtocolConfig();
+        protocolConfig.setName("mockprotocol2");
+        ProviderConfig provider = new ProviderConfig();
+        provider.setExport(true);
+        provider.setProtocol(protocolConfig);
+        provider.setVersion(version);
+        service.setProvider(provider);
+        service.export();
+        assertNotNull(ApplicationModel.getProviderModel(URL.buildKey(service.getPath(), null, version)));
     }
 }

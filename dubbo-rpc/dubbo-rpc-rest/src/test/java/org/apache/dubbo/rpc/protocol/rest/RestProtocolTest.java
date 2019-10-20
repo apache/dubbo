@@ -19,6 +19,11 @@ package org.apache.dubbo.rpc.protocol.rest;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.ProtocolConfig;
+import org.apache.dubbo.config.ProviderConfig;
+import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -244,7 +249,7 @@ public class RestProtocolTest {
 
     @Test
     public void testRemoteApplicationName() {
-        URL url = URL.valueOf("rest://127.0.0.1:5342/rest/say?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.DemoService").addParameter("application","consumer");
+        URL url = URL.valueOf("rest://127.0.0.1:5342/rest/say?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.DemoService").addParameter("application", "consumer");
         DemoServiceImpl server = new DemoServiceImpl();
         ProviderModel providerModel = new ProviderModel(url.getPathKey(), server, DemoService.class);
         ApplicationModel.initProviderModel(url.getPathKey(), providerModel);
@@ -257,5 +262,49 @@ public class RestProtocolTest {
         Assertions.assertEquals("consumer", result);
         invoker.destroy();
         exporter.unexport();
+    }
+
+    @Test
+    public void testProviderConfig() {
+        String group = "test";
+        String version = "1.0.0";
+
+        ApplicationConfig app = new ApplicationConfig("app");
+
+        ProtocolConfig protocolConfig = new ProtocolConfig();
+        protocolConfig.setName("rest");
+
+        RegistryConfig registry = new RegistryConfig();
+        registry.setAddress("N/A");
+        registry.setProtocol("rest");
+
+        ProviderConfig provider = new ProviderConfig();
+        provider.setExport(true);
+        provider.setGroup(group);
+        provider.setVersion(version);
+        provider.setProtocol(protocolConfig);
+
+        ServiceConfig<DemoServiceImpl> service = new ServiceConfig<DemoServiceImpl>();
+        service.setApplication(app);
+        service.setInterface(DemoService.class);
+        service.setPath("rest/say");
+        service.setProvider(provider);
+        service.setRegistry(registry);
+        service.setRef(new DemoServiceImpl());
+
+        service.export();
+
+        DemoServiceImpl server = service.getRef();
+
+        URL url = URL.valueOf("rest://127.0.0.1:80/rest/say?interface=org.apache.dubbo.rpc.protocol.rest.DemoService");
+
+        Invoker<DemoService> invoker = protocol.refer(DemoService.class, url);
+        Assertions.assertFalse(server.isCalled());
+
+        DemoService client = proxy.getProxy(invoker);
+        String result = client.sayHello("haha");
+        Assertions.assertTrue(server.isCalled());
+        Assertions.assertEquals("Hello, haha", result);
+        invoker.destroy();
     }
 }
