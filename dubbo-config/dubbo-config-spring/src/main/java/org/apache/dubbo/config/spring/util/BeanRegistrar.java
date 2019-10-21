@@ -19,6 +19,10 @@ package org.apache.dubbo.config.spring.util;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.RootBeanDefinition;
+import org.springframework.core.AliasRegistry;
+
+import static org.springframework.util.ObjectUtils.containsElement;
+import static org.springframework.util.StringUtils.hasText;
 
 /**
  * Bean Registrar
@@ -46,4 +50,15 @@ public class BeanRegistrar {
 
     }
 
+    /**
+     * Detect the alias is present or not in the given bean name from {@link AliasRegistry}
+     *
+     * @param registry {@link AliasRegistry}
+     * @param beanName the bean name
+     * @param alias    alias to test
+     * @return if present, return <code>true</code>, or <code>false</code>
+     */
+    public static boolean hasAlias(AliasRegistry registry, String beanName, String alias) {
+        return hasText(beanName) && hasText(alias) && containsElement(registry.getAliases(beanName), alias);
+    }
 }

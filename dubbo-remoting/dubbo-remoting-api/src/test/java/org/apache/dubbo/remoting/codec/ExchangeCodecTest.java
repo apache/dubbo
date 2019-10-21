@@ -402,7 +402,6 @@ public class ExchangeCodecTest extends TelnetCodecTest {
 //        Assertions.assertEquals(response.getProtocolVersion(), obj.getVersion());
     }
 
-    // http://code.alibabatech.com/jira/browse/DUBBO-392
     @Test
     public void testMessageLengthGreaterThanMessageActualLength() throws Exception {
         Channel channel = getCliendSideChannel(url);
