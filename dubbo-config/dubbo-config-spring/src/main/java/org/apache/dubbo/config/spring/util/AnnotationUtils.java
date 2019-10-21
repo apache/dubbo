@@ -18,6 +18,7 @@ package org.apache.dubbo.config.spring.util;
 
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.annotation.Service;
+
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.PropertyResolver;
@@ -25,16 +26,8 @@ import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
 import java.lang.annotation.Annotation;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Method;
-import java.util.Collections;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
 import static java.lang.String.valueOf;
@@ -42,7 +35,6 @@ import static java.util.Collections.emptyMap;
 import static java.util.Collections.unmodifiableMap;
 import static org.springframework.core.annotation.AnnotatedElementUtils.getMergedAnnotation;
 import static org.springframework.core.annotation.AnnotationAttributes.fromMap;
-import static org.springframework.core.annotation.AnnotationUtils.findAnnotation;
 import static org.springframework.core.annotation.AnnotationUtils.getAnnotationAttributes;
 import static org.springframework.core.annotation.AnnotationUtils.getDefaultValue;
 import static org.springframework.util.ClassUtils.getAllInterfacesForClass;
@@ -184,123 +176,6 @@ public class AnnotationUtils {
         }
 
         return interfaceName;
-
-    }
-
-
-    // Cloned from https://github.com/alibaba/spring-context-support/blob/1.0.2/src/main/java/com/alibaba/spring/util/AnnotationUtils.java
-
-    /**
-     * Is specified {@link Annotation} present on {@link Method}'s declaring class or parameters or itself.
-     *
-     * @param method          {@link Method}
-     * @param annotationClass {@link Annotation} type
-     * @param <A>             {@link Annotation} type
-     * @return If present , return <code>true</code> , or <code>false</code>
-     * @since 2.6.6
-     */
-    public static <A extends Annotation> boolean isPresent(Method method, Class<A> annotationClass) {
-
-        Map<ElementType, List<A>> annotationsMap = findAnnotations(method, annotationClass);
-
-        return !annotationsMap.isEmpty();
-
-    }
-
-    /**
-     * Find specified {@link Annotation} type maps from {@link Method}
-     *
-     * @param method          {@link Method}
-     * @param annotationClass {@link Annotation} type
-     * @param <A>             {@link Annotation} type
-     * @return {@link Annotation} type maps , the {@link ElementType} as key ,
-     * the list of {@link Annotation} as value.
-     * If {@link Annotation} was annotated on {@link Method}'s parameters{@link ElementType#PARAMETER} ,
-     * the associated {@link Annotation} list may contain multiple elements.
-     * @since 2.6.6
-     */
-    public static <A extends Annotation> Map<ElementType, List<A>> findAnnotations(Method method,
-                                                                                   Class<A> annotationClass) {
-
-        Retention retention = annotationClass.getAnnotation(Retention.class);
-
-        RetentionPolicy retentionPolicy = retention.value();
-
-        if (!RetentionPolicy.RUNTIME.equals(retentionPolicy)) {
-            return Collections.emptyMap();
-        }
-
-        Map<ElementType, List<A>> annotationsMap = new LinkedHashMap<ElementType, List<A>>();
-
-        Target target = annotationClass.getAnnotation(Target.class);
-
-        ElementType[] elementTypes = target.value();
-
-
-        for (ElementType elementType : elementTypes) {
-
-            List<A> annotationsList = new LinkedList<A>();
-
-            switch (elementType) {
-
-                case PARAMETER:
-
-                    Annotation[][] parameterAnnotations = method.getParameterAnnotations();
-
-                    for (Annotation[] annotations : parameterAnnotations) {
-
-                        for (Annotation annotation : annotations) {
-
-                            if (annotationClass.equals(annotation.annotationType())) {
-
-                                annotationsList.add((A) annotation);
-
-                            }
-
-                        }
-
-                    }
-
-                    break;
-
-                case METHOD:
-
-                    A annotation = findAnnotation(method, annotationClass);
-
-                    if (annotation != null) {
-
-                        annotationsList.add(annotation);
-
-                    }
-
-                    break;
-
-                case TYPE:
-
-                    Class<?> beanType = method.getDeclaringClass();
-
-                    A annotation2 = findAnnotation(beanType, annotationClass);
-
-                    if (annotation2 != null) {
-
-                        annotationsList.add(annotation2);
-
-                    }
-
-                    break;
-
-            }
-
-            if (!annotationsList.isEmpty()) {
-
-                annotationsMap.put(elementType, annotationsList);
-
-            }
-
-
-        }
-
-        return unmodifiableMap(annotationsMap);
 
     }
 

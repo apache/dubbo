@@ -32,7 +32,6 @@ import io.etcd.jetcd.launcher.EtcdClusterFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
@@ -44,6 +43,7 @@ import java.util.concurrent.CompletableFuture;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
+import static org.apache.dubbo.metadata.support.Constants.SYNC_REPORT_KEY;
 
 /**
  * Unit test for etcd metadata report
@@ -63,7 +63,7 @@ public class EtcdMetadataReportTest {
         etcdCluster.start();
         etcdClientForTest = Client.builder().endpoints(etcdCluster.getClientEndpoints()).build();
         List<URI> clientEndPoints = etcdCluster.getClientEndpoints();
-        this.registryUrl = URL.valueOf("etcd://" + clientEndPoints.get(0).getHost() + ":" + clientEndPoints.get(0).getPort());
+        this.registryUrl = URL.valueOf("etcd://" + clientEndPoints.get(0).getHost() + ":" + clientEndPoints.get(0).getPort()).addParameter(SYNC_REPORT_KEY, true);
         etcdMetadataReportFactory = new EtcdMetadataReportFactory();
         this.etcdMetadataReport = (EtcdMetadataReport) etcdMetadataReportFactory.createMetadataReport(registryUrl);
     }
@@ -74,7 +74,6 @@ public class EtcdMetadataReportTest {
     }
 
     @Test
-    @Disabled("Disabled because https://github.com/apache/dubbo/issues/4185")
     public void testStoreProvider() throws Exception {
         String version = "1.0.0";
         String group = null;
@@ -120,7 +119,6 @@ public class EtcdMetadataReportTest {
                 ServiceDefinitionBuilder.buildFullDefinition(interfaceClass, url.getParameters());
 
         etcdMetadataReport.storeProviderMetadata(providerMetadataIdentifier, fullServiceDefinition);
-        Thread.sleep(1000);
         return providerMetadataIdentifier;
     }
 
@@ -131,7 +129,6 @@ public class EtcdMetadataReportTest {
         Map<String, String> tmp = new HashMap<>();
         tmp.put("paramConsumerTest", "etcdConsumer");
         etcdMetadataReport.storeConsumerMetadata(consumerIdentifier, tmp);
-        Thread.sleep(1000);
         return consumerIdentifier;
     }
 }
