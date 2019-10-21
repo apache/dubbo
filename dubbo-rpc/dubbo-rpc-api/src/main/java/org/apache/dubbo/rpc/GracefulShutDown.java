@@ -20,7 +20,7 @@ package org.apache.dubbo.rpc;
 import org.apache.dubbo.common.extension.SPI;
 
 /**
- * this interface is used to enable grace shutdown
+ * this interface is used to enable graceful shutdown
  * any class implements this interface should be a spring bean or add spi extension config
  * if you use spring ,ShutdownHookListener will use it and flush resources in ContextClosedEvent
  * Without spring,please add a file under META-INFO/dubbo/internal which named org.apache.dubbo.rpc.GracefulShutDown
