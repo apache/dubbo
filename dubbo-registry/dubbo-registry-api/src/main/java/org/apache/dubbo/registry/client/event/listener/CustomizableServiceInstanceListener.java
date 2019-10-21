@@ -16,15 +16,13 @@
  */
 package org.apache.dubbo.registry.client.event.listener;
 
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.event.EventListener;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
 import org.apache.dubbo.registry.client.event.ServiceInstancePreRegisteredEvent;
 
 import java.util.ServiceLoader;
-
-import static org.apache.dubbo.common.utils.DubboServiceLoader.load;
-
 
 /**
  * An {@link EventListener event listener} to customize {@link ServiceInstance the service instance} by the instances of
@@ -39,7 +37,9 @@ public class CustomizableServiceInstanceListener implements EventListener<Servic
 
     @Override
     public void onEvent(ServiceInstancePreRegisteredEvent event) {
-        load(ServiceInstanceCustomizer.class).forEach(customizer -> {
+        ExtensionLoader<ServiceInstanceCustomizer> loader =
+                ExtensionLoader.getExtensionLoader(ServiceInstanceCustomizer.class);
+        loader.getSupportedExtensionInstances().forEach(customizer -> {
             // customizes
             customizer.customize(event.getServiceInstance());
         });

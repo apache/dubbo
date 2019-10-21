@@ -30,14 +30,14 @@ import java.util.Set;
  * ServiceModel and ServiceMetadata are to some extend duplicated with each other.
  * We should merge them in the future.
  */
-public class ServiceModel {
+public class ServiceDescriptor {
     private final String serviceName;
     private final Class<?> serviceInterfaceClass;
     // to accelarate search
-    private final Map<String, Set<MethodModel>> methods = new HashMap<>();
-    private final Map<String, Map<String, MethodModel>> descToMethods = new HashMap<>();
+    private final Map<String, Set<MethodDescriptor>> methods = new HashMap<>();
+    private final Map<String, Map<String, MethodDescriptor>> descToMethods = new HashMap<>();
 
-    public ServiceModel (Class<?> interfaceClass) {
+    public ServiceDescriptor(Class<?> interfaceClass) {
         this.serviceInterfaceClass = interfaceClass;
         this.serviceName = interfaceClass.getName();
         initMethods();
@@ -50,12 +50,12 @@ public class ServiceModel {
         for (Method method : methodsToExport) {
             method.setAccessible(true);
 
-            Set<MethodModel> methodModels = methods.computeIfAbsent(method.getName(), (k) ->new HashSet<>(1));
-            methodModels.add(new MethodModel(method));
+            Set<MethodDescriptor> methodModels = methods.computeIfAbsent(method.getName(), (k) -> new HashSet<>(1));
+            methodModels.add(new MethodDescriptor(method));
         }
 
         methods.forEach((methodName, methodList) -> {
-            Map<String, MethodModel> descMap = descToMethods.computeIfAbsent(methodName, k -> new HashMap<>());
+            Map<String, MethodDescriptor> descMap = descToMethods.computeIfAbsent(methodName, k -> new HashMap<>());
             methodList.forEach(methodModel -> descMap.put(methodModel.getParamDesc(), methodModel));
 
 //            Map<Class<?>[], MethodModel> typesMap = typeToMethods.computeIfAbsent(methodName, k -> new HashMap<>());
@@ -71,24 +71,24 @@ public class ServiceModel {
         return serviceInterfaceClass;
     }
 
-    public Set<MethodModel> getAllMethods () {
-        Set<MethodModel> methodModels = new HashSet<>();
+    public Set<MethodDescriptor> getAllMethods() {
+        Set<MethodDescriptor> methodModels = new HashSet<>();
         methods.forEach((k, v) -> methodModels.addAll(v));
         return methodModels;
     }
 
-    public Optional<MethodModel> getMethod (String methodName, String params) {
-        Map<String, MethodModel> methods = descToMethods.get(methodName);
+    public Optional<MethodDescriptor> getMethod(String methodName, String params) {
+        Map<String, MethodDescriptor> methods = descToMethods.get(methodName);
         if (CollectionUtils.isNotEmptyMap(methods)) {
             return Optional.ofNullable(methods.get(params));
         }
         return Optional.empty();
     }
 
-    public Optional<MethodModel> getMethod (String methodName, Class<?>[] paramTypes) {
-        Set<MethodModel> methodModels = methods.get(methodName);
+    public Optional<MethodDescriptor> getMethod(String methodName, Class<?>[] paramTypes) {
+        Set<MethodDescriptor> methodModels = methods.get(methodName);
         if (CollectionUtils.isNotEmpty(methodModels)) {
-            for (MethodModel methodModel : methodModels) {
+            for (MethodDescriptor methodModel : methodModels) {
                 if (Arrays.equals(paramTypes, methodModel.getParameterClasses())) {
                     return Optional.of(methodModel);
                 }
@@ -97,7 +97,7 @@ public class ServiceModel {
         return Optional.empty();
     }
 
-    public Set<MethodModel> getMethods (String methodName) {
+    public Set<MethodDescriptor> getMethods(String methodName) {
         return methods.get(methodName);
     }
 

@@ -85,7 +85,7 @@ public abstract class AbstractRegistry implements Registry {
     private final boolean syncSaveFile;
     private final AtomicLong lastCacheChanged = new AtomicLong();
     private final AtomicInteger savePropertiesRetryTimes = new AtomicInteger();
-    private final ConcurrentMap<URL, RegisterStatedURL> registered = new ConcurrentHashMap<>();
+    private final Set<URL> registered = new ConcurrentHashSet<>();
     private final ConcurrentMap<URL, Set<NotifyListener>> subscribed = new ConcurrentHashMap<>();
     private final ConcurrentMap<URL, Map<String, List<URL>>> notified = new ConcurrentHashMap<>();
     private URL registryUrl;
@@ -135,17 +135,7 @@ public abstract class AbstractRegistry implements Registry {
     }
 
     public Set<URL> getRegistered() {
-        Set<URL> registeredUrls = new HashSet<>();
-        registered.forEach((_k, statedURL) -> {
-            if (statedURL.isRegistered()) {
-                registeredUrls.add(statedURL.getProviderUrl());
-            }
-        });
-        return registeredUrls;
-    }
-
-    public Map<URL, RegisterStatedURL> getRegisterStatedUrls() {
-        return Collections.unmodifiableMap(registered);
+        return Collections.unmodifiableSet(registered);
     }
 
     public Map<URL, Set<NotifyListener>> getSubscribed() {
@@ -293,7 +283,7 @@ public abstract class AbstractRegistry implements Registry {
         if (logger.isInfoEnabled()) {
             logger.info("Register: " + url);
         }
-        registered.putIfAbsent(url, new RegisterStatedURL(url, true));
+        registered.add(url);
     }
 
     @Override
@@ -304,8 +294,7 @@ public abstract class AbstractRegistry implements Registry {
         if (logger.isInfoEnabled()) {
             logger.info("Unregister: " + url);
         }
-        RegisterStatedURL statedURL = registered.get(url);
-        statedURL.setRegistered(false);
+        registered.remove(url);
     }
 
     @Override
@@ -530,32 +519,6 @@ public abstract class AbstractRegistry implements Registry {
         @Override
         public void run() {
             doSaveProperties(version);
-        }
-    }
-
-    public static class RegisterStatedURL {
-        private volatile URL providerUrl;
-        private volatile boolean registered;
-
-        public RegisterStatedURL(URL providerUrl, boolean registered) {
-            this.providerUrl = providerUrl;
-            this.registered = registered;
-        }
-
-        public URL getProviderUrl() {
-            return providerUrl;
-        }
-
-        public void setProviderUrl(URL providerUrl) {
-            this.providerUrl = providerUrl;
-        }
-
-        public boolean isRegistered() {
-            return registered;
-        }
-
-        public void setRegistered(boolean registered) {
-            this.registered = registered;
         }
     }
 

@@ -21,21 +21,19 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Reference;
-import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.event.Event;
 import org.apache.dubbo.event.EventDispatcher;
-import org.apache.dubbo.rpc.model.ConsumerModel;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
-import org.apache.dubbo.rpc.model.ServiceModel;
 import org.apache.dubbo.rpc.service.GenericService;
+import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
@@ -111,19 +109,6 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         appendParametersComponents.forEach(component -> component.appendReferParameters(this));
     }
 
-    public ConsumerModel buildConsumerModel(Map<String, Object> attributes,
-                                            ServiceModel serviceModel,
-                                            ReferenceConfig<?> rc,
-                                            T proxy) {
-        return new ConsumerModel(serviceMetadata.getServiceKey(),
-                proxy,
-                serviceModel,
-                rc,
-                attributes,
-                serviceMetadata
-        );
-    }
-
     public boolean shouldCheck() {
         Boolean shouldCheck = isCheck();
         if (shouldCheck == null && getConsumer() != null) {
@@ -152,7 +137,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         if (consumer != null) {
             return;
         }
-        setConsumer(ConfigManager.getInstance().getDefaultConsumer().orElseGet(() -> {
+        setConsumer(ApplicationModel.getConfigManager().getDefaultConsumer().orElseGet(() -> {
             ConsumerConfig consumerConfig = new ConsumerConfig();
             consumerConfig.refresh();
             return consumerConfig;
@@ -192,12 +177,24 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         }
     }
 
+    public Class<?> getActualInterface() {
+        Class actualInterface = interfaceClass;
+        if (interfaceClass == GenericService.class) {
+            try {
+                actualInterface = Class.forName(interfaceName);
+            } catch (ClassNotFoundException e) {
+                // ignore
+            }
+        }
+        return actualInterface;
+    }
+
     public Class<?> getInterfaceClass() {
         if (interfaceClass != null) {
             return interfaceClass;
         }
-        if (isGeneric()
-                || (getConsumer() != null && getConsumer().isGeneric())) {
+        if (ProtocolUtils.isGeneric(getGeneric())
+                || (getConsumer() != null && ProtocolUtils.isGeneric(getConsumer().getGeneric()))) {
             return GenericService.class;
         }
         try {

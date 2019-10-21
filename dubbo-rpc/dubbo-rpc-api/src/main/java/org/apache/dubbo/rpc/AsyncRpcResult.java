@@ -167,6 +167,10 @@ public class AsyncRpcResult implements Result {
 
     @Override
     public Result get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+        if (executor != null) {
+            ThreadlessExecutor threadlessExecutor = (ThreadlessExecutor) executor;
+            threadlessExecutor.waitAndDrain();
+        }
         return responseFuture.get(timeout, unit);
     }
 
@@ -181,7 +185,7 @@ public class AsyncRpcResult implements Result {
     }
 
     public Result whenCompleteWithContext(BiConsumer<Result, Throwable> fn) {
-        this.responseFuture.whenComplete((v, t) -> {
+        this.responseFuture = this.responseFuture.whenComplete((v, t) -> {
             beforeContext.accept(v, t);
             fn.accept(v, t);
             afterContext.accept(v, t);

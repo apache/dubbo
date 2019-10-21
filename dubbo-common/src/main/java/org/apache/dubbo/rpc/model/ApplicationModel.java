@@ -16,65 +16,39 @@
  */
 package org.apache.dubbo.rpc.model;
 
+import org.apache.dubbo.common.config.Environment;
+import org.apache.dubbo.common.context.FrameworkExt;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.context.ConfigManager;
 
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
+ * {@link ExtensionLoader}, {@code DubboBootstrap} and this class are at present designed to be
+ * singleton or static (by itself totally static or uses some static fields). So the instances
+ * returned from them are of process scope. If you want to support multiple dubbo servers in one
+ * single process, you may need to refactor those three classes.
+ *
  * Represent a application which is using Dubbo and store basic metadata info for using
  * during the processing of RPC invoking.
  * <p>
  * ApplicationModel includes many ProviderModel which is about published services
  * and many Consumer Model which is about subscribed services.
  * <p>
- * adjust project structure in order to fully utilize the methods introduced here.
+ *
  */
-@Deprecated
+
 public class ApplicationModel {
     protected static final Logger LOGGER = LoggerFactory.getLogger(ApplicationModel.class);
-
-    /**
-     * serviceKey -> exported service
-     * each service may has different group, version, path, instance and so on, but they point to the same {@link ServiceModel}
-     */
-    private static final ConcurrentMap<String, ProviderModel> PROVIDED_SERVICES = new ConcurrentHashMap<>();
-    /**
-     * serviceKey -> referred service
-     * each service may has different group, version, path, instance and so on, but they point to the same {@link ServiceModel}
-     */
-    private static final ConcurrentMap<String, ConsumerModel> CONSUMED_SERVICES = new ConcurrentHashMap<>();
-
-    /**
-     * The description of a unique service (interface definition in Dubbo)
-     */
-    private static final ConcurrentHashMap<String, ServiceModel> SERVICES = new ConcurrentHashMap<>();
-
-    private static String application;
+    public static final String NAME = "application";
 
     private static AtomicBoolean INIT_FLAG = new AtomicBoolean(false);
-
-    public static Collection<ConsumerModel> allConsumerModels() {
-        return CONSUMED_SERVICES.values();
-    }
-
-    public static Collection<ProviderModel> allProviderModels() {
-        return PROVIDED_SERVICES.values();
-    }
-
-    public static ProviderModel getProviderModel(String serviceKey) {
-        return PROVIDED_SERVICES.get(serviceKey);
-    }
-
-    public static ConsumerModel getConsumerModel(String serviceKey) {
-        return CONSUMED_SERVICES.get(serviceKey);
-    }
 
     public static void init() {
         if (INIT_FLAG.compareAndSet(false, true)) {
@@ -86,64 +60,110 @@ public class ApplicationModel {
         }
     }
 
-    public static void initConsumerModel(String serviceName, ConsumerModel consumerModel) {
-        if (CONSUMED_SERVICES.putIfAbsent(serviceName, consumerModel) != null) {
-            LOGGER.warn("Already register the same consumer:" + serviceName);
-        }
+    public static Collection<ConsumerModel> allConsumerModels() {
+        return getServiceRepository().getReferredServices();
     }
 
-    public static void initProviderModel(String serviceName, ProviderModel providerModel) {
-        if (PROVIDED_SERVICES.putIfAbsent(serviceName, providerModel) != null) {
-            LOGGER.warn("Already register the same:" + serviceName);
-        }
+    public static Collection<ProviderModel> allProviderModels() {
+        return getServiceRepository().getExportedServices();
     }
 
-    public static ServiceModel registerServiceModel(Class<?> interfaceClass) {
-        return SERVICES.computeIfAbsent(interfaceClass.getName(), (k) -> new ServiceModel(interfaceClass));
+    public static ProviderModel getProviderModel(String serviceKey) {
+        return getServiceRepository().lookupExportedService(serviceKey);
+    }
+
+    public static ConsumerModel getConsumerModel(String serviceKey) {
+        return getServiceRepository().lookupReferredService(serviceKey);
+    }
+
+//    public static void initProviderModel(String serviceName, ProviderModel providerModel) {
+//        if (PROVIDED_SERVICES.putIfAbsent(serviceName, providerModel) != null) {
+//            LOGGER.warn("Already register the same:" + serviceName);
+//        }
+//    }
+
+//    public static ServiceDescriptor registerServiceModel(Class<?> interfaceClass) {
+//        return SERVICES.computeIfAbsent(interfaceClass.getName(), (k) -> new ServiceDescriptor(interfaceClass));
+//    }
+
+//    /**
+//     * See {@link #registerServiceModel(Class)}
+//     *
+//     * we assume:
+//     * 1. services with different interface are not allowed to have the same path.
+//     * 2. services with the same interface but different group/version can share the same path.
+//     * 3. path's default value is the name of the interface.
+//     * @param path
+//     * @param interfaceClass
+//     * @return
+//     */
+//    public static ServiceDescriptor registerServiceModel(String path, Class<?> interfaceClass) {
+//        ServiceDescriptor serviceModel = registerServiceModel(interfaceClass);
+//        // register path
+//        if (!interfaceClass.getName().equals(path)) {
+//            SERVICES.putIfAbsent(path, serviceModel);
+//        }
+//        return serviceModel;
+//    }
+
+    public static Optional<ServiceDescriptor> getServiceModel(String interfaceName) {
+        return Optional.ofNullable(getServiceRepository().lookupService(interfaceName));
+    }
+
+    public static Optional<ServiceDescriptor> getServiceModel(Class<?> interfaceClass) {
+        return Optional.ofNullable(getServiceRepository().lookupService(interfaceClass.getName()));
     }
 
     /**
-     * See {@link #registerServiceModel(Class)}
-     *
-     * we assume:
-     * 1. services with different interface are not allowed to have the same path.
-     * 2. services with the same interface but different group/version can share the same path.
-     * 3. path's default value is the name of the interface.
-     * @param path
-     * @param interfaceClass
-     * @return
-     */
-    public static ServiceModel registerServiceModel(String path, Class<?> interfaceClass) {
-        ServiceModel serviceModel = registerServiceModel(interfaceClass);
-        // register path
-        if (!interfaceClass.getName().equals(path)) {
-            SERVICES.putIfAbsent(path, serviceModel);
+     * instances
+     **/
+
+    private static final ExtensionLoader<FrameworkExt> loader = ExtensionLoader.getExtensionLoader(FrameworkExt.class);
+
+    public static void initApplication() {
+        Set<FrameworkExt> exts = ExtensionLoader.getExtensionLoader(FrameworkExt.class).getSupportedExtensionInstances();
+        for (FrameworkExt ext : exts) {
+            ext.initialize();
         }
-        return serviceModel;
     }
 
-    public static Optional<ServiceModel> getServiceModel (String interfaceName) {
-        return Optional.ofNullable(SERVICES.get(interfaceName));
+    public static Environment getEnvironment() {
+        return (Environment) loader.getExtension(Environment.NAME);
     }
 
-    public static Optional<ServiceModel> getServiceModel (Class<?> interfaceClass) {
-        return Optional.ofNullable(SERVICES.get(interfaceClass.getName()));
+    public static ConfigManager getConfigManager() {
+        return (ConfigManager) loader.getExtension(ConfigManager.NAME);
     }
 
+    public static ServiceRepository getServiceRepository() {
+        return (ServiceRepository) loader.getExtension(ServiceRepository.NAME);
+    }
+
+    public static ApplicationConfig getApplicationConfig() {
+        return getConfigManager().getApplicationOrElseThrow();
+    }
+
+    public static String getName() {
+        return getApplicationConfig().getName();
+    }
+
+    @Deprecated
+    private static String application;
+
+    @Deprecated
     public static String getApplication() {
-        return application;
+        return application == null ? getName() : application;
     }
 
+    @Deprecated
     public static void setApplication(String application) {
         ApplicationModel.application = application;
     }
 
-    /**
-     * For unit test
-     */
+    // only for unit test
     public static void reset() {
-        PROVIDED_SERVICES.clear();
-        CONSUMED_SERVICES.clear();
+        getServiceRepository().destroy();
+        getConfigManager().destroy();
+        getEnvironment().destroy();
     }
-
 }

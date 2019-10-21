@@ -33,7 +33,7 @@ public class DubboInterfaceConsumerBootstrap {
         interfaceRegistry.setId("interfaceRegistry");
         interfaceRegistry.setAddress("zookeeper://127.0.0.1:2181");
 
-        DubboBootstrap bootstrap = new DubboBootstrap()
+        DubboBootstrap bootstrap = DubboBootstrap.getInstance()
                 .application("dubbo-consumer-demo")
                 // Zookeeper
                 .registry(interfaceRegistry)

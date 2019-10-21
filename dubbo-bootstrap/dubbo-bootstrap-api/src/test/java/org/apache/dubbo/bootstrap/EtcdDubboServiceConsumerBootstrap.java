@@ -30,7 +30,7 @@ public class EtcdDubboServiceConsumerBootstrap {
 
     public static void main(String[] args) throws Exception {
 
-        DubboBootstrap bootstrap = new DubboBootstrap()
+        DubboBootstrap bootstrap = DubboBootstrap.getInstance()
                 .application("dubbo-consumer-demo")
                 // Zookeeper
                 .protocol(builder -> builder.port(20887).name("dubbo"))

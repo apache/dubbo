@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.model;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.config.ServiceConfig;
 
 import java.lang.reflect.Method;
@@ -28,17 +29,18 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * ProviderModel which is about published services
+ * ProviderModel is about published services
  */
 public class ProviderModel {
     private final String serviceKey;
     private final Object serviceInstance;
-    private final ServiceModel serviceModel;
+    private final ServiceDescriptor serviceModel;
     private final ServiceConfig<?> serviceConfig;
+    private final List<RegisterStatedURL> urls;
 
     public ProviderModel(String serviceKey,
                          Object serviceInstance,
-                         ServiceModel serviceModel,
+                         ServiceDescriptor serviceModel,
                          ServiceConfig<?> serviceConfig) {
         if (null == serviceInstance) {
             throw new IllegalArgumentException("Service[" + serviceKey + "]Target is NULL.");
@@ -48,6 +50,7 @@ public class ProviderModel {
         this.serviceInstance = serviceInstance;
         this.serviceModel = serviceModel;
         this.serviceConfig = serviceConfig;
+        this.urls = new ArrayList<>(1);
     }
 
     public String getServiceKey() {
@@ -62,16 +65,62 @@ public class ProviderModel {
         return serviceInstance;
     }
 
-    public Set<MethodModel> getAllMethods() {
+    public Set<MethodDescriptor> getAllMethods() {
         return serviceModel.getAllMethods();
     }
 
-    public ServiceModel getServiceModel() {
+    public ServiceDescriptor getServiceModel() {
         return serviceModel;
     }
 
     public ServiceConfig getServiceConfig() {
         return serviceConfig;
+    }
+
+    public List<RegisterStatedURL> getStatedUrl() {
+        return urls;
+    }
+
+    public void addStatedUrl(RegisterStatedURL url) {
+        this.urls.add(url);
+    }
+
+    public static class RegisterStatedURL {
+        private volatile URL registryUrl;
+        private volatile URL providerUrl;
+        private volatile boolean registered;
+
+        public RegisterStatedURL(URL providerUrl,
+                                 URL registryUrl,
+                                 boolean registered) {
+            this.providerUrl = providerUrl;
+            this.registered = registered;
+            this.registryUrl = registryUrl;
+        }
+
+        public URL getProviderUrl() {
+            return providerUrl;
+        }
+
+        public void setProviderUrl(URL providerUrl) {
+            this.providerUrl = providerUrl;
+        }
+
+        public boolean isRegistered() {
+            return registered;
+        }
+
+        public void setRegistered(boolean registered) {
+            this.registered = registered;
+        }
+
+        public URL getRegistryUrl() {
+            return registryUrl;
+        }
+
+        public void setRegistryUrl(URL registryUrl) {
+            this.registryUrl = registryUrl;
+        }
     }
 
     /* *************** Start, metadata compatible **************** */
@@ -81,7 +130,7 @@ public class ProviderModel {
 
     public ProviderModel(String serviceKey,
                          Object serviceInstance,
-                         ServiceModel serviceModel,
+                         ServiceDescriptor serviceModel,
                          ServiceConfig<?> serviceConfig,
                          ServiceMetadata serviceMetadata) {
         this(serviceKey, serviceInstance, serviceModel, serviceConfig);

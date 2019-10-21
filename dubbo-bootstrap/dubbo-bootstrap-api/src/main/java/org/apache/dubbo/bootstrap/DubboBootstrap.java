@@ -30,7 +30,6 @@ import org.apache.dubbo.common.bytecode.Wrapper;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.config.configcenter.wrapper.CompositeDynamicConfiguration;
-import org.apache.dubbo.common.context.Lifecycle;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.lang.ShutdownHookCallback;
 import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
@@ -73,7 +72,6 @@ import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
-import org.apache.dubbo.registry.client.event.ServiceDiscoveryInitializingEvent;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
@@ -81,7 +79,7 @@ import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.cluster.ConfiguratorFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ProviderModel;
+import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.model.ServiceRepository;
 import org.apache.dubbo.rpc.service.GenericService;
@@ -100,7 +98,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -120,7 +117,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.sort;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static org.apache.dubbo.common.config.ConfigurationUtils.parseProperties;
 import static org.apache.dubbo.common.config.configcenter.DynamicConfiguration.getDynamicConfiguration;
@@ -134,6 +130,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.METADATA_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.REGISTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
@@ -149,7 +146,6 @@ import static org.apache.dubbo.config.Constants.DUBBO_PORT_TO_BIND;
 import static org.apache.dubbo.config.Constants.DUBBO_PORT_TO_REGISTRY;
 import static org.apache.dubbo.config.Constants.MULTICAST;
 import static org.apache.dubbo.config.Constants.SCOPE_NONE;
-import static org.apache.dubbo.config.context.ConfigManager.getInstance;
 import static org.apache.dubbo.metadata.WritableMetadataService.getExtension;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.setMetadataStorageType;
 import static org.apache.dubbo.remoting.Constants.BIND_IP_KEY;
@@ -165,11 +161,16 @@ import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
 
 /**
+ * See {@link ApplicationModel} and {@link ExtensionLoader} for why this class is designed to be singleton.
+ *
  * The bootstrap class of Dubbo
+ *
+ * Get singleton instance by calling static method {@link #getInstance()}.
+ * Designed as singleton because some classes inside Dubbo, such as ExtensionLoader, are designed only for one instance per process.
  *
  * @since 2.7.4
  */
-public class DubboBootstrap extends GenericEventListener implements Lifecycle {
+public class DubboBootstrap extends GenericEventListener {
 
     public static final String DEFAULT_REGISTRY_ID = "REGISTRY#DEFAULT";
 
@@ -187,6 +188,8 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
+    private static DubboBootstrap instance;
+
     private final AtomicBoolean awaited = new AtomicBoolean(false);
 
     private final Lock lock = new ReentrantLock();
@@ -197,7 +200,9 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
 
     private final EventDispatcher eventDispatcher = EventDispatcher.getDefaultExtension();
 
-    private final ConfigManager configManager = getInstance();
+    private final ConfigManager configManager;
+
+    private final Environment environment;
 
     private ReferenceConfigCache cache;
 
@@ -211,17 +216,24 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
 
     private volatile MetadataServiceExporter metadataServiceExporter;
 
-    private volatile List<ServiceDiscovery> serviceDiscoveries = new LinkedList<>();
-
     private ConcurrentMap<ServiceConfig<?>, List<Exporter<?>>> exporters = new ConcurrentHashMap<>();
 
     private List<CompletableFuture<List<Exporter<?>>>> delayedExportingFutures = new ArrayList<>();
 
-    public static DubboBootstrap newInstance() {
-        return new DubboBootstrap();
+    /**
+     * See {@link ApplicationModel} and {@link ExtensionLoader} for why DubboBootstrap is designed to be singleton.
+     */
+    public static synchronized DubboBootstrap getInstance() {
+        if (instance == null) {
+            instance = new DubboBootstrap();
+        }
+        return instance;
     }
 
-    public DubboBootstrap() {
+    private DubboBootstrap() {
+        configManager = ApplicationModel.getConfigManager();
+        environment = ApplicationModel.getEnvironment();
+
         ShutdownHookCallbacks.INSTANCE.addCallback(new ShutdownHookCallback() {
             @Override
             public void callback() throws Throwable {
@@ -232,19 +244,6 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
 
     public void registerShutdownHook() {
         DubboShutdownHook.getDubboShutdownHook().register();
-    }
-
-    /**
-     * Store the {@link ServiceDiscovery} instances into {@link ServiceDiscoveryInitializingEvent}
-     *
-     * @param event {@link ServiceDiscoveryInitializingEvent}
-     * @see {@linkplan org.apache.dubbo.registry.client.EventPublishingServiceDiscovery}
-     */
-    public void onServiceDiscoveryInitializing(ServiceDiscoveryInitializingEvent event) {
-        executeMutually(() -> {
-            serviceDiscoveries.add(event.getSource());
-            sort(serviceDiscoveries);
-        });
     }
 
     private boolean isOnlyRegisterProvider() {
@@ -518,6 +517,9 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
     }
 
     public ReferenceConfigCache getCache() {
+        if (cache == null) {
+            cache = ReferenceConfigCache.getCache();
+        }
         return cache;
     }
 
@@ -527,11 +529,11 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
     public DubboBootstrap initialize() {
         if (!isInitialized()) {
 
+            ApplicationModel.initApplication();
+
             startConfigCenter();
 
             startMetadataReport();
-
-            loadServiceRepository();
 
             loadRemoteConfigs();
 
@@ -563,7 +565,7 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
                 configCenter.refresh();
                 compositeDynamicConfiguration.addConfiguration(prepareEnvironment(configCenter));
             }
-            Environment.getInstance().setDynamicConfiguration(compositeDynamicConfiguration);
+            environment.setDynamicConfiguration(compositeDynamicConfiguration);
         }
         configManager.refreshAll();
     }
@@ -588,17 +590,13 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
         MetadataReportInstance.init(metadataReportConfig.toUrl());
     }
 
-    private void loadServiceRepository() {
-        ServiceRepository.init(getApplication().getRepository());
-    }
-
     /**
      * For compatibility purpose, use registry as the default config center when the registry protocol is zookeeper and
      * there's no config center specified explicitly.
      */
     private void useRegistryAsConfigCenterIfNecessary() {
         // we use the loading status of DynamicConfiguration to decide whether ConfigCenter has been initiated.
-        if (Environment.getInstance().getDynamicConfiguration().isPresent()) {
+        if (environment.getDynamicConfiguration().isPresent()) {
             return;
         }
 
@@ -683,19 +681,18 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
         addEventListener(this);
     }
 
-    private Collection<ServiceDiscovery> getServiceDiscoveries() {
-        return serviceDiscoveries;
+    private List<ServiceDiscovery> getServiceDiscoveries() {
+        return Collections.unmodifiableList(
+                ExtensionLoader
+                        .getExtensionLoader(ServiceDiscovery.class)
+                        .getLoadedExtensionInstances()
+        );
     }
 
     /**
      * Start the bootstrap
      */
-    @Override
     public DubboBootstrap start() {
-//        if (!shouldStart()) {
-//            return this;
-//        }
-
         if (!isInitialized()) {
             initialize();
         }
@@ -725,21 +722,6 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
         }
         return this;
     }
-
-    /**
-     * Should Start current bootstrap
-     *
-     * @return If there is not any service discovery registry in the {@link ConfigManager#getRegistries()}, it will not
-     * start current bootstrap
-     */
-//    private boolean shouldStart() {
-//        return configManager.getRegistries()
-//                .stream()
-//                .map(RegistryConfig::getAddress)
-//                .map(URL::valueOf)
-//                .filter(UrlUtils::isServiceDiscoveryRegistryType)
-//                .count() > 0;
-//    }
 
     private boolean hasExportedServices() {
         return !metadataService.getExportedURLs().isEmpty();
@@ -771,7 +753,7 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
                 executeMutually(() -> {
                     while (!awaited.get()) {
                         if (logger.isInfoEnabled()) {
-                            logger.info(NAME + " is awaiting...");
+                            logger.info(NAME + " awaiting ...");
                         }
                         try {
                             condition.await();
@@ -787,32 +769,23 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
 
     public DubboBootstrap awaitFinish() throws Exception {
         CompletableFuture future = CompletableFuture.allOf(delayedExportingFutures.toArray(new CompletableFuture[0]));
+        logger.info(NAME + " waiting services exporting / referring ...");
         future.get();
+        logger.info("Service export / refer finished.");
         return this;
     }
 
-    /**
-     * Stop the bootstrap
-     */
-    @Override
-    public DubboBootstrap stop() {
-        if (isInitialized() && isStarted()) {
-            unregisterServiceInstance();
-            unexportMetadataService();
-            unexportServices();
-            started = false;
-        }
-        return this;
-    }
-
-    @Override
     public boolean isInitialized() {
         return initialized;
     }
 
-    @Override
     public boolean isStarted() {
         return started;
+    }
+
+    public DubboBootstrap stop() throws IllegalStateException {
+        destroy();
+        return this;
     }
     /* serve for builder apis, begin */
 
@@ -862,9 +835,9 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
                         );
             }
             try {
-                Environment.getInstance().setConfigCenterFirst(configCenter.isHighestPriority());
-                Environment.getInstance().updateExternalConfigurationMap(parseProperties(configContent));
-                Environment.getInstance().updateAppExternalConfigurationMap(parseProperties(appConfigContent));
+                environment.setConfigCenterFirst(configCenter.isHighestPriority());
+                environment.updateExternalConfigurationMap(parseProperties(configContent));
+                environment.updateAppExternalConfigurationMap(parseProperties(appConfigContent));
             } catch (IOException e) {
                 throw new IllegalStateException("Failed to parse configurations from Config Center.", e);
             }
@@ -897,6 +870,15 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
 
     private void exportServices() {
         configManager.getServices().forEach(sc -> {
+            // Make sure services with the same service key can be exported only once.
+            if (exporters.keySet().stream()
+                    .anyMatch(exportedService -> exportedService.getUniqueServiceName().equals(sc.getUniqueServiceName()))
+            ) {
+                logger.warn("Service " + sc.getUniqueServiceName() + "has been exported, it's not allowed to export " +
+                        "a service with the same group/interface:version more than once.");
+                return;
+            }
+
             CompletableFuture<List<Exporter<?>>> future = Helper.export(sc);
             if (future == null) {
                 return;
@@ -924,12 +906,30 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
         if (cache == null) {
             cache = ReferenceConfigCache.getCache();
         }
+
         configManager.getReferences().forEach((rc) -> {
+            // Make sure service with the same key only refer once.
+            if (cache.getReferredReferences().values().stream()
+                    .anyMatch(referredService -> referredService.getUniqueServiceName().equals(rc.getUniqueServiceName()))
+            ) {
+                logger.warn("Service " + rc.getUniqueServiceName() + "has been referred, it's not allowed to refer " +
+                        "one service with the same group/interface:version more than once.");
+                return;
+            }
+
             // check eager init or not.
             if (rc.shouldInit()) {
                 cache.get(rc);
             }
         });
+    }
+
+    private void unreferServices() {
+        if (cache == null) {
+            cache = ReferenceConfigCache.getCache();
+        }
+
+        cache.destroyAll();
     }
 
     private void registerServiceInstance() {
@@ -983,22 +983,20 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
     }
 
     public void destroy() {
+        started = false;
 
-        stop();
+        unregisterServiceInstance();
+        unexportMetadataService();
+        unexportServices();
+        unreferServices();
 
         destroyRegistries();
-
         destroyProtocols();
-
-        destroyReferences();
-
         destroyServiceDiscoveries();
 
         clear();
-
-        release();
-
         shutdown();
+        release();
     }
 
     private void destroyProtocols() {
@@ -1014,13 +1012,6 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
         AbstractRegistryFactory.destroyAll();
     }
 
-    private void destroyReferences() {
-        cache.destroyAll();
-        if (logger.isDebugEnabled()) {
-            logger.debug(NAME + "'s all ReferenceConfigs have been destroyed.");
-        }
-    }
-
     private void destroyServiceDiscoveries() {
         getServiceDiscoveries().forEach(serviceDiscovery -> {
             execute(() -> {
@@ -1034,20 +1025,17 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
 
     private void clear() {
         clearConfigs();
-        clearServiceDiscoveries();
+        clearApplicationModel();
+    }
+
+    private void clearApplicationModel() {
+
     }
 
     private void clearConfigs() {
         configManager.clear();
         if (logger.isDebugEnabled()) {
             logger.debug(NAME + "'s configs have been clear.");
-        }
-    }
-
-    private void clearServiceDiscoveries() {
-        serviceDiscoveries.clear();
-        if (logger.isDebugEnabled()) {
-            logger.debug(NAME + "'s serviceDiscoveries have been clear.");
         }
     }
 
@@ -1100,7 +1088,56 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
          */
         private static final ProxyFactory PROXY_FACTORY = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
 
-        public static void checkAndUpdateSubConfigs(ServiceConfig<?> sc) {
+        public static void unexport(Exporter<?> exporter) {
+            exporter.unexport();
+//            ApplicationModel.getServiceRepository().remove();
+        }
+
+        public static List<Exporter<?>> exportSync(ServiceConfig<?> sc) {
+            CompletableFuture<List<Exporter<?>>> future = export(sc);
+            if (future == null) {
+                return Collections.emptyList();
+            }
+            try {
+                return future.get();
+            } catch (Exception e) {
+                throw new RuntimeException("Error happened when waiting for delayed services to finish exporting.", e);
+            }
+        }
+
+        public static CompletableFuture<List<Exporter<?>>> export(ServiceConfig<?> sc) {
+            checkAndUpdateSubConfigs(sc);
+
+            ServiceMetadata serviceMetadata = sc.getServiceMetadata();
+            //init serviceMetadata
+            serviceMetadata.setVersion(sc.getVersion());
+            serviceMetadata.setGroup(sc.getGroup());
+            serviceMetadata.setDefaultGroup(sc.getGroup());
+            serviceMetadata.setServiceType(sc.getInterfaceClass());
+            serviceMetadata.setServiceInterfaceName(sc.getInterface());
+            serviceMetadata.setTarget(sc.getRef());
+
+            if (!sc.shouldExport()) {
+                return null;
+            }
+
+            CompletableFuture<List<Exporter<?>>> future = ScheduledCompletableFuture.schedule(
+                    DELAY_EXPORT_EXECUTOR,
+                    () -> doExport(sc),
+                    sc.getDelay() == null ? 0 : sc.getDelay(),
+                    TimeUnit.MILLISECONDS);
+
+            if (!sc.shouldDelay()) {
+                try {
+                    future.get();
+                } catch (Exception e) {
+                    throw new RuntimeException("Error happened when waiting for delayed services to finish exporting.", e);
+                }
+            }
+            return future;
+        }
+
+        private static void checkAndUpdateSubConfigs(ServiceConfig<?> sc) {
             // Use default configs defined explicitly on global scope
             sc.completeCompoundConfigs();
             sc.checkDefault();
@@ -1169,51 +1206,8 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
             sc.appendParameters();
         }
 
-        public static List<Exporter<?>> exportSync(ServiceConfig<?> sc) {
-            CompletableFuture<List<Exporter<?>>> future = export(sc);
-            if (future == null) {
-                return Collections.emptyList();
-            }
-            try {
-                return future.get();
-            } catch (Exception e) {
-                throw new RuntimeException("Error happened when waiting for delayed services to finish exporting.", e);
-            }
-        }
 
-        public static CompletableFuture<List<Exporter<?>>> export(ServiceConfig<?> sc) {
-            checkAndUpdateSubConfigs(sc);
-
-            ServiceMetadata serviceMetadata = sc.getServiceMetadata();
-            //init serviceMetadata
-            serviceMetadata.setVersion(sc.getVersion());
-            serviceMetadata.setGroup(sc.getGroup());
-            serviceMetadata.setDefaultGroup(sc.getGroup());
-            serviceMetadata.setServiceType(sc.getInterfaceClass());
-            serviceMetadata.setServiceInterfaceName(sc.getInterface());
-            serviceMetadata.setTarget(sc.getRef());
-
-            if (!sc.shouldExport()) {
-                return null;
-            }
-
-            CompletableFuture<List<Exporter<?>>> future = ScheduledCompletableFuture.schedule(
-                    DELAY_EXPORT_EXECUTOR,
-                    () -> doExport(sc),
-                    sc.getDelay(),
-                    TimeUnit.MILLISECONDS);
-
-            if (!sc.shouldDelay()) {
-                try {
-                    future.get();
-                } catch (Exception e) {
-                    throw new RuntimeException("Error happened when waiting for delayed services to finish exporting.", e);
-                }
-            }
-            return future;
-        }
-
-        protected static synchronized List<Exporter<?>> doExport(ServiceConfig<?> sc) {
+        protected static List<Exporter<?>> doExport(ServiceConfig<?> sc) {
             if (StringUtils.isEmpty(sc.getPath())) {
                 sc.setPath(sc.getInterface());
             }
@@ -1226,20 +1220,24 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
 
         @SuppressWarnings({"unchecked", "rawtypes"})
         private static List<Exporter<?>> doExportUrls(ServiceConfig<?> sc) {
+            ServiceRepository repository = ApplicationModel.getServiceRepository();
+            ServiceDescriptor serviceDescriptor = repository.registerService(sc.getInterfaceClass());
+            repository.registerProvider(
+                    sc.getUniqueServiceName(),
+                    sc.getRef(),
+                    serviceDescriptor,
+                    sc,
+                    sc.getServiceMetadata()
+            );
+
             List<URL> registryURLs = BootstrapUtils.loadRegistries(sc, true);
 
             List<Exporter<?>> exporters = new ArrayList<>();
             for (ProtocolConfig protocolConfig : sc.getProtocols()) {
-                String pathKey = URL.buildKey(sc.getContextPath(protocolConfig).map(p -> p + "/" + sc.getPath()).orElse(sc.getPath()), sc.getGroup(), sc.getVersion());
+                String pathKey = URL.buildKey(sc.getContextPath(protocolConfig)
+                        .map(p -> p + "/" + sc.getPath())
+                        .orElse(sc.getPath()), sc.getGroup(), sc.getVersion());
                 sc.getServiceMetadata().setServiceKey(pathKey);
-                ProviderModel providerModel = new ProviderModel(
-                        pathKey,
-                        sc.getRef(),
-                        ApplicationModel.registerServiceModel(sc.getInterfaceClass()),
-                        sc,
-                        sc.getServiceMetadata()
-                );
-                ApplicationModel.initProviderModel(pathKey, providerModel);
                 exporters.addAll(doExportUrlsFor1Protocol(sc, protocolConfig, registryURLs));
             }
             return exporters;
@@ -1373,9 +1371,6 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
                 }
                 // export to remote if the config is not local (export to local only when config is local)
                 if (!SCOPE_LOCAL.equalsIgnoreCase(scope)) {
-                    if (!isOnlyInJvm(sc) && logger.isInfoEnabled()) {
-                        logger.info("Export dubbo service " + interfaceClass.getName() + " to url " + url);
-                    }
                     if (CollectionUtils.isNotEmpty(registryURLs)) {
                         for (URL registryURL : registryURLs) {
                             //if protocol is only injvm ,not register
@@ -1388,7 +1383,11 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
                                 url = url.addParameterAndEncoded(MONITOR_KEY, monitorUrl.toFullString());
                             }
                             if (logger.isInfoEnabled()) {
-                                logger.info("Register dubbo service " + interfaceClass.getName() + " url " + url + " to registry " + registryURL);
+                                if (url.getParameter(REGISTER_KEY, true)) {
+                                    logger.info("Register dubbo service " + interfaceClass.getName() + " url " + url + " to registry " + registryURL);
+                                } else {
+                                    logger.info("Export dubbo service " + interfaceClass.getName() + " to url " + url);
+                                }
                             }
 
                             // For providers, this is used to enable custom proxy to generate invoker
@@ -1404,6 +1403,9 @@ public class DubboBootstrap extends GenericEventListener implements Lifecycle {
                             exporters.add(exporter);
                         }
                     } else {
+                        if (logger.isInfoEnabled()) {
+                            logger.info("Export dubbo service " + interfaceClass.getName() + " to url " + url);
+                        }
                         Invoker<?> invoker = PROXY_FACTORY.getInvoker(sc.getRef(), (Class) interfaceClass, url);
                         DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, sc);
 

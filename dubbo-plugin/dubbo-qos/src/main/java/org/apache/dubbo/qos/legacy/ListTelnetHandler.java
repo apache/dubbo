@@ -25,7 +25,7 @@ import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import org.apache.dubbo.remoting.telnet.support.Help;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
-import org.apache.dubbo.rpc.model.MethodModel;
+import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceRepository;
 
@@ -39,7 +39,7 @@ import java.util.List;
 @Help(parameter = "[-l] [service]", summary = "List services and methods.", detail = "List services and methods.")
 public class ListTelnetHandler implements TelnetHandler {
 
-    private ServiceRepository serviceRepository = ServiceRepository.getLoadedInstance();
+    private ServiceRepository serviceRepository = ApplicationModel.getServiceRepository();
 
     @Override
     public String telnet(Channel channel, String message) {
@@ -124,7 +124,7 @@ public class ListTelnetHandler implements TelnetHandler {
         for (ProviderModel provider : ApplicationModel.allProviderModels()) {
             if (isProviderMatched(service,provider)) {
                 buf.append(provider.getServiceKey()).append(" (as provider):\r\n");
-                for (MethodModel method : provider.getAllMethods()) {
+                for (MethodDescriptor method : provider.getAllMethods()) {
                     printMethod(method.getMethod(), buf, detail);
                 }
             }
@@ -135,7 +135,7 @@ public class ListTelnetHandler implements TelnetHandler {
         for (ConsumerModel consumer : ApplicationModel.allConsumerModels()) {
             if (isConsumerMatcher(service,consumer)) {
                 buf.append(consumer.getServiceKey()).append(" (as consumer):\r\n");
-                for (MethodModel method : consumer.getAllMethods()) {
+                for (MethodDescriptor method : consumer.getAllMethods()) {
                     printMethod(method.getMethod(), buf, detail);
                 }
             }

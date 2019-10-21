@@ -36,7 +36,7 @@ import java.util.Set;
 public class ConsumerModel {
     private final String serviceKey;
     private final Object proxyObject;
-    private final ServiceModel serviceModel;
+    private final ServiceDescriptor serviceModel;
     private final ReferenceConfig<?> referenceConfig;
 
     private final Map<String, AsyncMethodInfo> methodConfigs = new HashMap<>();
@@ -51,7 +51,7 @@ public class ConsumerModel {
      */
     public ConsumerModel(String serviceKey
             , Object proxyObject
-            , ServiceModel serviceModel
+            , ServiceDescriptor serviceModel
             , ReferenceConfig<?> referenceConfig
             , Map<String, Object> attributes) {
 
@@ -83,7 +83,7 @@ public class ConsumerModel {
      *
      * @return method model list
      */
-    public Set<MethodModel> getAllMethods() {
+    public Set<MethodDescriptor> getAllMethods() {
         return serviceModel.getAllMethods();
     }
 
@@ -99,7 +99,7 @@ public class ConsumerModel {
         return methodConfigs.get(methodName);
     }
 
-    public ServiceModel getServiceModel() {
+    public ServiceDescriptor getServiceModel() {
         return serviceModel;
     }
 
@@ -183,12 +183,13 @@ public class ConsumerModel {
 
     public ConsumerModel(String serviceKey
             , Object proxyObject
-            , ServiceModel serviceModel
+            , ServiceDescriptor serviceModel
             , ReferenceConfig<?> referenceConfig
             , Map<String, Object> attributes
             , ServiceMetadata metadata) {
 
         this(serviceKey, proxyObject, serviceModel, referenceConfig, attributes);
+        this.serviceMetadata = metadata;
 
         for (Method method : metadata.getServiceType().getMethods()) {
             methodModels.put(method, new ConsumerMethodModel(method, attributes));

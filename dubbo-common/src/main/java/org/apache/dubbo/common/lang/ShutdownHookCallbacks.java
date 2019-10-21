@@ -16,13 +16,14 @@
  */
 package org.apache.dubbo.common.lang;
 
+import org.apache.dubbo.common.extension.ExtensionLoader;
+
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
 import static java.util.Collections.sort;
 import static org.apache.dubbo.common.function.ThrowableAction.execute;
-import static org.apache.dubbo.common.utils.DubboServiceLoader.load;
 
 /**
  * The compose {@link ShutdownHookCallback} class to manipulate one and more {@link ShutdownHookCallback} instances
@@ -60,7 +61,9 @@ public class ShutdownHookCallbacks {
     }
 
     private void loadCallbacks() {
-        load(ShutdownHookCallback.class).forEach(this::addCallback);
+        ExtensionLoader<ShutdownHookCallback> loader =
+                ExtensionLoader.getExtensionLoader(ShutdownHookCallback.class);
+        loader.getSupportedExtensionInstances().forEach(this::addCallback);
     }
 
     public void callback() {

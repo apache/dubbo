@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.metadata;
 
-import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -50,7 +49,7 @@ public class DynamicConfigurationServiceNameMappingTest {
                 .getDefaultExtension()
                 .getDynamicConfiguration(null);
 
-        Environment.getInstance().setDynamicConfiguration(configuration);
+        ApplicationModel.getEnvironment().setDynamicConfiguration(configuration);
     }
 
     @Test

@@ -23,7 +23,8 @@ import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ProviderModel;
+import org.apache.dubbo.rpc.model.ServiceDescriptor;
+import org.apache.dubbo.rpc.model.ServiceRepository;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -44,6 +45,7 @@ public class ListTelnetHandlerTest {
 
     private static TelnetHandler list = new ListTelnetHandler();
     private Channel mockChannel;
+    private final ServiceRepository repository = ApplicationModel.getServiceRepository();
 
     @BeforeAll
     public static void setUp() {
@@ -65,11 +67,7 @@ public class ListTelnetHandlerTest {
         mockChannel = mock(Channel.class);
         given(mockChannel.getAttribute("telnet.service")).willReturn(DemoService.class.getName());
 
-        ProviderModel providerModel = new ProviderModel(DemoService.class.getName(),
-                new DemoServiceImpl(),
-                ApplicationModel.registerServiceModel(DemoService.class),
-                null);
-        ApplicationModel.initProviderModel(DemoService.class.getName(), providerModel);
+        registerProvider(DemoService.class.getName(), new DemoServiceImpl(), DemoService.class);
 
         String result = list.telnet(mockChannel, "-l DemoService");
         for (Method method : DemoService.class.getMethods()) {
@@ -82,11 +80,7 @@ public class ListTelnetHandlerTest {
         mockChannel = mock(Channel.class);
         given(mockChannel.getAttribute("telnet.service")).willReturn(DemoService.class.getName());
 
-        ProviderModel providerModel = new ProviderModel(DemoService.class.getName(),
-                new DemoServiceImpl(),
-                ApplicationModel.registerServiceModel(DemoService.class),
-                null);
-        ApplicationModel.initProviderModel(DemoService.class.getName(), providerModel);
+        registerProvider(DemoService.class.getName(), new DemoServiceImpl(), DemoService.class);
 
         String result = list.telnet(mockChannel, "DemoService");
         for (Method method : DemoService.class.getMethods()) {
@@ -99,11 +93,7 @@ public class ListTelnetHandlerTest {
         mockChannel = mock(Channel.class);
         given(mockChannel.getAttribute("telnet.service")).willReturn(null);
 
-        ProviderModel providerModel = new ProviderModel(DemoService.class.getName(),
-                new DemoServiceImpl(),
-                ApplicationModel.registerServiceModel(DemoService.class),
-                null);
-        ApplicationModel.initProviderModel(DemoService.class.getName(), providerModel);
+        registerProvider(DemoService.class.getName(), new DemoServiceImpl(), DemoService.class);
 
         String result = list.telnet(mockChannel, "");
         assertEquals("PROVIDER:\r\norg.apache.dubbo.qos.legacy.service.DemoService\r\n", result);
@@ -114,11 +104,7 @@ public class ListTelnetHandlerTest {
         mockChannel = mock(Channel.class);
         given(mockChannel.getAttribute("telnet.service")).willReturn(null);
 
-        ProviderModel providerModel = new ProviderModel(DemoService.class.getName(),
-                new DemoServiceImpl(),
-                ApplicationModel.registerServiceModel(DemoService.class),
-                null);
-        ApplicationModel.initProviderModel(DemoService.class.getName(), providerModel);
+        registerProvider(DemoService.class.getName(), new DemoServiceImpl(), DemoService.class);
 
         String result = list.telnet(mockChannel, "-l");
         assertEquals("PROVIDER:\r\norg.apache.dubbo.qos.legacy.service.DemoService ->  published: N\r\n", result);
@@ -129,11 +115,7 @@ public class ListTelnetHandlerTest {
         mockChannel = mock(Channel.class);
         given(mockChannel.getAttribute("telnet.service")).willReturn(DemoService.class.getName());
 
-        ProviderModel providerModel = new ProviderModel(DemoService.class.getName(),
-                new DemoServiceImpl(),
-                ApplicationModel.registerServiceModel(DemoService.class),
-                null);
-        ApplicationModel.initProviderModel(DemoService.class.getName(), providerModel);
+        registerProvider(DemoService.class.getName(), new DemoServiceImpl(), DemoService.class);
 
         String result = list.telnet(mockChannel, "");
         assertTrue(result.startsWith("Use default service org.apache.dubbo.qos.legacy.service.DemoService.\r\n" +
@@ -150,5 +132,16 @@ public class ListTelnetHandlerTest {
 
         String result = list.telnet(mockChannel, "xx");
         assertEquals("No such service: xx", result);
+    }
+
+    private void registerProvider(String key, Object impl, Class<?> interfaceClass) {
+        ServiceDescriptor serviceDescriptor = repository.registerService(interfaceClass);
+        repository.registerProvider(
+                key,
+                impl,
+                serviceDescriptor,
+                null,
+                null
+        );
     }
 }

@@ -61,6 +61,10 @@ public class ProtocolUtils {
                 || GENERIC_SERIALIZATION_PROTOBUF.equalsIgnoreCase(generic));
     }
 
+    public static boolean isValidGenericValue(String generic) {
+        return isGeneric(generic) || Boolean.FALSE.toString().equalsIgnoreCase(generic);
+    }
+
     public static boolean isDefaultGenericSerialization(String generic) {
         return isGeneric(generic)
                 && GENERIC_SERIALIZATION_DEFAULT.equalsIgnoreCase(generic);

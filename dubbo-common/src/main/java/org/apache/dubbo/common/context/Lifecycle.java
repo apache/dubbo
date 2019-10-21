@@ -21,7 +21,7 @@ package org.apache.dubbo.common.context;
  *
  * @since 2.7.4
  */
-public interface Lifecycle<V> {
+public interface Lifecycle {
 
     /**
      * Initialize the component before {@link #start() start}
@@ -29,14 +29,7 @@ public interface Lifecycle<V> {
      * @return current {@link Lifecycle}
      * @throws IllegalStateException
      */
-    Lifecycle initialize() throws IllegalStateException;
-
-    /**
-     * Initialized or not
-     *
-     * @return if initialized, return <code>true</code>, or <code>false</code>
-     */
-    boolean isInitialized();
+    void initialize() throws IllegalStateException;
 
     /**
      * Start the component
@@ -44,30 +37,7 @@ public interface Lifecycle<V> {
      * @return current {@link Lifecycle}
      * @throws IllegalStateException
      */
-    Lifecycle start() throws IllegalStateException;
-
-    /**
-     * The component is started or not
-     *
-     * @return if started, return <code>true</code>, or <code>false</code>
-     */
-    boolean isStarted();
-
-    /**
-     * Stop the component
-     *
-     * @return current {@link Lifecycle}
-     */
-    Lifecycle stop() throws IllegalStateException;
-
-    /**
-     * The component is stopped or not
-     *
-     * @return if stopped, return <code>true</code>, or <code>false</code>
-     */
-    default boolean isStopped() {
-        return !isStarted();
-    }
+    void start() throws IllegalStateException;
 
     /**
      * Destroy the component

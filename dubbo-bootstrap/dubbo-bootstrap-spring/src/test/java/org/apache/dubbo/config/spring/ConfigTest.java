@@ -115,7 +115,7 @@ public class ConfigTest {
         reference.setInterface(HelloService.class);
         reference.setUrl("dubbo://127.0.0.1:12345");
 
-        DubboBootstrap bootstrap = DubboBootstrap.newInstance()
+        DubboBootstrap bootstrap = DubboBootstrap.getInstance()
                 .application(new ApplicationConfig("consumer"))
                 .reference(reference)
                 .start();
@@ -151,7 +151,7 @@ public class ConfigTest {
         reference.setInterface(DemoService.class);
         reference.setUrl(url);
 
-        DubboBootstrap bootstrap = DubboBootstrap.newInstance()
+        DubboBootstrap bootstrap = DubboBootstrap.getInstance()
                 .application(new ApplicationConfig("consumer"))
                 .reference(reference)
                 .start();
@@ -383,7 +383,7 @@ public class ConfigTest {
         reference.setInterface(DemoService.class);
         reference.setUrl("dubbo://" + NetUtils.getLocalHost() + ":20880?" + DemoService.class.getName() + "?check=false");
 
-        DubboBootstrap bootstrap = DubboBootstrap.newInstance()
+        DubboBootstrap bootstrap = DubboBootstrap.getInstance()
                 .application(application)
                 .provider(provider)
                 .service(service)
@@ -578,7 +578,7 @@ public class ConfigTest {
         reference.setInterface(DemoService.class);
         reference.setUrl("dubbo://127.0.0.1:13123");
 
-        DubboBootstrap bootstrap = DubboBootstrap.newInstance()
+        DubboBootstrap bootstrap = DubboBootstrap.getInstance()
                 .application(application)
                 .registry(registry)
                 .protocol(protocol)
@@ -709,7 +709,7 @@ public class ConfigTest {
             reference.setInjvm(true);
             reference.setRetries(2);
 
-            DubboBootstrap.newInstance()
+            DubboBootstrap.getInstance()
                     .application(new ApplicationConfig("testSystemPropertyOverrideReferenceConfig"))
                     .registry(new RegistryConfig(RegistryConfig.NO_AVAILABLE))
                     .protocol(protocolConfig)
@@ -734,7 +734,7 @@ public class ConfigTest {
             serviceConfig.setInterface(DemoService.class);
             serviceConfig.setRef(new DemoServiceImpl());
 
-            DubboBootstrap bootstrap = DubboBootstrap.newInstance()
+            DubboBootstrap bootstrap = DubboBootstrap.getInstance()
                     .service(serviceConfig)
                     .start();
             try {
@@ -780,7 +780,7 @@ public class ConfigTest {
             service.setRegistry(registry);
             service.setProtocol(protocol);
 
-            DubboBootstrap bootstrap = DubboBootstrap.newInstance()
+            DubboBootstrap bootstrap = DubboBootstrap.getInstance()
                     .application(application)
                     .registry(registry)
                     .protocol(protocol)
@@ -828,7 +828,7 @@ public class ConfigTest {
             service.setRegistry(registry);
             service.setProtocol(protocol);
 
-            DubboBootstrap bootstrap = DubboBootstrap.newInstance()
+            DubboBootstrap bootstrap = DubboBootstrap.getInstance()
                     .application(application)
                     .registry(registry)
                     .protocol(protocol)
@@ -928,7 +928,7 @@ public class ConfigTest {
             service.setProtocol(protocol);
 
 
-            DubboBootstrap.newInstance()
+            DubboBootstrap.getInstance()
                     .application(application)
                     .registry(registry)
                     .protocol(protocol)
@@ -975,7 +975,7 @@ public class ConfigTest {
         helloService.setRegistry(registry);
         helloService.setProtocol(protocol);
 
-        DubboBootstrap bootstrap = DubboBootstrap.newInstance()
+        DubboBootstrap bootstrap = DubboBootstrap.getInstance()
                 .application(application)
                 .registry(registry)
                 .protocol(protocol)
@@ -1005,7 +1005,7 @@ public class ConfigTest {
         ref.setRegistry(rc);
         ref.setInterface(DemoService.class.getName());
 
-        DubboBootstrap bootstrap = DubboBootstrap.newInstance()
+        DubboBootstrap bootstrap = DubboBootstrap.getInstance()
                 .application(new ApplicationConfig("test-refer-generic-export"))
                 .service(sc)
                 .reference(ref);
@@ -1027,7 +1027,7 @@ public class ConfigTest {
         service.setGeneric(GENERIC_SERIALIZATION_BEAN);
         service.setRef((method, parameterTypes, args) -> null);
 
-        DubboBootstrap bootstrap = DubboBootstrap.newInstance()
+        DubboBootstrap bootstrap = DubboBootstrap.getInstance()
                 .application(new ApplicationConfig("test"))
                 .service(service)
                 .start();

@@ -73,10 +73,9 @@ public interface Constants {
      */
     String PRODUCTION_ENVIRONMENT = "product";
 
-    String CONFIG_CONFIGFILE_KEY = "config.config-file";
-    String CONFIG_ENABLE_KEY = "config.highest-priority";
-    String CONFIG_TIMEOUT_KEY = "config.timeout";
-    String CONFIG_APPNAME_KEY = "config.app-name";
+    String CONFIG_CONFIGFILE_KEY = "config-file";
+    String CONFIG_ENABLE_KEY = "highest-priority";
+    String CONFIG_APP_CONFIGFILE_KEY = "app-config-file";
 
     String MULTICAST = "multicast";
 

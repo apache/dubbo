@@ -63,7 +63,7 @@ public class EtcdDubboServiceProviderBootstrap {
 
         ApplicationConfig applicationConfig = new ApplicationConfig("dubbo-provider-demo");
 //        applicationConfig.setMetadataType("remote");
-        new DubboBootstrap()
+        DubboBootstrap.getInstance()
                 .application(applicationConfig)
                 // Zookeeper in service registry type
 //                .registry("zookeeper", builder -> builder.address("zookeeper://127.0.0.1:2181?registry.type=service"))

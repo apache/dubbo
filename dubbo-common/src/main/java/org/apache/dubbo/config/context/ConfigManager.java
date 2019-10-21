@@ -16,7 +16,8 @@
  */
 package org.apache.dubbo.config.context;
 
-import org.apache.dubbo.common.config.Environment;
+import org.apache.dubbo.common.context.FrameworkExt;
+import org.apache.dubbo.common.context.LifecycleAdapter;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -33,6 +34,7 @@ import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -58,55 +60,15 @@ import static org.apache.dubbo.config.AbstractConfig.getTagName;
 import static org.apache.dubbo.config.Constants.PROTOCOLS_SUFFIX;
 import static org.apache.dubbo.config.Constants.REGISTRIES_SUFFIX;
 
-/**
- * TODO
- * Experimental API, should only being used internally at present.
- * <p>
- * Maybe we can consider open to end user in the following version by providing a fluent style builder.
- *
- * <pre>{@code
- *  public void class DubboBuilder() {
- *
- *      public static DubboBuilder create() {
- *          return new DubboBuilder();
- *      }
- *
- *      public DubboBuilder application(ApplicationConfig application) {
- *          ConfigManager.getInstance().addApplication(application);
- *          return this;
- *      }
- *
- *      ...
- *
- *      public void build() {
- *          // export all ServiceConfigs
- *          // refer all ReferenceConfigs
- *      }
- *  }
- *  }
- * </pre>
- * </p>
- * TODO
- * The properties defined here are duplicate with that in ReferenceConfig/ServiceConfig,
- * the properties here are currently only used for duplication check but are still not being used in the export/refer process yet.
- * Maybe we can remove the property definition in ReferenceConfig/ServiceConfig and only keep the setXxxConfig() as an entrance.
- * All workflow internally can rely on ConfigManager.
- */
-public class ConfigManager {
-
+public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
+    public static final String NAME = "config";
     private static final Logger logger = LoggerFactory.getLogger(ConfigManager.class);
-
-    private static final ConfigManager CONFIG_MANAGER = new ConfigManager();
 
     private final Map<String, Map<String, AbstractConfig>> configsCache = newMap();
 
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
-    public static ConfigManager getInstance() {
-        return CONFIG_MANAGER;
-    }
-
-    private ConfigManager() {
+    public ConfigManager() {
     }
 
     // ApplicationConfig correlative methods
@@ -159,6 +121,14 @@ public class ConfigManager {
 
     public void addConfigCenters(Iterable<ConfigCenterConfig> configCenters) {
         configCenters.forEach(this::addConfigCenter);
+    }
+
+    public Optional<Collection<ConfigCenterConfig>> getDefaultConfigCenter() {
+        Collection<ConfigCenterConfig> defaults = getDefaultConfigs(getConfigsMap(getTagName(ConfigCenterConfig.class)));
+        if (CollectionUtils.isEmpty(defaults)) {
+            defaults = getConfigCenters();
+        }
+        return Optional.ofNullable(defaults);
     }
 
     public ConfigCenterConfig getConfigCenter(String id) {
@@ -253,12 +223,11 @@ public class ConfigManager {
 
     public Set<String> getProtocolIds() {
         Set<String> protocolIds = new HashSet<>();
-        protocolIds.addAll(getSubProperties(Environment.getInstance()
+        protocolIds.addAll(getSubProperties(ApplicationModel.getEnvironment()
                 .getExternalConfigurationMap(), PROTOCOLS_SUFFIX));
-        protocolIds.addAll(getSubProperties(Environment.getInstance()
+        protocolIds.addAll(getSubProperties(ApplicationModel.getEnvironment()
                 .getAppExternalConfigurationMap(), PROTOCOLS_SUFFIX));
 
-        protocolIds.addAll(getConfigIds(getTagName(ProtocolConfig.class)));
         return unmodifiableSet(protocolIds);
     }
 
@@ -289,12 +258,11 @@ public class ConfigManager {
 
     public Set<String> getRegistryIds() {
         Set<String> registryIds = new HashSet<>();
-        registryIds.addAll(getSubProperties(Environment.getInstance().getExternalConfigurationMap(),
+        registryIds.addAll(getSubProperties(ApplicationModel.getEnvironment().getExternalConfigurationMap(),
                 REGISTRIES_SUFFIX));
-        registryIds.addAll(getSubProperties(Environment.getInstance().getAppExternalConfigurationMap(),
+        registryIds.addAll(getSubProperties(ApplicationModel.getEnvironment().getAppExternalConfigurationMap(),
                 REGISTRIES_SUFFIX));
 
-        registryIds.addAll(getConfigIds(getTagName(RegistryConfig.class)));
         return unmodifiableSet(registryIds);
     }
 
@@ -326,7 +294,7 @@ public class ConfigManager {
         referenceConfigs.forEach(this::addReference);
     }
 
-    public Collection<ReferenceConfig> getReferences() {
+    public Collection<ReferenceConfig<?>> getReferences() {
         return getConfigs(getTagName(ReferenceConfig.class));
     }
 
@@ -426,13 +394,6 @@ public class ConfigManager {
                 return configsMap.values().iterator().next();
             }
         });
-    }
-
-    protected <C extends AbstractConfig> Collection<String> getConfigIds(String configType) {
-        return getConfigs(configType)
-                .stream()
-                .map(AbstractConfig::getId)
-                .collect(Collectors.toSet());
     }
 
     private <V> V write(Callable<V> callable) {

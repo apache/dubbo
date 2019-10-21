@@ -277,4 +277,6 @@ public interface CommonConstants {
 
     int DEFAULT_FAILBACK_TIMES = 3;
 
+    String REGISTER_KEY = "register";
+
 }

@@ -18,7 +18,7 @@ package org.apache.dubbo.common.config.configcenter;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.Configuration;
-import org.apache.dubbo.common.config.Environment;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Collections;
 import java.util.Optional;
@@ -251,7 +251,7 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
      * @return DynamicConfiguration instance
      */
     static DynamicConfiguration getDynamicConfiguration() {
-        Optional<DynamicConfiguration> optional = Environment.getInstance().getDynamicConfiguration();
+        Optional<DynamicConfiguration> optional = ApplicationModel.getEnvironment().getDynamicConfiguration();
         return optional.orElseGet(() -> getExtensionLoader(DynamicConfigurationFactory.class)
                 .getDefaultExtension()
                 .getDynamicConfiguration(null));

@@ -35,7 +35,7 @@ public class Application {
         ProtocolConfig protocolConfig = new ProtocolConfig("rest");
         protocolConfig.setPort(8090);
 
-        DubboBootstrap bootstrap = new DubboBootstrap();
+        DubboBootstrap bootstrap = DubboBootstrap.getInstance();
         bootstrap.application(new ApplicationConfig("dubbo-provider-for-sc"))
                 .registry(new RegistryConfig("consul://127.0.0.1:8500?registry-type=service"))
                 .protocol(protocolConfig)

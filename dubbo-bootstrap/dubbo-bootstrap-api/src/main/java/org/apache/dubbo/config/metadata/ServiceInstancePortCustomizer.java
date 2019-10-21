@@ -16,10 +16,10 @@
  */
 package org.apache.dubbo.config.metadata;
 
-import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 /**
  * The {@link ServiceInstanceCustomizer} to customize the {@link ServiceInstance#getPort() port} of service instance.
@@ -35,7 +35,7 @@ public class ServiceInstancePortCustomizer implements ServiceInstanceCustomizer 
             return;
         }
 
-        ConfigManager.getInstance()
+        ApplicationModel.getConfigManager()
                 .getProtocols()
                 .stream()
                 .findFirst()

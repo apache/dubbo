@@ -80,7 +80,7 @@ public class GenericServiceTest {
         reference.setInterface(DemoService.class);
         reference.setUrl("dubbo://127.0.0.1:29581?generic=true&timeout=3000");
 
-        DubboBootstrap bootstrap = DubboBootstrap.newInstance()
+        DubboBootstrap bootstrap = DubboBootstrap.getInstance()
                 .application(new ApplicationConfig("generic-test"))
                 .registry(new RegistryConfig("N/A"))
                 .protocol(new ProtocolConfig("dubbo", 29581))
@@ -122,7 +122,7 @@ public class GenericServiceTest {
         reference.setUrl("dubbo://127.0.0.1:29581?scope=remote&timeout=3000");
         reference.setGeneric(true);
 
-        DubboBootstrap bootstrap = DubboBootstrap.newInstance()
+        DubboBootstrap bootstrap = DubboBootstrap.getInstance()
                 .application(new ApplicationConfig("generic-test"))
                 .registry(new RegistryConfig("N/A"))
                 .protocol(new ProtocolConfig("dubbo", 29581))
@@ -160,7 +160,7 @@ public class GenericServiceTest {
         reference.setUrl("dubbo://127.0.0.1:29581?scope=remote&timeout=3000");
         reference.setGeneric(GENERIC_SERIALIZATION_NATIVE_JAVA);
 
-        DubboBootstrap bootstrap = DubboBootstrap.newInstance()
+        DubboBootstrap bootstrap = DubboBootstrap.getInstance()
                 .application(new ApplicationConfig("generic-test"))
                 .registry(new RegistryConfig("N/A"))
                 .protocol(new ProtocolConfig("dubbo", 29581))
@@ -230,7 +230,7 @@ public class GenericServiceTest {
         reference.setUrl("dubbo://127.0.0.1:29581?scope=remote&timeout=3000");
         reference.setGeneric(GENERIC_SERIALIZATION_BEAN);
 
-        DubboBootstrap bootstrap = DubboBootstrap.newInstance()
+        DubboBootstrap bootstrap = DubboBootstrap.getInstance()
                 .application(new ApplicationConfig("generic-test"))
                 .registry(new RegistryConfig("N/A"))
                 .protocol(new ProtocolConfig("dubbo", 29581))
@@ -287,7 +287,7 @@ public class GenericServiceTest {
         ref.setInterface(DemoService.class);
         ref.setUrl("dubbo://127.0.0.1:29581?scope=remote&generic=bean&timeout=3000");
 
-        DubboBootstrap bootstrap = DubboBootstrap.newInstance()
+        DubboBootstrap bootstrap = DubboBootstrap.getInstance()
                 .application(new ApplicationConfig("generic-test"))
                 .registry(new RegistryConfig("N/A"))
                 .protocol(new ProtocolConfig("dubbo", 29581))

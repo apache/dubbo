@@ -17,6 +17,7 @@
 package org.apache.dubbo.registry.client.metadata;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.lang.Prioritized;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
@@ -30,6 +31,7 @@ import java.util.List;
  *
  * @since 2.7.4
  */
+@SPI
 public interface SubscribedURLsSynthesizer extends Prioritized {
 
     /**

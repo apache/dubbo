@@ -16,11 +16,14 @@
  */
 package org.apache.dubbo.common.lang;
 
+import org.apache.dubbo.common.extension.SPI;
+
 /**
  * Dubbo ShutdownHook callback interface
  *
  * @since 2.7.4
  */
+@SPI
 public interface ShutdownHookCallback extends Prioritized {
 
     /**

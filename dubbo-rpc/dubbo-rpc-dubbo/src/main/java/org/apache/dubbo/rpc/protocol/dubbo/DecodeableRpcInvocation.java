@@ -30,8 +30,8 @@ import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.transport.CodecSupport;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.MethodModel;
-import org.apache.dubbo.rpc.model.ServiceModel;
+import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.rpc.model.ServiceDescriptor;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -116,9 +116,9 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
             Class<?>[] pts = DubboCodec.EMPTY_CLASS_ARRAY;
             if (desc.length() > 0) {
                 // TODO, lambda function requires variables to be final.
-                Optional<ServiceModel> serviceModel = ApplicationModel.getServiceModel(path);
+                Optional<ServiceDescriptor> serviceModel = ApplicationModel.getServiceModel(path);
                 if (serviceModel.isPresent()) {
-                    Optional<MethodModel> methodOptional = serviceModel.get().getMethod(getMethodName(), desc);
+                    Optional<MethodDescriptor> methodOptional = serviceModel.get().getMethod(getMethodName(), desc);
                     if (methodOptional.isPresent()) {
                         pts = methodOptional.get().getParameterClasses();
                         args = new Object[pts.length];

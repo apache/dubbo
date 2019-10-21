@@ -17,6 +17,7 @@
 package org.apache.dubbo.registry.client.metadata;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.ServiceInstance;
 
@@ -27,7 +28,6 @@ import java.util.ServiceLoader;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
-import static java.util.ServiceLoader.load;
 import static org.apache.dubbo.common.utils.CollectionUtils.isNotEmpty;
 
 /**
@@ -43,20 +43,16 @@ import static org.apache.dubbo.common.utils.CollectionUtils.isNotEmpty;
  */
 class CompositeMetadataServiceURLBuilder implements MetadataServiceURLBuilder {
 
-    private final Class<MetadataServiceURLBuilder> builderClass;
-
     private final Iterator<MetadataServiceURLBuilder> builders;
 
-    private final ClassLoader classLoader;
-
     public CompositeMetadataServiceURLBuilder() {
-        this.builderClass = MetadataServiceURLBuilder.class;
-        this.classLoader = getClass().getClassLoader();
         this.builders = initBuilders();
     }
 
     private Iterator<MetadataServiceURLBuilder> initBuilders() {
-        return load(builderClass, classLoader).iterator();
+        ExtensionLoader<MetadataServiceURLBuilder> loader =
+                ExtensionLoader.getExtensionLoader(MetadataServiceURLBuilder.class);
+        return loader.getSupportedExtensionInstances().iterator();
     }
 
     @Override

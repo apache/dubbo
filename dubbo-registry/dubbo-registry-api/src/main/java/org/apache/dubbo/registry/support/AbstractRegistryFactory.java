@@ -59,6 +59,10 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
         return Collections.unmodifiableCollection(REGISTRIES.values());
     }
 
+    public static Registry getRegistry(String key) {
+        return REGISTRIES.get(key);
+    }
+
     /**
      * Close all created registries
      */

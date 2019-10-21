@@ -14,41 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring.context.annotation;
+package org.apache.dubbo.common.context;
 
-import org.apache.dubbo.common.context.Lifecycle;
-
-/**
- * {@link Lifecycle}
- */
-public class MyLifecycle implements Lifecycle {
+public abstract class LifecycleAdapter implements Lifecycle {
 
     @Override
-    public Lifecycle initialize() throws IllegalStateException {
-        EnableDubboLifecycleTest.initialized = true;
-        return this;
+    public void initialize() throws IllegalStateException {
+
     }
 
     @Override
-    public boolean isInitialized() {
-        return true;
-    }
+    public void start() throws IllegalStateException {
 
-    @Override
-    public Lifecycle start() throws IllegalStateException {
-        initialize();
-        EnableDubboLifecycleTest.started = true;
-        return this;
-    }
-
-    @Override
-    public boolean isStarted() {
-        return true;
-    }
-
-    @Override
-    public Lifecycle stop() throws IllegalStateException {
-        return this;
     }
 
     @Override

@@ -17,7 +17,9 @@
 package org.apache.dubbo.config.spring.context;
 
 
+import org.apache.dubbo.bootstrap.DubboBootstrap;
 import org.apache.dubbo.common.context.Lifecycle;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.DubboShutdownHook;
 
 import org.springframework.context.ApplicationContext;
@@ -28,12 +30,8 @@ import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.SmartApplicationListener;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ServiceLoader;
+import java.util.Map;
 
-import static java.util.Collections.emptyList;
-import static java.util.ServiceLoader.load;
 import static org.springframework.beans.factory.BeanFactoryUtils.beansOfTypeIncludingAncestors;
 
 /**
@@ -44,8 +42,6 @@ import static org.springframework.beans.factory.BeanFactoryUtils.beansOfTypeIncl
  * @since 2.7.4
  */
 public class DubboLifecycleComponentApplicationListener implements ApplicationListener {
-
-    private List<Lifecycle> lifecycleComponents = emptyList();
 
     @Override
     public void onApplicationEvent(ApplicationEvent event) {
@@ -62,40 +58,25 @@ public class DubboLifecycleComponentApplicationListener implements ApplicationLi
     }
 
     protected void onContextRefreshedEvent(ContextRefreshedEvent event) {
-        initLifecycleComponents(event);
-        startLifecycleComponents();
+        ApplicationContext context = event.getApplicationContext();
+        DubboBootstrap bootstrap = loadBootsttrapAsBean(context);
+        if (bootstrap == null) {
+            bootstrap = DubboBootstrap.getInstance();
+        }
+        bootstrap.start();
     }
 
     protected void onContextClosedEvent(ContextClosedEvent event) {
         DubboShutdownHook.getDubboShutdownHook().doDestroy();
     }
 
-    private void initLifecycleComponents(ContextRefreshedEvent event) {
-        ApplicationContext context = event.getApplicationContext();
-        ClassLoader classLoader = context.getClassLoader();
-        lifecycleComponents = new LinkedList<>();
-        // load the instances of Lifecycle from ServiceLoader
-        loadLifecycleComponents(lifecycleComponents, classLoader);
-        // load the Beans of Lifecycle from ApplicationContext
-        loadLifecycleComponents(lifecycleComponents, context);
+    private DubboBootstrap loadBootsttrapAsBean(ApplicationContext context) {
+        Map<String, DubboBootstrap> beans = beansOfTypeIncludingAncestors(context, DubboBootstrap.class);
+        if (CollectionUtils.isNotEmptyMap(beans)) {
+            return beans.values().iterator().next();
+        }
+        return null;
     }
-
-    private void loadLifecycleComponents(List<Lifecycle> lifecycleComponents, ClassLoader classLoader) {
-        ServiceLoader<Lifecycle> serviceLoader = load(Lifecycle.class, classLoader);
-        serviceLoader.forEach(lifecycleComponents::add);
-    }
-
-    private void loadLifecycleComponents(List<Lifecycle> lifecycleComponents, ApplicationContext context) {
-        lifecycleComponents.addAll(beansOfTypeIncludingAncestors(context, Lifecycle.class).values());
-    }
-
-    private void startLifecycleComponents() {
-        lifecycleComponents.forEach(Lifecycle::start);
-    }
-
-//    private void destroyLifecycleComponents() {
-//        lifecycleComponents.forEach(Lifecycle::destroy);
-//    }
 
     /**
      * the specified {@link ApplicationEvent event} must be {@link ApplicationContextEvent} and

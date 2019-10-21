@@ -64,7 +64,7 @@ public class DubboMonitorFactory extends AbstractMonitorFactory {
         }
         urlBuilder.addParameters(CHECK_KEY, String.valueOf(false),
                 REFERENCE_FILTER_KEY, filter + "-monitor");
-        ApplicationModel.registerServiceModel(MonitorService.class);
+        ApplicationModel.getServiceRepository().registerService(MonitorService.class);
         Invoker<MonitorService> monitorInvoker = protocol.refer(MonitorService.class, urlBuilder.build());
         MonitorService monitorService = proxyFactory.getProxy(monitorInvoker);
         return new DubboMonitor(monitorInvoker, monitorService);

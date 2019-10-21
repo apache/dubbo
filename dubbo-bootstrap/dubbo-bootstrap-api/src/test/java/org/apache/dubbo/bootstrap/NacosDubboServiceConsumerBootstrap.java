@@ -31,7 +31,7 @@ public class NacosDubboServiceConsumerBootstrap {
 
         ApplicationConfig applicationConfig = new ApplicationConfig("dubbo-nacos-consumer-demo");
 //        applicationConfig.setMetadataType("remote");
-        DubboBootstrap bootstrap = new DubboBootstrap()
+        DubboBootstrap bootstrap = DubboBootstrap.getInstance()
                 .application(applicationConfig)
                 // Zookeeper
 //                .registry("nacos", builder -> builder.address("nacos://127.0.0.1:8848?registry.type=service&subscribed.services=dubbo-nacos-provider-demo"))

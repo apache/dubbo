@@ -16,52 +16,115 @@
  */
 package org.apache.dubbo.rpc.model;
 
-import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.common.context.FrameworkExt;
+import org.apache.dubbo.common.context.LifecycleAdapter;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.ReferenceConfig;
+import org.apache.dubbo.config.ServiceConfig;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
-@SPI("default")
-public interface ServiceRepository {
+public class ServiceRepository extends LifecycleAdapter implements FrameworkExt {
 
-    void registerService(Class<?> interfaceClazz);
+    public static final String NAME = "repository";
 
-    void registerConsumer(String serviceKey, Object proxyObject, ServiceModel serviceModel, Map<String, Object> attributes);
+    // services
+    private ConcurrentMap<String, ServiceDescriptor> services = new ConcurrentHashMap<>();
 
-    void registerProvider(String serviceKey, Object serviceInstance, ServiceModel serviceModel);
+    // consumers
+    private ConcurrentMap<String, ConsumerModel> consumers = new ConcurrentHashMap<>();
 
-    List<ServiceModel> getAllServices();
+    // providers
+    private ConcurrentMap<String, ProviderModel> providers = new ConcurrentHashMap<>();
 
-    ServiceModel lookupService(String interfaceName);
-
-    MethodModel lookupMethod(String interfaceName, String methodName);
-
-    List<ProviderModel> getExportedServices();
-
-    ProviderModel lookupExportedService(String serviceKey);
-
-    List<ConsumerModel> getReferredServices();
-
-    ConsumerModel lookupReferredService(String serviceKey);
-
-    static ExtensionLoader<ServiceRepository> loader = ExtensionLoader.getExtensionLoader(ServiceRepository.class);
-
-    static void init(String name) {
-        if (StringUtils.isNotEmpty(name)) {
-            loader.getExtension(name);
-        }
+    public ServiceDescriptor registerService(Class<?> interfaceClazz) {
+        return services.computeIfAbsent(interfaceClazz.getName(),
+                _k -> new ServiceDescriptor(interfaceClazz));
     }
 
-    static ServiceRepository getLoadedInstance() {
-        Set<Object> instances = loader.getLoadedExtensionInstances();
-        if (CollectionUtils.isNotEmpty(instances)) {
-            return (ServiceRepository) instances.iterator().next();
-        } else {
-            return loader.getDefaultExtension();
+    public void registerConsumer(String serviceKey,
+                                 Map<String, Object> attributes,
+                                 ServiceDescriptor serviceModel,
+                                 ReferenceConfig<?> rc,
+                                 Object proxy,
+                                 ServiceMetadata serviceMetadata) {
+        consumers.computeIfAbsent(
+                serviceKey,
+                _k -> new ConsumerModel(
+                        serviceMetadata.getServiceKey(),
+                        proxy,
+                        serviceModel,
+                        rc,
+                        attributes,
+                        serviceMetadata
+                )
+        );
+    }
+
+    public void registerProvider(String serviceKey,
+                                 Object serviceInstance,
+                                 ServiceDescriptor serviceModel,
+                                 ServiceConfig<?> serviceConfig,
+                                 ServiceMetadata serviceMetadata) {
+        providers.computeIfAbsent(
+                serviceKey,
+                _k -> new ProviderModel(
+                        serviceKey,
+                        serviceInstance,
+                        serviceModel,
+                        serviceConfig,
+                        serviceMetadata
+                )
+        );
+    }
+
+    public List<ServiceDescriptor> getAllServices() {
+        return Collections.unmodifiableList(new ArrayList<>(services.values()));
+    }
+
+    public ServiceDescriptor lookupService(String interfaceName) {
+        return services.get(interfaceName);
+    }
+
+    public MethodDescriptor lookupMethod(String interfaceName, String methodName) {
+        ServiceDescriptor serviceDescriptor = lookupService(interfaceName);
+        if (serviceDescriptor == null) {
+            return null;
         }
+        Set<MethodDescriptor> methods = serviceDescriptor.getMethods(methodName);
+        if (CollectionUtils.isEmpty(methods)) {
+            return null;
+        }
+        return methods.iterator().next();
+    }
+
+    public List<ProviderModel> getExportedServices() {
+        return Collections.unmodifiableList(new ArrayList<>(providers.values()));
+    }
+
+    public ProviderModel lookupExportedService(String serviceKey) {
+        return providers.get(serviceKey);
+    }
+
+    public List<ConsumerModel> getReferredServices() {
+        return Collections.unmodifiableList(new ArrayList<>(consumers.values()));
+    }
+
+    public ConsumerModel lookupReferredService(String serviceKey) {
+        return consumers.get(serviceKey);
+    }
+
+    @Override
+    public void destroy() throws IllegalStateException {
+        // currently works for unit test
+        services.clear();
+        consumers.clear();
+        providers.clear();
     }
 }

@@ -31,7 +31,6 @@ import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.registry.RegistryService;
-import org.apache.dubbo.registry.support.AbstractRegistry;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -42,6 +41,7 @@ import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.Configurator;
 import org.apache.dubbo.rpc.cluster.governance.GovernanceRuleRepository;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.protocol.InvokerWrapper;
 
 import java.util.ArrayList;
@@ -49,7 +49,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
@@ -175,11 +174,13 @@ public class RegistryProtocol implements Protocol {
     public void register(URL registryUrl, URL registeredProviderUrl) {
         Registry registry = registryFactory.getRegistry(registryUrl);
         registry.register(registeredProviderUrl);
-    }
 
-    public void unregister(URL registryUrl, URL registeredProviderUrl) {
-        Registry registry = registryFactory.getRegistry(registryUrl);
-        registry.unregister(registeredProviderUrl);
+        ProviderModel model = ApplicationModel.getProviderModel(registeredProviderUrl.getServiceKey());
+        model.addStatedUrl(new ProviderModel.RegisterStatedURL(
+                registeredProviderUrl,
+                registryUrl,
+                true
+        ));
     }
 
     @Override
@@ -202,7 +203,7 @@ public class RegistryProtocol implements Protocol {
 
         // url to registry
         final Registry registry = getRegistry(originInvoker);
-        final URL registeredProviderUrl = getRegisteredProviderUrl(providerUrl, registryUrl);
+        final URL registeredProviderUrl = getUrlToRegistry(providerUrl, registryUrl);
         //to judge if we need to delay publish
         boolean register = registeredProviderUrl.getParameter("register", true);
         if (register) {
@@ -240,27 +241,34 @@ public class RegistryProtocol implements Protocol {
         ExporterChangeableWrapper exporter = doChangeLocalExport(originInvoker, newInvokerUrl);
         // update registry
         URL registryUrl = getRegistryUrl(originInvoker);
-        final URL registeredProviderUrl = getRegisteredProviderUrl(newInvokerUrl, registryUrl);
+        final URL newProviderUrl = getUrlToRegistry(newInvokerUrl, registryUrl);
 
-        getRegisteredUrl(originInvoker).ifPresent(oldProviderUrl -> {
-            if (!registeredProviderUrl.equals(oldProviderUrl)) {
-                unregister(registryUrl, oldProviderUrl);
-                register(registryUrl, registeredProviderUrl);
-            }
-        });
-
-        exporter.setRegisterUrl(registeredProviderUrl);
+        getRegisteredUrl(registryUrl, newProviderUrl)
+                .ifPresent(oldProviderUrl -> {
+                    if (!newProviderUrl.equals(oldProviderUrl)) {
+                        Registry registry = getRegistry(originInvoker);
+                        registry.unregister(oldProviderUrl);
+                        registry.register(newProviderUrl);
+                        exporter.setRegisterUrl(newProviderUrl);
+                    }
+                });
     }
 
-    private Optional<URL> getRegisteredUrl(Invoker<?> invoker) {
-        Registry registry = getRegistry(invoker);
-        // TODO, consider adding method to the interface to avoid type cast.
-        AbstractRegistry abstractRegistry = (AbstractRegistry) registry;
-        Set<URL> registered = abstractRegistry.getRegistered();
-        if (CollectionUtils.isNotEmpty(registered)) {
-            return registered.stream()
-                    .filter(u -> u.getServiceKey().equals(getProviderUrl(invoker).getServiceKey()))
-                    .findFirst();
+    private Optional<URL> getRegisteredUrl(URL registryUrl, URL providerUrl) {
+        ProviderModel providerModel = ApplicationModel.getServiceRepository()
+                .lookupExportedService(providerUrl.getServiceKey());
+
+        List<ProviderModel.RegisterStatedURL> statedUrls = providerModel.getStatedUrl();
+        Optional<ProviderModel.RegisterStatedURL> statedUrlOptional = statedUrls.stream()
+                .filter(u -> u.getRegistryUrl().equals(registryUrl)
+                        && u.getProviderUrl().getProtocol().equals(providerUrl.getProtocol()))
+                .findFirst();
+
+        if (statedUrlOptional.isPresent()) {
+            ProviderModel.RegisterStatedURL statedURL = statedUrlOptional.get();
+            if (statedURL.isRegistered()) {
+                return Optional.of(statedURL.getProviderUrl());
+            }
         }
         return Optional.empty();
     }
@@ -318,7 +326,7 @@ public class RegistryProtocol implements Protocol {
      * @param providerUrl
      * @return url to registry.
      */
-    private URL getRegisteredProviderUrl(final URL providerUrl, final URL registryUrl) {
+    private URL getUrlToRegistry(final URL providerUrl, final URL registryUrl) {
         //The address you see at the registry
         if (!registryUrl.getParameter(SIMPLIFIED_KEY, false)) {
             return providerUrl.removeParameters(getFilteredKeys(providerUrl)).removeParameters(

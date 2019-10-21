@@ -18,7 +18,7 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.bootstrap.DubboBootstrap;
-import org.apache.dubbo.config.context.ConfigManager;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.service.DemoService;
 import org.apache.dubbo.service.DemoServiceImpl;
 
@@ -38,12 +38,12 @@ public class ReferenceConfigTest {
 
     @BeforeEach
     public void setUp() {
-        ConfigManager.getInstance().clear();
+        ApplicationModel.getConfigManager().clear();
     }
 
     @AfterEach
     public void tearDown() {
-        ConfigManager.getInstance().clear();
+        ApplicationModel.getConfigManager().clear();
     }
 
     @Test
@@ -68,7 +68,7 @@ public class ReferenceConfigTest {
         rc.setInterface(DemoService.class.getName());
         rc.setInjvm(false);
 
-        DubboBootstrap bootstrap = new DubboBootstrap()
+        DubboBootstrap bootstrap = DubboBootstrap.getInstance()
                 .application(application)
                 .registry(registry)
                 .protocol(protocol)

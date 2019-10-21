@@ -28,6 +28,7 @@ import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.MetadataServiceExporter;
 import org.apache.dubbo.rpc.Exporter;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,8 +56,6 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final ConfigManager configManager;
-
     private final MetadataService metadataService;
 
     private volatile ServiceConfig<MetadataService> serviceConfig;
@@ -66,7 +65,6 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
     private volatile List<Exporter<?>> exporters;
 
     public ConfigurableMetadataServiceExporter(MetadataService metadataService) {
-        this.configManager = ConfigManager.getInstance();
         this.metadataService = metadataService;
     }
 
@@ -122,11 +120,11 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
     }
 
     private ApplicationConfig getApplicationConfig() {
-        return configManager.getApplication().get();
+        return ApplicationModel.getConfigManager().getApplication().get();
     }
 
     private List<RegistryConfig> getRegistries() {
-        return new ArrayList<>(configManager.getRegistries());
+        return new ArrayList<>(ApplicationModel.getConfigManager().getRegistries());
     }
 
     private List<ProtocolConfig> getProtocols() {

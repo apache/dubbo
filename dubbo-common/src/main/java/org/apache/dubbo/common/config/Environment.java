@@ -18,18 +18,21 @@ package org.apache.dubbo.common.config;
 
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.context.FrameworkExt;
+import org.apache.dubbo.common.context.LifecycleAdapter;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.ConfigCenterConfig;
+import org.apache.dubbo.config.context.ConfigManager;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * TODO load as SPI will be better?
- */
-public class Environment {
-    private static final Environment INSTANCE = new Environment();
+public class Environment extends LifecycleAdapter implements FrameworkExt {
+    public static final String NAME = "environment";
 
     private Map<String, PropertiesConfiguration> propertiesConfigs = new ConcurrentHashMap<>();
     private Map<String, SystemConfiguration> systemConfigs = new ConcurrentHashMap<>();
@@ -44,8 +47,17 @@ public class Environment {
 
     private DynamicConfiguration dynamicConfiguration;
 
-    public static Environment getInstance() {
-        return INSTANCE;
+    @Override
+    public void initialize() throws IllegalStateException {
+        ConfigManager configManager = ApplicationModel.getConfigManager();
+        Optional<Collection<ConfigCenterConfig>> defaultConfigs = configManager.getDefaultConfigCenter();
+        defaultConfigs.ifPresent(configs -> {
+            for (ConfigCenterConfig config : configs) {
+                this.setExternalConfigMap(config.getExternalConfiguration());
+                this.setAppExternalConfigMap(config.getAppExternalConfiguration());
+                break;
+            }
+        });
     }
 
     public PropertiesConfiguration getPropertiesConfig(String prefix, String id) {
@@ -157,6 +169,12 @@ public class Environment {
 
     public void setDynamicConfiguration(DynamicConfiguration dynamicConfiguration) {
         this.dynamicConfiguration = dynamicConfiguration;
+    }
+
+    @Override
+    public void destroy() throws IllegalStateException {
+        clearExternalConfigs();
+        clearAppExternalConfigs();
     }
 
     // For test

@@ -27,7 +27,7 @@ public class ZookeeperDubboServiceConsumerBootstrap {
 
     public static void main(String[] args) throws Exception {
 
-        DubboBootstrap bootstrap = new DubboBootstrap()
+        DubboBootstrap bootstrap = DubboBootstrap.getInstance()
                 .application("zookeeper-dubbo-consumer")
                 .registry("zookeeper", builder -> builder.address("zookeeper://127.0.0.1:2181?registry-type=service&subscribed-services=zookeeper-dubbo-provider"))
                 .reference("echo", builder -> builder.interfaceClass(EchoService.class).protocol("dubbo"))

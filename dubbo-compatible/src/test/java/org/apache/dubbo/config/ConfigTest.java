@@ -18,7 +18,7 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.bootstrap.DubboBootstrap;
-import org.apache.dubbo.config.context.ConfigManager;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.service.DemoService;
 import org.apache.dubbo.service.DemoServiceImpl;
 
@@ -35,14 +35,14 @@ public class ConfigTest {
 
     @AfterEach
     public void tearDown() {
-        ConfigManager.getInstance().clear();
+        ApplicationModel.getConfigManager().clear();
     }
 
     @BeforeEach
     public void setup() {
         // In IDE env, make sure adding the following argument to VM options
         System.setProperty("java.net.preferIPv4Stack", "true");
-        ConfigManager.getInstance().clear();
+        ApplicationModel.getConfigManager().clear();
     }
 
     @Test
@@ -58,7 +58,7 @@ public class ConfigTest {
         reference.setRegistry(registryConfig);
         reference.setInterface(DemoService.class);
 
-        DubboBootstrap bootstrap = new DubboBootstrap()
+        DubboBootstrap bootstrap = DubboBootstrap.getInstance()
                 .application(applicationConfig)
                 .registry(registryConfig)
                 .service(service)

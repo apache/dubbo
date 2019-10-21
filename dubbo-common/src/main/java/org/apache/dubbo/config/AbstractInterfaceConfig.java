@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
@@ -189,8 +190,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                     "Please add <dubbo:application name=\"...\" /> to your spring config.");
         }
 
-        ApplicationModel.setApplication(application.getName());
-
         // backward compatibility
         String wait = ConfigUtils.getProperty(SHUTDOWN_WAIT_KEY);
         if (wait != null && wait.trim().length() > 0) {
@@ -215,7 +214,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         if (this.monitor != null) {
             return;
         }
-        ConfigManager configManager = ConfigManager.getInstance();
+        ConfigManager configManager = ApplicationModel.getConfigManager();
         setMonitor(
                 configManager
                         .getMonitor()
@@ -230,7 +229,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     public void checkMetadataReport() {
         // TODO get from ConfigManager first, only create if absent.
         if (metadataReportConfig == null) {
-            ConfigManager configManager = ConfigManager.getInstance();
+            ConfigManager configManager = ApplicationModel.getConfigManager();
             if (CollectionUtils.isNotEmpty(configManager.getMetadataConfigs())) {
                 setMetadataReportConfig(configManager.getMetadataConfigs()
                         .toArray(new MetadataReportConfig[configManager.getMetadataConfigs().size()])[0]);
@@ -332,7 +331,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         computeValidRegistryIds();
         if (StringUtils.isEmpty(registryIds)) {
             if (CollectionUtils.isEmpty(registries)) {
-                List<RegistryConfig> registryConfigs = ConfigManager.getInstance().getDefaultRegistries();
+                List<RegistryConfig> registryConfigs = ApplicationModel.getConfigManager().getDefaultRegistries();
                 if (registryConfigs.isEmpty()) {
                     registryConfigs = new ArrayList<>();
                     RegistryConfig registryConfig = new RegistryConfig();
@@ -346,7 +345,15 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             List<RegistryConfig> tmpRegistries = CollectionUtils.isNotEmpty(registries) ? registries : new ArrayList<>();
             Arrays.stream(ids).forEach(id -> {
                 if (tmpRegistries.stream().noneMatch(reg -> reg.getId().equals(id))) {
-                    ConfigManager.getInstance().getRegistry(id).ifPresent(tmpRegistries::add);
+                    Optional<RegistryConfig> globalRegistry = ApplicationModel.getConfigManager().getRegistry(id);
+                    if (globalRegistry.isPresent()) {
+                        tmpRegistries.add(globalRegistry.get());
+                    } else {
+                        RegistryConfig registryConfig = new RegistryConfig();
+                        registryConfig.setId(id);
+                        registryConfig.refresh();
+                        tmpRegistries.add(registryConfig);
+                    }
                 }
             });
 
@@ -498,7 +505,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             this.application.refresh();
             return;
         }
-        ConfigManager configManager = ConfigManager.getInstance();
+        ConfigManager configManager = ApplicationModel.getConfigManager();
         setApplication(
                 configManager
                         .getApplication()

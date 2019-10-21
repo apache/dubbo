@@ -27,7 +27,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE_ASYNC;
 /**
  *
  */
-public class MethodModel {
+public class MethodDescriptor {
     private final Method method;
     //    private final boolean isCallBack;
 //    private final boolean isFuture;
@@ -38,7 +38,7 @@ public class MethodModel {
     private final String methodName;
     private final boolean generic;
 
-    public MethodModel (Method method) {
+    public MethodDescriptor(Method method) {
         this.method = method;
         this.parameterClasses = method.getParameterTypes();
         this.returnClass = method.getReturnType();

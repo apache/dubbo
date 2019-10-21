@@ -25,6 +25,7 @@ import com.alibaba.fastjson.JSON;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -921,5 +922,31 @@ public final class StringUtils {
             String str = obj.toString();
             return str != null ? str : "";
         }
+    }
+
+    /**
+     * @param rawParameters format like '[{a:b},{c:d}]'
+     * @return
+     */
+    public static Map<String, String> parseParameters(String rawParameters) {
+        Pattern pattern = Pattern.compile("^\\[((\\s*\\{\\s*[\\w_\\-\\.]+\\s*:\\s*.+?\\s*\\}\\s*,?\\s*)+)\\s*\\]$");
+        Pattern pairPattern = Pattern.compile("^\\{\\s*([\\w-_\\.]+)\\s*:\\s*(.+)\\s*\\}$");
+
+        Matcher matcher = pattern.matcher(rawParameters);
+        if (!matcher.matches()) {
+            return Collections.emptyMap();
+        }
+
+        String pairs = matcher.group(1);
+        String[] pairArr = pairs.split("\\s*,\\s*");
+
+        Map<String, String> parameters = new HashMap<>();
+        for (String pair : pairArr) {
+            Matcher pairMatcher = pairPattern.matcher(pair);
+            if (pairMatcher.matches()) {
+                parameters.put(pairMatcher.group(1), pairMatcher.group(2));
+            }
+        }
+        return parameters;
     }
 }

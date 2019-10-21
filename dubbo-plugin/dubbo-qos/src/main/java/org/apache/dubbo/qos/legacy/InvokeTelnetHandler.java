@@ -25,7 +25,7 @@ import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import org.apache.dubbo.remoting.telnet.support.Help;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.MethodModel;
+import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ProviderModel;
 
 import com.alibaba.fastjson.JSON;
@@ -159,9 +159,9 @@ public class InvokeTelnetHandler implements TelnetHandler {
                 || StringUtils.isEmpty(service);
     }
 
-    private List<Method> findSameSignatureMethod(Set<MethodModel> methods, String lookupMethodName, List<Object> args) {
+    private List<Method> findSameSignatureMethod(Set<MethodDescriptor> methods, String lookupMethodName, List<Object> args) {
         List<Method> sameSignatureMethods = new ArrayList<>();
-        for (MethodModel model : methods) {
+        for (MethodDescriptor model : methods) {
             Method method = model.getMethod();
             if (method.getName().equals(lookupMethodName) && method.getParameterTypes().length == args.size()) {
                 sameSignatureMethods.add(method);

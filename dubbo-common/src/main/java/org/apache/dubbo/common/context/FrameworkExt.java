@@ -14,27 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.utils;
+package org.apache.dubbo.common.context;
 
-import org.junit.jupiter.api.Test;
+import org.apache.dubbo.common.extension.SPI;
 
-import java.util.List;
+@SPI
+public interface FrameworkExt extends Lifecycle {
 
-import static org.apache.dubbo.common.utils.DubboServiceLoader.loadServices;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-/**
- * {@link DubboServiceLoader} Test
- *
- * @since 2.7.4
- */
-public class DubboServiceLoaderTest {
-
-    @Test
-    public void testLoad() {
-        List<CharSequence> charSequences = loadServices(CharSequence.class);
-        assertEquals(DefaultCharSequence.class, charSequences.get(0).getClass());
-        assertEquals(String.class, charSequences.get(1).getClass());
-        assertEquals(StringBuilder.class, charSequences.get(2).getClass());
-    }
 }

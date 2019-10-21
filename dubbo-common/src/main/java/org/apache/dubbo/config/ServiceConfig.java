@@ -21,10 +21,10 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Service;
-import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.event.Event;
 import org.apache.dubbo.event.EventDispatcher;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
@@ -259,7 +259,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             return;
         }
         setProvider(
-                ConfigManager.getInstance()
+                ApplicationModel.getConfigManager()
                         .getDefaultProvider()
                         .orElseGet(() -> {
                             ProviderConfig providerConfig = new ProviderConfig();
@@ -280,7 +280,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         computeValidProtocolIds();
         if (StringUtils.isEmpty(protocolIds)) {
             if (CollectionUtils.isEmpty(protocols)) {
-                List<ProtocolConfig> protocolConfigs = ConfigManager.getInstance().getDefaultProtocols();
+                List<ProtocolConfig> protocolConfigs = ApplicationModel.getConfigManager().getDefaultProtocols();
                 if (protocolConfigs.isEmpty()) {
                     protocolConfigs = new ArrayList<>(1);
                     ProtocolConfig protocolConfig = new ProtocolConfig();
@@ -294,7 +294,15 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             List<ProtocolConfig> tmpProtocols = CollectionUtils.isNotEmpty(protocols) ? protocols : new ArrayList<>();
             Arrays.stream(arr).forEach(id -> {
                 if (tmpProtocols.stream().noneMatch(prot -> prot.getId().equals(id))) {
-                    ConfigManager.getInstance().getProtocol(id).ifPresent(tmpProtocols::add);
+                    Optional<ProtocolConfig> globalProtocol = ApplicationModel.getConfigManager().getProtocol(id);
+                    if (globalProtocol.isPresent()) {
+                        tmpProtocols.add(globalProtocol.get());
+                    } else {
+                        ProtocolConfig protocolConfig = new ProtocolConfig();
+                        protocolConfig.setId(id);
+                        protocolConfig.refresh();
+                        tmpProtocols.add(protocolConfig);
+                    }
                 }
             });
             if (tmpProtocols.size() > arr.length) {
@@ -373,7 +381,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     public void setProvider(ProviderConfig provider) {
-        ConfigManager.getInstance().addProvider(provider);
+        ApplicationModel.getConfigManager().addProvider(provider);
         this.provider = provider;
     }
 
@@ -394,7 +402,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (StringUtils.isEmpty(generic)) {
             return;
         }
-        if (ProtocolUtils.isGeneric(generic)) {
+        if (ProtocolUtils.isValidGenericValue(generic)) {
             this.generic = generic;
         } else {
             throw new IllegalArgumentException("Unsupported generic type " + generic);

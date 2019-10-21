@@ -30,7 +30,6 @@ import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.ReferenceConfig;
-import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.event.ReferenceConfigDestroyedEvent;
 import org.apache.dubbo.event.Event;
 import org.apache.dubbo.event.EventDispatcher;
@@ -44,8 +43,9 @@ import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
 import org.apache.dubbo.rpc.cluster.support.registry.ZoneAwareCluster;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
+import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
-import org.apache.dubbo.rpc.model.ServiceModel;
+import org.apache.dubbo.rpc.model.ServiceRepository;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
 import org.apache.dubbo.rpc.service.Destroyable;
 import org.apache.dubbo.rpc.service.GenericService;
@@ -224,7 +224,7 @@ public class ReferenceConfigCache {
             return;
         }
 
-        ConfigManager.getInstance().removeConfig(rc);
+        ApplicationModel.getConfigManager().removeConfig(rc);
 
         Map<String, Object> proxiesOfType = proxies.remove(type);
         proxiesOfType.forEach((_k, _v) -> {
@@ -261,7 +261,7 @@ public class ReferenceConfigCache {
         }
 
         referredReferences.forEach((_k, referenceConfig) -> {
-            ConfigManager.getInstance().removeConfig(referenceConfig);
+            ApplicationModel.getConfigManager().removeConfig(referenceConfig);
         });
 
         proxies.forEach((_type, proxiesOfType) -> {
@@ -273,6 +273,14 @@ public class ReferenceConfigCache {
 
         referredReferences.clear();
         proxies.clear();
+    }
+
+    public ConcurrentMap<String, ReferenceConfig<?>> getReferredReferences() {
+        return referredReferences;
+    }
+
+    public ConcurrentMap<Class<?>, ConcurrentMap<String, Object>> getProxies() {
+        return proxies;
     }
 
     @Override
@@ -322,10 +330,19 @@ public class ReferenceConfigCache {
             Class<?> interfaceClass = rc.getInterfaceClass();
             String interfaceName = rc.getInterface();
 
+            ServiceMetadata serviceMetadata = rc.getServiceMetadata();
+            //init serivceMetadata
+            serviceMetadata.setVersion(rc.getVersion());
+            serviceMetadata.setGroup(rc.getGroup());
+            serviceMetadata.setDefaultGroup(rc.getGroup());
+            serviceMetadata.setServiceType(rc.getActualInterface());
+            serviceMetadata.setServiceInterfaceName(interfaceName);
+            serviceMetadata.setServiceKey(URL.buildKey(interfaceName, rc.getGroup(), rc.getVersion()));
+
             rc.checkStubAndLocal(interfaceClass);
             BootstrapUtils.checkMock(interfaceClass, rc);
-            Map<String, String> map = new HashMap<String, String>();
 
+            Map<String, String> map = new HashMap<String, String>();
             map.put(SIDE_KEY, CONSUMER_SIDE);
 
             ReferenceConfig.appendRuntimeParameters(map);
@@ -379,7 +396,6 @@ public class ReferenceConfigCache {
             }
             map.put(REGISTER_IP_KEY, hostToRegistry);
 
-            ServiceMetadata serviceMetadata = rc.getServiceMetadata();
             serviceMetadata.getAttachments().putAll(map);
 
             T proxy = createProxy(map, rc);
@@ -387,9 +403,15 @@ public class ReferenceConfigCache {
             serviceMetadata.setTarget(proxy);
             serviceMetadata.addAttribute(PROXY_CLASS_REF, proxy);
 
-            ServiceModel serviceModel = ApplicationModel.registerServiceModel(interfaceClass);
-            ApplicationModel.initConsumerModel(serviceMetadata.getServiceKey(),
-                    rc.buildConsumerModel(attributes, serviceModel, rc, proxy));
+            ServiceRepository repository = ApplicationModel.getServiceRepository();
+            ServiceDescriptor serviceDescriptor = repository.registerService(interfaceClass);
+            repository.registerConsumer(
+                    serviceMetadata.getServiceKey(),
+                    attributes,
+                    serviceDescriptor,
+                    rc,
+                    proxy,
+                    serviceMetadata);
 
             // dispatch a ReferenceConfigDestroyedEvent since 2.7.4
             dispatch(new ReferenceConfigDestroyedEvent(rc));

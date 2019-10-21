@@ -21,8 +21,8 @@ import org.apache.dubbo.common.extension.SPI;
 import java.util.Map;
 
 /**
- * Used to interact with other systems. Typical use cases:
- * 1. get extra attributes related to the instance on which Dubbo is deploying from underlying third-party systems or infrastructures.
+ * Used to interact with other systems. Typical use cases are:
+ * 1. get extra attributes from underlying infrastructures related to the instance on which Dubbo is currently deploying.
  * 2. get configurations from third-party systems which maybe useful for a specific component.
  */
 

@@ -17,7 +17,6 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
@@ -27,16 +26,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.apache.dubbo.common.config.configcenter.Constants.CONFIG_CHECK_KEY;
-import static org.apache.dubbo.common.config.configcenter.Constants.CONFIG_CLUSTER_KEY;
-import static org.apache.dubbo.common.config.configcenter.Constants.CONFIG_GROUP_KEY;
-import static org.apache.dubbo.common.config.configcenter.Constants.CONFIG_NAMESPACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.config.Constants.CONFIG_APP_CONFIGFILE_KEY;
 import static org.apache.dubbo.config.Constants.CONFIG_CONFIGFILE_KEY;
 import static org.apache.dubbo.config.Constants.CONFIG_ENABLE_KEY;
-import static org.apache.dubbo.config.Constants.CONFIG_TIMEOUT_KEY;
 import static org.apache.dubbo.config.Constants.ZOOKEEPER_PROTOCOL;
 
 /**
@@ -82,10 +77,14 @@ public class ConfigCenterConfig extends AbstractConfig {
     /* If the Config Center product you use have some special parameters that is not covered by this class, you can add it to here.
     For example, with XML:
       <dubbo:config-center>
-           <dubbo:parameter key="config.{your key}" value="{your value}" />
+           <dubbo:parameter key="{your key}" value="{your value}" />
       </dubbo:config-center>
      */
     private Map<String, String> parameters;
+
+    private Map<String, String> externalConfiguration;
+
+    private Map<String, String> appExternalConfiguration;
 
     public ConfigCenterConfig() {
     }
@@ -108,12 +107,20 @@ public class ConfigCenterConfig extends AbstractConfig {
         return inited.compareAndSet(false, true);
     }
 
+    public Map<String, String> getExternalConfiguration() {
+        return externalConfiguration;
+    }
+
+    public Map<String, String> getAppExternalConfiguration() {
+        return appExternalConfiguration;
+    }
+
     public void setExternalConfig(Map<String, String> externalConfiguration) {
-        Environment.getInstance().setExternalConfigMap(externalConfiguration);
+        this.externalConfiguration = externalConfiguration;
     }
 
     public void setAppExternalConfig(Map<String, String> appExternalConfiguration) {
-        Environment.getInstance().setAppExternalConfigMap(appExternalConfiguration);
+        this.appExternalConfiguration = appExternalConfiguration;
     }
 
     public String getProtocol() {
@@ -133,7 +140,6 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.address = address;
     }
 
-    @Parameter(key = CONFIG_CLUSTER_KEY)
     public String getCluster() {
         return cluster;
     }
@@ -142,7 +148,6 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.cluster = cluster;
     }
 
-    @Parameter(key = CONFIG_NAMESPACE_KEY)
     public String getNamespace() {
         return namespace;
     }
@@ -151,7 +156,6 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.namespace = namespace;
     }
 
-    @Parameter(key = CONFIG_GROUP_KEY)
     public String getGroup() {
         return group;
     }
@@ -160,7 +164,6 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.group = group;
     }
 
-    @Parameter(key = CONFIG_CHECK_KEY)
     public Boolean isCheck() {
         return check;
     }
@@ -194,7 +197,6 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.password = password;
     }
 
-    @Parameter(key = CONFIG_TIMEOUT_KEY)
     public Long getTimeout() {
         return timeout;
     }
@@ -212,7 +214,7 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.configFile = configFile;
     }
 
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, key = CONFIG_APP_CONFIGFILE_KEY)
     public String getAppConfigFile() {
         return appConfigFile;
     }

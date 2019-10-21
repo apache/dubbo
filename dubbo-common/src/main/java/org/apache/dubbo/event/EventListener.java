@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.event;
 
+import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.lang.Prioritized;
 
 import java.lang.reflect.ParameterizedType;
@@ -32,10 +33,11 @@ import static org.apache.dubbo.common.utils.ReflectUtils.findParameterizedTypes;
  * published, whose priority could be changed by {@link #getPriority()} method.
  *
  * @param <E> the concrete class of {@link Event Dubbo Event}
- * @see Event
+ * @see Event 
  * @see java.util.EventListener
  * @since 2.7.4
  */
+@SPI
 @FunctionalInterface
 public interface EventListener<E extends Event> extends java.util.EventListener, Prioritized {
 

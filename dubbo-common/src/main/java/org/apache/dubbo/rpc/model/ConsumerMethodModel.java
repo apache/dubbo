@@ -24,7 +24,7 @@ import java.util.concurrent.ConcurrentMap;
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
 
 /**
- * Replaced with {@link MethodModel}
+ * Replaced with {@link MethodDescriptor}
  */
 @Deprecated
 public class ConsumerMethodModel {

@@ -25,7 +25,8 @@ import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ProviderModel;
+import org.apache.dubbo.rpc.model.ServiceDescriptor;
+import org.apache.dubbo.rpc.model.ServiceRepository;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,6 +50,7 @@ public class InvokerTelnetHandlerTest {
     private static TelnetHandler invoke = new InvokeTelnetHandler();
     private static TelnetHandler select = new SelectTelnetHandler();
     private Channel mockChannel;
+    private final ServiceRepository repository = ApplicationModel.getServiceRepository();
 
     @BeforeEach
     public void setup() {
@@ -68,11 +70,7 @@ public class InvokerTelnetHandlerTest {
         given(mockChannel.getLocalAddress()).willReturn(NetUtils.toAddress("127.0.0.1:5555"));
         given(mockChannel.getRemoteAddress()).willReturn(NetUtils.toAddress("127.0.0.1:20886"));
 
-        ProviderModel providerModel = new ProviderModel(DemoService.class.getName(),
-                new DemoServiceImpl(),
-                ApplicationModel.registerServiceModel(DemoService.class),
-                null);
-        ApplicationModel.initProviderModel(DemoService.class.getName(), providerModel);
+        registerProvider(DemoService.class.getName(), new DemoServiceImpl(), DemoService.class);
 
         String result = invoke.telnet(mockChannel, "echo(\"ok\")");
         assertTrue(result.contains("result: \"ok\""));
@@ -86,11 +84,7 @@ public class InvokerTelnetHandlerTest {
         given(mockChannel.getLocalAddress()).willReturn(NetUtils.toAddress("127.0.0.1:5555"));
         given(mockChannel.getRemoteAddress()).willReturn(NetUtils.toAddress("127.0.0.1:20886"));
 
-        ProviderModel providerModel = new ProviderModel(DemoService.class.getName(),
-                new DemoServiceImpl(),
-                ApplicationModel.registerServiceModel(DemoService.class),
-                null);
-        ApplicationModel.initProviderModel(DemoService.class.getName(), providerModel);
+        registerProvider(DemoService.class.getName(), new DemoServiceImpl(), DemoService.class);
 
         String result = invoke.telnet(mockChannel, "DemoService.echo(\"ok\")");
         assertTrue(result.contains("result: \"ok\""));
@@ -104,11 +98,7 @@ public class InvokerTelnetHandlerTest {
         given(mockChannel.getLocalAddress()).willReturn(NetUtils.toAddress("127.0.0.1:5555"));
         given(mockChannel.getRemoteAddress()).willReturn(NetUtils.toAddress("127.0.0.1:20886"));
 
-        ProviderModel providerModel = new ProviderModel(DemoService.class.getName(),
-                new DemoServiceImpl(),
-                ApplicationModel.registerServiceModel(DemoService.class),
-                null);
-        ApplicationModel.initProviderModel(DemoService.class.getName(), providerModel);
+        registerProvider(DemoService.class.getName(), new DemoServiceImpl(), DemoService.class);
         try {
             invoke.telnet(mockChannel, "sayHello(null)");
         } catch (Exception ex) {
@@ -123,11 +113,7 @@ public class InvokerTelnetHandlerTest {
         given(mockChannel.getLocalAddress()).willReturn(NetUtils.toAddress("127.0.0.1:5555"));
         given(mockChannel.getRemoteAddress()).willReturn(NetUtils.toAddress("127.0.0.1:20886"));
 
-        ProviderModel providerModel = new ProviderModel(DemoService.class.getName(),
-                new DemoServiceImpl(),
-                ApplicationModel.registerServiceModel(DemoService.class),
-                null);
-        ApplicationModel.initProviderModel(DemoService.class.getName(), providerModel);
+        registerProvider(DemoService.class.getName(), new DemoServiceImpl(), DemoService.class);
 
         String result = invoke.telnet(mockChannel, "getType(\"High\")");
         assertTrue(result.contains("result: \"High\""));
@@ -142,12 +128,8 @@ public class InvokerTelnetHandlerTest {
         given(mockChannel.getLocalAddress()).willReturn(NetUtils.toAddress("127.0.0.1:5555"));
         given(mockChannel.getRemoteAddress()).willReturn(NetUtils.toAddress("127.0.0.1:20886"));
 
-        ProviderModel providerModel = new ProviderModel(DemoService.class.getName(),
-                new DemoServiceImpl(),
-                ApplicationModel.registerServiceModel(DemoService.class),
-                null
-        );
-        ApplicationModel.initProviderModel(DemoService.class.getName(), providerModel);
+        registerProvider(DemoService.class.getName(), new DemoServiceImpl(), DemoService.class);
+
         String result = invoke.telnet(mockChannel, "getPerson({\"name\":\"zhangsan\",\"age\":12,\"class\":\"org.apache.dubbo.rpc.protocol.dubbo.support.Person\"})");
         assertTrue(result.contains("result: 12"));
     }
@@ -160,8 +142,8 @@ public class InvokerTelnetHandlerTest {
         given(mockChannel.getLocalAddress()).willReturn(NetUtils.toAddress("127.0.0.1:5555"));
         given(mockChannel.getRemoteAddress()).willReturn(NetUtils.toAddress("127.0.0.1:20886"));
 
-        ProviderModel providerModel = new ProviderModel(DemoService.class.getName(), new DemoServiceImpl(), ApplicationModel.registerServiceModel(DemoService.class), null);
-        ApplicationModel.initProviderModel(DemoService.class.getName(), providerModel);
+        registerProvider(DemoService.class.getName(), new DemoServiceImpl(), DemoService.class);
+
         String param = "{\"name\":\"Dubbo\",\"age\":8}";
         String result = invoke.telnet(mockChannel, "getPerson(" + param + ")");
         assertTrue(result.contains("Please use the select command to select the method you want to invoke. eg: select 1"));
@@ -177,8 +159,8 @@ public class InvokerTelnetHandlerTest {
         given(mockChannel.getLocalAddress()).willReturn(NetUtils.toAddress("127.0.0.1:5555"));
         given(mockChannel.getRemoteAddress()).willReturn(NetUtils.toAddress("127.0.0.1:20886"));
 
-        ProviderModel providerModel = new ProviderModel(DemoService.class.getName(), new DemoServiceImpl(), ApplicationModel.registerServiceModel(DemoService.class), null);
-        ApplicationModel.initProviderModel(DemoService.class.getName(), providerModel);
+        registerProvider(DemoService.class.getName(), new DemoServiceImpl(), DemoService.class);
+
         String param = "{\"name\":\"Dubbo\",\"age\":8},{\"name\":\"Apache\",\"age\":20}";
         String result = invoke.telnet(mockChannel, "getPerson(" + param + ")");
         assertTrue(result.contains("result: 28"));
@@ -200,6 +182,17 @@ public class InvokerTelnetHandlerTest {
         given(mockChannel.getAttribute("telnet.service")).willReturn(null);
         String result = invoke.telnet(mockChannel, "(");
         assertEquals("Invalid parameters, format: service.method(args)", result);
+    }
+
+    private void registerProvider(String key, Object impl, Class<?> interfaceClass) {
+        ServiceDescriptor serviceDescriptor = repository.registerService(interfaceClass);
+        repository.registerProvider(
+                key,
+                impl,
+                serviceDescriptor,
+                null,
+                null
+        );
     }
 
     private Channel getChannelInstance() {

@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.event;
 
+import org.apache.dubbo.common.extension.ExtensionLoader;
+
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -30,7 +32,6 @@ import java.util.stream.Stream;
 
 import static java.util.Collections.sort;
 import static java.util.Collections.unmodifiableList;
-import static java.util.ServiceLoader.load;
 import static org.apache.dubbo.event.EventListener.findEventType;
 
 /**
@@ -161,7 +162,7 @@ public abstract class AbstractEventDispatcher implements EventDispatcher {
      * @see ServiceLoader#load(Class)
      */
     protected void loadEventListenerInstances() {
-        ServiceLoader<EventListener> serviceLoader = load(EventListener.class, getClass().getClassLoader());
-        serviceLoader.forEach(this::addEventListener);
+        ExtensionLoader<EventListener> loader = ExtensionLoader.getExtensionLoader(EventListener.class);
+        loader.getSupportedExtensionInstances().forEach(this::addEventListener);
     }
 }

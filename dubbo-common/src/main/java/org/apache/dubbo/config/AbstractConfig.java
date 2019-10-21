@@ -31,18 +31,22 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.context.ConfigConfigurationAdapter;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 
 import javax.annotation.PostConstruct;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
+
+import static org.apache.dubbo.common.utils.ReflectUtils.findMethodByMethodSignature;
 
 /**
  * Utility methods and public methods for parsing configuration
@@ -285,6 +289,58 @@ public abstract class AbstractConfig implements Serializable {
         return getter.substring(i, i + 1).toLowerCase() + getter.substring(i + 1);
     }
 
+    private static void invokeSetParameters(Class c, Object o, Map map) {
+        try {
+            Method method = findMethodByMethodSignature(c, "setParameters", new String[]{Map.class.getName()});
+            if (method != null && isParametersSetter(method)) {
+                method.invoke(o, map);
+            }
+        } catch (Throwable t) {
+            // ignore
+        }
+    }
+
+    private static Map<String, String> invokeGetParameters(Class c, Object o) {
+        try {
+            Method method = findMethodByMethodSignature(c, "getParameters", null);
+            if (method != null && isParametersGetter(method)) {
+                return (Map<String, String>) method.invoke(o);
+            }
+        } catch (Throwable t) {
+            // ignore
+        }
+        return null;
+    }
+
+    private static boolean isParametersGetter(Method method) {
+        String name = method.getName();
+        return ("getParameters".equals(name)
+                && Modifier.isPublic(method.getModifiers())
+                && method.getParameterTypes().length == 0
+                && method.getReturnType() == Map.class);
+    }
+
+    private static boolean isParametersSetter(Method method) {
+        return ("setParameters".equals(method.getName())
+                && Modifier.isPublic(method.getModifiers())
+                && method.getParameterCount() == 1
+                && Map.class == method.getParameterTypes()[0]
+                && method.getReturnType() == void.class);
+    }
+
+    private static Map<String, String> convert(Map<String, String> parameters, String prefix) {
+        if (parameters == null || parameters.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        Map<String, String> result = new HashMap<>();
+        String pre = (prefix != null && prefix.length() > 0 ? prefix + "." : "");
+        for (Map.Entry<String, String> entry : parameters.entrySet()) {
+            result.put(pre + entry.getKey().replace('-', '.'), entry.getValue());
+        }
+        return result;
+    }
+
     @Parameter(excluded = true)
     public String getId() {
         return id;
@@ -354,13 +410,12 @@ public abstract class AbstractConfig implements Serializable {
             try {
                 String name = method.getName();
                 if (MethodUtils.isMetaMethod(method)) {
-                    String prop = calculateAttributeFromGetter(name);
                     String key;
                     Parameter parameter = method.getAnnotation(Parameter.class);
                     if (parameter != null && parameter.key().length() > 0 && parameter.useKeyAsProperty()) {
                         key = parameter.key();
                     } else {
-                        key = prop;
+                        key = calculateAttributeFromGetter(name);
                     }
                     // treat url and configuration differently, the value should always present in configuration though it may not need to present in url.
                     //if (method.getReturnType() == Object.class || parameter != null && parameter.excluded()) {
@@ -368,6 +423,14 @@ public abstract class AbstractConfig implements Serializable {
                         metaData.put(key, null);
                         continue;
                     }
+
+                    /**
+                     * Attributes annotated as deprecated should not override newly added replacement.
+                     */
+                    if (MethodUtils.isDeprecated(method) && metaData.get(key) != null) {
+                        continue;
+                    }
+
                     Object value = method.invoke(this);
                     String str = String.valueOf(value).trim();
                     if (value != null && str.length() > 0) {
@@ -375,17 +438,9 @@ public abstract class AbstractConfig implements Serializable {
                     } else {
                         metaData.put(key, null);
                     }
-                } else if ("getParameters".equals(name)
-                        && Modifier.isPublic(method.getModifiers())
-                        && method.getParameterTypes().length == 0
-                        && method.getReturnType() == Map.class) {
+                } else if (isParametersGetter(method)) {
                     Map<String, String> map = (Map<String, String>) method.invoke(this, new Object[0]);
-                    if (map != null && map.size() > 0) {
-//                            String pre = (prefix != null && prefix.length() > 0 ? prefix + "." : "");
-                        for (Map.Entry<String, String> entry : map.entrySet()) {
-                            metaData.put(entry.getKey().replace('-', '.'), entry.getValue());
-                        }
-                    }
+                    metaData.putAll(convert(map, ""));
                 }
             } catch (Exception e) {
                 throw new IllegalStateException(e.getMessage(), e);
@@ -403,19 +458,12 @@ public abstract class AbstractConfig implements Serializable {
         this.prefix = prefix;
     }
 
-    /**
-     * TODO: Currently, only support overriding of properties explicitly defined in Config class, doesn't support
-     * overriding of customized parameters stored in 'parameters'.
-     */
     public void refresh() {
-        if (!refreshed.compareAndSet(false, true)) {
-            logger.info("Will not refresh " + this.getClass().getName() + ", already update to date.");
-            return;
-        }
+        Environment env = ApplicationModel.getEnvironment();
         try {
-            CompositeConfiguration compositeConfiguration = Environment.getInstance().getConfiguration(getPrefix(), getId());
+            CompositeConfiguration compositeConfiguration = env.getConfiguration(getPrefix(), getId());
             Configuration config = new ConfigConfigurationAdapter(this);
-            if (Environment.getInstance().isConfigCenterFirst()) {
+            if (env.isConfigCenterFirst()) {
                 // The sequence would be: SystemConfiguration -> AppExternalConfiguration -> ExternalConfiguration -> AbstractConfig -> PropertiesConfiguration
                 compositeConfiguration.addConfiguration(4, config);
             } else {
@@ -427,16 +475,18 @@ public abstract class AbstractConfig implements Serializable {
             Method[] methods = getClass().getMethods();
             for (Method method : methods) {
                 if (MethodUtils.isSetter(method)) {
-                    try {
-                        String value = StringUtils.trim(compositeConfiguration.getString(extractPropertyName(getClass(), method)));
-                        // isTypeMatch() is called to avoid duplicate and incorrect update, for example, we have two 'setGeneric' methods in ReferenceConfig.
-                        if (StringUtils.isNotEmpty(value) && ClassUtils.isTypeMatch(method.getParameterTypes()[0], value)) {
-                            method.invoke(this, ClassUtils.convertPrimitive(method.getParameterTypes()[0], value));
-                        }
-                    } catch (NoSuchMethodException e) {
-                        logger.info("Failed to override the property " + method.getName() + " in " +
-                                this.getClass().getSimpleName() +
-                                ", please make sure every property has getter/setter method provided.");
+                    String value = StringUtils.trim(compositeConfiguration.getString(extractPropertyName(getClass(), method)));
+                    // isTypeMatch() is called to avoid duplicate and incorrect update, for example, we have two 'setGeneric' methods in ReferenceConfig.
+                    if (StringUtils.isNotEmpty(value) && ClassUtils.isTypeMatch(method.getParameterTypes()[0], value)) {
+                        method.invoke(this, ClassUtils.convertPrimitive(method.getParameterTypes()[0], value));
+                    }
+                } else if (isParametersSetter(method)) {
+                    String value = StringUtils.trim(compositeConfiguration.getString(extractPropertyName(getClass(), method)));
+                    if (StringUtils.isNotEmpty(value)) {
+                        Map<String, String> map = invokeGetParameters(getClass(), this);
+                        map = map == null ? new HashMap<>() : map;
+                        map.putAll(convert(StringUtils.parseParameters(value), ""));
+                        invokeSetParameters(getClass(), this, map);
                     }
                 }
             }
@@ -516,7 +566,7 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     /**
-     * Add {@link AbstractConfig current instance} into {@link ConfigManager}
+     * Add {@link AbstractConfig instance} into {@link ConfigManager}
      * <p>
      * Current method will invoked by Spring or Java EE container automatically, or should be triggered manually.
      *
@@ -525,6 +575,6 @@ public abstract class AbstractConfig implements Serializable {
      */
     @PostConstruct
     public void addIntoConfigManager() {
-        ConfigManager.getInstance().addConfig(this);
+        ApplicationModel.getConfigManager().addConfig(this);
     }
 }

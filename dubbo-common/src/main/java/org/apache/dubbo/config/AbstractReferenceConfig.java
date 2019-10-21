@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
@@ -96,11 +97,13 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
         this.init = init;
     }
 
+    @Deprecated
     @Parameter(excluded = true)
     public Boolean isGeneric() {
-        return ProtocolUtils.isGeneric(generic);
+        return this.generic != null ? ProtocolUtils.isGeneric(generic) : null;
     }
 
+    @Deprecated
     public void setGeneric(Boolean generic) {
         if (generic != null) {
             this.generic = generic.toString();
@@ -112,7 +115,14 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
     }
 
     public void setGeneric(String generic) {
-        this.generic = generic;
+        if (StringUtils.isEmpty(generic)) {
+            return;
+        }
+        if (ProtocolUtils.isValidGenericValue(generic)) {
+            this.generic = generic;
+        } else {
+            throw new IllegalArgumentException("Unsupported generic type " + generic);
+        }
     }
 
     /**

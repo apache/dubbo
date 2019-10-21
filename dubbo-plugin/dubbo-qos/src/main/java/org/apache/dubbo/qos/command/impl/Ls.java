@@ -24,7 +24,6 @@ import org.apache.dubbo.qos.textui.TTable;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
-import org.apache.dubbo.rpc.model.ServiceRepository;
 
 import java.util.Collection;
 
@@ -32,8 +31,6 @@ import java.util.Collection;
         "ls"
 })
 public class Ls implements BaseCommand {
-    private ServiceRepository serviceRepository = ServiceRepository.getLoadedInstance();
-
     @Override
     public String execute(CommandContext commandContext, String[] args) {
         StringBuilder result = new StringBuilder();
