@@ -262,17 +262,15 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
         map.put(Constants.SIDE_KEY, Constants.CONSUMER_SIDE);//consumer端
         appendRuntimeParameters(map);//添加运行时参数，例如版本、时间戳和进程号等
-        if (!isGeneric()) {//泛化处理
+        if (!isGeneric()) {//非泛化处理
             String revision = Version.getVersion(interfaceClass, version);//接口版本
             if (revision != null && revision.length() > 0) {
                 map.put("revision", revision);
             }
-            //泛化默认interface = GenericService.class
             String[] methods = Wrapper.getWrapper(interfaceClass).getMethodNames();
             if (methods.length == 0) {
                 map.put("methods", Constants.ANY_VALUE);
             } else {
-                //泛化的情况下，取
                 map.put("methods", StringUtils.join(new HashSet<String>(Arrays.asList(methods)), ","));
             }
         }
@@ -352,16 +350,16 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 }
             } else { // KKEY 走注册中心逻辑
                 checkRegistry();
-                List<URL> us = loadRegistries(false);//加载注册中心URL
-                if (CollectionUtils.isNotEmpty(us)) {
-                    for (URL u : us) {
-                        URL monitorUrl = loadMonitor(u);//加载monitor参数并生成URL
+                List<URL> urlList = loadRegistries(false);//加载注册中心URL
+                if (CollectionUtils.isNotEmpty(urlList)) {
+                    for (URL url : urlList) {
+                        URL monitorUrl = loadMonitor(url);//加载monitor参数并生成URL
                         if (monitorUrl != null) {
                             //编码并添加到URL的monitor中
                             map.put(Constants.MONITOR_KEY, URL.encode(monitorUrl.toFullString()));
                         }
                         //将map转换成key=value&k=v的字符串并编码添加到url的refer
-                        urls.add(u.addParameterAndEncoded(Constants.REFER_KEY, StringUtils.toQueryString(map)));
+                        urls.add(url.addParameterAndEncoded(Constants.REFER_KEY, StringUtils.toQueryString(map)));
                     }
                 }
                 if (urls.isEmpty()) {//注册中心都没配置，则直接抛异常

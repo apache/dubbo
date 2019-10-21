@@ -75,6 +75,7 @@ public class MockClusterInvoker<T> implements Invoker<T> {
             //no mock
             result = this.invoker.invoke(invocation);
         } else if (value.startsWith("force")) {
+            //强制mock
             if (logger.isWarnEnabled()) {
                 logger.warn("force-mock: " + invocation.getMethodName() + " force-mock enabled , url : " + directory.getUrl());
             }
@@ -83,6 +84,7 @@ public class MockClusterInvoker<T> implements Invoker<T> {
         } else {
             //fail-mock
             try {
+                //先Invoke，失败后再mock
                 result = this.invoker.invoke(invocation);
             } catch (RpcException e) {
                 if (e.isBiz()) {
