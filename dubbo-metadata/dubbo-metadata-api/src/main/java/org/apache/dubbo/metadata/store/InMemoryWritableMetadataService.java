@@ -158,7 +158,10 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
     boolean removeURL(Map<String, SortedSet<URL>> serviceURLs, URL url) {
         return executeMutually(() -> {
             String key = url.getServiceKey();
-            SortedSet<URL> urls = serviceURLs.getOrDefault(key, emptySortedSet());
+            SortedSet<URL> urls = serviceURLs.getOrDefault(key, null);
+            if (urls == null) {
+                return true;
+            }
             boolean r = urls.remove(url);
             // if it is empty
             if (urls.isEmpty()) {

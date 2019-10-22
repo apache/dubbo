@@ -19,12 +19,6 @@ package org.apache.dubbo.registry.client.metadata;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
 
-import org.junit.jupiter.api.Test;
-
-import static org.apache.dubbo.registry.client.metadata.MetadataServiceURLBuilder.composite;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 /**
  * {@link MetadataServiceURLBuilder} Test
  *
@@ -39,15 +33,10 @@ public class MetadataServiceURLBuilderTest {
         serviceInstance.getMetadata().put("dubbo.metadata-service.url-params", "{\"dubbo\":{\"application\":\"dubbo-provider-demo\",\"deprecated\":\"false\",\"group\":\"dubbo-provider-demo\",\"version\":\"1.0.0\",\"timestamp\":\"1564845042651\",\"dubbo\":\"2.0.2\",\"provider.host\":\"192.168.0.102\",\"provider.port\":\"20880\"}}");
     }
 
-    @Test
-    public void testComposite() {
-        assertEquals(CompositeMetadataServiceURLBuilder.class, composite().getClass());
-    }
-
-    @Test
-    public void testBuild() {
-        assertTrue(composite().build(null).isEmpty());
-        assertTrue(composite().build(new DefaultServiceInstance("127.0.0.1", "test", 8080)).isEmpty());
-        assertEquals(2, composite().build(serviceInstance).size());
-    }
+//    @Test
+//    public void testBuild() {
+//        assertTrue(composite().build(null).isEmpty());
+//        assertTrue(composite().build(new DefaultServiceInstance("127.0.0.1", "test", 8080)).isEmpty());
+//        assertEquals(2, composite().build(serviceInstance).size());
+//    }
 }

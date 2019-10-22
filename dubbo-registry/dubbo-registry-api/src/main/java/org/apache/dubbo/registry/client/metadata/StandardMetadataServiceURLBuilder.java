@@ -27,16 +27,17 @@ import java.util.Map;
 
 import static java.lang.String.valueOf;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PORT_KEY;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getMetadataServiceURLsParams;
-import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getProtocolPort;
 
 /**
- * The {@link MetadataServiceURLBuilder} implementation for The standard Dubbo scenario
+ * Standard Dubbo provider enabling introspection service discovery mode.
  *
  * @see MetadataService
  * @since 2.7.4
  */
 public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuilder {
+    public static final String NAME = "standard";
 
     /**
      * Build the {@link URL urls} from {@link ServiceInstance#getMetadata() the metadata} of {@link ServiceInstance}
@@ -47,7 +48,7 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
     @Override
     public List<URL> build(ServiceInstance serviceInstance) {
 
-        Map<String, Map<String, Object>> paramsMap = getMetadataServiceURLsParams(serviceInstance);
+        Map<String, Map<String, String>> paramsMap = getMetadataServiceURLsParams(serviceInstance);
 
         List<URL> urls = new ArrayList<>(paramsMap.size());
 
@@ -55,9 +56,10 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
 
         String host = serviceInstance.getHost();
 
-        for (Map.Entry<String, Map<String, Object>> entry : paramsMap.entrySet()) {
+        for (Map.Entry<String, Map<String, String>> entry : paramsMap.entrySet()) {
             String protocol = entry.getKey();
-            Integer port = getProtocolPort(serviceInstance, protocol);
+            Map<String, String> params = entry.getValue();
+            int port = Integer.parseInt(params.get(PORT_KEY));
             URLBuilder urlBuilder = new URLBuilder()
                     .setHost(host)
                     .setPort(port)
@@ -65,7 +67,7 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
                     .setPath(MetadataService.class.getName());
 
             // add parameters
-            entry.getValue().forEach((name, value) -> urlBuilder.addParameter(name, valueOf(value)));
+            params.forEach((name, value) -> urlBuilder.addParameter(name, valueOf(value)));
 
             // add the default parameters
             urlBuilder.addParameter(GROUP_KEY, serviceName);

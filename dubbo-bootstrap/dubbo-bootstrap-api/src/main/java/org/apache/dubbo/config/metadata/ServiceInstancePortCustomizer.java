@@ -16,10 +16,15 @@
  */
 package org.apache.dubbo.config.metadata;
 
+import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import java.util.Collection;
+import java.util.stream.Stream;
 
 /**
  * The {@link ServiceInstanceCustomizer} to customize the {@link ServiceInstance#getPort() port} of service instance.
@@ -35,17 +40,25 @@ public class ServiceInstancePortCustomizer implements ServiceInstanceCustomizer 
             return;
         }
 
-        ApplicationModel.getConfigManager()
-                .getProtocols()
-                .stream()
+        Collection<ProtocolConfig> protocols = ApplicationModel.getConfigManager()
+                .getProtocols();
+
+        if (CollectionUtils.isEmpty(protocols)) {
+            throw new IllegalStateException("We should have at least one protocol configured at this point.");
+        }
+
+        Stream<ProtocolConfig> protocolStream = protocols.stream();
+        ProtocolConfig protocolConfig = protocolStream
+                // use rest as service instance's default protocol.
+                .filter(protocol -> "rest".equals(protocol.getName()))
                 .findFirst()
-                .ifPresent(protocolConfig -> {
-                    if (serviceInstance instanceof DefaultServiceInstance) {
-                        DefaultServiceInstance instance = (DefaultServiceInstance) serviceInstance;
-                        if (protocolConfig.getPort() != null) {
-                            instance.setPort(protocolConfig.getPort());
-                        }
-                    }
-                });
+                .orElseGet(() -> protocolStream.findFirst().get());
+
+        if (serviceInstance instanceof DefaultServiceInstance) {
+            DefaultServiceInstance instance = (DefaultServiceInstance) serviceInstance;
+            if (protocolConfig.getPort() != null) {
+                instance.setPort(protocolConfig.getPort());
+            }
+        }
     }
 }

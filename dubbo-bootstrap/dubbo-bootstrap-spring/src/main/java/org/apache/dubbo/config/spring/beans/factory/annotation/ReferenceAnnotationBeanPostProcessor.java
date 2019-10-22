@@ -234,7 +234,8 @@ public class ReferenceAnnotationBeanPostProcessor extends AnnotationInjectedBean
             localReferenceBeanInvocationHandlerCache.put(referencedBeanName, handler);
         } else {
             // Remote Reference Bean should initialize immediately
-            handler.init();
+            // FIXME
+            // handler.init();
         }
 
         return handler;

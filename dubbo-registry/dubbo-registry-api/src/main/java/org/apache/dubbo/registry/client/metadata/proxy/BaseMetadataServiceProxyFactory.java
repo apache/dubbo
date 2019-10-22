@@ -7,10 +7,8 @@ import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
-
 /**
- * 2019-08-09
+ * base class for remote and local implementations.
  */
 abstract class BaseMetadataServiceProxyFactory implements MetadataServiceProxyFactory {
     private final Map<String, MetadataService> proxies = new HashMap<>();

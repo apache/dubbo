@@ -156,6 +156,10 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         this.subscribedURLsSynthesizers = initSubscribedURLsSynthesizers();
     }
 
+    public ServiceDiscovery getServiceDiscovery() {
+        return serviceDiscovery;
+    }
+
     /**
      * Get the subscribed services from the specified registry {@link URL url}
      *
@@ -744,7 +748,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
             exportedURLs = toURLs(urls);
         } catch (Throwable e) {
             if (logger.isErrorEnabled()) {
-                logger.error(format("It's failed to get the exported URLs from the target service instance[%s]",
+                logger.error(format("Failed to get the exported URLs from the target service instance[%s]",
                         providerServiceInstance), e);
             }
             exportedURLs = null; // set the result to be null if failed to get
@@ -791,6 +795,12 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         Set<String> serviceNames = getSubscribedServices();
         if (isEmpty(serviceNames)) {
             serviceNames = findMappedServices(subscribedURL);
+        }
+        if (isEmpty(serviceNames)) {
+            throw new IllegalStateException(String.format("Could not resolve interface %s for its application (service), " +
+                    "you should either specify service name explicitly or make sure there's at least one active provider " +
+                    " instance and it has registered the service-app mapping info to config center automatically. \n" +
+                    "The full subscribing url is %s", subscribedURL.getServiceInterface(), subscribedURL));
         }
         return serviceNames;
     }

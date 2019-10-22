@@ -71,6 +71,7 @@ import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
+import org.apache.dubbo.registry.client.ServiceDiscoveryRegistry;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 import org.apache.dubbo.rpc.Exporter;
@@ -115,6 +116,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
@@ -682,11 +684,12 @@ public class DubboBootstrap extends GenericEventListener {
     }
 
     private List<ServiceDiscovery> getServiceDiscoveries() {
-        return Collections.unmodifiableList(
-                ExtensionLoader
-                        .getExtensionLoader(ServiceDiscovery.class)
-                        .getLoadedExtensionInstances()
-        );
+        return AbstractRegistryFactory.getRegistries()
+                .stream()
+                .filter(registry -> registry instanceof ServiceDiscoveryRegistry)
+                .map(registry -> (ServiceDiscoveryRegistry) registry)
+                .map(ServiceDiscoveryRegistry::getServiceDiscovery)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -933,6 +936,9 @@ public class DubboBootstrap extends GenericEventListener {
     }
 
     private void registerServiceInstance() {
+        if (CollectionUtils.isEmpty(getServiceDiscoveries())) {
+            return;
+        }
 
         ApplicationConfig application = getApplication();
 
@@ -957,12 +963,19 @@ public class DubboBootstrap extends GenericEventListener {
 
         for (String urlValue : urlValues) {
             URL url = URL.valueOf(urlValue);
+            if (MetadataService.class.getName().equals(url.getServiceInterface())) {
+                continue;
+            }
             if ("rest".equals(url.getProtocol())) { // REST first
                 selectedURL = url;
                 break;
             } else {
                 selectedURL = url; // If not found, take any one
             }
+        }
+
+        if (selectedURL == null && CollectionUtils.isNotEmpty(urlValues)) {
+            selectedURL = URL.valueOf(urlValues.iterator().next());
         }
 
         return selectedURL;

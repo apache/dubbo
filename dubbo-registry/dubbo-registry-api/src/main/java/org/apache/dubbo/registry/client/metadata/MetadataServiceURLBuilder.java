@@ -18,18 +18,13 @@ package org.apache.dubbo.registry.client.metadata;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.ServiceInstance;
 
 import java.util.List;
-import java.util.ServiceLoader;
 
 /**
- * The builder interface of {@link MetadataService} to build {@link URL URLs}, the multiple implementations
- * will be loaded by Java standard {@link ServiceLoader} and {@link #composite() composited},
- * whose building {@link URL URLs} will be aggregated
+ * Used to build metadata service url from ServiceInstance.
  *
- * @see CompositeMetadataServiceURLBuilder
  * @since 2.7.4
  */
 @SPI
@@ -39,17 +34,7 @@ public interface MetadataServiceURLBuilder {
      * Build the {@link URL URLs} from the specified {@link ServiceInstance}
      *
      * @param serviceInstance {@link ServiceInstance}
-     * @return non-null
+     * @return TODO, usually, we generate one metadata url from one instance. There's no scenario to return a metadta url list.
      */
     List<URL> build(ServiceInstance serviceInstance);
-
-    /**
-     * Get the composite implementation of {@link MetadataServiceURLBuilder}
-     *
-     * @return the instance of {@link CompositeMetadataServiceURLBuilder}
-     * @see CompositeMetadataServiceURLBuilder
-     */
-    static MetadataServiceURLBuilder composite() {
-        return new CompositeMetadataServiceURLBuilder();
-    }
 }

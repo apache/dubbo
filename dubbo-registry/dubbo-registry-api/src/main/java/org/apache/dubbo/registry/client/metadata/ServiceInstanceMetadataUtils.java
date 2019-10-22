@@ -17,13 +17,14 @@
 package org.apache.dubbo.registry.client.metadata;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.client.ServiceInstance;
-import org.apache.dubbo.rpc.Protocol;
 
 import com.alibaba.fastjson.JSON;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -33,6 +34,7 @@ import static java.util.Collections.emptyMap;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PORT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 import static org.apache.dubbo.registry.integration.RegistryProtocol.DEFAULT_REGISTER_PROVIDER_KEYS;
@@ -54,15 +56,7 @@ public class ServiceInstanceMetadataUtils {
      */
     public static final String METADATA_SERVICE_PREFIX = "dubbo.metadata-service.";
 
-    /**
-     * The prefix of {@link Protocol} : "dubbo.protocols."
-     */
-    public static final String DUBBO_PROTOCOLS_PREFIX = "dubbo.protocols.";
-
-    /**
-     * The suffix of port : ".port";
-     */
-    public static final String DUBBO_PORT_SUFFIX = ".port";
+    public static final String ENDPOINTS = "dubbo.endpoints";
 
     /**
      * The property name of metadata JSON of {@link MetadataService}'s {@link URL}
@@ -98,7 +92,7 @@ public class ServiceInstanceMetadataUtils {
      * @return non-null {@link Map}, the key is {@link URL#getProtocol() the protocol of URL}, the value is
      * {@link #getMetadataServiceURLParams(ServiceInstance, String)}
      */
-    public static Map<String, Map<String, Object>> getMetadataServiceURLsParams(ServiceInstance serviceInstance) {
+    public static Map<String, Map<String, String>> getMetadataServiceURLsParams(ServiceInstance serviceInstance) {
         Map<String, String> metadata = serviceInstance.getMetadata();
         String param = metadata.get(METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME);
         return isBlank(param) ? emptyMap() : (Map) JSON.parse(param);
@@ -110,8 +104,8 @@ public class ServiceInstanceMetadataUtils {
      * @param serviceInstance the instance of {@link ServiceInstance}
      * @return non-null {@link Map}
      */
-    public static Map<String, Object> getMetadataServiceURLParams(ServiceInstance serviceInstance, String protocol) {
-        Map<String, Map<String, Object>> params = getMetadataServiceURLsParams(serviceInstance);
+    public static Map<String, String> getMetadataServiceURLParams(ServiceInstance serviceInstance, String protocol) {
+        Map<String, Map<String, String>> params = getMetadataServiceURLsParams(serviceInstance);
         return params.getOrDefault(protocol, emptyMap());
     }
 
@@ -122,7 +116,7 @@ public class ServiceInstanceMetadataUtils {
         urls.stream()
                 // remove APPLICATION_KEY because service name must be present
                 .map(url -> url.removeParameter(APPLICATION_KEY))
-                // remove GROUP_KEY because service name must be present
+                // remove GROUP_KEY, always uses application name.
                 .map(url -> url.removeParameter(GROUP_KEY))
                 // remove DEPRECATED_KEY because it's always false
                 .map(url -> url.removeParameter(DEPRECATED_KEY))
@@ -143,6 +137,7 @@ public class ServiceInstanceMetadataUtils {
     private static Map<String, String> getParams(URL providerURL) {
         Map<String, String> params = new LinkedHashMap<>();
         setDefaultParams(params, providerURL);
+        params.put(PORT_KEY, String.valueOf(providerURL.getPort()));
         return params;
     }
 
@@ -212,27 +207,15 @@ public class ServiceInstanceMetadataUtils {
                 || metadata.containsKey(METADATA_SERVICE_URLS_PROPERTY_NAME);
     }
 
-    /**
-     * Create the property name of Dubbo protocol port
-     *
-     * @param protocol the name of protocol, e.g, dubbo, rest, and so on
-     * @return e.g, "dubbo.protocols.dubbo.port"
-     */
-    public static String createProtocolPortPropertyName(String protocol) {
-        return DUBBO_PROTOCOLS_PREFIX + protocol + DUBBO_PORT_SUFFIX;
-    }
-
-    /**
-     * Set the protocol port into {@link ServiceInstance#getMetadata() the metadata of service instance}
-     *
-     * @param serviceInstance {@link ServiceInstance service instance}
-     * @param protocol        the name of protocol, e.g, dubbo, rest, and so on
-     * @param port            the port of protocol
-     */
-    public static void setProtocolPort(ServiceInstance serviceInstance, String protocol, int port) {
+    public static void setEndpoints(ServiceInstance serviceInstance, Map<String, Integer> protocolPortss) {
         Map<String, String> metadata = serviceInstance.getMetadata();
-        String propertyName = createProtocolPortPropertyName(protocol);
-        metadata.put(propertyName, Integer.toString(port));
+        List<Endpoint> endpoints = new ArrayList<>();
+        protocolPortss.forEach((k, v) -> {
+            Endpoint endpoint = new Endpoint(v, k);
+            endpoints.add(endpoint);
+        });
+
+        metadata.put(ENDPOINTS, JSON.toJSONString(endpoints));
     }
 
     /**
@@ -245,9 +228,16 @@ public class ServiceInstanceMetadataUtils {
      */
     public static Integer getProtocolPort(ServiceInstance serviceInstance, String protocol) {
         Map<String, String> metadata = serviceInstance.getMetadata();
-        String propertyName = createProtocolPortPropertyName(protocol);
-        String propertyValue = metadata.get(propertyName);
-        return propertyValue == null ? null : Integer.valueOf(propertyValue);
+        String rawEndpoints = metadata.get(ENDPOINTS);
+        if (StringUtils.isNotEmpty(rawEndpoints)) {
+            List<Endpoint> endpoints = JSON.parseArray(rawEndpoints, Endpoint.class);
+            for (Endpoint endpoint : endpoints) {
+                if (endpoint.getProtocol().equals(protocol)) {
+                    return endpoint.getPort();
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -262,6 +252,32 @@ public class ServiceInstanceMetadataUtils {
             if (!isBlank(parameterValue)) {
                 params.put(parameterName, parameterValue);
             }
+        }
+    }
+
+    public static class Endpoint {
+        Integer port;
+        String protocol;
+
+        public Endpoint(Integer port, String protocol) {
+            this.port = port;
+            this.protocol = protocol;
+        }
+
+        public Integer getPort() {
+            return port;
+        }
+
+        public void setPort(Integer port) {
+            this.port = port;
+        }
+
+        public String getProtocol() {
+            return protocol;
+        }
+
+        public void setProtocol(String protocol) {
+            this.protocol = protocol;
         }
     }
 }

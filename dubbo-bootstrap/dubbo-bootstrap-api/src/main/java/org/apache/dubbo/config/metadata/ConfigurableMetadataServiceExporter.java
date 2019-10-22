@@ -33,7 +33,6 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import java.util.ArrayList;
 import java.util.List;
 
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 
@@ -76,7 +75,7 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
             ServiceConfig<MetadataService> serviceConfig = new ServiceConfig<>();
             serviceConfig.setApplication(getApplicationConfig());
             serviceConfig.setRegistries(getRegistries());
-            serviceConfig.setProtocols(getProtocols());
+            serviceConfig.setProtocol(generateMetadataProtocol());
             serviceConfig.setInterface(MetadataService.class);
             serviceConfig.setRef(metadataService);
             serviceConfig.setGroup(getApplicationConfig().getName());
@@ -127,13 +126,10 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
         return new ArrayList<>(ApplicationModel.getConfigManager().getRegistries());
     }
 
-    private List<ProtocolConfig> getProtocols() {
-        return asList(getDefaultProtocol());
-    }
-
-    private ProtocolConfig getDefaultProtocol() {
+    private ProtocolConfig generateMetadataProtocol() {
         ProtocolConfig defaultProtocol = new ProtocolConfig();
         defaultProtocol.setName(DUBBO);
+        // defaultProtocol.setHost() ?
         // auto-increment port
         defaultProtocol.setPort(-1);
         return defaultProtocol;

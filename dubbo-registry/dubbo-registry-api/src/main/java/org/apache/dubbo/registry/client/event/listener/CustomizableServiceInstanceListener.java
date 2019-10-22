@@ -22,15 +22,9 @@ import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
 import org.apache.dubbo.registry.client.event.ServiceInstancePreRegisteredEvent;
 
-import java.util.ServiceLoader;
-
 /**
- * An {@link EventListener event listener} to customize {@link ServiceInstance the service instance} by the instances of
- * {@link ServiceInstanceCustomizer} {@link ServiceLoader SPI}.
+ * Customize the {@link ServiceInstance} before registering to Registry.
  *
- * @see EventListener
- * @see ServiceInstancePreRegisteredEvent
- * @see ServiceInstanceCustomizer
  * @since 2.7.4
  */
 public class CustomizableServiceInstanceListener implements EventListener<ServiceInstancePreRegisteredEvent> {
@@ -39,6 +33,7 @@ public class CustomizableServiceInstanceListener implements EventListener<Servic
     public void onEvent(ServiceInstancePreRegisteredEvent event) {
         ExtensionLoader<ServiceInstanceCustomizer> loader =
                 ExtensionLoader.getExtensionLoader(ServiceInstanceCustomizer.class);
+        // FIXME, sort customizer before apply
         loader.getSupportedExtensionInstances().forEach(customizer -> {
             // customizes
             customizer.customize(event.getServiceInstance());

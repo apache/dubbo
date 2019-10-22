@@ -30,11 +30,13 @@ import java.util.stream.Collectors;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.METADATA_SERVICE_URLS_PROPERTY_NAME;
 
 /**
- * The {@link MetadataServiceURLBuilder} implementation for The standard Dubbo scenario
+ * Supporting interaction with Dubbo Spring Cloud at https://github.com/alibaba/spring-cloud-alibaba
+ * Dubbo Spring Cloud is a Dubbo extension that favours a per instance registry model and exposes metadata service.
  *
  * @since 2.7.4
  */
 public class SpringCloudMetadataServiceURLBuilder implements MetadataServiceURLBuilder {
+    public static final String NAME = "spring-cloud";
 
     @Override
     public List<URL> build(ServiceInstance serviceInstance) {
