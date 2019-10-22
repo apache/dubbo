@@ -364,12 +364,28 @@ class URL implements Serializable {
     }
 
     public String getAuthority() {
-        if (StringUtils.isEmpty(username)
-                && StringUtils.isEmpty(password)) {
-            return null;
+        StringBuilder ret = new StringBuilder();
+
+        if (StringUtils.isNotEmpty(username)) {
+            ret.append(username);
+            ret.append(":");
         }
-        return (username == null ? "" : username)
-                + ":" + (password == null ? "" : password);
+        if (StringUtils.isNotEmpty(password)) {
+            ret.append(password);
+        }
+
+        if (StringUtils.isNotEmpty(host)) {
+            if (StringUtils.isNotEmpty(username)) {
+                ret.append("@");
+            }
+            ret.append(host);
+            if (port != 0) {
+                ret.append(":");
+                ret.append(port);
+            }
+        }
+
+        return ret.length() == 0 ? null : ret.toString();
     }
 
     public String getHost() {

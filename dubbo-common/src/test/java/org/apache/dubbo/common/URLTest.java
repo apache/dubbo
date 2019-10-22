@@ -720,4 +720,23 @@ public class URLTest {
         URL url4 = URL.valueOf("10.20.130.230:20880/context/path?interface=org.apache.dubbo.test.interfaceName");
         Assertions.assertEquals("org.apache.dubbo.test.interfaceName::", url4.getColonSeparatedKey());
     }
+
+    @Test
+    public void test_getAuthority() {
+        URL url1 = URL.valueOf("http://10.20.130.230:20880/context/path?version=1.0.0&application=morgan#anchor1");
+        Assertions.assertEquals("10.20.130.230:20880", url1.getAuthority());
+        URL url2 = URL.valueOf("http://admin:hello1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan#anchor1");
+        Assertions.assertEquals("admin:hello1234@10.20.130.230:20880", url2.getAuthority());
+        URL url3 = URL.valueOf("http://admin:@10.20.130.230:20880/context/path?version=1.0.0&application=morgan#anchor1");
+        Assertions.assertEquals("admin:@10.20.130.230:20880", url3.getAuthority());
+        URL url4 = URL.valueOf("192.168.1.3:20880");
+        Assertions.assertEquals("192.168.1.3:20880", url4.getAuthority());
+        URL url5 = URL.valueOf("file://home/user1/router.js?type=script");
+        Assertions.assertEquals("home", url5.getAuthority());
+        URL url6 = URL.valueOf("file:///home/user1/router.js?type=script");
+        Assertions.assertNull(url6.getAuthority());
+        URL url7 = URL.valueOf("http://10.20.130.230/context/path?version=1.0.0&application=morgan#anchor1");
+        Assertions.assertEquals("10.20.130.230", url7.getAuthority());
+
+    }
 }
