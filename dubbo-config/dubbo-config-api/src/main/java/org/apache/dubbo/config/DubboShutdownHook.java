@@ -20,9 +20,11 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
+import org.apache.dubbo.rpc.GracefulShutDown;
 import org.apache.dubbo.rpc.Protocol;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 /**
  * The shutdown hook thread to do the clean up stuff.
@@ -82,19 +84,46 @@ public class DubboShutdownHook extends Thread {
      * Destroy all the resources, including registries and protocols.
      */
     public void doDestroy() {
+
+        destroyRegistries();
+
+        ExtensionLoader<GracefulShutDown> loader = ExtensionLoader.getExtensionLoader(GracefulShutDown.class);
+        cleanResources(loader, GracefulShutDown::afterRegistriesDestroyed);
+        // destroy all the protocols
+        destroyProtocols();
+        cleanResources(loader, GracefulShutDown::afterProtocolDestroyed);
+    }
+
+    /**
+     * clean resources in different stage
+     *
+     * @param loader   the spi loader
+     * @param consumer a lamda expression  you want do
+     */
+    private void cleanResources(ExtensionLoader<GracefulShutDown> loader, Consumer<GracefulShutDown> consumer) {
+
+        try {
+            GracefulShutDown shutDown = loader.getExtension(GracefulShutDown.MARK);
+                if (null != shutDown){
+                    consumer.accept(shutDown);
+                }
+            }catch (Throwable t){
+                logger.warn(t.getMessage(),t);
+            }
+    }
+
+    public void destroyRegistries(){
         if (!destroyed.compareAndSet(false, true)) {
             return;
         }
         // destroy all the registries
         AbstractRegistryFactory.destroyAll();
-        // destroy all the protocols
-        destroyProtocols();
     }
 
     /**
      * Destroy all the protocols.
      */
-    private void destroyProtocols() {
+    public void destroyProtocols() {
         ExtensionLoader<Protocol> loader = ExtensionLoader.getExtensionLoader(Protocol.class);
         for (String protocolName : loader.getLoadedExtensions()) {
             try {
