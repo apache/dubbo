@@ -2,7 +2,6 @@ package org.apache.dubbo.metadata.store;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.metadata.report.MetadataReportInstance;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;

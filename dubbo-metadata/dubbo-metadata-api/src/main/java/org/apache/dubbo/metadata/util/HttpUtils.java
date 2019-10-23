@@ -18,8 +18,6 @@ package org.apache.dubbo.metadata.util;
 
 import org.apache.dubbo.common.utils.StringUtils;
 
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -32,16 +30,11 @@ import java.util.stream.Collectors;
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableSet;
 import static org.apache.dubbo.common.utils.StringUtils.AND;
-import static org.apache.dubbo.common.utils.StringUtils.AND_CHAR;
-import static org.apache.dubbo.common.utils.StringUtils.EMPTY_VALUE;
 import static org.apache.dubbo.common.utils.StringUtils.EQUAL;
-import static org.apache.dubbo.common.utils.StringUtils.EQUAL_CHAR;
 import static org.apache.dubbo.common.utils.StringUtils.QUESTION_MASK;
 import static org.apache.dubbo.common.utils.StringUtils.SLASH;
 import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
 import static org.apache.dubbo.common.utils.StringUtils.replace;
-import static org.apache.dubbo.common.utils.StringUtils.split;
-import static org.apache.dubbo.common.utils.StringUtils.trim;
 
 /**
  * Http Utilities class
@@ -118,48 +111,48 @@ public abstract class HttpUtils {
         return replace(normalizedPath, "//", "/");
     }
 
-    /**
-     * Get Parameters from the specified query string.
-     * <p>
-     *
-     * @param queryString The query string
-     * @return The query parameters
-     */
-    public static MultivaluedMap<String, String> getParameters(String queryString) {
-        return getParameters(split(queryString, AND_CHAR));
-    }
+//    /**
+//     * Get Parameters from the specified query string.
+//     * <p>
+//     *
+//     * @param queryString The query string
+//     * @return The query parameters
+//     */
+//    public static MultivaluedMap<String, String> getParameters(String queryString) {
+//        return getParameters(split(queryString, AND_CHAR));
+//    }
 
-    /**
-     * Get Parameters from the specified pairs of name-value.
-     * <p>
-     *
-     * @param pairs The pairs of name-value
-     * @return The query parameters
-     */
-    public static MultivaluedMap<String, String> getParameters(Iterable<String> pairs) {
-        MultivaluedMap<String, String> parameters = new MultivaluedHashMap<>();
-        if (pairs != null) {
-            for (String pair : pairs) {
-                String[] nameAndValue = split(pair, EQUAL_CHAR);
-                String name = decode(nameAndValue[0]);
-                String value = nameAndValue.length < 2 ? null : nameAndValue[1];
-                value = decode(value);
-                addParam(parameters, name, value);
-            }
-        }
-        return parameters;
-    }
+//    /**
+//     * Get Parameters from the specified pairs of name-value.
+//     * <p>
+//     *
+//     * @param pairs The pairs of name-value
+//     * @return The query parameters
+//     */
+//    public static MultivaluedMap<String, String> getParameters(Iterable<String> pairs) {
+//        MultivaluedMap<String, String> parameters = new MultivaluedHashMap<>();
+//        if (pairs != null) {
+//            for (String pair : pairs) {
+//                String[] nameAndValue = split(pair, EQUAL_CHAR);
+//                String name = decode(nameAndValue[0]);
+//                String value = nameAndValue.length < 2 ? null : nameAndValue[1];
+//                value = decode(value);
+//                addParam(parameters, name, value);
+//            }
+//        }
+//        return parameters;
+//    }
 
-    /**
-     * Get Parameters from the specified pairs of name-value.
-     * <p>
-     *
-     * @param pairs The pairs of name-value
-     * @return The query parameters
-     */
-    public static MultivaluedMap<String, String> getParameters(String... pairs) {
-        return getParameters(asList(pairs));
-    }
+//    /**
+//     * Get Parameters from the specified pairs of name-value.
+//     * <p>
+//     *
+//     * @param pairs The pairs of name-value
+//     * @return The query parameters
+//     */
+//    public static MultivaluedMap<String, String> getParameters(String... pairs) {
+//        return getParameters(asList(pairs));
+//    }
 
     // /**
     // * Parse a read-only {@link MultivaluedMap} of {@link HttpCookie} from {@link
@@ -194,7 +187,7 @@ public abstract class HttpUtils {
     /**
      * To the name and value line sets
      *
-     * @param nameAndValuesMap {@link MultivaluedMap} the map of name and values
+     * @param nameAndValuesMap the map of name and values
      * @return non-null
      */
     public static Set<String> toNameAndValuesSet(
@@ -262,12 +255,12 @@ public abstract class HttpUtils {
         return encodedValue;
     }
 
-    private static void addParam(MultivaluedMap<String, String> paramsMap, String name,
-                                 String value) {
-        String paramValue = trim(value);
-        if (isEmpty(paramValue)) {
-            paramValue = EMPTY_VALUE;
-        }
-        paramsMap.add(trim(name), paramValue);
-    }
+//    private static void addParam(MultivaluedMap<String, String> paramsMap, String name,
+//                                 String value) {
+//        String paramValue = trim(value);
+//        if (isEmpty(paramValue)) {
+//            paramValue = EMPTY_VALUE;
+//        }
+//        paramsMap.add(trim(name), paramValue);
+//    }
 }

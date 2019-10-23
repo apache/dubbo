@@ -19,10 +19,8 @@ package org.apache.dubbo.metadata.rest;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
 
-import javax.ws.rs.core.MediaType;
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -30,10 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static java.util.Collections.unmodifiableMap;
-import static javax.ws.rs.core.MediaType.MEDIA_TYPE_WILDCARD;
 import static org.apache.dubbo.metadata.util.HttpUtils.normalizePath;
 
 /**
@@ -61,34 +57,6 @@ public class RequestMetadata implements Serializable {
      * Default Constructor
      */
     public RequestMetadata() {
-    }
-
-//    private static void mediaTypes(Map<String, List<String>> httpHeaders, String headerName,
-//                                   Collection<String> destination) {
-//        List<String> value = httpHeaders.get(headerName);
-//        List<MediaType> mediaTypes = parseMediaTypes(value);
-//        destination.addAll(toMediaTypeValues(mediaTypes));
-//    }
-
-//    private static List<String> toMediaTypeValues(List<MediaType> mediaTypes) {
-//        List<String> list = new ArrayList<>(mediaTypes.size());
-//        for (MediaType mediaType : mediaTypes) {
-//            list.add(mediaType.toString());
-//        }
-//        return list;
-//    }
-
-    private static List<MediaType> toMediaTypes(Collection<String> mediaTypeValues) {
-        if (mediaTypeValues.isEmpty()) {
-            return Collections.singletonList(new MediaType(MEDIA_TYPE_WILDCARD, null));
-        }
-        return parseMediaTypes(new LinkedList<>(mediaTypeValues));
-    }
-
-    private static List<MediaType> parseMediaTypes(List<String> mediaTypeValues) {
-        return mediaTypeValues.stream()
-                .map(MediaType::valueOf)
-                .collect(Collectors.toList());
     }
 
     public String getMethod() {
