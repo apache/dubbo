@@ -26,10 +26,16 @@ import io.grpc.netty.NettyServerBuilder;
 @SPI
 public interface GrpcConfigurator {
 
-    NettyServerBuilder configureServerBuilder(NettyServerBuilder builder, URL url);
+    default NettyServerBuilder configureServerBuilder(NettyServerBuilder builder, URL url) {
+        return builder;
+    }
 
-    NettyChannelBuilder configureChannelBuilder(NettyChannelBuilder builder, URL url);
+    default NettyChannelBuilder configureChannelBuilder(NettyChannelBuilder builder, URL url) {
+        return builder;
+    }
 
-    CallOptions configureCallOptions(CallOptions options, URL url);
+    default CallOptions configureCallOptions(CallOptions options, URL url) {
+        return options;
+    }
 
 }

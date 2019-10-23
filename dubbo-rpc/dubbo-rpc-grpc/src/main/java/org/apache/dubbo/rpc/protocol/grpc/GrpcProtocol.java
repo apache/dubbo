@@ -34,6 +34,7 @@ import io.grpc.ManagedChannel;
 import io.grpc.Server;
 import io.grpc.netty.NettyServerBuilder;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.concurrent.ConcurrentHashMap;
@@ -71,6 +72,8 @@ public class GrpcProtocol extends AbstractProxyProtocol {
 
         GrpcRemotingServer grpcServer = (GrpcRemotingServer) protocolServer.getRemotingServer();
         grpcServer.getRegistry().addService((BindableService) impl, url.getServiceKey());
+
+        grpcServer.start();
 
         return () -> grpcServer.getRegistry().removeService(url.getServiceKey());
     }
@@ -136,6 +139,8 @@ public class GrpcProtocol extends AbstractProxyProtocol {
     public void destroy() {
         serverMap.values().forEach(ProtocolServer::close);
         channelMap.values().forEach(ManagedChannel::shutdown);
+        serverMap.clear();
+        channelMap.clear();
     }
 
     public class GrpcRemotingServer extends RemotingServerAdapter {
@@ -146,6 +151,14 @@ public class GrpcProtocol extends AbstractProxyProtocol {
         public GrpcRemotingServer(Server server, DubboHandlerRegistry handlerRegistry) {
             this.originalServer = server;
             this.handlerRegistry = handlerRegistry;
+        }
+
+        public void start() throws RpcException {
+            try {
+                originalServer.start();
+            } catch (IOException e) {
+                throw new RpcException("Starting gRPC server failed. ", e);
+            }
         }
 
         public DubboHandlerRegistry getRegistry() {

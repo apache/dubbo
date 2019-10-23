@@ -19,15 +19,16 @@ package org.apache.dubbo.rpc.protocol.grpc;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.threadpool.ThreadPool;
+import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.rpc.protocol.grpc.interceptors.ClientInterceptor;
 import org.apache.dubbo.rpc.protocol.grpc.interceptors.GrpcConfigurator;
+import org.apache.dubbo.rpc.protocol.grpc.interceptors.ServerInterceptor;
 import org.apache.dubbo.rpc.protocol.grpc.interceptors.ServerTransportFilter;
 
 import io.grpc.CallOptions;
-import io.grpc.ClientInterceptor;
 import io.grpc.Deadline;
 import io.grpc.ManagedChannel;
 import io.grpc.ServerBuilder;
-import io.grpc.ServerInterceptor;
 import io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.NettyChannelBuilder;
 import io.grpc.netty.NettyServerBuilder;
@@ -37,7 +38,10 @@ import io.netty.handler.ssl.SslContextBuilder;
 
 import javax.net.ssl.SSLException;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
@@ -56,7 +60,6 @@ import static org.apache.dubbo.remoting.Constants.SSL_SERVER_KEY_PATH_KEY;
 import static org.apache.dubbo.remoting.Constants.SSL_SERVER_TRUST_CERT_PATH_KEY;
 import static org.apache.dubbo.rpc.Constants.EXECUTES_KEY;
 import static org.apache.dubbo.rpc.protocol.grpc.GrpcConstants.CLIENT_INTERCEPTORS;
-import static org.apache.dubbo.rpc.protocol.grpc.GrpcConstants.CONFIGURATOR;
 import static org.apache.dubbo.rpc.protocol.grpc.GrpcConstants.EXECUTOR;
 import static org.apache.dubbo.rpc.protocol.grpc.GrpcConstants.MAX_CONCURRENT_CALLS_PER_CONNECTION;
 import static org.apache.dubbo.rpc.protocol.grpc.GrpcConstants.MAX_INBOUND_MESSAGE_SIZE;
@@ -117,13 +120,9 @@ public class GrpcOptionsUtils {
         }
 
         // Give users the chance to customize ServerBuilder
-        GrpcConfigurator configurator = ExtensionLoader.getExtensionLoader(GrpcConfigurator.class)
-                .getExtension(url.getParameter(CONFIGURATOR, "default"));
-        if (configurator != null) {
-            builder = configurator.configureServerBuilder(builder, url);
-        }
-
-        return builder;
+        return getConfigurator()
+                .map(configurator -> configurator.configureServerBuilder(builder, url))
+                .orElse(builder);
     }
 
     static ManagedChannel buildManagedChannel(URL url) {
@@ -139,28 +138,26 @@ public class GrpcOptionsUtils {
 //        builder.directExecutor();
 
         // client interceptors
-        builder.intercept(ExtensionLoader.getExtensionLoader(ClientInterceptor.class)
-                .getActivateExtension(url, CLIENT_INTERCEPTORS, CONSUMER_SIDE));
+        List<io.grpc.ClientInterceptor> interceptors = new ArrayList<>(
+                ExtensionLoader.getExtensionLoader(ClientInterceptor.class)
+                        .getActivateExtension(url, CLIENT_INTERCEPTORS, CONSUMER_SIDE)
+        );
 
-        // Give users the chance to customize ChannelBuilder
-        GrpcConfigurator configurator = ExtensionLoader.getExtensionLoader(GrpcConfigurator.class)
-                .getExtension(url.getParameter(CONFIGURATOR, "default"));
-        if (configurator != null) {
-            builder = configurator.configureChannelBuilder(builder, url);
-        }
+        builder.intercept(interceptors);
 
-        return builder.build();
+        return getConfigurator()
+                .map(configurator -> configurator.configureChannelBuilder(builder, url))
+                .orElse(builder)
+                .build();
     }
 
     static CallOptions buildCallOptions(URL url) {
-        CallOptions callOptions = CallOptions.DEFAULT;
-        callOptions = callOptions.withDeadline(Deadline.after(
-                url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT), TimeUnit.MILLISECONDS)
-        );
+        CallOptions callOptions = CallOptions.DEFAULT
+                .withDeadline(Deadline.after(url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT), TimeUnit.MILLISECONDS));
 
-        GrpcConfigurator configurator = ExtensionLoader.getExtensionLoader(GrpcConfigurator.class)
-                .getExtension(url.getParameter(CONFIGURATOR, "default"));
-        return configurator.configureCallOptions(callOptions, url);
+        return getConfigurator()
+                .map(configurator -> configurator.configureCallOptions(callOptions, url))
+                .orElse(callOptions);
     }
 
     private static SslContext buildServerSslContext(URL url) {
@@ -215,5 +212,15 @@ public class GrpcOptionsUtils {
         } catch (SSLException e) {
             throw new IllegalStateException("Build SslSession failed.", e);
         }
+    }
+
+    private static Optional<GrpcConfigurator> getConfigurator() {
+        // Give users the chance to customize ServerBuilder
+        Set<GrpcConfigurator> configurators = ExtensionLoader.getExtensionLoader(GrpcConfigurator.class)
+                .getSupportedExtensionInstances();
+        if (CollectionUtils.isNotEmpty(configurators)) {
+            return Optional.of(configurators.iterator().next());
+        }
+        return Optional.empty();
     }
 }
