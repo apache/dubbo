@@ -14,27 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.utils;
-
-import org.junit.jupiter.api.Test;
-
-import java.util.List;
-
-import static org.apache.dubbo.common.utils.PrioritizedServiceLoader.loadServices;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+package org.apache.dubbo.common.convert;
 
 /**
- * {@link PrioritizedServiceLoader} Test
+ * A converter converts a {@link String} value to the target instance of type {@link T}
  *
+ * @param <T> the target type
  * @since 2.7.5
  */
-public class DubboServiceLoaderTest {
-
-    @Test
-    public void testLoad() {
-        List<CharSequence> charSequences = loadServices(CharSequence.class);
-        assertEquals(DefaultCharSequence.class, charSequences.get(0).getClass());
-        assertEquals(String.class, charSequences.get(1).getClass());
-        assertEquals(StringBuilder.class, charSequences.get(2).getClass());
-    }
+public interface StringConverter<T> extends Converter<String, T> {
 }

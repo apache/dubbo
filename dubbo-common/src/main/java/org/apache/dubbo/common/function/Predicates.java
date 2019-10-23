@@ -16,14 +16,12 @@
  */
 package org.apache.dubbo.common.function;
 
-import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import static java.lang.Boolean.TRUE;
 import static java.util.stream.Stream.of;
-import static java.util.stream.StreamSupport.stream;
 
 /**
  * The utilities class for Java {@link Predicate}
@@ -31,6 +29,8 @@ import static java.util.stream.StreamSupport.stream;
  * @since 2.7.5
  */
 public interface Predicates {
+
+    Predicate[] EMPTY_ARRAY = new Predicate[0];
 
     /**
      * {@link Predicate} always return <code>true</code>
@@ -52,16 +52,31 @@ public interface Predicates {
         return e -> false;
     }
 
-    static <T> List<T> filterAll(Iterable<T> values, Predicate<T>... predicates) {
-        return stream(values.spliterator(), false)
-                .filter(and(predicates))
-                .collect(Collectors.toList());
+
+    static <E, T> Predicate<T> map(Function<E, Predicate<T>> function, E element) {
+        return function.apply(element);
     }
 
-    static <T> List<T> filterAny(Iterable<T> values, Predicate<T>... predicates) {
-        return stream(values.spliterator(), false)
-                .filter(or(predicates))
-                .collect(Collectors.toList());
+    //
+//    static <E, T> Predicate<T> map(Function<E, Predicate<T>> function, E... elements) {
+//        return and(predicates(function, elements));
+//    }
+//
+
+    static <E, T> Predicate<T>[] predicates(Function<E, Predicate<T>> function, E... elements) {
+        return of(elements)
+                .map(e -> function.apply(e))
+                .toArray(Predicate[]::new);
+    }
+
+    static <E, T> Predicate<T>[] predicates(BiFunction<E, T, Predicate<T>> function, T value, E... elements) {
+        return of(elements)
+                .map(e -> function.apply(e, value))
+                .toArray(Predicate[]::new);
+    }
+
+    static <E, T> Predicate<T> predicate(BiFunction<E, T, Predicate<T>> function, T value, E... elements) {
+        return and(predicates(function, value, elements));
     }
 
     /**

@@ -27,13 +27,13 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.StreamSupport.stream;
 
 /**
- * An extension class of {@link ServiceLoader} to help the ease for use of Dubbo services/components
+ * An extension class of {@link ServiceLoader} with {@link Prioritized} feature
  *
  * @see ServiceLoader
  * @see Prioritized
  * @since 2.7.5
  */
-public class DubboServiceLoader {
+public interface PrioritizedServiceLoader {
 
     /**
      * Load a {@link Stream stream} of services by the specified {@link Class type} and {@link ClassLoader}
@@ -51,7 +51,7 @@ public class DubboServiceLoader {
 
         ClassLoader actualClassLoader = classLoader;
         if (actualClassLoader == null) {
-            actualClassLoader = DubboServiceLoader.class.getClassLoader();
+            actualClassLoader = PrioritizedServiceLoader.class.getClassLoader();
         }
 
         ServiceLoader<S> serviceLoader = ServiceLoader.load(serviceClass, actualClassLoader);

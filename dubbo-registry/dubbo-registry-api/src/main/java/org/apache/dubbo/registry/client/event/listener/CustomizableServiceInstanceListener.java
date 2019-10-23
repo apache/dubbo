@@ -23,7 +23,7 @@ import org.apache.dubbo.registry.client.event.ServiceInstancePreRegisteredEvent;
 
 import java.util.ServiceLoader;
 
-import static org.apache.dubbo.common.utils.DubboServiceLoader.load;
+import static org.apache.dubbo.common.utils.PrioritizedServiceLoader.load;
 
 
 /**

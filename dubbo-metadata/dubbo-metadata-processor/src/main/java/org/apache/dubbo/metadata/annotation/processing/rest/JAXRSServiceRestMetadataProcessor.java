@@ -39,11 +39,6 @@ import static org.apache.dubbo.metadata.util.HttpUtils.buildPath;
 public class JAXRSServiceRestMetadataProcessor extends AbstractServiceRestMetadataProcessor {
 
     /**
-     * The package name of JAX-RS
-     */
-    public static final String JAX_RS_PACKAGE_NAME = "javax.ws.rs";
-
-    /**
      * The annotation name of @Path
      */
     public static final String PATH_ANNOTATION_CLASS_NAME = "javax.ws.rs.Path";
@@ -52,26 +47,6 @@ public class JAXRSServiceRestMetadataProcessor extends AbstractServiceRestMetada
      * The annotation name of @HttpMethod
      */
     public static final String HTTP_METHOD_ANNOTATION_CLASS_NAME = "javax.ws.rs.HttpMethod";
-    /**
-     * The annotation class name of @QueryParam
-     */
-    public static final String QUERY_PARAM_ANNOTATION_CLASS_NAME = "javax.ws.rs.QueryParam";
-
-    /**
-     * The annotation class name of @PathParam
-     */
-    public static final String PATH_PARAM_ANNOTATION_CLASS_NAME = "javax.ws.rs.PathParam";
-
-    /**
-     * The annotation class name of @HeaderParam
-     */
-    public static final String HEADER_PARAM_ANNOTATION_CLASS_NAME = "javax.ws.rs.HeaderParam";
-
-
-    /**
-     * The annotation class name of @DefaultValue
-     */
-    public static final String DEFAULT_VALUE_ANNOTATION_CLASS_NAME = "javax.ws.rs.DefaultValue";
 
     /**
      * The annotation class name of @Produces

@@ -180,7 +180,8 @@ public interface AnnotationUtils {
     }
 
     static boolean isAnnotationPresent(Element element, CharSequence annotationClassName) {
-        return findAnnotation(element, annotationClassName) != null;
+        return findAnnotation(element, annotationClassName) != null ||
+                findMetaAnnotation(element, annotationClassName) != null;
     }
 
 //    static boolean isMetaAnnotationPresent(AnnotationMirror annotation, CharSequence metaAnnotationClassName) {

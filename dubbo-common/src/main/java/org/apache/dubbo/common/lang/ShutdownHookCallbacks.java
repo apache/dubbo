@@ -22,7 +22,7 @@ import java.util.List;
 
 import static java.util.Collections.sort;
 import static org.apache.dubbo.common.function.ThrowableAction.execute;
-import static org.apache.dubbo.common.utils.DubboServiceLoader.load;
+import static org.apache.dubbo.common.utils.PrioritizedServiceLoader.load;
 
 /**
  * The compose {@link ShutdownHookCallback} class to manipulate one and more {@link ShutdownHookCallback} instances

@@ -14,27 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.utils;
+package org.apache.dubbo.metadata.tools;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-
-import static org.apache.dubbo.common.utils.PrioritizedServiceLoader.loadServices;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.io.IOException;
 
 /**
- * {@link PrioritizedServiceLoader} Test
+ * {@link SpringRestService} Test
  *
  * @since 2.7.5
  */
-public class DubboServiceLoaderTest {
+public class SpringRestServiceTest {
 
     @Test
-    public void testLoad() {
-        List<CharSequence> charSequences = loadServices(CharSequence.class);
-        assertEquals(DefaultCharSequence.class, charSequences.get(0).getClass());
-        assertEquals(String.class, charSequences.get(1).getClass());
-        assertEquals(StringBuilder.class, charSequences.get(2).getClass());
+    public void test() throws IOException {
+        Compiler compiler = new Compiler();
+        compiler.compile(User.class, RestService.class, SpringRestService.class);
     }
 }

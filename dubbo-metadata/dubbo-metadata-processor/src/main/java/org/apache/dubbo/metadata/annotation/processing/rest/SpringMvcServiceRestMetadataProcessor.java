@@ -17,9 +17,17 @@
 package org.apache.dubbo.metadata.annotation.processing.rest;
 
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import java.util.Set;
+
+import static org.apache.dubbo.common.utils.ArrayUtils.isEmpty;
+import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.findMetaAnnotation;
+import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.getAttribute;
+import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.isAnnotationPresent;
+import static org.apache.dubbo.metadata.util.HttpUtils.buildPath;
 
 /**
  * {@link ServiceRestMetadataProcessor}
@@ -28,11 +36,49 @@ import java.util.Set;
  */
 public class SpringMvcServiceRestMetadataProcessor extends AbstractServiceRestMetadataProcessor {
 
+    public static final String CONTROLLER_ANNOTATION_CLASS_NAME = "org.springframework.stereotype.Controller";
+
+    public static final String REQUEST_MAPPING_ANNOTATION_CLASS_NAME = "org.springframework.web.bind.annotation.RequestMapping";
+
+    @Override
+    public boolean supports(ProcessingEnvironment processingEnvironment, TypeElement serviceType) {
+        return super.supports(processingEnvironment, serviceType) &&
+                isAnnotationPresent(serviceType, CONTROLLER_ANNOTATION_CLASS_NAME);
+    }
+
     @Override
     protected String getRequestPath(ProcessingEnvironment processingEnv, TypeElement serviceType,
                                     ExecutableElement method) {
-        return null;
+
+        String requestPathFromType = getRequestPath(serviceType);
+
+        String requestPathFromMethod = getRequestPath(method);
+
+        return buildPath(requestPathFromType, requestPathFromMethod);
     }
+
+    private String getRequestPath(Element element) {
+        AnnotationMirror requestMapping = findMetaAnnotation(element, REQUEST_MAPPING_ANNOTATION_CLASS_NAME);
+        return getRequestPath(requestMapping);
+    }
+
+
+    private String getRequestPath(AnnotationMirror requestMapping) {
+
+        // try "value" first
+        String[] value = getAttribute(requestMapping, "value");
+
+        if (isEmpty(value)) { // try "path" later
+            value = getAttribute(requestMapping, "path");
+        }
+
+        if (isEmpty(value)) {
+            return "";
+        }
+        // TODO Is is required to support more request paths?
+        return value[0];
+    }
+
 
     @Override
     protected String getRequestMethod(ProcessingEnvironment processingEnv, TypeElement serviceType,

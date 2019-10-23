@@ -21,7 +21,7 @@ import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.DubboServiceLoader;
+import org.apache.dubbo.common.utils.PrioritizedServiceLoader;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.ServiceNameMapping;
@@ -77,7 +77,7 @@ import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoad
 import static org.apache.dubbo.common.function.ThrowableAction.execute;
 import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
 import static org.apache.dubbo.common.utils.CollectionUtils.isNotEmpty;
-import static org.apache.dubbo.common.utils.DubboServiceLoader.loadServices;
+import static org.apache.dubbo.common.utils.PrioritizedServiceLoader.loadServices;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 import static org.apache.dubbo.metadata.MetadataService.toURLs;
 import static org.apache.dubbo.registry.client.ServiceDiscoveryFactory.getExtension;
@@ -190,10 +190,10 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
     /**
      * Initialize {@link SubscribedURLsSynthesizer} instances that are
-     * {@link DubboServiceLoader#loadServices(Class, ClassLoader) loaded} by {@link DubboServiceLoader}
+     * {@link PrioritizedServiceLoader#loadServices(Class, ClassLoader) loaded} by {@link PrioritizedServiceLoader}
      *
      * @return non-null {@link List}
-     * @see DubboServiceLoader#loadServices(Class, ClassLoader)
+     * @see PrioritizedServiceLoader#loadServices(Class, ClassLoader)
      */
     private List<SubscribedURLsSynthesizer> initSubscribedURLsSynthesizers() {
         return loadServices(SubscribedURLsSynthesizer.class, this.getClass().getClassLoader());
