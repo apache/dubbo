@@ -16,39 +16,20 @@
  */
 package org.apache.dubbo.metadata.tools;
 
-import org.apache.dubbo.metadata.annotation.processing.model.Model;
+import org.junit.jupiter.api.Test;
 
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import java.util.concurrent.TimeUnit;
+import java.io.IOException;
 
 /**
- * Test Service
+ * The test case for {@link StandardRestService}
  *
  * @since 2.7.5
  */
-@Path("/echo")
-public interface TestService {
+public class StandardRestServiceTest {
 
-    @GET
-    <T> String echo(@PathParam("message") @DefaultValue("mercyblitz") String message);
-
-    @POST
-    Model model(@PathParam("model") Model model);
-
-    // Test primitive
-    @PUT
-    String testPrimitive(boolean z, int i);
-
-    // Test enumeration
-    @PUT
-    Model testEnum(TimeUnit timeUnit);
-
-    // Test Array
-    @GET
-    String testArray(String[] strArray, int[] intArray, Model[] modelArray);
+    @Test
+    public void test() throws IOException {
+        Compiler compiler = new Compiler();
+        compiler.compile(User.class, RestService.class, StandardRestService.class);
+    }
 }

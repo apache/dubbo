@@ -342,7 +342,7 @@ public class TypeUtilsTest extends AbstractAnnotationProcessingTest {
         TypeMirror dtsType = getSuperType(gtsType);
         assertEquals(dtsType, getType(DefaultTestService.class).asType());
 
-        assertNull(getSuperType((Element) null));
+        assertNull(getSuperType((TypeElement) null));
         assertNull(getSuperType((TypeMirror) null));
     }
 

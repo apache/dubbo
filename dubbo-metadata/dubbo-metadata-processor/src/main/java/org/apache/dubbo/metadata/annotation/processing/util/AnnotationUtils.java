@@ -22,8 +22,10 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeMirror;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Array;
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.List;
@@ -39,6 +41,7 @@ import static org.apache.dubbo.common.function.Streams.filterFirst;
 import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.getHierarchicalTypes;
 import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.getType;
 import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.isSameType;
+import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.isTypeElement;
 import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.ofTypeElement;
 
 /**
@@ -121,11 +124,16 @@ public interface AnnotationUtils {
     }
 
     static List<AnnotationMirror> getAllAnnotations(Element element, Predicate<AnnotationMirror>... annotationFilters) {
-        return filterAll(getHierarchicalTypes(element)
-                .stream()
-                .map(AnnotationUtils::getAnnotations)
-                .flatMap(Collection::stream)
-                .collect(Collectors.toList()), annotationFilters);
+
+        List<AnnotationMirror> allAnnotations = isTypeElement(element) ?
+                getHierarchicalTypes(ofTypeElement(element))
+                        .stream()
+                        .map(AnnotationUtils::getAnnotations)
+                        .flatMap(Collection::stream)
+                        .collect(Collectors.toList()) :
+                (List<AnnotationMirror>) element.getAnnotationMirrors();
+
+        return filterAll(allAnnotations, annotationFilters);
     }
 
     static List<AnnotationMirror> getAllAnnotations(ProcessingEnvironment processingEnv, Type annotatedType) {
@@ -160,21 +168,64 @@ public interface AnnotationUtils {
         return filterFirst(getAllAnnotations(element, annotation -> isSameType(annotation.getAnnotationType(), annotationClassName)));
     }
 
+    static AnnotationMirror findMetaAnnotation(Element annotatedConstruct, CharSequence metaAnnotationClassName) {
+        return annotatedConstruct == null ?
+                null :
+                getAnnotations(annotatedConstruct)
+                        .stream()
+                        .map(annotation -> findAnnotation(annotation.getAnnotationType(), metaAnnotationClassName))
+                        .filter(Objects::nonNull)
+                        .findFirst()
+                        .orElse(null);
+    }
+
+    static boolean isAnnotationPresent(Element element, CharSequence annotationClassName) {
+        return findAnnotation(element, annotationClassName) != null;
+    }
+
+//    static boolean isMetaAnnotationPresent(AnnotationMirror annotation, CharSequence metaAnnotationClassName) {
+//        if (annotation == null || metaAnnotationClassName == null) {
+//            return false;
+//        }
+//        return findAnnotation(annotation.getAnnotationType(), metaAnnotationClassName) != null;
+//    }
+
     static <T> T getAttribute(AnnotationMirror annotation, String attributeName) {
         return annotation == null ? null : getAttribute(annotation.getElementValues(), attributeName);
     }
 
+
     static <T> T getAttribute(Map<? extends ExecutableElement, ? extends AnnotationValue> attributesMap,
                               String attributeName) {
-        T attributeValue = null;
+        T annotationValue = null;
         for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : attributesMap.entrySet()) {
-            ExecutableElement executableElement = entry.getKey();
-            if (Objects.equals(attributeName, executableElement.getSimpleName().toString())) {
-                attributeValue = (T) entry.getValue().getValue();
+            ExecutableElement attributeMethod = entry.getKey();
+            if (Objects.equals(attributeName, attributeMethod.getSimpleName().toString())) {
+                TypeMirror attributeType = attributeMethod.getReturnType();
+                AnnotationValue value = entry.getValue();
+                if (attributeType instanceof ArrayType) { // array-typed attribute values
+                    ArrayType arrayType = (ArrayType) attributeType;
+                    String componentType = arrayType.getComponentType().toString();
+                    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+                    List<AnnotationValue> values = (List<AnnotationValue>) value.getValue();
+                    int size = values.size();
+                    try {
+                        Class<?> componentClass = classLoader.loadClass(componentType);
+                        Object array = Array.newInstance(componentClass, values.size());
+                        for (int i = 0; i < size; i++) {
+                            Array.set(array, i, values.get(i).getValue());
+                        }
+                        annotationValue = (T) array;
+                    } catch (ClassNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    annotationValue = (T) value.getValue();
+                }
                 break;
             }
         }
-        return attributeValue;
+        return annotationValue;
     }
 
     static <T> T getValue(AnnotationMirror annotation) {

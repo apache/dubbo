@@ -14,15 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.annotation.processing.util;
+package org.apache.dubbo.metadata.tools;
 
-import javax.annotation.processing.Processor;
+
+import java.util.Map;
 
 /**
- * An utilities class for {@link Processor}
+ * An interface for REST service
  *
  * @since 2.7.5
  */
-public interface AnnotationProcessorUtils {
+public interface RestService {
 
+    String param(String param);
+
+    String params(int a, String b);
+
+    String headers(String header, String header2, Integer param);
+
+    String pathVariables(String path1, String path2, String param);
+
+    String form(String form);
+
+    User requestBodyMap(Map<String, Object> data, String param);
+
+    Map<String, Object> requestBodyUser(User user);
 }

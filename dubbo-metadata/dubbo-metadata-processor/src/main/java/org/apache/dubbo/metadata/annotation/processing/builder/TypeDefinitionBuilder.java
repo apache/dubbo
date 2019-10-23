@@ -23,7 +23,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
 
-import static org.apache.dubbo.common.utils.DubboServiceLoader.load;
+import static org.apache.dubbo.common.utils.PrioritizedServiceLoader.load;
 
 /**
  * A class builds the instance of {@link TypeDefinition}

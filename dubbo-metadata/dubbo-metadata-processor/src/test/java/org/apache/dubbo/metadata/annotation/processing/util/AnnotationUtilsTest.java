@@ -34,11 +34,13 @@ import java.util.List;
 import java.util.Set;
 
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.findAnnotation;
+import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.findMetaAnnotation;
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.getAllAnnotations;
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.getAnnotation;
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.getAnnotations;
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.getAttribute;
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.getValue;
+import static org.apache.dubbo.metadata.annotation.processing.util.MethodUtils.getAllDeclaredMethods;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -179,6 +181,13 @@ public class AnnotationUtilsTest extends AbstractAnnotationProcessingTest {
         assertNull(findAnnotation(testType, (String) null));
         assertNull(findAnnotation(testType.asType(), (Class) null));
         assertNull(findAnnotation(testType.asType(), (String) null));
+    }
+
+    @Test
+    public void testFindMetaAnnotation() {
+        getAllDeclaredMethods(getType(TestService.class)).forEach(method -> {
+            assertEquals("javax.ws.rs.HttpMethod", findMetaAnnotation(method, "javax.ws.rs.HttpMethod").getAnnotationType().toString());
+        });
     }
 
     @Test

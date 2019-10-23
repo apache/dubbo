@@ -19,6 +19,8 @@ package org.apache.dubbo.metadata.annotation.processing;
 import org.apache.dubbo.metadata.annotation.processing.rest.ServiceRestMetadataProcessor;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
 
+import com.google.gson.Gson;
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
@@ -39,8 +41,8 @@ import static org.apache.dubbo.metadata.annotation.processing.util.ServiceAnnota
 
 /**
  * The {@link Processor} class to generate the metadata of REST from the classes that are annotated by Dubbo's
- * @Service
  *
+ * @Service
  * @see Processor
  * @since 2.7.5
  */
@@ -63,6 +65,10 @@ public class RestMetadataServiceAnnotationProcessor extends AbstractServiceAnnot
         typesIn(roundEnv.getRootElements()).forEach(serviceType -> process(processingEnv, serviceType, annotations));
 
         if (roundEnv.processingOver()) {
+            serviceRestMetadata.forEach(serviceRestMetadata -> {
+                Gson gson = new Gson();
+                System.out.println(gson.toJson(serviceRestMetadata));
+            });
         }
 
         return false;
@@ -71,6 +77,7 @@ public class RestMetadataServiceAnnotationProcessor extends AbstractServiceAnnot
     private void process(ProcessingEnvironment processingEnv, TypeElement serviceType,
                          Set<? extends TypeElement> annotations) {
         stream(metadataProcessors.spliterator(), false)
+                .filter(processor -> processor.supports(processingEnv, serviceType))
                 .map(processor -> processor.process(processingEnv, serviceType, annotations))
                 .forEach(serviceRestMetadata::add);
     }

@@ -19,10 +19,8 @@ package org.apache.dubbo.metadata.rest;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
 
-import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -65,20 +63,20 @@ public class RequestMetadata implements Serializable {
     public RequestMetadata() {
     }
 
-    private static void mediaTypes(Map<String, List<String>> httpHeaders, String headerName,
-                                   Collection<String> destination) {
-        List<String> value = httpHeaders.get(headerName);
-        List<MediaType> mediaTypes = parseMediaTypes(value);
-        destination.addAll(toMediaTypeValues(mediaTypes));
-    }
+//    private static void mediaTypes(Map<String, List<String>> httpHeaders, String headerName,
+//                                   Collection<String> destination) {
+//        List<String> value = httpHeaders.get(headerName);
+//        List<MediaType> mediaTypes = parseMediaTypes(value);
+//        destination.addAll(toMediaTypeValues(mediaTypes));
+//    }
 
-    private static List<String> toMediaTypeValues(List<MediaType> mediaTypes) {
-        List<String> list = new ArrayList<>(mediaTypes.size());
-        for (MediaType mediaType : mediaTypes) {
-            list.add(mediaType.toString());
-        }
-        return list;
-    }
+//    private static List<String> toMediaTypeValues(List<MediaType> mediaTypes) {
+//        List<String> list = new ArrayList<>(mediaTypes.size());
+//        for (MediaType mediaType : mediaTypes) {
+//            list.add(mediaType.toString());
+//        }
+//        return list;
+//    }
 
     private static List<MediaType> toMediaTypes(Collection<String> mediaTypeValues) {
         if (mediaTypeValues.isEmpty()) {
@@ -177,13 +175,13 @@ public class RequestMetadata implements Serializable {
         return headers.keySet();
     }
 
-    public List<MediaType> getConsumeMediaTypes() {
-        return toMediaTypes(consumes);
-    }
-
-    public List<MediaType> getProduceMediaTypes() {
-        return toMediaTypes(produces);
-    }
+//    public List<MediaType> getConsumeMediaTypes() {
+//        return toMediaTypes(consumes);
+//    }
+//
+//    public List<MediaType> getProduceMediaTypes() {
+//        return toMediaTypes(produces);
+//    }
 
     public String getParameter(String name) {
         return this.getFirst(params, name);
@@ -214,8 +212,8 @@ public class RequestMetadata implements Serializable {
             // Add all headers
             addAll(headers, httpHeaders);
             // Handles "Content-Type" and "Accept" headers if present
-            mediaTypes(httpHeaders, HttpHeaders.CONTENT_TYPE, this.consumes);
-            mediaTypes(httpHeaders, HttpHeaders.ACCEPT, this.produces);
+//            mediaTypes(httpHeaders, HttpHeaders.CONTENT_TYPE, this.consumes);
+//            mediaTypes(httpHeaders, HttpHeaders.ACCEPT, this.produces);
             this.headers.putAll(httpHeaders);
         }
         return this;

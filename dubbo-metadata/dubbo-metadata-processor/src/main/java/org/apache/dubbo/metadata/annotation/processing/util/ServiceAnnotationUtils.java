@@ -23,6 +23,7 @@ import java.util.Set;
 import static java.lang.String.valueOf;
 import static org.apache.dubbo.common.utils.CollectionUtils.asHashSet;
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.getAttribute;
+import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.isAnnotationPresent;
 
 /**
  * The utilities class for @Service annotation
@@ -71,6 +72,11 @@ public interface ServiceAnnotationUtils {
         return getAnnotation(annotatedClass.getAnnotationMirrors());
     }
 
+    static boolean isServiceAnnotationPresent(TypeElement annotatedType) {
+        return isAnnotationPresent(annotatedType, SERVICE_ANNOTATION_TYPE) ||
+                isAnnotationPresent(annotatedType, LEGACY_SERVICE_ANNOTATION_TYPE);
+    }
+
     static AnnotationMirror getAnnotation(Iterable<? extends AnnotationMirror> annotationMirrors) {
         AnnotationMirror matchedAnnotationMirror = null;
         for (AnnotationMirror annotationMirror : annotationMirrors) {
@@ -84,7 +90,8 @@ public interface ServiceAnnotationUtils {
         }
 
         if (matchedAnnotationMirror == null) {
-            throw new IllegalArgumentException(" must be ");
+            throw new IllegalArgumentException("The annotated element must be implemented the interface "
+                    + SERVICE_ANNOTATION_TYPE + " or " + LEGACY_SERVICE_ANNOTATION_TYPE);
         }
 
         return matchedAnnotationMirror;

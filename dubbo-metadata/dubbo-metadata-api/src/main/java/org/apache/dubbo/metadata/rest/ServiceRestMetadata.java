@@ -17,6 +17,7 @@
 package org.apache.dubbo.metadata.rest;
 
 import java.io.Serializable;
+import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -36,7 +37,7 @@ public class ServiceRestMetadata implements Serializable {
 
     private String group;
 
-    private Set<MethodRestMetadata> meta;
+    private Set<RestMethodMetadata> meta;
 
     public String getServiceInterface() {
         return serviceInterface;
@@ -62,11 +63,14 @@ public class ServiceRestMetadata implements Serializable {
         this.group = group;
     }
 
-    public Set<MethodRestMetadata> getMeta() {
+    public Set<RestMethodMetadata> getMeta() {
+        if (meta == null) {
+            meta = new LinkedHashSet<>();
+        }
         return meta;
     }
 
-    public void setMeta(Set<MethodRestMetadata> meta) {
+    public void setMeta(Set<RestMethodMetadata> meta) {
         this.meta = meta;
     }
 
@@ -84,5 +88,16 @@ public class ServiceRestMetadata implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(getServiceInterface(), getVersion(), getGroup(), getMeta());
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ServiceRestMetadata{");
+        sb.append("serviceInterface='").append(serviceInterface).append('\'');
+        sb.append(", version='").append(version).append('\'');
+        sb.append(", group='").append(group).append('\'');
+        sb.append(", meta=").append(meta);
+        sb.append('}');
+        return sb.toString();
     }
 }

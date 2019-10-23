@@ -19,17 +19,16 @@ package org.apache.dubbo.metadata.annotation.processing.rest;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.AnnotatedConstruct;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
+import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.findAnnotation;
+import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.findMetaAnnotation;
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.getAnnotation;
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.getValue;
-import static org.apache.dubbo.metadata.util.HttpUtils.HTTP_METHODS;
 import static org.apache.dubbo.metadata.util.HttpUtils.buildPath;
 
 /**
@@ -47,77 +46,84 @@ public class JAXRSServiceRestMetadataProcessor extends AbstractServiceRestMetada
     /**
      * The annotation name of @Path
      */
-    public static final String PATH_ANNOTATION_NAME = "javax.ws.rs.Path";
+    public static final String PATH_ANNOTATION_CLASS_NAME = "javax.ws.rs.Path";
 
     /**
      * The annotation name of @HttpMethod
      */
-    public static final String HTTP_METHOD_ANNOTATION_NAME = "javax.ws.rs.HttpMethod";
+    public static final String HTTP_METHOD_ANNOTATION_CLASS_NAME = "javax.ws.rs.HttpMethod";
+    /**
+     * The annotation class name of @QueryParam
+     */
+    public static final String QUERY_PARAM_ANNOTATION_CLASS_NAME = "javax.ws.rs.QueryParam";
 
     /**
-     * The mapping to map the annotation class names and HTTP methods
+     * The annotation class name of @PathParam
      */
-    public static final Map<String, String> HTTP_METHOD_ANNOTATIONS_MAPPING = initHttpMethodAnnotationsMapping();
+    public static final String PATH_PARAM_ANNOTATION_CLASS_NAME = "javax.ws.rs.PathParam";
 
-    private static Map<String, String> initHttpMethodAnnotationsMapping() {
-        Map<String, String> mapping = new LinkedHashMap<>();
-        HTTP_METHODS.forEach(method -> mapping.computeIfAbsent(toHttpMethodAnnotationClassName(method),
-                key -> method));
-        return Collections.unmodifiableMap(mapping);
-    }
+    /**
+     * The annotation class name of @HeaderParam
+     */
+    public static final String HEADER_PARAM_ANNOTATION_CLASS_NAME = "javax.ws.rs.HeaderParam";
 
-    private static String toHttpMethodAnnotationClassName(String method) {
-        return JAX_RS_PACKAGE_NAME + "." + method;
-    }
+
+    /**
+     * The annotation class name of @DefaultValue
+     */
+    public static final String DEFAULT_VALUE_ANNOTATION_CLASS_NAME = "javax.ws.rs.DefaultValue";
+
+    /**
+     * The annotation class name of @Produces
+     */
+    public static final String PRODUCES_ANNOTATION_CLASS_NAME = "javax.ws.rs.Produces";
+
+    /**
+     * The annotation class name of @Consumes
+     */
+    public static final String CONSUMES_ANNOTATION_CLASS_NAME = "javax.ws.rs.Consumes";
 
     @Override
-    protected String resolveRequestPath(ProcessingEnvironment processingEnv, TypeElement serviceType, ExecutableElement method) {
-
+    protected String getRequestPath(ProcessingEnvironment processingEnv, TypeElement serviceType, ExecutableElement method) {
         String pathFromType = getPathValue(processingEnv, serviceType);
-
         String pathFromMethod = getPathValue(method);
-
         return buildPath(pathFromType, pathFromMethod);
     }
 
-    private String getPathValue(ProcessingEnvironment processingEnv, TypeElement serviceType) {
-        AnnotationMirror annotation = getAnnotation(serviceType, PATH_ANNOTATION_NAME);
-        return getValue(annotation);
-    }
-
-    private String getPathValue(AnnotatedConstruct annotatedConstruct) {
-        AnnotationMirror annotation = getAnnotation(annotatedConstruct, PATH_ANNOTATION_NAME);
-        return getValue(annotation);
-    }
-
     @Override
-    protected String resolveRequestMethod(ProcessingEnvironment processingEnv, TypeElement serviceType, ExecutableElement method) {
-        AnnotationMirror annotation = getAnnotation(method, HTTP_METHOD_ANNOTATION_NAME);
+    protected String getRequestMethod(ProcessingEnvironment processingEnv, TypeElement serviceType, ExecutableElement method) {
+        AnnotationMirror annotation = findMetaAnnotation(method, HTTP_METHOD_ANNOTATION_CLASS_NAME);
         return getValue(annotation);
-    }
-
-    @Override
-    protected void processRequestParameters(ProcessingEnvironment processingEnv, TypeElement serviceType,
-                                            ExecutableElement method, Map<String, List<String>> parameters) {
-
-
-    }
-
-    @Override
-    protected void processRequestHeaders(ProcessingEnvironment processingEnv, TypeElement serviceType,
-                                         ExecutableElement method, Map<String, List<String>> headers) {
-
     }
 
     @Override
     protected void processProduces(ProcessingEnvironment processingEnv, TypeElement serviceType,
                                    ExecutableElement method, Set<String> produces) {
-
+        addAnnotationValues(method, PRODUCES_ANNOTATION_CLASS_NAME, produces);
     }
 
     @Override
     protected void processConsumes(ProcessingEnvironment processingEnv, TypeElement serviceType,
                                    ExecutableElement method, Set<String> consumes) {
+        addAnnotationValues(method, CONSUMES_ANNOTATION_CLASS_NAME, consumes);
+    }
 
+
+    private void addAnnotationValues(Element element, String annotationAttributeName, Set<String> result) {
+        AnnotationMirror annotation = findAnnotation(element, annotationAttributeName);
+        String[] value = getValue(annotation);
+        if (value != null) {
+            Stream.of(value).forEach(result::add);
+        }
+    }
+
+    private String getPathValue(ProcessingEnvironment processingEnv, TypeElement serviceType) {
+        AnnotationMirror annotation = findAnnotation(serviceType, PATH_ANNOTATION_CLASS_NAME);
+        return getValue(annotation);
+    }
+
+    private String getPathValue(AnnotatedConstruct annotatedConstruct) {
+        AnnotationMirror annotation = getAnnotation(annotatedConstruct, PATH_ANNOTATION_CLASS_NAME);
+        return getValue(annotation);
     }
 }

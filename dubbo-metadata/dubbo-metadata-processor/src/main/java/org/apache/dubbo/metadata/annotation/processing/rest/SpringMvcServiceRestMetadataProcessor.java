@@ -19,8 +19,6 @@ package org.apache.dubbo.metadata.annotation.processing.rest;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -31,27 +29,15 @@ import java.util.Set;
 public class SpringMvcServiceRestMetadataProcessor extends AbstractServiceRestMetadataProcessor {
 
     @Override
-    protected String resolveRequestPath(ProcessingEnvironment processingEnv, TypeElement serviceType,
-                                        ExecutableElement method) {
+    protected String getRequestPath(ProcessingEnvironment processingEnv, TypeElement serviceType,
+                                    ExecutableElement method) {
         return null;
     }
 
     @Override
-    protected String resolveRequestMethod(ProcessingEnvironment processingEnv, TypeElement serviceType,
-                                          ExecutableElement method) {
+    protected String getRequestMethod(ProcessingEnvironment processingEnv, TypeElement serviceType,
+                                      ExecutableElement method) {
         return null;
-    }
-
-    @Override
-    protected void processRequestParameters(ProcessingEnvironment processingEnv, TypeElement serviceType,
-                                            ExecutableElement method, Map<String, List<String>> parameters) {
-
-    }
-
-    @Override
-    protected void processRequestHeaders(ProcessingEnvironment processingEnv, TypeElement serviceType,
-                                         ExecutableElement method, Map<String, List<String>> headers) {
-
     }
 
     @Override

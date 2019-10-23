@@ -19,10 +19,14 @@ package org.apache.dubbo.metadata.rest;
 import org.apache.dubbo.metadata.definition.model.MethodDefinition;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+
+import static java.util.Collections.emptyList;
 
 /**
  * The metadata class for {@link RequestMetadata HTTP(REST) request} and
@@ -30,7 +34,7 @@ import java.util.Objects;
  *
  * @since 2.7.5
  */
-public class MethodRestMetadata implements Serializable {
+public class RestMethodMetadata implements Serializable {
 
     private static final long serialVersionUID = 2935252016200830694L;
 
@@ -107,11 +111,25 @@ public class MethodRestMetadata implements Serializable {
     }
 
     public Map<Integer, Collection<String>> getIndexToName() {
+        if (indexToName == null) {
+            indexToName = new HashMap<>();
+        }
         return indexToName;
     }
 
     public void setIndexToName(Map<Integer, Collection<String>> indexToName) {
         this.indexToName = indexToName;
+    }
+
+    public void addIndexToName(Integer index, String name) {
+        Map<Integer, Collection<String>> indexToName = getIndexToName();
+        Collection<String> parameterNames = indexToName.computeIfAbsent(index, i -> new ArrayList<>(1));
+        parameterNames.add(name);
+    }
+
+    public boolean hasIndexedName(Integer index, String name) {
+        Map<Integer, Collection<String>> indexToName = getIndexToName();
+        return indexToName.getOrDefault(index, emptyList()).contains(name);
     }
 
     public List<String> getFormParams() {
@@ -133,8 +151,8 @@ public class MethodRestMetadata implements Serializable {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof MethodRestMetadata)) return false;
-        MethodRestMetadata that = (MethodRestMetadata) o;
+        if (!(o instanceof RestMethodMetadata)) return false;
+        RestMethodMetadata that = (RestMethodMetadata) o;
         return Objects.equals(getMethod(), that.getMethod()) &&
                 Objects.equals(getRequest(), that.getRequest()) &&
                 Objects.equals(getUrlIndex(), that.getUrlIndex()) &&
@@ -149,5 +167,21 @@ public class MethodRestMetadata implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(getMethod(), getRequest(), getUrlIndex(), getBodyIndex(), getHeaderMapIndex(), getBodyType(), getIndexToName(), getFormParams(), getIndexToEncoded());
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("RestMethodMetadata{");
+        sb.append("method=").append(method);
+        sb.append(", request=").append(request);
+        sb.append(", urlIndex=").append(urlIndex);
+        sb.append(", bodyIndex=").append(bodyIndex);
+        sb.append(", headerMapIndex=").append(headerMapIndex);
+        sb.append(", bodyType='").append(bodyType).append('\'');
+        sb.append(", indexToName=").append(indexToName);
+        sb.append(", formParams=").append(formParams);
+        sb.append(", indexToEncoded=").append(indexToEncoded);
+        sb.append('}');
+        return sb.toString();
     }
 }

@@ -142,8 +142,8 @@ public interface TypeUtils {
         return element != null && ANNOTATION_TYPE.equals(element.getKind());
     }
 
-    static Set<TypeElement> getHierarchicalTypes(Element element) {
-        return getHierarchicalTypes(element, true, true, true);
+    static Set<TypeElement> getHierarchicalTypes(TypeElement type) {
+        return getHierarchicalTypes(type, true, true, true);
     }
 
     static Set<DeclaredType> getHierarchicalTypes(TypeMirror type) {
@@ -163,31 +163,28 @@ public interface TypeUtils {
         return getHierarchicalTypes(type, t -> !typeNames.contains(t.toString()));
     }
 
-    static Set<TypeElement> getHierarchicalTypes(Element element,
+    static Set<TypeElement> getHierarchicalTypes(TypeElement type,
                                                  boolean includeSelf,
                                                  boolean includeSuperTypes,
                                                  boolean includeSuperInterfaces,
                                                  Predicate<TypeElement>... typeFilters) {
 
-        if (element == null) {
+        if (type == null) {
             return emptySet();
         }
 
         Set<TypeElement> hierarchicalTypes = new LinkedHashSet<>();
 
         if (includeSelf) {
-            TypeElement current = ofTypeElement(element);
-            if (current != null) {
-                hierarchicalTypes.add(current);
-            }
+            hierarchicalTypes.add(type);
         }
 
         if (includeSuperTypes) {
-            hierarchicalTypes.addAll(getAllSuperTypes(element));
+            hierarchicalTypes.addAll(getAllSuperTypes(type));
         }
 
         if (includeSuperInterfaces) {
-            hierarchicalTypes.addAll(getAllInterfaces(element));
+            hierarchicalTypes.addAll(getAllInterfaces(type));
         }
 
         return filterAll(hierarchicalTypes, typeFilters);
@@ -203,7 +200,7 @@ public interface TypeUtils {
                 includeSuperInterfaces));
     }
 
-    static List<TypeMirror> getInterfaces(Element type, Predicate<TypeMirror>... interfaceFilters) {
+    static List<TypeMirror> getInterfaces(TypeElement type, Predicate<TypeMirror>... interfaceFilters) {
         return type == null ? emptyList() : filterAll((List<TypeMirror>) ofTypeElement(type).getInterfaces(), interfaceFilters);
     }
 
@@ -211,8 +208,8 @@ public interface TypeUtils {
         return getInterfaces(ofTypeElement(type), interfaceFilters);
     }
 
-    static Set<TypeElement> getAllInterfaces(Element element, Predicate<TypeElement>... interfaceFilters) {
-        return element == null ? emptySet() : filterAll(ofTypeElements(getAllInterfaces(element.asType())), interfaceFilters);
+    static Set<TypeElement> getAllInterfaces(TypeElement type, Predicate<TypeElement>... interfaceFilters) {
+        return type == null ? emptySet() : filterAll(ofTypeElements(getAllInterfaces(type.asType())), interfaceFilters);
     }
 
     static Set<? extends TypeMirror> getAllInterfaces(TypeMirror type, Predicate<TypeMirror>... interfaceFilters) {
@@ -247,9 +244,8 @@ public interface TypeUtils {
         return elements.getTypeElement(typeName);
     }
 
-    static TypeElement getSuperType(Element element) {
-        TypeElement currentType = ofTypeElement(element);
-        return currentType == null ? null : ofTypeElement(currentType.getSuperclass());
+    static TypeElement getSuperType(TypeElement type) {
+        return type == null ? null : ofTypeElement(type.getSuperclass());
     }
 
     static DeclaredType getSuperType(TypeMirror type) {
@@ -257,17 +253,17 @@ public interface TypeUtils {
         return superType == null ? null : ofDeclaredType(superType.asType());
     }
 
-    static Set<TypeElement> getAllSuperTypes(Element element) {
-        return getAllSuperTypes(element, EMPTY_ARRAY);
+    static Set<TypeElement> getAllSuperTypes(TypeElement type) {
+        return getAllSuperTypes(type, EMPTY_ARRAY);
     }
 
-    static Set<TypeElement> getAllSuperTypes(Element element, Predicate<TypeElement>... typeFilters) {
-        if (element == null) {
+    static Set<TypeElement> getAllSuperTypes(TypeElement type, Predicate<TypeElement>... typeFilters) {
+        if (type == null) {
             return emptySet();
         }
 
         Set<TypeElement> allSuperTypes = new LinkedHashSet<>();
-        TypeElement superType = getSuperType(element);
+        TypeElement superType = getSuperType(type);
         if (superType != null) {
             // add super type
             allSuperTypes.add(superType);

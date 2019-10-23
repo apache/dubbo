@@ -22,6 +22,8 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
 import java.util.Set;
 
+import static org.apache.dubbo.metadata.annotation.processing.util.ServiceAnnotationUtils.isServiceAnnotationPresent;
+
 /**
  * The class to process {@link ServiceRestMetadata} based on Annotation Processor Tool
  *
@@ -29,11 +31,15 @@ import java.util.Set;
  */
 public interface ServiceRestMetadataProcessor {
 
+    default boolean supports(ProcessingEnvironment processingEnvironment, TypeElement serviceType) {
+        return isServiceAnnotationPresent(serviceType);
+    }
+
     /**
      * Process the {@link ServiceRestMetadata} from given service type
      *
      * @param processingEnvironment {@link ProcessingEnvironment}
-     * @param serviceType   Dubbo service type or interface
+     * @param serviceType           Dubbo service type or interface
      * @param annotations
      * @return non-null
      */
