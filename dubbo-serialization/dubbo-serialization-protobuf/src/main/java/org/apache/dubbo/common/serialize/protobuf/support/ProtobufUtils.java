@@ -21,14 +21,21 @@ import org.apache.dubbo.common.serialize.protobuf.support.wrapper.ThrowablePB.St
 import org.apache.dubbo.common.serialize.protobuf.support.wrapper.ThrowablePB.ThrowableProto;
 
 import com.google.common.base.Strings;
+import com.google.protobuf.BoolValue;
+import com.google.protobuf.BytesValue;
 import com.google.protobuf.CodedInputStream;
+import com.google.protobuf.DoubleValue;
 import com.google.protobuf.Empty;
 import com.google.protobuf.ExtensionRegistryLite;
+import com.google.protobuf.FloatValue;
 import com.google.protobuf.GeneratedMessageV3.Builder;
+import com.google.protobuf.Int32Value;
+import com.google.protobuf.Int64Value;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.MessageLite;
 import com.google.protobuf.MessageOrBuilder;
 import com.google.protobuf.Parser;
+import com.google.protobuf.StringValue;
 import com.google.protobuf.util.JsonFormat;
 import com.google.protobuf.util.JsonFormat.Printer;
 
@@ -85,10 +92,17 @@ public class ProtobufUtils {
             ExtensionRegistryLite.getEmptyRegistry();
 
     static {
-        // Builtin types needed to be registered in advance
+        // Built-in types need to be registered in advance
         marshaller(MapValue.Map.getDefaultInstance());
         marshaller(Empty.getDefaultInstance());
         marshaller(ThrowableProto.getDefaultInstance());
+        marshaller(BoolValue.getDefaultInstance());
+        marshaller(Int32Value.getDefaultInstance());
+        marshaller(Int64Value.getDefaultInstance());
+        marshaller(FloatValue.getDefaultInstance());
+        marshaller(DoubleValue.getDefaultInstance());
+        marshaller(BytesValue.getDefaultInstance());
+        marshaller(StringValue.getDefaultInstance());
     }
 
     public static <T extends MessageLite> void marshaller(T defaultInstance) {
@@ -97,7 +111,7 @@ public class ProtobufUtils {
 
     static void serialize(Object value, OutputStream os) throws IOException {
         MessageLite messageLite = (MessageLite) value;
-        messageLite.writeTo(os);
+        messageLite.writeDelimitedTo(os);
     }
 
     @SuppressWarnings("unchecked")
@@ -170,11 +184,12 @@ public class ProtobufUtils {
         }
 
         public T parse(InputStream stream) throws InvalidProtocolBufferException {
-            CodedInputStream cis = CodedInputStream.newInstance(stream);
-            // Pre-create the CodedInputStream so that we can remove the size limit restriction
-            // when parsing.
-            cis.setSizeLimit(Integer.MAX_VALUE);
-            return parseFrom(cis);
+            return parser.parseDelimitedFrom(stream, globalRegistry);
+//            CodedInputStream cis = CodedInputStream.newInstance(stream);
+//            // Pre-create the CodedInputStream so that we can remove the size limit restriction
+//            // when parsing.
+//            cis.setSizeLimit(Integer.MAX_VALUE);
+//            return parseFrom(cis);
         }
 
         private T parseFrom(CodedInputStream stream) throws InvalidProtocolBufferException {
