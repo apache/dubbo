@@ -433,7 +433,7 @@ static void PrintDubboInterface(
     p->Print(
     *vars,
     "public interface $dubbo_interface$ {\n\n"
-    "   static Class<?> clazz = init();\n");
+    "   static Class<?> clazz = init();\n\n");
 
     for (int i = 0; i < service->method_count(); ++i) {
         const MethodDescriptor* method = service->method(i);
@@ -450,7 +450,7 @@ static void PrintDubboInterface(
        // Simple Future RPC
         p->Print(
             *vars,
-            "   $CompletableFuture$<$output_type$> $lower_method_name$Async(\n$input_type$ request);\n\n");
+            "   $CompletableFuture$<$output_type$> $lower_method_name$Async(\n  $input_type$ request);\n\n");
 //            p->Print(
 //            *vars,
 //            "default $CompletableFuture$<$output_type$> $lower_method_name$Async(\n"
@@ -459,7 +459,7 @@ static void PrintDubboInterface(
     }
 
     p->Outdent();
-    p->Print(" }\n\n");
+    p->Print("  }\n\n");
 
 }
 
