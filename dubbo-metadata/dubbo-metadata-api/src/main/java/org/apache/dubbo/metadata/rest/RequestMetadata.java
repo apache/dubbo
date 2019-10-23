@@ -30,6 +30,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import static java.util.Collections.unmodifiableMap;
+import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 import static org.apache.dubbo.metadata.util.HttpUtils.normalizePath;
 
 /**
@@ -84,6 +85,9 @@ public class RequestMetadata implements Serializable {
     }
 
     private static void add(Map<String, List<String>> multiValueMap, String key, String value) {
+        if (isBlank(key)) {
+            return;
+        }
         List<String> values = get(multiValueMap, key, true);
         values.add(value);
     }

@@ -34,6 +34,7 @@ import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import static java.lang.Enum.valueOf;
 import static java.util.Collections.emptyList;
 import static org.apache.dubbo.common.function.Predicates.EMPTY_ARRAY;
 import static org.apache.dubbo.common.function.Streams.filterAll;
@@ -211,10 +212,15 @@ public interface AnnotationUtils {
                     List<AnnotationValue> values = (List<AnnotationValue>) value.getValue();
                     int size = values.size();
                     try {
-                        Class<?> componentClass = classLoader.loadClass(componentType);
+                        Class componentClass = classLoader.loadClass(componentType);
+                        boolean isEnum = componentClass.isEnum();
                         Object array = Array.newInstance(componentClass, values.size());
                         for (int i = 0; i < size; i++) {
-                            Array.set(array, i, values.get(i).getValue());
+                            Object element = values.get(i).getValue();
+                            if (isEnum) {
+                                element = valueOf(componentClass, element.toString());
+                            }
+                            Array.set(array, i, element);
                         }
                         annotationValue = (T) array;
                     } catch (ClassNotFoundException e) {

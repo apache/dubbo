@@ -19,14 +19,14 @@ package org.apache.dubbo.metadata.annotation.processing.rest.annotation.jaxrs;
 import org.apache.dubbo.metadata.annotation.processing.rest.annotation.AnnotatedMethodParameterProcessor;
 
 /**
- * The {@link AnnotatedMethodParameterProcessor} implementation for JAX-RS's @QueryParam
+ * The {@link AnnotatedMethodParameterProcessor} implementation for JAX-RS's @FormParam
  *
  * @since 2.7.5
  */
-public class QueryParamParameterProcessor extends ParamAnnotationParameterProcessor {
+public class FormParamParameterProcessor extends ParamAnnotationParameterProcessor {
 
     @Override
     public String getAnnotationType() {
-        return "javax.ws.rs.QueryParam";
+        return "javax.ws.rs.FormParam";
     }
 }

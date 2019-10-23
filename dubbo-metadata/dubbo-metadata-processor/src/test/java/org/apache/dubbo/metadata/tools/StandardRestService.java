@@ -28,12 +28,10 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.dubbo.metadata.tools.LoggerUtils.log;
-import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 
 /**
  * JAX-RS {@link RestService}
@@ -53,7 +51,8 @@ public class StandardRestService implements RestService {
     @Override
     @Path("params")
     @POST
-    public String params(@QueryParam("a") @DefaultValue("value-a") int a, @QueryParam("value-b") @DefaultValue("value-b") String b) {
+    public String params(@QueryParam("a") @DefaultValue("value-a") int a,
+                         @QueryParam("b") @DefaultValue("value-b") String b) {
         log("/params", a + b);
         return a + b;
     }
@@ -63,7 +62,7 @@ public class StandardRestService implements RestService {
     @GET
     public String headers(@HeaderParam("h") @DefaultValue("value-h") String header,
                           @HeaderParam("h2") @DefaultValue("value-h2") String header2,
-                          @QueryParam("v") @DefaultValue("value-param") Integer param) {
+                          @QueryParam("v") @DefaultValue("1") Integer param) {
         String result = header + " , " + header2 + " , " + param;
         log("/headers", result);
         return result;
@@ -92,7 +91,7 @@ public class StandardRestService implements RestService {
     @Override
     @Path("request/body/map")
     @POST
-    @Produces(APPLICATION_JSON_VALUE)
+    @Produces("application/json;charset=UTF-8")
     public User requestBodyMap(Map<String, Object> data,
                                @QueryParam("param") String param) {
         User user = new User();
@@ -106,7 +105,7 @@ public class StandardRestService implements RestService {
     @Path("request/body/user")
     @POST
     @Override
-    @Consumes(MediaType.APPLICATION_JSON)
+    @Consumes("application/json;charset=UTF-8")
     public Map<String, Object> requestBodyUser(User user) {
         Map<String, Object> map = new HashMap<>();
         map.put("id", user.getId());

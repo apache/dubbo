@@ -37,20 +37,14 @@ public interface AnnotatedMethodParameterProcessor extends Prioritized {
      */
     String getAnnotationType();
 
-    /**
-     * The class name presenting the metadata annotated type
-     *
-     * @return <code>null</code> as default value
-     */
-    default String getMetaAnnotationType() {
-        return null;
+    static String buildDefaultValue(int parameterIndex) {
+        return "{" + parameterIndex + "}";
     }
 
     /**
      * Process the specified method {@link VariableElement parameter}
      *
-     * @param annotation         {@link AnnotationMirror the target annotation} whose type is
-     *                           {@link #getAnnotationType()} or {@link #getMetaAnnotationType()}
+     * @param annotation         {@link AnnotationMirror the target annotation} whose type is {@link #getAnnotationType()}
      * @param parameter          {@link VariableElement method parameter}
      * @param parameterIndex     the index of parameter in the method
      * @param method             {@link ExecutableElement method that parameter belongs to}

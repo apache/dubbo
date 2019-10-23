@@ -31,6 +31,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -38,8 +39,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static java.lang.ThreadLocal.withInitial;
 import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
@@ -57,26 +60,33 @@ import static org.apache.dubbo.metadata.annotation.processing.util.ServiceAnnota
  */
 public abstract class AbstractServiceRestMetadataProcessor implements ServiceRestMetadataProcessor {
 
-    private final Map<String, List<AnnotatedMethodParameterProcessor>> parameterProcessorsMap = loadAnnotatedMethodParameterProcessors();
+    private final static ThreadLocal<Map<String, Object>> threadLocalCache = withInitial(HashMap::new);
+
+    private final static Map<String, List<AnnotatedMethodParameterProcessor>> parameterProcessorsMap =
+            loadAnnotatedMethodParameterProcessors();
 
     @Override
     public final ServiceRestMetadata process(ProcessingEnvironment processingEnv,
                                              TypeElement serviceType,
                                              Set<? extends TypeElement> annotations) {
 
-        AnnotationMirror serviceAnnotation = getAnnotation(serviceType);
-
         ServiceRestMetadata serviceRestMetadata = new ServiceRestMetadata();
-        serviceRestMetadata.setServiceInterface(resolveServiceInterfaceName(serviceType, serviceAnnotation));
-        serviceRestMetadata.setGroup(getGroup(serviceAnnotation));
-        serviceRestMetadata.setVersion(getVersion(serviceAnnotation));
 
-        List<? extends ExecutableElement> methods = getAllDeclaredMethods(serviceType, Object.class);
+        try {
+            AnnotationMirror serviceAnnotation = getAnnotation(serviceType);
+            serviceRestMetadata.setServiceInterface(resolveServiceInterfaceName(serviceType, serviceAnnotation));
+            serviceRestMetadata.setGroup(getGroup(serviceAnnotation));
+            serviceRestMetadata.setVersion(getVersion(serviceAnnotation));
 
-        methods.forEach(method -> {
-            processRestMethodMetadata(processingEnv, serviceType, method)
-                    .ifPresent(serviceRestMetadata.getMeta()::add);
-        });
+            List<? extends ExecutableElement> methods = getAllDeclaredMethods(serviceType, Object.class);
+
+            methods.forEach(method -> {
+                processRestMethodMetadata(processingEnv, serviceType, method)
+                        .ifPresent(serviceRestMetadata.getMeta()::add);
+            });
+        } finally {
+            clearCache();
+        }
 
         return serviceRestMetadata;
     }
@@ -120,7 +130,22 @@ public abstract class AbstractServiceRestMetadataProcessor implements ServiceRes
         request.setProduces(produces);
         request.setConsumes(consumes);
 
+        // Post-Process
+        postProcessRestMethodMetadata(processingEnv, serviceType, method, metadata);
+
         return of(metadata);
+    }
+
+    /**
+     * Post-Process for {@link RestMethodMetadata}, sub-type could override this method for further works
+     *
+     * @param processingEnv {@link ProcessingEnvironment}
+     * @param serviceType   The type that @Service annotated
+     * @param method        The public method of <code>serviceType</code>
+     * @param metadata      {@link RestMethodMetadata} maybe updated
+     */
+    protected void postProcessRestMethodMetadata(ProcessingEnvironment processingEnv, TypeElement serviceType,
+                                                 ExecutableElement method, RestMethodMetadata metadata) {
     }
 
     protected abstract String getRequestPath(ProcessingEnvironment processingEnv, TypeElement serviceType,
@@ -170,6 +195,20 @@ public abstract class AbstractServiceRestMetadataProcessor implements ServiceRes
     protected abstract void processConsumes(ProcessingEnvironment processingEnv, TypeElement serviceType,
                                             ExecutableElement method, Set<String> consumes);
 
+    protected static final void put(String name, Object value) {
+        Map<String, Object> cache = getCache();
+        cache.put(name, value);
+    }
+
+    protected static final <T> T get(String name) throws ClassCastException {
+        Map<String, Object> cache = getCache();
+        return (T) cache.get(name);
+    }
+
+    protected static final <V> V computeIfAbsent(String name, Function<? super String, ? extends V> mappingFunction) {
+        return (V) getCache().computeIfAbsent(name, mappingFunction);
+    }
+
     private static String getMethodName(ExecutableElement method) {
         return method.getSimpleName().toString();
     }
@@ -203,5 +242,15 @@ public abstract class AbstractServiceRestMetadataProcessor implements ServiceRes
                 });
 
         return parameterProcessorsMap;
+    }
+
+    private static Map<String, Object> getCache() {
+        return threadLocalCache.get();
+    }
+
+    private static void clearCache() {
+        Map<String, Object> cache = getCache();
+        cache.clear();
+        threadLocalCache.remove();
     }
 }

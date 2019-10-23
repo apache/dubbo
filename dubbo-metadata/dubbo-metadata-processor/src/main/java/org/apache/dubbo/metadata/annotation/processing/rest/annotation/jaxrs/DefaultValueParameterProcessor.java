@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.metadata.annotation.processing.rest.annotation.jaxrs;
 
+import org.apache.dubbo.metadata.annotation.processing.rest.annotation.AbstractAnnotatedMethodParameterProcessor;
 import org.apache.dubbo.metadata.annotation.processing.rest.annotation.AnnotatedMethodParameterProcessor;
 import org.apache.dubbo.metadata.rest.RequestMetadata;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
@@ -26,7 +27,6 @@ import javax.lang.model.element.VariableElement;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.getValue;
 
 /**
  * The {@link AnnotatedMethodParameterProcessor} implementation for JAX-RS's @DefaultValue
@@ -34,7 +34,7 @@ import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUti
  *
  * @since 2.7.5
  */
-public class DefaultValueParameterProcessor implements AnnotatedMethodParameterProcessor {
+public class DefaultValueParameterProcessor extends AbstractAnnotatedMethodParameterProcessor {
 
     /**
      * The annotation class name of @DefaultValue
@@ -46,24 +46,15 @@ public class DefaultValueParameterProcessor implements AnnotatedMethodParameterP
         return DEFAULT_VALUE_ANNOTATION_CLASS_NAME;
     }
 
-    static String buildDefaultValuePlaceholder(int parameterIndex) {
-        return "{" + parameterIndex + "}";
-    }
-
     @Override
-    public void process(AnnotationMirror annotation, VariableElement parameter, int parameterIndex,
-                        ExecutableElement method, RestMethodMetadata restMethodMetadata) {
-
-        String placeholderValue = buildDefaultValuePlaceholder(parameterIndex);
-
+    protected void process(String annotationValue, String defaultValue, AnnotationMirror annotation, VariableElement parameter, int parameterIndex, ExecutableElement method, RestMethodMetadata restMethodMetadata) {
         RequestMetadata requestMetadata = restMethodMetadata.getRequest();
 
-        String defaultValue = getValue(annotation);
-
         // process the request parameters
-        setDefaultValue(requestMetadata.getParams(), placeholderValue, defaultValue);
+        setDefaultValue(requestMetadata.getParams(), defaultValue, annotationValue);
         // process the request headers
-        setDefaultValue(requestMetadata.getHeaders(), placeholderValue, defaultValue);
+        setDefaultValue(requestMetadata.getHeaders(), defaultValue, annotationValue);
+
     }
 
     private void setDefaultValue(Map<String, List<String>> source, String placeholderValue, String defaultValue) {

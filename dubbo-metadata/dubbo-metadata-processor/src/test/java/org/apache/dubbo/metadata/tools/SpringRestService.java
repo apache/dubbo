@@ -43,22 +43,23 @@ public class SpringRestService implements RestService {
 
     @Override
     @GetMapping(value = "/param")
-    public String param(@RequestParam String param) {
+    public String param(@RequestParam(defaultValue = "value-param") String param) {
         log("/param", param);
         return param;
     }
 
     @Override
     @PostMapping("/params")
-    public String params(@RequestParam int a, @RequestParam String b) {
+    public String params(@RequestParam(defaultValue = "value-a") int a, @RequestParam(defaultValue = "value-b") String b) {
         log("/params", a + b);
         return a + b;
     }
 
     @Override
     @GetMapping("/headers")
-    public String headers(@RequestHeader("h") String header,
-                          @RequestHeader("h2") String header2, @RequestParam("v") Integer param) {
+    public String headers(@RequestHeader(name = "h", defaultValue = "value-h") String header,
+                          @RequestHeader(name = "h2", defaultValue = "value-h2") String header2,
+                          @RequestParam(value = "v", defaultValue = "1") Integer param) {
         String result = header + " , " + header2 + " , " + param;
         log("/headers", result);
         return result;

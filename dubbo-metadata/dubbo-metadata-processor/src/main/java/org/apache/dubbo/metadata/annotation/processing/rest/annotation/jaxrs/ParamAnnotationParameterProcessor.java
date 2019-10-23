@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.metadata.annotation.processing.rest.annotation.jaxrs;
 
+import org.apache.dubbo.metadata.annotation.processing.rest.annotation.AbstractAnnotatedMethodParameterProcessor;
 import org.apache.dubbo.metadata.annotation.processing.rest.annotation.AnnotatedMethodParameterProcessor;
 import org.apache.dubbo.metadata.rest.RequestMetadata;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
@@ -24,34 +25,14 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 
-import static org.apache.dubbo.metadata.annotation.processing.rest.annotation.jaxrs.DefaultValueParameterProcessor.buildDefaultValuePlaceholder;
-import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.getValue;
-
 /**
- * The {@link AnnotatedMethodParameterProcessor} implementation for JAX-RS's @PathParam
- *
- * @since 2.7.5
+ * The abstract {@link AnnotatedMethodParameterProcessor} implementation for JAX-RS's @*Param
  */
-public class PathParamParameterProcessor implements AnnotatedMethodParameterProcessor {
+public abstract class ParamAnnotationParameterProcessor extends AbstractAnnotatedMethodParameterProcessor {
 
-    /**
-     * The annotation class name of @PathParam
-     */
-    public static final String PATH_PARAM_ANNOTATION_CLASS_NAME = "javax.ws.rs.PathParam";
-
-    @Override
-    public String getAnnotationType() {
-        return PATH_PARAM_ANNOTATION_CLASS_NAME;
-    }
-
-    @Override
-    public void process(AnnotationMirror annotation, VariableElement parameter, int parameterIndex,
-                        ExecutableElement method, RestMethodMetadata restMethodMetadata) {
-
-        String paramName = getValue(annotation);
-
+    protected void process(String name, String defaultValue, AnnotationMirror annotation, VariableElement parameter, int parameterIndex,
+                           ExecutableElement method, RestMethodMetadata restMethodMetadata) {
         RequestMetadata requestMetadata = restMethodMetadata.getRequest();
-        // Add the placeholder as parameter value
-        requestMetadata.addParam(paramName, buildDefaultValuePlaceholder(parameterIndex));
+        requestMetadata.addParam(name, defaultValue);
     }
 }
