@@ -399,13 +399,20 @@ static void PrintMarshallerStaticBlock(const ServiceDescriptor* service,
 
        p->Print(
            *vars,
-           "static {\n"
-           "    if (registered.compareAndSet(false, true)) {\n"
-           "       $ProtobufUtils$.marshaller(\n"
-           "            $input_type$.getDefaultInstance());\n"
-           "       $ProtobufUtils$.marshaller(\n"
-           "            $output_type$.getDefaultInstance());\n"
-           "    }\n"
+           "private static Class<?> init() {\n"
+           "    Class<?> clazz = null;\n"
+           "    try {\n"
+           "        clazz = Class.forName(DemoServiceDubbo.class.getName());\n"
+           "        if (registered.compareAndSet(false, true)) {\n"
+           "            $ProtobufUtils$.marshaller(\n"
+           "                $input_type$.getDefaultInstance());\n"
+           "            $ProtobufUtils$.marshaller(\n"
+           "                $output_type$.getDefaultInstance());\n"
+           "        }\n"
+           "     } catch (ClassNotFoundException e) {\n"
+           "        // ignore \n"
+           "     }\n"
+           "     return clazz;\n"
            "}\n\n");
    }
 }
@@ -425,7 +432,8 @@ static void PrintDubboInterface(
     );
     p->Print(
     *vars,
-    "public interface $dubbo_interface$ {\n\n");
+    "public interface $dubbo_interface$ {\n\n"
+    "   static Class<?> clazz = init();\n");
 
     for (int i = 0; i < service->method_count(); ++i) {
         const MethodDescriptor* method = service->method(i);
@@ -438,11 +446,11 @@ static void PrintDubboInterface(
         // Simple RPC
         p->Print(
             *vars,
-            "$output_type$ $lower_method_name$($input_type$ request);\n\n");
+            "   $output_type$ $lower_method_name$($input_type$ request);\n\n");
        // Simple Future RPC
         p->Print(
             *vars,
-            "$CompletableFuture$<$output_type$> $lower_method_name$Async(\n$input_type$ request);\n\n");
+            "   $CompletableFuture$<$output_type$> $lower_method_name$Async(\n$input_type$ request);\n\n");
 //            p->Print(
 //            *vars,
 //            "default $CompletableFuture$<$output_type$> $lower_method_name$Async(\n"
@@ -451,7 +459,7 @@ static void PrintDubboInterface(
     }
 
     p->Outdent();
-    p->Print("}\n\n");
+    p->Print(" }\n\n");
 
 }
 
