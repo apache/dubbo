@@ -241,12 +241,11 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     }
 
     public synchronized T get() {
-        checkAndUpdateSubConfigs();
-
         if (destroyed) {
             throw new IllegalStateException("The invoker of ReferenceConfig(" + url + ") has already destroyed!");
         }
         if (ref == null) {
+            checkAndUpdateSubConfigs();
             init();
         }
         return ref;
