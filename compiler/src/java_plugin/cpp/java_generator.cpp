@@ -990,7 +990,7 @@ static void PrintDubboInterface(
 
         // Consustor
         p->Print(*vars, "public $dubbo_stub$($Channel$ channel, $CallOptions$ callOptions) {\n"
-        "   blockingStub = $service_class_name$.newBlockingStub(channel)..build(channel, callOptions);\n"
+        "   blockingStub = $service_class_name$.newBlockingStub(channel).build(channel, callOptions);\n"
         "   futureStub = $service_class_name$.newFutureStub(channel).build(channel, callOptions);\n"
         "   stub = $service_class_name$.newStub(channel).build(channel, callOptions);\n"
         "}\n\n");
