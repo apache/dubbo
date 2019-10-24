@@ -123,7 +123,7 @@ public class StackTest {
         stack.push("one");
 
         Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
-            stack.remove(-1);
+            stack.remove(-2);
         });
     }
 }
