@@ -41,9 +41,7 @@ public class BroadcastClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
     private static final Logger logger = LoggerFactory.getLogger(BroadcastClusterInvoker.class);
 
-    private ExecutorService pool = new ThreadPoolExecutor(10, 10,
-            0L, TimeUnit.MILLISECONDS,
-            new LinkedBlockingQueue<>(), new NamedThreadFactory("BroadcastClusterInvoker pool"));
+    private ExecutorService executor = Executors.newCachedThreadPool(new NamedThreadFactory("broadcast-cluster-executor", true));
 
     public BroadcastClusterInvoker(Directory<T> directory) {
         super(directory);
@@ -60,7 +58,7 @@ public class BroadcastClusterInvoker<T> extends AbstractClusterInvoker<T> {
             return callable;
         }).collect(Collectors.toList());
         try {
-            List<Future<Result>> futureList = pool.invokeAll(tasks);
+            List<Future<Result>> futureList = executor.invokeAll(tasks);
             futureList.stream().map(it -> {
                 try {
                     return it.get();
