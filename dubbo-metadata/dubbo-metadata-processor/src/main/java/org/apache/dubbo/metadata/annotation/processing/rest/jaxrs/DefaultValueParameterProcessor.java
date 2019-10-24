@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.annotation.processing.rest.annotation.jaxrs;
+package org.apache.dubbo.metadata.annotation.processing.rest.jaxrs;
 
-import org.apache.dubbo.metadata.annotation.processing.rest.annotation.AbstractAnnotatedMethodParameterProcessor;
-import org.apache.dubbo.metadata.annotation.processing.rest.annotation.AnnotatedMethodParameterProcessor;
+import org.apache.dubbo.metadata.annotation.processing.rest.AbstractAnnotatedMethodParameterProcessor;
+import org.apache.dubbo.metadata.annotation.processing.rest.AnnotatedMethodParameterProcessor;
 import org.apache.dubbo.metadata.rest.RequestMetadata;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 

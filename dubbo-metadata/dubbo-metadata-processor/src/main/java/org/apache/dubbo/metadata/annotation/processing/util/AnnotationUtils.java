@@ -132,7 +132,7 @@ public interface AnnotationUtils {
                         .map(AnnotationUtils::getAnnotations)
                         .flatMap(Collection::stream)
                         .collect(Collectors.toList()) :
-                (List<AnnotationMirror>) element.getAnnotationMirrors();
+                element == null ? emptyList() : (List<AnnotationMirror>) element.getAnnotationMirrors();
 
         return filterAll(allAnnotations, annotationFilters);
     }

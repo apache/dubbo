@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.annotation.processing.rest.annotation.springmvc;
+package org.apache.dubbo.metadata.annotation.processing.rest.springmvc;
 
-import org.apache.dubbo.metadata.annotation.processing.rest.annotation.AnnotatedMethodParameterProcessor;
+import org.apache.dubbo.metadata.annotation.processing.rest.AnnotatedMethodParameterProcessor;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -24,18 +24,19 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 
 /**
- * The {@link AnnotatedMethodParameterProcessor} implementation for Spring Web MVC's @RequestHeader
+ * The {@link AnnotatedMethodParameterProcessor} implementation for Spring Web MVC's @RequestParam
  */
-public class RequestHeaderParameterProcessor extends AbstractRequestAnnotationParameterProcessor {
+public class RequestParamParameterProcessor extends AbstractRequestAnnotationParameterProcessor {
 
     @Override
     public String getAnnotationType() {
-        return "org.springframework.web.bind.annotation.RequestHeader";
+        return "org.springframework.web.bind.annotation.RequestParam";
     }
 
     @Override
-    protected void process(String name, String defaultValue, AnnotationMirror annotation, VariableElement parameter, int parameterIndex, ExecutableElement method, RestMethodMetadata restMethodMetadata) {
-        restMethodMetadata.getRequest().addHeader(name, defaultValue);
+    protected void process(String name, String defaultValue, AnnotationMirror annotation,
+                           VariableElement parameter, int parameterIndex,
+                           ExecutableElement method, RestMethodMetadata restMethodMetadata) {
+        restMethodMetadata.getRequest().addParam(name, defaultValue);
     }
-
 }

@@ -14,11 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.annotation.processing.rest.annotation.jaxrs;
+package org.apache.dubbo.metadata.annotation.processing.rest.springmvc;
 
-import org.apache.dubbo.metadata.annotation.processing.rest.annotation.AbstractAnnotatedMethodParameterProcessor;
-import org.apache.dubbo.metadata.annotation.processing.rest.annotation.AnnotatedMethodParameterProcessor;
-import org.apache.dubbo.metadata.rest.RequestMetadata;
+import org.apache.dubbo.metadata.annotation.processing.rest.AnnotatedMethodParameterProcessor;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -26,13 +24,18 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 
 /**
- * The abstract {@link AnnotatedMethodParameterProcessor} implementation for JAX-RS's @*Param
+ * The {@link AnnotatedMethodParameterProcessor} implementation for Spring Web MVC's @RequestHeader
  */
-public abstract class ParamAnnotationParameterProcessor extends AbstractAnnotatedMethodParameterProcessor {
+public class RequestHeaderParameterProcessor extends AbstractRequestAnnotationParameterProcessor {
 
-    protected void process(String name, String defaultValue, AnnotationMirror annotation, VariableElement parameter, int parameterIndex,
-                           ExecutableElement method, RestMethodMetadata restMethodMetadata) {
-        RequestMetadata requestMetadata = restMethodMetadata.getRequest();
-        requestMetadata.addParam(name, defaultValue);
+    @Override
+    public String getAnnotationType() {
+        return "org.springframework.web.bind.annotation.RequestHeader";
     }
+
+    @Override
+    protected void process(String name, String defaultValue, AnnotationMirror annotation, VariableElement parameter, int parameterIndex, ExecutableElement method, RestMethodMetadata restMethodMetadata) {
+        restMethodMetadata.getRequest().addHeader(name, defaultValue);
+    }
+
 }

@@ -1,1 +1,1 @@
-org.apache.dubbo.metadata.annotation.processing.RestMetadataServiceAnnotationProcessor
+org.apache.dubbo.metadata.annotation.processing.rest.ServiceRestMetadataAnnotationProcessor

@@ -17,7 +17,6 @@
 package org.apache.dubbo.metadata.annotation.processing.rest;
 
 import org.apache.dubbo.metadata.annotation.processing.builder.TypeDefinitionBuilder;
-import org.apache.dubbo.metadata.annotation.processing.rest.annotation.AnnotatedMethodParameterProcessor;
 import org.apache.dubbo.metadata.definition.model.MethodDefinition;
 import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 import org.apache.dubbo.metadata.rest.RequestMetadata;

@@ -81,7 +81,7 @@ public interface TypeDefinitionBuilder<T extends TypeMirror> extends Prioritized
                 .findFirst()
                 .ifPresent(builder -> {
                     builder.build(processingEnv, type, typeDefinition);
-                    typeDefinition.setTypeBuilderName(builder.getClass().getName());
+                    // typeDefinition.setTypeBuilderName(builder.getClass().getName());
                 });
 
         return typeDefinition;

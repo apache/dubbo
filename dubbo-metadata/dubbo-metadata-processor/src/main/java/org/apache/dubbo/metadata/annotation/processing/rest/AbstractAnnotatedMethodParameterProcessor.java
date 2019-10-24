@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.annotation.processing.rest.annotation;
+package org.apache.dubbo.metadata.annotation.processing.rest;
 
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 
@@ -22,7 +22,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 
-import static org.apache.dubbo.metadata.annotation.processing.rest.annotation.AnnotatedMethodParameterProcessor.buildDefaultValue;
+import static org.apache.dubbo.metadata.annotation.processing.rest.AnnotatedMethodParameterProcessor.buildDefaultValue;
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.getValue;
 
 /**

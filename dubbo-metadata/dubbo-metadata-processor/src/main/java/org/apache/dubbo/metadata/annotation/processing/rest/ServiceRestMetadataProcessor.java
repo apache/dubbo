@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.metadata.annotation.processing.rest;
 
+import org.apache.dubbo.common.lang.Prioritized;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
 
 import javax.annotation.processing.ProcessingEnvironment;
@@ -29,7 +30,7 @@ import static org.apache.dubbo.metadata.annotation.processing.util.ServiceAnnota
  *
  * @since 2.7.5
  */
-public interface ServiceRestMetadataProcessor {
+public interface ServiceRestMetadataProcessor extends Prioritized {
 
     default boolean supports(ProcessingEnvironment processingEnvironment, TypeElement serviceType) {
         return isServiceAnnotationPresent(serviceType);

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.annotation.processing.rest.annotation;
+package org.apache.dubbo.metadata.annotation.processing.rest;
 
 import org.apache.dubbo.common.lang.Prioritized;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
@@ -37,10 +37,6 @@ public interface AnnotatedMethodParameterProcessor extends Prioritized {
      */
     String getAnnotationType();
 
-    static String buildDefaultValue(int parameterIndex) {
-        return "{" + parameterIndex + "}";
-    }
-
     /**
      * Process the specified method {@link VariableElement parameter}
      *
@@ -52,4 +48,15 @@ public interface AnnotatedMethodParameterProcessor extends Prioritized {
      */
     void process(AnnotationMirror annotation, VariableElement parameter, int parameterIndex, ExecutableElement method,
                  RestMethodMetadata restMethodMetadata);
+
+
+    /**
+     * Build the default value
+     *
+     * @param parameterIndex the index of parameter
+     * @return the placeholder
+     */
+    static String buildDefaultValue(int parameterIndex) {
+        return "{" + parameterIndex + "}";
+    }
 }

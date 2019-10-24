@@ -1,0 +1,10 @@
+# JAX-RS's implementations
+org.apache.dubbo.metadata.annotation.processing.rest.jaxrs.QueryParamParameterProcessor
+org.apache.dubbo.metadata.annotation.processing.rest.jaxrs.FormParamParameterProcessor
+org.apache.dubbo.metadata.annotation.processing.rest.jaxrs.MatrixParamParameterProcessor
+org.apache.dubbo.metadata.annotation.processing.rest.jaxrs.HeaderParamParameterProcessor
+org.apache.dubbo.metadata.annotation.processing.rest.jaxrs.DefaultValueParameterProcessor
+
+# Spring Web MVC's implementations
+org.apache.dubbo.metadata.annotation.processing.rest.springmvc.RequestParamParameterProcessor
+org.apache.dubbo.metadata.annotation.processing.rest.springmvc.RequestHeaderParameterProcessor

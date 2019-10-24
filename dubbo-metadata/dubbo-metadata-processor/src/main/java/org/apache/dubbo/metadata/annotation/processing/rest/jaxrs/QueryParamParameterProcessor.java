@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.annotation.processing.rest.annotation.jaxrs;
+package org.apache.dubbo.metadata.annotation.processing.rest.jaxrs;
 
-import org.apache.dubbo.metadata.annotation.processing.rest.annotation.AnnotatedMethodParameterProcessor;
+import org.apache.dubbo.metadata.annotation.processing.rest.AnnotatedMethodParameterProcessor;
 
 /**
  * The {@link AnnotatedMethodParameterProcessor} implementation for JAX-RS's @QueryParam

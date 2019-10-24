@@ -14,7 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.annotation.processing.rest;
+package org.apache.dubbo.metadata.annotation.processing.rest.jaxrs;
+
+import org.apache.dubbo.metadata.annotation.processing.rest.AbstractServiceRestMetadataProcessor;
+import org.apache.dubbo.metadata.annotation.processing.rest.ServiceRestMetadataProcessor;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.AnnotatedConstruct;

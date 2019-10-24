@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.annotation.processing.rest.annotation.springmvc;
+package org.apache.dubbo.metadata.annotation.processing.rest.springmvc;
 
-import org.apache.dubbo.metadata.annotation.processing.rest.annotation.AbstractAnnotatedMethodParameterProcessor;
-import org.apache.dubbo.metadata.annotation.processing.rest.annotation.AnnotatedMethodParameterProcessor;
+import org.apache.dubbo.metadata.annotation.processing.rest.AbstractAnnotatedMethodParameterProcessor;
+import org.apache.dubbo.metadata.annotation.processing.rest.AnnotatedMethodParameterProcessor;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 
 import javax.lang.model.element.AnnotationMirror;
