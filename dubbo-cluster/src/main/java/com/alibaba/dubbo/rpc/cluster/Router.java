@@ -51,4 +51,5 @@ public interface Router extends Comparable<Router> {
      */
     <T> List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException;
 
+    int getPriority();
 }

@@ -112,12 +112,13 @@ public class ScriptRouter implements Router {
         }
     }
 
+    @Override
+    public int getPriority() {
+        return this.priority;
+    }
+
     public int compareTo(Router o) {
-        if (o == null || o.getClass() != ScriptRouter.class) {
-            return 1;
-        }
-        ScriptRouter c = (ScriptRouter) o;
-        return this.priority == c.priority ? rule.compareTo(c.rule) : (this.priority > c.priority ? 1 : -1);
+        return this.getPriority() == o.getPriority() ? 0 : (this.getPriority() > o.getPriority() ? 1 : -1);
     }
 
 }

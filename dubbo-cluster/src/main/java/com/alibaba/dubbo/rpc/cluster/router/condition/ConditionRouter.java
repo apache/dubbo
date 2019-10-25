@@ -173,16 +173,17 @@ public class ConditionRouter implements Router, Comparable<Router> {
         return invokers;
     }
 
+    @Override
+    public int getPriority() {
+        return this.priority;
+    }
+
     public URL getUrl() {
         return url;
     }
 
     public int compareTo(Router o) {
-        if (o == null || o.getClass() != ConditionRouter.class) {
-            return 1;
-        }
-        ConditionRouter c = (ConditionRouter) o;
-        return this.priority == c.priority ? url.toFullString().compareTo(c.url.toFullString()) : (this.priority > c.priority ? 1 : -1);
+        return this.getPriority() == o.getPriority() ? 0 : (this.getPriority() > o.getPriority() ? 1 : -1);
     }
 
     boolean matchWhen(URL url, Invocation invocation) {
