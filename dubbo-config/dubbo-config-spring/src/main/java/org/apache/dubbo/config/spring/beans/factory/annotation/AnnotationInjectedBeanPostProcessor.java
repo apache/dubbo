@@ -65,7 +65,6 @@ import static org.springframework.core.BridgeMethodResolver.isVisibilityBridgeMe
 /**
  * Abstract generic {@link BeanPostProcessor} implementation for customized annotation that annotated injected-object.
  * <p>
- * The source code is cloned from https://github.com/alibaba/spring-context-support/blob/1.0.2/src/main/java/com/alibaba/spring/beans/factory/annotation/AnnotationInjectedBeanPostProcessor.java
  *
  * @revision 2.7.3 Uses {@link AnnotationAttributes} instead of {@link Annotation}
  * @since 2.6.6

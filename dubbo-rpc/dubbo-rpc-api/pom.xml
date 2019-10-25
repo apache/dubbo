@@ -44,5 +44,10 @@
             <artifactId>dubbo-remoting-api</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>hessian-lite</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>

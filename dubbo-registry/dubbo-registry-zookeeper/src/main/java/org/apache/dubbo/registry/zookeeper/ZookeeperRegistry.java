@@ -33,7 +33,9 @@ import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 import org.apache.dubbo.rpc.RpcException;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -81,13 +83,26 @@ public class ZookeeperRegistry extends FailbackRegistry {
         }
         this.root = group;
         zkClient = zookeeperTransporter.connect(url);
-        zkClient.addStateListener(state -> {
+        zkClient.addStateListener((state) -> {
             if (state == StateListener.RECONNECTED) {
+                logger.warn("Trying to fetch the latest urls, in case there're provider changes during connection loss.\n" +
+                        " Since ephemeral ZNode will not get deleted for a connection lose, " +
+                        "there's no need to re-register url of this instance.");
+                ZookeeperRegistry.this.fetchLatestAddresses();
+            } else if (state == StateListener.NEW_SESSION_CREATED) {
+                logger.warn("Trying to re-register urls and re-subscribe listeners of this instance to registry...");
                 try {
-                    recover();
+                    ZookeeperRegistry.this.recover();
                 } catch (Exception e) {
                     logger.error(e.getMessage(), e);
                 }
+            } else if (state == StateListener.SESSION_LOST) {
+                logger.warn("Url of this instance will be deleted from registry soon. " +
+                        "Dubbo client will try to re-register once a new session is created.");
+            } else if (state == StateListener.SUSPENDED) {
+
+            } else if (state == StateListener.CONNECTED) {
+
             }
         });
     }
@@ -291,6 +306,26 @@ public class ZookeeperRegistry extends FailbackRegistry {
             urls.add(empty);
         }
         return urls;
+    }
+
+    /**
+     * When zookeeper connection recovered from a connection loss, it need to fetch the latest provider list.
+     * re-register watcher is only a side effect and is not mandate.
+     */
+    private void fetchLatestAddresses() {
+        // subscribe
+        Map<URL, Set<NotifyListener>> recoverSubscribed = new HashMap<URL, Set<NotifyListener>>(getSubscribed());
+        if (!recoverSubscribed.isEmpty()) {
+            if (logger.isInfoEnabled()) {
+                logger.info("Fetching the latest urls of " + recoverSubscribed.keySet());
+            }
+            for (Map.Entry<URL, Set<NotifyListener>> entry : recoverSubscribed.entrySet()) {
+                URL url = entry.getKey();
+                for (NotifyListener listener : entry.getValue()) {
+                    addFailedSubscribed(url, listener);
+                }
+            }
+        }
     }
 
 }

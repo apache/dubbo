@@ -16,97 +16,100 @@
  */
 package org.apache.dubbo.config.spring.util;
 
-import org.springframework.core.env.AbstractEnvironment;
-import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.EnumerablePropertySource;
 import org.springframework.core.env.MutablePropertySources;
+import org.springframework.core.env.PropertyResolver;
 import org.springframework.core.env.PropertySource;
 import org.springframework.core.env.PropertySources;
+import org.springframework.core.env.PropertySourcesPropertyResolver;
 
-import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
+
+import static java.util.Collections.unmodifiableMap;
 
 
 /**
  * {@link PropertySources} Utilities
  * <p>
- * The source code is cloned from https://github.com/alibaba/spring-context-support/blob/1.0.2/src/main/java/com/alibaba/spring/util/PropertySourcesUtils.java
  *
  * @since 2.6.6
  */
 public abstract class PropertySourcesUtils {
 
     /**
-     * Get Sub {@link Properties}
+     * Get prefixed {@link Properties}
      *
      * @param propertySources {@link PropertySource} Iterable
      * @param prefix          the prefix of property name
      * @return Map
      * @see Properties
      */
-    public static Map<String, Object> getSubProperties(Iterable<PropertySource<?>> propertySources, String prefix) {
+    public static Map<String, Object> getPrefixedProperties(Iterable<PropertySource<?>> propertySources, String prefix) {
 
-        // Non-Extension AbstractEnvironment
-        AbstractEnvironment environment = new AbstractEnvironment() {
-        };
-
-        MutablePropertySources mutablePropertySources = environment.getPropertySources();
+        MutablePropertySources mutablePropertySources = new MutablePropertySources();
 
         for (PropertySource<?> source : propertySources) {
             mutablePropertySources.addLast(source);
         }
 
-        return getSubProperties(environment, prefix);
+        return getPrefixedProperties(mutablePropertySources, prefix);
 
     }
 
     /**
-     * Get Sub {@link Properties}
+     * Get prefixed {@link Properties}
      *
-     * @param environment {@link ConfigurableEnvironment}
-     * @param prefix      the prefix of property name
+     * @param propertySources {@link PropertySources}
+     * @param prefix          the prefix of property name
      * @return Map
      * @see Properties
      */
-    public static Map<String, Object> getSubProperties(ConfigurableEnvironment environment, String prefix) {
+    public static Map<String, Object> getPrefixedProperties(PropertySources propertySources, String prefix) {
 
-        Map<String, Object> subProperties = new LinkedHashMap<>();
+        PropertyResolver propertyResolver = new PropertySourcesPropertyResolver(propertySources);
 
-        MutablePropertySources propertySources = environment.getPropertySources();
+        Map<String, Object> prefixedProperties = new LinkedHashMap<>();
 
-        String normalizedPrefix = normalizePrefix(prefix);
+        String normalizedPrefix = buildPrefix(prefix);
 
-        for (PropertySource<?> source : propertySources) {
+        Iterator<PropertySource<?>> iterator = propertySources.iterator();
+
+        while (iterator.hasNext()) {
+            PropertySource<?> source = iterator.next();
             if (source instanceof EnumerablePropertySource) {
                 for (String name : ((EnumerablePropertySource<?>) source).getPropertyNames()) {
-                    if (!subProperties.containsKey(name) && name.startsWith(normalizedPrefix)) {
+                    if (!prefixedProperties.containsKey(name) && name.startsWith(normalizedPrefix)) {
                         String subName = name.substring(normalizedPrefix.length());
-                        if (!subProperties.containsKey(subName)) { // take first one
+                        if (!prefixedProperties.containsKey(subName)) { // take first one
                             Object value = source.getProperty(name);
                             if (value instanceof String) {
                                 // Resolve placeholder
-                                value = environment.resolvePlaceholders((String) value);
+                                value = propertyResolver.resolvePlaceholders((String) value);
                             }
-                            subProperties.put(subName, value);
+                            prefixedProperties.put(subName, value);
                         }
                     }
                 }
             }
         }
 
-        return Collections.unmodifiableMap(subProperties);
-
+        return unmodifiableMap(prefixedProperties);
     }
 
     /**
-     * Normalize the prefix
+     * Build the prefix
      *
      * @param prefix the prefix
      * @return the prefix
      */
-    public static String normalizePrefix(String prefix) {
-        return prefix.endsWith(".") ? prefix : prefix + ".";
+    public static String buildPrefix(String prefix) {
+        if (prefix.endsWith(".")) {
+            return prefix;
+        } else {
+            return prefix + ".";
+        }
     }
 }
