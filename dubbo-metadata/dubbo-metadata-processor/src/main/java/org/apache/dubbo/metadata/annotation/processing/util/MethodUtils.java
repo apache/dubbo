@@ -17,6 +17,7 @@
 package org.apache.dubbo.metadata.annotation.processing.util;
 
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
@@ -31,11 +32,14 @@ import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static javax.lang.model.element.ElementKind.METHOD;
 import static javax.lang.model.util.ElementFilter.methodsIn;
 import static org.apache.dubbo.common.function.Predicates.EMPTY_ARRAY;
+import static org.apache.dubbo.common.function.Streams.filter;
 import static org.apache.dubbo.common.function.Streams.filterAll;
 import static org.apache.dubbo.common.function.Streams.filterFirst;
 import static org.apache.dubbo.metadata.annotation.processing.util.MemberUtils.getDeclaredMembers;
+import static org.apache.dubbo.metadata.annotation.processing.util.MemberUtils.isPublicNonStatic;
 import static org.apache.dubbo.metadata.annotation.processing.util.MemberUtils.matchParameterTypes;
 import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.getHierarchicalTypes;
 import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.ofDeclaredType;
@@ -76,7 +80,7 @@ public interface MethodUtils {
     }
 
     static List<ExecutableElement> getAllDeclaredMethods(TypeElement type, Type... excludedTypes) {
-        return getAllDeclaredMethods(ofDeclaredType(type), excludedTypes);
+        return type == null ? emptyList() : getAllDeclaredMethods(type.asType(), excludedTypes);
     }
 
     static List<ExecutableElement> getAllDeclaredMethods(TypeMirror type, Type... excludedTypes) {
@@ -85,6 +89,22 @@ public interface MethodUtils {
                 .map(t -> getDeclaredMethods(t))
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList());
+    }
+
+    static List<ExecutableElement> getPublicNonStaticMethods(TypeElement type, Type... excludedTypes) {
+        return getPublicNonStaticMethods(ofDeclaredType(type), excludedTypes);
+    }
+
+    static List<ExecutableElement> getPublicNonStaticMethods(TypeMirror type, Type... excludedTypes) {
+        return filter(getAllDeclaredMethods(type, excludedTypes), MethodUtils::isPublicNonStaticMethod);
+    }
+
+    static boolean isMethod(ExecutableElement method) {
+        return method == null ? false : METHOD.equals(method.getKind());
+    }
+
+    static boolean isPublicNonStaticMethod(ExecutableElement method) {
+        return isMethod(method) && isPublicNonStatic(method);
     }
 
     static ExecutableElement findMethod(TypeElement type, String methodName, Type oneParameterType, Type... otherParameterTypes) {
@@ -115,13 +135,22 @@ public interface MethodUtils {
         return filterFirst(getAllDeclaredMethods(type), method -> elements.overrides(method, declaringMethod, type));
     }
 
-//    static List<String> getMethodParameterTypes(ExecutableElement method) {
-//        return method.getParameters()
-//                .stream()
-//                .map(Element::asType)
-//                .map(TypeMirror::toString)
-//                .collect(toList());
-//    }
+
+    static String getMethodName(ExecutableElement method) {
+        return method.getSimpleName().toString();
+    }
+
+    static String getReturnType(ExecutableElement method) {
+        return method.getReturnType().toString();
+    }
+
+    static String[] getMethodParameterTypes(ExecutableElement method) {
+        return method.getParameters()
+                .stream()
+                .map(Element::asType)
+                .map(TypeMirror::toString)
+                .toArray(String[]::new);
+    }
 
     static boolean isEnclosingMethod(Type type, ExecutableElement method) {
         return isEnclosingMethod(type.getTypeName(), method);

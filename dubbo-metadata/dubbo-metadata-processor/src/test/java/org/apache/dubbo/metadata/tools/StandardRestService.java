@@ -19,7 +19,6 @@ package org.apache.dubbo.metadata.tools;
 import org.apache.dubbo.config.annotation.Service;
 
 import javax.ws.rs.Consumes;
-import javax.ws.rs.DefaultValue;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -31,40 +30,34 @@ import javax.ws.rs.QueryParam;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.apache.dubbo.metadata.tools.LoggerUtils.log;
 
 /**
  * JAX-RS {@link RestService}
  */
-@Service(version = "1.0.0", protocol = {"dubbo", "rest"})
+@Service(version = "3.0.0", protocol = {"dubbo", "rest"})
 @Path("/")
 public class StandardRestService implements RestService {
 
     @Override
     @Path("param")
     @GET
-    public String param(@QueryParam("param") @DefaultValue("value-param") String param) {
-        log("/param", param);
+    public String param(@QueryParam("param") String param) {
         return param;
     }
 
     @Override
     @Path("params")
     @POST
-    public String params(@QueryParam("a") @DefaultValue("value-a") int a,
-                         @QueryParam("b") @DefaultValue("value-b") String b) {
-        log("/params", a + b);
+    public String params(@QueryParam("a") int a, @QueryParam("b") String b) {
         return a + b;
     }
 
     @Override
     @Path("headers")
     @GET
-    public String headers(@HeaderParam("h") @DefaultValue("value-h") String header,
-                          @HeaderParam("h2") @DefaultValue("value-h2") String header2,
-                          @QueryParam("v") @DefaultValue("1") Integer param) {
+    public String headers(@HeaderParam("h") String header,
+                          @HeaderParam("h2") String header2, @QueryParam("v") Integer param) {
         String result = header + " , " + header2 + " , " + param;
-        log("/headers", result);
         return result;
     }
 
@@ -74,7 +67,6 @@ public class StandardRestService implements RestService {
     public String pathVariables(@PathParam("p1") String path1,
                                 @PathParam("p2") String path2, @QueryParam("v") String param) {
         String result = path1 + " , " + path2 + " , " + param;
-        log("/path-variables", result);
         return result;
     }
 
@@ -98,7 +90,6 @@ public class StandardRestService implements RestService {
         user.setId(((Integer) data.get("id")).longValue());
         user.setName((String) data.get("name"));
         user.setAge((Integer) data.get("age"));
-        log("/request/body/map", param);
         return user;
     }
 

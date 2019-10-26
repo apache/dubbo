@@ -24,12 +24,13 @@ import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.TypeElement;
 import java.io.IOException;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import static java.util.stream.Collectors.toSet;
 import static javax.lang.model.util.ElementFilter.typesIn;
 import static org.apache.dubbo.common.utils.PrioritizedServiceLoader.loadServices;
+import static org.apache.dubbo.metadata.annotation.processing.util.ServiceAnnotationUtils.isServiceAnnotationPresent;
 
 /**
  * The {@link Processor} class to generate the metadata of REST from the classes that are annotated by Dubbo's
@@ -42,15 +43,15 @@ public class ServiceRestMetadataAnnotationProcessor extends AbstractServiceAnnot
 
     private List<ServiceRestMetadataProcessor> metadataProcessors;
 
-    private ServiceRestMetadataWriter serviceRestMetadataWriter;
+    private ServiceRestMetadataStorage serviceRestMetadataWriter;
 
-    private Set<ServiceRestMetadata> serviceRestMetadata;
+    private Set<ServiceRestMetadata> serviceRestMetadata = new LinkedHashSet<>();
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
-        this.metadataProcessors = loadServices(ServiceRestMetadataProcessor.class);
-        this.serviceRestMetadataWriter = new ServiceRestMetadataWriter(processingEnv);
+        this.metadataProcessors = loadServices(ServiceRestMetadataProcessor.class, getClass().getClassLoader());
+        this.serviceRestMetadataWriter = new ServiceRestMetadataStorage(processingEnv);
     }
 
     @Override
@@ -60,7 +61,7 @@ public class ServiceRestMetadataAnnotationProcessor extends AbstractServiceAnnot
 
         if (roundEnv.processingOver()) {
             try {
-                serviceRestMetadataWriter.write(serviceRestMetadata);
+                serviceRestMetadataWriter.append(serviceRestMetadata);
             } catch (IOException e) {
                 throw new IllegalStateException(e);
             }
@@ -71,10 +72,16 @@ public class ServiceRestMetadataAnnotationProcessor extends AbstractServiceAnnot
 
     private void process(ProcessingEnvironment processingEnv, TypeElement serviceType,
                          Set<? extends TypeElement> annotations) {
-        serviceRestMetadata = metadataProcessors
+        metadataProcessors
                 .stream()
-                .filter(processor -> processor.supports(processingEnv, serviceType))
+                .filter(processor -> supports(processor, processingEnv, serviceType))
                 .map(processor -> processor.process(processingEnv, serviceType, annotations))
-                .collect(toSet());
+                .forEach(serviceRestMetadata::add);
+    }
+
+    private boolean supports(ServiceRestMetadataProcessor processor, ProcessingEnvironment processingEnv,
+                             TypeElement serviceType) {
+        //  @Service must be present in service type
+        return isServiceAnnotationPresent(serviceType) && processor.supports(processingEnv, serviceType);
     }
 }

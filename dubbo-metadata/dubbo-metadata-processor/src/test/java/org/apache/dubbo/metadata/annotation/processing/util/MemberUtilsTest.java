@@ -80,4 +80,9 @@ public class MemberUtilsTest extends AbstractAnnotationProcessingTest {
         assertEquals("l", fields.get(9).getSimpleName().toString());
         assertEquals("z", fields.get(10).getSimpleName().toString());
     }
+
+    @Test
+    public void testHasMembers() {
+
+    }
 }

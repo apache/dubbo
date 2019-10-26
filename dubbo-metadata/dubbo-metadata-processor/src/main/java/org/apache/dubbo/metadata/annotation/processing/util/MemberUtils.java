@@ -17,15 +17,20 @@
 package org.apache.dubbo.metadata.annotation.processing.util;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
+import static javax.lang.model.element.Modifier.PUBLIC;
+import static javax.lang.model.element.Modifier.STATIC;
 import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.getHierarchicalTypes;
 import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.ofTypeElement;
 
@@ -36,6 +41,26 @@ import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.ofT
  */
 public interface MemberUtils {
 
+    static boolean matches(Element member, ElementKind kind) {
+        return member == null || kind == null ? false : kind.equals(member.getKind());
+    }
+
+    static boolean isPublicNonStatic(Element member) {
+        return hasModifiers(member, PUBLIC) && !hasModifiers(member, STATIC);
+    }
+
+    static boolean hasModifiers(Element member, Modifier... modifiers) {
+        if (member == null || modifiers == null) {
+            return false;
+        }
+        Set<Modifier> actualModifiers = member.getModifiers();
+        for (Modifier modifier : modifiers) {
+            if (!actualModifiers.contains(modifier)) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     static List<? extends Element> getDeclaredMembers(TypeMirror type) {
         TypeElement element = ofTypeElement(type);

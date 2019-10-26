@@ -15,19 +15,95 @@
     <name>dubbo-metadata-processor</name>
     <description>The metadata processor module of Dubbo project</description>
 
-
     <dependencies>
-
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-metadata-api</artifactId>
             <version>${project.parent.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.dubbo</groupId>
+                    <artifactId>dubbo-rpc-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.dubbo</groupId>
+                    <artifactId>dubbo-cluster</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.google.code.gson</groupId>
+                    <artifactId>gson</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-common</artifactId>
+            <version>${project.parent.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.annotation</groupId>
+                    <artifactId>javax.annotation-api</artifactId>
+                </exclusion>
+
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-api</artifactId>
+                </exclusion>
+
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.javassist</groupId>
+                    <artifactId>javassist</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.alibaba</groupId>
+                    <artifactId>hessian-lite</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.alibaba</groupId>
+                    <artifactId>fastjson</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.esotericsoftware</groupId>
+                    <artifactId>kryo</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>de.javakaffee</groupId>
+                    <artifactId>kryo-serializers</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>de.ruedigermoeller</groupId>
+                    <artifactId>fst</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>commons-io</groupId>
+                    <artifactId>commons-io</artifactId>
+                </exclusion>
+            </exclusions>
+
         </dependency>
 
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
-            <optional>true</optional>
         </dependency>
 
         <!-- Test -->
@@ -36,6 +112,36 @@
             <artifactId>dubbo-config-api</artifactId>
             <version>${project.parent.version}</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.dubbo</groupId>
+                    <artifactId>dubbo-registry-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.dubbo</groupId>
+                    <artifactId>dubbo-metadata-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.dubbo</groupId>
+                    <artifactId>dubbo-monitor-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.dubbo</groupId>
+                    <artifactId>dubbo-remoting-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.dubbo</groupId>
+                    <artifactId>dubbo-rpc-injvm</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.dubbo</groupId>
+                    <artifactId>dubbo-filter-validation</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.dubbo</groupId>
+                    <artifactId>dubbo-filter-cache</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- JAX-RS API -->
@@ -52,5 +158,4 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
 </project>

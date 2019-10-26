@@ -56,8 +56,7 @@ public class SpringMvcServiceRestMetadataProcessor extends AbstractServiceRestMe
 
     @Override
     public boolean supports(ProcessingEnvironment processingEnvironment, TypeElement serviceType) {
-        return super.supports(processingEnvironment, serviceType) &&
-                isAnnotationPresent(serviceType, CONTROLLER_ANNOTATION_CLASS_NAME);
+        return isAnnotationPresent(serviceType, CONTROLLER_ANNOTATION_CLASS_NAME);
     }
 
     @Override

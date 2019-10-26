@@ -18,10 +18,12 @@ package org.apache.dubbo.metadata.annotation.processing.util;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
+import java.util.HashSet;
 import java.util.Set;
 
 import static java.lang.String.valueOf;
-import static org.apache.dubbo.common.utils.CollectionUtils.asHashSet;
+import static java.util.Arrays.asList;
+import static java.util.Collections.unmodifiableSet;
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.getAttribute;
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.isAnnotationPresent;
 
@@ -63,10 +65,7 @@ public interface ServiceAnnotationUtils {
      */
     String VERSION_ATTRIBUTE_NAME = "version";
 
-    Set<String> SUPPORTED_ANNOTATION_TYPES = asHashSet(
-            SERVICE_ANNOTATION_TYPE,
-            LEGACY_SERVICE_ANNOTATION_TYPE
-    );
+    Set<String> SUPPORTED_ANNOTATION_TYPES = unmodifiableSet(new HashSet(asList(SERVICE_ANNOTATION_TYPE, LEGACY_SERVICE_ANNOTATION_TYPE)));
 
     static AnnotationMirror getAnnotation(TypeElement annotatedClass) {
         return getAnnotation(annotatedClass.getAnnotationMirrors());

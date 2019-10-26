@@ -24,7 +24,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 
-import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.getAttribute;
 
 /**
@@ -44,12 +43,12 @@ public abstract class AbstractRequestAnnotationParameterProcessor extends Abstra
         String name = super.getAnnotationValue(annotation, parameter, parameterIndex);
 
         // try to get "name" attribute if required
-        if (isBlank(name)) {
+        if (isEmpty(name)) {
             name = getAttribute(annotation, "name");
         }
 
         // finally , try to the name of parameter
-        if (isBlank(name)) {
+        if (isEmpty(name)) {
             name = parameter.getSimpleName().toString();
         }
 
@@ -58,9 +57,13 @@ public abstract class AbstractRequestAnnotationParameterProcessor extends Abstra
 
     protected String getDefaultValue(AnnotationMirror annotation, VariableElement parameter, int parameterIndex) {
         String defaultValue = getAttribute(annotation, "defaultValue");
-        if (isBlank(defaultValue)) {
+        if (isEmpty(defaultValue)) {
             defaultValue = super.getDefaultValue(annotation, parameter, parameterIndex);
         }
         return defaultValue;
+    }
+
+    protected boolean isEmpty(String str) {
+        return str == null || str.isEmpty();
     }
 }

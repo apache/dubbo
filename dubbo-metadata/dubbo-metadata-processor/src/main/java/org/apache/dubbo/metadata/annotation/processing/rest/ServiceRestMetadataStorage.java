@@ -16,35 +16,51 @@
  */
 package org.apache.dubbo.metadata.annotation.processing.rest;
 
-import org.apache.dubbo.metadata.annotation.processing.ClassPathMetadataWriter;
+import org.apache.dubbo.metadata.annotation.processing.ClassPathMetadataStorage;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
 
 import com.google.gson.Gson;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import java.io.IOException;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
+import static com.google.gson.reflect.TypeToken.getParameterized;
+
 /**
- * The writer for {@link ServiceRestMetadata}
+ * The storage for {@link ServiceRestMetadata}
  */
-public class ServiceRestMetadataWriter {
+public class ServiceRestMetadataStorage {
 
     public static final String METADATA_RESOURCE_PATH = "META-INF/dubbo/service-rest-metadata.json";
 
-    private final ClassPathMetadataWriter writer;
+    private final ClassPathMetadataStorage storage;
 
-    public ServiceRestMetadataWriter(ProcessingEnvironment processingEnv) {
-        this.writer = new ClassPathMetadataWriter(processingEnv);
+    public ServiceRestMetadataStorage(ProcessingEnvironment processingEnv) {
+        this.storage = new ClassPathMetadataStorage(processingEnv);
+    }
+
+    public void append(Set<ServiceRestMetadata> serviceRestMetadata) throws IOException {
+        Set<ServiceRestMetadata> allServiceRestMetadata = new LinkedHashSet<>();
+        storage.read(METADATA_RESOURCE_PATH, reader -> {
+            Gson gson = new Gson();
+            return (List) gson.fromJson(reader, getParameterized(List.class, ServiceRestMetadata.class).getType());
+        }).ifPresent(existedMetadata -> {
+            // Add all existed ServiceRestMetadata
+            allServiceRestMetadata.addAll(existedMetadata);
+        });
+        // Add all new ServiceRestMetadata
+        allServiceRestMetadata.addAll(serviceRestMetadata);
+        write(serviceRestMetadata);
     }
 
     public void write(Set<ServiceRestMetadata> serviceRestMetadata) throws IOException {
         if (serviceRestMetadata.isEmpty()) {
             return;
         }
-        Gson gson = new Gson();
-        String json = gson.toJson(serviceRestMetadata);
-        writer.write(json, METADATA_RESOURCE_PATH);
+        storage.write(() -> new Gson().toJson(serviceRestMetadata), METADATA_RESOURCE_PATH);
     }
 
 }

@@ -121,7 +121,7 @@ public class PrimitiveTypeDefinitionBuilderTest extends AbstractAnnotationProces
 
     static void assertBasicTypeDefinition(TypeDefinition typeDefinition, String type, TypeDefinitionBuilder builder) {
         assertEquals(type, typeDefinition.getType());
-        assertEquals(builder.getClass().getName(), typeDefinition.getTypeBuilderName());
+//        assertEquals(builder.getClass().getName(), typeDefinition.getTypeBuilderName());
         assertTrue(typeDefinition.getProperties().isEmpty());
         assertTrue(typeDefinition.getItems().isEmpty());
         assertTrue(typeDefinition.getEnums().isEmpty());

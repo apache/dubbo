@@ -17,6 +17,7 @@
 package org.apache.dubbo.metadata.annotation.processing.util;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
@@ -25,7 +26,6 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static javax.lang.model.element.Modifier.FINAL;
 import static javax.lang.model.element.Modifier.PUBLIC;
@@ -35,6 +35,8 @@ import static org.apache.dubbo.common.function.Predicates.EMPTY_ARRAY;
 import static org.apache.dubbo.common.function.Streams.filterAll;
 import static org.apache.dubbo.common.function.Streams.filterFirst;
 import static org.apache.dubbo.metadata.annotation.processing.util.MemberUtils.getDeclaredMembers;
+import static org.apache.dubbo.metadata.annotation.processing.util.MemberUtils.hasModifiers;
+import static org.apache.dubbo.metadata.annotation.processing.util.MemberUtils.matches;
 import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.getHierarchicalTypes;
 import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.isEnumType;
 
@@ -111,11 +113,15 @@ public interface FieldUtils {
     }
 
     static boolean isNonStaticField(VariableElement field) {
-        return !isField(field, STATIC);
+        return !hasModifiers(field, STATIC);
+    }
+
+    static boolean isField(VariableElement field) {
+        return matches(field, ElementKind.FIELD);
     }
 
     static boolean isField(VariableElement field, Modifier... modifiers) {
-        return field == null ? false : field.getModifiers().containsAll(asList(modifiers));
+        return isField(field) && hasModifiers(field, modifiers);
     }
 
     static List<VariableElement> getNonStaticFields(TypeMirror type) {

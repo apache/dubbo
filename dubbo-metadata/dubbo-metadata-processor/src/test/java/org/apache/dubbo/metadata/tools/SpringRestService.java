@@ -30,28 +30,24 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.apache.dubbo.metadata.tools.LoggerUtils.log;
-
 /**
  * Spring MVC {@link RestService}
  *
  * @since 2.7.5
  */
-@Service(version = "1.0.0")
+@Service(version = "2.0.0")
 @RestController
 public class SpringRestService implements RestService {
 
     @Override
     @GetMapping(value = "/param")
     public String param(@RequestParam(defaultValue = "value-param") String param) {
-        log("/param", param);
         return param;
     }
 
     @Override
     @PostMapping("/params")
     public String params(@RequestParam(defaultValue = "value-a") int a, @RequestParam(defaultValue = "value-b") String b) {
-        log("/params", a + b);
         return a + b;
     }
 
@@ -61,7 +57,6 @@ public class SpringRestService implements RestService {
                           @RequestHeader(name = "h2", defaultValue = "value-h2") String header2,
                           @RequestParam(value = "v", defaultValue = "1") Integer param) {
         String result = header + " , " + header2 + " , " + param;
-        log("/headers", result);
         return result;
     }
 
@@ -70,7 +65,6 @@ public class SpringRestService implements RestService {
     public String pathVariables(@PathVariable("p1") String path1,
                                 @PathVariable("p2") String path2, @RequestParam("v") String param) {
         String result = path1 + " , " + path2 + " , " + param;
-        log("/path-variables", result);
         return result;
     }
 
@@ -88,7 +82,6 @@ public class SpringRestService implements RestService {
         user.setId(((Integer) data.get("id")).longValue());
         user.setName((String) data.get("name"));
         user.setAge((Integer) data.get("age"));
-        log("/request/body/map", param);
         return user;
     }
 

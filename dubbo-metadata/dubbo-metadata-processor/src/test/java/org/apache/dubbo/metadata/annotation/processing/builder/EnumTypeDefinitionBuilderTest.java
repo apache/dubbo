@@ -61,7 +61,7 @@ public class EnumTypeDefinitionBuilderTest extends AbstractAnnotationProcessingT
         TypeDefinition typeDefinition = build(processingEnv, typeElement);
         assertEquals(Color.class.getName(), typeDefinition.getType());
         assertEquals(asList("RED", "YELLOW", "BLUE"), typeDefinition.getEnums());
-        assertEquals(typeDefinition.getTypeBuilderName(), builder.getClass().getName());
+//        assertEquals(typeDefinition.getTypeBuilderName(), builder.getClass().getName());
     }
 
 }

@@ -16,20 +16,16 @@
  */
 package org.apache.dubbo.metadata.annotation.processing.rest;
 
-import org.apache.dubbo.metadata.annotation.processing.builder.TypeDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.MethodDefinition;
-import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 import org.apache.dubbo.metadata.rest.RequestMetadata;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeMirror;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -46,7 +42,9 @@ import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.apache.dubbo.common.utils.PrioritizedServiceLoader.load;
-import static org.apache.dubbo.metadata.annotation.processing.util.MethodUtils.getAllDeclaredMethods;
+import static org.apache.dubbo.metadata.annotation.processing.builder.MethodDefinitionBuilder.build;
+import static org.apache.dubbo.metadata.annotation.processing.util.LoggerUtils.info;
+import static org.apache.dubbo.metadata.annotation.processing.util.MethodUtils.getPublicNonStaticMethods;
 import static org.apache.dubbo.metadata.annotation.processing.util.ServiceAnnotationUtils.getAnnotation;
 import static org.apache.dubbo.metadata.annotation.processing.util.ServiceAnnotationUtils.getGroup;
 import static org.apache.dubbo.metadata.annotation.processing.util.ServiceAnnotationUtils.getVersion;
@@ -61,13 +59,17 @@ public abstract class AbstractServiceRestMetadataProcessor implements ServiceRes
 
     private final static ThreadLocal<Map<String, Object>> threadLocalCache = withInitial(HashMap::new);
 
-    private final static Map<String, List<AnnotatedMethodParameterProcessor>> parameterProcessorsMap =
-            loadAnnotatedMethodParameterProcessors();
+    private final static Map<String, List<AnnotatedMethodParameterProcessor>> parameterProcessorsMap = loadAnnotatedMethodParameterProcessors();
+
+    private final String processorName = getClass().getSimpleName();
 
     @Override
     public final ServiceRestMetadata process(ProcessingEnvironment processingEnv,
                                              TypeElement serviceType,
                                              Set<? extends TypeElement> annotations) {
+
+        info("%s is processing the service type[%s] with annotations[%s]", processorName, serviceType,
+                annotations.stream().map(t -> "@" + t.toString()).collect(Collectors.joining(",")));
 
         ServiceRestMetadata serviceRestMetadata = new ServiceRestMetadata();
 
@@ -77,7 +79,7 @@ public abstract class AbstractServiceRestMetadataProcessor implements ServiceRes
             serviceRestMetadata.setGroup(getGroup(serviceAnnotation));
             serviceRestMetadata.setVersion(getVersion(serviceAnnotation));
 
-            List<? extends ExecutableElement> methods = getAllDeclaredMethods(serviceType, Object.class);
+            List<? extends ExecutableElement> methods = getPublicNonStaticMethods(serviceType, Object.class);
 
             methods.forEach(method -> {
                 processRestMethodMetadata(processingEnv, serviceType, method)
@@ -86,6 +88,8 @@ public abstract class AbstractServiceRestMetadataProcessor implements ServiceRes
         } finally {
             clearCache();
         }
+
+        info("The %s's process result : %s", processorName, serviceRestMetadata);
 
         return serviceRestMetadata;
     }
@@ -155,12 +159,7 @@ public abstract class AbstractServiceRestMetadataProcessor implements ServiceRes
 
     protected MethodDefinition getMethodDefinition(ProcessingEnvironment processingEnv, TypeElement serviceType,
                                                    ExecutableElement method) {
-        MethodDefinition methodDefinition = new MethodDefinition();
-        methodDefinition.setName(getMethodName(method));
-        methodDefinition.setReturnType(getReturnType(method));
-        methodDefinition.setParameterTypes(getParameterTypes(method));
-        methodDefinition.setParameters(getParameters(processingEnv, method));
-        return methodDefinition;
+        return build(processingEnv, method);
     }
 
     protected void processAnnotatedMethodParameters(ExecutableElement method, TypeElement type,
@@ -208,32 +207,10 @@ public abstract class AbstractServiceRestMetadataProcessor implements ServiceRes
         return (V) getCache().computeIfAbsent(name, mappingFunction);
     }
 
-    private static String getMethodName(ExecutableElement method) {
-        return method.getSimpleName().toString();
-    }
-
-    private static String getReturnType(ExecutableElement method) {
-        return method.getReturnType().toString();
-    }
-
-    private static String[] getParameterTypes(ExecutableElement method) {
-        return method.getParameters()
-                .stream()
-                .map(Element::asType)
-                .map(TypeMirror::toString)
-                .toArray(String[]::new);
-    }
-
-    private static List<TypeDefinition> getParameters(ProcessingEnvironment processingEnv, ExecutableElement method) {
-        return method.getParameters().stream()
-                .map(element -> TypeDefinitionBuilder.build(processingEnv, element))
-                .collect(Collectors.toList());
-    }
-
     private static Map<String, List<AnnotatedMethodParameterProcessor>> loadAnnotatedMethodParameterProcessors() {
         Map<String, List<AnnotatedMethodParameterProcessor>> parameterProcessorsMap = new LinkedHashMap<>();
 
-        load(AnnotatedMethodParameterProcessor.class)
+        load(AnnotatedMethodParameterProcessor.class, AnnotatedMethodParameterProcessor.class.getClassLoader())
                 .forEach(processor -> {
                     List<AnnotatedMethodParameterProcessor> processors =
                             parameterProcessorsMap.computeIfAbsent(processor.getAnnotationType(), k -> new LinkedList<>());

@@ -208,7 +208,7 @@ public interface AnnotationUtils {
                 if (attributeType instanceof ArrayType) { // array-typed attribute values
                     ArrayType arrayType = (ArrayType) attributeType;
                     String componentType = arrayType.getComponentType().toString();
-                    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+                    ClassLoader classLoader = AnnotationUtils.class.getClassLoader();
                     List<AnnotationValue> values = (List<AnnotationValue>) value.getValue();
                     int size = values.size();
                     try {

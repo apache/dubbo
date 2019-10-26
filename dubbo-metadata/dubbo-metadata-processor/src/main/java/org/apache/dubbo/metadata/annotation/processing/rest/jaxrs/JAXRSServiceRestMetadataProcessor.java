@@ -32,6 +32,7 @@ import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUti
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.findMetaAnnotation;
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.getAnnotation;
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.getValue;
+import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.isAnnotationPresent;
 import static org.apache.dubbo.metadata.util.HttpUtils.buildPath;
 
 /**
@@ -60,6 +61,11 @@ public class JAXRSServiceRestMetadataProcessor extends AbstractServiceRestMetada
      * The annotation class name of @Consumes
      */
     public static final String CONSUMES_ANNOTATION_CLASS_NAME = "javax.ws.rs.Consumes";
+
+    @Override
+    public boolean supports(ProcessingEnvironment processingEnvironment, TypeElement serviceType) {
+        return isAnnotationPresent(serviceType, PATH_ANNOTATION_CLASS_NAME);
+    }
 
     @Override
     protected String getRequestPath(ProcessingEnvironment processingEnv, TypeElement serviceType, ExecutableElement method) {

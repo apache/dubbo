@@ -23,9 +23,13 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
+import javax.tools.FileObject;
+import javax.tools.StandardLocation;
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashSet;
@@ -346,4 +350,27 @@ public interface TypeUtils {
     static List<TypeElement> listTypeElements(Iterable<? extends TypeMirror> types) {
         return new ArrayList<>(ofTypeElements(types));
     }
+
+    static URL getResource(ProcessingEnvironment processingEnv, Element type) {
+        return getResource(processingEnv, ofDeclaredType(type));
+    }
+
+    static URL getResource(ProcessingEnvironment processingEnv, TypeMirror type) {
+        return getResource(processingEnv, type.toString());
+    }
+
+    static URL getResource(ProcessingEnvironment processingEnv, CharSequence type) {
+        String relativeName = getResourceName(type);
+        try {
+            FileObject fileObject = processingEnv.getFiler().getResource(StandardLocation.CLASS_OUTPUT, "", relativeName);
+            return fileObject.toUri().toURL();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    static String getResourceName(CharSequence type) {
+        return type == null ? null : type.toString().replace('.', '/').concat(".class");
+    }
+
 }

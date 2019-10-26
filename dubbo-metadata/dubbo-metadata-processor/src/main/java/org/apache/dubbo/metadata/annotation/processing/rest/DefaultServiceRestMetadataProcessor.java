@@ -29,6 +29,11 @@ import java.util.Set;
 public class DefaultServiceRestMetadataProcessor extends AbstractServiceRestMetadataProcessor {
 
     @Override
+    public boolean supports(ProcessingEnvironment processingEnvironment, TypeElement serviceType) {
+        return true;
+    }
+
+    @Override
     protected String getRequestPath(ProcessingEnvironment processingEnv, TypeElement serviceType,
                                     ExecutableElement method) {
         return null;
