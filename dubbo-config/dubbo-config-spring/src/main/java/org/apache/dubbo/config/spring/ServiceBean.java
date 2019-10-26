@@ -72,6 +72,8 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
 
     private transient boolean supportedApplicationListener;
 
+    private transient boolean ready;
+
     private ApplicationEventPublisher applicationEventPublisher;
 
     public ServiceBean() {
@@ -107,7 +109,16 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
+        if (event.getApplicationContext() != applicationContext) {
+            return;
+        }
         if (!isExported() && !isUnexported()) {
+            if(!ready) {
+                if (logger.isWarnEnabled()) {
+                    logger.warn("The service unready. service: " + getInterface());
+                }
+                return;
+            }
             if (logger.isInfoEnabled()) {
                 logger.info("The service ready on spring started. service: " + getInterface());
             }
@@ -313,6 +324,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
                 setPath(beanName);
             }
         }
+        ready = true;
         if (!supportedApplicationListener) {
             export();
         }
