@@ -16,10 +16,14 @@
  */
 package org.apache.dubbo.rpc.model;
 
+import org.apache.dubbo.common.utils.StringUtils;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
+ * Notice, this class currently has no usage inside Dubbo.
+ *
  * data related to service level such as name, version, classloader of business service,
  * security info, etc. Also with a AttributeMap for extension.
  */
@@ -53,6 +57,9 @@ public class ServiceMetadata {
     }
 
     public String getServiceKey() {
+        if (StringUtils.isNotEmpty(serviceKey)) {
+            return serviceKey;
+        }
         return serviceInterfaceName + ":" + version;
     }
 

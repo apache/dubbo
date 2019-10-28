@@ -35,9 +35,10 @@ import java.util.Set;
  */
 public class ConsumerModel {
     private final String serviceKey;
-    private final Object proxyObject;
     private final ServiceDescriptor serviceModel;
     private final ReferenceConfig<?> referenceConfig;
+
+    private Object proxyObject;
 
     private final Map<String, AsyncMethodInfo> methodConfigs = new HashMap<>();
 
@@ -56,7 +57,7 @@ public class ConsumerModel {
             , Map<String, Object> attributes) {
 
         Assert.notEmptyString(serviceKey, "Service name can't be null or blank");
-        Assert.notNull(proxyObject, "Proxy object can't be null");
+//        Assert.notNull(proxyObject, "Proxy object can't be null");
 
         this.serviceKey = serviceKey;
         this.proxyObject = proxyObject;
@@ -76,6 +77,10 @@ public class ConsumerModel {
      */
     public Object getProxyObject() {
         return proxyObject;
+    }
+
+    public void setProxyObject(Object proxyObject) {
+        this.proxyObject = proxyObject;
     }
 
     /**

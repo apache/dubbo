@@ -89,11 +89,15 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
     }
 
     public void setExternalConfigMap(Map<String, String> externalConfiguration) {
-        this.externalConfigurationMap = externalConfiguration;
+        if (externalConfiguration != null) {
+            this.externalConfigurationMap = externalConfiguration;
+        }
     }
 
     public void setAppExternalConfigMap(Map<String, String> appExternalConfiguration) {
-        this.appExternalConfigurationMap = appExternalConfiguration;
+        if (appExternalConfiguration != null) {
+            this.appExternalConfigurationMap = appExternalConfiguration;
+        }
     }
 
     public Map<String, String> getExternalConfigurationMap() {

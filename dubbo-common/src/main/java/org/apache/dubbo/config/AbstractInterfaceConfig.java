@@ -29,6 +29,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -496,8 +497,14 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         return application;
     }
 
+    @Deprecated
     public void setApplication(ApplicationConfig application) {
         this.application = application;
+        ConfigManager configManager = ApplicationModel.getConfigManager();
+        configManager.getApplication().orElseGet(() -> {
+            configManager.setApplication(application);
+            return application;
+        });
     }
 
     private void createApplicationIfAbsent() {
@@ -586,12 +593,20 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         this.owner = owner;
     }
 
+    @Deprecated
     public ConfigCenterConfig getConfigCenter() {
         return configCenter;
     }
 
+    @Deprecated
     public void setConfigCenter(ConfigCenterConfig configCenter) {
         this.configCenter = configCenter;
+        ConfigManager configManager = ApplicationModel.getConfigManager();
+        Collection<ConfigCenterConfig> configs = configManager.getConfigCenters();
+        if (CollectionUtils.isEmpty(configs)
+                || configs.stream().noneMatch(existed -> existed.getAddress().equals(configCenter.getAddress()))) {
+            configManager.addConfigCenter(configCenter);
+        }
     }
 
     public Integer getCallbacks() {
@@ -626,12 +641,20 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         this.scope = scope;
     }
 
+    @Deprecated
     public MetadataReportConfig getMetadataReportConfig() {
         return metadataReportConfig;
     }
 
+    @Deprecated
     public void setMetadataReportConfig(MetadataReportConfig metadataReportConfig) {
         this.metadataReportConfig = metadataReportConfig;
+        ConfigManager configManager = ApplicationModel.getConfigManager();
+        Collection<MetadataReportConfig> configs = configManager.getMetadataConfigs();
+        if (CollectionUtils.isEmpty(configs)
+                || configs.stream().noneMatch(existed -> existed.getAddress().equals(metadataReportConfig.getAddress()))) {
+            configManager.addMetadataReport(metadataReportConfig);
+        }
     }
 
     public MetricsConfig getMetrics() {

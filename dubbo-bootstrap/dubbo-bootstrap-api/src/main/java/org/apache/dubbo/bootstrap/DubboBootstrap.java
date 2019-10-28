@@ -208,9 +208,9 @@ public class DubboBootstrap extends GenericEventListener {
 
     private ReferenceConfigCache cache;
 
-    private volatile boolean initialized = false;
+    private AtomicBoolean initialized = new AtomicBoolean(false);
 
-    private volatile boolean started = false;
+    private AtomicBoolean started = new AtomicBoolean(false);
 
     private volatile ServiceInstance serviceInstance;
 
@@ -526,36 +526,73 @@ public class DubboBootstrap extends GenericEventListener {
     }
 
     /**
+     * export a single ServiceConfig
+     * <p>
+     * Bootstrap must has been started before calling this method.
+     */
+    public void export(ServiceConfig<?> serviceConfig) {
+        if (!isStarted()) {
+            throw new IllegalStateException("Bootstrap hasn't been started yet.");
+        }
+        this.service(serviceConfig);
+        exporter.accept(serviceConfig);
+    }
+
+    public void unExport(ServiceConfig<?> serviceConfig) {
+        if (!isStarted()) {
+            throw new IllegalStateException("Bootstrap hasn't been started yet.");
+        }
+        configManager.removeConfig(serviceConfig);
+        List<Exporter<?>> scExporters = exporters.get(serviceConfig);
+        if (CollectionUtils.isNotEmpty(scExporters)) {
+            scExporters.forEach(Exporter::unexport);
+        }
+    }
+
+    /**
+     * refer a single ReferenceConfig
+     * <p>
+     * Bootstrap must has been started before calling this method.
+     */
+    public void refer(ReferenceConfig<?> referenceConfig) {
+        if (!isStarted()) {
+            throw new IllegalStateException("Bootstrap hasn't been started yet.");
+        }
+        this.reference(referenceConfig);
+        referrer.accept(referenceConfig);
+    }
+
+    public void unRefer(ReferenceConfig<?> referenceConfig) {
+        if (!isStarted()) {
+            throw new IllegalStateException("Bootstrap hasn't been started yet.");
+        }
+        configManager.removeConfig(referenceConfig);
+        cache.destroy(referenceConfig);
+    }
+
+    /**
      * Initialize
      */
-    public DubboBootstrap initialize() {
-        if (!isInitialized()) {
+    private void initialize() {
+        ApplicationModel.initApplication();
 
-            ApplicationModel.initApplication();
+        startConfigCenter();
 
-            startConfigCenter();
+        startMetadataReport();
 
-            startMetadataReport();
+        loadRemoteConfigs();
 
-            loadRemoteConfigs();
+        useRegistryAsConfigCenterIfNecessary();
 
-            useRegistryAsConfigCenterIfNecessary();
+        initMetadataService();
 
-            initMetadataService();
+        initMetadataServiceExporter();
 
-            initMetadataServiceExporter();
+        initEventListener();
 
-            initEventListener();
-
-            initialized = true;
-
-            if (logger.isInfoEnabled()) {
-                logger.info(NAME + " has been initialized!");
-            }
-
+        if (logger.isInfoEnabled()) {
+            logger.info(NAME + " has been initialized!");
         }
-
-        return this;
     }
 
     private void startConfigCenter() {
@@ -696,28 +733,23 @@ public class DubboBootstrap extends GenericEventListener {
      * Start the bootstrap
      */
     public DubboBootstrap start() {
-        if (!isInitialized()) {
+        if (started.compareAndSet(false, true)) {
             initialize();
-        }
-        if (!isStarted()) {
             if (logger.isInfoEnabled()) {
                 logger.info(NAME + " is starting...");
             }
             // 1. export Dubbo Services
             exportServices();
 
-            // 2. export MetadataService
-            exportMetadataService();
-
             // Not only provider register
             if (!isOnlyRegisterProvider() || hasExportedServices()) {
+                // 2. export MetadataService
+                exportMetadataService();
                 //3. Register the local ServiceInstance if required
                 registerServiceInstance();
             }
 
             referServices();
-
-            started = true;
 
             if (logger.isInfoEnabled()) {
                 logger.info(NAME + " has started.");
@@ -779,11 +811,11 @@ public class DubboBootstrap extends GenericEventListener {
     }
 
     public boolean isInitialized() {
-        return initialized;
+        return initialized.get();
     }
 
     public boolean isStarted() {
-        return started;
+        return started.get();
     }
 
     public DubboBootstrap stop() throws IllegalStateException {
@@ -872,29 +904,7 @@ public class DubboBootstrap extends GenericEventListener {
     }
 
     private void exportServices() {
-        configManager.getServices().forEach(sc -> {
-            // Make sure services with the same service key can be exported only once.
-            if (exporters.keySet().stream()
-                    .anyMatch(exportedService -> exportedService.getUniqueServiceName().equals(sc.getUniqueServiceName()))
-            ) {
-                logger.warn("Service " + sc.getUniqueServiceName() + "has been exported, it's not allowed to export " +
-                        "a service with the same group/interface:version more than once.");
-                return;
-            }
-
-            CompletableFuture<List<Exporter<?>>> future = Helper.export(sc);
-            if (future == null) {
-                return;
-            }
-            future.whenComplete((v, t) -> {
-                if (t != null) {
-                    throw new RuntimeException(t);
-                } else {
-                    exporters.put(sc, v);
-                }
-            });
-            delayedExportingFutures.add(future);
-        });
+        configManager.getServices().forEach(exporter);
     }
 
     private void unexportServices() {
@@ -910,21 +920,7 @@ public class DubboBootstrap extends GenericEventListener {
             cache = ReferenceConfigCache.getCache();
         }
 
-        configManager.getReferences().forEach((rc) -> {
-            // Make sure service with the same key only refer once.
-            if (cache.getReferredReferences().values().stream()
-                    .anyMatch(referredService -> referredService.getUniqueServiceName().equals(rc.getUniqueServiceName()))
-            ) {
-                logger.warn("Service " + rc.getUniqueServiceName() + "has been referred, it's not allowed to refer " +
-                        "one service with the same group/interface:version more than once.");
-                return;
-            }
-
-            // check eager init or not.
-            if (rc.shouldInit()) {
-                cache.get(rc);
-            }
-        });
+        configManager.getReferences().forEach(referrer);
     }
 
     private void unreferServices() {
@@ -996,20 +992,20 @@ public class DubboBootstrap extends GenericEventListener {
     }
 
     public void destroy() {
-        started = false;
+        if (started.compareAndSet(true, false)) {
+            unregisterServiceInstance();
+            unexportMetadataService();
+            unexportServices();
+            unreferServices();
 
-        unregisterServiceInstance();
-        unexportMetadataService();
-        unexportServices();
-        unreferServices();
+            destroyRegistries();
+            destroyProtocols();
+            destroyServiceDiscoveries();
 
-        destroyRegistries();
-        destroyProtocols();
-        destroyServiceDiscoveries();
-
-        clear();
-        shutdown();
-        release();
+            clear();
+            shutdown();
+            release();
+        }
     }
 
     private void destroyProtocols() {
@@ -1078,6 +1074,46 @@ public class DubboBootstrap extends GenericEventListener {
             lock.unlock();
         }
     }
+
+    private Consumer<? super ServiceConfig> exporter = (sc) -> {
+        // Make sure services with the same service key can be exported only once.
+        if (exporters.keySet().stream()
+                .anyMatch(exportedService -> exportedService.getUniqueServiceName().equals(sc.getUniqueServiceName()))
+        ) {
+            logger.warn("Service " + sc.getUniqueServiceName() + "has been exported, it's not allowed to export " +
+                    "a service with the same group/interface:version more than once.");
+            return;
+        }
+
+        CompletableFuture<List<Exporter<?>>> future = Helper.export(sc);
+        if (future == null) {
+            return;
+        }
+        future.whenComplete((v, t) -> {
+            if (t != null) {
+                throw new RuntimeException(t);
+            } else {
+                exporters.put(sc, v);
+            }
+        });
+        delayedExportingFutures.add(future);
+    };
+
+    private Consumer<? super ReferenceConfig> referrer = (rc) -> {
+        // Make sure service with the same key only refer once.
+        if (cache.getReferredReferences().values().stream()
+                .anyMatch(referredService -> referredService.getUniqueServiceName().equals(rc.getUniqueServiceName()))
+        ) {
+            logger.warn("Service " + rc.getUniqueServiceName() + "has been referred, it's not allowed to refer " +
+                    "one service with the same group/interface:version more than once.");
+            return;
+        }
+
+        // check eager init or not.
+        if (rc.shouldInit()) {
+            cache.get(rc);
+        }
+    };
 
     public static class Helper {
 
@@ -1250,6 +1286,7 @@ public class DubboBootstrap extends GenericEventListener {
                 String pathKey = URL.buildKey(sc.getContextPath(protocolConfig)
                         .map(p -> p + "/" + sc.getPath())
                         .orElse(sc.getPath()), sc.getGroup(), sc.getVersion());
+                // TODO, uncomment this line once service key is unified
                 sc.getServiceMetadata().setServiceKey(pathKey);
                 exporters.addAll(doExportUrlsFor1Protocol(sc, protocolConfig, registryURLs));
             }

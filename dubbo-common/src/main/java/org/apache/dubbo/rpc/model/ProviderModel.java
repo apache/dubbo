@@ -136,6 +136,7 @@ public class ProviderModel {
         this(serviceKey, serviceInstance, serviceModel, serviceConfig);
 
         this.serviceMetadata = serviceMetadata;
+        initMethod(serviceModel.getServiceInterfaceClass());
     }
 
     public String getServiceName() {

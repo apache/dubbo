@@ -337,6 +337,7 @@ public class ReferenceConfigCache {
             serviceMetadata.setDefaultGroup(rc.getGroup());
             serviceMetadata.setServiceType(rc.getActualInterface());
             serviceMetadata.setServiceInterfaceName(interfaceName);
+            // TODO, uncomment this line once service key is unified
             serviceMetadata.setServiceKey(URL.buildKey(interfaceName, rc.getGroup(), rc.getVersion()));
 
             rc.checkStubAndLocal(interfaceClass);
@@ -398,11 +399,6 @@ public class ReferenceConfigCache {
 
             serviceMetadata.getAttachments().putAll(map);
 
-            T proxy = createProxy(map, rc);
-
-            serviceMetadata.setTarget(proxy);
-            serviceMetadata.addAttribute(PROXY_CLASS_REF, proxy);
-
             ServiceRepository repository = ApplicationModel.getServiceRepository();
             ServiceDescriptor serviceDescriptor = repository.registerService(interfaceClass);
             repository.registerConsumer(
@@ -410,8 +406,14 @@ public class ReferenceConfigCache {
                     attributes,
                     serviceDescriptor,
                     rc,
-                    proxy,
+                    null,
                     serviceMetadata);
+
+            T proxy = createProxy(map, rc);
+
+            serviceMetadata.setTarget(proxy);
+            serviceMetadata.addAttribute(PROXY_CLASS_REF, proxy);
+            repository.lookupReferredService(serviceMetadata.getServiceKey()).setProxyObject(proxy);
 
             // dispatch a ReferenceConfigDestroyedEvent since 2.7.4
             dispatch(new ReferenceConfigDestroyedEvent(rc));
