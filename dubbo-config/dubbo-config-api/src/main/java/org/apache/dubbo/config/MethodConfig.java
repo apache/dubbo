@@ -16,13 +16,24 @@
  */
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.support.Parameter;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
+import static org.apache.dubbo.config.Constants.ON_INVOKE_INSTANCE_KEY;
+import static org.apache.dubbo.config.Constants.ON_INVOKE_METHOD_KEY;
+import static org.apache.dubbo.config.Constants.ON_RETURN_INSTANCE_KEY;
+import static org.apache.dubbo.config.Constants.ON_RETURN_METHOD_KEY;
+import static org.apache.dubbo.config.Constants.ON_THROW_INSTANCE_KEY;
+import static org.apache.dubbo.config.Constants.ON_THROW_METHOD_KEY;
+
 /**
- * MethodConfig
+ * The method configuration
  *
  * @export
  */
@@ -30,59 +41,136 @@ public class MethodConfig extends AbstractMethodConfig {
 
     private static final long serialVersionUID = 884908855422675941L;
 
-    // method name
+    /**
+     * The method name
+     */
     private String name;
 
-    // stat
+    /**
+     * Stat
+     */
     private Integer stat;
 
-    // whether to retry
+    /**
+     * Whether to retry
+     */
     private Boolean retry;
 
-    // if it's reliable
+    /**
+     * If it's reliable
+     */
     private Boolean reliable;
 
-    // thread limits for method invocations
+    /**
+     * Thread limits for method invocations
+     */
     private Integer executes;
 
-    // if it's deprecated
+    /**
+     * If it's deprecated
+     */
     private Boolean deprecated;
 
-    // whether to enable sticky
+    /**
+     * Whether to enable sticky
+     */
     private Boolean sticky;
 
-    // whether need to return
+    /**
+     * Whether need to return
+     */
     private Boolean isReturn;
 
-    // callback instance when async-call is invoked
+    /**
+     * Callback instance when async-call is invoked
+     */
     private Object oninvoke;
 
-    // callback method when async-call is invoked
+    /**
+     * Callback method when async-call is invoked
+     */
     private String oninvokeMethod;
 
-    // callback instance when async-call is returned
+    /**
+     * Callback instance when async-call is returned
+     */
     private Object onreturn;
 
-    // callback method when async-call is returned
+    /**
+     * Callback method when async-call is returned
+     */
     private String onreturnMethod;
 
-    // callback instance when async-call has exception thrown
+    /**
+     * Callback instance when async-call has exception thrown
+     */
     private Object onthrow;
 
-    // callback method when async-call has exception thrown
+    /**
+     * Callback method when async-call has exception thrown
+     */
     private String onthrowMethod;
 
+    /**
+     * The method arguments
+     */
     private List<ArgumentConfig> arguments;
+
+    /**
+     * These properties come from MethodConfig's parent Config module, they will neither be collected directly from xml or API nor be delivered to url
+     */
+    private String service;
+    private String serviceId;
 
     @Parameter(excluded = true)
     public String getName() {
         return name;
     }
 
+    public MethodConfig() {
+    }
+
+    public MethodConfig(Method method) {
+        appendAnnotation(Method.class, method);
+
+        this.setReturn(method.isReturn());
+
+        if(!"".equals(method.oninvoke())){
+            this.setOninvoke(method.oninvoke());
+        }
+        if(!"".equals(method.onreturn())){
+            this.setOnreturn(method.onreturn());
+        }
+        if(!"".equals(method.onthrow())){
+            this.setOnthrow(method.onthrow());
+        }
+
+        if (method.arguments() != null && method.arguments().length != 0) {
+            List<ArgumentConfig> argumentConfigs = new ArrayList<ArgumentConfig>(method.arguments().length);
+            this.setArguments(argumentConfigs);
+            for (int i = 0; i < method.arguments().length; i++) {
+                ArgumentConfig argumentConfig = new ArgumentConfig(method.arguments()[i]);
+                argumentConfigs.add(argumentConfig);
+            }
+        }
+    }
+
+    public static List<MethodConfig> constructMethodConfig(Method[] methods) {
+        if (methods != null && methods.length != 0) {
+            List<MethodConfig> methodConfigs = new ArrayList<MethodConfig>(methods.length);
+            for (int i = 0; i < methods.length; i++) {
+                MethodConfig methodConfig = new MethodConfig(methods[i]);
+                methodConfigs.add(methodConfig);
+            }
+            return methodConfigs;
+        }
+        return Collections.emptyList();
+    }
+
     public void setName(String name) {
         checkMethodName("name", name);
         this.name = name;
-        if (id == null || id.length() == 0) {
+        if (StringUtils.isEmpty(id)) {
             id = name;
         }
     }
@@ -149,7 +237,7 @@ public class MethodConfig extends AbstractMethodConfig {
         this.sticky = sticky;
     }
 
-    @Parameter(key = Constants.ON_RETURN_INSTANCE_KEY, excluded = true, attribute = true)
+    @Parameter(key = ON_RETURN_INSTANCE_KEY, excluded = true, attribute = true)
     public Object getOnreturn() {
         return onreturn;
     }
@@ -158,7 +246,7 @@ public class MethodConfig extends AbstractMethodConfig {
         this.onreturn = onreturn;
     }
 
-    @Parameter(key = Constants.ON_RETURN_METHOD_KEY, excluded = true, attribute = true)
+    @Parameter(key = ON_RETURN_METHOD_KEY, excluded = true, attribute = true)
     public String getOnreturnMethod() {
         return onreturnMethod;
     }
@@ -167,7 +255,7 @@ public class MethodConfig extends AbstractMethodConfig {
         this.onreturnMethod = onreturnMethod;
     }
 
-    @Parameter(key = Constants.ON_THROW_INSTANCE_KEY, excluded = true, attribute = true)
+    @Parameter(key = ON_THROW_INSTANCE_KEY, excluded = true, attribute = true)
     public Object getOnthrow() {
         return onthrow;
     }
@@ -176,7 +264,7 @@ public class MethodConfig extends AbstractMethodConfig {
         this.onthrow = onthrow;
     }
 
-    @Parameter(key = Constants.ON_THROW_METHOD_KEY, excluded = true, attribute = true)
+    @Parameter(key = ON_THROW_METHOD_KEY, excluded = true, attribute = true)
     public String getOnthrowMethod() {
         return onthrowMethod;
     }
@@ -185,7 +273,7 @@ public class MethodConfig extends AbstractMethodConfig {
         this.onthrowMethod = onthrowMethod;
     }
 
-    @Parameter(key = Constants.ON_INVOKE_INSTANCE_KEY, excluded = true, attribute = true)
+    @Parameter(key = ON_INVOKE_INSTANCE_KEY, excluded = true, attribute = true)
     public Object getOninvoke() {
         return oninvoke;
     }
@@ -194,7 +282,7 @@ public class MethodConfig extends AbstractMethodConfig {
         this.oninvoke = oninvoke;
     }
 
-    @Parameter(key = Constants.ON_INVOKE_METHOD_KEY, excluded = true, attribute = true)
+    @Parameter(key = ON_INVOKE_METHOD_KEY, excluded = true, attribute = true)
     public String getOninvokeMethod() {
         return oninvokeMethod;
     }
@@ -211,4 +299,34 @@ public class MethodConfig extends AbstractMethodConfig {
         this.isReturn = isReturn;
     }
 
+    @Parameter(excluded = true)
+    public String getService() {
+        return service;
+    }
+
+    public void setService(String service) {
+        this.service = service;
+    }
+
+    @Parameter(excluded = true)
+    public String getServiceId() {
+        return serviceId;
+    }
+
+    public void setServiceId(String serviceId) {
+        this.serviceId = serviceId;
+    }
+
+    /**
+     * service and name must not be null.
+     *
+     * @return
+     */
+    @Override
+    @Parameter(excluded = true)
+    public String getPrefix() {
+        return CommonConstants.DUBBO + "." + service
+                + (StringUtils.isEmpty(serviceId) ? "" : ("." + serviceId))
+                + "." + getName();
+    }
 }

@@ -30,8 +30,8 @@ public class Menu {
     }
 
     public Menu(Map<String, List<String>> menus) {
-        for (String key : menus.keySet()) {
-            this.menus.put(key, new ArrayList<String>(menus.get(key)));
+        for (Map.Entry<String, List<String>> entry : menus.entrySet()) {
+            this.menus.put(entry.getKey(), new ArrayList<String>(entry.getValue()));
         }
     }
 

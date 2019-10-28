@@ -18,6 +18,7 @@ package org.apache.dubbo.remoting.telnet.support.command;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import org.apache.dubbo.remoting.telnet.support.Help;
@@ -54,14 +55,14 @@ public class HelpTelnetHandler implements TelnetHandler {
         } else {
             List<List<String>> table = new ArrayList<List<String>>();
             List<TelnetHandler> handlers = extensionLoader.getActivateExtension(channel.getUrl(), "telnet");
-            if (handlers != null && !handlers.isEmpty()) {
+            if (CollectionUtils.isNotEmpty(handlers)) {
                 for (TelnetHandler handler : handlers) {
                     Help help = handler.getClass().getAnnotation(Help.class);
                     List<String> row = new ArrayList<String>();
                     String parameter = " " + extensionLoader.getExtensionName(handler) + " " + (help != null ? help.parameter().replace("\r\n", " ").replace("\n", " ") : "");
-                    row.add(parameter.length() > 50 ? parameter.substring(0, 50) + "..." : parameter);
+                    row.add(parameter.length() > 55 ? parameter.substring(0, 55) + "..." : parameter);
                     String summary = help != null ? help.summary().replace("\r\n", " ").replace("\n", " ") : "";
-                    row.add(summary.length() > 50 ? summary.substring(0, 50) + "..." : summary);
+                    row.add(summary.length() > 55 ? summary.substring(0, 55) + "..." : summary);
                     table.add(row);
                 }
             }

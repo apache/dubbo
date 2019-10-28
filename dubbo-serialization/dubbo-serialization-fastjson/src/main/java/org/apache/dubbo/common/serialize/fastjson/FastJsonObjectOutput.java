@@ -17,6 +17,7 @@
 package org.apache.dubbo.common.serialize.fastjson;
 
 import org.apache.dubbo.common.serialize.ObjectOutput;
+
 import com.alibaba.fastjson.serializer.JSONSerializer;
 import com.alibaba.fastjson.serializer.SerializeWriter;
 import com.alibaba.fastjson.serializer.SerializerFeature;
@@ -27,6 +28,9 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
 
+/**
+ * FastJson object output implementation
+ */
 public class FastJsonObjectOutput implements ObjectOutput {
 
     private final PrintWriter writer;

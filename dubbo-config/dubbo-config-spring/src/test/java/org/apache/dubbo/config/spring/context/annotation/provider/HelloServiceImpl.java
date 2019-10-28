@@ -16,15 +16,16 @@
  */
 package org.apache.dubbo.config.spring.context.annotation.provider;
 
-import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.api.HelloService;
+
+import com.alibaba.dubbo.config.annotation.Service;
 
 /**
  * {@link HelloService} Implementation just annotating Dubbo's {@link Service}
  *
  * @since 2.5.9
  */
-@Service
+@Service(interfaceName = "org.apache.dubbo.config.spring.api.HelloService")
 public class HelloServiceImpl implements HelloService {
 
     @Override

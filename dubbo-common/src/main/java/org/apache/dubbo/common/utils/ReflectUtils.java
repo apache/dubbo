@@ -28,6 +28,7 @@ import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.net.URL;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
@@ -39,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -249,19 +251,24 @@ public final class ReflectUtils {
         try {
             ParameterizedType parameterizedType = ((ParameterizedType) cls.getGenericInterfaces()[0]);
             Object genericClass = parameterizedType.getActualTypeArguments()[i];
-            if (genericClass instanceof ParameterizedType) { // handle nested generic type
+
+            // handle nested generic type
+            if (genericClass instanceof ParameterizedType) {
                 return (Class<?>) ((ParameterizedType) genericClass).getRawType();
-            } else if (genericClass instanceof GenericArrayType) { // handle array generic type
-                return (Class<?>) ((GenericArrayType) genericClass).getGenericComponentType();
-            } else if (((Class) genericClass).isArray()) {
-                // Requires JDK 7 or higher, Foo<int[]> is no longer GenericArrayType
-                return ((Class) genericClass).getComponentType();
-            } else {
-                return (Class<?>) genericClass;
             }
+
+            // handle array generic type
+            if (genericClass instanceof GenericArrayType) {
+                return (Class<?>) ((GenericArrayType) genericClass).getGenericComponentType();
+            }
+
+            // Requires JDK 7 or higher, Foo<int[]> is no longer GenericArrayType
+            if (((Class) genericClass).isArray()) {
+                return ((Class) genericClass).getComponentType();
+            }
+            return (Class<?>) genericClass;
         } catch (Throwable e) {
-            throw new IllegalArgumentException(cls.getName()
-                    + " generic type undefined!", e);
+            throw new IllegalArgumentException(cls.getName() + " generic type undefined!", e);
         }
     }
 
@@ -497,8 +504,8 @@ public final class ReflectUtils {
     public static String getDesc(final CtMethod m) throws NotFoundException {
         StringBuilder ret = new StringBuilder(m.getName()).append('(');
         CtClass[] parameterTypes = m.getParameterTypes();
-        for (int i = 0; i < parameterTypes.length; i++) {
-            ret.append(getDesc(parameterTypes[i]));
+        for (CtClass parameterType : parameterTypes) {
+            ret.append(getDesc(parameterType));
         }
         ret.append(')').append(getDesc(m.getReturnType()));
         return ret.toString();
@@ -665,7 +672,7 @@ public final class ReflectUtils {
      * @return Class instance.
      */
     public static Class<?> name2class(String name) throws ClassNotFoundException {
-        return name2class(ClassHelper.getClassLoader(), name);
+        return name2class(ClassUtils.getClassLoader(), name);
     }
 
     /**
@@ -708,33 +715,42 @@ public final class ReflectUtils {
             } else if ("short".equals(name)) {
                 sb.append(JVM_SHORT);
             } else {
-                sb.append('L').append(name).append(';'); // "java.lang.Object" ==> "Ljava.lang.Object;"
+                // "java.lang.Object" ==> "Ljava.lang.Object;"
+                sb.append('L').append(name).append(';');
             }
             name = sb.toString();
         } else {
             if ("void".equals(name)) {
                 return void.class;
-            } else if ("boolean".equals(name)) {
+            }
+            if ("boolean".equals(name)) {
                 return boolean.class;
-            } else if ("byte".equals(name)) {
+            }
+            if ("byte".equals(name)) {
                 return byte.class;
-            } else if ("char".equals(name)) {
+            }
+            if ("char".equals(name)) {
                 return char.class;
-            } else if ("double".equals(name)) {
+            }
+            if ("double".equals(name)) {
                 return double.class;
-            } else if ("float".equals(name)) {
+            }
+            if ("float".equals(name)) {
                 return float.class;
-            } else if ("int".equals(name)) {
+            }
+            if ("int".equals(name)) {
                 return int.class;
-            } else if ("long".equals(name)) {
+            }
+            if ("long".equals(name)) {
                 return long.class;
-            } else if ("short".equals(name)) {
+            }
+            if ("short".equals(name)) {
                 return short.class;
             }
         }
 
         if (cl == null) {
-            cl = ClassHelper.getClassLoader();
+            cl = ClassUtils.getClassLoader();
         }
         Class<?> clazz = NAME_CLASS_CACHE.get(name);
         if (clazz == null) {
@@ -754,7 +770,7 @@ public final class ReflectUtils {
      * @throws ClassNotFoundException
      */
     public static Class<?> desc2class(String desc) throws ClassNotFoundException {
-        return desc2class(ClassHelper.getClassLoader(), desc);
+        return desc2class(ClassUtils.getClassLoader(), desc);
     }
 
     /**
@@ -788,17 +804,19 @@ public final class ReflectUtils {
             case JVM_SHORT:
                 return short.class;
             case 'L':
-                desc = desc.substring(1, desc.length() - 1).replace('/', '.'); // "Ljava/lang/Object;" ==> "java.lang.Object"
+                // "Ljava/lang/Object;" ==> "java.lang.Object"
+                desc = desc.substring(1, desc.length() - 1).replace('/', '.');
                 break;
             case '[':
-                desc = desc.replace('/', '.');  // "[[Ljava/lang/Object;" ==> "[[Ljava.lang.Object;"
+                // "[[Ljava/lang/Object;" ==> "[[Ljava.lang.Object;"
+                desc = desc.replace('/', '.');
                 break;
             default:
                 throw new ClassNotFoundException("Class not found: " + desc);
         }
 
         if (cl == null) {
-            cl = ClassHelper.getClassLoader();
+            cl = ClassUtils.getClassLoader();
         }
         Class<?> clazz = DESC_CLASS_CACHE.get(desc);
         if (clazz == null) {
@@ -816,7 +834,7 @@ public final class ReflectUtils {
      * @throws ClassNotFoundException
      */
     public static Class<?>[] desc2classArray(String desc) throws ClassNotFoundException {
-        Class<?>[] ret = desc2classArray(ClassHelper.getClassLoader(), desc);
+        Class<?>[] ret = desc2classArray(ClassUtils.getClassLoader(), desc);
         return ret;
     }
 
@@ -941,7 +959,7 @@ public final class ReflectUtils {
     }
 
     public static Object getEmptyObject(Class<?> returnType) {
-        return getEmptyObject(returnType, new HashMap<Class<?>, Object>(), 0);
+        return getEmptyObject(returnType, new HashMap<>(), 0);
     }
 
     private static Object getEmptyObject(Class<?> returnType, Map<Class<?>, Object> emptyInstances, int level) {
@@ -950,64 +968,78 @@ public final class ReflectUtils {
         }
         if (returnType == null) {
             return null;
-        } else if (returnType == boolean.class || returnType == Boolean.class) {
+        }
+        if (returnType == boolean.class || returnType == Boolean.class) {
             return false;
-        } else if (returnType == char.class || returnType == Character.class) {
+        }
+        if (returnType == char.class || returnType == Character.class) {
             return '\0';
-        } else if (returnType == byte.class || returnType == Byte.class) {
+        }
+        if (returnType == byte.class || returnType == Byte.class) {
             return (byte) 0;
-        } else if (returnType == short.class || returnType == Short.class) {
+        }
+        if (returnType == short.class || returnType == Short.class) {
             return (short) 0;
-        } else if (returnType == int.class || returnType == Integer.class) {
+        }
+        if (returnType == int.class || returnType == Integer.class) {
             return 0;
-        } else if (returnType == long.class || returnType == Long.class) {
+        }
+        if (returnType == long.class || returnType == Long.class) {
             return 0L;
-        } else if (returnType == float.class || returnType == Float.class) {
+        }
+        if (returnType == float.class || returnType == Float.class) {
             return 0F;
-        } else if (returnType == double.class || returnType == Double.class) {
+        }
+        if (returnType == double.class || returnType == Double.class) {
             return 0D;
-        } else if (returnType.isArray()) {
+        }
+        if (returnType.isArray()) {
             return Array.newInstance(returnType.getComponentType(), 0);
-        } else if (returnType.isAssignableFrom(ArrayList.class)) {
-            return new ArrayList<Object>(0);
-        } else if (returnType.isAssignableFrom(HashSet.class)) {
-            return new HashSet<Object>(0);
-        } else if (returnType.isAssignableFrom(HashMap.class)) {
-            return new HashMap<Object, Object>(0);
-        } else if (String.class.equals(returnType)) {
+        }
+        if (returnType.isAssignableFrom(ArrayList.class)) {
+            return new ArrayList<>(0);
+        }
+        if (returnType.isAssignableFrom(HashSet.class)) {
+            return new HashSet<>(0);
+        }
+        if (returnType.isAssignableFrom(HashMap.class)) {
+            return new HashMap<>(0);
+        }
+        if (String.class.equals(returnType)) {
             return "";
-        } else if (!returnType.isInterface()) {
-            try {
-                Object value = emptyInstances.get(returnType);
-                if (value == null) {
-                    value = returnType.newInstance();
-                    emptyInstances.put(returnType, value);
-                }
-                Class<?> cls = value.getClass();
-                while (cls != null && cls != Object.class) {
-                    Field[] fields = cls.getDeclaredFields();
-                    for (Field field : fields) {
-                        if (field.isSynthetic()) {
-                            continue;
-                        }
-                        Object property = getEmptyObject(field.getType(), emptyInstances, level + 1);
-                        if (property != null) {
-                            try {
-                                if (!field.isAccessible()) {
-                                    field.setAccessible(true);
-                                }
-                                field.set(value, property);
-                            } catch (Throwable e) {
+        }
+        if (returnType.isInterface()) {
+            return null;
+        }
+
+        try {
+            Object value = emptyInstances.get(returnType);
+            if (value == null) {
+                value = returnType.newInstance();
+                emptyInstances.put(returnType, value);
+            }
+            Class<?> cls = value.getClass();
+            while (cls != null && cls != Object.class) {
+                Field[] fields = cls.getDeclaredFields();
+                for (Field field : fields) {
+                    if (field.isSynthetic()) {
+                        continue;
+                    }
+                    Object property = getEmptyObject(field.getType(), emptyInstances, level + 1);
+                    if (property != null) {
+                        try {
+                            if (!field.isAccessible()) {
+                                field.setAccessible(true);
                             }
+                            field.set(value, property);
+                        } catch (Throwable ignored) {
                         }
                     }
-                    cls = cls.getSuperclass();
                 }
-                return value;
-            } catch (Throwable e) {
-                return null;
+                cls = cls.getSuperclass();
             }
-        } else {
+            return value;
+        } catch (Throwable e) {
             return null;
         }
     }
@@ -1095,5 +1127,26 @@ public final class ReflectUtils {
         }
 
         return properties;
+    }
+
+    public static Type[] getReturnTypes(Method method) {
+        Class<?> returnType = method.getReturnType();
+        Type genericReturnType = method.getGenericReturnType();
+        if (Future.class.isAssignableFrom(returnType)) {
+            if (genericReturnType instanceof ParameterizedType) {
+                Type actualArgType = ((ParameterizedType) genericReturnType).getActualTypeArguments()[0];
+                if (actualArgType instanceof ParameterizedType) {
+                    returnType = (Class<?>) ((ParameterizedType) actualArgType).getRawType();
+                    genericReturnType = actualArgType;
+                } else {
+                    returnType = (Class<?>) actualArgType;
+                    genericReturnType = returnType;
+                }
+            } else {
+                returnType = null;
+                genericReturnType = null;
+            }
+        }
+        return new Type[]{returnType, genericReturnType};
     }
 }

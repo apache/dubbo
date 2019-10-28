@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.io.UnsafeStringWriter;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -26,12 +25,23 @@ import com.alibaba.fastjson.JSON;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
+import static org.apache.dubbo.common.constants.CommonConstants.DOT_REGEX;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.HIDE_KEY_PREFIX;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SEPARATOR_REGEX;
+import static org.apache.dubbo.common.constants.CommonConstants.UNDERLINE_SEPARATOR;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 
 /**
  * StringUtils
@@ -55,10 +65,9 @@ public final class StringUtils {
      * Gets a CharSequence length or {@code 0} if the CharSequence is
      * {@code null}.
      *
-     * @param cs
-     *            a CharSequence or {@code null}
+     * @param cs a CharSequence or {@code null}
      * @return CharSequence length or {@code 0} if the CharSequence is
-     *         {@code null}.
+     * {@code null}.
      */
     public static int length(final CharSequence cs) {
         return cs == null ? 0 : cs.length();
@@ -77,10 +86,10 @@ public final class StringUtils {
      * StringUtils.repeat("a", -2) = ""
      * </pre>
      *
-     * @param str  the String to repeat, may be null
-     * @param repeat  number of times to repeat str, negative treated as zero
+     * @param str    the String to repeat, may be null
+     * @param repeat number of times to repeat str, negative treated as zero
      * @return a new String consisting of the original String repeated,
-     *  {@code null} if null String input
+     * {@code null} if null String input
      */
     public static String repeat(final String str, final int repeat) {
         // Performance tuned for 2.0 (JDK1.4)
@@ -101,9 +110,9 @@ public final class StringUtils {
 
         final int outputLength = inputLength * repeat;
         switch (inputLength) {
-            case 1 :
+            case 1:
                 return repeat(str.charAt(0), repeat);
-            case 2 :
+            case 2:
                 final char ch0 = str.charAt(0);
                 final char ch1 = str.charAt(1);
                 final char[] output2 = new char[outputLength];
@@ -112,7 +121,7 @@ public final class StringUtils {
                     output2[i + 1] = ch1;
                 }
                 return new String(output2);
-            default :
+            default:
                 final StringBuilder buf = new StringBuilder(outputLength);
                 for (int i = 0; i < repeat; i++) {
                     buf.append(str);
@@ -134,15 +143,15 @@ public final class StringUtils {
      * StringUtils.repeat("?", ", ", 3)  = "?, ?, ?"
      * </pre>
      *
-     * @param str        the String to repeat, may be null
-     * @param separator  the String to inject, may be null
-     * @param repeat     number of times to repeat str, negative treated as zero
+     * @param str       the String to repeat, may be null
+     * @param separator the String to inject, may be null
+     * @param repeat    number of times to repeat str, negative treated as zero
      * @return a new String consisting of the original String repeated,
-     *  {@code null} if null String input
+     * {@code null} if null String input
      * @since 2.5
      */
     public static String repeat(final String str, final String separator, final int repeat) {
-        if(str == null || separator == null) {
+        if (str == null || separator == null) {
             return repeat(str, repeat);
         }
         // given that repeat(String, int) is quite optimized, better to rely on it than try and splice this into it
@@ -168,13 +177,13 @@ public final class StringUtils {
      * StringUtils.removeEnd("abc", "")    = "abc"
      * </pre>
      *
-     * @param str  the source String to search, may be null
-     * @param remove  the String to search for and remove, may be null
+     * @param str    the source String to search, may be null
+     * @param remove the String to search for and remove, may be null
      * @return the substring with the string removed if found,
-     *  {@code null} if null String input
+     * {@code null} if null String input
      */
     public static String removeEnd(final String str, final String remove) {
-        if (isEmpty(str) || isEmpty(remove)) {
+        if (isAnyEmpty(str, remove)) {
             return str;
         }
         if (str.endsWith(remove)) {
@@ -200,8 +209,8 @@ public final class StringUtils {
      * consider using {@link #repeat(String, int)} instead.
      * </p>
      *
-     * @param ch  character to repeat
-     * @param repeat  number of times to repeat char, negative treated as zero
+     * @param ch     character to repeat
+     * @param repeat number of times to repeat char, negative treated as zero
      * @return String with repeated character
      * @see #repeat(String, int)
      */
@@ -234,8 +243,8 @@ public final class StringUtils {
      * StringUtils.stripEnd("120.00", ".0")   = "12"
      * </pre>
      *
-     * @param str  the String to remove characters from, may be null
-     * @param stripChars  the set of characters to remove, null treated as whitespace
+     * @param str        the String to remove characters from, may be null
+     * @param stripChars the set of characters to remove, null treated as whitespace
      * @return the stripped String, {@code null} if null String input
      */
     public static String stripEnd(final String str, final String stripChars) {
@@ -274,12 +283,12 @@ public final class StringUtils {
      * StringUtils.replace("aba", "a", "z")   = "zbz"
      * </pre>
      *
-     * @see #replace(String text, String searchString, String replacement, int max)
-     * @param text  text to search and replace in, may be null
-     * @param searchString  the String to search for, may be null
+     * @param text         text to search and replace in, may be null
+     * @param searchString the String to search for, may be null
      * @param replacement  the String to replace it with, may be null
      * @return the text with any replacements processed,
-     *  {@code null} if null String input
+     * {@code null} if null String input
+     * @see #replace(String text, String searchString, String replacement, int max)
      */
     public static String replace(final String text, final String searchString, final String replacement) {
         return replace(text, searchString, replacement, -1);
@@ -306,15 +315,15 @@ public final class StringUtils {
      * StringUtils.replace("abaa", "a", "z", -1)  = "zbzz"
      * </pre>
      *
-     * @param text  text to search and replace in, may be null
-     * @param searchString  the String to search for, may be null
+     * @param text         text to search and replace in, may be null
+     * @param searchString the String to search for, may be null
      * @param replacement  the String to replace it with, may be null
-     * @param max  maximum number of values to replace, or {@code -1} if no maximum
+     * @param max          maximum number of values to replace, or {@code -1} if no maximum
      * @return the text with any replacements processed,
-     *  {@code null} if null String input
+     * {@code null} if null String input
      */
     public static String replace(final String text, final String searchString, final String replacement, int max) {
-        if (isEmpty(text) || isEmpty(searchString) || replacement == null || max == 0) {
+        if (isAnyEmpty(text, searchString) || replacement == null || max == 0) {
             return text;
         }
         int start = 0;
@@ -328,7 +337,7 @@ public final class StringUtils {
         increase *= max < 0 ? 16 : max > 64 ? 64 : max;
         final StringBuilder buf = new StringBuilder(text.length() + increase);
         while (end != INDEX_NOT_FOUND) {
-            buf.append(text.substring(start, end)).append(replacement);
+            buf.append(text, start, end).append(replacement);
             start = end + replLength;
             if (--max == 0) {
                 break;
@@ -339,11 +348,17 @@ public final class StringUtils {
         return buf.toString();
     }
 
-    public static boolean isBlank(String str) {
-        if (str == null || str.length() == 0) {
+    public static boolean isBlank(CharSequence cs) {
+        int strLen;
+        if (cs == null || (strLen = cs.length()) == 0) {
             return true;
         }
-        return false;
+        for (int i = 0; i < strLen; i++) {
+            if (!Character.isWhitespace(cs.charAt(i))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -353,10 +368,57 @@ public final class StringUtils {
      * @return is empty.
      */
     public static boolean isEmpty(String str) {
-        if (str == null || str.length() == 0) {
-            return true;
+        return str == null || str.isEmpty();
+    }
+
+    /**
+     * <p>Checks if the strings contain empty or null elements. <p/>
+     *
+     * <pre>
+     * StringUtils.isNoneEmpty(null)            = false
+     * StringUtils.isNoneEmpty("")              = false
+     * StringUtils.isNoneEmpty(" ")             = true
+     * StringUtils.isNoneEmpty("abc")           = true
+     * StringUtils.isNoneEmpty("abc", "def")    = true
+     * StringUtils.isNoneEmpty("abc", null)     = false
+     * StringUtils.isNoneEmpty("abc", "")       = false
+     * StringUtils.isNoneEmpty("abc", " ")      = true
+     * </pre>
+     *
+     * @param ss the strings to check
+     * @return {@code true} if all strings are not empty or null
+     */
+    public static boolean isNoneEmpty(final String... ss) {
+        if (ArrayUtils.isEmpty(ss)) {
+            return false;
         }
-        return false;
+        for (final String s : ss) {
+            if (isEmpty(s)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * <p>Checks if the strings contain at least on empty or null element. <p/>
+     *
+     * <pre>
+     * StringUtils.isAnyEmpty(null)            = true
+     * StringUtils.isAnyEmpty("")              = true
+     * StringUtils.isAnyEmpty(" ")             = false
+     * StringUtils.isAnyEmpty("abc")           = false
+     * StringUtils.isAnyEmpty("abc", "def")    = false
+     * StringUtils.isAnyEmpty("abc", null)     = true
+     * StringUtils.isAnyEmpty("abc", "")       = true
+     * StringUtils.isAnyEmpty("abc", " ")      = false
+     * </pre>
+     *
+     * @param ss the strings to check
+     * @return {@code true} if at least one in the strings is empty or null
+     */
+    public static boolean isAnyEmpty(final String... ss) {
+        return !isNoneEmpty(ss);
     }
 
     /**
@@ -366,7 +428,7 @@ public final class StringUtils {
      * @return is not empty.
      */
     public static boolean isNotEmpty(String str) {
-        return str != null && str.length() > 0;
+        return !isEmpty(str);
     }
 
     /**
@@ -391,17 +453,11 @@ public final class StringUtils {
      * @return is integer
      */
     public static boolean isInteger(String str) {
-        if (str == null || str.length() == 0) {
-            return false;
-        }
-        return INT_PATTERN.matcher(str).matches();
+        return isNotEmpty(str) && INT_PATTERN.matcher(str).matches();
     }
 
     public static int parseInteger(String str) {
-        if (!isInteger(str)) {
-            return 0;
-        }
-        return Integer.parseInt(str);
+        return isInteger(str) ? Integer.parseInt(str) : 0;
     }
 
     /**
@@ -409,7 +465,7 @@ public final class StringUtils {
      * <a href="http://www.exampledepot.com/egs/java.lang/IsJavaId.html">more info.</a>
      */
     public static boolean isJavaIdentifier(String s) {
-        if (s.length() == 0 || !Character.isJavaIdentifierStart(s.charAt(0))) {
+        if (isEmpty(s) || !Character.isJavaIdentifierStart(s.charAt(0))) {
             return false;
         }
         for (int i = 1; i < s.length(); i++) {
@@ -421,10 +477,7 @@ public final class StringUtils {
     }
 
     public static boolean isContains(String values, String value) {
-        if (values == null || values.length() == 0) {
-            return false;
-        }
-        return isContains(Constants.COMMA_SPLIT_PATTERN.split(values), value);
+        return isNotEmpty(values) && isContains(COMMA_SPLIT_PATTERN.split(values), value);
     }
 
     /**
@@ -433,7 +486,7 @@ public final class StringUtils {
      * @return contains
      */
     public static boolean isContains(String[] values, String value) {
-        if (value != null && value.length() > 0 && values != null && values.length > 0) {
+        if (isNotEmpty(value) && ArrayUtils.isNotEmpty(values)) {
             for (String v : values) {
                 if (value.equals(v)) {
                     return true;
@@ -443,18 +496,27 @@ public final class StringUtils {
         return false;
     }
 
-    public static boolean isNumeric(String str) {
-        if (str == null) {
+    public static boolean isNumeric(String str, boolean allowDot) {
+        if (str == null || str.isEmpty()) {
             return false;
         }
+        boolean hasDot = false;
         int sz = str.length();
         for (int i = 0; i < sz; i++) {
-            if (Character.isDigit(str.charAt(i)) == false) {
+            if (str.charAt(i) == '.') {
+                if (hasDot || !allowDot) {
+                    return false;
+                }
+                hasDot = true;
+                continue;
+            }
+            if (!Character.isDigit(str.charAt(i))) {
                 return false;
             }
         }
         return true;
     }
+
 
     /**
      * @param e
@@ -494,14 +556,14 @@ public final class StringUtils {
     }
 
     /**
-     * translat.
+     * translate.
      *
      * @param src  source string.
      * @param from src char table.
      * @param to   target char table.
      * @return String.
      */
-    public static String translat(String src, String from, String to) {
+    public static String translate(String src, String from, String to) {
         if (isEmpty(src)) {
             return src;
         }
@@ -561,8 +623,8 @@ public final class StringUtils {
      * @return String.
      */
     public static String join(String[] array) {
-        if (array.length == 0) {
-            return "";
+        if (ArrayUtils.isEmpty(array)) {
+            return EMPTY;
         }
         StringBuilder sb = new StringBuilder();
         for (String s : array) {
@@ -579,8 +641,8 @@ public final class StringUtils {
      * @return String.
      */
     public static String join(String[] array, char split) {
-        if (array.length == 0) {
-            return "";
+        if (ArrayUtils.isEmpty(array)) {
+            return EMPTY;
         }
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < array.length; i++) {
@@ -600,8 +662,8 @@ public final class StringUtils {
      * @return String.
      */
     public static String join(String[] array, String split) {
-        if (array.length == 0) {
-            return "";
+        if (ArrayUtils.isEmpty(array)) {
+            return EMPTY;
         }
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < array.length; i++) {
@@ -614,8 +676,8 @@ public final class StringUtils {
     }
 
     public static String join(Collection<String> coll, String split) {
-        if (coll.isEmpty()) {
-            return "";
+        if (CollectionUtils.isEmpty(coll)) {
+            return EMPTY;
         }
 
         StringBuilder sb = new StringBuilder();
@@ -643,7 +705,7 @@ public final class StringUtils {
         Map<String, String> map = new HashMap<String, String>(tmp.length);
         for (int i = 0; i < tmp.length; i++) {
             Matcher matcher = KVP_PATTERN.matcher(tmp[i]);
-            if (matcher.matches() == false) {
+            if (!matcher.matches()) {
                 continue;
             }
             map.put(matcher.group(1), matcher.group(2));
@@ -663,7 +725,7 @@ public final class StringUtils {
      * @return Parameters instance.
      */
     public static Map<String, String> parseQueryString(String qs) {
-        if (qs == null || qs.length() == 0) {
+        if (isEmpty(qs)) {
             return new HashMap<String, String>();
         }
         return parseKeyValuePair(qs, "\\&");
@@ -671,13 +733,13 @@ public final class StringUtils {
 
     public static String getServiceKey(Map<String, String> ps) {
         StringBuilder buf = new StringBuilder();
-        String group = ps.get(Constants.GROUP_KEY);
-        if (group != null && group.length() > 0) {
+        String group = ps.get(GROUP_KEY);
+        if (isNotEmpty(group)) {
             buf.append(group).append("/");
         }
-        buf.append(ps.get(Constants.INTERFACE_KEY));
-        String version = ps.get(Constants.VERSION_KEY);
-        if (version != null && version.length() > 0) {
+        buf.append(ps.get(INTERFACE_KEY));
+        String version = ps.get(VERSION_KEY);
+        if (isNotEmpty(group)) {
             buf.append(":").append(version);
         }
         return buf.toString();
@@ -689,8 +751,7 @@ public final class StringUtils {
             for (Map.Entry<String, String> entry : new TreeMap<String, String>(ps).entrySet()) {
                 String key = entry.getKey();
                 String value = entry.getValue();
-                if (key != null && key.length() > 0
-                        && value != null && value.length() > 0) {
+                if (isNoneEmpty(key, value)) {
                     if (buf.length() > 0) {
                         buf.append("&");
                     }
@@ -704,7 +765,7 @@ public final class StringUtils {
     }
 
     public static String camelToSplitName(String camelName, String split) {
-        if (camelName == null || camelName.length() == 0) {
+        if (isEmpty(camelName)) {
             return camelName;
         }
         StringBuilder buf = null;
@@ -714,7 +775,7 @@ public final class StringUtils {
                 if (buf == null) {
                     buf = new StringBuilder();
                     if (i > 0) {
-                        buf.append(camelName.substring(0, i));
+                        buf.append(camelName, 0, i);
                     }
                 }
                 if (i > 0) {
@@ -732,7 +793,7 @@ public final class StringUtils {
         StringBuilder buf = new StringBuilder();
         for (Object arg : args) {
             if (buf.length() > 0) {
-                buf.append(Constants.COMMA_SEPARATOR);
+                buf.append(COMMA_SEPARATOR);
             }
             if (arg == null || ReflectUtils.isPrimitives(arg.getClass())) {
                 buf.append(arg);
@@ -746,5 +807,63 @@ public final class StringUtils {
             }
         }
         return buf.toString();
+    }
+
+    public static String trim(String str) {
+        return str == null ? null : str.trim();
+    }
+
+    public static String toURLKey(String key) {
+        return key.toLowerCase().replaceAll(SEPARATOR_REGEX, HIDE_KEY_PREFIX);
+    }
+
+    public static String toOSStyleKey(String key) {
+        key = key.toUpperCase().replaceAll(DOT_REGEX, UNDERLINE_SEPARATOR);
+        if (!key.startsWith("DUBBO_")) {
+            key = "DUBBO_" + key;
+        }
+        return key;
+    }
+
+    public static boolean isAllUpperCase(String str) {
+        if (str != null && !isEmpty(str)) {
+            int sz = str.length();
+
+            for(int i = 0; i < sz; ++i) {
+                if (!Character.isUpperCase(str.charAt(i))) {
+                    return false;
+                }
+            }
+
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * @param rawParameters format like '[{a:b},{c:d}]'
+     * @return
+     */
+    public static Map<String, String> parseParameters(String rawParameters) {
+        Pattern pattern = Pattern.compile("^\\[((\\s*\\{\\s*[\\w_\\-\\.]+\\s*:\\s*.+?\\s*\\}\\s*,?\\s*)+)\\s*\\]$");
+        Pattern pairPattern = Pattern.compile("^\\{\\s*([\\w-_\\.]+)\\s*:\\s*(.+)\\s*\\}$");
+
+        Matcher matcher = pattern.matcher(rawParameters);
+        if (!matcher.matches()) {
+            return Collections.emptyMap();
+        }
+
+        String pairs = matcher.group(1);
+        String[] pairArr = pairs.split("\\s*,\\s*");
+
+        Map<String, String> parameters = new HashMap<>();
+        for (String pair : pairArr) {
+            Matcher pairMatcher = pairPattern.matcher(pair);
+            if (pairMatcher.matches()) {
+                parameters.put(pairMatcher.group(1), pairMatcher.group(2));
+            }
+        }
+        return parameters;
     }
 }

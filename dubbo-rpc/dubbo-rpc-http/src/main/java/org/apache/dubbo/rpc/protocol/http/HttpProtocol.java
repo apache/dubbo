@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.http;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.http.HttpBinder;
 import org.apache.dubbo.remoting.http.HttpHandler;
@@ -24,41 +23,36 @@ import org.apache.dubbo.remoting.http.HttpServer;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.AbstractProxyProtocol;
-import org.apache.dubbo.rpc.service.GenericService;
-import org.apache.dubbo.rpc.support.ProtocolUtils;
-import org.aopalliance.intercept.MethodInvocation;
+
+import com.googlecode.jsonrpc4j.HttpException;
+import com.googlecode.jsonrpc4j.JsonRpcClientException;
+import com.googlecode.jsonrpc4j.JsonRpcServer;
+import com.googlecode.jsonrpc4j.spring.JsonProxyFactoryBean;
 import org.springframework.remoting.RemoteAccessException;
-import org.springframework.remoting.httpinvoker.HttpComponentsHttpInvokerRequestExecutor;
-import org.springframework.remoting.httpinvoker.HttpInvokerProxyFactoryBean;
-import org.springframework.remoting.httpinvoker.HttpInvokerServiceExporter;
-import org.springframework.remoting.httpinvoker.SimpleHttpInvokerRequestExecutor;
-import org.springframework.remoting.support.RemoteInvocation;
-import org.springframework.remoting.support.RemoteInvocationFactory;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * HttpProtocol
- */
 public class HttpProtocol extends AbstractProxyProtocol {
 
-    public static final int DEFAULT_PORT = 80;
+    public static final String ACCESS_CONTROL_ALLOW_ORIGIN_HEADER = "Access-Control-Allow-Origin";
+    public static final String ACCESS_CONTROL_ALLOW_METHODS_HEADER = "Access-Control-Allow-Methods";
+    public static final String ACCESS_CONTROL_ALLOW_HEADERS_HEADER = "Access-Control-Allow-Headers";
 
-    private final Map<String, HttpServer> serverMap = new ConcurrentHashMap<String, HttpServer>();
+    private final Map<String, HttpServer> serverMap = new ConcurrentHashMap<>();
 
-    private final Map<String, HttpInvokerServiceExporter> skeletonMap = new ConcurrentHashMap<String, HttpInvokerServiceExporter>();
+    private final Map<String, JsonRpcServer> skeletonMap = new ConcurrentHashMap<>();
 
     private HttpBinder httpBinder;
 
     public HttpProtocol() {
-        super(RemoteAccessException.class);
+        super(HttpException.class, JsonRpcClientException.class);
     }
 
     public void setHttpBinder(HttpBinder httpBinder) {
@@ -67,91 +61,67 @@ public class HttpProtocol extends AbstractProxyProtocol {
 
     @Override
     public int getDefaultPort() {
-        return DEFAULT_PORT;
+        return 80;
+    }
+
+    private class InternalHandler implements HttpHandler {
+
+        private boolean cors;
+
+        public InternalHandler(boolean cors) {
+            this.cors = cors;
+        }
+
+        @Override
+        public void handle(HttpServletRequest request, HttpServletResponse response)
+                throws ServletException {
+            String uri = request.getRequestURI();
+            JsonRpcServer skeleton = skeletonMap.get(uri);
+            if (cors) {
+                response.setHeader(ACCESS_CONTROL_ALLOW_ORIGIN_HEADER, "*");
+                response.setHeader(ACCESS_CONTROL_ALLOW_METHODS_HEADER, "POST");
+                response.setHeader(ACCESS_CONTROL_ALLOW_HEADERS_HEADER, "*");
+            }
+            if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+                response.setStatus(200);
+            } else if ("POST".equalsIgnoreCase(request.getMethod())) {
+
+                RpcContext.getContext().setRemoteAddress(request.getRemoteAddr(), request.getRemotePort());
+                try {
+                    skeleton.handle(request.getInputStream(), response.getOutputStream());
+                } catch (Throwable e) {
+                    throw new ServletException(e);
+                }
+            } else {
+                response.setStatus(500);
+            }
+        }
+
     }
 
     @Override
-    protected <T> Runnable doExport(final T impl, Class<T> type, URL url) throws RpcException {
-        String addr = getAddr(url);
+    protected <T> Runnable doExport(T impl, Class<T> type, URL url) throws RpcException {
+        String addr = url.getIp() + ":" + url.getPort();
         HttpServer server = serverMap.get(addr);
         if (server == null) {
-            server = httpBinder.bind(url, new InternalHandler());
+            server = httpBinder.bind(url, new InternalHandler(url.getParameter("cors", false)));
             serverMap.put(addr, server);
         }
         final String path = url.getAbsolutePath();
-        skeletonMap.put(path, createExporter(impl, type));
-
-        final String genericPath = path + "/" + Constants.GENERIC_KEY;
-
-        skeletonMap.put(genericPath, createExporter(impl, GenericService.class));
-        return new Runnable() {
-            @Override
-            public void run() {
-                skeletonMap.remove(path);
-                skeletonMap.remove(genericPath);
-            }
-        };
+        JsonRpcServer skeleton = new JsonRpcServer(impl, type);
+        skeletonMap.put(path, skeleton);
+        return () -> skeletonMap.remove(path);
     }
 
-    private <T> HttpInvokerServiceExporter createExporter(T impl, Class<?> type) {
-        final HttpInvokerServiceExporter httpServiceExporter = new HttpInvokerServiceExporter();
-        httpServiceExporter.setServiceInterface(type);
-        httpServiceExporter.setService(impl);
-        try {
-            httpServiceExporter.afterPropertiesSet();
-        } catch (Exception e) {
-            throw new RpcException(e.getMessage(), e);
-        }
-        return httpServiceExporter;
-    }
-
-    @Override
     @SuppressWarnings("unchecked")
-    protected <T> T doRefer(final Class<T> serviceType, final URL url) throws RpcException {
-        final String generic = url.getParameter(Constants.GENERIC_KEY);
-        final boolean isGeneric = ProtocolUtils.isGeneric(generic) || serviceType.equals(GenericService.class);
+    @Override
+    protected <T> T doRefer(final Class<T> serviceType, URL url) throws RpcException {
+        JsonProxyFactoryBean jsonProxyFactoryBean = new JsonProxyFactoryBean();
+        jsonProxyFactoryBean.setServiceUrl(url.setProtocol("http").toIdentityString());
+        jsonProxyFactoryBean.setServiceInterface(serviceType);
 
-        final HttpInvokerProxyFactoryBean httpProxyFactoryBean = new HttpInvokerProxyFactoryBean();
-        httpProxyFactoryBean.setRemoteInvocationFactory(new RemoteInvocationFactory() {
-            @Override
-            public RemoteInvocation createRemoteInvocation(MethodInvocation methodInvocation) {
-                RemoteInvocation invocation = new HttpRemoteInvocation(methodInvocation);
-                if (isGeneric) {
-                    invocation.addAttribute(Constants.GENERIC_KEY, generic);
-                }
-                return invocation;
-            }
-        });
-
-        String key = url.toIdentityString();
-        if (isGeneric) {
-            key = key + "/" + Constants.GENERIC_KEY;
-        }
-
-        httpProxyFactoryBean.setServiceUrl(key);
-        httpProxyFactoryBean.setServiceInterface(serviceType);
-        String client = url.getParameter(Constants.CLIENT_KEY);
-        if (client == null || client.length() == 0 || "simple".equals(client)) {
-            SimpleHttpInvokerRequestExecutor httpInvokerRequestExecutor = new SimpleHttpInvokerRequestExecutor() {
-                @Override
-                protected void prepareConnection(HttpURLConnection con,
-                                                 int contentLength) throws IOException {
-                    super.prepareConnection(con, contentLength);
-                    con.setReadTimeout(url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT));
-                    con.setConnectTimeout(url.getParameter(Constants.CONNECT_TIMEOUT_KEY, Constants.DEFAULT_CONNECT_TIMEOUT));
-                }
-            };
-            httpProxyFactoryBean.setHttpInvokerRequestExecutor(httpInvokerRequestExecutor);
-        } else if ("commons".equals(client)) {
-            HttpComponentsHttpInvokerRequestExecutor httpInvokerRequestExecutor = new HttpComponentsHttpInvokerRequestExecutor();
-            httpInvokerRequestExecutor.setReadTimeout(url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT));
-            httpInvokerRequestExecutor.setConnectTimeout(url.getParameter(Constants.CONNECT_TIMEOUT_KEY, Constants.DEFAULT_CONNECT_TIMEOUT));
-            httpProxyFactoryBean.setHttpInvokerRequestExecutor(httpInvokerRequestExecutor);
-        } else {
-            throw new IllegalStateException("Unsupported http protocol client " + client + ", only supported: simple, commons");
-        }
-        httpProxyFactoryBean.afterPropertiesSet();
-        return (T) httpProxyFactoryBean.getObject();
+        jsonProxyFactoryBean.afterPropertiesSet();
+        return (T) jsonProxyFactoryBean.getObject();
     }
 
     @Override
@@ -172,25 +142,22 @@ public class HttpProtocol extends AbstractProxyProtocol {
         return super.getErrorCode(e);
     }
 
-    private class InternalHandler implements HttpHandler {
-
-        @Override
-        public void handle(HttpServletRequest request, HttpServletResponse response)
-                throws IOException, ServletException {
-            String uri = request.getRequestURI();
-            HttpInvokerServiceExporter skeleton = skeletonMap.get(uri);
-            if (!request.getMethod().equalsIgnoreCase("POST")) {
-                response.setStatus(500);
-            } else {
-                RpcContext.getContext().setRemoteAddress(request.getRemoteAddr(), request.getRemotePort());
+    @Override
+    public void destroy() {
+        super.destroy();
+        for (String key : new ArrayList<>(serverMap.keySet())) {
+            HttpServer server = serverMap.remove(key);
+            if (server != null) {
                 try {
-                    skeleton.handleRequest(request, response);
-                } catch (Throwable e) {
-                    throw new ServletException(e);
+                    if (logger.isInfoEnabled()) {
+                        logger.info("Close jsonrpc server " + server.getUrl());
+                    }
+                    server.close();
+                } catch (Throwable t) {
+                    logger.warn(t.getMessage(), t);
                 }
             }
         }
-
     }
 
 }

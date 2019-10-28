@@ -16,8 +16,8 @@
  */
 package org.apache.dubbo.cache.support.jcache;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.StringUtils;
 
 import javax.cache.Cache;
 import javax.cache.CacheException;
@@ -29,27 +29,36 @@ import javax.cache.expiry.Duration;
 import javax.cache.spi.CachingProvider;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.dubbo.common.constants.CommonConstants.METHOD_KEY;
+
 /**
- * JCache
+ * This class store the cache value per thread. If a service,method,consumer or provided is configured with key <b>cache</b>
+ * with value <b>jcache</b>, dubbo initialize the instance of this class using {@link JCacheFactory} to store method's returns value
+ * to server from store without making method call.
+ *
+ * @see Cache
+ * @see JCacheFactory
+ * @see org.apache.dubbo.cache.support.AbstractCacheFactory
+ * @see org.apache.dubbo.cache.filter.CacheFilter
  */
 public class JCache implements org.apache.dubbo.cache.Cache {
 
     private final Cache<Object, Object> store;
 
     public JCache(URL url) {
-        String method = url.getParameter(Constants.METHOD_KEY, "");
+        String method = url.getParameter(METHOD_KEY, "");
         String key = url.getAddress() + "." + url.getServiceKey() + "." + method;
         // jcache parameter is the full-qualified class name of SPI implementation
         String type = url.getParameter("jcache");
 
-        CachingProvider provider = type == null || type.length() == 0 ? Caching.getCachingProvider() : Caching.getCachingProvider(type);
+        CachingProvider provider = StringUtils.isEmpty(type) ? Caching.getCachingProvider() : Caching.getCachingProvider(type);
         CacheManager cacheManager = provider.getCacheManager();
         Cache<Object, Object> cache = cacheManager.getCache(key);
         if (cache == null) {
             try {
                 //configure the cache
                 MutableConfiguration config =
-                        new MutableConfiguration<Object, Object>()
+                        new MutableConfiguration<>()
                                 .setTypes(Object.class, Object.class)
                                 .setExpiryPolicyFactory(CreatedExpiryPolicy.factoryOf(new Duration(TimeUnit.MILLISECONDS, url.getMethodParameter(method, "cache.write.expire", 60 * 1000))))
                                 .setStoreByValue(false)

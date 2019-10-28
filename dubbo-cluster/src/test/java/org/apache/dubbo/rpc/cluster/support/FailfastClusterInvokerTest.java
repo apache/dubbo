@@ -17,30 +17,28 @@
 package org.apache.dubbo.rpc.cluster.support;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.cluster.Directory;
 
-import org.junit.Assert;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
 /**
  * FailfastClusterInvokerTest
- *
  */
 @SuppressWarnings("unchecked")
 public class FailfastClusterInvokerTest {
@@ -49,13 +47,13 @@ public class FailfastClusterInvokerTest {
     Invoker<FailfastClusterInvokerTest> invoker1 = mock(Invoker.class);
     RpcInvocation invocation = new RpcInvocation();
     Directory<FailfastClusterInvokerTest> dic;
-    Result result = new RpcResult();
+    Result result = new AppResponse();
 
     /**
      * @throws java.lang.Exception
      */
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
 
         dic = mock(Directory.class);
@@ -81,22 +79,24 @@ public class FailfastClusterInvokerTest {
         given(invoker1.getInterface()).willReturn(FailfastClusterInvokerTest.class);
     }
 
-    @Test(expected = RpcException.class)
-    public void testInvokeExceptoin() {
-        resetInvoker1ToException();
-        FailfastClusterInvoker<FailfastClusterInvokerTest> invoker = new FailfastClusterInvoker<FailfastClusterInvokerTest>(dic);
-        invoker.invoke(invocation);
-        Assert.assertSame(invoker1, RpcContext.getContext().getInvoker());
+    @Test
+    public void testInvokeException() {
+        Assertions.assertThrows(RpcException.class, () -> {
+            resetInvoker1ToException();
+            FailfastClusterInvoker<FailfastClusterInvokerTest> invoker = new FailfastClusterInvoker<FailfastClusterInvokerTest>(dic);
+            invoker.invoke(invocation);
+            Assertions.assertSame(invoker1, RpcContext.getContext().getInvoker());
+        });
     }
 
     @Test()
-    public void testInvokeNoExceptoin() {
+    public void testInvokeNoException() {
 
         resetInvoker1ToNoException();
 
         FailfastClusterInvoker<FailfastClusterInvokerTest> invoker = new FailfastClusterInvoker<FailfastClusterInvokerTest>(dic);
         Result ret = invoker.invoke(invocation);
-        Assert.assertSame(result, ret);
+        Assertions.assertSame(result, ret);
     }
 
     @Test()

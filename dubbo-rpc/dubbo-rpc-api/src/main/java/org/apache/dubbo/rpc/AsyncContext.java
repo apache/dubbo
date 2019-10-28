@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.rpc;
 
-import java.util.concurrent.CompletableFuture;
-
 /**
  * AsyncContext works like {@see javax.servlet.AsyncContext} in the Servlet 3.0.
  * An AsyncContext is stated by a call to {@link RpcContext#startAsync()}.
@@ -28,13 +26,6 @@ import java.util.concurrent.CompletableFuture;
 public interface AsyncContext {
 
     /**
-     * get the internal future which is binding to this async context
-     *
-     * @return the internal future
-     */
-    CompletableFuture getInternalFuture();
-
-    /**
      * write value and complete the async context.
      *
      * @param value invoke result
@@ -42,7 +33,7 @@ public interface AsyncContext {
     void write(Object value);
 
     /**
-     * @return true if the aysnc context is started
+     * @return true if the async context is started
      */
     boolean isAsyncStarted();
 

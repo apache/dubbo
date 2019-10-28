@@ -21,6 +21,7 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.RegistryConfig;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
@@ -30,12 +31,15 @@ import java.lang.annotation.Annotation;
 import java.util.List;
 
 import static org.apache.dubbo.config.spring.util.BeanFactoryUtils.getBeans;
-import static org.apache.dubbo.config.spring.util.BeanFactoryUtils.getOptionalBean;
+import static org.apache.dubbo.config.spring.util.BeanFactoryUtils.getNullableBean;
 
 /**
  * Abstract Configurable {@link Annotation} Bean Builder
+ *
  * @since 2.5.7
+ * @deprecated use {@link AnnotatedInterfaceConfigBeanBuilder}
  */
+@Deprecated
 abstract class AbstractAnnotationConfigBeanBuilder<A extends Annotation, B extends AbstractInterfaceConfig> {
 
     protected final Log logger = LogFactory.getLog(getClass());
@@ -76,7 +80,7 @@ abstract class AbstractAnnotationConfigBeanBuilder<A extends Annotation, B exten
         configureBean(bean);
 
         if (logger.isInfoEnabled()) {
-            logger.info(bean + " has been built.");
+            logger.info("The bean[type:" + bean.getClass().getSimpleName() + "] has been built.");
         }
 
         return bean;
@@ -128,7 +132,7 @@ abstract class AbstractAnnotationConfigBeanBuilder<A extends Annotation, B exten
 
         String monitorBeanName = resolveMonitorConfigBeanName(annotation);
 
-        MonitorConfig monitorConfig = getOptionalBean(applicationContext, monitorBeanName, MonitorConfig.class);
+        MonitorConfig monitorConfig = getNullableBean(applicationContext, monitorBeanName, MonitorConfig.class);
 
         bean.setMonitor(monitorConfig);
 
@@ -139,7 +143,7 @@ abstract class AbstractAnnotationConfigBeanBuilder<A extends Annotation, B exten
         String applicationConfigBeanName = resolveApplicationConfigBeanName(annotation);
 
         ApplicationConfig applicationConfig =
-                getOptionalBean(applicationContext, applicationConfigBeanName, ApplicationConfig.class);
+                getNullableBean(applicationContext, applicationConfigBeanName, ApplicationConfig.class);
 
         bean.setApplication(applicationConfig);
 
@@ -150,7 +154,7 @@ abstract class AbstractAnnotationConfigBeanBuilder<A extends Annotation, B exten
         String moduleConfigBeanName = resolveModuleConfigBeanName(annotation);
 
         ModuleConfig moduleConfig =
-                getOptionalBean(applicationContext, moduleConfigBeanName, ModuleConfig.class);
+                getNullableBean(applicationContext, moduleConfigBeanName, ModuleConfig.class);
 
         bean.setModule(moduleConfig);
 
@@ -174,7 +178,7 @@ abstract class AbstractAnnotationConfigBeanBuilder<A extends Annotation, B exten
 
 
     /**
-     * Resolves the bean ids of {@link org.apache.dubbo.config.RegistryConfig}
+     * Resolves the bean ids of {@link RegistryConfig}
      *
      * @param annotation {@link A}
      * @return non-empty array

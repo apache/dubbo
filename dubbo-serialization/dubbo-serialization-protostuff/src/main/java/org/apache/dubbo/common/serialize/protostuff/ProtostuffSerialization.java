@@ -26,10 +26,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import static org.apache.dubbo.common.serialize.Constants.PROTOSTUFF_SERIALIZATION_ID;
+
+/**
+ * Protostuff serialization implementation
+ *
+ * <pre>
+ *     e.g. &lt;dubbo:protocol serialization="protostuff" /&gt;
+ * </pre>
+ */
 public class ProtostuffSerialization implements Serialization {
     @Override
     public byte getContentTypeId() {
-        return 10;
+        return PROTOSTUFF_SERIALIZATION_ID;
     }
 
     @Override

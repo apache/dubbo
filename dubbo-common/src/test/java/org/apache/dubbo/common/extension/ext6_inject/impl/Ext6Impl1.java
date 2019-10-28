@@ -21,15 +21,15 @@ import org.apache.dubbo.common.extension.ext1.SimpleExt;
 import org.apache.dubbo.common.extension.ext6_inject.Dao;
 import org.apache.dubbo.common.extension.ext6_inject.Ext6;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 public class Ext6Impl1 implements Ext6 {
     public Dao obj;
     SimpleExt ext1;
 
     public void setDao(Dao obj) {
-        Assert.assertNotNull("inject extension instance can not be null", obj);
-        Assert.fail();
+        Assertions.assertNotNull(obj, "inject extension instance can not be null");
+        Assertions.fail();
     }
 
     public void setExt1(SimpleExt ext1) {

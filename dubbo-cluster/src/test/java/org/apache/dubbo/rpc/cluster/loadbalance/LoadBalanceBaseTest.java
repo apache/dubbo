@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.loadbalance;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.rpc.Invocation;
@@ -24,12 +23,13 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.RpcStatus;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 import com.alibaba.fastjson.JSON;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +37,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
+import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_WARMUP;
+import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_WEIGHT;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
@@ -62,18 +64,19 @@ public class LoadBalanceBaseTest {
     /**
      * @throws java.lang.Exception
      */
-    @BeforeClass
+    @BeforeAll
     public static void setUpBeforeClass() throws Exception {
     }
 
     /**
      * @throws java.lang.Exception
      */
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
 
         invocation = mock(Invocation.class);
         given(invocation.getMethodName()).willReturn("method1");
+        given(invocation.getArguments()).willReturn(new Object[] {"arg1","arg2","arg3"});
 
         invoker1 = mock(Invoker.class);
         invoker2 = mock(Invoker.class);
@@ -127,27 +130,27 @@ public class LoadBalanceBaseTest {
         }
         return counter;
     }
-    
+
     protected AbstractLoadBalance getLoadBalance(String loadbalanceName) {
         return (AbstractLoadBalance) ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(loadbalanceName);
     }
 
     @Test
     public void testLoadBalanceWarmup() {
-        Assert.assertEquals(1, calculateDefaultWarmupWeight(0));
-        Assert.assertEquals(1, calculateDefaultWarmupWeight(13));
-        Assert.assertEquals(1, calculateDefaultWarmupWeight(6 * 1000));
-        Assert.assertEquals(2, calculateDefaultWarmupWeight(12 * 1000));
-        Assert.assertEquals(10, calculateDefaultWarmupWeight(60 * 1000));
-        Assert.assertEquals(50, calculateDefaultWarmupWeight(5 * 60 * 1000));
-        Assert.assertEquals(50, calculateDefaultWarmupWeight(5 * 60 * 1000 + 23));
-        Assert.assertEquals(50, calculateDefaultWarmupWeight(5 * 60 * 1000 + 5999));
-        Assert.assertEquals(51, calculateDefaultWarmupWeight(5 * 60 * 1000 + 6000));
-        Assert.assertEquals(90, calculateDefaultWarmupWeight(9 * 60 * 1000));
-        Assert.assertEquals(98, calculateDefaultWarmupWeight(10 * 60 * 1000 - 12 * 1000));
-        Assert.assertEquals(99, calculateDefaultWarmupWeight(10 * 60 * 1000 - 6 * 1000));
-        Assert.assertEquals(100, calculateDefaultWarmupWeight(10 * 60 * 1000));
-        Assert.assertEquals(100, calculateDefaultWarmupWeight(20 * 60 * 1000));
+        Assertions.assertEquals(1, calculateDefaultWarmupWeight(0));
+        Assertions.assertEquals(1, calculateDefaultWarmupWeight(13));
+        Assertions.assertEquals(1, calculateDefaultWarmupWeight(6 * 1000));
+        Assertions.assertEquals(2, calculateDefaultWarmupWeight(12 * 1000));
+        Assertions.assertEquals(10, calculateDefaultWarmupWeight(60 * 1000));
+        Assertions.assertEquals(50, calculateDefaultWarmupWeight(5 * 60 * 1000));
+        Assertions.assertEquals(50, calculateDefaultWarmupWeight(5 * 60 * 1000 + 23));
+        Assertions.assertEquals(50, calculateDefaultWarmupWeight(5 * 60 * 1000 + 5999));
+        Assertions.assertEquals(51, calculateDefaultWarmupWeight(5 * 60 * 1000 + 6000));
+        Assertions.assertEquals(90, calculateDefaultWarmupWeight(9 * 60 * 1000));
+        Assertions.assertEquals(98, calculateDefaultWarmupWeight(10 * 60 * 1000 - 12 * 1000));
+        Assertions.assertEquals(99, calculateDefaultWarmupWeight(10 * 60 * 1000 - 6 * 1000));
+        Assertions.assertEquals(100, calculateDefaultWarmupWeight(10 * 60 * 1000));
+        Assertions.assertEquals(100, calculateDefaultWarmupWeight(20 * 60 * 1000));
     }
 
     /**
@@ -156,11 +159,11 @@ public class LoadBalanceBaseTest {
      * @return
      */
     private static int calculateDefaultWarmupWeight(int uptime) {
-        return AbstractLoadBalance.calculateWarmupWeight(uptime, Constants.DEFAULT_WARMUP, Constants.DEFAULT_WEIGHT);
+        return AbstractLoadBalance.calculateWarmupWeight(uptime, DEFAULT_WARMUP, DEFAULT_WEIGHT);
     }
 
     /*------------------------------------test invokers for weight---------------------------------------*/
-    
+
     protected static class InvokeResult {
         private AtomicLong count = new AtomicLong();
         private int weight = 0;
@@ -173,28 +176,28 @@ public class LoadBalanceBaseTest {
         public AtomicLong getCount() {
             return count;
         }
-        
+
         public int getWeight() {
             return weight;
         }
-        
+
         public int getTotalWeight() {
             return totalWeight;
         }
-        
+
         public void setTotalWeight(int totalWeight) {
             this.totalWeight = totalWeight;
         }
-        
+
         public int getExpected(int runCount) {
             return getWeight() * runCount / getTotalWeight();
         }
-        
+
         public float getDeltaPercentage(int runCount) {
             int expected = getExpected(runCount);
             return Math.abs((expected - getCount().get()) * 100.0f / expected);
         }
-        
+
         @Override
         public String toString() {
             return JSON.toJSONString(this);
@@ -207,12 +210,12 @@ public class LoadBalanceBaseTest {
     protected Invoker<LoadBalanceBaseTest> weightInvoker3;
     protected Invoker<LoadBalanceBaseTest> weightInvokerTmp;
 
-    @Before
+    @BeforeEach
     public void before() throws Exception {
-        weightInvoker1 = mock(Invoker.class);
-        weightInvoker2 = mock(Invoker.class);
-        weightInvoker3 = mock(Invoker.class);
-        weightInvokerTmp = mock(Invoker.class);
+        weightInvoker1 = mock(Invoker.class, Mockito.withSettings().stubOnly());
+        weightInvoker2 = mock(Invoker.class, Mockito.withSettings().stubOnly());
+        weightInvoker3 = mock(Invoker.class, Mockito.withSettings().stubOnly());
+        weightInvokerTmp = mock(Invoker.class, Mockito.withSettings().stubOnly());
 
         weightTestInvocation = new RpcInvocation();
         weightTestInvocation.setMethodName("test");
@@ -225,15 +228,15 @@ public class LoadBalanceBaseTest {
         given(weightInvoker1.isAvailable()).willReturn(true);
         given(weightInvoker1.getInterface()).willReturn(LoadBalanceBaseTest.class);
         given(weightInvoker1.getUrl()).willReturn(url1);
-        
+
         given(weightInvoker2.isAvailable()).willReturn(true);
         given(weightInvoker2.getInterface()).willReturn(LoadBalanceBaseTest.class);
         given(weightInvoker2.getUrl()).willReturn(url2);
-        
+
         given(weightInvoker3.isAvailable()).willReturn(true);
         given(weightInvoker3.getInterface()).willReturn(LoadBalanceBaseTest.class);
         given(weightInvoker3.getUrl()).willReturn(url3);
-        
+
         given(weightInvokerTmp.isAvailable()).willReturn(true);
         given(weightInvokerTmp.getInterface()).willReturn(LoadBalanceBaseTest.class);
         given(weightInvokerTmp.getUrl()).willReturn(urlTmp);
@@ -249,7 +252,7 @@ public class LoadBalanceBaseTest {
         // weightTestRpcStatus3 active is 1
         RpcStatus.beginCount(weightInvoker3.getUrl(), weightTestInvocation.getMethodName());
     }
-    
+
     protected Map<Invoker, InvokeResult> getWeightedInvokeResult(int runs, String loadbalanceName) {
         Map<Invoker, InvokeResult> counter = new ConcurrentHashMap<Invoker, InvokeResult>();
         AbstractLoadBalance lb = getLoadBalance(loadbalanceName);
@@ -269,5 +272,5 @@ public class LoadBalanceBaseTest {
         }
         return counter;
     }
-    
+
 }

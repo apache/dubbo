@@ -21,10 +21,8 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -36,7 +34,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class RoundRobinLoadBalance extends AbstractLoadBalance {
     public static final String NAME = "roundrobin";
     
-    private static int RECYCLE_PERIOD = 60000;
+    private static final int RECYCLE_PERIOD = 60000;
     
     protected static class WeightedRoundRobin {
         private int weight;
@@ -101,14 +99,11 @@ public class RoundRobinLoadBalance extends AbstractLoadBalance {
             String identifyString = invoker.getUrl().toIdentityString();
             WeightedRoundRobin weightedRoundRobin = map.get(identifyString);
             int weight = getWeight(invoker, invocation);
-            if (weight < 0) {
-                weight = 0;
-            }
+
             if (weightedRoundRobin == null) {
                 weightedRoundRobin = new WeightedRoundRobin();
                 weightedRoundRobin.setWeight(weight);
                 map.putIfAbsent(identifyString, weightedRoundRobin);
-                weightedRoundRobin = map.get(identifyString);
             }
             if (weight != weightedRoundRobin.getWeight()) {
                 //weight changed
@@ -127,15 +122,8 @@ public class RoundRobinLoadBalance extends AbstractLoadBalance {
             if (updateLock.compareAndSet(false, true)) {
                 try {
                     // copy -> modify -> update reference
-                    ConcurrentMap<String, WeightedRoundRobin> newMap = new ConcurrentHashMap<String, WeightedRoundRobin>();
-                    newMap.putAll(map);
-                    Iterator<Entry<String, WeightedRoundRobin>> it = newMap.entrySet().iterator();
-                    while (it.hasNext()) {
-                        Entry<String, WeightedRoundRobin> item = it.next();
-                        if (now - item.getValue().getLastUpdate() > RECYCLE_PERIOD) {
-                            it.remove();
-                        }
-                    }
+                    ConcurrentMap<String, WeightedRoundRobin> newMap = new ConcurrentHashMap<>(map);
+                    newMap.entrySet().removeIf(item -> now - item.getValue().getLastUpdate() > RECYCLE_PERIOD);
                     methodWeightMap.put(key, newMap);
                 } finally {
                     updateLock.set(false);

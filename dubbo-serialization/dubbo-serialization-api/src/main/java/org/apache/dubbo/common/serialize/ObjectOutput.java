@@ -19,7 +19,7 @@ package org.apache.dubbo.common.serialize;
 import java.io.IOException;
 
 /**
- * Object output.
+ * Object output interface.
  */
 public interface ObjectOutput extends DataOutput {
 

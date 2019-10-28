@@ -40,7 +40,7 @@ public class StreamUtils {
             }
 
             @Override
-            public int read(byte b[], int off, int len) throws IOException {
+            public int read(byte[] b, int off, int len) throws IOException {
                 if (b == null) {
                     throw new NullPointerException();
                 }
@@ -189,7 +189,7 @@ public class StreamUtils {
             @Override
             public synchronized void reset() throws IOException {
                 if (!mInMarked) {
-                    throw new IOException("should mark befor reset!");
+                    throw new IOException("should mark before reset!");
                 }
 
                 mInReset = true;

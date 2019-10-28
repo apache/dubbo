@@ -16,13 +16,30 @@
  */
 package org.apache.dubbo.rpc.cluster.support;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.Constants;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
+
+import static org.apache.dubbo.common.constants.CommonConstants.ALIVE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.CORE_THREADS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY_PREFIX;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.QUEUES_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.RELEASE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.remoting.Constants.DUBBO_VERSION_KEY;
+import static org.apache.dubbo.rpc.Constants.INVOKER_LISTENER_KEY;
+import static org.apache.dubbo.rpc.Constants.REFERENCE_FILTER_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.TAG_KEY;
 
 /**
  * ClusterUtils
@@ -36,85 +53,64 @@ public class ClusterUtils {
         Map<String, String> map = new HashMap<String, String>();
         Map<String, String> remoteMap = remoteUrl.getParameters();
 
-
         if (remoteMap != null && remoteMap.size() > 0) {
             map.putAll(remoteMap);
 
             // Remove configurations from provider, some items should be affected by provider.
-            map.remove(Constants.THREAD_NAME_KEY);
-            map.remove(Constants.DEFAULT_KEY_PREFIX + Constants.THREAD_NAME_KEY);
+            map.remove(THREAD_NAME_KEY);
+            map.remove(DEFAULT_KEY_PREFIX + THREAD_NAME_KEY);
 
-            map.remove(Constants.THREADPOOL_KEY);
-            map.remove(Constants.DEFAULT_KEY_PREFIX + Constants.THREADPOOL_KEY);
+            map.remove(THREADPOOL_KEY);
+            map.remove(DEFAULT_KEY_PREFIX + THREADPOOL_KEY);
 
-            map.remove(Constants.CORE_THREADS_KEY);
-            map.remove(Constants.DEFAULT_KEY_PREFIX + Constants.CORE_THREADS_KEY);
+            map.remove(CORE_THREADS_KEY);
+            map.remove(DEFAULT_KEY_PREFIX + CORE_THREADS_KEY);
 
-            map.remove(Constants.THREADS_KEY);
-            map.remove(Constants.DEFAULT_KEY_PREFIX + Constants.THREADS_KEY);
+            map.remove(THREADS_KEY);
+            map.remove(DEFAULT_KEY_PREFIX + THREADS_KEY);
 
-            map.remove(Constants.QUEUES_KEY);
-            map.remove(Constants.DEFAULT_KEY_PREFIX + Constants.QUEUES_KEY);
+            map.remove(QUEUES_KEY);
+            map.remove(DEFAULT_KEY_PREFIX + QUEUES_KEY);
 
-            map.remove(Constants.ALIVE_KEY);
-            map.remove(Constants.DEFAULT_KEY_PREFIX + Constants.ALIVE_KEY);
+            map.remove(ALIVE_KEY);
+            map.remove(DEFAULT_KEY_PREFIX + ALIVE_KEY);
 
             map.remove(Constants.TRANSPORTER_KEY);
-            map.remove(Constants.DEFAULT_KEY_PREFIX + Constants.TRANSPORTER_KEY);
-
-            map.remove(Constants.ASYNC_KEY);
-            map.remove(Constants.DEFAULT_KEY_PREFIX + Constants.ASYNC_KEY);
-
-            // remove method async entry.
-            Set<String> methodAsyncKey = new HashSet<>();
-            for (String key : map.keySet()) {
-                if (key != null && key.endsWith("." + Constants.ASYNC_KEY)) {
-                    methodAsyncKey.add(key);
-                }
-            }
-            for (String needRemove : methodAsyncKey) {
-                map.remove(needRemove);
-            }
+            map.remove(DEFAULT_KEY_PREFIX + Constants.TRANSPORTER_KEY);
         }
 
         if (localMap != null && localMap.size() > 0) {
-            map.putAll(localMap);
-        }
-        if (remoteMap != null && remoteMap.size() > 0) {
-            // Use version passed from provider side
-            String dubbo = remoteMap.get(Constants.DUBBO_VERSION_KEY);
-            if (dubbo != null && dubbo.length() > 0) {
-                map.put(Constants.DUBBO_VERSION_KEY, dubbo);
+            Map<String, String> copyOfLocalMap = new HashMap<>(localMap);
+
+            if(map.containsKey(GROUP_KEY)){
+                copyOfLocalMap.remove(GROUP_KEY);
             }
-            String version = remoteMap.get(Constants.VERSION_KEY);
-            if (version != null && version.length() > 0) {
-                map.put(Constants.VERSION_KEY, version);
+            if(map.containsKey(VERSION_KEY)){
+                copyOfLocalMap.remove(VERSION_KEY);
             }
-            String group = remoteMap.get(Constants.GROUP_KEY);
-            if (group != null && group.length() > 0) {
-                map.put(Constants.GROUP_KEY, group);
-            }
-            String methods = remoteMap.get(Constants.METHODS_KEY);
-            if (methods != null && methods.length() > 0) {
-                map.put(Constants.METHODS_KEY, methods);
-            }
-            // Reserve timestamp of provider url.
-            String remoteTimestamp = remoteMap.get(Constants.TIMESTAMP_KEY);
-            if (remoteTimestamp != null && remoteTimestamp.length() > 0) {
-                map.put(Constants.REMOTE_TIMESTAMP_KEY, remoteMap.get(Constants.TIMESTAMP_KEY));
-            }
+
+            copyOfLocalMap.remove(RELEASE_KEY);
+            copyOfLocalMap.remove(DUBBO_VERSION_KEY);
+            copyOfLocalMap.remove(METHODS_KEY);
+            copyOfLocalMap.remove(TIMESTAMP_KEY);
+            copyOfLocalMap.remove(TAG_KEY);
+
+            map.putAll(copyOfLocalMap);
+
+            map.put(REMOTE_APPLICATION_KEY, remoteMap.get(APPLICATION_KEY));
+
             // Combine filters and listeners on Provider and Consumer
-            String remoteFilter = remoteMap.get(Constants.REFERENCE_FILTER_KEY);
-            String localFilter = localMap.get(Constants.REFERENCE_FILTER_KEY);
+            String remoteFilter = remoteMap.get(REFERENCE_FILTER_KEY);
+            String localFilter = copyOfLocalMap.get(REFERENCE_FILTER_KEY);
             if (remoteFilter != null && remoteFilter.length() > 0
                     && localFilter != null && localFilter.length() > 0) {
-                localMap.put(Constants.REFERENCE_FILTER_KEY, remoteFilter + "," + localFilter);
+                map.put(REFERENCE_FILTER_KEY, remoteFilter + "," + localFilter);
             }
-            String remoteListener = remoteMap.get(Constants.INVOKER_LISTENER_KEY);
-            String localListener = localMap.get(Constants.INVOKER_LISTENER_KEY);
+            String remoteListener = remoteMap.get(INVOKER_LISTENER_KEY);
+            String localListener = copyOfLocalMap.get(INVOKER_LISTENER_KEY);
             if (remoteListener != null && remoteListener.length() > 0
                     && localListener != null && localListener.length() > 0) {
-                localMap.put(Constants.INVOKER_LISTENER_KEY, remoteListener + "," + localListener);
+                map.put(INVOKER_LISTENER_KEY, remoteListener + "," + localListener);
             }
         }
 
