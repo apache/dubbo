@@ -31,7 +31,7 @@ public final class GooglePB {
         (com.google.protobuf.ExtensionRegistryLite) registry);
   }
   /**
-   * Protobuf enum {@code org.apache.dubbo.common.serialize.protobuf.model.PhoneType}
+   * Protobuf enum {@code org.apache.dubbo.metadata.definition.protobuf.model.PhoneType}
    */
   public enum PhoneType
       implements com.google.protobuf.ProtocolMessageEnum {
@@ -70,7 +70,7 @@ public final class GooglePB {
     /**
      * @deprecated Use {@link #forNumber(int)} instead.
      */
-    @Deprecated
+    @java.lang.Deprecated
     public static PhoneType valueOf(int value) {
       return forNumber(value);
     }
@@ -106,7 +106,7 @@ public final class GooglePB {
     }
     public static final com.google.protobuf.Descriptors.EnumDescriptor
         getDescriptor() {
-      return GooglePB.getDescriptor().getEnumTypes().get(0);
+      return org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.getDescriptor().getEnumTypes().get(0);
     }
 
     private static final PhoneType[] VALUES = values();
@@ -114,7 +114,7 @@ public final class GooglePB {
     public static PhoneType valueOf(
         com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
       if (desc.getType() != getDescriptor()) {
-        throw new IllegalArgumentException(
+        throw new java.lang.IllegalArgumentException(
           "EnumValueDescriptor is not for this type.");
       }
       return VALUES[desc.getIndex()];
@@ -126,11 +126,11 @@ public final class GooglePB {
       this.value = value;
     }
 
-    // @@protoc_insertion_point(enum_scope:org.apache.dubbo.common.serialize.protobuf.model.PhoneType)
+    // @@protoc_insertion_point(enum_scope:org.apache.dubbo.metadata.definition.protobuf.model.PhoneType)
   }
 
   public interface PBRequestTypeOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:org.apache.dubbo.common.serialize.protobuf.model.PBRequestType)
+      // @@protoc_insertion_point(interface_extends:org.apache.dubbo.metadata.definition.protobuf.model.PBRequestType)
       com.google.protobuf.MessageOrBuilder {
 
     /**
@@ -185,7 +185,7 @@ public final class GooglePB {
     /**
      * <code>optional string name = 6;</code>
      */
-    String getName();
+    java.lang.String getName();
     /**
      * <code>optional string name = 6;</code>
      */
@@ -202,69 +202,116 @@ public final class GooglePB {
     com.google.protobuf.ByteString getMsg();
 
     /**
-     * <code>repeated .org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber phone = 8;</code>
+     * <code>repeated .org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber phone = 8;</code>
      */
-    java.util.List<PhoneNumber>
+    java.util.List<org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber>
         getPhoneList();
     /**
-     * <code>repeated .org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber phone = 8;</code>
+     * <code>repeated .org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber phone = 8;</code>
      */
-    GooglePB.PhoneNumber getPhone(int index);
+    org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber getPhone(int index);
     /**
-     * <code>repeated .org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber phone = 8;</code>
+     * <code>repeated .org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber phone = 8;</code>
      */
     int getPhoneCount();
     /**
-     * <code>repeated .org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber phone = 8;</code>
+     * <code>repeated .org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber phone = 8;</code>
      */
-    java.util.List<? extends PhoneNumberOrBuilder>
+    java.util.List<? extends org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumberOrBuilder>
         getPhoneOrBuilderList();
     /**
-     * <code>repeated .org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber phone = 8;</code>
+     * <code>repeated .org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber phone = 8;</code>
      */
-    GooglePB.PhoneNumberOrBuilder getPhoneOrBuilder(
+    org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumberOrBuilder getPhoneOrBuilder(
             int index);
 
     /**
-     * <code>map&lt;string, .org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber&gt; doubleMap = 9;</code>
+     * <code>map&lt;string, .org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber&gt; doubleMap = 9;</code>
      */
     int getDoubleMapCount();
     /**
-     * <code>map&lt;string, .org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber&gt; doubleMap = 9;</code>
+     * <code>map&lt;string, .org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber&gt; doubleMap = 9;</code>
      */
     boolean containsDoubleMap(
-            String key);
+            java.lang.String key);
     /**
      * Use {@link #getDoubleMapMap()} instead.
      */
-    @Deprecated
-    java.util.Map<String, PhoneNumber>
+    @java.lang.Deprecated
+    java.util.Map<java.lang.String, org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber>
     getDoubleMap();
     /**
-     * <code>map&lt;string, .org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber&gt; doubleMap = 9;</code>
+     * <code>map&lt;string, .org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber&gt; doubleMap = 9;</code>
      */
-    java.util.Map<String, PhoneNumber>
+    java.util.Map<java.lang.String, org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber>
     getDoubleMapMap();
     /**
-     * <code>map&lt;string, .org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber&gt; doubleMap = 9;</code>
+     * <code>map&lt;string, .org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber&gt; doubleMap = 9;</code>
      */
 
-    GooglePB.PhoneNumber getDoubleMapOrDefault(
-            String key,
-            GooglePB.PhoneNumber defaultValue);
+    org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber getDoubleMapOrDefault(
+            java.lang.String key,
+            org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber defaultValue);
     /**
-     * <code>map&lt;string, .org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber&gt; doubleMap = 9;</code>
+     * <code>map&lt;string, .org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber&gt; doubleMap = 9;</code>
      */
 
-    GooglePB.PhoneNumber getDoubleMapOrThrow(
-            String key);
+    org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber getDoubleMapOrThrow(
+            java.lang.String key);
+
+    /**
+     * <code>repeated bytes bytesList = 10;</code>
+     */
+    java.util.List<com.google.protobuf.ByteString> getBytesListList();
+    /**
+     * <code>repeated bytes bytesList = 10;</code>
+     */
+    int getBytesListCount();
+    /**
+     * <code>repeated bytes bytesList = 10;</code>
+     */
+    com.google.protobuf.ByteString getBytesList(int index);
+
+    /**
+     * <code>map&lt;string, bytes&gt; bytesMap = 11;</code>
+     */
+    int getBytesMapCount();
+    /**
+     * <code>map&lt;string, bytes&gt; bytesMap = 11;</code>
+     */
+    boolean containsBytesMap(
+            java.lang.String key);
+    /**
+     * Use {@link #getBytesMapMap()} instead.
+     */
+    @java.lang.Deprecated
+    java.util.Map<java.lang.String, com.google.protobuf.ByteString>
+    getBytesMap();
+    /**
+     * <code>map&lt;string, bytes&gt; bytesMap = 11;</code>
+     */
+    java.util.Map<java.lang.String, com.google.protobuf.ByteString>
+    getBytesMapMap();
+    /**
+     * <code>map&lt;string, bytes&gt; bytesMap = 11;</code>
+     */
+
+    com.google.protobuf.ByteString getBytesMapOrDefault(
+            java.lang.String key,
+            com.google.protobuf.ByteString defaultValue);
+    /**
+     * <code>map&lt;string, bytes&gt; bytesMap = 11;</code>
+     */
+
+    com.google.protobuf.ByteString getBytesMapOrThrow(
+            java.lang.String key);
   }
   /**
-   * Protobuf type {@code org.apache.dubbo.common.serialize.protobuf.model.PBRequestType}
+   * Protobuf type {@code org.apache.dubbo.metadata.definition.protobuf.model.PBRequestType}
    */
   public  static final class PBRequestType extends
       com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:org.apache.dubbo.common.serialize.protobuf.model.PBRequestType)
+      // @@protoc_insertion_point(message_implements:org.apache.dubbo.metadata.definition.protobuf.model.PBRequestType)
       PBRequestTypeOrBuilder {
   private static final long serialVersionUID = 0L;
     // Use PBRequestType.newBuilder() to construct.
@@ -280,9 +327,10 @@ public final class GooglePB {
       name_ = "";
       msg_ = com.google.protobuf.ByteString.EMPTY;
       phone_ = java.util.Collections.emptyList();
+      bytesList_ = java.util.Collections.emptyList();
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return this.unknownFields;
@@ -348,11 +396,11 @@ public final class GooglePB {
             }
             case 66: {
               if (!((mutable_bitField0_ & 0x00000080) == 0x00000080)) {
-                phone_ = new java.util.ArrayList<PhoneNumber>();
+                phone_ = new java.util.ArrayList<org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber>();
                 mutable_bitField0_ |= 0x00000080;
               }
               phone_.add(
-                  input.readMessage(GooglePB.PhoneNumber.PARSER, extensionRegistry));
+                  input.readMessage(org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber.PARSER, extensionRegistry));
               break;
             }
             case 74: {
@@ -368,6 +416,27 @@ public final class GooglePB {
                   doubleMap__.getKey(), doubleMap__.getValue());
               break;
             }
+            case 82: {
+              if (!((mutable_bitField0_ & 0x00000200) == 0x00000200)) {
+                bytesList_ = new java.util.ArrayList<com.google.protobuf.ByteString>();
+                mutable_bitField0_ |= 0x00000200;
+              }
+              bytesList_.add(input.readBytes());
+              break;
+            }
+            case 90: {
+              if (!((mutable_bitField0_ & 0x00000400) == 0x00000400)) {
+                bytesMap_ = com.google.protobuf.MapField.newMapField(
+                    BytesMapDefaultEntryHolder.defaultEntry);
+                mutable_bitField0_ |= 0x00000400;
+              }
+              com.google.protobuf.MapEntry<String, com.google.protobuf.ByteString>
+              bytesMap__ = input.readMessage(
+                  BytesMapDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
+              bytesMap_.getMutableMap().put(
+                  bytesMap__.getKey(), bytesMap__.getValue());
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -379,13 +448,16 @@ public final class GooglePB {
         if (((mutable_bitField0_ & 0x00000080) == 0x00000080)) {
           phone_ = java.util.Collections.unmodifiableList(phone_);
         }
+        if (((mutable_bitField0_ & 0x00000200) == 0x00000200)) {
+          bytesList_ = java.util.Collections.unmodifiableList(bytesList_);
+        }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return GooglePB.internal_static_org_apache_dubbo_common_serialize_protobuf_model_PBRequestType_descriptor;
+      return org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.internal_static_org_apache_dubbo_metadata_definition_protobuf_model_PBRequestType_descriptor;
     }
 
     @SuppressWarnings({"rawtypes"})
@@ -394,6 +466,8 @@ public final class GooglePB {
       switch (number) {
         case 9:
           return internalGetDoubleMap();
+        case 11:
+          return internalGetBytesMap();
         default:
           throw new RuntimeException(
               "Invalid map field number: " + number);
@@ -401,9 +475,9 @@ public final class GooglePB {
     }
     protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return GooglePB.internal_static_org_apache_dubbo_common_serialize_protobuf_model_PBRequestType_fieldAccessorTable
+      return org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.internal_static_org_apache_dubbo_metadata_definition_protobuf_model_PBRequestType_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              GooglePB.PBRequestType.class, GooglePB.PBRequestType.Builder.class);
+              org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType.class, org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType.Builder.class);
     }
 
     private int bitField0_;
@@ -483,7 +557,7 @@ public final class GooglePB {
     }
 
     public static final int NAME_FIELD_NUMBER = 6;
-    private volatile Object name_;
+    private volatile java.lang.Object name_;
     /**
      * <code>optional string name = 6;</code>
      */
@@ -493,14 +567,14 @@ public final class GooglePB {
     /**
      * <code>optional string name = 6;</code>
      */
-    public String getName() {
-      Object ref = name_;
-      if (ref instanceof String) {
-        return (String) ref;
+    public java.lang.String getName() {
+      java.lang.Object ref = name_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
       } else {
         com.google.protobuf.ByteString bs =
             (com.google.protobuf.ByteString) ref;
-        String s = bs.toStringUtf8();
+        java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
           name_ = s;
         }
@@ -512,11 +586,11 @@ public final class GooglePB {
      */
     public com.google.protobuf.ByteString
         getNameBytes() {
-      Object ref = name_;
-      if (ref instanceof String) {
+      java.lang.Object ref = name_;
+      if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
-                (String) ref);
+                (java.lang.String) ref);
         name_ = b;
         return b;
       } else {
@@ -540,36 +614,36 @@ public final class GooglePB {
     }
 
     public static final int PHONE_FIELD_NUMBER = 8;
-    private java.util.List<PhoneNumber> phone_;
+    private java.util.List<org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber> phone_;
     /**
-     * <code>repeated .org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber phone = 8;</code>
+     * <code>repeated .org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber phone = 8;</code>
      */
-    public java.util.List<PhoneNumber> getPhoneList() {
+    public java.util.List<org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber> getPhoneList() {
       return phone_;
     }
     /**
-     * <code>repeated .org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber phone = 8;</code>
+     * <code>repeated .org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber phone = 8;</code>
      */
-    public java.util.List<? extends PhoneNumberOrBuilder>
+    public java.util.List<? extends org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumberOrBuilder>
         getPhoneOrBuilderList() {
       return phone_;
     }
     /**
-     * <code>repeated .org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber phone = 8;</code>
+     * <code>repeated .org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber phone = 8;</code>
      */
     public int getPhoneCount() {
       return phone_.size();
     }
     /**
-     * <code>repeated .org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber phone = 8;</code>
+     * <code>repeated .org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber phone = 8;</code>
      */
-    public GooglePB.PhoneNumber getPhone(int index) {
+    public org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber getPhone(int index) {
       return phone_.get(index);
     }
     /**
-     * <code>repeated .org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber phone = 8;</code>
+     * <code>repeated .org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber phone = 8;</code>
      */
-    public GooglePB.PhoneNumberOrBuilder getPhoneOrBuilder(
+    public org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumberOrBuilder getPhoneOrBuilder(
         int index) {
       return phone_.get(index);
     }
@@ -579,12 +653,12 @@ public final class GooglePB {
       static final com.google.protobuf.MapEntry<
           String, PhoneNumber> defaultEntry =
               com.google.protobuf.MapEntry
-              .<String, GooglePB.PhoneNumber>newDefaultInstance(
-                  GooglePB.internal_static_org_apache_dubbo_common_serialize_protobuf_model_PBRequestType_DoubleMapEntry_descriptor,
+              .<java.lang.String, org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber>newDefaultInstance(
+                  org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.internal_static_org_apache_dubbo_metadata_definition_protobuf_model_PBRequestType_DoubleMapEntry_descriptor,
                   com.google.protobuf.WireFormat.FieldType.STRING,
                   "",
                   com.google.protobuf.WireFormat.FieldType.MESSAGE,
-                  GooglePB.PhoneNumber.getDefaultInstance());
+                  org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber.getDefaultInstance());
     }
     private com.google.protobuf.MapField<
         String, PhoneNumber> doubleMap_;
@@ -601,51 +675,149 @@ public final class GooglePB {
       return internalGetDoubleMap().getMap().size();
     }
     /**
-     * <code>map&lt;string, .org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber&gt; doubleMap = 9;</code>
+     * <code>map&lt;string, .org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber&gt; doubleMap = 9;</code>
      */
 
     public boolean containsDoubleMap(
-        String key) {
-      if (key == null) { throw new NullPointerException(); }
+        java.lang.String key) {
+      if (key == null) { throw new java.lang.NullPointerException(); }
       return internalGetDoubleMap().getMap().containsKey(key);
     }
     /**
      * Use {@link #getDoubleMapMap()} instead.
      */
-    @Deprecated
-    public java.util.Map<String, PhoneNumber> getDoubleMap() {
+    @java.lang.Deprecated
+    public java.util.Map<java.lang.String, org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber> getDoubleMap() {
       return getDoubleMapMap();
     }
     /**
-     * <code>map&lt;string, .org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber&gt; doubleMap = 9;</code>
+     * <code>map&lt;string, .org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber&gt; doubleMap = 9;</code>
      */
 
-    public java.util.Map<String, PhoneNumber> getDoubleMapMap() {
+    public java.util.Map<java.lang.String, org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber> getDoubleMapMap() {
       return internalGetDoubleMap().getMap();
     }
     /**
-     * <code>map&lt;string, .org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber&gt; doubleMap = 9;</code>
+     * <code>map&lt;string, .org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber&gt; doubleMap = 9;</code>
      */
 
-    public GooglePB.PhoneNumber getDoubleMapOrDefault(
-        String key,
-        GooglePB.PhoneNumber defaultValue) {
-      if (key == null) { throw new NullPointerException(); }
-      java.util.Map<String, PhoneNumber> map =
+    public org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber getDoubleMapOrDefault(
+        java.lang.String key,
+        org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber defaultValue) {
+      if (key == null) { throw new java.lang.NullPointerException(); }
+      java.util.Map<java.lang.String, org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber> map =
           internalGetDoubleMap().getMap();
       return map.containsKey(key) ? map.get(key) : defaultValue;
     }
     /**
-     * <code>map&lt;string, .org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber&gt; doubleMap = 9;</code>
+     * <code>map&lt;string, .org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber&gt; doubleMap = 9;</code>
      */
 
-    public GooglePB.PhoneNumber getDoubleMapOrThrow(
-        String key) {
-      if (key == null) { throw new NullPointerException(); }
-      java.util.Map<String, PhoneNumber> map =
+    public org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber getDoubleMapOrThrow(
+        java.lang.String key) {
+      if (key == null) { throw new java.lang.NullPointerException(); }
+      java.util.Map<java.lang.String, org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber> map =
           internalGetDoubleMap().getMap();
       if (!map.containsKey(key)) {
-        throw new IllegalArgumentException();
+        throw new java.lang.IllegalArgumentException();
+      }
+      return map.get(key);
+    }
+
+    public static final int BYTESLIST_FIELD_NUMBER = 10;
+    private java.util.List<com.google.protobuf.ByteString> bytesList_;
+    /**
+     * <code>repeated bytes bytesList = 10;</code>
+     */
+    public java.util.List<com.google.protobuf.ByteString>
+        getBytesListList() {
+      return bytesList_;
+    }
+    /**
+     * <code>repeated bytes bytesList = 10;</code>
+     */
+    public int getBytesListCount() {
+      return bytesList_.size();
+    }
+    /**
+     * <code>repeated bytes bytesList = 10;</code>
+     */
+    public com.google.protobuf.ByteString getBytesList(int index) {
+      return bytesList_.get(index);
+    }
+
+    public static final int BYTESMAP_FIELD_NUMBER = 11;
+    private static final class BytesMapDefaultEntryHolder {
+      static final com.google.protobuf.MapEntry<
+          String, com.google.protobuf.ByteString> defaultEntry =
+              com.google.protobuf.MapEntry
+              .<java.lang.String, com.google.protobuf.ByteString>newDefaultInstance(
+                  org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.internal_static_org_apache_dubbo_metadata_definition_protobuf_model_PBRequestType_BytesMapEntry_descriptor,
+                  com.google.protobuf.WireFormat.FieldType.STRING,
+                  "",
+                  com.google.protobuf.WireFormat.FieldType.BYTES,
+                  com.google.protobuf.ByteString.EMPTY);
+    }
+    private com.google.protobuf.MapField<
+        String, com.google.protobuf.ByteString> bytesMap_;
+    private com.google.protobuf.MapField<String, com.google.protobuf.ByteString>
+    internalGetBytesMap() {
+      if (bytesMap_ == null) {
+        return com.google.protobuf.MapField.emptyMapField(
+            BytesMapDefaultEntryHolder.defaultEntry);
+      }
+      return bytesMap_;
+    }
+
+    public int getBytesMapCount() {
+      return internalGetBytesMap().getMap().size();
+    }
+    /**
+     * <code>map&lt;string, bytes&gt; bytesMap = 11;</code>
+     */
+
+    public boolean containsBytesMap(
+        java.lang.String key) {
+      if (key == null) { throw new java.lang.NullPointerException(); }
+      return internalGetBytesMap().getMap().containsKey(key);
+    }
+    /**
+     * Use {@link #getBytesMapMap()} instead.
+     */
+    @java.lang.Deprecated
+    public java.util.Map<java.lang.String, com.google.protobuf.ByteString> getBytesMap() {
+      return getBytesMapMap();
+    }
+    /**
+     * <code>map&lt;string, bytes&gt; bytesMap = 11;</code>
+     */
+
+    public java.util.Map<java.lang.String, com.google.protobuf.ByteString> getBytesMapMap() {
+      return internalGetBytesMap().getMap();
+    }
+    /**
+     * <code>map&lt;string, bytes&gt; bytesMap = 11;</code>
+     */
+
+    public com.google.protobuf.ByteString getBytesMapOrDefault(
+        java.lang.String key,
+        com.google.protobuf.ByteString defaultValue) {
+      if (key == null) { throw new java.lang.NullPointerException(); }
+      java.util.Map<java.lang.String, com.google.protobuf.ByteString> map =
+          internalGetBytesMap().getMap();
+      return map.containsKey(key) ? map.get(key) : defaultValue;
+    }
+    /**
+     * <code>map&lt;string, bytes&gt; bytesMap = 11;</code>
+     */
+
+    public com.google.protobuf.ByteString getBytesMapOrThrow(
+        java.lang.String key) {
+      if (key == null) { throw new java.lang.NullPointerException(); }
+      java.util.Map<java.lang.String, com.google.protobuf.ByteString> map =
+          internalGetBytesMap().getMap();
+      if (!map.containsKey(key)) {
+        throw new java.lang.IllegalArgumentException();
       }
       return map.get(key);
     }
@@ -662,7 +834,7 @@ public final class GooglePB {
           return false;
         }
       }
-      for (GooglePB.PhoneNumber item : getDoubleMapMap().values()) {
+      for (org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber item : getDoubleMapMap().values()) {
         if (!item.isInitialized()) {
           memoizedIsInitialized = 0;
           return false;
@@ -704,6 +876,15 @@ public final class GooglePB {
           internalGetDoubleMap(),
           DoubleMapDefaultEntryHolder.defaultEntry,
           9);
+      for (int i = 0; i < bytesList_.size(); i++) {
+        output.writeBytes(10, bytesList_.get(i));
+      }
+      com.google.protobuf.GeneratedMessageV3
+        .serializeStringMapTo(
+          output,
+          internalGetBytesMap(),
+          BytesMapDefaultEntryHolder.defaultEntry,
+          11);
       unknownFields.writeTo(output);
     }
 
@@ -743,7 +924,7 @@ public final class GooglePB {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(8, phone_.get(i));
       }
-      for (java.util.Map.Entry<String, PhoneNumber> entry
+      for (java.util.Map.Entry<java.lang.String, org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber> entry
            : internalGetDoubleMap().getMap().entrySet()) {
         com.google.protobuf.MapEntry<String, PhoneNumber>
         doubleMap__ = DoubleMapDefaultEntryHolder.defaultEntry.newBuilderForType()
@@ -753,34 +934,53 @@ public final class GooglePB {
         size += com.google.protobuf.CodedOutputStream
             .computeMessageSize(9, doubleMap__);
       }
+      {
+        int dataSize = 0;
+        for (int i = 0; i < bytesList_.size(); i++) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeBytesSizeNoTag(bytesList_.get(i));
+        }
+        size += dataSize;
+        size += 1 * getBytesListList().size();
+      }
+      for (java.util.Map.Entry<java.lang.String, com.google.protobuf.ByteString> entry
+           : internalGetBytesMap().getMap().entrySet()) {
+        com.google.protobuf.MapEntry<String, com.google.protobuf.ByteString>
+        bytesMap__ = BytesMapDefaultEntryHolder.defaultEntry.newBuilderForType()
+            .setKey(entry.getKey())
+            .setValue(entry.getValue())
+            .build();
+        size += com.google.protobuf.CodedOutputStream
+            .computeMessageSize(11, bytesMap__);
+      }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
     }
 
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof GooglePB.PBRequestType)) {
+      if (!(obj instanceof org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType)) {
         return super.equals(obj);
       }
-      GooglePB.PBRequestType other = (GooglePB.PBRequestType) obj;
+      org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType other = (org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType) obj;
 
       boolean result = true;
       result = result && (hasMoney() == other.hasMoney());
       if (hasMoney()) {
         result = result && (
-            Double.doubleToLongBits(getMoney())
-            == Double.doubleToLongBits(
+            java.lang.Double.doubleToLongBits(getMoney())
+            == java.lang.Double.doubleToLongBits(
                 other.getMoney()));
       }
       result = result && (hasCash() == other.hasCash());
       if (hasCash()) {
         result = result && (
-            Float.floatToIntBits(getCash())
-            == Float.floatToIntBits(
+            java.lang.Float.floatToIntBits(getCash())
+            == java.lang.Float.floatToIntBits(
                 other.getCash()));
       }
       result = result && (hasAge() == other.hasAge());
@@ -812,11 +1012,15 @@ public final class GooglePB {
           .equals(other.getPhoneList());
       result = result && internalGetDoubleMap().equals(
           other.internalGetDoubleMap());
+      result = result && getBytesListList()
+          .equals(other.getBytesListList());
+      result = result && internalGetBytesMap().equals(
+          other.internalGetBytesMap());
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -826,11 +1030,11 @@ public final class GooglePB {
       if (hasMoney()) {
         hash = (37 * hash) + MONEY_FIELD_NUMBER;
         hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
-            Double.doubleToLongBits(getMoney()));
+            java.lang.Double.doubleToLongBits(getMoney()));
       }
       if (hasCash()) {
         hash = (37 * hash) + CASH_FIELD_NUMBER;
-        hash = (53 * hash) + Float.floatToIntBits(
+        hash = (53 * hash) + java.lang.Float.floatToIntBits(
             getCash());
       }
       if (hasAge()) {
@@ -863,74 +1067,82 @@ public final class GooglePB {
         hash = (37 * hash) + DOUBLEMAP_FIELD_NUMBER;
         hash = (53 * hash) + internalGetDoubleMap().hashCode();
       }
+      if (getBytesListCount() > 0) {
+        hash = (37 * hash) + BYTESLIST_FIELD_NUMBER;
+        hash = (53 * hash) + getBytesListList().hashCode();
+      }
+      if (!internalGetBytesMap().getMap().isEmpty()) {
+        hash = (37 * hash) + BYTESMAP_FIELD_NUMBER;
+        hash = (53 * hash) + internalGetBytesMap().hashCode();
+      }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
     }
 
-    public static GooglePB.PBRequestType parseFrom(
+    public static org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static GooglePB.PBRequestType parseFrom(
+    public static org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static GooglePB.PBRequestType parseFrom(
+    public static org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static GooglePB.PBRequestType parseFrom(
+    public static org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static GooglePB.PBRequestType parseFrom(byte[] data)
+    public static org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static GooglePB.PBRequestType parseFrom(
+    public static org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static GooglePB.PBRequestType parseFrom(java.io.InputStream input)
+    public static org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static GooglePB.PBRequestType parseFrom(
+    public static org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static GooglePB.PBRequestType parseDelimitedFrom(java.io.InputStream input)
+    public static org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static GooglePB.PBRequestType parseDelimitedFrom(
+    public static org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static GooglePB.PBRequestType parseFrom(
+    public static org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static GooglePB.PBRequestType parseFrom(
+    public static org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -942,7 +1154,7 @@ public final class GooglePB {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(GooglePB.PBRequestType prototype) {
+    public static Builder newBuilder(org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -950,22 +1162,22 @@ public final class GooglePB {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
         BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
     /**
-     * Protobuf type {@code org.apache.dubbo.common.serialize.protobuf.model.PBRequestType}
+     * Protobuf type {@code org.apache.dubbo.metadata.definition.protobuf.model.PBRequestType}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:org.apache.dubbo.common.serialize.protobuf.model.PBRequestType)
-        GooglePB.PBRequestTypeOrBuilder {
+        // @@protoc_insertion_point(builder_implements:org.apache.dubbo.metadata.definition.protobuf.model.PBRequestType)
+        org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestTypeOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return GooglePB.internal_static_org_apache_dubbo_common_serialize_protobuf_model_PBRequestType_descriptor;
+        return org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.internal_static_org_apache_dubbo_metadata_definition_protobuf_model_PBRequestType_descriptor;
       }
 
       @SuppressWarnings({"rawtypes"})
@@ -974,6 +1186,8 @@ public final class GooglePB {
         switch (number) {
           case 9:
             return internalGetDoubleMap();
+          case 11:
+            return internalGetBytesMap();
           default:
             throw new RuntimeException(
                 "Invalid map field number: " + number);
@@ -985,6 +1199,8 @@ public final class GooglePB {
         switch (number) {
           case 9:
             return internalGetMutableDoubleMap();
+          case 11:
+            return internalGetMutableBytesMap();
           default:
             throw new RuntimeException(
                 "Invalid map field number: " + number);
@@ -992,12 +1208,12 @@ public final class GooglePB {
       }
       protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return GooglePB.internal_static_org_apache_dubbo_common_serialize_protobuf_model_PBRequestType_fieldAccessorTable
+        return org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.internal_static_org_apache_dubbo_metadata_definition_protobuf_model_PBRequestType_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                GooglePB.PBRequestType.class, GooglePB.PBRequestType.Builder.class);
+                org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType.class, org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType.Builder.class);
       }
 
-      // Construct using org.apache.dubbo.common.serialize.protobuf.model.GooglePB.PBRequestType.newBuilder()
+      // Construct using org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -1036,28 +1252,31 @@ public final class GooglePB {
           phoneBuilder_.clear();
         }
         internalGetMutableDoubleMap().clear();
+        bytesList_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000200);
+        internalGetMutableBytesMap().clear();
         return this;
       }
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return GooglePB.internal_static_org_apache_dubbo_common_serialize_protobuf_model_PBRequestType_descriptor;
+        return org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.internal_static_org_apache_dubbo_metadata_definition_protobuf_model_PBRequestType_descriptor;
       }
 
-      public GooglePB.PBRequestType getDefaultInstanceForType() {
-        return GooglePB.PBRequestType.getDefaultInstance();
+      public org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType getDefaultInstanceForType() {
+        return org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType.getDefaultInstance();
       }
 
-      public GooglePB.PBRequestType build() {
-        GooglePB.PBRequestType result = buildPartial();
+      public org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType build() {
+        org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public GooglePB.PBRequestType buildPartial() {
-        GooglePB.PBRequestType result = new GooglePB.PBRequestType(this);
+      public org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType buildPartial() {
+        org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType result = new org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
@@ -1099,6 +1318,13 @@ public final class GooglePB {
         }
         result.doubleMap_ = internalGetDoubleMap();
         result.doubleMap_.makeImmutable();
+        if (((bitField0_ & 0x00000200) == 0x00000200)) {
+          bytesList_ = java.util.Collections.unmodifiableList(bytesList_);
+          bitField0_ = (bitField0_ & ~0x00000200);
+        }
+        result.bytesList_ = bytesList_;
+        result.bytesMap_ = internalGetBytesMap();
+        result.bytesMap_.makeImmutable();
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -1109,7 +1335,7 @@ public final class GooglePB {
       }
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return (Builder) super.setField(field, value);
       }
       public Builder clearField(
@@ -1122,25 +1348,25 @@ public final class GooglePB {
       }
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          int index, Object value) {
+          int index, java.lang.Object value) {
         return (Builder) super.setRepeatedField(field, index, value);
       }
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return (Builder) super.addRepeatedField(field, value);
       }
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof GooglePB.PBRequestType) {
-          return mergeFrom((GooglePB.PBRequestType)other);
+        if (other instanceof org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType) {
+          return mergeFrom((org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(GooglePB.PBRequestType other) {
-        if (other == GooglePB.PBRequestType.getDefaultInstance()) return this;
+      public Builder mergeFrom(org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType other) {
+        if (other == org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType.getDefaultInstance()) return this;
         if (other.hasMoney()) {
           setMoney(other.getMoney());
         }
@@ -1192,6 +1418,18 @@ public final class GooglePB {
         }
         internalGetMutableDoubleMap().mergeFrom(
             other.internalGetDoubleMap());
+        if (!other.bytesList_.isEmpty()) {
+          if (bytesList_.isEmpty()) {
+            bytesList_ = other.bytesList_;
+            bitField0_ = (bitField0_ & ~0x00000200);
+          } else {
+            ensureBytesListIsMutable();
+            bytesList_.addAll(other.bytesList_);
+          }
+          onChanged();
+        }
+        internalGetMutableBytesMap().mergeFrom(
+            other.internalGetBytesMap());
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
@@ -1203,7 +1441,7 @@ public final class GooglePB {
             return false;
           }
         }
-        for (GooglePB.PhoneNumber item : getDoubleMapMap().values()) {
+        for (org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber item : getDoubleMapMap().values()) {
           if (!item.isInitialized()) {
             return false;
           }
@@ -1215,11 +1453,11 @@ public final class GooglePB {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        GooglePB.PBRequestType parsedMessage = null;
+        org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (GooglePB.PBRequestType) e.getUnfinishedMessage();
+          parsedMessage = (org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -1390,7 +1628,7 @@ public final class GooglePB {
         return this;
       }
 
-      private Object name_ = "";
+      private java.lang.Object name_ = "";
       /**
        * <code>optional string name = 6;</code>
        */
@@ -1400,18 +1638,18 @@ public final class GooglePB {
       /**
        * <code>optional string name = 6;</code>
        */
-      public String getName() {
-        Object ref = name_;
-        if (!(ref instanceof String)) {
+      public java.lang.String getName() {
+        java.lang.Object ref = name_;
+        if (!(ref instanceof java.lang.String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
-          String s = bs.toStringUtf8();
+          java.lang.String s = bs.toStringUtf8();
           if (bs.isValidUtf8()) {
             name_ = s;
           }
           return s;
         } else {
-          return (String) ref;
+          return (java.lang.String) ref;
         }
       }
       /**
@@ -1419,11 +1657,11 @@ public final class GooglePB {
        */
       public com.google.protobuf.ByteString
           getNameBytes() {
-        Object ref = name_;
+        java.lang.Object ref = name_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b =
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (String) ref);
+                  (java.lang.String) ref);
           name_ = b;
           return b;
         } else {
@@ -1434,7 +1672,7 @@ public final class GooglePB {
        * <code>optional string name = 6;</code>
        */
       public Builder setName(
-          String value) {
+          java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -1501,11 +1739,11 @@ public final class GooglePB {
         return this;
       }
 
-      private java.util.List<PhoneNumber> phone_ =
+      private java.util.List<org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber> phone_ =
         java.util.Collections.emptyList();
       private void ensurePhoneIsMutable() {
         if (!((bitField0_ & 0x00000080) == 0x00000080)) {
-          phone_ = new java.util.ArrayList<PhoneNumber>(phone_);
+          phone_ = new java.util.ArrayList<org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber>(phone_);
           bitField0_ |= 0x00000080;
          }
       }
@@ -1514,9 +1752,9 @@ public final class GooglePB {
           PhoneNumber, PhoneNumber.Builder, PhoneNumberOrBuilder> phoneBuilder_;
 
       /**
-       * <code>repeated .org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber phone = 8;</code>
+       * <code>repeated .org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber phone = 8;</code>
        */
-      public java.util.List<PhoneNumber> getPhoneList() {
+      public java.util.List<org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber> getPhoneList() {
         if (phoneBuilder_ == null) {
           return java.util.Collections.unmodifiableList(phone_);
         } else {
@@ -1524,7 +1762,7 @@ public final class GooglePB {
         }
       }
       /**
-       * <code>repeated .org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber phone = 8;</code>
+       * <code>repeated .org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber phone = 8;</code>
        */
       public int getPhoneCount() {
         if (phoneBuilder_ == null) {
@@ -1534,9 +1772,9 @@ public final class GooglePB {
         }
       }
       /**
-       * <code>repeated .org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber phone = 8;</code>
+       * <code>repeated .org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber phone = 8;</code>
        */
-      public GooglePB.PhoneNumber getPhone(int index) {
+      public org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber getPhone(int index) {
         if (phoneBuilder_ == null) {
           return phone_.get(index);
         } else {
@@ -1544,10 +1782,10 @@ public final class GooglePB {
         }
       }
       /**
-       * <code>repeated .org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber phone = 8;</code>
+       * <code>repeated .org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber phone = 8;</code>
        */
       public Builder setPhone(
-          int index, GooglePB.PhoneNumber value) {
+          int index, org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber value) {
         if (phoneBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -1561,10 +1799,10 @@ public final class GooglePB {
         return this;
       }
       /**
-       * <code>repeated .org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber phone = 8;</code>
+       * <code>repeated .org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber phone = 8;</code>
        */
       public Builder setPhone(
-          int index, GooglePB.PhoneNumber.Builder builderForValue) {
+          int index, org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber.Builder builderForValue) {
         if (phoneBuilder_ == null) {
           ensurePhoneIsMutable();
           phone_.set(index, builderForValue.build());
@@ -1575,9 +1813,9 @@ public final class GooglePB {
         return this;
       }
       /**
-       * <code>repeated .org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber phone = 8;</code>
+       * <code>repeated .org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber phone = 8;</code>
        */
-      public Builder addPhone(GooglePB.PhoneNumber value) {
+      public Builder addPhone(org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber value) {
         if (phoneBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -1591,10 +1829,10 @@ public final class GooglePB {
         return this;
       }
       /**
-       * <code>repeated .org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber phone = 8;</code>
+       * <code>repeated .org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber phone = 8;</code>
        */
       public Builder addPhone(
-          int index, GooglePB.PhoneNumber value) {
+          int index, org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber value) {
         if (phoneBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -1608,10 +1846,10 @@ public final class GooglePB {
         return this;
       }
       /**
-       * <code>repeated .org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber phone = 8;</code>
+       * <code>repeated .org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber phone = 8;</code>
        */
       public Builder addPhone(
-          GooglePB.PhoneNumber.Builder builderForValue) {
+          org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber.Builder builderForValue) {
         if (phoneBuilder_ == null) {
           ensurePhoneIsMutable();
           phone_.add(builderForValue.build());
@@ -1622,10 +1860,10 @@ public final class GooglePB {
         return this;
       }
       /**
-       * <code>repeated .org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber phone = 8;</code>
+       * <code>repeated .org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber phone = 8;</code>
        */
       public Builder addPhone(
-          int index, GooglePB.PhoneNumber.Builder builderForValue) {
+          int index, org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber.Builder builderForValue) {
         if (phoneBuilder_ == null) {
           ensurePhoneIsMutable();
           phone_.add(index, builderForValue.build());
@@ -1636,10 +1874,10 @@ public final class GooglePB {
         return this;
       }
       /**
-       * <code>repeated .org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber phone = 8;</code>
+       * <code>repeated .org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber phone = 8;</code>
        */
       public Builder addAllPhone(
-          Iterable<? extends PhoneNumber> values) {
+          java.lang.Iterable<? extends org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber> values) {
         if (phoneBuilder_ == null) {
           ensurePhoneIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -1651,7 +1889,7 @@ public final class GooglePB {
         return this;
       }
       /**
-       * <code>repeated .org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber phone = 8;</code>
+       * <code>repeated .org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber phone = 8;</code>
        */
       public Builder clearPhone() {
         if (phoneBuilder_ == null) {
@@ -1664,7 +1902,7 @@ public final class GooglePB {
         return this;
       }
       /**
-       * <code>repeated .org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber phone = 8;</code>
+       * <code>repeated .org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber phone = 8;</code>
        */
       public Builder removePhone(int index) {
         if (phoneBuilder_ == null) {
@@ -1677,16 +1915,16 @@ public final class GooglePB {
         return this;
       }
       /**
-       * <code>repeated .org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber phone = 8;</code>
+       * <code>repeated .org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber phone = 8;</code>
        */
-      public GooglePB.PhoneNumber.Builder getPhoneBuilder(
+      public org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber.Builder getPhoneBuilder(
           int index) {
         return getPhoneFieldBuilder().getBuilder(index);
       }
       /**
-       * <code>repeated .org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber phone = 8;</code>
+       * <code>repeated .org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber phone = 8;</code>
        */
-      public GooglePB.PhoneNumberOrBuilder getPhoneOrBuilder(
+      public org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumberOrBuilder getPhoneOrBuilder(
           int index) {
         if (phoneBuilder_ == null) {
           return phone_.get(index);  } else {
@@ -1694,9 +1932,9 @@ public final class GooglePB {
         }
       }
       /**
-       * <code>repeated .org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber phone = 8;</code>
+       * <code>repeated .org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber phone = 8;</code>
        */
-      public java.util.List<? extends PhoneNumberOrBuilder>
+      public java.util.List<? extends org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumberOrBuilder>
            getPhoneOrBuilderList() {
         if (phoneBuilder_ != null) {
           return phoneBuilder_.getMessageOrBuilderList();
@@ -1705,24 +1943,24 @@ public final class GooglePB {
         }
       }
       /**
-       * <code>repeated .org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber phone = 8;</code>
+       * <code>repeated .org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber phone = 8;</code>
        */
-      public GooglePB.PhoneNumber.Builder addPhoneBuilder() {
+      public org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber.Builder addPhoneBuilder() {
         return getPhoneFieldBuilder().addBuilder(
-            GooglePB.PhoneNumber.getDefaultInstance());
+            org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber.getDefaultInstance());
       }
       /**
-       * <code>repeated .org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber phone = 8;</code>
+       * <code>repeated .org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber phone = 8;</code>
        */
-      public GooglePB.PhoneNumber.Builder addPhoneBuilder(
+      public org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber.Builder addPhoneBuilder(
           int index) {
         return getPhoneFieldBuilder().addBuilder(
-            index, GooglePB.PhoneNumber.getDefaultInstance());
+            index, org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber.getDefaultInstance());
       }
       /**
-       * <code>repeated .org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber phone = 8;</code>
+       * <code>repeated .org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber phone = 8;</code>
        */
-      public java.util.List<PhoneNumber.Builder>
+      public java.util.List<org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber.Builder>
            getPhoneBuilderList() {
         return getPhoneFieldBuilder().getBuilderList();
       }
@@ -1768,51 +2006,51 @@ public final class GooglePB {
         return internalGetDoubleMap().getMap().size();
       }
       /**
-       * <code>map&lt;string, .org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber&gt; doubleMap = 9;</code>
+       * <code>map&lt;string, .org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber&gt; doubleMap = 9;</code>
        */
 
       public boolean containsDoubleMap(
-          String key) {
-        if (key == null) { throw new NullPointerException(); }
+          java.lang.String key) {
+        if (key == null) { throw new java.lang.NullPointerException(); }
         return internalGetDoubleMap().getMap().containsKey(key);
       }
       /**
        * Use {@link #getDoubleMapMap()} instead.
        */
-      @Deprecated
-      public java.util.Map<String, PhoneNumber> getDoubleMap() {
+      @java.lang.Deprecated
+      public java.util.Map<java.lang.String, org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber> getDoubleMap() {
         return getDoubleMapMap();
       }
       /**
-       * <code>map&lt;string, .org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber&gt; doubleMap = 9;</code>
+       * <code>map&lt;string, .org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber&gt; doubleMap = 9;</code>
        */
 
-      public java.util.Map<String, PhoneNumber> getDoubleMapMap() {
+      public java.util.Map<java.lang.String, org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber> getDoubleMapMap() {
         return internalGetDoubleMap().getMap();
       }
       /**
-       * <code>map&lt;string, .org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber&gt; doubleMap = 9;</code>
+       * <code>map&lt;string, .org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber&gt; doubleMap = 9;</code>
        */
 
-      public GooglePB.PhoneNumber getDoubleMapOrDefault(
-          String key,
-          GooglePB.PhoneNumber defaultValue) {
-        if (key == null) { throw new NullPointerException(); }
-        java.util.Map<String, PhoneNumber> map =
+      public org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber getDoubleMapOrDefault(
+          java.lang.String key,
+          org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber defaultValue) {
+        if (key == null) { throw new java.lang.NullPointerException(); }
+        java.util.Map<java.lang.String, org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber> map =
             internalGetDoubleMap().getMap();
         return map.containsKey(key) ? map.get(key) : defaultValue;
       }
       /**
-       * <code>map&lt;string, .org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber&gt; doubleMap = 9;</code>
+       * <code>map&lt;string, .org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber&gt; doubleMap = 9;</code>
        */
 
-      public GooglePB.PhoneNumber getDoubleMapOrThrow(
-          String key) {
-        if (key == null) { throw new NullPointerException(); }
-        java.util.Map<String, PhoneNumber> map =
+      public org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber getDoubleMapOrThrow(
+          java.lang.String key) {
+        if (key == null) { throw new java.lang.NullPointerException(); }
+        java.util.Map<java.lang.String, org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber> map =
             internalGetDoubleMap().getMap();
         if (!map.containsKey(key)) {
-          throw new IllegalArgumentException();
+          throw new java.lang.IllegalArgumentException();
         }
         return map.get(key);
       }
@@ -1823,12 +2061,12 @@ public final class GooglePB {
         return this;
       }
       /**
-       * <code>map&lt;string, .org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber&gt; doubleMap = 9;</code>
+       * <code>map&lt;string, .org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber&gt; doubleMap = 9;</code>
        */
 
       public Builder removeDoubleMap(
-          String key) {
-        if (key == null) { throw new NullPointerException(); }
+          java.lang.String key) {
+        if (key == null) { throw new java.lang.NullPointerException(); }
         internalGetMutableDoubleMap().getMutableMap()
             .remove(key);
         return this;
@@ -1836,30 +2074,225 @@ public final class GooglePB {
       /**
        * Use alternate mutation accessors instead.
        */
-      @Deprecated
-      public java.util.Map<String, PhoneNumber>
+      @java.lang.Deprecated
+      public java.util.Map<java.lang.String, org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber>
       getMutableDoubleMap() {
         return internalGetMutableDoubleMap().getMutableMap();
       }
       /**
-       * <code>map&lt;string, .org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber&gt; doubleMap = 9;</code>
+       * <code>map&lt;string, .org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber&gt; doubleMap = 9;</code>
        */
       public Builder putDoubleMap(
-          String key,
-          GooglePB.PhoneNumber value) {
-        if (key == null) { throw new NullPointerException(); }
-        if (value == null) { throw new NullPointerException(); }
+          java.lang.String key,
+          org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber value) {
+        if (key == null) { throw new java.lang.NullPointerException(); }
+        if (value == null) { throw new java.lang.NullPointerException(); }
         internalGetMutableDoubleMap().getMutableMap()
             .put(key, value);
         return this;
       }
       /**
-       * <code>map&lt;string, .org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber&gt; doubleMap = 9;</code>
+       * <code>map&lt;string, .org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber&gt; doubleMap = 9;</code>
        */
 
       public Builder putAllDoubleMap(
-          java.util.Map<String, PhoneNumber> values) {
+          java.util.Map<java.lang.String, org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber> values) {
         internalGetMutableDoubleMap().getMutableMap()
+            .putAll(values);
+        return this;
+      }
+
+      private java.util.List<com.google.protobuf.ByteString> bytesList_ = java.util.Collections.emptyList();
+      private void ensureBytesListIsMutable() {
+        if (!((bitField0_ & 0x00000200) == 0x00000200)) {
+          bytesList_ = new java.util.ArrayList<com.google.protobuf.ByteString>(bytesList_);
+          bitField0_ |= 0x00000200;
+         }
+      }
+      /**
+       * <code>repeated bytes bytesList = 10;</code>
+       */
+      public java.util.List<com.google.protobuf.ByteString>
+          getBytesListList() {
+        return java.util.Collections.unmodifiableList(bytesList_);
+      }
+      /**
+       * <code>repeated bytes bytesList = 10;</code>
+       */
+      public int getBytesListCount() {
+        return bytesList_.size();
+      }
+      /**
+       * <code>repeated bytes bytesList = 10;</code>
+       */
+      public com.google.protobuf.ByteString getBytesList(int index) {
+        return bytesList_.get(index);
+      }
+      /**
+       * <code>repeated bytes bytesList = 10;</code>
+       */
+      public Builder setBytesList(
+          int index, com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureBytesListIsMutable();
+        bytesList_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated bytes bytesList = 10;</code>
+       */
+      public Builder addBytesList(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureBytesListIsMutable();
+        bytesList_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated bytes bytesList = 10;</code>
+       */
+      public Builder addAllBytesList(
+          java.lang.Iterable<? extends com.google.protobuf.ByteString> values) {
+        ensureBytesListIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, bytesList_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated bytes bytesList = 10;</code>
+       */
+      public Builder clearBytesList() {
+        bytesList_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000200);
+        onChanged();
+        return this;
+      }
+
+      private com.google.protobuf.MapField<
+          String, com.google.protobuf.ByteString> bytesMap_;
+      private com.google.protobuf.MapField<String, com.google.protobuf.ByteString>
+      internalGetBytesMap() {
+        if (bytesMap_ == null) {
+          return com.google.protobuf.MapField.emptyMapField(
+              BytesMapDefaultEntryHolder.defaultEntry);
+        }
+        return bytesMap_;
+      }
+      private com.google.protobuf.MapField<String, com.google.protobuf.ByteString>
+      internalGetMutableBytesMap() {
+        onChanged();;
+        if (bytesMap_ == null) {
+          bytesMap_ = com.google.protobuf.MapField.newMapField(
+              BytesMapDefaultEntryHolder.defaultEntry);
+        }
+        if (!bytesMap_.isMutable()) {
+          bytesMap_ = bytesMap_.copy();
+        }
+        return bytesMap_;
+      }
+
+      public int getBytesMapCount() {
+        return internalGetBytesMap().getMap().size();
+      }
+      /**
+       * <code>map&lt;string, bytes&gt; bytesMap = 11;</code>
+       */
+
+      public boolean containsBytesMap(
+          java.lang.String key) {
+        if (key == null) { throw new java.lang.NullPointerException(); }
+        return internalGetBytesMap().getMap().containsKey(key);
+      }
+      /**
+       * Use {@link #getBytesMapMap()} instead.
+       */
+      @java.lang.Deprecated
+      public java.util.Map<java.lang.String, com.google.protobuf.ByteString> getBytesMap() {
+        return getBytesMapMap();
+      }
+      /**
+       * <code>map&lt;string, bytes&gt; bytesMap = 11;</code>
+       */
+
+      public java.util.Map<java.lang.String, com.google.protobuf.ByteString> getBytesMapMap() {
+        return internalGetBytesMap().getMap();
+      }
+      /**
+       * <code>map&lt;string, bytes&gt; bytesMap = 11;</code>
+       */
+
+      public com.google.protobuf.ByteString getBytesMapOrDefault(
+          java.lang.String key,
+          com.google.protobuf.ByteString defaultValue) {
+        if (key == null) { throw new java.lang.NullPointerException(); }
+        java.util.Map<java.lang.String, com.google.protobuf.ByteString> map =
+            internalGetBytesMap().getMap();
+        return map.containsKey(key) ? map.get(key) : defaultValue;
+      }
+      /**
+       * <code>map&lt;string, bytes&gt; bytesMap = 11;</code>
+       */
+
+      public com.google.protobuf.ByteString getBytesMapOrThrow(
+          java.lang.String key) {
+        if (key == null) { throw new java.lang.NullPointerException(); }
+        java.util.Map<java.lang.String, com.google.protobuf.ByteString> map =
+            internalGetBytesMap().getMap();
+        if (!map.containsKey(key)) {
+          throw new java.lang.IllegalArgumentException();
+        }
+        return map.get(key);
+      }
+
+      public Builder clearBytesMap() {
+        internalGetMutableBytesMap().getMutableMap()
+            .clear();
+        return this;
+      }
+      /**
+       * <code>map&lt;string, bytes&gt; bytesMap = 11;</code>
+       */
+
+      public Builder removeBytesMap(
+          java.lang.String key) {
+        if (key == null) { throw new java.lang.NullPointerException(); }
+        internalGetMutableBytesMap().getMutableMap()
+            .remove(key);
+        return this;
+      }
+      /**
+       * Use alternate mutation accessors instead.
+       */
+      @java.lang.Deprecated
+      public java.util.Map<java.lang.String, com.google.protobuf.ByteString>
+      getMutableBytesMap() {
+        return internalGetMutableBytesMap().getMutableMap();
+      }
+      /**
+       * <code>map&lt;string, bytes&gt; bytesMap = 11;</code>
+       */
+      public Builder putBytesMap(
+          java.lang.String key,
+          com.google.protobuf.ByteString value) {
+        if (key == null) { throw new java.lang.NullPointerException(); }
+        if (value == null) { throw new java.lang.NullPointerException(); }
+        internalGetMutableBytesMap().getMutableMap()
+            .put(key, value);
+        return this;
+      }
+      /**
+       * <code>map&lt;string, bytes&gt; bytesMap = 11;</code>
+       */
+
+      public Builder putAllBytesMap(
+          java.util.Map<java.lang.String, com.google.protobuf.ByteString> values) {
+        internalGetMutableBytesMap().getMutableMap()
             .putAll(values);
         return this;
       }
@@ -1874,20 +2307,20 @@ public final class GooglePB {
       }
 
 
-      // @@protoc_insertion_point(builder_scope:org.apache.dubbo.common.serialize.protobuf.model.PBRequestType)
+      // @@protoc_insertion_point(builder_scope:org.apache.dubbo.metadata.definition.protobuf.model.PBRequestType)
     }
 
-    // @@protoc_insertion_point(class_scope:org.apache.dubbo.common.serialize.protobuf.model.PBRequestType)
-    private static final GooglePB.PBRequestType DEFAULT_INSTANCE;
+    // @@protoc_insertion_point(class_scope:org.apache.dubbo.metadata.definition.protobuf.model.PBRequestType)
+    private static final org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new GooglePB.PBRequestType();
+      DEFAULT_INSTANCE = new org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType();
     }
 
-    public static GooglePB.PBRequestType getDefaultInstance() {
+    public static org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
-    @Deprecated public static final com.google.protobuf.Parser<PBRequestType>
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<PBRequestType>
         PARSER = new com.google.protobuf.AbstractParser<PBRequestType>() {
       public PBRequestType parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
@@ -1901,19 +2334,19 @@ public final class GooglePB {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<PBRequestType> getParserForType() {
       return PARSER;
     }
 
-    public GooglePB.PBRequestType getDefaultInstanceForType() {
+    public org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
   }
 
   public interface PBResponseTypeOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:org.apache.dubbo.common.serialize.protobuf.model.PBResponseType)
+      // @@protoc_insertion_point(interface_extends:org.apache.dubbo.metadata.definition.protobuf.model.PBResponseType)
       com.google.protobuf.MessageOrBuilder {
 
     /**
@@ -1923,7 +2356,7 @@ public final class GooglePB {
     /**
      * <code>optional string msg = 1;</code>
      */
-    String getMsg();
+    java.lang.String getMsg();
     /**
      * <code>optional string msg = 1;</code>
      */
@@ -1931,24 +2364,24 @@ public final class GooglePB {
         getMsgBytes();
 
     /**
-     * <code>optional .org.apache.dubbo.common.serialize.protobuf.model.PBRequestType CDubboPBRequestType = 3;</code>
+     * <code>optional .org.apache.dubbo.metadata.definition.protobuf.model.PBRequestType CDubboPBRequestType = 3;</code>
      */
     boolean hasCDubboPBRequestType();
     /**
-     * <code>optional .org.apache.dubbo.common.serialize.protobuf.model.PBRequestType CDubboPBRequestType = 3;</code>
+     * <code>optional .org.apache.dubbo.metadata.definition.protobuf.model.PBRequestType CDubboPBRequestType = 3;</code>
      */
-    GooglePB.PBRequestType getCDubboPBRequestType();
+    org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType getCDubboPBRequestType();
     /**
-     * <code>optional .org.apache.dubbo.common.serialize.protobuf.model.PBRequestType CDubboPBRequestType = 3;</code>
+     * <code>optional .org.apache.dubbo.metadata.definition.protobuf.model.PBRequestType CDubboPBRequestType = 3;</code>
      */
-    GooglePB.PBRequestTypeOrBuilder getCDubboPBRequestTypeOrBuilder();
+    org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestTypeOrBuilder getCDubboPBRequestTypeOrBuilder();
   }
   /**
-   * Protobuf type {@code org.apache.dubbo.common.serialize.protobuf.model.PBResponseType}
+   * Protobuf type {@code org.apache.dubbo.metadata.definition.protobuf.model.PBResponseType}
    */
   public  static final class PBResponseType extends
       com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:org.apache.dubbo.common.serialize.protobuf.model.PBResponseType)
+      // @@protoc_insertion_point(message_implements:org.apache.dubbo.metadata.definition.protobuf.model.PBResponseType)
       PBResponseTypeOrBuilder {
   private static final long serialVersionUID = 0L;
     // Use PBResponseType.newBuilder() to construct.
@@ -1959,7 +2392,7 @@ public final class GooglePB {
       msg_ = "";
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return this.unknownFields;
@@ -1994,11 +2427,11 @@ public final class GooglePB {
               break;
             }
             case 26: {
-              GooglePB.PBRequestType.Builder subBuilder = null;
+              org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType.Builder subBuilder = null;
               if (((bitField0_ & 0x00000002) == 0x00000002)) {
                 subBuilder = cDubboPBRequestType_.toBuilder();
               }
-              cDubboPBRequestType_ = input.readMessage(GooglePB.PBRequestType.PARSER, extensionRegistry);
+              cDubboPBRequestType_ = input.readMessage(org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType.PARSER, extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(cDubboPBRequestType_);
                 cDubboPBRequestType_ = subBuilder.buildPartial();
@@ -2020,19 +2453,19 @@ public final class GooglePB {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return GooglePB.internal_static_org_apache_dubbo_common_serialize_protobuf_model_PBResponseType_descriptor;
+      return org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.internal_static_org_apache_dubbo_metadata_definition_protobuf_model_PBResponseType_descriptor;
     }
 
     protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return GooglePB.internal_static_org_apache_dubbo_common_serialize_protobuf_model_PBResponseType_fieldAccessorTable
+      return org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.internal_static_org_apache_dubbo_metadata_definition_protobuf_model_PBResponseType_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              GooglePB.PBResponseType.class, GooglePB.PBResponseType.Builder.class);
+              org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBResponseType.class, org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBResponseType.Builder.class);
     }
 
     private int bitField0_;
     public static final int MSG_FIELD_NUMBER = 1;
-    private volatile Object msg_;
+    private volatile java.lang.Object msg_;
     /**
      * <code>optional string msg = 1;</code>
      */
@@ -2042,14 +2475,14 @@ public final class GooglePB {
     /**
      * <code>optional string msg = 1;</code>
      */
-    public String getMsg() {
-      Object ref = msg_;
-      if (ref instanceof String) {
-        return (String) ref;
+    public java.lang.String getMsg() {
+      java.lang.Object ref = msg_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
       } else {
         com.google.protobuf.ByteString bs =
             (com.google.protobuf.ByteString) ref;
-        String s = bs.toStringUtf8();
+        java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
           msg_ = s;
         }
@@ -2061,11 +2494,11 @@ public final class GooglePB {
      */
     public com.google.protobuf.ByteString
         getMsgBytes() {
-      Object ref = msg_;
-      if (ref instanceof String) {
+      java.lang.Object ref = msg_;
+      if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
-                (String) ref);
+                (java.lang.String) ref);
         msg_ = b;
         return b;
       } else {
@@ -2074,24 +2507,24 @@ public final class GooglePB {
     }
 
     public static final int CDUBBOPBREQUESTTYPE_FIELD_NUMBER = 3;
-    private GooglePB.PBRequestType cDubboPBRequestType_;
+    private org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType cDubboPBRequestType_;
     /**
-     * <code>optional .org.apache.dubbo.common.serialize.protobuf.model.PBRequestType CDubboPBRequestType = 3;</code>
+     * <code>optional .org.apache.dubbo.metadata.definition.protobuf.model.PBRequestType CDubboPBRequestType = 3;</code>
      */
     public boolean hasCDubboPBRequestType() {
       return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
-     * <code>optional .org.apache.dubbo.common.serialize.protobuf.model.PBRequestType CDubboPBRequestType = 3;</code>
+     * <code>optional .org.apache.dubbo.metadata.definition.protobuf.model.PBRequestType CDubboPBRequestType = 3;</code>
      */
-    public GooglePB.PBRequestType getCDubboPBRequestType() {
-      return cDubboPBRequestType_ == null ? GooglePB.PBRequestType.getDefaultInstance() : cDubboPBRequestType_;
+    public org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType getCDubboPBRequestType() {
+      return cDubboPBRequestType_ == null ? org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType.getDefaultInstance() : cDubboPBRequestType_;
     }
     /**
-     * <code>optional .org.apache.dubbo.common.serialize.protobuf.model.PBRequestType CDubboPBRequestType = 3;</code>
+     * <code>optional .org.apache.dubbo.metadata.definition.protobuf.model.PBRequestType CDubboPBRequestType = 3;</code>
      */
-    public GooglePB.PBRequestTypeOrBuilder getCDubboPBRequestTypeOrBuilder() {
-      return cDubboPBRequestType_ == null ? GooglePB.PBRequestType.getDefaultInstance() : cDubboPBRequestType_;
+    public org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestTypeOrBuilder getCDubboPBRequestTypeOrBuilder() {
+      return cDubboPBRequestType_ == null ? org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType.getDefaultInstance() : cDubboPBRequestType_;
     }
 
     private byte memoizedIsInitialized = -1;
@@ -2138,15 +2571,15 @@ public final class GooglePB {
       return size;
     }
 
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof GooglePB.PBResponseType)) {
+      if (!(obj instanceof org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBResponseType)) {
         return super.equals(obj);
       }
-      GooglePB.PBResponseType other = (GooglePB.PBResponseType) obj;
+      org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBResponseType other = (org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBResponseType) obj;
 
       boolean result = true;
       result = result && (hasMsg() == other.hasMsg());
@@ -2163,7 +2596,7 @@ public final class GooglePB {
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -2183,69 +2616,69 @@ public final class GooglePB {
       return hash;
     }
 
-    public static GooglePB.PBResponseType parseFrom(
+    public static org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBResponseType parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static GooglePB.PBResponseType parseFrom(
+    public static org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBResponseType parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static GooglePB.PBResponseType parseFrom(
+    public static org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBResponseType parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static GooglePB.PBResponseType parseFrom(
+    public static org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBResponseType parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static GooglePB.PBResponseType parseFrom(byte[] data)
+    public static org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBResponseType parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static GooglePB.PBResponseType parseFrom(
+    public static org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBResponseType parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static GooglePB.PBResponseType parseFrom(java.io.InputStream input)
+    public static org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBResponseType parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static GooglePB.PBResponseType parseFrom(
+    public static org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBResponseType parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static GooglePB.PBResponseType parseDelimitedFrom(java.io.InputStream input)
+    public static org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBResponseType parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static GooglePB.PBResponseType parseDelimitedFrom(
+    public static org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBResponseType parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static GooglePB.PBResponseType parseFrom(
+    public static org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBResponseType parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static GooglePB.PBResponseType parseFrom(
+    public static org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBResponseType parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -2257,7 +2690,7 @@ public final class GooglePB {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(GooglePB.PBResponseType prototype) {
+    public static Builder newBuilder(org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBResponseType prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -2265,32 +2698,32 @@ public final class GooglePB {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
         BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
     /**
-     * Protobuf type {@code org.apache.dubbo.common.serialize.protobuf.model.PBResponseType}
+     * Protobuf type {@code org.apache.dubbo.metadata.definition.protobuf.model.PBResponseType}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:org.apache.dubbo.common.serialize.protobuf.model.PBResponseType)
-        GooglePB.PBResponseTypeOrBuilder {
+        // @@protoc_insertion_point(builder_implements:org.apache.dubbo.metadata.definition.protobuf.model.PBResponseType)
+        org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBResponseTypeOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return GooglePB.internal_static_org_apache_dubbo_common_serialize_protobuf_model_PBResponseType_descriptor;
+        return org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.internal_static_org_apache_dubbo_metadata_definition_protobuf_model_PBResponseType_descriptor;
       }
 
       protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return GooglePB.internal_static_org_apache_dubbo_common_serialize_protobuf_model_PBResponseType_fieldAccessorTable
+        return org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.internal_static_org_apache_dubbo_metadata_definition_protobuf_model_PBResponseType_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                GooglePB.PBResponseType.class, GooglePB.PBResponseType.Builder.class);
+                org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBResponseType.class, org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBResponseType.Builder.class);
       }
 
-      // Construct using org.apache.dubbo.common.serialize.protobuf.model.GooglePB.PBResponseType.newBuilder()
+      // Construct using org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBResponseType.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -2321,23 +2754,23 @@ public final class GooglePB {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return GooglePB.internal_static_org_apache_dubbo_common_serialize_protobuf_model_PBResponseType_descriptor;
+        return org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.internal_static_org_apache_dubbo_metadata_definition_protobuf_model_PBResponseType_descriptor;
       }
 
-      public GooglePB.PBResponseType getDefaultInstanceForType() {
-        return GooglePB.PBResponseType.getDefaultInstance();
+      public org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBResponseType getDefaultInstanceForType() {
+        return org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBResponseType.getDefaultInstance();
       }
 
-      public GooglePB.PBResponseType build() {
-        GooglePB.PBResponseType result = buildPartial();
+      public org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBResponseType build() {
+        org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBResponseType result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public GooglePB.PBResponseType buildPartial() {
-        GooglePB.PBResponseType result = new GooglePB.PBResponseType(this);
+      public org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBResponseType buildPartial() {
+        org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBResponseType result = new org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBResponseType(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
@@ -2362,7 +2795,7 @@ public final class GooglePB {
       }
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return (Builder) super.setField(field, value);
       }
       public Builder clearField(
@@ -2375,25 +2808,25 @@ public final class GooglePB {
       }
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          int index, Object value) {
+          int index, java.lang.Object value) {
         return (Builder) super.setRepeatedField(field, index, value);
       }
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return (Builder) super.addRepeatedField(field, value);
       }
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof GooglePB.PBResponseType) {
-          return mergeFrom((GooglePB.PBResponseType)other);
+        if (other instanceof org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBResponseType) {
+          return mergeFrom((org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBResponseType)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(GooglePB.PBResponseType other) {
-        if (other == GooglePB.PBResponseType.getDefaultInstance()) return this;
+      public Builder mergeFrom(org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBResponseType other) {
+        if (other == org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBResponseType.getDefaultInstance()) return this;
         if (other.hasMsg()) {
           bitField0_ |= 0x00000001;
           msg_ = other.msg_;
@@ -2420,11 +2853,11 @@ public final class GooglePB {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        GooglePB.PBResponseType parsedMessage = null;
+        org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBResponseType parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (GooglePB.PBResponseType) e.getUnfinishedMessage();
+          parsedMessage = (org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBResponseType) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -2435,7 +2868,7 @@ public final class GooglePB {
       }
       private int bitField0_;
 
-      private Object msg_ = "";
+      private java.lang.Object msg_ = "";
       /**
        * <code>optional string msg = 1;</code>
        */
@@ -2445,18 +2878,18 @@ public final class GooglePB {
       /**
        * <code>optional string msg = 1;</code>
        */
-      public String getMsg() {
-        Object ref = msg_;
-        if (!(ref instanceof String)) {
+      public java.lang.String getMsg() {
+        java.lang.Object ref = msg_;
+        if (!(ref instanceof java.lang.String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
-          String s = bs.toStringUtf8();
+          java.lang.String s = bs.toStringUtf8();
           if (bs.isValidUtf8()) {
             msg_ = s;
           }
           return s;
         } else {
-          return (String) ref;
+          return (java.lang.String) ref;
         }
       }
       /**
@@ -2464,11 +2897,11 @@ public final class GooglePB {
        */
       public com.google.protobuf.ByteString
           getMsgBytes() {
-        Object ref = msg_;
+        java.lang.Object ref = msg_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b =
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (String) ref);
+                  (java.lang.String) ref);
           msg_ = b;
           return b;
         } else {
@@ -2479,7 +2912,7 @@ public final class GooglePB {
        * <code>optional string msg = 1;</code>
        */
       public Builder setMsg(
-          String value) {
+          java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -2511,29 +2944,29 @@ public final class GooglePB {
         return this;
       }
 
-      private GooglePB.PBRequestType cDubboPBRequestType_ = null;
+      private org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType cDubboPBRequestType_ = null;
       private com.google.protobuf.SingleFieldBuilderV3<
           PBRequestType, PBRequestType.Builder, PBRequestTypeOrBuilder> cDubboPBRequestTypeBuilder_;
       /**
-       * <code>optional .org.apache.dubbo.common.serialize.protobuf.model.PBRequestType CDubboPBRequestType = 3;</code>
+       * <code>optional .org.apache.dubbo.metadata.definition.protobuf.model.PBRequestType CDubboPBRequestType = 3;</code>
        */
       public boolean hasCDubboPBRequestType() {
         return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
-       * <code>optional .org.apache.dubbo.common.serialize.protobuf.model.PBRequestType CDubboPBRequestType = 3;</code>
+       * <code>optional .org.apache.dubbo.metadata.definition.protobuf.model.PBRequestType CDubboPBRequestType = 3;</code>
        */
-      public GooglePB.PBRequestType getCDubboPBRequestType() {
+      public org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType getCDubboPBRequestType() {
         if (cDubboPBRequestTypeBuilder_ == null) {
-          return cDubboPBRequestType_ == null ? GooglePB.PBRequestType.getDefaultInstance() : cDubboPBRequestType_;
+          return cDubboPBRequestType_ == null ? org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType.getDefaultInstance() : cDubboPBRequestType_;
         } else {
           return cDubboPBRequestTypeBuilder_.getMessage();
         }
       }
       /**
-       * <code>optional .org.apache.dubbo.common.serialize.protobuf.model.PBRequestType CDubboPBRequestType = 3;</code>
+       * <code>optional .org.apache.dubbo.metadata.definition.protobuf.model.PBRequestType CDubboPBRequestType = 3;</code>
        */
-      public Builder setCDubboPBRequestType(GooglePB.PBRequestType value) {
+      public Builder setCDubboPBRequestType(org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType value) {
         if (cDubboPBRequestTypeBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -2547,10 +2980,10 @@ public final class GooglePB {
         return this;
       }
       /**
-       * <code>optional .org.apache.dubbo.common.serialize.protobuf.model.PBRequestType CDubboPBRequestType = 3;</code>
+       * <code>optional .org.apache.dubbo.metadata.definition.protobuf.model.PBRequestType CDubboPBRequestType = 3;</code>
        */
       public Builder setCDubboPBRequestType(
-          GooglePB.PBRequestType.Builder builderForValue) {
+          org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType.Builder builderForValue) {
         if (cDubboPBRequestTypeBuilder_ == null) {
           cDubboPBRequestType_ = builderForValue.build();
           onChanged();
@@ -2561,15 +2994,15 @@ public final class GooglePB {
         return this;
       }
       /**
-       * <code>optional .org.apache.dubbo.common.serialize.protobuf.model.PBRequestType CDubboPBRequestType = 3;</code>
+       * <code>optional .org.apache.dubbo.metadata.definition.protobuf.model.PBRequestType CDubboPBRequestType = 3;</code>
        */
-      public Builder mergeCDubboPBRequestType(GooglePB.PBRequestType value) {
+      public Builder mergeCDubboPBRequestType(org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType value) {
         if (cDubboPBRequestTypeBuilder_ == null) {
           if (((bitField0_ & 0x00000002) == 0x00000002) &&
               cDubboPBRequestType_ != null &&
-              cDubboPBRequestType_ != GooglePB.PBRequestType.getDefaultInstance()) {
+              cDubboPBRequestType_ != org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType.getDefaultInstance()) {
             cDubboPBRequestType_ =
-              GooglePB.PBRequestType.newBuilder(cDubboPBRequestType_).mergeFrom(value).buildPartial();
+              org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType.newBuilder(cDubboPBRequestType_).mergeFrom(value).buildPartial();
           } else {
             cDubboPBRequestType_ = value;
           }
@@ -2581,7 +3014,7 @@ public final class GooglePB {
         return this;
       }
       /**
-       * <code>optional .org.apache.dubbo.common.serialize.protobuf.model.PBRequestType CDubboPBRequestType = 3;</code>
+       * <code>optional .org.apache.dubbo.metadata.definition.protobuf.model.PBRequestType CDubboPBRequestType = 3;</code>
        */
       public Builder clearCDubboPBRequestType() {
         if (cDubboPBRequestTypeBuilder_ == null) {
@@ -2594,26 +3027,26 @@ public final class GooglePB {
         return this;
       }
       /**
-       * <code>optional .org.apache.dubbo.common.serialize.protobuf.model.PBRequestType CDubboPBRequestType = 3;</code>
+       * <code>optional .org.apache.dubbo.metadata.definition.protobuf.model.PBRequestType CDubboPBRequestType = 3;</code>
        */
-      public GooglePB.PBRequestType.Builder getCDubboPBRequestTypeBuilder() {
+      public org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType.Builder getCDubboPBRequestTypeBuilder() {
         bitField0_ |= 0x00000002;
         onChanged();
         return getCDubboPBRequestTypeFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .org.apache.dubbo.common.serialize.protobuf.model.PBRequestType CDubboPBRequestType = 3;</code>
+       * <code>optional .org.apache.dubbo.metadata.definition.protobuf.model.PBRequestType CDubboPBRequestType = 3;</code>
        */
-      public GooglePB.PBRequestTypeOrBuilder getCDubboPBRequestTypeOrBuilder() {
+      public org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestTypeOrBuilder getCDubboPBRequestTypeOrBuilder() {
         if (cDubboPBRequestTypeBuilder_ != null) {
           return cDubboPBRequestTypeBuilder_.getMessageOrBuilder();
         } else {
           return cDubboPBRequestType_ == null ?
-              GooglePB.PBRequestType.getDefaultInstance() : cDubboPBRequestType_;
+              org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBRequestType.getDefaultInstance() : cDubboPBRequestType_;
         }
       }
       /**
-       * <code>optional .org.apache.dubbo.common.serialize.protobuf.model.PBRequestType CDubboPBRequestType = 3;</code>
+       * <code>optional .org.apache.dubbo.metadata.definition.protobuf.model.PBRequestType CDubboPBRequestType = 3;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
           PBRequestType, PBRequestType.Builder, PBRequestTypeOrBuilder>
@@ -2639,20 +3072,20 @@ public final class GooglePB {
       }
 
 
-      // @@protoc_insertion_point(builder_scope:org.apache.dubbo.common.serialize.protobuf.model.PBResponseType)
+      // @@protoc_insertion_point(builder_scope:org.apache.dubbo.metadata.definition.protobuf.model.PBResponseType)
     }
 
-    // @@protoc_insertion_point(class_scope:org.apache.dubbo.common.serialize.protobuf.model.PBResponseType)
-    private static final GooglePB.PBResponseType DEFAULT_INSTANCE;
+    // @@protoc_insertion_point(class_scope:org.apache.dubbo.metadata.definition.protobuf.model.PBResponseType)
+    private static final org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBResponseType DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new GooglePB.PBResponseType();
+      DEFAULT_INSTANCE = new org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBResponseType();
     }
 
-    public static GooglePB.PBResponseType getDefaultInstance() {
+    public static org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBResponseType getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
-    @Deprecated public static final com.google.protobuf.Parser<PBResponseType>
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<PBResponseType>
         PARSER = new com.google.protobuf.AbstractParser<PBResponseType>() {
       public PBResponseType parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
@@ -2666,19 +3099,19 @@ public final class GooglePB {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<PBResponseType> getParserForType() {
       return PARSER;
     }
 
-    public GooglePB.PBResponseType getDefaultInstanceForType() {
+    public org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PBResponseType getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
   }
 
   public interface PhoneNumberOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber)
+      // @@protoc_insertion_point(interface_extends:org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber)
       com.google.protobuf.MessageOrBuilder {
 
     /**
@@ -2688,7 +3121,7 @@ public final class GooglePB {
     /**
      * <code>required string number = 1;</code>
      */
-    String getNumber();
+    java.lang.String getNumber();
     /**
      * <code>required string number = 1;</code>
      */
@@ -2696,20 +3129,20 @@ public final class GooglePB {
         getNumberBytes();
 
     /**
-     * <code>optional .org.apache.dubbo.common.serialize.protobuf.model.PhoneType type = 2 [default = HOME];</code>
+     * <code>optional .org.apache.dubbo.metadata.definition.protobuf.model.PhoneType type = 2 [default = HOME];</code>
      */
     boolean hasType();
     /**
-     * <code>optional .org.apache.dubbo.common.serialize.protobuf.model.PhoneType type = 2 [default = HOME];</code>
+     * <code>optional .org.apache.dubbo.metadata.definition.protobuf.model.PhoneType type = 2 [default = HOME];</code>
      */
-    GooglePB.PhoneType getType();
+    org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneType getType();
   }
   /**
-   * Protobuf type {@code org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber}
+   * Protobuf type {@code org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber}
    */
   public  static final class PhoneNumber extends
       com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber)
+      // @@protoc_insertion_point(message_implements:org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber)
       PhoneNumberOrBuilder {
   private static final long serialVersionUID = 0L;
     // Use PhoneNumber.newBuilder() to construct.
@@ -2721,7 +3154,7 @@ public final class GooglePB {
       type_ = 1;
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return this.unknownFields;
@@ -2757,7 +3190,7 @@ public final class GooglePB {
             }
             case 16: {
               int rawValue = input.readEnum();
-              GooglePB.PhoneType value = GooglePB.PhoneType.valueOf(rawValue);
+              org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneType value = org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneType.valueOf(rawValue);
               if (value == null) {
                 unknownFields.mergeVarintField(2, rawValue);
               } else {
@@ -2780,19 +3213,19 @@ public final class GooglePB {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return GooglePB.internal_static_org_apache_dubbo_common_serialize_protobuf_model_PhoneNumber_descriptor;
+      return org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.internal_static_org_apache_dubbo_metadata_definition_protobuf_model_PhoneNumber_descriptor;
     }
 
     protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return GooglePB.internal_static_org_apache_dubbo_common_serialize_protobuf_model_PhoneNumber_fieldAccessorTable
+      return org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.internal_static_org_apache_dubbo_metadata_definition_protobuf_model_PhoneNumber_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              GooglePB.PhoneNumber.class, GooglePB.PhoneNumber.Builder.class);
+              org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber.class, org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber.Builder.class);
     }
 
     private int bitField0_;
     public static final int NUMBER_FIELD_NUMBER = 1;
-    private volatile Object number_;
+    private volatile java.lang.Object number_;
     /**
      * <code>required string number = 1;</code>
      */
@@ -2802,14 +3235,14 @@ public final class GooglePB {
     /**
      * <code>required string number = 1;</code>
      */
-    public String getNumber() {
-      Object ref = number_;
-      if (ref instanceof String) {
-        return (String) ref;
+    public java.lang.String getNumber() {
+      java.lang.Object ref = number_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
       } else {
         com.google.protobuf.ByteString bs =
             (com.google.protobuf.ByteString) ref;
-        String s = bs.toStringUtf8();
+        java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
           number_ = s;
         }
@@ -2821,11 +3254,11 @@ public final class GooglePB {
      */
     public com.google.protobuf.ByteString
         getNumberBytes() {
-      Object ref = number_;
-      if (ref instanceof String) {
+      java.lang.Object ref = number_;
+      if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
-                (String) ref);
+                (java.lang.String) ref);
         number_ = b;
         return b;
       } else {
@@ -2836,17 +3269,17 @@ public final class GooglePB {
     public static final int TYPE_FIELD_NUMBER = 2;
     private int type_;
     /**
-     * <code>optional .org.apache.dubbo.common.serialize.protobuf.model.PhoneType type = 2 [default = HOME];</code>
+     * <code>optional .org.apache.dubbo.metadata.definition.protobuf.model.PhoneType type = 2 [default = HOME];</code>
      */
     public boolean hasType() {
       return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
-     * <code>optional .org.apache.dubbo.common.serialize.protobuf.model.PhoneType type = 2 [default = HOME];</code>
+     * <code>optional .org.apache.dubbo.metadata.definition.protobuf.model.PhoneType type = 2 [default = HOME];</code>
      */
-    public GooglePB.PhoneType getType() {
-      GooglePB.PhoneType result = GooglePB.PhoneType.valueOf(type_);
-      return result == null ? GooglePB.PhoneType.HOME : result;
+    public org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneType getType() {
+      org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneType result = org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneType.valueOf(type_);
+      return result == null ? org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneType.HOME : result;
     }
 
     private byte memoizedIsInitialized = -1;
@@ -2891,15 +3324,15 @@ public final class GooglePB {
       return size;
     }
 
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof GooglePB.PhoneNumber)) {
+      if (!(obj instanceof org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber)) {
         return super.equals(obj);
       }
-      GooglePB.PhoneNumber other = (GooglePB.PhoneNumber) obj;
+      org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber other = (org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber) obj;
 
       boolean result = true;
       result = result && (hasNumber() == other.hasNumber());
@@ -2915,7 +3348,7 @@ public final class GooglePB {
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -2935,69 +3368,69 @@ public final class GooglePB {
       return hash;
     }
 
-    public static GooglePB.PhoneNumber parseFrom(
+    public static org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static GooglePB.PhoneNumber parseFrom(
+    public static org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static GooglePB.PhoneNumber parseFrom(
+    public static org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static GooglePB.PhoneNumber parseFrom(
+    public static org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static GooglePB.PhoneNumber parseFrom(byte[] data)
+    public static org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static GooglePB.PhoneNumber parseFrom(
+    public static org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static GooglePB.PhoneNumber parseFrom(java.io.InputStream input)
+    public static org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static GooglePB.PhoneNumber parseFrom(
+    public static org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static GooglePB.PhoneNumber parseDelimitedFrom(java.io.InputStream input)
+    public static org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static GooglePB.PhoneNumber parseDelimitedFrom(
+    public static org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static GooglePB.PhoneNumber parseFrom(
+    public static org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static GooglePB.PhoneNumber parseFrom(
+    public static org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -3009,7 +3442,7 @@ public final class GooglePB {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(GooglePB.PhoneNumber prototype) {
+    public static Builder newBuilder(org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -3017,32 +3450,32 @@ public final class GooglePB {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
         BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
     /**
-     * Protobuf type {@code org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber}
+     * Protobuf type {@code org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber)
-        GooglePB.PhoneNumberOrBuilder {
+        // @@protoc_insertion_point(builder_implements:org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber)
+        org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumberOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return GooglePB.internal_static_org_apache_dubbo_common_serialize_protobuf_model_PhoneNumber_descriptor;
+        return org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.internal_static_org_apache_dubbo_metadata_definition_protobuf_model_PhoneNumber_descriptor;
       }
 
       protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return GooglePB.internal_static_org_apache_dubbo_common_serialize_protobuf_model_PhoneNumber_fieldAccessorTable
+        return org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.internal_static_org_apache_dubbo_metadata_definition_protobuf_model_PhoneNumber_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                GooglePB.PhoneNumber.class, GooglePB.PhoneNumber.Builder.class);
+                org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber.class, org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber.Builder.class);
       }
 
-      // Construct using org.apache.dubbo.common.serialize.protobuf.model.GooglePB.PhoneNumber.newBuilder()
+      // Construct using org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -3068,23 +3501,23 @@ public final class GooglePB {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return GooglePB.internal_static_org_apache_dubbo_common_serialize_protobuf_model_PhoneNumber_descriptor;
+        return org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.internal_static_org_apache_dubbo_metadata_definition_protobuf_model_PhoneNumber_descriptor;
       }
 
-      public GooglePB.PhoneNumber getDefaultInstanceForType() {
-        return GooglePB.PhoneNumber.getDefaultInstance();
+      public org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber getDefaultInstanceForType() {
+        return org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber.getDefaultInstance();
       }
 
-      public GooglePB.PhoneNumber build() {
-        GooglePB.PhoneNumber result = buildPartial();
+      public org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber build() {
+        org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public GooglePB.PhoneNumber buildPartial() {
-        GooglePB.PhoneNumber result = new GooglePB.PhoneNumber(this);
+      public org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber buildPartial() {
+        org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber result = new org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
@@ -3105,7 +3538,7 @@ public final class GooglePB {
       }
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return (Builder) super.setField(field, value);
       }
       public Builder clearField(
@@ -3118,25 +3551,25 @@ public final class GooglePB {
       }
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          int index, Object value) {
+          int index, java.lang.Object value) {
         return (Builder) super.setRepeatedField(field, index, value);
       }
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return (Builder) super.addRepeatedField(field, value);
       }
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof GooglePB.PhoneNumber) {
-          return mergeFrom((GooglePB.PhoneNumber)other);
+        if (other instanceof org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber) {
+          return mergeFrom((org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(GooglePB.PhoneNumber other) {
-        if (other == GooglePB.PhoneNumber.getDefaultInstance()) return this;
+      public Builder mergeFrom(org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber other) {
+        if (other == org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber.getDefaultInstance()) return this;
         if (other.hasNumber()) {
           bitField0_ |= 0x00000001;
           number_ = other.number_;
@@ -3161,11 +3594,11 @@ public final class GooglePB {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        GooglePB.PhoneNumber parsedMessage = null;
+        org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (GooglePB.PhoneNumber) e.getUnfinishedMessage();
+          parsedMessage = (org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -3176,7 +3609,7 @@ public final class GooglePB {
       }
       private int bitField0_;
 
-      private Object number_ = "";
+      private java.lang.Object number_ = "";
       /**
        * <code>required string number = 1;</code>
        */
@@ -3186,18 +3619,18 @@ public final class GooglePB {
       /**
        * <code>required string number = 1;</code>
        */
-      public String getNumber() {
-        Object ref = number_;
-        if (!(ref instanceof String)) {
+      public java.lang.String getNumber() {
+        java.lang.Object ref = number_;
+        if (!(ref instanceof java.lang.String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
-          String s = bs.toStringUtf8();
+          java.lang.String s = bs.toStringUtf8();
           if (bs.isValidUtf8()) {
             number_ = s;
           }
           return s;
         } else {
-          return (String) ref;
+          return (java.lang.String) ref;
         }
       }
       /**
@@ -3205,11 +3638,11 @@ public final class GooglePB {
        */
       public com.google.protobuf.ByteString
           getNumberBytes() {
-        Object ref = number_;
+        java.lang.Object ref = number_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b =
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (String) ref);
+                  (java.lang.String) ref);
           number_ = b;
           return b;
         } else {
@@ -3220,7 +3653,7 @@ public final class GooglePB {
        * <code>required string number = 1;</code>
        */
       public Builder setNumber(
-          String value) {
+          java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -3254,22 +3687,22 @@ public final class GooglePB {
 
       private int type_ = 1;
       /**
-       * <code>optional .org.apache.dubbo.common.serialize.protobuf.model.PhoneType type = 2 [default = HOME];</code>
+       * <code>optional .org.apache.dubbo.metadata.definition.protobuf.model.PhoneType type = 2 [default = HOME];</code>
        */
       public boolean hasType() {
         return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
-       * <code>optional .org.apache.dubbo.common.serialize.protobuf.model.PhoneType type = 2 [default = HOME];</code>
+       * <code>optional .org.apache.dubbo.metadata.definition.protobuf.model.PhoneType type = 2 [default = HOME];</code>
        */
-      public GooglePB.PhoneType getType() {
-        GooglePB.PhoneType result = GooglePB.PhoneType.valueOf(type_);
-        return result == null ? GooglePB.PhoneType.HOME : result;
+      public org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneType getType() {
+        org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneType result = org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneType.valueOf(type_);
+        return result == null ? org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneType.HOME : result;
       }
       /**
-       * <code>optional .org.apache.dubbo.common.serialize.protobuf.model.PhoneType type = 2 [default = HOME];</code>
+       * <code>optional .org.apache.dubbo.metadata.definition.protobuf.model.PhoneType type = 2 [default = HOME];</code>
        */
-      public Builder setType(GooglePB.PhoneType value) {
+      public Builder setType(org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneType value) {
         if (value == null) {
           throw new NullPointerException();
         }
@@ -3279,7 +3712,7 @@ public final class GooglePB {
         return this;
       }
       /**
-       * <code>optional .org.apache.dubbo.common.serialize.protobuf.model.PhoneType type = 2 [default = HOME];</code>
+       * <code>optional .org.apache.dubbo.metadata.definition.protobuf.model.PhoneType type = 2 [default = HOME];</code>
        */
       public Builder clearType() {
         bitField0_ = (bitField0_ & ~0x00000002);
@@ -3298,20 +3731,20 @@ public final class GooglePB {
       }
 
 
-      // @@protoc_insertion_point(builder_scope:org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber)
+      // @@protoc_insertion_point(builder_scope:org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber)
     }
 
-    // @@protoc_insertion_point(class_scope:org.apache.dubbo.common.serialize.protobuf.model.PhoneNumber)
-    private static final GooglePB.PhoneNumber DEFAULT_INSTANCE;
+    // @@protoc_insertion_point(class_scope:org.apache.dubbo.metadata.definition.protobuf.model.PhoneNumber)
+    private static final org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new GooglePB.PhoneNumber();
+      DEFAULT_INSTANCE = new org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber();
     }
 
-    public static GooglePB.PhoneNumber getDefaultInstance() {
+    public static org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
-    @Deprecated public static final com.google.protobuf.Parser<PhoneNumber>
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<PhoneNumber>
         PARSER = new com.google.protobuf.AbstractParser<PhoneNumber>() {
       public PhoneNumber parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
@@ -3325,37 +3758,42 @@ public final class GooglePB {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<PhoneNumber> getParserForType() {
       return PARSER;
     }
 
-    public GooglePB.PhoneNumber getDefaultInstanceForType() {
+    public org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
   }
 
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_apache_dubbo_common_serialize_protobuf_model_PBRequestType_descriptor;
+    internal_static_org_apache_dubbo_metadata_definition_protobuf_model_PBRequestType_descriptor;
   private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_org_apache_dubbo_common_serialize_protobuf_model_PBRequestType_fieldAccessorTable;
+      internal_static_org_apache_dubbo_metadata_definition_protobuf_model_PBRequestType_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_apache_dubbo_common_serialize_protobuf_model_PBRequestType_DoubleMapEntry_descriptor;
+    internal_static_org_apache_dubbo_metadata_definition_protobuf_model_PBRequestType_DoubleMapEntry_descriptor;
   private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_org_apache_dubbo_common_serialize_protobuf_model_PBRequestType_DoubleMapEntry_fieldAccessorTable;
+      internal_static_org_apache_dubbo_metadata_definition_protobuf_model_PBRequestType_DoubleMapEntry_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_apache_dubbo_common_serialize_protobuf_model_PBResponseType_descriptor;
+    internal_static_org_apache_dubbo_metadata_definition_protobuf_model_PBRequestType_BytesMapEntry_descriptor;
   private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_org_apache_dubbo_common_serialize_protobuf_model_PBResponseType_fieldAccessorTable;
+      internal_static_org_apache_dubbo_metadata_definition_protobuf_model_PBRequestType_BytesMapEntry_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_org_apache_dubbo_common_serialize_protobuf_model_PhoneNumber_descriptor;
+    internal_static_org_apache_dubbo_metadata_definition_protobuf_model_PBResponseType_descriptor;
   private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_org_apache_dubbo_common_serialize_protobuf_model_PhoneNumber_fieldAccessorTable;
+      internal_static_org_apache_dubbo_metadata_definition_protobuf_model_PBResponseType_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_org_apache_dubbo_metadata_definition_protobuf_model_PhoneNumber_descriptor;
+  private static final
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_org_apache_dubbo_metadata_definition_protobuf_model_PhoneNumber_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -3364,30 +3802,35 @@ public final class GooglePB {
   private static  com.google.protobuf.Descriptors.FileDescriptor
       descriptor;
   static {
-    String[] descriptorData = {
-      "\n\016GooglePB.proto\0220org.apache.dubbo.commo" +
-      "n.serialize.protobuf.model\"\220\003\n\rPBRequest" +
-      "Type\022\r\n\005money\030\001 \001(\001\022\014\n\004cash\030\002 \001(\002\022\013\n\003age" +
-      "\030\003 \001(\005\022\013\n\003num\030\004 \001(\003\022\013\n\003sex\030\005 \001(\010\022\014\n\004name" +
-      "\030\006 \001(\t\022\013\n\003msg\030\007 \001(\014\022L\n\005phone\030\010 \003(\0132=.org" +
-      ".apache.dubbo.common.serialize.protobuf." +
-      "model.PhoneNumber\022a\n\tdoubleMap\030\t \003(\0132N.o" +
-      "rg.apache.dubbo.common.serialize.protobu" +
-      "f.model.PBRequestType.DoubleMapEntry\032o\n\016" +
-      "DoubleMapEntry\022\013\n\003key\030\001 \001(\t\022L\n\005value\030\002 \001",
-      "(\0132=.org.apache.dubbo.common.serialize.p" +
-      "rotobuf.model.PhoneNumber:\0028\001\"{\n\016PBRespo" +
-      "nseType\022\013\n\003msg\030\001 \001(\t\022\\\n\023CDubboPBRequestT" +
-      "ype\030\003 \001(\0132?.org.apache.dubbo.common.seri" +
-      "alize.protobuf.model.PBRequestType\"n\n\013Ph" +
-      "oneNumber\022\016\n\006number\030\001 \002(\t\022O\n\004type\030\002 \001(\0162" +
-      ";.org.apache.dubbo.common.serialize.prot" +
-      "obuf.model.PhoneType:\004HOME*+\n\tPhoneType\022" +
-      "\n\n\006MOBILE\020\000\022\010\n\004HOME\020\001\022\010\n\004WORK\020\0022\241\001\n\017CDub" +
-      "boPBService\022\215\001\n\010sayHello\022?.org.apache.du",
-      "bbo.common.serialize.protobuf.model.PBRe" +
-      "questType\032@.org.apache.dubbo.common.seri" +
-      "alize.protobuf.model.PBResponseType"
+    java.lang.String[] descriptorData = {
+      "\n\016GooglePB.proto\0223org.apache.dubbo.metad" +
+      "ata.definition.protobuf.model\"\301\004\n\rPBRequ" +
+      "estType\022\r\n\005money\030\001 \001(\001\022\014\n\004cash\030\002 \001(\002\022\013\n\003" +
+      "age\030\003 \001(\005\022\013\n\003num\030\004 \001(\003\022\013\n\003sex\030\005 \001(\010\022\014\n\004n" +
+      "ame\030\006 \001(\t\022\013\n\003msg\030\007 \001(\014\022O\n\005phone\030\010 \003(\0132@." +
+      "org.apache.dubbo.metadata.definition.pro" +
+      "tobuf.model.PhoneNumber\022d\n\tdoubleMap\030\t \003" +
+      "(\0132Q.org.apache.dubbo.metadata.definitio" +
+      "n.protobuf.model.PBRequestType.DoubleMap" +
+      "Entry\022\021\n\tbytesList\030\n \003(\014\022b\n\010bytesMap\030\013 \003",
+      "(\0132P.org.apache.dubbo.metadata.definitio" +
+      "n.protobuf.model.PBRequestType.BytesMapE" +
+      "ntry\032r\n\016DoubleMapEntry\022\013\n\003key\030\001 \001(\t\022O\n\005v" +
+      "alue\030\002 \001(\0132@.org.apache.dubbo.metadata.d" +
+      "efinition.protobuf.model.PhoneNumber:\0028\001" +
+      "\032/\n\rBytesMapEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030" +
+      "\002 \001(\014:\0028\001\"~\n\016PBResponseType\022\013\n\003msg\030\001 \001(\t" +
+      "\022_\n\023CDubboPBRequestType\030\003 \001(\0132B.org.apac" +
+      "he.dubbo.metadata.definition.protobuf.mo" +
+      "del.PBRequestType\"q\n\013PhoneNumber\022\016\n\006numb",
+      "er\030\001 \002(\t\022R\n\004type\030\002 \001(\0162>.org.apache.dubb" +
+      "o.metadata.definition.protobuf.model.Pho" +
+      "neType:\004HOME*+\n\tPhoneType\022\n\n\006MOBILE\020\000\022\010\n" +
+      "\004HOME\020\001\022\010\n\004WORK\020\0022\247\001\n\017CDubboPBService\022\223\001" +
+      "\n\010sayHello\022B.org.apache.dubbo.metadata.d" +
+      "efinition.protobuf.model.PBRequestType\032C" +
+      ".org.apache.dubbo.metadata.definition.pr" +
+      "otobuf.model.PBResponseType"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -3401,30 +3844,36 @@ public final class GooglePB {
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
         }, assigner);
-    internal_static_org_apache_dubbo_common_serialize_protobuf_model_PBRequestType_descriptor =
+    internal_static_org_apache_dubbo_metadata_definition_protobuf_model_PBRequestType_descriptor =
       getDescriptor().getMessageTypes().get(0);
-    internal_static_org_apache_dubbo_common_serialize_protobuf_model_PBRequestType_fieldAccessorTable = new
+    internal_static_org_apache_dubbo_metadata_definition_protobuf_model_PBRequestType_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_org_apache_dubbo_common_serialize_protobuf_model_PBRequestType_descriptor,
-        new String[] { "Money", "Cash", "Age", "Num", "Sex", "Name", "Msg", "Phone", "DoubleMap", });
-    internal_static_org_apache_dubbo_common_serialize_protobuf_model_PBRequestType_DoubleMapEntry_descriptor =
-      internal_static_org_apache_dubbo_common_serialize_protobuf_model_PBRequestType_descriptor.getNestedTypes().get(0);
-    internal_static_org_apache_dubbo_common_serialize_protobuf_model_PBRequestType_DoubleMapEntry_fieldAccessorTable = new
+        internal_static_org_apache_dubbo_metadata_definition_protobuf_model_PBRequestType_descriptor,
+        new java.lang.String[] { "Money", "Cash", "Age", "Num", "Sex", "Name", "Msg", "Phone", "DoubleMap", "BytesList", "BytesMap", });
+    internal_static_org_apache_dubbo_metadata_definition_protobuf_model_PBRequestType_DoubleMapEntry_descriptor =
+      internal_static_org_apache_dubbo_metadata_definition_protobuf_model_PBRequestType_descriptor.getNestedTypes().get(0);
+    internal_static_org_apache_dubbo_metadata_definition_protobuf_model_PBRequestType_DoubleMapEntry_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_org_apache_dubbo_common_serialize_protobuf_model_PBRequestType_DoubleMapEntry_descriptor,
-        new String[] { "Key", "Value", });
-    internal_static_org_apache_dubbo_common_serialize_protobuf_model_PBResponseType_descriptor =
+        internal_static_org_apache_dubbo_metadata_definition_protobuf_model_PBRequestType_DoubleMapEntry_descriptor,
+        new java.lang.String[] { "Key", "Value", });
+    internal_static_org_apache_dubbo_metadata_definition_protobuf_model_PBRequestType_BytesMapEntry_descriptor =
+      internal_static_org_apache_dubbo_metadata_definition_protobuf_model_PBRequestType_descriptor.getNestedTypes().get(1);
+    internal_static_org_apache_dubbo_metadata_definition_protobuf_model_PBRequestType_BytesMapEntry_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_org_apache_dubbo_metadata_definition_protobuf_model_PBRequestType_BytesMapEntry_descriptor,
+        new java.lang.String[] { "Key", "Value", });
+    internal_static_org_apache_dubbo_metadata_definition_protobuf_model_PBResponseType_descriptor =
       getDescriptor().getMessageTypes().get(1);
-    internal_static_org_apache_dubbo_common_serialize_protobuf_model_PBResponseType_fieldAccessorTable = new
+    internal_static_org_apache_dubbo_metadata_definition_protobuf_model_PBResponseType_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_org_apache_dubbo_common_serialize_protobuf_model_PBResponseType_descriptor,
-        new String[] { "Msg", "CDubboPBRequestType", });
-    internal_static_org_apache_dubbo_common_serialize_protobuf_model_PhoneNumber_descriptor =
+        internal_static_org_apache_dubbo_metadata_definition_protobuf_model_PBResponseType_descriptor,
+        new java.lang.String[] { "Msg", "CDubboPBRequestType", });
+    internal_static_org_apache_dubbo_metadata_definition_protobuf_model_PhoneNumber_descriptor =
       getDescriptor().getMessageTypes().get(2);
-    internal_static_org_apache_dubbo_common_serialize_protobuf_model_PhoneNumber_fieldAccessorTable = new
+    internal_static_org_apache_dubbo_metadata_definition_protobuf_model_PhoneNumber_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_org_apache_dubbo_common_serialize_protobuf_model_PhoneNumber_descriptor,
-        new String[] { "Number", "Type", });
+        internal_static_org_apache_dubbo_metadata_definition_protobuf_model_PhoneNumber_descriptor,
+        new java.lang.String[] { "Number", "Type", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)

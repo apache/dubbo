@@ -48,7 +48,7 @@ public class ProtobufTypeBuilderTest {
             }
         }
         Map<String, TypeDefinition> propertiesMap = typeDefinition.getProperties();
-        assertThat(propertiesMap.size(), is(9));
+        assertThat(propertiesMap.size(), is(11));
         assertThat(propertiesMap.containsKey("money"), is(true));
         assertThat(propertiesMap.get("money").getType(), equalTo("double"));
         assertThat(propertiesMap.containsKey("cash"), is(true));
@@ -67,5 +67,7 @@ public class ProtobufTypeBuilderTest {
         assertThat(propertiesMap.get("phone").getType(), equalTo("java.util.List<org.apache.dubbo.metadata.definition.protobuf.model.GooglePB$PhoneNumber>"));
         assertThat(propertiesMap.containsKey("doubleMap"), is(true));
         assertThat(propertiesMap.get("doubleMap").getType(), equalTo("java.util.Map<java.lang.String, org.apache.dubbo.metadata.definition.protobuf.model.GooglePB$PhoneNumber>"));
+        assertThat(propertiesMap.get("bytesList").getType(), equalTo("java.util.List<com.google.protobuf.ByteString>"));
+        assertThat(propertiesMap.get("bytesMap").getType(), equalTo("java.util.Map<java.lang.String, com.google.protobuf.ByteString>"));
     }
 }

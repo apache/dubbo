@@ -46,7 +46,7 @@ import java.util.Set;
 public class ValidationTest {
     private ApplicationConfig application = new ApplicationConfig("validation-test");
     private RegistryConfig registryNA = new RegistryConfig("N/A");
-    private ProtocolConfig protocolDubo29582 = new ProtocolConfig("dubbo", 29582);
+    private ProtocolConfig protocolDubbo29582 = new ProtocolConfig("dubbo", 29582);
 
     @BeforeEach
     public void setUp() {
@@ -63,7 +63,7 @@ public class ValidationTest {
         ServiceConfig<ValidationService> service = new ServiceConfig<ValidationService>();
         service.setApplication(application);
         service.setRegistry(registryNA);
-        service.setProtocol(protocolDubo29582);
+        service.setProtocol(protocolDubbo29582);
         service.setInterface(ValidationService.class.getName());
         service.setRef(new ValidationServiceImpl());
         service.setValidation(String.valueOf(true));
@@ -189,7 +189,7 @@ public class ValidationTest {
         ServiceConfig<ValidationService> service = new ServiceConfig<ValidationService>();
         service.setApplication(application);
         service.setRegistry(registryNA);
-        service.setProtocol(protocolDubo29582);
+        service.setProtocol(protocolDubbo29582);
         service.setInterface(ValidationService.class.getName());
         service.setRef(new ValidationServiceImpl());
         service.setValidation(String.valueOf(true));
@@ -254,7 +254,7 @@ public class ValidationTest {
         ServiceConfig<ValidationService> service = new ServiceConfig<ValidationService>();
         service.setApplication(application);
         service.setRegistry(registryNA);
-        service.setProtocol(protocolDubo29582);
+        service.setProtocol(protocolDubbo29582);
         service.setInterface(ValidationService.class.getName());
         service.setRef(new ValidationServiceImpl());
         service.setValidation(String.valueOf(true));
