@@ -25,6 +25,7 @@ import org.apache.dubbo.remoting.transport.AbstractChannel;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
+import org.apache.dubbo.remoting.utils.LogUtils;
 
 import java.net.InetSocketAddress;
 import java.util.Map;
@@ -50,6 +51,7 @@ final class NettyChannel extends AbstractChannel {
     private final Channel channel;
 
     private final Map<String, Object> attributes = new ConcurrentHashMap<String, Object>();
+
     /**
      * The constructor of NettyChannel.
      * It is private so NettyChannel usually create by {@link NettyChannel#getOrAddChannel(Channel, URL, ChannelHandler)}
@@ -65,11 +67,12 @@ final class NettyChannel extends AbstractChannel {
         }
         this.channel = channel;
     }
+
     /**
      * Get dubbo channel by netty channel through channel cache.
      * Put netty channel into it if dubbo channel don't exist in the cache.
      *
-     * @param ch netty channel
+     * @param ch      netty channel
      * @param url
      * @param handler dubbo handler that contain netty's handler
      * @return
@@ -90,6 +93,7 @@ final class NettyChannel extends AbstractChannel {
         }
         return ret;
     }
+
     /**
      * Remove the inactive channel.
      *
@@ -120,7 +124,7 @@ final class NettyChannel extends AbstractChannel {
      * Send message by netty and whether to wait the completion of the send.
      *
      * @param message message that need send.
-     * @param sent whether to ack async-sent
+     * @param sent    whether to ack async-sent
      * @throws RemotingException throw RemotingException if wait until timeout or any exception thrown by method body that surrounded by try-catch.
      */
     @Override
@@ -142,10 +146,10 @@ final class NettyChannel extends AbstractChannel {
                 throw cause;
             }
         } catch (Throwable e) {
-            throw new RemotingException(this, "Failed to send message " + message + " to " + getRemoteAddress() + ", cause: " + e.getMessage(), e);
+            throw new RemotingException(this, "Failed to send message " + LogUtils.getRequest(message) + " to " + getRemoteAddress() + ", cause: " + e.getMessage(), e);
         }
         if (!success) {
-            throw new RemotingException(this, "Failed to send message " + message + " to " + getRemoteAddress()
+            throw new RemotingException(this, "Failed to send message " + LogUtils.getRequest(message) + " to " + getRemoteAddress()
                     + "in timeout(" + timeout + "ms) limit");
         }
     }
