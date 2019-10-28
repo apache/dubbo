@@ -24,8 +24,11 @@ import org.apache.dubbo.rpc.cluster.Directory;
 /**
  * mock impl
  *
+ * Notice! Except for mock, this class also wraps the Invoker with {@link org.apache.dubbo.rpc.ClusterInterceptor}
+ * by extending {@link AbstractCluster#join(Directory)}.
+ *
  */
-public class MockClusterWrapper implements Cluster {
+public class MockClusterWrapper extends AbstractCluster {
 
     private Cluster cluster;
 
@@ -34,7 +37,7 @@ public class MockClusterWrapper implements Cluster {
     }
 
     @Override
-    public <T> Invoker<T> join(Directory<T> directory) throws RpcException {
+    protected <T> Invoker<T> doJoin(Directory<T> directory) throws RpcException {
         return new MockClusterInvoker<T>(directory,
                 this.cluster.join(directory));
     }

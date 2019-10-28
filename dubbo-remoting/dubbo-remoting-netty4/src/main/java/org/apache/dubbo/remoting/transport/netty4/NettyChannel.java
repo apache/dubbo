@@ -30,6 +30,7 @@ import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
@@ -50,6 +51,9 @@ final class NettyChannel extends AbstractChannel {
     private final Channel channel;
 
     private final Map<String, Object> attributes = new ConcurrentHashMap<String, Object>();
+
+    private final AtomicBoolean active = new AtomicBoolean(false);
+
     /**
      * The constructor of NettyChannel.
      * It is private so NettyChannel usually create by {@link NettyChannel#getOrAddChannel(Channel, URL, ChannelHandler)}
@@ -82,6 +86,7 @@ final class NettyChannel extends AbstractChannel {
         if (ret == null) {
             NettyChannel nettyChannel = new NettyChannel(ch, url, handler);
             if (ch.isActive()) {
+                nettyChannel.markActive(true);
                 ret = CHANNEL_MAP.putIfAbsent(ch, nettyChannel);
             }
             if (ret == null) {
@@ -97,7 +102,19 @@ final class NettyChannel extends AbstractChannel {
      */
     static void removeChannelIfDisconnected(Channel ch) {
         if (ch != null && !ch.isActive()) {
-            CHANNEL_MAP.remove(ch);
+            NettyChannel nettyChannel = CHANNEL_MAP.remove(ch);
+            if (nettyChannel != null) {
+                nettyChannel.markActive(false);
+            }
+        }
+    }
+
+    static void removeChannel(Channel ch) {
+        if (ch != null) {
+            NettyChannel nettyChannel = CHANNEL_MAP.remove(ch);
+            if (nettyChannel != null) {
+                nettyChannel.markActive(false);
+            }
         }
     }
 
@@ -113,7 +130,15 @@ final class NettyChannel extends AbstractChannel {
 
     @Override
     public boolean isConnected() {
-        return !isClosed() && channel.isActive();
+        return !isClosed() && active.get();
+    }
+
+    public boolean isActive() {
+        return active.get();
+    }
+
+    public void markActive(boolean isActive) {
+        active.set(isActive);
     }
 
     /**
@@ -142,6 +167,7 @@ final class NettyChannel extends AbstractChannel {
                 throw cause;
             }
         } catch (Throwable e) {
+            removeChannelIfDisconnected(channel);
             throw new RemotingException(this, "Failed to send message " + message + " to " + getRemoteAddress() + ", cause: " + e.getMessage(), e);
         }
         if (!success) {

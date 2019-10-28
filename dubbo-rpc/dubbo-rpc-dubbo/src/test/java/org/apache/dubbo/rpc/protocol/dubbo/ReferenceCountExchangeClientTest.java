@@ -41,8 +41,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
-import static org.apache.dubbo.rpc.protocol.dubbo.Constants.SHARE_CONNECTIONS_KEY;
 import static org.apache.dubbo.remoting.Constants.CONNECTIONS_KEY;
+import static org.apache.dubbo.rpc.protocol.dubbo.Constants.SHARE_CONNECTIONS_KEY;
 
 
 public class ReferenceCountExchangeClientTest {

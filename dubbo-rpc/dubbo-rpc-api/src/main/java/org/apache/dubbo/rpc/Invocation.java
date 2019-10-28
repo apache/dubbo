@@ -27,6 +27,8 @@ import java.util.Map;
  */
 public interface Invocation {
 
+    String getTargetServiceUniqueName();
+
     /**
      * get method name.
      *
@@ -34,6 +36,13 @@ public interface Invocation {
      * @serial
      */
     String getMethodName();
+
+
+    /**
+     * get the interface name
+     * @return
+     */
+    String getServiceName();
 
     /**
      * get parameter types.
@@ -57,11 +66,11 @@ public interface Invocation {
      * @return attachments.
      * @serial
      */
-    Map<String, String> getAttachments();
+    Map<String, Object> getAttachments();
 
-    void setAttachment(String key, String value);
+    void setAttachment(String key, Object value);
 
-    void setAttachmentIfAbsent(String key, String value);
+    void setAttachmentIfAbsent(String key, Object value);
 
     /**
      * get attachment by key.
@@ -69,7 +78,7 @@ public interface Invocation {
      * @return attachment value.
      * @serial
      */
-    String getAttachment(String key);
+    Object getAttachment(String key);
 
     /**
      * get attachment by key with default value.
@@ -77,7 +86,7 @@ public interface Invocation {
      * @return attachment value.
      * @serial
      */
-    String getAttachment(String key, String defaultValue);
+    Object getAttachment(String key, Object defaultValue);
 
     /**
      * get the invoker in current context.
@@ -87,4 +96,9 @@ public interface Invocation {
      */
     Invoker<?> getInvoker();
 
+    Object put(Object key, Object value);
+
+    Object get(Object key);
+
+    Map<Object, Object> getAttributes();
 }
