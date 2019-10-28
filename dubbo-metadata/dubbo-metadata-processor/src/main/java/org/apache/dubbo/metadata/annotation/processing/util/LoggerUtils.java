@@ -17,28 +17,29 @@
 package org.apache.dubbo.metadata.annotation.processing.util;
 
 
-import java.util.logging.Logger;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 
 import static java.lang.String.format;
-import static java.util.logging.Level.INFO;
-import static java.util.logging.Level.WARNING;
 
 /**
  * Logger Utils
+ *
+ * @since 2.7.5
  */
 public interface LoggerUtils {
 
-    Logger LOGGER = Logger.getLogger("dubbo-metadata-processor");
+    Logger LOGGER = LoggerFactory.getLogger("dubbo-metadata-processor");
 
     static void info(String format, Object... args) {
-        if (LOGGER.isLoggable(INFO)) {
+        if (LOGGER.isInfoEnabled()) {
             LOGGER.info(format(format, args));
         }
     }
 
     static void warn(String format, Object... args) {
-        if (LOGGER.isLoggable(WARNING)) {
-            LOGGER.warning(format(format, args));
+        if (LOGGER.isWarnEnabled()) {
+            LOGGER.warn(format(format, args));
         }
     }
 }

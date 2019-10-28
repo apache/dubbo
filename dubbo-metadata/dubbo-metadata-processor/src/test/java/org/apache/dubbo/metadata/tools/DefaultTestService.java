@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
  * @since 2.7.5
  */
 @Service(
-        interfaceName = "org.apache.dubbo.metadata.tools.EchoService",
+        interfaceName = "org.apache.dubbo.metadata.tools.TestService",
         version = "1.0.0",
         group = "default"
 )

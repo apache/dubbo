@@ -33,9 +33,12 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import java.io.File;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -48,6 +51,8 @@ import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.get
 import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.getAllSuperTypes;
 import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.getHierarchicalTypes;
 import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.getInterfaces;
+import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.getResource;
+import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.getResourceName;
 import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.getSuperType;
 import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.isAnnotationType;
 import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.isArrayType;
@@ -66,7 +71,9 @@ import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.ofD
 import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.ofTypeElement;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -439,5 +446,22 @@ public class TypeUtilsTest extends AbstractAnnotationProcessingTest {
 
         typeElements = listTypeElements(null);
         assertTrue(typeElements.isEmpty());
+    }
+
+    @Test
+    public void testGetResource() throws URISyntaxException {
+        URL resource = getResource(processingEnv, testType);
+        assertNotNull(resource);
+        assertTrue(new File(resource.toURI()).exists());
+        assertEquals(resource, getResource(processingEnv, testType.asType()));
+        assertEquals(resource, getResource(processingEnv, "org.apache.dubbo.metadata.tools.TestServiceImpl"));
+
+        assertThrows(RuntimeException.class, () -> getResource(processingEnv, "NotFound"));
+    }
+
+    @Test
+    public void testGetResourceName() {
+        assertEquals("java/lang/String.class", getResourceName("java.lang.String"));
+        assertNull(getResourceName(null));
     }
 }

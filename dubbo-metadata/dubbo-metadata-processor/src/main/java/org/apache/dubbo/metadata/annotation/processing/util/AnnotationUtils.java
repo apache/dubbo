@@ -185,17 +185,9 @@ public interface AnnotationUtils {
                 findMetaAnnotation(element, annotationClassName) != null;
     }
 
-//    static boolean isMetaAnnotationPresent(AnnotationMirror annotation, CharSequence metaAnnotationClassName) {
-//        if (annotation == null || metaAnnotationClassName == null) {
-//            return false;
-//        }
-//        return findAnnotation(annotation.getAnnotationType(), metaAnnotationClassName) != null;
-//    }
-
     static <T> T getAttribute(AnnotationMirror annotation, String attributeName) {
         return annotation == null ? null : getAttribute(annotation.getElementValues(), attributeName);
     }
-
 
     static <T> T getAttribute(Map<? extends ExecutableElement, ? extends AnnotationValue> attributesMap,
                               String attributeName) {
@@ -224,7 +216,7 @@ public interface AnnotationUtils {
                         }
                         annotationValue = (T) array;
                     } catch (ClassNotFoundException e) {
-                        e.printStackTrace();
+                        throw new RuntimeException(e);
                     }
                 } else {
                     annotationValue = (T) value.getValue();

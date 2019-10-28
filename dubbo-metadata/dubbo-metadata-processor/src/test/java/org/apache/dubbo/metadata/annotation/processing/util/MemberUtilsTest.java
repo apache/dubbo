@@ -23,15 +23,24 @@ import org.apache.dubbo.metadata.tools.TestServiceImpl;
 import org.junit.jupiter.api.Test;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import java.util.List;
 import java.util.Set;
 
+import static javax.lang.model.element.Modifier.PRIVATE;
 import static javax.lang.model.util.ElementFilter.fieldsIn;
+import static javax.lang.model.util.ElementFilter.methodsIn;
 import static org.apache.dubbo.metadata.annotation.processing.util.MemberUtils.getAllDeclaredMembers;
 import static org.apache.dubbo.metadata.annotation.processing.util.MemberUtils.getDeclaredMembers;
+import static org.apache.dubbo.metadata.annotation.processing.util.MemberUtils.hasModifiers;
+import static org.apache.dubbo.metadata.annotation.processing.util.MemberUtils.isPublicNonStatic;
+import static org.apache.dubbo.metadata.annotation.processing.util.MemberUtils.matchParameterTypes;
+import static org.apache.dubbo.metadata.annotation.processing.util.MethodUtils.findMethod;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * {@link MemberUtils} Test
@@ -49,6 +58,20 @@ public class MemberUtilsTest extends AbstractAnnotationProcessingTest {
     @Override
     protected void beforeEach() {
         testType = getType(TestServiceImpl.class);
+    }
+
+    @Test
+    public void testIsPublicNonStatic() {
+        assertFalse(isPublicNonStatic(null));
+        methodsIn(getDeclaredMembers(testType.asType())).forEach(method -> assertTrue(isPublicNonStatic(method)));
+    }
+
+    @Test
+    public void testHasModifiers() {
+        assertFalse(hasModifiers(null));
+        List<? extends Element> members = getAllDeclaredMembers(testType.asType());
+        List<VariableElement> fields = fieldsIn(members);
+        assertTrue(hasModifiers(fields.get(0), PRIVATE));
     }
 
     @Test
@@ -82,7 +105,9 @@ public class MemberUtilsTest extends AbstractAnnotationProcessingTest {
     }
 
     @Test
-    public void testHasMembers() {
-
+    public void testMatchParameterTypes() {
+        ExecutableElement method = findMethod(testType, "echo", "java.lang.String");
+        assertTrue(matchParameterTypes(method.getParameters(), "java.lang.String"));
+        assertFalse(matchParameterTypes(method.getParameters(), "java.lang.Object"));
     }
 }

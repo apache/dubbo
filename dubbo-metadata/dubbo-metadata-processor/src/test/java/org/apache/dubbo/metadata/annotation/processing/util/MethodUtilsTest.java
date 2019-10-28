@@ -32,7 +32,12 @@ import java.util.Set;
 import static org.apache.dubbo.metadata.annotation.processing.util.MethodUtils.findMethod;
 import static org.apache.dubbo.metadata.annotation.processing.util.MethodUtils.getAllDeclaredMethods;
 import static org.apache.dubbo.metadata.annotation.processing.util.MethodUtils.getDeclaredMethods;
+import static org.apache.dubbo.metadata.annotation.processing.util.MethodUtils.getMethodName;
+import static org.apache.dubbo.metadata.annotation.processing.util.MethodUtils.getMethodParameterTypes;
 import static org.apache.dubbo.metadata.annotation.processing.util.MethodUtils.getOverrideMethod;
+import static org.apache.dubbo.metadata.annotation.processing.util.MethodUtils.getPublicNonStaticMethods;
+import static org.apache.dubbo.metadata.annotation.processing.util.MethodUtils.getReturnType;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -68,19 +73,35 @@ public class MethodUtilsTest extends AbstractAnnotationProcessingTest {
         assertTrue(getAllDeclaredMethods((TypeMirror) null).isEmpty());
     }
 
+    private List<? extends ExecutableElement> doGetAllDeclaredMethods() {
+        return getAllDeclaredMethods(testType, Object.class);
+    }
+
     @Test
     public void testGetAllDeclaredMethods() {
+        List<? extends ExecutableElement> methods = doGetAllDeclaredMethods();
+        assertEquals(14, methods.size());
+    }
 
-        List<? extends ExecutableElement> methods = getAllDeclaredMethods(testType, Object.class);
+    @Test
+    public void testGetPublicNonStaticMethods() {
+        List<? extends ExecutableElement> methods = getPublicNonStaticMethods(testType, Object.class);
         assertEquals(14, methods.size());
 
-        ExecutableElement overrideMethod = getOverrideMethod(processingEnv, testType, methods.get(0));
-        assertNull(overrideMethod);
+        methods = getPublicNonStaticMethods(testType.asType(), Object.class);
+        assertEquals(14, methods.size());
+    }
 
-        ExecutableElement declaringMethod = findMethod(getType(TestService.class), "echo", "java.lang.String");
+    @Test
+    public void testIsMethod() {
+        List<? extends ExecutableElement> methods = getPublicNonStaticMethods(testType, Object.class);
+        assertEquals(14, methods.stream().map(MethodUtils::isMethod).count());
+    }
 
-        overrideMethod = getOverrideMethod(processingEnv, testType, declaringMethod);
-        assertEquals(methods.get(0), overrideMethod);
+    @Test
+    public void testIsPublicNonStaticMethod() {
+        List<? extends ExecutableElement> methods = getPublicNonStaticMethods(testType, Object.class);
+        assertEquals(14, methods.stream().map(MethodUtils::isPublicNonStaticMethod).count());
     }
 
     @Test
@@ -139,7 +160,36 @@ public class MethodUtilsTest extends AbstractAnnotationProcessingTest {
     }
 
     @Test
-    public void testMatchParameterTypes() {
+    public void testGetOverrideMethod() {
+        List<? extends ExecutableElement> methods = doGetAllDeclaredMethods();
 
+        ExecutableElement overrideMethod = getOverrideMethod(processingEnv, testType, methods.get(0));
+        assertNull(overrideMethod);
+
+        ExecutableElement declaringMethod = findMethod(getType(TestService.class), "echo", "java.lang.String");
+
+        overrideMethod = getOverrideMethod(processingEnv, testType, declaringMethod);
+        assertEquals(methods.get(0), overrideMethod);
+    }
+
+    @Test
+    public void testGetMethodName() {
+        ExecutableElement method = findMethod(testType, "echo", "java.lang.String");
+        assertEquals("echo", getMethodName(method));
+        assertNull(getMethodName(null));
+    }
+
+    @Test
+    public void testReturnType() {
+        ExecutableElement method = findMethod(testType, "echo", "java.lang.String");
+        assertEquals("java.lang.String", getReturnType(method));
+        assertNull(getReturnType(null));
+    }
+
+    @Test
+    public void testMatchParameterTypes() {
+        ExecutableElement method = findMethod(testType, "echo", "java.lang.String");
+        assertArrayEquals(new String[]{"java.lang.String"}, getMethodParameterTypes(method));
+        assertTrue(getMethodParameterTypes(null).length == 0);
     }
 }

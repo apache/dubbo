@@ -18,14 +18,18 @@ package org.apache.dubbo.metadata.annotation.processing.util;
 
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.metadata.annotation.processing.AbstractAnnotationProcessingTest;
+import org.apache.dubbo.metadata.tools.SpringRestService;
 import org.apache.dubbo.metadata.tools.TestService;
 import org.apache.dubbo.metadata.tools.TestServiceImpl;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.ws.rs.Path;
@@ -40,7 +44,10 @@ import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUti
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.getAnnotations;
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.getAttribute;
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.getValue;
+import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.isAnnotationPresent;
+import static org.apache.dubbo.metadata.annotation.processing.util.MethodUtils.findMethod;
 import static org.apache.dubbo.metadata.annotation.processing.util.MethodUtils.getAllDeclaredMethods;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -68,7 +75,7 @@ public class AnnotationUtilsTest extends AbstractAnnotationProcessingTest {
         AnnotationMirror serviceAnnotation = getAnnotation(testType, Service.class);
         assertEquals("3.0.0", getAttribute(serviceAnnotation, "version"));
         assertEquals("test", getAttribute(serviceAnnotation, "group"));
-        assertEquals("org.apache.dubbo.metadata.tools.EchoService", getAttribute(serviceAnnotation, "interfaceName"));
+        assertEquals("org.apache.dubbo.metadata.tools.TestService", getAttribute(serviceAnnotation, "interfaceName"));
 
         assertNull(getAnnotation(testType, (Class) null));
         assertNull(getAnnotation(testType, (String) null));
@@ -128,17 +135,20 @@ public class AnnotationUtilsTest extends AbstractAnnotationProcessingTest {
         List<AnnotationMirror> annotations = getAllAnnotations(testType);
         assertEquals(5, annotations.size());
 
+        annotations = getAllAnnotations(testType.asType(), annotation -> true);
+        assertEquals(5, annotations.size());
+
         annotations = getAllAnnotations(processingEnv, TestServiceImpl.class);
         assertEquals(5, annotations.size());
 
-        annotations = getAllAnnotations(testType, Service.class);
-        assertEquals(3, annotations.size());
+        annotations = getAllAnnotations(testType.asType(), Service.class);
+        assertEquals(2, annotations.size());
 
         annotations = getAllAnnotations(testType, Override.class);
         assertEquals(0, annotations.size());
 
-        annotations = getAllAnnotations(testType, com.alibaba.dubbo.config.annotation.Service.class);
-        assertEquals(1, annotations.size());
+        annotations = getAllAnnotations(testType.asType(), com.alibaba.dubbo.config.annotation.Service.class);
+        assertEquals(2, annotations.size());
 
         assertTrue(getAllAnnotations((Element) null, (Class) null).isEmpty());
         assertTrue(getAllAnnotations((TypeMirror) null, (String) null).isEmpty());
@@ -192,17 +202,31 @@ public class AnnotationUtilsTest extends AbstractAnnotationProcessingTest {
 
     @Test
     public void testGetAttribute() {
-        assertEquals("org.apache.dubbo.metadata.tools.EchoService", getAttribute(findAnnotation(testType, Service.class), "interfaceName"));
-        assertEquals("org.apache.dubbo.metadata.tools.EchoService", getAttribute(findAnnotation(testType, Service.class).getElementValues(), "interfaceName"));
+        assertEquals("org.apache.dubbo.metadata.tools.TestService", getAttribute(findAnnotation(testType, Service.class), "interfaceName"));
+        assertEquals("org.apache.dubbo.metadata.tools.TestService", getAttribute(findAnnotation(testType, Service.class).getElementValues(), "interfaceName"));
         assertEquals("/echo", getAttribute(findAnnotation(testType, Path.class), "value"));
 
         assertNull(getAttribute(findAnnotation(testType, Path.class), null));
         assertNull(getAttribute(findAnnotation(testType, (Class) null), null));
+
+        ExecutableElement method = findMethod(getType(SpringRestService.class), "param", String.class);
+
+        AnnotationMirror annotation = findAnnotation(method, GetMapping.class);
+
+        assertArrayEquals(new String[]{"/param"}, (String[]) getAttribute(annotation, "value"));
+        assertNull(getAttribute(annotation, "path"));
     }
 
     @Test
     public void testGetValue() {
         AnnotationMirror pathAnnotation = getAnnotation(getType(TestService.class), Path.class);
         assertEquals("/echo", getValue(pathAnnotation));
+    }
+
+    @Test
+    public void testIsAnnotationPresent() {
+        assertTrue(isAnnotationPresent(testType, "org.apache.dubbo.config.annotation.Service"));
+        assertTrue(isAnnotationPresent(testType, "com.alibaba.dubbo.config.annotation.Service"));
+        assertTrue(isAnnotationPresent(testType, "javax.ws.rs.Path"));
     }
 }

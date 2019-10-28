@@ -20,7 +20,6 @@ import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.Processor;
 import javax.lang.model.SourceVersion;
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -35,7 +34,6 @@ import java.util.Set;
 
 import static javax.lang.model.util.ElementFilter.methodsIn;
 import static org.apache.dubbo.metadata.annotation.processing.util.ServiceAnnotationUtils.SUPPORTED_ANNOTATION_TYPES;
-import static org.apache.dubbo.metadata.annotation.processing.util.ServiceAnnotationUtils.resolveServiceInterfaceName;
 
 /**
  * Abstract {@link Processor} for the classes that were annotated by Dubbo's @Service
@@ -96,11 +94,6 @@ public abstract class AbstractServiceAnnotationProcessor extends AbstractProcess
 
     protected PackageElement getPackageElement(Element type) {
         return this.elements.getPackageOf(type);
-    }
-
-    protected TypeElement resolveServiceInterface(TypeElement annotatedClass, AnnotationMirror annotation) {
-        String interfaceClassName = resolveServiceInterfaceName(annotatedClass, annotation);
-        return getTypeElement(interfaceClassName);
     }
 
     @Override

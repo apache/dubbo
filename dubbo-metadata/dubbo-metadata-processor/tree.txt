@@ -1,0 +1,43 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -------------< org.apache.dubbo:dubbo-metadata-processor >--------------
+[INFO] Building dubbo-metadata-processor 2.7.5-cloudnative-SNAPSHOT
+[INFO] --------------------------------[ jar ]---------------------------------
+Downloading from apache.snapshots: https://repository.apache.org/snapshots/org/apache/dubbo/dubbo-metadata/2.7.5-cloudnative-SNAPSHOT/maven-metadata.xml
+Downloading from apache.snapshots: https://repository.apache.org/snapshots/org/apache/dubbo/dubbo-parent/2.7.5-cloudnative-SNAPSHOT/maven-metadata.xml
+Progress (1): 629 B                   Downloaded from apache.snapshots: https://repository.apache.org/snapshots/org/apache/dubbo/dubbo-parent/2.7.5-cloudnative-SNAPSHOT/maven-metadata.xml (629 B at 153 B/s)
+Downloading from sonatype-nexus: https://oss.sonatype.org/content/repositories/releases/org/apache/dubbo/dubbo-common/2.7.5-cloudnative-SNAPSHOT/maven-metadata.xml
+Downloading from apache.snapshots: https://repository.apache.org/snapshots/org/apache/dubbo/dubbo-common/2.7.5-cloudnative-SNAPSHOT/maven-metadata.xml
+Progress (1): 814 B                   Downloaded from apache.snapshots: https://repository.apache.org/snapshots/org/apache/dubbo/dubbo-common/2.7.5-cloudnative-SNAPSHOT/maven-metadata.xml (814 B at 251 B/s)
+Downloading from apache.snapshots: https://repository.apache.org/snapshots/org/apache/dubbo/dubbo-config-api/2.7.5-cloudnative-SNAPSHOT/maven-metadata.xml
+Downloading from sonatype-nexus: https://oss.sonatype.org/content/repositories/releases/org/apache/dubbo/dubbo-config-api/2.7.5-cloudnative-SNAPSHOT/maven-metadata.xml
+Downloading from sonatype-nexus: https://oss.sonatype.org/content/repositories/releases/org/apache/dubbo/dubbo-config/2.7.5-cloudnative-SNAPSHOT/maven-metadata.xml
+Downloading from apache.snapshots: https://repository.apache.org/snapshots/org/apache/dubbo/dubbo-config/2.7.5-cloudnative-SNAPSHOT/maven-metadata.xml
+[INFO] 
+[INFO] --- maven-dependency-plugin:2.10:tree (default-cli) @ dubbo-metadata-processor ---
+[INFO] org.apache.dubbo:dubbo-metadata-processor:jar:2.7.5-cloudnative-SNAPSHOT
+[INFO] +- org.apache.dubbo:dubbo-metadata-api:jar:2.7.5-cloudnative-SNAPSHOT:compile
+[INFO] +- org.apache.dubbo:dubbo-common:jar:2.7.5-cloudnative-SNAPSHOT:compile
+[INFO] +- com.google.code.gson:gson:jar:2.8.5:compile
+[INFO] +- org.apache.dubbo:dubbo-config-api:jar:2.7.5-cloudnative-SNAPSHOT:test
+[INFO] +- javax.ws.rs:javax.ws.rs-api:jar:2.0:test
+[INFO] +- org.springframework:spring-web:jar:4.3.16.RELEASE:test
+[INFO] +- org.junit.jupiter:junit-jupiter-engine:jar:5.4.0:test
+[INFO] |  +- org.apiguardian:apiguardian-api:jar:1.0.0:test
+[INFO] |  +- org.junit.platform:junit-platform-engine:jar:1.4.0:test
+[INFO] |  |  +- org.opentest4j:opentest4j:jar:1.1.1:test
+[INFO] |  |  \- org.junit.platform:junit-platform-commons:jar:1.4.0:test
+[INFO] |  \- org.junit.jupiter:junit-jupiter-api:jar:5.4.0:test
+[INFO] +- org.junit.jupiter:junit-jupiter-params:jar:5.4.0:test
+[INFO] +- org.hamcrest:hamcrest-all:jar:1.3:test
+[INFO] +- org.mockito:mockito-core:jar:2.23.4:test
+[INFO] |  +- net.bytebuddy:byte-buddy:jar:1.9.3:test
+[INFO] |  +- net.bytebuddy:byte-buddy-agent:jar:1.9.3:test
+[INFO] |  \- org.objenesis:objenesis:jar:2.6:test
+[INFO] \- cglib:cglib-nodep:jar:2.2:test
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  20.428 s
+[INFO] Finished at: 2019-10-25T14:57:18+08:00
+[INFO] ------------------------------------------------------------------------

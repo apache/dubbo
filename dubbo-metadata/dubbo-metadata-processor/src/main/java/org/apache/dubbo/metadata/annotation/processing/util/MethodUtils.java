@@ -26,7 +26,6 @@ import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -137,26 +136,20 @@ public interface MethodUtils {
 
 
     static String getMethodName(ExecutableElement method) {
-        return method.getSimpleName().toString();
+        return method == null ? null : method.getSimpleName().toString();
     }
 
     static String getReturnType(ExecutableElement method) {
-        return method.getReturnType().toString();
+        return method == null ? null : method.getReturnType().toString();
     }
 
     static String[] getMethodParameterTypes(ExecutableElement method) {
-        return method.getParameters()
-                .stream()
-                .map(Element::asType)
-                .map(TypeMirror::toString)
-                .toArray(String[]::new);
-    }
-
-    static boolean isEnclosingMethod(Type type, ExecutableElement method) {
-        return isEnclosingMethod(type.getTypeName(), method);
-    }
-
-    static boolean isEnclosingMethod(CharSequence type, ExecutableElement method) {
-        return Objects.equals(type, method.getEnclosingElement().asType().toString());
+        return method == null ?
+                new String[0] :
+                method.getParameters()
+                        .stream()
+                        .map(Element::asType)
+                        .map(TypeMirror::toString)
+                        .toArray(String[]::new);
     }
 }

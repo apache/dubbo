@@ -67,13 +67,13 @@ public interface ServiceAnnotationUtils {
 
     Set<String> SUPPORTED_ANNOTATION_TYPES = unmodifiableSet(new HashSet(asList(SERVICE_ANNOTATION_TYPE, LEGACY_SERVICE_ANNOTATION_TYPE)));
 
-    static AnnotationMirror getAnnotation(TypeElement annotatedClass) {
-        return getAnnotation(annotatedClass.getAnnotationMirrors());
-    }
-
     static boolean isServiceAnnotationPresent(TypeElement annotatedType) {
         return isAnnotationPresent(annotatedType, SERVICE_ANNOTATION_TYPE) ||
                 isAnnotationPresent(annotatedType, LEGACY_SERVICE_ANNOTATION_TYPE);
+    }
+
+    static AnnotationMirror getAnnotation(TypeElement annotatedClass) {
+        return getAnnotation(annotatedClass.getAnnotationMirrors());
     }
 
     static AnnotationMirror getAnnotation(Iterable<? extends AnnotationMirror> annotationMirrors) {

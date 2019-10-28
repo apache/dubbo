@@ -17,7 +17,6 @@
 package org.apache.dubbo.metadata.annotation.processing.util;
 
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
@@ -27,8 +26,8 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
-import static javax.lang.model.element.Modifier.FINAL;
-import static javax.lang.model.element.Modifier.PUBLIC;
+import static javax.lang.model.element.ElementKind.ENUM_CONSTANT;
+import static javax.lang.model.element.ElementKind.FIELD;
 import static javax.lang.model.element.Modifier.STATIC;
 import static javax.lang.model.util.ElementFilter.fieldsIn;
 import static org.apache.dubbo.common.function.Predicates.EMPTY_ARRAY;
@@ -109,15 +108,15 @@ public interface FieldUtils {
         if (field == null || !isEnumType(field.getEnclosingElement())) {
             return false;
         }
-        return isField(field, PUBLIC, STATIC, FINAL);
+        return ENUM_CONSTANT.equals(field.getKind());
     }
 
     static boolean isNonStaticField(VariableElement field) {
-        return !hasModifiers(field, STATIC);
+        return isField(field) && !hasModifiers(field, STATIC);
     }
 
     static boolean isField(VariableElement field) {
-        return matches(field, ElementKind.FIELD);
+        return matches(field, FIELD) || isEnumMemberField(field);
     }
 
     static boolean isField(VariableElement field, Modifier... modifiers) {

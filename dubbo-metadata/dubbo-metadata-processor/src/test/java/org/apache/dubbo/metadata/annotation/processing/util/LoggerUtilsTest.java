@@ -14,38 +14,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.tools;
+package org.apache.dubbo.metadata.annotation.processing.util;
 
+import org.junit.jupiter.api.Test;
 
-import org.apache.dubbo.config.annotation.Service;
-
-import java.io.Serializable;
+import static org.apache.dubbo.metadata.annotation.processing.util.LoggerUtils.info;
+import static org.apache.dubbo.metadata.annotation.processing.util.LoggerUtils.warn;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
- * {@link TestService} Implementation
+ * {@link LoggerUtils} Test
  *
  * @since 2.7.5
  */
-@com.alibaba.dubbo.config.annotation.Service(
-        interfaceName = "org.apache.dubbo.metadata.tools.TestService",
-        interfaceClass = TestService.class,
-        version = "3.0.0",
-        group = "test"
-)
-@Service(
-        interfaceName = "org.apache.dubbo.metadata.tools.TestService",
-        interfaceClass = TestService.class,
-        version = "3.0.0",
-        group = "test"
-)
-public class TestServiceImpl extends GenericTestService implements TestService, AutoCloseable, Serializable {
+public class LoggerUtilsTest {
 
-    @Override
-    public String echo(String message) {
-        return "[ECHO] " + message;
+    @Test
+    public void testLogger() {
+        assertNotNull(LoggerUtils.LOGGER);
     }
 
-    @Override
-    public void close() throws Exception {
+    @Test
+    public void testInfo() {
+        info("Hello,World");
+        info("Hello,%s", "World");
+        info("%s,%s", "Hello", "World");
+    }
+
+    @Test
+    public void testWarn() {
+        warn("Hello,World");
+        warn("Hello,%s", "World");
+        warn("%s,%s", "Hello", "World");
     }
 }

@@ -356,21 +356,27 @@ public interface TypeUtils {
     }
 
     static URL getResource(ProcessingEnvironment processingEnv, TypeMirror type) {
-        return getResource(processingEnv, type.toString());
+        return type == null ? null : getResource(processingEnv, type.toString());
     }
 
     static URL getResource(ProcessingEnvironment processingEnv, CharSequence type) {
         String relativeName = getResourceName(type);
+        URL resource = null;
         try {
-            FileObject fileObject = processingEnv.getFiler().getResource(StandardLocation.CLASS_OUTPUT, "", relativeName);
-            return fileObject.toUri().toURL();
+            if (relativeName != null) {
+                FileObject fileObject = processingEnv.getFiler().getResource(StandardLocation.CLASS_OUTPUT, "", relativeName);
+                resource = fileObject.toUri().toURL();
+                // try to open it
+                resource.getContent();
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
+        return resource;
     }
 
     static String getResourceName(CharSequence type) {
         return type == null ? null : type.toString().replace('.', '/').concat(".class");
     }
-
 }
