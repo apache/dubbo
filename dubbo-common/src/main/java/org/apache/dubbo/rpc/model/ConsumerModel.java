@@ -18,7 +18,7 @@ package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.config.ReferenceConfig;
+import org.apache.dubbo.config.inner.ReferenceConfig;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;

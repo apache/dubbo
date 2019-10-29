@@ -16,8 +16,8 @@
  */
 package org.apache.dubbo.config.event;
 
-import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.annotation.Reference;
+import org.apache.dubbo.config.inner.ReferenceConfig;
 import org.apache.dubbo.event.Event;
 
 /**

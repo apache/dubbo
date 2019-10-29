@@ -17,6 +17,7 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.inner.ReferenceConfig;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
@@ -28,7 +29,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.STUB_EVENT_KEY;
  * AbstractConsumerConfig
  *
  * @export
- * @see org.apache.dubbo.config.ReferenceConfig
+ * @see ReferenceConfig
  */
 public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
 

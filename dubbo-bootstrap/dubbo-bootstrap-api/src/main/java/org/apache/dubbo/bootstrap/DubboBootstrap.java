@@ -54,11 +54,11 @@ import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
-import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
-import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.event.ServiceConfigExportedEvent;
+import org.apache.dubbo.config.inner.ReferenceConfig;
+import org.apache.dubbo.config.inner.ServiceConfig;
 import org.apache.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
 import org.apache.dubbo.config.metadata.ConfigurableMetadataServiceExporter;
 import org.apache.dubbo.event.Event;
@@ -554,12 +554,13 @@ public class DubboBootstrap extends GenericEventListener {
      * <p>
      * Bootstrap must has been started before calling this method.
      */
-    public void refer(ReferenceConfig<?> referenceConfig) {
+    public Object refer(ReferenceConfig<?> referenceConfig) {
         if (!isStarted()) {
             throw new IllegalStateException("Bootstrap hasn't been started yet.");
         }
         this.reference(referenceConfig);
         referrer.accept(referenceConfig);
+        return cache.get(referenceConfig);
     }
 
     public void unRefer(ReferenceConfig<?> referenceConfig) {
@@ -650,13 +651,18 @@ public class DubboBootstrap extends GenericEventListener {
                     String id = "config-center-" + protocol + "-" + registryConfig.getPort();
                     ConfigCenterConfig cc = new ConfigCenterConfig();
                     cc.setId(id);
-                    cc.setParameters(registryConfig.getParameters() == null ?
-                            new HashMap<>() :
-                            new HashMap<>(registryConfig.getParameters()));
+                    if (cc.getParameters() == null) {
+                        cc.setParameters(new HashMap<>());
+                    }
+                    if (registryConfig.getParameters() != null) {
+                        cc.getParameters().putAll(registryConfig.getParameters());
+                    }
                     cc.getParameters().put(CLIENT_KEY, registryConfig.getClient());
                     cc.setProtocol(registryConfig.getProtocol());
                     cc.setAddress(registryConfig.getAddress());
                     cc.setNamespace(registryConfig.getGroup());
+                    cc.setUsername(registryConfig.getUsername());
+                    cc.setPassword(registryConfig.getPassword());
                     cc.setHighestPriority(false);
                     configManager.addConfigCenter(cc);
                 });

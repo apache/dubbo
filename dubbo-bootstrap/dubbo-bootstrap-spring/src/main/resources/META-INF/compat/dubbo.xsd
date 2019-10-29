@@ -1474,7 +1474,7 @@
             <xsd:documentation><![CDATA[ Export service config ]]></xsd:documentation>
             <xsd:appinfo>
                 <tool:annotation>
-                    <tool:exports type="org.apache.dubbo.config.ServiceConfig"/>
+                    <tool:exports type="org.apache.dubbo.config.inner.ServiceConfig"/>
                 </tool:annotation>
             </xsd:appinfo>
         </xsd:annotation>
@@ -1485,7 +1485,7 @@
             <xsd:documentation><![CDATA[ Reference service config ]]></xsd:documentation>
             <xsd:appinfo>
                 <tool:annotation>
-                    <tool:exports type="org.apache.dubbo.config.ReferenceConfig"/>
+                    <tool:exports type="org.apache.dubbo.config.inner.ReferenceConfig"/>
                 </tool:annotation>
             </xsd:appinfo>
         </xsd:annotation>

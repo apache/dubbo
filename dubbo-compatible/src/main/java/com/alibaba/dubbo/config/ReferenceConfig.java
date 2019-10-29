@@ -20,7 +20,7 @@ package com.alibaba.dubbo.config;
 import org.apache.dubbo.config.annotation.Reference;
 
 @Deprecated
-public class ReferenceConfig<T> extends org.apache.dubbo.config.ReferenceConfig<T> {
+public class ReferenceConfig<T> extends org.apache.dubbo.config.inner.ReferenceConfig<T> {
 
     public ReferenceConfig() {
     }

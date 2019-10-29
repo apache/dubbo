@@ -43,6 +43,31 @@ public interface Invocation extends org.apache.dubbo.rpc.Invocation {
         return null;
     }
 
+    @Override
+    default String getTargetServiceUniqueName() {
+        return null;
+    }
+
+    @Override
+    default Object getAttachment(String key, Object defaultValue) {
+        return null;
+    }
+
+    @Override
+    default Object put(Object key, Object value) {
+        return null;
+    }
+
+    @Override
+    default Object get(Object key) {
+        return null;
+    }
+
+    @Override
+    default Map<Object, Object> getAttributes() {
+        return null;
+    }
+
     class CompatibleInvocation implements Invocation {
 
         private org.apache.dubbo.rpc.Invocation delegate;

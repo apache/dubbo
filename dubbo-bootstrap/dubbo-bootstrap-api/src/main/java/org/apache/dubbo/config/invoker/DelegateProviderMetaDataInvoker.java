@@ -17,7 +17,7 @@
 package org.apache.dubbo.config.invoker;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.config.ServiceConfig;
+import org.apache.dubbo.config.inner.ServiceConfig;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;

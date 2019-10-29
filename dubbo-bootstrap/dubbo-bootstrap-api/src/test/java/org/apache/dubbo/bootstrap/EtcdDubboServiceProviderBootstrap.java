@@ -21,7 +21,7 @@ import org.apache.dubbo.bootstrap.rest.UserServiceImpl;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
-import org.apache.dubbo.config.ServiceConfig;
+import org.apache.dubbo.config.inner.ServiceConfig;
 
 import java.util.Arrays;
 

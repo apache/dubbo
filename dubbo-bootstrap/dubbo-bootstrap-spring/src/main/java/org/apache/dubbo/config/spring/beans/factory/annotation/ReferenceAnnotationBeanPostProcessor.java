@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
-import org.apache.dubbo.bootstrap.ReferenceConfigCache;
+import org.apache.dubbo.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.ReferenceBean;
@@ -243,8 +243,14 @@ public class ReferenceAnnotationBeanPostProcessor extends AnnotationInjectedBean
         if (existsServiceBean(referencedBeanName)) { // If the local @Service Bean exists, build a proxy of ReferenceBean
             return newProxyInstance(getClassLoader(), new Class[]{serviceInterfaceType},
                     wrapInvocationHandler(referenceBeanName, referenceBean));
-        } else {                                    // ReferenceBean should be initialized and get immediately
-            return referenceBean.get();
+        } else { // ReferenceBean should be initialized and get immediately
+            /**
+             * TODO, if we can make sure this happens after {@link DubboLifecycleComponentApplicationListener},
+             * TODO, then we can avoid starting bootstrap in here, because bootstrap should has been started.
+             */
+            DubboBootstrap bootstrap = DubboBootstrap.getInstance();
+            bootstrap.start();
+            return bootstrap.refer(referenceBean);
         }
     }
 
@@ -289,7 +295,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AnnotationInjectedBean
         }
 
         private void init() {
-            this.bean = ReferenceConfigCache.ReferHelper.refer(referenceBean);
+            this.bean = DubboBootstrap.getInstance().refer(referenceBean);
         }
     }
 

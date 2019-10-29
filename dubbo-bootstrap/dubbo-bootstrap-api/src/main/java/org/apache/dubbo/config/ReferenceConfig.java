@@ -14,23 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.event;
+package org.apache.dubbo.config;
 
-import org.apache.dubbo.config.inner.ServiceConfig;
-import org.apache.dubbo.event.Event;
+import org.apache.dubbo.bootstrap.DubboBootstrap;
 
 /**
- * {@link ServiceConfig} event post-{@link ServiceConfig#export() export}
- *
- * @since 2.7.4
+ * Please avoid using this class for any new application,
+ * use {@link org.apache.dubbo.config.inner.ReferenceConfig} instead.
  */
-public class ServiceConfigExportedEvent extends Event {
+@Deprecated
+public class ReferenceConfig<T> extends org.apache.dubbo.config.inner.ReferenceConfig<T> {
 
-    public ServiceConfigExportedEvent(ServiceConfig source) {
-        super(source);
+    public synchronized T get() {
+        DubboBootstrap bootstrap = DubboBootstrap.getInstance();
+        // bootstrap guarantees only started once.
+        bootstrap.start();
+        return (T) bootstrap.refer(this);
     }
 
-    public ServiceConfig getServiceConfig() {
-        return (ServiceConfig) getSource();
-    }
 }

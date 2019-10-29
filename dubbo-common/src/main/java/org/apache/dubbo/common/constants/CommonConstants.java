@@ -258,6 +258,8 @@ public interface CommonConstants {
 
     String GENERIC_SERIALIZATION_BEAN = "bean";
 
+    String GENERIC_RAW_RETURN = "raw.return";
+
     String GENERIC_SERIALIZATION_PROTOBUF = "protobuf-json";
 
     /**

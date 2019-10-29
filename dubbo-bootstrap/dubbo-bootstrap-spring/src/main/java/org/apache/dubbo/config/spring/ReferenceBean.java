@@ -17,8 +17,8 @@
 package org.apache.dubbo.config.spring;
 
 import org.apache.dubbo.bootstrap.ReferenceConfigCache;
-import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.annotation.Reference;
+import org.apache.dubbo.config.inner.ReferenceConfig;
 import org.apache.dubbo.config.spring.extension.SpringExtensionFactory;
 import org.apache.dubbo.config.support.Parameter;
 

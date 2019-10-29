@@ -21,8 +21,8 @@ package org.apache.dubbo.demo.consumer;
 import org.apache.dubbo.bootstrap.DubboBootstrap;
 import org.apache.dubbo.bootstrap.ReferenceConfigCache;
 import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.inner.ReferenceConfig;
 import org.apache.dubbo.demo.DemoService;
 
 public class Application {

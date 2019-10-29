@@ -17,6 +17,8 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.config.inner.ReferenceConfig;
+import org.apache.dubbo.config.inner.ServiceConfig;
 
 /**
  * Dynamically add some parameters / check config
