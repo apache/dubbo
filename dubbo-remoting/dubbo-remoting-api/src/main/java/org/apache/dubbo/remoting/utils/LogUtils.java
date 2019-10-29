@@ -14,7 +14,7 @@ public class LogUtils {
      * @param message
      * @return
      */
-    public static Object getRequest(Object message) {
+    public static Object getRequestWithoutData(Object message) {
         if (logger.isDebugEnabled()) {
             return message;
         }

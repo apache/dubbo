@@ -110,11 +110,11 @@ final class NettyChannel extends AbstractChannel {
                 throw cause;
             }
         } catch (Throwable e) {
-            throw new RemotingException(this, "Failed to send message " + LogUtils.getRequest(message) + " to " + getRemoteAddress() + ", cause: " + e.getMessage(), e);
+            throw new RemotingException(this, "Failed to send message " + LogUtils.getRequestWithoutData(message) + " to " + getRemoteAddress() + ", cause: " + e.getMessage(), e);
         }
 
         if (!success) {
-            throw new RemotingException(this, "Failed to send message " + LogUtils.getRequest(message) + " to " + getRemoteAddress()
+            throw new RemotingException(this, "Failed to send message " + LogUtils.getRequestWithoutData(message) + " to " + getRemoteAddress()
                     + "in timeout(" + timeout + "ms) limit");
         }
     }

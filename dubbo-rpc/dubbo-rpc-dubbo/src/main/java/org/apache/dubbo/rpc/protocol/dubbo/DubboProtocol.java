@@ -263,7 +263,7 @@ public class DubboProtocol extends AbstractProtocol {
 
         if (exporter == null) {
             throw new RemotingException(channel, "Not found exported service: " + serviceKey + " in " + exporterMap.keySet() + ", may be version or group mismatch " +
-                    ", channel: consumer: " + channel.getRemoteAddress() + " --> provider: " + channel.getLocalAddress() + ", message:" + getInvocation(inv));
+                    ", channel: consumer: " + channel.getRemoteAddress() + " --> provider: " + channel.getLocalAddress() + ", message:" + getInvocationWithoutData(inv));
         }
 
         return exporter.getInvoker();
@@ -673,7 +673,7 @@ public class DubboProtocol extends AbstractProtocol {
      * @param invocation
      * @return
      */
-    private Invocation getInvocation(Invocation invocation) {
+    private Invocation getInvocationWithoutData(Invocation invocation) {
         if (logger.isDebugEnabled()) {
             return invocation;
         }
