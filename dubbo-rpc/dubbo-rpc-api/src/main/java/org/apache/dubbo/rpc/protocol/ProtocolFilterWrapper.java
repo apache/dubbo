@@ -27,6 +27,7 @@ import org.apache.dubbo.rpc.ListenableFilter;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.util.List;
 
@@ -47,8 +48,6 @@ public class ProtocolFilterWrapper implements Protocol {
         }
         this.protocol = protocol;
     }
-
-
 
     private static <T> Invoker<T> buildInvokerChain(final Invoker<T> invoker, String key, String group) {
         Invoker<T> last = invoker;
@@ -82,7 +81,7 @@ public class ProtocolFilterWrapper implements Protocol {
                             asyncResult = filter.invoke(next, invocation);
                         } catch (Exception e) {
                             // onError callback
-                            if (filter instanceof ListenableFilter) {
+                            if (filter instanceof ListenableFilter && !RpcUtils.isOneway(getUrl(), invocation)) {
                                 Filter.Listener listener = ((ListenableFilter) filter).listener();
                                 if (listener != null) {
                                     listener.onError(e, invoker, invocation);
@@ -155,6 +154,11 @@ public class ProtocolFilterWrapper implements Protocol {
         @Override
         public Result invoke(Invocation invocation) throws RpcException {
             Result asyncResult = filterInvoker.invoke(invocation);
+
+            //do not invoke listener for one way mode.
+            if (RpcUtils.isOneway(getUrl(), invocation)) {
+                return asyncResult;
+            }
 
             asyncResult = asyncResult.whenCompleteWithContext((r, t) -> {
                 for (int i = filters.size() - 1; i >= 0; i--) {
