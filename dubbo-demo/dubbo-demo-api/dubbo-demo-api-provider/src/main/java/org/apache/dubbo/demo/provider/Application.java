@@ -21,7 +21,7 @@ package org.apache.dubbo.demo.provider;
 import org.apache.dubbo.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.RegistryConfig;
-import org.apache.dubbo.config.inner.ServiceConfig;
+import org.apache.dubbo.config.service.ServiceConfig;
 import org.apache.dubbo.demo.DemoService;
 
 public class Application {

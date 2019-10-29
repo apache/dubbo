@@ -17,7 +17,7 @@
 package org.apache.dubbo.config.event;
 
 import org.apache.dubbo.config.annotation.Reference;
-import org.apache.dubbo.config.inner.ReferenceConfig;
+import org.apache.dubbo.config.service.ReferenceConfig;
 import org.apache.dubbo.event.Event;
 import org.apache.dubbo.rpc.Invoker;
 

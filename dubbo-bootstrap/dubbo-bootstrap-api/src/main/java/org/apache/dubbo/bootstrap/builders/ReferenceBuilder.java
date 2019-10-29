@@ -18,7 +18,7 @@ package org.apache.dubbo.bootstrap.builders;
 
 import org.apache.dubbo.config.ConsumerConfig;
 import org.apache.dubbo.config.MethodConfig;
-import org.apache.dubbo.config.inner.ReferenceConfig;
+import org.apache.dubbo.config.service.ReferenceConfig;
 
 import java.util.ArrayList;
 import java.util.List;

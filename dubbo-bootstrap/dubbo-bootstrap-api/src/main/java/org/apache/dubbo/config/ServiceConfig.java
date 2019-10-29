@@ -20,10 +20,10 @@ import org.apache.dubbo.bootstrap.DubboBootstrap;
 
 /**
  * Please avoid using this class for any new application,
- * use {@link org.apache.dubbo.config.inner.ServiceConfig} instead.
+ * use {@link org.apache.dubbo.config.service.ServiceConfig} instead.
  */
 @Deprecated
-public class ServiceConfig<T> extends org.apache.dubbo.config.inner.ServiceConfig<T> {
+public class ServiceConfig<T> extends org.apache.dubbo.config.service.ServiceConfig<T> {
 
     @Deprecated
     public void export() {

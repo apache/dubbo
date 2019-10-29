@@ -18,7 +18,7 @@ package org.apache.dubbo.config.spring;
 
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Service;
-import org.apache.dubbo.config.inner.ServiceConfig;
+import org.apache.dubbo.config.service.ServiceConfig;
 import org.apache.dubbo.config.spring.context.event.ServiceBeanExportedEvent;
 import org.apache.dubbo.config.spring.extension.SpringExtensionFactory;
 

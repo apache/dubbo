@@ -19,8 +19,8 @@ package org.apache.dubbo.rpc.model;
 import org.apache.dubbo.common.context.FrameworkExt;
 import org.apache.dubbo.common.context.LifecycleAdapter;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.config.inner.ReferenceConfig;
-import org.apache.dubbo.config.inner.ServiceConfig;
+import org.apache.dubbo.config.service.ReferenceConfig;
+import org.apache.dubbo.config.service.ServiceConfig;
 
 import java.util.ArrayList;
 import java.util.Collections;

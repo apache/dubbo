@@ -20,10 +20,10 @@ import org.apache.dubbo.bootstrap.DubboBootstrap;
 
 /**
  * Please avoid using this class for any new application,
- * use {@link org.apache.dubbo.config.inner.ReferenceConfig} instead.
+ * use {@link org.apache.dubbo.config.service.ReferenceConfig} instead.
  */
 @Deprecated
-public class ReferenceConfig<T> extends org.apache.dubbo.config.inner.ReferenceConfig<T> {
+public class ReferenceConfig<T> extends org.apache.dubbo.config.service.ReferenceConfig<T> {
 
     public synchronized T get() {
         DubboBootstrap bootstrap = DubboBootstrap.getInstance();

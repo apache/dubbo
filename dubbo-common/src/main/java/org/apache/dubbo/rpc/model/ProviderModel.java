@@ -17,7 +17,7 @@
 package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.config.inner.ServiceConfig;
+import org.apache.dubbo.config.service.ServiceConfig;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;

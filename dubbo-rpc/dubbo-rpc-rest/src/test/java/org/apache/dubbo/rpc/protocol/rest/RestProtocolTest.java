@@ -224,7 +224,7 @@ public class RestProtocolTest {
 
         assertThat(result, is(3));
 
-        Map<String, String> attachment = DemoServiceImpl.getAttachments();
+        Map<String, Object> attachment = DemoServiceImpl.getAttachments();
         assertThat(attachment.get("key1"), nullValue());
         assertThat(attachment.get("key2"), equalTo("value"));
         assertThat(attachment.get("key3"), equalTo("=value"));
@@ -255,8 +255,8 @@ public class RestProtocolTest {
     public void testRemoteApplicationName() {
         URL url = URL.valueOf("rest://127.0.0.1:5342/rest/say?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.DemoService").addParameter("application","consumer");
         DemoServiceImpl server = new DemoServiceImpl();
-        ProviderModel providerModel = new ProviderModel(url.getPathKey(), server, DemoService.class);
-        ApplicationModel.initProviderModel(url.getPathKey(), providerModel);
+
+        this.registerProvider(url, server, DemoService.class);
 
         Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, url));
         Invoker<DemoService> invoker = protocol.refer(DemoService.class, url);

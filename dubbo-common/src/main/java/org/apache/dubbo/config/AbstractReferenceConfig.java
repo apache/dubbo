@@ -17,7 +17,7 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.config.inner.ReferenceConfig;
+import org.apache.dubbo.config.service.ReferenceConfig;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 

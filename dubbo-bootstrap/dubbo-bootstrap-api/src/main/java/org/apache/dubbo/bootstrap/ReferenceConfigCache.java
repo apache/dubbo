@@ -30,7 +30,7 @@ import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.event.ReferenceConfigDestroyedEvent;
-import org.apache.dubbo.config.inner.ReferenceConfig;
+import org.apache.dubbo.config.service.ReferenceConfig;
 import org.apache.dubbo.event.Event;
 import org.apache.dubbo.event.EventDispatcher;
 import org.apache.dubbo.metadata.WritableMetadataService;

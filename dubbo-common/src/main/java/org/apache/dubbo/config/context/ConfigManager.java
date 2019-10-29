@@ -32,8 +32,8 @@ import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
-import org.apache.dubbo.config.inner.ReferenceConfig;
-import org.apache.dubbo.config.inner.ServiceConfig;
+import org.apache.dubbo.config.service.ReferenceConfig;
+import org.apache.dubbo.config.service.ServiceConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Collection;

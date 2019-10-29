@@ -18,7 +18,7 @@ package org.apache.dubbo.config.event.listener;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.config.event.ServiceConfigExportedEvent;
-import org.apache.dubbo.config.inner.ServiceConfig;
+import org.apache.dubbo.config.service.ServiceConfig;
 import org.apache.dubbo.event.EventListener;
 import org.apache.dubbo.metadata.ServiceNameMapping;
 

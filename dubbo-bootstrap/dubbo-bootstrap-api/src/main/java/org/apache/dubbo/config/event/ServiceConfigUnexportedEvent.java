@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.config.event;
 
-import org.apache.dubbo.config.inner.ServiceConfig;
+import org.apache.dubbo.config.service.ServiceConfig;
 import org.apache.dubbo.event.Event;
 
 /**
