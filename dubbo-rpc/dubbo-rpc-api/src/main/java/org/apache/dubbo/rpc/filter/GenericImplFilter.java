@@ -32,6 +32,7 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.service.GenericException;
+import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
@@ -130,6 +131,7 @@ public class GenericImplFilter extends ListenableFilter {
             String methodName = invocation.getMethodName();
             Class<?>[] parameterTypes = invocation.getParameterTypes();
             if (ProtocolUtils.isGeneric(generic)
+                    && GenericService.class != invoker.getInterface()
                     && (!$INVOKE.equals(invocation.getMethodName()) && !$INVOKE_ASYNC.equals(invocation.getMethodName()))
                     && invocation instanceof RpcInvocation) {
                 if (!appResponse.hasException()) {

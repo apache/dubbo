@@ -62,7 +62,7 @@ public class RpcUtils {
                 }
             }
         } catch (Throwable t) {
-            logger.warn(t.getMessage(), t);
+            // ignore
         }
         return null;
     }

@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc;
 
 import java.util.Map;
+import java.util.stream.Stream;
 
 /**
  * Invocation. (API, Prototype, NonThreadSafe)
@@ -44,6 +45,17 @@ public interface Invocation {
      * @serial
      */
     Class<?>[] getParameterTypes();
+
+    /**
+     * get parameter's signature, string representation of parameter types.
+     *
+     * @return parameter's signature
+     */
+    default String[] getParameterSignatures() {
+        return Stream.of(getParameterTypes())
+                .map(Class::getName)
+                .toArray(String[]::new);
+    }
 
     /**
      * get arguments.
