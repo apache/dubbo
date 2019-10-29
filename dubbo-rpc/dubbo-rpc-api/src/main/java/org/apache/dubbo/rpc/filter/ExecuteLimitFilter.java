@@ -19,12 +19,14 @@ package org.apache.dubbo.rpc.filter;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcStatus;
+import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import static org.apache.dubbo.rpc.Constants.EXECUTES_KEY;
 
@@ -67,7 +69,7 @@ public class ExecuteLimitFilter implements Filter, Filter.Listener {
 
     @Override
     public void onMessage(Result appResponse, Invoker<?> invoker, Invocation invocation) {
-        RpcStatus.endCount(invoker.getUrl(), invocation.getMethodName(), getElapsed(invocation), true);
+        RpcStatus.endCount(invoker.getUrl(), getGenericOriginMethod(invocation), getElapsed(invocation), true);
     }
 
     @Override
@@ -78,11 +80,21 @@ public class ExecuteLimitFilter implements Filter, Filter.Listener {
                 return;
             }
         }
-        RpcStatus.endCount(invoker.getUrl(), invocation.getMethodName(), getElapsed(invocation), false);
+        RpcStatus.endCount(invoker.getUrl(), getGenericOriginMethod(invocation), getElapsed(invocation), false);
     }
 
     private long getElapsed(Invocation invocation) {
         Object beginTime = invocation.get(EXECUTELIMIT_FILTER_START_TIME);
         return beginTime != null ? System.currentTimeMillis() - (Long) beginTime : 0;
+    }
+
+    private String getGenericOriginMethod(Invocation invocation) {
+        String originMethodName = null;
+        if (ProtocolUtils.isGeneric((String) invocation.getAttachment(Constants.GENERIC_KEY, "false"))) {
+            originMethodName = invocation.getArguments() != null && invocation.getArguments().length > 0 ?
+                    (String) invocation.getArguments()[0] : invocation.getMethodName();
+        }
+        originMethodName = originMethodName == null ? invocation.getMethodName() : originMethodName;
+        return originMethodName;
     }
 }
