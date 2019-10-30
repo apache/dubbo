@@ -1,7 +1,7 @@
 # Dubbo customized version
 
 ## Get Started, how to use
-1. Add maven dependency
+1. Add maven dependency to your project
 ```xml
     <build>
         <extensions>
@@ -176,12 +176,12 @@ public static abstract class GreeterImplBase implements io.grpc.BindableService,
 
 To compile the plugin:
 ```
-$ ../gradlew java_pluginExecutable
+$ ./gradlew java_pluginExecutable
 ```
 
 To publish to local repository
 ```
-$ ../gradlew publishToMavenLocal
+$ ./gradlew publishToMavenLocal
 ```
 
 ## Publish to maven repository
