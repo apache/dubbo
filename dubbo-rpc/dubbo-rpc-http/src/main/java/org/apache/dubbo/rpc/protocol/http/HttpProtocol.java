@@ -17,9 +17,10 @@
 package org.apache.dubbo.rpc.protocol.http;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.RemotingServer;
 import org.apache.dubbo.remoting.http.HttpBinder;
 import org.apache.dubbo.remoting.http.HttpHandler;
-import org.apache.dubbo.remoting.http.HttpServer;
+import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.AbstractProxyProtocol;
@@ -44,8 +45,6 @@ public class HttpProtocol extends AbstractProxyProtocol {
     public static final String ACCESS_CONTROL_ALLOW_ORIGIN_HEADER = "Access-Control-Allow-Origin";
     public static final String ACCESS_CONTROL_ALLOW_METHODS_HEADER = "Access-Control-Allow-Methods";
     public static final String ACCESS_CONTROL_ALLOW_HEADERS_HEADER = "Access-Control-Allow-Headers";
-
-    private final Map<String, HttpServer> serverMap = new ConcurrentHashMap<>();
 
     private final Map<String, JsonRpcServer> skeletonMap = new ConcurrentHashMap<>();
 
@@ -100,12 +99,12 @@ public class HttpProtocol extends AbstractProxyProtocol {
     }
 
     @Override
-    protected <T> Runnable doExport(T impl, Class<T> type, URL url) throws RpcException {
-        String addr = url.getIp() + ":" + url.getPort();
-        HttpServer server = serverMap.get(addr);
-        if (server == null) {
-            server = httpBinder.bind(url, new InternalHandler(url.getParameter("cors", false)));
-            serverMap.put(addr, server);
+    protected <T> Runnable doExport(final T impl, Class<T> type, URL url) throws RpcException {
+        String addr = getAddr(url);
+        ProtocolServer protocolServer = serverMap.get(addr);
+        if (protocolServer == null) {
+            RemotingServer remotingServer = httpBinder.bind(url, new InternalHandler(url.getParameter("cors", false)));
+            serverMap.put(addr, new ProxyProtocolServer(remotingServer));
         }
         final String path = url.getAbsolutePath();
         JsonRpcServer skeleton = new JsonRpcServer(impl, type);
@@ -124,7 +123,6 @@ public class HttpProtocol extends AbstractProxyProtocol {
         return (T) jsonProxyFactoryBean.getObject();
     }
 
-    @Override
     protected int getErrorCode(Throwable e) {
         if (e instanceof RemoteAccessException) {
             e = e.getCause();
@@ -146,7 +144,7 @@ public class HttpProtocol extends AbstractProxyProtocol {
     public void destroy() {
         super.destroy();
         for (String key : new ArrayList<>(serverMap.keySet())) {
-            HttpServer server = serverMap.remove(key);
+            ProtocolServer server = serverMap.remove(key);
             if (server != null) {
                 try {
                     if (logger.isInfoEnabled()) {

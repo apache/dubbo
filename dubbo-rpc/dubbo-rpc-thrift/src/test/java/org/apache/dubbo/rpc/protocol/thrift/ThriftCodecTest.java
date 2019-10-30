@@ -133,7 +133,7 @@ public class ThriftCodecTest {
 
         Request request = createRequest();
 
-        DefaultFuture future = DefaultFuture.newFuture(channel, request, 10);
+        DefaultFuture future = DefaultFuture.newFuture(channel, request, 10, null);
 
         TMessage message = new TMessage("echoString", TMessageType.REPLY, ThriftCodec.getSeqId());
 
@@ -210,7 +210,7 @@ public class ThriftCodecTest {
 
         Request request = createRequest();
 
-        DefaultFuture future = DefaultFuture.newFuture(channel, request, 10);
+        DefaultFuture future = DefaultFuture.newFuture(channel, request, 10, null);
 
         TMessage message = new TMessage("echoString", TMessageType.EXCEPTION, ThriftCodec.getSeqId());
 
@@ -402,10 +402,10 @@ public class ThriftCodecTest {
         protocol.writeI16(Short.MAX_VALUE);
         protocol.writeByte(ThriftCodec.VERSION);
         protocol.writeString(
-                ((RpcInvocation) request.getData())
+                (String) ((RpcInvocation) request.getData())
                         .getAttachment(INTERFACE_KEY));
         protocol.writeString(
-                ((RpcInvocation) request.getData())
+                (String) ((RpcInvocation) request.getData())
                         .getAttachment(PATH_KEY));
         protocol.writeI64(request.getId());
         protocol.getTransport().flush();

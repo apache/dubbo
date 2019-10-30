@@ -36,19 +36,19 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
-import static org.apache.dubbo.rpc.cluster.Constants.CLUSTER_STICKY_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.CALLBACK_INSTANCES_LIMIT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.LAZY_CONNECT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
-import static org.apache.dubbo.rpc.Constants.LAZY_CONNECT_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
-import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
+import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
 import static org.apache.dubbo.remoting.Constants.CONNECT_TIMEOUT_KEY;
 import static org.apache.dubbo.remoting.Constants.RECONNECT_KEY;
-import static org.apache.dubbo.rpc.Constants.CALLBACK_INSTANCES_LIMIT_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.CLUSTER_STICKY_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 
 /**
  * DubboRegistryFactory

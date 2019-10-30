@@ -17,14 +17,14 @@
 package org.apache.dubbo.remoting.p2p;
 
 import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.Server;
+import org.apache.dubbo.remoting.RemotingServer;
 
 /**
  * Peer. (SPI, Prototype, ThreadSafe)
  * <p>
  * <a href="http://en.wikipedia.org/wiki/Peer-to-peer">Peer-to-peer</a>
  */
-public interface Peer extends Server {
+public interface Peer extends RemotingServer {
 
     /**
      * leave.

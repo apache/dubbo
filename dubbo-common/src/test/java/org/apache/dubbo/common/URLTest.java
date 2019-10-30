@@ -720,4 +720,12 @@ public class URLTest {
         URL url4 = URL.valueOf("10.20.130.230:20880/context/path?interface=org.apache.dubbo.test.interfaceName");
         Assertions.assertEquals("org.apache.dubbo.test.interfaceName::", url4.getColonSeparatedKey());
     }
+
+    @Test
+    public void testValueOf() {
+        URL.valueOf("10.20.130.230");
+        URL.valueOf("10.20.130.230:20880");
+        URL.valueOf("dubbo://10.20.130.230:20880");
+        URL.valueOf("dubbo://10.20.130.230:20880/path");
+    }
 }
