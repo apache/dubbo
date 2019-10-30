@@ -2,7 +2,7 @@ apply plugin: "cpp"
 apply plugin: "com.google.protobuf"
 
 group = "org.apache.dubbo"
-version = "1.19.0-SNAPSHOT" // CURRENT_GRPC_VERSION
+version = "1.19.0" // CURRENT_GRPC_VERSION
 
 description = 'The protoc plugin for gRPC Java'
 
