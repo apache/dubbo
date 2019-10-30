@@ -2,7 +2,7 @@ apply plugin: "cpp"
 apply plugin: "com.google.protobuf"
 
 group = "org.apache.dubbo"
-version = "1.19.0-SNAPSHOT" // CURRENT_GRPC_VERSION
+version = "1.19.0" // CURRENT_GRPC_VERSION
 
 description = 'The protoc plugin for gRPC Java'
 
@@ -24,7 +24,8 @@ apply plugin: "net.ltgt.errorprone"
 buildscript {
     repositories {
         maven { // The google mirror is less flaky than mavenCentral()
-            url "https://maven-central.storage-download.googleapis.com/repos/central/data/" }
+            url "https://maven-central.storage-download.googleapis.com/repos/central/data/"
+        }
         mavenLocal()
         maven { url "https://plugins.gradle.org/m2/" }
     }
@@ -368,6 +369,12 @@ publishing {
             }
         }
     }
+}
+
+signing {
+    useGpgCmd()
+    required false
+    sign publishing.publications.maven
 }
 
 def configureTestTask(Task task, String dep, String extraPackage, String serviceName) {
