@@ -20,6 +20,7 @@
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-rpc</artifactId>
         <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>dubbo-rpc-thrift</artifactId>
     <packaging>jar</packaging>
@@ -59,7 +60,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-config-spring</artifactId>
+            <artifactId>dubbo-bootstrap-spring</artifactId>
             <version>${project.parent.version}</version>
             <scope>test</scope>
         </dependency>

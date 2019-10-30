@@ -180,6 +180,17 @@ public class NetUtils {
         return address;
     }
 
+    private static volatile String HOST_ADDRESS;
+
+    public static String getHostAddress () {
+        if (HOST_ADDRESS != null) {
+            return HOST_ADDRESS;
+        }
+
+        HOST_ADDRESS = getLocalHost();
+        return HOST_ADDRESS;
+    }
+
     public static String getLocalHost() {
         InetAddress address = getLocalAddress();
         return address == null ? LOCALHOST_VALUE : address.getHostAddress();

@@ -35,12 +35,12 @@ import org.apache.dubbo.rpc.service.GenericService;
 
 import java.lang.reflect.Constructor;
 
-import static org.apache.dubbo.rpc.Constants.LOCAL_KEY;
-import static org.apache.dubbo.rpc.Constants.STUB_KEY;
-import static org.apache.dubbo.rpc.Constants.IS_SERVER_KEY;
-import static org.apache.dubbo.rpc.Constants.STUB_EVENT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.STUB_EVENT_KEY;
 import static org.apache.dubbo.rpc.Constants.DEFAULT_STUB_EVENT;
+import static org.apache.dubbo.rpc.Constants.IS_SERVER_KEY;
+import static org.apache.dubbo.rpc.Constants.LOCAL_KEY;
 import static org.apache.dubbo.rpc.Constants.STUB_EVENT_METHODS_KEY;
+import static org.apache.dubbo.rpc.Constants.STUB_KEY;
 
 /**
  * StubProxyFactoryWrapper
