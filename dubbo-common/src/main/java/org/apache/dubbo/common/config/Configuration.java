@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.common.config;
 
+import java.util.NoSuchElementException;
+
 /**
  * Configuration interface, to fetch the value for the specified key.
  */
@@ -42,6 +44,49 @@ public interface Configuration {
      */
     default String getString(String key, String defaultValue) {
         return convert(String.class, key, defaultValue);
+    }
+
+    default int getInt(String key) {
+        Integer i = this.getInteger(key, (Integer) null);
+        if (i != null) {
+            return i;
+        } else {
+            throw new NoSuchElementException('\'' + key + "' doesn't map to an existing object");
+        }
+    }
+
+    default int getInt(String key, int defaultValue) {
+        Integer i = this.getInteger(key, (Integer) null);
+        return i == null ? defaultValue : i;
+    }
+
+    default Integer getInteger(String key, Integer defaultValue) {
+        try {
+            return convert(Integer.class, key, defaultValue);
+        } catch (NumberFormatException e) {
+            throw new IllegalStateException('\'' + key + "' doesn't map to a Integer object", e);
+        }
+    }
+
+    default boolean getBoolean(String key) {
+        Boolean b = this.getBoolean(key, null);
+        if (b != null) {
+            return b;
+        } else {
+            throw new NoSuchElementException('\'' + key + "' doesn't map to an existing object");
+        }
+    }
+
+    default boolean getBoolean(String key, boolean defaultValue) {
+        return this.getBoolean(key, toBooleanObject(defaultValue));
+    }
+
+    default Boolean getBoolean(String key, Boolean defaultValue) {
+        try {
+            return convert(Boolean.class, key, defaultValue);
+        } catch (Exception e) {
+            throw new IllegalStateException("Try to get " + '\'' + key + "' failed, maybe because this key doesn't map to a Boolean object", e);
+        }
     }
 
     /**
@@ -128,5 +173,7 @@ public interface Configuration {
         return cls.cast(obj);
     }
 
-
+    static Boolean toBooleanObject(boolean bool) {
+        return bool ? Boolean.TRUE : Boolean.FALSE;
+    }
 }

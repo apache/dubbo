@@ -18,9 +18,9 @@ package org.apache.dubbo.rpc.filter;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.ListenableFilter;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
@@ -29,6 +29,7 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
@@ -37,7 +38,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_APPLICATI
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.rpc.Constants.ASYNC_KEY;
-import static org.apache.dubbo.remoting.Constants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.rpc.Constants.FORCE_USE_TAG;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 
@@ -49,16 +49,12 @@ import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
  * @see RpcContext
  */
 @Activate(group = PROVIDER, order = -10000)
-public class ContextFilter extends ListenableFilter {
+public class ContextFilter implements Filter, Filter.Listener {
     private static final String TAG_KEY = "dubbo.tag";
-
-    public ContextFilter() {
-        super.listener = new ContextListener();
-    }
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        Map<String, String> attachments = invocation.getAttachments();
+        Map<String, Object> attachments = invocation.getAttachments();
         if (attachments != null) {
             attachments = new HashMap<>(attachments);
             attachments.remove(PATH_KEY);
@@ -79,11 +75,11 @@ public class ContextFilter extends ListenableFilter {
                 .setInvocation(invocation)
 //                .setAttachments(attachments)  // merged from dubbox
                 .setLocalAddress(invoker.getUrl().getHost(), invoker.getUrl().getPort());
-        String remoteApplication = invocation.getAttachment(REMOTE_APPLICATION_KEY);
+        String remoteApplication = (String) invocation.getAttachment(REMOTE_APPLICATION_KEY);
         if (StringUtils.isNotEmpty(remoteApplication)) {
             context.setRemoteApplicationName(remoteApplication);
         } else {
-            context.setRemoteApplicationName(RpcContext.getContext().getAttachment(REMOTE_APPLICATION_KEY));
+            context.setRemoteApplicationName((String) RpcContext.getContext().getAttachment(REMOTE_APPLICATION_KEY));
 
         }
 
@@ -102,24 +98,24 @@ public class ContextFilter extends ListenableFilter {
             ((RpcInvocation) invocation).setInvoker(invoker);
         }
         try {
+            RpcContext.getContext().clearAfterEachInvoke(false);
             return invoker.invoke(invocation);
         } finally {
+            RpcContext.getContext().clearAfterEachInvoke(true);
             // IMPORTANT! For async scenario, we must remove context from current thread, so we always create a new RpcContext for the next invoke for the same thread.
             RpcContext.removeContext();
             RpcContext.removeServerContext();
         }
     }
 
-    static class ContextListener implements Listener {
-        @Override
-        public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
-            // pass attachments to result
-            appResponse.addAttachments(RpcContext.getServerContext().getAttachments());
-        }
+    @Override
+    public void onMessage(Result appResponse, Invoker<?> invoker, Invocation invocation) {
+        // pass attachments to result
+        appResponse.addAttachments(RpcContext.getServerContext().getAttachments());
+    }
 
-        @Override
-        public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
+    @Override
+    public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
 
-        }
     }
 }

@@ -841,6 +841,89 @@ public final class StringUtils {
         }
     }
 
+    public static String[] delimitedListToStringArray(String str, String delimiter) {
+        return delimitedListToStringArray(str, delimiter, (String) null);
+    }
+
+    public static String[] delimitedListToStringArray(String str, String delimiter, String charsToDelete) {
+        if (str == null) {
+            return new String[0];
+        } else if (delimiter == null) {
+            return new String[]{str};
+        } else {
+            List<String> result = new ArrayList();
+            int pos;
+            if ("".equals(delimiter)) {
+                for (pos = 0; pos < str.length(); ++pos) {
+                    result.add(deleteAny(str.substring(pos, pos + 1), charsToDelete));
+                }
+            } else {
+                int delPos;
+                for (pos = 0; (delPos = str.indexOf(delimiter, pos)) != -1; pos = delPos + delimiter.length()) {
+                    result.add(deleteAny(str.substring(pos, delPos), charsToDelete));
+                }
+
+                if (str.length() > 0 && pos <= str.length()) {
+                    result.add(deleteAny(str.substring(pos), charsToDelete));
+                }
+            }
+
+            return toStringArray((Collection) result);
+        }
+    }
+
+    public static String arrayToDelimitedString(Object[] arr, String delim) {
+        if (ArrayUtils.isEmpty(arr)) {
+            return "";
+        } else if (arr.length == 1) {
+            return nullSafeToString(arr[0]);
+        } else {
+            StringBuilder sb = new StringBuilder();
+
+            for (int i = 0; i < arr.length; ++i) {
+                if (i > 0) {
+                    sb.append(delim);
+                }
+
+                sb.append(arr[i]);
+            }
+
+            return sb.toString();
+        }
+    }
+
+    public static String deleteAny(String inString, String charsToDelete) {
+        if (isNotEmpty(inString) && isNotEmpty(charsToDelete)) {
+            StringBuilder sb = new StringBuilder(inString.length());
+
+            for (int i = 0; i < inString.length(); ++i) {
+                char c = inString.charAt(i);
+                if (charsToDelete.indexOf(c) == -1) {
+                    sb.append(c);
+                }
+            }
+
+            return sb.toString();
+        } else {
+            return inString;
+        }
+    }
+
+    public static String[] toStringArray(Collection<String> collection) {
+        return (String[]) collection.toArray(new String[0]);
+    }
+
+    public static String nullSafeToString(Object obj) {
+        if (obj == null) {
+            return "null";
+        } else if (obj instanceof String) {
+            return (String) obj;
+        } else {
+            String str = obj.toString();
+            return str != null ? str : "";
+        }
+    }
+
     /**
      * @param rawParameters format like '[{a:b},{c:d}]'
      * @return
