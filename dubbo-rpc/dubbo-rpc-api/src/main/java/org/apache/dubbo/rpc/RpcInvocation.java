@@ -23,6 +23,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
@@ -46,6 +47,8 @@ public class RpcInvocation implements Invocation, Serializable {
     private String methodName;
 
     private Class<?>[] parameterTypes;
+
+    private String[] parameterSignatures;
 
     private Object[] arguments;
 
@@ -118,6 +121,10 @@ public class RpcInvocation implements Invocation, Serializable {
     public RpcInvocation(String methodName, Class<?>[] parameterTypes, Object[] arguments, Map<String, Object> attachments, Invoker<?> invoker) {
         this.methodName = methodName;
         this.parameterTypes = parameterTypes == null ? new Class<?>[0] : parameterTypes;
+        this.parameterSignatures = parameterTypes == null ? null :
+                Stream.of(getParameterTypes())
+                        .map(Class::getName)
+                        .toArray(String[]::new);
         this.arguments = arguments == null ? new Object[0] : arguments;
         this.attachments = attachments == null ? new HashMap<String, Object>() : attachments;
         this.invoker = invoker;
@@ -168,8 +175,19 @@ public class RpcInvocation implements Invocation, Serializable {
         return parameterTypes;
     }
 
+    @Override
+    public String[] getParameterSignatures() {
+        return  parameterSignatures;
+    }
+
     public void setParameterTypes(Class<?>[] parameterTypes) {
         this.parameterTypes = parameterTypes == null ? new Class<?>[0] : parameterTypes;
+    }
+
+    // parameter signatures can be set independently, it is useful when the service type is not found on caller side and
+    // the invocation is not generic invocation either.
+    public void setParameterSignatures(String[] parameterSignatures) {
+        this.parameterSignatures = parameterSignatures;
     }
 
     @Override
