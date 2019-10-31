@@ -698,7 +698,7 @@ public class ExtensionLoader<T> {
 
     private Map<String, Class<?>> getExtensionClasses() {
         Map<String, Class<?>> classes = cachedClasses.get();
-        if (classes == null) {
+        if (classes == null || classes.size() == 0 ) {
             synchronized (cachedClasses) {
                 classes = cachedClasses.get();
                 if (classes == null) {
