@@ -61,6 +61,7 @@ import org.apache.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
 import org.apache.dubbo.config.metadata.ConfigurableMetadataServiceExporter;
 import org.apache.dubbo.config.service.ReferenceConfig;
 import org.apache.dubbo.config.service.ServiceConfig;
+import org.apache.dubbo.config.utils.ReferenceConfigCache;
 import org.apache.dubbo.event.Event;
 import org.apache.dubbo.event.EventDispatcher;
 import org.apache.dubbo.event.EventListener;
