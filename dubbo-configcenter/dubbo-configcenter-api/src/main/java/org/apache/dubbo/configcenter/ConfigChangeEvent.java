@@ -23,7 +23,7 @@ package org.apache.dubbo.configcenter;
  */
 public class ConfigChangeEvent {
     private final String key;
-
+    private final String group;
     private final String value;
     private final ConfigChangeType changeType;
 
@@ -31,14 +31,27 @@ public class ConfigChangeEvent {
         this(key, value, ConfigChangeType.MODIFIED);
     }
 
+    public ConfigChangeEvent(String key, String group, String value) {
+        this(key, group, value, ConfigChangeType.MODIFIED);
+    }
+
     public ConfigChangeEvent(String key, String value, ConfigChangeType changeType) {
+        this(key, null, value, changeType);
+    }
+
+    public ConfigChangeEvent(String key, String group, String value, ConfigChangeType changeType) {
         this.key = key;
+        this.group = group;
         this.value = value;
         this.changeType = changeType;
     }
 
     public String getKey() {
         return key;
+    }
+
+    public String getGroup() {
+        return group;
     }
 
     public String getValue() {
@@ -53,6 +66,7 @@ public class ConfigChangeEvent {
     public String toString() {
         return "ConfigChangeEvent{" +
                 "key='" + key + '\'' +
+                ", group='" + group + '\'' +
                 ", value='" + value + '\'' +
                 ", changeType=" + changeType +
                 '}';

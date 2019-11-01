@@ -28,22 +28,28 @@ import java.util.Optional;
  * Consumer Model which is about subscribed services.
  */
 public class ConsumerModel {
-    private final ServiceMetadata serviceMetadata;
-    private final Map<Method, ConsumerMethodModel> methodModels = new IdentityHashMap<Method, ConsumerMethodModel>();
+    private ServiceMetadata serviceMetadata;
+    private Map<Method, ConsumerMethodModel> methodModels = new IdentityHashMap<Method, ConsumerMethodModel>();
 
     /**
      * This constructor create an instance of ConsumerModel and passed objects should not be null.
      * If service name, service instance, proxy object,methods should not be null. If these are null
      * then this constructor will throw {@link IllegalArgumentException}
      *
-     * @param attributes Attributes of methods.
-     * @param metadata
+     * @param serviceMetadata
      */
-    public ConsumerModel(Map<String, Object> attributes, ServiceMetadata metadata) {
-        this.serviceMetadata = metadata;
-        for (Method method : metadata.getServiceType().getMethods()) {
+    public ConsumerModel(ServiceMetadata serviceMetadata) {
+        this.serviceMetadata = serviceMetadata;
+    }
+
+    public void init(Map<String, Object> attributes) {
+        for (Method method : serviceMetadata.getServiceType().getMethods()) {
             methodModels.put(method, new ConsumerMethodModel(method, attributes));
         }
+    }
+
+    public ClassLoader getClassLoader() {
+        return serviceMetadata.getServiceType().getClassLoader();
     }
 
     /**
