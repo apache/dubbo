@@ -48,7 +48,6 @@ import org.apache.dubbo.rpc.support.ProtocolUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -244,6 +243,17 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             }
             checkInterfaceAndMethods(interfaceClass, methods);
         }
+
+        //init serivceMetadata
+        serviceMetadata.setVersion(version);
+        serviceMetadata.setGroup(group);
+        serviceMetadata.setDefaultGroup(group);
+        serviceMetadata.setServiceKey(URL.buildKey(interfaceName, group, version));
+        serviceMetadata.setServiceType(getActualInterface());
+        serviceMetadata.setServiceInterfaceName(interfaceName);
+        ConsumerModel consumerModel = new ConsumerModel(serviceMetadata);
+        ApplicationModel.initConsumerModel(URL.buildKey(interfaceName, group, version), consumerModel);
+
         resolveFile();
         checkApplication();
         checkMetadataReport();
@@ -257,8 +267,6 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
     }
 
     public synchronized T get() {
-        checkAndUpdateSubConfigs();
-
         if (destroyed) {
             throw new IllegalStateException("The invoker of ReferenceConfig(" + url + ") has already destroyed!");
         }
@@ -289,16 +297,10 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         if (initialized) {
             return;
         }
+
+        checkAndUpdateSubConfigs();
         checkStubAndLocal(interfaceClass);
         checkMock(interfaceClass);
-
-        //init serivceMetadata
-        serviceMetadata.setVersion(version);
-        serviceMetadata.setGroup(group);
-        serviceMetadata.setDefaultGroup(group);
-        serviceMetadata.setServiceType(getActualInterface());
-        serviceMetadata.setServiceInterfaceName(interfaceName);
-        serviceMetadata.setServiceKey(URL.buildKey(interfaceName, group, version));
 
         Map<String, String> map = new HashMap<String, String>();
         map.put(SIDE_KEY, CONSUMER_SIDE);
@@ -344,7 +346,10 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                     attributes.put(methodConfig.getName(), asyncMethodInfo);
                 }
             }
+
+            ApplicationModel.getConsumerModel(URL.buildKey(interfaceName, group, version)).init(attributes);
         }
+
 
         String hostToRegistry = ConfigUtils.getSystemProperty(DUBBO_IP_TO_REGISTRY);
         if (StringUtils.isEmpty(hostToRegistry)) {
@@ -352,17 +357,14 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         } else if (isInvalidLocalHost(hostToRegistry)) {
             throw new IllegalArgumentException("Specified invalid registry ip from property:" + DUBBO_IP_TO_REGISTRY + ", value:" + hostToRegistry);
         }
+
         map.put(REGISTER_IP_KEY, hostToRegistry);
 
-        serviceMetadata.getAttachments().putAll(map);
-
-        ApplicationModel.initConsumerModel(URL.buildKey(interfaceName, group, version), buildConsumerModel(attributes, serviceMetadata));
-
         ref = createProxy(map);
-
-
         serviceMetadata.setTarget(ref);
         serviceMetadata.addAttribute(PROXY_CLASS_REF, ref);
+        serviceMetadata.getAttachments().putAll(map);
+
         initialized = true;
     }
 
@@ -376,20 +378,6 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             }
         }
         return actualInterface;
-    }
-
-    private ConsumerModel buildConsumerModel(Map<String, Object> attributes, ServiceMetadata metadata) {
-        Method[] methods = interfaceClass.getMethods();
-        Class serviceInterface = interfaceClass;
-        if (interfaceClass == GenericService.class) {
-            try {
-                serviceInterface = Class.forName(interfaceName);
-                methods = serviceInterface.getMethods();
-            } catch (ClassNotFoundException e) {
-                methods = interfaceClass.getMethods();
-            }
-        }
-        return new ConsumerModel(attributes, metadata);
     }
 
     @SuppressWarnings({"unchecked", "rawtypes", "deprecation"})
