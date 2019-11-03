@@ -58,7 +58,7 @@ public interface Invocation {
      *
      * @return parameter's signature
      */
-    default String[] getParameterSignatures() {
+    default String[] getCompatibleParamSignatures() {
         return Stream.of(getParameterTypes())
                 .map(Class::getName)
                 .toArray(String[]::new);

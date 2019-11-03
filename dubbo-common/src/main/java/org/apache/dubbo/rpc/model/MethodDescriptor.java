@@ -32,6 +32,8 @@ public class MethodDescriptor {
     //    private final boolean isCallBack;
 //    private final boolean isFuture;
     private final String paramDesc;
+    // duplicate filed as paramDesc, but with different format.
+    private final String[] compatibleParamSignatures;
     private final Class<?>[] parameterClasses;
     private final Class<?> returnClass;
     private final Type[] returnTypes;
@@ -43,7 +45,8 @@ public class MethodDescriptor {
         this.parameterClasses = method.getParameterTypes();
         this.returnClass = method.getReturnType();
         this.returnTypes = ReflectUtils.getReturnTypes(method);
-        this.paramDesc = ReflectUtils.getDesc(method);
+        this.paramDesc = ReflectUtils.getDesc(parameterClasses);
+        this.compatibleParamSignatures = ReflectUtils.getDescArray(method);
         this.methodName = method.getName();
         this.generic = (methodName.equals($INVOKE) || methodName.equals($INVOKE_ASYNC)) && parameterClasses.length == 3;
     }
@@ -58,6 +61,10 @@ public class MethodDescriptor {
 
     public String getParamDesc() {
         return paramDesc;
+    }
+
+    public String[] getCompatibleParamSignatures() {
+        return compatibleParamSignatures;
     }
 
     public Class<?>[] getParameterClasses() {

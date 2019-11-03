@@ -550,6 +550,14 @@ public class DubboBootstrap extends GenericEventListener {
         }
     }
 
+    public boolean isExported(ServiceConfig<?> serviceConfig) {
+        return CollectionUtils.isNotEmpty(exporters.get(serviceConfig));
+    }
+
+    public boolean isRefereed(ReferenceConfig<?> referenceConfig) {
+        return getCache().get(referenceConfig) != null;
+    }
+
     /**
      * refer a single ReferenceConfig
      * <p>
@@ -1257,6 +1265,7 @@ public class DubboBootstrap extends GenericEventListener {
                 }
             }
             sc.setInterface(interfaceClass);
+            sc.setInterface(interfaceName);
             sc.checkStubAndLocal(interfaceClass);
             BootstrapUtils.checkMock(interfaceClass, sc);
             sc.appendParameters();

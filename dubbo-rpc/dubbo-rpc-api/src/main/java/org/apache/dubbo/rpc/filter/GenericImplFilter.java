@@ -42,6 +42,7 @@ import java.lang.reflect.Type;
 
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE_ASYNC;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_INVOCATION_PREFIX;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 
 /**
@@ -56,13 +57,21 @@ public class GenericImplFilter implements Filter, Filter.Listener {
 
     private static final String GENERIC_PARAMETER_DESC = "Ljava/lang/String;[Ljava/lang/String;[Ljava/lang/Object;";
 
+    private static final String GENERIC_IMPL_MARKER = DUBBO_INVOCATION_PREFIX + "GENERIC_IMPL";
+
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         String generic = invoker.getUrl().getParameter(GENERIC_KEY);
-        if (ProtocolUtils.isGeneric(generic)
-                && (!$INVOKE.equals(invocation.getMethodName()) && !$INVOKE_ASYNC.equals(invocation.getMethodName()))
-                && invocation instanceof RpcInvocation) {
+        // calling a generic impl service
+        if (isCallingGenericImpl(generic, invocation)) {
             RpcInvocation invocation2 = new RpcInvocation(invocation);
+
+            /**
+             * Mark this invocation as a generic impl call, this value will be removed automatically before passing on the wire.
+             * See {@link RpcUtils#sieveUnnecessaryAttachments(Invocation)}
+             */
+            invocation2.setAttachment(GENERIC_IMPL_MARKER, true);
+
             String methodName = invocation2.getMethodName();
             Class<?>[] parameterTypes = invocation2.getParameterTypes();
             Object[] arguments = invocation2.getArguments();
@@ -91,10 +100,9 @@ public class GenericImplFilter implements Filter, Filter.Listener {
             invocation2.setParameterTypesDesc(GENERIC_PARAMETER_DESC);
             invocation2.setArguments(new Object[]{methodName, types, args});
             return invoker.invoke(invocation2);
-        } else if ((invocation.getMethodName().equals($INVOKE) || invocation.getMethodName().equals($INVOKE_ASYNC))
-                && invocation.getArguments() != null
-                && invocation.getArguments().length == 3
-                && ProtocolUtils.isGeneric(generic)) {
+        }
+        // making a generic call to a normal service
+        else if (isMakingGenericCall(generic, invocation)) {
 
             Object[] args = (Object[]) invocation.getArguments()[2];
             if (ProtocolUtils.isJavaGenericSerialization(generic)) {
@@ -127,9 +135,7 @@ public class GenericImplFilter implements Filter, Filter.Listener {
         String generic = invoker.getUrl().getParameter(GENERIC_KEY);
         String methodName = invocation.getMethodName();
         Class<?>[] parameterTypes = invocation.getParameterTypes();
-        if (ProtocolUtils.isGeneric(generic)
-                && (!$INVOKE.equals(invocation.getMethodName()) && !$INVOKE_ASYNC.equals(invocation.getMethodName()))
-                && invocation instanceof RpcInvocation) {
+        if (invocation.getAttachment(GENERIC_IMPL_MARKER) != null) {
             if (!appResponse.hasException()) {
                 Object value = appResponse.getValue();
                 try {
@@ -193,6 +199,19 @@ public class GenericImplFilter implements Filter, Filter.Listener {
     @Override
     public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
 
+    }
+
+    private boolean isCallingGenericImpl(String generic, Invocation invocation) {
+        return ProtocolUtils.isGeneric(generic)
+                && (!$INVOKE.equals(invocation.getMethodName()) && !$INVOKE_ASYNC.equals(invocation.getMethodName()))
+                && invocation instanceof RpcInvocation;
+    }
+
+    private boolean isMakingGenericCall(String generic, Invocation invocation) {
+        return (invocation.getMethodName().equals($INVOKE) || invocation.getMethodName().equals($INVOKE_ASYNC))
+                && invocation.getArguments() != null
+                && invocation.getArguments().length == 3
+                && ProtocolUtils.isGeneric(generic);
     }
 
 }
