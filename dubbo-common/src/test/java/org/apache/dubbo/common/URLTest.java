@@ -737,6 +737,13 @@ public class URLTest {
         Assertions.assertNull(url6.getAuthority());
         URL url7 = URL.valueOf("http://10.20.130.230/context/path?version=1.0.0&application=morgan#anchor1");
         Assertions.assertEquals("10.20.130.230", url7.getAuthority());
+    }
 
+
+    public void testValueOf() {
+        URL.valueOf("10.20.130.230");
+        URL.valueOf("10.20.130.230:20880");
+        URL.valueOf("dubbo://10.20.130.230:20880");
+        URL.valueOf("dubbo://10.20.130.230:20880/path");
     }
 }
