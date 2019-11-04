@@ -152,6 +152,10 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
 
     @Override
     public String getProperties(String key, String group, long timeout) throws IllegalStateException {
+        // Apollo does not allow namespace ends with '.properties', '.yaml', ...
+        if (key.endsWith(".properties")) {
+            key = key.replace(".properties", "-properties");
+        }
         ConfigFile configFile = ConfigService.getConfigFile(key, ConfigFileFormat.Properties);
         if (configFile == null) {
             throw new IllegalStateException("There is no namespace named " + key + " in Apollo.");
