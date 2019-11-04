@@ -21,6 +21,11 @@ import org.apache.dubbo.common.extension.SPI;
 
 import java.util.Properties;
 
+/**
+ * 
+ * The smaller value, the higher priority
+ * 
+ */
 @SPI
 public interface OrderedPropertiesProvider {
     /**

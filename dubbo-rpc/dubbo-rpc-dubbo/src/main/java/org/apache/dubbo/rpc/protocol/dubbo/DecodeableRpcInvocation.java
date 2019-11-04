@@ -22,6 +22,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.Cleanable;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.utils.Assert;
+import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.Codec;
@@ -32,6 +33,7 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
+import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -115,24 +117,27 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
             Object[] args = DubboCodec.EMPTY_OBJECT_ARRAY;
             Class<?>[] pts = DubboCodec.EMPTY_CLASS_ARRAY;
             if (desc.length() > 0) {
-                // TODO, lambda function requires variables to be final.
-                Optional<ServiceDescriptor> serviceModel = ApplicationModel.getServiceModel(path);
-                if (serviceModel.isPresent()) {
-                    Optional<MethodDescriptor> methodOptional = serviceModel.get().getMethod(getMethodName(), desc);
-                    if (methodOptional.isPresent()) {
-                        pts = methodOptional.get().getParameterClasses();
-                        args = new Object[pts.length];
-                        for (int i = 0; i < args.length; i++) {
-                            try {
-                                args[i] = in.readObject(pts[i]);
-                            } catch (Exception e) {
-                                if (log.isWarnEnabled()) {
-                                    log.warn("Decode argument failed: " + e.getMessage(), e);
-                                }
-                            }
+                if (RpcUtils.isGenericCall(path, getMethodName())) {
+                    pts = ReflectUtils.desc2classArray(desc);
+                } else {
+                    Optional<ServiceDescriptor> serviceModel = ApplicationModel.getServiceModel(path);
+                    if (serviceModel.isPresent()) {
+                        Optional<MethodDescriptor> methodOptional = serviceModel.get().getMethod(getMethodName(), desc);
+                        if (methodOptional.isPresent()) {
+                            pts = methodOptional.get().getParameterClasses();
+                            this.setReturnTypes(methodOptional.get().getReturnTypes());
                         }
+                    }
+                }
 
-                        this.setReturnTypes(methodOptional.get().getReturnTypes());
+                args = new Object[pts.length];
+                for (int i = 0; i < args.length; i++) {
+                    try {
+                        args[i] = in.readObject(pts[i]);
+                    } catch (Exception e) {
+                        if (log.isWarnEnabled()) {
+                            log.warn("Decode argument failed: " + e.getMessage(), e);
+                        }
                     }
                 }
             }

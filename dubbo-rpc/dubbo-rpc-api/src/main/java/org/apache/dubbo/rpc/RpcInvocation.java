@@ -51,6 +51,7 @@ public class RpcInvocation implements Invocation, Serializable {
 
     private transient Class<?>[] parameterTypes;
     private String parameterTypesDesc;
+    private String[] compatibleParamSignatures;
 
     private Object[] arguments;
 
@@ -133,6 +134,7 @@ public class RpcInvocation implements Invocation, Serializable {
                     serviceModel.getMethod(methodName, parameterTypes)
                             .ifPresent(methodModel -> {
                                 this.parameterTypesDesc = methodModel.getParamDesc();
+                                this.compatibleParamSignatures = methodModel.getCompatibleParamSignatures();
                                 this.returnTypes = methodModel.getReturnTypes();
                             })
             );
@@ -203,6 +205,16 @@ public class RpcInvocation implements Invocation, Serializable {
 
     public void setParameterTypesDesc(String parameterTypesDesc) {
         this.parameterTypesDesc = parameterTypesDesc;
+    }
+
+    public String[] getCompatibleParamSignatures() {
+        return compatibleParamSignatures;
+    }
+
+    // parameter signatures can be set independently, it is useful when the service type is not found on caller side and
+    // the invocation is not generic invocation either.
+    public void setCompatibleParamSignatures(String[] compatibleParamSignatures) {
+        this.compatibleParamSignatures = compatibleParamSignatures;
     }
 
     @Override

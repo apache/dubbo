@@ -25,12 +25,18 @@ import org.apache.dubbo.bootstrap.DubboBootstrap;
 @Deprecated
 public class ServiceConfig<T> extends org.apache.dubbo.config.service.ServiceConfig<T> {
 
+    private DubboBootstrap bootstrap = DubboBootstrap.getInstance();
+
     @Deprecated
     public void export() {
-        DubboBootstrap bootstrap = DubboBootstrap.getInstance();
         // bootstrap guarantees only started once.
         bootstrap.start();
         bootstrap.export(this);
+    }
+
+    @Deprecated
+    public void unexport() {
+        bootstrap.unExport(this);
     }
 
 }

@@ -428,6 +428,16 @@ public final class ReflectUtils {
         return ret.toString();
     }
 
+    public static String[] getDescArray(final Method m) {
+        Class<?>[] parameterTypes = m.getParameterTypes();
+        String[] arr = new String[parameterTypes.length];
+
+        for (int i = 0; i < parameterTypes.length; i++) {
+            arr[i] = getDesc(parameterTypes[i]);
+        }
+        return arr;
+    }
+
     /**
      * get constructor desc.
      * "()V", "(Ljava/lang/String;I)V"

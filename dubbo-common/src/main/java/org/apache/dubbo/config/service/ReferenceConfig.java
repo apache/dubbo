@@ -131,8 +131,9 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             shouldInit = getConsumer().isInit();
         }
         if (shouldInit == null) {
-            // default is false
-            return false;
+            // default is true, spring will still init lazily by setting init's default value to false,
+            // the def default setting happens in {@link ReferenceBean#afterPropertiesSet}.
+            return true;
         }
         return shouldInit;
     }

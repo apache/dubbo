@@ -538,6 +538,7 @@ public class ReferenceConfigCache {
                 rc.setGeneric(rc.getConsumer().getGeneric());
             }
             Class<?> interfaceClass = null;
+            String realInterfaceName = rc.getInterface();
             if (ProtocolUtils.isGeneric(rc.getGeneric())) {
                 interfaceClass = GenericService.class;
             } else {
@@ -550,6 +551,7 @@ public class ReferenceConfigCache {
                 rc.checkInterfaceAndMethods(interfaceClass, rc.getMethods());
             }
             rc.setInterface(interfaceClass);
+            rc.setInterface(realInterfaceName);
             rc.resolveFile();
             rc.checkApplication();
             rc.checkMetadataReport();

@@ -288,4 +288,6 @@ public interface CommonConstants {
 
     String REGISTER_KEY = "register";
 
+    String DUBBO_INVOCATION_PREFIX = "_DUBBO_IGNORE_ATTACH_";
+
 }
