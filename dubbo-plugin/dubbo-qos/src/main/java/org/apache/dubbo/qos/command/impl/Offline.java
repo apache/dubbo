@@ -60,7 +60,7 @@ public class Offline implements BaseCommand {
         boolean hasService = false;
         Collection<ProviderModel> providerModelList = ApplicationModel.allProviderModels();
         for (ProviderModel providerModel : providerModelList) {
-            if (providerModel.getServiceName().matches(servicePattern)) {
+            if (providerModel.getServiceMetadata().getDisplayServiceKey().matches(servicePattern)) {
                 hasService = true;
                 Set<ProviderInvokerWrapper> providerInvokerWrapperSet = ProviderConsumerRegTable
                         .getProviderInvoker(providerModel.getServiceMetadata().getServiceKey());
