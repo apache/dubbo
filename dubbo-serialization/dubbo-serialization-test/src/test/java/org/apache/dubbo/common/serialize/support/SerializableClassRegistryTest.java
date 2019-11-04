@@ -18,12 +18,13 @@ package org.apache.dubbo.common.serialize.support;
 
 import org.apache.dubbo.common.serialize.model.SerializablePerson;
 import org.apache.dubbo.common.serialize.model.person.Phone;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 
 public class SerializableClassRegistryTest {
     @Test

@@ -43,17 +43,17 @@ import org.apache.dubbo.common.extension.SPI;
 @SPI
 public interface Filter {
     /**
-     * Does not need to override/implement this method.
+     * Make sure call invoker.invoke() in your implementation.
      */
     Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException;
 
     /**
-     * Filter itself should only be response for passing invocation, all callbacks has been placed into {@link Listener}
+     * Please use {@link Listener#onMessage(Result, Invoker, Invocation)} instead.
+     * This method is kept only for compatibility and may get removed at any version in the future.
      *
      * @param appResponse
      * @param invoker
      * @param invocation
-     * @return
      */
     @Deprecated
     default Result onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
@@ -62,7 +62,7 @@ public interface Filter {
 
     interface Listener {
 
-        void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation);
+        void onMessage(Result appResponse, Invoker<?> invoker, Invocation invocation);
 
         void onError(Throwable t, Invoker<?> invoker, Invocation invocation);
     }
