@@ -20,6 +20,7 @@ import org.apache.dubbo.common.utils.ReflectUtils;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.util.stream.Stream;
 
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE_ASYNC;
@@ -46,7 +47,9 @@ public class MethodDescriptor {
         this.returnClass = method.getReturnType();
         this.returnTypes = ReflectUtils.getReturnTypes(method);
         this.paramDesc = ReflectUtils.getDesc(parameterClasses);
-        this.compatibleParamSignatures = ReflectUtils.getDescArray(method);
+        this.compatibleParamSignatures = Stream.of(parameterClasses)
+                .map(Class::getName)
+                .toArray(String[]::new);
         this.methodName = method.getName();
         this.generic = (methodName.equals($INVOKE) || methodName.equals($INVOKE_ASYNC)) && parameterClasses.length == 3;
     }
