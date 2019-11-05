@@ -777,7 +777,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             if (registries == null) {
                 setRegistries(application.getRegistries());
             }
-            if (monitor == null) {
+            if (monitor == null && application.getMonitor() != null) {
                 setMonitor(application.getMonitor());
             }
         }
@@ -791,7 +791,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (provider != null) {
             return;
         }
-        setProvider (
+        setProvider(
                 ConfigManager.getInstance()
                         .getDefaultProvider()
                         .orElseGet(() -> {
@@ -822,15 +822,15 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
         if (StringUtils.isEmpty(protocolIds)) {
             if (CollectionUtils.isEmpty(protocols)) {
-               setProtocols(
-                       ConfigManager.getInstance().getDefaultProtocols()
-                        .filter(CollectionUtils::isNotEmpty)
-                        .orElseGet(() -> {
-                            ProtocolConfig protocolConfig = new ProtocolConfig();
-                            protocolConfig.refresh();
-                            return Arrays.asList(protocolConfig);
-                        })
-               );
+                setProtocols(
+                        ConfigManager.getInstance().getDefaultProtocols()
+                                .filter(CollectionUtils::isNotEmpty)
+                                .orElseGet(() -> {
+                                    ProtocolConfig protocolConfig = new ProtocolConfig();
+                                    protocolConfig.refresh();
+                                    return Arrays.asList(protocolConfig);
+                                })
+                );
             }
         } else {
             String[] arr = Constants.COMMA_SPLIT_PATTERN.split(protocolIds);
