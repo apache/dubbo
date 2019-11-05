@@ -500,7 +500,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             if (registries == null) {
                 setRegistries(application.getRegistries());
             }
-            if (monitor == null) {
+            if (monitor == null && application.getMonitor() != null) {
                 setMonitor(application.getMonitor());
             }
         }
