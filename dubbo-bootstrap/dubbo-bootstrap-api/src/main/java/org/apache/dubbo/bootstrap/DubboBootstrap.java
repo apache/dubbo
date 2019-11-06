@@ -61,6 +61,7 @@ import org.apache.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
 import org.apache.dubbo.config.metadata.ConfigurableMetadataServiceExporter;
 import org.apache.dubbo.config.service.ReferenceConfig;
 import org.apache.dubbo.config.service.ServiceConfig;
+import org.apache.dubbo.config.utils.ReferenceConfigCache;
 import org.apache.dubbo.event.Event;
 import org.apache.dubbo.event.EventDispatcher;
 import org.apache.dubbo.event.EventListener;
@@ -547,6 +548,14 @@ public class DubboBootstrap extends GenericEventListener {
         if (CollectionUtils.isNotEmpty(scExporters)) {
             scExporters.forEach(Exporter::unexport);
         }
+    }
+
+    public boolean isExported(ServiceConfig<?> serviceConfig) {
+        return CollectionUtils.isNotEmpty(exporters.get(serviceConfig));
+    }
+
+    public boolean isRefereed(ReferenceConfig<?> referenceConfig) {
+        return getCache().get(referenceConfig) != null;
     }
 
     /**
@@ -1256,6 +1265,7 @@ public class DubboBootstrap extends GenericEventListener {
                 }
             }
             sc.setInterface(interfaceClass);
+            sc.setInterface(interfaceName);
             sc.checkStubAndLocal(interfaceClass);
             BootstrapUtils.checkMock(interfaceClass, sc);
             sc.appendParameters();

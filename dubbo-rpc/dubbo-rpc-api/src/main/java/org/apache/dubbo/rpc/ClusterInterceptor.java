@@ -19,7 +19,7 @@ package org.apache.dubbo.rpc;
 import org.apache.dubbo.common.extension.SPI;
 
 /**
- * Different from {@link Filter}, ClusterInterceptor works on the outmost layer, before one specific address/invoker is picked.
+ * Different from {@link Filter}, ClusterInterceptor works at the outmost layer, before one specific address/invoker is picked.
  */
 @SPI
 public interface ClusterInterceptor {
@@ -28,6 +28,15 @@ public interface ClusterInterceptor {
 
     void after(Invoker<?> invoker, Invocation invocation);
 
+    /**
+     * Does not need to override this method, override {@link #before(Invoker, Invocation)} and {@link #after(Invoker, Invocation)}
+     * methods to add your own logic expected to be executed before and after invoke.
+     *
+     * @param invoker
+     * @param invocation
+     * @return
+     * @throws RpcException
+     */
     default Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         return invoker.invoke(invocation);
     }

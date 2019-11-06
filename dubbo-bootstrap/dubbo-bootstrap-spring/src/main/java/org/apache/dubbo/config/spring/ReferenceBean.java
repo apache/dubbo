@@ -16,11 +16,11 @@
  */
 package org.apache.dubbo.config.spring;
 
-import org.apache.dubbo.bootstrap.ReferenceConfigCache;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.service.ReferenceConfig;
 import org.apache.dubbo.config.spring.extension.SpringExtensionFactory;
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.config.utils.ReferenceConfigCache;
 
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.DisposableBean;
@@ -74,6 +74,11 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
     public void afterPropertiesSet() throws Exception {
         if (applicationContext != null) {
             BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ConfigCenterBean.class, false, false);
+        }
+
+        // lazy init by default.
+        if (init == null) {
+            init = false;
         }
 
         // eager init if necessary.

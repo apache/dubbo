@@ -24,6 +24,7 @@ import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
+import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import com.google.gson.Gson;
 
@@ -44,6 +45,7 @@ import static org.apache.dubbo.common.URL.buildKey;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
+import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 
 /**
  * The {@link WritableMetadataService} implementation stores the metadata of Dubbo services in memory locally when they
@@ -122,7 +124,8 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
     public void publishServiceDefinition(URL providerUrl) {
         try {
             String interfaceName = providerUrl.getParameter(INTERFACE_KEY);
-            if (StringUtils.isNotEmpty(interfaceName)) {
+            if (StringUtils.isNotEmpty(interfaceName)
+                    && !ProtocolUtils.isGeneric(providerUrl.getParameter(GENERIC_KEY))) {
                 Class interfaceClass = Class.forName(interfaceName);
                 ServiceDefinition serviceDefinition = ServiceDefinitionBuilder.build(interfaceClass);
                 Gson gson = new Gson();

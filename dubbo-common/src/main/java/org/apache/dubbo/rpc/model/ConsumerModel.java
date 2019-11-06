@@ -184,7 +184,7 @@ public class ConsumerModel {
     /* *************** Start, metadata compatible **************** */
 
     private ServiceMetadata serviceMetadata;
-    private final Map<Method, ConsumerMethodModel> methodModels = new IdentityHashMap<Method, ConsumerMethodModel>();
+    private Map<Method, ConsumerMethodModel> methodModels = new IdentityHashMap<Method, ConsumerMethodModel>();
 
     public ConsumerModel(String serviceKey
             , Object proxyObject
@@ -199,6 +199,10 @@ public class ConsumerModel {
         for (Method method : metadata.getServiceType().getMethods()) {
             methodModels.put(method, new ConsumerMethodModel(method, attributes));
         }
+    }
+
+    public ClassLoader getClassLoader() {
+        return serviceMetadata.getServiceType().getClassLoader();
     }
 
     /**
