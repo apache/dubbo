@@ -347,7 +347,6 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                 }
             }
 
-            ApplicationModel.getConsumerModel(URL.buildKey(interfaceName, group, version)).init(attributes);
         }
 
 
@@ -364,6 +363,8 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         serviceMetadata.setTarget(ref);
         serviceMetadata.addAttribute(PROXY_CLASS_REF, ref);
         serviceMetadata.getAttachments().putAll(map);
+
+        ApplicationModel.getConsumerModel(URL.buildKey(interfaceName, group, version)).init(attributes);
 
         initialized = true;
     }
