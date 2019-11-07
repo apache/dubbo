@@ -77,6 +77,8 @@ public class ConsumerModel {
     }
 
     /**
+     * Return method model for the given method and the given arguments type on consumer side
+     *
      * @param method   metodName
      * @param argsType method arguments type
      * @return
