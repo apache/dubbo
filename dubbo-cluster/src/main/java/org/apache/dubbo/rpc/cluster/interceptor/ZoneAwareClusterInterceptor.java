@@ -14,28 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.interceptors;
+package org.apache.dubbo.rpc.cluster.interceptor;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.rpc.ClusterInterceptor;
 import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.ZoneDetector;
+import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
 
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_ZONE;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_ZONE_FORCE;
 
 /**
  * Determines the zone information of current request.
+ *
+ * active only when url has key 'cluster=zone-aware'
  */
 @Activate(value = "cluster:zone-aware")
 public class ZoneAwareClusterInterceptor implements ClusterInterceptor {
 
     @Override
-    public void before(Invoker<?> invoker, Invocation invocation) {
+    public void before(AbstractClusterInvoker<?> clusterInvoker, Invocation invocation) {
         RpcContext rpcContext = RpcContext.getContext();
         String zone = (String) rpcContext.getAttachment(REGISTRY_ZONE);
         String force = (String) rpcContext.getAttachment(REGISTRY_ZONE_FORCE);
@@ -55,7 +56,7 @@ public class ZoneAwareClusterInterceptor implements ClusterInterceptor {
     }
 
     @Override
-    public void after(Invoker<?> invoker, Invocation invocation) {
+    public void after(AbstractClusterInvoker<?> clusterInvoker, Invocation invocation) {
 
     }
 }

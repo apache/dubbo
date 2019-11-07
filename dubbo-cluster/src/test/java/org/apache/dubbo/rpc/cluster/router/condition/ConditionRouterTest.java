@@ -88,7 +88,7 @@ public class ConditionRouterTest {
     public void testRoute_matchFilter() {
         List<Invoker<String>> invokers = new ArrayList<Invoker<String>>();
         Invoker<String> invoker1 = new MockInvoker<String>(URL.valueOf(
-                "dubbo://10.20.3.3:20880/com.foo.BarService?default.serialization=fastjson"));
+                "dubbo://10.20.3.3:20880/com.foo.BarService?serialization=fastjson"));
         Invoker<String> invoker2 = new MockInvoker<String>(URL.valueOf("dubbo://" + LOCAL_HOST
                 + ":20880/com.foo.BarService"));
         Invoker<String> invoker3 = new MockInvoker<String>(URL.valueOf("dubbo://" + LOCAL_HOST

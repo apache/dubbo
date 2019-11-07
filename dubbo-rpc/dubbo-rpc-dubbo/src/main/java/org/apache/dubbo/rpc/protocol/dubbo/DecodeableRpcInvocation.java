@@ -33,14 +33,13 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
-import org.apache.dubbo.rpc.support.RpcUtils;
+import org.apache.dubbo.rpc.model.ServiceRepository;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 import static org.apache.dubbo.common.URL.buildKey;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
@@ -117,18 +116,22 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
             Object[] args = DubboCodec.EMPTY_OBJECT_ARRAY;
             Class<?>[] pts = DubboCodec.EMPTY_CLASS_ARRAY;
             if (desc.length() > 0) {
-                if (RpcUtils.isGenericCall(path, getMethodName())) {
-                    pts = ReflectUtils.desc2classArray(desc);
-                } else {
-                    Optional<ServiceDescriptor> serviceModel = ApplicationModel.getServiceModel(path);
-                    if (serviceModel.isPresent()) {
-                        Optional<MethodDescriptor> methodOptional = serviceModel.get().getMethod(getMethodName(), desc);
-                        if (methodOptional.isPresent()) {
-                            pts = methodOptional.get().getParameterClasses();
-                            this.setReturnTypes(methodOptional.get().getReturnTypes());
-                        }
+//                if (RpcUtils.isGenericCall(path, getMethodName()) || RpcUtils.isEcho(path, getMethodName())) {
+//                    pts = ReflectUtils.desc2classArray(desc);
+//                } else {
+                ServiceRepository repository = ApplicationModel.getServiceRepository();
+                ServiceDescriptor serviceDescriptor = repository.lookupService(path);
+                if (serviceDescriptor != null) {
+                    MethodDescriptor methodDescriptor = serviceDescriptor.getMethod(getMethodName(), desc);
+                    if (methodDescriptor != null) {
+                        pts = methodDescriptor.getParameterClasses();
+                        this.setReturnTypes(methodDescriptor.getReturnTypes());
                     }
                 }
+                if (pts == DubboCodec.EMPTY_CLASS_ARRAY) {
+                    pts = ReflectUtils.desc2classArray(desc);
+                    }
+//                }
 
                 args = new Object[pts.length];
                 for (int i = 0; i < args.length; i++) {

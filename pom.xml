@@ -533,6 +533,7 @@
                                 <!-- exclude the edazdarevic files -->
                                 <exclude>**/org/apache/dubbo/common/utils/CIDRUtils.java</exclude>
                                 <exclude>.github/**</exclude>
+                                <exclude>compiler/**</exclude>
                             </excludes>
                         </configuration>
                     </execution>

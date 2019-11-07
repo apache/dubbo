@@ -14,26 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.infra.support;
+package org.apache.dubbo.monitor.support;
 
-import org.apache.dubbo.common.infra.InfraAdapter;
+import org.apache.dubbo.monitor.MetricsService;
+import org.apache.dubbo.rpc.model.BuiltinServiceDetector;
 
-import java.util.Collections;
-import java.util.Map;
-
-public class CmdbAdapter implements InfraAdapter {
-
-    public CmdbAdapter() {
-        // init;
-    }
+public class MetricsServiceDetector implements BuiltinServiceDetector {
 
     @Override
-    public Map<String, String> getExtraAttributes(Map<String, String> params) {
-        return Collections.emptyMap();
+    public Class<?> getService() {
+        return MetricsService.class;
     }
 
-    @Override
-    public String getAttribute(String key) {
-        return "";
-    }
 }

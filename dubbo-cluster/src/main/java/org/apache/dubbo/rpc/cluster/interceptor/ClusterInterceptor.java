@@ -14,9 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc;
+package org.apache.dubbo.rpc.cluster.interceptor;
 
 import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.rpc.Filter;
+import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
 
 /**
  * Different from {@link Filter}, ClusterInterceptor works at the outmost layer, before one specific address/invoker is picked.
@@ -24,27 +29,28 @@ import org.apache.dubbo.common.extension.SPI;
 @SPI
 public interface ClusterInterceptor {
 
-    void before(Invoker<?> invoker, Invocation invocation);
+    void before(AbstractClusterInvoker<?> clusterInvoker, Invocation invocation);
 
-    void after(Invoker<?> invoker, Invocation invocation);
+    void after(AbstractClusterInvoker<?> clusterInvoker, Invocation invocation);
 
     /**
-     * Does not need to override this method, override {@link #before(Invoker, Invocation)} and {@link #after(Invoker, Invocation)}
-     * methods to add your own logic expected to be executed before and after invoke.
+     * Does not need to override this method, override {@link #before(AbstractClusterInvoker, Invocation)}
+     * and {@link #after(AbstractClusterInvoker, Invocation)}, methods to add your own logic expected to be
+     * executed before and after invoke.
      *
-     * @param invoker
+     * @param clusterInvoker
      * @param invocation
      * @return
      * @throws RpcException
      */
-    default Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        return invoker.invoke(invocation);
+    default Result intercept(AbstractClusterInvoker<?> clusterInvoker, Invocation invocation) throws RpcException {
+        return clusterInvoker.invoke(invocation);
     }
 
     interface Listener {
 
-        void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation);
+        void onResponse(Result appResponse, AbstractClusterInvoker<?> clusterInvoker, Invocation invocation);
 
-        void onError(Throwable t, Invoker<?> invoker, Invocation invocation);
+        void onError(Throwable t, AbstractClusterInvoker<?> clusterInvoker, Invocation invocation);
     }
 }

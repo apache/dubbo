@@ -24,7 +24,8 @@ import org.apache.dubbo.bootstrap.DubboBootstrap;
  */
 @Deprecated
 public class ReferenceConfig<T> extends org.apache.dubbo.config.service.ReferenceConfig<T> {
-    DubboBootstrap bootstrap = DubboBootstrap.getInstance();
+
+    private DubboBootstrap bootstrap = DubboBootstrap.getInstance();
 
     @Deprecated
     public synchronized T get() {

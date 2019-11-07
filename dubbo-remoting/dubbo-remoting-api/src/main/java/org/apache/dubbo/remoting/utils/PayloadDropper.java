@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.remoting.utils;
 
 import org.apache.dubbo.common.logger.Logger;
@@ -22,8 +21,8 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
 
-public class LogUtils {
-    private static Logger logger = LoggerFactory.getLogger(LogUtils.class);
+public class PayloadDropper {
+    private static Logger logger = LoggerFactory.getLogger(PayloadDropper.class);
 
     /**
      * only log body in debugger mode for size & security consideration.

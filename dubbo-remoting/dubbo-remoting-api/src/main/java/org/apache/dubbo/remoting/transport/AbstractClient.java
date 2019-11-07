@@ -56,6 +56,8 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
 
         needReconnect = url.getParameter(Constants.SEND_RECONNECT_KEY, false);
 
+        initExecutor(url);
+
         try {
             doOpen();
         } catch (Throwable t) {
@@ -84,12 +86,15 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
                     "Failed to start " + getClass().getSimpleName() + " " + NetUtils.getLocalAddress()
                             + " connect to the server " + getRemoteAddress() + ", cause: " + t.getMessage(), t);
         }
+    }
+
+    private void initExecutor(URL url) {
+        url = ExecutorUtil.setThreadName(url, CLIENT_THREAD_POOL_NAME);
+        url = url.addParameterIfAbsent(THREADPOOL_KEY, DEFAULT_CLIENT_THREADPOOL);
         executor = executorRepository.createExecutorIfAbsent(url);
     }
 
     protected static ChannelHandler wrapChannelHandler(URL url, ChannelHandler handler) {
-        url = ExecutorUtil.setThreadName(url, CLIENT_THREAD_POOL_NAME);
-        url = url.addParameterIfAbsent(THREADPOOL_KEY, DEFAULT_CLIENT_THREADPOOL);
         return ChannelHandlers.wrap(handler, url);
     }
 

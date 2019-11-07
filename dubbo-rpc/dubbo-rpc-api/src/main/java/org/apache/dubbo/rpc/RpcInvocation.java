@@ -17,8 +17,13 @@
 package org.apache.dubbo.rpc;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.rpc.model.ServiceDescriptor;
+import org.apache.dubbo.rpc.model.ServiceRepository;
+import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -26,6 +31,7 @@ import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
@@ -125,19 +131,32 @@ public class RpcInvocation implements Invocation, Serializable {
 
     public RpcInvocation(String methodName, String serviceName, Class<?>[] parameterTypes, Object[] arguments, Map<String, Object> attachments, Invoker<?> invoker) {
         this.methodName = methodName;
+        this.serviceName = serviceName;
         this.parameterTypes = parameterTypes == null ? new Class<?>[0] : parameterTypes;
         this.arguments = arguments == null ? new Object[0] : arguments;
         this.attachments = attachments == null ? new HashMap<String, Object>() : attachments;
         this.invoker = invoker;
+        initParameterDesc();
+    }
+
+    private void initParameterDesc() {
+        ServiceRepository repository = ApplicationModel.getServiceRepository();
         if (StringUtils.isNotEmpty(serviceName)) {
-            ApplicationModel.getServiceModel(serviceName).ifPresent(serviceModel ->
-                    serviceModel.getMethod(methodName, parameterTypes)
-                            .ifPresent(methodModel -> {
-                                this.parameterTypesDesc = methodModel.getParamDesc();
-                                this.compatibleParamSignatures = methodModel.getCompatibleParamSignatures();
-                                this.returnTypes = methodModel.getReturnTypes();
-                            })
-            );
+            ServiceDescriptor serviceDescriptor = repository.lookupService(serviceName);
+            if (serviceDescriptor != null) {
+                MethodDescriptor methodDescriptor = serviceDescriptor.getMethod(methodName, parameterTypes);
+                if (methodDescriptor != null) {
+                    this.parameterTypesDesc = methodDescriptor.getParamDesc();
+                    this.compatibleParamSignatures = methodDescriptor.getCompatibleParamSignatures();
+                    this.returnTypes = methodDescriptor.getReturnTypes();
+                }
+            }
+        }
+
+        if (parameterTypesDesc == null) {
+            this.parameterTypesDesc = ReflectUtils.getDesc(this.getParameterTypes());
+            this.compatibleParamSignatures = Stream.of(this.parameterTypes).map(Class::getName).toArray(String[]::new);
+            this.returnTypes = RpcUtils.getReturnTypes(this);
         }
     }
 

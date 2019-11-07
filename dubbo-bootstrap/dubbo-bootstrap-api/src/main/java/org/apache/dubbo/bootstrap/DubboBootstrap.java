@@ -1302,6 +1302,8 @@ public class DubboBootstrap extends GenericEventListener {
                 String pathKey = URL.buildKey(sc.getContextPath(protocolConfig)
                         .map(p -> p + "/" + sc.getPath())
                         .orElse(sc.getPath()), sc.getGroup(), sc.getVersion());
+                // In case user specified path, register service one more time to map it to path.
+                repository.registerService(pathKey, sc.getInterfaceClass());
                 // TODO, uncomment this line once service key is unified
                 sc.getServiceMetadata().setServiceKey(pathKey);
                 exporters.addAll(doExportUrlsFor1Protocol(sc, protocolConfig, registryURLs));

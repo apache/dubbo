@@ -14,23 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.infra.support;
+package org.apache.dubbo.rpc.model;
 
-import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.common.infra.InfraAdapter;
+import org.apache.dubbo.common.extension.SPI;
 
-import java.util.Map;
+@SPI
+public interface BuiltinServiceDetector {
 
-@Activate
-public class KubernetesAdapter implements InfraAdapter {
+    Class<?> getService();
 
-    @Override
-    public Map<String, String> getExtraAttributes(Map<String, String> params) {
-        return null;
-    }
-
-    @Override
-    public String getAttribute(String key) {
-        return null;
-    }
 }
