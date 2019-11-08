@@ -48,6 +48,8 @@ public class DefaultExecutorRepository implements ExecutorRepository {
 
     private Ring<ScheduledExecutorService> scheduledExecutors = new Ring<>();
 
+    private ScheduledExecutorService serviceExporterExecutor;
+
     private ScheduledExecutorService reconnectScheduledExecutor;
 
     private ConcurrentMap<String, ConcurrentMap<Integer, ExecutorService>> data = new ConcurrentHashMap<>();
@@ -59,6 +61,7 @@ public class DefaultExecutorRepository implements ExecutorRepository {
 //        }
 //
 //        reconnectScheduledExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-reconnect-scheduler"));
+        serviceExporterExecutor = Executors.newScheduledThreadPool(1, new NamedThreadFactory("Dubbo-exporter-scheduler"));
     }
 
     public synchronized ExecutorService createExecutorIfAbsent(URL url) {
@@ -131,6 +134,11 @@ public class DefaultExecutorRepository implements ExecutorRepository {
     @Override
     public ScheduledExecutorService nextScheduledExecutor() {
         return scheduledExecutors.pollItem();
+    }
+
+    @Override
+    public ScheduledExecutorService getServiceExporterExecutor() {
+        return serviceExporterExecutor;
     }
 
     @Override

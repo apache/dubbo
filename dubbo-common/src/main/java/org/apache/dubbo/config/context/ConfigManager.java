@@ -32,8 +32,8 @@ import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
-import org.apache.dubbo.config.service.ReferenceConfig;
-import org.apache.dubbo.config.service.ServiceConfig;
+import org.apache.dubbo.config.service.ReferenceConfigBase;
+import org.apache.dubbo.config.service.ServiceConfigBase;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Collection;
@@ -268,38 +268,38 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 
     // ServiceConfig correlative methods
 
-    public void addService(ServiceConfig<?> serviceConfig) {
+    public void addService(ServiceConfigBase<?> serviceConfig) {
         addConfig(serviceConfig);
     }
 
-    public void addServices(Iterable<ServiceConfig<?>> serviceConfigs) {
+    public void addServices(Iterable<ServiceConfigBase<?>> serviceConfigs) {
         serviceConfigs.forEach(this::addService);
     }
 
-    public Collection<ServiceConfig> getServices() {
-        return getConfigs(getTagName(ServiceConfig.class));
+    public Collection<ServiceConfigBase> getServices() {
+        return getConfigs(getTagName(ServiceConfigBase.class));
     }
 
-    public <T> ServiceConfig<T> getService(String id) {
-        return getConfig(getTagName(ServiceConfig.class), id);
+    public <T> ServiceConfigBase<T> getService(String id) {
+        return getConfig(getTagName(ServiceConfigBase.class), id);
     }
 
     // ReferenceConfig correlative methods
 
-    public void addReference(ReferenceConfig<?> referenceConfig) {
+    public void addReference(ReferenceConfigBase<?> referenceConfig) {
         addConfig(referenceConfig);
     }
 
-    public void addReferences(Iterable<ReferenceConfig<?>> referenceConfigs) {
+    public void addReferences(Iterable<ReferenceConfigBase<?>> referenceConfigs) {
         referenceConfigs.forEach(this::addReference);
     }
 
-    public Collection<ReferenceConfig<?>> getReferences() {
-        return getConfigs(getTagName(ReferenceConfig.class));
+    public Collection<ReferenceConfigBase<?>> getReferences() {
+        return getConfigs(getTagName(ReferenceConfigBase.class));
     }
 
-    public <T> ReferenceConfig<T> getReference(String id) {
-        return getConfig(getTagName(ReferenceConfig.class), id);
+    public <T> ReferenceConfigBase<T> getReference(String id) {
+        return getConfig(getTagName(ReferenceConfigBase.class), id);
     }
 
     protected static Set<String> getSubProperties(Map<String, String> properties, String prefix) {

@@ -20,8 +20,8 @@ import org.apache.dubbo.common.context.FrameworkExt;
 import org.apache.dubbo.common.context.LifecycleAdapter;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.config.service.ReferenceConfig;
-import org.apache.dubbo.config.service.ServiceConfig;
+import org.apache.dubbo.config.service.ReferenceConfigBase;
+import org.apache.dubbo.config.service.ServiceConfigBase;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -83,7 +83,7 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt 
     public void registerConsumer(String serviceKey,
                                  Map<String, Object> attributes,
                                  ServiceDescriptor serviceModel,
-                                 ReferenceConfig<?> rc,
+                                 ReferenceConfigBase<?> rc,
                                  Object proxy,
                                  ServiceMetadata serviceMetadata) {
         consumers.computeIfAbsent(
@@ -102,7 +102,7 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt 
     public void registerProvider(String serviceKey,
                                  Object serviceInstance,
                                  ServiceDescriptor serviceModel,
-                                 ServiceConfig<?> serviceConfig,
+                                 ServiceConfigBase<?> serviceConfig,
                                  ServiceMetadata serviceMetadata) {
         providers.computeIfAbsent(
                 serviceKey,
