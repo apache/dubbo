@@ -404,6 +404,9 @@ public abstract class AbstractConfig implements Serializable {
                 if (MethodUtils.isMetaMethod(method)) {
                     String key;
                     Parameter parameter = method.getAnnotation(Parameter.class);
+                    if (method.getReturnType() == Object.class || parameter != null && parameter.excluded()) {
+                        continue;
+                    }
                     if (parameter != null && parameter.key().length() > 0 && parameter.useKeyAsProperty()) {
                         key = parameter.key();
                     } else {
