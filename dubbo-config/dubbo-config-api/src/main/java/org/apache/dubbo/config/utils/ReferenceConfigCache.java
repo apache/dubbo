@@ -112,11 +112,6 @@ public class ReferenceConfigCache {
         String key = generator.generateKey(referenceConfig);
         Class<?> type = referenceConfig.getInterfaceClass();
 
-        if (referredReferences.get(key) != null) {
-            throw new IllegalStateException("Service " + key + "has been referred, it's not allowed to refer " +
-                    "one service with the same group/interface:version more than once.");
-        }
-
         proxies.computeIfAbsent(type, _t -> new ConcurrentHashMap());
 
         ConcurrentMap<String, Object> proxiesOfType = proxies.get(type);

@@ -478,10 +478,19 @@ public class DubboBootstrap extends GenericEventListener {
         return this;
     }
 
+    @Deprecated
+    public void init() {
+        initialize();
+    }
+
     /**
      * Initialize
      */
     private void initialize() {
+        if (!initialized.compareAndSet(false, true)) {
+            return;
+        }
+
         ApplicationModel.initApplication();
 
         startConfigCenter();

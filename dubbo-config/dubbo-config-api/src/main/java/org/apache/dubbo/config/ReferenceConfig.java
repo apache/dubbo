@@ -189,7 +189,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
         if (bootstrap == null) {
             bootstrap = DubboBootstrap.getInstance();
-            bootstrap.start();
+            bootstrap.init();
         }
 
         checkAndUpdateSubConfigs();
@@ -272,11 +272,11 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 null,
                 serviceMetadata);
 
-        T proxy = createProxy(map);
+        ref = createProxy(map);
 
-        serviceMetadata.setTarget(proxy);
-        serviceMetadata.addAttribute(PROXY_CLASS_REF, proxy);
-        repository.lookupReferredService(serviceMetadata.getServiceKey()).setProxyObject(proxy);
+        serviceMetadata.setTarget(ref);
+        serviceMetadata.addAttribute(PROXY_CLASS_REF, ref);
+        repository.lookupReferredService(serviceMetadata.getServiceKey()).setProxyObject(ref);
 
         initialized = true;
         // dispatch a ReferenceConfigDestroyedEvent since 2.7.4

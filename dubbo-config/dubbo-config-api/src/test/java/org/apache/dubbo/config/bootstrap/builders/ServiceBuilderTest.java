@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.builders;
+package org.apache.dubbo.config.bootstrap.builders;
 
 import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.ProviderConfig;
@@ -25,9 +25,9 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 
-import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_BEAN;
-import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_DEFAULT;
-import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_NATIVE_JAVA;
+import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_BEAN;
+import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_DEFAULT;
+import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_NATIVE_JAVA;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
