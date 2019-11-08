@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.remoting.exchange;
 
-import org.apache.dubbo.remoting.Server;
+import org.apache.dubbo.remoting.RemotingServer;
 
 import java.net.InetSocketAddress;
 import java.util.Collection;
@@ -24,7 +24,7 @@ import java.util.Collection;
 /**
  * ExchangeServer. (API/SPI, Prototype, ThreadSafe)
  */
-public interface ExchangeServer extends Server {
+public interface ExchangeServer extends RemotingServer {
 
     /**
      * get channels.

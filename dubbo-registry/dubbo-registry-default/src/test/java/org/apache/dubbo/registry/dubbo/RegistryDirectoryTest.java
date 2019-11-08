@@ -34,6 +34,7 @@ import org.apache.dubbo.rpc.cluster.loadbalance.LeastActiveLoadBalance;
 import org.apache.dubbo.rpc.cluster.loadbalance.RoundRobinLoadBalance;
 import org.apache.dubbo.rpc.cluster.router.script.ScriptRouterFactory;
 import org.apache.dubbo.rpc.cluster.support.wrapper.MockClusterInvoker;
+import org.apache.dubbo.rpc.service.GenericService;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,27 +50,27 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
-import static org.apache.dubbo.rpc.cluster.Constants.INVOCATION_NEED_MOCK;
-import static org.apache.dubbo.rpc.cluster.Constants.LOADBALANCE_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.MOCK_PROTOCOL;
-import static org.apache.dubbo.rpc.cluster.Constants.ROUTER_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.RULE_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.TYPE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.DISABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.LOADBALANCE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.ROUTE_PROTOCOL;
-import static org.apache.dubbo.rpc.Constants.$INVOKE;
 import static org.apache.dubbo.rpc.Constants.MOCK_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.INVOCATION_NEED_MOCK;
+import static org.apache.dubbo.rpc.cluster.Constants.MOCK_PROTOCOL;
+import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.ROUTER_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.RULE_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.TYPE_KEY;
 import static org.junit.jupiter.api.Assertions.fail;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
@@ -482,7 +483,7 @@ public class RegistryDirectoryTest {
         registryDirectory.notify(serviceUrls);
 
         // Object $invoke(String method, String[] parameterTypes, Object[] args) throws GenericException;
-        invocation = new RpcInvocation($INVOKE, new Class[]{String.class, String[].class, Object[].class},
+        invocation = new RpcInvocation($INVOKE, GenericService.class.getName(), new Class[]{String.class, String[].class, Object[].class},
                 new Object[]{"getXXX1", "", new Object[]{}});
 
         List<Invoker> invokers = registryDirectory.list(invocation);
@@ -509,7 +510,7 @@ public class RegistryDirectoryTest {
 
         registryDirectory.notify(serviceUrls);
 
-        invocation = new RpcInvocation($INVOKE,
+        invocation = new RpcInvocation($INVOKE, GenericService.class.getName(),
                 new Class[]{String.class, String[].class, Object[].class},
                 new Object[]{"getXXX1", new String[]{"Enum"}, new Object[]{Param.MORGAN}});
 

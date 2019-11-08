@@ -25,11 +25,12 @@ import org.apache.dubbo.monitor.support.AbstractMonitorFactory;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
+import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_FILTER_KEY;
 import static org.apache.dubbo.remoting.Constants.CHECK_KEY;
-import static org.apache.dubbo.rpc.Constants.REFERENCE_FILTER_KEY;
 
 /**
  * DefaultMonitorFactory
@@ -63,6 +64,7 @@ public class DubboMonitorFactory extends AbstractMonitorFactory {
         }
         urlBuilder.addParameters(CHECK_KEY, String.valueOf(false),
                 REFERENCE_FILTER_KEY, filter + "-monitor");
+        ApplicationModel.getServiceRepository().registerService(MonitorService.class);
         Invoker<MonitorService> monitorInvoker = protocol.refer(MonitorService.class, urlBuilder.build());
         MonitorService monitorService = proxyFactory.getProxy(monitorInvoker);
         return new DubboMonitor(monitorInvoker, monitorService);

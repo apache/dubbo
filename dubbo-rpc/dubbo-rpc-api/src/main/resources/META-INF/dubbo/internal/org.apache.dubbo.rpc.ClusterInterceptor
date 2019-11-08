@@ -1,0 +1,2 @@
+consumer-context=org.apache.dubbo.rpc.interceptors.ConsumerContextClusterInterceptor
+zone-aware=org.apache.dubbo.rpc.interceptors.ZoneAwareClusterInterceptor

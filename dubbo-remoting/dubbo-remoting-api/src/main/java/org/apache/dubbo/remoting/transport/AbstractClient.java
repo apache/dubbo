@@ -21,7 +21,7 @@ import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.store.DataStore;
+import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
@@ -36,7 +36,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CLIENT_THREADPOOL;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 
@@ -50,6 +49,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
     private final Lock connectLock = new ReentrantLock();
     private final boolean needReconnect;
     protected volatile ExecutorService executor;
+    private ExecutorRepository executorRepository = ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
 
     public AbstractClient(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
@@ -84,11 +84,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
                     "Failed to start " + getClass().getSimpleName() + " " + NetUtils.getLocalAddress()
                             + " connect to the server " + getRemoteAddress() + ", cause: " + t.getMessage(), t);
         }
-
-        executor = (ExecutorService) ExtensionLoader.getExtensionLoader(DataStore.class)
-                .getDefaultExtension().get(CONSUMER_SIDE, Integer.toString(url.getPort()));
-        ExtensionLoader.getExtensionLoader(DataStore.class)
-                .getDefaultExtension().remove(CONSUMER_SIDE, Integer.toString(url.getPort()));
+        executor = executorRepository.createExecutorIfAbsent(url);
     }
 
     protected static ChannelHandler wrapChannelHandler(URL url, ChannelHandler handler) {
@@ -196,7 +192,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
 
             } else {
                 if (logger.isInfoEnabled()) {
-                    logger.info("Succeed connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
+                    logger.info("Successed connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
                             + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
                             + ", channel is " + this.getChannel());
                 }
