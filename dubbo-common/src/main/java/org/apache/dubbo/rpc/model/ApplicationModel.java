@@ -75,13 +75,9 @@ public class ApplicationModel {
         return getServiceRepository().lookupReferredService(serviceKey);
     }
 
-    /**
-     * instances
-     **/
-
     private static final ExtensionLoader<FrameworkExt> loader = ExtensionLoader.getExtensionLoader(FrameworkExt.class);
 
-    public static void initApplication() {
+    public static void iniFrameworkExts() {
         Set<FrameworkExt> exts = ExtensionLoader.getExtensionLoader(FrameworkExt.class).getSupportedExtensionInstances();
         for (FrameworkExt ext : exts) {
             ext.initialize();

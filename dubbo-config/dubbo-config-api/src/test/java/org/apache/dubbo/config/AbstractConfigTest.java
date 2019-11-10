@@ -19,6 +19,7 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.config.api.Greeting;
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.hamcrest.Matchers;
@@ -166,17 +167,17 @@ public class AbstractConfigTest {
 
     @Test
     public void checkExtension() throws Exception {
-        Assertions.assertThrows(IllegalStateException.class, () -> BootstrapUtils.checkExtension(Greeting.class, "hello", "world"));
+        Assertions.assertThrows(IllegalStateException.class, () -> ConfigValidationUtils.checkExtension(Greeting.class, "hello", "world"));
     }
 
     @Test
     public void checkMultiExtension1() throws Exception {
-        Assertions.assertThrows(IllegalStateException.class, () -> BootstrapUtils.checkMultiExtension(Greeting.class, "hello", "default,world"));
+        Assertions.assertThrows(IllegalStateException.class, () -> ConfigValidationUtils.checkMultiExtension(Greeting.class, "hello", "default,world"));
     }
 
     @Test
     public void checkMultiExtension2() throws Exception {
-        Assertions.assertThrows(IllegalStateException.class, () -> BootstrapUtils.checkMultiExtension(Greeting.class, "hello", "default,-world"));
+        Assertions.assertThrows(IllegalStateException.class, () -> ConfigValidationUtils.checkMultiExtension(Greeting.class, "hello", "default,-world"));
     }
 
     @Test
@@ -186,7 +187,7 @@ public class AbstractConfigTest {
             for (int i = 0; i <= 200; i++) {
                 builder.append("a");
             }
-            BootstrapUtils.checkLength("hello", builder.toString());
+            ConfigValidationUtils.checkLength("hello", builder.toString());
         });
     }
 
@@ -197,20 +198,20 @@ public class AbstractConfigTest {
             for (int i = 0; i <= 200; i++) {
                 builder.append("a");
             }
-            BootstrapUtils.checkPathLength("hello", builder.toString());
+            ConfigValidationUtils.checkPathLength("hello", builder.toString());
         });
     }
 
     @Test
     public void checkName() throws Exception {
-        Assertions.assertThrows(IllegalStateException.class, () -> BootstrapUtils.checkName("hello", "world%"));
+        Assertions.assertThrows(IllegalStateException.class, () -> ConfigValidationUtils.checkName("hello", "world%"));
     }
 
     @Test
     public void checkNameHasSymbol() throws Exception {
         try {
-            BootstrapUtils.checkNameHasSymbol("hello", ":*,/ -0123\tabcdABCD");
-            BootstrapUtils.checkNameHasSymbol("mock", "force:return world");
+            ConfigValidationUtils.checkNameHasSymbol("hello", ":*,/ -0123\tabcdABCD");
+            ConfigValidationUtils.checkNameHasSymbol("mock", "force:return world");
         } catch (Exception e) {
             fail("the value should be legal.");
         }
@@ -219,7 +220,7 @@ public class AbstractConfigTest {
     @Test
     public void checkKey() throws Exception {
         try {
-            BootstrapUtils.checkKey("hello", "*,-0123abcdABCD");
+            ConfigValidationUtils.checkKey("hello", "*,-0123abcdABCD");
         } catch (Exception e) {
             fail("the value should be legal.");
         }
@@ -228,7 +229,7 @@ public class AbstractConfigTest {
     @Test
     public void checkMultiName() throws Exception {
         try {
-            BootstrapUtils.checkMultiName("hello", ",-._0123abcdABCD");
+            ConfigValidationUtils.checkMultiName("hello", ",-._0123abcdABCD");
         } catch (Exception e) {
             fail("the value should be legal.");
         }
@@ -237,7 +238,7 @@ public class AbstractConfigTest {
     @Test
     public void checkPathName() throws Exception {
         try {
-            BootstrapUtils.checkPathName("hello", "/-$._0123abcdABCD");
+            ConfigValidationUtils.checkPathName("hello", "/-$._0123abcdABCD");
         } catch (Exception e) {
             fail("the value should be legal.");
         }
@@ -246,13 +247,13 @@ public class AbstractConfigTest {
     @Test
     public void checkMethodName() throws Exception {
         try {
-            BootstrapUtils.checkMethodName("hello", "abcdABCD0123abcd");
+            ConfigValidationUtils.checkMethodName("hello", "abcdABCD0123abcd");
         } catch (Exception e) {
             fail("the value should be legal.");
         }
 
         try {
-            BootstrapUtils.checkMethodName("hello", "0a");
+            ConfigValidationUtils.checkMethodName("hello", "0a");
             fail("the value should be illegal.");
         } catch (Exception e) {
             // ignore
@@ -263,7 +264,7 @@ public class AbstractConfigTest {
     public void checkParameterName() throws Exception {
         Map<String, String> parameters = Collections.singletonMap("hello", ":*,/-._0123abcdABCD");
         try {
-            BootstrapUtils.checkParameterName(parameters);
+            ConfigValidationUtils.checkParameterName(parameters);
         } catch (Exception e) {
             fail("the value should be legal.");
         }

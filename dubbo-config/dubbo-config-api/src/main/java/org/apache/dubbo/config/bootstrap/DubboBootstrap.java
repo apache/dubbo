@@ -42,6 +42,7 @@ import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
+import org.apache.dubbo.config.SslConfig;
 import org.apache.dubbo.config.bootstrap.builders.ApplicationBuilder;
 import org.apache.dubbo.config.bootstrap.builders.ConsumerBuilder;
 import org.apache.dubbo.config.bootstrap.builders.ProtocolBuilder;
@@ -52,6 +53,7 @@ import org.apache.dubbo.config.bootstrap.builders.ServiceBuilder;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.metadata.ConfigurableMetadataServiceExporter;
 import org.apache.dubbo.config.service.ServiceConfigBase;
+import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.config.utils.ReferenceConfigCache;
 import org.apache.dubbo.event.EventDispatcher;
 import org.apache.dubbo.event.EventListener;
@@ -456,6 +458,11 @@ public class DubboBootstrap extends GenericEventListener {
         return this;
     }
 
+    public DubboBootstrap ssl(SslConfig sslConfig) {
+        configManager.setSsl(sslConfig);
+        return this;
+    }
+
     public DubboBootstrap cache(ReferenceConfigCache cache) {
         this.cache = cache;
         return this;
@@ -491,15 +498,17 @@ public class DubboBootstrap extends GenericEventListener {
             return;
         }
 
-        ApplicationModel.initApplication();
+        ApplicationModel.iniFrameworkExts();
 
         startConfigCenter();
+
+        useRegistryAsConfigCenterIfNecessary();
 
         startMetadataReport();
 
         loadRemoteConfigs();
 
-        useRegistryAsConfigCenterIfNecessary();
+        checkGlobalConfigs();
 
         initMetadataService();
 
@@ -512,6 +521,31 @@ public class DubboBootstrap extends GenericEventListener {
         }
     }
 
+    private void checkGlobalConfigs() {
+        // check Application
+        ConfigValidationUtils.validateApplicationConfig(getApplication());
+        // check Config Center
+        Collection<ConfigCenterConfig> configCenters = configManager.getConfigCenters();
+        if (CollectionUtils.isNotEmpty(configCenters)) {
+            for (ConfigCenterConfig configCenterConfig : configCenters) {
+                ConfigValidationUtils.validateConfigCenterConfig(configCenterConfig);
+            }
+        }
+        // check Metadata
+        Collection<MetadataReportConfig> metadatas = configManager.getMetadataConfigs();
+        for (MetadataReportConfig metadataReportConfig : metadatas) {
+            ConfigValidationUtils.validateMetadataConfig(metadataReportConfig);
+        }
+        // check Monitor
+        ConfigValidationUtils.validateMonitorConfig(getMonitor());
+        // check Metrics
+        ConfigValidationUtils.validateMetricsConfig(getMetrics());
+        // check Module
+        ConfigValidationUtils.validateModuleConfig(getModule());
+        // check Ssl
+        ConfigValidationUtils.validateSslConfig(getSsl());
+    }
+
     private void startConfigCenter() {
         Collection<ConfigCenterConfig> configCenters = configManager.getConfigCenters();
 
@@ -519,6 +553,7 @@ public class DubboBootstrap extends GenericEventListener {
             CompositeDynamicConfiguration compositeDynamicConfiguration = new CompositeDynamicConfiguration();
             for (ConfigCenterConfig configCenter : configCenters) {
                 configCenter.refresh();
+                ConfigValidationUtils.validateConfigCenterConfig(configCenter);
                 compositeDynamicConfiguration.addConfiguration(prepareEnvironment(configCenter));
             }
             environment.setDynamicConfiguration(compositeDynamicConfiguration);
@@ -539,6 +574,7 @@ public class DubboBootstrap extends GenericEventListener {
             return;
         }
         MetadataReportConfig metadataReportConfig = metadataReportConfigs.iterator().next();
+        ConfigValidationUtils.validateMetadataConfig(metadataReportConfig);
         if (!metadataReportConfig.isValid()) {
             return;
         }
@@ -682,20 +718,6 @@ public class DubboBootstrap extends GenericEventListener {
 
     private boolean hasExportedServices() {
         return !metadataService.getExportedURLs().isEmpty();
-    }
-
-    private ApplicationConfig getApplication() {
-        ApplicationConfig application = configManager
-                .getApplication()
-                .orElseGet(() -> {
-                    ApplicationConfig applicationConfig = new ApplicationConfig();
-                    applicationConfig.refresh();
-                    return applicationConfig;
-                });
-        if (!application.isValid()) {
-            throw new IllegalStateException("ApplicationConfig cannot be null");
-        }
-        return application;
     }
 
     /**
@@ -1046,5 +1068,65 @@ public class DubboBootstrap extends GenericEventListener {
         } finally {
             lock.unlock();
         }
+    }
+
+    private ApplicationConfig getApplication() {
+        ApplicationConfig application = configManager
+                .getApplication()
+                .orElseGet(() -> {
+                    ApplicationConfig applicationConfig = new ApplicationConfig();
+                    applicationConfig.refresh();
+                    return applicationConfig;
+                });
+        configManager.setApplication(application);
+        return application;
+    }
+
+    private MonitorConfig getMonitor() {
+        MonitorConfig monitor = configManager
+                .getMonitor()
+                .orElseGet(() -> {
+                    MonitorConfig monitorConfig = new MonitorConfig();
+                    monitorConfig.refresh();
+                    return monitorConfig;
+                });
+        configManager.setMonitor(monitor);
+        return monitor;
+    }
+
+    private MetricsConfig getMetrics() {
+        MetricsConfig metrics = configManager
+                .getMetrics()
+                .orElseGet(() -> {
+                    MetricsConfig metricsConfig = new MetricsConfig();
+                    metricsConfig.refresh();
+                    return metricsConfig;
+                });
+        configManager.setMetrics(metrics);
+        return metrics;
+    }
+
+    private ModuleConfig getModule() {
+        ModuleConfig module = configManager
+                .getModule()
+                .orElseGet(() -> {
+                    ModuleConfig moduleConfig = new ModuleConfig();
+                    moduleConfig.refresh();
+                    return moduleConfig;
+                });
+        configManager.setModule(module);
+        return module;
+    }
+
+    private SslConfig getSsl() {
+        SslConfig ssl = configManager
+                .getSsl()
+                .orElseGet(() -> {
+                    SslConfig sslConfig = new SslConfig();
+                    sslConfig.refresh();
+                    return sslConfig;
+                });
+        configManager.setSsl(ssl);
+        return ssl;
     }
 }

@@ -14,11 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config;
+package org.apache.dubbo.config.utils;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.status.StatusChecker;
 import org.apache.dubbo.common.threadpool.ThreadPool;
@@ -27,6 +29,22 @@ import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
+import org.apache.dubbo.config.AbstractConfig;
+import org.apache.dubbo.config.AbstractInterfaceConfig;
+import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.ConfigCenterConfig;
+import org.apache.dubbo.config.ConsumerConfig;
+import org.apache.dubbo.config.MetadataReportConfig;
+import org.apache.dubbo.config.MethodConfig;
+import org.apache.dubbo.config.MetricsConfig;
+import org.apache.dubbo.config.ModuleConfig;
+import org.apache.dubbo.config.MonitorConfig;
+import org.apache.dubbo.config.ProtocolConfig;
+import org.apache.dubbo.config.ProviderConfig;
+import org.apache.dubbo.config.ReferenceConfig;
+import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.ServiceConfig;
+import org.apache.dubbo.config.SslConfig;
 import org.apache.dubbo.monitor.MonitorFactory;
 import org.apache.dubbo.monitor.MonitorService;
 import org.apache.dubbo.registry.RegistryService;
@@ -63,6 +81,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.PASSWORD_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOVE_VALUE_PREFIX;
+import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_SECONDS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.USERNAME_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
@@ -103,10 +123,8 @@ import static org.apache.dubbo.rpc.Constants.THROW_PREFIX;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 
-/**
- *
- */
-public class BootstrapUtils {
+public class ConfigValidationUtils {
+    private static final Logger logger = LoggerFactory.getLogger(ConfigValidationUtils.class);
     /**
      * The maximum length of a <b>parameter's value</b>
      */
@@ -188,7 +206,6 @@ public class BootstrapUtils {
     }
 
     public static URL loadMonitor(AbstractInterfaceConfig interfaceConfig, URL registryURL) {
-        interfaceConfig.checkMonitor();
         Map<String, String> map = new HashMap<String, String>();
         map.put(INTERFACE_KEY, MonitorService.class.getName());
         AbstractInterfaceConfig.appendRuntimeParameters(map);
@@ -284,10 +301,8 @@ public class BootstrapUtils {
 
         List<MethodConfig> methods = config.getMethods();
         if (CollectionUtils.isNotEmpty(methods)) {
-            methods.forEach(BootstrapUtils::validateMethodConfig);
+            methods.forEach(ConfigValidationUtils::validateMethodConfig);
         }
-
-
     }
 
     public static void validateServiceConfig(ServiceConfig config) {
@@ -300,6 +315,24 @@ public class BootstrapUtils {
 
         validateAbstractInterfaceConfig(config);
 
+        List<RegistryConfig> registries = config.getRegistries();
+        if (registries != null) {
+            for (RegistryConfig registry : registries) {
+                validateRegistryConfig(registry);
+            }
+        }
+
+        List<ProtocolConfig> protocols = config.getProtocols();
+        if (protocols != null) {
+            for (ProtocolConfig protocol : protocols) {
+                validateProtocolConfig(protocol);
+            }
+        }
+
+        ProviderConfig providerConfig = config.getProvider();
+        if (providerConfig != null) {
+            validateProviderConfig(providerConfig);
+        }
     }
 
     public static void validateReferenceConfig(ReferenceConfig config) {
@@ -309,13 +342,47 @@ public class BootstrapUtils {
         checkName(CLIENT_KEY, config.getClient());
 
         validateAbstractInterfaceConfig(config);
+
+        List<RegistryConfig> registries = config.getRegistries();
+        if (registries != null) {
+            for (RegistryConfig registry : registries) {
+                validateRegistryConfig(registry);
+            }
+        }
+
+        ConsumerConfig consumerConfig = config.getConsumer();
+        if (consumerConfig != null) {
+            validateConsumerConfig(consumerConfig);
+        }
     }
 
     public static void validateConfigCenterConfig(ConfigCenterConfig config) {
-        checkParameterName(config.getParameters());
+        if (config != null) {
+            checkParameterName(config.getParameters());
+        }
     }
 
     public static void validateApplicationConfig(ApplicationConfig config) {
+        if (config == null) {
+            return;
+        }
+
+        if (!config.isValid()) {
+            throw new IllegalStateException("No application config found or it's not a valid config! " +
+                    "Please add <dubbo:application name=\"...\" /> to your spring config.");
+        }
+
+        // backward compatibility
+        String wait = ConfigUtils.getProperty(SHUTDOWN_WAIT_KEY);
+        if (wait != null && wait.trim().length() > 0) {
+            System.setProperty(SHUTDOWN_WAIT_KEY, wait.trim());
+        } else {
+            wait = ConfigUtils.getProperty(SHUTDOWN_WAIT_SECONDS_KEY);
+            if (wait != null && wait.trim().length() > 0) {
+                System.setProperty(SHUTDOWN_WAIT_SECONDS_KEY, wait.trim());
+            }
+        }
+
         checkName(NAME, config.getName());
         checkMultiName(OWNER, config.getOwner());
         checkName(ORGANIZATION, config.getOrganization());
@@ -325,41 +392,70 @@ public class BootstrapUtils {
     }
 
     public static void validateModuleConfig(ModuleConfig config) {
-        checkName(NAME, config.getName());
-        checkName(OWNER, config.getOwner());
-        checkName(ORGANIZATION, config.getOrganization());
+        if (config != null) {
+            checkName(NAME, config.getName());
+            checkName(OWNER, config.getOwner());
+            checkName(ORGANIZATION, config.getOrganization());
+        }
+    }
+
+    public static void validateMetadataConfig(MetadataReportConfig metadataReportConfig) {
+        if (metadataReportConfig == null) {
+            return;
+        }
+    }
+
+    public static void validateMetricsConfig(MetricsConfig metricsConfig) {
+        if (metricsConfig == null) {
+            return;
+        }
+    }
+
+    public static void validateSslConfig(SslConfig sslConfig) {
+        if (sslConfig == null) {
+            return;
+        }
     }
 
     public static void validateMonitorConfig(MonitorConfig config) {
-        checkParameterName(config.getParameters());
+        if (config != null) {
+            if (!config.isValid()) {
+                logger.info("There's no valid monitor config found, if you want to open monitor statistics for Dubbo, " +
+                        "please make sure your monitor is configured properly.");
+            }
+
+            checkParameterName(config.getParameters());
+        }
     }
 
     public static void validateProtocolConfig(ProtocolConfig config) {
-        String name = config.getName();
-        checkName("name", name);
-        checkName(HOST_KEY, config.getHost());
-        checkPathName("contextpath", config.getContextpath());
+        if (config != null) {
+            String name = config.getName();
+            checkName("name", name);
+            checkName(HOST_KEY, config.getHost());
+            checkPathName("contextpath", config.getContextpath());
 
 
-        if (DUBBO_PROTOCOL.equals(name)) {
-            checkMultiExtension(Codec.class, CODEC_KEY, config.getCodec());
+            if (DUBBO_PROTOCOL.equals(name)) {
+                checkMultiExtension(Codec.class, CODEC_KEY, config.getCodec());
+            }
+            if (DUBBO_PROTOCOL.equals(name)) {
+                checkMultiExtension(Serialization.class, SERIALIZATION_KEY, config.getSerialization());
+            }
+            if (DUBBO_PROTOCOL.equals(name)) {
+                checkMultiExtension(Transporter.class, SERVER_KEY, config.getServer());
+            }
+            if (DUBBO_PROTOCOL.equals(name)) {
+                checkMultiExtension(Transporter.class, CLIENT_KEY, config.getClient());
+            }
+            checkMultiExtension(TelnetHandler.class, TELNET, config.getTelnet());
+            checkMultiExtension(StatusChecker.class, "status", config.getStatus());
+            checkExtension(Transporter.class, TRANSPORTER_KEY, config.getTransporter());
+            checkExtension(Exchanger.class, EXCHANGER_KEY, config.getExchanger());
+            checkExtension(Dispatcher.class, DISPATCHER_KEY, config.getDispatcher());
+            checkExtension(Dispatcher.class, "dispather", config.getDispather());
+            checkExtension(ThreadPool.class, THREADPOOL_KEY, config.getThreadpool());
         }
-        if (DUBBO_PROTOCOL.equals(name)) {
-            checkMultiExtension(Serialization.class, SERIALIZATION_KEY, config.getSerialization());
-        }
-        if (DUBBO_PROTOCOL.equals(name)) {
-            checkMultiExtension(Transporter.class, SERVER_KEY, config.getServer());
-        }
-        if (DUBBO_PROTOCOL.equals(name)) {
-            checkMultiExtension(Transporter.class, CLIENT_KEY, config.getClient());
-        }
-        checkMultiExtension(TelnetHandler.class, TELNET, config.getTelnet());
-        checkMultiExtension(StatusChecker.class, "status", config.getStatus());
-        checkExtension(Transporter.class, TRANSPORTER_KEY, config.getTransporter());
-        checkExtension(Exchanger.class, EXCHANGER_KEY, config.getExchanger());
-        checkExtension(Dispatcher.class, DISPATCHER_KEY, config.getDispatcher());
-        checkExtension(Dispatcher.class, "dispather", config.getDispather());
-        checkExtension(ThreadPool.class, THREADPOOL_KEY, config.getThreadpool());
     }
 
     public static void validateProviderConfig(ProviderConfig config) {
@@ -369,6 +465,12 @@ public class BootstrapUtils {
         checkMultiExtension(StatusChecker.class, STATUS_KEY, config.getStatus());
         checkExtension(Transporter.class, TRANSPORTER_KEY, config.getTransporter());
         checkExtension(Exchanger.class, EXCHANGER_KEY, config.getExchanger());
+    }
+
+    public static void validateConsumerConfig(ConsumerConfig config) {
+        if (config == null) {
+            return;
+        }
     }
 
     public static void validateRegistryConfig(RegistryConfig config) {
@@ -382,11 +484,7 @@ public class BootstrapUtils {
         checkParameterName(config.getParameters());
     }
 
-    public static void validateSslConfig(SslConfig config) {
-
-    }
-
-    protected static void validateMethodConfig(MethodConfig config) {
+    public static void validateMethodConfig(MethodConfig config) {
         checkExtension(LoadBalance.class, LOADBALANCE_KEY, config.getLoadbalance());
         checkParameterName(config.getParameters());
         checkMethodName("name", config.getName());
@@ -405,7 +503,7 @@ public class BootstrapUtils {
         return isServiceDiscoveryRegistryType(url) ? SERVICE_REGISTRY_PROTOCOL : REGISTRY_PROTOCOL;
     }
 
-    protected static void checkExtension(Class<?> type, String property, String value) {
+    public static void checkExtension(Class<?> type, String property, String value) {
         checkName(property, value);
         if (StringUtils.isNotEmpty(value)
                 && !ExtensionLoader.getExtensionLoader(type).hasExtension(value)) {
@@ -421,7 +519,7 @@ public class BootstrapUtils {
      * @param property The extension key
      * @param value    The Extension name
      */
-    protected static void checkMultiExtension(Class<?> type, String property, String value) {
+    public static void checkMultiExtension(Class<?> type, String property, String value) {
         checkMultiName(property, value);
         if (StringUtils.isNotEmpty(value)) {
             String[] values = value.split("\\s*[,]+\\s*");
@@ -439,39 +537,39 @@ public class BootstrapUtils {
         }
     }
 
-    protected static void checkLength(String property, String value) {
+    public static void checkLength(String property, String value) {
         checkProperty(property, value, MAX_LENGTH, null);
     }
 
-    protected static void checkPathLength(String property, String value) {
+    public static void checkPathLength(String property, String value) {
         checkProperty(property, value, MAX_PATH_LENGTH, null);
     }
 
-    protected static void checkName(String property, String value) {
+    public static void checkName(String property, String value) {
         checkProperty(property, value, MAX_LENGTH, PATTERN_NAME);
     }
 
-    protected static void checkNameHasSymbol(String property, String value) {
+    public static void checkNameHasSymbol(String property, String value) {
         checkProperty(property, value, MAX_LENGTH, PATTERN_NAME_HAS_SYMBOL);
     }
 
-    protected static void checkKey(String property, String value) {
+    public static void checkKey(String property, String value) {
         checkProperty(property, value, MAX_LENGTH, PATTERN_KEY);
     }
 
-    protected static void checkMultiName(String property, String value) {
+    public static void checkMultiName(String property, String value) {
         checkProperty(property, value, MAX_LENGTH, PATTERN_MULTI_NAME);
     }
 
-    protected static void checkPathName(String property, String value) {
+    public static void checkPathName(String property, String value) {
         checkProperty(property, value, MAX_PATH_LENGTH, PATTERN_PATH);
     }
 
-    protected static void checkMethodName(String property, String value) {
+    public static void checkMethodName(String property, String value) {
         checkProperty(property, value, MAX_LENGTH, PATTERN_METHOD_NAME);
     }
 
-    protected static void checkParameterName(Map<String, String> parameters) {
+    public static void checkParameterName(Map<String, String> parameters) {
         if (CollectionUtils.isEmptyMap(parameters)) {
             return;
         }
@@ -480,7 +578,7 @@ public class BootstrapUtils {
         }
     }
 
-    protected static void checkProperty(String property, String value, int maxlength, Pattern pattern) {
+    public static void checkProperty(String property, String value, int maxlength, Pattern pattern) {
         if (StringUtils.isEmpty(value)) {
             return;
         }

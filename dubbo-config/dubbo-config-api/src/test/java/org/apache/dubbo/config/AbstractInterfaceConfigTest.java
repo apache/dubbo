@@ -25,6 +25,7 @@ import org.apache.dubbo.config.mock.GreetingLocal2;
 import org.apache.dubbo.config.mock.GreetingLocal3;
 import org.apache.dubbo.config.mock.GreetingMock1;
 import org.apache.dubbo.config.mock.GreetingMock2;
+import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.monitor.MonitorService;
 import org.apache.dubbo.registry.RegistryService;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -98,7 +99,6 @@ public class AbstractInterfaceConfigTest {
             writeDubboProperties(SHUTDOWN_WAIT_KEY, "100");
             System.setProperty("dubbo.application.name", "demo");
             InterfaceConfig interfaceConfig = new InterfaceConfig();
-            interfaceConfig.checkApplication();
             ApplicationConfig appConfig = interfaceConfig.getApplication();
             Assertions.assertEquals("demo", appConfig.getName());
             Assertions.assertEquals("100", System.getProperty(SHUTDOWN_WAIT_KEY));
@@ -107,8 +107,6 @@ public class AbstractInterfaceConfigTest {
             ConfigUtils.setProperties(null);
             writeDubboProperties(SHUTDOWN_WAIT_SECONDS_KEY, "1000");
             System.setProperty("dubbo.application.name", "demo");
-            interfaceConfig = new InterfaceConfig();
-            interfaceConfig.checkApplication();
             Assertions.assertEquals("1000", System.getProperty(SHUTDOWN_WAIT_SECONDS_KEY));
         } finally {
             ConfigUtils.setProperties(null);
@@ -118,13 +116,6 @@ public class AbstractInterfaceConfigTest {
         }
     }
 
-    @Test
-    public void checkApplication2() {
-        Assertions.assertThrows(IllegalStateException.class, () -> {
-            InterfaceConfig interfaceConfig = new InterfaceConfig();
-            interfaceConfig.checkApplication();
-        });
-    }
 
     @Test
     public void testLoadRegistries() {
@@ -132,7 +123,7 @@ public class AbstractInterfaceConfigTest {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
         // FIXME: now we need to check first, then load
         interfaceConfig.checkRegistry();
-        List<URL> urls = BootstrapUtils.loadRegistries(interfaceConfig, true);
+        List<URL> urls = ConfigValidationUtils.loadRegistries(interfaceConfig, true);
         Assertions.assertEquals(1, urls.size());
         URL url = urls.get(0);
         Assertions.assertEquals("registry", url.getProtocol());
@@ -149,7 +140,7 @@ public class AbstractInterfaceConfigTest {
         System.setProperty("dubbo.monitor.address", "monitor-addr:12080");
         System.setProperty("dubbo.monitor.protocol", "monitor");
         InterfaceConfig interfaceConfig = new InterfaceConfig();
-        URL url = BootstrapUtils.loadMonitor(interfaceConfig, new URL("dubbo", "addr1", 9090));
+        URL url = ConfigValidationUtils.loadMonitor(interfaceConfig, new URL("dubbo", "addr1", 9090));
         Assertions.assertEquals("monitor-addr:12080", url.getAddress());
         Assertions.assertEquals(MonitorService.class.getName(), url.getParameter("interface"));
         Assertions.assertNotNull(url.getParameter("dubbo"));
@@ -206,7 +197,7 @@ public class AbstractInterfaceConfigTest {
             InterfaceConfig interfaceConfig = new InterfaceConfig();
             interfaceConfig.setLocal(GreetingLocal1.class.getName());
             interfaceConfig.checkStubAndLocal(Greeting.class);
-            BootstrapUtils.checkMock(Greeting.class, interfaceConfig);
+            ConfigValidationUtils.checkMock(Greeting.class, interfaceConfig);
         });
     }
 
@@ -216,7 +207,7 @@ public class AbstractInterfaceConfigTest {
             InterfaceConfig interfaceConfig = new InterfaceConfig();
             interfaceConfig.setLocal(GreetingLocal2.class.getName());
             interfaceConfig.checkStubAndLocal(Greeting.class);
-            BootstrapUtils.checkMock(Greeting.class, interfaceConfig);
+            ConfigValidationUtils.checkMock(Greeting.class, interfaceConfig);
         });
     }
 
@@ -225,7 +216,7 @@ public class AbstractInterfaceConfigTest {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
         interfaceConfig.setLocal(GreetingLocal3.class.getName());
         interfaceConfig.checkStubAndLocal(Greeting.class);
-        BootstrapUtils.checkMock(Greeting.class, interfaceConfig);
+        ConfigValidationUtils.checkMock(Greeting.class, interfaceConfig);
     }
 
     @Test
@@ -234,7 +225,7 @@ public class AbstractInterfaceConfigTest {
             InterfaceConfig interfaceConfig = new InterfaceConfig();
             interfaceConfig.setStub(GreetingLocal1.class.getName());
             interfaceConfig.checkStubAndLocal(Greeting.class);
-            BootstrapUtils.checkMock(Greeting.class, interfaceConfig);
+            ConfigValidationUtils.checkMock(Greeting.class, interfaceConfig);
         });
     }
 
@@ -244,7 +235,7 @@ public class AbstractInterfaceConfigTest {
             InterfaceConfig interfaceConfig = new InterfaceConfig();
             interfaceConfig.setStub(GreetingLocal2.class.getName());
             interfaceConfig.checkStubAndLocal(Greeting.class);
-            BootstrapUtils.checkMock(Greeting.class, interfaceConfig);
+            ConfigValidationUtils.checkMock(Greeting.class, interfaceConfig);
         });
     }
 
@@ -253,7 +244,7 @@ public class AbstractInterfaceConfigTest {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
         interfaceConfig.setStub(GreetingLocal3.class.getName());
         interfaceConfig.checkStubAndLocal(Greeting.class);
-        BootstrapUtils.checkMock(Greeting.class, interfaceConfig);
+        ConfigValidationUtils.checkMock(Greeting.class, interfaceConfig);
     }
 
     @Test
@@ -262,7 +253,7 @@ public class AbstractInterfaceConfigTest {
             InterfaceConfig interfaceConfig = new InterfaceConfig();
             interfaceConfig.setMock("return {a, b}");
             interfaceConfig.checkStubAndLocal(Greeting.class);
-            BootstrapUtils.checkMock(Greeting.class, interfaceConfig);
+            ConfigValidationUtils.checkMock(Greeting.class, interfaceConfig);
         });
     }
 
@@ -272,7 +263,7 @@ public class AbstractInterfaceConfigTest {
             InterfaceConfig interfaceConfig = new InterfaceConfig();
             interfaceConfig.setMock(GreetingMock1.class.getName());
             interfaceConfig.checkStubAndLocal(Greeting.class);
-            BootstrapUtils.checkMock(Greeting.class, interfaceConfig);
+            ConfigValidationUtils.checkMock(Greeting.class, interfaceConfig);
         });
     }
 
@@ -282,7 +273,7 @@ public class AbstractInterfaceConfigTest {
             InterfaceConfig interfaceConfig = new InterfaceConfig();
             interfaceConfig.setMock(GreetingMock2.class.getName());
             interfaceConfig.checkStubAndLocal(Greeting.class);
-            BootstrapUtils.checkMock(Greeting.class, interfaceConfig);
+            ConfigValidationUtils.checkMock(Greeting.class, interfaceConfig);
         });
     }
 
