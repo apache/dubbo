@@ -17,10 +17,10 @@
 package org.apache.dubbo.config.spring.context.annotation;
 
 import org.apache.dubbo.config.RegistryConfig;
-import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.context.annotation.consumer.test.TestConsumerConfiguration;
 import org.apache.dubbo.config.spring.context.annotation.provider.DemoServiceImpl;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -52,13 +52,13 @@ public class EnableDubboTest {
 
     @BeforeEach
     public void setUp() {
-        ConfigManager.getInstance().clear();
+        ApplicationModel.getConfigManager().clear();
         context = new AnnotationConfigApplicationContext();
     }
 
     @AfterEach
     public void tearDown() {
-        ConfigManager.getInstance().clear();
+        ApplicationModel.getConfigManager().clear();
         context.close();
     }
 
@@ -99,6 +99,11 @@ public class EnableDubboTest {
         String value = demoService.sayName("Mercy");
 
         Assertions.assertEquals("Hello,Mercy", value);
+
+        DemoService autowiredDemoService = consumerConfiguration.getAutowiredDemoService();
+
+        Assertions.assertEquals("Hello,Mercy", autowiredDemoService.sayName("Mercy"));
+
 
         TestConsumerConfiguration.Child child = context.getBean(TestConsumerConfiguration.Child.class);
 

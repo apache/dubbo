@@ -67,19 +67,9 @@ public class AnnotationPropertyValuesAdapterTest {
 
         DefaultConversionService conversionService = new DefaultConversionService();
 
-        conversionService.addConverter(new Converter<String[], String>() {
-            @Override
-            public String convert(String[] source) {
-                return arrayToCommaDelimitedString(source);
-            }
-        });
+        conversionService.addConverter((Converter<String[], String>) source -> arrayToCommaDelimitedString(source));
 
-        conversionService.addConverter(new Converter<String[], Map<String, String>>() {
-            @Override
-            public Map<String, String> convert(String[] source) {
-                return CollectionUtils.toStringMap(source);
-            }
-        });
+        conversionService.addConverter((Converter<String[], Map<String, String>>) source -> CollectionUtils.toStringMap(source));
 
 
         dataBinder.setConversionService(conversionService);
@@ -131,11 +121,11 @@ public class AnnotationPropertyValuesAdapterTest {
 
         Assert.assertEquals(data, referenceBean.getParameters());
         // Bean compare
-        Assert.assertEquals(null, referenceBean.getApplication());
-        Assert.assertEquals(null, referenceBean.getModule());
-        Assert.assertEquals(null, referenceBean.getConsumer());
-        Assert.assertEquals(null, referenceBean.getMonitor());
-        Assert.assertEquals(null, referenceBean.getRegistry());
+        Assert.assertNull(referenceBean.getApplication());
+        Assert.assertNull(referenceBean.getModule());
+        Assert.assertNull(referenceBean.getConsumer());
+        Assert.assertNull(referenceBean.getMonitor());
+        Assert.assertNull(referenceBean.getRegistry());
 
     }
 

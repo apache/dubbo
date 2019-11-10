@@ -18,6 +18,7 @@ package org.apache.dubbo.config.spring.context.annotation;
 
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.spring.beans.factory.annotation.DubboConfigBindingBeanPostProcessor;
+import org.apache.dubbo.config.spring.beans.factory.config.ConfigurableSourceBeanMetadataElement;
 import org.apache.dubbo.config.spring.context.config.NamePropertyDefaultValueDubboConfigBeanCustomizer;
 
 import org.apache.commons.logging.Log;
@@ -44,8 +45,8 @@ import java.util.Set;
 
 import static org.apache.dubbo.config.spring.context.config.NamePropertyDefaultValueDubboConfigBeanCustomizer.BEAN_NAME;
 import static org.apache.dubbo.config.spring.util.BeanRegistrar.registerInfrastructureBean;
-import static org.apache.dubbo.config.spring.util.PropertySourcesUtils.getSubProperties;
-import static org.apache.dubbo.config.spring.util.PropertySourcesUtils.normalizePrefix;
+import static org.apache.dubbo.config.spring.util.PropertySourcesUtils.buildPrefix;
+import static org.apache.dubbo.config.spring.util.PropertySourcesUtils.getPrefixedProperties;
 import static org.springframework.beans.factory.support.BeanDefinitionBuilder.rootBeanDefinition;
 import static org.springframework.beans.factory.support.BeanDefinitionReaderUtils.registerWithGeneratedName;
 
@@ -56,7 +57,8 @@ import static org.springframework.beans.factory.support.BeanDefinitionReaderUtil
  * @see DubboConfigBindingBeanPostProcessor
  * @since 2.5.8
  */
-public class DubboConfigBindingRegistrar implements ImportBeanDefinitionRegistrar, EnvironmentAware {
+public class DubboConfigBindingRegistrar implements ImportBeanDefinitionRegistrar, EnvironmentAware,
+        ConfigurableSourceBeanMetadataElement {
 
     private final Log log = LogFactory.getLog(getClass());
 
@@ -89,7 +91,7 @@ public class DubboConfigBindingRegistrar implements ImportBeanDefinitionRegistra
                                           boolean multiple,
                                           BeanDefinitionRegistry registry) {
 
-        Map<String, Object> properties = getSubProperties(environment.getPropertySources(), prefix);
+        Map<String, Object> properties = getPrefixedProperties(environment.getPropertySources(), prefix);
 
         if (CollectionUtils.isEmpty(properties)) {
             if (log.isDebugEnabled()) {
@@ -121,6 +123,11 @@ public class DubboConfigBindingRegistrar implements ImportBeanDefinitionRegistra
 
         AbstractBeanDefinition beanDefinition = builder.getBeanDefinition();
 
+        /**
+         * @since 2.7.4
+         */
+        setSource(beanDefinition);
+
         registry.registerBeanDefinition(beanName, beanDefinition);
 
         if (log.isInfoEnabled()) {
@@ -137,7 +144,7 @@ public class DubboConfigBindingRegistrar implements ImportBeanDefinitionRegistra
 
         BeanDefinitionBuilder builder = rootBeanDefinition(processorClass);
 
-        String actualPrefix = multiple ? normalizePrefix(prefix) + beanName : prefix;
+        String actualPrefix = multiple ? buildPrefix(prefix) + beanName : prefix;
 
         builder.addConstructorArgValue(actualPrefix).addConstructorArgValue(beanName);
 

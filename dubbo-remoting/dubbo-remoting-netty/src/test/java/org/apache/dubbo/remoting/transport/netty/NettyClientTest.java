@@ -18,7 +18,7 @@ package org.apache.dubbo.remoting.transport.netty;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.Server;
+import org.apache.dubbo.remoting.RemotingServer;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.Exchangers;
 
@@ -34,7 +34,7 @@ import java.util.List;
  * Time: 5:47 PM
  */
 public class NettyClientTest {
-    static Server server;
+    static RemotingServer server;
 
 
     @BeforeAll
@@ -73,7 +73,7 @@ public class NettyClientTest {
     @Test
     public void testServerClose() throws Exception {
         for (int i = 0; i < 100; i++) {
-            Server aServer = Exchangers.bind(URL.valueOf("exchange://localhost:" + (6000 + i) + "?server=netty3"), new TelnetServerHandler());
+            RemotingServer aServer = Exchangers.bind(URL.valueOf("exchange://localhost:" + (6000 + i) + "?server=netty3"), new TelnetServerHandler());
             aServer.close();
         }
     }

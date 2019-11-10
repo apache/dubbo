@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.compiler.support;
 
-import org.apache.dubbo.common.utils.ClassHelper;
 
 import javax.tools.DiagnosticCollector;
 import javax.tools.FileObject;
@@ -74,7 +73,7 @@ public class JdkCompiler extends AbstractCompiler {
         StandardJavaFileManager manager = compiler.getStandardFileManager(diagnosticCollector, null, null);
         final ClassLoader loader = Thread.currentThread().getContextClassLoader();
         if (loader instanceof URLClassLoader
-                && (!loader.getClass().getName().equals("sun.misc.Launcher$AppClassLoader"))) {
+                && (!"sun.misc.Launcher$AppClassLoader".equals(loader.getClass().getName()))) {
             try {
                 URLClassLoader urlClassLoader = (URLClassLoader) loader;
                 List<File> files = new ArrayList<File>();
@@ -261,7 +260,7 @@ public class JdkCompiler extends AbstractCompiler {
                 return defineClass(qualifiedClassName, bytes, 0, bytes.length);
             }
             try {
-                return ClassHelper.forNameWithCallerClassLoader(qualifiedClassName, getClass());
+                return org.apache.dubbo.common.utils.ClassUtils.forNameWithCallerClassLoader(qualifiedClassName, getClass());
             } catch (ClassNotFoundException nf) {
                 return super.findClass(qualifiedClassName);
             }

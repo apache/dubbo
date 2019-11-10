@@ -39,13 +39,13 @@ public class BeanFactoryUtilsTest {
     }
 
     @Test
-    public void testGetOptionalBean() {
+    public void testGetNullableBean() {
 
         applicationContext.register(TestBean.class);
 
         applicationContext.refresh();
 
-        TestBean testBean = BeanFactoryUtils.getOptionalBean(applicationContext, "testBean", TestBean.class);
+        TestBean testBean = BeanFactoryUtils.getNullableBean(applicationContext, "testBean", TestBean.class);
 
         Assertions.assertNotNull(testBean);
 
@@ -54,11 +54,11 @@ public class BeanFactoryUtilsTest {
     }
 
     @Test
-    public void testGetOptionalBeanIfAbsent() {
+    public void testGetNullableBeanIfAbsent() {
 
         applicationContext.refresh();
 
-        TestBean testBean = BeanFactoryUtils.getOptionalBean(applicationContext, "testBean", TestBean.class);
+        TestBean testBean = BeanFactoryUtils.getNullableBean(applicationContext, "testBean", TestBean.class);
 
         Assertions.assertNull(testBean);
     }

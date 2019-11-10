@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.registry.dubbo;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.ExtensionLoader;
@@ -42,8 +41,13 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.apache.dubbo.common.Constants.DEFAULT_REGISTER_PROVIDER_KEYS;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
+import static org.apache.dubbo.registry.integration.RegistryProtocol.DEFAULT_REGISTER_PROVIDER_KEYS;
+import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * RegistryProtocolTest
@@ -59,16 +63,20 @@ public class RegistryProtocolTest {
     final URL registryUrl = URL.valueOf("registry://127.0.0.1:9090/");
     final private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
 
+    public static RegistryProtocol getRegistryProtocol() {
+        return (RegistryProtocol) ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(REGISTRY_PROTOCOL);
+    }
+
     @Test
     public void testDefaultPort() {
-        RegistryProtocol registryProtocol = new RegistryProtocol();
+        RegistryProtocol registryProtocol = getRegistryProtocol();
         assertEquals(9090, registryProtocol.getDefaultPort());
     }
 
     @Test
     public void testExportUrlNull() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            RegistryProtocol registryProtocol = new RegistryProtocol();
+            RegistryProtocol registryProtocol = getRegistryProtocol();
             registryProtocol.setCluster(new FailfastCluster());
 
             Protocol dubboProtocol = DubboProtocol.getDubboProtocol();
@@ -81,13 +89,13 @@ public class RegistryProtocolTest {
 
     @Test
     public void testExport() {
-        RegistryProtocol registryProtocol = new RegistryProtocol();
+        RegistryProtocol registryProtocol = getRegistryProtocol();
         registryProtocol.setCluster(new FailfastCluster());
         registryProtocol.setRegistryFactory(ExtensionLoader.getExtensionLoader(RegistryFactory.class).getAdaptiveExtension());
 
         Protocol dubboProtocol = DubboProtocol.getDubboProtocol();
         registryProtocol.setProtocol(dubboProtocol);
-        URL newRegistryUrl = registryUrl.addParameter(Constants.EXPORT_KEY, serviceUrl);
+        URL newRegistryUrl = registryUrl.addParameter(EXPORT_KEY, serviceUrl);
         DubboInvoker<DemoService> invoker = new DubboInvoker<DemoService>(DemoService.class,
                 newRegistryUrl, new ExchangeClient[]{new MockedClient("10.20.20.20", 2222, true)});
         Exporter<DemoService> exporter = registryProtocol.export(invoker);
@@ -101,10 +109,10 @@ public class RegistryProtocolTest {
 
     @Test
     public void testNotifyOverride() throws Exception {
-        URL newRegistryUrl = registryUrl.addParameter(Constants.EXPORT_KEY, serviceUrl);
+        URL newRegistryUrl = registryUrl.addParameter(EXPORT_KEY, serviceUrl);
         Invoker<RegistryProtocolTest> invoker = new MockInvoker<RegistryProtocolTest>(RegistryProtocolTest.class, newRegistryUrl);
         Exporter<?> exporter = protocol.export(invoker);
-        RegistryProtocol rprotocol = RegistryProtocol.getRegistryProtocol();
+        RegistryProtocol rprotocol = getRegistryProtocol();
         NotifyListener listener = getListener(rprotocol);
         List<URL> urls = new ArrayList<URL>();
         urls.add(URL.valueOf("override://0.0.0.0/?timeout=1000"));
@@ -112,7 +120,7 @@ public class RegistryProtocolTest {
         urls.add(URL.valueOf("override://0.0.0.0/" + service + "?x=y"));
         listener.notify(urls);
 
-        assertEquals(true, exporter.getInvoker().isAvailable());
+        assertTrue(exporter.getInvoker().isAvailable());
         assertEquals("100", exporter.getInvoker().getUrl().getParameter("timeout"));
         assertEquals("y", exporter.getInvoker().getUrl().getParameter("x"));
 
@@ -131,16 +139,16 @@ public class RegistryProtocolTest {
      */
     @Test
     public void testNotifyOverride_notmatch() throws Exception {
-        URL newRegistryUrl = registryUrl.addParameter(Constants.EXPORT_KEY, serviceUrl);
+        URL newRegistryUrl = registryUrl.addParameter(EXPORT_KEY, serviceUrl);
         Invoker<RegistryProtocolTest> invoker = new MockInvoker<RegistryProtocolTest>(RegistryProtocolTest.class, newRegistryUrl);
         Exporter<?> exporter = protocol.export(invoker);
-        RegistryProtocol rprotocol = RegistryProtocol.getRegistryProtocol();
+        RegistryProtocol rprotocol = getRegistryProtocol();
         NotifyListener listener = getListener(rprotocol);
         List<URL> urls = new ArrayList<URL>();
         urls.add(URL.valueOf("override://0.0.0.0/org.apache.dubbo.registry.protocol.HackService?timeout=100"));
         listener.notify(urls);
-        assertEquals(true, exporter.getInvoker().isAvailable());
-        assertEquals(null, exporter.getInvoker().getUrl().getParameter("timeout"));
+        assertTrue(exporter.getInvoker().isAvailable());
+        assertNull(exporter.getInvoker().getUrl().getParameter("timeout"));
         exporter.unexport();
         destroyRegistryProtocol();
     }
@@ -150,7 +158,7 @@ public class RegistryProtocolTest {
      */
     @Test
     public void testDestoryRegistry() {
-        URL newRegistryUrl = registryUrl.addParameter(Constants.EXPORT_KEY, serviceUrl);
+        URL newRegistryUrl = registryUrl.addParameter(EXPORT_KEY, serviceUrl);
         Invoker<RegistryProtocolTest> invoker = new MockInvoker<RegistryProtocolTest>(RegistryProtocolTest.class, newRegistryUrl);
         Exporter<?> exporter = protocol.export(invoker);
         destroyRegistryProtocol();
@@ -159,13 +167,13 @@ public class RegistryProtocolTest {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        assertEquals(false, exporter.getInvoker().isAvailable());
+        assertFalse(exporter.getInvoker().isAvailable());
 
     }
 
     @Test
     public void testGetParamsToRegistry() {
-        RegistryProtocol registryProtocol = new RegistryProtocol();
+        RegistryProtocol registryProtocol = getRegistryProtocol();
         String[] additionalParams = new String[]{"key1", "key2"};
         String[] registryParams = registryProtocol.getParamsToRegistry(DEFAULT_REGISTER_PROVIDER_KEYS, additionalParams);
         String[] expectParams = ArrayUtils.addAll(DEFAULT_REGISTER_PROVIDER_KEYS, additionalParams);
@@ -173,7 +181,7 @@ public class RegistryProtocolTest {
     }
 
     private void destroyRegistryProtocol() {
-        Protocol registry = RegistryProtocol.getRegistryProtocol();
+        Protocol registry = getRegistryProtocol();
         registry.destroy();
     }
 

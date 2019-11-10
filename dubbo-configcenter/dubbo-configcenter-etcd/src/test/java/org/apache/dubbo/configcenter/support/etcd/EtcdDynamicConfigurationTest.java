@@ -17,44 +17,49 @@
 
 package org.apache.dubbo.configcenter.support.etcd;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
+import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
+import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
+
 import io.etcd.jetcd.ByteSequence;
 import io.etcd.jetcd.Client;
-import org.apache.dubbo.common.Constants;
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.configcenter.ConfigChangeEvent;
-import org.apache.dubbo.configcenter.ConfigurationListener;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
+import io.etcd.jetcd.launcher.EtcdCluster;
+import io.etcd.jetcd.launcher.EtcdClusterFactory;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
+import java.net.URI;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.dubbo.remoting.etcd.Constants.SESSION_TIMEOUT_KEY;
 
 /**
  * Unit test for etcd config center support
- * TODO Integrate with https://github.com/etcd-io/jetcd#launcher or using mock data.
+ * Integrate with https://github.com/etcd-io/jetcd#launcher
  */
-@Disabled
 public class EtcdDynamicConfigurationTest {
-
-    private static final String ENDPOINT = "http://127.0.0.1:2379";
 
     private static EtcdDynamicConfiguration config;
 
-    private static Client etcdClient;
+    public EtcdCluster etcdCluster = EtcdClusterFactory.buildCluster(getClass().getSimpleName(), 3, false, false);
+
+    private static Client client;
 
     @Test
     public void testGetConfig() {
+
         put("/dubbo/config/org.apache.dubbo.etcd.testService/configurators", "hello");
         put("/dubbo/config/test/dubbo.properties", "aaa=bbb");
-        Assertions.assertEquals("hello", config.getConfig("org.apache.dubbo.etcd.testService.configurators"));
-        Assertions.assertEquals("aaa=bbb", config.getConfig("dubbo.properties", "test"));
+        Assert.assertEquals("hello", config.getConfig("org.apache.dubbo.etcd.testService.configurators", DynamicConfiguration.DEFAULT_GROUP));
+        Assert.assertEquals("aaa=bbb", config.getConfig("dubbo.properties", "test"));
     }
 
     @Test
@@ -77,16 +82,16 @@ public class EtcdDynamicConfigurationTest {
 
         Thread.sleep(1000);
 
-        Assertions.assertTrue(latch.await(5, TimeUnit.SECONDS));
-        Assertions.assertEquals(1, listener1.getCount("/dubbo/config/AService/configurators"));
-        Assertions.assertEquals(1, listener2.getCount("/dubbo/config/AService/configurators"));
-        Assertions.assertEquals(1, listener3.getCount("/dubbo/config/testapp/tagrouters"));
-        Assertions.assertEquals(1, listener4.getCount("/dubbo/config/testapp/tagrouters"));
+        Assert.assertTrue(latch.await(5, TimeUnit.SECONDS));
+        Assert.assertEquals(1, listener1.getCount("/dubbo/config/AService/configurators"));
+        Assert.assertEquals(1, listener2.getCount("/dubbo/config/AService/configurators"));
+        Assert.assertEquals(1, listener3.getCount("/dubbo/config/testapp/tagrouters"));
+        Assert.assertEquals(1, listener4.getCount("/dubbo/config/testapp/tagrouters"));
 
-        Assertions.assertEquals("new value1", listener1.getValue());
-        Assertions.assertEquals("new value1", listener2.getValue());
-        Assertions.assertEquals("new value2", listener3.getValue());
-        Assertions.assertEquals("new value2", listener4.getValue());
+        Assert.assertEquals("new value1", listener1.getValue());
+        Assert.assertEquals("new value1", listener2.getValue());
+        Assert.assertEquals("new value2", listener3.getValue());
+        Assert.assertEquals("new value2", listener4.getValue());
     }
 
     private class TestListener implements ConfigurationListener {
@@ -99,10 +104,10 @@ public class EtcdDynamicConfigurationTest {
         }
 
         @Override
-        public void process(ConfigChangeEvent event) {
+        public void process(ConfigChangedEvent event) {
             Integer count = countMap.computeIfAbsent(event.getKey(), k -> 0);
             countMap.put(event.getKey(), ++count);
-            value = event.getValue();
+            value = event.getContent();
             latch.countDown();
         }
 
@@ -115,27 +120,35 @@ public class EtcdDynamicConfigurationTest {
         }
     }
 
-    static void put(String key, String value) {
+    private void put(String key, String value) {
         try {
-            etcdClient.getKVClient()
-                    .put(ByteSequence.from(key, UTF_8), ByteSequence.from(value, UTF_8))
-                    .get();
+            client.getKVClient().put(ByteSequence.from(key, UTF_8), ByteSequence.from(value, UTF_8)).get();
         } catch (Exception e) {
             System.out.println("Error put value to etcd.");
         }
     }
 
-    @BeforeAll
-    static void setUp() {
-        etcdClient = Client.builder().endpoints(ENDPOINT).build();
+    @Before
+    public void setUp() {
+
+        etcdCluster.start();
+
+        client = Client.builder().endpoints(etcdCluster.getClientEndpoints()).build();
+
+        List<URI> clientEndPoints = etcdCluster.getClientEndpoints();
+
+        String ipAddress = clientEndPoints.get(0).getHost() + ":" + clientEndPoints.get(0).getPort();
+        String urlForDubbo = "etcd3://" + ipAddress + "/org.apache.dubbo.etcd.testService";
+
         // timeout in 15 seconds.
-        URL url = URL.valueOf("etcd3://127.0.0.1:2379/org.apache.dubbo.etcd.testService")
-                .addParameter(Constants.SESSION_TIMEOUT_KEY, 15000);
+        URL url = URL.valueOf(urlForDubbo)
+                .addParameter(SESSION_TIMEOUT_KEY, 15000);
         config = new EtcdDynamicConfiguration(url);
     }
 
-    @AfterAll
-    static void tearDown() {
-        etcdClient.close();
+    @After
+    public void tearDown() {
+        etcdCluster.close();
     }
+
 }

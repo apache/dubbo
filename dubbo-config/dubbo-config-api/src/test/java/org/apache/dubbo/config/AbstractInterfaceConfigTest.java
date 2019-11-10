@@ -16,11 +16,10 @@
  */
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.config.api.Greeting;
-import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.mock.GreetingLocal1;
 import org.apache.dubbo.config.mock.GreetingLocal2;
 import org.apache.dubbo.config.mock.GreetingLocal3;
@@ -28,6 +27,7 @@ import org.apache.dubbo.config.mock.GreetingMock1;
 import org.apache.dubbo.config.mock.GreetingMock2;
 import org.apache.dubbo.monitor.MonitorService;
 import org.apache.dubbo.registry.RegistryService;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -46,23 +46,26 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
+import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_SECONDS_KEY;
+
 public class AbstractInterfaceConfigTest {
     private static File dubboProperties;
 
     @BeforeAll
     public static void setUp(@TempDir Path folder) {
-        dubboProperties = folder.resolve(Constants.DUBBO_PROPERTIES_KEY).toFile();
-        System.setProperty(Constants.DUBBO_PROPERTIES_KEY, dubboProperties.getAbsolutePath());
+        dubboProperties = folder.resolve(CommonConstants.DUBBO_PROPERTIES_KEY).toFile();
+        System.setProperty(CommonConstants.DUBBO_PROPERTIES_KEY, dubboProperties.getAbsolutePath());
     }
 
     @AfterAll
     public static void tearDown() {
-        System.clearProperty(Constants.DUBBO_PROPERTIES_KEY);
+        System.clearProperty(CommonConstants.DUBBO_PROPERTIES_KEY);
     }
 
     @AfterEach
     public void tearMethodAfterEachUT() {
-        ConfigManager.getInstance().clear();
+        ApplicationModel.getConfigManager().clear();
     }
 
     @Test
@@ -89,29 +92,29 @@ public class AbstractInterfaceConfigTest {
     public void checkApplication1() {
         try {
             ConfigUtils.setProperties(null);
-            System.clearProperty(Constants.SHUTDOWN_WAIT_KEY);
-            System.clearProperty(Constants.SHUTDOWN_WAIT_SECONDS_KEY);
+            System.clearProperty(SHUTDOWN_WAIT_KEY);
+            System.clearProperty(SHUTDOWN_WAIT_SECONDS_KEY);
 
-            writeDubboProperties(Constants.SHUTDOWN_WAIT_KEY, "100");
+            writeDubboProperties(SHUTDOWN_WAIT_KEY, "100");
             System.setProperty("dubbo.application.name", "demo");
             InterfaceConfig interfaceConfig = new InterfaceConfig();
             interfaceConfig.checkApplication();
             ApplicationConfig appConfig = interfaceConfig.getApplication();
             Assertions.assertEquals("demo", appConfig.getName());
-            Assertions.assertEquals("100", System.getProperty(Constants.SHUTDOWN_WAIT_KEY));
+            Assertions.assertEquals("100", System.getProperty(SHUTDOWN_WAIT_KEY));
 
-            System.clearProperty(Constants.SHUTDOWN_WAIT_KEY);
+            System.clearProperty(SHUTDOWN_WAIT_KEY);
             ConfigUtils.setProperties(null);
-            writeDubboProperties(Constants.SHUTDOWN_WAIT_SECONDS_KEY, "1000");
+            writeDubboProperties(SHUTDOWN_WAIT_SECONDS_KEY, "1000");
             System.setProperty("dubbo.application.name", "demo");
             interfaceConfig = new InterfaceConfig();
             interfaceConfig.checkApplication();
-            Assertions.assertEquals("1000", System.getProperty(Constants.SHUTDOWN_WAIT_SECONDS_KEY));
+            Assertions.assertEquals("1000", System.getProperty(SHUTDOWN_WAIT_SECONDS_KEY));
         } finally {
             ConfigUtils.setProperties(null);
             System.clearProperty("dubbo.application.name");
-            System.clearProperty(Constants.SHUTDOWN_WAIT_KEY);
-            System.clearProperty(Constants.SHUTDOWN_WAIT_SECONDS_KEY);
+            System.clearProperty(SHUTDOWN_WAIT_KEY);
+            System.clearProperty(SHUTDOWN_WAIT_SECONDS_KEY);
         }
     }
 
@@ -129,7 +132,7 @@ public class AbstractInterfaceConfigTest {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
         // FIXME: now we need to check first, then load
         interfaceConfig.checkRegistry();
-        List<URL> urls = interfaceConfig.loadRegistries(true);
+        List<URL> urls = BootstrapUtils.loadRegistries(interfaceConfig, true);
         Assertions.assertEquals(1, urls.size());
         URL url = urls.get(0);
         Assertions.assertEquals("registry", url.getProtocol());
@@ -146,7 +149,7 @@ public class AbstractInterfaceConfigTest {
         System.setProperty("dubbo.monitor.address", "monitor-addr:12080");
         System.setProperty("dubbo.monitor.protocol", "monitor");
         InterfaceConfig interfaceConfig = new InterfaceConfig();
-        URL url = interfaceConfig.loadMonitor(new URL("dubbo", "addr1", 9090));
+        URL url = BootstrapUtils.loadMonitor(interfaceConfig, new URL("dubbo", "addr1", 9090));
         Assertions.assertEquals("monitor-addr:12080", url.getAddress());
         Assertions.assertEquals(MonitorService.class.getName(), url.getParameter("interface"));
         Assertions.assertNotNull(url.getParameter("dubbo"));
@@ -203,7 +206,7 @@ public class AbstractInterfaceConfigTest {
             InterfaceConfig interfaceConfig = new InterfaceConfig();
             interfaceConfig.setLocal(GreetingLocal1.class.getName());
             interfaceConfig.checkStubAndLocal(Greeting.class);
-            interfaceConfig.checkMock(Greeting.class);
+            BootstrapUtils.checkMock(Greeting.class, interfaceConfig);
         });
     }
 
@@ -213,7 +216,7 @@ public class AbstractInterfaceConfigTest {
             InterfaceConfig interfaceConfig = new InterfaceConfig();
             interfaceConfig.setLocal(GreetingLocal2.class.getName());
             interfaceConfig.checkStubAndLocal(Greeting.class);
-            interfaceConfig.checkMock(Greeting.class);
+            BootstrapUtils.checkMock(Greeting.class, interfaceConfig);
         });
     }
 
@@ -222,7 +225,7 @@ public class AbstractInterfaceConfigTest {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
         interfaceConfig.setLocal(GreetingLocal3.class.getName());
         interfaceConfig.checkStubAndLocal(Greeting.class);
-        interfaceConfig.checkMock(Greeting.class);
+        BootstrapUtils.checkMock(Greeting.class, interfaceConfig);
     }
 
     @Test
@@ -231,7 +234,7 @@ public class AbstractInterfaceConfigTest {
             InterfaceConfig interfaceConfig = new InterfaceConfig();
             interfaceConfig.setStub(GreetingLocal1.class.getName());
             interfaceConfig.checkStubAndLocal(Greeting.class);
-            interfaceConfig.checkMock(Greeting.class);
+            BootstrapUtils.checkMock(Greeting.class, interfaceConfig);
         });
     }
 
@@ -241,7 +244,7 @@ public class AbstractInterfaceConfigTest {
             InterfaceConfig interfaceConfig = new InterfaceConfig();
             interfaceConfig.setStub(GreetingLocal2.class.getName());
             interfaceConfig.checkStubAndLocal(Greeting.class);
-            interfaceConfig.checkMock(Greeting.class);
+            BootstrapUtils.checkMock(Greeting.class, interfaceConfig);
         });
     }
 
@@ -250,7 +253,7 @@ public class AbstractInterfaceConfigTest {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
         interfaceConfig.setStub(GreetingLocal3.class.getName());
         interfaceConfig.checkStubAndLocal(Greeting.class);
-        interfaceConfig.checkMock(Greeting.class);
+        BootstrapUtils.checkMock(Greeting.class, interfaceConfig);
     }
 
     @Test
@@ -259,7 +262,7 @@ public class AbstractInterfaceConfigTest {
             InterfaceConfig interfaceConfig = new InterfaceConfig();
             interfaceConfig.setMock("return {a, b}");
             interfaceConfig.checkStubAndLocal(Greeting.class);
-            interfaceConfig.checkMock(Greeting.class);
+            BootstrapUtils.checkMock(Greeting.class, interfaceConfig);
         });
     }
 
@@ -269,7 +272,7 @@ public class AbstractInterfaceConfigTest {
             InterfaceConfig interfaceConfig = new InterfaceConfig();
             interfaceConfig.setMock(GreetingMock1.class.getName());
             interfaceConfig.checkStubAndLocal(Greeting.class);
-            interfaceConfig.checkMock(Greeting.class);
+            BootstrapUtils.checkMock(Greeting.class, interfaceConfig);
         });
     }
 
@@ -279,7 +282,7 @@ public class AbstractInterfaceConfigTest {
             InterfaceConfig interfaceConfig = new InterfaceConfig();
             interfaceConfig.setMock(GreetingMock2.class.getName());
             interfaceConfig.checkStubAndLocal(Greeting.class);
-            interfaceConfig.checkMock(Greeting.class);
+            BootstrapUtils.checkMock(Greeting.class, interfaceConfig);
         });
     }
 

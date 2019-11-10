@@ -28,4 +28,6 @@ public class ReferenceConfig<T> extends org.apache.dubbo.config.ReferenceConfig<
     public ReferenceConfig(Reference reference) {
         super(reference);
     }
+
+
 }

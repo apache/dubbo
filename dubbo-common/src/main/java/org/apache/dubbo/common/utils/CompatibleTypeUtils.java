@@ -51,6 +51,7 @@ public class CompatibleTypeUtils {
         if (value == null || type == null || type.isAssignableFrom(value.getClass())) {
             return value;
         }
+
         if (value instanceof String) {
             String string = (String) value;
             if (char.class.equals(type) || Character.class.equals(type)) {
@@ -59,78 +60,107 @@ public class CompatibleTypeUtils {
                             " when convert String to char, the String MUST only 1 char.", string));
                 }
                 return string.charAt(0);
-            } else if (type.isEnum()) {
+            }
+            if (type.isEnum()) {
                 return Enum.valueOf((Class<Enum>) type, string);
-            } else if (type == BigInteger.class) {
+            }
+            if (type == BigInteger.class) {
                 return new BigInteger(string);
-            } else if (type == BigDecimal.class) {
+            }
+            if (type == BigDecimal.class) {
                 return new BigDecimal(string);
-            } else if (type == Short.class || type == short.class) {
+            }
+            if (type == Short.class || type == short.class) {
                 return new Short(string);
-            } else if (type == Integer.class || type == int.class) {
+            }
+            if (type == Integer.class || type == int.class) {
                 return new Integer(string);
-            } else if (type == Long.class || type == long.class) {
+            }
+            if (type == Long.class || type == long.class) {
                 return new Long(string);
-            } else if (type == Double.class || type == double.class) {
+            }
+            if (type == Double.class || type == double.class) {
                 return new Double(string);
-            } else if (type == Float.class || type == float.class) {
+            }
+            if (type == Float.class || type == float.class) {
                 return new Float(string);
-            } else if (type == Byte.class || type == byte.class) {
+            }
+            if (type == Byte.class || type == byte.class) {
                 return new Byte(string);
-            } else if (type == Boolean.class || type == boolean.class) {
-                return new Boolean(string);
-            } else if (type == Date.class || type == java.sql.Date.class || type == java.sql.Timestamp.class || type == java.sql.Time.class) {
+            }
+            if (type == Boolean.class || type == boolean.class) {
+                return Boolean.valueOf(string);
+            }
+            if (type == Date.class || type == java.sql.Date.class || type == java.sql.Timestamp.class
+                    || type == java.sql.Time.class) {
                 try {
-                    Date date = new SimpleDateFormat(DATE_FORMAT).parse((String) value);
+                    Date date = new SimpleDateFormat(DATE_FORMAT).parse(string);
                     if (type == java.sql.Date.class) {
                         return new java.sql.Date(date.getTime());
-                    } else if (type == java.sql.Timestamp.class) {
-                        return new java.sql.Timestamp(date.getTime());
-                    } else if (type == java.sql.Time.class) {
-                        return new java.sql.Time(date.getTime());
-                    } else {
-                        return date;
                     }
+                    if (type == java.sql.Timestamp.class) {
+                        return new java.sql.Timestamp(date.getTime());
+                    }
+                    if (type == java.sql.Time.class) {
+                        return new java.sql.Time(date.getTime());
+                    }
+                    return date;
                 } catch (ParseException e) {
-                    throw new IllegalStateException("Failed to parse date " + value + " by format " + DATE_FORMAT + ", cause: " + e.getMessage(), e);
+                    throw new IllegalStateException("Failed to parse date " + value + " by format "
+                            + DATE_FORMAT + ", cause: " + e.getMessage(), e);
                 }
-            } else if (type == Class.class) {
+            }
+            if (type == Class.class) {
                 try {
-                    return ReflectUtils.name2class((String) value);
+                    return ReflectUtils.name2class(string);
                 } catch (ClassNotFoundException e) {
                     throw new RuntimeException(e.getMessage(), e);
                 }
-            } else if (char[].class.equals(type)) {
+            }
+            if (char[].class.equals(type)) {
                 // Process string to char array for generic invoke
                 // See
-                // - https://github.com/apache/incubator-dubbo/issues/2003
+                // - https://github.com/apache/dubbo/issues/2003
                 int len = string.length();
                 char[] chars = new char[len];
                 string.getChars(0, len, chars, 0);
                 return chars;
             }
-        } else if (value instanceof Number) {
+        }
+        if (value instanceof Number) {
             Number number = (Number) value;
             if (type == byte.class || type == Byte.class) {
                 return number.byteValue();
-            } else if (type == short.class || type == Short.class) {
+            }
+            if (type == short.class || type == Short.class) {
                 return number.shortValue();
-            } else if (type == int.class || type == Integer.class) {
+            }
+            if (type == int.class || type == Integer.class) {
                 return number.intValue();
-            } else if (type == long.class || type == Long.class) {
+            }
+            if (type == long.class || type == Long.class) {
                 return number.longValue();
-            } else if (type == float.class || type == Float.class) {
+            }
+            if (type == float.class || type == Float.class) {
                 return number.floatValue();
-            } else if (type == double.class || type == Double.class) {
+            }
+            if (type == double.class || type == Double.class) {
                 return number.doubleValue();
-            } else if (type == BigInteger.class) {
+            }
+            if (type == BigInteger.class) {
                 return BigInteger.valueOf(number.longValue());
-            } else if (type == BigDecimal.class) {
+            }
+            if (type == BigDecimal.class) {
                 return BigDecimal.valueOf(number.doubleValue());
-            } else if (type == Date.class) {
+            }
+            if (type == Date.class) {
                 return new Date(number.longValue());
             }
-        } else if (value instanceof Collection) {
+            if (type == boolean.class || type == Boolean.class) {
+                return 0 != number.intValue();
+            }
+        }
+        if (value instanceof Collection) {
             Collection collection = (Collection) value;
             if (type.isArray()) {
                 int length = collection.size();
@@ -140,19 +170,23 @@ public class CompatibleTypeUtils {
                     Array.set(array, i++, item);
                 }
                 return array;
-            } else if (!type.isInterface()) {
+            }
+            if (!type.isInterface()) {
                 try {
                     Collection result = (Collection) type.newInstance();
                     result.addAll(collection);
                     return result;
-                } catch (Throwable e) {
+                } catch (Throwable ignored) {
                 }
-            } else if (type == List.class) {
+            }
+            if (type == List.class) {
                 return new ArrayList<Object>(collection);
-            } else if (type == Set.class) {
+            }
+            if (type == Set.class) {
                 return new HashSet<Object>(collection);
             }
-        } else if (value.getClass().isArray() && Collection.class.isAssignableFrom(type)) {
+        }
+        if (value.getClass().isArray() && Collection.class.isAssignableFrom(type)) {
             Collection collection;
             if (!type.isInterface()) {
                 try {

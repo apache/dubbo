@@ -1,0 +1,6 @@
+management:
+  security:
+    enabled: false
+endpoints:
+  shutdown:
+    enabled: true

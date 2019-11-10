@@ -17,11 +17,11 @@
 
 package org.apache.dubbo.remoting.exchange.support.header;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.Channel;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
@@ -29,6 +29,7 @@ import org.apache.dubbo.remoting.exchange.ExchangeHandler;
 import org.apache.dubbo.remoting.exchange.ExchangeServer;
 import org.apache.dubbo.remoting.exchange.Exchangers;
 import org.apache.dubbo.remoting.transport.dispatcher.FakeChannelHandlers;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -81,7 +82,7 @@ public class HeartbeatHandlerTest {
 
     @Test
     public void testHeartbeat() throws Exception {
-        URL serverURL = URL.valueOf("header://localhost:55555?transporter=netty3");
+        URL serverURL = URL.valueOf("header://localhost:55556?transporter=netty3");
         serverURL = serverURL.addParameter(Constants.HEARTBEAT_KEY, 1000);
         TestHeartbeatHandler handler = new TestHeartbeatHandler();
         server = Exchangers.bind(serverURL, handler);
@@ -91,14 +92,14 @@ public class HeartbeatHandlerTest {
         Thread.sleep(10000);
         System.err.println("++++++++++++++ disconnect count " + handler.disconnectCount);
         System.err.println("++++++++++++++ connect count " + handler.connectCount);
-        Assertions.assertTrue(handler.disconnectCount == 0);
-        Assertions.assertTrue(handler.connectCount == 1);
+        Assertions.assertEquals(0, handler.disconnectCount);
+        Assertions.assertEquals(1, handler.connectCount);
     }
 
     @Test
     public void testClientHeartbeat() throws Exception {
         FakeChannelHandlers.setTestingChannelHandlers();
-        URL serverURL = URL.valueOf("header://localhost:55555?transporter=netty3");
+        URL serverURL = URL.valueOf("header://localhost:55557?transporter=netty3");
         TestHeartbeatHandler handler = new TestHeartbeatHandler();
         server = Exchangers.bind(serverURL, handler);
         System.out.println("Server bind successfully");

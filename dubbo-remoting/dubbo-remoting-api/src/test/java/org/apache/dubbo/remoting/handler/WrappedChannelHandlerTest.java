@@ -83,8 +83,6 @@ public class WrappedChannelHandlerTest {
         Assertions.assertThrows(RemotingException.class, () -> handler.connected(new MockedChannel()));
     }
 
-    ;
-
     @Test
     public void test_Disconnect_Biz_Error() throws RemotingException {
         Assertions.assertThrows(RemotingException.class, () -> handler.disconnected(new MockedChannel()));

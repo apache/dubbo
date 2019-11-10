@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.extension.support;
 
-import org.apache.dubbo.common.extension.Activate;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
