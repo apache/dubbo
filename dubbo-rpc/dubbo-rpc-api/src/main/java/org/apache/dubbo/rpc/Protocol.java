@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.SPI;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -82,6 +83,8 @@ public interface Protocol {
      *
      * @return
      */
-    List<ProtocolServer> getServers();
+    default List<ProtocolServer> getServers() {
+        return Collections.emptyList();
+    }
 
 }

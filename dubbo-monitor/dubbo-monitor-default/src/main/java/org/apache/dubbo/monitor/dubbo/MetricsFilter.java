@@ -31,7 +31,6 @@ import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
 import com.alibaba.fastjson.JSON;
@@ -89,7 +88,6 @@ public class MetricsFilter implements Filter {
             Invoker<MetricsService> metricsInvoker = initMetricsInvoker();
 
             try {
-                ApplicationModel.getServiceRepository().registerService(MetricsService.class);
                 protocol.export(metricsInvoker);
             } catch (RuntimeException e) {
                 logger.error("Metrics Service need to be configured" +

@@ -18,7 +18,7 @@ package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.config.service.ReferenceConfig;
+import org.apache.dubbo.config.service.ReferenceConfigBase;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -36,7 +36,7 @@ import java.util.Set;
 public class ConsumerModel {
     private final String serviceKey;
     private final ServiceDescriptor serviceModel;
-    private final ReferenceConfig<?> referenceConfig;
+    private final ReferenceConfigBase<?> referenceConfig;
 
     private Object proxyObject;
 
@@ -53,7 +53,7 @@ public class ConsumerModel {
     public ConsumerModel(String serviceKey
             , Object proxyObject
             , ServiceDescriptor serviceModel
-            , ReferenceConfig<?> referenceConfig
+            , ReferenceConfigBase<?> referenceConfig
             , Map<String, Object> attributes) {
 
         Assert.notEmptyString(serviceKey, "Service name can't be null or blank");
@@ -108,7 +108,7 @@ public class ConsumerModel {
         return serviceModel;
     }
 
-    public ReferenceConfig getReferenceConfig() {
+    public ReferenceConfigBase getReferenceConfig() {
         return referenceConfig;
     }
 
@@ -189,7 +189,7 @@ public class ConsumerModel {
     public ConsumerModel(String serviceKey
             , Object proxyObject
             , ServiceDescriptor serviceModel
-            , ReferenceConfig<?> referenceConfig
+            , ReferenceConfigBase<?> referenceConfig
             , Map<String, Object> attributes
             , ServiceMetadata metadata) {
 

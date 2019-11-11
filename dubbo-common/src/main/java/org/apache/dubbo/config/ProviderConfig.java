@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.config.service.ServiceConfig;
+import org.apache.dubbo.config.service.ServiceConfigBase;
 import org.apache.dubbo.config.support.Parameter;
 
 import java.util.ArrayList;
@@ -27,7 +27,7 @@ import java.util.Arrays;
  *
  * @export
  * @see org.apache.dubbo.config.ProtocolConfig
- * @see ServiceConfig
+ * @see ServiceConfigBase
  */
 public class ProviderConfig extends AbstractServiceConfig {
 

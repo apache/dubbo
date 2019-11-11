@@ -21,8 +21,8 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
-import org.apache.dubbo.config.service.ReferenceConfig;
-import org.apache.dubbo.config.service.ServiceConfig;
+import org.apache.dubbo.config.service.ReferenceConfigBase;
+import org.apache.dubbo.config.service.ServiceConfigBase;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.support.AbstractRegistry;
 import org.apache.dubbo.rpc.model.ConsumerModel;
@@ -34,7 +34,7 @@ import java.util.Map;
 public class ServiceCheckUtils {
 
     public static boolean isRegistered(ProviderModel providerModel) {
-        ServiceConfig serviceConfig = providerModel.getServiceConfig();
+        ServiceConfigBase serviceConfig = providerModel.getServiceConfig();
         List<RegistryConfig> registryConfigs = serviceConfig.getRegistries();
         List<ProtocolConfig> protocolConfigs = serviceConfig.getProtocols();
         // TODO, only check the status of one registry and no protocol now.
@@ -47,7 +47,7 @@ public class ServiceCheckUtils {
     }
 
     public static int getConsumerAddressNum(ConsumerModel consumerModel) {
-        ReferenceConfig referenceConfig = consumerModel.getReferenceConfig();
+        ReferenceConfigBase referenceConfig = consumerModel.getReferenceConfig();
         // TODO, only check one registry by default.
         List<RegistryConfig> registryConfigs = referenceConfig.getRegistries();
         Registry registry = ExtensionLoader.getExtensionLoader(Registry.class).getExtension(registryConfigs.get(0).getProtocol());

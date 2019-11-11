@@ -6,6 +6,7 @@ accesslog=org.apache.dubbo.rpc.filter.AccessLogFilter
 activelimit=org.apache.dubbo.rpc.filter.ActiveLimitFilter
 classloader=org.apache.dubbo.rpc.filter.ClassLoaderFilter
 context=org.apache.dubbo.rpc.filter.ContextFilter
+consumercontext=org.apache.dubbo.rpc.filter.ConsumerContextFilter
 exception=org.apache.dubbo.rpc.filter.ExceptionFilter
 executelimit=org.apache.dubbo.rpc.filter.ExecuteLimitFilter
 deprecated=org.apache.dubbo.rpc.filter.DeprecatedFilter

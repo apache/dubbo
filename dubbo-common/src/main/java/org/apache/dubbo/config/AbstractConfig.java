@@ -66,7 +66,7 @@ public abstract class AbstractConfig implements Serializable {
     /**
      * The suffix container
      */
-    private static final String[] SUFFIXES = new String[]{"Config", "Bean"};
+    private static final String[] SUFFIXES = new String[]{"Config", "Bean", "ConfigBase"};
 
     static {
         LEGACY_PROPERTIES.put("dubbo.protocol.name", "dubbo.service.protocol");
