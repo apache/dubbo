@@ -17,7 +17,7 @@
 package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.config.service.ServiceConfig;
+import org.apache.dubbo.config.service.ServiceConfigBase;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -35,13 +35,13 @@ public class ProviderModel {
     private final String serviceKey;
     private final Object serviceInstance;
     private final ServiceDescriptor serviceModel;
-    private final ServiceConfig<?> serviceConfig;
+    private final ServiceConfigBase<?> serviceConfig;
     private final List<RegisterStatedURL> urls;
 
     public ProviderModel(String serviceKey,
                          Object serviceInstance,
                          ServiceDescriptor serviceModel,
-                         ServiceConfig<?> serviceConfig) {
+                         ServiceConfigBase<?> serviceConfig) {
         if (null == serviceInstance) {
             throw new IllegalArgumentException("Service[" + serviceKey + "]Target is NULL.");
         }
@@ -73,7 +73,7 @@ public class ProviderModel {
         return serviceModel;
     }
 
-    public ServiceConfig getServiceConfig() {
+    public ServiceConfigBase getServiceConfig() {
         return serviceConfig;
     }
 
@@ -131,7 +131,7 @@ public class ProviderModel {
     public ProviderModel(String serviceKey,
                          Object serviceInstance,
                          ServiceDescriptor serviceModel,
-                         ServiceConfig<?> serviceConfig,
+                         ServiceConfigBase<?> serviceConfig,
                          ServiceMetadata serviceMetadata) {
         this(serviceKey, serviceInstance, serviceModel, serviceConfig);
 

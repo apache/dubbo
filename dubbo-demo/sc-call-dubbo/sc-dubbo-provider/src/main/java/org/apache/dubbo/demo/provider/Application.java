@@ -18,11 +18,11 @@
  */
 package org.apache.dubbo.demo.provider;
 
-import org.apache.dubbo.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
-import org.apache.dubbo.config.service.ServiceConfig;
+import org.apache.dubbo.config.ServiceConfig;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.demo.provider.rest.UserService;
 import org.apache.dubbo.demo.provider.rest.UserServiceImpl;
 

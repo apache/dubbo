@@ -32,14 +32,14 @@
     <dependencies>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-bootstrap-api</artifactId>
+            <artifactId>dubbo-config-api</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-bootstrap-spring</artifactId>
+            <artifactId>dubbo-config-spring</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
             <optional>true</optional>
@@ -598,8 +598,8 @@
                             <artifactSet>
                                 <includes>
                                     <include>com.alibaba:hessian-lite</include>
-                                    <include>org.apache.dubbo:dubbo-bootstrap-api</include>
-                                    <include>org.apache.dubbo:dubbo-bootstrap-spring</include>
+                                    <include>org.apache.dubbo:dubbo-config-api</include>
+                                    <include>org.apache.dubbo:dubbo-config-spring</include>
                                     <include>org.apache.dubbo:dubbo-compatible</include>
                                     <include>org.apache.dubbo:dubbo-common</include>
                                     <include>org.apache.dubbo:dubbo-remoting-api</include>
