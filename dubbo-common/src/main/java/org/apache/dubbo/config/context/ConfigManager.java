@@ -31,10 +31,10 @@ import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
+import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.ServiceConfigBase;
 import org.apache.dubbo.config.SslConfig;
-import org.apache.dubbo.config.service.ReferenceConfigBase;
-import org.apache.dubbo.config.service.ServiceConfigBase;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Collection;

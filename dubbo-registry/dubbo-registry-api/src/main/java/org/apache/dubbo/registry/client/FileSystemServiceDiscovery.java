@@ -51,7 +51,7 @@ import static org.apache.dubbo.common.config.configcenter.file.FileSystemDynamic
  * File System {@link ServiceDiscovery} implementation
  *
  * @see FileSystemDynamicConfiguration
- * @since 2.7.4
+ * @since 2.7.5
  */
 public class FileSystemServiceDiscovery implements ServiceDiscovery, EventListener<ServiceInstancesChangedEvent> {
 

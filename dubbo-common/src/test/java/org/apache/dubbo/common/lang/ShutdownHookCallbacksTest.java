@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * {@link ShutdownHookCallbacks}
  *
- * @since 2.7.4
+ * @since 2.7.5
  */
 public class ShutdownHookCallbacksTest {
 

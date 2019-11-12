@@ -19,7 +19,7 @@ package org.apache.dubbo.event;
 /**
  * Echo {@link Event}
  *
- * @since 2.7.4
+ * @since 2.7.5
  */
 class EchoEvent extends Event {
 

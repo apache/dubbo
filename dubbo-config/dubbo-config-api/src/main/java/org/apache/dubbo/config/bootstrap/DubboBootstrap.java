@@ -42,6 +42,7 @@ import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
+import org.apache.dubbo.config.ServiceConfigBase;
 import org.apache.dubbo.config.SslConfig;
 import org.apache.dubbo.config.bootstrap.builders.ApplicationBuilder;
 import org.apache.dubbo.config.bootstrap.builders.ConsumerBuilder;
@@ -52,7 +53,6 @@ import org.apache.dubbo.config.bootstrap.builders.RegistryBuilder;
 import org.apache.dubbo.config.bootstrap.builders.ServiceBuilder;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.metadata.ConfigurableMetadataServiceExporter;
-import org.apache.dubbo.config.service.ServiceConfigBase;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.config.utils.ReferenceConfigCache;
 import org.apache.dubbo.event.EventDispatcher;
@@ -107,7 +107,7 @@ import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
  * Get singleton instance by calling static method {@link #getInstance()}.
  * Designed as singleton because some classes inside Dubbo, such as ExtensionLoader, are designed only for one instance per process.
  *
- * @since 2.7.4
+ * @since 2.7.5
  */
 public class DubboBootstrap extends GenericEventListener {
 

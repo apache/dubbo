@@ -76,7 +76,7 @@ public class DubboNamespaceHandler extends NamespaceHandlerSupport implements Co
      * @param element       {@link Element}
      * @param parserContext {@link ParserContext}
      * @return
-     * @since 2.7.4
+     * @since 2.7.5
      */
     @Override
     public BeanDefinition parse(Element element, ParserContext parserContext) {
@@ -94,7 +94,7 @@ public class DubboNamespaceHandler extends NamespaceHandlerSupport implements Co
      * @param registry {@link BeanDefinitionRegistry}
      * @see DubboLifecycleComponentApplicationListener
      * @see AnnotatedBeanDefinitionRegistryUtils#registerBeans(BeanDefinitionRegistry, Class[])
-     * @since 2.7.4
+     * @since 2.7.5
      */
     private void registerDubboLifecycleComponentApplicationListener(BeanDefinitionRegistry registry) {
         registerBeans(registry, DubboLifecycleComponentApplicationListener.class);
@@ -105,7 +105,7 @@ public class DubboNamespaceHandler extends NamespaceHandlerSupport implements Co
      *
      * @param registry {@link BeanDefinitionRegistry}
      * @see AnnotationConfigUtils
-     * @since 2.7.4
+     * @since 2.7.5
      */
     private void registerAnnotationConfigProcessors(BeanDefinitionRegistry registry) {
         AnnotationConfigUtils.registerAnnotationConfigProcessors(registry);

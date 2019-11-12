@@ -22,7 +22,7 @@ import org.apache.dubbo.registry.client.ServiceDiscovery;
  * An event raised after the {@link ServiceDiscovery Service Discovery} destroyed.
  *
  * @see ServiceDiscovery#destroy()
- * @since 2.7.4
+ * @since 2.7.5
  */
 public class ServiceDiscoveryDestroyedEvent extends ServiceDiscoveryEvent {
 

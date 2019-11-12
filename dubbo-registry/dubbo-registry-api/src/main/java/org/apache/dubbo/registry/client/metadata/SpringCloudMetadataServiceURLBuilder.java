@@ -33,7 +33,7 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
  * Supporting interaction with Dubbo Spring Cloud at https://github.com/alibaba/spring-cloud-alibaba
  * Dubbo Spring Cloud is a Dubbo extension that favours a per instance registry model and exposes metadata service.
  *
- * @since 2.7.4
+ * @since 2.7.5
  */
 public class SpringCloudMetadataServiceURLBuilder implements MetadataServiceURLBuilder {
     public static final String NAME = "spring-cloud";

@@ -47,7 +47,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
  * @see MetadataServiceExporter
  * @see ServiceConfig
  * @see ConfigManager
- * @since 2.7.4
+ * @since 2.7.5
  */
 public class ConfigurableMetadataServiceExporter implements MetadataServiceExporter {
 

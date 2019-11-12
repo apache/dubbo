@@ -56,28 +56,28 @@ public interface RegistryConstants {
     /**
      * The parameter key of Dubbo Registry type
      *
-     * @since 2.7.4
+     * @since 2.7.5
      */
     String REGISTRY_TYPE_KEY = "registry-type";
 
     /**
      * The parameter value of Service-Oriented Registry type
      *
-     * @since 2.7.4
+     * @since 2.7.5
      */
     String SERVICE_REGISTRY_TYPE = "service";
 
     /**
      * The protocol for Service Discovery
      *
-     * @since 2.7.4
+     * @since 2.7.5
      */
     String SERVICE_REGISTRY_PROTOCOL = "service-discovery-registry";
 
     /**
      * The parameter key of the subscribed service names for Service-Oriented Registry
      *
-     * @since 2.7.4
+     * @since 2.7.5
      */
     String SUBSCRIBED_SERVICE_NAMES_KEY = "subscribed-services";
 
@@ -87,7 +87,7 @@ public interface RegistryConstants {
     /**
      * The request size of service instances
      *
-     * @since 2.7.4
+     * @since 2.7.5
      */
     String INSTANCES_REQUEST_SIZE_KEY = "instances-request-size";
 

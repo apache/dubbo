@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.config.service.ServiceConfigBase;
 import org.apache.dubbo.config.support.Parameter;
 
 import java.util.ArrayList;

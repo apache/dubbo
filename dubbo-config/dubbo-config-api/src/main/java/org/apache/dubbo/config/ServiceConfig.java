@@ -32,7 +32,6 @@ import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.event.ServiceConfigExportedEvent;
 import org.apache.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
-import org.apache.dubbo.config.service.ServiceConfigBase;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.event.Event;
@@ -703,7 +702,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
      * Dispatch an {@link Event event}
      *
      * @param event an {@link Event event}
-     * @since 2.7.4
+     * @since 2.7.5
      */
     private void dispatch(Event event) {
         EventDispatcher.getDefaultExtension().dispatch(event);

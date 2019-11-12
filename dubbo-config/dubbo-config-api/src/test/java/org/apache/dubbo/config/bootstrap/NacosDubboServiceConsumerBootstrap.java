@@ -23,7 +23,7 @@ import org.apache.dubbo.config.bootstrap.rest.UserService;
 /**
  * Dubbo Provider Bootstrap
  *
- * @since 2.7.4
+ * @since 2.7.5
  */
 public class NacosDubboServiceConsumerBootstrap {
 

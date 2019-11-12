@@ -30,7 +30,6 @@ import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.event.ReferenceConfigDestroyedEvent;
-import org.apache.dubbo.config.service.ReferenceConfigBase;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.event.Event;
 import org.apache.dubbo.event.EventDispatcher;
@@ -441,7 +440,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
      * Dispatch an {@link Event event}
      *
      * @param event an {@link Event event}
-     * @since 2.7.4
+     * @since 2.7.5
      */
     protected void dispatch(Event event) {
         EventDispatcher.getDefaultExtension().dispatch(event);
