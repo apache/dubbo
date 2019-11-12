@@ -490,12 +490,14 @@ public class ConfigValidationUtils {
         checkMethodName("name", config.getName());
 
         String mock = config.getMock();
-        if (mock.startsWith(RETURN_PREFIX) || mock.startsWith(THROW_PREFIX + " ")) {
-            checkLength(MOCK_KEY, mock);
-        } else if (mock.startsWith(FAIL_PREFIX) || mock.startsWith(FORCE_PREFIX)) {
-            checkNameHasSymbol(MOCK_KEY, mock);
-        } else {
-            checkName(MOCK_KEY, mock);
+        if (StringUtils.isNotEmpty(mock)) {
+            if (mock.startsWith(RETURN_PREFIX) || mock.startsWith(THROW_PREFIX + " ")) {
+                checkLength(MOCK_KEY, mock);
+            } else if (mock.startsWith(FAIL_PREFIX) || mock.startsWith(FORCE_PREFIX)) {
+                checkNameHasSymbol(MOCK_KEY, mock);
+            } else {
+                checkName(MOCK_KEY, mock);
+            }
         }
     }
 

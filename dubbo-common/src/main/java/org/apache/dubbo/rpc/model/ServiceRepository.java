@@ -20,8 +20,8 @@ import org.apache.dubbo.common.context.FrameworkExt;
 import org.apache.dubbo.common.context.LifecycleAdapter;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.config.service.ReferenceConfigBase;
-import org.apache.dubbo.config.service.ServiceConfigBase;
+import org.apache.dubbo.config.ReferenceConfigBase;
+import org.apache.dubbo.config.ServiceConfigBase;
 
 import java.util.ArrayList;
 import java.util.Collections;
