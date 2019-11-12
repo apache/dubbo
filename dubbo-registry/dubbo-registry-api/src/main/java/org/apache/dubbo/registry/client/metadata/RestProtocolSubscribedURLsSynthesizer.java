@@ -41,7 +41,7 @@ import static org.apache.dubbo.rpc.cluster.Constants.CLUSTER_STICKY_KEY;
 /**
  * {@link SubscribedURLsSynthesizer} implementation for REST {@link Protocol protocol}
  *
- * @since 2.7.4
+ * @since 2.7.5
  */
 public class RestProtocolSubscribedURLsSynthesizer implements SubscribedURLsSynthesizer {
 

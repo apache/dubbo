@@ -29,7 +29,7 @@ import java.util.Arrays;
 /**
  * Dubbo Provider Bootstrap
  *
- * @since 2.7.4
+ * @since 2.7.5
  */
 public class DubboServiceProviderBootstrap {
 

@@ -25,7 +25,7 @@ import static org.apache.dubbo.common.utils.StringUtils.isBlank;
  *
  * @see ServiceInstance#getMetadata()
  * @see ServiceInstanceCustomizer
- * @since 2.7.4
+ * @since 2.7.5
  */
 public abstract class ServiceInstanceMetadataCustomizer implements ServiceInstanceCustomizer {
 

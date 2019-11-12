@@ -26,7 +26,7 @@ import java.util.Objects;
  * The Service Discovery Changed {@link EventListener Event Listener}
  *
  * @see ServiceInstancesChangedEvent
- * @since 2.7.4
+ * @since 2.7.5
  */
 public abstract class ServiceInstancesChangedListener implements ConditionalEventListener<ServiceInstancesChangedEvent> {
 

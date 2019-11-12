@@ -40,7 +40,7 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
  * Use this implementation to generate the proxy on Consumer side representing the remote MetadataService
  * exposed on the Provider side. Also see {@link RemoteMetadataServiceProxyFactory}
  *
- * @since 2.7.4
+ * @since 2.7.5
  */
 public class DefaultMetadataServiceProxyFactory extends BaseMetadataServiceProxyFactory implements MetadataServiceProxyFactory {
 
