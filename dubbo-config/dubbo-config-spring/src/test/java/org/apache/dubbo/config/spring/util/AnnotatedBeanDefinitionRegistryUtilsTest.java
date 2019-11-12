@@ -18,6 +18,7 @@ package org.apache.dubbo.config.spring.util;
 
 import org.junit.Assert;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.stereotype.Service;
@@ -35,6 +36,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class AnnotatedBeanDefinitionRegistryUtilsTest {
 
     private AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
+
+    @BeforeEach
+    public void init() {
+        context.setAllowBeanDefinitionOverriding(false);
+    }
 
     @AfterEach
     public void destroy() {
@@ -58,6 +64,9 @@ public class AnnotatedBeanDefinitionRegistryUtilsTest {
     public void testRegisterBeans() {
 
         registerBeans(context, A.class, A.class);
+
+        registerBeans(context, A.class);
+
 
         context.refresh();
 

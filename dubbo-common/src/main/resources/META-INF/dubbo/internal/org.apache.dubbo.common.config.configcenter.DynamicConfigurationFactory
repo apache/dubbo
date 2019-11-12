@@ -1,0 +1,2 @@
+nop=org.apache.dubbo.common.config.configcenter.nop.NopDynamicConfigurationFactory
+file=org.apache.dubbo.common.config.configcenter.file.FileSystemDynamicConfigurationFactory

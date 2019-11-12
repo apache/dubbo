@@ -23,8 +23,8 @@ import org.apache.dubbo.registry.Registry;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 
 /**
  * TODO Comment of MockRegistry

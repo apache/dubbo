@@ -39,12 +39,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_LOADBALANCE;
+import static org.apache.dubbo.common.constants.CommonConstants.LOADBALANCE_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.CLUSTER_AVAILABLE_CHECK_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.CLUSTER_STICKY_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_CLUSTER_AVAILABLE_CHECK;
 import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_CLUSTER_STICKY;
-import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_LOADBALANCE;
-import static org.apache.dubbo.rpc.cluster.Constants.LOADBALANCE_KEY;
 
 /**
  * AbstractClusterInvoker
@@ -53,13 +53,16 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractClusterInvoker.class);
 
-    protected final Directory<T> directory;
+    protected Directory<T> directory;
 
-    protected final boolean availablecheck;
+    protected boolean availablecheck;
 
     private AtomicBoolean destroyed = new AtomicBoolean(false);
 
     private volatile Invoker<T> stickyInvoker = null;
+
+    public AbstractClusterInvoker() {
+    }
 
     public AbstractClusterInvoker(Directory<T> directory) {
         this(directory, directory.getUrl());
@@ -92,6 +95,10 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
             return invoker.isAvailable();
         }
         return directory.isAvailable();
+    }
+
+    public Directory<T> getDirectory() {
+        return directory;
     }
 
     @Override
@@ -237,7 +244,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
         checkWhetherDestroyed();
 
         // binding attachments into invocation.
-        Map<String, String> contextAttachments = RpcContext.getContext().getAttachments();
+        Map<String, Object> contextAttachments = RpcContext.getContext().getAttachments();
         if (contextAttachments != null && contextAttachments.size() != 0) {
             ((RpcInvocation) invocation).addAttachments(contextAttachments);
         }

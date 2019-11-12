@@ -26,9 +26,10 @@ import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.util.ObjectUtils;
 
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Objects;
+import java.util.Set;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
@@ -37,7 +38,6 @@ import static org.springframework.util.ClassUtils.resolveClassName;
 /**
  * Annotated {@link BeanDefinition} Utilities
  * <p>
- * The source code is cloned from https://github.com/alibaba/spring-context-support/blob/1.0.2/src/main/java/com/alibaba/spring/util/AnnotatedBeanDefinitionRegistryUtils.java
  *
  * @since 2.6.6
  */
@@ -94,8 +94,10 @@ public abstract class AnnotatedBeanDefinitionRegistryUtils {
             return;
         }
 
+        Set<Class<?>> classesToRegister = new LinkedHashSet<>(asList(annotatedClasses));
+
         // Remove all annotated-classes that have been registered
-        Iterator<Class<?>> iterator = new ArrayList<>(asList(annotatedClasses)).iterator();
+        Iterator<Class<?>> iterator = classesToRegister.iterator();
 
         while (iterator.hasNext()) {
             Class<?> annotatedClass = iterator.next();
@@ -110,7 +112,9 @@ public abstract class AnnotatedBeanDefinitionRegistryUtils {
             logger.debug(registry.getClass().getSimpleName() + " will register annotated classes : " + asList(annotatedClasses) + " .");
         }
 
-        reader.register(annotatedClasses);
+        reader.register(classesToRegister.toArray(new Class[0]));
 
+        // clear
+        classesToRegister.clear();
     }
 }

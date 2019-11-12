@@ -25,6 +25,7 @@ import com.alibaba.fastjson.JSON;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -336,7 +337,7 @@ public final class StringUtils {
         increase *= max < 0 ? 16 : max > 64 ? 64 : max;
         final StringBuilder buf = new StringBuilder(text.length() + increase);
         while (end != INDEX_NOT_FOUND) {
-            buf.append(text.substring(start, end)).append(replacement);
+            buf.append(text, start, end).append(replacement);
             start = end + replLength;
             if (--max == 0) {
                 break;
@@ -774,7 +775,7 @@ public final class StringUtils {
                 if (buf == null) {
                     buf = new StringBuilder();
                     if (i > 0) {
-                        buf.append(camelName.substring(0, i));
+                        buf.append(camelName, 0, i);
                     }
                 }
                 if (i > 0) {
@@ -838,5 +839,114 @@ public final class StringUtils {
         } else {
             return false;
         }
+    }
+
+    public static String[] delimitedListToStringArray(String str, String delimiter) {
+        return delimitedListToStringArray(str, delimiter, (String) null);
+    }
+
+    public static String[] delimitedListToStringArray(String str, String delimiter, String charsToDelete) {
+        if (str == null) {
+            return new String[0];
+        } else if (delimiter == null) {
+            return new String[]{str};
+        } else {
+            List<String> result = new ArrayList();
+            int pos;
+            if ("".equals(delimiter)) {
+                for (pos = 0; pos < str.length(); ++pos) {
+                    result.add(deleteAny(str.substring(pos, pos + 1), charsToDelete));
+                }
+            } else {
+                int delPos;
+                for (pos = 0; (delPos = str.indexOf(delimiter, pos)) != -1; pos = delPos + delimiter.length()) {
+                    result.add(deleteAny(str.substring(pos, delPos), charsToDelete));
+                }
+
+                if (str.length() > 0 && pos <= str.length()) {
+                    result.add(deleteAny(str.substring(pos), charsToDelete));
+                }
+            }
+
+            return toStringArray((Collection) result);
+        }
+    }
+
+    public static String arrayToDelimitedString(Object[] arr, String delim) {
+        if (ArrayUtils.isEmpty(arr)) {
+            return "";
+        } else if (arr.length == 1) {
+            return nullSafeToString(arr[0]);
+        } else {
+            StringBuilder sb = new StringBuilder();
+
+            for (int i = 0; i < arr.length; ++i) {
+                if (i > 0) {
+                    sb.append(delim);
+                }
+
+                sb.append(arr[i]);
+            }
+
+            return sb.toString();
+        }
+    }
+
+    public static String deleteAny(String inString, String charsToDelete) {
+        if (isNotEmpty(inString) && isNotEmpty(charsToDelete)) {
+            StringBuilder sb = new StringBuilder(inString.length());
+
+            for (int i = 0; i < inString.length(); ++i) {
+                char c = inString.charAt(i);
+                if (charsToDelete.indexOf(c) == -1) {
+                    sb.append(c);
+                }
+            }
+
+            return sb.toString();
+        } else {
+            return inString;
+        }
+    }
+
+    public static String[] toStringArray(Collection<String> collection) {
+        return (String[]) collection.toArray(new String[0]);
+    }
+
+    public static String nullSafeToString(Object obj) {
+        if (obj == null) {
+            return "null";
+        } else if (obj instanceof String) {
+            return (String) obj;
+        } else {
+            String str = obj.toString();
+            return str != null ? str : "";
+        }
+    }
+
+    /**
+     * @param rawParameters format like '[{a:b},{c:d}]'
+     * @return
+     */
+    public static Map<String, String> parseParameters(String rawParameters) {
+        Pattern pattern = Pattern.compile("^\\[((\\s*\\{\\s*[\\w_\\-\\.]+\\s*:\\s*.+?\\s*\\}\\s*,?\\s*)+)\\s*\\]$");
+        Pattern pairPattern = Pattern.compile("^\\{\\s*([\\w-_\\.]+)\\s*:\\s*(.+)\\s*\\}$");
+
+        Matcher matcher = pattern.matcher(rawParameters);
+        if (!matcher.matches()) {
+            return Collections.emptyMap();
+        }
+
+        String pairs = matcher.group(1);
+        String[] pairArr = pairs.split("\\s*,\\s*");
+
+        Map<String, String> parameters = new HashMap<>();
+        for (String pair : pairArr) {
+            Matcher pairMatcher = pairPattern.matcher(pair);
+            if (pairMatcher.matches()) {
+                parameters.put(pairMatcher.group(1), pairMatcher.group(2));
+            }
+        }
+        return parameters;
     }
 }

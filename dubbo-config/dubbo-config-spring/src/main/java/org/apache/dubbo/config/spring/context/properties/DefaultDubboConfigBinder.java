@@ -23,7 +23,7 @@ import org.springframework.validation.DataBinder;
 
 import java.util.Map;
 
-import static org.apache.dubbo.config.spring.util.PropertySourcesUtils.getSubProperties;
+import static org.apache.dubbo.config.spring.util.PropertySourcesUtils.getPrefixedProperties;
 
 /**
  * Default {@link DubboConfigBinder} implementation based on Spring {@link DataBinder}
@@ -37,7 +37,7 @@ public class DefaultDubboConfigBinder extends AbstractDubboConfigBinder {
         dataBinder.setIgnoreInvalidFields(isIgnoreInvalidFields());
         dataBinder.setIgnoreUnknownFields(isIgnoreUnknownFields());
         // Get properties under specified prefix from PropertySources
-        Map<String, Object> properties = getSubProperties(getPropertySources(), prefix);
+        Map<String, Object> properties = getPrefixedProperties(getPropertySources(), prefix);
         // Convert Map to MutablePropertyValues
         MutablePropertyValues propertyValues = new MutablePropertyValues(properties);
         // Bind

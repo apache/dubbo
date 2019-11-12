@@ -125,11 +125,12 @@
         <arguments />
         <checkstyle.skip>true</checkstyle.skip>
         <rat.skip>true</rat.skip>
-        <revision>2.7.4-SNAPSHOT</revision>
+        <revision>2.7.5-SNAPSHOT</revision>
     </properties>
 
     <modules>
         <module>dubbo-common</module>
+        <module>dubbo-config</module>
         <module>dubbo-container</module>
         <module>dubbo-remoting</module>
         <module>dubbo-rpc</module>
@@ -137,7 +138,6 @@
         <module>dubbo-cluster</module>
         <module>dubbo-registry</module>
         <module>dubbo-monitor</module>
-        <module>dubbo-config</module>
         <module>dubbo-demo</module>
         <module>dubbo-plugin</module>
         <module>dubbo-serialization</module>
@@ -146,9 +146,9 @@
         <module>dubbo-bom</module>
         <module>dubbo-all</module>
         <module>dubbo-distribution</module>
-        <module>dubbo-metadata-report</module>
         <module>dubbo-configcenter</module>
         <module>dubbo-dependencies</module>
+        <module>dubbo-metadata</module>
     </modules>
 
     <dependencyManagement>
@@ -282,6 +282,18 @@
             <build>
                 <plugins>
                     <plugin>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>${maven_source_version}</version>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
                         <artifactId>maven-javadoc-plugin</artifactId>
                         <version>${maven_javadoc_version}</version>
                         <executions>
@@ -289,6 +301,7 @@
                                 <id>attach-javadoc</id>
                                 <goals>
                                     <goal>jar</goal>
+                                    <goal>aggregate</goal>
                                 </goals>
                                 <configuration>
                                     <additionalDependencies>
@@ -315,6 +328,11 @@
                                 <link>http://docs.oracle.com/javase/8/docs/api</link>
                             </links>
                             <doclint>none</doclint>
+                            <excludePackageNames>
+                                org.apache.dubbo.demo,org.apache.dubbo.demo.*
+                            </excludePackageNames>
+                            <doctitle>Apache Dubbo ${project.version} API</doctitle>
+                            <windowtitle>Apache Dubbo ${project.version} API</windowtitle>
                         </configuration>
                     </plugin>
                     <plugin>
@@ -387,18 +405,6 @@
             </resource>
         </resources>
         <plugins>
-            <plugin>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>${maven_source_version}</version>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
             <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>${maven_jar_version}</version>
@@ -526,6 +532,8 @@
                                 <exclude>**/org/apache/dubbo/common/timer/HashedWheelTimer.java</exclude>
                                 <!-- exclude the edazdarevic files -->
                                 <exclude>**/org/apache/dubbo/common/utils/CIDRUtils.java</exclude>
+                                <exclude>.github/**</exclude>
+                                <exclude>compiler/**</exclude>
                             </excludes>
                         </configuration>
                     </execution>

@@ -1,0 +1,2 @@
+default=org.apache.dubbo.metadata.store.InMemoryWritableMetadataService
+remote=org.apache.dubbo.metadata.store.RemoteWritableMetadataServiceDelegate
