@@ -28,7 +28,7 @@ import java.util.TreeSet;
 
 import static java.util.Arrays.asList;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
-import static org.apache.dubbo.metadata.DynamicConfigurationServiceNameMapping.buildGroup;
+import static org.apache.dubbo.metadata.DynamicConfigurationServiceNameMapping.buildKey;
 import static org.apache.dubbo.metadata.ServiceNameMapping.getDefaultExtension;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -54,10 +54,10 @@ public class DynamicConfigurationServiceNameMappingTest {
 
     @Test
     public void testBuildGroup() {
-        assertEquals("test", buildGroup("test", null, null, null));
-        assertEquals("test", buildGroup("test", "default", null, null));
-        assertEquals("test", buildGroup("test", "default", "1.0.0", null));
-        assertEquals("test", buildGroup("test", "default", "1.0.0", "dubbo"));
+        assertEquals("test", buildKey("test", null, null, null));
+        assertEquals("test", buildKey("test", "default", null, null));
+        assertEquals("test", buildKey("test", "default", "1.0.0", null));
+        assertEquals("test", buildKey("test", "default", "1.0.0", "dubbo"));
     }
 
     @Test

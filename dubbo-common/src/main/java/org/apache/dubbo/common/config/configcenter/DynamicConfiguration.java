@@ -20,12 +20,9 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.TreeMap;
 
 import static org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory.getDynamicConfigurationFactory;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
@@ -47,6 +44,8 @@ import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoad
 public interface DynamicConfiguration extends Configuration, AutoCloseable {
 
     String DEFAULT_GROUP = "dubbo";
+
+    String DEFAULT_MAPPING_GROUP = "mapping";
 
     /**
      * {@link #addListener(String, String, ConfigurationListener)}
@@ -200,7 +199,7 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
      * @throws UnsupportedOperationException If the under layer does not support
      * @since 2.7.5
      */
-    default SortedSet<String> getConfigKeys(String group) throws UnsupportedOperationException {
+    default SortedSet<String> getConfigKeys(String group, String rootKey) throws UnsupportedOperationException {
         throw new UnsupportedOperationException("No support");
     }
 

@@ -34,11 +34,9 @@ import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.config.listener.AbstractSharedListener;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.client.config.http.HttpAgent;
-import com.alibaba.nacos.client.config.impl.HttpSimpleClient;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.List;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -58,9 +56,6 @@ import static com.alibaba.nacos.api.PropertyKeyConst.NAMESPACE;
 import static com.alibaba.nacos.api.PropertyKeyConst.SECRET_KEY;
 import static com.alibaba.nacos.api.PropertyKeyConst.SERVER_ADDR;
 import static com.alibaba.nacos.client.naming.utils.UtilAndComs.NACOS_NAMING_LOG_NAME;
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_CHAR_SEPERATOR;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 
 /**
@@ -120,31 +115,6 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
             throw new IllegalStateException(e);
         }
         return agent;
-    }
-
-    public void publishNacosConfig(String key, String value) {
-        String[] keyAndGroup = getKeyAndGroup(key);
-        publishConfig(keyAndGroup[0], keyAndGroup[1], value);
-    }
-
-    @Override
-    public boolean publishConfig(String key, String group, String content) {
-        boolean published = false;
-        try {
-            published = configService.publishConfig(key, group, content);
-        } catch (NacosException e) {
-            logger.error(e.getErrMsg());
-        }
-        return published;
-    }
-
-    private String[] getKeyAndGroup(String key) {
-        int i = key.lastIndexOf(GROUP_CHAR_SEPERATOR);
-        if (i < 0) {
-            return new String[]{key, null};
-        } else {
-            return new String[]{key.substring(0, i), key.substring(i + 1)};
-        }
     }
 
     private Properties buildNacosProperties(URL url) {
@@ -243,21 +213,53 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     }
 
     @Override
-    public SortedSet<String> getConfigKeys(String group) {
-        // TODO use Nacos Client API to replace HTTP Open API
-        SortedSet<String> keys = new TreeSet<>();
+    public boolean publishConfig(String key, String group, String content) {
+        boolean published = false;
         try {
-            List<String> paramsValues = asList("search", "accurate", "dataId", "", "group", group, "pageNo", "1", "pageSize", String.valueOf(Integer.MAX_VALUE));
-            String encoding = getProperty(ENCODE, "UTF-8");
-            HttpSimpleClient.HttpResult result = httpAgent.httpGet(GET_CONFIG_KEYS_PATH, emptyList(), paramsValues, encoding, 5 * 1000);
-            Stream<String> keysStream = toKeysStream(result.content);
-            keysStream.forEach(keys::add);
-        } catch (IOException e) {
-            if (logger.isErrorEnabled()) {
-                logger.error(e.getMessage(), e);
+            String value = configService.getConfig(key, group, -1L);
+            if (StringUtils.isNotEmpty(value)) {
+                content = value + "," + content;
             }
+            published = configService.publishConfig(key, group, content);
+        } catch (NacosException e) {
+            logger.error(e.getErrMsg());
         }
-        return keys;
+        return published;
+    }
+
+    @Override
+    public SortedSet<String> getConfigKeys(String group, String key) {
+        // TODO use Nacos Client API to replace HTTP Open API
+//        SortedSet<String> keys = new TreeSet<>();
+//        try {
+//            List<String> paramsValues = asList(
+//                    "search", "accurate",
+//                    "dataId", "",
+//                    "group", group,
+//                    "pageNo", "1",
+//                    "pageSize", String.valueOf(Integer.MAX_VALUE)
+//            );
+//            String encoding = getProperty(ENCODE, "UTF-8");
+//            HttpSimpleClient.HttpResult result = httpAgent.httpGet(GET_CONFIG_KEYS_PATH, emptyList(), paramsValues, encoding, 5 * 1000);
+//            Stream<String> keysStream = toKeysStream(result.content);
+//            keysStream.forEach(keys::add);
+//        } catch (IOException e) {
+//            if (logger.isErrorEnabled()) {
+//                logger.error(e.getMessage(), e);
+//            }
+//        }
+//        return keys;
+
+        SortedSet<String> configKeys = new TreeSet<>();
+        try {
+            String value = configService.getConfig(key, group, -1L);
+            if (value != null) {
+                Collections.addAll(configKeys, value.split(","));
+            }
+        } catch (NacosException e) {
+            logger.error(e.getErrMsg());
+        }
+        return configKeys;
     }
 
     private Stream<String> toKeysStream(String content) {

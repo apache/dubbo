@@ -27,7 +27,6 @@ import java.io.File;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static java.util.Collections.singleton;
 import static org.apache.commons.io.FileUtils.deleteQuietly;
 import static org.apache.dubbo.common.URL.valueOf;
 import static org.apache.dubbo.common.config.configcenter.DynamicConfiguration.DEFAULT_GROUP;
@@ -91,7 +90,6 @@ public class FileSystemDynamicConfigurationTest {
         assertTrue(configuration.publishConfig(KEY, CONTENT));
         assertTrue(configuration.publishConfig(KEY, CONTENT));
         assertEquals(CONTENT, configuration.getConfig(KEY, DEFAULT_GROUP));
-        assertTrue(configuration.getConfigs(null).size() > 0);
     }
 
     @Test
@@ -106,17 +104,17 @@ public class FileSystemDynamicConfigurationTest {
         Thread.sleep(configuration.getDelay() * 1000);
     }
 
-    @Test
-    public void testGetConfigsAndGroups() {
-        assertTrue(configuration.publishConfig(KEY, CONTENT));
-        assertEquals(singleton(KEY), configuration.getConfigKeys(DEFAULT_GROUP));
-        assertEquals(singleton(DEFAULT_GROUP), configuration.getConfigGroups());
-
-        assertTrue(configuration.publishConfig(KEY, "test", CONTENT));
-        assertEquals(singleton(KEY), configuration.getConfigKeys(DEFAULT_GROUP));
-        assertTrue(configuration.getConfigGroups().contains(DEFAULT_GROUP));
-        assertTrue(configuration.getConfigGroups().contains("test"));
-    }
+//    @Test
+//    public void testGetConfigsAndGroups() {
+//        assertTrue(configuration.publishConfig(KEY, CONTENT));
+//        assertEquals(singleton(KEY), configuration.getConfigKeys(DEFAULT_GROUP));
+//        assertEquals(singleton(DEFAULT_GROUP), configuration.getConfigGroups());
+//
+//        assertTrue(configuration.publishConfig(KEY, "test", CONTENT));
+//        assertEquals(singleton(KEY), configuration.getConfigKeys(DEFAULT_GROUP));
+//        assertTrue(configuration.getConfigGroups().contains(DEFAULT_GROUP));
+//        assertTrue(configuration.getConfigGroups().contains("test"));
+//    }
 
     @Test
     public void testAddAndRemoveListener() throws InterruptedException {
