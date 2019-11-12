@@ -74,7 +74,7 @@ import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 /**
  * File-System based {@link DynamicConfiguration} implementation
  *
- * @since 2.7.4
+ * @since 2.7.5
  */
 public class FileSystemDynamicConfiguration extends AbstractDynamicConfiguration {
 

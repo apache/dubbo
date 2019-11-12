@@ -124,7 +124,7 @@ public class DubboConfigBindingRegistrar implements ImportBeanDefinitionRegistra
         AbstractBeanDefinition beanDefinition = builder.getBeanDefinition();
 
         /**
-         * @since 2.7.4
+         * @since 2.7.5
          */
         setSource(beanDefinition);
 

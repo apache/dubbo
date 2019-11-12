@@ -403,7 +403,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
      * Register {@link DubboConfigAliasPostProcessor}
      *
      * @param registry {@link BeanDefinitionRegistry}
-     * @since 2.7.4 [Feature] https://github.com/apache/dubbo/issues/5093
+     * @since 2.7.5 [Feature] https://github.com/apache/dubbo/issues/5093
      */
     private void registerDubboConfigAliasPostProcessor(BeanDefinitionRegistry registry) {
         registerInfrastructureBean(registry, DubboConfigAliasPostProcessor.BEAN_NAME, DubboConfigAliasPostProcessor.class);

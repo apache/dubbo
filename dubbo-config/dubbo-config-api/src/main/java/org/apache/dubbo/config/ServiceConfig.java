@@ -703,7 +703,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
      * Dispatch an {@link Event event}
      *
      * @param event an {@link Event event}
-     * @since 2.7.4
+     * @since 2.7.5
      */
     private void dispatch(Event event) {
         EventDispatcher.getDefaultExtension().dispatch(event);

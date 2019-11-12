@@ -119,7 +119,7 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
  * @see ServiceDiscovery
  * @see FailbackRegistry
  * @see WritableMetadataService
- * @since 2.7.4
+ * @since 2.7.5
  */
 public class ServiceDiscoveryRegistry extends FailbackRegistry {
 

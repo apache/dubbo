@@ -16,22 +16,33 @@
  */
 package org.apache.dubbo.config.spring;
 
+import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.ConsumerConfig;
+import org.apache.dubbo.config.MetadataReportConfig;
+import org.apache.dubbo.config.MetricsConfig;
+import org.apache.dubbo.config.ModuleConfig;
+import org.apache.dubbo.config.MonitorConfig;
+import org.apache.dubbo.config.ProtocolConfig;
+import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.ReferenceConfig;
+import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.spring.extension.SpringExtensionFactory;
 import org.apache.dubbo.config.support.Parameter;
 
-import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
+import static org.springframework.beans.factory.BeanFactoryUtils.beansOfTypeIncludingAncestors;
+
 /**
  * ReferenceFactoryBean
  */
-public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean, ApplicationContextAware, InitializingBean, DisposableBean {
+public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
+        ApplicationContextAware, InitializingBean, DisposableBean {
 
     private static final long serialVersionUID = 213195494150089726L;
 
@@ -67,12 +78,28 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
         return true;
     }
 
+    /**
+     * Initializes there Dubbo's Config Beans before @Reference bean autowiring
+     */
+    private void prepareDubboConfigBeans() {
+        beansOfTypeIncludingAncestors(applicationContext, ApplicationConfig.class);
+        beansOfTypeIncludingAncestors(applicationContext, ModuleConfig.class);
+        beansOfTypeIncludingAncestors(applicationContext, RegistryConfig.class);
+        beansOfTypeIncludingAncestors(applicationContext, ProtocolConfig.class);
+        beansOfTypeIncludingAncestors(applicationContext, MonitorConfig.class);
+        beansOfTypeIncludingAncestors(applicationContext, ProviderConfig.class);
+        beansOfTypeIncludingAncestors(applicationContext, ConsumerConfig.class);
+        beansOfTypeIncludingAncestors(applicationContext, ConfigCenterBean.class);
+        beansOfTypeIncludingAncestors(applicationContext, MetadataReportConfig.class);
+        beansOfTypeIncludingAncestors(applicationContext, MetricsConfig.class);
+    }
+
     @Override
     @SuppressWarnings({"unchecked"})
     public void afterPropertiesSet() throws Exception {
-        if (applicationContext != null) {
-            BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ConfigCenterBean.class, false, false);
-        }
+
+        // Initializes there Dubbo's Config Beans before @Reference bean autowiring
+        prepareDubboConfigBeans();
 
         // lazy init by default.
         if (init == null) {

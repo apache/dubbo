@@ -43,7 +43,7 @@ import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 /**
  * The utilities class for {@link NamingService}
  *
- * @since 2.7.4
+ * @since 2.7.5
  */
 public class NacosNamingServiceUtils {
 
@@ -54,7 +54,7 @@ public class NacosNamingServiceUtils {
      *
      * @param serviceInstance {@link ServiceInstance}
      * @return non-null
-     * @since 2.7.4
+     * @since 2.7.5
      */
     public static Instance toInstance(ServiceInstance serviceInstance) {
         Instance instance = new Instance();
@@ -73,7 +73,7 @@ public class NacosNamingServiceUtils {
      *
      * @param instance {@link Instance}
      * @return non-null
-     * @since 2.7.4
+     * @since 2.7.5
      */
     public static ServiceInstance toServiceInstance(Instance instance) {
         DefaultServiceInstance serviceInstance = new DefaultServiceInstance(instance.getInstanceId(),
@@ -89,7 +89,7 @@ public class NacosNamingServiceUtils {
      *
      * @param connectionURL {@link URL connection url}
      * @return non-null, "default" as default
-     * @since 2.7.4
+     * @since 2.7.5
      */
     public static String getGroup(URL connectionURL) {
         return connectionURL.getParameter("nacos.group", DEFAULT_GROUP);
@@ -100,7 +100,7 @@ public class NacosNamingServiceUtils {
      *
      * @param connectionURL {@link URL connection url}
      * @return {@link NamingService}
-     * @since 2.7.4
+     * @since 2.7.5
      */
     public static NamingService createNamingService(URL connectionURL) {
         Properties nacosProperties = buildNacosProperties(connectionURL);

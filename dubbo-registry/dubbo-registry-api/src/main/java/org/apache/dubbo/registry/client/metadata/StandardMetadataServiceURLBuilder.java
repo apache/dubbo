@@ -34,7 +34,7 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
  * Standard Dubbo provider enabling introspection service discovery mode.
  *
  * @see MetadataService
- * @since 2.7.4
+ * @since 2.7.5
  */
 public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuilder {
     public static final String NAME = "standard";

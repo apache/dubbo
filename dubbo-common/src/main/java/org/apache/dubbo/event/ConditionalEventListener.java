@@ -21,7 +21,7 @@ package org.apache.dubbo.event;
  * {@link Event event} is handled or not by current listener.
  *
  * @see EventListener
- * @since 2.7.4
+ * @since 2.7.5
  */
 public interface ConditionalEventListener<E extends Event> extends EventListener<E> {
 
