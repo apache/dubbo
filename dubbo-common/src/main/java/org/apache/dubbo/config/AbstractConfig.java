@@ -569,7 +569,7 @@ public abstract class AbstractConfig implements Serializable {
      * Current method will invoked by Spring or Java EE container automatically, or should be triggered manually.
      *
      * @see ConfigManager#addConfig(AbstractConfig)
-     * @since 2.7.4
+     * @since 2.7.5
      */
     @PostConstruct
     public void addIntoConfigManager() {

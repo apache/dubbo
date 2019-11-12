@@ -136,7 +136,7 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
      * @param content the content of configuration
      * @return <code>true</code> if success, or <code>false</code>
      * @throws UnsupportedOperationException If the under layer does not support
-     * @since 2.7.4
+     * @since 2.7.5
      */
     default boolean publishConfig(String key, String content) throws UnsupportedOperationException {
         return publishConfig(key, DEFAULT_GROUP, content);
@@ -150,7 +150,7 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
      * @param content the content of configuration
      * @return <code>true</code> if success, or <code>false</code>
      * @throws UnsupportedOperationException If the under layer does not support
-     * @since 2.7.4
+     * @since 2.7.5
      */
     default boolean publishConfig(String key, String group, String content) throws UnsupportedOperationException {
         throw new UnsupportedOperationException("No support");
@@ -162,7 +162,7 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
      * @param key the key to represent a configuration
      * @return the content of configuration was removed
      * @throws UnsupportedOperationException If the under layer does not support
-     * @since 2.7.4
+     * @since 2.7.5
      */
     default String removeConfig(String key) throws UnsupportedOperationException {
         return removeConfig(key, DEFAULT_GROUP);
@@ -175,7 +175,7 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
      * @param group the group where the key belongs to
      * @return the content of configuration was removed
      * @throws UnsupportedOperationException If the under layer does not support
-     * @since 2.7.4
+     * @since 2.7.5
      */
     default String removeConfig(String key, String group) throws UnsupportedOperationException {
         throw new UnsupportedOperationException("No support");
@@ -186,7 +186,7 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
      *
      * @return the read-only non-null {@link Set set} of config keys
      * @throws UnsupportedOperationException If the under layer does not support
-     * @since 2.7.4
+     * @since 2.7.5
      */
     default Set<String> getConfigGroups() throws UnsupportedOperationException {
         throw new UnsupportedOperationException("No support");
@@ -198,7 +198,7 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
      * @param group the specified group
      * @return the read-only non-null sorted {@link Set set} of config keys
      * @throws UnsupportedOperationException If the under layer does not support
-     * @since 2.7.4
+     * @since 2.7.5
      */
     default SortedSet<String> getConfigKeys(String group) throws UnsupportedOperationException {
         throw new UnsupportedOperationException("No support");
@@ -210,7 +210,7 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
      * @param group the specified group
      * @return the read-only non-null sorted {@link SortedMap map}
      * @throws UnsupportedOperationException If the under layer does not support
-     * @since 2.7.4
+     * @since 2.7.5
      */
     default SortedMap<String, String> getConfigs(String group) throws UnsupportedOperationException {
         return getConfigs(group, -1);
@@ -224,7 +224,7 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
      * @return the read-only non-null sorted {@link SortedMap map}
      * @throws UnsupportedOperationException If the under layer does not support
      * @throws IllegalStateException         If timeout exceeds
-     * @since 2.7.4
+     * @since 2.7.5
      */
     default SortedMap<String, String> getConfigs(String group, long timeout) throws UnsupportedOperationException,
             IllegalStateException {
@@ -238,7 +238,7 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
      * Close the configuration
      *
      * @throws Exception
-     * @since 2.7.4
+     * @since 2.7.5
      */
     @Override
     default void close() throws Exception {
@@ -262,7 +262,7 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
      *
      * @param connectionURL
      * @return non-null
-     * @since 2.7.4
+     * @since 2.7.5
      */
     static DynamicConfiguration getDynamicConfiguration(URL connectionURL) {
         String protocol = connectionURL.getProtocol();

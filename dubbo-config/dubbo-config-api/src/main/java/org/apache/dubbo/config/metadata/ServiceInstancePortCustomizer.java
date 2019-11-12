@@ -29,7 +29,7 @@ import java.util.stream.Stream;
 /**
  * The {@link ServiceInstanceCustomizer} to customize the {@link ServiceInstance#getPort() port} of service instance.
  *
- * @since 2.7.4
+ * @since 2.7.5
  */
 public class ServiceInstancePortCustomizer implements ServiceInstanceCustomizer {
 

@@ -32,7 +32,7 @@ import static org.springframework.util.StringUtils.hasText;
 /**
  * A Post-Processor class to set the alias of Dubbo Config bean using its {@link AbstractConfig#getId()}
  *
- * @since 2.7.4
+ * @since 2.7.5
  */
 public class DubboConfigAliasPostProcessor implements BeanDefinitionRegistryPostProcessor, BeanPostProcessor {
 
