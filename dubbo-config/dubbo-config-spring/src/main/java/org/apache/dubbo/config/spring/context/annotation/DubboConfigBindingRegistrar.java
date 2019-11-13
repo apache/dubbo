@@ -44,8 +44,8 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import static com.alibaba.spring.util.BeanRegistrar.registerInfrastructureBean;
 import static org.apache.dubbo.config.spring.context.config.NamePropertyDefaultValueDubboConfigBeanCustomizer.BEAN_NAME;
-import static org.apache.dubbo.config.spring.util.BeanRegistrar.registerInfrastructureBean;
 import static org.apache.dubbo.config.spring.util.PropertySourcesUtils.buildPrefix;
 import static org.apache.dubbo.config.spring.util.PropertySourcesUtils.getPrefixedProperties;
 import static org.springframework.beans.factory.support.BeanDefinitionBuilder.rootBeanDefinition;

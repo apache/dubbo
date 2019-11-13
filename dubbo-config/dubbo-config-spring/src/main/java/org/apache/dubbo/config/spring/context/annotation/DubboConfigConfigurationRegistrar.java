@@ -26,7 +26,7 @@ import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.type.AnnotationMetadata;
 
 import static com.alibaba.spring.util.AnnotatedBeanDefinitionRegistryUtils.registerBeans;
-import static org.apache.dubbo.config.spring.util.BeanRegistrar.registerInfrastructureBean;
+import static com.alibaba.spring.util.BeanRegistrar.registerInfrastructureBean;
 
 /**
  * Dubbo {@link AbstractConfig Config} {@link ImportBeanDefinitionRegistrar register}, which order can be configured
