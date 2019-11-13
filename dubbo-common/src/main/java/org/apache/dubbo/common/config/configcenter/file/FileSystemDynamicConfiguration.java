@@ -379,7 +379,6 @@ public class FileSystemDynamicConfiguration extends AbstractDynamicConfiguration
         }
     }
 
-    @Override
     public String removeConfig(String key, String group) {
         return delay(key, group, configFile -> {
 
@@ -454,7 +453,6 @@ public class FileSystemDynamicConfiguration extends AbstractDynamicConfiguration
         processingDirectories.add(configDirectory);
     }
 
-    @Override
     public Set<String> getConfigGroups() {
         return Stream.of(getRootDirectory().listFiles())
                 .filter(File::isDirectory)

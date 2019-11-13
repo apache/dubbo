@@ -93,30 +93,6 @@ public class FileSystemDynamicConfigurationTest {
     }
 
     @Test
-    public void testPublishAndRemoveConfig() throws InterruptedException {
-        assertTrue(configuration.publishConfig(KEY, CONTENT));
-        configuration.addListener(KEY, event -> {
-            System.out.printf("[%s] " + event + "\n", Thread.currentThread().getName());
-
-        });
-        assertTrue(configuration.publishConfig(KEY, CONTENT));
-        assertEquals(CONTENT, configuration.removeConfig(KEY));
-        Thread.sleep(configuration.getDelay() * 1000);
-    }
-
-//    @Test
-//    public void testGetConfigsAndGroups() {
-//        assertTrue(configuration.publishConfig(KEY, CONTENT));
-//        assertEquals(singleton(KEY), configuration.getConfigKeys(DEFAULT_GROUP));
-//        assertEquals(singleton(DEFAULT_GROUP), configuration.getConfigGroups());
-//
-//        assertTrue(configuration.publishConfig(KEY, "test", CONTENT));
-//        assertEquals(singleton(KEY), configuration.getConfigKeys(DEFAULT_GROUP));
-//        assertTrue(configuration.getConfigGroups().contains(DEFAULT_GROUP));
-//        assertTrue(configuration.getConfigGroups().contains("test"));
-//    }
-
-    @Test
     public void testAddAndRemoveListener() throws InterruptedException {
 
         configuration.publishConfig(KEY, "A");

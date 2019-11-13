@@ -31,6 +31,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.event.ServiceConfigExportedEvent;
+import org.apache.dubbo.config.event.ServiceConfigUnexportedEvent;
 import org.apache.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
@@ -134,11 +135,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     private DubboBootstrap bootstrap;
 
     /**
-     * The urls of the services exported
-     */
-    private final List<URL> urls = new ArrayList<URL>();
-
-    /**
      * The exported services
      */
     private final List<Exporter<?>> exporters = new ArrayList<Exporter<?>>();
@@ -148,14 +144,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
     public ServiceConfig(Service service) {
         super(service);
-    }
-
-    public URL toUrl() {
-        return urls.isEmpty() ? null : urls.iterator().next();
-    }
-
-    public List<URL> toUrls() {
-        return urls;
     }
 
     @Parameter(excluded = true)
@@ -186,6 +174,9 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             exporters.clear();
         }
         unexported = true;
+
+        // dispatch a ServiceConfigUnExportedEvent since 2.7.4
+        dispatch(new ServiceConfigUnexportedEvent(this));
     }
 
     public synchronized void export() {
