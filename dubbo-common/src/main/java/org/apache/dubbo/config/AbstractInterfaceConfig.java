@@ -153,14 +153,18 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     /**
      * The url of the reference service
      */
-    private final List<URL> urls = new ArrayList<URL>();
+    protected final List<URL> urls = new ArrayList<URL>();
 
     public List<URL> getExportedUrls() {
         return urls;
     }
 
-    public void updateUrls(List<URL> urls) {
-        this.urls.addAll(urls);
+    public URL toUrl() {
+        return urls.isEmpty() ? null : urls.iterator().next();
+    }
+
+    public List<URL> toUrls() {
+        return urls;
     }
 
     /**

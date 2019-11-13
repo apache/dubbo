@@ -18,25 +18,19 @@ package org.apache.dubbo.registry.client.metadata;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.rpc.Protocol;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import static java.lang.Boolean.TRUE;
-import static org.apache.dubbo.common.constants.CommonConstants.LAZY_CONNECT_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.PID_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.registry.Constants.REGISTER_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.CLUSTER_STICKY_KEY;
 
 /**
  * {@link SubscribedURLsSynthesizer} implementation for REST {@link Protocol protocol}
@@ -56,15 +50,6 @@ public class RestProtocolSubscribedURLsSynthesizer implements SubscribedURLsSynt
 
         String protocol = subscribedURL.getParameter(PROTOCOL_KEY);
 
-        Map<String, String> parametersToCopy = subscribedURL.removeParameter(CATEGORY_KEY)
-                .removeParameter(PROTOCOL_KEY)
-                .removeParameter(SIDE_KEY)
-                .removeParameter(CLUSTER_STICKY_KEY)
-                .removeParameter(TIMESTAMP_KEY)
-                .removeParameter(PID_KEY)
-                .removeParameter(LAZY_CONNECT_KEY)
-                .getParameters();
-
         return serviceInstances.stream().map(serviceInstance -> {
             URLBuilder urlBuilder = new URLBuilder()
                     .setProtocol(protocol)
@@ -72,20 +57,11 @@ public class RestProtocolSubscribedURLsSynthesizer implements SubscribedURLsSynt
                     .setPort(serviceInstance.getPort())
                     .setPath(subscribedURL.getServiceInterface())
                     .addParameter(SIDE_KEY, PROVIDER)
+                    .addParameter(APPLICATION_KEY, serviceInstance.getServiceName())
                     .addParameter(REGISTER_KEY, TRUE.toString());
-
-            // Copy the parameters
-            parametersToCopy.forEach((key, value) -> {
-                urlBuilder.addParameter(key, value);
-            });
 
             return urlBuilder.build();
         }).collect(Collectors.toList());
     }
 
-    private void addParameter(URLBuilder urlBuilder, String key, String value) {
-        if (StringUtils.isNotEmpty(value)) {
-            urlBuilder.addParameter(key, value);
-        }
-    }
 }

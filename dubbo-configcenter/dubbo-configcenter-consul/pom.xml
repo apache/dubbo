@@ -34,8 +34,12 @@
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.ecwid.consul</groupId>
-            <artifactId>consul-api</artifactId>
+            <groupId>com.orbitz.consul</groupId>
+            <artifactId>consul-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.pszymczyk.consul</groupId>
+            <artifactId>embedded-consul</artifactId>
         </dependency>
     </dependencies>
 

@@ -49,7 +49,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
@@ -369,6 +368,17 @@ public class FileSystemDynamicConfiguration extends AbstractDynamicConfiguration
     }
 
     @Override
+    public SortedSet<String> getConfigKeys(String group, String key) {
+        File[] files = groupDirectory(group).listFiles(File::isFile);
+        if (files == null) {
+            return new TreeSet<>();
+        } else {
+            return Stream.of(files)
+                    .map(File::getName)
+                    .collect(TreeSet::new, Set::add, Set::addAll);
+        }
+    }
+
     public String removeConfig(String key, String group) {
         return delay(key, group, configFile -> {
 
@@ -443,30 +453,11 @@ public class FileSystemDynamicConfiguration extends AbstractDynamicConfiguration
         processingDirectories.add(configDirectory);
     }
 
-    @Override
-    public SortedSet<String> getConfigKeys(String group) {
-        File[] files = groupDirectory(group).listFiles(File::isFile);
-        if (files == null) {
-            return new TreeSet<>();
-        } else {
-            return Stream.of(files)
-                    .map(File::getName)
-                    .collect(TreeSet::new, Set::add, Set::addAll);
-        }
-    }
-
-
-    @Override
     public Set<String> getConfigGroups() {
         return Stream.of(getRootDirectory().listFiles())
                 .filter(File::isDirectory)
                 .map(File::getName)
                 .collect(Collectors.toSet());
-    }
-
-    @Override
-    public SortedMap<String, String> getConfigs(String group) throws UnsupportedOperationException {
-        return getConfigs(group, -1);
     }
 
     @Override

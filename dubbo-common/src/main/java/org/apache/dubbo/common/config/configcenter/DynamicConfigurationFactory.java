@@ -41,6 +41,6 @@ public interface DynamicConfigurationFactory {
     static DynamicConfigurationFactory getDynamicConfigurationFactory(String name) {
         Class<DynamicConfigurationFactory> factoryClass = DynamicConfigurationFactory.class;
         ExtensionLoader<DynamicConfigurationFactory> loader = getExtensionLoader(factoryClass);
-        return loader.hasExtension(name) ? loader.getExtension(name) : loader.getDefaultExtension();
+        return loader.getOrDefaultExtension(name);
     }
 }

@@ -30,6 +30,7 @@ import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.event.ReferenceConfigDestroyedEvent;
+import org.apache.dubbo.config.event.ReferenceConfigInitializedEvent;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.event.Event;
 import org.apache.dubbo.event.EventDispatcher;
@@ -119,11 +120,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     private transient volatile T ref;
 
     /**
-     * The url of the reference service
-     */
-    private final List<URL> urls = new ArrayList<URL>();
-
-    /**
      * The invoker of the reference service
      */
     private transient volatile Invoker<?> invoker;
@@ -145,14 +141,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
     public ReferenceConfig(Reference reference) {
         super(reference);
-    }
-
-    public URL toUrl() {
-        return urls.isEmpty() ? null : urls.iterator().next();
-    }
-
-    public List<URL> toUrls() {
-        return urls;
     }
 
     public synchronized T get() {
@@ -180,6 +168,9 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         }
         invoker = null;
         ref = null;
+
+        // dispatch a ReferenceConfigDestroyedEvent since 2.7.4
+        dispatch(new ReferenceConfigDestroyedEvent(this));
     }
 
     public synchronized void init() {
@@ -279,8 +270,9 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         repository.lookupReferredService(serviceMetadata.getServiceKey()).setProxyObject(ref);
 
         initialized = true;
-        // dispatch a ReferenceConfigDestroyedEvent since 2.7.4
-        dispatch(new ReferenceConfigDestroyedEvent(this));
+
+        // dispatch a ReferenceConfigInitializedEvent since 2.7.4
+        dispatch(new ReferenceConfigInitializedEvent(this, invoker));
     }
 
     @SuppressWarnings({"unchecked", "rawtypes", "deprecation"})

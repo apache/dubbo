@@ -27,6 +27,7 @@ import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
+import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 
 import com.ecwid.consul.v1.ConsulClient;
 import com.ecwid.consul.v1.QueryParams;
@@ -37,6 +38,8 @@ import com.ecwid.consul.v1.health.model.HealthService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -73,7 +76,8 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
     private String tag;
     private ConsulClient client;
     private ExecutorService notifierExecutor = newCachedThreadPool(
-            new NamedThreadFactory("dubbo-consul-notifier", true));
+            new NamedThreadFactory("dubbo-service-discovery-consul-notifier", true));
+    private ConsulNotifier notifier;
     private TtlScheduler ttlScheduler;
     private long checkPassInterval;
     private URL url;
@@ -106,6 +110,10 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
 
     @Override
     public void destroy() {
+        notifier.stop();
+        notifier = null;
+        notifierExecutor.shutdownNow();
+        ttlScheduler.stop();
     }
 
     @Override
@@ -116,8 +124,20 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
     }
 
     @Override
-    public void update(ServiceInstance serviceInstance) throws RuntimeException {
+    public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener) throws NullPointerException, IllegalArgumentException {
+        if (notifier == null) {
+            String serviceName = listener.getServiceName();
+            Response<List<HealthService>> response = getHealthServices(serviceName, -1, buildWatchTimeout());
+            Long consulIndex = response.getConsulIndex();
+            notifier = new ConsulNotifier(serviceName, consulIndex);
+        }
+        notifierExecutor.execute(notifier);
+    }
 
+    @Override
+    public void update(ServiceInstance serviceInstance) throws RuntimeException {
+        // TODO
+        // client.catalogRegister(buildCatalogService(serviceInstance));
     }
 
     @Override
@@ -135,6 +155,10 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
     @Override
     public List<ServiceInstance> getInstances(String serviceName) throws NullPointerException {
         Response<List<HealthService>> response = getHealthServices(serviceName, -1, buildWatchTimeout());
+        Long consulIndex = response.getConsulIndex();
+        if (notifier == null) {
+            notifier = new ConsulNotifier(serviceName, consulIndex);
+        }
         return convert(response.getValue());
     }
 
@@ -143,6 +167,7 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
                 .map(HealthService::getService)
                 .map(service -> {
                     ServiceInstance instance = new DefaultServiceInstance(
+                            service.getId(),
                             service.getService(),
                             service.getAddress(),
                             service.getPort());
@@ -163,6 +188,7 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
 
     private Map<String, String> getMetadata(HealthService.Service service) {
         Map<String, String> metadata = service.getMeta();
+        metadata = decodeMetadata(metadata);
         if (CollectionUtils.isEmptyMap(metadata)) {
             metadata = getScCompatibleMetadata(service.getTags());
         }
@@ -203,7 +229,7 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
         service.setName(serviceInstance.getServiceName());
         service.setCheck(buildCheck(serviceInstance));
         service.setTags(buildTags(serviceInstance));
-        service.setMeta(buildMetadata(serviceInstance));
+//        service.setMeta(buildMetadata(serviceInstance));
         return service;
     }
 
@@ -226,7 +252,26 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
         if (CollectionUtils.isNotEmptyMap(serviceInstance.getMetadata())) {
             metadata.putAll(serviceInstance.getMetadata());
         }
+        metadata = encodeMetadata(metadata);
         return metadata;
+    }
+
+    private Map<String, String> encodeMetadata(Map<String, String> metadata) {
+        if (metadata == null) {
+            return metadata;
+        }
+        Map<String, String> encoded = new HashMap<>(metadata.size());
+        metadata.forEach((k, v) -> encoded.put(Base64.getEncoder().encodeToString(k.getBytes()), v));
+        return encoded;
+    }
+
+    private Map<String, String> decodeMetadata(Map<String, String> metadata) {
+        if (metadata == null) {
+            return metadata;
+        }
+        Map<String, String> decoded = new HashMap<>(metadata.size());
+        metadata.forEach((k, v) -> decoded.put(new String(Base64.getDecoder().decode(k)), v));
+        return decoded;
     }
 
     private NewService.Check buildCheck(ServiceInstance serviceInstance) {
@@ -243,12 +288,12 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
     }
 
     private class ConsulNotifier implements Runnable {
-        private ServiceInstance serviceInstance;
+        private String serviceName;
         private long consulIndex;
         private boolean running;
 
-        ConsulNotifier(ServiceInstance serviceInstance, long consulIndex) {
-            this.serviceInstance = serviceInstance;
+        ConsulNotifier(String serviceName, long consulIndex) {
+            this.serviceName = serviceName;
             this.consulIndex = consulIndex;
             this.running = true;
         }
@@ -261,17 +306,14 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
         }
 
         private void processService() {
-//            String service = url.getServiceKey();
-//            Response<List<HealthService>> response = getHealthServices(service, consulIndex, buildWatchTimeout(url));
-//            Long currentIndex = response.getConsulIndex();
-//            if (currentIndex != null && currentIndex > consulIndex) {
-//                consulIndex = currentIndex;
-//                List<HealthService> services = response.getValue();
-//                List<URL> urls = convert(services, url);
-//                for (NotifyListener listener : getSubscribed().get(url)) {
-//                    doNotify(url, listener, urls);
-//                }
-//            }
+            Response<List<HealthService>> response = getHealthServices(serviceName, -1, Integer.MAX_VALUE);
+            Long currentIndex = response.getConsulIndex();
+            if (currentIndex != null && currentIndex > consulIndex) {
+                consulIndex = currentIndex;
+                List<HealthService> services = response.getValue();
+                List<ServiceInstance> serviceInstances = convert(services);
+                dispatchServiceInstancesChangedEvent(serviceName, serviceInstances);
+            }
         }
 
         void stop() {
@@ -286,7 +328,6 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
         private final Map<String, ScheduledFuture> serviceHeartbeats = new ConcurrentHashMap<>();
 
         private ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-        ;
 
         private long checkInterval;
 
@@ -341,6 +382,10 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
                 }
             }
 
+        }
+
+        public void stop() {
+            scheduler.shutdownNow();
         }
 
     }
