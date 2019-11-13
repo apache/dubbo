@@ -22,7 +22,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.config.DubboShutdownHook;
-import org.apache.dubbo.config.spring.util.BeanFactoryUtils;
+import org.apache.dubbo.config.spring.util.ApplicationContextUtils;
 
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
@@ -49,7 +49,7 @@ public class SpringExtensionFactory implements ExtensionFactory {
             ((ConfigurableApplicationContext) context).registerShutdownHook();
             DubboShutdownHook.getDubboShutdownHook().unregister();
         }
-        BeanFactoryUtils.addApplicationListener(context, SHUTDOWN_HOOK_LISTENER);
+        ApplicationContextUtils.addApplicationListener(context, SHUTDOWN_HOOK_LISTENER);
     }
 
     public static void removeApplicationContext(ApplicationContext context) {
