@@ -21,6 +21,7 @@ import org.apache.dubbo.config.spring.beans.factory.annotation.DubboConfigBindin
 import org.apache.dubbo.config.spring.beans.factory.config.ConfigurableSourceBeanMetadataElement;
 import org.apache.dubbo.config.spring.context.config.NamePropertyDefaultValueDubboConfigBeanCustomizer;
 
+import com.alibaba.spring.beans.factory.annotation.ConfigurationBeanBindingRegistrar;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -56,7 +57,9 @@ import static org.springframework.beans.factory.support.BeanDefinitionReaderUtil
  * @see EnableDubboConfigBinding
  * @see DubboConfigBindingBeanPostProcessor
  * @since 2.5.8
+ * @deprecated it will be removed in future, please use {@link ConfigurationBeanBindingRegistrar} for replacement
  */
+@Deprecated
 public class DubboConfigBindingRegistrar implements ImportBeanDefinitionRegistrar, EnvironmentAware,
         ConfigurableSourceBeanMetadataElement {
 
