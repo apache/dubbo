@@ -22,6 +22,7 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.ServiceNameMapping;
@@ -70,6 +71,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDED_BY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_TYPE;
 import static org.apache.dubbo.common.constants.RegistryConstants.SUBSCRIBED_SERVICE_NAMES_KEY;
@@ -149,7 +151,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
     public ServiceDiscoveryRegistry(URL registryURL) {
         super(registryURL);
         this.serviceDiscovery = createServiceDiscovery(registryURL);
-        this.subscribedServices = getSubscribedServices(registryURL);
+        this.subscribedServices = parseServices(registryURL.getParameter(SUBSCRIBED_SERVICE_NAMES_KEY));
         this.serviceNameMapping = ServiceNameMapping.getDefaultExtension();
         String metadataStorageType = getMetadataStorageType(registryURL);
         this.writableMetadataService = WritableMetadataService.getExtension(metadataStorageType);
@@ -324,6 +326,9 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         writableMetadataService.subscribeURL(url);
 
         Set<String> serviceNames = getServices(url);
+        if (CollectionUtils.isEmpty(serviceNames)) {
+            throw new IllegalStateException("Should has at least one way to know which services this interface belongs to, subscription url: " + url);
+        }
 
         serviceNames.forEach(serviceName -> subscribeURLs(url, listener, serviceName));
 
@@ -744,8 +749,10 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         try {
             MetadataService metadataService = MetadataServiceProxyFactory.getExtension(metadataStorageType)
                     .getProxy(providerServiceInstance);
-            SortedSet<String> urls = metadataService.getExportedURLs();
-            exportedURLs = toURLs(urls);
+            if (metadataService != null) {
+                SortedSet<String> urls = metadataService.getExportedURLs();
+                exportedURLs = toURLs(urls);
+            }
         } catch (Throwable e) {
             if (logger.isErrorEnabled()) {
                 logger.error(format("Failed to get the exported URLs from the target service instance[%s]",
@@ -791,18 +798,37 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 1.developer explicitly specifies the application name this interface belongs to
+     * 2.check Interface-App mapping
+     * 3.use the services specified in registry url.
+     *
+     * @param subscribedURL
+     * @return
+     */
     protected Set<String> getServices(URL subscribedURL) {
-        Set<String> serviceNames = getSubscribedServices();
-        if (isEmpty(serviceNames)) {
-            serviceNames = findMappedServices(subscribedURL);
+        Set<String> subscribedServices = new LinkedHashSet<>();
+
+        String serviceNames = subscribedURL.getParameter(PROVIDED_BY);
+        if (StringUtils.isNotEmpty(serviceNames)) {
+            subscribedServices = parseServices(serviceNames);
         }
-        if (isEmpty(serviceNames)) {
-            throw new IllegalStateException(String.format("Could not resolve interface %s for its application (service), " +
-                    "you should either specify service name explicitly or make sure there's at least one active provider " +
-                    " instance and it has registered the service-app mapping info to config center automatically. \n" +
-                    "The full subscribing url is %s", subscribedURL.getServiceInterface(), subscribedURL));
+
+        if (isEmpty(subscribedServices)) {
+            subscribedServices = findMappedServices(subscribedURL);
+            if (isEmpty(subscribedServices)) {
+                subscribedServices = getSubscribedServices();
+            }
         }
-        return serviceNames;
+        return subscribedServices;
+    }
+
+    public static Set<String> parseServices(String literalServices) {
+        return isBlank(literalServices) ? emptySet() :
+                unmodifiableSet(of(literalServices.split(","))
+                        .map(String::trim)
+                        .filter(StringUtils::isNotEmpty)
+                        .collect(toSet()));
     }
 
     /**

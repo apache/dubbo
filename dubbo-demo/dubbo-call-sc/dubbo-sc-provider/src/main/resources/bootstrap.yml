@@ -13,8 +13,10 @@ spring:
         instance-id: ${spring.application.name}:${random.value}
         service-name: ${spring.application.name}
         heartbeat:
-          enabled: false
-        health-check-interval: 1000s
+          enabled: true
+        health-check-interval: 10s
+        health-check-critical-timeout: 10s
+        register-health-check: true
       config:
         format: yaml
         prefix: config

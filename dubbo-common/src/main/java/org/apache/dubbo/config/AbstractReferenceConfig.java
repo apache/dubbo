@@ -81,6 +81,11 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
      */
     protected String group;
 
+    /**
+     * declares which app or service this interface belongs to
+     */
+    protected String providedBy;
+
     public Boolean isCheck() {
         return check;
     }
@@ -219,5 +224,14 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
 
     public void setGroup(String group) {
         this.group = group;
+    }
+
+    @Parameter(key = "provided-by")
+    public String getProvidedBy() {
+        return providedBy;
+    }
+
+    public void setProvidedBy(String providedBy) {
+        this.providedBy = providedBy;
     }
 }
