@@ -37,8 +37,8 @@ import java.util.Map;
 import static com.alibaba.spring.util.AnnotationUtils.getAttribute;
 import static com.alibaba.spring.util.AnnotationUtils.getAttributes;
 import static com.alibaba.spring.util.BeanFactoryUtils.getOptionalBean;
+import static com.alibaba.spring.util.ObjectUtils.of;
 import static org.apache.dubbo.config.spring.util.DubboAnnotationUtils.resolveServiceInterfaceClass;
-import static org.apache.dubbo.config.spring.util.ObjectUtils.of;
 import static org.springframework.core.annotation.AnnotationAttributes.fromMap;
 import static org.springframework.util.StringUtils.commaDelimitedListToStringArray;
 
