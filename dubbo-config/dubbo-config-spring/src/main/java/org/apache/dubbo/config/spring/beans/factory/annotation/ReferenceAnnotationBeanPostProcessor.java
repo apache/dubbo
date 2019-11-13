@@ -21,7 +21,6 @@ import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.context.event.ServiceBeanExportedEvent;
-import org.apache.dubbo.config.spring.util.AnnotationUtils;
 
 import com.alibaba.spring.beans.factory.annotation.AbstractAnnotationBeanPostProcessor;
 import org.springframework.beans.BeansException;
@@ -45,9 +44,10 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import static com.alibaba.spring.util.AnnotationUtils.getAttribute;
+import static com.alibaba.spring.util.AnnotationUtils.getAttributes;
 import static java.lang.reflect.Proxy.newProxyInstance;
 import static org.apache.dubbo.config.spring.beans.factory.annotation.ServiceBeanNameBuilder.create;
-import static org.apache.dubbo.config.spring.util.AnnotationUtils.getAttribute;
 import static org.springframework.util.StringUtils.hasText;
 
 /**
@@ -300,7 +300,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
                                                  Class<?> injectedType, InjectionMetadata.InjectedElement injectedElement) {
         return buildReferencedBeanName(attributes, injectedType) +
                 "#source=" + (injectedElement.getMember()) +
-                "#attributes=" + AnnotationUtils.resolvePlaceholders(attributes, getEnvironment());
+                "#attributes=" + getAttributes(attributes, getEnvironment());
     }
 
     /**
