@@ -17,19 +17,12 @@
 package org.apache.dubbo.config.spring.util;
 
 import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.support.AbstractApplicationContext;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import static java.util.Collections.emptyList;
-import static org.springframework.util.ObjectUtils.isEmpty;
 
 /**
  * {@link BeanFactory} Utilities class
@@ -39,7 +32,7 @@ import static org.springframework.util.ObjectUtils.isEmpty;
  * @see org.springframework.beans.factory.BeanFactoryUtils
  * @since 2.5.7
  */
-public class BeanFactoryUtils {
+public class ApplicationContextUtils {
 
     public static boolean addApplicationListener(ApplicationContext applicationContext, ApplicationListener listener) {
         try {
@@ -63,52 +56,5 @@ public class BeanFactoryUtils {
             }
         }
         return false;
-    }
-
-    /**
-     * Get nullable Bean
-     *
-     * @param beanFactory {@link ListableBeanFactory}
-     * @param beanName    the name of Bean
-     * @param beanType    the {@link Class type} of Bean
-     * @param <T>         the {@link Class type} of Bean
-     * @return A bean if present , or <code>null</code>
-     */
-    public static <T> T getNullableBean(ListableBeanFactory beanFactory, String beanName, Class<T> beanType) {
-        T bean = null;
-        try {
-            bean = beanFactory.getBean(beanName, beanType);
-        } catch (Throwable ignored) {
-            // Any exception will be ignored to handle
-        }
-        return bean;
-    }
-
-
-    /**
-     * Gets name-matched Beans from {@link ListableBeanFactory BeanFactory}
-     *
-     * @param beanFactory {@link ListableBeanFactory BeanFactory}
-     * @param beanNames   the names of Bean
-     * @param beanType    the {@link Class type} of Bean
-     * @param <T>         the {@link Class type} of Bean
-     * @return the read-only and non-null {@link List} of Bean names
-     */
-    public static <T> List<T> getBeans(ListableBeanFactory beanFactory, String[] beanNames, Class<T> beanType) {
-
-        if (isEmpty(beanNames)) {
-            return emptyList();
-        }
-
-        List<T> beans = new ArrayList<T>(beanNames.length);
-
-        for (String beanName : beanNames) {
-            T bean = getNullableBean(beanFactory, beanName, beanType);
-            if (bean != null) {
-                beans.add(bean);
-            }
-        }
-
-        return Collections.unmodifiableList(beans);
     }
 }

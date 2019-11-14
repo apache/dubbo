@@ -16,22 +16,31 @@
  */
 package org.apache.dubbo.config.spring.util;
 
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.GenericApplicationContext;
+
+import static org.apache.dubbo.config.spring.util.ApplicationContextUtils.addApplicationListener;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * {@link Class} Utilities
- * <p>
- * The source code is cloned from
- * https://github.com/alibaba/spring-context-support/blob/1.0.2/src/main/java/com/alibaba/spring/util/ClassUtils.java
+ * {@link ApplicationContextUtils} Test
  *
- * @since 2.6.6
+ * @since 2.5.7
  */
-public abstract class ClassUtils {
+public class ApplicationContextUtilsTest {
 
-    public static <T> Class<T> resolveGenericType(Class<?> declaredClass) {
-        ParameterizedType parameterizedType = (ParameterizedType) declaredClass.getGenericSuperclass();
-        Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
-        return (Class<T>) actualTypeArguments[0];
+    private ApplicationContext applicationContext;
+
+    @BeforeEach
+    public void init() {
+        applicationContext = new GenericApplicationContext();
+    }
+
+    @Test
+    public void testAddApplicationListener() {
+        assertTrue(addApplicationListener(applicationContext, event -> {
+        }));
     }
 }
