@@ -21,7 +21,6 @@ import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -79,14 +78,8 @@ public class CompositeDynamicConfiguration implements DynamicConfiguration {
 
     @Override
     @SuppressWarnings("unchecked")
-    public SortedSet<String> getConfigKeys(String group) throws UnsupportedOperationException {
-        return (SortedSet<String>) iterateConfigOperation(configuration -> configuration.getConfigKeys(group));
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public SortedMap<String, String> getConfigs(String group) throws UnsupportedOperationException {
-        return (SortedMap<String, String>) iterateConfigOperation(configuration -> configuration.getConfigs(group));
+    public SortedSet<String> getConfigKeys(String group, String key) throws UnsupportedOperationException {
+        return (SortedSet<String>) iterateConfigOperation(configuration -> configuration.getConfigKeys(group, key));
     }
 
     private void iterateListenerOperation(Consumer<DynamicConfiguration> consumer) {
@@ -99,6 +92,9 @@ public class CompositeDynamicConfiguration implements DynamicConfiguration {
         Object value = null;
         for (DynamicConfiguration configuration : configurations) {
             value = func.apply(configuration);
+            if (value != null) {
+                break;
+            }
         }
         return value;
     }

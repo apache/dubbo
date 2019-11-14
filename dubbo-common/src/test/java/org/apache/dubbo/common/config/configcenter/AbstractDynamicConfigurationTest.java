@@ -110,25 +110,8 @@ public class AbstractDynamicConfigurationTest {
     }
 
     @Test
-    public void testRemoveConfig() {
-        assertThrows(UnsupportedOperationException.class, () -> configuration.removeConfig(null), "No support");
-        assertThrows(UnsupportedOperationException.class, () -> configuration.removeConfig(null, null), "No support");
-    }
-
-    @Test
-    public void testGetConfigGroups() {
-        assertThrows(UnsupportedOperationException.class, () -> configuration.getConfigGroups(), "No support");
-    }
-
-    @Test
     public void testGetConfigKeys() {
-        assertThrows(UnsupportedOperationException.class, () -> configuration.getConfigKeys(null), "No support");
-    }
-
-    @Test
-    public void testGetConfigs() {
-        assertThrows(UnsupportedOperationException.class, () -> configuration.getConfigs(null), "No support");
-        assertThrows(UnsupportedOperationException.class, () -> configuration.getConfigs(null, 1000), "No support");
+        assertThrows(UnsupportedOperationException.class, () -> configuration.getConfigKeys(null, null), "No support");
     }
 
     @Test

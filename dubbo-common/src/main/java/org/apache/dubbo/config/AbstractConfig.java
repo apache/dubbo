@@ -328,7 +328,13 @@ public abstract class AbstractConfig implements Serializable {
         Map<String, String> result = new HashMap<>();
         String pre = (prefix != null && prefix.length() > 0 ? prefix + "." : "");
         for (Map.Entry<String, String> entry : parameters.entrySet()) {
-            result.put(pre + entry.getKey().replace('-', '.'), entry.getValue());
+            String key = entry.getKey();
+            String value = entry.getValue();
+            result.put(pre + key, value);
+            // For compatibility, key like "registry-type" will has a duplicate key "registry.type"
+            if (key.contains("-")) {
+                result.put(pre + key.replace('-', '.'), value);
+            }
         }
         return result;
     }

@@ -130,7 +130,6 @@
 
     <modules>
         <module>dubbo-common</module>
-        <module>dubbo-config</module>
         <module>dubbo-container</module>
         <module>dubbo-remoting</module>
         <module>dubbo-rpc</module>
@@ -138,6 +137,7 @@
         <module>dubbo-cluster</module>
         <module>dubbo-registry</module>
         <module>dubbo-monitor</module>
+        <module>dubbo-config</module>
         <module>dubbo-demo</module>
         <module>dubbo-plugin</module>
         <module>dubbo-serialization</module>

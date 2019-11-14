@@ -20,6 +20,7 @@ import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.ServiceInstance;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 
 /**
@@ -29,12 +30,13 @@ import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoad
  * @see MetadataService
  * @since 2.7.5
  */
-@SPI("default")
+@SPI(DEFAULT_METADATA_STORAGE_TYPE)
+
 public interface MetadataServiceProxyFactory {
 
     /**
      * Create a {@link MetadataService} proxy via the specified {@link ServiceInstance}
-     *
+     *WritableMetadataService
      * @param serviceInstance the instance of {@link ServiceInstance}
      * @return non-null
      */

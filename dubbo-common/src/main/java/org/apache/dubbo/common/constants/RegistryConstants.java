@@ -81,8 +81,7 @@ public interface RegistryConstants {
      */
     String SUBSCRIBED_SERVICE_NAMES_KEY = "subscribed-services";
 
-    String SUBSCRIBED_PROTOCOL_DEFAULT = "rest";
-
+    String PROVIDED_BY = "provided-by";
 
     /**
      * The request size of service instances

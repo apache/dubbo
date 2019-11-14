@@ -22,8 +22,6 @@ import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 
 import java.util.SortedSet;
 
-import static java.util.Collections.emptySortedSet;
-
 /**
  * The default extension of {@link DynamicConfiguration}. If user does not specify a config centre, or specifies one
  * that is not a valid extension, it will default to this one.
@@ -68,7 +66,7 @@ public class NopDynamicConfiguration implements DynamicConfiguration {
      * @since 2.7.5
      */
     @Override
-    public SortedSet<String> getConfigKeys(String group) {
-        return emptySortedSet();
+    public SortedSet<String> getConfigKeys(String group, String key) {
+        return null;
     }
 }

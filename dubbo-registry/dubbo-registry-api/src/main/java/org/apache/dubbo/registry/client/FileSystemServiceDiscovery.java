@@ -45,6 +45,7 @@ import java.util.stream.Collectors;
 import static com.alibaba.fastjson.JSON.toJSONString;
 import static java.lang.String.format;
 import static java.nio.channels.FileChannel.open;
+import static org.apache.dubbo.common.config.configcenter.DynamicConfiguration.DEFAULT_MAPPING_GROUP;
 import static org.apache.dubbo.common.config.configcenter.file.FileSystemDynamicConfiguration.CONFIG_CENTER_DIR_PARAM_NAME;
 
 /**
@@ -79,7 +80,7 @@ public class FileSystemServiceDiscovery implements ServiceDiscovery, EventListen
 
     private void registerListener() {
         getServices().forEach(serviceName -> {
-            dynamicConfiguration.getConfigKeys(serviceName).forEach(serviceInstanceId -> {
+            dynamicConfiguration.getConfigKeys(DEFAULT_MAPPING_GROUP, serviceName).forEach(serviceInstanceId -> {
                 dynamicConfiguration.addListener(serviceInstanceId, serviceName, this::onConfigChanged);
             });
         });
@@ -120,7 +121,7 @@ public class FileSystemServiceDiscovery implements ServiceDiscovery, EventListen
 
     @Override
     public List<ServiceInstance> getInstances(String serviceName) {
-        return dynamicConfiguration.getConfigKeys(serviceName)
+        return dynamicConfiguration.getConfigKeys(DEFAULT_MAPPING_GROUP, serviceName)
                 .stream()
                 .map(serviceInstanceId -> dynamicConfiguration.getConfig(serviceInstanceId, serviceName))
                 .map(content -> JSON.parseObject(content, DefaultServiceInstance.class))
