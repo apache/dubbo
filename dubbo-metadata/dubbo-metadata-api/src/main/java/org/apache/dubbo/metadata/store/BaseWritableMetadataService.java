@@ -4,20 +4,17 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.metadata.MetadataService;
-import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 
 import java.util.Collection;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 /**
  * @author cvictory ON 2019-08-14
+ * @since 2.7.5
  */
 public class BaseWritableMetadataService {
     final Logger logger = LoggerFactory.getLogger(getClass());
