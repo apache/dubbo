@@ -25,6 +25,9 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ProviderModel;
+import org.apache.dubbo.rpc.model.ServiceRepository;
 import org.apache.dubbo.rpc.protocol.AbstractProxyProtocol;
 
 import io.grpc.BindableService;
@@ -55,7 +58,7 @@ public class GrpcProtocol extends AbstractProxyProtocol {
     private final ConcurrentMap<String, ManagedChannel> channelMap = new ConcurrentHashMap<>();
 
     @Override
-    protected <T> Runnable doExport(T impl, Class<T> type, URL url) throws RpcException {
+    protected <T> Runnable doExport(T proxiedImpl, Class<T> type, URL url) throws RpcException {
         String key = url.getAddress();
         ProtocolServer protocolServer = serverMap.computeIfAbsent(key, k -> {
             DubboHandlerRegistry registry = new DubboHandlerRegistry();
@@ -71,7 +74,23 @@ public class GrpcProtocol extends AbstractProxyProtocol {
         });
 
         GrpcRemotingServer grpcServer = (GrpcRemotingServer) protocolServer.getRemotingServer();
-        grpcServer.getRegistry().addService((BindableService) impl, url.getServiceKey());
+
+        ServiceRepository serviceRepository = ApplicationModel.getServiceRepository();
+        ProviderModel providerModel = serviceRepository.lookupExportedService(url.getServiceKey());
+        if (providerModel == null) {
+            throw new IllegalStateException("Service " + url.getServiceKey() + "should have already been stored in service repository, " +
+                    "but failed to find it.");
+        }
+        Object originalImpl = providerModel.getServiceInstance();
+
+        Class<?> implClass = originalImpl.getClass();
+        try {
+            Method method = implClass.getDeclaredMethod("setProxiedImpl", type);
+            method.invoke(originalImpl, proxiedImpl);
+        } catch (Exception e) {
+            throw new IllegalStateException();
+        }
+        grpcServer.getRegistry().addService((BindableService) originalImpl, url.getServiceKey());
 
         grpcServer.start();
 
