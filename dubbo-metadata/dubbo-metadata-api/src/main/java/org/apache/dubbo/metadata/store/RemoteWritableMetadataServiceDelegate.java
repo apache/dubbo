@@ -1,6 +1,7 @@
 package org.apache.dubbo.metadata.store;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.InmemoryConfiguration;
 import org.apache.dubbo.metadata.WritableMetadataService;
 
 import java.util.SortedSet;

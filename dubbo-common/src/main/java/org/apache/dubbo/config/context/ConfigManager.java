@@ -62,10 +62,8 @@ import static org.apache.dubbo.config.Constants.PROTOCOLS_SUFFIX;
 import static org.apache.dubbo.config.Constants.REGISTRIES_SUFFIX;
 
 public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
-
-    private static final Logger logger = LoggerFactory.getLogger(ConfigManager.class);
-
     public static final String NAME = "config";
+    private static final Logger logger = LoggerFactory.getLogger(ConfigManager.class);
 
     private final Map<String, Map<String, AbstractConfig>> configsCache = newMap();
 

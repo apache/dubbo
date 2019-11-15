@@ -33,7 +33,6 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static java.lang.String.valueOf;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.DOT_REGEX;
@@ -58,34 +57,6 @@ public final class StringUtils {
     private static final Pattern KVP_PATTERN = Pattern.compile("([_.a-zA-Z0-9][-_.a-zA-Z0-9]*)[=](.*)"); //key value pair pattern.
     private static final Pattern INT_PATTERN = Pattern.compile("^\\d+$");
     private static final int PAD_LIMIT = 8192;
-
-    /**
-     * @since 2.7.5
-     */
-    public static final char EQUAL_CHAR = '=';
-
-    public static final String EQUAL = valueOf(EQUAL_CHAR);
-
-    public static final char AND_CHAR = '&';
-
-    public static final String AND = valueOf(AND_CHAR);
-
-    public static final char SEMICOLON_CHAR = ';';
-
-    public static final String SEMICOLON = valueOf(SEMICOLON_CHAR);
-
-    public static final char QUESTION_MASK_CHAR = '?';
-
-    public static final String QUESTION_MASK = valueOf(QUESTION_MASK_CHAR);
-
-    public static final char SLASH_CHAR = '/';
-
-    public static final String SLASH = valueOf(SLASH_CHAR);
-
-    /**
-     * The empty value
-     */
-    public static final String EMPTY_VALUE = "";
 
     private StringUtils() {
     }

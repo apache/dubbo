@@ -25,7 +25,7 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 
-import static com.alibaba.spring.util.BeanRegistrar.hasAlias;
+import static org.apache.dubbo.config.spring.util.BeanRegistrar.hasAlias;
 import static org.springframework.util.ObjectUtils.nullSafeEquals;
 import static org.springframework.util.StringUtils.hasText;
 

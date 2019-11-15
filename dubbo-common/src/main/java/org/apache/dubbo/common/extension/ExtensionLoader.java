@@ -19,7 +19,6 @@ package org.apache.dubbo.common.extension;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.context.Lifecycle;
 import org.apache.dubbo.common.extension.support.ActivateComparator;
-import org.apache.dubbo.common.lang.Prioritized;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ArrayUtils;
@@ -41,8 +40,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -51,17 +49,17 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
 
-import static java.util.Collections.sort;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOVE_VALUE_PREFIX;
 
 /**
+ *
  * {@link org.apache.dubbo.rpc.model.ApplicationModel}, {@code DubboBootstrap} and this class are
  * at present designed to be singleton or static (by itself totally static or uses some static fields).
  * So the instances returned from them are of process or classloader scope. If you want to support
  * multiple dubbo servers in a single process, you may need to refactor these three classes.
- * <p>
+ *
  * Load dubbo extensions
  * <ul>
  * <li>auto inject dependency extension </li>
@@ -406,7 +404,7 @@ public class ExtensionLoader<T> {
      * @return non-null
      */
     public T getOrDefaultExtension(String name) {
-        return containsExtension(name) ? getExtension(name) : getDefaultExtension();
+        return containsExtension(name)  ? getExtension(name) : getDefaultExtension();
     }
 
     /**
@@ -434,16 +432,14 @@ public class ExtensionLoader<T> {
     }
 
     public Set<T> getSupportedExtensionInstances() {
-        List<T> instances = new LinkedList<>();
+        Set<T> instances = new HashSet<>();
         Set<String> supportedExtensions = getSupportedExtensions();
         if (CollectionUtils.isNotEmpty(supportedExtensions)) {
             for (String name : supportedExtensions) {
                 instances.add(getExtension(name));
             }
         }
-        // sort the Prioritized instances
-        sort(instances, Prioritized.COMPARATOR);
-        return new LinkedHashSet<>(instances);
+        return instances;
     }
 
     /**
@@ -716,7 +712,7 @@ public class ExtensionLoader<T> {
 
     /**
      * synchronized in getExtensionClasses
-     */
+     * */
     private Map<String, Class<?>> loadExtensionClasses() {
         cacheDefaultExtensionName();
 
@@ -763,7 +759,7 @@ public class ExtensionLoader<T> {
         try {
             Enumeration<java.net.URL> urls = null;
             ClassLoader classLoader = findClassLoader();
-
+            
             // try to load from ExtensionLoader's ClassLoader first
             if (extensionLoaderClassLoaderFirst) {
                 ClassLoader extensionLoaderClassLoader = ExtensionLoader.class.getClassLoader();
@@ -771,8 +767,8 @@ public class ExtensionLoader<T> {
                     urls = extensionLoaderClassLoader.getResources(fileName);
                 }
             }
-
-            if (urls == null || !urls.hasMoreElements()) {
+            
+            if(urls == null || !urls.hasMoreElements()) {
                 if (classLoader != null) {
                     urls = classLoader.getResources(fileName);
                 } else {

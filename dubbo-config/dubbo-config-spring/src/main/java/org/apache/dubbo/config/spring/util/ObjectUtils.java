@@ -14,34 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring.context.annotation;
-
-import org.springframework.context.annotation.Import;
-
-import java.lang.annotation.Annotation;
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+package org.apache.dubbo.config.spring.util;
 
 /**
- * Multiple {@link EnableDubboConfigBinding} {@link Annotation}
+ * Object Utilities
  *
- * @since 2.5.8
- * @see EnableDubboConfigBinding
+ * @since 2.6.6
  */
-@Target({ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-@Import(DubboConfigBindingsRegistrar.class)
-public @interface EnableDubboConfigBindings {
+public abstract class ObjectUtils {
 
     /**
-     * The value of {@link EnableDubboConfigBindings}
+     * Convert from variable arguments to array
      *
-     * @return non-null
+     * @param values variable arguments
+     * @param <T>    The class
+     * @return array
      */
-    EnableDubboConfigBinding[] value();
+    public static <T> T[] of(T... values) {
+        return values;
+    }
 
 }

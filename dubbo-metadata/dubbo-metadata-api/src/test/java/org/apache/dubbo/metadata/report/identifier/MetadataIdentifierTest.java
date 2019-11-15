@@ -17,6 +17,7 @@
 package org.apache.dubbo.metadata.report.identifier;
 
 import org.apache.dubbo.metadata.MetadataConstants;
+import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

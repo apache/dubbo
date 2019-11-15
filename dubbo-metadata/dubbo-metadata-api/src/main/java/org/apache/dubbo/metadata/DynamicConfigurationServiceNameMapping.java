@@ -27,12 +27,11 @@ import java.util.List;
 import java.util.Set;
 
 import static java.util.Arrays.asList;
+import static org.apache.dubbo.common.config.configcenter.DynamicConfiguration.DEFAULT_MAPPING_GROUP;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 
 /**
  * The {@link ServiceNameMapping} implementation based on {@link DynamicConfiguration}
- *
- * @since 2.7.5
  */
 public class DynamicConfigurationServiceNameMapping implements ServiceNameMapping {
 
@@ -55,14 +54,13 @@ public class DynamicConfigurationServiceNameMapping implements ServiceNameMappin
 
         // the Dubbo Service Key as group
         // the service(application) name as key
-        // It does not matter whatever the content is, we just need a record
-        String key = ApplicationModel.getApplication();
-        String content = String.valueOf(System.currentTimeMillis());
+        // It does matter whatever the content is, we just need a record
+        String app = ApplicationModel.getApplication();
         execute(() -> {
-            dynamicConfiguration.publishConfig(key, buildGroup(serviceInterface, group, version, protocol), content);
+            dynamicConfiguration.publishConfig(buildKey(serviceInterface, group, version, protocol), app);
             if (logger.isInfoEnabled()) {
-                logger.info(String.format("The Dubbo service key[%s] mapped to service name[%s] with content : %s",
-                        key, group, content));
+                logger.info(String.format("Dubbo service[%s] mapped to interface name[%s].",
+                        app, serviceInterface, app));
             }
         });
     }
@@ -72,17 +70,15 @@ public class DynamicConfigurationServiceNameMapping implements ServiceNameMappin
 
         DynamicConfiguration dynamicConfiguration = DynamicConfiguration.getDynamicConfiguration();
 
-        String key = ApplicationModel.getApplication();
-
         Set<String> serviceNames = new LinkedHashSet<>();
         execute(() -> {
-            Set<String> keys = dynamicConfiguration.getConfigKeys(buildGroup(serviceInterface, group, version, protocol), key);
+            Set<String> keys = dynamicConfiguration.getConfigKeys(DEFAULT_MAPPING_GROUP, buildKey(serviceInterface, group, version, protocol));
             serviceNames.addAll(keys);
         });
         return Collections.unmodifiableSet(serviceNames);
     }
 
-    protected static String buildGroup(String serviceInterface, String group, String version, String protocol) {
+    protected static String buildKey(String serviceInterface, String group, String version, String protocol) {
         //        the issue : https://github.com/apache/dubbo/issues/4671
         //        StringBuilder groupBuilder = new StringBuilder(serviceInterface)
         //                .append(KEY_SEPARATOR).append(defaultString(group))

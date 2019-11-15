@@ -14,34 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring.context.annotation;
+package org.apache.dubbo.config.spring.util;
 
-import org.springframework.context.annotation.Import;
-
-import java.lang.annotation.Annotation;
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 
 /**
- * Multiple {@link EnableDubboConfigBinding} {@link Annotation}
+ * {@link Class} Utilities
+ * <p>
+ * The source code is cloned from
+ * https://github.com/alibaba/spring-context-support/blob/1.0.2/src/main/java/com/alibaba/spring/util/ClassUtils.java
  *
- * @since 2.5.8
- * @see EnableDubboConfigBinding
+ * @since 2.6.6
  */
-@Target({ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-@Import(DubboConfigBindingsRegistrar.class)
-public @interface EnableDubboConfigBindings {
+public abstract class ClassUtils {
 
-    /**
-     * The value of {@link EnableDubboConfigBindings}
-     *
-     * @return non-null
-     */
-    EnableDubboConfigBinding[] value();
-
+    public static <T> Class<T> resolveGenericType(Class<?> declaredClass) {
+        ParameterizedType parameterizedType = (ParameterizedType) declaredClass.getGenericSuperclass();
+        Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
+        return (Class<T>) actualTypeArguments[0];
+    }
 }

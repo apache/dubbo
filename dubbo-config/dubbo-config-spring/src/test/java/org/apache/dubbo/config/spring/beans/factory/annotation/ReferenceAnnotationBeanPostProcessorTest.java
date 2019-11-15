@@ -97,19 +97,17 @@ public class ReferenceAnnotationBeanPostProcessorTest {
         TestBean testBean = context.getBean(TestBean.class);
 
         DemoService demoService = testBean.getDemoService();
-        Map<String, DemoService> demoServicesMap = context.getBeansOfType(DemoService.class);
+
+        Assert.assertEquals("Hello,Mercy", demoService.sayName("Mercy"));
+        Assert.assertEquals("Greeting, Mercy", defaultHelloService.sayHello("Mercy"));
+        Assert.assertEquals("Hello, Mercy", helloServiceImpl.sayHello("Mercy"));
+
+        Assert.assertEquals("Greeting, Mercy", helloService.sayHello("Mercy"));
 
         Assert.assertNotNull(testBean.getDemoServiceFromAncestor());
         Assert.assertNotNull(testBean.getDemoServiceFromParent());
         Assert.assertNotNull(testBean.getDemoService());
         Assert.assertNotNull(testBean.autowiredDemoService);
-        Assert.assertEquals(1, demoServicesMap.size());
-
-        Assert.assertEquals("Hello,Mercy", demoService.sayName("Mercy"));
-        Assert.assertEquals("Greeting, Mercy", defaultHelloService.sayHello("Mercy"));
-        Assert.assertEquals("Hello, Mercy", helloServiceImpl.sayHello("Mercy"));
-        Assert.assertEquals("Greeting, Mercy", helloService.sayHello("Mercy"));
-
 
         Assert.assertEquals("Hello,Mercy", testBean.getDemoServiceFromAncestor().sayName("Mercy"));
         Assert.assertEquals("Hello,Mercy", testBean.getDemoServiceFromParent().sayName("Mercy"));
@@ -120,6 +118,9 @@ public class ReferenceAnnotationBeanPostProcessorTest {
 
         Assert.assertEquals("Hello,Mercy", myDemoService.sayName("Mercy"));
 
+        Map<String, DemoService> demoServicesMap = context.getBeansOfType(DemoService.class);
+
+        Assert.assertEquals(1, demoServicesMap.size());
 
         for (DemoService demoService1 : demoServicesMap.values()) {
 
@@ -164,7 +165,7 @@ public class ReferenceAnnotationBeanPostProcessorTest {
 
             InjectionMetadata.InjectedElement injectedElement = entry.getKey();
 
-            Assert.assertEquals("com.alibaba.spring.beans.factory.annotation.AbstractAnnotationBeanPostProcessor$AnnotatedFieldElement",
+            Assert.assertEquals("org.apache.dubbo.config.spring.beans.factory.annotation.AnnotationInjectedBeanPostProcessor$AnnotatedFieldElement",
                     injectedElement.getClass().getName());
 
         }
@@ -186,7 +187,7 @@ public class ReferenceAnnotationBeanPostProcessorTest {
 
             InjectionMetadata.InjectedElement injectedElement = entry.getKey();
 
-            Assert.assertEquals("com.alibaba.spring.beans.factory.annotation.AbstractAnnotationBeanPostProcessor$AnnotatedMethodElement",
+            Assert.assertEquals("org.apache.dubbo.config.spring.beans.factory.annotation.AnnotationInjectedBeanPostProcessor$AnnotatedMethodElement",
                     injectedElement.getClass().getName());
 
         }

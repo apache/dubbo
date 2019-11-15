@@ -21,7 +21,6 @@ import org.apache.dubbo.config.spring.beans.factory.annotation.DubboConfigBindin
 import org.apache.dubbo.config.spring.beans.factory.config.ConfigurableSourceBeanMetadataElement;
 import org.apache.dubbo.config.spring.context.config.NamePropertyDefaultValueDubboConfigBeanCustomizer;
 
-import com.alibaba.spring.beans.factory.annotation.ConfigurationBeanBindingRegistrar;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -44,13 +43,12 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static com.alibaba.spring.util.BeanRegistrar.registerInfrastructureBean;
-import static com.alibaba.spring.util.PropertySourcesUtils.getSubProperties;
-import static com.alibaba.spring.util.PropertySourcesUtils.normalizePrefix;
 import static org.apache.dubbo.config.spring.context.config.NamePropertyDefaultValueDubboConfigBeanCustomizer.BEAN_NAME;
+import static org.apache.dubbo.config.spring.util.BeanRegistrar.registerInfrastructureBean;
+import static org.apache.dubbo.config.spring.util.PropertySourcesUtils.buildPrefix;
+import static org.apache.dubbo.config.spring.util.PropertySourcesUtils.getPrefixedProperties;
 import static org.springframework.beans.factory.support.BeanDefinitionBuilder.rootBeanDefinition;
 import static org.springframework.beans.factory.support.BeanDefinitionReaderUtils.registerWithGeneratedName;
-import static org.springframework.core.annotation.AnnotationAttributes.fromMap;
 
 /**
  * {@link AbstractConfig Dubbo Config} binding Bean registrar
@@ -58,9 +56,7 @@ import static org.springframework.core.annotation.AnnotationAttributes.fromMap;
  * @see EnableDubboConfigBinding
  * @see DubboConfigBindingBeanPostProcessor
  * @since 2.5.8
- * @deprecated it will be removed in future, please use {@link ConfigurationBeanBindingRegistrar} for replacement
  */
-@Deprecated
 public class DubboConfigBindingRegistrar implements ImportBeanDefinitionRegistrar, EnvironmentAware,
         ConfigurableSourceBeanMetadataElement {
 
@@ -71,7 +67,8 @@ public class DubboConfigBindingRegistrar implements ImportBeanDefinitionRegistra
     @Override
     public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
 
-        AnnotationAttributes attributes = fromMap(importingClassMetadata.getAnnotationAttributes(EnableDubboConfigBinding.class.getName()));
+        AnnotationAttributes attributes = AnnotationAttributes.fromMap(
+                importingClassMetadata.getAnnotationAttributes(EnableDubboConfigBinding.class.getName()));
 
         registerBeanDefinitions(attributes, registry);
 
@@ -94,7 +91,7 @@ public class DubboConfigBindingRegistrar implements ImportBeanDefinitionRegistra
                                           boolean multiple,
                                           BeanDefinitionRegistry registry) {
 
-        Map<String, Object> properties = getSubProperties(environment.getPropertySources(), prefix);
+        Map<String, Object> properties = getPrefixedProperties(environment.getPropertySources(), prefix);
 
         if (CollectionUtils.isEmpty(properties)) {
             if (log.isDebugEnabled()) {
@@ -147,7 +144,7 @@ public class DubboConfigBindingRegistrar implements ImportBeanDefinitionRegistra
 
         BeanDefinitionBuilder builder = rootBeanDefinition(processorClass);
 
-        String actualPrefix = multiple ? normalizePrefix(prefix) + beanName : prefix;
+        String actualPrefix = multiple ? buildPrefix(prefix) + beanName : prefix;
 
         builder.addConstructorArgValue(actualPrefix).addConstructorArgValue(beanName);
 

@@ -63,9 +63,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static com.alibaba.spring.util.ObjectUtils.of;
 import static org.apache.dubbo.config.spring.beans.factory.annotation.ServiceBeanNameBuilder.create;
-import static org.apache.dubbo.config.spring.util.DubboAnnotationUtils.resolveServiceInterfaceClass;
+import static org.apache.dubbo.config.spring.util.AnnotationUtils.resolveServiceInterfaceClass;
+import static org.apache.dubbo.config.spring.util.ObjectUtils.of;
 import static org.springframework.beans.factory.support.BeanDefinitionBuilder.rootBeanDefinition;
 import static org.springframework.context.annotation.AnnotationConfigUtils.CONFIGURATION_BEAN_NAME_GENERATOR;
 import static org.springframework.core.annotation.AnnotatedElementUtils.findMergedAnnotation;

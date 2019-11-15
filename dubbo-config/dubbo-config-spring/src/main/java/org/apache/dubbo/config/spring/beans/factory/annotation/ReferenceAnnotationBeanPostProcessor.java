@@ -21,8 +21,8 @@ import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.context.event.ServiceBeanExportedEvent;
+import org.apache.dubbo.config.spring.util.AnnotationUtils;
 
-import com.alibaba.spring.beans.factory.annotation.AbstractAnnotationBeanPostProcessor;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.InjectionMetadata;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -44,10 +44,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import static com.alibaba.spring.util.AnnotationUtils.getAttribute;
-import static com.alibaba.spring.util.AnnotationUtils.getAttributes;
 import static java.lang.reflect.Proxy.newProxyInstance;
 import static org.apache.dubbo.config.spring.beans.factory.annotation.ServiceBeanNameBuilder.create;
+import static org.apache.dubbo.config.spring.util.AnnotationUtils.getAttribute;
 import static org.springframework.util.StringUtils.hasText;
 
 /**
@@ -56,7 +55,7 @@ import static org.springframework.util.StringUtils.hasText;
  *
  * @since 2.5.7
  */
-public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBeanPostProcessor implements
+public class ReferenceAnnotationBeanPostProcessor extends AnnotationInjectedBeanPostProcessor implements
         ApplicationContextAware, ApplicationListener {
 
     /**
@@ -300,7 +299,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
                                                  Class<?> injectedType, InjectionMetadata.InjectedElement injectedElement) {
         return buildReferencedBeanName(attributes, injectedType) +
                 "#source=" + (injectedElement.getMember()) +
-                "#attributes=" + getAttributes(attributes, getEnvironment());
+                "#attributes=" + AnnotationUtils.resolvePlaceholders(attributes, getEnvironment());
     }
 
     /**

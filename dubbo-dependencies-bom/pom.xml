@@ -144,9 +144,6 @@
         <!-- Eureka -->
         <eureka.version>1.9.12</eureka.version>
 
-        <!-- Alibaba -->
-        <alibaba_spring_context_support_version>1.0.4-SNAPSHOT</alibaba_spring_context_support_version>
-
         <jaxb_version>2.2.7</jaxb_version>
         <activation_version>1.2.0</activation_version>
         <test_container_version>1.11.2</test_container_version>
@@ -280,14 +277,6 @@
                 <artifactId>eureka-core</artifactId>
                 <version>${eureka.version}</version>
             </dependency>
-
-            <!-- Alibaba -->
-            <dependency>
-                <groupId>com.alibaba.spring</groupId>
-                <artifactId>spring-context-support</artifactId>
-                <version>${alibaba_spring_context_support_version}</version>
-            </dependency>
-
             <dependency>
                 <groupId>com.googlecode.xmemcached</groupId>
                 <artifactId>xmemcached</artifactId>
