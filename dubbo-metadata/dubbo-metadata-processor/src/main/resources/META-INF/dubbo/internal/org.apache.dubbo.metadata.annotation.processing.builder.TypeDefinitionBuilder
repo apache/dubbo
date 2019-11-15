@@ -1,7 +1,0 @@
-array = org.apache.dubbo.metadata.annotation.processing.builder.ArrayTypeDefinitionBuilder
-collection =  org.apache.dubbo.metadata.annotation.processing.builder.CollectionTypeDefinitionBuilder
-enum =  org.apache.dubbo.metadata.annotation.processing.builder.EnumTypeDefinitionBuilder
-general =  org.apache.dubbo.metadata.annotation.processing.builder.GeneralTypeDefinitionBuilder
-map =  org.apache.dubbo.metadata.annotation.processing.builder.MapTypeDefinitionBuilder
-primitive =  org.apache.dubbo.metadata.annotation.processing.builder.PrimitiveTypeDefinitionBuilder
-simple = org.apache.dubbo.metadata.annotation.processing.builder.SimpleTypeDefinitionBuilder
