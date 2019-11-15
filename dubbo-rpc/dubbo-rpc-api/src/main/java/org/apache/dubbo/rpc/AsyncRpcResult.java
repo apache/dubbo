@@ -163,7 +163,7 @@ public class AsyncRpcResult extends AbstractResult {
 
     @Override
     public Result get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-        return this.get();
+        return super.get(timeout, unit);
     }
 
     @Override
