@@ -125,7 +125,7 @@ public class ServiceAnnotationUtilsTest extends AbstractAnnotationProcessingTest
     @Test
     public void testGetGroup() {
         TypeElement type = getType(TestServiceImpl.class);
-        assertEquals("test", getGroup(getAnnotation(type)));
+        assertEquals("test",getGroup(getAnnotation(type)));
 
         type = getType(GenericTestService.class);
         assertEquals("generic", getGroup(getAnnotation(type)));

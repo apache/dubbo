@@ -69,14 +69,14 @@ public class PrimitiveTypeDefinitionBuilderTest extends AbstractAnnotationProces
 
         TypeElement testType = getType(PrimitiveTypeModel.class);
 
-        zField = findField(testType, "z");
-        bField = findField(testType, "b");
-        cField = findField(testType, "c");
-        sField = findField(testType, "s");
-        iField = findField(testType, "i");
-        lField = findField(testType, "l");
-        fField = findField(testType, "f");
-        dField = findField(testType, "d");
+        zField = findField( testType, "z");
+        bField = findField( testType, "b");
+        cField = findField( testType, "c");
+        sField = findField( testType, "s");
+        iField = findField( testType, "i");
+        lField = findField( testType, "l");
+        fField = findField( testType, "f");
+        dField = findField( testType, "d");
 
         assertEquals("boolean", zField.asType().toString());
         assertEquals("byte", bField.asType().toString());

@@ -61,11 +61,11 @@ public class MapTypeDefinitionBuilderTest extends AbstractAnnotationProcessingTe
     protected void beforeEach() {
         builder = new MapTypeDefinitionBuilder();
         TypeElement testType = getType(MapTypeModel.class);
-        stringsField = findField(testType, "strings");
-        colorsField = findField(testType, "colors");
-        primitiveTypeModelsField = findField(testType, "primitiveTypeModels");
-        modelsField = findField(testType, "models");
-        modelArraysField = findField(testType, "modelArrays");
+        stringsField = findField( testType, "strings");
+        colorsField = findField( testType, "colors");
+        primitiveTypeModelsField = findField( testType, "primitiveTypeModels");
+        modelsField = findField( testType, "models");
+        modelArraysField = findField( testType, "modelArrays");
 
         assertEquals("strings", stringsField.getSimpleName().toString());
         assertEquals("colors", colorsField.getSimpleName().toString());

@@ -58,11 +58,11 @@ public class CollectionTypeDefinitionBuilderTest extends AbstractAnnotationProce
     protected void beforeEach() {
         builder = new CollectionTypeDefinitionBuilder();
         TypeElement testType = getType(CollectionTypeModel.class);
-        stringsField = findField(testType, "strings");
-        colorsField = findField(testType, "colors");
-        primitiveTypeModelsField = findField(testType, "primitiveTypeModels");
-        modelsField = findField(testType, "models");
-        modelArraysField = findField(testType, "modelArrays");
+        stringsField = findField( testType, "strings");
+        colorsField = findField( testType, "colors");
+        primitiveTypeModelsField = findField( testType, "primitiveTypeModels");
+        modelsField = findField( testType, "models");
+        modelArraysField = findField( testType, "modelArrays");
 
         assertEquals("strings", stringsField.getSimpleName().toString());
         assertEquals("colors", colorsField.getSimpleName().toString());
