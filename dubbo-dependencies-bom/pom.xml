@@ -104,6 +104,7 @@
         <jedis_version>2.9.0</jedis_version>
         <consul_version>1.4.2</consul_version>
         <consul_process_version>2.0.0</consul_process_version>
+        <consul_client_version>1.3.7</consul_client_version>
         <xmemcached_version>1.3.6</xmemcached_version>
         <cxf_version>3.1.15</cxf_version>
         <thrift_version>0.12.0</thrift_version>
@@ -127,7 +128,7 @@
         <rs_api_version>2.0</rs_api_version>
         <resteasy_version>3.0.19.Final</resteasy_version>
         <tomcat_embed_version>8.5.31</tomcat_embed_version>
-        <jetcd_version>0.3.0</jetcd_version>
+        <jetcd_version>0.4.1</jetcd_version>
         <nacos_version>1.1.1</nacos_version>
         <grpc.version>1.22.1</grpc.version>
         <!-- Log libs -->
@@ -142,6 +143,9 @@
 
         <!-- Eureka -->
         <eureka.version>1.9.12</eureka.version>
+
+        <!-- Alibaba -->
+        <alibaba_spring_context_support_version>1.0.4-SNAPSHOT</alibaba_spring_context_support_version>
 
         <jaxb_version>2.2.7</jaxb_version>
         <activation_version>1.2.0</activation_version>
@@ -258,6 +262,12 @@
                 <groupId>com.pszymczyk.consul</groupId>
                 <artifactId>embedded-consul</artifactId>
                 <version>${consul_process_version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.orbitz.consul</groupId>
+                <artifactId>consul-client</artifactId>
+                <version>${consul_client_version}</version>
             </dependency>
             <!-- Eureka -->
             <dependency>
@@ -270,6 +280,14 @@
                 <artifactId>eureka-core</artifactId>
                 <version>${eureka.version}</version>
             </dependency>
+
+            <!-- Alibaba -->
+            <dependency>
+                <groupId>com.alibaba.spring</groupId>
+                <artifactId>spring-context-support</artifactId>
+                <version>${alibaba_spring_context_support_version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>com.googlecode.xmemcached</groupId>
                 <artifactId>xmemcached</artifactId>

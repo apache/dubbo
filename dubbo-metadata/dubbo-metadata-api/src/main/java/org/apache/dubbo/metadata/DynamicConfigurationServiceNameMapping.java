@@ -31,6 +31,8 @@ import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 
 /**
  * The {@link ServiceNameMapping} implementation based on {@link DynamicConfiguration}
+ *
+ * @since 2.7.5
  */
 public class DynamicConfigurationServiceNameMapping implements ServiceNameMapping {
 
@@ -53,7 +55,7 @@ public class DynamicConfigurationServiceNameMapping implements ServiceNameMappin
 
         // the Dubbo Service Key as group
         // the service(application) name as key
-        // It does matter whatever the content is, we just need a record
+        // It does not matter whatever the content is, we just need a record
         String key = ApplicationModel.getApplication();
         String content = String.valueOf(System.currentTimeMillis());
         execute(() -> {
@@ -70,9 +72,11 @@ public class DynamicConfigurationServiceNameMapping implements ServiceNameMappin
 
         DynamicConfiguration dynamicConfiguration = DynamicConfiguration.getDynamicConfiguration();
 
+        String key = ApplicationModel.getApplication();
+
         Set<String> serviceNames = new LinkedHashSet<>();
         execute(() -> {
-            Set<String> keys = dynamicConfiguration.getConfigKeys(buildGroup(serviceInterface, group, version, protocol));
+            Set<String> keys = dynamicConfiguration.getConfigKeys(buildGroup(serviceInterface, group, version, protocol), key);
             serviceNames.addAll(keys);
         });
         return Collections.unmodifiableSet(serviceNames);

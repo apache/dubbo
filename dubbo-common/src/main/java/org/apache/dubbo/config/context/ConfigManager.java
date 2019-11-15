@@ -31,9 +31,10 @@ import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
+import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.config.RegistryConfig;
-import org.apache.dubbo.config.service.ReferenceConfig;
-import org.apache.dubbo.config.service.ServiceConfig;
+import org.apache.dubbo.config.ServiceConfigBase;
+import org.apache.dubbo.config.SslConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Collection;
@@ -61,8 +62,10 @@ import static org.apache.dubbo.config.Constants.PROTOCOLS_SUFFIX;
 import static org.apache.dubbo.config.Constants.REGISTRIES_SUFFIX;
 
 public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
-    public static final String NAME = "config";
+
     private static final Logger logger = LoggerFactory.getLogger(ConfigManager.class);
+
+    public static final String NAME = "config";
 
     private final Map<String, Map<String, AbstractConfig>> configsCache = newMap();
 
@@ -111,6 +114,14 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 
     public Optional<MetricsConfig> getMetrics() {
         return ofNullable(getConfig(getTagName(MetricsConfig.class)));
+    }
+
+    public void setSsl(SslConfig sslConfig) {
+        addConfig(sslConfig, true);
+    }
+
+    public Optional<SslConfig> getSsl() {
+        return ofNullable(getConfig(getTagName(SslConfig.class)));
     }
 
     // ConfigCenterConfig correlative methods
@@ -268,38 +279,38 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 
     // ServiceConfig correlative methods
 
-    public void addService(ServiceConfig<?> serviceConfig) {
+    public void addService(ServiceConfigBase<?> serviceConfig) {
         addConfig(serviceConfig);
     }
 
-    public void addServices(Iterable<ServiceConfig<?>> serviceConfigs) {
+    public void addServices(Iterable<ServiceConfigBase<?>> serviceConfigs) {
         serviceConfigs.forEach(this::addService);
     }
 
-    public Collection<ServiceConfig> getServices() {
-        return getConfigs(getTagName(ServiceConfig.class));
+    public Collection<ServiceConfigBase> getServices() {
+        return getConfigs(getTagName(ServiceConfigBase.class));
     }
 
-    public <T> ServiceConfig<T> getService(String id) {
-        return getConfig(getTagName(ServiceConfig.class), id);
+    public <T> ServiceConfigBase<T> getService(String id) {
+        return getConfig(getTagName(ServiceConfigBase.class), id);
     }
 
     // ReferenceConfig correlative methods
 
-    public void addReference(ReferenceConfig<?> referenceConfig) {
+    public void addReference(ReferenceConfigBase<?> referenceConfig) {
         addConfig(referenceConfig);
     }
 
-    public void addReferences(Iterable<ReferenceConfig<?>> referenceConfigs) {
+    public void addReferences(Iterable<ReferenceConfigBase<?>> referenceConfigs) {
         referenceConfigs.forEach(this::addReference);
     }
 
-    public Collection<ReferenceConfig<?>> getReferences() {
-        return getConfigs(getTagName(ReferenceConfig.class));
+    public Collection<ReferenceConfigBase<?>> getReferences() {
+        return getConfigs(getTagName(ReferenceConfigBase.class));
     }
 
-    public <T> ReferenceConfig<T> getReference(String id) {
-        return getConfig(getTagName(ReferenceConfig.class), id);
+    public <T> ReferenceConfigBase<T> getReference(String id) {
+        return getConfig(getTagName(ReferenceConfigBase.class), id);
     }
 
     protected static Set<String> getSubProperties(Map<String, String> properties, String prefix) {

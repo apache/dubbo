@@ -47,7 +47,7 @@ import static org.apache.dubbo.rpc.Constants.DEPRECATED_KEY;
  * @see ServiceInstance#getMetadata()
  * @see MetadataService
  * @see URL
- * @since 2.7.4
+ * @since 2.7.5
  */
 public class ServiceInstanceMetadataUtils {
 

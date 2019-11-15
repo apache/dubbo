@@ -1,0 +1,3 @@
+# org.apache.dubbo.metadata.annotation.processing.rest.DefaultServiceRestMetadataProcessor
+jaxrs = org.apache.dubbo.metadata.annotation.processing.rest.jaxrs.JAXRSServiceRestMetadataProcessor
+springmvc = org.apache.dubbo.metadata.annotation.processing.rest.springmvc.SpringMvcServiceRestMetadataProcessor

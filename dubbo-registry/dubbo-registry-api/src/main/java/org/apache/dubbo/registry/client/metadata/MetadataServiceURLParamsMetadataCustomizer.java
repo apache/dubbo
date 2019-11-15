@@ -35,7 +35,7 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
  * into {@link ServiceInstance#getMetadata() the service instances' metadata}
  *
  * @see ServiceInstanceMetadataCustomizer
- * @since 2.7.4
+ * @since 2.7.5
  */
 public class MetadataServiceURLParamsMetadataCustomizer extends ServiceInstanceMetadataCustomizer {
 

@@ -137,6 +137,7 @@
         <module>dubbo-cluster</module>
         <module>dubbo-registry</module>
         <module>dubbo-monitor</module>
+        <module>dubbo-config</module>
         <module>dubbo-demo</module>
         <module>dubbo-plugin</module>
         <module>dubbo-serialization</module>
@@ -148,7 +149,6 @@
         <module>dubbo-configcenter</module>
         <module>dubbo-dependencies</module>
         <module>dubbo-metadata</module>
-        <module>dubbo-bootstrap</module>
     </modules>
 
     <dependencyManagement>
@@ -533,6 +533,7 @@
                                 <!-- exclude the edazdarevic files -->
                                 <exclude>**/org/apache/dubbo/common/utils/CIDRUtils.java</exclude>
                                 <exclude>.github/**</exclude>
+                                <exclude>compiler/**</exclude>
                             </excludes>
                         </configuration>
                     </execution>

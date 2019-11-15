@@ -106,7 +106,7 @@ public class NacosDynamicConfigurationTest {
         put("key1", "a");
         put("key2", "b");
 
-        SortedSet<String> keys = config.getConfigKeys(DynamicConfiguration.DEFAULT_GROUP);
+        SortedSet<String> keys = config.getConfigKeys(DynamicConfiguration.DEFAULT_GROUP, null);
 
         Assertions.assertFalse(keys.isEmpty());
 

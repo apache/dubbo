@@ -18,6 +18,7 @@ package org.apache.dubbo.common.infra.support;
 
 import org.apache.dubbo.common.infra.InfraAdapter;
 
+import java.util.Collections;
 import java.util.Map;
 
 public class CmdbAdapter implements InfraAdapter {
@@ -28,11 +29,11 @@ public class CmdbAdapter implements InfraAdapter {
 
     @Override
     public Map<String, String> getExtraAttributes(Map<String, String> params) {
-        return null;
+        return Collections.emptyMap();
     }
 
     @Override
     public String getAttribute(String key) {
-        return null;
+        return "";
     }
 }

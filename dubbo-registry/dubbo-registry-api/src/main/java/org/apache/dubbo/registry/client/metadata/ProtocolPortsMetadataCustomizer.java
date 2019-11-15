@@ -34,7 +34,7 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
  * A Class to customize the ports of {@link Protocol protocols} into
  * {@link ServiceInstance#getMetadata() the metadata of service instance}
  *
- * @since 2.7.4
+ * @since 2.7.5
  */
 public class ProtocolPortsMetadataCustomizer implements ServiceInstanceCustomizer {
 

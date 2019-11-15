@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 /**
  * {@link ConditionalEventListener} test
  *
- * @since 2.7.4
+ * @since 2.7.5
  */
 public class ConditionalEventListenerTest {
 

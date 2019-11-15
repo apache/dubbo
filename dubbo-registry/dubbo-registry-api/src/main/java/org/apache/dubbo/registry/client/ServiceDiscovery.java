@@ -42,7 +42,7 @@ import static org.apache.dubbo.event.EventDispatcher.getDefaultExtension;
 /**
  * The common operations of Service Discovery
  *
- * @since 2.7.4
+ * @since 2.7.5
  */
 @SPI("file")
 public interface ServiceDiscovery extends Prioritized {
