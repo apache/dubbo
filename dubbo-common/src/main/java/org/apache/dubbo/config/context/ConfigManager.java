@@ -445,7 +445,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     private static void checkDuplicate(AbstractConfig oldOne, AbstractConfig newOne) throws IllegalStateException {
         if (oldOne != null && !oldOne.equals(newOne)) {
             String configName = oldOne.getClass().getSimpleName();
-            throw new IllegalStateException("Duplicate Config found for " + configName + ", you should use only one unique " + configName + " for one application.");
+            logger.warn("Duplicate Config found for " + configName + ", you should use only one unique " + configName + " for one application.");
         }
     }
 
