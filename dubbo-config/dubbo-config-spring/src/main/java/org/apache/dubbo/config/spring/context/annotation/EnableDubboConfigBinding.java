@@ -22,6 +22,7 @@ import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.spring.beans.factory.annotation.DubboConfigBindingBeanPostProcessor;
 
+import com.alibaba.spring.beans.factory.annotation.EnableConfigurationBeanBinding;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.PropertySources;
 
@@ -44,13 +45,16 @@ import java.lang.annotation.Target;
  * @see DubboConfigBindingRegistrar
  * @see DubboConfigBindingBeanPostProcessor
  * @see EnableDubboConfigBindings
+ * @see EnableConfigurationBeanBinding
  * @since 2.5.8
+ * @deprecated it will be removed in future, please use {@link EnableConfigurationBeanBinding} for replacement
  */
 @Target({ElementType.TYPE, ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Repeatable(EnableDubboConfigBindings.class)
 @Import(DubboConfigBindingRegistrar.class)
+@Deprecated
 public @interface EnableDubboConfigBinding {
 
     /**
