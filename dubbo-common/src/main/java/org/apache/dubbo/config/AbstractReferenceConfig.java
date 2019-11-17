@@ -86,6 +86,8 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
      */
     protected String providedBy;
 
+    protected String router;
+
     public Boolean isCheck() {
         return check;
     }
@@ -233,5 +235,14 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
 
     public void setProvidedBy(String providedBy) {
         this.providedBy = providedBy;
+    }
+
+    @Parameter(key = "router", append = true)
+    public String getRouter() {
+        return router;
+    }
+
+    public void setRouter(String router) {
+        this.router = router;
     }
 }
