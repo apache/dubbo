@@ -93,7 +93,9 @@ public class GrpcProtocol extends AbstractProxyProtocol {
         }
         grpcServer.getRegistry().addService((BindableService) originalImpl, url.getServiceKey());
 
-        grpcServer.start();
+        if (!grpcServer.isStarted()) {
+            grpcServer.start();
+        }
 
         return () -> grpcServer.getRegistry().removeService(url.getServiceKey());
     }
@@ -167,6 +169,7 @@ public class GrpcProtocol extends AbstractProxyProtocol {
 
         private Server originalServer;
         private DubboHandlerRegistry handlerRegistry;
+        private volatile boolean started;
 
         public GrpcRemotingServer(Server server, DubboHandlerRegistry handlerRegistry) {
             this.originalServer = server;
@@ -176,6 +179,7 @@ public class GrpcProtocol extends AbstractProxyProtocol {
         public void start() throws RpcException {
             try {
                 originalServer.start();
+                started = true;
             } catch (IOException e) {
                 throw new RpcException("Starting gRPC server failed. ", e);
             }
@@ -188,6 +192,10 @@ public class GrpcProtocol extends AbstractProxyProtocol {
         @Override
         public Object getDelegateServer() {
             return originalServer;
+        }
+
+        public boolean isStarted() {
+            return started;
         }
 
         @Override
