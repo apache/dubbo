@@ -222,6 +222,7 @@ public class ReferenceConfigCache {
         }
 
         referredReferences.forEach((_k, referenceConfig) -> {
+            referenceConfig.destroy();
             ApplicationModel.getConfigManager().removeConfig(referenceConfig);
         });
 

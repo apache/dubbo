@@ -53,6 +53,7 @@ public class InvokerInvocationHandler implements InvocationHandler {
         }
         if ("$destroy".equals(methodName) && parameterTypes.length == 0) {
             invoker.destroy();
+            return null;
         }
 
         RpcInvocation rpcInvocation = new RpcInvocation(method, invoker.getInterface().getName(), args);
