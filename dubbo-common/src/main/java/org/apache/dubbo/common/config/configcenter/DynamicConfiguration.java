@@ -45,8 +45,6 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
 
     String DEFAULT_GROUP = "dubbo";
 
-    String DEFAULT_MAPPING_GROUP = "mapping";
-
     /**
      * {@link #addListener(String, String, ConfigurationListener)}
      *
@@ -138,7 +136,7 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
      * @since 2.7.5
      */
     default boolean publishConfig(String key, String content) throws UnsupportedOperationException {
-        return publishConfig(key, DEFAULT_MAPPING_GROUP, content);
+        return publishConfig(key, DEFAULT_GROUP, content);
     }
 
     /**
@@ -159,12 +157,11 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
      * Get the config keys by the specified group
      *
      * @param group the specified group
-     * @param rootKey the
      * @return the read-only non-null sorted {@link Set set} of config keys
      * @throws UnsupportedOperationException If the under layer does not support
      * @since 2.7.5
      */
-    default SortedSet<String> getConfigKeys(String group, String rootKey) throws UnsupportedOperationException {
+    default SortedSet<String> getConfigKeys(String group) throws UnsupportedOperationException {
         throw new UnsupportedOperationException("No support");
     }
 

@@ -50,7 +50,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 
 public final class StringUtils {
 
-    public static final String EMPTY = "";
+    public static final String EMPTY_STRING = "";
     public static final int INDEX_NOT_FOUND = -1;
     public static final String[] EMPTY_STRING_ARRAY = new String[0];
 
@@ -82,10 +82,9 @@ public final class StringUtils {
 
     public static final String SLASH = valueOf(SLASH_CHAR);
 
-    /**
-     * The empty value
-     */
-    public static final String EMPTY_VALUE = "";
+    public static final char HYPHEN_CHAR = '-';
+
+    public static final String HYPHEN = valueOf(HYPHEN_CHAR);
 
     private StringUtils() {
     }
@@ -127,7 +126,7 @@ public final class StringUtils {
             return null;
         }
         if (repeat <= 0) {
-            return EMPTY;
+            return EMPTY_STRING;
         }
         final int inputLength = str.length();
         if (repeat == 1 || inputLength == 0) {
@@ -653,7 +652,7 @@ public final class StringUtils {
      */
     public static String join(String[] array) {
         if (ArrayUtils.isEmpty(array)) {
-            return EMPTY;
+            return EMPTY_STRING;
         }
         StringBuilder sb = new StringBuilder();
         for (String s : array) {
@@ -671,7 +670,7 @@ public final class StringUtils {
      */
     public static String join(String[] array, char split) {
         if (ArrayUtils.isEmpty(array)) {
-            return EMPTY;
+            return EMPTY_STRING;
         }
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < array.length; i++) {
@@ -692,7 +691,7 @@ public final class StringUtils {
      */
     public static String join(String[] array, String split) {
         if (ArrayUtils.isEmpty(array)) {
-            return EMPTY;
+            return EMPTY_STRING;
         }
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < array.length; i++) {
@@ -706,7 +705,7 @@ public final class StringUtils {
 
     public static String join(Collection<String> coll, String split) {
         if (CollectionUtils.isEmpty(coll)) {
-            return EMPTY;
+            return EMPTY_STRING;
         }
 
         StringBuilder sb = new StringBuilder();
@@ -858,7 +857,7 @@ public final class StringUtils {
         if (str != null && !isEmpty(str)) {
             int sz = str.length();
 
-            for(int i = 0; i < sz; ++i) {
+            for (int i = 0; i < sz; ++i) {
                 if (!Character.isUpperCase(str.charAt(i))) {
                     return false;
                 }
