@@ -306,7 +306,7 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
         }
 
         private void processService() {
-            Response<List<HealthService>> response = getHealthServices(serviceName, -1, Integer.MAX_VALUE);
+            Response<List<HealthService>> response = getHealthServices(serviceName, consulIndex, Integer.MAX_VALUE);
             Long currentIndex = response.getConsulIndex();
             if (currentIndex != null && currentIndex > consulIndex) {
                 consulIndex = currentIndex;
