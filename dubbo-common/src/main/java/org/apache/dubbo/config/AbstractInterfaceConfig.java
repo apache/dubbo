@@ -150,6 +150,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     protected String tag;
 
+    protected String env;
+
     /**
      * The url of the reference service
      */
@@ -631,6 +633,15 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     public void setTag(String tag) {
         this.tag = tag;
+    }
+
+    @Parameter(excluded = true)
+    public String getEnv() {
+        return env;
+    }
+
+    public void setEnv(String env) {
+        this.env = env;
     }
 
     public SslConfig getSslConfig() {

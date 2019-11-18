@@ -228,6 +228,9 @@ public interface CommonConstants {
 
     String TAG_KEY = "dubbo.tag";
 
+    String ROUTER_ENV_KEY = "router.env";
+    String DEFAULT_ROUTER_ENV = "DUBBO_ROUTER_ENV";
+
     /**
      * To decide whether to make connection when the client is created
      */

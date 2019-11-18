@@ -34,6 +34,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.QUEUES_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_FILTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.RELEASE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.ROUTER_ENV_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TAG_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
@@ -94,6 +95,7 @@ public class ClusterUtils {
             copyOfLocalMap.remove(METHODS_KEY);
             copyOfLocalMap.remove(TIMESTAMP_KEY);
             copyOfLocalMap.remove(TAG_KEY);
+            copyOfLocalMap.remove(ROUTER_ENV_KEY);
 
             map.putAll(copyOfLocalMap);
 
