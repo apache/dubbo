@@ -23,9 +23,9 @@ import com.alibaba.dubbo.rpc.Invoker;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.apache.dubbo.remoting.Constants.DUBBO_VERSION_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
@@ -41,6 +41,11 @@ public class LegacyInvocation implements Invocation {
         this.arg0 = arg0;
     }
 
+    @Override
+    public String getTargetServiceUniqueName() {
+        return null;
+    }
+
     public String getMethodName() {
         return "echo";
     }
@@ -53,8 +58,8 @@ public class LegacyInvocation implements Invocation {
         return new Object[]{arg0};
     }
 
-    public Map<String, String> getAttachments() {
-        Map<String, String> attachments = new HashMap<String, String>();
+    public Map<String, Object> getAttachments() {
+        Map<String, Object> attachments = new HashMap<String, Object>();
         attachments.put(PATH_KEY, "dubbo");
         attachments.put(GROUP_KEY, "dubbo");
         attachments.put(VERSION_KEY, "1.0.0");
@@ -68,11 +73,26 @@ public class LegacyInvocation implements Invocation {
         return null;
     }
 
-    public String getAttachment(String key) {
+    @Override
+    public Object put(Object key, Object value) {
+        return null;
+    }
+
+    @Override
+    public Object get(Object key) {
+        return null;
+    }
+
+    @Override
+    public Map<Object, Object> getAttributes() {
+        return null;
+    }
+
+    public Object getAttachment(String key) {
         return getAttachments().get(key);
     }
 
-    public String getAttachment(String key, String defaultValue) {
+    public Object getAttachment(String key, Object defaultValue) {
         return getAttachments().get(key);
     }
 

@@ -16,22 +16,21 @@
  */
 package org.apache.dubbo.rpc.cluster.support;
 
-import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.Directory;
+import org.apache.dubbo.rpc.cluster.support.wrapper.AbstractCluster;
 
 /**
  * {@link FailfastClusterInvoker}
  *
  */
-public class FailfastCluster implements Cluster {
+public class FailfastCluster extends AbstractCluster {
 
     public final static String NAME = "failfast";
 
     @Override
-    public <T> Invoker<T> join(Directory<T> directory) throws RpcException {
-        return new FailfastClusterInvoker<T>(directory);
+    public <T> AbstractClusterInvoker<T> doJoin(Directory<T> directory) throws RpcException {
+        return new FailfastClusterInvoker<>(directory);
     }
 
 }

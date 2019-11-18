@@ -21,14 +21,28 @@
     http://dubbo.apache.org/schema/dubbo http://dubbo.apache.org/schema/dubbo/dubbo.xsd
     ">
 
+    <bean id="a" class="java.lang.String" abstract="true">
+        <property name="value" value="1" />
+    </bean>
+
+    <bean id="b" parent="a" >
+        <property name="value2" value="2" />
+    </bean>
+
+    <bean id="c" class="java.lang.Object">
+        <property name="b" ref="b" />
+    </bean>
+
     <!-- 当前应用信息配置 -->
-    <dubbo:application name="dubbo-spring-test"/>
+    <dubbo:application name="dubbo-spring-test" >
+        <dubbo:parameter key="" value="" />
+    </dubbo:application>
 
     <!-- 连接注册中心配置 -->
     <dubbo:registry address="N/A"/>
 
     <dubbo:protocol name="dubbo" port="12345" />
 
-    <dubbo:annotation package="org.apache.dubbo.config.spring.annotation.provider"/>
+    <dubbo:annotation package="org.apache.dubbo.config.spring.com.alibaba.dubbo.config.annotation.provider"/>
 
 </beans>

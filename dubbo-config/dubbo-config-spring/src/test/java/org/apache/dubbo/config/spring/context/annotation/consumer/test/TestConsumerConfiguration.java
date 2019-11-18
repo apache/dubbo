@@ -57,8 +57,8 @@ public class TestConsumerConfiguration {
 
 
     @Bean
-    public TestConsumerConfiguration.Child c() {
-        return new TestConsumerConfiguration.Child();
+    public Child c() {
+        return new Child();
     }
 
     public static abstract class Ancestor {
@@ -75,7 +75,7 @@ public class TestConsumerConfiguration {
         }
     }
 
-    public static abstract class Parent extends TestConsumerConfiguration.Ancestor {
+    public static abstract class Parent extends Ancestor {
 
         private DemoService demoServiceFromParent;
 
@@ -90,7 +90,7 @@ public class TestConsumerConfiguration {
 
     }
 
-    public static class Child extends TestConsumerConfiguration.Parent {
+    public static class Child extends Parent {
 
         @Reference(version = "2.5.7", url = remoteURL, application = "dubbo-demo-application")
         private DemoService demoServiceFromChild;

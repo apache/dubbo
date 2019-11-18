@@ -77,7 +77,7 @@ public class SimpleRegistryService extends AbstractRegistryService {
             register(service, new URL("dubbo",
                     NetUtils.getLocalHost(),
                     RpcContext.getContext().getLocalPort(),
-                    org.apache.dubbo.registry.RegistryService.class.getName(),
+                    RegistryService.class.getName(),
                     url.getParameters()));
             List<String> rs = registries;
             if (rs != null && rs.size() > 0) {
@@ -134,7 +134,7 @@ public class SimpleRegistryService extends AbstractRegistryService {
                 super.unsubscribe(service, new URL("subscribe",
                         RpcContext.getContext().getRemoteHost(),
                         RpcContext.getContext().getRemotePort(),
-                        org.apache.dubbo.registry.RegistryService.class.getName(), getSubscribed(service)), entry.getValue());
+                        RegistryService.class.getName(), getSubscribed(service)), entry.getValue());
             }
         }
     }
