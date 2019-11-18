@@ -19,27 +19,25 @@ package org.apache.dubbo.metadata;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import static java.lang.String.valueOf;
 import static java.util.Arrays.asList;
-import static org.apache.dubbo.common.config.configcenter.DynamicConfiguration.DEFAULT_MAPPING_GROUP;
-import static org.apache.dubbo.common.utils.StringUtils.isBlank;
+import static org.apache.dubbo.common.utils.StringUtils.SLASH;
+import static org.apache.dubbo.rpc.model.ApplicationModel.getName;
 
 /**
  * The {@link ServiceNameMapping} implementation based on {@link DynamicConfiguration}
  */
 public class DynamicConfigurationServiceNameMapping implements ServiceNameMapping {
 
+    public static String DEFAULT_MAPPING_GROUP = "mapping";
+
     private static final List<String> IGNORED_SERVICE_INTERFACES = asList(MetadataService.class.getName());
-
-    private static final String SEPARATOR = ":";
-
-    private static final String EMPTY = "";
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -55,12 +53,13 @@ public class DynamicConfigurationServiceNameMapping implements ServiceNameMappin
         // the Dubbo Service Key as group
         // the service(application) name as key
         // It does matter whatever the content is, we just need a record
-        String app = ApplicationModel.getApplication();
+        String key = getName();
+        String content = valueOf(System.currentTimeMillis());
         execute(() -> {
-            dynamicConfiguration.publishConfig(buildKey(serviceInterface, group, version, protocol), app);
+            dynamicConfiguration.publishConfig(key, buildGroup(serviceInterface, group, version, protocol), content);
             if (logger.isInfoEnabled()) {
                 logger.info(String.format("Dubbo service[%s] mapped to interface name[%s].",
-                        app, serviceInterface, app));
+                        group, serviceInterface, group));
             }
         });
     }
@@ -72,24 +71,20 @@ public class DynamicConfigurationServiceNameMapping implements ServiceNameMappin
 
         Set<String> serviceNames = new LinkedHashSet<>();
         execute(() -> {
-            Set<String> keys = dynamicConfiguration.getConfigKeys(DEFAULT_MAPPING_GROUP, buildKey(serviceInterface, group, version, protocol));
+            Set<String> keys = dynamicConfiguration.getConfigKeys(buildGroup(serviceInterface, group, version, protocol));
             serviceNames.addAll(keys);
         });
         return Collections.unmodifiableSet(serviceNames);
     }
 
-    protected static String buildKey(String serviceInterface, String group, String version, String protocol) {
+    protected static String buildGroup(String serviceInterface, String group, String version, String protocol) {
         //        the issue : https://github.com/apache/dubbo/issues/4671
         //        StringBuilder groupBuilder = new StringBuilder(serviceInterface)
         //                .append(KEY_SEPARATOR).append(defaultString(group))
         //                .append(KEY_SEPARATOR).append(defaultString(version))
         //                .append(KEY_SEPARATOR).append(defaultString(protocol));
         //        return groupBuilder.toString();
-        return serviceInterface;
-    }
-
-    private static String defaultString(String value) {
-        return isBlank(value) ? EMPTY : value;
+        return DEFAULT_MAPPING_GROUP + SLASH + serviceInterface;
     }
 
     private void execute(Runnable runnable) {

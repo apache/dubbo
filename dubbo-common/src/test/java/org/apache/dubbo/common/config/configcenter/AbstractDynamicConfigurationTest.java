@@ -111,7 +111,7 @@ public class AbstractDynamicConfigurationTest {
 
     @Test
     public void testGetConfigKeys() {
-        assertThrows(UnsupportedOperationException.class, () -> configuration.getConfigKeys(null, null), "No support");
+        assertThrows(UnsupportedOperationException.class, () -> configuration.getConfigKeys(null), "No support");
     }
 
     @Test

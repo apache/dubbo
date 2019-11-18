@@ -61,6 +61,8 @@ import static com.alibaba.nacos.client.naming.utils.UtilAndComs.NACOS_NAMING_LOG
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
+import static org.apache.dubbo.common.utils.StringUtils.HYPHEN_CHAR;
+import static org.apache.dubbo.common.utils.StringUtils.SLASH_CHAR;
 
 /**
  * The nacos implementation of {@link DynamicConfiguration}
@@ -175,10 +177,12 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
 
     @Override
     public void addListener(String key, String group, ConfigurationListener listener) {
-        NacosConfigListener nacosConfigListener = watchListenerMap.computeIfAbsent(key, k -> createTargetListener(key, group));
+        String resolvedGroup = resolveGroup(group);
+        String listenerKey = buildListenerKey(key, group);
+        NacosConfigListener nacosConfigListener = watchListenerMap.computeIfAbsent(listenerKey, k -> createTargetListener(key, resolvedGroup));
         nacosConfigListener.addListener(listener);
         try {
-            configService.addListener(key, group, nacosConfigListener);
+            configService.addListener(key, resolvedGroup, nacosConfigListener);
         } catch (NacosException e) {
             logger.error(e.getMessage());
         }
@@ -186,7 +190,8 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
 
     @Override
     public void removeListener(String key, String group, ConfigurationListener listener) {
-        NacosConfigListener eventListener = watchListenerMap.get(key);
+        String listenerKey = buildListenerKey(key, group);
+        NacosConfigListener eventListener = watchListenerMap.get(listenerKey);
         if (eventListener != null) {
             eventListener.removeListener(listener);
         }
@@ -194,12 +199,13 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
 
     @Override
     public String getConfig(String key, String group, long timeout) throws IllegalStateException {
+        String resolvedGroup = resolveGroup(group);
         try {
             long nacosTimeout = timeout < 0 ? DEFAULT_TIMEOUT : timeout;
-            if (StringUtils.isEmpty(group)) {
-                group = DEFAULT_GROUP;
+            if (StringUtils.isEmpty(resolvedGroup)) {
+                resolvedGroup = DEFAULT_GROUP;
             }
-            return configService.getConfig(key, group, nacosTimeout);
+            return configService.getConfig(key, resolvedGroup, nacosTimeout);
         } catch (NacosException e) {
             logger.error(e.getMessage());
         }
@@ -219,12 +225,13 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     @Override
     public boolean publishConfig(String key, String group, String content) {
         boolean published = false;
+        String resolvedGroup = resolveGroup(group);
         try {
-            String value = configService.getConfig(key, group, -1L);
+            String value = configService.getConfig(key, resolvedGroup, -1L);
             if (StringUtils.isNotEmpty(value)) {
                 content = value + "," + content;
             }
-            published = configService.publishConfig(key, group, content);
+            published = configService.publishConfig(key, resolvedGroup, content);
         } catch (NacosException e) {
             logger.error(e.getErrMsg());
         }
@@ -234,19 +241,19 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     /**
      * TODO Nacos does not support atomic update of the value mapped to a key.
      *
-     * @param group the specified group
      * @param key
+     * @param group the specified group
      * @return
      */
     @Override
-    public SortedSet<String> getConfigKeys(String group, String key) {
+    public SortedSet<String> getConfigKeys(String group) {
         // TODO use Nacos Client API to replace HTTP Open API
         SortedSet<String> keys = new TreeSet<>();
         try {
             List<String> paramsValues = asList(
                     "search", "accurate",
                     "dataId", "",
-                    "group", group,
+                    "group", resolveGroup(group),
                     "pageNo", "1",
                     "pageSize", String.valueOf(Integer.MAX_VALUE)
             );
@@ -260,17 +267,6 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
             }
         }
         return keys;
-
-//        SortedSet<String> configKeys = new TreeSet<>();
-//        try {
-//            String value = configService.getConfig(key, group, -1L);
-//            if (value != null) {
-//                Collections.addAll(configKeys, value.split(","));
-//            }
-//        } catch (NacosException e) {
-//            logger.error(e.getErrMsg());
-//        }
-//        return configKeys;
     }
 
     private Stream<String> toKeysStream(String content) {
@@ -335,5 +331,13 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
             }
             return ConfigChangeType.MODIFIED;
         }
+    }
+
+    protected String buildListenerKey(String key, String group) {
+        return key + HYPHEN_CHAR + resolveGroup(group);
+    }
+
+    protected String resolveGroup(String group) {
+        return group.replace(SLASH_CHAR, HYPHEN_CHAR);
     }
 }

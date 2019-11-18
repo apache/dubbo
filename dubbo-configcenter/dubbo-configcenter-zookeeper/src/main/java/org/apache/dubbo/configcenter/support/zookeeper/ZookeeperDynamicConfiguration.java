@@ -40,13 +40,12 @@ import static java.util.Collections.unmodifiableSortedSet;
 import static org.apache.dubbo.common.config.configcenter.Constants.CONFIG_NAMESPACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
+import static org.apache.dubbo.common.utils.StringUtils.EMPTY_STRING;
 
 /**
  *
  */
 public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
-
-    private static final String EMPTY_STRING = "";
 
     private static final Logger logger = LoggerFactory.getLogger(ZookeeperDynamicConfiguration.class);
 
@@ -118,8 +117,8 @@ public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
     }
 
     @Override
-    public SortedSet<String> getConfigKeys(String group, String key) {
-        String path = getPathKey(group, key);
+    public SortedSet<String> getConfigKeys(String group) {
+        String path = getPathKey(group, EMPTY_STRING);
         List<String> nodes = zkClient.getChildren(path);
         return isEmpty(nodes) ? emptySortedSet() : unmodifiableSortedSet(new TreeSet<>(nodes));
     }

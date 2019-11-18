@@ -46,6 +46,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import static org.apache.dubbo.common.config.configcenter.Constants.CONFIG_NAMESPACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
+import static org.apache.dubbo.common.utils.StringUtils.EMPTY_STRING;
 
 /**
  * config center implementation for consul
@@ -95,9 +96,9 @@ public class ConsulDynamicConfiguration implements DynamicConfiguration {
     }
 
     @Override
-    public SortedSet<String> getConfigKeys(String group, String key) throws UnsupportedOperationException {
+    public SortedSet<String> getConfigKeys(String group) throws UnsupportedOperationException {
         SortedSet<String> configKeys = new TreeSet<>();
-        String normalizedKey = convertKey(group, key);
+        String normalizedKey = convertKey(group, EMPTY_STRING);
         List<String> keys = kvClient.getKeys(normalizedKey);
         if (CollectionUtils.isNotEmpty(keys)) {
             keys.stream()
