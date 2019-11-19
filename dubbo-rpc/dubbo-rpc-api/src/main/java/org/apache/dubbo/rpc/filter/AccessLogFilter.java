@@ -115,7 +115,7 @@ public class AccessLogFilter implements Filter {
     private void log(String accessLog, AccessLogData accessLogData) {
         Set<AccessLogData> logSet = LOG_ENTRIES.computeIfAbsent(accessLog, k -> new ConcurrentHashSet<>());
 
-        if (logSet.size() >= LOG_MAX_BUFFER) {
+        if (logSet.size() < LOG_MAX_BUFFER) {
             logSet.add(accessLogData);
         } else {
             logger.warn("AccessLog buffer is full. Do a force writing to file to clear buffer.");
