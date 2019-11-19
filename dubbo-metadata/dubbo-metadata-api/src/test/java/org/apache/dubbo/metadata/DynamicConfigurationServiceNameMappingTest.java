@@ -18,6 +18,7 @@ package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
+import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.BeforeAll;
@@ -46,7 +47,7 @@ public class DynamicConfigurationServiceNameMappingTest {
     public static void setUp() throws Exception {
 
         DynamicConfiguration configuration = getExtensionLoader(DynamicConfigurationFactory.class)
-                .getDefaultExtension()
+                .getExtension("file")
                 .getDynamicConfiguration(null);
 
         ApplicationModel.getEnvironment().setDynamicConfiguration(configuration);
@@ -54,10 +55,10 @@ public class DynamicConfigurationServiceNameMappingTest {
 
     @Test
     public void testBuildGroup() {
-        assertEquals("test", buildGroup("test", null, null, null));
-        assertEquals("test", buildGroup("test", "default", null, null));
-        assertEquals("test", buildGroup("test", "default", "1.0.0", null));
-        assertEquals("test", buildGroup("test", "default", "1.0.0", "dubbo"));
+        assertEquals("mapping/test", buildGroup("test", null, null, null));
+        assertEquals("mapping/test", buildGroup("test", "default", null, null));
+        assertEquals("mapping/test", buildGroup("test", "default", "1.0.0", null));
+        assertEquals("mapping/test", buildGroup("test", "default", "1.0.0", "dubbo"));
     }
 
     @Test
@@ -66,7 +67,7 @@ public class DynamicConfigurationServiceNameMappingTest {
         String serviceName = "test";
         String serviceName2 = "test2";
 
-        ApplicationModel.setApplication(serviceName);
+        ApplicationModel.getConfigManager().setApplication(new ApplicationConfig(serviceName));
 
         String serviceInterface = "org.apache.dubbo.service.UserService";
         String group = null;
@@ -75,7 +76,8 @@ public class DynamicConfigurationServiceNameMappingTest {
 
         serviceNameMapping.map(serviceInterface, group, version, protocol);
 
-        ApplicationModel.setApplication(serviceName2);
+        ApplicationModel.getConfigManager().removeConfig(new ApplicationConfig(serviceName));
+        ApplicationModel.getConfigManager().setApplication(new ApplicationConfig(serviceName2));
 
         serviceNameMapping.map(serviceInterface, group, version, protocol);
 
@@ -83,5 +85,6 @@ public class DynamicConfigurationServiceNameMappingTest {
 
         assertEquals(new TreeSet(asList(serviceName, serviceName2)), serviceNames);
 
+        ApplicationModel.getConfigManager().removeConfig(new ApplicationConfig(serviceName2));
     }
 }

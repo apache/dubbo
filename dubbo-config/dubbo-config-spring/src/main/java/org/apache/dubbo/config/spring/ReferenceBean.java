@@ -98,7 +98,7 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
     @SuppressWarnings({"unchecked"})
     public void afterPropertiesSet() throws Exception {
 
-        // Initializes there Dubbo's Config Beans before @Reference bean autowiring
+        // Initializes Dubbo's Config Beans before @Reference bean autowiring
         prepareDubboConfigBeans();
 
         // lazy init by default.

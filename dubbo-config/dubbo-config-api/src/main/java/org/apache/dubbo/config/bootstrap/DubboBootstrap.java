@@ -1070,15 +1070,16 @@ public class DubboBootstrap extends GenericEventListener {
         }
     }
 
-    private ApplicationConfig getApplication() {
+    public ApplicationConfig getApplication() {
         ApplicationConfig application = configManager
                 .getApplication()
                 .orElseGet(() -> {
                     ApplicationConfig applicationConfig = new ApplicationConfig();
-                    applicationConfig.refresh();
+                    configManager.setApplication(applicationConfig);
                     return applicationConfig;
                 });
-        configManager.setApplication(application);
+
+        application.refresh();
         return application;
     }
 
@@ -1087,10 +1088,11 @@ public class DubboBootstrap extends GenericEventListener {
                 .getMonitor()
                 .orElseGet(() -> {
                     MonitorConfig monitorConfig = new MonitorConfig();
-                    monitorConfig.refresh();
+                    configManager.setMonitor(monitorConfig);
                     return monitorConfig;
                 });
-        configManager.setMonitor(monitor);
+
+        monitor.refresh();
         return monitor;
     }
 
@@ -1099,10 +1101,10 @@ public class DubboBootstrap extends GenericEventListener {
                 .getMetrics()
                 .orElseGet(() -> {
                     MetricsConfig metricsConfig = new MetricsConfig();
-                    metricsConfig.refresh();
+                    configManager.setMetrics(metricsConfig);
                     return metricsConfig;
                 });
-        configManager.setMetrics(metrics);
+        metrics.refresh();
         return metrics;
     }
 
@@ -1111,10 +1113,11 @@ public class DubboBootstrap extends GenericEventListener {
                 .getModule()
                 .orElseGet(() -> {
                     ModuleConfig moduleConfig = new ModuleConfig();
-                    moduleConfig.refresh();
+                    configManager.setModule(moduleConfig);
                     return moduleConfig;
                 });
-        configManager.setModule(module);
+
+        module.refresh();
         return module;
     }
 
@@ -1123,10 +1126,11 @@ public class DubboBootstrap extends GenericEventListener {
                 .getSsl()
                 .orElseGet(() -> {
                     SslConfig sslConfig = new SslConfig();
-                    sslConfig.refresh();
+                    configManager.setSsl(sslConfig);
                     return sslConfig;
                 });
-        configManager.setSsl(ssl);
+
+        ssl.refresh();
         return ssl;
     }
 }

@@ -36,7 +36,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.rpc.model.ApplicationModel.getConfigManager;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -95,9 +94,6 @@ public class ConfigManagerTest {
         configManager.setApplication(config);
         assertTrue(configManager.getApplication().isPresent());
         assertEquals(config, configManager.getApplication().get());
-        assertThrows(IllegalStateException.class, () -> {
-            configManager.setApplication(new ApplicationConfig("test"));
-        });
     }
 
     // Test MonitorConfig correlative methods
@@ -108,9 +104,6 @@ public class ConfigManagerTest {
         configManager.setMonitor(monitorConfig);
         assertTrue(configManager.getMonitor().isPresent());
         assertEquals(monitorConfig, configManager.getMonitor().get());
-        assertThrows(IllegalStateException.class, () -> {
-            configManager.setMonitor(new MonitorConfig());
-        });
     }
 
     // Test MonitorConfig correlative methods
@@ -120,9 +113,6 @@ public class ConfigManagerTest {
         configManager.setModule(config);
         assertTrue(configManager.getModule().isPresent());
         assertEquals(config, configManager.getModule().get());
-        assertThrows(IllegalStateException.class, () -> {
-            configManager.setModule(new ModuleConfig("test"));
-        });
     }
 
     // Test MetricsConfig correlative methods
@@ -132,11 +122,6 @@ public class ConfigManagerTest {
         configManager.setMetrics(config);
         assertTrue(configManager.getMetrics().isPresent());
         assertEquals(config, configManager.getMetrics().get());
-        assertThrows(IllegalStateException.class, () -> {
-            MetricsConfig metricsConfig = new MetricsConfig();
-            metricsConfig.setPort("101");
-            configManager.setMetrics(metricsConfig);
-        });
     }
 
     // Test ProviderConfig correlative methods

@@ -130,7 +130,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
                 }
                 if (pts == DubboCodec.EMPTY_CLASS_ARRAY) {
                     pts = ReflectUtils.desc2classArray(desc);
-                    }
+                }
 //                }
 
                 args = new Object[pts.length];

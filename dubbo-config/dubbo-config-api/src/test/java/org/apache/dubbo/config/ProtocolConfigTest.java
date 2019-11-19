@@ -17,11 +17,7 @@
 
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.config.mock.MockProtocol2;
-import org.apache.dubbo.rpc.Protocol;
-
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -33,16 +29,6 @@ import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.is;
 
 public class ProtocolConfigTest {
-
-    @Test
-    public void testDestroy() throws Exception {
-        Protocol protocol = Mockito.mock(Protocol.class);
-        MockProtocol2.delegate = protocol;
-        ProtocolConfig protocolConfig = new ProtocolConfig();
-        protocolConfig.setName("mockprotocol2");
-        protocolConfig.destroy();
-        Mockito.verify(protocol).destroy();
-    }
 
     @Test
     public void testName() throws Exception {
