@@ -35,7 +35,6 @@ import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.CountDownLatch;
 
@@ -129,12 +128,12 @@ public class ZookeeperDynamicConfigurationTest {
 
     @Test
     public void testPublishConfig() {
-        String key = "user-service";
-        String group = "org.apache.dubbo.service.UserService";
-        String content = "test";
+        String group = "user-service";
+        String key = "org.apache.dubbo.service.UserService";
+        String app = "test";
 
-        assertTrue(configuration.publishConfig(key, group, content));
-        assertEquals("test", configuration.getProperties(key, group));
+        assertTrue(configuration.publishConfig(app, group + "/" + key, "non"));
+        assertEquals("non", configuration.getProperties(app, group + "/" + key));
     }
 
     @Test
@@ -142,16 +141,15 @@ public class ZookeeperDynamicConfigurationTest {
 
         String group = "mapping";
         String key = "org.apache.dubbo.service.UserService";
-        String content = "app1";
+        String app = "app1";
 
         String key2 = "org.apache.dubbo.service.UserService2";
 
-        assertTrue(configuration.publishConfig(key, group, content));
-        assertTrue(configuration.publishConfig(key2, group, content));
+        assertTrue(configuration.publishConfig(app, group + "/" + key, ""));
+        assertTrue(configuration.publishConfig(app, group + "/" + key2, ""));
 
-        Set<String> configKeys = configuration.getConfigKeys(group);
-
-        assertEquals(new TreeSet(asList(content)), configKeys);
+        assertEquals(new TreeSet(asList(key, key2)), configuration.getConfigKeys(group));
+        assertEquals(new TreeSet(asList(app)), configuration.getConfigKeys(group + "/" + key));
     }
 
     private class TestListener implements ConfigurationListener {
