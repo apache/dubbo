@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.config.configcenter.file;
 
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
 
 import org.junit.jupiter.api.Test;
@@ -32,9 +31,6 @@ public class FileSystemDynamicConfigurationFactoryTest {
 
     @Test
     public void testGetFactory() {
-        DynamicConfigurationFactory factory = DynamicConfigurationFactory.getDynamicConfigurationFactory("not-exists");
-        assertEquals(factory, DynamicConfigurationFactory.getDynamicConfigurationFactory("file"));
-        assertEquals(factory.getDynamicConfiguration(URL.valueOf("dummy")), factory.getDynamicConfiguration(URL.valueOf("dummy")));
-        assertEquals("org.apache.dubbo.common.config.configcenter.InternalDynamicConfiguration", factory.getDynamicConfiguration(URL.valueOf("dummy")).getClass().getName());
+        assertEquals(FileSystemDynamicConfigurationFactory.class, DynamicConfigurationFactory.getDynamicConfigurationFactory("file").getClass());
     }
 }
