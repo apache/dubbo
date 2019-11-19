@@ -33,6 +33,8 @@ import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 
+import java.util.Objects;
+
 /**
  * ServiceFactoryBean
  *
@@ -148,11 +150,20 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
+
+        if (!isOriginEventSource(event)) {
+            return;
+        }
+
         if (!isExported() && !isUnexported()) {
             if (logger.isInfoEnabled()) {
                 logger.info("The service ready on spring started. service: " + getInterface());
             }
             export();
         }
+    }
+
+    private boolean isOriginEventSource(ContextRefreshedEvent event) {
+        return Objects.equals(applicationContext, event.getApplicationContext());
     }
 }

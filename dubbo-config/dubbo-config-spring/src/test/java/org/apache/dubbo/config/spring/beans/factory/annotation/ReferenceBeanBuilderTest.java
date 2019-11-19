@@ -82,7 +82,7 @@ public class ReferenceBeanBuilderTest {
         Assert.assertEquals(true, referenceBean.isGeneric());
         Assert.assertNull(referenceBean.isInjvm());
         Assert.assertEquals(false, referenceBean.isCheck());
-        Assert.assertNull(referenceBean.isInit());
+        Assert.assertFalse(referenceBean.isInit());
         Assert.assertEquals(true, referenceBean.getLazy());
         Assert.assertEquals(true, referenceBean.getStubevent());
         Assert.assertEquals("reconnect", referenceBean.getReconnect());
