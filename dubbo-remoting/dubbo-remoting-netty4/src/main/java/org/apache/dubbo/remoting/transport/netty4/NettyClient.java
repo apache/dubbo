@@ -54,7 +54,7 @@ public class NettyClient extends AbstractClient {
     /**
      * netty client bootstrap
      */
-    private static final NioEventLoopGroup nioEventLoopGroup = new NioEventLoopGroup(Constants.DEFAULT_IO_THREADS, new DefaultThreadFactory("NettyClientWorker", true));
+    private static final NioEventLoopGroup NIO_EVENT_LOOP_GROUP = new NioEventLoopGroup(Constants.DEFAULT_IO_THREADS, new DefaultThreadFactory("NettyClientWorker", true));
 
     private static final String SOCKS_PROXY_HOST = "socksProxyHost";
 
@@ -90,7 +90,7 @@ public class NettyClient extends AbstractClient {
     protected void doOpen() throws Throwable {
         final NettyClientHandler nettyClientHandler = new NettyClientHandler(getUrl(), this);
         bootstrap = new Bootstrap();
-        bootstrap.group(nioEventLoopGroup)
+        bootstrap.group(NIO_EVENT_LOOP_GROUP)
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.TCP_NODELAY, true)
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)

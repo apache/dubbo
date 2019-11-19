@@ -134,7 +134,7 @@ public final class ReflectUtils {
 
     private static final ConcurrentMap<String, Class<?>> NAME_CLASS_CACHE = new ConcurrentHashMap<String, Class<?>>();
 
-    private static final ConcurrentMap<String, Method> Signature_METHODS_CACHE = new ConcurrentHashMap<String, Method>();
+    private static final ConcurrentMap<String, Method> SIGNATURE_METHODS_CACHE = new ConcurrentHashMap<String, Method>();
 
     private ReflectUtils() {
     }
@@ -897,7 +897,7 @@ public final class ReflectUtils {
         if (parameterTypes != null && parameterTypes.length > 0) {
             signature += StringUtils.join(parameterTypes);
         }
-        Method method = Signature_METHODS_CACHE.get(signature);
+        Method method = SIGNATURE_METHODS_CACHE.get(signature);
         if (method != null) {
             return method;
         }
@@ -925,7 +925,7 @@ public final class ReflectUtils {
             method = clazz.getMethod(methodName, types);
 
         }
-        Signature_METHODS_CACHE.put(signature, method);
+        SIGNATURE_METHODS_CACHE.put(signature, method);
         return method;
     }
 

@@ -4,17 +4,13 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.metadata.MetadataService;
-import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 
 import java.util.Collection;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 /**
  * @author cvictory ON 2019-08-14
@@ -39,9 +35,9 @@ public class BaseWritableMetadataService {
      * whose key is the return value of {@link URL#getServiceKey()} method and value is
      * the {@link SortedSet sorted set} of the {@link URL URLs}
      */
-    final static ConcurrentNavigableMap<String, SortedSet<URL>> subscribedServiceURLs = new ConcurrentSkipListMap<>();
+    final static ConcurrentNavigableMap<String, SortedSet<URL>> SUBSCRIBED_SERVICE_URLS = new ConcurrentSkipListMap<>();
 
-    final static ConcurrentNavigableMap<String, String> serviceDefinitions = new ConcurrentSkipListMap<>();
+    final static ConcurrentNavigableMap<String, String> SERVICE_DEFINITIONS = new ConcurrentSkipListMap<>();
 
 
     boolean throwableAction(Consumer<URL> consumer, URL url) {
@@ -55,7 +51,7 @@ public class BaseWritableMetadataService {
     }
 
     public SortedSet<String> getSubscribedURLs() {
-        return getAllUnmodifiableServiceURLs(subscribedServiceURLs);
+        return getAllUnmodifiableServiceURLs(SUBSCRIBED_SERVICE_URLS);
     }
 
     static SortedSet<String> getAllUnmodifiableServiceURLs(Map<String, SortedSet<URL>> serviceURLs) {

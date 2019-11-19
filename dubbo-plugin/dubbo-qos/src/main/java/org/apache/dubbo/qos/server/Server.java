@@ -60,7 +60,7 @@ public class Server {
     private EventLoopGroup worker;
 
     private Server() {
-        this.welcome = DubboLogo.dubbo;
+        this.welcome = DubboLogo.DUBBO;
     }
 
     private String welcome;
