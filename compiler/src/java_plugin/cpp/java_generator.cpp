@@ -845,6 +845,11 @@ static void PrintImplBase(
         *vars,
         "public static abstract class $abstract_name$ implements $BindableService$, $dubbo_interface$ {\n\n");
 
+  p->Print(*vars, "private $dubbo_interface$ proxiedImpl;\n\n");
+  p->Print(*vars, "public final void setProxiedImpl($dubbo_interface$ proxiedImpl) {\n");
+  p->Print(*vars, " this.proxiedImpl = proxiedImpl;\n");
+  p->Print(*vars, "}\n\n");
+
   // RPC methods
   for (int i = 0; i < service->method_count(); ++i) {
     const MethodDescriptor* method = service->method(i);
@@ -905,7 +910,7 @@ static void PrintImplBase(
     p->Print(
         *vars,
         "@$Override$\n public final $ServerServiceDefinition$ bindService() {\n");
-    (*vars)["instance"] = "this";
+    (*vars)["instance"] = "proxiedImpl";
     PrintBindServiceMethodBody(service, vars, p, generate_nano);
     p->Print("}\n");
     p->Outdent();
@@ -1091,6 +1096,7 @@ static void PrintMethodHandlerClass(const ServiceDescriptor* service,
   }
   p->Print("\n");
   (*vars)["service_name"] = service->name() + "ImplBase";
+  (*vars)["dubbo_interface"] = "I" + service->name();
   p->Print(
       *vars,
       "private static final class MethodHandlers<Req, Resp> implements\n"
@@ -1098,10 +1104,10 @@ static void PrintMethodHandlerClass(const ServiceDescriptor* service,
       "    io.grpc.stub.ServerCalls.ServerStreamingMethod<Req, Resp>,\n"
       "    io.grpc.stub.ServerCalls.ClientStreamingMethod<Req, Resp>,\n"
       "    io.grpc.stub.ServerCalls.BidiStreamingMethod<Req, Resp> {\n"
-      "  private final $service_name$ serviceImpl;\n"
+      "  private final $dubbo_interface$ serviceImpl;\n"
       "  private final int methodId;\n"
       "\n"
-      "  MethodHandlers($service_name$ serviceImpl, int methodId) {\n"
+      "  MethodHandlers($dubbo_interface$ serviceImpl, int methodId) {\n"
       "    this.serviceImpl = serviceImpl;\n"
       "    this.methodId = methodId;\n"
       "  }\n\n");
@@ -1504,8 +1510,7 @@ void GenerateService(const ServiceDescriptor* service,
   vars["StreamObserver"] = "io.grpc.stub.StreamObserver";
   vars["Iterator"] = "java.util.Iterator";
   vars["Generated"] = "javax.annotation.Generated";
-  vars["ListenableFuture"] =
-      "com.google.common.util.concurrent.ListenableFuture";
+  vars["ListenableFuture"] = "com.google.common.util.concurrent.ListenableFuture";
   vars["default_method_body"] = "   throw new UnsupportedOperationException(\""
              "No need to override this method, extend XxxImplBase and override "
              "all methods it allows.\");";

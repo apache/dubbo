@@ -101,8 +101,10 @@ public class AbstractMetadataReportFactoryTest {
 
     @Test
     public void testGetOneMetadataReportForIpFormat() {
-        URL url1 = URL.valueOf("zookeeper://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic");
-        URL url2 = URL.valueOf("zookeeper://" + NetUtils.getLocalAddress().getHostAddress() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic");
+        String hostName = NetUtils.getLocalAddress().getHostName();
+        String ip = NetUtils.getIpByHost(hostName);
+        URL url1 = URL.valueOf("zookeeper://" + hostName + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic");
+        URL url2 = URL.valueOf("zookeeper://" + ip + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic");
         MetadataReport metadataReport1 = metadataReportFactory.getMetadataReport(url1);
         MetadataReport metadataReport2 = metadataReportFactory.getMetadataReport(url2);
         Assertions.assertEquals(metadataReport1, metadataReport2);

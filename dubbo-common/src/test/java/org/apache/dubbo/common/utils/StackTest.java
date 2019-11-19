@@ -83,6 +83,17 @@ public class StackTest {
     }
 
     @Test
+    public void testIllegalGetNegative() throws Exception {
+        Stack<String> stack = new Stack<String>();
+        stack.push("one");
+        stack.get(-1);
+
+        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
+            stack.get(-10);
+        });
+    }
+
+    @Test
     public void testIllegalSet() throws Exception {
         Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
             Stack<String> stack = new Stack<String>();
@@ -91,10 +102,28 @@ public class StackTest {
     }
 
     @Test
+    public void testIllegalSetNegative() throws Exception {
+        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
+            Stack<String> stack = new Stack<String>();
+            stack.set(-1, "illegal");
+        });
+    }
+
+    @Test
     public void testIllegalRemove() throws Exception {
         Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
             Stack<String> stack = new Stack<String>();
             stack.remove(1);
+        });
+    }
+
+    @Test
+    public void testIllegalRemoveNegative() throws Exception {
+        Stack<String> stack = new Stack<String>();
+        stack.push("one");
+
+        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
+            stack.remove(-2);
         });
     }
 }
