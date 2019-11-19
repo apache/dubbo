@@ -18,6 +18,7 @@ package org.apache.dubbo.config.spring.context.annotation;
 
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.spring.beans.factory.annotation.DubboConfigAliasPostProcessor;
+import org.apache.dubbo.config.spring.context.config.NamePropertyDefaultValueDubboConfigBeanCustomizer;
 
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
@@ -27,6 +28,7 @@ import org.springframework.core.type.AnnotationMetadata;
 
 import static com.alibaba.spring.util.AnnotatedBeanDefinitionRegistryUtils.registerBeans;
 import static com.alibaba.spring.util.BeanRegistrar.registerInfrastructureBean;
+import static org.apache.dubbo.config.spring.context.config.NamePropertyDefaultValueDubboConfigBeanCustomizer.BEAN_NAME;
 
 /**
  * Dubbo {@link AbstractConfig Config} {@link ImportBeanDefinitionRegistrar register}, which order can be configured
@@ -55,6 +57,14 @@ public class DubboConfigConfigurationRegistrar implements ImportBeanDefinitionRe
 
         // Register DubboConfigAliasPostProcessor
         registerDubboConfigAliasPostProcessor(registry);
+
+        // Register NamePropertyDefaultValueDubboConfigBeanCustomizer
+        registerDubboConfigBeanCustomizers(registry);
+
+    }
+
+    private void registerDubboConfigBeanCustomizers(BeanDefinitionRegistry registry) {
+        registerInfrastructureBean(registry, BEAN_NAME, NamePropertyDefaultValueDubboConfigBeanCustomizer.class);
     }
 
     /**

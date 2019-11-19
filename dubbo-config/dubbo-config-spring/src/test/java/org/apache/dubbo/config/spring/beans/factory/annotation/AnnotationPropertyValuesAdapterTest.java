@@ -67,9 +67,19 @@ public class AnnotationPropertyValuesAdapterTest {
 
         DefaultConversionService conversionService = new DefaultConversionService();
 
-        conversionService.addConverter((Converter<String[], String>) source -> arrayToCommaDelimitedString(source));
+        conversionService.addConverter(new Converter<String[], String>() {
+            @Override
+            public String convert(String[] source) {
+                return arrayToCommaDelimitedString(source);
+            }
+        });
 
-        conversionService.addConverter((Converter<String[], Map<String, String>>) source -> CollectionUtils.toStringMap(source));
+        conversionService.addConverter(new Converter<String[], Map<String, String>>() {
+            @Override
+            public Map<String, String> convert(String[] source) {
+                return CollectionUtils.toStringMap(source);
+            }
+        });
 
 
         dataBinder.setConversionService(conversionService);
