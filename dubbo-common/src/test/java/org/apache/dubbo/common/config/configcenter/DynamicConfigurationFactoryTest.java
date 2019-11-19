@@ -34,6 +34,6 @@ public class DynamicConfigurationFactoryTest {
     public void testDefaultExtension() {
         DynamicConfigurationFactory factory = getExtensionLoader(DynamicConfigurationFactory.class).getDefaultExtension();
         assertEquals(NopDynamicConfigurationFactory.class, factory.getClass());
-        assertEquals(factory, getExtensionLoader(DynamicConfigurationFactory.class).getExtension("nop"));
+        assertEquals(NopDynamicConfigurationFactory.class, getExtensionLoader(DynamicConfigurationFactory.class).getExtension("nop").getClass());
     }
 }
