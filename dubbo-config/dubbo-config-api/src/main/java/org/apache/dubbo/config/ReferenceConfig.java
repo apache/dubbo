@@ -371,7 +371,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
 
     private Class<?> getActualInterface() {
         Class actualInterface = interfaceClass;
-        if (interfaceClass == GenericService.class) {
+        if (interfaceClass != GenericService.class) {
             try {
                 actualInterface = Class.forName(interfaceName);
             } catch (ClassNotFoundException e) {
