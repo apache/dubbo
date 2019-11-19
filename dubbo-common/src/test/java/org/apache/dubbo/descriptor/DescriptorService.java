@@ -14,23 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.config.configcenter.file;
+package org.apache.dubbo.descriptor;
 
-import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
+public interface DescriptorService {
 
-import org.junit.jupiter.api.Test;
+    void noParameterMethod();
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-/**
- * {@link FileSystemDynamicConfigurationFactory} Test
- *
- * @since 2.7.5
- */
-public class FileSystemDynamicConfigurationFactoryTest {
-
-    @Test
-    public void testGetFactory() {
-        assertEquals(FileSystemDynamicConfigurationFactory.class, DynamicConfigurationFactory.getDynamicConfigurationFactory("file").getClass());
-    }
 }

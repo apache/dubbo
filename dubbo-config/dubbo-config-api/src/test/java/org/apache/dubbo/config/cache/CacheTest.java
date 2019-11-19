@@ -29,7 +29,6 @@ import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,12 +48,12 @@ public class CacheTest {
 
     @BeforeEach
     public void setUp() {
-        ApplicationModel.getConfigManager().clear();
+//        ApplicationModel.getConfigManager().clear();
     }
 
     @AfterEach
     public void tearDown() {
-        ApplicationModel.getConfigManager().clear();
+//        ApplicationModel.getConfigManager().clear();
     }
 
     private void testCache(String type) throws Exception {

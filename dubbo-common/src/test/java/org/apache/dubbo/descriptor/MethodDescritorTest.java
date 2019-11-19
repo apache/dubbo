@@ -14,23 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.config.configcenter.file;
+package org.apache.dubbo.descriptor;
 
-import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
+import org.apache.dubbo.rpc.model.MethodDescriptor;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import java.lang.reflect.Method;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-/**
- * {@link FileSystemDynamicConfigurationFactory} Test
- *
- * @since 2.7.5
- */
-public class FileSystemDynamicConfigurationFactoryTest {
-
+public class MethodDescritorTest {
     @Test
-    public void testGetFactory() {
-        assertEquals(FileSystemDynamicConfigurationFactory.class, DynamicConfigurationFactory.getDynamicConfigurationFactory("file").getClass());
+    public void testMethodWithNoParameters() throws Exception {
+        Method method = DescriptorService.class.getMethod("noParameterMethod");
+        MethodDescriptor descriptor = new MethodDescriptor(method);
+        assertEquals("", descriptor.getParamDesc());
+        Assertions.assertEquals(0, descriptor.getParameterClasses().length);
     }
 }

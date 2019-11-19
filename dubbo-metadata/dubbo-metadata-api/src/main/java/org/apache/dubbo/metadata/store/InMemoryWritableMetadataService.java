@@ -28,7 +28,6 @@ import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import com.google.gson.Gson;
 
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.SortedSet;
@@ -87,8 +86,19 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
         return getAllUnmodifiableServiceURLs(subscribedServiceURLs);
     }
 
-    SortedSet<String> getAllUnmodifiableServiceURLs(Map<String, SortedSet<URL>> serviceURLs) {
-        return MetadataService.toSortedStrings(serviceURLs.values().stream().flatMap(Collection::stream));
+    private SortedSet<String> getAllUnmodifiableServiceURLs(Map<String, SortedSet<URL>> serviceURLs) {
+        SortedSet<URL> bizURLs = new TreeSet<>(InMemoryWritableMetadataService.URLComparator.INSTANCE);
+        for (Map.Entry<String, SortedSet<URL>> entry : serviceURLs.entrySet()) {
+            SortedSet<URL> urls = entry.getValue();
+            if (urls != null) {
+                for (URL url : urls) {
+                    if (!MetadataService.class.getName().equals(url.getServiceInterface())) {
+                        bizURLs.add(url);
+                    }
+                }
+            }
+        }
+        return MetadataService.toSortedStrings(bizURLs);
     }
 
     @Override

@@ -151,7 +151,7 @@ public class ZookeeperDynamicConfigurationTest {
 
         Set<String> configKeys = configuration.getConfigKeys(group);
 
-        assertEquals(new TreeSet(asList(content)), configKeys);
+        assertEquals(new TreeSet(asList(key, key2)), configKeys);
     }
 
     private class TestListener implements ConfigurationListener {

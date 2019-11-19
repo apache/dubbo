@@ -431,6 +431,9 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public ApplicationConfig getApplication() {
+        if (application != null) {
+            return application;
+        }
         return ApplicationModel.getConfigManager().getApplicationOrElseThrow();
     }
 
@@ -447,6 +450,9 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public ModuleConfig getModule() {
+        if (module != null) {
+            return module;
+        }
         return ApplicationModel.getConfigManager().getModule().orElse(null);
     }
 
@@ -504,6 +510,9 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
 
     public MonitorConfig getMonitor() {
+        if (monitor != null) {
+            return monitor;
+        }
         return ApplicationModel.getConfigManager().getMonitor().orElse(null);
     }
 
@@ -551,7 +560,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             ConfigManager configManager = ApplicationModel.getConfigManager();
             Collection<ConfigCenterConfig> configs = configManager.getConfigCenters();
             if (CollectionUtils.isEmpty(configs)
-                    || configs.stream().noneMatch(existed -> existed.getAddress().equals(configCenter.getAddress()))) {
+                    || configs.stream().noneMatch(existed -> existed.equals(configCenter))) {
                 configManager.addConfigCenter(configCenter);
             }
         }
@@ -591,7 +600,14 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     @Deprecated
     public MetadataReportConfig getMetadataReportConfig() {
-        return metadataReportConfig;
+        if (metadataReportConfig != null) {
+            return metadataReportConfig;
+        }
+        Collection<MetadataReportConfig> metadataReportConfigs = ApplicationModel.getConfigManager().getMetadataConfigs();
+        if (CollectionUtils.isNotEmpty(metadataReportConfigs)) {
+            return metadataReportConfigs.iterator().next();
+        }
+        return null;
     }
 
     @Deprecated
@@ -601,7 +617,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             ConfigManager configManager = ApplicationModel.getConfigManager();
             Collection<MetadataReportConfig> configs = configManager.getMetadataConfigs();
             if (CollectionUtils.isEmpty(configs)
-                    || configs.stream().noneMatch(existed -> existed.getAddress().equals(metadataReportConfig.getAddress()))) {
+                    || configs.stream().noneMatch(existed -> existed.equals(metadataReportConfig))) {
                 configManager.addMetadataReport(metadataReportConfig);
             }
         }
@@ -609,6 +625,9 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     @Deprecated
     public MetricsConfig getMetrics() {
+        if (metrics != null) {
+            return metrics;
+        }
         return ApplicationModel.getConfigManager().getMetrics().orElse(null);
     }
 

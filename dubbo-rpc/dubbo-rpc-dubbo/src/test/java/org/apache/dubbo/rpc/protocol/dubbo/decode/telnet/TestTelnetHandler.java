@@ -14,23 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.config.configcenter.file;
+package org.apache.dubbo.rpc.protocol.dubbo.decode.telnet;
 
-import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
-
-import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.remoting.Channel;
+import org.apache.dubbo.remoting.telnet.TelnetHandler;
+import org.apache.dubbo.remoting.telnet.support.Help;
 
 /**
- * {@link FileSystemDynamicConfigurationFactory} Test
- *
- * @since 2.7.5
+ * ListTelnetHandler handler list services and its methods details.
  */
-public class FileSystemDynamicConfigurationFactoryTest {
+@Activate
+@Help(summary = "test telnet command.", detail = "test telnet command.")
+public class TestTelnetHandler implements TelnetHandler {
 
-    @Test
-    public void testGetFactory() {
-        assertEquals(FileSystemDynamicConfigurationFactory.class, DynamicConfigurationFactory.getDynamicConfigurationFactory("file").getClass());
+    @Override
+    public String telnet(Channel channel, String message) {
+        return "TestTelnetHandler";
     }
 }
