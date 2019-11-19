@@ -52,6 +52,15 @@ import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 
 /**
  * Apollo implementation, https://github.com/ctripcorp/apollo
+ *
+ * Apollo will be used for management of both governance rules and .properties files, by default, these two different
+ * kinds of data share the same namespace 'dubbo'. To gain better performance, we recommend separate them by giving
+ * namespace and group different values, for example:
+ *
+ * <dubbo:config-center namespace="governance" group="dubbo" />, 'dubbo=governance' is for governance rules while
+ * 'group=dubbo' is for properties files.
+ *
+ * Please see http://dubbo.apache.org/zh-cn/docs/user/configuration/config-center.html for details.
  */
 public class ApolloDynamicConfiguration implements DynamicConfiguration {
     private static final Logger logger = LoggerFactory.getLogger(ApolloDynamicConfiguration.class);
@@ -150,15 +159,30 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
         return dubboConfig.getProperty(key, null);
     }
 
+    /**
+     * Recommend specify namespace and group when using Apollo.
+     * <p>
+     * <dubbo:config-center namespace="governance" group="dubbo" />, 'dubbo=governance' is for governance rules while
+     * 'group=dubbo' is for properties files.
+     *
+     * @param key     default value is 'dubbo.properties', currently useless for Apollo.
+     * @param group
+     * @param timeout
+     * @return
+     * @throws IllegalStateException
+     */
     @Override
     public String getProperties(String key, String group, long timeout) throws IllegalStateException {
-        // Apollo does not allow namespace ends with '.properties', '.yaml', ...
-        if (key.endsWith(".properties")) {
-            key = key.replace(".properties", "-properties");
+        if (StringUtils.isEmpty(group)) {
+            return dubboConfigFile.getContent();
         }
-        ConfigFile configFile = ConfigService.getConfigFile(key, ConfigFileFormat.Properties);
+        if (group.equals(url.getParameter(APPLICATION_KEY))) {
+            return ConfigService.getConfigFile(APOLLO_APPLICATION_KEY, ConfigFileFormat.Properties).getContent();
+        }
+
+        ConfigFile configFile = ConfigService.getConfigFile(group, ConfigFileFormat.Properties);
         if (configFile == null) {
-            throw new IllegalStateException("There is no namespace named " + key + " in Apollo.");
+            throw new IllegalStateException("There is no namespace named " + group + " in Apollo.");
         }
         return configFile.getContent();
     }

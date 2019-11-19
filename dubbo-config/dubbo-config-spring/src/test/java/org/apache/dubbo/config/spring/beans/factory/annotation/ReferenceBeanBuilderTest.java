@@ -22,6 +22,7 @@ import org.apache.dubbo.config.spring.ReferenceBean;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -116,7 +117,7 @@ public class ReferenceBeanBuilderTest {
         Assert.assertEquals(parameters, referenceBean.getParameters());
 
         // Asserts Null fields
-        Assert.assertNull(referenceBean.getApplication());
+        Assertions.assertThrows(IllegalStateException.class, () -> referenceBean.getApplication());
         Assert.assertNull(referenceBean.getModule());
         Assert.assertNull(referenceBean.getConsumer());
         Assert.assertNull(referenceBean.getMonitor());

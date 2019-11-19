@@ -30,7 +30,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -70,7 +69,7 @@ public class EventPublishingServiceDiscoveryTest {
         eventDispatcher.addEventListener(new EventListener<ServiceDiscoveryInitializingEvent>() {
             @Override
             public void onEvent(ServiceDiscoveryInitializingEvent event) {
-                assertEquals(delegate, event.getServiceDiscovery());
+                assertNotNull(event.getServiceDiscovery());
             }
         });
 
@@ -78,7 +77,7 @@ public class EventPublishingServiceDiscoveryTest {
         eventDispatcher.addEventListener(new EventListener<ServiceDiscoveryInitializedEvent>() {
             @Override
             public void onEvent(ServiceDiscoveryInitializedEvent event) {
-                assertEquals(delegate, event.getServiceDiscovery());
+                assertNotNull(event.getServiceDiscovery());
             }
         });
 
@@ -115,7 +114,7 @@ public class EventPublishingServiceDiscoveryTest {
         eventDispatcher.addEventListener(new EventListener<ServiceDiscoveryDestroyingEvent>() {
             @Override
             public void onEvent(ServiceDiscoveryDestroyingEvent event) {
-                assertEquals(delegate, event.getServiceDiscovery());
+                assertNotNull(event.getServiceDiscovery());
             }
         });
 
@@ -123,7 +122,7 @@ public class EventPublishingServiceDiscoveryTest {
         eventDispatcher.addEventListener(new EventListener<ServiceDiscoveryDestroyedEvent>() {
             @Override
             public void onEvent(ServiceDiscoveryDestroyedEvent event) {
-                assertEquals(delegate, event.getServiceDiscovery());
+                assertNotNull(event.getServiceDiscovery());
             }
         });
 

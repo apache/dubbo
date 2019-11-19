@@ -149,7 +149,7 @@ public class ZookeeperDynamicConfigurationTest {
         assertTrue(configuration.publishConfig(key, group, content));
         assertTrue(configuration.publishConfig(key2, group, content));
 
-        Set<String> configKeys = configuration.getConfigKeys(group);
+        Set<String> configKeys = configuration.getConfigKeys(group, key);
 
         assertEquals(new TreeSet(asList(content)), configKeys);
     }
