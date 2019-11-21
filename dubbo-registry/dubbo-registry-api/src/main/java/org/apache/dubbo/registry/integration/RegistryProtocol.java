@@ -718,4 +718,20 @@ public class RegistryProtocol implements Protocol {
             this.registerUrl = registerUrl;
         }
     }
+
+    // for unit test
+    private static RegistryProtocol INSTANCE;
+
+    // for unit test
+    public RegistryProtocol() {
+        INSTANCE = this;
+    }
+
+    // for unit test
+    public static RegistryProtocol getRegistryProtocol() {
+        if (INSTANCE == null) {
+            ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(REGISTRY_PROTOCOL); // load
+        }
+        return INSTANCE;
+    }
 }
