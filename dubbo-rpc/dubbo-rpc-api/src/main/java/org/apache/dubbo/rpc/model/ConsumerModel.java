@@ -43,8 +43,11 @@ public class ConsumerModel {
     }
 
     public void init(Map<String, Object> attributes) {
-        for (Method method : serviceMetadata.getServiceType().getMethods()) {
-            methodModels.put(method, new ConsumerMethodModel(method, attributes));
+        Class[] interfaceList = serviceMetadata.getTarget().getClass().getInterfaces();
+        for (Class interfaceClass : interfaceList) {
+            for (Method method : interfaceClass.getMethods()) {
+                methodModels.put(method, new ConsumerMethodModel(method, attributes));
+            }
         }
     }
 
@@ -88,7 +91,7 @@ public class ConsumerModel {
     public ConsumerMethodModel getMethodModel(String method, String[] argsType) {
         Optional<ConsumerMethodModel> consumerMethodModel = methodModels.entrySet().stream()
                 .filter(entry -> entry.getKey().getName().equals(method))
-                .map(Map.Entry::getValue).filter(methodModel ->  Arrays.equals(argsType, methodModel.getParameterTypes()))
+                .map(Map.Entry::getValue).filter(methodModel -> Arrays.equals(argsType, methodModel.getParameterTypes()))
                 .findFirst();
         return consumerMethodModel.orElse(null);
     }
