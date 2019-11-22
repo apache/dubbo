@@ -57,12 +57,13 @@ public class AbstractInterfaceConfigTest {
 
     @Test
     public void testCheckRegistry1() {
-        System.setProperty("dubbo.registry.address", "addr1|addr2");
+        System.setProperty("dubbo.registry.address", "addr1");
         try {
             InterfaceConfig interfaceConfig = new InterfaceConfig();
             interfaceConfig.setApplication(new ApplicationConfig("testCheckRegistry1"));
             interfaceConfig.checkRegistry();
-            Assertions.assertEquals(2, interfaceConfig.getRegistries().size());
+            Assertions.assertEquals(1, interfaceConfig.getRegistries().size());
+            Assertions.assertEquals("addr1", interfaceConfig.getRegistries().get(0).getAddress());
         } finally {
             System.clearProperty("dubbo.registry.address");
         }
