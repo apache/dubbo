@@ -608,12 +608,7 @@ public class PojoUtils {
             }
         }
         if (result != null) {
-            ConcurrentMap<String, Field> fields = CLASS_FIELD_CACHE.get(cls);
-            if (fields == null) {
-                fields = new ConcurrentHashMap<String, Field>();
-                CLASS_FIELD_CACHE.putIfAbsent(cls, fields);
-            }
-            fields = CLASS_FIELD_CACHE.get(cls);
+            ConcurrentMap<String, Field> fields = CLASS_FIELD_CACHE.computeIfAbsent(cls, k -> new ConcurrentHashMap<>());
             fields.putIfAbsent(fieldName, result);
         }
         return result;

@@ -92,12 +92,7 @@ public class MonitorFilter implements Filter, Filter.Listener {
     // concurrent counter
     private AtomicInteger getConcurrent(Invoker<?> invoker, Invocation invocation) {
         String key = invoker.getInterface().getName() + "." + invocation.getMethodName();
-        AtomicInteger concurrent = concurrents.get(key);
-        if (concurrent == null) {
-            concurrents.putIfAbsent(key, new AtomicInteger());
-            concurrent = concurrents.get(key);
-        }
-        return concurrent;
+        return concurrents.computeIfAbsent(key, k -> new AtomicInteger());
     }
 
     @Override
