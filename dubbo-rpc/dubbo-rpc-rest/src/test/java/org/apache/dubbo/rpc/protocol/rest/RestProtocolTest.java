@@ -271,7 +271,7 @@ public class RestProtocolTest {
     private void registerProvider(URL url, Object impl, Class<?> interfaceClass) {
         ServiceDescriptor serviceDescriptor = repository.registerService(interfaceClass);
         repository.registerProvider(
-                url.getPathKey(),
+                url.getServiceKey(),
                 impl,
                 serviceDescriptor,
                 null,
