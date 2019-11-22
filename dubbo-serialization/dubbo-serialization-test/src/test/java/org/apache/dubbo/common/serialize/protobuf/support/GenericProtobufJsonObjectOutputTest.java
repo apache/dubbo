@@ -167,10 +167,10 @@ public class GenericProtobufJsonObjectOutputTest {
 
     @Test
     public void testWriteMap() throws IOException {
-        Map<String, String> map = new HashMap<>();
+        Map<String, Object> map = new HashMap<>();
         map.put("key", "hello");
         map.put("value", "dubbo");
-        this.genericProtobufObjectOutput.writeObject(map);
+        this.genericProtobufObjectOutput.writeAttachments(map);
         this.flushToInput();
         assertThat(genericProtobufObjectInput.readObject(Map.class), is(map));
     }
@@ -180,10 +180,10 @@ public class GenericProtobufJsonObjectOutputTest {
     void testWriteMultiType() throws IOException {
         long random = new Random().nextLong();
         this.genericProtobufObjectOutput.writeLong(random);
-        Map<String, String> map = new HashMap<>();
+        Map<String, Object> map = new HashMap<>();
         map.put("key", "hello");
         map.put("value", "world");
-        this.genericProtobufObjectOutput.writeObject(map);
+        this.genericProtobufObjectOutput.writeAttachments(map);
         final int length = new Random().nextInt(100);
         byte[] bytes = new byte[length];
         new Random().nextBytes(bytes);

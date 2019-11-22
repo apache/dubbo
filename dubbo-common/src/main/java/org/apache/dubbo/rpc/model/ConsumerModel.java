@@ -31,7 +31,7 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * This model is bind to your reference's configuration, for example, group, version or method level configuration.
+ * This model is bound to your reference's configuration, for example, group, version or method level configuration.
  */
 public class ConsumerModel {
     private final String serviceKey;
