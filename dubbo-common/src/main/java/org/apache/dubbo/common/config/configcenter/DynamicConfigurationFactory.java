@@ -25,7 +25,7 @@ import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoad
 /**
  * The factory interface to create the instance of {@link DynamicConfiguration}
  */
-@SPI("nop")
+@SPI("nop") // 2.7.5 change the default SPI implementation
 public interface DynamicConfigurationFactory {
 
     DynamicConfiguration getDynamicConfiguration(URL url);
@@ -41,6 +41,6 @@ public interface DynamicConfigurationFactory {
     static DynamicConfigurationFactory getDynamicConfigurationFactory(String name) {
         Class<DynamicConfigurationFactory> factoryClass = DynamicConfigurationFactory.class;
         ExtensionLoader<DynamicConfigurationFactory> loader = getExtensionLoader(factoryClass);
-        return loader.hasExtension(name) ? loader.getExtension(name) : loader.getDefaultExtension();
+        return loader.getOrDefaultExtension(name);
     }
 }

@@ -28,7 +28,7 @@ import java.util.function.Function;
  * The enumeration for the parameters  of {@link CuratorFramework}
  *
  * @see CuratorFramework
- * @since 2.7.4
+ * @since 2.7.5
  */
 public enum CuratorFrameworkParams {
 

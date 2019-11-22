@@ -39,7 +39,7 @@ import static org.springframework.beans.factory.BeanFactoryUtils.beansOfTypeIncl
  *
  * @see {@link Lifecycle Dubbo Lifecycle}
  * @see SmartApplicationListener
- * @since 2.7.4
+ * @since 2.7.5
  */
 public class DubboLifecycleComponentApplicationListener implements ApplicationListener {
 

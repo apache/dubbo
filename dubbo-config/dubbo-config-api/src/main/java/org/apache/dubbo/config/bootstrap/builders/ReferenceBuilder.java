@@ -19,7 +19,7 @@ package org.apache.dubbo.config.bootstrap.builders;
 import org.apache.dubbo.config.ConsumerConfig;
 import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.ReferenceConfig;
-import org.apache.dubbo.config.service.ReferenceConfigBase;
+import org.apache.dubbo.config.ReferenceConfigBase;
 
 import java.util.ArrayList;
 import java.util.List;

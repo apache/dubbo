@@ -112,6 +112,7 @@ public class ApplicationModel {
         return application == null ? getName() : application;
     }
 
+    // Currently used by UT.
     @Deprecated
     public static void setApplication(String application) {
         ApplicationModel.application = application;
@@ -123,4 +124,5 @@ public class ApplicationModel {
         getConfigManager().destroy();
         getEnvironment().destroy();
     }
+
 }

@@ -232,6 +232,12 @@
                         <xsd:documentation><![CDATA[ lazy create connection. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
+                <xsd:attribute name="provided-by" type="xsd:string">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            <![CDATA[ declares which app or service this interface belongs to. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
@@ -1474,7 +1480,7 @@
             <xsd:documentation><![CDATA[ Export service config ]]></xsd:documentation>
             <xsd:appinfo>
                 <tool:annotation>
-                    <tool:exports type="org.apache.dubbo.config.service.ServiceConfigBase"/>
+                    <tool:exports type="org.apache.dubbo.config.ServiceConfigBase"/>
                 </tool:annotation>
             </xsd:appinfo>
         </xsd:annotation>
@@ -1485,7 +1491,7 @@
             <xsd:documentation><![CDATA[ Reference service config ]]></xsd:documentation>
             <xsd:appinfo>
                 <tool:annotation>
-                    <tool:exports type="org.apache.dubbo.config.service.ReferenceConfigBase"/>
+                    <tool:exports type="org.apache.dubbo.config.ReferenceConfigBase"/>
                 </tool:annotation>
             </xsd:appinfo>
         </xsd:annotation>

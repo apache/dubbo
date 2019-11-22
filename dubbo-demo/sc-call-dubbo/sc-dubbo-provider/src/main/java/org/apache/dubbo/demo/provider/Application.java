@@ -40,8 +40,7 @@ public class Application {
                 .registry(new RegistryConfig("consul://127.0.0.1:8500?registry-type=service"))
                 .protocol(protocolConfig)
                 .service(service)
-                .start();
-
-        System.in.read();
+                .start()
+                .await();
     }
 }

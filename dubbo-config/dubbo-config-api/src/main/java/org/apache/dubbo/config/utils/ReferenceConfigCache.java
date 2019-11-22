@@ -18,7 +18,7 @@ package org.apache.dubbo.config.utils;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.config.service.ReferenceConfigBase;
+import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.service.Destroyable;
 
@@ -222,6 +222,7 @@ public class ReferenceConfigCache {
         }
 
         referredReferences.forEach((_k, referenceConfig) -> {
+            referenceConfig.destroy();
             ApplicationModel.getConfigManager().removeConfig(referenceConfig);
         });
 

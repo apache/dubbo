@@ -24,7 +24,7 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
-import static org.apache.dubbo.config.spring.util.ObjectUtils.of;
+import static com.alibaba.spring.util.ObjectUtils.of;
 import static org.springframework.beans.BeanUtils.getPropertyDescriptor;
 
 /**

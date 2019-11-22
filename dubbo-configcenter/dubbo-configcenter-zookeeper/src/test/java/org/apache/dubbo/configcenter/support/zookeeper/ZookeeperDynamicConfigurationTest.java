@@ -140,11 +140,11 @@ public class ZookeeperDynamicConfigurationTest {
     @Test
     public void testGetConfigKeysAndContents() {
 
-        String key = "user-service";
-        String group = "org.apache.dubbo.service.UserService";
-        String content = "test";
+        String group = "mapping";
+        String key = "org.apache.dubbo.service.UserService";
+        String content = "app1";
 
-        String key2 = "user-service-1";
+        String key2 = "org.apache.dubbo.service.UserService2";
 
         assertTrue(configuration.publishConfig(key, group, content));
         assertTrue(configuration.publishConfig(key2, group, content));
@@ -152,12 +152,6 @@ public class ZookeeperDynamicConfigurationTest {
         Set<String> configKeys = configuration.getConfigKeys(group);
 
         assertEquals(new TreeSet(asList(key, key2)), configKeys);
-
-        Map<String, String> configs = configuration.getConfigs(group);
-
-        assertEquals(configs.keySet(), configKeys);
-
-        configs.forEach((k, value) -> assertEquals(content, value));
     }
 
     private class TestListener implements ConfigurationListener {

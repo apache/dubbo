@@ -60,9 +60,26 @@ public class ApolloDynamicConfigurationTest {
     @Before
     public void setUp() {
         String apolloUrl = System.getProperty("apollo.configService");
-        String urlForDubbo = "apollo://" + apolloUrl.substring(apolloUrl.lastIndexOf("/") + 1) + "/org.apache.dubbo.apollo.testService?config.namespace=dubbo";
+        String urlForDubbo = "apollo://" + apolloUrl.substring(apolloUrl.lastIndexOf("/") + 1) + "/org.apache.dubbo.apollo.testService?namespace=dubbo&check=true";
         url = URL.valueOf(urlForDubbo).addParameter(SESSION_TIMEOUT_KEY, 15000);
     }
+
+//    /**
+//     * Embedded Apollo does not work as expected.
+//     */
+//    @Test
+//    public void testProperties() {
+//        URL url = this.url.addParameter(GROUP_KEY, "dubbo")
+//                .addParameter("namespace", "governance");
+//
+//        apolloDynamicConfiguration = new ApolloDynamicConfiguration(url);
+//        putData("dubbo", "dubbo.registry.address", "zookeeper://127.0.0.1:2181");
+//        assertEquals("zookeeper://127.0.0.1:2181", apolloDynamicConfiguration.getProperties(null, "dubbo"));
+//
+//        putData("governance", "router.tag", "router tag rule");
+//        assertEquals("router tag rule", apolloDynamicConfiguration.getConfig("router.tag", "governance"));
+//
+//    }
 
     /**
      * Test get rule.
@@ -127,6 +144,10 @@ public class ApolloDynamicConfigurationTest {
         assertEquals(mockValue, result.getContent());
         assertEquals(mockKey, result.getKey());
         assertEquals(ConfigChangeType.MODIFIED, result.getChangeType());
+    }
+
+    private static void putData(String namespace, String key, String value) {
+        embeddedApollo.addOrModifyProperty(namespace, key, value);
     }
 
     private static void putData(String key, String value) {

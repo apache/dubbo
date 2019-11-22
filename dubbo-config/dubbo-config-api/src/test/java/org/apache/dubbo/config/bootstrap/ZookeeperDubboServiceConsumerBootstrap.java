@@ -21,7 +21,7 @@ import org.apache.dubbo.config.bootstrap.rest.UserService;
 /**
  * Dubbo Provider Bootstrap
  *
- * @since 2.7.4
+ * @since 2.7.5
  */
 public class ZookeeperDubboServiceConsumerBootstrap {
 
@@ -32,18 +32,17 @@ public class ZookeeperDubboServiceConsumerBootstrap {
                 .registry("zookeeper", builder -> builder.address("zookeeper://127.0.0.1:2181?registry-type=service&subscribed-services=zookeeper-dubbo-provider"))
                 .reference("echo", builder -> builder.interfaceClass(EchoService.class).protocol("dubbo"))
                 .reference("user", builder -> builder.interfaceClass(UserService.class).protocol("rest"))
-                .start()
-                .await();
+                .start();
 
         EchoService echoService = bootstrap.getCache().get(EchoService.class);
         UserService userService = bootstrap.getCache().get(UserService.class);
 
-        for (int i = 0; i < 500; i++) {
+        for (int i = 0; i < 5; i++) {
             Thread.sleep(2000L);
             System.out.println(echoService.echo("Hello,World"));
             System.out.println(userService.getUser(i * 1L));
         }
 
-
+        bootstrap.stop();
     }
 }

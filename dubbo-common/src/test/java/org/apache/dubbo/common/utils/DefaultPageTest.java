@@ -25,7 +25,7 @@ import static java.util.Arrays.asList;
 /**
  * {@link DefaultPage}
  *
- * @since 2.7.4
+ * @since 2.7.5
  */
 public class DefaultPageTest {
 

@@ -18,7 +18,7 @@ package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.config.service.ReferenceConfigBase;
+import org.apache.dubbo.config.ReferenceConfigBase;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -31,7 +31,7 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * This model is bind to your reference's configuration, for example, group, version or method level configuration.
+ * This model is bound to your reference's configuration, for example, group, version or method level configuration.
  */
 public class ConsumerModel {
     private final String serviceKey;

@@ -24,7 +24,6 @@ import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.mock.MockRegistry;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -137,13 +136,13 @@ public class InvokerSideConfigUrlTest extends UrlTestBase {
     public void setUp() {
         initServConf();
         initRefConf();
-        ApplicationModel.getConfigManager().clear();
+//        ApplicationModel.getConfigManager().clear();
     }
 
     @AfterEach()
     public void teardown() {
         //RegistryServer.reloadCache();
-        ApplicationModel.getConfigManager().clear();
+//        ApplicationModel.getConfigManager().clear();
     }
 
 

@@ -53,8 +53,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import static com.alibaba.spring.util.BeanRegistrar.registerInfrastructureBean;
 import static org.apache.dubbo.common.constants.CommonConstants.HIDE_KEY_PREFIX;
-import static org.apache.dubbo.config.spring.util.BeanRegistrar.registerInfrastructureBean;
 
 /**
  * AbstractBeanDefinitionParser
@@ -403,7 +403,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
      * Register {@link DubboConfigAliasPostProcessor}
      *
      * @param registry {@link BeanDefinitionRegistry}
-     * @since 2.7.4 [Feature] https://github.com/apache/dubbo/issues/5093
+     * @since 2.7.5 [Feature] https://github.com/apache/dubbo/issues/5093
      */
     private void registerDubboConfigAliasPostProcessor(BeanDefinitionRegistry registry) {
         registerInfrastructureBean(registry, DubboConfigAliasPostProcessor.BEAN_NAME, DubboConfigAliasPostProcessor.class);

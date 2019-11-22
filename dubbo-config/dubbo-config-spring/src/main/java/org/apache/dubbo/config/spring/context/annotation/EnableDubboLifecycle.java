@@ -30,7 +30,7 @@ import java.lang.annotation.Target;
 /**
  * Enables Dubbo {@link Lifecycle} components
  *
- * @since 2.7.4
+ * @since 2.7.5
  */
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)

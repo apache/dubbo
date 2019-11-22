@@ -34,6 +34,7 @@ import org.apache.dubbo.rpc.cluster.loadbalance.LeastActiveLoadBalance;
 import org.apache.dubbo.rpc.cluster.loadbalance.RoundRobinLoadBalance;
 import org.apache.dubbo.rpc.cluster.router.script.ScriptRouterFactory;
 import org.apache.dubbo.rpc.cluster.support.wrapper.MockClusterInvoker;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.service.GenericService;
 
 import org.junit.jupiter.api.Assertions;
@@ -91,7 +92,7 @@ public class RegistryDirectoryTest {
 
     @BeforeEach
     public void setUp() {
-
+        ApplicationModel.setApplication("RegistryDirectoryTest");
     }
 
     private RegistryDirectory getRegistryDirectory(URL url) {

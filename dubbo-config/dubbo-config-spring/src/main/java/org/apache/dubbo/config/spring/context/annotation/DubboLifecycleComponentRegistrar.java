@@ -23,12 +23,12 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.type.AnnotationMetadata;
 
-import static org.apache.dubbo.config.spring.util.AnnotatedBeanDefinitionRegistryUtils.registerBeans;
+import static com.alibaba.spring.util.AnnotatedBeanDefinitionRegistryUtils.registerBeans;
 
 /**
  * A {@link ImportBeanDefinitionRegistrar register} for the {@link Lifecycle Dubbo Lifecycle} components
  *
- * @since 2.7.4
+ * @since 2.7.5
  */
 public class DubboLifecycleComponentRegistrar implements ImportBeanDefinitionRegistrar {
 

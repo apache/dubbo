@@ -32,9 +32,10 @@ import org.springframework.context.annotation.PropertySource;
 
 import java.util.Map;
 
-import static org.apache.dubbo.config.spring.util.BeanRegistrar.hasAlias;
+import static com.alibaba.spring.util.BeanRegistrar.hasAlias;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 /**
  * {@link EnableDubboConfig} Test
