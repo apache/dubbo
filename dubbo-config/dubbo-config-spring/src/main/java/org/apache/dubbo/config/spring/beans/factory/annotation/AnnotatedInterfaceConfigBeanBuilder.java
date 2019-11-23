@@ -31,8 +31,8 @@ import org.springframework.util.Assert;
 import java.lang.annotation.Annotation;
 import java.util.List;
 
-import static org.apache.dubbo.config.spring.util.BeanFactoryUtils.getBeans;
-import static org.apache.dubbo.config.spring.util.BeanFactoryUtils.getNullableBean;
+import static com.alibaba.spring.util.BeanFactoryUtils.getBeans;
+import static com.alibaba.spring.util.BeanFactoryUtils.getOptionalBean;
 
 /**
  * An Abstract Builder to build {@link AbstractInterfaceConfig Interface Config} Bean that annotated
@@ -133,7 +133,7 @@ public abstract class AnnotatedInterfaceConfigBeanBuilder<C extends AbstractInte
 
         String monitorBeanName = resolveMonitorConfigBeanName(attributes);
 
-        MonitorConfig monitorConfig = getNullableBean(applicationContext, monitorBeanName, MonitorConfig.class);
+        MonitorConfig monitorConfig = getOptionalBean(applicationContext, monitorBeanName, MonitorConfig.class);
 
         configBean.setMonitor(monitorConfig);
 
@@ -144,7 +144,7 @@ public abstract class AnnotatedInterfaceConfigBeanBuilder<C extends AbstractInte
         String applicationConfigBeanName = resolveApplicationConfigBeanName(attributes);
 
         ApplicationConfig applicationConfig =
-                getNullableBean(applicationContext, applicationConfigBeanName, ApplicationConfig.class);
+                getOptionalBean(applicationContext, applicationConfigBeanName, ApplicationConfig.class);
 
         configBean.setApplication(applicationConfig);
 
@@ -155,7 +155,7 @@ public abstract class AnnotatedInterfaceConfigBeanBuilder<C extends AbstractInte
         String moduleConfigBeanName = resolveModuleConfigBeanName(attributes);
 
         ModuleConfig moduleConfig =
-                getNullableBean(applicationContext, moduleConfigBeanName, ModuleConfig.class);
+                getOptionalBean(applicationContext, moduleConfigBeanName, ModuleConfig.class);
 
         configBean.setModule(moduleConfig);
 

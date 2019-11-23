@@ -36,14 +36,14 @@ public class HttpRemoteInvocation extends RemoteInvocation {
 
     public HttpRemoteInvocation(MethodInvocation methodInvocation) {
         super(methodInvocation);
-        addAttribute(DUBBO_ATTACHMENTS_ATTR_NAME, new HashMap<String, String>(RpcContext.getContext().getAttachments()));
+        addAttribute(DUBBO_ATTACHMENTS_ATTR_NAME, new HashMap<String, Object>(RpcContext.getContext().getAttachments()));
     }
 
     @Override
     public Object invoke(Object targetObject) throws NoSuchMethodException, IllegalAccessException,
             InvocationTargetException {
         RpcContext context = RpcContext.getContext();
-        context.setAttachments((Map<String, String>) getAttribute(DUBBO_ATTACHMENTS_ATTR_NAME));
+        context.setAttachments((Map<String, Object>) getAttribute(DUBBO_ATTACHMENTS_ATTR_NAME));
 
         String generic = (String) getAttribute(GENERIC_KEY);
         if (StringUtils.isNotEmpty(generic)) {

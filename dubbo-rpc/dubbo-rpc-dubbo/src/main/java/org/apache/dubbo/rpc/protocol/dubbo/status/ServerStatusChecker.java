@@ -19,10 +19,11 @@ package org.apache.dubbo.rpc.protocol.dubbo.status;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.status.Status;
 import org.apache.dubbo.common.status.StatusChecker;
-import org.apache.dubbo.remoting.exchange.ExchangeServer;
+import org.apache.dubbo.remoting.RemotingServer;
+import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
-import java.util.Collection;
+import java.util.List;
 
 /**
  * ServerStatusChecker
@@ -32,13 +33,14 @@ public class ServerStatusChecker implements StatusChecker {
 
     @Override
     public Status check() {
-        Collection<ExchangeServer> servers = DubboProtocol.getDubboProtocol().getServers();
+        List<ProtocolServer> servers = DubboProtocol.getDubboProtocol().getServers();
         if (servers == null || servers.isEmpty()) {
             return new Status(Status.Level.UNKNOWN);
         }
         Status.Level level = Status.Level.OK;
         StringBuilder buf = new StringBuilder();
-        for (ExchangeServer server : servers) {
+        for (ProtocolServer protocolServer : servers) {
+            RemotingServer server = protocolServer.getRemotingServer();
             if (!server.isBound()) {
                 level = Status.Level.ERROR;
                 buf.setLength(0);
