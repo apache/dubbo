@@ -14,18 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.samples.microservices.sc;
+package org.apache.dubbo.config.spring.beans.factory;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
-import org.springframework.cloud.netflix.feign.EnableFeignClients;
+import org.apache.dubbo.config.spring.ServiceBean;
 
-@SpringBootApplication
-@EnableDiscoveryClient
-@EnableFeignClients()
-public class Application {
-    public static void main(String[] args) {
-        SpringApplication.run(Application.class, args);
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.BeanPostProcessor;
+
+public class ServiceBeanPostProcessor implements BeanPostProcessor {
+    @Override
+    public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+        return bean;
+    }
+
+    @Override
+    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+        if (bean instanceof ServiceBean) {
+            ((ServiceBean) bean).export();
+        }
+        return bean;
     }
 }

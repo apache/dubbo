@@ -19,7 +19,7 @@
                 <configuration>
                     <protocArtifact>com.google.protobuf:protoc:3.7.1:exe:${os.detected.classifier}</protocArtifact>
                     <pluginId>grpc-java</pluginId>
-                    <pluginArtifact>org.apache.dubbo:protoc-gen-grpc-java:${proto_dubbo_plugin_version}:exe:${os.detected.classifier}</pluginArtifact>
+                    <pluginArtifact>org.apache.dubbo:protoc-gen-dubbo-java:${proto_dubbo_plugin_version}:exe:${os.detected.classifier}</pluginArtifact>
                     <outputDirectory>build/generated/source/proto/main/java</outputDirectory>
                     <clearOutputDirectory>false</clearOutputDirectory>
                     <!-- supports 'dubbo' and 'grpc' -->
