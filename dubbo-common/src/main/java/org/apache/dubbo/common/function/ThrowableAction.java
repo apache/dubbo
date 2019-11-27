@@ -23,7 +23,7 @@ import java.util.function.Function;
  *
  * @see Function
  * @see Throwable
- * @since 2.7.4
+ * @since 2.7.5
  */
 @FunctionalInterface
 public interface ThrowableAction {

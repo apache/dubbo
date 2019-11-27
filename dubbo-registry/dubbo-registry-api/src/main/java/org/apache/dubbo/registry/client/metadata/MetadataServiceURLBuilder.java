@@ -25,7 +25,7 @@ import java.util.List;
 /**
  * Used to build metadata service url from ServiceInstance.
  *
- * @since 2.7.4
+ * @since 2.7.5
  */
 @SPI
 public interface MetadataServiceURLBuilder {

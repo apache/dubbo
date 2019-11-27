@@ -23,7 +23,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -77,24 +76,38 @@ public class ServiceDescriptor {
         return methodModels;
     }
 
-    public Optional<MethodDescriptor> getMethod(String methodName, String params) {
+    /**
+     * Does not use Optional as return type to avoid potential performance decrease.
+     *
+     * @param methodName
+     * @param params
+     * @return
+     */
+    public MethodDescriptor getMethod(String methodName, String params) {
         Map<String, MethodDescriptor> methods = descToMethods.get(methodName);
         if (CollectionUtils.isNotEmptyMap(methods)) {
-            return Optional.ofNullable(methods.get(params));
+            return methods.get(params);
         }
-        return Optional.empty();
+        return null;
     }
 
-    public Optional<MethodDescriptor> getMethod(String methodName, Class<?>[] paramTypes) {
+    /**
+     * Does not use Optional as return type to avoid potential performance decrease.
+     *
+     * @param methodName
+     * @param paramTypes
+     * @return
+     */
+    public MethodDescriptor getMethod(String methodName, Class<?>[] paramTypes) {
         Set<MethodDescriptor> methodModels = methods.get(methodName);
         if (CollectionUtils.isNotEmpty(methodModels)) {
             for (MethodDescriptor methodModel : methodModels) {
                 if (Arrays.equals(paramTypes, methodModel.getParameterClasses())) {
-                    return Optional.of(methodModel);
+                    return methodModel;
                 }
             }
         }
-        return Optional.empty();
+        return null;
     }
 
     public Set<MethodDescriptor> getMethods(String methodName) {

@@ -36,6 +36,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE_ASYNC;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_INVOCATION_PREFIX;
+import static org.apache.dubbo.rpc.Constants.$ECHO;
 import static org.apache.dubbo.rpc.Constants.ASYNC_KEY;
 import static org.apache.dubbo.rpc.Constants.AUTO_ATTACH_INVOCATIONID_KEY;
 import static org.apache.dubbo.rpc.Constants.ID_KEY;
@@ -189,6 +190,10 @@ public class RpcUtils {
 
     public static boolean isGenericCall(String path, String method) {
         return $INVOKE.equals(method) || $INVOKE_ASYNC.equals(method);
+    }
+
+    public static boolean isEcho(String path, String method) {
+        return $ECHO.equals(method);
     }
 
     public static InvokeMode getInvokeMode(URL url, Invocation inv) {

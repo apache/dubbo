@@ -128,9 +128,7 @@ class URL implements Serializable {
 
     private volatile transient String string;
 
-    private final transient String serviceKey;
-
-    private final transient String serviceInterface;
+    private transient String serviceKey;
 
     protected URL() {
         this.protocol = null;
@@ -141,8 +139,6 @@ class URL implements Serializable {
         this.path = null;
         this.parameters = null;
         this.methodParameters = null;
-        this.serviceKey = null;
-        this.serviceInterface = null;
     }
 
     public URL(String protocol, String host, int port) {
@@ -216,13 +212,6 @@ class URL implements Serializable {
         }
         this.parameters = Collections.unmodifiableMap(parameters);
         this.methodParameters = Collections.unmodifiableMap(methodParameters);
-
-        this.serviceInterface = getParameter(INTERFACE_KEY, path);
-        if (this.serviceInterface == null) {
-            this.serviceKey = null;
-        } else {
-            this.serviceKey = buildKey(serviceInterface, getParameter(GROUP_KEY), getParameter(VERSION_KEY));
-        }
     }
 
     /**
@@ -1410,6 +1399,14 @@ class URL implements Serializable {
      * @return
      */
     public String getServiceKey() {
+        if (serviceKey != null) {
+            return serviceKey;
+        }
+        String inf = getServiceInterface();
+        if (inf == null) {
+            return null;
+        }
+        serviceKey = buildKey(inf, getParameter(GROUP_KEY), getParameter(VERSION_KEY));
         return serviceKey;
     }
 

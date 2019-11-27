@@ -60,8 +60,9 @@ import static com.alibaba.nacos.api.PropertyKeyConst.SERVER_ADDR;
 import static com.alibaba.nacos.client.naming.utils.UtilAndComs.NACOS_NAMING_LOG_NAME;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_CHAR_SEPERATOR;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
+import static org.apache.dubbo.common.utils.StringUtils.HYPHEN_CHAR;
+import static org.apache.dubbo.common.utils.StringUtils.SLASH_CHAR;
 
 /**
  * The nacos implementation of {@link DynamicConfiguration}
@@ -122,31 +123,6 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
         return agent;
     }
 
-    public void publishNacosConfig(String key, String value) {
-        String[] keyAndGroup = getKeyAndGroup(key);
-        publishConfig(keyAndGroup[0], keyAndGroup[1], value);
-    }
-
-    @Override
-    public boolean publishConfig(String key, String group, String content) {
-        boolean published = false;
-        try {
-            published = configService.publishConfig(key, group, content);
-        } catch (NacosException e) {
-            logger.error(e.getErrMsg());
-        }
-        return published;
-    }
-
-    private String[] getKeyAndGroup(String key) {
-        int i = key.lastIndexOf(GROUP_CHAR_SEPERATOR);
-        if (i < 0) {
-            return new String[]{key, null};
-        } else {
-            return new String[]{key.substring(0, i), key.substring(i + 1)};
-        }
-    }
-
     private Properties buildNacosProperties(URL url) {
         Properties properties = new Properties();
         setServerAddr(url, properties);
@@ -201,10 +177,12 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
 
     @Override
     public void addListener(String key, String group, ConfigurationListener listener) {
-        NacosConfigListener nacosConfigListener = watchListenerMap.computeIfAbsent(key, k -> createTargetListener(key, group));
+        String resolvedGroup = resolveGroup(group);
+        String listenerKey = buildListenerKey(key, group);
+        NacosConfigListener nacosConfigListener = watchListenerMap.computeIfAbsent(listenerKey, k -> createTargetListener(key, resolvedGroup));
         nacosConfigListener.addListener(listener);
         try {
-            configService.addListener(key, group, nacosConfigListener);
+            configService.addListener(key, resolvedGroup, nacosConfigListener);
         } catch (NacosException e) {
             logger.error(e.getMessage());
         }
@@ -212,7 +190,8 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
 
     @Override
     public void removeListener(String key, String group, ConfigurationListener listener) {
-        NacosConfigListener eventListener = watchListenerMap.get(key);
+        String listenerKey = buildListenerKey(key, group);
+        NacosConfigListener eventListener = watchListenerMap.get(listenerKey);
         if (eventListener != null) {
             eventListener.removeListener(listener);
         }
@@ -220,12 +199,13 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
 
     @Override
     public String getConfig(String key, String group, long timeout) throws IllegalStateException {
+        String resolvedGroup = resolveGroup(group);
         try {
             long nacosTimeout = timeout < 0 ? DEFAULT_TIMEOUT : timeout;
-            if (StringUtils.isEmpty(group)) {
-                group = DEFAULT_GROUP;
+            if (StringUtils.isEmpty(resolvedGroup)) {
+                resolvedGroup = DEFAULT_GROUP;
             }
-            return configService.getConfig(key, group, nacosTimeout);
+            return configService.getConfig(key, resolvedGroup, nacosTimeout);
         } catch (NacosException e) {
             logger.error(e.getMessage());
         }
@@ -243,11 +223,40 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     }
 
     @Override
+    public boolean publishConfig(String key, String group, String content) {
+        boolean published = false;
+        String resolvedGroup = resolveGroup(group);
+        try {
+            String value = configService.getConfig(key, resolvedGroup, -1L);
+            if (StringUtils.isNotEmpty(value)) {
+                content = value + "," + content;
+            }
+            published = configService.publishConfig(key, resolvedGroup, content);
+        } catch (NacosException e) {
+            logger.error(e.getErrMsg());
+        }
+        return published;
+    }
+
+    /**
+     * TODO Nacos does not support atomic update of the value mapped to a key.
+     *
+     * @param key
+     * @param group the specified group
+     * @return
+     */
+    @Override
     public SortedSet<String> getConfigKeys(String group) {
         // TODO use Nacos Client API to replace HTTP Open API
         SortedSet<String> keys = new TreeSet<>();
         try {
-            List<String> paramsValues = asList("search", "accurate", "dataId", "", "group", group, "pageNo", "1", "pageSize", String.valueOf(Integer.MAX_VALUE));
+            List<String> paramsValues = asList(
+                    "search", "accurate",
+                    "dataId", "",
+                    "group", resolveGroup(group),
+                    "pageNo", "1",
+                    "pageSize", String.valueOf(Integer.MAX_VALUE)
+            );
             String encoding = getProperty(ENCODE, "UTF-8");
             HttpSimpleClient.HttpResult result = httpAgent.httpGet(GET_CONFIG_KEYS_PATH, emptyList(), paramsValues, encoding, 5 * 1000);
             Stream<String> keysStream = toKeysStream(result.content);
@@ -322,5 +331,13 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
             }
             return ConfigChangeType.MODIFIED;
         }
+    }
+
+    protected String buildListenerKey(String key, String group) {
+        return key + HYPHEN_CHAR + resolveGroup(group);
+    }
+
+    protected String resolveGroup(String group) {
+        return group.replace(SLASH_CHAR, HYPHEN_CHAR);
     }
 }

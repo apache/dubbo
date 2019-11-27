@@ -45,4 +45,21 @@ public class ScheduledCompletableFuture {
         return completableFuture;
     }
 
+    public static <T> CompletableFuture<T> submit(
+            ScheduledExecutorService executor,
+            Supplier<T> task
+    ) {
+        CompletableFuture<T> completableFuture = new CompletableFuture<>();
+        executor.submit(
+                () -> {
+                    try {
+                        return completableFuture.complete(task.get());
+                    } catch (Throwable t) {
+                        return completableFuture.completeExceptionally(t);
+                    }
+                }
+        );
+        return completableFuture;
+    }
+
 }

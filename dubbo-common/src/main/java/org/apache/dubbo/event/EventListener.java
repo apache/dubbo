@@ -35,7 +35,7 @@ import static org.apache.dubbo.common.utils.ReflectUtils.findParameterizedTypes;
  * @param <E> the concrete class of {@link Event Dubbo Event}
  * @see Event 
  * @see java.util.EventListener
- * @since 2.7.4
+ * @since 2.7.5
  */
 @SPI
 @FunctionalInterface

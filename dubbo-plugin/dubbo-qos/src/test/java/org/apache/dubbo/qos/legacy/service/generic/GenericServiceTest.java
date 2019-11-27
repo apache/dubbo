@@ -18,7 +18,6 @@
  */
 package org.apache.dubbo.qos.legacy.service.generic;
 
-import org.apache.dubbo.bootstrap.DubboBootstrap;
 import org.apache.dubbo.common.beanutil.JavaBeanAccessor;
 import org.apache.dubbo.common.beanutil.JavaBeanDescriptor;
 import org.apache.dubbo.common.beanutil.JavaBeanSerializeUtil;
@@ -27,9 +26,10 @@ import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
+import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
-import org.apache.dubbo.config.service.ReferenceConfig;
-import org.apache.dubbo.config.service.ServiceConfig;
+import org.apache.dubbo.config.ServiceConfig;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.utils.ReferenceConfigCache;
 import org.apache.dubbo.rpc.service.GenericException;
 import org.apache.dubbo.rpc.service.GenericService;

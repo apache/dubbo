@@ -172,7 +172,7 @@ public interface CommonConstants {
 
     String METADATA_KEY = "metadata";
 
-    String DEFAULT_METADATA_STORAGE_TYPE = "default";
+    String DEFAULT_METADATA_STORAGE_TYPE = "local";
 
     String REMOTE_METADATA_STORAGE_TYPE = "remote";
 

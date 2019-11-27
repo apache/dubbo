@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * {@link WritableMetadataService} Test
  *
- * @since 2.7.4
+ * @since 2.7.5
  */
 public class LocalMetadataServiceTest {
 

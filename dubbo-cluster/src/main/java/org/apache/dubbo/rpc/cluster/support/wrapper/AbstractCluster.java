@@ -18,13 +18,15 @@ package org.apache.dubbo.rpc.cluster.support.wrapper;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.rpc.ClusterInterceptor;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.Directory;
+import org.apache.dubbo.rpc.cluster.LoadBalance;
+import org.apache.dubbo.rpc.cluster.interceptor.ClusterInterceptor;
+import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
 
 import java.util.List;
 
@@ -32,70 +34,15 @@ import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_INTERC
 
 public abstract class AbstractCluster implements Cluster {
 
-    private <T> Invoker<T> buildClusterInterceptors(Invoker<T> invoker, String key) {
-        Invoker<T> last = invoker;
-        List<ClusterInterceptor> interceptors = ExtensionLoader.getExtensionLoader(ClusterInterceptor.class).getActivateExtension(invoker.getUrl(), key);
+    private <T> Invoker<T> buildClusterInterceptors(AbstractClusterInvoker<T> clusterInvoker, String key) {
+        AbstractClusterInvoker<T> last = clusterInvoker;
+        List<ClusterInterceptor> interceptors = ExtensionLoader.getExtensionLoader(ClusterInterceptor.class).getActivateExtension(clusterInvoker.getUrl(), key);
 
         if (!interceptors.isEmpty()) {
             for (int i = interceptors.size() - 1; i >= 0; i--) {
                 final ClusterInterceptor interceptor = interceptors.get(i);
-                final Invoker<T> next = last;
-                last = new Invoker<T>() {
-
-                    @Override
-                    public Class<T> getInterface() {
-                        return invoker.getInterface();
-                    }
-
-                    @Override
-                    public URL getUrl() {
-                        return invoker.getUrl();
-                    }
-
-                    @Override
-                    public boolean isAvailable() {
-                        return invoker.isAvailable();
-                    }
-
-                    @Override
-                    public Result invoke(Invocation invocation) throws RpcException {
-                        Result asyncResult;
-                        try {
-                            interceptor.before(next, invocation);
-                            asyncResult = interceptor.invoke(next, invocation);
-                        } catch (Exception e) {
-                            // onError callback
-                            if (interceptor instanceof ClusterInterceptor.Listener) {
-                                ClusterInterceptor.Listener listener = (ClusterInterceptor.Listener) interceptor;
-                                listener.onError(e, invoker, invocation);
-                            }
-                            throw e;
-                        } finally {
-                            interceptor.after(next, invocation);
-                        }
-                        return asyncResult.whenCompleteWithContext((r, t) -> {
-                            // onResponse callback
-                            if (interceptor instanceof ClusterInterceptor.Listener) {
-                                ClusterInterceptor.Listener listener = (ClusterInterceptor.Listener) interceptor;
-                                if (t == null) {
-                                    listener.onResponse(r, invoker, invocation);
-                                } else {
-                                    listener.onError(t, invoker, invocation);
-                                }
-                            }
-                        });
-                    }
-
-                    @Override
-                    public void destroy() {
-                        invoker.destroy();
-                    }
-
-                    @Override
-                    public String toString() {
-                        return invoker.toString();
-                    }
-                };
+                final AbstractClusterInvoker<T> next = last;
+                last = new InterceptorInvokerNode<>(clusterInvoker, interceptor, next);
             }
         }
         return last;
@@ -106,5 +53,80 @@ public abstract class AbstractCluster implements Cluster {
         return buildClusterInterceptors(doJoin(directory), directory.getUrl().getParameter(REFERENCE_INTERCEPTOR_KEY));
     }
 
-    protected abstract <T> Invoker<T> doJoin(Directory<T> directory) throws RpcException;
+    protected abstract <T> AbstractClusterInvoker<T> doJoin(Directory<T> directory) throws RpcException;
+
+    protected class InterceptorInvokerNode<T> extends AbstractClusterInvoker<T> {
+
+        private AbstractClusterInvoker<T> clusterInvoker;
+        private ClusterInterceptor interceptor;
+        private AbstractClusterInvoker<T> next;
+
+        public InterceptorInvokerNode(AbstractClusterInvoker<T> clusterInvoker,
+                                      ClusterInterceptor interceptor,
+                                      AbstractClusterInvoker<T> next) {
+            this.clusterInvoker = clusterInvoker;
+            this.interceptor = interceptor;
+            this.next = next;
+        }
+
+        @Override
+        public Class<T> getInterface() {
+            return clusterInvoker.getInterface();
+        }
+
+        @Override
+        public URL getUrl() {
+            return clusterInvoker.getUrl();
+        }
+
+        @Override
+        public boolean isAvailable() {
+            return clusterInvoker.isAvailable();
+        }
+
+        @Override
+        public Result invoke(Invocation invocation) throws RpcException {
+            Result asyncResult;
+            try {
+                interceptor.before(next, invocation);
+                asyncResult = interceptor.intercept(next, invocation);
+            } catch (Exception e) {
+                // onError callback
+                if (interceptor instanceof ClusterInterceptor.Listener) {
+                    ClusterInterceptor.Listener listener = (ClusterInterceptor.Listener) interceptor;
+                    listener.onError(e, clusterInvoker, invocation);
+                }
+                throw e;
+            } finally {
+                interceptor.after(next, invocation);
+            }
+            return asyncResult.whenCompleteWithContext((r, t) -> {
+                // onResponse callback
+                if (interceptor instanceof ClusterInterceptor.Listener) {
+                    ClusterInterceptor.Listener listener = (ClusterInterceptor.Listener) interceptor;
+                    if (t == null) {
+                        listener.onResponse(r, clusterInvoker, invocation);
+                    } else {
+                        listener.onError(t, clusterInvoker, invocation);
+                    }
+                }
+            });
+        }
+
+        @Override
+        public void destroy() {
+            clusterInvoker.destroy();
+        }
+
+        @Override
+        public String toString() {
+            return clusterInvoker.toString();
+        }
+
+        @Override
+        protected Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
+            // The only purpose is to build a interceptor chain, so the cluster related logic doesn't matter.
+            return null;
+        }
+    }
 }

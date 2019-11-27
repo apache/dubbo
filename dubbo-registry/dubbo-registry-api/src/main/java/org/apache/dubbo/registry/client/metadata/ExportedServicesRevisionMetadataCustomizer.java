@@ -31,7 +31,7 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
  * <p>
  * The reversion is calculated on the methods that all Dubbo exported interfaces declare
  *
- * @since 2.7.4
+ * @since 2.7.5
  */
 public class ExportedServicesRevisionMetadataCustomizer extends ServiceInstanceMetadataCustomizer {
 

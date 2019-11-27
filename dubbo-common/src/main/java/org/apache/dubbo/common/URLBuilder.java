@@ -141,7 +141,11 @@ public final class URLBuilder {
                 path = path.substring(firstNonSlash);
             }
         }
-        return new URL(protocol, username, password, host, port, path, parameters, methodParameters);
+        if (CollectionUtils.isEmptyMap(methodParameters)) {
+            return new URL(protocol, username, password, host, port, path, parameters);
+        } else {
+            return new URL(protocol, username, password, host, port, path, parameters, methodParameters);
+        }
     }
 
 
