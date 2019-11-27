@@ -113,9 +113,6 @@ public class WrapperTest {
         });
     }
 
-    /**
-     * see http://code.alibabatech.com/jira/browse/DUBBO-571
-     */
     @Test
     public void test_getDeclaredMethodNames_ContainExtendsParentMethods() throws Exception {
         assertArrayEquals(new String[]{"hello",}, Wrapper.getWrapper(Parent1.class).getMethodNames());
@@ -123,9 +120,6 @@ public class WrapperTest {
         assertArrayEquals(new String[]{}, Wrapper.getWrapper(Son.class).getDeclaredMethodNames());
     }
 
-    /**
-     * see http://code.alibabatech.com/jira/browse/DUBBO-571
-     */
     @Test
     public void test_getMethodNames_ContainExtendsParentMethods() throws Exception {
         assertArrayEquals(new String[]{"hello", "world"}, Wrapper.getWrapper(Son.class).getMethodNames());

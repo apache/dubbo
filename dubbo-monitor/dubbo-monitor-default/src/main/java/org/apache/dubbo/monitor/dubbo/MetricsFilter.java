@@ -31,6 +31,7 @@ import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
 import com.alibaba.fastjson.JSON;
@@ -56,16 +57,16 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_PROTOCOL;
+import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METRICS_PORT;
+import static org.apache.dubbo.common.constants.CommonConstants.METRICS_PROTOCOL;
 import static org.apache.dubbo.monitor.Constants.DUBBO_CONSUMER;
 import static org.apache.dubbo.monitor.Constants.DUBBO_CONSUMER_METHOD;
 import static org.apache.dubbo.monitor.Constants.DUBBO_GROUP;
 import static org.apache.dubbo.monitor.Constants.DUBBO_PROVIDER;
 import static org.apache.dubbo.monitor.Constants.DUBBO_PROVIDER_METHOD;
 import static org.apache.dubbo.monitor.Constants.METHOD;
-import static org.apache.dubbo.monitor.Constants.METRICS_PORT;
-import static org.apache.dubbo.monitor.Constants.METRICS_PROTOCOL;
 import static org.apache.dubbo.monitor.Constants.SERVICE;
-import static org.apache.dubbo.remoting.Constants.EXECUTOR_SERVICE_COMPONENT_KEY;
 
 public class MetricsFilter implements Filter {
 
@@ -88,6 +89,7 @@ public class MetricsFilter implements Filter {
             Invoker<MetricsService> metricsInvoker = initMetricsInvoker();
 
             try {
+                ApplicationModel.getServiceRepository().registerService(MetricsService.class);
                 protocol.export(metricsInvoker);
             } catch (RuntimeException e) {
                 logger.error("Metrics Service need to be configured" +

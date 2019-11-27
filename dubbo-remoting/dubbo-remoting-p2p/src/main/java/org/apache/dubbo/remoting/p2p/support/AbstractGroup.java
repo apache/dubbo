@@ -22,7 +22,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Client;
 import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.Server;
+import org.apache.dubbo.remoting.RemotingServer;
 import org.apache.dubbo.remoting.Transporters;
 import org.apache.dubbo.remoting.p2p.Group;
 import org.apache.dubbo.remoting.p2p.Peer;
@@ -42,7 +42,7 @@ public abstract class AbstractGroup implements Group {
 
     protected final URL url;
 
-    protected final Map<URL, Server> servers = new ConcurrentHashMap<URL, Server>();
+    protected final Map<URL, RemotingServer> servers = new ConcurrentHashMap<URL, RemotingServer>();
 
     protected final Map<URL, Client> clients = new ConcurrentHashMap<URL, Client>();
 
@@ -80,7 +80,7 @@ public abstract class AbstractGroup implements Group {
 
     @Override
     public Peer join(URL url, ChannelHandler handler) throws RemotingException {
-        Server server = servers.get(url);
+        RemotingServer server = servers.get(url);
         if (server == null) { // TODO exist concurrent gap
             server = Transporters.bind(url, handler);
             servers.put(url, server);
@@ -91,7 +91,7 @@ public abstract class AbstractGroup implements Group {
 
     @Override
     public void leave(URL url) throws RemotingException {
-        Server server = servers.remove(url);
+        RemotingServer server = servers.remove(url);
         if (server != null) {
             server.close();
         }

@@ -36,6 +36,9 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
 
     protected static final Logger logger = LoggerFactory.getLogger(AbstractZookeeperClient.class);
 
+    protected int DEFAULT_CONNECTION_TIMEOUT_MS = 5 * 1000;
+    protected int DEFAULT_SESSION_TIMEOUT_MS = 60 * 1000;
+
     private final URL url;
 
     private final Set<StateListener> stateListeners = new CopyOnWriteArraySet<StateListener>();

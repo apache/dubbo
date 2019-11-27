@@ -16,11 +16,16 @@
  */
 package org.apache.dubbo.remoting.http.support;
 
+import org.apache.dubbo.common.Parameters;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.Channel;
+import org.apache.dubbo.remoting.ChannelHandler;
+import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.http.HttpHandler;
 import org.apache.dubbo.remoting.http.HttpServer;
 
 import java.net.InetSocketAddress;
+import java.util.Collection;
 
 /**
  * AbstractHttpServer
@@ -83,4 +88,47 @@ public abstract class AbstractHttpServer implements HttpServer {
         return closed;
     }
 
+    /**
+     * Following methods are extended from RemotingServer, useless for http servers
+     */
+
+    @Override
+    public boolean canHandleIdle() {
+        return false;
+    }
+
+    @Override
+    public Collection<Channel> getChannels() {
+        return null;
+    }
+
+    @Override
+    public Channel getChannel(InetSocketAddress remoteAddress) {
+        return null;
+    }
+
+    @Override
+    public void reset(Parameters parameters) {
+
+    }
+
+    @Override
+    public ChannelHandler getChannelHandler() {
+        return null;
+    }
+
+    @Override
+    public void send(Object message) throws RemotingException {
+
+    }
+
+    @Override
+    public void send(Object message, boolean sent) throws RemotingException {
+
+    }
+
+    @Override
+    public void startClose() {
+
+    }
 }
