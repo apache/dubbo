@@ -1,0 +1,1 @@
+rmi=org.apache.dubbo.rpc.protocol.rmi.RmiProtocol

@@ -22,9 +22,12 @@
        http://dubbo.apache.org/schema/dubbo http://dubbo.apache.org/schema/dubbo/dubbo.xsd">
 
     <!-- 当前应用信息配置 -->
-    <dubbo:application name="dubbo-annotation-consumer"/>
+    <dubbo:application name="dubbo-annotation-test"/>
 
     <!-- 连接注册中心配置 -->
     <dubbo:registry address="N/A"/>
+    <dubbo:monitor version="1.1"/>
+    <dubbo:module name="defaultModule"/>
+    <dubbo:consumer version="1.2.0"/>
 
 </beans>

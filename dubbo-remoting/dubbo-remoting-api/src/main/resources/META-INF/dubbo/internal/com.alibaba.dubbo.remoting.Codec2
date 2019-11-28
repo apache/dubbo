@@ -1,3 +1,0 @@
-transport=com.alibaba.dubbo.remoting.transport.codec.TransportCodec
-telnet=com.alibaba.dubbo.remoting.telnet.codec.TelnetCodec
-exchange=com.alibaba.dubbo.remoting.exchange.codec.ExchangeCodec

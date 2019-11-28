@@ -1,0 +1,5 @@
+all=org.apache.dubbo.remoting.transport.dispatcher.all.AllDispatcher
+direct=org.apache.dubbo.remoting.transport.dispatcher.direct.DirectDispatcher
+message=org.apache.dubbo.remoting.transport.dispatcher.message.MessageOnlyDispatcher
+execution=org.apache.dubbo.remoting.transport.dispatcher.execution.ExecutionDispatcher
+connection=org.apache.dubbo.remoting.transport.dispatcher.connection.ConnectionOrderedDispatcher

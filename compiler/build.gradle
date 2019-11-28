@@ -1,0 +1,406 @@
+apply plugin: "cpp"
+apply plugin: "com.google.protobuf"
+
+group = "org.apache.dubbo"
+version = "1.19.0-SNAPSHOT" // CURRENT_GRPC_VERSION
+
+description = 'The protoc plugin for gRPC Java'
+
+apply plugin: "checkstyle"
+apply plugin: "java"
+apply plugin: "maven"
+apply plugin: "maven-publish"
+apply plugin: "idea"
+apply plugin: "signing"
+apply plugin: "jacoco"
+
+apply plugin: "me.champeau.gradle.jmh"
+apply plugin: "com.google.osdetector"
+// The plugin only has an effect if a signature is specified
+apply plugin: "ru.vyarus.animalsniffer"
+
+apply plugin: "net.ltgt.errorprone"
+
+buildscript {
+    repositories {
+        maven { // The google mirror is less flaky than mavenCentral()
+            url "https://maven-central.storage-download.googleapis.com/repos/central/data/"
+        }
+        mavenLocal()
+        maven { url "https://plugins.gradle.org/m2/" }
+    }
+    dependencies {
+        classpath "com.google.protobuf:protobuf-gradle-plugin:0.8.5"
+        classpath "com.diffplug.spotless:spotless-plugin-gradle:3.13.0"
+        classpath 'com.google.gradle:osdetector-gradle-plugin:1.4.0'
+        classpath 'ru.vyarus:gradle-animalsniffer-plugin:1.4.5'
+        classpath 'net.ltgt.gradle:gradle-errorprone-plugin:0.6'
+        classpath "me.champeau.gradle:jmh-gradle-plugin:0.4.5"
+        classpath 'me.champeau.gradle:japicmp-gradle-plugin:0.2.5'
+    }
+}
+
+import net.ltgt.gradle.errorprone.CheckSeverity
+
+def artifactStagingPath = "$buildDir/artifacts" as File
+// Adds space-delimited arguments from the environment variable env to the
+// argList.
+def addEnvArgs = { env, argList ->
+    def value = System.getenv(env)
+    if (value != null) {
+        value.split(' +').each() { it -> argList.add(it) }
+    }
+}
+
+// Adds corresponding "-l" option to the argList if libName is not found in
+// LDFLAGS. This is only used for Mac because when building for uploadArchives
+// artifacts, we add the ".a" files directly to LDFLAGS and without "-l" in
+// order to get statically linked, otherwise we add the libraries through "-l"
+// so that they can be searched for in default search paths.
+def addLibraryIfNotLinked = { libName, argList ->
+    def ldflags = System.env.LDFLAGS
+    if (ldflags == null || !ldflags.contains('lib' + libName + '.a')) {
+        argList.add('-l' + libName)
+    }
+}
+
+def String arch = rootProject.hasProperty('targetArch') ? rootProject.targetArch : osdetector.arch
+def boolean vcDisable = rootProject.hasProperty('vcDisable') ? rootProject.vcDisable : false
+def boolean usingVisualCpp // Whether VisualCpp is actually available and selected
+
+ext{
+    def exeSuffix = osdetector.os == 'windows' ? ".exe" : ""
+    protocPluginBaseName = 'protoc-gen-dubbo-java'
+    javaPluginPath = "$rootDir/build/exe/java_plugin/$protocPluginBaseName$exeSuffix"
+
+    nettyVersion = '4.1.32.Final'
+    googleauthVersion = '0.9.0'
+    guavaVersion = '26.0-android'
+    protobufVersion = '3.6.1'
+    protocVersion = protobufVersion
+    protobufNanoVersion = '3.0.0-alpha-5'
+    opencensusVersion = '0.19.2'
+
+    libraries = [
+            animalsniffer_annotations: "org.codehaus.mojo:animal-sniffer-annotations:1.17",
+            errorprone: "com.google.errorprone:error_prone_annotations:2.2.0",
+            gson: "com.google.code.gson:gson:2.7",
+            guava: "com.google.guava:guava:26.0-android",
+            hpack: 'com.twitter:hpack:0.10.1',
+            javax_annotation: 'javax.annotation:javax.annotation-api:1.2',
+            jsr305: 'com.google.code.findbugs:jsr305:3.0.2',
+            google_api_protos: 'com.google.api.grpc:proto-google-common-protos:1.12.0',
+
+            // Keep the following references of tcnative version in sync whenever it's updated
+            // SECURITY.md (multiple occurrences)
+            // examples/example-tls/build.gradle
+            // examples/example-tls/pom.xml
+            netty_tcnative: 'io.netty:netty-tcnative-boringssl-static:2.0.20.Final',
+
+            conscrypt: 'org.conscrypt:conscrypt-openjdk-uber:1.0.1',
+            re2j: 'com.google.re2j:re2j:1.2'
+    ]
+}
+
+model {
+    toolChains {
+        // If you have both VC and Gcc installed, VC will be selected, unless you
+        // set 'vcDisable=true'
+        if (!vcDisable) {
+            visualCpp(VisualCpp) {
+                // Prefer vcvars-provided environment over registry-discovered environment
+                def String vsDir = System.getenv("VSINSTALLDIR")
+                def String winDir = System.getenv("WindowsSdkDir")
+                if (vsDir != null && winDir != null) {
+                    installDir = vsDir
+                    windowsSdkDir = winDir
+                }
+            }
+        }
+        gcc(Gcc) {
+            target("ppcle_64")
+            target("aarch_64")
+        }
+        clang(Clang) {
+        }
+    }
+
+    platforms {
+        x86_32 { architecture "x86" }
+        x86_64 { architecture "x86_64" }
+        ppcle_64 { architecture "ppcle_64" }
+        aarch_64 { architecture "aarch_64" }
+    }
+
+    components {
+        java_plugin(NativeExecutableSpec) {
+            if (arch in [
+                'x86_32',
+                'x86_64',
+                'ppcle_64',
+                'aarch_64'
+            ]) {
+                // If arch is not within the defined platforms, we do not specify the
+                // targetPlatform so that Gradle will choose what is appropriate.
+                targetPlatform arch
+            }
+            baseName "$protocPluginBaseName"
+        }
+    }
+
+    binaries {
+        all {
+            if (toolChain in Gcc || toolChain in Clang) {
+                cppCompiler.define("GRPC_VERSION", version)
+                cppCompiler.args "--std=c++0x"
+                addEnvArgs("CXXFLAGS", cppCompiler.args)
+                addEnvArgs("CPPFLAGS", cppCompiler.args)
+                if (osdetector.os == "osx") {
+                    cppCompiler.args "-mmacosx-version-min=10.7", "-stdlib=libc++"
+                    addLibraryIfNotLinked('protoc', linker.args)
+                    addLibraryIfNotLinked('protobuf', linker.args)
+                } else if (osdetector.os == "windows") {
+                    linker.args "-static", "-lprotoc", "-lprotobuf", "-static-libgcc", "-static-libstdc++",
+                            "-s"
+                } else {
+                    // Link protoc, protobuf, libgcc and libstdc++ statically.
+                    // Link other (system) libraries dynamically.
+                    // Clang under OSX doesn't support these options.
+                    linker.args "-Wl,-Bstatic", "-lprotoc", "-lprotobuf", "-static-libgcc",
+                            "-static-libstdc++",
+                            "-Wl,-Bdynamic", "-lpthread", "-s"
+                }
+                addEnvArgs("LDFLAGS", linker.args)
+            } else if (toolChain in VisualCpp) {
+                usingVisualCpp = true
+                cppCompiler.define("GRPC_VERSION", version)
+                cppCompiler.args "/EHsc", "/MT"
+                if (rootProject.hasProperty('vcProtobufInclude')) {
+                    cppCompiler.args "/I${rootProject.vcProtobufInclude}"
+                }
+                linker.args "libprotobuf.lib", "libprotoc.lib"
+                if (rootProject.hasProperty('vcProtobufLibs')) {
+                    linker.args "/LIBPATH:${rootProject.vcProtobufLibs}"
+                }
+            }
+        }
+    }
+}
+
+configurations {
+    testLiteCompile
+    testNanoCompile
+}
+
+sourceSets {
+    testLite {
+        proto { setSrcDirs(['src/test/proto']) }
+    }
+    testNano {
+        proto { setSrcDirs(['src/test/proto']) }
+    }
+}
+
+
+compileTestJava {
+    options.compilerArgs += [
+        "-Xlint:-cast"
+    ]
+    options.errorprone.excludedPaths = ".*/build/generated/source/proto/.*"
+}
+
+compileTestLiteJava {
+    options.compilerArgs = compileTestJava.options.compilerArgs
+    // Protobuf-generated Lite produces quite a few warnings.
+    options.compilerArgs += [
+        "-Xlint:-rawtypes",
+        "-Xlint:-unchecked",
+        "-Xlint:-fallthrough"
+    ]
+    options.errorprone.excludedPaths = ".*/build/generated/source/proto/.*"
+}
+
+compileTestNanoJava {
+    options.compilerArgs = compileTestJava.options.compilerArgs
+    options.errorprone.excludedPaths = ".*/build/generated/source/proto/.*"
+}
+
+protobuf {
+    protoc {
+        if (project.hasProperty('protoc')) {
+            path = project.protoc
+        } else {
+            // Since nano is removed from newer versions of protoc, use an older version for the
+            // while. This means we won't be able to test any descriptor.proto additions, but that
+            // should be fine for a while.
+            artifact = libraries.protoc_nano
+        }
+    }
+    plugins {
+        javalite {
+            if (project.hasProperty('protoc-gen-javalite')) {
+                path = project['protoc-gen-javalite']
+            } else {
+                artifact = libraries.protoc_lite
+            }
+        }
+        grpc { path = javaPluginPath }
+    }
+    generateProtoTasks {
+        all().each { task ->
+            task.dependsOn 'java_pluginExecutable'
+            task.inputs.file javaPluginPath
+        }
+        ofSourceSet('test')*.plugins { grpc {} }
+        ofSourceSet('testLite')*.each { task ->
+            task.builtins { remove java }
+            task.plugins {
+                javalite {}
+                grpc { option 'lite' }
+            }
+        }
+        ofSourceSet('testNano').each { task ->
+            task.builtins {
+                remove java
+                javanano { option 'ignore_services=true' }
+            }
+            task.plugins { grpc { option 'nano' } }
+        }
+    }
+}
+
+checkstyleTestNano {
+    source = fileTree(dir: "src/testNano", include: "**/*.java")
+}
+
+println "*** Building codegen requires Protobuf version ${protocVersion}"
+println "*** Please refer to https://github.com/apache/dubbo/blob/master/compiler/README.md"
+
+task buildArtifacts(type: Copy) {
+    dependsOn 'java_pluginExecutable'
+    from("$buildDir/exe") {
+        if (osdetector.os != 'windows') {
+            rename 'protoc-gen-dubbo-java', '$0.exe'
+        }
+    }
+    into artifactStagingPath
+}
+
+archivesBaseName = "$protocPluginBaseName"
+
+task checkArtifacts {
+    dependsOn buildArtifacts
+    doLast {
+        if (!usingVisualCpp) {
+            def ret = exec {
+                executable 'bash'
+                args 'check-artifact.sh', osdetector.os, arch
+            }
+            if (ret.exitValue != 0) {
+                throw new GradleException("check-artifact.sh exited with " + ret.exitValue)
+            }
+        } else {
+            def exeName = "$artifactStagingPath/java_plugin/${protocPluginBaseName}.exe"
+            def os = new ByteArrayOutputStream()
+            def ret = exec {
+                executable 'dumpbin'
+                args '/nologo', '/dependents', exeName
+                standardOutput = os
+            }
+            if (ret.exitValue != 0) {
+                throw new GradleException("dumpbin exited with " + ret.exitValue)
+            }
+            def dlls = os.toString() =~ /Image has the following dependencies:\s+(.*)\s+Summary/
+            if (dlls[0][1] != "KERNEL32.dll") {
+                throw new Exception("unexpected dll deps: " + dlls[0][1]);
+            }
+            os.reset()
+            ret = exec {
+                executable 'dumpbin'
+                args '/nologo', '/headers', exeName
+                standardOutput = os
+            }
+            if (ret.exitValue != 0) {
+                throw new GradleException("dumpbin exited with " + ret.exitValue)
+            }
+            def machine = os.toString() =~ / machine \(([^)]+)\)/
+            def expectedArch = [x86_32: "x86", x86_64: "x64"][arch]
+            if (machine[0][1] != expectedArch) {
+                throw new Exception("unexpected architecture: " + machine[0][1]);
+            }
+        }
+    }
+}
+
+// Exe files are skipped by Maven by default. Override it.
+// Also skip jar files that is generated by the java plugin.
+publishing {
+    repositories {
+        maven {
+            name "dubbo"
+            credentials {
+                username repositoryUser // 仓库发布用户名
+                password repositoryPassword // 仓库发布用户密码
+            }
+            if(project.version.endsWith('-SNAPSHOT')) {
+                url "https://repository.apache.org/content/repositories/snapshots"
+            } else {
+                url 'https://repository.apache.org/service/local/staging/deploy/maven2' // 仓库地址
+            }
+        }
+    }
+
+    publications {
+        maven(MavenPublication) {
+            // Removes all artifacts since grpc-compiler doesn't generates any Jar
+            artifacts = []
+            artifactId 'protoc-gen-dubbo-java'
+            artifact("$artifactStagingPath/java_plugin/${protocPluginBaseName}.exe" as File) {
+                classifier osdetector.os + "-" + arch
+                extension "exe"
+                builtBy checkArtifacts
+            }
+            pom.withXml {
+                // This isn't any sort of Java archive artifact, and OSSRH doesn't enforce
+                // javadoc for 'pom' packages. 'exe' would be a more appropriate packaging
+                // value, but it isn't clear how that will be interpreted. In addition,
+                // 'pom' is typically the value used when building an exe with Maven.
+                asNode().project.packaging*.value = 'pom'
+            }
+        }
+    }
+}
+
+signing {
+    useGpgCmd()
+    required false
+    sign publishing.publications.maven
+}
+
+def configureTestTask(Task task, String dep, String extraPackage, String serviceName) {
+    test.dependsOn task
+    task.dependsOn "generateTest${dep}Proto"
+    if (osdetector.os != 'windows') {
+        task.executable "diff"
+        task.args "-u"
+    } else {
+        task.executable "fc"
+    }
+    // File isn't found on Windows if last slash is forward-slash
+    def slash = System.getProperty("file.separator")
+    task.args "$buildDir/generated/source/proto/test${dep}/grpc/io/grpc/testing/compiler${extraPackage}${slash}${serviceName}Grpc.java",
+            "$projectDir/src/test${dep}/golden/${serviceName}.java.txt"
+}
+
+task testGolden(type: Exec)
+task testLiteGolden(type: Exec)
+task testNanoGolden(type: Exec)
+task testDeprecatedGolden(type: Exec)
+task testDeprecatedLiteGolden(type: Exec)
+task testDeprecatedNanoGolden(type: Exec)
+configureTestTask(testGolden, '', '', 'TestService')
+configureTestTask(testLiteGolden, 'Lite', '', 'TestService')
+configureTestTask(testNanoGolden, 'Nano', '/nano', 'TestService')
+configureTestTask(testDeprecatedGolden, '', '', 'TestDeprecatedService')
+configureTestTask(testDeprecatedLiteGolden, 'Lite', '', 'TestDeprecatedService')
+configureTestTask(testDeprecatedNanoGolden, 'Nano', '/nano', 'TestDeprecatedService')

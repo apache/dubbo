@@ -27,6 +27,6 @@
 
     <dubbo:protocol name="thrift"/>
 
-    <dubbo:reference id="demoService" interface="com.alibaba.dubbo.rpc.gen.thrift.Demo$Iface" timeout="1000000"/>
+    <dubbo:reference id="demoService" interface="org.apache.dubbo.rpc.gen.thrift.Demo$Iface" timeout="1000000"/>
 
 </beans>
