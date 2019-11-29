@@ -123,7 +123,7 @@ public class ActiveLimitFilterTest {
                         try {
                             Result asyncResult = activeLimitFilter.invoke(invoker, invocation);
                             Result result = asyncResult.get();
-                            activeLimitFilter.listener().onResponse(result, invoker, invocation);
+                            activeLimitFilter.onMessage(result, invoker, invocation);
                         } catch (RpcException expected) {
                             count.incrementAndGet();
 //                            activeLimitFilter.listener().onError(expected, invoker, invocation);
@@ -171,10 +171,10 @@ public class ActiveLimitFilterTest {
                         try {
                             Result asyncResult = activeLimitFilter.invoke(invoker, invocation);
                             Result result = asyncResult.get();
-                            activeLimitFilter.listener().onResponse(result, invoker, invocation);
+                            activeLimitFilter.onMessage(result, invoker, invocation);
                         } catch (RpcException expected) {
                             count.incrementAndGet();
-                            activeLimitFilter.listener().onError(expected, invoker, invocation);
+                            activeLimitFilter.onError(expected, invoker, invocation);
                         } catch (Exception e) {
                             fail();
                         }
@@ -219,7 +219,7 @@ public class ActiveLimitFilterTest {
         try {
             activeLimitFilter.invoke(invoker, invocation);
         } catch (RuntimeException ex) {
-            activeLimitFilter.listener().onError(ex, invoker, invocation);
+            activeLimitFilter.onError(ex, invoker, invocation);
             int afterExceptionActiveCount = count.getActive();
             assertEquals(beforeExceptionActiveCount, afterExceptionActiveCount, "After exception active count should be same");
         }

@@ -17,13 +17,14 @@
 package org.apache.dubbo.config.utils;
 
 import org.apache.dubbo.config.ReferenceConfig;
+import org.apache.dubbo.config.utils.service.FooService;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-public class MockReferenceConfig extends ReferenceConfig<String> {
+public class MockReferenceConfig extends ReferenceConfig<FooService> {
     static AtomicLong counter = new AtomicLong();
 
-    String value;
+    FooService value;
     boolean destroyMethodRun = false;
 
     public static void setCounter(long c) {
@@ -39,11 +40,16 @@ public class MockReferenceConfig extends ReferenceConfig<String> {
     }
 
     @Override
-    public synchronized String get() {
+    public synchronized FooService get() {
         if (value != null) return value;
 
-        value = "" + counter.getAndIncrement();
+        counter.getAndIncrement();
+        value = super.get();
         return value;
+    }
+
+    public long getCounter() {
+        return counter.get();
     }
 
     @Override

@@ -16,20 +16,20 @@
  */
 package org.apache.dubbo.common.config;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * The type Inmemory configuration test.
  */
 class InmemoryConfigurationTest {
 
-    private static InmemoryConfiguration memConfig;
+    private InmemoryConfiguration memConfig;
     private static final String MOCK_KEY = "mockKey";
     private static final String MOCK_VALUE = "mockValue";
     private static final String MOCK_ONE_KEY = "one";
@@ -59,7 +59,6 @@ class InmemoryConfigurationTest {
         Assertions.assertEquals(MOCK_VALUE, memConfig.getInternalProperty(MOCK_KEY));
         Assertions.assertEquals(MOCK_VALUE, memConfig.getString(MOCK_KEY, MOCK_VALUE));
         Assertions.assertEquals(MOCK_VALUE, memConfig.getProperty(MOCK_KEY, MOCK_VALUE));
-
     }
 
     /**
@@ -84,11 +83,27 @@ class InmemoryConfigurationTest {
 
     }
 
+    @Test
+    public void testGetInt() {
+        memConfig.addProperty("a", "1");
+        Assertions.assertEquals(1, memConfig.getInt("a"));
+        Assertions.assertEquals(Integer.valueOf(1), memConfig.getInteger("a", 2));
+        Assertions.assertEquals(2, memConfig.getInt("b", 2));
+    }
+
+    @Test
+    public void getBoolean() {
+        memConfig.addProperty("a", Boolean.TRUE.toString());
+        Assertions.assertTrue(memConfig.getBoolean("a"));
+        Assertions.assertFalse(memConfig.getBoolean("b", false));
+        Assertions.assertTrue(memConfig.getBoolean("b", Boolean.TRUE));
+    }
+
     /**
      * Clean.
      */
     @AfterEach
-    public void clean(){
+    public void clean() {
 
     }
 

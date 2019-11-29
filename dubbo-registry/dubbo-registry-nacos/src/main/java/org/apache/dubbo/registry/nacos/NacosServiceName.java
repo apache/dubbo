@@ -17,22 +17,17 @@
 package org.apache.dubbo.registry.nacos;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.StringUtils;
 
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
-
+import java.util.Arrays;
 import java.util.Objects;
 
-import static org.apache.commons.lang3.ArrayUtils.getLength;
-import static org.apache.commons.lang3.StringUtils.contains;
-import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.apache.commons.lang3.StringUtils.split;
-import static org.apache.commons.lang3.StringUtils.splitPreserveAllTokens;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
+import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 
 /**
  * The service name of Nacos
@@ -80,7 +75,7 @@ public class NacosServiceName {
 
     public NacosServiceName(String value) {
         this.value = value;
-        String[] segments = splitPreserveAllTokens(value, NAME_SEPARATOR);
+        String[] segments = value.split(NAME_SEPARATOR, -1);
         this.category = segments[CATEGORY_INDEX];
         this.serviceInterface = segments[SERVICE_INTERFACE_INDEX];
         this.version = segments[SERVICE_VERSION_INDEX];
@@ -113,12 +108,12 @@ public class NacosServiceName {
         }
 
         // Not match comparison
-        if (!StringUtils.equals(this.category, concreteServiceName.category) &&
-                !ArrayUtils.contains(splitPreserveAllTokens(this.category, VALUE_SEPARATOR), concreteServiceName.category)) {
+        if (!StringUtils.isEquals(this.category, concreteServiceName.category)
+                && !matchRange(this.category, concreteServiceName.category)) {
             return false;
         }
 
-        if (!StringUtils.equals(this.serviceInterface, concreteServiceName.serviceInterface)) {
+        if (!StringUtils.isEquals(this.serviceInterface, concreteServiceName.serviceInterface)) {
             return false;
         }
 
@@ -132,12 +127,12 @@ public class NacosServiceName {
         }
 
         // range condition
-        if (!StringUtils.equals(this.version, concreteServiceName.version) &&
-                !matchRange(this.version, concreteServiceName.version)) {
+        if (!StringUtils.isEquals(this.version, concreteServiceName.version)
+                && !matchRange(this.version, concreteServiceName.version)) {
             return false;
         }
 
-        if (!StringUtils.equals(this.group, concreteServiceName.group) &&
+        if (!StringUtils.isEquals(this.group, concreteServiceName.group) &&
                 !matchRange(this.group, concreteServiceName.group)) {
             return false;
         }
@@ -152,8 +147,8 @@ public class NacosServiceName {
         if (!isRange(range)) {
             return false;
         }
-        String[] values = split(range, VALUE_SEPARATOR);
-        return ArrayUtils.contains(values, value);
+        String[] values = range.split(VALUE_SEPARATOR);
+        return Arrays.asList(values).contains(value);
     }
 
     private boolean isConcrete(String value) {
@@ -165,11 +160,7 @@ public class NacosServiceName {
     }
 
     private boolean isRange(String value) {
-        if (contains(value, VALUE_SEPARATOR)) {
-            String[] values = split(value, VALUE_SEPARATOR);
-            return getLength(values) > 1;
-        }
-        return false;
+        return value != null && value.indexOf(VALUE_SEPARATOR) > -1 && value.split(VALUE_SEPARATOR).length > 1;
     }
 
     public String getCategory() {
@@ -218,7 +209,6 @@ public class NacosServiceName {
                 .append(NAME_SEPARATOR).append(group)
                 .toString();
     }
-
 
     @Override
     public boolean equals(Object o) {

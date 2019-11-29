@@ -17,21 +17,10 @@
 package org.apache.dubbo.rpc.cluster;
 
 public interface Constants {
-    String LOADBALANCE_KEY = "loadbalance";
-
-    String DEFAULT_LOADBALANCE = "random";
 
     String FAIL_BACK_TASKS_KEY = "failbacktasks";
 
     int DEFAULT_FAILBACK_TASKS = 100;
-
-    String RETRIES_KEY = "retries";
-
-    int DEFAULT_RETRIES = 2;
-
-    int DEFAULT_FAILBACK_TIMES = 3;
-
-    String FORKS_KEY = "forks";
 
     int DEFAULT_FORKS = 2;
 
@@ -89,8 +78,6 @@ public interface Constants {
 
     String RUNTIME_KEY = "runtime";
 
-    String REMOTE_TIMESTAMP_KEY = "remote.timestamp";
-
     String WARMUP_KEY = "warmup";
 
     int DEFAULT_WARMUP = 10 * 60 * 1000;
@@ -99,7 +86,7 @@ public interface Constants {
 
     String OVERRIDE_PROVIDERS_KEY = "providerAddresses";
 
-    String TAG_KEY = "dubbo.tag";
+
     /**
      * key for router type, for e.g., "script"/"file",  corresponding to ScriptRouterFactory.NAME, FileRouterFactory.NAME
      */
