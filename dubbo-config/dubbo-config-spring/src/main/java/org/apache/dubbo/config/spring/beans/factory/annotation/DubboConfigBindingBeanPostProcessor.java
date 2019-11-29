@@ -17,9 +17,11 @@
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
 import org.apache.dubbo.common.utils.Assert;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.spring.context.annotation.DubboConfigBindingRegistrar;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubboConfigBinding;
+import org.apache.dubbo.config.spring.context.config.DubboConfigBeanCustomizer;
 import org.apache.dubbo.config.spring.context.properties.DefaultDubboConfigBinder;
 import org.apache.dubbo.config.spring.context.properties.DubboConfigBinder;
 
@@ -28,9 +30,21 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.core.env.Environment;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
+import static org.springframework.beans.factory.BeanFactoryUtils.beansOfTypeIncludingAncestors;
 
 /**
  * Dubbo Config Binding {@link BeanPostProcessor}
@@ -40,7 +54,8 @@ import org.springframework.core.env.Environment;
  * @since 2.5.8
  */
 
-public class DubboConfigBindingBeanPostProcessor implements BeanPostProcessor, ApplicationContextAware, InitializingBean {
+public class DubboConfigBindingBeanPostProcessor implements BeanPostProcessor, ApplicationContextAware, InitializingBean
+        , BeanDefinitionRegistryPostProcessor {
 
     private final Log log = LogFactory.getLog(getClass());
 
@@ -58,9 +73,13 @@ public class DubboConfigBindingBeanPostProcessor implements BeanPostProcessor, A
 
     private ApplicationContext applicationContext;
 
+    private BeanDefinitionRegistry beanDefinitionRegistry;
+
     private boolean ignoreUnknownFields = true;
 
     private boolean ignoreInvalidFields = true;
+
+    private List<DubboConfigBeanCustomizer> configBeanCustomizers = Collections.emptyList();
 
     /**
      * @param prefix   the prefix of Configuration Properties
@@ -76,19 +95,35 @@ public class DubboConfigBindingBeanPostProcessor implements BeanPostProcessor, A
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
 
-        if (beanName.equals(this.beanName) && bean instanceof AbstractConfig) {
+        if (this.beanName.equals(beanName) && bean instanceof AbstractConfig) {
 
             AbstractConfig dubboConfig = (AbstractConfig) bean;
 
-            dubboConfigBinder.bind(prefix, dubboConfig);
+            bind(prefix, dubboConfig);
 
-            if (log.isInfoEnabled()) {
-                log.info("The properties of bean [name : " + beanName + "] have been binding by prefix of " +
-                        "configuration properties : " + prefix);
-            }
+            customize(beanName, dubboConfig);
+
         }
 
         return bean;
+
+    }
+
+    private void bind(String prefix, AbstractConfig dubboConfig) {
+
+        dubboConfigBinder.bind(prefix, dubboConfig);
+
+        if (log.isInfoEnabled()) {
+            log.info("The properties of bean [name : " + beanName + "] have been binding by prefix of " +
+                    "configuration properties : " + prefix);
+        }
+    }
+
+    private void customize(String beanName, AbstractConfig dubboConfig) {
+
+        for (DubboConfigBeanCustomizer customizer : configBeanCustomizers) {
+            customizer.customize(beanName, dubboConfig);
+        }
 
     }
 
@@ -118,6 +153,15 @@ public class DubboConfigBindingBeanPostProcessor implements BeanPostProcessor, A
 
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+        if (bean instanceof AbstractConfig) {
+            String id = ((AbstractConfig) bean).getId();
+            if (beanDefinitionRegistry != null && beanDefinitionRegistry instanceof DefaultListableBeanFactory) {
+                DefaultListableBeanFactory factory = (DefaultListableBeanFactory) beanDefinitionRegistry;
+                if (!StringUtils.isBlank(id) && !factory.hasAlias(beanName, id)) {
+                    beanDefinitionRegistry.registerAlias(beanName, id);
+                }
+            }
+        }
         return bean;
     }
 
@@ -128,6 +172,14 @@ public class DubboConfigBindingBeanPostProcessor implements BeanPostProcessor, A
 
     @Override
     public void afterPropertiesSet() throws Exception {
+
+        initDubboConfigBinder();
+
+        initConfigBeanCustomizers();
+
+    }
+
+    private void initDubboConfigBinder() {
 
         if (dubboConfigBinder == null) {
             try {
@@ -146,6 +198,16 @@ public class DubboConfigBindingBeanPostProcessor implements BeanPostProcessor, A
 
     }
 
+    private void initConfigBeanCustomizers() {
+
+        Collection<DubboConfigBeanCustomizer> configBeanCustomizers =
+                beansOfTypeIncludingAncestors(applicationContext, DubboConfigBeanCustomizer.class).values();
+
+        this.configBeanCustomizers = new ArrayList<>(configBeanCustomizers);
+
+        AnnotationAwareOrderComparator.sort(this.configBeanCustomizers);
+    }
+
     /**
      * Create {@link DubboConfigBinder} instance.
      *
@@ -158,4 +220,15 @@ public class DubboConfigBindingBeanPostProcessor implements BeanPostProcessor, A
         return defaultDubboConfigBinder;
     }
 
+    @Override
+    public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
+        if (this.beanDefinitionRegistry == null) {
+            this.beanDefinitionRegistry = registry;
+        }
+    }
+
+    @Override
+    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+        //do nothing here
+    }
 }

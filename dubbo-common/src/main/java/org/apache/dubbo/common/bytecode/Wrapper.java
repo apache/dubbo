@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.common.bytecode;
 
-import org.apache.dubbo.common.utils.ClassHelper;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 
 import java.lang.reflect.Field;
@@ -113,12 +113,7 @@ public abstract class Wrapper {
             return OBJECT_WRAPPER;
         }
 
-        Wrapper ret = WRAPPER_MAP.get(c);
-        if (ret == null) {
-            ret = makeWrapper(c);
-            WRAPPER_MAP.put(c, ret);
-        }
-        return ret;
+        return WRAPPER_MAP.computeIfAbsent(c, key -> makeWrapper(key));
     }
 
     private static Wrapper makeWrapper(Class<?> c) {
@@ -127,7 +122,7 @@ public abstract class Wrapper {
         }
 
         String name = c.getName();
-        ClassLoader cl = ClassHelper.getClassLoader(c);
+        ClassLoader cl = ClassUtils.getClassLoader(c);
 
         StringBuilder c1 = new StringBuilder("public void setPropertyValue(Object o, String n, Object v){ ");
         StringBuilder c2 = new StringBuilder("public Object getPropertyValue(Object o, String n){ ");

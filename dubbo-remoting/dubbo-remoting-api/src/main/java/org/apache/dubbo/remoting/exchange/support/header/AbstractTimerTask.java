@@ -45,11 +45,11 @@ public abstract class AbstractTimerTask implements TimerTask {
     }
 
     static Long lastRead(Channel channel) {
-        return (Long) channel.getAttribute(HeaderExchangeHandler.KEY_READ_TIMESTAMP);
+        return (Long) channel.getAttribute(HeartbeatHandler.KEY_READ_TIMESTAMP);
     }
 
     static Long lastWrite(Channel channel) {
-        return (Long) channel.getAttribute(HeaderExchangeHandler.KEY_WRITE_TIMESTAMP);
+        return (Long) channel.getAttribute(HeartbeatHandler.KEY_WRITE_TIMESTAMP);
     }
 
     static Long now() {

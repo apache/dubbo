@@ -51,12 +51,7 @@ public class ThreadLocalCache implements Cache {
      * @param url
      */
     public ThreadLocalCache(URL url) {
-        this.store = new ThreadLocal<Map<Object, Object>>() {
-            @Override
-            protected Map<Object, Object> initialValue() {
-                return new HashMap<Object, Object>();
-            }
-        };
+        this.store = ThreadLocal.withInitial(HashMap::new);
     }
 
     /**

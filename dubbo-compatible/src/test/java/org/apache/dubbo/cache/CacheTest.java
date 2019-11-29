@@ -24,7 +24,6 @@ import com.alibaba.dubbo.cache.CacheFactory;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -50,6 +49,11 @@ public class CacheTest {
 
     static class NullInvocation implements Invocation {
         @Override
+        public String getTargetServiceUniqueName() {
+            return null;
+        }
+
+        @Override
         public String getMethodName() {
             return null;
         }
@@ -65,22 +69,37 @@ public class CacheTest {
         }
 
         @Override
-        public Map<String, String> getAttachments() {
+        public Map<String, Object> getAttachments() {
             return null;
         }
 
         @Override
-        public String getAttachment(String key) {
+        public Object getAttachment(String key) {
             return null;
         }
 
         @Override
-        public String getAttachment(String key, String defaultValue) {
+        public Object getAttachment(String key, Object defaultValue) {
             return null;
         }
 
         @Override
         public Invoker<?> getInvoker() {
+            return null;
+        }
+
+        @Override
+        public Object put(Object key, Object value) {
+            return null;
+        }
+
+        @Override
+        public Object get(Object key) {
+            return null;
+        }
+
+        @Override
+        public Map<Object, Object> getAttributes() {
             return null;
         }
     }

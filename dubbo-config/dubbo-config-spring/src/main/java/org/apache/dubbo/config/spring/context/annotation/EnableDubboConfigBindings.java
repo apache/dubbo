@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.spring.context.annotation;
 
+import com.alibaba.spring.beans.factory.annotation.EnableConfigurationBeanBindings;
 import org.springframework.context.annotation.Import;
 
 import java.lang.annotation.Annotation;
@@ -28,13 +29,15 @@ import java.lang.annotation.Target;
 /**
  * Multiple {@link EnableDubboConfigBinding} {@link Annotation}
  *
- * @since 2.5.8
  * @see EnableDubboConfigBinding
+ * @since 2.5.8
+ * @deprecated it will be removed in future, please use {@link EnableConfigurationBeanBindings} for replacement
  */
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Import(DubboConfigBindingsRegistrar.class)
+@Deprecated
 public @interface EnableDubboConfigBindings {
 
     /**

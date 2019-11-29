@@ -23,6 +23,8 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.exchange.Request;
 
+import static org.apache.dubbo.common.constants.CommonConstants.HEARTBEAT_EVENT;
+
 /**
  * HeartbeatTimerTask
  */
@@ -47,7 +49,7 @@ public class HeartbeatTimerTask extends AbstractTimerTask {
                 Request req = new Request();
                 req.setVersion(Version.getProtocolVersion());
                 req.setTwoWay(true);
-                req.setEvent(Request.HEARTBEAT_EVENT);
+                req.setEvent(HEARTBEAT_EVENT);
                 channel.send(req);
                 if (logger.isDebugEnabled()) {
                     logger.debug("Send heartbeat to remote channel " + channel.getRemoteAddress()

@@ -21,6 +21,7 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.annotation.Service;
+import org.apache.dubbo.config.spring.beans.factory.ServiceBeanPostProcessor;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -83,6 +84,11 @@ public class ServiceAnnotationTestConfiguration {
         protocolConfig.setName("dubbo");
         protocolConfig.setPort(12345);
         return protocolConfig;
+    }
+
+    @Bean
+    public ServiceBeanPostProcessor serviceBeanPostProcessor() {
+        return new ServiceBeanPostProcessor();
     }
 
     @Primary

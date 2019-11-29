@@ -43,6 +43,7 @@ import java.lang.annotation.Target;
 @Documented
 @EnableDubboConfig
 @DubboComponentScan
+@EnableDubboLifecycle
 public @interface EnableDubbo {
 
     /**
@@ -76,6 +77,6 @@ public @interface EnableDubbo {
      * @see EnableDubboConfig#multiple()
      */
     @AliasFor(annotation = EnableDubboConfig.class, attribute = "multiple")
-    boolean multipleConfig() default false;
+    boolean multipleConfig() default true;
 
 }

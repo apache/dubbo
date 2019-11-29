@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.filter;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.Filter;
@@ -27,6 +26,10 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
+import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_APPLICATION_KEY;
+
 /**
  * ConsumerContextFilter set current RpcContext with invoker,invocation, local host, remote host and port
  * for consumer invoker.It does it to make the requires info available to execution thread's RpcContext.
@@ -34,7 +37,7 @@ import org.apache.dubbo.rpc.RpcInvocation;
  * @see org.apache.dubbo.rpc.Filter
  * @see RpcContext
  */
-@Activate(group = Constants.CONSUMER, order = -10000)
+@Activate(group = CONSUMER, order = -10000)
 public class ConsumerContextFilter implements Filter {
 
     @Override
@@ -43,24 +46,13 @@ public class ConsumerContextFilter implements Filter {
                 .setInvoker(invoker)
                 .setInvocation(invocation)
                 .setLocalAddress(NetUtils.getLocalHost(), 0)
-                .setRemoteAddress(invoker.getUrl().getHost(),
-                        invoker.getUrl().getPort());
+                .setRemoteAddress(invoker.getUrl().getHost(), invoker.getUrl().getPort())
+                .setRemoteApplicationName(invoker.getUrl().getParameter(REMOTE_APPLICATION_KEY))
+                .setAttachment(REMOTE_APPLICATION_KEY, invoker.getUrl().getParameter(APPLICATION_KEY));
         if (invocation instanceof RpcInvocation) {
             ((RpcInvocation) invocation).setInvoker(invoker);
         }
-        try {
-            // TODO should we clear server context?
-            RpcContext.removeServerContext();
-            return invoker.invoke(invocation);
-        } finally {
-            // TODO removeContext? but we need to save future for RpcContext.getFuture() API. If clear attachments here, attachments will not available when postProcessResult is invoked.
-            RpcContext.getContext().clearAttachments();
-        }
+        return invoker.invoke(invocation);
     }
 
-    @Override
-    public Result onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
-        RpcContext.getServerContext().setAttachments(result.getAttachments());
-        return result;
-    }
 }
