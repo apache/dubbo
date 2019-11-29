@@ -20,8 +20,12 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 
 /**
@@ -38,7 +42,7 @@ import java.util.function.BiConsumer;
  * @see org.apache.dubbo.rpc.Invoker#invoke(Invocation)
  * @see AppResponse
  */
-public interface Result extends CompletionStage<Result>, Future<Result>, Serializable {
+public interface Result extends Serializable {
 
     /**
      * Get invoke result.
@@ -86,45 +90,37 @@ public interface Result extends CompletionStage<Result>, Future<Result>, Seriali
      *
      * @return attachments.
      */
-    Map<String, String> getAttachments();
+    Map<String, Object> getAttachments();
 
     /**
      * Add the specified map to existing attachments in this instance.
      *
      * @param map
      */
-    void addAttachments(Map<String, String> map);
+    void addAttachments(Map<String, Object> map);
 
     /**
      * Replace the existing attachments with the specified param.
      *
      * @param map
      */
-    void setAttachments(Map<String, String> map);
+    void setAttachments(Map<String, Object> map);
 
     /**
      * get attachment by key.
      *
      * @return attachment value.
      */
-    String getAttachment(String key);
+    Object getAttachment(String key);
 
     /**
      * get attachment by key with default value.
      *
      * @return attachment value.
      */
-    String getAttachment(String key, String defaultValue);
+    Object getAttachment(String key, Object defaultValue);
 
-    void setAttachment(String key, String value);
-
-    /**
-     * Returns the specified {@code valueIfAbsent} when not complete, or
-     * returns the result value or throws an exception when complete.
-     *
-     * @see CompletableFuture#getNow(Object)
-     */
-    Result getNow(Result valueIfAbsent);
+    void setAttachment(String key, Object value);
 
     /**
      * Add a callback which can be triggered when the RPC call finishes.
@@ -137,7 +133,9 @@ public interface Result extends CompletionStage<Result>, Future<Result>, Seriali
      */
     Result whenCompleteWithContext(BiConsumer<Result, Throwable> fn);
 
-    default CompletableFuture<Result> completionFuture() {
-        return toCompletableFuture();
-    }
+    <U> CompletableFuture<U> thenApply(Function<Result, ? extends U> fn);
+
+    Result get() throws InterruptedException, ExecutionException;
+
+    Result get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException;
 }

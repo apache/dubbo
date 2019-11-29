@@ -16,11 +16,15 @@
  */
 package org.apache.dubbo.rpc;
 
-import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * {@link AsyncRpcResult} is introduced in 3.0.0 to replace RpcResult, and RpcResult is replaced with {@link AppResponse}:
@@ -41,7 +45,7 @@ import java.util.function.BiConsumer;
  *
  * @serial Do not change the class name and properties.
  */
-public class AppResponse extends AbstractResult implements Serializable {
+public class AppResponse implements Result {
 
     private static final long serialVersionUID = -6925924956850004727L;
 
@@ -49,7 +53,7 @@ public class AppResponse extends AbstractResult implements Serializable {
 
     private Throwable exception;
 
-    private Map<String, String> attachments = new HashMap<String, String>();
+    private Map<String, Object> attachments = new HashMap<String, Object>();
 
     public AppResponse() {
     }
@@ -113,7 +117,7 @@ public class AppResponse extends AbstractResult implements Serializable {
     }
 
     @Override
-    public Map<String, String> getAttachments() {
+    public Map<String, Object> getAttachments() {
         return attachments;
     }
 
@@ -122,43 +126,55 @@ public class AppResponse extends AbstractResult implements Serializable {
      *
      * @param map contains all key-value pairs to append
      */
-    @Override
-    public void setAttachments(Map<String, String> map) {
-        this.attachments = map == null ? new HashMap<String, String>() : map;
+    public void setAttachments(Map<String, Object> map) {
+        this.attachments = map == null ? new HashMap<String, Object>() : map;
     }
 
-    @Override
-    public void addAttachments(Map<String, String> map) {
+    public void addAttachments(Map<String, Object> map) {
         if (map == null) {
             return;
         }
         if (this.attachments == null) {
-            this.attachments = new HashMap<String, String>();
+            this.attachments = new HashMap<String, Object>();
         }
         this.attachments.putAll(map);
     }
 
     @Override
-    public String getAttachment(String key) {
+    public Object getAttachment(String key) {
         return attachments.get(key);
     }
 
     @Override
-    public String getAttachment(String key, String defaultValue) {
-        String result = attachments.get(key);
-        if (result == null || result.length() == 0) {
+    public Object getAttachment(String key, Object defaultValue) {
+        Object result = attachments.get(key);
+        if (result == null) {
             result = defaultValue;
         }
         return result;
     }
 
-    @Override
-    public void setAttachment(String key, String value) {
+    public void setAttachment(String key, Object value) {
         attachments.put(key, value);
     }
 
     @Override
     public Result whenCompleteWithContext(BiConsumer<Result, Throwable> fn) {
+        throw new UnsupportedOperationException("AppResponse represents an concrete business response, there will be no status changes, you should get internal values directly.");
+    }
+
+    @Override
+    public <U> CompletableFuture<U> thenApply(Function<Result, ? extends U> fn) {
+        throw new UnsupportedOperationException("AppResponse represents an concrete business response, there will be no status changes, you should get internal values directly.");
+    }
+
+    @Override
+    public Result get() throws InterruptedException, ExecutionException {
+        throw new UnsupportedOperationException("AppResponse represents an concrete business response, there will be no status changes, you should get internal values directly.");
+    }
+
+    @Override
+    public Result get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
         throw new UnsupportedOperationException("AppResponse represents an concrete business response, there will be no status changes, you should get internal values directly.");
     }
 

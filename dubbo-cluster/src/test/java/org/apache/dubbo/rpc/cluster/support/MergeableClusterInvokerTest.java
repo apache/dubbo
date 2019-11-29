@@ -28,8 +28,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -107,7 +105,7 @@ public class MergeableClusterInvokerTest {
         given(invocation.getMethodName()).willReturn("getMenu");
         given(invocation.getParameterTypes()).willReturn(new Class<?>[]{});
         given(invocation.getArguments()).willReturn(new Object[]{});
-        given(invocation.getAttachments()).willReturn(new HashMap<String, String>())
+        given(invocation.getAttachments()).willReturn(new HashMap<String, Object>())
                 ;
         given(invocation.getInvoker()).willReturn(firstInvoker);
 
@@ -184,7 +182,7 @@ public class MergeableClusterInvokerTest {
                 new Class<?>[]{String.class, List.class});
         given(invocation.getArguments()).willReturn(new Object[]{menu, menuItems})
                 ;
-        given(invocation.getAttachments()).willReturn(new HashMap<String, String>())
+        given(invocation.getAttachments()).willReturn(new HashMap<String, Object>())
                 ;
         given(invocation.getInvoker()).willReturn(firstInvoker);
 

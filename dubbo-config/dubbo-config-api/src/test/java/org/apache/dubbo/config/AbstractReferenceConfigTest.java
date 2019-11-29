@@ -25,11 +25,11 @@ import org.junit.jupiter.api.Test;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.apache.dubbo.rpc.Constants.GENERIC_SERIALIZATION_NATIVE_JAVA;
+import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_NATIVE_JAVA;
+import static org.apache.dubbo.common.constants.CommonConstants.INVOKER_LISTENER_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_FILTER_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.STUB_EVENT_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.CLUSTER_STICKY_KEY;
-import static org.apache.dubbo.rpc.Constants.INVOKER_LISTENER_KEY;
-import static org.apache.dubbo.rpc.Constants.REFERENCE_FILTER_KEY;
-import static org.apache.dubbo.rpc.Constants.STUB_EVENT_KEY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
