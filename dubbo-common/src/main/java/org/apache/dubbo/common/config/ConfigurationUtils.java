@@ -19,6 +19,7 @@ package org.apache.dubbo.common.config;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -27,8 +28,8 @@ import java.util.Map;
 import java.util.Properties;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
-import static org.apache.dubbo.common.constants.ConfigConstants.SHUTDOWN_WAIT_KEY;
-import static org.apache.dubbo.common.constants.ConfigConstants.SHUTDOWN_WAIT_SECONDS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_SECONDS_KEY;
 
 /**
  * Utilities for manipulating configurations from different sources
@@ -40,7 +41,7 @@ public class ConfigurationUtils {
     @SuppressWarnings("deprecation")
     public static int getServerShutdownTimeout() {
         int timeout = DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
-        Configuration configuration = Environment.getInstance().getConfiguration();
+        Configuration configuration = ApplicationModel.getEnvironment().getConfiguration();
         String value = StringUtils.trim(configuration.getString(SHUTDOWN_WAIT_KEY));
 
         if (value != null && value.length() > 0) {
@@ -67,7 +68,7 @@ public class ConfigurationUtils {
     }
 
     public static String getProperty(String property, String defaultValue) {
-        return StringUtils.trim(Environment.getInstance().getConfiguration().getString(property, defaultValue));
+        return StringUtils.trim(ApplicationModel.getEnvironment().getConfiguration().getString(property, defaultValue));
     }
 
     public static Map<String, String> parseProperties(String content) throws IOException {

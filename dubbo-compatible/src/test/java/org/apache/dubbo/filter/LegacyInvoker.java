@@ -17,7 +17,7 @@
 package org.apache.dubbo.filter;
 
 
-import org.apache.dubbo.rpc.RpcResult;
+import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.service.DemoService;
 
 import com.alibaba.dubbo.common.URL;
@@ -58,8 +58,8 @@ public class LegacyInvoker<T> implements Invoker<T> {
     }
 
     public Result invoke(Invocation invocation) throws RpcException {
-        RpcResult result = new RpcResult();
-        if (hasException == false) {
+        AppResponse result = new AppResponse();
+        if (!hasException) {
             result.setValue("alibaba");
         } else {
             result.setException(new RuntimeException("mocked exception"));

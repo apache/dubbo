@@ -65,7 +65,7 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
                 return zookeeperClient;
             }
 
-            zookeeperClient = createZookeeperClient(toClientURL(url));
+            zookeeperClient = createZookeeperClient(url);
             logger.info("No valid zookeeper client found from cache, therefore create a new client for url. " + url);
             writeToClientMap(addressList, zookeeperClient);
         }
@@ -143,6 +143,7 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
         if (url.getParameter(RemotingConstants.BACKUP_KEY) != null) {
             parameterMap.put(RemotingConstants.BACKUP_KEY, url.getParameter(RemotingConstants.BACKUP_KEY));
         }
+
         return new URL(url.getProtocol(), url.getUsername(), url.getPassword(), url.getHost(), url.getPort(),
                 ZookeeperTransporter.class.getName(), parameterMap);
     }

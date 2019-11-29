@@ -38,4 +38,8 @@ public interface DemoService {
     @Path("/say")
     @Consumes({MediaType.TEXT_PLAIN})
     String sayHello(String name);
+
+    @GET
+    @Path("/getRemoteApplicationName")
+    String getRemoteApplicationName();
 }

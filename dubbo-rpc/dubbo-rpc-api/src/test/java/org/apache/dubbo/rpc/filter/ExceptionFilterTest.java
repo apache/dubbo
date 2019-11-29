@@ -17,18 +17,17 @@
 package org.apache.dubbo.rpc.filter;
 
 import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.support.DemoService;
 import org.apache.dubbo.rpc.support.LocalException;
 
 import com.alibaba.com.caucho.hessian.HessianException;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -51,18 +50,20 @@ public class ExceptionFilterTest {
         RpcContext.getContext().setRemoteAddress("127.0.0.1", 1234);
         RpcException exception = new RpcException("TestRpcException");
 
-        ExceptionFilter exceptionFilter = new ExceptionFilter(logger);
-        RpcInvocation invocation = new RpcInvocation("sayHello", new Class<?>[]{String.class}, new Object[]{"world"});
+        ExceptionFilter exceptionFilter = new ExceptionFilter();
+        RpcInvocation invocation = new RpcInvocation("sayHello", DemoService.class.getName(), new Class<?>[]{String.class}, new Object[]{"world"});
         Invoker<DemoService> invoker = mock(Invoker.class);
         given(invoker.getInterface()).willReturn(DemoService.class);
         given(invoker.invoke(eq(invocation))).willThrow(exception);
-
 
         try {
             exceptionFilter.invoke(invoker, invocation);
         } catch (RpcException e) {
             assertEquals("TestRpcException", e.getMessage());
+            exceptionFilter.setLogger(logger);
+            exceptionFilter.onError(e, invoker, invocation);
         }
+
         Mockito.verify(logger).error(eq("Got unchecked and undeclared exception which called by 127.0.0.1. service: "
                 + DemoService.class.getName() + ", method: sayHello, exception: "
                 + RpcException.class.getName() + ": TestRpcException"), eq(exception));
@@ -74,18 +75,18 @@ public class ExceptionFilterTest {
     public void testJavaException() {
 
         ExceptionFilter exceptionFilter = new ExceptionFilter();
-        RpcInvocation invocation = new RpcInvocation("sayHello", new Class<?>[]{String.class}, new Object[]{"world"});
+        RpcInvocation invocation = new RpcInvocation("sayHello", DemoService.class.getName(), new Class<?>[]{String.class}, new Object[]{"world"});
 
-        RpcResult rpcResult = new RpcResult();
-        rpcResult.setException(new IllegalArgumentException("java"));
+        AppResponse appResponse = new AppResponse();
+        appResponse.setException(new IllegalArgumentException("java"));
 
         Invoker<DemoService> invoker = mock(Invoker.class);
-        when(invoker.invoke(invocation)).thenReturn(rpcResult);
+        when(invoker.invoke(invocation)).thenReturn(appResponse);
         when(invoker.getInterface()).thenReturn(DemoService.class);
 
         Result newResult = exceptionFilter.invoke(invoker, invocation);
 
-        Assertions.assertEquals(rpcResult.getException(), newResult.getException());
+        Assertions.assertEquals(appResponse.getException(), newResult.getException());
 
     }
 
@@ -94,44 +95,45 @@ public class ExceptionFilterTest {
     public void testRuntimeException() {
 
         ExceptionFilter exceptionFilter = new ExceptionFilter();
-        RpcInvocation invocation = new RpcInvocation("sayHello", new Class<?>[]{String.class}, new Object[]{"world"});
+        RpcInvocation invocation = new RpcInvocation("sayHello", DemoService.class.getName(), new Class<?>[]{String.class}, new Object[]{"world"});
 
-        RpcResult rpcResult = new RpcResult();
-        rpcResult.setException(new LocalException("localException"));
+        AppResponse appResponse = new AppResponse();
+        appResponse.setException(new LocalException("localException"));
 
         Invoker<DemoService> invoker = mock(Invoker.class);
-        when(invoker.invoke(invocation)).thenReturn(rpcResult);
+        when(invoker.invoke(invocation)).thenReturn(appResponse);
         when(invoker.getInterface()).thenReturn(DemoService.class);
 
         Result newResult = exceptionFilter.invoke(invoker, invocation);
 
-        Assertions.assertEquals(rpcResult.getException(), newResult.getException());
+        Assertions.assertEquals(appResponse.getException(), newResult.getException());
 
     }
 
     @SuppressWarnings("unchecked")
     @Test
-    public void testConvertToRunTimeException() {
+    public void testConvertToRunTimeException() throws Exception {
 
         ExceptionFilter exceptionFilter = new ExceptionFilter();
-        RpcInvocation invocation = new RpcInvocation("sayHello", new Class<?>[]{String.class}, new Object[]{"world"});
+        RpcInvocation invocation = new RpcInvocation("sayHello", DemoService.class.getName(), new Class<?>[]{String.class}, new Object[]{"world"});
 
-        RpcResult rpcResult = new RpcResult();
-        rpcResult.setException(new HessianException("hessian"));
+        AppResponse mockRpcResult = new AppResponse();
+        mockRpcResult.setException(new HessianException("hessian"));
+        Result mockAsyncResult = AsyncRpcResult.newDefaultAsyncResult(mockRpcResult, invocation);
+
 
         Invoker<DemoService> invoker = mock(Invoker.class);
-        when(invoker.invoke(invocation)).thenReturn(rpcResult);
+        when(invoker.invoke(invocation)).thenReturn(mockAsyncResult);
         when(invoker.getInterface()).thenReturn(DemoService.class);
 
-        Result newResult = exceptionFilter.invoke(invoker, invocation);
+        Result asyncResult = exceptionFilter.invoke(invoker, invocation);
 
-        newResult = exceptionFilter.onResponse(newResult, invoker, invocation);
+        AppResponse appResponse = (AppResponse) asyncResult.get();
+        exceptionFilter.onMessage(appResponse, invoker, invocation);
 
-        Assertions.assertFalse(newResult.getException() instanceof HessianException);
+        Assertions.assertFalse(appResponse.getException() instanceof HessianException);
 
-        Assertions.assertEquals(newResult.getException().getClass(), RuntimeException.class);
-        Assertions.assertEquals(newResult.getException().getMessage(), StringUtils.toString(rpcResult.getException()));
-
+        Assertions.assertEquals(appResponse.getException().getClass(), RuntimeException.class);
     }
 
 }

@@ -25,18 +25,18 @@ package org.apache.dubbo.rpc.gen.dubbo;
 
 public interface Demo {
 
-    public boolean echoBool(boolean arg);
+    boolean echoBool(boolean arg);
 
-    public byte echoByte(byte arg);
+    byte echoByte(byte arg);
 
-    public short echoI16(short arg);
+    short echoI16(short arg);
 
-    public int echoI32(int arg);
+    int echoI32(int arg);
 
-    public long echoI64(long arg);
+    long echoI64(long arg);
 
-    public double echoDouble(double arg);
+    double echoDouble(double arg);
 
-    public String echoString(String arg);
+    String echoString(String arg);
 
 }

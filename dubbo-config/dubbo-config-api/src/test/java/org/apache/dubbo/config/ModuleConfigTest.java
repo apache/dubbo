@@ -18,7 +18,6 @@
 package org.apache.dubbo.config;
 
 import org.hamcrest.Matchers;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
@@ -33,15 +32,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
 
 public class ModuleConfigTest {
-    @Test
-    public void testName1() {
-        Assertions.assertThrows(IllegalStateException.class, () -> {
-            ModuleConfig module = new ModuleConfig();
-            Map<String, String> parameters = new HashMap<String, String>();
-            ModuleConfig.appendParameters(parameters, module);
-        });
-
-    }
 
     @Test
     public void testName2() throws Exception {
