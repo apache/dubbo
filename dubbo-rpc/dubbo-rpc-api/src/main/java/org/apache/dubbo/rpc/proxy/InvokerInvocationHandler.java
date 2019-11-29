@@ -37,25 +37,23 @@ public class InvokerInvocationHandler implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        String methodName = method.getName();
-        Class<?>[] parameterTypes = method.getParameterTypes();
         if (method.getDeclaringClass() == Object.class) {
             return method.invoke(invoker, args);
         }
-        if ("toString".equals(methodName) && parameterTypes.length == 0) {
-            return invoker.toString();
-        }
-        if ("hashCode".equals(methodName) && parameterTypes.length == 0) {
-            return invoker.hashCode();
-        }
-        if ("equals".equals(methodName) && parameterTypes.length == 1) {
+        String methodName = method.getName();
+        Class<?>[] parameterTypes = method.getParameterTypes();
+        if (parameterTypes.length == 0) {
+            if ("toString".equals(methodName)) {
+                return invoker.toString();
+            } else if ("$destroy".equals(methodName)) {
+                invoker.destroy();
+                return null;
+            } else if ("hashCode".equals(methodName)) {
+                return invoker.hashCode();
+            }
+        } else if (parameterTypes.length == 1 && "equals".equals(methodName)) {
             return invoker.equals(args[0]);
         }
-        if ("$destroy".equals(methodName) && parameterTypes.length == 0) {
-            invoker.destroy();
-            return null;
-        }
-
         RpcInvocation rpcInvocation = new RpcInvocation(method, invoker.getInterface().getName(), args);
         rpcInvocation.setTargetServiceUniqueName(invoker.getUrl().getServiceKey());
 
