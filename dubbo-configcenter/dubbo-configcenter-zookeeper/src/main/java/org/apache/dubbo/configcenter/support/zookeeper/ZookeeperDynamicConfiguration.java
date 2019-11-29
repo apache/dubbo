@@ -40,13 +40,12 @@ import static java.util.Collections.unmodifiableSortedSet;
 import static org.apache.dubbo.common.config.configcenter.Constants.CONFIG_NAMESPACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
+import static org.apache.dubbo.common.utils.StringUtils.EMPTY_STRING;
 
 /**
  *
  */
 public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
-
-    private static final String EMPTY_STRING = "";
 
     private static final Logger logger = LoggerFactory.getLogger(ZookeeperDynamicConfiguration.class);
 
@@ -113,13 +112,13 @@ public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
     @Override
     public boolean publishConfig(String key, String group, String content) {
         String path = getPathKey(group, key);
-        zkClient.create(path, content, true);
+        zkClient.create(path, content, false);
         return true;
     }
 
     @Override
     public SortedSet<String> getConfigKeys(String group) {
-        String path = buildPath(group);
+        String path = getPathKey(group, EMPTY_STRING);
         List<String> nodes = zkClient.getChildren(path);
         return isEmpty(nodes) ? emptySortedSet() : unmodifiableSortedSet(new TreeSet<>(nodes));
     }
@@ -130,40 +129,10 @@ public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
     }
 
     private String getPathKey(String group, String key) {
+        if (StringUtils.isEmpty(key)) {
+            return buildPath(group);
+        }
         return buildPath(group) + PATH_SEPARATOR + key;
     }
-
-//    /**
-//     * Build the config node path by the specified <code>key</code> and <code>group</code>
-//     *
-//     * @param key   the key to represent a configuration
-//     * @param group the group where the key belongs to
-//     * @return
-//     */
-//    protected String buildPath(String key, String group) {
-//        String path = null;
-//        /**
-//         * when group is not null, we are getting startup configs from Config Center, for example:
-//         * group=dubbo, key=dubbo.properties
-//         */
-//        if (StringUtils.isNotEmpty(group)) {
-//            path = group + "/" + key;
-//        }
-//        /**
-//         * when group is null, we are fetching governance rules, for example:
-//         * 1. key=org.apache.dubbo.DemoService.configurators
-//         * 2. key = org.apache.dubbo.DemoService.condition-router
-//         */
-//        else {
-//            int i = key.lastIndexOf(".");
-//            path = key.substring(0, i) + "/" + key.substring(i + 1);
-//        }
-//        return buildPath(path);
-//    }
-//
-//    protected String buildPath(String relativePath) {
-//        String path = rootPath + "/" + relativePath;
-//        return path;
-//    }
 
 }

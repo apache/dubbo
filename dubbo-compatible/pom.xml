@@ -35,7 +35,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-bootstrap-spring</artifactId>
+            <artifactId>dubbo-config-spring</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>

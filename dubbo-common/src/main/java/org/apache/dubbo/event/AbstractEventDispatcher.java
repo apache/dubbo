@@ -42,7 +42,7 @@ import static org.apache.dubbo.event.EventListener.findEventType;
  * @see ServiceLoader
  * @see EventListener
  * @see Event
- * @since 2.7.4
+ * @since 2.7.5
  */
 public abstract class AbstractEventDispatcher implements EventDispatcher {
 

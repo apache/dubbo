@@ -31,7 +31,7 @@ import static org.apache.zookeeper.Watcher.Event.EventType.NodeDataChanged;
  * {@link Watcher.Event.EventType#NodeChildrenChanged} and {@link Watcher.Event.EventType#NodeDataChanged} event types,
  * which will multicast a {@link ServiceInstancesChangedEvent} when the service node has been changed.
  *
- * @since 2.7.4
+ * @since 2.7.5
  */
 public class ZookeeperServiceDiscoveryChangeWatcher implements CuratorWatcher {
 

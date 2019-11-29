@@ -27,7 +27,7 @@ import static org.apache.dubbo.registry.client.DefaultServiceInstanceTest.create
 /**
  * {@link FileSystemServiceDiscovery} Test
  *
- * @since 2.7.4
+ * @since 2.7.5
  */
 public class FileSystemServiceDiscoveryTest {
 

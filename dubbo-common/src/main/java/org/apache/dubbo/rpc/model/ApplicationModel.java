@@ -25,7 +25,6 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 
 import java.util.Collection;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -76,51 +75,9 @@ public class ApplicationModel {
         return getServiceRepository().lookupReferredService(serviceKey);
     }
 
-//    public static void initProviderModel(String serviceName, ProviderModel providerModel) {
-//        if (PROVIDED_SERVICES.putIfAbsent(serviceName, providerModel) != null) {
-//            LOGGER.warn("Already register the same:" + serviceName);
-//        }
-//    }
-
-//    public static ServiceDescriptor registerServiceModel(Class<?> interfaceClass) {
-//        return SERVICES.computeIfAbsent(interfaceClass.getName(), (k) -> new ServiceDescriptor(interfaceClass));
-//    }
-
-//    /**
-//     * See {@link #registerServiceModel(Class)}
-//     *
-//     * we assume:
-//     * 1. services with different interface are not allowed to have the same path.
-//     * 2. services with the same interface but different group/version can share the same path.
-//     * 3. path's default value is the name of the interface.
-//     * @param path
-//     * @param interfaceClass
-//     * @return
-//     */
-//    public static ServiceDescriptor registerServiceModel(String path, Class<?> interfaceClass) {
-//        ServiceDescriptor serviceModel = registerServiceModel(interfaceClass);
-//        // register path
-//        if (!interfaceClass.getName().equals(path)) {
-//            SERVICES.putIfAbsent(path, serviceModel);
-//        }
-//        return serviceModel;
-//    }
-
-    public static Optional<ServiceDescriptor> getServiceModel(String interfaceName) {
-        return Optional.ofNullable(getServiceRepository().lookupService(interfaceName));
-    }
-
-    public static Optional<ServiceDescriptor> getServiceModel(Class<?> interfaceClass) {
-        return Optional.ofNullable(getServiceRepository().lookupService(interfaceClass.getName()));
-    }
-
-    /**
-     * instances
-     **/
-
     private static final ExtensionLoader<FrameworkExt> loader = ExtensionLoader.getExtensionLoader(FrameworkExt.class);
 
-    public static void initApplication() {
+    public static void iniFrameworkExts() {
         Set<FrameworkExt> exts = ExtensionLoader.getExtensionLoader(FrameworkExt.class).getSupportedExtensionInstances();
         for (FrameworkExt ext : exts) {
             ext.initialize();
@@ -155,6 +112,7 @@ public class ApplicationModel {
         return application == null ? getName() : application;
     }
 
+    // Currently used by UT.
     @Deprecated
     public static void setApplication(String application) {
         ApplicationModel.application = application;
@@ -166,4 +124,5 @@ public class ApplicationModel {
         getConfigManager().destroy();
         getEnvironment().destroy();
     }
+
 }

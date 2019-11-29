@@ -27,7 +27,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
  * Abstract {@link DynamicConfigurationFactory} implementation with cache ability
  *
  * @see DynamicConfigurationFactory
- * @since 2.7.4
+ * @since 2.7.5
  */
 public abstract class AbstractDynamicConfigurationFactory implements DynamicConfigurationFactory {
 

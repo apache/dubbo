@@ -70,7 +70,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-bootstrap-spring</artifactId>
+            <artifactId>dubbo-config-spring</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
