@@ -36,7 +36,6 @@
         <module>dubbo-rpc-http</module>
         <module>dubbo-rpc-rmi</module>
         <module>dubbo-rpc-hessian</module>
-        <module>dubbo-rpc-http-invoker</module>
         <module>dubbo-rpc-webservice</module>
         <module>dubbo-rpc-native-thrift</module>
         <module>dubbo-rpc-thrift</module>

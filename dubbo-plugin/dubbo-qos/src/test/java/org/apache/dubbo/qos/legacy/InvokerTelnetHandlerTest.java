@@ -130,7 +130,7 @@ public class InvokerTelnetHandlerTest {
 
         registerProvider(DemoService.class.getName(), new DemoServiceImpl(), DemoService.class);
 
-        String result = invoke.telnet(mockChannel, "getPerson({\"name\":\"zhangsan\",\"age\":12,\"class\":\"org.apache.dubbo.rpc.protocol.dubbo.support.Person\"})");
+        String result = invoke.telnet(mockChannel, "getPerson({\"name\":\"zhangsan\",\"age\":12,\"class\":\"org.apache.dubbo.qos.legacy.service.Person\"})");
         assertTrue(result.contains("result: 12"));
     }
 
