@@ -26,7 +26,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class GsonJsonObjectOutputTest {
@@ -124,7 +126,7 @@ public class GsonJsonObjectOutputTest {
 
     @Test
     public void testWriteObject() throws IOException, ClassNotFoundException {
-        Image image = new Image("http://dubbo.io/logo.png", "logo", 300, 480, Image.Size.SMALL);
+        Image image = new Image("http://dubbo.apache.org/img/dubbo_white.png", "logo", 300, 480, Image.Size.SMALL);
         this.gsonJsonObjectOutput.writeObject(image);
         this.flushToInput();
 

@@ -16,11 +16,8 @@
  */
 package org.apache.dubbo.common.serialize.protobuf.support;
 
-import org.apache.dubbo.common.serialize.base.AbstractSerializationTest;
-import org.apache.dubbo.common.serialize.protostuff.ProtostuffSerialization;
-
-public class GenericProtobufSerializationTest extends AbstractSerializationTest {
+public class GenericProtobufSerializationTest extends AbstractProtobufSerializationTest {
     {
-        serialization = new ProtostuffSerialization();
+        serialization = new GenericProtobufSerialization();
     }
 }
