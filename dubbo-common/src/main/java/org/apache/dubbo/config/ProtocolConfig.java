@@ -508,12 +508,6 @@ public class ProtocolConfig extends AbstractConfig {
         this.extension = extension;
     }
 
-    public void destroy() {
-        if (name != null) {
-
-        }
-    }
-
     @Override
     public void refresh() {
         if (StringUtils.isEmpty(this.getName())) {

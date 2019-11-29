@@ -100,12 +100,12 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
-                <artifactId>dubbo-bootstrap-api</artifactId>
+                <artifactId>dubbo-config-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
-                <artifactId>dubbo-bootstrap-spring</artifactId>
+                <artifactId>dubbo-config-spring</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

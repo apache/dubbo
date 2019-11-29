@@ -41,8 +41,21 @@ import java.util.Properties;
 
 import static com.alibaba.nacos.api.PropertyKeyConst.ACCESS_KEY;
 import static com.alibaba.nacos.api.PropertyKeyConst.CLUSTER_NAME;
+import static com.alibaba.nacos.api.PropertyKeyConst.CONFIG_LONG_POLL_TIMEOUT;
+import static com.alibaba.nacos.api.PropertyKeyConst.CONFIG_RETRY_TIME;
+import static com.alibaba.nacos.api.PropertyKeyConst.CONTEXT_PATH;
+import static com.alibaba.nacos.api.PropertyKeyConst.ENABLE_REMOTE_SYNC_CONFIG;
+import static com.alibaba.nacos.api.PropertyKeyConst.ENCODE;
 import static com.alibaba.nacos.api.PropertyKeyConst.ENDPOINT;
+import static com.alibaba.nacos.api.PropertyKeyConst.ENDPOINT_PORT;
+import static com.alibaba.nacos.api.PropertyKeyConst.IS_USE_CLOUD_NAMESPACE_PARSING;
+import static com.alibaba.nacos.api.PropertyKeyConst.IS_USE_ENDPOINT_PARSING_RULE;
+import static com.alibaba.nacos.api.PropertyKeyConst.MAX_RETRY;
 import static com.alibaba.nacos.api.PropertyKeyConst.NAMESPACE;
+import static com.alibaba.nacos.api.PropertyKeyConst.NAMING_CLIENT_BEAT_THREAD_COUNT;
+import static com.alibaba.nacos.api.PropertyKeyConst.NAMING_LOAD_CACHE_AT_START;
+import static com.alibaba.nacos.api.PropertyKeyConst.NAMING_POLLING_THREAD_COUNT;
+import static com.alibaba.nacos.api.PropertyKeyConst.RAM_ROLE_NAME;
 import static com.alibaba.nacos.api.PropertyKeyConst.SECRET_KEY;
 import static com.alibaba.nacos.api.PropertyKeyConst.SERVER_ADDR;
 import static com.alibaba.nacos.client.naming.utils.UtilAndComs.NACOS_NAMING_LOG_NAME;
@@ -104,19 +117,41 @@ public class NacosMetadataReport extends AbstractMetadataReport {
         properties.put(SERVER_ADDR, serverAddr);
     }
 
-    private void setProperties(URL url, Properties properties) {
-        putPropertyIfAbsent(url, properties, NAMESPACE);
+    private static void setProperties(URL url, Properties properties) {
         putPropertyIfAbsent(url, properties, NACOS_NAMING_LOG_NAME);
+        putPropertyIfAbsent(url, properties, IS_USE_CLOUD_NAMESPACE_PARSING);
+        putPropertyIfAbsent(url, properties, IS_USE_ENDPOINT_PARSING_RULE);
         putPropertyIfAbsent(url, properties, ENDPOINT);
+        putPropertyIfAbsent(url, properties, ENDPOINT_PORT);
+        putPropertyIfAbsent(url, properties, NAMESPACE);
         putPropertyIfAbsent(url, properties, ACCESS_KEY);
         putPropertyIfAbsent(url, properties, SECRET_KEY);
+        putPropertyIfAbsent(url, properties, RAM_ROLE_NAME);
+        putPropertyIfAbsent(url, properties, CONTEXT_PATH);
         putPropertyIfAbsent(url, properties, CLUSTER_NAME);
+        putPropertyIfAbsent(url, properties, ENCODE);
+        putPropertyIfAbsent(url, properties, CONFIG_LONG_POLL_TIMEOUT);
+        putPropertyIfAbsent(url, properties, CONFIG_RETRY_TIME);
+        putPropertyIfAbsent(url, properties, MAX_RETRY);
+        putPropertyIfAbsent(url, properties, ENABLE_REMOTE_SYNC_CONFIG);
+        putPropertyIfAbsent(url, properties, NAMING_LOAD_CACHE_AT_START, "true");
+        putPropertyIfAbsent(url, properties, NAMING_CLIENT_BEAT_THREAD_COUNT);
+        putPropertyIfAbsent(url, properties, NAMING_POLLING_THREAD_COUNT);
     }
 
-    private void putPropertyIfAbsent(URL url, Properties properties, String propertyName) {
+    private static void putPropertyIfAbsent(URL url, Properties properties, String propertyName) {
         String propertyValue = url.getParameter(propertyName);
         if (StringUtils.isNotEmpty(propertyValue)) {
             properties.setProperty(propertyName, propertyValue);
+        }
+    }
+
+    private static void putPropertyIfAbsent(URL url, Properties properties, String propertyName, String defaultValue) {
+        String propertyValue = url.getParameter(propertyName);
+        if (StringUtils.isNotEmpty(propertyValue)) {
+            properties.setProperty(propertyName, propertyValue);
+        } else {
+            properties.setProperty(propertyName, defaultValue);
         }
     }
 

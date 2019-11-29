@@ -19,9 +19,6 @@ package org.apache.dubbo.rpc.cluster.governance;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.extension.SPI;
 
-/**
- *
- */
 @SPI("default")
 public interface GovernanceRuleRepository {
 

@@ -48,6 +48,8 @@ public class DefaultExecutorRepository implements ExecutorRepository {
 
     private Ring<ScheduledExecutorService> scheduledExecutors = new Ring<>();
 
+    private ScheduledExecutorService serviceExporterExecutor;
+
     private ScheduledExecutorService reconnectScheduledExecutor;
 
     private ConcurrentMap<String, ConcurrentMap<Integer, ExecutorService>> data = new ConcurrentHashMap<>();
@@ -59,15 +61,24 @@ public class DefaultExecutorRepository implements ExecutorRepository {
 //        }
 //
 //        reconnectScheduledExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-reconnect-scheduler"));
+        serviceExporterExecutor = Executors.newScheduledThreadPool(1, new NamedThreadFactory("Dubbo-exporter-scheduler"));
     }
 
-    public ExecutorService createExecutorIfAbsent(URL url) {
+    public synchronized ExecutorService createExecutorIfAbsent(URL url) {
         String componentKey = EXECUTOR_SERVICE_COMPONENT_KEY;
         if (CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY))) {
             componentKey = CONSUMER_SIDE;
         }
         Map<Integer, ExecutorService> executors = data.computeIfAbsent(componentKey, k -> new ConcurrentHashMap<>());
-        return executors.computeIfAbsent(url.getPort(), k -> (ExecutorService) ExtensionLoader.getExtensionLoader(ThreadPool.class).getAdaptiveExtension().getExecutor(url));
+        Integer portKey = url.getPort();
+        ExecutorService executor = executors.computeIfAbsent(portKey, k -> createExecutor(url));
+        // If executor has been shut down, create a new one
+        if (executor.isShutdown() || executor.isTerminated()) {
+            executors.remove(portKey);
+            executor = createExecutor(url);
+            executors.put(portKey, executor);
+        }
+        return executor;
     }
 
     public ExecutorService getExecutor(URL url) {
@@ -79,7 +90,17 @@ public class DefaultExecutorRepository implements ExecutorRepository {
         if (executors == null) {
             return null;
         }
-        return executors.get(url.getPort());
+
+        Integer portKey = url.getPort();
+        ExecutorService executor = executors.get(portKey);
+        if (executor != null) {
+            if (executor.isShutdown() || executor.isTerminated()) {
+                executors.remove(portKey);
+                executor = createExecutor(url);
+                executors.put(portKey, executor);
+            }
+        }
+        return executor;
     }
 
     @Override
@@ -116,8 +137,17 @@ public class DefaultExecutorRepository implements ExecutorRepository {
     }
 
     @Override
+    public ScheduledExecutorService getServiceExporterExecutor() {
+        return serviceExporterExecutor;
+    }
+
+    @Override
     public ExecutorService getSharedExecutor() {
         return SHARED_EXECUTOR;
+    }
+
+    private ExecutorService createExecutor(URL url) {
+        return (ExecutorService) ExtensionLoader.getExtensionLoader(ThreadPool.class).getAdaptiveExtension().getExecutor(url);
     }
 
 }

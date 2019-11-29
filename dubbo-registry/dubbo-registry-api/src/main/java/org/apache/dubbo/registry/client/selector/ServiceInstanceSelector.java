@@ -26,7 +26,7 @@ import java.util.List;
 /**
  * The {@link ServiceInstance} Selector
  *
- * @since 2.7.4
+ * @since 2.7.5
  */
 @SPI("random")
 public interface ServiceInstanceSelector {

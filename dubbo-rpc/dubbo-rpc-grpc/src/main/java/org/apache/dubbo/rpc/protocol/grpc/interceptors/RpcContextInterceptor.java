@@ -34,7 +34,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 
 /**
- * From gRPC's
+ * Hand over context information from Dubbo to gRPC.
  */
 @Activate(group = {PROVIDER, CONSUMER})
 public class RpcContextInterceptor implements ClientInterceptor, ServerInterceptor {

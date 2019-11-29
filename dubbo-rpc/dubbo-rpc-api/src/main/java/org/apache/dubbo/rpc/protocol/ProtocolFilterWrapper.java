@@ -90,6 +90,8 @@ public class ProtocolFilterWrapper implements Protocol {
                                 listener.onError(e, invoker, invocation);
                             }
                             throw e;
+                        } finally {
+
                         }
                         return asyncResult.whenCompleteWithContext((r, t) -> {
                             if (filter instanceof ListenableFilter) {// Deprecated!

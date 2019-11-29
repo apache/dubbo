@@ -35,7 +35,7 @@ import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
 /**
  * A class to resolve the version from {@link URL URLs}
  *
- * @since 2.7.4
+ * @since 2.7.5
  */
 public class URLRevisionResolver {
 
