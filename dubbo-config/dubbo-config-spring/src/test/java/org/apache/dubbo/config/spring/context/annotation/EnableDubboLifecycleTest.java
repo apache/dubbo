@@ -16,6 +16,10 @@
  */
 package org.apache.dubbo.config.spring.context.annotation;
 
+import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,12 +37,9 @@ public class EnableDubboLifecycleTest {
 
     private AnnotationConfigApplicationContext context;
 
-    static boolean initialized = false;
-
-    static boolean started = false;
-
     @BeforeEach
     public void init() {
+        ApplicationModel.getConfigManager().setApplication(new ApplicationConfig("EnableDubboLifecycleTest"));
         context = new AnnotationConfigApplicationContext(EnableDubboLifecycleTest.class);
     }
 
@@ -49,7 +50,7 @@ public class EnableDubboLifecycleTest {
 
     @Test
     public void test() {
-        assertTrue(initialized);
-        assertTrue(started);
+        assertTrue(DubboBootstrap.getInstance().isInitialized());
+        assertTrue(DubboBootstrap.getInstance().isStarted());
     }
 }
