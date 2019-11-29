@@ -18,7 +18,6 @@ package org.apache.dubbo.metadata.store;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
@@ -33,8 +32,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
-
-import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 
 /**
  * 2018/9/14
