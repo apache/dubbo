@@ -16,11 +16,11 @@
  */
 package org.apache.dubbo.config.spring.context.annotation;
 
-import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.context.annotation.consumer.ConsumerConfiguration;
 import org.apache.dubbo.config.spring.context.annotation.provider.DemoServiceImpl;
 import org.apache.dubbo.config.spring.context.annotation.provider.ProviderConfiguration;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -41,12 +41,12 @@ public class DubboComponentScanRegistrarTest {
 
     @BeforeEach
     public void setUp() {
-        ConfigManager.getInstance().clear();
+        ApplicationModel.getConfigManager().clear();
     }
 
     @AfterEach
     public void tearDown() {
-        ConfigManager.getInstance().clear();
+        ApplicationModel.getConfigManager().clear();
     }
 
     @Test

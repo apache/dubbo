@@ -21,8 +21,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptySet;
+import static java.util.Collections.unmodifiableSet;
 
 public class CollectionUtils {
 
@@ -170,6 +176,10 @@ public class CollectionUtils {
 
     public static Map<String, String> toStringMap(String... pairs) {
         Map<String, String> parameters = new HashMap<>();
+        if (ArrayUtils.isEmpty(pairs)) {
+            return parameters;
+        }
+
         if (pairs.length > 0) {
             if (pairs.length % 2 != 0) {
                 throw new IllegalArgumentException("pairs must be even.");
@@ -214,4 +224,17 @@ public class CollectionUtils {
         return !isEmptyMap(map);
     }
 
+    /**
+     * Convert to multiple values to be {@link LinkedHashSet}
+     *
+     * @param values one or more values
+     * @param <T>    the type of <code>values</code>
+     * @return read-only {@link Set}
+     */
+    public static <T> Set<T> ofSet(T... values) {
+        if (values == null || values.length < 1) {
+            return emptySet();
+        }
+        return unmodifiableSet(new LinkedHashSet<>(asList(values)));
+    }
 }

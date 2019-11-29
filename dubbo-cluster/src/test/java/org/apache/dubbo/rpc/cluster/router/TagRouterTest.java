@@ -16,11 +16,12 @@
  */
 package org.apache.dubbo.rpc.cluster.router;
 
+import org.apache.dubbo.rpc.cluster.router.tag.model.TagRouterRule;
+import org.apache.dubbo.rpc.cluster.router.tag.model.TagRuleParser;
+
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
-import org.apache.dubbo.rpc.cluster.router.tag.model.TagRouterRule;
-import org.apache.dubbo.rpc.cluster.router.tag.model.TagRuleParser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
