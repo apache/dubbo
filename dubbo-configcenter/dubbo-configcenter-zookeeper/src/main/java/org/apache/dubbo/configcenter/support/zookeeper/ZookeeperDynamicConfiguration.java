@@ -17,28 +17,36 @@
 package org.apache.dubbo.configcenter.support.zookeeper;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
+import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.configcenter.ConfigurationListener;
-import org.apache.dubbo.configcenter.DynamicConfiguration;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import static java.util.Collections.emptySortedSet;
+import static java.util.Collections.unmodifiableSortedSet;
+import static org.apache.dubbo.common.config.configcenter.Constants.CONFIG_NAMESPACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
-import static org.apache.dubbo.configcenter.Constants.CONFIG_NAMESPACE_KEY;
+import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
+import static org.apache.dubbo.common.utils.StringUtils.EMPTY_STRING;
 
 /**
  *
  */
 public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
+
     private static final Logger logger = LoggerFactory.getLogger(ZookeeperDynamicConfiguration.class);
 
     private Executor executor;
@@ -97,20 +105,34 @@ public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
     }
 
     @Override
-    public String getRule(String key, String group, long timeout) throws IllegalStateException {
+    public String getConfig(String key, String group, long timeout) throws IllegalStateException {
         return (String) getInternalProperty(getPathKey(group, key));
     }
 
     @Override
-    public String getProperties(String key, String group, long timeout) throws IllegalStateException {
-        // use global group 'dubbo' if no group specified
-        if (StringUtils.isEmpty(group)) {
-            group = DEFAULT_GROUP;
-        }
-        return (String) getInternalProperty(getPathKey(group, key));
+    public boolean publishConfig(String key, String group, String content) {
+        String path = getPathKey(group, key);
+        zkClient.create(path, content, false);
+        return true;
+    }
+
+    @Override
+    public SortedSet<String> getConfigKeys(String group) {
+        String path = getPathKey(group, EMPTY_STRING);
+        List<String> nodes = zkClient.getChildren(path);
+        return isEmpty(nodes) ? emptySortedSet() : unmodifiableSortedSet(new TreeSet<>(nodes));
+    }
+
+    private String buildPath(String group) {
+        String actualGroup = StringUtils.isEmpty(group) ? DEFAULT_GROUP : group;
+        return rootPath + PATH_SEPARATOR + actualGroup;
     }
 
     private String getPathKey(String group, String key) {
-        return rootPath + PATH_SEPARATOR + group + PATH_SEPARATOR + key;
+        if (StringUtils.isEmpty(key)) {
+            return buildPath(group);
+        }
+        return buildPath(group) + PATH_SEPARATOR + key;
     }
+
 }

@@ -16,17 +16,18 @@
  */
 package org.apache.dubbo.registry.nacos;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.StringUtils;
+
+import java.util.Arrays;
+import java.util.Objects;
+
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
-
-import java.util.Arrays;
-import java.util.Objects;
-
-import org.apache.dubbo.common.URL;
 
 /**
  * The service name of Nacos
@@ -107,12 +108,12 @@ public class NacosServiceName {
         }
 
         // Not match comparison
-        if (!this.category.equals(concreteServiceName.category)
+        if (!StringUtils.isEquals(this.category, concreteServiceName.category)
                 && !matchRange(this.category, concreteServiceName.category)) {
             return false;
         }
 
-        if (!this.serviceInterface.equals(concreteServiceName.serviceInterface)) {
+        if (!StringUtils.isEquals(this.serviceInterface, concreteServiceName.serviceInterface)) {
             return false;
         }
 
@@ -126,12 +127,13 @@ public class NacosServiceName {
         }
 
         // range condition
-        if (!this.version.equals(concreteServiceName.version)
+        if (!StringUtils.isEquals(this.version, concreteServiceName.version)
                 && !matchRange(this.version, concreteServiceName.version)) {
             return false;
         }
 
-        if (!this.group.equals(concreteServiceName.group) && !matchRange(this.group, concreteServiceName.group)) {
+        if (!StringUtils.isEquals(this.group, concreteServiceName.group) &&
+                !matchRange(this.group, concreteServiceName.group)) {
             return false;
         }
 

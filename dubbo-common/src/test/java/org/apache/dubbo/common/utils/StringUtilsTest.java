@@ -310,4 +310,27 @@ public class StringUtilsTest {
         assertEquals("DUBBO_TAG1", StringUtils.toOSStyleKey("tag1"));
     }
 
+    @Test
+    public void testParseParameters() {
+        String legalStr = "[{key1:value1},{key2:value2}]";
+        Map<String, String> legalMap = StringUtils.parseParameters(legalStr);
+        assertEquals(2, legalMap.size());
+        assertEquals("value2", legalMap.get("key2"));
+
+        String legalSpaceStr = "[{key1: value1}, {key2 :value2}]";
+        Map<String, String> legalSpaceMap = StringUtils.parseParameters(legalSpaceStr);
+        assertEquals(2, legalSpaceMap.size());
+        assertEquals("value2", legalSpaceMap.get("key2"));
+
+        String legalSpecialStr = "[{key-1: value*.1}, {key.2 :value*.-_2}]";
+        Map<String, String> legalSpecialMap = StringUtils.parseParameters(legalSpecialStr);
+        assertEquals(2, legalSpecialMap.size());
+        assertEquals("value*.1", legalSpecialMap.get("key-1"));
+        assertEquals("value*.-_2", legalSpecialMap.get("key.2"));
+
+        String illegalStr = "[{key=value},{aa:bb}]";
+        Map<String, String> illegalMap = StringUtils.parseParameters(illegalStr);
+        assertEquals(0, illegalMap.size());
+    }
+
 }

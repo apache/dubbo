@@ -43,6 +43,7 @@ import java.lang.annotation.Target;
 @Documented
 @EnableDubboConfig
 @DubboComponentScan
+@EnableDubboLifecycle
 public @interface EnableDubbo {
 
     /**

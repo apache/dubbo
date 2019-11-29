@@ -22,10 +22,9 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.config.DubboShutdownHook;
-import org.apache.dubbo.config.spring.util.BeanFactoryUtils;
+import org.apache.dubbo.config.spring.util.ApplicationContextUtils;
 
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
-import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
+import com.alibaba.spring.util.BeanFactoryUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
@@ -49,7 +48,7 @@ public class SpringExtensionFactory implements ExtensionFactory {
             ((ConfigurableApplicationContext) context).registerShutdownHook();
             DubboShutdownHook.getDubboShutdownHook().unregister();
         }
-        BeanFactoryUtils.addApplicationListener(context, SHUTDOWN_HOOK_LISTENER);
+        ApplicationContextUtils.addApplicationListener(context, SHUTDOWN_HOOK_LISTENER);
     }
 
     public static void removeApplicationContext(ApplicationContext context) {
@@ -75,33 +74,13 @@ public class SpringExtensionFactory implements ExtensionFactory {
         }
 
         for (ApplicationContext context : CONTEXTS) {
-            if (context.containsBean(name)) {
-                Object bean = context.getBean(name);
-                if (type.isInstance(bean)) {
-                    return (T) bean;
-                }
+            T bean = BeanFactoryUtils.getOptionalBean(context, name, type);
+            if (bean != null) {
+                return bean;
             }
         }
 
         logger.warn("No spring extension (bean) named:" + name + ", try to find an extension (bean) of type " + type.getName());
-
-        if (Object.class == type) {
-            return null;
-        }
-
-        for (ApplicationContext context : CONTEXTS) {
-            try {
-                return context.getBean(type);
-            } catch (NoUniqueBeanDefinitionException multiBeanExe) {
-                logger.warn("Find more than 1 spring extensions (beans) of type " + type.getName() + ", will stop auto injection. Please make sure you have specified the concrete parameter type and there's only one extension of that type.");
-            } catch (NoSuchBeanDefinitionException noBeanExe) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Error when get spring extension(bean) for type:" + type.getName(), noBeanExe);
-                }
-            }
-        }
-
-        logger.warn("No spring extension (bean) named:" + name + ", type:" + type.getName() + " found, stop get bean.");
 
         return null;
     }

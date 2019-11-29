@@ -20,13 +20,13 @@ package org.apache.dubbo.rpc.protocol.rmi;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.rpc.Exporter;
+import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.service.EchoService;
-
 import org.apache.dubbo.rpc.service.GenericService;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -130,6 +130,20 @@ public class RmiProtocolTest {
         Assertions.assertEquals("Hi, haha", result);
         invoker.destroy();
         exporter.unexport();
+    }
+
+
+    @Test
+    public void testRemoteApplicationName() throws Exception {
+        DemoService service = new DemoServiceImpl();
+        URL url = URL.valueOf("rmi://127.0.0.1:9001/TestService?release=2.7.0").addParameter("application", "consumer");
+        Exporter<?> rpcExporter = protocol.export(proxy.getInvoker(service, DemoService.class, url));
+
+        service = proxy.getProxy(protocol.refer(DemoService.class, url));
+        assertEquals(service.getRemoteApplicationName(), "consumer");
+
+        rpcExporter.unexport();
+
     }
 
     public interface NonStdRmiInterface {
