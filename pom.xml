@@ -532,6 +532,12 @@
                                 <exclude>**/org/apache/dubbo/common/timer/HashedWheelTimer.java</exclude>
                                 <!-- exclude the edazdarevic files -->
                                 <exclude>**/org/apache/dubbo/common/utils/CIDRUtils.java</exclude>
+                                <!-- exclude protobuf generated files -->
+                                <exclude>**/org/apache/dubbo/common/serialize/protobuf/support/wrapper/MapValue.java
+                                </exclude>
+                                <exclude>
+                                    **/org/apache/dubbo/common/serialize/protobuf/support/wrapper/ThrowablePB.java
+                                </exclude>
                                 <exclude>.github/**</exclude>
                                 <exclude>compiler/**</exclude>
                             </excludes>

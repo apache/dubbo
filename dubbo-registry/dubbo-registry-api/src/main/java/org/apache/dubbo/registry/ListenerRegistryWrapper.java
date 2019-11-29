@@ -151,4 +151,8 @@ public class ListenerRegistryWrapper implements Registry {
     public List<URL> lookup(URL url) {
         return registry.lookup(url);
     }
+
+    public Registry getRegistry() {
+        return registry;
+    }
 }

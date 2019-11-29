@@ -839,7 +839,7 @@ public class ConfigTest {
                 URL url = service.getExportedUrls().get(0);
                 // from api
                 assertEquals("aaa", url.getParameter("application"));
-                // from dubbo.properties
+                // from dubbo-binder.properties
                 assertEquals("world", url.getParameter("owner"));
                 // from system property
                 assertEquals(1234, url.getPort());
