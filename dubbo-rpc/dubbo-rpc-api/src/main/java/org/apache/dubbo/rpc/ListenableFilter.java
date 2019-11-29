@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc;
 /**
  *
  */
+@Deprecated
 public abstract class ListenableFilter implements Filter {
 
     protected Listener listener = null;
@@ -26,4 +27,5 @@ public abstract class ListenableFilter implements Filter {
     public Listener listener() {
         return listener;
     }
+
 }

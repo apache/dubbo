@@ -17,18 +17,19 @@
 package org.apache.dubbo.rpc.cluster.router;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.configcenter.DynamicConfiguration;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.rpc.cluster.Router;
+import org.apache.dubbo.rpc.cluster.governance.GovernanceRuleRepository;
 
 public abstract class AbstractRouter implements Router {
     protected int priority = DEFAULT_PRIORITY;
     protected boolean force = false;
     protected URL url;
 
-    protected DynamicConfiguration configuration;
+    protected GovernanceRuleRepository ruleRepository;
 
-    public AbstractRouter(DynamicConfiguration configuration, URL url) {
-        this.configuration = configuration;
+    public AbstractRouter(URL url) {
+        this.ruleRepository = ExtensionLoader.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension();
         this.url = url;
     }
 
@@ -42,10 +43,6 @@ public abstract class AbstractRouter implements Router {
 
     public void setUrl(URL url) {
         this.url = url;
-    }
-
-    public void setConfiguration(DynamicConfiguration configuration) {
-        this.configuration = configuration;
     }
 
     @Override

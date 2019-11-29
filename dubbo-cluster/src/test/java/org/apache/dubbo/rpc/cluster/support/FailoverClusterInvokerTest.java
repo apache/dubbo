@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.cluster.support;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
@@ -186,6 +187,7 @@ public class FailoverClusterInvokerTest {
             }
             invokers.clear();
             MockInvoker<Demo> invoker3 = new MockInvoker<Demo>(Demo.class, url);
+            invoker3.setResult(AsyncRpcResult.newDefaultAsyncResult(null));
             invokers.add(invoker3);
             return null;
         };

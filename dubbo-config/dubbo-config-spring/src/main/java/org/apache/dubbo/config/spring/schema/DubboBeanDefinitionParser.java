@@ -53,8 +53,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import static com.alibaba.spring.util.BeanRegistrar.registerInfrastructureBean;
 import static org.apache.dubbo.common.constants.CommonConstants.HIDE_KEY_PREFIX;
-import static org.apache.dubbo.config.spring.util.BeanRegistrar.registerInfrastructureBean;
 
 /**
  * AbstractBeanDefinitionParser
@@ -181,7 +181,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                                  * For 'provider' 'protocol' 'registry', keep literal value (should be id/name) and set the value to 'registryIds' 'providerIds' protocolIds'
                                  * The following process should make sure each id refers to the corresponding instance, here's how to find the instance for different use cases:
                                  * 1. Spring, check existing bean by id, see{@link ServiceBean#afterPropertiesSet()}; then try to use id to find configs defined in remote Config Center
-                                 * 2. API, directly use id to find configs defined in remote Config Center; if all config instances are defined locally, please use {@link org.apache.dubbo.config.ServiceConfig#setRegistries(List)}
+                                 * 2. API, directly use id to find configs defined in remote Config Center; if all config instances are defined locally, please use {@link ServiceConfig#setRegistries(List)}
                                  */
                                 beanDefinition.getPropertyValues().addPropertyValue(beanProperty + "Ids", value);
                             } else {
@@ -403,7 +403,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
      * Register {@link DubboConfigAliasPostProcessor}
      *
      * @param registry {@link BeanDefinitionRegistry}
-     * @since 2.7.4 [Feature] https://github.com/apache/dubbo/issues/5093
+     * @since 2.7.5 [Feature] https://github.com/apache/dubbo/issues/5093
      */
     private void registerDubboConfigAliasPostProcessor(BeanDefinitionRegistry registry) {
         registerInfrastructureBean(registry, DubboConfigAliasPostProcessor.BEAN_NAME, DubboConfigAliasPostProcessor.class);

@@ -24,7 +24,6 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.cluster.Directory;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -129,7 +128,7 @@ public class ForkingClusterInvokerTest {
 
         RpcContext.getContext().setAttachment(attachKey, attachValue);
 
-        Map<String, String> attachments = RpcContext.getContext().getAttachments();
+        Map<String, Object> attachments = RpcContext.getContext().getAttachments();
         Assertions.assertTrue(attachments != null && attachments.size() == 1, "set attachment failed!");
         try {
             invoker.invoke(invocation);
@@ -138,7 +137,7 @@ public class ForkingClusterInvokerTest {
             Assertions.assertTrue(expected.getMessage().contains("Failed to forking invoke provider"), "Succeeded to forking invoke provider !");
             assertFalse(expected.getCause() instanceof RpcException);
         }
-        Map<String, String> afterInvoke = RpcContext.getContext().getAttachments();
+        Map<String, Object> afterInvoke = RpcContext.getContext().getAttachments();
         Assertions.assertTrue(afterInvoke != null && afterInvoke.size() == 0, "clear attachment failed!");
     }
 
