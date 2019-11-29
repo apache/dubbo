@@ -31,7 +31,7 @@ import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.context.ConfigConfigurationAdapter;
 import org.apache.dubbo.config.support.Parameter;
-import org.apache.dubbo.rpc.model.ConsumerMethodModel;
+import org.apache.dubbo.rpc.model.AsyncMethodInfo;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -252,7 +252,7 @@ public abstract class AbstractConfig implements Serializable {
         }
     }
 
-    protected static ConsumerMethodModel.AsyncMethodInfo convertMethodConfig2AsyncInfo(MethodConfig methodConfig) {
+    protected static AsyncMethodInfo convertMethodConfig2AsyncInfo(MethodConfig methodConfig) {
         if (methodConfig == null || (methodConfig.getOninvoke() == null && methodConfig.getOnreturn() == null && methodConfig.getOnthrow() == null)) {
             return null;
         }
@@ -262,7 +262,7 @@ public abstract class AbstractConfig implements Serializable {
             throw new IllegalStateException("method config error : return attribute must be set true when onreturn or onthrow has been set.");
         }
 
-        ConsumerMethodModel.AsyncMethodInfo asyncMethodInfo = new ConsumerMethodModel.AsyncMethodInfo();
+        AsyncMethodInfo asyncMethodInfo = new AsyncMethodInfo();
 
         asyncMethodInfo.setOninvokeInstance(methodConfig.getOninvoke());
         asyncMethodInfo.setOnreturnInstance(methodConfig.getOnreturn());

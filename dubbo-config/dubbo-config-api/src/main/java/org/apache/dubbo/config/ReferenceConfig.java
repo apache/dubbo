@@ -38,7 +38,7 @@ import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
 import org.apache.dubbo.rpc.cluster.support.RegistryAwareCluster;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ConsumerMethodModel;
+import org.apache.dubbo.rpc.model.AsyncMethodInfo;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
@@ -328,9 +328,9 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         // appendParameters(map, consumer, Constants.DEFAULT_KEY);
         appendParameters(map, consumer);
         appendParameters(map, this);
-        Map<String, Object> attributes = null;
+        Map<String, AsyncMethodInfo> attributes = null;
         if (CollectionUtils.isNotEmpty(methods)) {
-            attributes = new HashMap<String, Object>();
+            attributes = new HashMap<>();
             for (MethodConfig methodConfig : methods) {
                 appendParameters(map, methodConfig, methodConfig.getName());
                 String retryKey = methodConfig.getName() + ".retry";
@@ -340,7 +340,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                         map.put(methodConfig.getName() + ".retries", "0");
                     }
                 }
-                ConsumerMethodModel.AsyncMethodInfo asyncMethodInfo = convertMethodConfig2AsyncInfo(methodConfig);
+                AsyncMethodInfo asyncMethodInfo = convertMethodConfig2AsyncInfo(methodConfig);
                 if (asyncMethodInfo != null) {
 //                    consumerModel.getMethodModel(methodConfig.getName()).addAttribute(ASYNC_KEY, asyncMethodInfo);
                     attributes.put(methodConfig.getName(), asyncMethodInfo);

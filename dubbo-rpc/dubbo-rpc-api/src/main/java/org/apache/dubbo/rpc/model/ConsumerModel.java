@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.model;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +31,7 @@ import java.util.Optional;
 public class ConsumerModel {
     private ServiceMetadata serviceMetadata;
     private Map<Method, ConsumerMethodModel> methodModels = new IdentityHashMap<Method, ConsumerMethodModel>();
+    private Map<String, AsyncMethodInfo> asyncMethodInfos = Collections.emptyMap();
 
     /**
      * This constructor create an instance of ConsumerModel and passed objects should not be null.
@@ -42,11 +44,15 @@ public class ConsumerModel {
         this.serviceMetadata = serviceMetadata;
     }
 
-    public void init(Map<String, Object> attributes) {
+    public void init(Map<String, AsyncMethodInfo> attributes) {
+        if (attributes != null) {
+            this.asyncMethodInfos = attributes;
+        }
+
         Class[] interfaceList = serviceMetadata.getTarget().getClass().getInterfaces();
         for (Class interfaceClass : interfaceList) {
             for (Method method : interfaceClass.getMethods()) {
-                methodModels.put(method, new ConsumerMethodModel(method, attributes));
+                methodModels.put(method, new ConsumerMethodModel(method));
             }
         }
     }
@@ -96,6 +102,9 @@ public class ConsumerModel {
         return consumerMethodModel.orElse(null);
     }
 
+    public AsyncMethodInfo getAsyncInfo(String methodName) {
+        return asyncMethodInfos.get(methodName);
+    }
 
     /**
      * @return

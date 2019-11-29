@@ -26,7 +26,7 @@ import org.apache.dubbo.rpc.ListenableFilter;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ConsumerMethodModel;
+import org.apache.dubbo.rpc.model.AsyncMethodInfo;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 
 import java.lang.reflect.InvocationTargetException;
@@ -55,7 +55,7 @@ public class FutureFilter extends ListenableFilter {
     }
 
     private void fireInvokeCallback(final Invoker<?> invoker, final Invocation invocation) {
-        final ConsumerMethodModel.AsyncMethodInfo asyncMethodInfo = getAsyncMethodInfo(invoker, invocation);
+        final AsyncMethodInfo asyncMethodInfo = getAsyncMethodInfo(invoker, invocation);
         if (asyncMethodInfo == null) {
             return;
         }
@@ -83,7 +83,7 @@ public class FutureFilter extends ListenableFilter {
     }
 
     private void fireReturnCallback(final Invoker<?> invoker, final Invocation invocation, final Object result) {
-        final ConsumerMethodModel.AsyncMethodInfo asyncMethodInfo = getAsyncMethodInfo(invoker, invocation);
+        final AsyncMethodInfo asyncMethodInfo = getAsyncMethodInfo(invoker, invocation);
         if (asyncMethodInfo == null) {
             return;
         }
@@ -129,7 +129,7 @@ public class FutureFilter extends ListenableFilter {
     }
 
     private void fireThrowCallback(final Invoker<?> invoker, final Invocation invocation, final Throwable exception) {
-        final ConsumerMethodModel.AsyncMethodInfo asyncMethodInfo = getAsyncMethodInfo(invoker, invocation);
+        final AsyncMethodInfo asyncMethodInfo = getAsyncMethodInfo(invoker, invocation);
         if (asyncMethodInfo == null) {
             return;
         }
@@ -175,7 +175,7 @@ public class FutureFilter extends ListenableFilter {
         }
     }
 
-    private ConsumerMethodModel.AsyncMethodInfo getAsyncMethodInfo(Invoker<?> invoker, Invocation invocation) {
+    private AsyncMethodInfo getAsyncMethodInfo(Invoker<?> invoker, Invocation invocation) {
         final ConsumerModel consumerModel = ApplicationModel.getConsumerModel(invoker.getUrl().getServiceKey());
         if (consumerModel == null) {
             return null;
@@ -186,17 +186,7 @@ public class FutureFilter extends ListenableFilter {
             methodName = (String) invocation.getArguments()[0];
         }
 
-        ConsumerMethodModel methodModel = consumerModel.getMethodModel(methodName);
-        if (methodModel == null) {
-            return null;
-        }
-
-        final ConsumerMethodModel.AsyncMethodInfo asyncMethodInfo = methodModel.getAsyncInfo();
-        if (asyncMethodInfo == null) {
-            return null;
-        }
-
-        return asyncMethodInfo;
+        return consumerModel.getAsyncInfo(methodName);
     }
 
     class FutureListener implements Listener {
