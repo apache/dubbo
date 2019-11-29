@@ -166,18 +166,18 @@ public class GenericProtobufJsonObjectOutputTest {
 
 
     @Test
-    public void testWriteMap() throws IOException {
+    public void testWriteMap() throws IOException, ClassNotFoundException {
         Map<String, Object> map = new HashMap<>();
         map.put("key", "hello");
         map.put("value", "dubbo");
         this.genericProtobufObjectOutput.writeAttachments(map);
         this.flushToInput();
-        assertThat(genericProtobufObjectInput.readObject(Map.class), is(map));
+        assertThat(genericProtobufObjectInput.readAttachments(), is(map));
     }
 
 
     @Test
-    void testWriteMultiType() throws IOException {
+    void testWriteMultiType() throws IOException, ClassNotFoundException {
         long random = new Random().nextLong();
         this.genericProtobufObjectOutput.writeLong(random);
         Map<String, Object> map = new HashMap<>();
@@ -192,7 +192,7 @@ public class GenericProtobufJsonObjectOutputTest {
         this.genericProtobufObjectOutput.writeShort((short) randomShort);
         this.flushToInput();
         assertThat(genericProtobufObjectInput.readLong(), is(random));
-        assertThat(genericProtobufObjectInput.readObject(Map.class), is(map));
+        assertThat(genericProtobufObjectInput.readAttachments(), is(map));
         assertThat(genericProtobufObjectInput.readBytes(), is(bytes));
         assertThat(genericProtobufObjectInput.readShort(), is((short) randomShort));
     }
