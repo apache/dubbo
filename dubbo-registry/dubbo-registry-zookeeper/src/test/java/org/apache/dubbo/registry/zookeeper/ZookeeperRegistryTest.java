@@ -36,7 +36,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 
@@ -53,8 +55,9 @@ public class ZookeeperRegistryTest {
     public void setUp() throws Exception {
         int zkServerPort = NetUtils.getAvailablePort();
         this.zkServer = new TestingServer(zkServerPort, true);
-        this.registryUrl = URL.valueOf("zookeeper://localhost:" + zkServerPort);
+        this.zkServer.start();
 
+        this.registryUrl = URL.valueOf("zookeeper://localhost:" + zkServerPort);
         zookeeperRegistryFactory = new ZookeeperRegistryFactory();
         zookeeperRegistryFactory.setZookeeperTransporter(new CuratorZookeeperTransporter());
         this.zookeeperRegistry = (ZookeeperRegistry) zookeeperRegistryFactory.createRegistry(registryUrl);
@@ -63,12 +66,6 @@ public class ZookeeperRegistryTest {
     @AfterEach
     public void tearDown() throws Exception {
         zkServer.stop();
-    }
-
-    @Test
-    public void testDefaultPort() {
-        Assertions.assertEquals("10.20.153.10:2181", ZookeeperRegistry.appendDefaultPort("10.20.153.10:0"));
-        Assertions.assertEquals("10.20.153.10:2181", ZookeeperRegistry.appendDefaultPort("10.20.153.10"));
     }
 
     @Test
@@ -131,7 +128,7 @@ public class ZookeeperRegistryTest {
     @Test
     /*
       This UT is unstable, consider remove it later.
-      @see https://github.com/apache/incubator-dubbo/issues/1787
+      @see https://github.com/apache/dubbo/issues/1787
      */
     public void testStatusChecker() {
         RegistryStatusChecker registryStatusChecker = new RegistryStatusChecker();
@@ -153,12 +150,7 @@ public class ZookeeperRegistryTest {
     public void testSubscribeAnyValue() throws InterruptedException {
         final CountDownLatch latch = new CountDownLatch(1);
         zookeeperRegistry.register(serviceUrl);
-        zookeeperRegistry.subscribe(anyUrl, new NotifyListener() {
-            @Override
-            public void notify(List<URL> urls) {
-                latch.countDown();
-            }
-        });
+        zookeeperRegistry.subscribe(anyUrl, urls -> latch.countDown());
         zookeeperRegistry.register(serviceUrl);
         latch.await();
     }

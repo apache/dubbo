@@ -17,23 +17,21 @@
 package org.apache.dubbo.remoting.exchange.support.header;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.Channel;
+import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import org.apache.dubbo.remoting.Channel;
-import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.exchange.Request;
-
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import java.util.List;
 
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class HeaderExchangeChannelTest {
@@ -193,7 +191,7 @@ public class HeaderExchangeChannelTest {
     public void closeWithTimeoutTest02() {
         Assertions.assertFalse(channel.isClosed());
         Request request = new Request();
-        DefaultFuture.newFuture(channel, request, 100);
+        DefaultFuture.newFuture(channel, request, 100, null);
         header.close(100);
         //return directly
         header.close(1000);

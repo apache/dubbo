@@ -112,6 +112,9 @@ public class RpcStatus {
         max = (max <= 0) ? Integer.MAX_VALUE : max;
         RpcStatus appStatus = getStatus(url);
         RpcStatus methodStatus = getStatus(url, methodName);
+        if (methodStatus.active.get() == Integer.MAX_VALUE) {
+            return false;
+        }
         if (methodStatus.active.incrementAndGet() > max) {
             methodStatus.active.decrementAndGet();
             return false;

@@ -79,4 +79,17 @@ public class ServiceAnnotationBeanPostProcessorTest {
 
     }
 
+    @Test
+    public void testMethodAnnotation() {
+
+        Map<String, ServiceBean> serviceBeansMap = beanFactory.getBeansOfType(ServiceBean.class);
+
+        Assert.assertEquals(2, serviceBeansMap.size());
+
+        ServiceBean demoServiceBean = serviceBeansMap.get("ServiceBean:org.apache.dubbo.config.spring.api.DemoService:2.5.7");
+
+        Assert.assertNotNull(demoServiceBean.getMethods());
+
+    }
+
 }

@@ -16,15 +16,16 @@
  */
 package org.apache.dubbo.remoting.transport.netty4;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.utils.DubboAppender;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.Client;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.Server;
+import org.apache.dubbo.remoting.RemotingServer;
 import org.apache.dubbo.remoting.exchange.Exchangers;
 import org.apache.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -47,24 +48,24 @@ public class ClientReconnectTest {
         {
             int port = NetUtils.getAvailablePort();
             Client client = startClient(port, 200);
-            Assertions.assertEquals(false, client.isConnected());
-            Server server = startServer(port);
+            Assertions.assertFalse(client.isConnected());
+            RemotingServer server = startServer(port);
             for (int i = 0; i < 100 && !client.isConnected(); i++) {
-                Thread.sleep(10);
+                Thread.sleep(20);
             }
-            Assertions.assertEquals(true, client.isConnected());
+            Assertions.assertTrue(client.isConnected());
             client.close(2000);
             server.close(2000);
         }
         {
             int port = NetUtils.getAvailablePort();
             Client client = startClient(port, 20000);
-            Assertions.assertEquals(false, client.isConnected());
-            Server server = startServer(port);
+            Assertions.assertFalse(client.isConnected());
+            RemotingServer server = startServer(port);
             for (int i = 0; i < 5; i++) {
                 Thread.sleep(200);
             }
-            Assertions.assertEquals(false, client.isConnected());
+            Assertions.assertFalse(client.isConnected());
             client.close(2000);
             server.close(2000);
         }
@@ -76,7 +77,7 @@ public class ClientReconnectTest {
         return Exchangers.connect(url);
     }
 
-    public Server startServer(int port) throws RemotingException {
+    public RemotingServer startServer(int port) throws RemotingException {
         final String url = "exchange://127.0.0.1:" + port + "/client.reconnect.test?server=netty4";
         return Exchangers.bind(url, new HandlerAdapter());
     }

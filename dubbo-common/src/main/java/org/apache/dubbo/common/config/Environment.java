@@ -16,19 +16,24 @@
  */
 package org.apache.dubbo.common.config;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.context.FrameworkExt;
+import org.apache.dubbo.common.context.LifecycleAdapter;
+import org.apache.dubbo.common.extension.DisableInject;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.ConfigCenterConfig;
+import org.apache.dubbo.config.context.ConfigManager;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * TODO load as SPI will be better?
- */
-public class Environment {
-    private static final Environment INSTANCE = new Environment();
+public class Environment extends LifecycleAdapter implements FrameworkExt {
+    public static final String NAME = "environment";
 
     private Map<String, PropertiesConfiguration> propertiesConfigs = new ConcurrentHashMap<>();
     private Map<String, SystemConfiguration> systemConfigs = new ConcurrentHashMap<>();
@@ -41,13 +46,18 @@ public class Environment {
 
     private boolean configCenterFirst = true;
 
-    /**
-     * FIXME, this instance will always be a type of DynamicConfiguration, ConfigCenterConfig will load the instance at startup and assign it to here.
-     */
-    private Configuration dynamicConfiguration;
+    private DynamicConfiguration dynamicConfiguration;
 
-    public static Environment getInstance() {
-        return INSTANCE;
+    @Override
+    public void initialize() throws IllegalStateException {
+        ConfigManager configManager = ApplicationModel.getConfigManager();
+        Optional<Collection<ConfigCenterConfig>> defaultConfigs = configManager.getDefaultConfigCenter();
+        defaultConfigs.ifPresent(configs -> {
+            for (ConfigCenterConfig config : configs) {
+                this.setExternalConfigMap(config.getExternalConfiguration());
+                this.setAppExternalConfigMap(config.getAppExternalConfiguration());
+            }
+        });
     }
 
     public PropertiesConfiguration getPropertiesConfig(String prefix, String id) {
@@ -78,12 +88,18 @@ public class Environment {
         return environmentConfigs.computeIfAbsent(toKey(prefix, id), k -> new EnvironmentConfiguration(prefix, id));
     }
 
+    @DisableInject
     public void setExternalConfigMap(Map<String, String> externalConfiguration) {
-        this.externalConfigurationMap = externalConfiguration;
+        if (externalConfiguration != null) {
+            this.externalConfigurationMap = externalConfiguration;
+        }
     }
 
+    @DisableInject
     public void setAppExternalConfigMap(Map<String, String> appExternalConfiguration) {
-        this.appExternalConfigurationMap = appExternalConfiguration;
+        if (appExternalConfiguration != null) {
+            this.appExternalConfigurationMap = appExternalConfiguration;
+        }
     }
 
     public Map<String, String> getExternalConfigurationMap() {
@@ -115,6 +131,7 @@ public class Environment {
         CompositeConfiguration compositeConfiguration = new CompositeConfiguration();
         // Config center has the highest priority
         compositeConfiguration.addConfiguration(this.getSystemConfig(prefix, id));
+        compositeConfiguration.addConfiguration(this.getEnvironmentConfig(prefix, id));
         compositeConfiguration.addConfiguration(this.getAppExternalConfig(prefix, id));
         compositeConfiguration.addConfiguration(this.getExternalConfig(prefix, id));
         compositeConfiguration.addConfiguration(this.getPropertiesConfig(prefix, id));
@@ -141,23 +158,31 @@ public class Environment {
         if (sb.length() > 0) {
             return sb.toString();
         }
-        return Constants.DUBBO;
+        return CommonConstants.DUBBO;
     }
 
     public boolean isConfigCenterFirst() {
         return configCenterFirst;
     }
 
+    @DisableInject
     public void setConfigCenterFirst(boolean configCenterFirst) {
         this.configCenterFirst = configCenterFirst;
     }
 
-    public Optional<Configuration> getDynamicConfiguration() {
+    public Optional<DynamicConfiguration> getDynamicConfiguration() {
         return Optional.ofNullable(dynamicConfiguration);
     }
 
-    public void setDynamicConfiguration(Configuration dynamicConfiguration) {
+    @DisableInject
+    public void setDynamicConfiguration(DynamicConfiguration dynamicConfiguration) {
         this.dynamicConfiguration = dynamicConfiguration;
+    }
+
+    @Override
+    public void destroy() throws IllegalStateException {
+        clearExternalConfigs();
+        clearAppExternalConfigs();
     }
 
     // For test

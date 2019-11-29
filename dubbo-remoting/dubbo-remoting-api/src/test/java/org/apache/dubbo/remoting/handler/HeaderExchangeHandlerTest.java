@@ -17,8 +17,8 @@
 package org.apache.dubbo.remoting.handler;
 
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.remoting.Channel;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.ExchangeHandler;
@@ -31,6 +31,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.apache.dubbo.common.constants.CommonConstants.READONLY_EVENT;
 
 //TODO response test
 public class HeaderExchangeHandlerTest {
@@ -70,7 +72,7 @@ public class HeaderExchangeHandlerTest {
                 Assertions.assertEquals(request.getVersion(), res.getVersion());
                 Assertions.assertEquals(Response.OK, res.getStatus());
                 Assertions.assertEquals(requestdata, res.getResult());
-                Assertions.assertEquals(null, res.getErrorMessage());
+                Assertions.assertNull(res.getErrorMessage());
                 count.incrementAndGet();
             }
         };
@@ -155,7 +157,7 @@ public class HeaderExchangeHandlerTest {
     public void test_received_request_event_readonly() throws RemotingException {
         final Request request = new Request();
         request.setTwoWay(true);
-        request.setEvent(Request.READONLY_EVENT);
+        request.setEvent(READONLY_EVENT);
 
         final Channel mchannel = new MockedChannel();
         HeaderExchangeHandler hexhandler = new HeaderExchangeHandler(new MockedExchangeHandler());
@@ -178,7 +180,7 @@ public class HeaderExchangeHandlerTest {
         HeaderExchangeHandler hexhandler = new HeaderExchangeHandler(new MockedExchangeHandler() {
 
             @Override
-            public CompletableFuture reply(ExchangeChannel channel, Object request) throws RemotingException {
+            public CompletableFuture<Object> reply(ExchangeChannel channel, Object request) throws RemotingException {
                 Assertions.fail();
                 throw new RemotingException(channel, "");
             }

@@ -18,6 +18,7 @@ package org.apache.dubbo.qos.server;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.qos.server.handler.QosProcessHandler;
 
 import io.netty.bootstrap.ServerBootstrap;
@@ -47,6 +48,8 @@ public class Server {
     public static final Server getInstance() {
         return INSTANCE;
     }
+
+    private String host;
 
     private int port;
 
@@ -82,7 +85,7 @@ public class Server {
         if (!started.compareAndSet(false, true)) {
             return;
         }
-        boss = new NioEventLoopGroup(0, new DefaultThreadFactory("qos-boss", true));
+        boss = new NioEventLoopGroup(1, new DefaultThreadFactory("qos-boss", true));
         worker = new NioEventLoopGroup(0, new DefaultThreadFactory("qos-worker", true));
         ServerBootstrap serverBootstrap = new ServerBootstrap();
         serverBootstrap.group(boss, worker);
@@ -97,7 +100,12 @@ public class Server {
             }
         });
         try {
-            serverBootstrap.bind(port).sync();
+            if (StringUtils.isBlank(host)) {
+                serverBootstrap.bind(port).sync();
+            } else {
+                serverBootstrap.bind(host, port).sync();
+            }
+
             logger.info("qos-server bind localhost:" + port);
         } catch (Throwable throwable) {
             logger.error("qos-server can not bind localhost:" + port, throwable);
@@ -116,6 +124,14 @@ public class Server {
         if (worker != null) {
             worker.shutdownGracefully();
         }
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public void setHost(String host) {
+        this.host = host;
     }
 
     public void setPort(int port) {

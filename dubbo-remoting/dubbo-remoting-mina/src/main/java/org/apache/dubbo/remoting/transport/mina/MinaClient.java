@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.transport.mina;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.logger.Logger;
@@ -25,6 +24,7 @@ import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.transport.AbstractClient;
 
@@ -51,7 +51,7 @@ public class MinaClient extends AbstractClient {
 
     private static final Logger logger = LoggerFactory.getLogger(MinaClient.class);
 
-    private static final Map<String, SocketConnector> connectors = new ConcurrentHashMap<String, SocketConnector>();
+    private static final Map<String, SocketConnector> CONNECTORS = new ConcurrentHashMap<String, SocketConnector>();
 
     private String connectorKey;
 
@@ -66,7 +66,7 @@ public class MinaClient extends AbstractClient {
     @Override
     protected void doOpen() throws Throwable {
         connectorKey = getUrl().toFullString();
-        SocketConnector c = connectors.get(connectorKey);
+        SocketConnector c = CONNECTORS.get(connectorKey);
         if (c != null) {
             connector = c;
         } else {
@@ -82,7 +82,7 @@ public class MinaClient extends AbstractClient {
             cfg.setConnectTimeout(timeout < 1000 ? 1 : timeout / 1000);
             // set codec.
             connector.getFilterChain().addLast("codec", new ProtocolCodecFilter(new MinaCodecAdapter(getCodec(), getUrl(), this)));
-            connectors.put(connectorKey, connector);
+            CONNECTORS.put(connectorKey, connector);
         }
     }
 

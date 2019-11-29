@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.common.bytecode;
 
-import org.apache.dubbo.common.utils.ClassHelper;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 
 import java.lang.reflect.Method;
@@ -69,7 +69,7 @@ public abstract class Mixin {
      * @return Mixin instance.
      */
     public static Mixin mixin(Class<?>[] ics, Class<?>[] dcs) {
-        return mixin(ics, dcs, ClassHelper.getCallerClassLoader(Mixin.class));
+        return mixin(ics, dcs, ClassUtils.getCallerClassLoader(Mixin.class));
     }
 
     /**

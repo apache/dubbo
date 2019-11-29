@@ -29,12 +29,56 @@ public interface Invocation extends org.apache.dubbo.rpc.Invocation {
         return null;
     }
 
+    @Override
+    default void setAttachmentIfAbsent(String key, Object value) {
+    }
+
+    @Override
+    default void setAttachment(String key, Object value) {
+
+    }
+
+    @Override
+    default String getServiceName() {
+        return null;
+    }
+
+    @Override
+    default String getTargetServiceUniqueName() {
+        return null;
+    }
+
+    @Override
+    default Object getAttachment(String key, Object defaultValue) {
+        return null;
+    }
+
+    @Override
+    default Object put(Object key, Object value) {
+        return null;
+    }
+
+    @Override
+    default Object get(Object key) {
+        return null;
+    }
+
+    @Override
+    default Map<Object, Object> getAttributes() {
+        return null;
+    }
+
     class CompatibleInvocation implements Invocation {
 
         private org.apache.dubbo.rpc.Invocation delegate;
 
         public CompatibleInvocation(org.apache.dubbo.rpc.Invocation invocation) {
             this.delegate = invocation;
+        }
+
+        @Override
+        public String getTargetServiceUniqueName() {
+            return delegate.getTargetServiceUniqueName();
         }
 
         @Override
@@ -53,23 +97,38 @@ public interface Invocation extends org.apache.dubbo.rpc.Invocation {
         }
 
         @Override
-        public Map<String, String> getAttachments() {
+        public Map<String, Object> getAttachments() {
             return delegate.getAttachments();
         }
 
         @Override
-        public String getAttachment(String key) {
+        public Object getAttachment(String key) {
             return delegate.getAttachment(key);
         }
 
         @Override
-        public String getAttachment(String key, String defaultValue) {
+        public Object getAttachment(String key, Object defaultValue) {
             return delegate.getAttachment(key, defaultValue);
         }
 
         @Override
         public Invoker<?> getInvoker() {
             return new Invoker.CompatibleInvoker(delegate.getInvoker());
+        }
+
+        @Override
+        public Object put(Object key, Object value) {
+            return delegate.put(key, value);
+        }
+
+        @Override
+        public Object get(Object key) {
+            return delegate.get(key);
+        }
+
+        @Override
+        public Map<Object, Object> getAttributes() {
+            return delegate.getAttributes();
         }
 
         @Override

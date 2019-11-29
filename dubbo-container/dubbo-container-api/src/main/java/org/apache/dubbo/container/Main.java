@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.container;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -31,8 +30,12 @@ import java.util.List;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
+
 /**
  * Main. (API, Static, ThreadSafe)
+ *
+ * This class is entry point loading containers.
  */
 public class Main {
 
@@ -52,7 +55,7 @@ public class Main {
         try {
             if (ArrayUtils.isEmpty(args)) {
                 String config = ConfigUtils.getProperty(CONTAINER_KEY, loader.getDefaultExtensionName());
-                args = Constants.COMMA_SPLIT_PATTERN.split(config);
+                args = COMMA_SPLIT_PATTERN.split(config);
             }
 
             final List<Container> containers = new ArrayList<Container>();
