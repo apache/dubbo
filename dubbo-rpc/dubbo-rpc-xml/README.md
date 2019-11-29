@@ -8,7 +8,7 @@ A RPC Extension for XML-RPC(http://ws.apache.org/xmlrpc)
 <dependency>
     <groupId>org.apache.dubbo</groupId>
     <artifactId>dubbo-rpc</artifactId>
-    <version>2.7.2-SNAPSHOT</version>
+    <version>2.7.3-SNAPSHOT</version>
 </dependency>
 
 ```

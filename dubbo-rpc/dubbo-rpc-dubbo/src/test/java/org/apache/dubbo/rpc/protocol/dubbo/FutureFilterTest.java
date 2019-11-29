@@ -30,7 +30,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import static org.apache.dubbo.config.Constants.ON_THROW_METHOD_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -77,7 +76,7 @@ public class FutureFilterTest {
             AppResponse result = new AppResponse();
             result.setException(new RuntimeException());
             given(invoker.invoke(invocation)).willReturn(result);
-            URL url = URL.valueOf("test://test:11/test?group=dubbo&version=1.1&" + ON_THROW_METHOD_KEY + "=echo");
+            URL url = URL.valueOf("test://test:11/test?group=dubbo&version=1.1&onthrow.method=echo");
             given(invoker.getUrl()).willReturn(url);
 
             eventFilter.invoke(invoker, invocation).recreate();

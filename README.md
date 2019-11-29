@@ -42,7 +42,7 @@ There's a [README](https://github.com/apache/dubbo-samples/tree/master/dubbo-sam
 
 ```xml
 <properties>
-    <dubbo.version>2.7.3</dubbo.version>
+    <dubbo.version>2.7.4.1</dubbo.version>
 </properties>
     
 <dependencies>
@@ -66,7 +66,7 @@ There's a [README](https://github.com/apache/dubbo-samples/tree/master/dubbo-sam
 package org.apache.dubbo.samples.api;
 
 public interface GreetingService {
-    String sayHello(String name);
+    String sayHi(String name);
 }
 ```
 
@@ -76,86 +76,94 @@ public interface GreetingService {
 
 ```java
 package org.apache.dubbo.samples.provider;
- 
-import org.apache.dubbo.samples.api.GreetingService;
- 
-public class GreetingServiceImpl implements GreetingService {
+
+import org.apache.dubbo.samples.api.GreetingsService;
+
+public class GreetingsServiceImpl implements GreetingsService {
     @Override
-    public String sayHello(String name) {
-        return "Hello " + name;
+    public String sayHi(String name) {
+        return "hi, " + name;
     }
 }
 ```
 
-*See [provider/GreetingServiceImpl.java](https://github.com/apache/dubbo-samples/blob/master/dubbo-samples-api/src/main/java/org/apache/dubbo/samples/server/GreetingsServiceImpl.java) on GitHub.*
+*See [provider/GreetingServiceImpl.java](https://github.com/apache/dubbo-samples/blob/master/dubbo-samples-api/src/main/java/org/apache/dubbo/samples/provider/GreetingsServiceImpl.java) on GitHub.*
 
 ### Start service provider
 
 ```java
-package org.apache.dubbo.demo.provider;
+package org.apache.dubbo.samples.provider;
+
 
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
-import org.apache.dubbo.samples.api.GreetingService;
+import org.apache.dubbo.samples.api.GreetingsService;
 
-import java.io.IOException;
- 
+import java.util.concurrent.CountDownLatch;
+
 public class Application {
+    private static String zookeeperHost = System.getProperty("zookeeper.address", "127.0.0.1");
 
-    public static void main(String[] args) throws IOException {
-        ServiceConfig<GreetingService> serviceConfig = new ServiceConfig<GreetingService>();
-        serviceConfig.setApplication(new ApplicationConfig("first-dubbo-provider"));
-        serviceConfig.setRegistry(new RegistryConfig("multicast://224.5.6.7:1234"));
-        serviceConfig.setInterface(GreetingService.class);
-        serviceConfig.setRef(new GreetingServiceImpl());
-        serviceConfig.export();
-        System.in.read();
+    public static void main(String[] args) throws Exception {
+        ServiceConfig<GreetingsService> service = new ServiceConfig<>();
+        service.setApplication(new ApplicationConfig("first-dubbo-provider"));
+        service.setRegistry(new RegistryConfig("zookeeper://" + zookeeperHost + ":2181"));
+        service.setInterface(GreetingsService.class);
+        service.setRef(new GreetingsServiceImpl());
+        service.export();
+
+        System.out.println("dubbo service started");
+        new CountDownLatch(1).await();
     }
 }
 ```
 
-*See [provider/Application.java](https://github.com/apache/dubbo-samples/blob/master/dubbo-samples-api/src/main/java/org/apache/dubbo/samples/server/Application.java) on GitHub.*
+*See [provider/Application.java](https://github.com/apache/dubbo-samples/blob/master/dubbo-samples-api/src/main/java/org/apache/dubbo/samples/provider/Application.java) on GitHub.*
 
 ### Build and run the provider
 
 ```bash
 # mvn clean package
-# mvn -Djava.net.preferIPv4Stack=true -Dexec.mainClass=org.apache.dubbo.demo.provider.Application exec:java
+# mvn -Djava.net.preferIPv4Stack=true -Dexec.mainClass=org.apache.dubbo.samples.provider.Application exec:java
 ```
 
 ### Call remote service in consumer
 
 ```java
-package org.apache.dubbo.demo.consumer;
+package org.apache.dubbo.samples.client;
+
 
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
-import org.apache.dubbo.samples.api.GreetingService;
+import org.apache.dubbo.samples.api.GreetingsService;
 
 public class Application {
+    private static String zookeeperHost = System.getProperty("zookeeper.address", "127.0.0.1");
+
     public static void main(String[] args) {
-        ReferenceConfig<GreetingService> referenceConfig = new ReferenceConfig<GreetingService>();
-        referenceConfig.setApplication(new ApplicationConfig("first-dubbo-consumer"));
-        referenceConfig.setRegistry(new RegistryConfig("multicast://224.5.6.7:1234"));
-        referenceConfig.setInterface(GreetingService.class);
-        GreetingService greetingService = referenceConfig.get();
-        System.out.println(greetingService.sayHello("world"));
+        ReferenceConfig<GreetingsService> reference = new ReferenceConfig<>();
+        reference.setApplication(new ApplicationConfig("first-dubbo-consumer"));
+        reference.setRegistry(new RegistryConfig("zookeeper://" + zookeeperHost + ":2181"));
+        reference.setInterface(GreetingsService.class);
+        GreetingsService service = reference.get();
+        String message = service.sayHi("dubbo");
+        System.out.println(message);
     }
 }
 ```
+*See [consumer/Application.java](https://github.com/apache/dubbo-samples/blob/master/dubbo-samples-api/src/main/java/org/apache/dubbo/samples/client/Application.java) on GitHub.*
 
 ### Build and run the consumer
 
 ```bash
 # mvn clean package
-# mvn -Djava.net.preferIPv4Stack=true -Dexec.mainClass=org.apache.dubbo.demo.consumer.Application exec:java
+# mvn -Djava.net.preferIPv4Stack=true -Dexec.mainClass=org.apache.dubbo.samples.client.Application exec:java
 ```
 
-The consumer will print out `Hello world` on the screen.
+The consumer will print out `hi, dubbo` on the screen.
 
-*See [consumer/Application.java](https://github.com/apache/dubbo-samples/blob/master/dubbo-samples-api/src/main/java/org/apache/dubbo/samples/client/Application.java) on GitHub.*
 
 ### Next steps
 

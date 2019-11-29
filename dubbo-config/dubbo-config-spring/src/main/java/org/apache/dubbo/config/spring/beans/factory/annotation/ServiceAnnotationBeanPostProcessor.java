@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
-import java.util.Collections;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ArrayUtils;
@@ -57,15 +56,16 @@ import org.springframework.util.StringUtils;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static com.alibaba.spring.util.ObjectUtils.of;
 import static org.apache.dubbo.config.spring.beans.factory.annotation.ServiceBeanNameBuilder.create;
-import static org.apache.dubbo.config.spring.util.AnnotationUtils.resolveServiceInterfaceClass;
-import static org.apache.dubbo.config.spring.util.ObjectUtils.of;
+import static org.apache.dubbo.config.spring.util.DubboAnnotationUtils.resolveServiceInterfaceClass;
 import static org.springframework.beans.factory.support.BeanDefinitionBuilder.rootBeanDefinition;
 import static org.springframework.context.annotation.AnnotationConfigUtils.CONFIGURATION_BEAN_NAME_GENERATOR;
 import static org.springframework.core.annotation.AnnotatedElementUtils.findMergedAnnotation;

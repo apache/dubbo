@@ -30,10 +30,9 @@ import org.mockito.Mockito;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-
-import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 
 public class TokenFilterTest {
 
@@ -48,7 +47,7 @@ public class TokenFilterTest {
         when(invoker.getUrl()).thenReturn(url);
         when(invoker.invoke(any(Invocation.class))).thenReturn(new AppResponse("result"));
 
-        Map<String, String> attachments = new HashMap<String, String>();
+        Map<String, Object> attachments = new HashMap<>();
         attachments.put(TOKEN_KEY, token);
         Invocation invocation = Mockito.mock(Invocation.class);
         when(invocation.getAttachments()).thenReturn(attachments);
@@ -67,7 +66,7 @@ public class TokenFilterTest {
             when(invoker.getUrl()).thenReturn(url);
             when(invoker.invoke(any(Invocation.class))).thenReturn(new AppResponse("result"));
 
-            Map<String, String> attachments = new HashMap<String, String>();
+            Map<String, Object> attachments = new HashMap<>();
             attachments.put(TOKEN_KEY, "wrongToken");
             Invocation invocation = Mockito.mock(Invocation.class);
             when(invocation.getAttachments()).thenReturn(attachments);

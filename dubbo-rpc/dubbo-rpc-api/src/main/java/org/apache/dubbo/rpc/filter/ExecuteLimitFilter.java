@@ -19,10 +19,9 @@ package org.apache.dubbo.rpc.filter;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.ListenableFilter;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcStatus;
@@ -38,13 +37,9 @@ import static org.apache.dubbo.rpc.Constants.EXECUTES_KEY;
  *
  */
 @Activate(group = CommonConstants.PROVIDER, value = EXECUTES_KEY)
-public class ExecuteLimitFilter extends ListenableFilter {
+public class ExecuteLimitFilter implements Filter, Filter.Listener {
 
     private static final String EXECUTELIMIT_FILTER_START_TIME = "execugtelimit_filter_start_time";
-
-    public ExecuteLimitFilter() {
-        super.listener = new ExecuteLimitListener();
-    }
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
@@ -58,7 +53,7 @@ public class ExecuteLimitFilter extends ListenableFilter {
                             "\" /> limited.");
         }
 
-        invocation.setAttachment(EXECUTELIMIT_FILTER_START_TIME, String.valueOf(System.currentTimeMillis()));
+        invocation.put(EXECUTELIMIT_FILTER_START_TIME, System.currentTimeMillis());
         try {
             return invoker.invoke(invocation);
         } catch (Throwable t) {
@@ -70,26 +65,24 @@ public class ExecuteLimitFilter extends ListenableFilter {
         }
     }
 
-    static class ExecuteLimitListener implements Listener {
-        @Override
-        public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
-            RpcStatus.endCount(invoker.getUrl(), invocation.getMethodName(), getElapsed(invocation), true);
-        }
+    @Override
+    public void onMessage(Result appResponse, Invoker<?> invoker, Invocation invocation) {
+        RpcStatus.endCount(invoker.getUrl(), invocation.getMethodName(), getElapsed(invocation), true);
+    }
 
-        @Override
-        public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
-            if (t instanceof RpcException) {
-                RpcException rpcException = (RpcException)t;
-                if (rpcException.isLimitExceed()) {
-                    return;
-                }
+    @Override
+    public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
+        if (t instanceof RpcException) {
+            RpcException rpcException = (RpcException) t;
+            if (rpcException.isLimitExceed()) {
+                return;
             }
-            RpcStatus.endCount(invoker.getUrl(), invocation.getMethodName(), getElapsed(invocation), false);
         }
+        RpcStatus.endCount(invoker.getUrl(), invocation.getMethodName(), getElapsed(invocation), false);
+    }
 
-        private long getElapsed(Invocation invocation) {
-            String beginTime = invocation.getAttachment(EXECUTELIMIT_FILTER_START_TIME);
-            return StringUtils.isNotEmpty(beginTime) ? System.currentTimeMillis() - Long.parseLong(beginTime) : 0;
-        }
+    private long getElapsed(Invocation invocation) {
+        Object beginTime = invocation.get(EXECUTELIMIT_FILTER_START_TIME);
+        return beginTime != null ? System.currentTimeMillis() - (Long) beginTime : 0;
     }
 }

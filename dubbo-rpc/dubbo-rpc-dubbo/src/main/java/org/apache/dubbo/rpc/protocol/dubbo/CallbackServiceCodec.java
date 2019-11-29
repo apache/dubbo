@@ -37,17 +37,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CALLBACK_INSTANCES_LIMIT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CALLBACK_INSTANCES;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import static org.apache.dubbo.rpc.protocol.dubbo.Constants.CALLBACK_SERVICE_KEY;
-import static org.apache.dubbo.rpc.Constants.CALLBACK_INSTANCES_LIMIT_KEY;
-import static org.apache.dubbo.rpc.Constants.DEFAULT_CALLBACK_INSTANCES;
-import static org.apache.dubbo.rpc.protocol.dubbo.Constants.CALLBACK_SERVICE_PROXY_KEY;
-import static org.apache.dubbo.rpc.protocol.dubbo.Constants.IS_CALLBACK_SERVICE;
-import static org.apache.dubbo.rpc.protocol.dubbo.Constants.CHANNEL_CALLBACK_KEY;
 import static org.apache.dubbo.rpc.Constants.IS_SERVER_KEY;
+import static org.apache.dubbo.rpc.protocol.dubbo.Constants.CALLBACK_SERVICE_KEY;
+import static org.apache.dubbo.rpc.protocol.dubbo.Constants.CALLBACK_SERVICE_PROXY_KEY;
+import static org.apache.dubbo.rpc.protocol.dubbo.Constants.CHANNEL_CALLBACK_KEY;
+import static org.apache.dubbo.rpc.protocol.dubbo.Constants.IS_CALLBACK_SERVICE;
 
 /**
  * callback service helper
@@ -65,7 +65,7 @@ class CallbackServiceCodec {
     private static byte isCallBack(URL url, String methodName, int argIndex) {
         // parameter callback rule: method-name.parameter-index(starting from 0).callback
         byte isCallback = CALLBACK_NONE;
-        if (url != null) {
+        if (url != null && url.hasMethodParameter(methodName)) {
             String callback = url.getParameter(methodName + "." + argIndex + ".callback");
             if (callback != null) {
                 if ("true".equalsIgnoreCase(callback)) {
@@ -144,7 +144,7 @@ class CallbackServiceCodec {
      */
     @SuppressWarnings("unchecked")
     private static Object referOrDestroyCallbackService(Channel channel, URL url, Class<?> clazz, Invocation inv, int instid, boolean isRefer) {
-        Object proxy = null;
+        Object proxy;
         String invokerCacheKey = getServerSideCallbackInvokerCacheKey(channel, clazz.getName(), instid);
         String proxyCacheKey = getServerSideCallbackServiceCacheKey(channel, clazz.getName(), instid);
         proxy = channel.getAttribute(proxyCacheKey);
@@ -165,7 +165,7 @@ class CallbackServiceCodec {
                     //ignore concurrent problem.
                     Set<Invoker<?>> callbackInvokers = (Set<Invoker<?>>) channel.getAttribute(CHANNEL_CALLBACK_KEY);
                     if (callbackInvokers == null) {
-                        callbackInvokers = new ConcurrentHashSet<Invoker<?>>(1);
+                        callbackInvokers = new ConcurrentHashSet<>(1);
                         callbackInvokers.add(invoker);
                         channel.setAttribute(CHANNEL_CALLBACK_KEY, callbackInvokers);
                     }
@@ -261,8 +261,6 @@ class CallbackServiceCodec {
         Object[] args = inv.getArguments();
         Class<?>[] pts = inv.getParameterTypes();
         switch (callbackStatus) {
-            case CallbackServiceCodec.CALLBACK_NONE:
-                return args[paraIndex];
             case CallbackServiceCodec.CALLBACK_CREATE:
                 inv.setAttachment(INV_ATT_CALLBACK_KEY + paraIndex, exportOrUnexportCallbackService(channel, url, pts[paraIndex], args[paraIndex], true));
                 return null;
@@ -288,18 +286,16 @@ class CallbackServiceCodec {
         }
         byte callbackstatus = isCallBack(url, inv.getMethodName(), paraIndex);
         switch (callbackstatus) {
-            case CallbackServiceCodec.CALLBACK_NONE:
-                return inObject;
             case CallbackServiceCodec.CALLBACK_CREATE:
                 try {
-                    return referOrDestroyCallbackService(channel, url, pts[paraIndex], inv, Integer.parseInt(inv.getAttachment(INV_ATT_CALLBACK_KEY + paraIndex)), true);
+                    return referOrDestroyCallbackService(channel, url, pts[paraIndex], inv, Integer.parseInt((String) inv.getAttachment(INV_ATT_CALLBACK_KEY + paraIndex)), true);
                 } catch (Exception e) {
                     logger.error(e.getMessage(), e);
                     throw new IOException(StringUtils.toString(e));
                 }
             case CallbackServiceCodec.CALLBACK_DESTROY:
                 try {
-                    return referOrDestroyCallbackService(channel, url, pts[paraIndex], inv, Integer.parseInt(inv.getAttachment(INV_ATT_CALLBACK_KEY + paraIndex)), false);
+                    return referOrDestroyCallbackService(channel, url, pts[paraIndex], inv, Integer.parseInt((String) inv.getAttachment(INV_ATT_CALLBACK_KEY + paraIndex)), false);
                 } catch (Exception e) {
                     throw new IOException(StringUtils.toString(e));
                 }

@@ -229,7 +229,7 @@ public class ConfigUtilsTest {
     }
 
 
-    @Disabled("see http://code.alibabatech.com/jira/browse/DUBBO-133")
+    @Disabled("Not know why disabled, the original link explaining this was reachable.")
     @Test
     public void testLoadPropertiesMultiFileNotRootPathException() throws Exception {
         try {
@@ -256,5 +256,15 @@ public class ConfigUtilsTest {
     @Test
     public void testGetPid() throws Exception {
         assertThat(ConfigUtils.getPid(), greaterThan(0));
+    }
+
+    @Test
+    public void testPropertiesWithStructedValue() throws Exception {
+        Properties p = ConfigUtils.loadProperties("parameters.properties", false);
+
+        Properties expected = new Properties();
+        expected.put("dubbo.parameters", "[{a:b},{c_.d: r*}]");
+
+        assertEquals(expected, p);
     }
 }

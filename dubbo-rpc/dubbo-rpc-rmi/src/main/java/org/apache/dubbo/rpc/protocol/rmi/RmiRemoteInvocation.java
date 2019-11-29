@@ -50,7 +50,7 @@ public class RmiRemoteInvocation extends RemoteInvocation {
     public Object invoke(Object targetObject) throws NoSuchMethodException, IllegalAccessException,
             InvocationTargetException {
         RpcContext context = RpcContext.getContext();
-        context.setAttachments((Map<String, String>) getAttribute(DUBBO_ATTACHMENTS_ATTR_NAME));
+        context.setAttachments((Map<String, Object>) getAttribute(DUBBO_ATTACHMENTS_ATTR_NAME));
         String generic = (String) getAttribute(GENERIC_KEY);
         if (StringUtils.isNotEmpty(generic)) {
             context.setAttachment(GENERIC_KEY, generic);

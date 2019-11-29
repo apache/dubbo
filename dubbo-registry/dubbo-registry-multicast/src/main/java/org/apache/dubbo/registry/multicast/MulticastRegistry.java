@@ -51,14 +51,14 @@ import java.util.concurrent.TimeUnit;
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
-import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
-import static org.apache.dubbo.registry.Constants.DEFAULT_SESSION_TIMEOUT;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.OVERRIDE_PROTOCOL;
+import static org.apache.dubbo.common.constants.RegistryConstants.ROUTE_PROTOCOL;
+import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
+import static org.apache.dubbo.registry.Constants.DEFAULT_SESSION_TIMEOUT;
 import static org.apache.dubbo.registry.Constants.REGISTER;
 import static org.apache.dubbo.registry.Constants.REGISTER_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.ROUTE_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.SESSION_TIMEOUT_KEY;
 import static org.apache.dubbo.registry.Constants.SUBSCRIBE;
 import static org.apache.dubbo.registry.Constants.UNREGISTER;
@@ -150,7 +150,7 @@ public class MulticastRegistry extends FailbackRegistry {
     private void checkMulticastAddress(InetAddress multicastAddress) {
         if (!multicastAddress.isMulticastAddress()) {
             String message = "Invalid multicast address " + multicastAddress;
-            if (!(multicastAddress instanceof Inet4Address)) {
+            if (multicastAddress instanceof Inet4Address) {
                 throw new IllegalArgumentException(message + ", " +
                         "ipv4 multicast address scope: 224.0.0.0 - 239.255.255.255.");
             } else {
