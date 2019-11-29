@@ -18,6 +18,7 @@ package org.apache.dubbo.config.spring.context.annotation;
 
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.spring.api.DemoService;
+import org.apache.dubbo.config.spring.beans.factory.ServiceBeanPostProcessor;
 import org.apache.dubbo.config.spring.context.annotation.consumer.test.TestConsumerConfiguration;
 import org.apache.dubbo.config.spring.context.annotation.provider.DemoServiceImpl;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -150,6 +151,11 @@ public class EnableDubboTest {
     @PropertySource("classpath:/META-INF/dubbo-provider.properties")
     @EnableTransactionManagement
     public static class TestProviderConfiguration {
+
+        @Bean
+        public ServiceBeanPostProcessor serviceBeanPostProcessor() {
+            return new ServiceBeanPostProcessor();
+        }
 
         @Primary
         @Bean

@@ -368,7 +368,7 @@ public class FileSystemDynamicConfiguration extends AbstractDynamicConfiguration
     }
 
     @Override
-    public SortedSet<String> getConfigKeys(String group, String key) {
+    public SortedSet<String> getConfigKeys(String group) {
         File[] files = groupDirectory(group).listFiles(File::isFile);
         if (files == null) {
             return new TreeSet<>();

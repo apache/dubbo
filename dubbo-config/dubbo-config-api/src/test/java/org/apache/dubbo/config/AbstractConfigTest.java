@@ -109,15 +109,15 @@ public class AbstractConfigTest {
     @Test
     public void testAppendParameters1() throws Exception {
         Map<String, String> parameters = new HashMap<String, String>();
-        parameters.put("default.num", "one");
         parameters.put("num", "ONE");
         AbstractConfig.appendParameters(parameters, new ParameterConfig(1, "hello/world", 30, "password"), "prefix");
         Assertions.assertEquals("one", parameters.get("prefix.key.1"));
         Assertions.assertEquals("two", parameters.get("prefix.key.2"));
-        Assertions.assertEquals("ONE,one,1", parameters.get("prefix.num"));
+        Assertions.assertEquals("ONE,1", parameters.get("prefix.num"));
         Assertions.assertEquals("hello%2Fworld", parameters.get("prefix.naming"));
         Assertions.assertEquals("30", parameters.get("prefix.age"));
-        Assertions.assertFalse(parameters.containsKey("prefix.key-2"));
+        Assertions.assertTrue(parameters.containsKey("prefix.key-2"));
+        Assertions.assertTrue(parameters.containsKey("prefix.key.2"));
         Assertions.assertFalse(parameters.containsKey("prefix.secret"));
     }
 

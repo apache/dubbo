@@ -78,8 +78,8 @@ public class CompositeDynamicConfiguration implements DynamicConfiguration {
 
     @Override
     @SuppressWarnings("unchecked")
-    public SortedSet<String> getConfigKeys(String group, String key) throws UnsupportedOperationException {
-        return (SortedSet<String>) iterateConfigOperation(configuration -> configuration.getConfigKeys(group, key));
+    public SortedSet<String> getConfigKeys(String group) throws UnsupportedOperationException {
+        return (SortedSet<String>) iterateConfigOperation(configuration -> configuration.getConfigKeys(group));
     }
 
     private void iterateListenerOperation(Consumer<DynamicConfiguration> consumer) {

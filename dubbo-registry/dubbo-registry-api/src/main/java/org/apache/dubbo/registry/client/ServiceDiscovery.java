@@ -44,7 +44,7 @@ import static org.apache.dubbo.event.EventDispatcher.getDefaultExtension;
  *
  * @since 2.7.5
  */
-@SPI("file")
+@SPI("zookeeper")
 public interface ServiceDiscovery extends Prioritized {
 
     // ==================================== Lifecycle ==================================== //

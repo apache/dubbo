@@ -62,8 +62,10 @@ import static org.apache.dubbo.config.Constants.PROTOCOLS_SUFFIX;
 import static org.apache.dubbo.config.Constants.REGISTRIES_SUFFIX;
 
 public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
-    public static final String NAME = "config";
+
     private static final Logger logger = LoggerFactory.getLogger(ConfigManager.class);
+
+    public static final String NAME = "config";
 
     private final Map<String, Map<String, AbstractConfig>> configsCache = newMap();
 
@@ -445,7 +447,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     private static void checkDuplicate(AbstractConfig oldOne, AbstractConfig newOne) throws IllegalStateException {
         if (oldOne != null && !oldOne.equals(newOne)) {
             String configName = oldOne.getClass().getSimpleName();
-            throw new IllegalStateException("Duplicate Config found for " + configName + ", you should use only one unique " + configName + " for one application.");
+            logger.warn("Duplicate Config found for " + configName + ", you should use only one unique " + configName + " for one application.");
         }
     }
 
