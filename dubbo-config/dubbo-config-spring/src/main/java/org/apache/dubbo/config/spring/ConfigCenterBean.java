@@ -33,10 +33,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Since 2.7.0+, export and refer will only be executed when Spring is fully initialized, and each Config bean will get refreshed on the start of the export and refer process.
+ * Start from 2.7.0+, export and refer will only be executed when Spring is fully initialized, and each Config bean will get refreshed on the start of the export and refer process.
  * So it's ok for this bean not to be the first Dubbo Config bean being initialized.
  * <p>
- * If use ConfigCenterConfig directly, you should make sure ConfigCenterConfig.init() is called before actually export/refer any Dubbo service.
  */
 public class ConfigCenterBean extends ConfigCenterConfig implements ApplicationContextAware, DisposableBean, EnvironmentAware {
 
@@ -59,12 +58,9 @@ public class ConfigCenterBean extends ConfigCenterConfig implements ApplicationC
     public void setEnvironment(Environment environment) {
         if (includeSpringEnv) {
             // Get PropertySource mapped to 'dubbo.properties' in Spring Environment.
-            Map<String, String> externalProperties = getConfigurations(getConfigFile(), environment);
+            setExternalConfig(getConfigurations(getConfigFile(), environment));
             // Get PropertySource mapped to 'application.dubbo.properties' in Spring Environment.
-            Map<String, String> appExternalProperties = getConfigurations(StringUtils.isNotEmpty(getAppConfigFile()) ? getAppConfigFile() : ("application." + getConfigFile()), environment);
-            // Refresh Dubbo Environment
-            org.apache.dubbo.common.config.Environment.getInstance().setExternalConfigMap(externalProperties);
-            org.apache.dubbo.common.config.Environment.getInstance().setAppExternalConfigMap(appExternalProperties);
+            setAppExternalConfig(getConfigurations(StringUtils.isNotEmpty(getAppConfigFile()) ? getAppConfigFile() : ("application." + getConfigFile()), environment));
         }
     }
 

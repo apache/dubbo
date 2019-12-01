@@ -21,8 +21,8 @@ import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.context.event.ServiceBeanExportedEvent;
-import org.apache.dubbo.config.spring.util.AnnotationUtils;
 
+import com.alibaba.spring.beans.factory.annotation.AbstractAnnotationBeanPostProcessor;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.InjectionMetadata;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -32,7 +32,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.annotation.AnnotationAttributes;
 
 import java.lang.reflect.Field;
@@ -45,9 +44,10 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import static com.alibaba.spring.util.AnnotationUtils.getAttribute;
+import static com.alibaba.spring.util.AnnotationUtils.getAttributes;
 import static java.lang.reflect.Proxy.newProxyInstance;
 import static org.apache.dubbo.config.spring.beans.factory.annotation.ServiceBeanNameBuilder.create;
-import static org.apache.dubbo.config.spring.util.AnnotationUtils.getAttribute;
 import static org.springframework.util.StringUtils.hasText;
 
 /**
@@ -56,7 +56,7 @@ import static org.springframework.util.StringUtils.hasText;
  *
  * @since 2.5.7
  */
-public class ReferenceAnnotationBeanPostProcessor extends AnnotationInjectedBeanPostProcessor implements
+public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBeanPostProcessor implements
         ApplicationContextAware, ApplicationListener {
 
     /**
@@ -123,7 +123,6 @@ public class ReferenceAnnotationBeanPostProcessor extends AnnotationInjectedBean
     @Override
     protected Object doGetInjectedBean(AnnotationAttributes attributes, Object bean, String beanName, Class<?> injectedType,
                                        InjectionMetadata.InjectedElement injectedElement) throws Exception {
-
         /**
          * The name of bean that annotated Dubbo's {@link Service @Service} in local Spring {@link ApplicationContext}
          */
@@ -242,7 +241,11 @@ public class ReferenceAnnotationBeanPostProcessor extends AnnotationInjectedBean
         if (existsServiceBean(referencedBeanName)) { // If the local @Service Bean exists, build a proxy of ReferenceBean
             return newProxyInstance(getClassLoader(), new Class[]{serviceInterfaceType},
                     wrapInvocationHandler(referenceBeanName, referenceBean));
-        } else {                                    // ReferenceBean should be initialized and get immediately
+        } else { // ReferenceBean should be initialized and get immediately
+            /**
+             * TODO, if we can make sure this happens after {@link DubboLifecycleComponentApplicationListener},
+             * TODO, then we can avoid starting bootstrap in here, because bootstrap should has been started.
+             */
             return referenceBean.get();
         }
     }
@@ -297,7 +300,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AnnotationInjectedBean
                                                  Class<?> injectedType, InjectionMetadata.InjectedElement injectedElement) {
         return buildReferencedBeanName(attributes, injectedType) +
                 "#source=" + (injectedElement.getMember()) +
-                "#attributes=" + AnnotationUtils.resolvePlaceholders(attributes, getEnvironment());
+                "#attributes=" + getAttributes(attributes, getEnvironment());
     }
 
     /**
@@ -347,8 +350,6 @@ public class ReferenceAnnotationBeanPostProcessor extends AnnotationInjectedBean
     public void onApplicationEvent(ApplicationEvent event) {
         if (event instanceof ServiceBeanExportedEvent) {
             onServiceBeanExportEvent((ServiceBeanExportedEvent) event);
-        } else if (event instanceof ContextRefreshedEvent) {
-            onContextRefreshedEvent((ContextRefreshedEvent) event);
         }
     }
 
@@ -365,10 +366,6 @@ public class ReferenceAnnotationBeanPostProcessor extends AnnotationInjectedBean
         if (handler != null) {
             handler.init();
         }
-    }
-
-    private void onContextRefreshedEvent(ContextRefreshedEvent event) {
-
     }
 
 

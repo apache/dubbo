@@ -90,7 +90,7 @@ public class FutureContext {
      *      public final class TracingFilter implements Filter {
      *          public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
      *              Result result = invoker.invoke(invocation);
-     *              result.whenComplete(new FinishSpanCallback(span));
+     *              result.getResponseFuture().whenComplete(new FinishSpanCallback(span));
      *              ......
      *          }
      *      }

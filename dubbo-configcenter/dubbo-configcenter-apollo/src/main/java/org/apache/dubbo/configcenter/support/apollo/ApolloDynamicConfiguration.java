@@ -17,13 +17,13 @@
 package org.apache.dubbo.configcenter.support.apollo;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
+import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
+import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
+import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.configcenter.ConfigChangeEvent;
-import org.apache.dubbo.configcenter.ConfigChangeType;
-import org.apache.dubbo.configcenter.ConfigurationListener;
-import org.apache.dubbo.configcenter.DynamicConfiguration;
 
 import com.ctrip.framework.apollo.Config;
 import com.ctrip.framework.apollo.ConfigChangeListener;
@@ -42,16 +42,25 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.stream.Collectors;
 
+import static org.apache.dubbo.common.config.configcenter.Constants.CONFIG_NAMESPACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
-import static org.apache.dubbo.common.constants.CommonConstants.CONFIG_NAMESPACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 
 /**
  * Apollo implementation, https://github.com/ctripcorp/apollo
+ *
+ * Apollo will be used for management of both governance rules and .properties files, by default, these two different
+ * kinds of data share the same namespace 'dubbo'. To gain better performance, we recommend separate them by giving
+ * namespace and group different values, for example:
+ *
+ * <dubbo:config-center namespace="governance" group="dubbo" />, 'dubbo=governance' is for governance rules while
+ * 'group=dubbo' is for properties files.
+ *
+ * Please see http://dubbo.apache.org/zh-cn/docs/user/configuration/config-center.html for details.
  */
 public class ApolloDynamicConfiguration implements DynamicConfiguration {
     private static final Logger logger = LoggerFactory.getLogger(ApolloDynamicConfiguration.class);
@@ -101,11 +110,11 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
         }
     }
 
-    private String getAddressWithProtocolPrefix (URL url) {
+    private String getAddressWithProtocolPrefix(URL url) {
         String address = url.getBackupAddress();
         if (StringUtils.isNotEmpty(address)) {
             address = Arrays.stream(COMMA_SPLIT_PATTERN.split(address))
-                    .map(addr ->  {
+                    .map(addr -> {
                         if (addr.startsWith(APOLLO_PROTOCOL_PREFIX)) {
                             return addr;
                         }
@@ -139,7 +148,7 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
     }
 
     @Override
-    public String getRule(String key, String group, long timeout) throws IllegalStateException {
+    public String getConfig(String key, String group, long timeout) throws IllegalStateException {
         if (StringUtils.isNotEmpty(group)) {
             if (group.equals(url.getParameter(APPLICATION_KEY))) {
                 return ConfigService.getAppConfig().getProperty(key, null);
@@ -150,11 +159,30 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
         return dubboConfig.getProperty(key, null);
     }
 
+    /**
+     * Recommend specify namespace and group when using Apollo.
+     * <p>
+     * <dubbo:config-center namespace="governance" group="dubbo" />, 'dubbo=governance' is for governance rules while
+     * 'group=dubbo' is for properties files.
+     *
+     * @param key     default value is 'dubbo.properties', currently useless for Apollo.
+     * @param group
+     * @param timeout
+     * @return
+     * @throws IllegalStateException
+     */
     @Override
     public String getProperties(String key, String group, long timeout) throws IllegalStateException {
-        ConfigFile configFile = ConfigService.getConfigFile(key, ConfigFileFormat.Properties);
+        if (StringUtils.isEmpty(group)) {
+            return dubboConfigFile.getContent();
+        }
+        if (group.equals(url.getParameter(APPLICATION_KEY))) {
+            return ConfigService.getConfigFile(APOLLO_APPLICATION_KEY, ConfigFileFormat.Properties).getContent();
+        }
+
+        ConfigFile configFile = ConfigService.getConfigFile(group, ConfigFileFormat.Properties);
         if (configFile == null) {
-            throw new IllegalStateException("There is no namespace named " + key + " in Apollo.");
+            throw new IllegalStateException("There is no namespace named " + group + " in Apollo.");
         }
         return configFile.getContent();
     }
@@ -197,7 +225,7 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
                     return;
                 }
 
-                ConfigChangeEvent event = new ConfigChangeEvent(key, change.getNewValue(), getChangeType(change));
+                ConfigChangedEvent event = new ConfigChangedEvent(key, change.getNamespace(), change.getNewValue(), getChangeType(change));
                 listeners.forEach(listener -> listener.process(event));
             }
         }
