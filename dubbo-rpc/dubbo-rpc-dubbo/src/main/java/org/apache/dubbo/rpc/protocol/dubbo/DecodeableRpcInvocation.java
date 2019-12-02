@@ -32,6 +32,7 @@ import org.apache.dubbo.remoting.transport.CodecSupport;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceRepository;
 
@@ -126,7 +127,11 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
                     if (methodDescriptor != null) {
                         pts = methodDescriptor.getParameterClasses();
                         this.setReturnTypes(methodDescriptor.getReturnTypes());
+                    }else{
+                        throw new IllegalArgumentException("Service not found:" + path + ":"+getMethodName());
                     }
+                }else{
+                    throw new IllegalArgumentException("Service not found:" + path );
                 }
                 if (pts == DubboCodec.EMPTY_CLASS_ARRAY) {
                     pts = ReflectUtils.desc2classArray(desc);
