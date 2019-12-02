@@ -119,7 +119,7 @@ public class ProtocolConfig extends AbstractConfig {
     private String accesslog;
 
     /**
-     * Transfort
+     * Transporter
      */
     private String transporter;
 
