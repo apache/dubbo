@@ -25,9 +25,9 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.PojoUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
+import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.ListenableFilter;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
@@ -40,31 +40,38 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
-import static org.apache.dubbo.rpc.Constants.$INVOKE;
-import static org.apache.dubbo.rpc.Constants.$INVOKE_ASYNC;
+import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
+import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE_ASYNC;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_INVOCATION_PREFIX;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 
 /**
  * GenericImplInvokerFilter
  */
 @Activate(group = CommonConstants.CONSUMER, value = GENERIC_KEY, order = 20000)
-public class GenericImplFilter extends ListenableFilter {
+public class GenericImplFilter implements Filter, Filter.Listener {
 
     private static final Logger logger = LoggerFactory.getLogger(GenericImplFilter.class);
 
     private static final Class<?>[] GENERIC_PARAMETER_TYPES = new Class<?>[]{String.class, String[].class, Object[].class};
 
-    public GenericImplFilter() {
-        super.listener = new GenericImplListener();
-    }
+    private static final String GENERIC_PARAMETER_DESC = "Ljava/lang/String;[Ljava/lang/String;[Ljava/lang/Object;";
+
+    private static final String GENERIC_IMPL_MARKER = DUBBO_INVOCATION_PREFIX + "GENERIC_IMPL";
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         String generic = invoker.getUrl().getParameter(GENERIC_KEY);
-        if (ProtocolUtils.isGeneric(generic)
-                && (!$INVOKE.equals(invocation.getMethodName()) && !$INVOKE_ASYNC.equals(invocation.getMethodName()))
-                && invocation instanceof RpcInvocation) {
+        // calling a generic impl service
+        if (isCallingGenericImpl(generic, invocation)) {
             RpcInvocation invocation2 = new RpcInvocation(invocation);
+
+            /**
+             * Mark this invocation as a generic impl call, this value will be removed automatically before passing on the wire.
+             * See {@link RpcUtils#sieveUnnecessaryAttachments(Invocation)}
+             */
+            invocation2.setAttachment(GENERIC_IMPL_MARKER, true);
+
             String methodName = invocation2.getMethodName();
             Class<?>[] parameterTypes = invocation2.getParameterTypes();
             Object[] arguments = invocation2.getArguments();
@@ -90,12 +97,12 @@ public class GenericImplFilter extends ListenableFilter {
                 invocation2.setMethodName($INVOKE);
             }
             invocation2.setParameterTypes(GENERIC_PARAMETER_TYPES);
+            invocation2.setParameterTypesDesc(GENERIC_PARAMETER_DESC);
             invocation2.setArguments(new Object[]{methodName, types, args});
             return invoker.invoke(invocation2);
-        } else if ((invocation.getMethodName().equals($INVOKE) || invocation.getMethodName().equals($INVOKE_ASYNC))
-                && invocation.getArguments() != null
-                && invocation.getArguments().length == 3
-                && ProtocolUtils.isGeneric(generic)) {
+        }
+        // making a generic call to a normal service
+        else if (isMakingGenericCall(generic, invocation)) {
 
             Object[] args = (Object[]) invocation.getArguments()[2];
             if (ProtocolUtils.isJavaGenericSerialization(generic)) {
@@ -123,79 +130,88 @@ public class GenericImplFilter extends ListenableFilter {
         throw new RpcException("Generic serialization [" + generic + "] only support message type " + expected + " and your message type is " + actual);
     }
 
-    static class GenericImplListener implements Listener {
-        @Override
-        public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
-            String generic = invoker.getUrl().getParameter(GENERIC_KEY);
-            String methodName = invocation.getMethodName();
-            Class<?>[] parameterTypes = invocation.getParameterTypes();
-            if (ProtocolUtils.isGeneric(generic)
-                    && (!$INVOKE.equals(invocation.getMethodName()) && !$INVOKE_ASYNC.equals(invocation.getMethodName()))
-                    && invocation instanceof RpcInvocation) {
-                if (!appResponse.hasException()) {
-                    Object value = appResponse.getValue();
-                    try {
-                        Method method = invoker.getInterface().getMethod(methodName, parameterTypes);
-                        if (ProtocolUtils.isBeanGenericSerialization(generic)) {
-                            if (value == null) {
-                                appResponse.setValue(value);
-                            } else if (value instanceof JavaBeanDescriptor) {
-                                appResponse.setValue(JavaBeanSerializeUtil.deserialize((JavaBeanDescriptor) value));
-                            } else {
-                                throw new RpcException("The type of result value is " + value.getClass().getName() + " other than " + JavaBeanDescriptor.class.getName() + ", and the result is " + value);
-                            }
+    @Override
+    public void onMessage(Result appResponse, Invoker<?> invoker, Invocation invocation) {
+        String generic = invoker.getUrl().getParameter(GENERIC_KEY);
+        String methodName = invocation.getMethodName();
+        Class<?>[] parameterTypes = invocation.getParameterTypes();
+        if (invocation.getAttachment(GENERIC_IMPL_MARKER) != null) {
+            if (!appResponse.hasException()) {
+                Object value = appResponse.getValue();
+                try {
+                    Method method = invoker.getInterface().getMethod(methodName, parameterTypes);
+                    if (ProtocolUtils.isBeanGenericSerialization(generic)) {
+                        if (value == null) {
+                            appResponse.setValue(value);
+                        } else if (value instanceof JavaBeanDescriptor) {
+                            appResponse.setValue(JavaBeanSerializeUtil.deserialize((JavaBeanDescriptor) value));
                         } else {
-                            Type[] types = ReflectUtils.getReturnTypes(method);
-                            appResponse.setValue(PojoUtils.realize(value, (Class<?>) types[0], types[1]));
+                            throw new RpcException("The type of result value is " + value.getClass().getName() + " other than " + JavaBeanDescriptor.class.getName() + ", and the result is " + value);
                         }
-                    } catch (NoSuchMethodException e) {
-                        throw new RpcException(e.getMessage(), e);
+                    } else {
+                        Type[] types = ReflectUtils.getReturnTypes(method);
+                        appResponse.setValue(PojoUtils.realize(value, (Class<?>) types[0], types[1]));
                     }
-                } else if (appResponse.getException() instanceof GenericException) {
-                    GenericException exception = (GenericException) appResponse.getException();
+                } catch (NoSuchMethodException e) {
+                    throw new RpcException(e.getMessage(), e);
+                }
+            } else if (appResponse.getException() instanceof GenericException) {
+                GenericException exception = (GenericException) appResponse.getException();
+                try {
+                    String className = exception.getExceptionClass();
+                    Class<?> clazz = ReflectUtils.forName(className);
+                    Throwable targetException = null;
+                    Throwable lastException = null;
                     try {
-                        String className = exception.getExceptionClass();
-                        Class<?> clazz = ReflectUtils.forName(className);
-                        Throwable targetException = null;
-                        Throwable lastException = null;
-                        try {
-                            targetException = (Throwable) clazz.newInstance();
-                        } catch (Throwable e) {
-                            lastException = e;
-                            for (Constructor<?> constructor : clazz.getConstructors()) {
-                                try {
-                                    targetException = (Throwable) constructor.newInstance(new Object[constructor.getParameterTypes().length]);
-                                    break;
-                                } catch (Throwable e1) {
-                                    lastException = e1;
-                                }
-                            }
-                        }
-                        if (targetException != null) {
-                            try {
-                                Field field = Throwable.class.getDeclaredField("detailMessage");
-                                if (!field.isAccessible()) {
-                                    field.setAccessible(true);
-                                }
-                                field.set(targetException, exception.getExceptionMessage());
-                            } catch (Throwable e) {
-                                logger.warn(e.getMessage(), e);
-                            }
-                            appResponse.setException(targetException);
-                        } else if (lastException != null) {
-                            throw lastException;
-                        }
+                        targetException = (Throwable) clazz.newInstance();
                     } catch (Throwable e) {
-                        throw new RpcException("Can not deserialize exception " + exception.getExceptionClass() + ", message: " + exception.getExceptionMessage(), e);
+                        lastException = e;
+                        for (Constructor<?> constructor : clazz.getConstructors()) {
+                            try {
+                                targetException = (Throwable) constructor.newInstance(new Object[constructor.getParameterTypes().length]);
+                                break;
+                            } catch (Throwable e1) {
+                                lastException = e1;
+                            }
+                        }
                     }
+                    if (targetException != null) {
+                        try {
+                            Field field = Throwable.class.getDeclaredField("detailMessage");
+                            if (!field.isAccessible()) {
+                                field.setAccessible(true);
+                            }
+                            field.set(targetException, exception.getExceptionMessage());
+                        } catch (Throwable e) {
+                            logger.warn(e.getMessage(), e);
+                        }
+                        appResponse.setException(targetException);
+                    } else if (lastException != null) {
+                        throw lastException;
+                    }
+                } catch (Throwable e) {
+                    throw new RpcException("Can not deserialize exception " + exception.getExceptionClass() + ", message: " + exception.getExceptionMessage(), e);
                 }
             }
         }
+    }
 
-        @Override
-        public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
+    @Override
+    public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
 
-        }
+    }
+
+    private boolean isCallingGenericImpl(String generic, Invocation invocation) {
+        return ProtocolUtils.isGeneric(generic)
+                && (!$INVOKE.equals(invocation.getMethodName()) && !$INVOKE_ASYNC.equals(invocation.getMethodName()))
+                && invocation instanceof RpcInvocation;
+    }
+
+    private boolean isMakingGenericCall(String generic, Invocation invocation) {
+        return (invocation.getMethodName().equals($INVOKE) || invocation.getMethodName().equals($INVOKE_ASYNC))
+                && invocation.getArguments() != null
+                && invocation.getArguments().length == 3
+                && ProtocolUtils.isGeneric(generic);
     }
 
 }

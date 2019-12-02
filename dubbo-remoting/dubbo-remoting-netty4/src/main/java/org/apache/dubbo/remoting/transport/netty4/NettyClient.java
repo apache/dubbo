@@ -40,9 +40,10 @@ import io.netty.handler.proxy.Socks5ProxyHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.DefaultThreadFactory;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-
 import java.net.InetSocketAddress;
+
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.apache.dubbo.remoting.Constants.SSL_ENABLED_KEY;
 
 /**
  * NettyClient.
@@ -102,12 +103,18 @@ public class NettyClient extends AbstractClient {
             @Override
             protected void initChannel(Channel ch) throws Exception {
                 int heartbeatInterval = UrlUtils.getHeartbeat(getUrl());
+
+                if (getUrl().getParameter(SSL_ENABLED_KEY, false)) {
+                    ch.pipeline().addLast("negotiation", SslHandlerInitializer.sslClientHandler(getUrl(), nettyClientHandler));
+                }
+
                 NettyCodecAdapter adapter = new NettyCodecAdapter(getCodec(), getUrl(), NettyClient.this);
                 ch.pipeline()//.addLast("logging",new LoggingHandler(LogLevel.INFO))//for debug
                         .addLast("decoder", adapter.getDecoder())
                         .addLast("encoder", adapter.getEncoder())
                         .addLast("client-idle-handler", new IdleStateHandler(heartbeatInterval, 0, 0, MILLISECONDS))
                         .addLast("handler", nettyClientHandler);
+
                 String socksProxyHost = ConfigUtils.getProperty(SOCKS_PROXY_HOST);
                 if(socksProxyHost != null) {
                     int socksProxyPort = Integer.parseInt(ConfigUtils.getProperty(SOCKS_PROXY_PORT, DEFAULT_SOCKS_PROXY_PORT));
@@ -192,10 +199,14 @@ public class NettyClient extends AbstractClient {
     @Override
     protected org.apache.dubbo.remoting.Channel getChannel() {
         Channel c = channel;
-        if (c == null || !c.isActive()) {
+        if (c == null) {
             return null;
         }
         return NettyChannel.getOrAddChannel(c, getUrl(), this);
+    }
+
+    Channel getNettyChannel() {
+        return channel;
     }
 
     @Override

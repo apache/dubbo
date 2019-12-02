@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.cluster.support;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
@@ -179,17 +180,16 @@ public class FailoverClusterInvokerTest {
         invokers.add(invoker1);
         invokers.add(invoker2);
 
-        Callable<Object> callable = new Callable<Object>() {
-            public Object call() throws Exception {
-                //Simulation: all invokers are destroyed
-                for (Invoker<Demo> invoker : invokers) {
-                    invoker.destroy();
-                }
-                invokers.clear();
-                MockInvoker<Demo> invoker3 = new MockInvoker<Demo>(Demo.class, url);
-                invokers.add(invoker3);
-                return null;
+        Callable<Object> callable = () -> {
+            //Simulation: all invokers are destroyed
+            for (Invoker<Demo> invoker : invokers) {
+                invoker.destroy();
             }
+            invokers.clear();
+            MockInvoker<Demo> invoker3 = new MockInvoker<Demo>(Demo.class, url);
+            invoker3.setResult(AsyncRpcResult.newDefaultAsyncResult(null));
+            invokers.add(invoker3);
+            return null;
         };
         invoker1.setCallable(callable);
         invoker2.setCallable(callable);

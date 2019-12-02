@@ -17,9 +17,10 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>dubbo-serialization</artifactId>
         <groupId>org.apache.dubbo</groupId>
+        <artifactId>dubbo-serialization</artifactId>
         <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -79,7 +80,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-serialization-protobuf-json</artifactId>
+            <artifactId>dubbo-serialization-protobuf</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
     </dependencies>

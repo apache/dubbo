@@ -20,6 +20,7 @@
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-parent</artifactId>
         <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>dubbo-demo</artifactId>
     <packaging>pom</packaging>
@@ -34,6 +35,11 @@
         <module>dubbo-demo-xml</module>
         <module>dubbo-demo-annotation</module>
         <module>dubbo-demo-api</module>
+        <!--        <module>dubbo-demo-servicediscovery-xml</module>-->
+        <!--        <module>servicediscovery-transfer</module>-->
+        <!--        <module>dubbo-call-sc</module>-->
+        <!--        <module>dubbo-call-scdubbo</module>-->
+        <!--        <module>sc-call-dubbo</module>-->
     </modules>
 
     <dependencyManagement>

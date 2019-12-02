@@ -41,6 +41,10 @@ public class SimpleRegistryService extends AbstractRegistryService {
     private final ConcurrentMap<String, ConcurrentMap<String, NotifyListener>> remoteListeners = new ConcurrentHashMap<String, ConcurrentMap<String, NotifyListener>>();
     private List<String> registries;
 
+    public SimpleRegistryService() {
+
+    }
+
     @Override
     public void register(String service, URL url) {
         super.register(service, url);

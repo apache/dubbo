@@ -145,11 +145,7 @@ public class NetUtils {
      * @return true if it is reachable
      */
     static boolean isPreferIPV6Address() {
-        boolean preferIpv6 = Boolean.getBoolean("java.net.preferIPv6Addresses");
-        if (!preferIpv6) {
-            return false;
-        }
-        return false;
+        return Boolean.getBoolean("java.net.preferIPv6Addresses");
     }
 
     /**
@@ -178,6 +174,17 @@ public class NetUtils {
             }
         }
         return address;
+    }
+
+    private static volatile String HOST_ADDRESS;
+
+    public static String getHostAddress () {
+        if (HOST_ADDRESS != null) {
+            return HOST_ADDRESS;
+        }
+
+        HOST_ADDRESS = getLocalHost();
+        return HOST_ADDRESS;
     }
 
     public static String getLocalHost() {
