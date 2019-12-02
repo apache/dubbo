@@ -262,6 +262,8 @@ public interface CommonConstants {
 
     String GENERIC_SERIALIZATION_PROTOBUF = "protobuf-json";
 
+    String GENERIC_WITH_CLZ_KEY = "generic.include.class";
+
     /**
      * The limit of callback service instances for one interface on every client
      */
