@@ -25,8 +25,6 @@ public interface Constants {
     String METHOD = "method";
     String DUBBO_GROUP = "dubbo";
     String METRICS_KEY = "metrics";
-    String METRICS_PORT = "metrics.port";
-    String METRICS_PROTOCOL = "metrics.protocol";
     String LOGSTAT_PROTOCOL = "logstat";
     String COUNT_PROTOCOL = "count";
 }

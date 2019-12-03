@@ -24,6 +24,8 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 
+import java.util.concurrent.CompletableFuture;
+
 /**
  * MockInvoker.java
  */
@@ -58,15 +60,16 @@ public class MyInvoker<T> implements Invoker<T> {
         return false;
     }
 
+    @Override
     public Result invoke(Invocation invocation) throws RpcException {
         AppResponse result = new AppResponse();
-        if (hasException == false) {
+        if (!hasException) {
             result.setValue("alibaba");
         } else {
             result.setException(new RuntimeException("mocked exception"));
         }
 
-        return AsyncRpcResult.newDefaultAsyncResult(result, invocation);
+        return new AsyncRpcResult(CompletableFuture.completedFuture(result), invocation);
     }
 
     @Override

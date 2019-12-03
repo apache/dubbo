@@ -41,8 +41,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
-import static org.apache.dubbo.rpc.protocol.dubbo.Constants.SHARE_CONNECTIONS_KEY;
 import static org.apache.dubbo.remoting.Constants.CONNECTIONS_KEY;
+import static org.apache.dubbo.rpc.protocol.dubbo.Constants.SHARE_CONNECTIONS_KEY;
 
 
 public class ReferenceCountExchangeClientTest {
@@ -299,11 +299,11 @@ public class ReferenceCountExchangeClientTest {
     }
 
     public interface IDemoService {
-        public String demo();
+        String demo();
     }
 
     public interface IHelloService {
-        public String hello();
+        String hello();
     }
 
     public class DemoServiceImpl implements IDemoService {

@@ -17,9 +17,10 @@
 package org.apache.dubbo.xml.rpc.protocol.xmlrpc;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.RemotingServer;
 import org.apache.dubbo.remoting.http.HttpBinder;
 import org.apache.dubbo.remoting.http.HttpHandler;
-import org.apache.dubbo.remoting.http.HttpServer;
+import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.AbstractProxyProtocol;
@@ -42,12 +43,10 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class XmlRpcProtocol extends AbstractProxyProtocol {
-    
+
     public static final String ACCESS_CONTROL_ALLOW_ORIGIN_HEADER = "Access-Control-Allow-Origin";
     public static final String ACCESS_CONTROL_ALLOW_METHODS_HEADER = "Access-Control-Allow-Methods";
     public static final String ACCESS_CONTROL_ALLOW_HEADERS_HEADER = "Access-Control-Allow-Headers";
-
-    private final Map<String, HttpServer> serverMap = new ConcurrentHashMap<>();
 
     private final Map<String, XmlRpcServletServer> skeletonMap = new ConcurrentHashMap<>();
 
@@ -67,7 +66,7 @@ public class XmlRpcProtocol extends AbstractProxyProtocol {
     }
 
     private class InternalHandler implements HttpHandler {
-    	
+
         private boolean cors;
 
         public InternalHandler(boolean cors) {
@@ -84,13 +83,13 @@ public class XmlRpcProtocol extends AbstractProxyProtocol {
                 response.setHeader(ACCESS_CONTROL_ALLOW_METHODS_HEADER, "POST");
                 response.setHeader(ACCESS_CONTROL_ALLOW_HEADERS_HEADER, "*");
             }
-            if (request.getMethod().equalsIgnoreCase("OPTIONS")) {
+            if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
                 response.setStatus(200);
-            } else if (request.getMethod().equalsIgnoreCase("POST")) {
+            } else if ("POST".equalsIgnoreCase(request.getMethod())) {
 
                 RpcContext.getContext().setRemoteAddress(request.getRemoteAddr(), request.getRemotePort());
                 try {
-                    xmlrpc.execute (request,response);
+                    xmlrpc.execute(request, response);
                 } catch (Throwable e) {
                     throw new ServletException(e);
                 }
@@ -105,10 +104,10 @@ public class XmlRpcProtocol extends AbstractProxyProtocol {
     protected <T> Runnable doExport(T impl, Class<T> type, URL url) throws RpcException {
         final URL httpUrl = url.setProtocol("http");
         String addr = httpUrl.getIp() + ":" + httpUrl.getPort();
-        HttpServer server = serverMap.get(addr);
-        if (server == null) {
-            server = httpBinder.bind(httpUrl, new InternalHandler(httpUrl.getParameter("cors", false)));
-            serverMap.put(addr, server);
+        ProtocolServer protocolServer = serverMap.get(addr);
+        if (protocolServer == null) {
+            RemotingServer remotingServer = httpBinder.bind(httpUrl, new InternalHandler(httpUrl.getParameter("cors", false)));
+            serverMap.put(addr, new ProxyProtocolServer(remotingServer));
         }
         final String path = httpUrl.getAbsolutePath();
 
@@ -117,19 +116,19 @@ public class XmlRpcProtocol extends AbstractProxyProtocol {
         PropertyHandlerMapping propertyHandlerMapping = new PropertyHandlerMapping();
         try {
 
-            propertyHandlerMapping.setRequestProcessorFactoryFactory(new RequestProcessorFactoryFactory(){
+            propertyHandlerMapping.setRequestProcessorFactoryFactory(new RequestProcessorFactoryFactory() {
                 @Override
-                public RequestProcessorFactory getRequestProcessorFactory(Class pClass) throws XmlRpcException{
-                    return new RequestProcessorFactory(){
+                public RequestProcessorFactory getRequestProcessorFactory(Class pClass) throws XmlRpcException {
+                    return new RequestProcessorFactory() {
                         @Override
-                        public Object getRequestProcessor(XmlRpcRequest pRequest) throws XmlRpcException{
+                        public Object getRequestProcessor(XmlRpcRequest pRequest) throws XmlRpcException {
                             return impl;
                         }
                     };
                 }
             });
 
-            propertyHandlerMapping.addHandler(XmlRpcProxyFactoryBean.replace(type.getName()),type);
+            propertyHandlerMapping.addHandler(XmlRpcProxyFactoryBean.replace(type.getName()), type);
 
         } catch (Exception e) {
             throw new RpcException(e);
@@ -150,8 +149,8 @@ public class XmlRpcProtocol extends AbstractProxyProtocol {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     protected <T> T doRefer(final Class<T> serviceType, URL url) throws RpcException {
+    @SuppressWarnings("unchecked")
         XmlRpcProxyFactoryBean xmlRpcProxyFactoryBean = new XmlRpcProxyFactoryBean();
         xmlRpcProxyFactoryBean.setServiceUrl(url.setProtocol("http").toIdentityString());
         xmlRpcProxyFactoryBean.setServiceInterface(serviceType);
@@ -181,7 +180,7 @@ public class XmlRpcProtocol extends AbstractProxyProtocol {
     public void destroy() {
         super.destroy();
         for (String key : new ArrayList<>(serverMap.keySet())) {
-            HttpServer server = serverMap.remove(key);
+            ProtocolServer server = serverMap.remove(key);
             if (server != null) {
                 try {
                     if (logger.isInfoEnabled()) {

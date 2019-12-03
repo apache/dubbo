@@ -30,13 +30,16 @@ import org.springframework.util.Assert;
 import java.lang.annotation.Annotation;
 import java.util.List;
 
-import static org.apache.dubbo.config.spring.util.BeanFactoryUtils.getBeans;
-import static org.apache.dubbo.config.spring.util.BeanFactoryUtils.getOptionalBean;
+import static com.alibaba.spring.util.BeanFactoryUtils.getBeans;
+import static com.alibaba.spring.util.BeanFactoryUtils.getOptionalBean;
 
 /**
  * Abstract Configurable {@link Annotation} Bean Builder
+ *
  * @since 2.5.7
+ * @deprecated use {@link AnnotatedInterfaceConfigBeanBuilder}
  */
+@Deprecated
 abstract class AbstractAnnotationConfigBeanBuilder<A extends Annotation, B extends AbstractInterfaceConfig> {
 
     protected final Log logger = LogFactory.getLog(getClass());

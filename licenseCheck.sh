@@ -1,9 +1,25 @@
 #!/bin/bash
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 
 APPEND_ARG=""
 FOLDER="./"
 LINE_FLAG="=============================================="
-TARGET_FILE="./license-list.txt"
+TARGET_FILE="./license-list"
 
 red=`tput setaf 1`
 green=`tput setaf 2`
@@ -18,9 +34,9 @@ else
     echo "checking whole project"
 fi
 
-echo "Running command: ./mvnw clean package -DskipTests=true -PlicenseCheck $APPEND_ARG"
+echo "Running command: mvn clean package -DskipTests=true -PlicenseCheck $APPEND_ARG"
 
-./mvnw clean package -DskipTests=true -PlicenseCheck $APPEND_ARG
+mvn clean package -DskipTests=true -PlicenseCheck $APPEND_ARG
 
 status=$?
 if [ $status -eq 0 ]; then
@@ -57,8 +73,12 @@ missingLicense=(
 for i in "${missingLicense[@]}"; do
     search=`echo $i |awk -F: '{print $1}'`
     replace=`echo $i |awk -F: '{print $2}'`
-    sed -i -e 's/'"$search"'/'"$replace"'/g' $TARGET_FILE
+    sed -i.bak 's/'"$search"'/'"$replace"'/g' $TARGET_FILE
 done
+
+if [ -f $TARGET_FILE.bak ]; then
+  rm -rf $TARGET_FILE.bak
+fi
 
 check_unknown_license=`cat $TARGET_FILE | grep "Unknown license"`
 
@@ -78,19 +98,29 @@ allowLicense=(
     "MIT"
     "The 3-Clause BSD License"
     "Public domain"
+    "JSR.*107"
+    "Common Public License Version 1.0"
+    "org.scijava:native-lib-loader"
+    "org.codehaus.woodstox:stax2-api"
+    "wsdl4j:wsdl4j"
+    "net.jcip:jcip-annotations"
 )
 
 #filter allow license
-license_need_check=`cat $TARGET_FILE | grep -v "generated-sources/license/THIRD-PARTY.txt" | grep -v "third-party dependencies" | grep -v $LINE_FLAG`
+license_need_check=`cat $TARGET_FILE | grep -v "generated-sources/license/THIRD-PARTY.txt" | grep -v "third-party dependencies" | grep -v "The project has no dependencies." | grep -v $LINE_FLAG`
 
 for i in "${allowLicense[@]}"; do
     license_need_check=`echo "$license_need_check"|grep -vi "$i"`
 done
 
-if test -z "$license_need_check"
-then
+# remove empty lines
+echo $license_need_check | sed '/^[[:space:]]*$/d' > license-need-check
+
+if [ ! -s license-need-check ]; then
     echo "${green}All dependencies license looks good${reset}"
 else
     echo "${red}Please check below license${reset}"
-    echo "$license_need_check"
+    cat license-need-check
 fi
+
+rm -f license-list license-need-check

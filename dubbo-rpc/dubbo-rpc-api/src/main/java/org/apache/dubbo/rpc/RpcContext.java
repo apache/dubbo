@@ -73,7 +73,7 @@ public class RpcContext {
         }
     };
 
-    private final Map<String, String> attachments = new HashMap<String, String>();
+    private final Map<String, Object> attachments = new HashMap<String, Object>();
     private final Map<String, Object> values = new HashMap<String, Object>();
 
     private List<URL> urls;
@@ -104,6 +104,9 @@ public class RpcContext {
     private Object request;
     private Object response;
     private AsyncContext asyncContext;
+
+    private boolean remove = true;
+
 
     protected RpcContext() {
     }
@@ -139,6 +142,14 @@ public class RpcContext {
         return LOCAL.get();
     }
 
+    public boolean canRemove() {
+        return remove;
+    }
+
+    public void clearAfterEachInvoke(boolean remove) {
+        this.remove = remove;
+    }
+
     public static void restoreContext(RpcContext oldContext) {
         LOCAL.set(oldContext);
     }
@@ -149,7 +160,9 @@ public class RpcContext {
      * @see org.apache.dubbo.rpc.filter.ContextFilter
      */
     public static void removeContext() {
-        LOCAL.remove();
+        if (LOCAL.get().canRemove()) {
+            LOCAL.remove();
+        }
     }
 
     /**
@@ -224,7 +237,7 @@ public class RpcContext {
      */
     @SuppressWarnings("unchecked")
     public <T> CompletableFuture<T> getCompletableFuture() {
-        return FutureContext.getCompletableFuture();
+        return FutureContext.getContext().getCompletableFuture();
     }
 
     /**
@@ -235,7 +248,7 @@ public class RpcContext {
      */
     @SuppressWarnings("unchecked")
     public <T> Future<T> getFuture() {
-        return FutureContext.getCompletableFuture();
+        return FutureContext.getContext().getCompletableFuture();
     }
 
     /**
@@ -244,7 +257,7 @@ public class RpcContext {
      * @param future
      */
     public void setFuture(CompletableFuture<?> future) {
-        FutureContext.setFuture(future);
+        FutureContext.getContext().setFuture(future);
     }
 
     public List<URL> getUrls() {
@@ -466,7 +479,7 @@ public class RpcContext {
      * @param key
      * @return attachment
      */
-    public String getAttachment(String key) {
+    public Object getAttachment(String key) {
         return attachments.get(key);
     }
 
@@ -477,7 +490,7 @@ public class RpcContext {
      * @param value
      * @return context
      */
-    public RpcContext setAttachment(String key, String value) {
+    public RpcContext setAttachment(String key, Object value) {
         if (value == null) {
             attachments.remove(key);
         } else {
@@ -502,7 +515,7 @@ public class RpcContext {
      *
      * @return attachments
      */
-    public Map<String, String> getAttachments() {
+    public Map<String, Object> getAttachments() {
         return attachments;
     }
 
@@ -512,7 +525,7 @@ public class RpcContext {
      * @param attachment
      * @return context
      */
-    public RpcContext setAttachments(Map<String, String> attachment) {
+    public RpcContext setAttachments(Map<String, Object> attachment) {
         this.attachments.clear();
         if (attachment != null && attachment.size() > 0) {
             this.attachments.putAll(attachment);
