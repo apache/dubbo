@@ -73,7 +73,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <!--                            <addClasspath>true</addClasspath>-->
+                            <addClasspath>true</addClasspath>
                             <mainClass>org.apache.dubbo.gen.grpc.DubboGrpcGenerator</mainClass>
                         </manifest>
                     </archive>
