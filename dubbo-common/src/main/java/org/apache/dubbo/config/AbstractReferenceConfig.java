@@ -59,7 +59,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
     /**
      * Lazy create connection
      */
-    protected Boolean lazy = false;
+    protected Boolean lazy;
 
     protected String reconnect;
 
