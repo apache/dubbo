@@ -179,7 +179,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     }
 
     public Optional<ProviderConfig> getDefaultProvider() {
-        return getProvider(DEFAULT_KEY);
+        return getProvider(genDefaultId(ProviderConfig.class));
     }
 
     public Collection<ProviderConfig> getProviders() {
@@ -201,7 +201,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     }
 
     public Optional<ConsumerConfig> getDefaultConsumer() {
-        return getConsumer(DEFAULT_KEY);
+        return getConsumer(genDefaultId(ConsumerConfig.class));
     }
 
     public Collection<ConsumerConfig> getConsumers() {
@@ -336,7 +336,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     }
 
     /**
-     * In some scenario,  we may nee to add and remove ServiceConfig or ReferenceConfig dynamically.
+     * In some scenario,  we may need to add and remove ServiceConfig or ReferenceConfig dynamically.
      *
      * @param config the config instance to remove.
      */
@@ -349,13 +349,6 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
         if (CollectionUtils.isNotEmptyMap(configs)) {
             configs.remove(getId(config));
         }
-    }
-
-    // For test purpose
-    public void clear() {
-        write(() -> {
-            this.configsCache.clear();
-        });
     }
 
     /**
@@ -485,8 +478,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 
     static <C extends AbstractConfig> String getId(C config) {
         String id = config.getId();
-        return isNotEmpty(id) ? id : isDefaultConfig(config) ?
-                config.getClass().getSimpleName() + "#" + DEFAULT_KEY : null;
+        return isNotEmpty(id) ? id : (isDefaultConfig(config) ? genDefaultId(config.getClass()) : null);
     }
 
     static <C extends AbstractConfig> boolean isDefaultConfig(C config) {
@@ -500,4 +492,16 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
                 .filter(ConfigManager::isDefaultConfig)
                 .collect(Collectors.toList());
     }
+
+    static String genDefaultId(Class<?> clazz) {
+        return clazz.getSimpleName() + "#" + DEFAULT_KEY;
+    }
+
+    // For test purpose
+    public void clear() {
+        write(() -> {
+            this.configsCache.clear();
+        });
+    }
+
 }

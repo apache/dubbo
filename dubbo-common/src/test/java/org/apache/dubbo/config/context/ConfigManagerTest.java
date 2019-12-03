@@ -132,7 +132,7 @@ public class ConfigManagerTest {
         Collection<ProviderConfig> configs = configManager.getProviders();
         assertEquals(1, configs.size());
         assertEquals(config, configs.iterator().next());
-        assertFalse(configManager.getDefaultProvider().isPresent());
+        assertTrue(configManager.getDefaultProvider().isPresent());
 
         config.setId(DEFAULT_KEY);
         configManager.addProvider(config);
@@ -149,7 +149,7 @@ public class ConfigManagerTest {
         Collection<ConsumerConfig> configs = configManager.getConsumers();
         assertEquals(1, configs.size());
         assertEquals(config, configs.iterator().next());
-        assertFalse(configManager.getDefaultConsumer().isPresent());
+        assertTrue(configManager.getDefaultConsumer().isPresent());
 
         config.setId(DEFAULT_KEY);
         configManager.addConsumer(config);
