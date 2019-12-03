@@ -54,7 +54,7 @@ stub = {{serviceName}}Grpc.newStub(channel).build(channel, callOptions);
         @java.lang.Deprecated
     {{/deprecated}}
     public {{#isManyOutput}}reactor.core.publisher.Flux{{/isManyOutput}}{{^isManyOutput}}reactor.core.publisher.Mono{{/isManyOutput}}<{{outputType}}> {{methodName}}({{#isManyInput}}reactor.core.publisher.Flux{{/isManyInput}}{{^isManyInput}}reactor.core.publisher.Mono{{/isManyInput}}<{{inputType}}> reactorRequest) {
-    {{serviceName}}Grpc.ChatStub localStub = stub.withDeadlineAfter(url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT), TimeUnit.MILLISECONDS);
+    {{serviceName}}Grpc.{{serviceName}}Stub localStub = stub.withDeadlineAfter(url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT), TimeUnit.MILLISECONDS);
     return com.salesforce.reactorgrpc.stub.ClientCalls.{{reactiveCallsMethodName}}(reactorRequest, localStub::{{methodName}});
     }
 
@@ -67,7 +67,7 @@ stub = {{serviceName}}Grpc.newStub(channel).build(channel, callOptions);
         @java.lang.Deprecated
     {{/deprecated}}
     public {{#isManyOutput}}reactor.core.publisher.Flux{{/isManyOutput}}{{^isManyOutput}}reactor.core.publisher.Mono{{/isManyOutput}}<{{outputType}}> {{methodName}}({{inputType}} reactorRequest) {
-    {{serviceName}}Grpc.ChatStub localStub = stub.withDeadlineAfter(url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT), TimeUnit.MILLISECONDS);
+    {{serviceName}}Grpc.{{serviceName}}Stub localStub = stub.withDeadlineAfter(url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT), TimeUnit.MILLISECONDS);
     return com.salesforce.reactorgrpc.stub.ClientCalls.{{reactiveCallsMethodName}}(reactor.core.publisher.Mono.just(reactorRequest), localStub::{{methodName}});
     }
 
