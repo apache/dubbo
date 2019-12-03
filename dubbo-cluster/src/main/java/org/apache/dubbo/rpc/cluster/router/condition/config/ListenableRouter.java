@@ -20,11 +20,9 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
-import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
@@ -43,16 +41,15 @@ import java.util.stream.Collectors;
  */
 public abstract class ListenableRouter extends AbstractRouter implements ConfigurationListener {
     public static final String NAME = "LISTENABLE_ROUTER";
-    private static final String RULE_SUFFIX = ".condition-router";
+    protected static final String RULE_SUFFIX = ".condition-router";
 
     private static final Logger logger = LoggerFactory.getLogger(ListenableRouter.class);
     private ConditionRouterRule routerRule;
     private List<ConditionRouter> conditionRouters = Collections.emptyList();
 
-    public ListenableRouter(URL url, String ruleKey) {
+    public ListenableRouter(URL url) {
         super(url);
         this.force = false;
-        this.init(ruleKey);
     }
 
     @Override
@@ -110,18 +107,6 @@ public abstract class ListenableRouter extends AbstractRouter implements Configu
                     .stream()
                     .map(condition -> new ConditionRouter(condition, rule.isForce(), rule.isEnabled()))
                     .collect(Collectors.toList());
-        }
-    }
-
-    private synchronized void init(String ruleKey) {
-        if (StringUtils.isEmpty(ruleKey)) {
-            return;
-        }
-        String routerKey = ruleKey + RULE_SUFFIX;
-        ruleRepository.addListener(routerKey, this);
-        String rule = ruleRepository.getRule(routerKey, DynamicConfiguration.DEFAULT_GROUP);
-        if (StringUtils.isNotEmpty(rule)) {
-            this.process(new ConfigChangedEvent(routerKey, DynamicConfiguration.DEFAULT_GROUP, rule));
         }
     }
 }
