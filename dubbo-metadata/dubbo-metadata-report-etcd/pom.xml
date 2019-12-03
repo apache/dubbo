@@ -29,6 +29,30 @@
 
     <artifactId>dubbo-metadata-report-etcd</artifactId>
 
+    <profiles>
+        <profile>
+            <id>no_dubbo-metadata-report-etcd_test</id>
+            <activation>
+                <property>
+                    <name>noDocker</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <version>${maven_surefire_version}</version>
+                        <configuration>
+                            <skipTests>true</skipTests>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
     <dependencies>
         <dependency>
             <groupId>org.apache.dubbo</groupId>

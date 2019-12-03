@@ -31,6 +31,29 @@ limitations under the License.
         <skip_maven_deploy>false</skip_maven_deploy>
         <dubbo.compiler.version>0.0.1-SNAPSHOT</dubbo.compiler.version>
     </properties>
+    <profiles>
+        <profile>
+            <id>no_dubbo-serialization-protobuf_test</id>
+            <activation>
+                <property>
+                    <name>noProtobuf</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <version>${maven_surefire_version}</version>
+                        <configuration>
+                            <skipTests>true</skipTests>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
     <dependencies>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
