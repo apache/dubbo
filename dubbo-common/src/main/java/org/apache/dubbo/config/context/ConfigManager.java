@@ -400,10 +400,10 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 //                throw new IllegalStateException("No such " + configType.getName() + " is found");
                 return null;
             } else if (size > 1) {
-                throw new IllegalStateException("The expected single matching " + configType + " but found " + size + " instances");
-            } else {
-                return configsMap.values().iterator().next();
+                logger.warn("Expected single matching of " + configType + ", but found " + size + " instances, will randomly pick the first one.");
             }
+
+            return configsMap.values().iterator().next();
         });
     }
 
