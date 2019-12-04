@@ -237,6 +237,16 @@ public class StringUtilsTest {
         assertThat(StringUtils.isContains("", "b"), is(false));
         assertThat(StringUtils.isContains(new String[]{"a", "b", "c"}, "b"), is(true));
         assertThat(StringUtils.isContains((String[]) null, null), is(false));
+
+        assertTrue(StringUtils.isContains("abc", 'a'));
+        assertFalse(StringUtils.isContains("abc", 'd'));
+        assertFalse(StringUtils.isContains("", 'a'));
+        assertFalse(StringUtils.isContains(null, 'a'));
+
+        assertTrue(StringUtils.isNotContains("abc", 'd'));
+        assertFalse(StringUtils.isNotContains("abc", 'a'));
+        assertTrue(StringUtils.isNotContains("", 'a'));
+        assertTrue(StringUtils.isNotContains(null, 'a'));
     }
 
     @Test
