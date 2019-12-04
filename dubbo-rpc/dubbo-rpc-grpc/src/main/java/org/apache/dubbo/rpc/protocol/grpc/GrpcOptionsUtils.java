@@ -26,7 +26,6 @@ import org.apache.dubbo.rpc.protocol.grpc.interceptors.ServerInterceptor;
 import org.apache.dubbo.rpc.protocol.grpc.interceptors.ServerTransportFilter;
 
 import io.grpc.CallOptions;
-import io.grpc.Deadline;
 import io.grpc.ManagedChannel;
 import io.grpc.ServerBuilder;
 import io.grpc.netty.GrpcSslContexts;
@@ -42,12 +41,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
-import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.remoting.Constants.DISPATCHER_KEY;
 import static org.apache.dubbo.remoting.Constants.SSL_CLIENT_CERT_PATH_KEY;
 import static org.apache.dubbo.remoting.Constants.SSL_CLIENT_KEY_PASSWORD_KEY;
@@ -152,9 +148,10 @@ public class GrpcOptionsUtils {
     }
 
     static CallOptions buildCallOptions(URL url) {
-        CallOptions callOptions = CallOptions.DEFAULT
-                .withDeadline(Deadline.after(url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT), TimeUnit.MILLISECONDS));
-
+        // gRPC Deadline starts counting when it's created, so we need to create and add a new Deadline for each RPC call.
+//        CallOptions callOptions = CallOptions.DEFAULT
+//                .withDeadline(Deadline.after(url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT), TimeUnit.MILLISECONDS));
+        CallOptions callOptions = CallOptions.DEFAULT;
         return getConfigurator()
                 .map(configurator -> configurator.configureCallOptions(callOptions, url))
                 .orElse(callOptions);
