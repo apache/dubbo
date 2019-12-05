@@ -216,9 +216,9 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             }
         }
         map.put(INTERFACE_KEY, interfaceName);
-        AbstractConfig.appendParameters(map, metrics);
-        AbstractConfig.appendParameters(map, application);
-        AbstractConfig.appendParameters(map, module);
+        AbstractConfig.appendParameters(map, getMetrics());
+        AbstractConfig.appendParameters(map, getApplication());
+        AbstractConfig.appendParameters(map, getModule());
         // remove 'default.' prefix for configs from ConsumerConfig
         // appendParameters(map, consumer, Constants.DEFAULT_KEY);
         AbstractConfig.appendParameters(map, consumer);

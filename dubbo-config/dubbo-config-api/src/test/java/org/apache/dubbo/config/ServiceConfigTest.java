@@ -254,4 +254,10 @@ public class ServiceConfigTest {
             service.setMock(true);
         });
     }
+
+    @Test
+    public void testApplicationInUrl() {
+        Assertions.assertNotNull(service.toUrl().getParameter(APPLICATION_KEY));
+        Assertions.assertEquals("app", service.toUrl().getParameter(APPLICATION_KEY));
+    }
 }
