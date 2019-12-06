@@ -204,7 +204,7 @@ public class RegistryProtocol implements Protocol {
         // url to registry
         final Registry registry = getRegistry(originInvoker);
         final URL registeredProviderUrl = getUrlToRegistry(providerUrl, registryUrl);
-        //to judge if we need to delay publish
+        // decide if we need to delay publish
         boolean register = providerUrl.getParameter(REGISTER_KEY, true);
         if (register) {
             register(registryUrl, registeredProviderUrl);
@@ -248,7 +248,7 @@ public class RegistryProtocol implements Protocol {
                     if (!newProviderUrl.equals(oldProviderUrl)) {
                         Registry registry = getRegistry(originInvoker);
                         registry.unregister(oldProviderUrl);
-                        registry.register(newProviderUrl);
+                        register(registryUrl, newProviderUrl);
                         exporter.setRegisterUrl(newProviderUrl);
                     }
                 });
