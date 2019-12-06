@@ -69,9 +69,6 @@ public class AppRouter extends ListenableRouter {
         }
         synchronized (this) {
             if (!Objects.equals(remoteApplication, application)) {
-                if (!StringUtils.isEmpty(application)) {
-                    ruleRepository.removeListener(application + RULE_SUFFIX, this);
-                }
                 String routerKey = remoteApplication + RULE_SUFFIX;
                 ruleRepository.addListener(routerKey, this);
                 application = remoteApplication;
