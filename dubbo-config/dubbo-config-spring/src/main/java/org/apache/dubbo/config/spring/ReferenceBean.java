@@ -26,6 +26,7 @@ import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.SslConfig;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.spring.extension.SpringExtensionFactory;
 import org.apache.dubbo.config.support.Parameter;
@@ -92,6 +93,7 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
         beansOfTypeIncludingAncestors(applicationContext, ConfigCenterBean.class);
         beansOfTypeIncludingAncestors(applicationContext, MetadataReportConfig.class);
         beansOfTypeIncludingAncestors(applicationContext, MetricsConfig.class);
+        beansOfTypeIncludingAncestors(applicationContext, SslConfig.class);
     }
 
     @Override
