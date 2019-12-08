@@ -292,4 +292,6 @@ public interface CommonConstants {
 
     String INTERFACES = "interfaces";
 
+    String SSL_ENABLED_KEY = "ssl-enabled";
+
 }

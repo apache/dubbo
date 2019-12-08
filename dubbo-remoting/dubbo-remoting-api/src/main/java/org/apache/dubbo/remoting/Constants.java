@@ -135,16 +135,4 @@ public interface Constants {
     String CONNECTIONS_KEY = "connections";
 
     int DEFAULT_BACKLOG = 1024;
-
-    String SSL_ENABLED_KEY = "ssl-enabled";
-
-    String SSL_SERVER_CERT_PATH_KEY = "ssl.server.cert.path";
-    String SSL_SERVER_KEY_PATH_KEY = "ssl.server.key.path";
-    String SSL_SERVER_TRUST_CERT_PATH_KEY = "ssl.server.trust.cert.path";
-    String SSL_SERVER_KEY_PASSWORD_KEY = "ssl.server.key.password";
-
-    String SSL_CLIENT_CERT_PATH_KEY = "ssl.client.cert.path";
-    String SSL_CLIENT_KEY_PATH_KEY = "ssl.client.key.path";
-    String SSL_CLIENT_TRUST_CERT_PATH_KEY = "ssl.client.trust.cert.path";
-    String SSL_CLIENT_KEY_PASSWORD_KEY = "ssl.client.key.password";
 }

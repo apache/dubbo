@@ -22,6 +22,7 @@ import org.apache.dubbo.config.support.Parameter;
 import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SSL_ENABLED_KEY;
 import static org.apache.dubbo.config.Constants.PROTOCOLS_SUFFIX;
 
 /**
@@ -476,6 +477,7 @@ public class ProtocolConfig extends AbstractConfig {
         this.isDefault = isDefault;
     }
 
+    @Parameter(key = SSL_ENABLED_KEY)
     public Boolean getSslEnabled() {
         return sslEnabled;
     }
