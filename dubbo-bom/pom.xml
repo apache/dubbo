@@ -190,11 +190,6 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
-                <artifactId>dubbo-rpc-http-invoker</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.dubbo</groupId>
                 <artifactId>dubbo-rpc-webservice</artifactId>
                 <version>${project.version}</version>
             </dependency>
