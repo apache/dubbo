@@ -48,7 +48,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
@@ -204,7 +203,7 @@ public class RegistryProtocol implements Protocol {
         // url to registry
         final Registry registry = getRegistry(originInvoker);
         final URL registeredProviderUrl = getUrlToRegistry(providerUrl, registryUrl);
-        //to judge if we need to delay publish
+        // decide if we need to delay publish
         boolean register = providerUrl.getParameter(REGISTER_KEY, true);
         if (register) {
             register(registryUrl, registeredProviderUrl);
@@ -243,34 +242,30 @@ public class RegistryProtocol implements Protocol {
         URL registryUrl = getRegistryUrl(originInvoker);
         final URL newProviderUrl = getUrlToRegistry(newInvokerUrl, registryUrl);
 
-        getRegisteredUrl(registryUrl, newProviderUrl)
-                .ifPresent(oldProviderUrl -> {
-                    if (!newProviderUrl.equals(oldProviderUrl)) {
-                        Registry registry = getRegistry(originInvoker);
-                        registry.unregister(oldProviderUrl);
-                        registry.register(newProviderUrl);
-                        exporter.setRegisterUrl(newProviderUrl);
-                    }
-                });
+        ProviderModel.RegisterStatedURL statedUrl = getStatedUrl(registryUrl, newProviderUrl);
+
+        if (!newProviderUrl.equals(statedUrl.getProviderUrl())) {
+            if (statedUrl.isRegistered()) {
+                Registry registry = getRegistry(originInvoker);
+                logger.info("Try to unregister old url: " + statedUrl.getProviderUrl());
+                registry.unregister(statedUrl.getProviderUrl());
+                logger.info("Try to register new url: " + newProviderUrl);
+                registry.register(newProviderUrl);
+            }
+            statedUrl.setProviderUrl(newProviderUrl);
+            exporter.setRegisterUrl(newProviderUrl);
+        }
     }
 
-    private Optional<URL> getRegisteredUrl(URL registryUrl, URL providerUrl) {
+    private ProviderModel.RegisterStatedURL getStatedUrl(URL registryUrl, URL providerUrl) {
         ProviderModel providerModel = ApplicationModel.getServiceRepository()
                 .lookupExportedService(providerUrl.getServiceKey());
 
         List<ProviderModel.RegisterStatedURL> statedUrls = providerModel.getStatedUrl();
-        Optional<ProviderModel.RegisterStatedURL> statedUrlOptional = statedUrls.stream()
+        return statedUrls.stream()
                 .filter(u -> u.getRegistryUrl().equals(registryUrl)
                         && u.getProviderUrl().getProtocol().equals(providerUrl.getProtocol()))
-                .findFirst();
-
-        if (statedUrlOptional.isPresent()) {
-            ProviderModel.RegisterStatedURL statedURL = statedUrlOptional.get();
-            if (statedURL.isRegistered()) {
-                return Optional.of(statedURL.getProviderUrl());
-            }
-        }
-        return Optional.empty();
+                .findFirst().orElseThrow(() -> new IllegalStateException("There should have at least one registered url."));
     }
 
     /**
@@ -569,7 +564,7 @@ public class RegistryProtocol implements Protocol {
             //The current, may have been merged many times
             URL currentUrl = exporter.getInvoker().getUrl();
             //Merged with this configuration
-            URL newUrl = getConfigedInvokerUrl(configurators, originUrl);
+            URL newUrl = getConfigedInvokerUrl(configurators, currentUrl);
             newUrl = getConfigedInvokerUrl(providerConfigurationListener.getConfigurators(), newUrl);
             newUrl = getConfigedInvokerUrl(serviceConfigurationListeners.get(originUrl.getServiceKey())
                     .getConfigurators(), newUrl);

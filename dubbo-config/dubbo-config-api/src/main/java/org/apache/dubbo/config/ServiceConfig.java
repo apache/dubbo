@@ -326,9 +326,9 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         map.put(SIDE_KEY, PROVIDER_SIDE);
 
         ServiceConfig.appendRuntimeParameters(map);
-        AbstractConfig.appendParameters(map, metrics);
-        AbstractConfig.appendParameters(map, application);
-        AbstractConfig.appendParameters(map, module);
+        AbstractConfig.appendParameters(map, getMetrics());
+        AbstractConfig.appendParameters(map, getApplication());
+        AbstractConfig.appendParameters(map, getModule());
         // remove 'default.' prefix for configs from ProviderConfig
         // appendParameters(map, provider, Constants.DEFAULT_KEY);
         AbstractConfig.appendParameters(map, provider);

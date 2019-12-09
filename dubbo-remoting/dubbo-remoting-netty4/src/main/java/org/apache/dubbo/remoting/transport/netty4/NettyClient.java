@@ -43,7 +43,7 @@ import io.netty.util.concurrent.DefaultThreadFactory;
 import java.net.InetSocketAddress;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static org.apache.dubbo.remoting.Constants.SSL_ENABLED_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SSL_ENABLED_KEY;
 
 /**
  * NettyClient.
