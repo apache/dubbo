@@ -165,13 +165,6 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-rpc-http-invoker</artifactId>
-            <version>${project.version}</version>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-rpc-webservice</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
@@ -620,7 +613,6 @@
                                     <include>org.apache.dubbo:dubbo-rpc-http</include>
                                     <include>org.apache.dubbo:dubbo-rpc-rmi</include>
                                     <include>org.apache.dubbo:dubbo-rpc-hessian</include>
-                                    <include>org.apache.dubbo:dubbo-rpc-http-invoker</include>
                                     <include>org.apache.dubbo:dubbo-rpc-webservice</include>
                                     <include>org.apache.dubbo:dubbo-rpc-thrift</include>
                                     <include>org.apache.dubbo:dubbo-rpc-memcached</include>
