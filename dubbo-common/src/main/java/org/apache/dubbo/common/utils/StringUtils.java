@@ -57,6 +57,8 @@ public final class StringUtils {
     private static final Logger logger = LoggerFactory.getLogger(StringUtils.class);
     private static final Pattern KVP_PATTERN = Pattern.compile("([_.a-zA-Z0-9][-_.a-zA-Z0-9]*)[=](.*)"); //key value pair pattern.
     private static final Pattern INT_PATTERN = Pattern.compile("^\\d+$");
+    private static final Pattern PARAMETERS_PATTERN = Pattern.compile("^\\[((\\s*\\{\\s*[\\w_\\-\\.]+\\s*:\\s*.+?\\s*\\}\\s*,?\\s*)+)\\s*\\]$");
+    private static final Pattern PAIR_PARAMETERS_PATTERN = Pattern.compile("^\\{\\s*([\\w-_\\.]+)\\s*:\\s*(.+)\\s*\\}$");
     private static final int PAD_LIMIT = 8192;
 
     /**
@@ -957,10 +959,8 @@ public final class StringUtils {
      * @return
      */
     public static Map<String, String> parseParameters(String rawParameters) {
-        Pattern pattern = Pattern.compile("^\\[((\\s*\\{\\s*[\\w_\\-\\.]+\\s*:\\s*.+?\\s*\\}\\s*,?\\s*)+)\\s*\\]$");
-        Pattern pairPattern = Pattern.compile("^\\{\\s*([\\w-_\\.]+)\\s*:\\s*(.+)\\s*\\}$");
 
-        Matcher matcher = pattern.matcher(rawParameters);
+        Matcher matcher = PARAMETERS_PATTERN.matcher(rawParameters);
         if (!matcher.matches()) {
             return Collections.emptyMap();
         }
@@ -970,7 +970,7 @@ public final class StringUtils {
 
         Map<String, String> parameters = new HashMap<>();
         for (String pair : pairArr) {
-            Matcher pairMatcher = pairPattern.matcher(pair);
+            Matcher pairMatcher = PAIR_PARAMETERS_PATTERN.matcher(pair);
             if (pairMatcher.matches()) {
                 parameters.put(pairMatcher.group(1), pairMatcher.group(2));
             }
