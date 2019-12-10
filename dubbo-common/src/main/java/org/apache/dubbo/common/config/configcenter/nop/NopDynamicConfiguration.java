@@ -23,7 +23,7 @@ import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import java.util.SortedSet;
 
 /**
- * The default extension of {@link DynamicConfiguration}. If user does not specify a config centre, or specifies one
+ * The default extension of {@link DynamicConfiguration}. If user does not specify a config center, or specifies one
  * that is not a valid extension, it will default to this one.
  */
 @Deprecated
