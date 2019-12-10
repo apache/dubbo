@@ -175,4 +175,9 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
         }
     };
 
+    // for unit test
+    public static void clearRegistryNotDestroy() {
+        REGISTRIES.clear();
+    }
+
 }
