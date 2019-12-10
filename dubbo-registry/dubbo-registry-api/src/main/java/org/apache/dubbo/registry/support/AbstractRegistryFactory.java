@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.registry.RegistryService;
@@ -27,7 +28,9 @@ import org.apache.dubbo.registry.RegistryService;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
@@ -50,6 +53,8 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
     // Registry Collection Map<RegistryAddress, Registry>
     private static final Map<String, Registry> REGISTRIES = new HashMap<>();
 
+    private static final AtomicBoolean destroyed = new AtomicBoolean(false);
+
     /**
      * Get all registries
      *
@@ -67,6 +72,10 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
      * Close all created registries
      */
     public static void destroyAll() {
+        if (!destroyed.compareAndSet(false, true)) {
+            return;
+        }
+
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("Close all registries " + getRegistries());
         }
@@ -89,6 +98,12 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
 
     @Override
     public Registry getRegistry(URL url) {
+        if (destroyed.get()) {
+            LOGGER.warn("All registry instances have been destroyed, failed to fetch any instance. " +
+                    "Usually, this means no need to try to do unnecessary redundant resource clearance, all registries has been taken care of.");
+            return DEFAULT_NOP_REGISTRY;
+        }
+
         url = URLBuilder.from(url)
                 .setPath(RegistryService.class.getName())
                 .addParameter(INTERFACE_KEY, RegistryService.class.getName())
@@ -116,5 +131,48 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
     }
 
     protected abstract Registry createRegistry(URL url);
+
+
+    private static Registry DEFAULT_NOP_REGISTRY = new Registry() {
+        @Override
+        public URL getUrl() {
+            return null;
+        }
+
+        @Override
+        public boolean isAvailable() {
+            return false;
+        }
+
+        @Override
+        public void destroy() {
+
+        }
+
+        @Override
+        public void register(URL url) {
+
+        }
+
+        @Override
+        public void unregister(URL url) {
+
+        }
+
+        @Override
+        public void subscribe(URL url, NotifyListener listener) {
+
+        }
+
+        @Override
+        public void unsubscribe(URL url, NotifyListener listener) {
+
+        }
+
+        @Override
+        public List<URL> lookup(URL url) {
+            return null;
+        }
+    };
 
 }
