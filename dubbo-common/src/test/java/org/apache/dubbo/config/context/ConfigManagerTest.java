@@ -133,25 +133,29 @@ public class ConfigManagerTest {
         assertEquals(1, configs.size());
         assertEquals(config, configs.iterator().next());
         assertTrue(configManager.getDefaultProvider().isPresent());
+
+        config.setId(DEFAULT_KEY);
+        configManager.addProvider(config);
+        assertTrue(configManager.getDefaultProvider().isPresent());
+        configs = configManager.getProviders();
+        assertEquals(2, configs.size());
     }
 
     // Test ConsumerConfig correlative methods
     @Test
     public void testConsumerConfig() {
-        ConsumerConfig configDefault = new ConsumerConfig();
-        configDefault.setDefault(true);
-        configDefault.setId("default-id");
-
         ConsumerConfig config = new ConsumerConfig();
-        config.setDefault(false);
-        config.setId("my-id");
-
-        configManager.addConsumers(asList(configDefault, config));
-
+        configManager.addConsumers(asList(config, null));
         Collection<ConsumerConfig> configs = configManager.getConsumers();
-        assertEquals(2, configs.size());
+        assertEquals(1, configs.size());
+        assertEquals(config, configs.iterator().next());
         assertTrue(configManager.getDefaultConsumer().isPresent());
-        assertEquals("default-id", configManager.getDefaultConsumer().get().getId());
+
+        config.setId(DEFAULT_KEY);
+        configManager.addConsumer(config);
+        assertTrue(configManager.getDefaultConsumer().isPresent());
+        configs = configManager.getConsumers();
+        assertEquals(2, configs.size());
     }
 
     // Test ProtocolConfig correlative methods
