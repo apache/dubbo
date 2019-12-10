@@ -22,6 +22,7 @@ import org.apache.dubbo.common.status.Status;
 import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.registry.status.RegistryStatusChecker;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,7 +46,7 @@ public class RegistryStatusCheckerTest {
 
     @BeforeEach
     public void setUp() {
-        AbstractRegistryFactory.destroyAll();
+        AbstractRegistryFactory.clearRegistryNotDestroy();
     }
 
     @Test
@@ -55,6 +56,7 @@ public class RegistryStatusCheckerTest {
 
     @Test
     public void testCheckOK() {
+        ApplicationModel.setApplication("testCheckOK");
         ExtensionLoader.getExtensionLoader(RegistryFactory.class).getAdaptiveExtension().getRegistry(registryUrl);
         ExtensionLoader.getExtensionLoader(RegistryFactory.class).getAdaptiveExtension().getRegistry(registryUrl2);
         assertEquals(Status.Level.OK, new RegistryStatusChecker().check().getLevel());
