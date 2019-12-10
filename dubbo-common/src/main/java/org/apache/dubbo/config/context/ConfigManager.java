@@ -178,8 +178,15 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
         return ofNullable(getConfig(getTagName(ProviderConfig.class), id));
     }
 
+    /**
+     * Only allows one default ProviderConfig
+     */
     public Optional<ProviderConfig> getDefaultProvider() {
-        return getProvider(DEFAULT_KEY);
+        List<ProviderConfig> providerConfigs = getDefaultConfigs(getConfigsMap(getTagName(ProviderConfig.class)));
+        if (CollectionUtils.isNotEmpty(providerConfigs)) {
+            return Optional.of(providerConfigs.get(0));
+        }
+        return Optional.empty();
     }
 
     public Collection<ProviderConfig> getProviders() {
@@ -200,8 +207,15 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
         return ofNullable(getConfig(getTagName(ConsumerConfig.class), id));
     }
 
+    /**
+     * Only allows one default ConsumerConfig
+     */
     public Optional<ConsumerConfig> getDefaultConsumer() {
-        return getConsumer(DEFAULT_KEY);
+        List<ConsumerConfig> consumerConfigs = getDefaultConfigs(getConfigsMap(getTagName(ConsumerConfig.class)));
+        if (CollectionUtils.isNotEmpty(consumerConfigs)) {
+            return Optional.of(consumerConfigs.get(0));
+        }
+        return Optional.empty();
     }
 
     public Collection<ConsumerConfig> getConsumers() {
