@@ -42,7 +42,6 @@ import java.lang.reflect.Type;
 
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE_ASYNC;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_INVOCATION_PREFIX;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 
 /**
@@ -57,7 +56,7 @@ public class GenericImplFilter implements Filter, Filter.Listener {
 
     private static final String GENERIC_PARAMETER_DESC = "Ljava/lang/String;[Ljava/lang/String;[Ljava/lang/Object;";
 
-    private static final String GENERIC_IMPL_MARKER = DUBBO_INVOCATION_PREFIX + "GENERIC_IMPL";
+    private static final String GENERIC_IMPL_MARKER = "GENERIC_IMPL";
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
@@ -70,7 +69,7 @@ public class GenericImplFilter implements Filter, Filter.Listener {
              * Mark this invocation as a generic impl call, this value will be removed automatically before passing on the wire.
              * See {@link RpcUtils#sieveUnnecessaryAttachments(Invocation)}
              */
-            invocation2.setAttachment(GENERIC_IMPL_MARKER, true);
+            invocation2.put(GENERIC_IMPL_MARKER, true);
 
             String methodName = invocation2.getMethodName();
             Class<?>[] parameterTypes = invocation2.getParameterTypes();
@@ -135,7 +134,8 @@ public class GenericImplFilter implements Filter, Filter.Listener {
         String generic = invoker.getUrl().getParameter(GENERIC_KEY);
         String methodName = invocation.getMethodName();
         Class<?>[] parameterTypes = invocation.getParameterTypes();
-        if (invocation.getAttachment(GENERIC_IMPL_MARKER) != null) {
+        Object genericImplMarker = invocation.get(GENERIC_IMPL_MARKER);
+        if (genericImplMarker != null && (boolean) invocation.get(GENERIC_IMPL_MARKER)) {
             if (!appResponse.hasException()) {
                 Object value = appResponse.getValue();
                 try {

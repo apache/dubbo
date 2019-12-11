@@ -54,7 +54,7 @@ public class ContextFilter implements Filter, Filter.Listener {
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        Map<String, Object> attachments = invocation.getAttachments();
+        Map<String, String> attachments = invocation.getAttachments();
         if (attachments != null) {
             attachments = new HashMap<>(attachments);
             attachments.remove(PATH_KEY);

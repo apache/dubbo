@@ -53,7 +53,7 @@ public class AppResponse implements Result {
 
     private Throwable exception;
 
-    private Map<String, Object> attachments = new HashMap<String, Object>();
+    private Map<String, String> attachments = new HashMap<String, String>();
 
     public AppResponse() {
     }
@@ -117,7 +117,7 @@ public class AppResponse implements Result {
     }
 
     @Override
-    public Map<String, Object> getAttachments() {
+    public Map<String, String> getAttachments() {
         return attachments;
     }
 
@@ -126,35 +126,35 @@ public class AppResponse implements Result {
      *
      * @param map contains all key-value pairs to append
      */
-    public void setAttachments(Map<String, Object> map) {
-        this.attachments = map == null ? new HashMap<String, Object>() : map;
+    public void setAttachments(Map<String, String> map) {
+        this.attachments = map == null ? new HashMap<String, String>() : map;
     }
 
-    public void addAttachments(Map<String, Object> map) {
+    public void addAttachments(Map<String, String> map) {
         if (map == null) {
             return;
         }
         if (this.attachments == null) {
-            this.attachments = new HashMap<String, Object>();
+            this.attachments = new HashMap<String, String>();
         }
         this.attachments.putAll(map);
     }
 
     @Override
-    public Object getAttachment(String key) {
+    public String getAttachment(String key) {
         return attachments.get(key);
     }
 
     @Override
-    public Object getAttachment(String key, Object defaultValue) {
-        Object result = attachments.get(key);
-        if (result == null) {
+    public String getAttachment(String key, String defaultValue) {
+        String result = attachments.get(key);
+        if (result == null || result.length() == 0) {
             result = defaultValue;
         }
         return result;
     }
 
-    public void setAttachment(String key, Object value) {
+    public void setAttachment(String key, String value) {
         attachments.put(key, value);
     }
 

@@ -199,32 +199,32 @@ public class AsyncRpcResult implements Result {
     }
 
     @Override
-    public Map<String, Object> getAttachments() {
+    public Map<String, String> getAttachments() {
         return getAppResponse().getAttachments();
     }
 
     @Override
-    public void setAttachments(Map<String, Object> map) {
+    public void setAttachments(Map<String, String> map) {
         getAppResponse().setAttachments(map);
     }
 
     @Override
-    public void addAttachments(Map<String, Object> map) {
+    public void addAttachments(Map<String, String> map) {
         getAppResponse().addAttachments(map);
     }
 
     @Override
-    public Object getAttachment(String key) {
+    public String getAttachment(String key) {
         return getAppResponse().getAttachment(key);
     }
 
     @Override
-    public Object getAttachment(String key, Object defaultValue) {
+    public String getAttachment(String key, String defaultValue) {
         return getAppResponse().getAttachment(key, defaultValue);
     }
 
     @Override
-    public void setAttachment(String key, Object value) {
+    public void setAttachment(String key, String value) {
         getAppResponse().setAttachment(key, value);
     }
 

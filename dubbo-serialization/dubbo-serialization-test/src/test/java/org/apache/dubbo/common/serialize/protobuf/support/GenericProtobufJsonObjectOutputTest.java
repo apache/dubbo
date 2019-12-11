@@ -167,7 +167,7 @@ public class GenericProtobufJsonObjectOutputTest {
 
     @Test
     public void testWriteMap() throws IOException, ClassNotFoundException {
-        Map<String, Object> map = new HashMap<>();
+        Map<String, String> map = new HashMap<>();
         map.put("key", "hello");
         map.put("value", "dubbo");
         this.genericProtobufObjectOutput.writeAttachments(map);
@@ -180,7 +180,7 @@ public class GenericProtobufJsonObjectOutputTest {
     void testWriteMultiType() throws IOException, ClassNotFoundException {
         long random = new Random().nextLong();
         this.genericProtobufObjectOutput.writeLong(random);
-        Map<String, Object> map = new HashMap<>();
+        Map<String, String> map = new HashMap<>();
         map.put("key", "hello");
         map.put("value", "world");
         this.genericProtobufObjectOutput.writeAttachments(map);

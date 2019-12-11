@@ -70,10 +70,10 @@ public class GenericFilter implements Filter, Filter.Listener {
                 if (args == null) {
                     args = new Object[params.length];
                 }
-                String generic = (String) inv.getAttachment(GENERIC_KEY);
+                String generic = inv.getAttachment(GENERIC_KEY);
 
                 if (StringUtils.isBlank(generic)) {
-                    generic = (String) RpcContext.getContext().getAttachment(GENERIC_KEY);
+                    generic = RpcContext.getContext().getAttachment(GENERIC_KEY);
                 }
 
                 if (StringUtils.isEmpty(generic)
@@ -156,9 +156,9 @@ public class GenericFilter implements Filter, Filter.Listener {
                 && inv.getArguments().length == 3
                 && !GenericService.class.isAssignableFrom(invoker.getInterface())) {
 
-            String generic = (String) inv.getAttachment(GENERIC_KEY);
+            String generic = inv.getAttachment(GENERIC_KEY);
             if (StringUtils.isBlank(generic)) {
-                generic = (String) RpcContext.getContext().getAttachment(GENERIC_KEY);
+                generic = RpcContext.getContext().getAttachment(GENERIC_KEY);
             }
 
             if (appResponse.hasException() && !(appResponse.getException() instanceof GenericException)) {

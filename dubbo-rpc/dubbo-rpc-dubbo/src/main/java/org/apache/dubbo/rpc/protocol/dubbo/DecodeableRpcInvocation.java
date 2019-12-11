@@ -146,11 +146,11 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
             }
             setParameterTypes(pts);
 
-            Map<String, Object> map = in.readAttachments();
+            Map<String, String> map = in.readAttachments();
             if (map != null && map.size() > 0) {
-                Map<String, Object> attachment = getAttachments();
+                Map<String, String> attachment = getAttachments();
                 if (attachment == null) {
-                    attachment = new HashMap<String, Object>();
+                    attachment = new HashMap<String, String>();
                 }
                 attachment.putAll(map);
                 setAttachments(attachment);
@@ -163,8 +163,8 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
 
             setArguments(args);
             String targetServiceName = buildKey((String) getAttachment(PATH_KEY),
-                    (String) getAttachment(GROUP_KEY),
-                    (String) getAttachment(VERSION_KEY));
+                    getAttachment(GROUP_KEY),
+                    getAttachment(VERSION_KEY));
             setTargetServiceUniqueName(targetServiceName);
         } catch (ClassNotFoundException e) {
             throw new IOException(StringUtils.toString("Read invocation data failed.", e));
