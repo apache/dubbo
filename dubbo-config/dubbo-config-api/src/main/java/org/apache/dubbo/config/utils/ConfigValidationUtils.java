@@ -463,9 +463,7 @@ public class ConfigValidationUtils {
     }
 
     public static void validateConsumerConfig(ConsumerConfig config) {
-        if (config == null) {
-            return;
-        }
+
     }
 
     public static void validateRegistryConfig(RegistryConfig config) {
