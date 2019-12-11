@@ -85,7 +85,7 @@ public class RpcInvocation implements Invocation, Serializable {
     public RpcInvocation(Invocation invocation, Invoker<?> invoker) {
         this(invocation.getMethodName(), invocation.getServiceName(), invocation.getParameterTypes(),
                 invocation.getArguments(), new HashMap<>(invocation.getAttachments()),
-                invocation.getInvoker());
+                invocation.getInvoker(), invocation.getAttributes());
         if (invoker != null) {
             URL url = invoker.getUrl();
             setAttachment(PATH_KEY, url.getPath());
@@ -113,7 +113,7 @@ public class RpcInvocation implements Invocation, Serializable {
 
     public RpcInvocation(Invocation invocation) {
         this(invocation.getMethodName(), invocation.getServiceName(), invocation.getParameterTypes(),
-                invocation.getArguments(), invocation.getAttachments(), invocation.getInvoker());
+                invocation.getArguments(), invocation.getAttachments(), invocation.getInvoker(), invocation.getAttributes());
         this.targetServiceUniqueName = invocation.getTargetServiceUniqueName();
     }
 
@@ -122,25 +122,26 @@ public class RpcInvocation implements Invocation, Serializable {
     }
 
     public RpcInvocation(Method method, String serviceName, Object[] arguments, Map<String, String> attachment, Map<Object, Object> attributes) {
-        this(method.getName(), serviceName, method.getParameterTypes(), arguments, attachment, null);
+        this(method.getName(), serviceName, method.getParameterTypes(), arguments, attachment, null, attributes);
         this.returnType = method.getReturnType();
-        this.attributes = attributes == null ? new HashMap<>() : attributes;
     }
 
     public RpcInvocation(String methodName, String serviceName, Class<?>[] parameterTypes, Object[] arguments) {
-        this(methodName, serviceName, parameterTypes, arguments, null, null);
+        this(methodName, serviceName, parameterTypes, arguments, null, null, null);
     }
 
     public RpcInvocation(String methodName, String serviceName, Class<?>[] parameterTypes, Object[] arguments, Map<String, String> attachments) {
-        this(methodName, serviceName, parameterTypes, arguments, attachments, null);
+        this(methodName, serviceName, parameterTypes, arguments, attachments, null, null);
     }
 
-    public RpcInvocation(String methodName, String serviceName, Class<?>[] parameterTypes, Object[] arguments, Map<String, String> attachments, Invoker<?> invoker) {
+    public RpcInvocation(String methodName, String serviceName, Class<?>[] parameterTypes, Object[] arguments,
+                         Map<String, String> attachments, Invoker<?> invoker, Map<Object, Object> attributes) {
         this.methodName = methodName;
         this.serviceName = serviceName;
         this.parameterTypes = parameterTypes == null ? new Class<?>[0] : parameterTypes;
         this.arguments = arguments == null ? new Object[0] : arguments;
-        this.attachments = attachments == null ? new HashMap<String, String>() : attachments;
+        this.attachments = attachments == null ? new HashMap<>() : attachments;
+        this.attributes = attributes == null ? new HashMap<>() : attributes;
         this.invoker = invoker;
         initParameterDesc();
     }
