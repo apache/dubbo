@@ -510,6 +510,14 @@ public final class StringUtils {
         return isNotEmpty(values) && isContains(COMMA_SPLIT_PATTERN.split(values), value);
     }
 
+    public static boolean isContains(String str, char ch) {
+        return isNotEmpty(str) && str.indexOf(ch) >= 0;
+    }
+
+    public static boolean isNotContains(String str, char ch) {
+        return !isContains(str, ch);
+    }
+
     /**
      * @param values
      * @param value
