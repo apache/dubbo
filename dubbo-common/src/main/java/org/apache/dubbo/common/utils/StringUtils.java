@@ -513,7 +513,7 @@ public final class StringUtils {
     }
 
     public static boolean isNotContains(String str, char ch) {
-        return isEmpty(str) || str.indexOf(ch) < 0;
+        return !isContains(str, ch);
     }
 
     /**
