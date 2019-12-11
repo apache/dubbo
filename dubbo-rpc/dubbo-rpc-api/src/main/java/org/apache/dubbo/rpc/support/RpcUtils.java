@@ -28,14 +28,11 @@ import org.apache.dubbo.rpc.service.GenericService;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE_ASYNC;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_INVOCATION_PREFIX;
 import static org.apache.dubbo.rpc.Constants.$ECHO;
 import static org.apache.dubbo.rpc.Constants.ASYNC_KEY;
 import static org.apache.dubbo.rpc.Constants.AUTO_ATTACH_INVOCATIONID_KEY;
@@ -98,7 +95,7 @@ public class RpcUtils {
     }
 
     public static Long getInvocationId(Invocation inv) {
-        String id = (String)inv.getAttachment(ID_KEY);
+        String id = inv.getAttachment(ID_KEY);
         return id == null ? null : new Long(id);
     }
 
@@ -214,16 +211,5 @@ public class RpcUtils {
             isOneway = !url.getMethodParameter(getMethodName(inv), RETURN_KEY, true);
         }
         return isOneway;
-    }
-
-    public static Map<String, Object> sieveUnnecessaryAttachments(Invocation invocation) {
-        Map<String, Object> attachments = invocation.getAttachments();
-        Map<String, Object> attachmentsToPass = new HashMap<>(attachments.size());
-        for (Map.Entry<String, Object> entry : attachments.entrySet()) {
-            if (!entry.getKey().startsWith(DUBBO_INVOCATION_PREFIX)) {
-                attachmentsToPass.put(entry.getKey(), entry.getValue());
-            }
-        }
-        return attachmentsToPass;
     }
 }

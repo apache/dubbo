@@ -47,7 +47,7 @@ public class TokenFilterTest {
         when(invoker.getUrl()).thenReturn(url);
         when(invoker.invoke(any(Invocation.class))).thenReturn(new AppResponse("result"));
 
-        Map<String, Object> attachments = new HashMap<>();
+        Map<String, String> attachments = new HashMap<>();
         attachments.put(TOKEN_KEY, token);
         Invocation invocation = Mockito.mock(Invocation.class);
         when(invocation.getAttachments()).thenReturn(attachments);
@@ -66,7 +66,7 @@ public class TokenFilterTest {
             when(invoker.getUrl()).thenReturn(url);
             when(invoker.invoke(any(Invocation.class))).thenReturn(new AppResponse("result"));
 
-            Map<String, Object> attachments = new HashMap<>();
+            Map<String, String> attachments = new HashMap<>();
             attachments.put(TOKEN_KEY, "wrongToken");
             Invocation invocation = Mockito.mock(Invocation.class);
             when(invocation.getAttachments()).thenReturn(attachments);
