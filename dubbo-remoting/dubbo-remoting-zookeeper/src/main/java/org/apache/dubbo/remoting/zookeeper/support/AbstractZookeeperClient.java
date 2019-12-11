@@ -107,16 +107,8 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
 
     @Override
     public List<String> addChildListener(String path, final ChildListener listener) {
-        ConcurrentMap<ChildListener, TargetChildListener> listeners = childListeners.get(path);
-        if (listeners == null) {
-            childListeners.putIfAbsent(path, new ConcurrentHashMap<ChildListener, TargetChildListener>());
-            listeners = childListeners.get(path);
-        }
-        TargetChildListener targetListener = listeners.get(listener);
-        if (targetListener == null) {
-            listeners.putIfAbsent(listener, createTargetChildListener(path, listener));
-            targetListener = listeners.get(listener);
-        }
+        ConcurrentMap<ChildListener, TargetChildListener> listeners = childListeners.computeIfAbsent(path, k -> new ConcurrentHashMap<>());
+        TargetChildListener targetListener = listeners.computeIfAbsent(listener, k -> createTargetChildListener(path, k));
         return addTargetChildListener(path, targetListener);
     }
 
@@ -127,16 +119,8 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
 
     @Override
     public void addDataListener(String path, DataListener listener, Executor executor) {
-        ConcurrentMap<DataListener, TargetDataListener> dataListenerMap = listeners.get(path);
-        if (dataListenerMap == null) {
-            listeners.putIfAbsent(path, new ConcurrentHashMap<DataListener, TargetDataListener>());
-            dataListenerMap = listeners.get(path);
-        }
-        TargetDataListener targetListener = dataListenerMap.get(listener);
-        if (targetListener == null) {
-            dataListenerMap.putIfAbsent(listener, createTargetDataListener(path, listener));
-            targetListener = dataListenerMap.get(listener);
-        }
+        ConcurrentMap<DataListener, TargetDataListener> dataListenerMap = listeners.computeIfAbsent(path, k -> new ConcurrentHashMap<>());
+        TargetDataListener targetListener = dataListenerMap.computeIfAbsent(listener, k -> createTargetDataListener(path, k));
         addTargetDataListener(path, targetListener, executor);
     }
 
