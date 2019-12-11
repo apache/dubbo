@@ -438,16 +438,11 @@ public class ConfigValidationUtils {
 
             if (DUBBO_PROTOCOL.equals(name)) {
                 checkMultiExtension(Codec.class, CODEC_KEY, config.getCodec());
-            }
-            if (DUBBO_PROTOCOL.equals(name)) {
                 checkMultiExtension(Serialization.class, SERIALIZATION_KEY, config.getSerialization());
-            }
-            if (DUBBO_PROTOCOL.equals(name)) {
                 checkMultiExtension(Transporter.class, SERVER_KEY, config.getServer());
-            }
-            if (DUBBO_PROTOCOL.equals(name)) {
                 checkMultiExtension(Transporter.class, CLIENT_KEY, config.getClient());
             }
+
             checkMultiExtension(TelnetHandler.class, TELNET, config.getTelnet());
             checkMultiExtension(StatusChecker.class, "status", config.getStatus());
             checkExtension(Transporter.class, TRANSPORTER_KEY, config.getTransporter());
