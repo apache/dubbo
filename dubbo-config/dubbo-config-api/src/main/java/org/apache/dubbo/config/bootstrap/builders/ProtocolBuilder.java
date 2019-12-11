@@ -112,7 +112,7 @@ public class ProtocolBuilder extends AbstractBuilder<ProtocolConfig, ProtocolBui
     private String accesslog;
 
     /**
-     * Transfort
+     * Transporter
      */
     private String transporter;
 

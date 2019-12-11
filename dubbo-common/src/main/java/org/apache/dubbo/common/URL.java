@@ -232,7 +232,7 @@ class URL implements Serializable {
         int port = 0;
         String path = null;
         Map<String, String> parameters = null;
-        int i = url.indexOf("?"); // separator between body and parameters
+        int i = url.indexOf('?'); // separator between body and parameters
         if (i >= 0) {
             String[] parts = url.substring(i + 1).split("&");
             parameters = new HashMap<>();
@@ -268,24 +268,24 @@ class URL implements Serializable {
             }
         }
 
-        i = url.indexOf("/");
+        i = url.indexOf('/');
         if (i >= 0) {
             path = url.substring(i + 1);
             url = url.substring(0, i);
         }
-        i = url.lastIndexOf("@");
+        i = url.lastIndexOf('@');
         if (i >= 0) {
             username = url.substring(0, i);
-            int j = username.indexOf(":");
+            int j = username.indexOf(':');
             if (j >= 0) {
                 password = username.substring(j + 1);
                 username = username.substring(0, j);
             }
             url = url.substring(i + 1);
         }
-        i = url.lastIndexOf(":");
+        i = url.lastIndexOf(':');
         if (i >= 0 && i < url.length() - 1) {
-            if (url.lastIndexOf("%") > i) {
+            if (url.lastIndexOf('%') > i) {
                 // ipv6 address with scope id
                 // e.g. fe80:0:0:0:894:aeec:f37d:23e1%en0
                 // see https://howdoesinternetwork.com/2013/ipv6-zone-id
@@ -311,7 +311,7 @@ class URL implements Serializable {
                 for (Map.Entry<String, String> entry : parameters.entrySet()) {
                     String key = entry.getKey();
                     for (String method : methods) {
-                        String methodPrefix = method + ".";
+                        String methodPrefix = method + '.';
                         if (key.startsWith(methodPrefix)) {
                             String realKey = key.substring(methodPrefix.length());
                             URL.putMethodParameter(method, realKey, entry.getValue(), methodParameters);
@@ -321,7 +321,7 @@ class URL implements Serializable {
             } else {
                 for (Map.Entry<String, String> entry : parameters.entrySet()) {
                     String key = entry.getKey();
-                    int methodSeparator = key.indexOf(".");
+                    int methodSeparator = key.indexOf('.');
                     if (methodSeparator > 0) {
                         String method = key.substring(0, methodSeparator);
                         String realKey = key.substring(methodSeparator + 1);
@@ -502,7 +502,7 @@ class URL implements Serializable {
         String[] backups = getParameter(RemotingConstants.BACKUP_KEY, new String[0]);
         if (ArrayUtils.isNotEmpty(backups)) {
             for (String backup : backups) {
-                address.append(",");
+                address.append(',');
                 address.append(appendDefaultPort(backup, defaultPort));
             }
         }

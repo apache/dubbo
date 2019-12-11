@@ -86,7 +86,10 @@ public class DubboMonitor implements Monitor {
     }
 
     public void send() {
-        logger.debug("Send statistics to monitor " + getUrl());
+        if (logger.isDebugEnabled()) {
+            logger.debug("Send statistics to monitor " + getUrl());
+        }
+
         String timestamp = String.valueOf(System.currentTimeMillis());
         for (Map.Entry<Statistics, AtomicReference<long[]>> entry : statisticsMap.entrySet()) {
             // get statistics data
