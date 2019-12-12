@@ -129,7 +129,8 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt 
         if (serviceDescriptor == null) {
             return null;
         }
-        Set<MethodDescriptor> methods = serviceDescriptor.getMethods(methodName);
+
+        List<MethodDescriptor> methods = serviceDescriptor.getMethods(methodName);
         if (CollectionUtils.isEmpty(methods)) {
             return null;
         }

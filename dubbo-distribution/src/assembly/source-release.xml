@@ -51,8 +51,6 @@
                 <exclude>**/*.jar</exclude>
                 <exclude>**/mvnw*</exclude>
                 <exclude>**/.flattened-pom.xml</exclude>
-                <exclude>**/compiler/.gradle/**</exclude>
-                <exclude>**/compiler/gradle/**</exclude>
             </excludes>
         </fileSet>
     </fileSets>

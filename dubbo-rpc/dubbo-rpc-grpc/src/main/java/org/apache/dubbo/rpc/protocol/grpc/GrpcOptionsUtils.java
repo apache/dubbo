@@ -20,13 +20,15 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.threadpool.ThreadPool;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.config.SslConfig;
+import org.apache.dubbo.config.context.ConfigManager;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.protocol.grpc.interceptors.ClientInterceptor;
 import org.apache.dubbo.rpc.protocol.grpc.interceptors.GrpcConfigurator;
 import org.apache.dubbo.rpc.protocol.grpc.interceptors.ServerInterceptor;
 import org.apache.dubbo.rpc.protocol.grpc.interceptors.ServerTransportFilter;
 
 import io.grpc.CallOptions;
-import io.grpc.Deadline;
 import io.grpc.ManagedChannel;
 import io.grpc.ServerBuilder;
 import io.grpc.netty.GrpcSslContexts;
@@ -37,27 +39,16 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 
 import javax.net.ssl.SSLException;
-import java.io.File;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
-import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SSL_ENABLED_KEY;
 import static org.apache.dubbo.remoting.Constants.DISPATCHER_KEY;
-import static org.apache.dubbo.remoting.Constants.SSL_CLIENT_CERT_PATH_KEY;
-import static org.apache.dubbo.remoting.Constants.SSL_CLIENT_KEY_PASSWORD_KEY;
-import static org.apache.dubbo.remoting.Constants.SSL_CLIENT_KEY_PATH_KEY;
-import static org.apache.dubbo.remoting.Constants.SSL_CLIENT_TRUST_CERT_PATH_KEY;
-import static org.apache.dubbo.remoting.Constants.SSL_ENABLED_KEY;
-import static org.apache.dubbo.remoting.Constants.SSL_SERVER_CERT_PATH_KEY;
-import static org.apache.dubbo.remoting.Constants.SSL_SERVER_KEY_PASSWORD_KEY;
-import static org.apache.dubbo.remoting.Constants.SSL_SERVER_KEY_PATH_KEY;
-import static org.apache.dubbo.remoting.Constants.SSL_SERVER_TRUST_CERT_PATH_KEY;
 import static org.apache.dubbo.rpc.Constants.EXECUTES_KEY;
 import static org.apache.dubbo.rpc.protocol.grpc.GrpcConstants.CLIENT_INTERCEPTORS;
 import static org.apache.dubbo.rpc.protocol.grpc.GrpcConstants.EXECUTOR;
@@ -152,29 +143,33 @@ public class GrpcOptionsUtils {
     }
 
     static CallOptions buildCallOptions(URL url) {
-        CallOptions callOptions = CallOptions.DEFAULT
-                .withDeadline(Deadline.after(url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT), TimeUnit.MILLISECONDS));
-
+        // gRPC Deadline starts counting when it's created, so we need to create and add a new Deadline for each RPC call.
+//        CallOptions callOptions = CallOptions.DEFAULT
+//                .withDeadline(Deadline.after(url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT), TimeUnit.MILLISECONDS));
+        CallOptions callOptions = CallOptions.DEFAULT;
         return getConfigurator()
                 .map(configurator -> configurator.configureCallOptions(callOptions, url))
                 .orElse(callOptions);
     }
 
     private static SslContext buildServerSslContext(URL url) {
+        ConfigManager globalConfigManager = ApplicationModel.getConfigManager();
+        SslConfig sslConfig = globalConfigManager.getSsl().orElseThrow(() -> new IllegalStateException("Ssl enabled, but no ssl cert information provided!"));
+
         SslContextBuilder sslClientContextBuilder = null;
         try {
-            String password = url.getParameter(SSL_SERVER_KEY_PASSWORD_KEY);
+            String password = sslConfig.getServerKeyPassword();
             if (password != null) {
-                sslClientContextBuilder = GrpcSslContexts.forServer(new File(url.getParameter(SSL_SERVER_CERT_PATH_KEY)),
-                        new File(url.getParameter(SSL_SERVER_KEY_PATH_KEY)));
+                sslClientContextBuilder = GrpcSslContexts.forServer(sslConfig.getServerKeyCertChainPathStream(),
+                        sslConfig.getServerPrivateKeyPathStream(), password);
             } else {
-                sslClientContextBuilder = GrpcSslContexts.forServer(new File(url.getParameter(SSL_SERVER_CERT_PATH_KEY)),
-                        new File(url.getParameter(SSL_SERVER_KEY_PATH_KEY)), password);
+                sslClientContextBuilder = GrpcSslContexts.forServer(sslConfig.getServerKeyCertChainPathStream(),
+                        sslConfig.getServerPrivateKeyPathStream());
             }
 
-            String trustCertCollectionFilePath = url.getParameter(SSL_SERVER_TRUST_CERT_PATH_KEY);
+            InputStream trustCertCollectionFilePath = sslConfig.getServerTrustCertCollectionPathStream();
             if (trustCertCollectionFilePath != null) {
-                sslClientContextBuilder.trustManager(new File(trustCertCollectionFilePath));
+                sslClientContextBuilder.trustManager(trustCertCollectionFilePath);
                 sslClientContextBuilder.clientAuth(ClientAuth.REQUIRE);
             }
         } catch (Exception e) {
@@ -188,20 +183,24 @@ public class GrpcOptionsUtils {
     }
 
     private static SslContext buildClientSslContext(URL url) {
+        ConfigManager globalConfigManager = ApplicationModel.getConfigManager();
+        SslConfig sslConfig = globalConfigManager.getSsl().orElseThrow(() -> new IllegalStateException("Ssl enabled, but no ssl cert information provided!"));
+
+
         SslContextBuilder builder = GrpcSslContexts.forClient();
-        String trustCertCollectionFilePath = url.getParameter(SSL_CLIENT_TRUST_CERT_PATH_KEY);
         try {
+            InputStream trustCertCollectionFilePath = sslConfig.getClientTrustCertCollectionPathStream();
             if (trustCertCollectionFilePath != null) {
-                builder.trustManager(new File(trustCertCollectionFilePath));
+                builder.trustManager(trustCertCollectionFilePath);
             }
-            String clientCertChainFilePath = url.getParameter(SSL_CLIENT_CERT_PATH_KEY);
-            String clientPrivateKeyFilePath = url.getParameter(SSL_CLIENT_KEY_PATH_KEY);
+            InputStream clientCertChainFilePath = sslConfig.getClientKeyCertChainPathStream();
+            InputStream clientPrivateKeyFilePath = sslConfig.getClientPrivateKeyPathStream();
             if (clientCertChainFilePath != null && clientPrivateKeyFilePath != null) {
-                String password = url.getParameter(SSL_CLIENT_KEY_PASSWORD_KEY);
+                String password = sslConfig.getClientKeyPassword();
                 if (password != null) {
-                    builder.keyManager(new File(clientCertChainFilePath), new File(clientPrivateKeyFilePath), password);
+                    builder.keyManager(clientCertChainFilePath, clientPrivateKeyFilePath, password);
                 } else {
-                    builder.keyManager(new File(clientCertChainFilePath), new File(clientPrivateKeyFilePath));
+                    builder.keyManager(clientCertChainFilePath, clientPrivateKeyFilePath);
                 }
             }
         } catch (Exception e) {

@@ -238,6 +238,12 @@
                             <![CDATA[ declares which app or service this interface belongs to. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
+                <xsd:attribute name="router" type="xsd:string">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            <![CDATA[ The routers ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
@@ -1375,6 +1381,65 @@
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
+
+    <xsd:complexType name="sslType">
+        <xsd:attribute name="id" type="xsd:ID">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The unique identifier for a bean. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="server-key-cert-chain-path" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The server cert. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="server-private-key-path" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The server key. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="server-key-password" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The server key. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="server-trust-cert-collection-path" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The trusted server cert. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="client-key-cert-chain-path" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The client cert. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="client-private-key-path" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The client key. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="client-key-password" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The client key pwd. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="client-trust-cert-collection-path" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The trusted client cert. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:element name="ssl" type="sslType">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[ The ssl config ]]></xsd:documentation>
+            <xsd:appinfo>
+                <tool:annotation>
+                    <tool:exports type="org.apache.dubbo.config.SslConfig"/>
+                </tool:annotation>
+            </xsd:appinfo>
+        </xsd:annotation>
+    </xsd:element>
 
     <xsd:element name="application" type="applicationType">
         <xsd:annotation>
