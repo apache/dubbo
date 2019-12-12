@@ -1375,7 +1375,7 @@ class URL implements Serializable {
      */
     public String getColonSeparatedKey() {
         StringBuilder serviceNameBuilder = new StringBuilder();
-        append(serviceNameBuilder, INTERFACE_KEY, true);
+        serviceNameBuilder.append(this.getServiceInterface());
         append(serviceNameBuilder, VERSION_KEY, false);
         append(serviceNameBuilder, GROUP_KEY, false);
         return serviceNameBuilder.toString();
