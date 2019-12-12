@@ -17,28 +17,38 @@
 package org.apache.dubbo.config.spring.schema;
 
 import org.apache.dubbo.common.Version;
-
 import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.config.MetadataReportConfig;
-import org.apache.dubbo.config.ModuleConfig;
-import org.apache.dubbo.config.RegistryConfig;
-import org.apache.dubbo.config.MonitorConfig;
-import org.apache.dubbo.config.MetricsConfig;
-import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.ConsumerConfig;
+import org.apache.dubbo.config.MetadataReportConfig;
+import org.apache.dubbo.config.MetricsConfig;
+import org.apache.dubbo.config.ModuleConfig;
+import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
+import org.apache.dubbo.config.ProviderConfig;
+import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.SslConfig;
 import org.apache.dubbo.config.spring.ConfigCenterBean;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.ServiceBean;
+import org.apache.dubbo.config.spring.beans.factory.config.ConfigurableSourceBeanMetadataElement;
+import org.apache.dubbo.config.spring.context.DubboLifecycleComponentApplicationListener;
 
+import com.alibaba.spring.util.AnnotatedBeanDefinitionRegistryUtils;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
+import org.springframework.beans.factory.xml.ParserContext;
+import org.springframework.context.annotation.AnnotationConfigUtils;
+import org.w3c.dom.Element;
+
+import static com.alibaba.spring.util.AnnotatedBeanDefinitionRegistryUtils.registerBeans;
 
 /**
  * DubboNamespaceHandler
  *
  * @export
  */
-public class DubboNamespaceHandler extends NamespaceHandlerSupport {
+public class DubboNamespaceHandler extends NamespaceHandlerSupport implements ConfigurableSourceBeanMetadataElement {
 
     static {
         Version.checkDuplicate(DubboNamespaceHandler.class);
@@ -53,6 +63,7 @@ public class DubboNamespaceHandler extends NamespaceHandlerSupport {
         registerBeanDefinitionParser("metadata-report", new DubboBeanDefinitionParser(MetadataReportConfig.class, true));
         registerBeanDefinitionParser("monitor", new DubboBeanDefinitionParser(MonitorConfig.class, true));
         registerBeanDefinitionParser("metrics", new DubboBeanDefinitionParser(MetricsConfig.class, true));
+        registerBeanDefinitionParser("ssl", new DubboBeanDefinitionParser(SslConfig.class, true));
         registerBeanDefinitionParser("provider", new DubboBeanDefinitionParser(ProviderConfig.class, true));
         registerBeanDefinitionParser("consumer", new DubboBeanDefinitionParser(ConsumerConfig.class, true));
         registerBeanDefinitionParser("protocol", new DubboBeanDefinitionParser(ProtocolConfig.class, true));
@@ -61,4 +72,44 @@ public class DubboNamespaceHandler extends NamespaceHandlerSupport {
         registerBeanDefinitionParser("annotation", new AnnotationBeanDefinitionParser());
     }
 
+    /**
+     * Override {@link NamespaceHandlerSupport#parse(Element, ParserContext)} method
+     *
+     * @param element       {@link Element}
+     * @param parserContext {@link ParserContext}
+     * @return
+     * @since 2.7.5
+     */
+    @Override
+    public BeanDefinition parse(Element element, ParserContext parserContext) {
+        BeanDefinitionRegistry registry = parserContext.getRegistry();
+        registerAnnotationConfigProcessors(registry);
+        registerDubboLifecycleComponentApplicationListener(registry);
+        BeanDefinition beanDefinition = super.parse(element, parserContext);
+        setSource(beanDefinition);
+        return beanDefinition;
+    }
+
+    /**
+     * Register {@link DubboLifecycleComponentApplicationListener} as a Spring Bean
+     *
+     * @param registry {@link BeanDefinitionRegistry}
+     * @see DubboLifecycleComponentApplicationListener
+     * @see AnnotatedBeanDefinitionRegistryUtils#registerBeans(BeanDefinitionRegistry, Class[])
+     * @since 2.7.5
+     */
+    private void registerDubboLifecycleComponentApplicationListener(BeanDefinitionRegistry registry) {
+        registerBeans(registry, DubboLifecycleComponentApplicationListener.class);
+    }
+
+    /**
+     * Register the processors for the Spring Annotation-Driven features
+     *
+     * @param registry {@link BeanDefinitionRegistry}
+     * @see AnnotationConfigUtils
+     * @since 2.7.5
+     */
+    private void registerAnnotationConfigProcessors(BeanDefinitionRegistry registry) {
+        AnnotationConfigUtils.registerAnnotationConfigProcessors(registry);
+    }
 }

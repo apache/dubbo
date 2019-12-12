@@ -18,8 +18,6 @@
 package org.apache.dubbo.remoting;
 
 
-import java.util.concurrent.ExecutorService;
-
 public interface Constants {
 
     String BUFFER_KEY = "buffer";
@@ -41,7 +39,7 @@ public interface Constants {
      */
     String ACCEPTS_KEY = "accepts";
 
-	int DEFAULT_ACCEPTS = 0;
+    int DEFAULT_ACCEPTS = 0;
 
     String CONNECT_QUEUE_CAPACITY = "connect.queue.capacity";
 
@@ -85,6 +83,8 @@ public interface Constants {
 
     String CODEC_KEY = "codec";
 
+    String CODEC_VERSION_KEY = "codec.version";
+
     String SERVER_KEY = "server";
 
     String CLIENT_KEY = "client";
@@ -117,8 +117,6 @@ public interface Constants {
 
     String CHANNEL_SEND_READONLYEVENT_KEY = "channel.readonly.send";
 
-    String EXECUTOR_SERVICE_COMPONENT_KEY = ExecutorService.class.getName();
-
     String RECONNECT_KEY = "reconnect";
 
     int DEFAULT_RECONNECT_PERIOD = 2000;
@@ -135,5 +133,6 @@ public interface Constants {
     int DEFAULT_HEARTBEAT = 60 * 1000;
     String HEARTBEAT_TIMEOUT_KEY = "heartbeat.timeout";
     String CONNECTIONS_KEY = "connections";
-    String DUBBO_VERSION_KEY = "dubbo";
+
+    int DEFAULT_BACKLOG = 1024;
 }

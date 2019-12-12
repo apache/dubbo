@@ -20,6 +20,7 @@
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-rpc</artifactId>
         <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>dubbo-rpc-api</artifactId>
     <packaging>jar</packaging>
@@ -48,6 +49,11 @@
             <groupId>org.ow2.asm</groupId>
             <artifactId>asm</artifactId>
             <version>5.0.4</version>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>hessian-lite</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

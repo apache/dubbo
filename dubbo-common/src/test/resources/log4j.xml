@@ -21,14 +21,14 @@
     <!-- 以下是appender的定义 -->
     <!-- ===================================================================== -->
     <appender name="dubbo" class="org.apache.dubbo.common.utils.DubboAppender">
-        <param name="File" value="../dubbo.log"/>
+        <param name="File" value="${user.dir}/dubbo.log"/>
         <param name="encoding" value="GBK"/>
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d %p [%c:%M] - %m%n"/>
         </layout>
     </appender>
     <root>
-        <level value="INFO"/>
+        <level value="DEBUG"/>
         <appender-ref ref="dubbo"/>
     </root>
 </log4j:configuration>
