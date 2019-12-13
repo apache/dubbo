@@ -234,7 +234,7 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     public String getConfig(String key, String group, long timeout) throws IllegalStateException {
         String resolvedGroup = resolveGroup(group);
         try {
-            long nacosTimeout = timeout < 0 ? DEFAULT_TIMEOUT : timeout;
+            long nacosTimeout = timeout < 0 ? getDefaultTimeout() : timeout;
             if (StringUtils.isEmpty(resolvedGroup)) {
                 resolvedGroup = DEFAULT_GROUP;
             }
@@ -248,7 +248,7 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     @Override
     public Object getInternalProperty(String key) {
         try {
-            return configService.getConfig(key, DEFAULT_GROUP, DEFAULT_TIMEOUT);
+            return configService.getConfig(key, DEFAULT_GROUP, getDefaultTimeout());
         } catch (NacosException e) {
             logger.error(e.getMessage());
         }
@@ -260,7 +260,7 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
         boolean published = false;
         String resolvedGroup = resolveGroup(group);
         try {
-            String value = configService.getConfig(key, resolvedGroup, -1L);
+            String value = configService.getConfig(key, resolvedGroup, getDefaultTimeout());
             if (StringUtils.isNotEmpty(value)) {
                 content = value + "," + content;
             }
@@ -269,6 +269,11 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
             logger.error(e.getErrMsg());
         }
         return published;
+    }
+
+    @Override
+    public long getDefaultTimeout() {
+        return DEFAULT_TIMEOUT;
     }
 
     /**
