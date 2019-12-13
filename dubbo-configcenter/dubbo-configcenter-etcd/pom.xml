@@ -32,29 +32,9 @@
     <name>${project.artifactId}</name>
     <description>The etcd implementation of the config-center api</description>
 
-    <profiles>
-        <profile>
-            <id>no_dubbo-configcenter-etcd_test</id>
-            <activation>
-                <property>
-                    <name>noDocker</name>
-                    <value>true</value>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <version>${maven_surefire_version}</version>
-                        <configuration>
-                            <skipTests>true</skipTests>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
+    <properties>
+        <skip_integration_test>true</skip_integration_test>
+    </properties>
 
     <dependencies>
         <dependency>
@@ -79,4 +59,17 @@
             <version>${project.parent.version}</version>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven_surefire_version}</version>
+                <configuration>
+                    <skipTests>${skip_integration_test}</skipTests>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
