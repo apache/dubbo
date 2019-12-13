@@ -31,7 +31,6 @@ limitations under the License.
         <skip_maven_deploy>false</skip_maven_deploy>
         <dubbo.compiler.version>0.0.1-SNAPSHOT</dubbo.compiler.version>
     </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
