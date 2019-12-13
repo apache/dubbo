@@ -4,7 +4,6 @@
 
 ### Features
 
-* 
 * Support HTTP/2 through gRPC, offers all features supported by HTTP/2 and gRPC
     * Stream communication: client stream, server stream and bi-stream.
     * Reactive stream style RPC call.
