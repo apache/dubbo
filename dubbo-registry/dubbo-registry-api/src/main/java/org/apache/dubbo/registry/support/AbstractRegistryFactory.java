@@ -27,9 +27,9 @@ import org.apache.dubbo.registry.RegistryService;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -51,7 +51,7 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
     private static final ReentrantLock LOCK = new ReentrantLock();
 
     // Registry Collection Map<RegistryAddress, Registry>
-    private static final Map<String, Registry> REGISTRIES = new HashMap<>();
+    private static final Map<String, Registry> REGISTRIES = new ConcurrentHashMap<>();
 
     private static final AtomicBoolean destroyed = new AtomicBoolean(false);
 
@@ -110,13 +110,13 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
                 .removeParameters(EXPORT_KEY, REFER_KEY)
                 .build();
         String key = url.toServiceStringWithoutResolving();
+        Registry registry = REGISTRIES.get(key);
+        if (registry != null) {
+            return registry;
+        }
         // Lock the registry access process to ensure a single instance of the registry
         LOCK.lock();
         try {
-            Registry registry = REGISTRIES.get(key);
-            if (registry != null) {
-                return registry;
-            }
             //create registry by spi/ioc
             registry = createRegistry(url);
             if (registry == null) {
