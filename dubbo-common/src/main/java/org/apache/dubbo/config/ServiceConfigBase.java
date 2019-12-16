@@ -197,45 +197,6 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         return ref.getClass();
     }
 
-    public void completeCompoundConfigs() {
-        if (provider != null) {
-            if (application == null) {
-                setApplication(provider.getApplication());
-            }
-            if (module == null) {
-                setModule(provider.getModule());
-            }
-            if (registries == null) {
-                setRegistries(provider.getRegistries());
-            }
-            if (monitor == null) {
-                setMonitor(provider.getMonitor());
-            }
-            if (protocols == null) {
-                setProtocols(provider.getProtocols());
-            }
-            if (configCenter == null) {
-                setConfigCenter(provider.getConfigCenter());
-            }
-        }
-        if (module != null) {
-            if (registries == null) {
-                setRegistries(module.getRegistries());
-            }
-            if (monitor == null) {
-                setMonitor(module.getMonitor());
-            }
-        }
-        if (application != null) {
-            if (registries == null) {
-                setRegistries(application.getRegistries());
-            }
-            if (monitor == null) {
-                setMonitor(application.getMonitor());
-            }
-        }
-    }
-
     public void checkDefault() {
         createProviderIfAbsent();
     }
@@ -262,6 +223,17 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         convertProtocolIdsToProtocols();
     }
 
+    public void completeCompoundConfigs() {
+    	super.completeCompoundConfigs(provider);
+    	if(provider != null) {
+            if (protocols == null) {
+                setProtocols(provider.getProtocols());
+            }
+            if (configCenter == null) {
+                setConfigCenter(provider.getConfigCenter());
+            }
+    	}
+    }
     private void convertProtocolIdsToProtocols() {
         computeValidProtocolIds();
         if (StringUtils.isEmpty(protocolIds)) {
