@@ -70,6 +70,8 @@ public interface Constants {
 
     String TOKEN_KEY = "token";
 
+    String INTERFACE = "interface";
+
     String INTERFACES = "interfaces";
 
     String GENERIC_KEY = "generic";
