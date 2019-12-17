@@ -143,7 +143,7 @@ public class DefaultFuture extends CompletableFuture<Object> {
                 DefaultFuture future = getFuture(entry.getKey());
                 if (future != null && !future.isDone()) {
                     ExecutorService futureExecutor = future.getExecutor();
-                    if (futureExecutor != null) {
+                    if (futureExecutor != null && !futureExecutor.isTerminated()) {
                         futureExecutor.shutdownNow();
                     }
 
