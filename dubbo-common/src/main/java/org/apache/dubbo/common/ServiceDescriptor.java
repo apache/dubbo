@@ -42,7 +42,7 @@ public class ServiceDescriptor {
     }
 
     /**
-     * Format : interface:version:group
+     * Format : interface:version
      *
      * @return
      */
@@ -50,24 +50,24 @@ public class ServiceDescriptor {
         StringBuilder serviceNameBuilder = new StringBuilder();
         serviceNameBuilder.append(serviceInterfaceName);
         serviceNameBuilder.append(COLON_SEPERATOR).append(version);
-        serviceNameBuilder.append(COLON_SEPERATOR).append(group);
         return serviceNameBuilder.toString();
     }
 
+    /**
+     * revert of org.apache.dubbo.common.ServiceDescriptor#getDisplayServiceKey()
+     * @param displayKey
+     * @return
+     */
     public static ServiceDescriptor revertDisplayServiceKey(String displayKey) {
         String[] eles = StringUtils.split(displayKey, COLON_SEPERATOR);
-        if (eles == null || eles.length < 1 || eles.length > 3) {
+        if (eles == null || eles.length < 1 || eles.length > 2) {
             return new ServiceDescriptor();
         }
         ServiceDescriptor serviceDescriptor = new ServiceDescriptor();
         serviceDescriptor.setServiceInterfaceName(eles[0]);
-        if (eles.length > 1) {
+        if (eles.length == 2) {
             serviceDescriptor.setVersion(eles[1]);
         }
-        if (eles.length == 3) {
-            serviceDescriptor.setGroup(eles[2]);
-        }
-
         return serviceDescriptor;
     }
 

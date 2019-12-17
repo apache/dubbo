@@ -46,7 +46,7 @@ public class Online implements BaseCommand {
         logger.info("receive online command");
         String servicePattern = ".*";
         if (ArrayUtils.isNotEmpty(args)) {
-            servicePattern = args[0];
+            servicePattern = "" + args[0];
         }
 
         boolean hasService = online(servicePattern);
@@ -62,7 +62,7 @@ public class Online implements BaseCommand {
 
         Collection<ProviderModel> providerModelList = serviceRepository.getExportedServices();
         for (ProviderModel providerModel : providerModelList) {
-            if (providerModel.getServiceName().matches(servicePattern)) {
+            if (providerModel.getServiceMetadata().getDisplayServiceKey().matches(servicePattern)) {
                 hasService = true;
                 List<ProviderModel.RegisterStatedURL> statedUrls = providerModel.getStatedUrl();
                 for (ProviderModel.RegisterStatedURL statedURL : statedUrls) {

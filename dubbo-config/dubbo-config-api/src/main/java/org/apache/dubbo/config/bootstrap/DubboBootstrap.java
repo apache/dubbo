@@ -498,7 +498,7 @@ public class DubboBootstrap extends GenericEventListener {
             return;
         }
 
-        ApplicationModel.iniFrameworkExts();
+        ApplicationModel.initFrameworkExts();
 
         startConfigCenter();
 
