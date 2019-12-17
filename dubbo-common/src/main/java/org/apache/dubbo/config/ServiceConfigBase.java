@@ -217,6 +217,12 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
             if (configCenter == null) {
                 setConfigCenter(provider.getConfigCenter());
             }
+            if (StringUtils.isEmpty(registryIds)) {
+                setRegistryIds(provider.getRegistryIds());
+            }
+            if (StringUtils.isEmpty(protocolIds)) {
+                setProtocolIds(provider.getProtocolIds());
+            }
         }
         if (module != null) {
             if (registries == null) {
