@@ -96,8 +96,9 @@ public class AsyncRpcResult implements Result {
                 responseFuture.complete(appResponse);
             }
         } catch (Exception e) {
-            // This should never happen;
-            logger.error("Got exception when trying to change the value of the underlying result from AsyncRpcResult.", e);
+            // This should not happen in normal request process;
+            logger.error("Got exception when trying to fetch the underlying result from AsyncRpcResult.");
+            throw new RpcException(e);
         }
     }
 
@@ -117,8 +118,9 @@ public class AsyncRpcResult implements Result {
                 responseFuture.complete(appResponse);
             }
         } catch (Exception e) {
-            // This should never happen;
-            logger.error("Got exception when trying to change the value of the underlying result from AsyncRpcResult.", e);
+            // This should not happen in normal request process;
+            logger.error("Got exception when trying to fetch the underlying result from AsyncRpcResult.");
+            throw new RpcException(e);
         }
     }
 
@@ -141,8 +143,9 @@ public class AsyncRpcResult implements Result {
                 return responseFuture.get();
             }
         } catch (Exception e) {
-            // This should never happen;
-            logger.error("Got exception when trying to fetch the underlying result from AsyncRpcResult.", e);
+            // This should not happen in normal request process;
+            logger.error("Got exception when trying to fetch the underlying result from AsyncRpcResult.");
+            throw new RpcException(e);
         }
         return new AppResponse();
     }
@@ -158,7 +161,7 @@ public class AsyncRpcResult implements Result {
      */
     @Override
     public Result get() throws InterruptedException, ExecutionException {
-        if (executor != null) {
+        if (executor != null && executor instanceof ThreadlessExecutor) {
             ThreadlessExecutor threadlessExecutor = (ThreadlessExecutor) executor;
             threadlessExecutor.waitAndDrain();
         }
@@ -167,7 +170,7 @@ public class AsyncRpcResult implements Result {
 
     @Override
     public Result get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-        if (executor != null) {
+        if (executor != null && executor instanceof ThreadlessExecutor) {
             ThreadlessExecutor threadlessExecutor = (ThreadlessExecutor) executor;
             threadlessExecutor.waitAndDrain();
         }
