@@ -317,11 +317,7 @@ public class MulticastRegistry extends FailbackRegistry {
         for (Map.Entry<URL, Set<NotifyListener>> entry : getSubscribed().entrySet()) {
             URL key = entry.getKey();
             if (UrlUtils.isMatch(key, url)) {
-                Set<URL> urls = received.get(key);
-                if (urls == null) {
-                    received.putIfAbsent(key, new ConcurrentHashSet<URL>());
-                    urls = received.get(key);
-                }
+                Set<URL> urls = received.computeIfAbsent(key, k -> new ConcurrentHashSet<>());
                 urls.add(url);
                 List<URL> list = toList(urls);
                 for (final NotifyListener listener : entry.getValue()) {
