@@ -104,8 +104,6 @@ class URL implements Serializable {
     // by default, port to registry
     private final int port;
 
-    private final String address;
-
     private final String path;
 
     private final Map<String, String> parameters;
@@ -131,6 +129,8 @@ class URL implements Serializable {
     private volatile transient String string;
 
     private transient String serviceKey;
+
+    private transient String address;
 
     protected URL() {
         this.protocol = null;
@@ -203,7 +203,7 @@ class URL implements Serializable {
         this.password = password;
         this.host = host;
         this.port = Math.max(port, 0);
-        this.address = port <= 0 ? host : host + ':' + port;
+        this.address = getAddress(host, port);
 
         // trim the beginning "/"
         while (path != null && path.startsWith("/")) {
@@ -217,6 +217,10 @@ class URL implements Serializable {
         }
         this.parameters = Collections.unmodifiableMap(parameters);
         this.methodParameters = Collections.unmodifiableMap(methodParameters);
+    }
+
+    private static String getAddress(String host, int port) {
+        return port <= 0 ? host : host + ':' + port;
     }
 
     /**
@@ -484,6 +488,9 @@ class URL implements Serializable {
     }
 
     public String getAddress() {
+        if (address == null) {
+            address = getAddress(host, port);
+        }
         return address;
     }
 
