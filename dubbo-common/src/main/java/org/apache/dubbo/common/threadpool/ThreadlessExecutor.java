@@ -19,9 +19,11 @@ package org.apache.dubbo.common.threadpool;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.AbstractExecutorService;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -42,12 +44,22 @@ public class ThreadlessExecutor extends AbstractExecutorService {
 
     private ExecutorService sharedExecutor;
 
+    private CompletableFuture<?> waitingFuture;
+
     private volatile boolean waiting = true;
 
     private final Object lock = new Object();
 
     public ThreadlessExecutor(ExecutorService sharedExecutor) {
         this.sharedExecutor = sharedExecutor;
+    }
+
+    public CompletableFuture<?> getWaitingFuture() {
+        return waitingFuture;
+    }
+
+    public void setWaitingFuture(CompletableFuture<?> waitingFuture) {
+        this.waitingFuture = waitingFuture;
     }
 
     public boolean isWaiting() {
@@ -113,9 +125,10 @@ public class ThreadlessExecutor extends AbstractExecutorService {
     /**
      * tells the thread blocking on {@link #waitAndDrain()} to return, despite of the current status, to avoid endless waiting.
      */
-    public void notifyReturn() {
+    public void notifyReturn(Throwable t) {
         // an empty runnable task.
         execute(() -> {
+            waitingFuture.completeExceptionally(t);
         });
     }
 
@@ -125,12 +138,14 @@ public class ThreadlessExecutor extends AbstractExecutorService {
 
     @Override
     public void shutdown() {
-
+        shutdownNow();
     }
 
     @Override
     public List<Runnable> shutdownNow() {
-        return null;
+        notifyReturn(new IllegalStateException("Consumer is shutting down and this call is going to be stopped without " +
+                "receiving any result, usually this is called by a slow provider instance or bad service implementation."));
+        return Collections.emptyList();
     }
 
     @Override
