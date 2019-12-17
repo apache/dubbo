@@ -26,7 +26,6 @@ import org.apache.dubbo.config.ServiceConfigBase;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -81,8 +80,7 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt 
     }
 
     public void registerConsumer(String serviceKey,
-                                 Map<String, Object> attributes,
-                                 ServiceDescriptor serviceModel,
+                                 ServiceDescriptor serviceDescriptor,
                                  ReferenceConfigBase<?> rc,
                                  Object proxy,
                                  ServiceMetadata serviceMetadata) {
@@ -91,9 +89,8 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt 
                 _k -> new ConsumerModel(
                         serviceMetadata.getServiceKey(),
                         proxy,
-                        serviceModel,
+                        serviceDescriptor,
                         rc,
-                        attributes,
                         serviceMetadata
                 )
         );
