@@ -203,7 +203,7 @@ class URL implements Serializable {
         this.password = password;
         this.host = host;
         this.port = Math.max(port, 0);
-        this.address = getAddress(host, port);
+        this.address = getAddress(this.host, this.port);
 
         // trim the beginning "/"
         while (path != null && path.startsWith("/")) {
