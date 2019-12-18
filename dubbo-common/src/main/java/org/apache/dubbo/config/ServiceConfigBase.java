@@ -277,7 +277,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
             }
         } else {
             String[] arr = COMMA_SPLIT_PATTERN.split(protocolIds);
-            List<ProtocolConfig> tmpProtocols = CollectionUtils.isNotEmpty(protocols) ? protocols : new ArrayList<>();
+            List<ProtocolConfig> tmpProtocols = new ArrayList<>();
             Arrays.stream(arr).forEach(id -> {
                 if (tmpProtocols.stream().noneMatch(prot -> prot.getId().equals(id))) {
                     Optional<ProtocolConfig> globalProtocol = ApplicationModel.getConfigManager().getProtocol(id);
