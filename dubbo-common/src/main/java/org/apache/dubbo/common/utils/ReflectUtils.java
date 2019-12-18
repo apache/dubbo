@@ -1204,7 +1204,7 @@ public final class ReflectUtils {
     }
 
     /**
-     * Find the hierarchical types form the source {@link Class class} by specified {@link Class type}.
+     * Find the hierarchical types from the source {@link Class class} by specified {@link Class type}.
      *
      * @param sourceClass the source {@link Class class}
      * @param matchType   the type to match
