@@ -25,7 +25,6 @@ import org.apache.dubbo.config.event.DubboShutdownHookRegisteredEvent;
 import org.apache.dubbo.config.event.DubboShutdownHookUnregisteredEvent;
 import org.apache.dubbo.event.Event;
 import org.apache.dubbo.event.EventDispatcher;
-import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 import org.apache.dubbo.rpc.Protocol;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -113,10 +112,7 @@ public class DubboShutdownHook extends Thread {
         if (!destroyed.compareAndSet(false, true)) {
             return;
         }
-        // destroy all the registries
-        AbstractRegistryFactory.destroyAll();
-        // destroy all the protocols
-        destroyProtocols();
+
         // dispatch the DubboDestroyedEvent @since 2.7.5
         dispatch(new DubboServiceDestroyedEvent(this));
     }
