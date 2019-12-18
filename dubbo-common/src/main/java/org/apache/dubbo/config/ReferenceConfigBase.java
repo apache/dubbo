@@ -136,6 +136,9 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
             if (monitor == null) {
                 setMonitor(consumer.getMonitor());
             }
+            if (StringUtils.isEmpty(registryIds)) {
+                setRegistryIds(consumer.getRegistryIds());
+            }
         }
         if (module != null) {
             if (registries == null) {
