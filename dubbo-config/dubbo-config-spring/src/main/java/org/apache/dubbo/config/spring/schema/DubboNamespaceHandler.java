@@ -39,6 +39,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
 import org.springframework.beans.factory.xml.ParserContext;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.AnnotationConfigUtils;
 import org.w3c.dom.Element;
 
@@ -92,10 +93,10 @@ public class DubboNamespaceHandler extends NamespaceHandlerSupport implements Co
     }
 
     /**
-     * Register {@link DubboLifecycleComponentApplicationListener} as a Spring Bean
+     * Register {@link ApplicationListener ApplicationListeners} as a Spring Bean
      *
      * @param registry {@link BeanDefinitionRegistry}
-     * @see DubboLifecycleComponentApplicationListener
+     * @see ApplicationListener
      * @see AnnotatedBeanDefinitionRegistryUtils#registerBeans(BeanDefinitionRegistry, Class[])
      * @since 2.7.5
      */
