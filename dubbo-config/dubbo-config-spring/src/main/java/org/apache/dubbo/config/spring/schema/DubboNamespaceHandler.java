@@ -31,6 +31,7 @@ import org.apache.dubbo.config.spring.ConfigCenterBean;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.beans.factory.config.ConfigurableSourceBeanMetadataElement;
+import org.apache.dubbo.config.spring.context.DubboBootstrapApplicationListener;
 import org.apache.dubbo.config.spring.context.DubboLifecycleComponentApplicationListener;
 
 import com.alibaba.spring.util.AnnotatedBeanDefinitionRegistryUtils;
@@ -100,6 +101,7 @@ public class DubboNamespaceHandler extends NamespaceHandlerSupport implements Co
      */
     private void registerDubboLifecycleComponentApplicationListener(BeanDefinitionRegistry registry) {
         registerBeans(registry, DubboLifecycleComponentApplicationListener.class);
+        registerBeans(registry, DubboBootstrapApplicationListener.class);
     }
 
     /**
