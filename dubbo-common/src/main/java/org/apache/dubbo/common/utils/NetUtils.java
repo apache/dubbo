@@ -494,7 +494,7 @@ public class NetUtils {
     private static void checkHostPattern(String pattern, String[] mask, boolean isIpv4) {
         if (!isIpv4) {
             if (mask.length != 8 && ipPatternContainExpression(pattern)) {
-                throw new IllegalArgumentException("If you config ip expression that contains '*' or '-', please fill qulified ip pattern like 234e:0:4567:0:0:0:3d:*. ");
+                throw new IllegalArgumentException("If you config ip expression that contains '*' or '-', please fill qualified ip pattern like 234e:0:4567:0:0:0:3d:*. ");
             }
             if (mask.length != 8 && !pattern.contains("::")) {
                 throw new IllegalArgumentException("The host is ipv6, but the pattern is not ipv6 pattern : " + pattern);
