@@ -115,7 +115,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     protected ModuleConfig module;
 
     /**
-     * Registry centers
+     * The registry list the service will register to
+     * Also see {@link #registryIds}, only one of them will work.
      */
     protected List<RegistryConfig> registries;
 
@@ -124,6 +125,10 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
      */
     private List<MethodConfig> methods;
 
+    /**
+     * The id list of registries the service will register to
+     * Also see {@link #registries}, only one of them will work.
+     */
     protected String registryIds;
 
     // connection events
@@ -277,7 +282,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             }
         } else {
             String[] ids = COMMA_SPLIT_PATTERN.split(registryIds);
-            List<RegistryConfig> tmpRegistries = CollectionUtils.isNotEmpty(registries) ? registries : new ArrayList<>();
+            List<RegistryConfig> tmpRegistries = new ArrayList<>();
             Arrays.stream(ids).forEach(id -> {
                 if (tmpRegistries.stream().noneMatch(reg -> reg.getId().equals(id))) {
                     Optional<RegistryConfig> globalRegistry = ApplicationModel.getConfigManager().getRegistry(id);

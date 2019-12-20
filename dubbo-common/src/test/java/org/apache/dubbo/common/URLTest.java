@@ -44,6 +44,7 @@ public class URLTest {
         assertNull(url.getUsername());
         assertNull(url.getPassword());
         assertNull(url.getHost());
+        assertNull(url.getAddress());
         assertEquals(0, url.getPort());
         assertEquals("context/path", url.getPath());
         assertEquals(2, url.getParameters().size());
@@ -71,6 +72,7 @@ public class URLTest {
         assertNull(url.getUsername());
         assertNull(url.getPassword());
         assertEquals("10.20.130.230", url.getHost());
+        assertEquals("10.20.130.230", url.getAddress());
         assertEquals(0, url.getPort());
         assertNull(url.getPath());
         assertEquals(0, url.getParameters().size());
@@ -80,6 +82,7 @@ public class URLTest {
         assertNull(url.getUsername());
         assertNull(url.getPassword());
         assertEquals("10.20.130.230", url.getHost());
+        assertEquals("10.20.130.230:20880", url.getAddress());
         assertEquals(20880, url.getPort());
         assertNull(url.getPath());
         assertEquals(0, url.getParameters().size());
@@ -89,6 +92,7 @@ public class URLTest {
         assertNull(url.getUsername());
         assertNull(url.getPassword());
         assertEquals("10.20.130.230", url.getHost());
+        assertEquals("10.20.130.230", url.getAddress());
         assertEquals(0, url.getPort());
         assertEquals("context/path", url.getPath());
         assertEquals(0, url.getParameters().size());
@@ -98,6 +102,7 @@ public class URLTest {
         assertNull(url.getUsername());
         assertNull(url.getPassword());
         assertEquals("10.20.130.230", url.getHost());
+        assertEquals("10.20.130.230:20880", url.getAddress());
         assertEquals(20880, url.getPort());
         assertEquals("context/path", url.getPath());
         assertEquals(0, url.getParameters().size());
@@ -107,6 +112,7 @@ public class URLTest {
         assertEquals("admin", url.getUsername());
         assertEquals("hello1234", url.getPassword());
         assertEquals("10.20.130.230", url.getHost());
+        assertEquals("10.20.130.230:20880", url.getAddress());
         assertEquals(20880, url.getPort());
         assertEquals("context/path", url.getPath());
         assertEquals(2, url.getParameters().size());
@@ -121,6 +127,7 @@ public class URLTest {
         assertNull(url.getUsername());
         assertNull(url.getPassword());
         assertNull(url.getHost());
+        assertNull(url.getAddress());
         assertEquals(0, url.getPort());
         assertEquals("home/user1/router.js", url.getPath());
         assertEquals(0, url.getParameters().size());
@@ -142,6 +149,7 @@ public class URLTest {
         assertNull(url.getUsername());
         assertNull(url.getPassword());
         assertNull(url.getHost());
+        assertNull(url.getAddress());
         assertEquals(0, url.getPort());
         assertEquals("home/user1/router.js", url.getPath());
         assertEquals(0, url.getParameters().size());
@@ -151,6 +159,7 @@ public class URLTest {
         assertNull(url.getUsername());
         assertNull(url.getPassword());
         assertNull(url.getHost());
+        assertNull(url.getAddress());
         assertEquals(0, url.getPort());
         assertEquals("d:/home/user1/router.js", url.getPath());
         assertEquals(0, url.getParameters().size());
@@ -160,6 +169,7 @@ public class URLTest {
         assertNull(url.getUsername());
         assertNull(url.getPassword());
         assertNull(url.getHost());
+        assertNull(url.getAddress());
         assertEquals(0, url.getPort());
         assertEquals("home/user1/router.js", url.getPath());
         assertEquals(2, url.getParameters().size());
@@ -173,6 +183,7 @@ public class URLTest {
         assertNull(url.getUsername());
         assertNull(url.getPassword());
         assertNull(url.getHost());
+        assertNull(url.getAddress());
         assertEquals(0, url.getPort());
         assertEquals("home/user1/router.js", url.getPath());
         assertEquals(2, url.getParameters().size());
@@ -189,6 +200,7 @@ public class URLTest {
         assertNull(url.getUsername());
         assertNull(url.getPassword());
         assertEquals("10.20.130.230", url.getHost());
+        assertEquals("10.20.130.230", url.getAddress());
         assertEquals(0, url.getPort());
         assertNull(url.getPath());
         assertEquals(0, url.getParameters().size());
@@ -198,6 +210,7 @@ public class URLTest {
         assertNull(url.getUsername());
         assertNull(url.getPassword());
         assertEquals("10.20.130.230", url.getHost());
+        assertEquals("10.20.130.230:20880", url.getAddress());
         assertEquals(20880, url.getPort());
         assertEquals("context/path", url.getPath());
         assertEquals(0, url.getParameters().size());
@@ -207,6 +220,7 @@ public class URLTest {
         assertEquals("admin", url.getUsername());
         assertEquals("hello1234", url.getPassword());
         assertEquals("10.20.130.230", url.getHost());
+        assertEquals("10.20.130.230:20880", url.getAddress());
         assertEquals(20880, url.getPort());
         assertNull(url.getPath());
         assertEquals(0, url.getParameters().size());
@@ -216,6 +230,7 @@ public class URLTest {
         assertEquals("admin", url.getUsername());
         assertEquals("hello1234", url.getPassword());
         assertEquals("10.20.130.230", url.getHost());
+        assertEquals("10.20.130.230:20880", url.getAddress());
         assertEquals(20880, url.getPort());
         assertNull(url.getPath());
         assertEquals(1, url.getParameters().size());
@@ -226,6 +241,7 @@ public class URLTest {
         assertEquals("admin", url.getUsername());
         assertEquals("hello1234", url.getPassword());
         assertEquals("10.20.130.230", url.getHost());
+        assertEquals("10.20.130.230:20880", url.getAddress());
         assertEquals(20880, url.getPort());
         assertEquals("context/path", url.getPath());
         assertEquals(2, url.getParameters().size());
@@ -237,6 +253,7 @@ public class URLTest {
         assertEquals("admin", url.getUsername());
         assertEquals("hello1234", url.getPassword());
         assertEquals("10.20.130.230", url.getHost());
+        assertEquals("10.20.130.230:20880", url.getAddress());
         assertEquals(20880, url.getPort());
         assertEquals("context/path", url.getPath());
         assertEquals(3, url.getParameters().size());
@@ -328,6 +345,7 @@ public class URLTest {
         assertEquals("admin", url.getUsername());
         assertEquals("hello1234", url.getPassword());
         assertEquals("host", url.getHost());
+        assertEquals("host:20880", url.getAddress());
         assertEquals(20880, url.getPort());
         assertEquals("context/path", url.getPath());
         assertEquals(2, url.getParameters().size());
@@ -340,6 +358,7 @@ public class URLTest {
         assertEquals("admin", url.getUsername());
         assertEquals("hello1234", url.getPassword());
         assertEquals("host", url.getHost());
+        assertEquals("host:1", url.getAddress());
         assertEquals(1, url.getPort());
         assertEquals("context/path", url.getPath());
         assertEquals(2, url.getParameters().size());
@@ -352,6 +371,7 @@ public class URLTest {
         assertEquals("admin", url.getUsername());
         assertEquals("hello1234", url.getPassword());
         assertEquals("host", url.getHost());
+        assertEquals("host:1", url.getAddress());
         assertEquals(1, url.getPort());
         assertEquals("path", url.getPath());
         assertEquals(2, url.getParameters().size());
@@ -364,6 +384,7 @@ public class URLTest {
         assertEquals("admin", url.getUsername());
         assertEquals("hello1234", url.getPassword());
         assertEquals("host", url.getHost());
+        assertEquals("host:1", url.getAddress());
         assertEquals(1, url.getPort());
         assertEquals("path", url.getPath());
         assertEquals(2, url.getParameters().size());
@@ -376,6 +397,7 @@ public class URLTest {
         assertEquals("username", url.getUsername());
         assertEquals("hello1234", url.getPassword());
         assertEquals("host", url.getHost());
+        assertEquals("host:1", url.getAddress());
         assertEquals(1, url.getPort());
         assertEquals("path", url.getPath());
         assertEquals(2, url.getParameters().size());
@@ -388,6 +410,7 @@ public class URLTest {
         assertEquals("username", url.getUsername());
         assertEquals("password", url.getPassword());
         assertEquals("host", url.getHost());
+        assertEquals("host:1", url.getAddress());
         assertEquals(1, url.getPort());
         assertEquals("path", url.getPath());
         assertEquals(2, url.getParameters().size());
@@ -404,6 +427,7 @@ public class URLTest {
         assertEquals("admin", url.getUsername());
         assertEquals("hello1234", url.getPassword());
         assertEquals("10.20.130.230", url.getHost());
+        assertEquals("10.20.130.230:20880", url.getAddress());
         assertEquals(20880, url.getPort());
         assertEquals("context/path", url.getPath());
         assertEquals(3, url.getParameters().size());
@@ -418,6 +442,7 @@ public class URLTest {
         assertEquals("admin", url.getUsername());
         assertEquals("hello1234", url.getPassword());
         assertEquals("10.20.130.230", url.getHost());
+        assertEquals("10.20.130.230:20880", url.getAddress());
         assertEquals(20880, url.getPort());
         assertEquals("context/path", url.getPath());
         assertEquals(2, url.getParameters().size());
@@ -432,6 +457,7 @@ public class URLTest {
         assertEquals("admin", url.getUsername());
         assertEquals("hello1234", url.getPassword());
         assertEquals("10.20.130.230", url.getHost());
+        assertEquals("10.20.130.230:20880", url.getAddress());
         assertEquals(20880, url.getPort());
         assertEquals("context/path", url.getPath());
         assertEquals(2, url.getParameters().size());
@@ -450,6 +476,7 @@ public class URLTest {
         assertEquals("admin", url.getUsername());
         assertEquals("hello1234", url.getPassword());
         assertEquals("10.20.130.230", url.getHost());
+        assertEquals("10.20.130.230:20880", url.getAddress());
         assertEquals(20880, url.getPort());
         assertEquals("context/path", url.getPath());
         assertEquals(2, url.getParameters().size());
@@ -475,6 +502,7 @@ public class URLTest {
         assertEquals("admin", url.getUsername());
         assertEquals("hello1234", url.getPassword());
         assertEquals("10.20.130.230", url.getHost());
+        assertEquals("10.20.130.230:20880", url.getAddress());
         assertEquals(20880, url.getPort());
         assertEquals("context/path", url.getPath());
         assertEquals(3, url.getParameters().size());
@@ -489,6 +517,7 @@ public class URLTest {
         assertEquals("admin", url.getUsername());
         assertEquals("hello1234", url.getPassword());
         assertEquals("10.20.130.230", url.getHost());
+        assertEquals("10.20.130.230:20880", url.getAddress());
         assertEquals(20880, url.getPort());
         assertEquals("context/path", url.getPath());
         assertEquals(3, url.getParameters().size());
@@ -503,6 +532,7 @@ public class URLTest {
         assertEquals("admin", url.getUsername());
         assertEquals("hello1234", url.getPassword());
         assertEquals("10.20.130.230", url.getHost());
+        assertEquals("10.20.130.230:20880", url.getAddress());
         assertEquals(20880, url.getPort());
         assertEquals("context/path", url.getPath());
         assertEquals(3, url.getParameters().size());
@@ -517,6 +547,7 @@ public class URLTest {
         assertEquals("admin", url.getUsername());
         assertEquals("hello1234", url.getPassword());
         assertEquals("10.20.130.230", url.getHost());
+        assertEquals("10.20.130.230:20880", url.getAddress());
         assertEquals(20880, url.getPort());
         assertEquals("context/path", url.getPath());
         assertEquals(2, url.getParameters().size());
@@ -530,6 +561,7 @@ public class URLTest {
         assertEquals("admin", url.getUsername());
         assertEquals("hello1234", url.getPassword());
         assertEquals("10.20.130.230", url.getHost());
+        assertEquals("10.20.130.230:20880", url.getAddress());
         assertEquals(20880, url.getPort());
         assertEquals("context/path", url.getPath());
         assertEquals(1, url.getParameters().size());
@@ -561,6 +593,7 @@ public class URLTest {
         assertEquals("admin", url.getUsername());
         assertEquals("hello1234", url.getPassword());
         assertEquals("10.20.130.230", url.getHost());
+        assertEquals("10.20.130.230:20880", url.getAddress());
         assertEquals(20880, url.getPort());
         assertEquals("context/path", url.getPath());
         assertEquals(1, url.getParameters().size());
@@ -614,14 +647,17 @@ public class URLTest {
     public void test_Localhost() throws Exception {
         URL url = URL.valueOf("dubbo://127.0.0.1:20880");
         assertEquals("127.0.0.1", url.getHost());
+        assertEquals("127.0.0.1:20880", url.getAddress());
         assertTrue(url.isLocalHost());
 
         url = URL.valueOf("dubbo://127.0.1.1:20880");
         assertEquals("127.0.1.1", url.getHost());
+        assertEquals("127.0.1.1:20880", url.getAddress());
         assertTrue(url.isLocalHost());
 
         url = URL.valueOf("dubbo://localhost:20880");
         assertEquals("localhost", url.getHost());
+        assertEquals("localhost:20880", url.getAddress());
         assertTrue(url.isLocalHost());
     }
 
@@ -647,6 +683,7 @@ public class URLTest {
         assertEquals("ad@min", url.getUsername());
         assertEquals("hello@1234", url.getPassword());
         assertEquals("10.20.130.230", url.getHost());
+        assertEquals("10.20.130.230:20880", url.getAddress());
         assertEquals(20880, url.getPort());
         assertEquals("context/path", url.getPath());
         assertEquals(2, url.getParameters().size());
@@ -663,6 +700,7 @@ public class URLTest {
         assertEquals("ad@min111", url.getUsername());
         assertEquals("haha@1234", url.getPassword());
         assertEquals("2001:0db8:85a3:08d3:1319:8a2e:0370:7344", url.getHost());
+        assertEquals("2001:0db8:85a3:08d3:1319:8a2e:0370:7344:20880", url.getAddress());
         assertEquals(20880, url.getPort());
         assertEquals("context/path", url.getPath());
         assertEquals(2, url.getParameters().size());
@@ -675,6 +713,7 @@ public class URLTest {
         URL url = URL.valueOf("2001:0db8:85a3:08d3:1319:8a2e:0370:7344%5/context/path?version=1.0.0&application=morgan");
         assertNull(url.getProtocol());
         assertEquals("2001:0db8:85a3:08d3:1319:8a2e:0370:7344%5", url.getHost());
+        assertEquals("2001:0db8:85a3:08d3:1319:8a2e:0370:7344%5", url.getAddress());
         assertEquals(0, url.getPort());
         assertEquals("context/path", url.getPath());
         assertEquals(2, url.getParameters().size());

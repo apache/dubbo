@@ -14,24 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring.beans.factory;
+package org.apache.dubbo.common.extension;
 
-import org.apache.dubbo.config.spring.ServiceBean;
+public interface LoadingStrategy {
+    String directory();
 
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.config.BeanPostProcessor;
-
-public class ServiceBeanPostProcessor implements BeanPostProcessor {
-    @Override
-    public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-        return bean;
+    default boolean preferExtensionClassLoader() {
+        return false;
     }
 
-    @Override
-    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-        if (bean instanceof ServiceBean) {
-            ((ServiceBean) bean).export();
-        }
-        return bean;
+    default String[] excludedPackages() {
+        return null;
     }
 }

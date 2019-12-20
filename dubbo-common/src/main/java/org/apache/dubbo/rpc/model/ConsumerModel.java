@@ -17,7 +17,6 @@
 package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.utils.Assert;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.ReferenceConfigBase;
 
 import java.lang.reflect.Method;
@@ -40,7 +39,7 @@ public class ConsumerModel {
 
     private Object proxyObject;
 
-    private final Map<String, AsyncMethodInfo> methodConfigs = new HashMap<>();
+    private Map<String, AsyncMethodInfo> methodConfigs = new HashMap<>();
 
     /**
      *  This constructor create an instance of ConsumerModel and passed objects should not be null.
@@ -48,13 +47,11 @@ public class ConsumerModel {
      *  then this constructor will throw {@link IllegalArgumentException}
      * @param serviceKey Name of the service.
      * @param proxyObject  Proxy object.
-     * @param attributes Attributes of methods.
      */
     public ConsumerModel(String serviceKey
             , Object proxyObject
             , ServiceDescriptor serviceModel
-            , ReferenceConfigBase<?> referenceConfig
-            , Map<String, Object> attributes) {
+            , ReferenceConfigBase<?> referenceConfig) {
 
         Assert.notEmptyString(serviceKey, "Service name can't be null or blank");
 //        Assert.notNull(proxyObject, "Proxy object can't be null");
@@ -63,11 +60,11 @@ public class ConsumerModel {
         this.proxyObject = proxyObject;
         this.serviceModel = serviceModel;
         this.referenceConfig = referenceConfig;
+    }
 
-        if (CollectionUtils.isNotEmptyMap(attributes)) {
-            attributes.forEach((method, object) -> {
-                methodConfigs.put(method, (AsyncMethodInfo) object);
-            });
+    public void init(Map<String, AsyncMethodInfo> attributes) {
+        if (attributes != null) {
+            this.methodConfigs = attributes;
         }
     }
 
@@ -112,74 +109,9 @@ public class ConsumerModel {
         return referenceConfig;
     }
 
-    public static class AsyncMethodInfo {
-        // callback instance when async-call is invoked
-        private Object oninvokeInstance;
-
-        // callback method when async-call is invoked
-        private Method oninvokeMethod;
-
-        // callback instance when async-call is returned
-        private Object onreturnInstance;
-
-        // callback method when async-call is returned
-        private Method onreturnMethod;
-
-        // callback instance when async-call has exception thrown
-        private Object onthrowInstance;
-
-        // callback method when async-call has exception thrown
-        private Method onthrowMethod;
-
-        public Object getOninvokeInstance() {
-            return oninvokeInstance;
-        }
-
-        public void setOninvokeInstance(Object oninvokeInstance) {
-            this.oninvokeInstance = oninvokeInstance;
-        }
-
-        public Method getOninvokeMethod() {
-            return oninvokeMethod;
-        }
-
-        public void setOninvokeMethod(Method oninvokeMethod) {
-            this.oninvokeMethod = oninvokeMethod;
-        }
-
-        public Object getOnreturnInstance() {
-            return onreturnInstance;
-        }
-
-        public void setOnreturnInstance(Object onreturnInstance) {
-            this.onreturnInstance = onreturnInstance;
-        }
-
-        public Method getOnreturnMethod() {
-            return onreturnMethod;
-        }
-
-        public void setOnreturnMethod(Method onreturnMethod) {
-            this.onreturnMethod = onreturnMethod;
-        }
-
-        public Object getOnthrowInstance() {
-            return onthrowInstance;
-        }
-
-        public void setOnthrowInstance(Object onthrowInstance) {
-            this.onthrowInstance = onthrowInstance;
-        }
-
-        public Method getOnthrowMethod() {
-            return onthrowMethod;
-        }
-
-        public void setOnthrowMethod(Method onthrowMethod) {
-            this.onthrowMethod = onthrowMethod;
-        }
+    public AsyncMethodInfo getAsyncInfo(String methodName) {
+        return methodConfigs.get(methodName);
     }
-
 
     /* *************** Start, metadata compatible **************** */
 
@@ -190,14 +122,13 @@ public class ConsumerModel {
             , Object proxyObject
             , ServiceDescriptor serviceModel
             , ReferenceConfigBase<?> referenceConfig
-            , Map<String, Object> attributes
             , ServiceMetadata metadata) {
 
-        this(serviceKey, proxyObject, serviceModel, referenceConfig, attributes);
+        this(serviceKey, proxyObject, serviceModel, referenceConfig);
         this.serviceMetadata = metadata;
 
         for (Method method : metadata.getServiceType().getMethods()) {
-            methodModels.put(method, new ConsumerMethodModel(method, attributes));
+            methodModels.put(method, new ConsumerMethodModel(method));
         }
     }
 

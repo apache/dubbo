@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.logger.support.FailsafeLogger;
 
 import java.io.IOException;
 import java.net.Inet4Address;
@@ -45,7 +46,14 @@ import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
  * IP and Port Helper for RPC
  */
 public class NetUtils {
-    private static final Logger logger = LoggerFactory.getLogger(NetUtils.class);
+    private static Logger logger;
+
+    {
+        logger = LoggerFactory.getLogger(NetUtils.class);
+        if (logger instanceof FailsafeLogger) {
+            logger = ((FailsafeLogger) logger).getLogger();
+        }
+    }
 
     // returned port range is [30000, 39999]
     private static final int RND_PORT_START = 30000;
@@ -494,7 +502,7 @@ public class NetUtils {
     private static void checkHostPattern(String pattern, String[] mask, boolean isIpv4) {
         if (!isIpv4) {
             if (mask.length != 8 && ipPatternContainExpression(pattern)) {
-                throw new IllegalArgumentException("If you config ip expression that contains '*' or '-', please fill qulified ip pattern like 234e:0:4567:0:0:0:3d:*. ");
+                throw new IllegalArgumentException("If you config ip expression that contains '*' or '-', please fill qualified ip pattern like 234e:0:4567:0:0:0:3d:*. ");
             }
             if (mask.length != 8 && !pattern.contains("::")) {
                 throw new IllegalArgumentException("The host is ipv6, but the pattern is not ipv6 pattern : " + pattern);
