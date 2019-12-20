@@ -513,7 +513,7 @@ public abstract class AbstractConfig implements Serializable {
                         String key = calculateAttributeFromGetter(name);
 
                         try {
-                            getClass().getField(key);
+                            getClass().getDeclaredField(key);
                         } catch (NoSuchFieldException e) {
                             // ignore
                             continue;
