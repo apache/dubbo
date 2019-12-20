@@ -17,12 +17,12 @@
 package org.apache.dubbo.configcenter.support.zookeeper;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
+import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
+import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
+import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.configcenter.ConfigChangeEvent;
-import org.apache.dubbo.configcenter.ConfigurationListener;
-import org.apache.dubbo.configcenter.DynamicConfiguration;
-import org.apache.dubbo.configcenter.DynamicConfigurationFactory;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -35,7 +35,13 @@ import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.CountDownLatch;
+
+import static java.util.Arrays.asList;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * TODO refactor using mockito
@@ -86,7 +92,7 @@ public class ZookeeperDynamicConfigurationTest {
 
     @Test
     public void testGetConfig() throws Exception {
-        Assertions.assertEquals("The content from dubbo.properties", configuration.getProperties("dubbo.properties", "dubbo"));
+        Assertions.assertEquals("The content from dubbo.properties", configuration.getConfig("dubbo.properties", "dubbo"));
     }
 
     @Test
@@ -121,6 +127,33 @@ public class ZookeeperDynamicConfigurationTest {
         Assertions.assertEquals("new value2", listener4.getValue());
     }
 
+    @Test
+    public void testPublishConfig() {
+        String key = "user-service";
+        String group = "org.apache.dubbo.service.UserService";
+        String content = "test";
+
+        assertTrue(configuration.publishConfig(key, group, content));
+        assertEquals("test", configuration.getProperties(key, group));
+    }
+
+    @Test
+    public void testGetConfigKeysAndContents() {
+
+        String group = "mapping";
+        String key = "org.apache.dubbo.service.UserService";
+        String content = "app1";
+
+        String key2 = "org.apache.dubbo.service.UserService2";
+
+        assertTrue(configuration.publishConfig(key, group, content));
+        assertTrue(configuration.publishConfig(key2, group, content));
+
+        Set<String> configKeys = configuration.getConfigKeys(group);
+
+        assertEquals(new TreeSet(asList(key, key2)), configKeys);
+    }
+
     private class TestListener implements ConfigurationListener {
         private CountDownLatch latch;
         private String value;
@@ -131,12 +164,12 @@ public class ZookeeperDynamicConfigurationTest {
         }
 
         @Override
-        public void process(ConfigChangeEvent event) {
+        public void process(ConfigChangedEvent event) {
             System.out.println(this + ": " + event);
             Integer count = countMap.computeIfAbsent(event.getKey(), k -> new Integer(0));
             countMap.put(event.getKey(), ++count);
 
-            value = event.getValue();
+            value = event.getContent();
             latch.countDown();
         }
 

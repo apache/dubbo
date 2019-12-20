@@ -1,5 +1,57 @@
 # Release Notes
 
+## 2.7.4.1
+
+### Enhancement
+
+* Enhance ProtobufTypeBuilder support generate type definition which contains Bytes List or Bytes Map. #5083
+* Using the ID of Dubbo Config as the alias of Bean. #5094
+* tag router supports anyhost. #4431
+* optimize generic invoke. #4076
+* dubbo zookeeper registry too slow #4828
+* use consul with group and version. #4755
+* qos support host config. #4720
+* migrate http protocol #4781
+* Some unit test optimization. #5026 #4803 #4687
+
+### Bugfixes
+
+* Apollo namespace optimization.  #5105
+* Simplify dubbo-common transitive dependencies. #5107 
+* Delete 'config.' prefix for url generated from ConfigCenterConfig. #5001
+* fix set generic method error. #5079
+* Add support for overriding Map properties in AbstractConfig.refresh. #4882
+* Fix travis javax.ex dependency issue. (unit test)
+* Fix: ExtensionLoader load duplicate filter，no log or exception. #4340 
+* When the provider interrupts abnormally, the consumer cannot return quickly and still waits for the timeout to end. #4694
+* Fix register config not take effect because of url simplified。 #4397
+* Don't support metadata for generic service. #4641 
+* Avoid resize in ClassUtils.java. #5009 
+* default attribute in <dubbo:registry> doesn't work as expected. #4412
+* make RegistryDirectory can refresh the invokers when providers number become 0 when using nacos registry. #4793
+* Multiple @Reference annotations only have one effect #4674
+* Fix RpcContext.getContext().getRemoteApplicationName() returns null #4351
+* Security issue: upgrade fastjson version to 1.2.60. #5018
+* nacos-registry:serviceName split error #4974
+* AbstractConfig.java-getMetaData set default depend on getmethod sequence #4678
+* fix protocol register set false not work. #4776 
+* Fix: In Rest protocol, the limitation of Dubbo-Attachments. #4898
+* The logic of org.apache.dubbo.config.MonitorConfig#isValid is incorrect #4892
+* protostuff return stackoverflow and other error msg #4861
+* fix method parameter bean generation. #3796 
+* replace hardcode with regex pattern #4810
+* Fix warm up issue when provider's timestamp is bigger than local machine's timestamp. #4870
+* Fix use generic invocation via API , lost #4238 ion" value #4784
+* In consumer side the app cannot catch the exception from provider that is configured serialization="kryo". #4238
+* fix StringUtils#isBlank #4725
+* when the interfaceName of the Reference annotation has duplicated,the exception is puzzled #4160
+* when anonymity  bean is defined in spirng context，dubbo throw npe #
+* add Thread ContextClassLoader #4712
+* Fix judgment ipv4 address #4729
+* The compilation of static methods should be excluded when generating the proxy. #4647
+* check EOF of inputstream in IOUtils.write #4648
+
+
 ## 2.7.3
 
 ### Change List

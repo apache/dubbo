@@ -145,11 +145,7 @@ public class NetUtils {
      * @return true if it is reachable
      */
     static boolean isPreferIPV6Address() {
-        boolean preferIpv6 = Boolean.getBoolean("java.net.preferIPv6Addresses");
-        if (!preferIpv6) {
-            return false;
-        }
-        return false;
+        return Boolean.getBoolean("java.net.preferIPv6Addresses");
     }
 
     /**
@@ -178,6 +174,17 @@ public class NetUtils {
             }
         }
         return address;
+    }
+
+    private static volatile String HOST_ADDRESS;
+
+    public static String getHostAddress () {
+        if (HOST_ADDRESS != null) {
+            return HOST_ADDRESS;
+        }
+
+        HOST_ADDRESS = getLocalHost();
+        return HOST_ADDRESS;
     }
 
     public static String getLocalHost() {
@@ -487,7 +494,7 @@ public class NetUtils {
     private static void checkHostPattern(String pattern, String[] mask, boolean isIpv4) {
         if (!isIpv4) {
             if (mask.length != 8 && ipPatternContainExpression(pattern)) {
-                throw new IllegalArgumentException("If you config ip expression that contains '*' or '-', please fill qulified ip pattern like 234e:0:4567:0:0:0:3d:*. ");
+                throw new IllegalArgumentException("If you config ip expression that contains '*' or '-', please fill qualified ip pattern like 234e:0:4567:0:0:0:3d:*. ");
             }
             if (mask.length != 8 && !pattern.contains("::")) {
                 throw new IllegalArgumentException("The host is ipv6, but the pattern is not ipv6 pattern : " + pattern);

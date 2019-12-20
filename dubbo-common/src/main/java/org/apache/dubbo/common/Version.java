@@ -162,17 +162,17 @@ public final class Version {
             String version = null;
             if (pkg != null) {
                 version = pkg.getImplementationVersion();
-                if (!StringUtils.isEmpty(version)) {
+                if (StringUtils.isNotEmpty(version)) {
                     return version;
                 }
 
                 version = pkg.getSpecificationVersion();
-                if (!StringUtils.isEmpty(version)) {
+                if (StringUtils.isNotEmpty(version)) {
                     return version;
                 }
             }
 
-            // guess version fro jar file name if nothing's found from MANIFEST.MF
+            // guess version from jar file name if nothing's found from MANIFEST.MF
             CodeSource codeSource = cls.getProtectionDomain().getCodeSource();
             if (codeSource == null) {
                 logger.info("No codeSource for class " + cls.getName() + " when getVersion, use default version " + defaultVersion);
@@ -260,7 +260,7 @@ public final class Version {
             URL url = urls.nextElement();
             if (url != null) {
                 String file = url.getFile();
-                if (file != null && file.length() > 0) {
+                if (StringUtils.isNotEmpty(file)) {
                     files.add(file);
                 }
             }

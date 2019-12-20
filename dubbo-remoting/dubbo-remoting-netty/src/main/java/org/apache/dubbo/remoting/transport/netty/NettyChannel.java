@@ -22,6 +22,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.transport.AbstractChannel;
+import org.apache.dubbo.remoting.utils.PayloadDropper;
 
 import org.jboss.netty.channel.ChannelFuture;
 
@@ -109,11 +110,11 @@ final class NettyChannel extends AbstractChannel {
                 throw cause;
             }
         } catch (Throwable e) {
-            throw new RemotingException(this, "Failed to send message " + message + " to " + getRemoteAddress() + ", cause: " + e.getMessage(), e);
+            throw new RemotingException(this, "Failed to send message " + PayloadDropper.getRequestWithoutData(message) + " to " + getRemoteAddress() + ", cause: " + e.getMessage(), e);
         }
 
         if (!success) {
-            throw new RemotingException(this, "Failed to send message " + message + " to " + getRemoteAddress()
+            throw new RemotingException(this, "Failed to send message " + PayloadDropper.getRequestWithoutData(message) + " to " + getRemoteAddress()
                     + "in timeout(" + timeout + "ms) limit");
         }
     }
@@ -185,6 +186,13 @@ final class NettyChannel extends AbstractChannel {
         if (obj == null) {
             return false;
         }
+
+        // FIXME: a hack to make org.apache.dubbo.remoting.exchange.support.DefaultFuture.closeChannel work
+        if (obj instanceof NettyClient) {
+            NettyClient client = (NettyClient) obj;
+            return channel.equals(client.getNettyChannel());
+        }
+
         if (getClass() != obj.getClass()) {
             return false;
         }

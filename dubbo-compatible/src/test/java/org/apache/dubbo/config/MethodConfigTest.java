@@ -17,7 +17,7 @@
 
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.rpc.model.ConsumerMethodModel;
+import org.apache.dubbo.rpc.model.AsyncMethodInfo;
 import org.apache.dubbo.service.Person;
 
 import com.alibaba.dubbo.config.ArgumentConfig;
@@ -43,7 +43,6 @@ import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MethodConfigTest {
     @Test
@@ -113,7 +112,7 @@ public class MethodConfigTest {
         methodConfig.setOninvokeMethod("setName");
         methodConfig.setOninvoke(new Person());
 
-        ConsumerMethodModel.AsyncMethodInfo methodInfo = org.apache.dubbo.config.MethodConfig.convertMethodConfig2AsyncInfo(methodConfig);
+        AsyncMethodInfo methodInfo = org.apache.dubbo.config.MethodConfig.convertMethodConfig2AsyncInfo(methodConfig);
 
         assertEquals(methodInfo.getOninvokeMethod(), Person.class.getMethod("setName", String.class));
     }

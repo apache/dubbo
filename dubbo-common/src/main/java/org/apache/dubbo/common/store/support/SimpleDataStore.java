@@ -50,11 +50,7 @@ public class SimpleDataStore implements DataStore {
 
     @Override
     public void put(String componentName, String key, Object value) {
-        Map<String, Object> componentData = data.get(componentName);
-        if (null == componentData) {
-            data.putIfAbsent(componentName, new ConcurrentHashMap<String, Object>());
-            componentData = data.get(componentName);
-        }
+        Map<String, Object> componentData = data.computeIfAbsent(componentName, k -> new ConcurrentHashMap<>());
         componentData.put(key, value);
     }
 
