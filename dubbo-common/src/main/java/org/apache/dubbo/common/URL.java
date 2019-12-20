@@ -130,12 +130,15 @@ class URL implements Serializable {
 
     private transient String serviceKey;
 
+    private transient String address;
+
     protected URL() {
         this.protocol = null;
         this.username = null;
         this.password = null;
         this.host = null;
         this.port = 0;
+        this.address = null;
         this.path = null;
         this.parameters = null;
         this.methodParameters = null;
@@ -180,7 +183,7 @@ class URL implements Serializable {
                int port,
                String path,
                Map<String, String> parameters) {
-        this (protocol, username, password, host, port, path, parameters, toMethodParameters(parameters));
+        this(protocol, username, password, host, port, path, parameters, toMethodParameters(parameters));
     }
 
     public URL(String protocol,
@@ -199,7 +202,9 @@ class URL implements Serializable {
         this.username = username;
         this.password = password;
         this.host = host;
-        this.port = (port < 0 ? 0 : port);
+        this.port = Math.max(port, 0);
+        this.address = getAddress(this.host, this.port);
+
         // trim the beginning "/"
         while (path != null && path.startsWith("/")) {
             path = path.substring(1);
@@ -212,6 +217,10 @@ class URL implements Serializable {
         }
         this.parameters = Collections.unmodifiableMap(parameters);
         this.methodParameters = Collections.unmodifiableMap(methodParameters);
+    }
+
+    private static String getAddress(String host, int port) {
+        return port <= 0 ? host : host + ':' + port;
     }
 
     /**
@@ -304,29 +313,31 @@ class URL implements Serializable {
 
     public static Map<String, Map<String, String>> toMethodParameters(Map<String, String> parameters) {
         Map<String, Map<String, String>> methodParameters = new HashMap<>();
-        if (parameters != null) {
-            String methodsString = parameters.get(METHODS_KEY);
-            if (StringUtils.isNotEmpty(methodsString)) {
-                String[] methods = methodsString.split(",");
-                for (Map.Entry<String, String> entry : parameters.entrySet()) {
-                    String key = entry.getKey();
-                    for (String method : methods) {
-                        String methodPrefix = method + '.';
-                        if (key.startsWith(methodPrefix)) {
-                            String realKey = key.substring(methodPrefix.length());
-                            URL.putMethodParameter(method, realKey, entry.getValue(), methodParameters);
-                        }
-                    }
-                }
-            } else {
-                for (Map.Entry<String, String> entry : parameters.entrySet()) {
-                    String key = entry.getKey();
-                    int methodSeparator = key.indexOf('.');
-                    if (methodSeparator > 0) {
-                        String method = key.substring(0, methodSeparator);
-                        String realKey = key.substring(methodSeparator + 1);
+        if (parameters == null) {
+            return methodParameters;
+        }
+
+        String methodsString = parameters.get(METHODS_KEY);
+        if (StringUtils.isNotEmpty(methodsString)) {
+            String[] methods = methodsString.split(",");
+            for (Map.Entry<String, String> entry : parameters.entrySet()) {
+                String key = entry.getKey();
+                for (String method : methods) {
+                    String methodPrefix = method + '.';
+                    if (key.startsWith(methodPrefix)) {
+                        String realKey = key.substring(methodPrefix.length());
                         URL.putMethodParameter(method, realKey, entry.getValue(), methodParameters);
                     }
+                }
+            }
+        } else {
+            for (Map.Entry<String, String> entry : parameters.entrySet()) {
+                String key = entry.getKey();
+                int methodSeparator = key.indexOf('.');
+                if (methodSeparator > 0) {
+                    String method = key.substring(0, methodSeparator);
+                    String realKey = key.substring(methodSeparator + 1);
+                    URL.putMethodParameter(method, realKey, entry.getValue(), methodParameters);
                 }
             }
         }
@@ -477,7 +488,10 @@ class URL implements Serializable {
     }
 
     public String getAddress() {
-        return port <= 0 ? host : host + ":" + port;
+        if (address == null) {
+            address = getAddress(host, port);
+        }
+        return address;
     }
 
     public URL setAddress(String address) {
@@ -765,7 +779,7 @@ class URL implements Serializable {
         Map<String, String> keyMap = methodParameters.get(method);
         String value = null;
         if (keyMap != null) {
-            value =  keyMap.get(key);
+            value = keyMap.get(key);
         }
         if (StringUtils.isEmpty(value)) {
             value = parameters.get(key);
@@ -1570,7 +1584,7 @@ class URL implements Serializable {
             return false;
         }
         URL other = (URL) obj;
-        if(!StringUtils.isEquals(host, other.host)) {
+        if (!StringUtils.isEquals(host, other.host)) {
             return false;
         }
         if (parameters == null) {
@@ -1580,19 +1594,19 @@ class URL implements Serializable {
         } else if (!parameters.equals(other.parameters)) {
             return false;
         }
-        if(!StringUtils.isEquals(password, other.password)) {
+        if (!StringUtils.isEquals(password, other.password)) {
             return false;
         }
-        if(!StringUtils.isEquals(path, other.path)) {
+        if (!StringUtils.isEquals(path, other.path)) {
             return false;
         }
         if (port != other.port) {
             return false;
         }
-        if(!StringUtils.isEquals(protocol, other.protocol)) {
+        if (!StringUtils.isEquals(protocol, other.protocol)) {
             return false;
         }
-        if(!StringUtils.isEquals(username, other.username)) {
+        if (!StringUtils.isEquals(username, other.username)) {
             return false;
         }
         return true;
