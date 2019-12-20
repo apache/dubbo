@@ -193,6 +193,7 @@ public class GrpcProtocol extends AbstractProxyProtocol {
         channelMap.values().forEach(ReferenceCountManagedChannel::shutdown);
         serverMap.clear();
         channelMap.clear();
+        super.destroy();
     }
 
     public class GrpcRemotingServer extends RemotingServerAdapter {
