@@ -23,21 +23,20 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 
-import io.grpc.ManagedChannel;
 import io.grpc.Status;
 import io.grpc.StatusException;
 
 public class GrpcInvoker<T> extends AbstractInvoker<T> {
 
     private final Invoker<T> target;
-    private ManagedChannel channel;
+    private ReferenceCountManagedChannel channel;
 
 //    private static List<Exception> grpcExceptions = new ArrayList<>();
 //    static {
 //        grpcExceptions.add();
 //    }
 
-    public GrpcInvoker(Class<T> type, URL url, Invoker<T> target, ManagedChannel channel) {
+    public GrpcInvoker(Class<T> type, URL url, Invoker<T> target, ReferenceCountManagedChannel channel) {
         super(type, url);
         this.target = target;
         this.channel = channel;
