@@ -1438,7 +1438,7 @@ class URL implements Serializable {
     }
 
     public static String buildKey(String path, String group, String version) {
-        return ServiceDescriptor.buildServiceKey(path, group, version);
+        return BaseServiceMetadata.buildServiceKey(path, group, version);
     }
 
     public String toServiceStringWithoutResolving() {

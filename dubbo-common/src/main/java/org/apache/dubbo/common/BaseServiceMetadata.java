@@ -21,7 +21,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 /**
  * 2019-10-10
  */
-public class ServiceDescriptor {
+public class BaseServiceMetadata {
     public static final char COLON_SEPERATOR = ':';
 
     protected String serviceKey;
@@ -58,12 +58,12 @@ public class ServiceDescriptor {
      * @param displayKey
      * @return
      */
-    public static ServiceDescriptor revertDisplayServiceKey(String displayKey) {
+    public static BaseServiceMetadata revertDisplayServiceKey(String displayKey) {
         String[] eles = StringUtils.split(displayKey, COLON_SEPERATOR);
         if (eles == null || eles.length < 1 || eles.length > 2) {
-            return new ServiceDescriptor();
+            return new BaseServiceMetadata();
         }
-        ServiceDescriptor serviceDescriptor = new ServiceDescriptor();
+        BaseServiceMetadata serviceDescriptor = new BaseServiceMetadata();
         serviceDescriptor.setServiceInterfaceName(eles[0]);
         if (eles.length == 2) {
             serviceDescriptor.setVersion(eles[1]);
