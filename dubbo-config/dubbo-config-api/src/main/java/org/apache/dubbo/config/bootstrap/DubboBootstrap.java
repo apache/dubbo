@@ -618,6 +618,9 @@ public class DubboBootstrap extends GenericEventListener {
                     cc.setNamespace(registryConfig.getGroup());
                     cc.setUsername(registryConfig.getUsername());
                     cc.setPassword(registryConfig.getPassword());
+                    if (registryConfig.getTimeout() != null) {
+                        cc.setTimeout(registryConfig.getTimeout().longValue());
+                    }
                     cc.setHighestPriority(false);
                     configManager.addConfigCenter(cc);
                 });
