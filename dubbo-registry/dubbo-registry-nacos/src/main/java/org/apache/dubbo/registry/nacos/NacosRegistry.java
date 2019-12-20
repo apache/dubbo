@@ -27,6 +27,13 @@ import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.support.FailbackRegistry;
 
+import com.alibaba.nacos.api.exception.NacosException;
+import com.alibaba.nacos.api.naming.NamingService;
+import com.alibaba.nacos.api.naming.listener.EventListener;
+import com.alibaba.nacos.api.naming.listener.NamingEvent;
+import com.alibaba.nacos.api.naming.pojo.Instance;
+import com.alibaba.nacos.api.naming.pojo.ListView;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -36,19 +43,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-
-import com.alibaba.nacos.api.exception.NacosException;
-import com.alibaba.nacos.api.naming.NamingService;
-import com.alibaba.nacos.api.naming.listener.EventListener;
-import com.alibaba.nacos.api.naming.listener.NamingEvent;
-import com.alibaba.nacos.api.naming.pojo.Instance;
-import com.alibaba.nacos.api.naming.pojo.ListView;
 
 import static java.util.Collections.singleton;
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
@@ -122,12 +120,9 @@ public class NacosRegistry extends FailbackRegistry {
 
     private final NamingService namingService;
 
-    private final ConcurrentMap<String, EventListener> nacosListeners;
-
     public NacosRegistry(URL url, NamingService namingService) {
         super(url);
         this.namingService = namingService;
-        this.nacosListeners = new ConcurrentHashMap<>();
     }
 
     @Override
@@ -398,16 +393,13 @@ public class NacosRegistry extends FailbackRegistry {
 
     private void subscribeEventListener(String serviceName, final URL url, final NotifyListener listener)
             throws NacosException {
-        if (!nacosListeners.containsKey(serviceName)) {
-            EventListener eventListener = event -> {
-                if (event instanceof NamingEvent) {
-                    NamingEvent e = (NamingEvent) event;
-                    notifySubscriber(url, listener, e.getInstances());
-                }
-            };
-            namingService.subscribe(serviceName, eventListener);
-            nacosListeners.put(serviceName, eventListener);
-        }
+        EventListener eventListener = event -> {
+            if (event instanceof NamingEvent) {
+                NamingEvent e = (NamingEvent) event;
+                notifySubscriber(url, listener, e.getInstances());
+            }
+        };
+        namingService.subscribe(serviceName, eventListener);
     }
 
     /**
