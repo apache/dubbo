@@ -26,7 +26,10 @@ import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 import io.grpc.Status;
 import io.grpc.StatusException;
 
+import java.util.concurrent.locks.ReentrantLock;
+
 public class GrpcInvoker<T> extends AbstractInvoker<T> {
+    private final ReentrantLock destroyLock = new ReentrantLock();
 
     private final Invoker<T> target;
     private ReferenceCountManagedChannel channel;
@@ -74,8 +77,19 @@ public class GrpcInvoker<T> extends AbstractInvoker<T> {
 
     @Override
     public void destroy() {
-        super.destroy();
-        channel.shutdown();
+        if (!super.isDestroyed()) {
+            // double check to avoid dup close
+            destroyLock.lock();
+            try {
+                if (super.isDestroyed()) {
+                    return;
+                }
+                super.destroy();
+                channel.shutdown();
+            } finally {
+                destroyLock.unlock();
+            }
+        }
     }
 
     private RpcException getRpcException(Class<?> type, URL url, Invocation invocation, Throwable e) {
