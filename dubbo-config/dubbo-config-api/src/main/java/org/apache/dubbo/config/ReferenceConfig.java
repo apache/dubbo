@@ -368,7 +368,12 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         if (StringUtils.isEmpty(interfaceName)) {
             throw new IllegalStateException("<dubbo:reference interface=\"\" /> interface not allow null!");
         }
-        completeCompoundConfigs();
+        completeCompoundConfigs(consumer);
+        if (consumer != null) {
+            if (StringUtils.isEmpty(registryIds)) {
+                setRegistryIds(consumer.getRegistryIds());
+            }
+        }
         // get consumer's global configuration
         checkDefault();
         this.refresh();
