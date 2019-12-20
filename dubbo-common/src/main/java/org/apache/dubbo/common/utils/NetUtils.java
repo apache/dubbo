@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.logger.support.FailsafeLogger;
 
 import java.io.IOException;
 import java.net.Inet4Address;
@@ -45,7 +46,14 @@ import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
  * IP and Port Helper for RPC
  */
 public class NetUtils {
-    private static final Logger logger = LoggerFactory.getLogger(NetUtils.class);
+    private static Logger logger;
+
+    {
+        logger = LoggerFactory.getLogger(NetUtils.class);
+        if (logger instanceof FailsafeLogger) {
+            logger = ((FailsafeLogger) logger).getLogger();
+        }
+    }
 
     // returned port range is [30000, 39999]
     private static final int RND_PORT_START = 30000;
