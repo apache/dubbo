@@ -270,8 +270,10 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 if (registryConfigs.isEmpty()) {
                     registryConfigs = new ArrayList<>();
                     RegistryConfig registryConfig = new RegistryConfig();
+                    registryConfig.setDefault(true);
                     registryConfig.refresh();
                     registryConfigs.add(registryConfig);
+                    ApplicationModel.getConfigManager().addRegistry(registryConfig);
                 }
                 setRegistries(registryConfigs);
             }

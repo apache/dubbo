@@ -276,8 +276,10 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
                 if (protocolConfigs.isEmpty()) {
                     protocolConfigs = new ArrayList<>(1);
                     ProtocolConfig protocolConfig = new ProtocolConfig();
+                    protocolConfig.setDefault(true);
                     protocolConfig.refresh();
                     protocolConfigs.add(protocolConfig);
+                    ApplicationModel.getConfigManager().addProtocol(protocolConfig);
                 }
                 setProtocols(protocolConfigs);
             }
