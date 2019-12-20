@@ -136,6 +136,10 @@ public class HttpProtocol extends AbstractProxyProtocol {
             } else if (ClassNotFoundException.class.isAssignableFrom(cls)) {
                 return RpcException.SERIALIZATION_EXCEPTION;
             }
+
+            if (e instanceof HttpProtocolErrorCode) {
+                return ((HttpProtocolErrorCode) e).getErrorCode();
+            }
         }
         return super.getErrorCode(e);
     }
