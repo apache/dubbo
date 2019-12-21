@@ -34,7 +34,12 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.epoll.Epoll;
+import io.netty.channel.epoll.EpollEventLoopGroup;
+import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.proxy.Socks5ProxyHandler;
 import io.netty.handler.timeout.IdleStateHandler;
@@ -54,7 +59,17 @@ public class NettyClient extends AbstractClient {
     /**
      * netty client bootstrap
      */
-    private static final NioEventLoopGroup nioEventLoopGroup = new NioEventLoopGroup(Constants.DEFAULT_IO_THREADS, new DefaultThreadFactory("NettyClientWorker", true));
+    private static EventLoopGroup nioEventLoopGroup;
+
+    static {
+        if (useEpoll()) {
+            nioEventLoopGroup = new EpollEventLoopGroup(Constants.DEFAULT_IO_THREADS,
+                    new DefaultThreadFactory("NettyClientEpollWorker", true));
+        } else {
+            nioEventLoopGroup = new NioEventLoopGroup(Constants.DEFAULT_IO_THREADS,
+                    new DefaultThreadFactory("NettyClientWorker", true));
+        }
+    }
 
     private static final String SOCKS_PROXY_HOST = "socksProxyHost";
 
@@ -95,7 +110,7 @@ public class NettyClient extends AbstractClient {
                 .option(ChannelOption.TCP_NODELAY, true)
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
                 //.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, getTimeout())
-                .channel(NioSocketChannel.class);
+                .channel(socketChannel());
 
         bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, Math.max(3000, getConnectTimeout()));
         bootstrap.handler(new ChannelInitializer() {
@@ -123,6 +138,15 @@ public class NettyClient extends AbstractClient {
                 }
             }
         });
+    }
+
+    private static boolean useEpoll() {
+        String osName = System.getProperty("os.name");
+        return osName != null && osName.toLowerCase().contains("linux") && Epoll.isAvailable();
+    }
+
+    private Class<? extends SocketChannel> socketChannel() {
+        return useEpoll() ? EpollSocketChannel.class : NioSocketChannel.class;
     }
 
     @Override
