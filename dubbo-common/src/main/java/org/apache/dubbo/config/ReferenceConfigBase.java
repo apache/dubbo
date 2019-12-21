@@ -122,42 +122,6 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         }));
     }
 
-    public void completeCompoundConfigs() {
-        if (consumer != null) {
-            if (application == null) {
-                setApplication(consumer.getApplication());
-            }
-            if (module == null) {
-                setModule(consumer.getModule());
-            }
-            if (registries == null) {
-                setRegistries(consumer.getRegistries());
-            }
-            if (monitor == null) {
-                setMonitor(consumer.getMonitor());
-            }
-            if (StringUtils.isEmpty(registryIds)) {
-                setRegistryIds(consumer.getRegistryIds());
-            }
-        }
-        if (module != null) {
-            if (registries == null) {
-                setRegistries(module.getRegistries());
-            }
-            if (monitor == null) {
-                setMonitor(module.getMonitor());
-            }
-        }
-        if (application != null) {
-            if (registries == null) {
-                setRegistries(application.getRegistries());
-            }
-            if (monitor == null) {
-                setMonitor(application.getMonitor());
-            }
-        }
-    }
-
     public Class<?> getActualInterface() {
         Class actualInterface = interfaceClass;
         if (interfaceClass == GenericService.class) {

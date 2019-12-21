@@ -307,6 +307,39 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     }
 
+    public void completeCompoundConfigs(AbstractInterfaceConfig interfaceConfig) {
+        if (interfaceConfig != null) {
+            if (application == null) {
+                setApplication(interfaceConfig.getApplication());
+            }
+            if (module == null) {
+                setModule(interfaceConfig.getModule());
+            }
+            if (registries == null) {
+                setRegistries(interfaceConfig.getRegistries());
+            }
+            if (monitor == null) {
+                setMonitor(interfaceConfig.getMonitor());
+            }
+        }
+        if (module != null) {
+            if (registries == null) {
+                setRegistries(module.getRegistries());
+            }
+            if (monitor == null) {
+                setMonitor(module.getMonitor());
+            }
+        }
+        if (application != null) {
+            if (registries == null) {
+                setRegistries(application.getRegistries());
+            }
+            if (monitor == null) {
+                setMonitor(application.getMonitor());
+            }
+        }
+    }
+    
     protected void computeValidRegistryIds() {
         if (StringUtils.isEmpty(getRegistryIds())) {
             if (getApplication() != null && StringUtils.isNotEmpty(getApplication().getRegistryIds())) {
