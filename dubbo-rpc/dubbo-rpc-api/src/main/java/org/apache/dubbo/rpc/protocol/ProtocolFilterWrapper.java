@@ -110,6 +110,8 @@ public class ProtocolFilterWrapper implements Protocol {
                                 } else {
                                     listener.onError(t, invoker, invocation);
                                 }
+                            } else {// Deprecated!
+                                filter.onResponse(r, invoker, invocation);
                             }
                         });
                     }
