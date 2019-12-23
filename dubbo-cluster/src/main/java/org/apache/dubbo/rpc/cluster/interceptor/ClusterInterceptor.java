@@ -49,7 +49,7 @@ public interface ClusterInterceptor {
 
     interface Listener {
 
-        void onResponse(Result appResponse, AbstractClusterInvoker<?> clusterInvoker, Invocation invocation);
+        void onMessage(Result appResponse, AbstractClusterInvoker<?> clusterInvoker, Invocation invocation);
 
         void onError(Throwable t, AbstractClusterInvoker<?> clusterInvoker, Invocation invocation);
     }
