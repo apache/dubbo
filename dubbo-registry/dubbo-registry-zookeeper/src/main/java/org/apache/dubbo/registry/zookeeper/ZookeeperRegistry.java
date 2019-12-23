@@ -127,7 +127,9 @@ public class ZookeeperRegistry extends FailbackRegistry {
     @Override
     public void doSubscribe(final URL url, final NotifyListener listener) {
         try {
+            // 订阅所有接口
             if (Constants.ANY_VALUE.equals(url.getServiceInterface())) {
+                // dubbo
                 String root = toRootPath();
                 ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.get(url);
                 if (listeners == null) {
@@ -162,7 +164,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
                 List<URL> urls = new ArrayList<>();
                 for (String path : toCategoriesPath(url)) {
                     ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.get(url);
-                    if (listeners == null) {
+                    if (listeners ==  null) {
                         zkListeners.putIfAbsent(url, new ConcurrentHashMap<>());
                         listeners = zkListeners.get(url);
                     }

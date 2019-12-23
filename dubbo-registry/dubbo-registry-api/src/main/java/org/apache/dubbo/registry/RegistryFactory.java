@@ -23,6 +23,7 @@ import org.apache.dubbo.common.extension.SPI;
 /**
  * RegistryFactory. (SPI, Singleton, ThreadSafe)
  *
+ * @author wangjinlong
  * @see org.apache.dubbo.registry.support.AbstractRegistryFactory
  */
 @SPI("dubbo")

@@ -333,7 +333,7 @@ public class ExtensionLoader<T> {
     }
 
     /**
-     * Find the extension with the given name. If the specified name is not found, then {@link IllegalStateException}
+     * Find the extension with the given name. If the specified name has not found, then {@link IllegalStateException}
      * will be thrown.
      */
     @SuppressWarnings("unchecked")
@@ -598,7 +598,7 @@ public class ExtensionLoader<T> {
         return getExtensionClasses().get(name);
     }
 
-    private Map<String, Class<?>> getExtensionClasses() {
+    public Map<String, Class<?>> getExtensionClasses() {
         Map<String, Class<?>> classes = cachedClasses.get();
         if (classes == null) {
             synchronized (cachedClasses) {
