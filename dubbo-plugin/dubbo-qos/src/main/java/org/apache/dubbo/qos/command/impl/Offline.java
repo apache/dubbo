@@ -64,14 +64,7 @@ public class Offline implements BaseCommand {
         for (ProviderModel providerModel : providerModelList) {
             if (providerModel.getServiceMetadata().getDisplayServiceKey().matches(servicePattern)) {
                 hasService = true;
-                List<ProviderModel.RegisterStatedURL> statedUrls = providerModel.getStatedUrl();
-                for (ProviderModel.RegisterStatedURL statedURL : statedUrls) {
-                    if (statedURL.isRegistered()) {
-                        Registry registry = registryFactory.getRegistry(statedURL.getRegistryUrl());
-                        registry.unregister(statedURL.getProviderUrl());
-                        statedURL.setRegistered(false);
-                    }
-                }
+                ProviderModel.RegisterStatedURL.unregisterList(providerModel.getStatedUrl(), registryFactory);
             }
         }
 

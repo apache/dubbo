@@ -18,6 +18,8 @@ package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.config.ServiceConfigBase;
+import org.apache.dubbo.registry.Registry;
+import org.apache.dubbo.registry.RegistryFactory;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -120,6 +122,26 @@ public class ProviderModel {
 
         public void setRegistryUrl(URL registryUrl) {
             this.registryUrl = registryUrl;
+        }
+        
+        public static void registerList(List<RegisterStatedURL> urls, RegistryFactory registryFactory) {
+            for (ProviderModel.RegisterStatedURL statedURL : urls) {
+                if (!statedURL.isRegistered()) {
+                    Registry registry = registryFactory.getRegistry(statedURL.getRegistryUrl());
+                    registry.register(statedURL.getProviderUrl());
+                    statedURL.setRegistered(true);
+                }
+            }
+        }
+        
+        public static void unregisterList(List<RegisterStatedURL> urls, RegistryFactory registryFactory) {
+            for (ProviderModel.RegisterStatedURL statedURL : urls) {
+                if (statedURL.isRegistered()) {
+                    Registry registry = registryFactory.getRegistry(statedURL.getRegistryUrl());
+                    registry.unregister(statedURL.getProviderUrl());
+                    statedURL.setRegistered(false);
+                }
+            }
         }
     }
 

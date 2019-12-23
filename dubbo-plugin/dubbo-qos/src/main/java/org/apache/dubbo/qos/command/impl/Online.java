@@ -64,14 +64,7 @@ public class Online implements BaseCommand {
         for (ProviderModel providerModel : providerModelList) {
             if (providerModel.getServiceMetadata().getDisplayServiceKey().matches(servicePattern)) {
                 hasService = true;
-                List<ProviderModel.RegisterStatedURL> statedUrls = providerModel.getStatedUrl();
-                for (ProviderModel.RegisterStatedURL statedURL : statedUrls) {
-                    if (!statedURL.isRegistered()) {
-                        Registry registry = registryFactory.getRegistry(statedURL.getRegistryUrl());
-                        registry.register(statedURL.getProviderUrl());
-                        statedURL.setRegistered(true);
-                    }
-                }
+                ProviderModel.RegisterStatedURL.registerList(providerModel.getStatedUrl(), registryFactory);
             }
         }
 
