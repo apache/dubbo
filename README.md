@@ -224,6 +224,7 @@ Please report security vulnerability to [us](mailto:security@dubbo.apache.org) p
 * [Dubbo Samples](https://github.com/apache/dubbo-samples) - samples for Apache Dubbo
 * [Dubbo Spring Boot](https://github.com/apache/dubbo-spring-boot-project) - Spring Boot Project for Dubbo
 * [Dubbo Admin](https://github.com/apache/dubbo-admin) - The reference implementation for Dubbo admin
+* [Dubbo Awesome](https://github.com/apache/dubbo-awesome) - Dubbo's slides and video links in Meetup
 
 #### Language
 
