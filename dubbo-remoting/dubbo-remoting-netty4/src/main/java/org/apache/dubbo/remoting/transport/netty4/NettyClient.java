@@ -43,7 +43,7 @@ import io.netty.util.concurrent.DefaultThreadFactory;
 import java.net.InetSocketAddress;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static org.apache.dubbo.remoting.Constants.SSL_ENABLED_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SSL_ENABLED_KEY;
 
 /**
  * NettyClient.
@@ -77,7 +77,7 @@ public class NettyClient extends AbstractClient {
      */
     public NettyClient(final URL url, final ChannelHandler handler) throws RemotingException {
     	// you can customize name and type of client thread pool by THREAD_NAME_KEY and THREADPOOL_KEY in CommonConstants.
-    	// the handler will be warped: MultiMessageHandler->HeartbeatHandler->handler
+    	// the handler will be wrapped: MultiMessageHandler->HeartbeatHandler->handler
     	super(url, wrapChannelHandler(url, handler));
     }
 

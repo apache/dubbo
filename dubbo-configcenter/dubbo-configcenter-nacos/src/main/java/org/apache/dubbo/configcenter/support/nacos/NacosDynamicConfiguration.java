@@ -52,15 +52,29 @@ import java.util.stream.Stream;
 
 import static com.alibaba.nacos.api.PropertyKeyConst.ACCESS_KEY;
 import static com.alibaba.nacos.api.PropertyKeyConst.CLUSTER_NAME;
+import static com.alibaba.nacos.api.PropertyKeyConst.CONFIG_LONG_POLL_TIMEOUT;
+import static com.alibaba.nacos.api.PropertyKeyConst.CONFIG_RETRY_TIME;
+import static com.alibaba.nacos.api.PropertyKeyConst.CONTEXT_PATH;
+import static com.alibaba.nacos.api.PropertyKeyConst.ENABLE_REMOTE_SYNC_CONFIG;
 import static com.alibaba.nacos.api.PropertyKeyConst.ENCODE;
 import static com.alibaba.nacos.api.PropertyKeyConst.ENDPOINT;
+import static com.alibaba.nacos.api.PropertyKeyConst.ENDPOINT_PORT;
+import static com.alibaba.nacos.api.PropertyKeyConst.IS_USE_CLOUD_NAMESPACE_PARSING;
+import static com.alibaba.nacos.api.PropertyKeyConst.IS_USE_ENDPOINT_PARSING_RULE;
+import static com.alibaba.nacos.api.PropertyKeyConst.MAX_RETRY;
 import static com.alibaba.nacos.api.PropertyKeyConst.NAMESPACE;
+import static com.alibaba.nacos.api.PropertyKeyConst.NAMING_CLIENT_BEAT_THREAD_COUNT;
+import static com.alibaba.nacos.api.PropertyKeyConst.NAMING_LOAD_CACHE_AT_START;
+import static com.alibaba.nacos.api.PropertyKeyConst.NAMING_POLLING_THREAD_COUNT;
+import static com.alibaba.nacos.api.PropertyKeyConst.RAM_ROLE_NAME;
 import static com.alibaba.nacos.api.PropertyKeyConst.SECRET_KEY;
 import static com.alibaba.nacos.api.PropertyKeyConst.SERVER_ADDR;
 import static com.alibaba.nacos.client.naming.utils.UtilAndComs.NACOS_NAMING_LOG_NAME;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
+import static org.apache.dubbo.common.utils.StringUtils.HYPHEN_CHAR;
+import static org.apache.dubbo.common.utils.StringUtils.SLASH_CHAR;
 
 /**
  * The nacos implementation of {@link DynamicConfiguration}
@@ -143,20 +157,41 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
         properties.put(SERVER_ADDR, serverAddr);
     }
 
-    private void setProperties(URL url, Properties properties) {
-        putPropertyIfAbsent(url, properties, NAMESPACE);
+    private static void setProperties(URL url, Properties properties) {
         putPropertyIfAbsent(url, properties, NACOS_NAMING_LOG_NAME);
+        putPropertyIfAbsent(url, properties, IS_USE_CLOUD_NAMESPACE_PARSING);
+        putPropertyIfAbsent(url, properties, IS_USE_ENDPOINT_PARSING_RULE);
         putPropertyIfAbsent(url, properties, ENDPOINT);
+        putPropertyIfAbsent(url, properties, ENDPOINT_PORT);
+        putPropertyIfAbsent(url, properties, NAMESPACE);
         putPropertyIfAbsent(url, properties, ACCESS_KEY);
         putPropertyIfAbsent(url, properties, SECRET_KEY);
+        putPropertyIfAbsent(url, properties, RAM_ROLE_NAME);
+        putPropertyIfAbsent(url, properties, CONTEXT_PATH);
         putPropertyIfAbsent(url, properties, CLUSTER_NAME);
         putPropertyIfAbsent(url, properties, ENCODE);
+        putPropertyIfAbsent(url, properties, CONFIG_LONG_POLL_TIMEOUT);
+        putPropertyIfAbsent(url, properties, CONFIG_RETRY_TIME);
+        putPropertyIfAbsent(url, properties, MAX_RETRY);
+        putPropertyIfAbsent(url, properties, ENABLE_REMOTE_SYNC_CONFIG);
+        putPropertyIfAbsent(url, properties, NAMING_LOAD_CACHE_AT_START, "true");
+        putPropertyIfAbsent(url, properties, NAMING_CLIENT_BEAT_THREAD_COUNT);
+        putPropertyIfAbsent(url, properties, NAMING_POLLING_THREAD_COUNT);
     }
 
-    private void putPropertyIfAbsent(URL url, Properties properties, String propertyName) {
+    private static void putPropertyIfAbsent(URL url, Properties properties, String propertyName) {
         String propertyValue = url.getParameter(propertyName);
         if (StringUtils.isNotEmpty(propertyValue)) {
             properties.setProperty(propertyName, propertyValue);
+        }
+    }
+
+    private static void putPropertyIfAbsent(URL url, Properties properties, String propertyName, String defaultValue) {
+        String propertyValue = url.getParameter(propertyName);
+        if (StringUtils.isNotEmpty(propertyValue)) {
+            properties.setProperty(propertyName, propertyValue);
+        } else {
+            properties.setProperty(propertyName, defaultValue);
         }
     }
 
@@ -175,10 +210,12 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
 
     @Override
     public void addListener(String key, String group, ConfigurationListener listener) {
-        NacosConfigListener nacosConfigListener = watchListenerMap.computeIfAbsent(key, k -> createTargetListener(key, group));
+        String resolvedGroup = resolveGroup(group);
+        String listenerKey = buildListenerKey(key, group);
+        NacosConfigListener nacosConfigListener = watchListenerMap.computeIfAbsent(listenerKey, k -> createTargetListener(key, resolvedGroup));
         nacosConfigListener.addListener(listener);
         try {
-            configService.addListener(key, group, nacosConfigListener);
+            configService.addListener(key, resolvedGroup, nacosConfigListener);
         } catch (NacosException e) {
             logger.error(e.getMessage());
         }
@@ -186,7 +223,8 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
 
     @Override
     public void removeListener(String key, String group, ConfigurationListener listener) {
-        NacosConfigListener eventListener = watchListenerMap.get(key);
+        String listenerKey = buildListenerKey(key, group);
+        NacosConfigListener eventListener = watchListenerMap.get(listenerKey);
         if (eventListener != null) {
             eventListener.removeListener(listener);
         }
@@ -194,12 +232,13 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
 
     @Override
     public String getConfig(String key, String group, long timeout) throws IllegalStateException {
+        String resolvedGroup = resolveGroup(group);
         try {
             long nacosTimeout = timeout < 0 ? DEFAULT_TIMEOUT : timeout;
-            if (StringUtils.isEmpty(group)) {
-                group = DEFAULT_GROUP;
+            if (StringUtils.isEmpty(resolvedGroup)) {
+                resolvedGroup = DEFAULT_GROUP;
             }
-            return configService.getConfig(key, group, nacosTimeout);
+            return configService.getConfig(key, resolvedGroup, nacosTimeout);
         } catch (NacosException e) {
             logger.error(e.getMessage());
         }
@@ -219,12 +258,13 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     @Override
     public boolean publishConfig(String key, String group, String content) {
         boolean published = false;
+        String resolvedGroup = resolveGroup(group);
         try {
-            String value = configService.getConfig(key, group, -1L);
+            String value = configService.getConfig(key, resolvedGroup, -1L);
             if (StringUtils.isNotEmpty(value)) {
                 content = value + "," + content;
             }
-            published = configService.publishConfig(key, group, content);
+            published = configService.publishConfig(key, resolvedGroup, content);
         } catch (NacosException e) {
             logger.error(e.getErrMsg());
         }
@@ -234,19 +274,19 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     /**
      * TODO Nacos does not support atomic update of the value mapped to a key.
      *
-     * @param group the specified group
      * @param key
+     * @param group the specified group
      * @return
      */
     @Override
-    public SortedSet<String> getConfigKeys(String group, String key) {
+    public SortedSet<String> getConfigKeys(String group) {
         // TODO use Nacos Client API to replace HTTP Open API
         SortedSet<String> keys = new TreeSet<>();
         try {
             List<String> paramsValues = asList(
                     "search", "accurate",
                     "dataId", "",
-                    "group", group,
+                    "group", resolveGroup(group),
                     "pageNo", "1",
                     "pageSize", String.valueOf(Integer.MAX_VALUE)
             );
@@ -260,17 +300,6 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
             }
         }
         return keys;
-
-//        SortedSet<String> configKeys = new TreeSet<>();
-//        try {
-//            String value = configService.getConfig(key, group, -1L);
-//            if (value != null) {
-//                Collections.addAll(configKeys, value.split(","));
-//            }
-//        } catch (NacosException e) {
-//            logger.error(e.getErrMsg());
-//        }
-//        return configKeys;
     }
 
     private Stream<String> toKeysStream(String content) {
@@ -335,5 +364,13 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
             }
             return ConfigChangeType.MODIFIED;
         }
+    }
+
+    protected String buildListenerKey(String key, String group) {
+        return key + HYPHEN_CHAR + resolveGroup(group);
+    }
+
+    protected String resolveGroup(String group) {
+        return group.replace(SLASH_CHAR, HYPHEN_CHAR);
     }
 }

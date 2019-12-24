@@ -100,4 +100,6 @@ public interface RegistryConstants {
     String REGISTRY_ZONE = "registry_zone";
     String REGISTRY_ZONE_FORCE = "registry_zone_force";
     String ZONE_KEY = "zone";
+
+    String REGISTRY_SERVICE_REFERENCE_PATH = "org.apache.dubbo.registry.RegistryService";
 }

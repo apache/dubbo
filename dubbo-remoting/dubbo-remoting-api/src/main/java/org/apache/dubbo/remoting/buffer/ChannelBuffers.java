@@ -112,6 +112,24 @@ public final class ChannelBuffers {
         return true;
     }
 
+    public static int hasCode(ChannelBuffer buffer){
+        final int aLen = buffer.readableBytes();
+        final int byteCount = aLen & 7;
+
+        int hashCode = 1;
+        int arrayIndex = buffer.readerIndex();
+
+        for (int i = byteCount; i > 0; i--) {
+            hashCode = 31 * hashCode + buffer.getByte(arrayIndex++);
+        }
+
+        if (hashCode == 0) {
+            hashCode = 1;
+        }
+
+        return hashCode;
+    }
+
     public static int compare(ChannelBuffer bufferA, ChannelBuffer bufferB) {
         final int aLen = bufferA.readableBytes();
         final int bLen = bufferB.readableBytes();

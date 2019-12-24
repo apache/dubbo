@@ -262,6 +262,8 @@ public interface CommonConstants {
 
     String GENERIC_SERIALIZATION_PROTOBUF = "protobuf-json";
 
+    String GENERIC_WITH_CLZ_KEY = "generic.include.class";
+
     /**
      * The limit of callback service instances for one interface on every client
      */
@@ -289,5 +291,9 @@ public interface CommonConstants {
     String REGISTER_KEY = "register";
 
     String DUBBO_INVOCATION_PREFIX = "_DUBBO_IGNORE_ATTACH_";
+
+    String INTERFACES = "interfaces";
+
+    String SSL_ENABLED_KEY = "ssl-enabled";
 
 }

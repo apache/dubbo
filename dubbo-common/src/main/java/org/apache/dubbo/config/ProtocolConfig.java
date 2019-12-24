@@ -22,6 +22,7 @@ import org.apache.dubbo.config.support.Parameter;
 import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SSL_ENABLED_KEY;
 import static org.apache.dubbo.config.Constants.PROTOCOLS_SUFFIX;
 
 /**
@@ -119,7 +120,7 @@ public class ProtocolConfig extends AbstractConfig {
     private String accesslog;
 
     /**
-     * Transfort
+     * Transporter
      */
     private String transporter;
 
@@ -476,6 +477,7 @@ public class ProtocolConfig extends AbstractConfig {
         this.isDefault = isDefault;
     }
 
+    @Parameter(key = SSL_ENABLED_KEY)
     public Boolean getSslEnabled() {
         return sslEnabled;
     }
@@ -506,12 +508,6 @@ public class ProtocolConfig extends AbstractConfig {
 
     public void setExtension(String extension) {
         this.extension = extension;
-    }
-
-    public void destroy() {
-        if (name != null) {
-
-        }
     }
 
     @Override

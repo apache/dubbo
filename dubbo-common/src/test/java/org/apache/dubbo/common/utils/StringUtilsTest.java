@@ -18,11 +18,7 @@ package org.apache.dubbo.common.utils;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
@@ -33,9 +29,8 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 public class StringUtilsTest {
     @Test
@@ -220,8 +215,33 @@ public class StringUtilsTest {
 
     @Test
     public void testSplit() throws Exception {
-        String s = "d,1,2,4";
-        assertEquals(StringUtils.split(s, ',').length, 4);
+        String str = "d,1,2,4";
+
+        assertEquals(4, StringUtils.split(str, ',').length);
+        assertArrayEquals(str.split(","), StringUtils.split(str, ','));
+
+        assertEquals(1, StringUtils.split(str, 'a').length);
+        assertArrayEquals(str.split("a"), StringUtils.split(str, 'a'));
+
+        assertEquals(0, StringUtils.split("", 'a').length);
+        assertEquals(0, StringUtils.split(null, 'a').length);
+
+        System.out.println(Arrays.toString(StringUtils.split("boo:and:foo", ':')));
+        System.out.println(Arrays.toString(StringUtils.split("boo:and:foo", 'o')));
+    }
+
+    @Test
+    public void testSplitToList() throws Exception {
+        String str = "d,1,2,4";
+
+        assertEquals(4, StringUtils.splitToList(str, ',').size());
+        assertEquals(Arrays.asList(str.split(",")), StringUtils.splitToList(str, ','));
+
+        assertEquals(1, StringUtils.splitToList(str, 'a').size());
+        assertEquals(Arrays.asList(str.split("a")), StringUtils.splitToList(str, 'a'));
+
+        assertEquals(0, StringUtils.splitToList("", 'a').size());
+        assertEquals(0, StringUtils.splitToList(null, 'a').size());
     }
 
     @Test
@@ -237,6 +257,16 @@ public class StringUtilsTest {
         assertThat(StringUtils.isContains("", "b"), is(false));
         assertThat(StringUtils.isContains(new String[]{"a", "b", "c"}, "b"), is(true));
         assertThat(StringUtils.isContains((String[]) null, null), is(false));
+
+        assertTrue(StringUtils.isContains("abc", 'a'));
+        assertFalse(StringUtils.isContains("abc", 'd'));
+        assertFalse(StringUtils.isContains("", 'a'));
+        assertFalse(StringUtils.isContains(null, 'a'));
+
+        assertTrue(StringUtils.isNotContains("abc", 'd'));
+        assertFalse(StringUtils.isNotContains("abc", 'a'));
+        assertTrue(StringUtils.isNotContains("", 'a'));
+        assertTrue(StringUtils.isNotContains(null, 'a'));
     }
 
     @Test

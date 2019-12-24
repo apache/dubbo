@@ -219,7 +219,7 @@ Please report security vulnerability to [us](mailto:security@dubbo.apache.org) p
 
 ## Dubbo ecosystem
 
-* [Dubbo Ecosystem Entry](https://github.com/dubbo) - A GitHub group `dubbo` to gather all Dubbo relevant projects not appropriate in [apache](https://github.com/apache) group yet
+* [Dubbo Ecosystem Entry](https://github.com/apache?utf8=%E2%9C%93&q=dubbo&type=&language=) - A GitHub group `dubbo` to gather all Dubbo relevant projects not appropriate in [apache](https://github.com/apache) group yet
 * [Dubbo Website](https://github.com/apache/dubbo-website) - Apache Dubbo official website
 * [Dubbo Samples](https://github.com/apache/dubbo-samples) - samples for Apache Dubbo
 * [Dubbo Spring Boot](https://github.com/apache/dubbo-spring-boot-project) - Spring Boot Project for Dubbo

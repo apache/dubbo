@@ -82,7 +82,7 @@ public class ReferenceAnnotationBeanPostProcessorTest {
     private HelloService helloServiceImpl;
 
     // #4 ReferenceBean (Field Injection #2)
-    @Reference(id = "helloService", methods = @Method(name = "sayName", timeout = 100))
+    @Reference(id = "helloService", methods = @Method(name = "sayHello", timeout = 100))
     private HelloService helloService;
 
     // #5 ReferenceBean (Field Injection #3)
