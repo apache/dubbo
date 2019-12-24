@@ -16,12 +16,12 @@
  */
 package org.apache.dubbo.common.beanutil;
 
-import org.apache.dubbo.common.model.person.BigPerson;
-import org.apache.dubbo.common.model.person.FullAddress;
-import org.apache.dubbo.common.model.person.PersonInfo;
-import org.apache.dubbo.common.model.person.PersonStatus;
-import org.apache.dubbo.common.model.person.Phone;
 import org.apache.dubbo.common.utils.PojoUtilsTest;
+import org.apache.dubbo.rpc.model.person.BigPerson;
+import org.apache.dubbo.rpc.model.person.FullAddress;
+import org.apache.dubbo.rpc.model.person.PersonInfo;
+import org.apache.dubbo.rpc.model.person.PersonStatus;
+import org.apache.dubbo.rpc.model.person.Phone;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -54,7 +54,7 @@ public class JavaBeanSerializeUtilTest {
     public void testSerialize_Primitive_NUll() {
         JavaBeanDescriptor descriptor;
         descriptor = JavaBeanSerializeUtil.serialize(null);
-        Assertions.assertTrue(descriptor == null);
+        Assertions.assertNull(descriptor);
     }
 
     @Test
@@ -75,7 +75,8 @@ public class JavaBeanSerializeUtilTest {
     @Test
     public void testDeserialize_Primitive0() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            JavaBeanDescriptor descriptor = new JavaBeanDescriptor(long.class.getName(), JavaBeanDescriptor.TYPE_BEAN + 1);
+            JavaBeanDescriptor descriptor = new JavaBeanDescriptor(long.class.getName(),
+                    JavaBeanDescriptor.TYPE_BEAN + 1);
         });
     }
 
@@ -89,7 +90,8 @@ public class JavaBeanSerializeUtilTest {
     @Test
     public void testDeserialize_containsProperty() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            JavaBeanDescriptor descriptor = new JavaBeanDescriptor(long.class.getName(), JavaBeanDescriptor.TYPE_PRIMITIVE);
+            JavaBeanDescriptor descriptor = new JavaBeanDescriptor(long.class.getName(),
+                    JavaBeanDescriptor.TYPE_PRIMITIVE);
             descriptor.containsProperty(null);
         });
     }
@@ -97,31 +99,54 @@ public class JavaBeanSerializeUtilTest {
     @Test
     public void testSetEnumNameProperty() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
-            JavaBeanDescriptor descriptor = new JavaBeanDescriptor(long.class.getName(), JavaBeanDescriptor.TYPE_PRIMITIVE);
+            JavaBeanDescriptor descriptor = new JavaBeanDescriptor(long.class.getName(),
+                    JavaBeanDescriptor.TYPE_PRIMITIVE);
             descriptor.setEnumNameProperty(JavaBeanDescriptor.class.getName());
         });
+
+        JavaBeanDescriptor descriptor = new JavaBeanDescriptor(JavaBeanDescriptor.class.getName(),
+                JavaBeanDescriptor.TYPE_ENUM);
+
+        String oldValueOrigin = descriptor.setEnumNameProperty(JavaBeanDescriptor.class.getName());
+        Assertions.assertNull(oldValueOrigin);
+
+        String oldValueNext = descriptor.setEnumNameProperty(JavaBeanDescriptor.class.getName());
+        Assertions.assertEquals(oldValueNext, descriptor.getEnumPropertyName());
     }
 
     @Test
     public void testGetEnumNameProperty() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
-            JavaBeanDescriptor descriptor = new JavaBeanDescriptor(long.class.getName(), JavaBeanDescriptor.TYPE_PRIMITIVE);
+            JavaBeanDescriptor descriptor = new JavaBeanDescriptor(long.class.getName(),
+                    JavaBeanDescriptor.TYPE_PRIMITIVE);
             descriptor.getEnumPropertyName();
         });
     }
 
     @Test
     public void testSetClassNameProperty() {
+
         Assertions.assertThrows(IllegalStateException.class, () -> {
-            JavaBeanDescriptor descriptor = new JavaBeanDescriptor(long.class.getName(), JavaBeanDescriptor.TYPE_PRIMITIVE);
+            JavaBeanDescriptor descriptor = new JavaBeanDescriptor(long.class.getName(),
+                    JavaBeanDescriptor.TYPE_PRIMITIVE);
             descriptor.setClassNameProperty(JavaBeanDescriptor.class.getName());
         });
+
+        JavaBeanDescriptor descriptor = new JavaBeanDescriptor(JavaBeanDescriptor.class.getName(),
+                JavaBeanDescriptor.TYPE_CLASS);
+
+        String oldValue1 = descriptor.setClassNameProperty(JavaBeanDescriptor.class.getName());
+        Assertions.assertNull(oldValue1);
+
+        String oldValue2 = descriptor.setClassNameProperty(JavaBeanDescriptor.class.getName());
+        Assertions.assertEquals(oldValue2, descriptor.getClassNameProperty());
     }
 
     @Test
     public void testGetClassNameProperty() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
-            JavaBeanDescriptor descriptor = new JavaBeanDescriptor(long.class.getName(), JavaBeanDescriptor.TYPE_PRIMITIVE);
+            JavaBeanDescriptor descriptor = new JavaBeanDescriptor(long.class.getName(),
+                    JavaBeanDescriptor.TYPE_PRIMITIVE);
             descriptor.getClassNameProperty();
         });
     }
@@ -129,7 +154,8 @@ public class JavaBeanSerializeUtilTest {
     @Test
     public void testSetPrimitiveProperty() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
-            JavaBeanDescriptor descriptor = new JavaBeanDescriptor(JavaBeanDescriptor.class.getName(), JavaBeanDescriptor.TYPE_BEAN);
+            JavaBeanDescriptor descriptor = new JavaBeanDescriptor(JavaBeanDescriptor.class.getName(),
+                    JavaBeanDescriptor.TYPE_BEAN);
             descriptor.setPrimitiveProperty(JavaBeanDescriptor.class.getName());
         });
     }
@@ -137,7 +163,8 @@ public class JavaBeanSerializeUtilTest {
     @Test
     public void testGetPrimitiveProperty() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
-            JavaBeanDescriptor descriptor = new JavaBeanDescriptor(JavaBeanDescriptor.class.getName(), JavaBeanDescriptor.TYPE_BEAN);
+            JavaBeanDescriptor descriptor = new JavaBeanDescriptor(JavaBeanDescriptor.class.getName(),
+                    JavaBeanDescriptor.TYPE_BEAN);
             descriptor.getPrimitiveProperty();
         });
     }
@@ -146,7 +173,7 @@ public class JavaBeanSerializeUtilTest {
     public void testDeserialize_get_and_set() {
         JavaBeanDescriptor descriptor = new JavaBeanDescriptor(long.class.getName(), JavaBeanDescriptor.TYPE_BEAN);
         descriptor.setType(JavaBeanDescriptor.TYPE_PRIMITIVE);
-        Assertions.assertTrue(descriptor.getType() == JavaBeanDescriptor.TYPE_PRIMITIVE);
+        Assertions.assertEquals(descriptor.getType(), JavaBeanDescriptor.TYPE_PRIMITIVE);
         descriptor.setClassName(JavaBeanDescriptor.class.getName());
         Assertions.assertEquals(JavaBeanDescriptor.class.getName(), descriptor.getClassName());
     }
@@ -169,9 +196,10 @@ public class JavaBeanSerializeUtilTest {
         Assertions.assertEquals(integers.length, descriptor.propertySize());
         for (int i = 0; i < integers.length; i++) {
             if (integers[i] == null) {
-                Assertions.assertTrue(integers[i] == descriptor.getProperty(i));
+                Assertions.assertSame(integers[i], descriptor.getProperty(i));
             } else {
-                Assertions.assertEquals(integers[i], ((JavaBeanDescriptor) descriptor.getProperty(i)).getPrimitiveProperty());
+                Assertions.assertEquals(integers[i], ((JavaBeanDescriptor) descriptor.getProperty(i))
+                        .getPrimitiveProperty());
             }
         }
 
@@ -215,7 +243,7 @@ public class JavaBeanSerializeUtilTest {
         Assertions.assertEquals((double) 0, JavaBeanSerializeUtil.getConstructorArg(Double.class));
         Assertions.assertEquals((char) 0, JavaBeanSerializeUtil.getConstructorArg(char.class));
         Assertions.assertEquals(new Character((char) 0), JavaBeanSerializeUtil.getConstructorArg(Character.class));
-        Assertions.assertEquals(null, JavaBeanSerializeUtil.getConstructorArg(JavaBeanSerializeUtil.class));
+        Assertions.assertNull(JavaBeanSerializeUtil.getConstructorArg(JavaBeanSerializeUtil.class));
     }
 
     @Test
@@ -228,7 +256,7 @@ public class JavaBeanSerializeUtilTest {
 
         Object obj = JavaBeanSerializeUtil.deserialize(descriptor);
         Assertions.assertTrue(obj.getClass().isArray());
-        Assertions.assertTrue(int.class == obj.getClass().getComponentType());
+        Assertions.assertSame(int.class, obj.getClass().getComponentType());
         for (int i = 0; i < len; i++) {
             Assertions.assertEquals(i, Array.get(obj, i));
         }
@@ -254,7 +282,8 @@ public class JavaBeanSerializeUtilTest {
         }
 
         descriptor = new JavaBeanDescriptor(BigPerson[].class.getName(), JavaBeanDescriptor.TYPE_ARRAY);
-        JavaBeanDescriptor innerDescriptor = new JavaBeanDescriptor(BigPerson.class.getName(), JavaBeanDescriptor.TYPE_ARRAY);
+        JavaBeanDescriptor innerDescriptor = new JavaBeanDescriptor(BigPerson.class.getName(),
+                JavaBeanDescriptor.TYPE_ARRAY);
         innerDescriptor.setProperty(0, JavaBeanSerializeUtil.serialize(createBigPerson(), JavaBeanAccessor.METHOD));
         descriptor.setProperty(0, innerDescriptor);
 
@@ -290,7 +319,7 @@ public class JavaBeanSerializeUtilTest {
         assertEqualsPrimitive(parent.getEmail(), descriptor.getProperty("email"));
 
         JavaBeanDescriptor childDescriptor = (JavaBeanDescriptor) descriptor.getProperty("child");
-        Assertions.assertTrue(descriptor == childDescriptor.getProperty("parent"));
+        Assertions.assertSame(descriptor, childDescriptor.getProperty("parent"));
         assertEqualsPrimitive(child.getName(), childDescriptor.getProperty("name"));
         assertEqualsPrimitive(child.getAge(), childDescriptor.getProperty("age"));
     }
@@ -318,7 +347,8 @@ public class JavaBeanSerializeUtilTest {
         assertEqualsPrimitive(bean.getDate(), descriptor.getProperty("date"));
         assertEqualsEnum(bean.getStatus(), descriptor.getProperty("status"));
         Assertions.assertTrue(((JavaBeanDescriptor) descriptor.getProperty("type")).isClassType());
-        Assertions.assertEquals(Bean.class.getName(), ((JavaBeanDescriptor) descriptor.getProperty("type")).getClassNameProperty());
+        Assertions.assertEquals(Bean.class.getName(), ((JavaBeanDescriptor) descriptor.getProperty("type"))
+                .getClassNameProperty());
         Assertions.assertTrue(((JavaBeanDescriptor) descriptor.getProperty("array")).isArrayType());
         Assertions.assertEquals(0, ((JavaBeanDescriptor) descriptor.getProperty("array")).propertySize());
 
@@ -334,7 +364,6 @@ public class JavaBeanSerializeUtilTest {
         Assertions.assertTrue(property.isMapType());
         Assertions.assertEquals(bean.getAddresses().getClass().getName(), property.getClassName());
         Assertions.assertEquals(1, property.propertySize());
-
 
         Map.Entry<Object, Object> entry = property.iterator().next();
         Assertions.assertTrue(((JavaBeanDescriptor) entry.getKey()).isPrimitiveType());
@@ -385,7 +414,7 @@ public class JavaBeanSerializeUtilTest {
     public void testSerializeJavaBeanDescriptor() {
         JavaBeanDescriptor descriptor = new JavaBeanDescriptor();
         JavaBeanDescriptor result = JavaBeanSerializeUtil.serialize(descriptor);
-        Assertions.assertTrue(descriptor == result);
+        Assertions.assertSame(descriptor, result);
 
         Map map = new HashMap();
         map.put("first", descriptor);
@@ -441,20 +470,20 @@ public class JavaBeanSerializeUtilTest {
         assertEqualsPrimitive(person.getInfoProfile().isMale(), infoProfile.getProperty("male"));
     }
 
-    static void assertEqualsPhone(Phone excpected, Object obj) {
+    static void assertEqualsPhone(Phone expected, Object obj) {
         JavaBeanDescriptor descriptor = (JavaBeanDescriptor) obj;
         Assertions.assertTrue(descriptor.isBeanType());
-        if (excpected.getArea() != null) {
-            assertEqualsPrimitive(excpected.getArea(), descriptor.getProperty("area"));
+        if (expected.getArea() != null) {
+            assertEqualsPrimitive(expected.getArea(), descriptor.getProperty("area"));
         }
-        if (excpected.getCountry() != null) {
-            assertEqualsPrimitive(excpected.getCountry(), descriptor.getProperty("country"));
+        if (expected.getCountry() != null) {
+            assertEqualsPrimitive(expected.getCountry(), descriptor.getProperty("country"));
         }
-        if (excpected.getExtensionNumber() != null) {
-            assertEqualsPrimitive(excpected.getExtensionNumber(), descriptor.getProperty("extensionNumber"));
+        if (expected.getExtensionNumber() != null) {
+            assertEqualsPrimitive(expected.getExtensionNumber(), descriptor.getProperty("extensionNumber"));
         }
-        if (excpected.getNumber() != null) {
-            assertEqualsPrimitive(excpected.getNumber(), descriptor.getProperty("number"));
+        if (expected.getNumber() != null) {
+            assertEqualsPrimitive(expected.getNumber(), descriptor.getProperty("number"));
         }
     }
 

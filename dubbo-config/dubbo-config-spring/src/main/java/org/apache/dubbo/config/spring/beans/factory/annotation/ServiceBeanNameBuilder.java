@@ -21,11 +21,13 @@ import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.ServiceBean;
 
+import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.env.Environment;
 import org.springframework.util.StringUtils;
 
-import static org.apache.dubbo.config.spring.util.AnnotationUtils.resolveInterfaceName;
-
+import static com.alibaba.spring.util.AnnotationUtils.getAttribute;
+import static org.apache.dubbo.config.spring.util.DubboAnnotationUtils.resolveInterfaceName;
+import static org.springframework.core.annotation.AnnotationUtils.getAnnotationAttributes;
 
 /**
  * Dubbo {@link Service @Service} Bean Builder
@@ -36,10 +38,11 @@ import static org.apache.dubbo.config.spring.util.AnnotationUtils.resolveInterfa
  * @see ReferenceBean
  * @since 2.6.5
  */
-class ServiceBeanNameBuilder {
+public class ServiceBeanNameBuilder {
 
     private static final String SEPARATOR = ":";
 
+    // Required
     private final String interfaceClassName;
 
     private final Environment environment;
@@ -49,25 +52,30 @@ class ServiceBeanNameBuilder {
 
     private String group;
 
+    private ServiceBeanNameBuilder(Class<?> interfaceClass, Environment environment) {
+        this(interfaceClass.getName(), environment);
+    }
+
     private ServiceBeanNameBuilder(String interfaceClassName, Environment environment) {
         this.interfaceClassName = interfaceClassName;
         this.environment = environment;
     }
 
-    private ServiceBeanNameBuilder(Class<?> interfaceClass, Environment environment) {
-        this(interfaceClass.getName(), environment);
+    private ServiceBeanNameBuilder(AnnotationAttributes attributes, Class<?> defaultInterfaceClass, Environment environment) {
+        this(resolveInterfaceName(attributes, defaultInterfaceClass), environment);
+        this.group(getAttribute(attributes,"group"));
+        this.version(getAttribute(attributes,"version"));
     }
 
-    private ServiceBeanNameBuilder(Service service, Class<?> interfaceClass, Environment environment) {
-        this(resolveInterfaceName(service, interfaceClass), environment);
-        this.group(service.group());
-        this.version(service.version());
-    }
-
-    private ServiceBeanNameBuilder(Reference reference, Class<?> interfaceClass, Environment environment) {
-        this(resolveInterfaceName(reference, interfaceClass), environment);
-        this.group(reference.group());
-        this.version(reference.version());
+    /**
+     * @param attributes
+     * @param defaultInterfaceClass
+     * @param environment
+     * @return
+     * @since 2.7.3
+     */
+    public static ServiceBeanNameBuilder create(AnnotationAttributes attributes, Class<?> defaultInterfaceClass, Environment environment) {
+        return new ServiceBeanNameBuilder(attributes, defaultInterfaceClass, environment);
     }
 
     public static ServiceBeanNameBuilder create(Class<?> interfaceClass, Environment environment) {
@@ -75,11 +83,11 @@ class ServiceBeanNameBuilder {
     }
 
     public static ServiceBeanNameBuilder create(Service service, Class<?> interfaceClass, Environment environment) {
-        return new ServiceBeanNameBuilder(service, interfaceClass, environment);
+        return create(getAnnotationAttributes(service, false, false), interfaceClass, environment);
     }
 
     public static ServiceBeanNameBuilder create(Reference reference, Class<?> interfaceClass, Environment environment) {
-        return new ServiceBeanNameBuilder(reference, interfaceClass, environment);
+        return create(getAnnotationAttributes(reference, false, false), interfaceClass, environment);
     }
 
     private static void append(StringBuilder builder, String value) {
@@ -105,7 +113,7 @@ class ServiceBeanNameBuilder {
         // Optional
         append(beanNameBuilder, version);
         append(beanNameBuilder, group);
-        // Build
+        // Build and remove last ":"
         String rawBeanName = beanNameBuilder.toString();
         // Resolve placeholders
         return environment.resolvePlaceholders(rawBeanName);

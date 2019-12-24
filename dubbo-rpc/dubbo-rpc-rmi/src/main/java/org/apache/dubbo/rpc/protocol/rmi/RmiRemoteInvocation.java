@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.rmi;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.RpcContext;
 
@@ -27,16 +26,18 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
+
 public class RmiRemoteInvocation extends RemoteInvocation {
     private static final long serialVersionUID = 1L;
-    private static final String dubboAttachmentsAttrName = "dubbo.attachments";
+    private static final String DUBBO_ATTACHMENTS_ATTR_NAME = "dubbo.attachments";
 
     /**
      * executed on consumer side
      */
     public RmiRemoteInvocation(MethodInvocation methodInvocation) {
         super(methodInvocation);
-        addAttribute(dubboAttachmentsAttrName, new HashMap<>(RpcContext.getContext().getAttachments()));
+        addAttribute(DUBBO_ATTACHMENTS_ATTR_NAME, new HashMap<>(RpcContext.getContext().getAttachments()));
     }
 
     /**
@@ -49,10 +50,10 @@ public class RmiRemoteInvocation extends RemoteInvocation {
     public Object invoke(Object targetObject) throws NoSuchMethodException, IllegalAccessException,
             InvocationTargetException {
         RpcContext context = RpcContext.getContext();
-        context.setAttachments((Map<String, String>) getAttribute(dubboAttachmentsAttrName));
-        String generic = (String) getAttribute(Constants.GENERIC_KEY);
+        context.setAttachments((Map<String, Object>) getAttribute(DUBBO_ATTACHMENTS_ATTR_NAME));
+        String generic = (String) getAttribute(GENERIC_KEY);
         if (StringUtils.isNotEmpty(generic)) {
-            context.setAttachment(Constants.GENERIC_KEY, generic);
+            context.setAttachment(GENERIC_KEY, generic);
         }
         try {
             return super.invoke(targetObject);

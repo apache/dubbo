@@ -18,7 +18,6 @@
 package org.apache.dubbo.common.serialize.protostuff;
 
 import org.apache.dubbo.common.serialize.base.AbstractSerializationTest;
-import org.junit.jupiter.api.Test;
 
 public class ProtostuffSerializationTest extends AbstractSerializationTest {
     {

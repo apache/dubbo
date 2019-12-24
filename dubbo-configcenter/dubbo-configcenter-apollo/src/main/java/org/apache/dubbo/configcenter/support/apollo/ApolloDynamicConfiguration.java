@@ -16,19 +16,20 @@
  */
 package org.apache.dubbo.configcenter.support.apollo;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
+import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
+import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
+import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.configcenter.ConfigChangeEvent;
-import org.apache.dubbo.configcenter.ConfigChangeType;
-import org.apache.dubbo.configcenter.ConfigurationListener;
-import org.apache.dubbo.configcenter.DynamicConfiguration;
 
 import com.ctrip.framework.apollo.Config;
 import com.ctrip.framework.apollo.ConfigChangeListener;
+import com.ctrip.framework.apollo.ConfigFile;
 import com.ctrip.framework.apollo.ConfigService;
+import com.ctrip.framework.apollo.core.enums.ConfigFileFormat;
 import com.ctrip.framework.apollo.enums.ConfigSourceType;
 import com.ctrip.framework.apollo.enums.PropertyChangeType;
 import com.ctrip.framework.apollo.model.ConfigChange;
@@ -41,8 +42,25 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.stream.Collectors;
 
+import static org.apache.dubbo.common.config.configcenter.Constants.CONFIG_NAMESPACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+
 /**
  * Apollo implementation, https://github.com/ctripcorp/apollo
+ *
+ * Apollo will be used for management of both governance rules and .properties files, by default, these two different
+ * kinds of data share the same namespace 'dubbo'. To gain better performance, we recommend separate them by giving
+ * namespace and group different values, for example:
+ *
+ * <dubbo:config-center namespace="governance" group="dubbo" />, 'dubbo=governance' is for governance rules while
+ * 'group=dubbo' is for properties files.
+ *
+ * Please see http://dubbo.apache.org/zh-cn/docs/user/configuration/config-center.html for details.
  */
 public class ApolloDynamicConfiguration implements DynamicConfiguration {
     private static final Logger logger = LoggerFactory.getLogger(ApolloDynamicConfiguration.class);
@@ -50,9 +68,12 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
     private static final String APOLLO_ADDR_KEY = "apollo.meta";
     private static final String APOLLO_CLUSTER_KEY = "apollo.cluster";
     private static final String APOLLO_PROTOCOL_PREFIX = "http://";
+    private static final String APOLLO_APPLICATION_KEY = "application";
+    private static final String APOLLO_APPID_KEY = "app.id";
 
     private URL url;
     private Config dubboConfig;
+    private ConfigFile dubboConfigFile;
     private ConcurrentMap<String, ApolloListener> listeners = new ConcurrentHashMap<>();
 
     ApolloDynamicConfiguration(URL url) {
@@ -60,20 +81,28 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
         // Instead of using Dubbo's configuration, I would suggest use the original configuration method Apollo provides.
         String configEnv = url.getParameter(APOLLO_ENV_KEY);
         String configAddr = getAddressWithProtocolPrefix(url);
-        String configCluster = url.getParameter(Constants.CONFIG_CLUSTER_KEY);
-        if (configEnv != null) {
+        String configCluster = url.getParameter(CLUSTER_KEY);
+        String configAppId = url.getParameter(APOLLO_APPID_KEY);
+        if (StringUtils.isEmpty(System.getProperty(APOLLO_ENV_KEY)) && configEnv != null) {
             System.setProperty(APOLLO_ENV_KEY, configEnv);
         }
-        if (StringUtils.isEmpty(System.getProperty(APOLLO_ENV_KEY)) && !Constants.ANYHOST_VALUE.equals(configAddr)) {
+        if (StringUtils.isEmpty(System.getProperty(APOLLO_ADDR_KEY)) && !ANYHOST_VALUE.equals(url.getHost())) {
             System.setProperty(APOLLO_ADDR_KEY, configAddr);
         }
-        if (configCluster != null) {
+        if (StringUtils.isEmpty(System.getProperty(APOLLO_CLUSTER_KEY)) && configCluster != null) {
             System.setProperty(APOLLO_CLUSTER_KEY, configCluster);
         }
+        if (StringUtils.isEmpty(System.getProperty(APOLLO_APPID_KEY)) && configAppId != null) {
+            System.setProperty(APOLLO_APPID_KEY, configAppId);
+        }
 
-        dubboConfig = ConfigService.getConfig(url.getParameter(Constants.CONFIG_NAMESPACE_KEY, DEFAULT_GROUP));
+        String namespace = url.getParameter(CONFIG_NAMESPACE_KEY, DEFAULT_GROUP);
+        String apolloNamespace = StringUtils.isEmpty(namespace) ? url.getParameter(GROUP_KEY, DEFAULT_GROUP) : namespace;
+        dubboConfig = ConfigService.getConfig(apolloNamespace);
+        dubboConfigFile = ConfigService.getConfigFile(apolloNamespace, ConfigFileFormat.Properties);
+
         // Decide to fail or to continue when failed to connect to remote server.
-        boolean check = url.getParameter(Constants.CONFIG_CHECK_KEY, true);
+        boolean check = url.getParameter(CHECK_KEY, true);
         if (dubboConfig.getSourceType() != ConfigSourceType.REMOTE) {
             if (check) {
                 throw new IllegalStateException("Failed to connect to config center, the config center is Apollo, " +
@@ -86,11 +115,11 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
         }
     }
 
-    private String getAddressWithProtocolPrefix (URL url) {
+    private String getAddressWithProtocolPrefix(URL url) {
         String address = url.getBackupAddress();
         if (StringUtils.isNotEmpty(address)) {
-            address = Arrays.stream(Constants.COMMA_SPLIT_PATTERN.split(address))
-                    .map(addr ->  {
+            address = Arrays.stream(COMMA_SPLIT_PATTERN.split(address))
+                    .map(addr -> {
                         if (addr.startsWith(APOLLO_PROTOCOL_PREFIX)) {
                             return addr;
                         }
@@ -123,18 +152,44 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
         }
     }
 
-    /**
-     * This method will be used to:
-     * 1. get configuration file at startup phase
-     * 2. get all kinds of Dubbo rules
-     */
     @Override
     public String getConfig(String key, String group, long timeout) throws IllegalStateException {
-        if (StringUtils.isNotEmpty(group) && !url.getParameter(Constants.CONFIG_GROUP_KEY, DEFAULT_GROUP).equals(group)) {
-            Config config = ConfigService.getAppConfig();
-            return config.getProperty(key, null);
+        if (StringUtils.isNotEmpty(group)) {
+            if (group.equals(url.getParameter(APPLICATION_KEY))) {
+                return ConfigService.getAppConfig().getProperty(key, null);
+            } else {
+                return ConfigService.getConfig(group).getProperty(key, null);
+            }
         }
         return dubboConfig.getProperty(key, null);
+    }
+
+    /**
+     * Recommend specify namespace and group when using Apollo.
+     * <p>
+     * <dubbo:config-center namespace="governance" group="dubbo" />, 'dubbo=governance' is for governance rules while
+     * 'group=dubbo' is for properties files.
+     *
+     * @param key     default value is 'dubbo.properties', currently useless for Apollo.
+     * @param group
+     * @param timeout
+     * @return
+     * @throws IllegalStateException
+     */
+    @Override
+    public String getProperties(String key, String group, long timeout) throws IllegalStateException {
+        if (StringUtils.isEmpty(group)) {
+            return dubboConfigFile.getContent();
+        }
+        if (group.equals(url.getParameter(APPLICATION_KEY))) {
+            return ConfigService.getConfigFile(APOLLO_APPLICATION_KEY, ConfigFileFormat.Properties).getContent();
+        }
+
+        ConfigFile configFile = ConfigService.getConfigFile(group, ConfigFileFormat.Properties);
+        if (configFile == null) {
+            throw new IllegalStateException("There is no namespace named " + group + " in Apollo.");
+        }
+        return configFile.getContent();
     }
 
     /**
@@ -146,7 +201,6 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
     public String getInternalProperty(String key) {
         return dubboConfig.getProperty(key, null);
     }
-
 
     /**
      * Ignores the group parameter.
@@ -176,7 +230,7 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
                     return;
                 }
 
-                ConfigChangeEvent event = new ConfigChangeEvent(key, change.getNewValue(), getChangeType(change));
+                ConfigChangedEvent event = new ConfigChangedEvent(key, change.getNamespace(), change.getNewValue(), getChangeType(change));
                 listeners.forEach(listener -> listener.process(event));
             }
         }

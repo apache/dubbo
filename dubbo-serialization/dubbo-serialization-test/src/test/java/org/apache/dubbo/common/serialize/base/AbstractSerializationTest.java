@@ -294,7 +294,7 @@ public abstract class AbstractSerializationTest {
                 byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
-        assertTrue(1.28F == deserialize.readFloat());
+        assertEquals(1.28F,deserialize.readFloat());
 
         try {
             deserialize.readFloat();
@@ -315,7 +315,7 @@ public abstract class AbstractSerializationTest {
                 byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
-        assertTrue(1.28 == deserialize.readDouble());
+        assertEquals(1.28,deserialize.readDouble());
 
         try {
             deserialize.readDouble();
@@ -1070,7 +1070,7 @@ public abstract class AbstractSerializationTest {
                 byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
-        assertEquals(false, deserialize.readBool());
+        assertFalse(deserialize.readBool());
         assertEquals(bigPerson, deserialize.readObject());
         assertEquals((byte) 23, deserialize.readByte());
         assertEquals(mediaContent, deserialize.readObject());
@@ -1097,7 +1097,7 @@ public abstract class AbstractSerializationTest {
                 byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
-        assertEquals(false, deserialize.readBool());
+        assertFalse(deserialize.readBool());
         assertEquals(bigPerson, deserialize.readObject(BigPerson.class));
         assertEquals((byte) 23, deserialize.readByte());
         assertEquals(mediaContent, deserialize.readObject(MediaContent.class));

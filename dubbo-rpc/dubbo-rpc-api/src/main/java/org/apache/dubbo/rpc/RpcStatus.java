@@ -54,12 +54,7 @@ public class RpcStatus {
      */
     public static RpcStatus getStatus(URL url) {
         String uri = url.toIdentityString();
-        RpcStatus status = SERVICE_STATISTICS.get(uri);
-        if (status == null) {
-            SERVICE_STATISTICS.putIfAbsent(uri, new RpcStatus());
-            status = SERVICE_STATISTICS.get(uri);
-        }
-        return status;
+        return SERVICE_STATISTICS.computeIfAbsent(uri, key -> new RpcStatus());
     }
 
     /**
@@ -77,17 +72,8 @@ public class RpcStatus {
      */
     public static RpcStatus getStatus(URL url, String methodName) {
         String uri = url.toIdentityString();
-        ConcurrentMap<String, RpcStatus> map = METHOD_STATISTICS.get(uri);
-        if (map == null) {
-            METHOD_STATISTICS.putIfAbsent(uri, new ConcurrentHashMap<String, RpcStatus>());
-            map = METHOD_STATISTICS.get(uri);
-        }
-        RpcStatus status = map.get(methodName);
-        if (status == null) {
-            map.putIfAbsent(methodName, new RpcStatus());
-            status = map.get(methodName);
-        }
-        return status;
+        ConcurrentMap<String, RpcStatus> map = METHOD_STATISTICS.computeIfAbsent(uri, k -> new ConcurrentHashMap<>());
+        return map.computeIfAbsent(methodName, k -> new RpcStatus());
     }
 
     /**
@@ -112,6 +98,9 @@ public class RpcStatus {
         max = (max <= 0) ? Integer.MAX_VALUE : max;
         RpcStatus appStatus = getStatus(url);
         RpcStatus methodStatus = getStatus(url, methodName);
+        if (methodStatus.active.get() == Integer.MAX_VALUE) {
+            return false;
+        }
         if (methodStatus.active.incrementAndGet() > max) {
             methodStatus.active.decrementAndGet();
             return false;

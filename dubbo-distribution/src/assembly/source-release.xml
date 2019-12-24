@@ -16,12 +16,12 @@
   -->
 <assembly xmlns="http://maven.apache.org/ASSEMBLY/2.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.0.0 http://maven.apache.org/xsd/assembly-2.0.0.xsd">
-    <id>source-release</id>
+    <id>src</id>
     <formats>
         <format>zip</format>
     </formats>
     <includeBaseDirectory>true</includeBaseDirectory>
-    <baseDirectory>${project.build.finalName}-source-release</baseDirectory>
+    <baseDirectory>${project.build.finalName}-src</baseDirectory>
 
     <fileSets>
         <fileSet>
@@ -50,6 +50,7 @@
                 <exclude>**/.mvn/**</exclude>
                 <exclude>**/*.jar</exclude>
                 <exclude>**/mvnw*</exclude>
+                <exclude>**/.flattened-pom.xml</exclude>
             </excludes>
         </fileSet>
     </fileSets>

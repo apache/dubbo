@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.exchange.support.header;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -24,6 +23,7 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.ExecutionException;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
@@ -34,7 +34,9 @@ import org.apache.dubbo.remoting.exchange.support.DefaultFuture;
 import org.apache.dubbo.remoting.transport.ChannelHandlerDelegate;
 
 import java.net.InetSocketAddress;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+
+import static org.apache.dubbo.common.constants.CommonConstants.READONLY_EVENT;
 
 
 /**
@@ -43,10 +45,6 @@ import java.util.concurrent.CompletableFuture;
 public class HeaderExchangeHandler implements ChannelHandlerDelegate {
 
     protected static final Logger logger = LoggerFactory.getLogger(HeaderExchangeHandler.class);
-
-    public static String KEY_READ_TIMESTAMP = HeartbeatHandler.KEY_READ_TIMESTAMP;
-
-    public static String KEY_WRITE_TIMESTAMP = HeartbeatHandler.KEY_WRITE_TIMESTAMP;
 
     private final ExchangeHandler handler;
 
@@ -72,7 +70,7 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
     }
 
     void handlerEvent(Channel channel, Request req) throws RemotingException {
-        if (req.getData() != null && req.getData().equals(Request.READONLY_EVENT)) {
+        if (req.getData() != null && req.getData().equals(READONLY_EVENT)) {
             channel.setAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY, Boolean.TRUE);
         }
     }
@@ -99,19 +97,12 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
         // find handler by message class.
         Object msg = req.getData();
         try {
-            // handle data.
-            CompletableFuture<Object> future = handler.reply(channel, msg);
-            if (future.isDone()) {
-                res.setStatus(Response.OK);
-                res.setResult(future.get());
-                channel.send(res);
-                return;
-            }
-            future.whenComplete((result, t) -> {
+            CompletionStage<Object> future = handler.reply(channel, msg);
+            future.whenComplete((appResult, t) -> {
                 try {
                     if (t == null) {
                         res.setStatus(Response.OK);
-                        res.setResult(result);
+                        res.setResult(appResult);
                     } else {
                         res.setStatus(Response.SERVICE_ERROR);
                         res.setErrorMessage(StringUtils.toString(t));
@@ -119,8 +110,6 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
                     channel.send(res);
                 } catch (RemotingException e) {
                     logger.warn("Send result to consumer failed, channel is " + channel + ", msg is " + e);
-                } finally {
-                    // HeaderExchangeChannel.removeChannelIfDisconnected(channel);
                 }
             });
         } catch (Throwable e) {
@@ -132,26 +121,18 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
 
     @Override
     public void connected(Channel channel) throws RemotingException {
-        channel.setAttribute(KEY_READ_TIMESTAMP, System.currentTimeMillis());
-        channel.setAttribute(KEY_WRITE_TIMESTAMP, System.currentTimeMillis());
         ExchangeChannel exchangeChannel = HeaderExchangeChannel.getOrAddChannel(channel);
-        try {
-            handler.connected(exchangeChannel);
-        } finally {
-            HeaderExchangeChannel.removeChannelIfDisconnected(channel);
-        }
+        handler.connected(exchangeChannel);
     }
 
     @Override
     public void disconnected(Channel channel) throws RemotingException {
-        channel.setAttribute(KEY_READ_TIMESTAMP, System.currentTimeMillis());
-        channel.setAttribute(KEY_WRITE_TIMESTAMP, System.currentTimeMillis());
         ExchangeChannel exchangeChannel = HeaderExchangeChannel.getOrAddChannel(channel);
         try {
             handler.disconnected(exchangeChannel);
         } finally {
             DefaultFuture.closeChannel(channel);
-            HeaderExchangeChannel.removeChannelIfDisconnected(channel);
+            HeaderExchangeChannel.removeChannel(channel);
         }
     }
 
@@ -159,15 +140,11 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
     public void sent(Channel channel, Object message) throws RemotingException {
         Throwable exception = null;
         try {
-            channel.setAttribute(KEY_WRITE_TIMESTAMP, System.currentTimeMillis());
             ExchangeChannel exchangeChannel = HeaderExchangeChannel.getOrAddChannel(channel);
-            try {
-                handler.sent(exchangeChannel, message);
-            } finally {
-                HeaderExchangeChannel.removeChannelIfDisconnected(channel);
-            }
+            handler.sent(exchangeChannel, message);
         } catch (Throwable t) {
             exception = t;
+            HeaderExchangeChannel.removeChannelIfDisconnected(channel);
         }
         if (message instanceof Request) {
             Request request = (Request) message;
@@ -187,38 +164,33 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
 
     @Override
     public void received(Channel channel, Object message) throws RemotingException {
-        channel.setAttribute(KEY_READ_TIMESTAMP, System.currentTimeMillis());
         final ExchangeChannel exchangeChannel = HeaderExchangeChannel.getOrAddChannel(channel);
-        try {
-            if (message instanceof Request) {
-                // handle request.
-                Request request = (Request) message;
-                if (request.isEvent()) {
-                    handlerEvent(channel, request);
-                } else {
-                    if (request.isTwoWay()) {
-                        handleRequest(exchangeChannel, request);
-                    } else {
-                        handler.received(exchangeChannel, request.getData());
-                    }
-                }
-            } else if (message instanceof Response) {
-                handleResponse(channel, (Response) message);
-            } else if (message instanceof String) {
-                if (isClientSide(channel)) {
-                    Exception e = new Exception("Dubbo client can not supported string message: " + message + " in channel: " + channel + ", url: " + channel.getUrl());
-                    logger.error(e.getMessage(), e);
-                } else {
-                    String echo = handler.telnet(channel, (String) message);
-                    if (echo != null && echo.length() > 0) {
-                        channel.send(echo);
-                    }
-                }
+        if (message instanceof Request) {
+            // handle request.
+            Request request = (Request) message;
+            if (request.isEvent()) {
+                handlerEvent(channel, request);
             } else {
-                handler.received(exchangeChannel, message);
+                if (request.isTwoWay()) {
+                    handleRequest(exchangeChannel, request);
+                } else {
+                    handler.received(exchangeChannel, request.getData());
+                }
             }
-        } finally {
-            HeaderExchangeChannel.removeChannelIfDisconnected(channel);
+        } else if (message instanceof Response) {
+            handleResponse(channel, (Response) message);
+        } else if (message instanceof String) {
+            if (isClientSide(channel)) {
+                Exception e = new Exception("Dubbo client can not supported string message: " + message + " in channel: " + channel + ", url: " + channel.getUrl());
+                logger.error(e.getMessage(), e);
+            } else {
+                String echo = handler.telnet(channel, (String) message);
+                if (echo != null && echo.length() > 0) {
+                    channel.send(echo);
+                }
+            }
+        } else {
+            handler.received(exchangeChannel, message);
         }
     }
 

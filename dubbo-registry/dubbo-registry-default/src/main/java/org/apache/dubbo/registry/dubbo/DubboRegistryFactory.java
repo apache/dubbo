@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.registry.dubbo;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.bytecode.Wrapper;
@@ -37,6 +36,20 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CALLBACK_INSTANCES_LIMIT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.LAZY_CONNECT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
+import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
+import static org.apache.dubbo.remoting.Constants.CONNECT_TIMEOUT_KEY;
+import static org.apache.dubbo.remoting.Constants.RECONNECT_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.CLUSTER_STICKY_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
+
 /**
  * DubboRegistryFactory
  *
@@ -50,15 +63,15 @@ public class DubboRegistryFactory extends AbstractRegistryFactory {
     private static URL getRegistryURL(URL url) {
         return URLBuilder.from(url)
                 .setPath(RegistryService.class.getName())
-                .removeParameter(Constants.EXPORT_KEY).removeParameter(Constants.REFER_KEY)
-                .addParameter(Constants.INTERFACE_KEY, RegistryService.class.getName())
-                .addParameter(Constants.CLUSTER_STICKY_KEY, "true")
-                .addParameter(Constants.LAZY_CONNECT_KEY, "true")
-                .addParameter(Constants.RECONNECT_KEY, "false")
-                .addParameterIfAbsent(Constants.TIMEOUT_KEY, "10000")
-                .addParameterIfAbsent(Constants.CALLBACK_INSTANCES_LIMIT_KEY, "10000")
-                .addParameterIfAbsent(Constants.CONNECT_TIMEOUT_KEY, "10000")
-                .addParameter(Constants.METHODS_KEY, StringUtils.join(new HashSet<>(Arrays.asList(Wrapper.getWrapper(RegistryService.class).getDeclaredMethodNames())), ","))
+                .removeParameter(EXPORT_KEY).removeParameter(REFER_KEY)
+                .addParameter(INTERFACE_KEY, RegistryService.class.getName())
+                .addParameter(CLUSTER_STICKY_KEY, "true")
+                .addParameter(LAZY_CONNECT_KEY, "true")
+                .addParameter(RECONNECT_KEY, "false")
+                .addParameterIfAbsent(TIMEOUT_KEY, "10000")
+                .addParameterIfAbsent(CALLBACK_INSTANCES_LIMIT_KEY, "10000")
+                .addParameterIfAbsent(CONNECT_TIMEOUT_KEY, "10000")
+                .addParameter(METHODS_KEY, StringUtils.join(new HashSet<>(Arrays.asList(Wrapper.getWrapper(RegistryService.class).getDeclaredMethodNames())), ","))
                 //.addParameter(Constants.STUB_KEY, RegistryServiceStub.class.getName())
                 //.addParameter(Constants.STUB_EVENT_KEY, Boolean.TRUE.toString()) //for event dispatch
                 //.addParameter(Constants.ON_DISCONNECT_KEY, "disconnect")
@@ -83,15 +96,15 @@ public class DubboRegistryFactory extends AbstractRegistryFactory {
     public Registry createRegistry(URL url) {
         url = getRegistryURL(url);
         List<URL> urls = new ArrayList<>();
-        urls.add(url.removeParameter(Constants.BACKUP_KEY));
-        String backup = url.getParameter(Constants.BACKUP_KEY);
+        urls.add(url.removeParameter(BACKUP_KEY));
+        String backup = url.getParameter(BACKUP_KEY);
         if (backup != null && backup.length() > 0) {
-            String[] addresses = Constants.COMMA_SPLIT_PATTERN.split(backup);
+            String[] addresses = COMMA_SPLIT_PATTERN.split(backup);
             for (String address : addresses) {
                 urls.add(url.setAddress(address));
             }
         }
-        RegistryDirectory<RegistryService> directory = new RegistryDirectory<>(RegistryService.class, url.addParameter(Constants.INTERFACE_KEY, RegistryService.class.getName()).addParameterAndEncoded(Constants.REFER_KEY, url.toParameterString()));
+        RegistryDirectory<RegistryService> directory = new RegistryDirectory<>(RegistryService.class, url.addParameter(INTERFACE_KEY, RegistryService.class.getName()).addParameterAndEncoded(REFER_KEY, url.toParameterString()));
         Invoker<RegistryService> registryInvoker = cluster.join(directory);
         RegistryService registryService = proxyFactory.getProxy(registryInvoker);
         DubboRegistry registry = new DubboRegistry(registryInvoker, registryService);
@@ -99,7 +112,7 @@ public class DubboRegistryFactory extends AbstractRegistryFactory {
         directory.setProtocol(protocol);
         directory.setRouterChain(RouterChain.buildChain(url));
         directory.notify(urls);
-        directory.subscribe(new URL(Constants.CONSUMER_PROTOCOL, NetUtils.getLocalHost(), 0, RegistryService.class.getName(), url.getParameters()));
+        directory.subscribe(new URL(CONSUMER_PROTOCOL, NetUtils.getLocalHost(), 0, RegistryService.class.getName(), url.getParameters()));
         return registry;
     }
 }

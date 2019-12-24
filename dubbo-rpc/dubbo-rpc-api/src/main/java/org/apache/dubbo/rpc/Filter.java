@@ -42,27 +42,29 @@ import org.apache.dubbo.common.extension.SPI;
  */
 @SPI
 public interface Filter {
-
     /**
-     * do invoke filter.
-     * <p>
-     * <code>
-     * // before filter
-     * Result result = invoker.invoke(invocation);
-     * // after filter
-     * return result;
-     * </code>
-     *
-     * @param invoker    service
-     * @param invocation invocation.
-     * @return invoke result.
-     * @throws RpcException
-     * @see org.apache.dubbo.rpc.Invoker#invoke(Invocation)
+     * Make sure call invoker.invoke() in your implementation.
      */
     Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException;
 
-    default Result onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
-        return result;
+    /**
+     * Please use {@link Listener#onMessage(Result, Invoker, Invocation)} instead.
+     * This method is kept only for compatibility and may get removed at any version in the future.
+     *
+     * @param appResponse
+     * @param invoker
+     * @param invocation
+     */
+    @Deprecated
+    default Result onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
+        return appResponse;
+    }
+
+    interface Listener {
+
+        void onMessage(Result appResponse, Invoker<?> invoker, Invocation invocation);
+
+        void onError(Throwable t, Invoker<?> invoker, Invocation invocation);
     }
 
 }

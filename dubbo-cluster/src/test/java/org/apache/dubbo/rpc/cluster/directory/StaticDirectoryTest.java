@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.directory;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.Invoker;
@@ -31,6 +30,8 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.apache.dubbo.rpc.cluster.Constants.RULE_KEY;
+
 /**
  * StaticDirectory Test
  */
@@ -38,7 +39,7 @@ public class StaticDirectoryTest {
     private URL SCRIPT_URL = URL.valueOf("condition://0.0.0.0/com.foo.BarService");
 
     private URL getRouteUrl(String rule) {
-        return SCRIPT_URL.addParameterAndEncoded(Constants.RULE_KEY, rule);
+        return SCRIPT_URL.addParameterAndEncoded(RULE_KEY, rule);
     }
 
     @Test

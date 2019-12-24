@@ -16,25 +16,21 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.apache.dubbo.common.Constants;
-
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 public class StringUtilsTest {
     @Test
@@ -193,9 +189,9 @@ public class StringUtilsTest {
     @Test
     public void testGetServiceKey() throws Exception {
         Map<String, String> map = new HashMap<String, String>();
-        map.put(Constants.GROUP_KEY, "dubbo");
-        map.put(Constants.INTERFACE_KEY, "a.b.c.Foo");
-        map.put(Constants.VERSION_KEY, "1.0.0");
+        map.put(GROUP_KEY, "dubbo");
+        map.put(INTERFACE_KEY, "a.b.c.Foo");
+        map.put(VERSION_KEY, "1.0.0");
         assertThat(StringUtils.getServiceKey(map), equalTo("dubbo/a.b.c.Foo:1.0.0"));
     }
 
@@ -219,8 +215,33 @@ public class StringUtilsTest {
 
     @Test
     public void testSplit() throws Exception {
-        String s = "d,1,2,4";
-        assertEquals(StringUtils.split(s, ',').length, 4);
+        String str = "d,1,2,4";
+
+        assertEquals(4, StringUtils.split(str, ',').length);
+        assertArrayEquals(str.split(","), StringUtils.split(str, ','));
+
+        assertEquals(1, StringUtils.split(str, 'a').length);
+        assertArrayEquals(str.split("a"), StringUtils.split(str, 'a'));
+
+        assertEquals(0, StringUtils.split("", 'a').length);
+        assertEquals(0, StringUtils.split(null, 'a').length);
+
+        System.out.println(Arrays.toString(StringUtils.split("boo:and:foo", ':')));
+        System.out.println(Arrays.toString(StringUtils.split("boo:and:foo", 'o')));
+    }
+
+    @Test
+    public void testSplitToList() throws Exception {
+        String str = "d,1,2,4";
+
+        assertEquals(4, StringUtils.splitToList(str, ',').size());
+        assertEquals(Arrays.asList(str.split(",")), StringUtils.splitToList(str, ','));
+
+        assertEquals(1, StringUtils.splitToList(str, 'a').size());
+        assertEquals(Arrays.asList(str.split("a")), StringUtils.splitToList(str, 'a'));
+
+        assertEquals(0, StringUtils.splitToList("", 'a').size());
+        assertEquals(0, StringUtils.splitToList(null, 'a').size());
     }
 
     @Test
@@ -236,6 +257,16 @@ public class StringUtilsTest {
         assertThat(StringUtils.isContains("", "b"), is(false));
         assertThat(StringUtils.isContains(new String[]{"a", "b", "c"}, "b"), is(true));
         assertThat(StringUtils.isContains((String[]) null, null), is(false));
+
+        assertTrue(StringUtils.isContains("abc", 'a'));
+        assertFalse(StringUtils.isContains("abc", 'd'));
+        assertFalse(StringUtils.isContains("", 'a'));
+        assertFalse(StringUtils.isContains(null, 'a'));
+
+        assertTrue(StringUtils.isNotContains("abc", 'd'));
+        assertFalse(StringUtils.isNotContains("abc", 'a'));
+        assertTrue(StringUtils.isNotContains("", 'a'));
+        assertTrue(StringUtils.isNotContains(null, 'a'));
     }
 
     @Test
@@ -293,6 +324,43 @@ public class StringUtilsTest {
         assertEquals("left blank", StringUtils.trim(" left blank"));
         assertEquals("right blank", StringUtils.trim("right blank "));
         assertEquals("bi-side blank", StringUtils.trim(" bi-side blank "));
-
     }
+
+    @Test
+    public void testToURLKey() {
+        assertEquals("dubbo.tag1", StringUtils.toURLKey("dubbo_tag1"));
+        assertEquals("dubbo.tag1.tag11", StringUtils.toURLKey("dubbo-tag1_tag11"));
+    }
+
+    @Test
+    public void testToOSStyleKey() {
+        assertEquals("DUBBO_TAG1", StringUtils.toOSStyleKey("dubbo_tag1"));
+        assertEquals("DUBBO_TAG1", StringUtils.toOSStyleKey("dubbo.tag1"));
+        assertEquals("DUBBO_TAG1_TAG11", StringUtils.toOSStyleKey("dubbo.tag1.tag11"));
+        assertEquals("DUBBO_TAG1", StringUtils.toOSStyleKey("tag1"));
+    }
+
+    @Test
+    public void testParseParameters() {
+        String legalStr = "[{key1:value1},{key2:value2}]";
+        Map<String, String> legalMap = StringUtils.parseParameters(legalStr);
+        assertEquals(2, legalMap.size());
+        assertEquals("value2", legalMap.get("key2"));
+
+        String legalSpaceStr = "[{key1: value1}, {key2 :value2}]";
+        Map<String, String> legalSpaceMap = StringUtils.parseParameters(legalSpaceStr);
+        assertEquals(2, legalSpaceMap.size());
+        assertEquals("value2", legalSpaceMap.get("key2"));
+
+        String legalSpecialStr = "[{key-1: value*.1}, {key.2 :value*.-_2}]";
+        Map<String, String> legalSpecialMap = StringUtils.parseParameters(legalSpecialStr);
+        assertEquals(2, legalSpecialMap.size());
+        assertEquals("value*.1", legalSpecialMap.get("key-1"));
+        assertEquals("value*.-_2", legalSpecialMap.get("key.2"));
+
+        String illegalStr = "[{key=value},{aa:bb}]";
+        Map<String, String> illegalMap = StringUtils.parseParameters(illegalStr);
+        assertEquals(0, illegalMap.size());
+    }
+
 }
