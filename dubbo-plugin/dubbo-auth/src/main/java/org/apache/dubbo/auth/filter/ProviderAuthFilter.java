@@ -14,36 +14,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.filter;
+package org.apache.dubbo.auth.filter;
 
+import org.apache.dubbo.auth.spi.AuthenticationHelper;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.rpc.Constants;
+import org.apache.dubbo.rpc.AsyncRpcResult;
+import org.apache.dubbo.auth.Constants;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.filter.auth.AuthenticationHelper;
 
-/**
- * The ConsumerAuthFilter
- * @see org.apache.dubbo.rpc.Filter
- */
-@Activate(group = CommonConstants.CONSUMER, order = -10000)
-public class ConsumerAuthFilter implements Filter {
+@Activate(group = CommonConstants.PROVIDER, order = -10000)
+public class ProviderAuthFilter implements Filter {
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         URL url = invoker.getUrl();
-        boolean shouldAuth = url.getParameter(Constants.REFERENCE_AUTH, false);
+        boolean shouldAuth = url.getParameter(Constants.SERVICE_AUTH, false);
         if (shouldAuth) {
             AuthenticationHelper authenticationHelper = ExtensionLoader.getExtensionLoader(AuthenticationHelper.class)
                     .getExtension(url.getParameter(Constants.AUTH_HELPER, Constants.DEFAULT_AUTH_HELPER));
-            authenticationHelper.signForRequest(invocation, url);
+            boolean authResult = false;
+            try {
+                authResult = authenticationHelper.authenticateRequest(invocation, url);
+                if (!authResult) {
+                    SecurityException securityException = new SecurityException("Authenticate Request failed");
+                    return AsyncRpcResult.newDefaultAsyncResult(securityException, invocation);
+                }
+            } catch (Exception e) {
+                SecurityException securityException = new SecurityException("Authenticate Request failed,", e);
+                return AsyncRpcResult.newDefaultAsyncResult(securityException, invocation);
+            }
         }
         return invoker.invoke(invocation);
     }
+
+
 }

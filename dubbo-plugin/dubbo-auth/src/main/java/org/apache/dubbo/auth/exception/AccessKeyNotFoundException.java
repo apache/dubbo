@@ -14,11 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.filter.auth;
+package org.apache.dubbo.auth.exception;
 
+
+import org.apache.dubbo.auth.model.AccessKeyPair;
 
 /**
- * Signals that an attempt to get the {@link AccessKey} has failed.
+ * Signals that an attempt to get the {@link AccessKeyPair} has failed.
  */
 public class AccessKeyNotFoundException extends Exception {
     private static final long serialVersionUID = 7106108446396804404L;

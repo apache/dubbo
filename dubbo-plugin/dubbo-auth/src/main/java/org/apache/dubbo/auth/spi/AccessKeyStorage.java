@@ -14,26 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.filter.auth;
+package org.apache.dubbo.auth.spi;
 
+import org.apache.dubbo.auth.model.AccessKeyPair;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.rpc.Invocation;
 
 
 /**
- * This SPI Extension support us to store our {@link AccessKey} or load {@link AccessKey} from other
+ * This SPI Extension support us to store our {@link AccessKeyPair} or load {@link AccessKeyPair} from other
  * storage, such as filesystem.
- *
  */
 @SPI
 public interface AccessKeyStorage {
 
     /**
-     * get AccessKey of this request
+     * get AccessKeyPair of this request
+     *
      * @param url
      * @param invocation
      * @return
      */
-    AccessKey getAccessKey(URL url, Invocation invocation);
+    AccessKeyPair getAccessKey(URL url, Invocation invocation);
 }

@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.util.Arrays;
 import java.util.Base64;
@@ -44,7 +45,7 @@ public class SignatureUtils {
                 return sign(metadata, key);
             }
             boolean notSerializable = Arrays.stream(parameters).anyMatch(parameter -> !(parameter instanceof Serializable));
-            if (notSerializable){
+            if (notSerializable) {
                 throw new IllegalArgumentException("");
             }
 
@@ -61,9 +62,9 @@ public class SignatureUtils {
     public static String sign(byte[] data, String key) throws SignatureException {
         String result;
         try {
+            Mac mac = Mac.getInstance(HMAC_SHA256_ALGORITHM);
             SecretKeySpec signingKey = new SecretKeySpec(key.getBytes(),
                     HMAC_SHA256_ALGORITHM);
-            Mac mac = Mac.getInstance(HMAC_SHA256_ALGORITHM);
             mac.init(signingKey);
             // compute the hmac on input data bytes
             byte[] rawHmac = mac.doFinal(data);
@@ -84,8 +85,7 @@ public class SignatureUtils {
             out = new ObjectOutputStream(bos);
             out.writeObject(parameters);
             out.flush();
-            byte[] bytes = bos.toByteArray();
-            return bytes;
+            return bos.toByteArray();
         } finally {
             try {
                 bos.close();

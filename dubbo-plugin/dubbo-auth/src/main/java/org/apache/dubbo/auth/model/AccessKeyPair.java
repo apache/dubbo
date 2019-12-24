@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.filter.auth;
+package org.apache.dubbo.auth.model;
 
 /**
  * The model of AK/SK pair
  */
-public class AccessKey {
+public class AccessKeyPair {
     private String accessKey;
     private String secretKey;
     private String consumerSide;
@@ -77,7 +77,7 @@ public class AccessKey {
 
     @Override
     public String toString() {
-        return "AccessKey{" +
+        return "AccessKeyPair{" +
                 "accessKey='" + accessKey + '\'' +
                 ", secretKey='" + secretKey + '\'' +
                 ", consumerSide='" + consumerSide + '\'' +

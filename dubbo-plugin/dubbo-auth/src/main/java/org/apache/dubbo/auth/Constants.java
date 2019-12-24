@@ -14,30 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.filter.auth;
+package org.apache.dubbo.auth;
 
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.rpc.Invocation;
+public interface Constants {
+    String REFERENCE_AUTH = "reference.auth";
 
-@SPI("accessKey")
-public interface AuthenticationHelper {
+    String SERVICE_AUTH = "service.auth";
 
-    /**
-     * give a sign to request
-     *
-     * @param invocation
-     * @param url
-     */
-    void signForRequest(Invocation invocation, URL url);
+    String AUTH_HELPER = "auth.helper";
 
-    /**
-     * verify the signature of the request is valid or not
-     *
-     * @param invocation
-     * @param url
-     * @return true if the signature is valid
-     */
-    boolean authenticateRequest(Invocation invocation, URL url);
+    String DEFAULT_AUTH_HELPER = "accesskey";
+
+    String DEFAULT_ACCESS_KEY_STORAGE = "urlstorage";
+
+    String ACCESS_KEY_STORAGE_KEY = "accessKey.storage";
+
+    String ACCESS_KEY_ID_KEY = "accessKeyId";
+
+    String SECRET_ACCESS_KEY_KEY = "secretAccessKey";
+
+    String REQUEST_TIMESTAMP_KEY = "timestamp";
+
+    String REQUEST_SIGNATURE_KEY = "signature";
+
+    String AK_KEY = "ak";
+
+    String SIGNATURE_STRING_FORMAT = "%s#%s#%s#%s";
+
+    String PARAMTER_ENCRYPT_ENABLE_KEY = "paramater.sign";
 }
