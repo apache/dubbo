@@ -139,12 +139,12 @@ public class NetUtils {
         if (address == null || address.isLoopbackAddress()) {
             return false;
         }
+
         String name = address.getHostAddress();
-        boolean result = (name != null
+        return (name != null
                 && IP_PATTERN.matcher(name).matches()
                 && !ANYHOST_VALUE.equals(name)
                 && !LOCALHOST_VALUE.equals(name));
-        return result;
     }
 
     /**
@@ -186,18 +186,16 @@ public class NetUtils {
 
     private static volatile String HOST_ADDRESS;
 
-    public static String getHostAddress () {
+    public static String getLocalHost() {
         if (HOST_ADDRESS != null) {
             return HOST_ADDRESS;
         }
 
-        HOST_ADDRESS = getLocalHost();
-        return HOST_ADDRESS;
-    }
-
-    public static String getLocalHost() {
         InetAddress address = getLocalAddress();
-        return address == null ? LOCALHOST_VALUE : address.getHostAddress();
+        if (address != null) {
+            return HOST_ADDRESS = address.getHostAddress();
+        }
+        return LOCALHOST_VALUE;
     }
 
     public static String filterLocalHost(String host) {
@@ -287,7 +285,7 @@ public class NetUtils {
                             Optional<InetAddress> addressOp = toValidAddress(addresses.nextElement());
                             if (addressOp.isPresent()) {
                                 try {
-                                    if(addressOp.get().isReachable(100)){
+                                    if (addressOp.get().isReachable(100)) {
                                         return addressOp.get();
                                     }
                                 } catch (IOException e) {
@@ -387,7 +385,7 @@ public class NetUtils {
                 InetAddress address = (InetAddress) addresses.nextElement();
                 if (preferIpv6 && address instanceof Inet6Address) {
                     try {
-                        if(address.isReachable(100)){
+                        if (address.isReachable(100)) {
                             multicastSocket.setInterface(address);
                             interfaceSet = true;
                             break;
@@ -397,7 +395,7 @@ public class NetUtils {
                     }
                 } else if (!preferIpv6 && address instanceof Inet4Address) {
                     try {
-                        if(address.isReachable(100)){
+                        if (address.isReachable(100)) {
                             multicastSocket.setInterface(address);
                             interfaceSet = true;
                             break;
