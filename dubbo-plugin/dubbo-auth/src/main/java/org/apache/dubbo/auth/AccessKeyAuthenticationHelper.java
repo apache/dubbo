@@ -20,10 +20,10 @@ import org.apache.dubbo.auth.exception.AccessKeyNotFoundException;
 import org.apache.dubbo.auth.model.AccessKeyPair;
 import org.apache.dubbo.auth.spi.AccessKeyStorage;
 import org.apache.dubbo.auth.spi.AuthenticationHelper;
+import org.apache.dubbo.auth.utils.SignatureUtils;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.utils.SignatureUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 
