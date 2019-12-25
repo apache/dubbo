@@ -299,6 +299,10 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     public void checkAndUpdateSubConfigs() {
         // Use default configs defined explicitly on global configs
         completeCompoundConfigs();
+        // init config
+        List<ConfigInitializer> configInitializers = ExtensionLoader.getExtensionLoader(ConfigInitializer.class)
+                .getActivateExtension(URL.valueOf("configInitializer://"), (String[]) null);
+        configInitializers.forEach(e -> e.initServiceConfig(this));
         // Config Center should always being started first.
         startConfigCenter();
         checkDefault();
@@ -361,13 +365,11 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
         checkStubAndLocal(interfaceClass);
         checkMock(interfaceClass);
-        appendParameters();
+        postProcessConfig(configInitializers);
     }
 
-    private void appendParameters() {
-        URL appendParametersUrl = URL.valueOf("appendParameters://");
-        List<AppendParametersComponent> appendParametersComponents = ExtensionLoader.getExtensionLoader(AppendParametersComponent.class).getActivateExtension(appendParametersUrl, (String[]) null);
-        appendParametersComponents.forEach(component -> component.appendExportParameters(this));
+    private void postProcessConfig(List<ConfigInitializer> configInitializers) {
+        configInitializers.forEach(component -> component.postProcessServiceConfig(this));
     }
 
     /**

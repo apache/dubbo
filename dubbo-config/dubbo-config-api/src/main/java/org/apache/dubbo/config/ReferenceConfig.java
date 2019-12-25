@@ -225,6 +225,11 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             throw new IllegalStateException("<dubbo:reference interface=\"\" /> interface not allow null!");
         }
         completeCompoundConfigs();
+        // init config
+        List<ConfigInitializer> configInitializers = ExtensionLoader.getExtensionLoader(ConfigInitializer.class)
+                .getActivateExtension(URL.valueOf("configInitializer://"), (String[]) null);
+        configInitializers.forEach(e -> e.initReferConfig(this));
+
         startConfigCenter();
         // get consumer's global configuration
         checkDefault();
@@ -257,13 +262,11 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         resolveFile();
         checkApplication();
         checkMetadataReport();
-        appendParameters();
+        postProcessConfig(configInitializers);
     }
 
-    private void appendParameters() {
-        URL appendParametersUrl = URL.valueOf("appendParameters://");
-        List<AppendParametersComponent> appendParametersComponents = ExtensionLoader.getExtensionLoader(AppendParametersComponent.class).getActivateExtension(appendParametersUrl, (String[]) null);
-        appendParametersComponents.forEach(component -> component.appendReferParameters(this));
+    private void postProcessConfig(List<ConfigInitializer> configInitializers) {
+        configInitializers.forEach(component -> component.postProcessReferConfig(this));
     }
 
     public synchronized T get() {
