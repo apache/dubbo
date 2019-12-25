@@ -127,17 +127,29 @@ public class TelnetCodec extends TransportCodec {
         return new String(copy, 0, index, charset.name()).trim();
     }
 
-    private static boolean isEquals(byte[] message, byte[] command) throws IOException {
+    private static boolean isEquals(byte[] message, byte[] command) {
         return message.length == command.length && endsWith(message, command);
     }
 
-    private static boolean endsWith(byte[] message, byte[] command) throws IOException {
+    private static boolean endsWith(byte[] message, byte[] command) {
         if (message.length < command.length) {
             return false;
         }
         int offset = message.length - command.length;
         for (int i = command.length - 1; i >= 0; i--) {
             if (message[offset + i] != command[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean startWith(byte[] message, byte[] command) {
+        if (message.length < command.length) {
+            return false;
+        }
+        for (int i = 0; i < command.length; i++) {
+            if (message[i] != command[i]) {
                 return false;
             }
         }
@@ -195,8 +207,8 @@ public class TelnetCodec extends TransportCodec {
             }
         }
 
-        boolean up = endsWith(message, UP);
-        boolean down = endsWith(message, DOWN);
+        boolean up = startWith(message, UP);
+        boolean down = startWith(message, DOWN);
         if (up || down) {
             LinkedList<String> history = (LinkedList<String>) channel.getAttribute(HISTORY_LIST_KEY);
             if (CollectionUtils.isEmpty(history)) {
