@@ -154,6 +154,9 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     protected String tag;
 
+    private  Boolean auth;
+
+
     /**
      * The url of the reference service
      */
@@ -666,6 +669,14 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     public void setTag(String tag) {
         this.tag = tag;
+    }
+
+    public Boolean getAuth() {
+        return auth;
+    }
+
+    public void setAuth(Boolean auth) {
+        this.auth = auth;
     }
 
     public SslConfig getSslConfig() {
