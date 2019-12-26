@@ -62,9 +62,11 @@ public class ThreadlessExecutor extends AbstractExecutorService {
      */
     public void waitAndDrain() throws InterruptedException {
         /**
-         * Usually, {@link #waitAndDrain()} will only get called once. It blocks for the response on the first time, then
-         * once the response (the task) reached and being executed and the method returned, the whole request process finished.
-         * Subsequent calls on {@link #waitAndDrain()} (if there're any) should return immediately.
+         * Usually, {@link #waitAndDrain()} will only get called once. It blocks for the response for the first time,
+         * once the response (the task) reached and being executed waitAndDrain will return, the whole request process
+         * then finished. Subsequent calls on {@link #waitAndDrain()} (if there're any) should return immediately.
+         *
+         * There's no need to worry about the Checking and updating of 'finished' are limited in waitAndDrain,
          */
         if (finished) {
             return;
