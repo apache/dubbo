@@ -64,9 +64,11 @@ public class ThreadlessExecutor extends AbstractExecutorService {
         /**
          * Usually, {@link #waitAndDrain()} will only get called once. It blocks for the response for the first time,
          * once the response (the task) reached and being executed waitAndDrain will return, the whole request process
-         * then finished. Subsequent calls on {@link #waitAndDrain()} (if there're any) should return immediately.
+         * then finishes. Subsequent calls on {@link #waitAndDrain()} (if there're any) should return immediately.
          *
-         * There's no need to worry about the Checking and updating of 'finished' are limited in waitAndDrain,
+         * There's no need to worry that {@link #finished} is not thread-safe. Checking and updating of
+         * 'finished' only appear in waitAndDrain, since waitAndDrain is binding to one RPC call (one thread), the call
+         * of it is totally sequential.
          */
         if (finished) {
             return;
@@ -89,7 +91,7 @@ public class ThreadlessExecutor extends AbstractExecutorService {
             }
             runnable = queue.poll();
         }
-
+        // mark the status of ThreadlessExecutor as finished.
         finished = true;
     }
 
