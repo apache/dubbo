@@ -51,12 +51,7 @@ import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
@@ -331,10 +326,10 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             }
         }
 
-        if (shouldCheck() && !invoker.isAvailable()) {
+        if (!invoker.isAvailable() && shouldCheck()) {
             throw new IllegalStateException("Failed to check the status of the service "
                     + interfaceName
-                    + ". No provider available for the service "
+                    + ". No provider available for the service or missing service method "
                     + (group == null ? "" : group + "/")
                     + interfaceName +
                     (version == null ? "" : ":" + version)
