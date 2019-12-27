@@ -37,7 +37,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 
 /**
- * Consider implementing {@code Licycle} to enable executors shutdown when the process stops.
+ * Consider implementing {@code Lifecycle} to enable executors shutdown when the process stops.
  */
 public class DefaultExecutorRepository implements ExecutorRepository {
     private static final Logger logger = LoggerFactory.getLogger(DefaultExecutorRepository.class);
