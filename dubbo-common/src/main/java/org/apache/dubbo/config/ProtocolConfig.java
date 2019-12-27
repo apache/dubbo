@@ -424,27 +424,6 @@ public class ProtocolConfig extends AbstractConfig {
         this.exchanger = exchanger;
     }
 
-    /**
-     * typo, switch to use {@link #getDispatcher()}
-     *
-     * @deprecated {@link #getDispatcher()}
-     */
-    @Deprecated
-    @Parameter(excluded = true)
-    public String getDispather() {
-        return getDispatcher();
-    }
-
-    /**
-     * typo, switch to use {@link #getDispatcher()}
-     *
-     * @deprecated {@link #setDispatcher(String)}
-     */
-    @Deprecated
-    public void setDispather(String dispather) {
-        setDispatcher(dispather);
-    }
-
     public String getDispatcher() {
         return dispatcher;
     }
