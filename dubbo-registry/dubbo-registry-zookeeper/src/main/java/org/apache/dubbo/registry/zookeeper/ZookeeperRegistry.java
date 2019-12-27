@@ -263,24 +263,30 @@ public class ZookeeperRegistry extends FailbackRegistry {
     }
 
     private List<URL> toUrlsWithoutEmpty(URL consumer, List<String> providers) {
-        List<URL> urls = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(providers)) {
+            Map<String, URL> copyOfStringUrls = new HashMap<>(stringUrls);
             for (String provider : providers) {
-                provider = URL.decode(provider);
-                if (provider.contains(PROTOCOL_SEPARATOR)) {
-                    URL url = URL.valueOf(provider);
-                    if (UrlUtils.isMatch(consumer, url)) {
-                        urls.add(url);
+                URL cachedUrl = copyOfStringUrls.remove(provider);
+                if (cachedUrl == null) {
+                    provider = URL.decode(provider);
+                    if (provider.contains(PROTOCOL_SEPARATOR)) {
+                        URL url = URL.valueOf(provider);
+                        if (UrlUtils.isMatch(consumer, url)) {
+                            stringUrls.put(provider, url);
+                        }
                     }
                 }
+                copyOfStringUrls.keySet().forEach(stringUrls::remove);
             }
+        } else {
+            stringUrls.clear();
         }
-        return urls;
+        return new ArrayList<>(stringUrls.values());
     }
 
     private List<URL> toUrlsWithEmpty(URL consumer, String path, List<String> providers) {
         List<URL> urls = toUrlsWithoutEmpty(consumer, providers);
-        if (urls == null || urls.isEmpty()) {
+        if (urls.isEmpty()) {
             int i = path.lastIndexOf(PATH_SEPARATOR);
             String category = i < 0 ? path : path.substring(i + 1);
             URL empty = URLBuilder.from(consumer)

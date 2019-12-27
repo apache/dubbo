@@ -56,7 +56,7 @@ public class ClusterUtils {
         if (remoteMap != null && remoteMap.size() > 0) {
             map.putAll(remoteMap);
 
-            // Remove configurations from provider, some items should be affected by provider.
+            // Remove configurations from provider, some items should not being affected by provider.
             map.remove(THREAD_NAME_KEY);
             map.remove(DEFAULT_KEY_PREFIX + THREAD_NAME_KEY);
 

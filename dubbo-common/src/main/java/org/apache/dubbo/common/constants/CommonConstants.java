@@ -296,4 +296,6 @@ public interface CommonConstants {
 
     String SSL_ENABLED_KEY = "ssl-enabled";
 
+    String REGISTRY_SNAPSHOT = "snapshot";
+
 }
