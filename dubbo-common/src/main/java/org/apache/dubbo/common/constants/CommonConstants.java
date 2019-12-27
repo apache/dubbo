@@ -107,13 +107,13 @@ public interface CommonConstants {
 
     String REMOVE_VALUE_PREFIX = "-";
 
-    String PROPERTIES_CHAR_SEPERATOR = "-";
+    String PROPERTIES_CHAR_SEPARATOR = "-";
 
     String UNDERLINE_SEPARATOR = "_";
 
     String SEPARATOR_REGEX = "_|-";
 
-    String GROUP_CHAR_SEPERATOR = ":";
+    String GROUP_CHAR_SEPARATOR = ":";
 
     String HIDE_KEY_PREFIX = ".";
 
