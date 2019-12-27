@@ -61,8 +61,6 @@ public class EtcdServiceDiscovery implements ServiceDiscovery, EventListener<Ser
     private final Set<String> services = new ConcurrentHashSet<>();
     private final Map<String, ChildListener> childListenerMap = new ConcurrentHashMap<>();
 
-    private final ConcurrentMap<URL, ConcurrentMap<NotifyListener, ChildListener>> etcdListeners = new ConcurrentHashMap<>();
-
     EtcdClient etcdClient;
     EventDispatcher dispatcher;
     ServiceInstance serviceInstance;
