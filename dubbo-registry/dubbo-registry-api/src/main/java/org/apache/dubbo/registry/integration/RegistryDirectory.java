@@ -615,6 +615,8 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 if (invoker.isAvailable()) {
                     return isConMethodLessThanPro(invoker);
                 }
+                logger.error("No provider available for the service " + invoker.getUrl().getPath());
+                return false;
             }
         }
         return false;
