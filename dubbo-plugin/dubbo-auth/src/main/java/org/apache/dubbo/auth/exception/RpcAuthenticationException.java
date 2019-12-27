@@ -14,31 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.auth.spi;
+package org.apache.dubbo.auth.exception;
 
 
-import org.apache.dubbo.auth.exception.RpcAuthenticationException;
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.rpc.Invocation;
+public class RpcAuthenticationException extends Exception {
+    public RpcAuthenticationException() {
+    }
 
-@SPI("accessKey")
-public interface AuthenticationHelper {
+    public RpcAuthenticationException(String message) {
+        super(message);
+    }
 
-    /**
-     * give a sign to request
-     *
-     * @param invocation
-     * @param url
-     */
-    void signForRequest(Invocation invocation, URL url);
-
-
-    /**
-     * verify the signature of the request is valid or not
-     * @param invocation
-     * @param url
-     * @throws RpcAuthenticationException when failed to authenticate current invocation
-     */
-    void authenticateRequest(Invocation invocation, URL url) throws RpcAuthenticationException;
+    public RpcAuthenticationException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

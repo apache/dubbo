@@ -17,6 +17,7 @@
 package org.apache.dubbo.auth;
 
 import org.apache.dubbo.auth.exception.AccessKeyNotFoundException;
+import org.apache.dubbo.auth.exception.RpcAuthenticationException;
 import org.apache.dubbo.auth.model.AccessKeyPair;
 import org.apache.dubbo.auth.spi.AccessKeyStorage;
 import org.apache.dubbo.auth.spi.AuthenticationHelper;
@@ -33,14 +34,14 @@ public class AccessKeyAuthenticationHelper implements AuthenticationHelper {
         String currentTime = String.valueOf(System.currentTimeMillis());
         String consumer = url.getParameter(CommonConstants.APPLICATION_KEY);
         AccessKeyPair accessKeyPair = getAccessKeyPair(invocation, url);
-        invocation.setAttachment(Constants.SIGNATURE_STRING_FORMAT, getSignature(url, invocation, accessKeyPair.getSecretKey(), currentTime));
+        invocation.setAttachment(Constants.REQUEST_SIGNATURE_KEY, getSignature(url, invocation, accessKeyPair.getSecretKey(), currentTime));
         invocation.setAttachment(Constants.REQUEST_TIMESTAMP_KEY, currentTime);
         invocation.setAttachment(Constants.AK_KEY, accessKeyPair.getAccessKey());
         invocation.setAttachment(CommonConstants.CONSUMER, consumer);
     }
 
     @Override
-    public boolean authenticateRequest(Invocation invocation, URL url) {
+    public void authenticateRequest(Invocation invocation, URL url) throws RpcAuthenticationException {
         String accessKeyId = String.valueOf(invocation.getAttachment(Constants.AK_KEY));
         String requestTimestamp = String.valueOf(invocation.getAttachment(Constants.REQUEST_TIMESTAMP_KEY));
         String originSignature = String.valueOf(invocation.getAttachment(Constants.REQUEST_SIGNATURE_KEY));
@@ -48,18 +49,21 @@ public class AccessKeyAuthenticationHelper implements AuthenticationHelper {
 
         if (StringUtils.isEmpty(accessKeyId) || StringUtils.isEmpty(consumer)
                 || StringUtils.isEmpty(requestTimestamp) || StringUtils.isEmpty(originSignature)) {
-            throw new RuntimeException("Auth failed, maybe consumer not enable the auth");
+            throw new RpcAuthenticationException("Failed to authenticate, maybe consumer not enable the auth");
         }
-        AccessKeyPair accessKeyPair = getAccessKeyPair(invocation, url);
+        AccessKeyPair accessKeyPair = null;
+        try {
+            accessKeyPair = getAccessKeyPair(invocation, url);
+        } catch (Exception e) {
+            throw new RpcAuthenticationException("Failed to authenticate , can't load the accessKeyPair", e);
+        }
 
         String computeSignature = getSignature(url, invocation, accessKeyPair.getSecretKey(), requestTimestamp);
         boolean success = computeSignature.equals(originSignature);
         if (!success) {
-            throw new RuntimeException("Auth failed, signature is not correct");
+            throw new RpcAuthenticationException("Failed to authenticate, signature is not correct");
         }
-        return success;
     }
-
 
     AccessKeyPair getAccessKeyPair(Invocation invocation, URL url) {
         AccessKeyStorage accessKeyStorage = ExtensionLoader.getExtensionLoader(AccessKeyStorage.class)

@@ -16,13 +16,13 @@
  */
 package org.apache.dubbo.auth.filter;
 
+import org.apache.dubbo.auth.Constants;
 import org.apache.dubbo.auth.spi.AuthenticationHelper;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.rpc.AsyncRpcResult;
-import org.apache.dubbo.auth.Constants;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -39,16 +39,10 @@ public class ProviderAuthFilter implements Filter {
         if (shouldAuth) {
             AuthenticationHelper authenticationHelper = ExtensionLoader.getExtensionLoader(AuthenticationHelper.class)
                     .getExtension(url.getParameter(Constants.AUTH_HELPER, Constants.DEFAULT_AUTH_HELPER));
-            boolean authResult = false;
             try {
-                authResult = authenticationHelper.authenticateRequest(invocation, url);
-                if (!authResult) {
-                    SecurityException securityException = new SecurityException("Authenticate Request failed");
-                    return AsyncRpcResult.newDefaultAsyncResult(securityException, invocation);
-                }
+                authenticationHelper.authenticateRequest(invocation, url);
             } catch (Exception e) {
-                SecurityException securityException = new SecurityException("Authenticate Request failed,", e);
-                return AsyncRpcResult.newDefaultAsyncResult(securityException, invocation);
+                return AsyncRpcResult.newDefaultAsyncResult(e, invocation);
             }
         }
         return invoker.invoke(invocation);
