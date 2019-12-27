@@ -177,7 +177,7 @@ class ProtocolBuilderTest {
     void dispather() {
         ProtocolBuilder builder = new ProtocolBuilder();
         builder.dispather("mockdispatcher");
-        Assertions.assertEquals("mockdispatcher", builder.build().getDispather());
+        Assertions.assertEquals("mockdispatcher", builder.build().getDispatcher());
     }
 
     @Test

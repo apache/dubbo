@@ -448,7 +448,6 @@ public class ConfigValidationUtils {
             checkExtension(Transporter.class, TRANSPORTER_KEY, config.getTransporter());
             checkExtension(Exchanger.class, EXCHANGER_KEY, config.getExchanger());
             checkExtension(Dispatcher.class, DISPATCHER_KEY, config.getDispatcher());
-            checkExtension(Dispatcher.class, "dispather", config.getDispather());
             checkExtension(ThreadPool.class, THREADPOOL_KEY, config.getThreadpool());
         }
     }
