@@ -246,7 +246,7 @@ public interface CommonConstants {
     String METRICS_PROTOCOL = "metrics.protocol";
 
     /**
-     * After simplify the registry, should add some paramter individually for provider.
+     * After simplify the registry, should add some parameter individually for provider.
      *
      * @since 2.7.0
      */

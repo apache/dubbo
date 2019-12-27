@@ -57,13 +57,7 @@ public class RpcUtils {
                     && !invocation.getMethodName().startsWith("$")) {
                 String service = invocation.getInvoker().getUrl().getServiceInterface();
                 if (StringUtils.isNotEmpty(service)) {
-                    Class<?> invokerInterface = invocation.getInvoker().getInterface();
-                    Class<?> cls = invokerInterface != null ? ReflectUtils.forName(invokerInterface.getClassLoader(), service)
-                            : ReflectUtils.forName(service);
-                    Method method = cls.getMethod(invocation.getMethodName(), invocation.getParameterTypes());
-                    if (method.getReturnType() == void.class) {
-                        return null;
-                    }
+                    Method method = getMethodByService(invocation, service);
                     return method.getReturnType();
                 }
             }
@@ -81,13 +75,7 @@ public class RpcUtils {
                     && !invocation.getMethodName().startsWith("$")) {
                 String service = invocation.getInvoker().getUrl().getServiceInterface();
                 if (StringUtils.isNotEmpty(service)) {
-                    Class<?> invokerInterface = invocation.getInvoker().getInterface();
-                    Class<?> cls = invokerInterface != null ? ReflectUtils.forName(invokerInterface.getClassLoader(), service)
-                            : ReflectUtils.forName(service);
-                    Method method = cls.getMethod(invocation.getMethodName(), invocation.getParameterTypes());
-                    if (method.getReturnType() == void.class) {
-                        return null;
-                    }
+                    Method method = getMethodByService(invocation, service);
                     return ReflectUtils.getReturnTypes(method);
                 }
             }
@@ -225,5 +213,16 @@ public class RpcUtils {
             }
         }
         return attachmentsToPass;
+    }
+
+    private static Method getMethodByService(Invocation invocation, String service) throws NoSuchMethodException {
+        Class<?> invokerInterface = invocation.getInvoker().getInterface();
+        Class<?> cls = invokerInterface != null ? ReflectUtils.forName(invokerInterface.getClassLoader(), service)
+                : ReflectUtils.forName(service);
+        Method method = cls.getMethod(invocation.getMethodName(), invocation.getParameterTypes());
+        if (method.getReturnType() == void.class) {
+            return null;
+        }
+        return method;
     }
 }
