@@ -51,7 +51,12 @@ import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
@@ -144,6 +149,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         this.repository = ApplicationModel.getServiceRepository();
     }
 
+    @Override
     public synchronized T get() {
         if (destroyed) {
             throw new IllegalStateException("The invoker of ReferenceConfig(" + url + ") has already destroyed!");
@@ -154,6 +160,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         return ref;
     }
 
+    @Override
     public synchronized void destroy() {
         if (ref == null) {
             return;
