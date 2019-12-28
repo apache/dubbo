@@ -48,11 +48,30 @@ import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.protocol.InvokerWrapper;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.apache.dubbo.common.constants.CommonConstants.*;
+import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.DISABLED_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
+import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PREFERRED_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.APP_DYNAMIC_CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.COMPATIBLE_CONFIG_KEY;
@@ -214,7 +233,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         List<AddressListener> supportedListeners = addressListenerExtensionLoader.getActivateExtension(getUrl(), (String[]) null);
         if (supportedListeners != null && !supportedListeners.isEmpty()) {
             for (AddressListener addressListener : supportedListeners) {
-                providerURLs = addressListener.notify(providerURLs, getUrl(),this);
+                providerURLs = addressListener.notify(providerURLs, getUrl(), this);
             }
         }
         refreshOverrideAndInvoker(providerURLs);
@@ -630,22 +649,22 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         String consumerMethod = queryMap.get(METHODS_KEY);
         String providerMethod = invoker.getUrl().getParameter(METHODS_KEY);
         List<String> alertMethodList = new ArrayList<>();
-        if(StringUtils.isNotEmpty(consumerMethod)){
+        if (StringUtils.isNotEmpty(consumerMethod)) {
             String[] newMethods = consumerMethod.split(",");
             List<String> oldMethodList = new LinkedList<>();
-            if(StringUtils.isNotEmpty(providerMethod)){
+            if (StringUtils.isNotEmpty(providerMethod)) {
                 String[] oldMethods = providerMethod.split(",");
                 oldMethodList.addAll(Arrays.asList(oldMethods));
             }
-            for(String s : newMethods){
-                if(oldMethodList.contains(s)){
+            for (String s : newMethods) {
+                if (oldMethodList.contains(s)) {
                     oldMethodList.remove(s);
-                }else{
+                } else {
                     alertMethodList.add(s);
                 }
             }
-            if(CollectionUtils.isNotEmpty(alertMethodList)){
-                logger.error("No provider available for the service methods " + invoker.getUrl().getPath()+ "#"+String.join(",", alertMethodList));
+            if (CollectionUtils.isNotEmpty(alertMethodList)) {
+                logger.error("No provider available for the service methods " + invoker.getUrl().getPath() + "#" + String.join(",", alertMethodList));
                 return false;
             }
         }
