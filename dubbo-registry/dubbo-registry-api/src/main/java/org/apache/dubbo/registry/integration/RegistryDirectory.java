@@ -631,7 +631,8 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         Map<String, Invoker<T>> localUrlInvokerMap = urlInvokerMap;
         if (localUrlInvokerMap != null && localUrlInvokerMap.size() > 0) {
             for (Invoker<T> invoker : new ArrayList<>(localUrlInvokerMap.values())) {
-                if (invoker.isAvailable() && isConMethodLessThanPro(invoker)) {
+                if (invoker.isAvailable()) {
+                    isConMethodLessThanPro(invoker);
                     return true;
                 }
             }

@@ -195,7 +195,7 @@ public class UrlTestBase {
         }
 
         if (!failLog.equals(FAILLOG_HEADER)) {
-//            fail(failLog);
+            fail(failLog);
         }
     }
 
