@@ -40,9 +40,4 @@ public class DemoServiceComponent implements DemoService {
     public CompletableFuture<String> sayHelloAsync(String name) {
         return null;
     }
-
-    @Override
-    public String sayHi(String name) {
-        return demoService.sayHi(name);
-    }
 }

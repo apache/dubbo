@@ -25,11 +25,4 @@ public interface DemoService {
     default CompletableFuture<String> sayHelloAsync(String name) {
         return CompletableFuture.completedFuture(sayHello(name));
     }
-
-    /**
-     * sdk increase a new method,zk has not this method
-     * @param name name
-     * @return String
-     */
-    String sayHi(String name);
 }

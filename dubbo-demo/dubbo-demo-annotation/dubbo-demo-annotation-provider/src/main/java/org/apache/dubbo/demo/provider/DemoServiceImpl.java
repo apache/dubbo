@@ -41,11 +41,4 @@ public class DemoServiceImpl implements DemoService {
     public CompletableFuture<String> sayHelloAsync(String name) {
         return null;
     }
-
-
-    @Override
-    public String sayHi(String name) {
-        return "Hi";
-    }
-
 }
