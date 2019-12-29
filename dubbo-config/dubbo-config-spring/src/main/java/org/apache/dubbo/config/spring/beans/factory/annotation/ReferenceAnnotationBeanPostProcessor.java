@@ -16,13 +16,18 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
+import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.context.event.ServiceBeanExportedEvent;
+import org.apache.dubbo.config.spring.util.ConfigCommonUtils;
+import org.apache.dubbo.config.spring.util.DubboConfigSpringConstants;
 
 import com.alibaba.spring.beans.factory.annotation.AbstractAnnotationBeanPostProcessor;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.InjectionMetadata;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -33,6 +38,7 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.core.annotation.AnnotationAttributes;
+import org.springframework.core.env.Environment;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
@@ -58,6 +64,7 @@ import static org.springframework.util.StringUtils.hasText;
  */
 public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBeanPostProcessor implements
         ApplicationContextAware, ApplicationListener {
+    private final Log log = LogFactory.getLog(getClass());
 
     /**
      * The bean name of {@link ReferenceAnnotationBeanPostProcessor}
@@ -82,6 +89,10 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
             new ConcurrentHashMap<>(CACHE_SIZE);
 
     private ApplicationContext applicationContext;
+
+    private volatile boolean alreadyGetConsumerConfig = false;
+
+    private volatile boolean trueinitFromConsumerConfig = true;
 
     /**
      * To support the legacy annotation that is @com.alibaba.dubbo.config.annotation.Reference since 2.7.3
@@ -123,6 +134,40 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
     @Override
     protected Object doGetInjectedBean(AnnotationAttributes attributes, Object bean, String beanName, Class<?> injectedType,
                                        InjectionMetadata.InjectedElement injectedElement) throws Exception {
+        try {
+            if (!alreadyGetConsumerConfig) {
+                String property = ConfigUtils.getProperty(DubboConfigSpringConstants.TRUE_INIT_KEY);
+                if (property == null) {
+                    Environment environment = (Environment) getBeanFactory().getBean("environment");
+                    if (environment != null) {
+                        property = environment.getProperty(DubboConfigSpringConstants.TRUE_INIT_KEY);
+                    }
+                }
+                if (property != null) {
+                    trueinitFromConsumerConfig = Boolean.valueOf(property);
+                }
+                alreadyGetConsumerConfig = true;
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+
+        if (trueinitFromConsumerConfig) {
+            return getTargetBean(attributes, bean, beanName, injectedType, injectedElement);
+        } else {
+            return ConfigCommonUtils.getSpringProxy(injectedType, getClassLoader(), () -> {
+                try {
+                    return getTargetBean(attributes, bean, beanName, injectedType, injectedElement);
+                } catch (Exception e) {
+                    log.error(e.getMessage(), e);
+                    return null;
+                }
+            });
+        }
+    }
+
+    private Object getTargetBean(AnnotationAttributes attributes, Object bean, String beanName, Class<?> injectedType,
+                                 InjectionMetadata.InjectedElement injectedElement) throws Exception {
         /**
          * The name of bean that annotated Dubbo's {@link Service @Service} in local Spring {@link ApplicationContext}
          */

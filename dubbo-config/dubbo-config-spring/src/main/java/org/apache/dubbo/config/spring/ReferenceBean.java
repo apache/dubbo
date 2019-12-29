@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.spring;
 
+import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConsumerConfig;
 import org.apache.dubbo.config.MetadataReportConfig;
@@ -29,6 +30,8 @@ import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.SslConfig;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.spring.extension.SpringExtensionFactory;
+import org.apache.dubbo.config.spring.util.ConfigCommonUtils;
+import org.apache.dubbo.config.spring.util.DubboConfigSpringConstants;
 import org.apache.dubbo.config.support.Parameter;
 
 import org.springframework.beans.factory.DisposableBean;
@@ -36,6 +39,7 @@ import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.env.Environment;
 
 import static org.springframework.beans.factory.BeanFactoryUtils.beansOfTypeIncludingAncestors;
 
@@ -65,6 +69,21 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
 
     @Override
     public Object getObject() {
+        String property = ConfigUtils.getProperty(DubboConfigSpringConstants.TRUE_INIT_KEY);
+        if (property == null) {
+            Environment environment = (Environment) this.applicationContext.getBean("environment");
+            if (environment != null) {
+                property = environment.getProperty(DubboConfigSpringConstants.TRUE_INIT_KEY);
+            }
+        }
+        if (property != null) {
+            Boolean trueinit = Boolean.valueOf(property);
+            if (!trueinit) {
+                return ConfigCommonUtils.getSpringProxy(this.interfaceClass,
+                    Thread.currentThread().getContextClassLoader(), () -> get());
+            }
+        }
+
         return get();
     }
 

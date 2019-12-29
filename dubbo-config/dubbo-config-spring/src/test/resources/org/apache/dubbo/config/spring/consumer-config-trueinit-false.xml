@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!--
   Licensed to the Apache Software Foundation (ASF) under one or more
   contributor license agreements.  See the NOTICE file distributed with
@@ -17,16 +16,15 @@
   -->
 <beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:dubbo="http://dubbo.apache.org/schema/dubbo"
-       xmlns="http://www.springframework.org/schema/beans" xmlns:context="http://www.springframework.org/schema/context"
+       xmlns="http://www.springframework.org/schema/beans"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
-       http://dubbo.apache.org/schema/dubbo http://dubbo.apache.org/schema/dubbo/dubbo.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+    http://dubbo.apache.org/schema/dubbo http://dubbo.apache.org/schema/dubbo/dubbo.xsd
+    ">
 
-    <dubbo:application name="demo-consumer"/>
+    <!-- current application configuration -->
+<!--    <dubbo:application name="test-consumer-config-trueinit-false"/>-->
 
-    <dubbo:registry address="zookeeper://127.0.0.1:2181"/>
-
-    <dubbo:reference id="demoService" check="false" interface="org.apache.dubbo.demo.DemoService"/>
-
-    <context:component-scan base-package="org.apache.dubbo.demo.consumer.service"/>
+    <!-- service reference configuration -->
+    <dubbo:reference id="helloService5" interface="org.apache.dubbo.config.spring.api.HelloService"/>
 
 </beans>
