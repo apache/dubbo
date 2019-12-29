@@ -26,4 +26,10 @@ public interface DemoService {
         return CompletableFuture.completedFuture(sayHello(name));
     }
 
+    /**
+     * sdk increase a new method,zk has not this method
+     * @param name name
+     * @return String
+     */
+    String sayHi(String name);
 }

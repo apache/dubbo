@@ -42,4 +42,10 @@ public class DemoServiceImpl implements DemoService {
         return null;
     }
 
+
+    @Override
+    public String sayHi(String name) {
+        return "Hi";
+    }
+
 }

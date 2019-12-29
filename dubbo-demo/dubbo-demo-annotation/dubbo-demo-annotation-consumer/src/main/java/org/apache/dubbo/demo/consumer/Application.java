@@ -38,6 +38,7 @@ public class Application {
         DemoService service = context.getBean("demoServiceComponent", DemoServiceComponent.class);
         String hello = service.sayHello("world");
         System.out.println("result :" + hello);
+        service.sayHi("hi");
     }
 
     @Configuration

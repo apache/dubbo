@@ -195,7 +195,12 @@ public class InvokerSideConfigUrlTest extends UrlTestBase {
         servConf.export();
 
         fillConfigs(config, dataTable, TESTVALUE1);
-        refConf.get();
+        try {
+            refConf.get();
+        }
+        catch (Exception e){
+            System.out.println("exception:" + e);
+        }
 
         String subScribedUrlStr = getSubscribedUrlString();
 

@@ -103,8 +103,8 @@ public class ReferenceConfigTest {
         } catch (Exception e) {
             e.printStackTrace();
         }
-//        Assertions.assertFalse(success);
-//        Assertions.assertNull(demoService);
+        Assertions.assertFalse(success);
+        Assertions.assertNull(demoService);
 
         ServiceConfig<DemoService> sc = new ServiceConfig<DemoService>();
         sc.setInterface(DemoService.class);
