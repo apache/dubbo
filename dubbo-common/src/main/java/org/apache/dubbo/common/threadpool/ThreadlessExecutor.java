@@ -32,7 +32,7 @@ import java.util.concurrent.TimeoutException;
  * any thread.
  *
  * Tasks submitted to this executor through {@link #execute(Runnable)} will not get scheduled to a specific thread, though normal executors always do the schedule.
- * Those tasks are stored in a blocking queue and will only be executed when a thead calls {@link #waitAndDrain()}, the thead executing the task
+ * Those tasks are stored in a blocking queue and will only be executed when a thread calls {@link #waitAndDrain()}, the thread executing the task
  * is exactly the same as the one calling waitAndDrain.
  */
 public class ThreadlessExecutor extends AbstractExecutorService {
@@ -41,6 +41,8 @@ public class ThreadlessExecutor extends AbstractExecutorService {
     private final BlockingQueue<Runnable> queue = new LinkedBlockingQueue<>();
 
     private ExecutorService sharedExecutor;
+
+    private boolean finished = false;
 
     private volatile boolean waiting = true;
 
@@ -55,9 +57,23 @@ public class ThreadlessExecutor extends AbstractExecutorService {
     }
 
     /**
-     * Waits until there is a Runnable, then executes it and all queued Runnables after it.
+     * Waits until there is a task, executes the task and all queued tasks (if there're any). The task is either a normal
+     * response or a timeout response.
      */
     public void waitAndDrain() throws InterruptedException {
+        /**
+         * Usually, {@link #waitAndDrain()} will only get called once. It blocks for the response for the first time,
+         * once the response (the task) reached and being executed waitAndDrain will return, the whole request process
+         * then finishes. Subsequent calls on {@link #waitAndDrain()} (if there're any) should return immediately.
+         *
+         * There's no need to worry that {@link #finished} is not thread-safe. Checking and updating of
+         * 'finished' only appear in waitAndDrain, since waitAndDrain is binding to one RPC call (one thread), the call
+         * of it is totally sequential.
+         */
+        if (finished) {
+            return;
+        }
+
         Runnable runnable = queue.take();
 
         synchronized (lock) {
@@ -75,6 +91,8 @@ public class ThreadlessExecutor extends AbstractExecutorService {
             }
             runnable = queue.poll();
         }
+        // mark the status of ThreadlessExecutor as finished.
+        finished = true;
     }
 
     public long waitAndDrain(long timeout, TimeUnit unit) throws InterruptedException, TimeoutException {
