@@ -637,7 +637,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 }
             }
         }
-        logger.error("No provider available for the service " + queryMap.get(INTERFACE_KEY));
+        logger.warn("No provider available for the service " + queryMap.get(INTERFACE_KEY));
         return false;
     }
 
@@ -666,7 +666,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 }
             }
             if (CollectionUtils.isNotEmpty(alertMethodList)) {
-                logger.error("No provider available for the service methods " + invoker.getUrl().getPath() + "#" + String.join(",", alertMethodList));
+                logger.warn("No provider available for the service methods " + invoker.getUrl().getPath() + "#" + String.join(",", alertMethodList));
                 return false;
             }
         }
