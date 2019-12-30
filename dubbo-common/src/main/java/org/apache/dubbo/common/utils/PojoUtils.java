@@ -260,39 +260,19 @@ public class PojoUtils {
     private static Map createMap(Map src) {
         Class<? extends Map> cl = src.getClass();
         Map result = null;
-        if (HashMap.class == cl) {
-            result = new HashMap();
-        } else if (Hashtable.class == cl) {
-            result = new Hashtable();
-        } else if (IdentityHashMap.class == cl) {
-            result = new IdentityHashMap();
-        } else if (LinkedHashMap.class == cl) {
-            result = new LinkedHashMap();
-        } else if (Properties.class == cl) {
-            result = new Properties();
-        } else if (TreeMap.class == cl) {
-            result = new TreeMap();
-        } else if (WeakHashMap.class == cl) {
-            return new WeakHashMap();
-        } else if (ConcurrentHashMap.class == cl) {
-            result = new ConcurrentHashMap();
-        } else if (ConcurrentSkipListMap.class == cl) {
-            result = new ConcurrentSkipListMap();
-        } else {
-            try {
-                result = cl.newInstance();
-            } catch (Exception e) { /* ignore */ }
+        try {
+            result = cl.newInstance();
+        } catch (Exception e) { /* ignore */ }
 
-            if (result == null) {
-                try {
-                    Constructor<?> constructor = cl.getConstructor(Map.class);
-                    result = (Map) constructor.newInstance(Collections.EMPTY_MAP);
-                } catch (Exception e) { /* ignore */ }
-            }
+        if (result == null) {
+            try {
+                Constructor<?> constructor = cl.getConstructor(Map.class);
+                result = (Map) constructor.newInstance(Collections.EMPTY_MAP);
+            } catch (Exception e) { /* ignore */ }
         }
 
         if (result == null) {
-            result = new HashMap<Object, Object>();
+            result = new HashMap<>();
         }
 
         return result;
