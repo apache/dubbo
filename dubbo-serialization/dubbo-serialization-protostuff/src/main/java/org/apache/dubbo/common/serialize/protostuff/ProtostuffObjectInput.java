@@ -20,12 +20,13 @@ package org.apache.dubbo.common.serialize.protostuff;
 import io.protostuff.GraphIOUtil;
 import io.protostuff.Schema;
 import io.protostuff.runtime.RuntimeSchema;
+import org.apache.dubbo.common.serialize.ObjectInput;
+import org.apache.dubbo.common.serialize.protostuff.utils.WrapperUtils;
+
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
-import org.apache.dubbo.common.serialize.ObjectInput;
-import org.apache.dubbo.common.serialize.protostuff.utils.WrapperUtils;
 
 /**
  * Protostuff object input implementation
@@ -38,7 +39,6 @@ public class ProtostuffObjectInput implements ObjectInput {
         dis = new DataInputStream(inputStream);
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     @Override
     public Object readObject() throws IOException, ClassNotFoundException {
         int classNameLength = dis.readInt();
@@ -55,12 +55,12 @@ public class ProtostuffObjectInput implements ObjectInput {
         dis.readFully(bytes, 0, bytesLength);
 
         String className = new String(classNameBytes);
-        Class clazz = Class.forName(className);
+        Class<?> clazz = Class.forName(className);
 
         Object result;
         if (WrapperUtils.needWrapper(clazz)) {
             Schema<Wrapper> schema = RuntimeSchema.getSchema(Wrapper.class);
-            Wrapper wrapper = schema.newMessage();
+            Wrapper<?> wrapper = schema.newMessage();
             GraphIOUtil.mergeFrom(bytes, wrapper, schema);
             result = wrapper.getData();
         } else {

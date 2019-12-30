@@ -188,19 +188,14 @@ public class PersonInfo implements Serializable {
         } else if (!name.equals(other.name))
             return false;
         if (phones == null) {
-            if (other.phones != null)
-                return false;
-        } else if (!phones.equals(other.phones))
-            return false;
-        return true;
+            return other.phones == null;
+        } else
+            return phones.equals(other.phones);
     }
 
     @Override
     public String toString() {
-        return "PersonInfo [phones=" + phones + ", fax=" + fax + ", fullAddress=" + fullAddress
-                + ", mobileNo=" + mobileNo + ", name=" + name + ", male=" + male + ", female="
-                + female + ", department=" + department + ", jobTitle=" + jobTitle
-                + ", homepageUrl=" + homepageUrl + "]";
+        return "PersonInfo [phones=" + phones + ", fax=" + fax + ", fullAddress=" + fullAddress + ", mobileNo=" + mobileNo + ", name=" + name + ", male=" + male + ", female=" + female + ", department=" + department + ", jobTitle=" + jobTitle + ", homepageUrl=" + homepageUrl + "]";
     }
 
 }

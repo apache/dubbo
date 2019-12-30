@@ -39,8 +39,7 @@ public class FullAddress implements Serializable {
     public FullAddress() {
     }
 
-    public FullAddress(String countryId, String provinceName, String cityId, String streetAddress,
-                       String zipCode) {
+    public FullAddress(String countryId, String provinceName, String cityId, String streetAddress, String zipCode) {
         this.countryId = countryId;
         this.countryName = countryId;
         this.provinceName = provinceName;
@@ -50,8 +49,7 @@ public class FullAddress implements Serializable {
         this.zipCode = zipCode;
     }
 
-    public FullAddress(String countryId, String countryName, String provinceName, String cityId,
-                       String cityName, String streetAddress, String zipCode) {
+    public FullAddress(String countryId, String countryName, String provinceName, String cityId, String cityName, String streetAddress, String zipCode) {
         this.countryId = countryId;
         this.countryName = countryName;
         this.provinceName = provinceName;
@@ -171,11 +169,9 @@ public class FullAddress implements Serializable {
         } else if (!streetAddress.equals(other.streetAddress))
             return false;
         if (zipCode == null) {
-            if (other.zipCode != null)
-                return false;
-        } else if (!zipCode.equals(other.zipCode))
-            return false;
-        return true;
+            return other.zipCode == null;
+        } else
+            return zipCode.equals(other.zipCode);
     }
 
     @Override

@@ -26,8 +26,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import static org.hamcrest.Matchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
 
 public class FastJsonSerializationTest {
@@ -51,12 +51,12 @@ public class FastJsonSerializationTest {
     @Test
     public void testObjectOutput() throws IOException {
         ObjectOutput objectOutput = fastJsonSerialization.serialize(null, mock(OutputStream.class));
-        assertThat(objectOutput, Matchers.<ObjectOutput>instanceOf(FastJsonObjectOutput.class));
+        assertThat(objectOutput, Matchers.instanceOf(FastJsonObjectOutput.class));
     }
 
     @Test
     public void testObjectInput() throws IOException {
         ObjectInput objectInput = fastJsonSerialization.deserialize(null, mock(InputStream.class));
-        assertThat(objectInput, Matchers.<ObjectInput>instanceOf(FastJsonObjectInput.class));
+        assertThat(objectInput, Matchers.instanceOf(FastJsonObjectInput.class));
     }
 }

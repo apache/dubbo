@@ -16,9 +16,6 @@
  */
 package org.apache.dubbo.common.serialize.protobuf.support;
 
-import org.apache.dubbo.common.serialize.ObjectOutput;
-import org.apache.dubbo.common.serialize.protobuf.support.wrapper.MapValue;
-
 import com.google.protobuf.BoolValue;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.BytesValue;
@@ -27,6 +24,8 @@ import com.google.protobuf.FloatValue;
 import com.google.protobuf.Int32Value;
 import com.google.protobuf.Int64Value;
 import com.google.protobuf.StringValue;
+import org.apache.dubbo.common.serialize.ObjectOutput;
+import org.apache.dubbo.common.serialize.protobuf.support.wrapper.MapValue;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -107,7 +106,7 @@ public class GenericProtobufJsonObjectOutput implements ObjectOutput {
             throw new IllegalArgumentException("This serialization only support google protobuf object, the object is : null");
         }
         if (!ProtobufUtils.isSupported(obj.getClass())) {
-            throw new IllegalArgumentException("This serialization only support google protobuf object, the object class is: " + obj.getClass().getName());
+            throw new IllegalArgumentException(String.format("This serialization only support google protobuf object, the object class is: %s", obj.getClass().getName()));
         }
 
         writer.write(ProtobufUtils.serializeJson(obj));

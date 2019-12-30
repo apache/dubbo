@@ -54,7 +54,7 @@ public class CompactedObjectInputStream extends ObjectInputStream {
                 Class<?> clazz = loadClass(readUTF());
                 return ObjectStreamClass.lookup(clazz);
             default:
-                throw new StreamCorruptedException("Unexpected class descriptor type: " + type);
+                throw new StreamCorruptedException(String.format("Unexpected class descriptor type: %d", type));
         }
     }
 

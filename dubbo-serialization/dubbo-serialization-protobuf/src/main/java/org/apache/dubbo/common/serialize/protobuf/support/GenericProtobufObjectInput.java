@@ -16,10 +16,7 @@
  */
 package org.apache.dubbo.common.serialize.protobuf.support;
 
-import org.apache.dubbo.common.serialize.ObjectInput;
-import org.apache.dubbo.common.serialize.protobuf.support.wrapper.MapValue;
-import org.apache.dubbo.common.serialize.protobuf.support.wrapper.ThrowablePB;
-
+import com.google.common.collect.Maps;
 import com.google.protobuf.BoolValue;
 import com.google.protobuf.BytesValue;
 import com.google.protobuf.DoubleValue;
@@ -27,11 +24,13 @@ import com.google.protobuf.FloatValue;
 import com.google.protobuf.Int32Value;
 import com.google.protobuf.Int64Value;
 import com.google.protobuf.StringValue;
+import org.apache.dubbo.common.serialize.ObjectInput;
+import org.apache.dubbo.common.serialize.protobuf.support.wrapper.MapValue;
+import org.apache.dubbo.common.serialize.protobuf.support.wrapper.ThrowablePB;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
-import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.HEARTBEAT_EVENT;
@@ -109,10 +108,9 @@ public class GenericProtobufObjectInput implements ObjectInput {
         return readObject(cls);
     }
 
-    @SuppressWarnings("unchecked")
     private <T> T read(Class<T> cls) throws IOException {
         if (!ProtobufUtils.isSupported(cls)) {
-            throw new IllegalArgumentException("This serialization only support google protobuf messages, but the actual input type is :" + cls.getName());
+            throw new IllegalArgumentException(String.format("This serialization only support google protobuf messages, but the actual input type is :%s", cls.getName()));
         }
 
         return ProtobufUtils.deserialize(is, cls);
@@ -136,11 +134,9 @@ public class GenericProtobufObjectInput implements ObjectInput {
     @Override
     public Map<String, Object> readAttachments() throws IOException {
         Map<String, String> stringAttachments = ProtobufUtils.deserialize(is, MapValue.Map.class).getAttachmentsMap();
-        Map<String, Object> attachments = new HashMap<>();
+        Map<String, Object> attachments = Maps.newHashMapWithExpectedSize(stringAttachments.size());
 
-        if (stringAttachments != null) {
-            stringAttachments.forEach((k, v) -> attachments.put(k, v));
-        }
+        stringAttachments.forEach(attachments::put);
         return attachments;
     }
 }

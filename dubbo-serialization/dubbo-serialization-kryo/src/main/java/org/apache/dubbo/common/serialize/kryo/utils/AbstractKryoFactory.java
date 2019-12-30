@@ -16,14 +16,11 @@
  */
 package org.apache.dubbo.common.serialize.kryo.utils;
 
-import com.esotericsoftware.kryo.serializers.JavaSerializer;
-import org.apache.dubbo.common.serialize.kryo.CompatibleKryo;
-import org.apache.dubbo.common.serialize.support.SerializableClassRegistry;
-
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.pool.KryoFactory;
 import com.esotericsoftware.kryo.serializers.DefaultSerializers;
+import com.esotericsoftware.kryo.serializers.JavaSerializer;
 import de.javakaffee.kryoserializers.ArraysAsListSerializer;
 import de.javakaffee.kryoserializers.BitSetSerializer;
 import de.javakaffee.kryoserializers.GregorianCalendarSerializer;
@@ -33,6 +30,8 @@ import de.javakaffee.kryoserializers.SynchronizedCollectionsSerializer;
 import de.javakaffee.kryoserializers.URISerializer;
 import de.javakaffee.kryoserializers.UUIDSerializer;
 import de.javakaffee.kryoserializers.UnmodifiableCollectionsSerializer;
+import org.apache.dubbo.common.serialize.kryo.CompatibleKryo;
+import org.apache.dubbo.common.serialize.support.SerializableClassRegistry;
 
 import java.lang.reflect.InvocationHandler;
 import java.math.BigDecimal;
@@ -40,9 +39,9 @@ import java.math.BigInteger;
 import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -59,7 +58,7 @@ import java.util.regex.Pattern;
 
 public abstract class AbstractKryoFactory implements KryoFactory {
 
-    private final Set<Class> registrations = new LinkedHashSet<Class>();
+    private final Set<Class<?>> registrations = new LinkedHashSet<>();
 
     private boolean registrationRequired;
 
@@ -71,10 +70,10 @@ public abstract class AbstractKryoFactory implements KryoFactory {
 
     /**
      * only supposed to be called at startup time
-     *
-     *  later may consider adding support for custom serializer, custom id, etc
+     * <p>
+     * later may consider adding support for custom serializer, custom id, etc
      */
-    public void registerClass(Class clazz) {
+    public void registerClass(Class<?> clazz) {
 
         if (kryoCreated) {
             throw new IllegalStateException("Can't register class after creating kryo instance");
@@ -91,11 +90,11 @@ public abstract class AbstractKryoFactory implements KryoFactory {
         Kryo kryo = new CompatibleKryo();
 
         // TODO
-//        kryo.setReferences(false);
+        //        kryo.setReferences(false);
         kryo.setRegistrationRequired(registrationRequired);
 
         kryo.addDefaultSerializer(Throwable.class, new JavaSerializer());
-        kryo.register(Arrays.asList("").getClass(), new ArraysAsListSerializer());
+        kryo.register(Collections.singletonList("").getClass(), new ArraysAsListSerializer());
         kryo.register(GregorianCalendar.class, new GregorianCalendarSerializer());
         kryo.register(InvocationHandler.class, new JdkProxySerializer());
         kryo.register(BigDecimal.class, new DefaultSerializers.BigDecimalSerializer());
@@ -133,7 +132,7 @@ public abstract class AbstractKryoFactory implements KryoFactory {
         kryo.register(float[].class);
         kryo.register(double[].class);
 
-        for (Class clazz : registrations) {
+        for (Class<?> clazz : registrations) {
             kryo.register(clazz);
         }
 
@@ -141,7 +140,7 @@ public abstract class AbstractKryoFactory implements KryoFactory {
             if (ser == null) {
                 kryo.register(clazz);
             } else {
-                kryo.register(clazz, (Serializer) ser);
+                kryo.register(clazz, (Serializer<?>) ser);
             }
         });
 

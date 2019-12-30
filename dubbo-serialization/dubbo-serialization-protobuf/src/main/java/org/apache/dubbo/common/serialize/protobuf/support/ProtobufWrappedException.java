@@ -16,10 +16,9 @@
  */
 package org.apache.dubbo.common.serialize.protobuf.support;
 
+import com.google.common.base.Strings;
 import org.apache.dubbo.common.serialize.protobuf.support.wrapper.ThrowablePB;
 import org.apache.dubbo.common.serialize.protobuf.support.wrapper.ThrowablePB.ThrowableProto;
-
-import com.google.common.base.Strings;
 
 /**
  * For protobuf, all server side exceptions should be wrapped using this specific one.
@@ -28,8 +27,8 @@ public class ProtobufWrappedException extends RuntimeException {
 
     private static final long serialVersionUID = -1792808536714102039L;
 
-    private String originalClassName;
-    private String originalMessage;
+    private final String originalClassName;
+    private final String originalMessage;
 
     public ProtobufWrappedException(ThrowableProto throwableProto) {
         super(throwableProto.getOriginalClassName() + ": " + throwableProto.getOriginalMessage());
@@ -38,14 +37,16 @@ public class ProtobufWrappedException extends RuntimeException {
         originalMessage = throwableProto.getOriginalMessage();
 
         if (throwableProto.getStackTraceCount() > 0) {
-            setStackTrace(throwableProto.getStackTraceList().stream()
-                    .map(ProtobufWrappedException::toStackTraceElement)
-                    .toArray(StackTraceElement[]::new));
+            setStackTrace(throwableProto.getStackTraceList().stream().map(ProtobufWrappedException::toStackTraceElement).toArray(StackTraceElement[]::new));
         }
 
         if (throwableProto.hasCause()) {
             initCause(new ProtobufWrappedException(throwableProto.getCause()));
         }
+    }
+
+    private static StackTraceElement toStackTraceElement(ThrowablePB.StackTraceElementProto proto) {
+        return new StackTraceElement(proto.getClassName(), proto.getMethodName(), Strings.emptyToNull(proto.getFileName()), proto.getLineNumber());
     }
 
     public String getOriginalClassName() {
@@ -54,14 +55,6 @@ public class ProtobufWrappedException extends RuntimeException {
 
     public String getOriginalMessage() {
         return originalMessage;
-    }
-
-    private static StackTraceElement toStackTraceElement(ThrowablePB.StackTraceElementProto proto) {
-        return new StackTraceElement(
-                proto.getClassName(),
-                proto.getMethodName(),
-                Strings.emptyToNull(proto.getFileName()),
-                proto.getLineNumber());
     }
 
 }

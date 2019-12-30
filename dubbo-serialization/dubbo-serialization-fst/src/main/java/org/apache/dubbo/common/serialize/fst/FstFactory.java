@@ -17,7 +17,6 @@
 package org.apache.dubbo.common.serialize.fst;
 
 import org.apache.dubbo.common.serialize.support.SerializableClassRegistry;
-
 import org.nustaq.serialization.FSTConfiguration;
 import org.nustaq.serialization.FSTObjectInput;
 import org.nustaq.serialization.FSTObjectOutput;
@@ -30,17 +29,17 @@ import java.io.OutputStream;
  */
 public class FstFactory {
 
-    private static final FstFactory factory = new FstFactory();
+    private static final FstFactory FACTORY = new FstFactory();
 
     private final FSTConfiguration conf = FSTConfiguration.createDefaultConfiguration();
 
 
-    public static FstFactory getDefaultFactory() {
-        return factory;
-    }
-
     public FstFactory() {
         SerializableClassRegistry.getRegisteredClasses().keySet().forEach(conf::registerClass);
+    }
+
+    public static FstFactory getDefaultFactory() {
+        return FACTORY;
     }
 
     public FSTObjectOutput getObjectOutput(OutputStream outputStream) {

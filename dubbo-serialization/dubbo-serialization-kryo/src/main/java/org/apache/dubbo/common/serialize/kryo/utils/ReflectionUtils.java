@@ -18,7 +18,7 @@ package org.apache.dubbo.common.serialize.kryo.utils;
 
 public abstract class ReflectionUtils {
 
-    public static boolean checkZeroArgConstructor(Class clazz) {
+    public static boolean checkZeroArgConstructor(Class<?> clazz) {
         try {
             clazz.getDeclaredConstructor();
             return true;
@@ -27,7 +27,7 @@ public abstract class ReflectionUtils {
         }
     }
 
-    public static boolean isJdk(Class clazz) {
+    public static boolean isJdk(Class<?> clazz) {
         return clazz.getName().startsWith("java.") || clazz.getName().startsWith("javax.");
     }
 }

@@ -136,16 +136,12 @@ public class BigPerson implements Serializable {
                 return false;
         } else if (!personId.equals(other.personId))
             return false;
-        if (status != other.status)
-            return false;
-        return true;
+        return status == other.status;
     }
 
     @Override
     public String toString() {
-        return "BigPerson [personId=" + personId + ", loginName=" + loginName + ", status="
-                + status + ", email=" + email + ", penName=" + penName + ", infoProfile="
-                + infoProfile + "]";
+        return "BigPerson [personId=" + personId + ", loginName=" + loginName + ", status=" + status + ", email=" + email + ", penName=" + penName + ", infoProfile=" + infoProfile + "]";
     }
 
 }

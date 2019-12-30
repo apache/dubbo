@@ -23,10 +23,8 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
-import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class Hessian2SerializationTest extends AbstractSerializationPersonFailTest {
@@ -44,16 +42,15 @@ public class Hessian2SerializationTest extends AbstractSerializationPersonFailTe
         objectOutput.writeObject(data);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
-        assertTrue(Arrays.equals(data, (boolean[]) deserialize.readObject(boolean[].class)));
+        assertArrayEquals(data, deserialize.readObject(boolean[].class));
 
         try {
             deserialize.readObject(boolean[].class);
             fail();
-        } catch (ArrayIndexOutOfBoundsException e) {
+        } catch (ArrayIndexOutOfBoundsException ignored) {
         }
         // NOTE: Hessian2 throws ArrayIndexOutOfBoundsException instead of IOException, let's live with this.
     }
@@ -71,16 +68,15 @@ public class Hessian2SerializationTest extends AbstractSerializationPersonFailTe
         objectOutput.writeObject(data);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
-        assertArrayEquals(data, (short[]) deserialize.readObject(short[].class));
+        assertArrayEquals(data, deserialize.readObject(short[].class));
 
         try {
             deserialize.readObject(short[].class);
             fail();
-        } catch (ArrayIndexOutOfBoundsException e) {
+        } catch (ArrayIndexOutOfBoundsException ignored) {
         }
         // NOTE: Hessian2 throws ArrayIndexOutOfBoundsException instead of IOException, let's live with this.
     }
@@ -93,8 +89,7 @@ public class Hessian2SerializationTest extends AbstractSerializationPersonFailTe
         objectOutput.writeObject(data);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
         assertArrayEquals(data, (int[]) deserialize.readObject());
@@ -102,7 +97,7 @@ public class Hessian2SerializationTest extends AbstractSerializationPersonFailTe
         try {
             deserialize.readObject(int[].class);
             fail();
-        } catch (ArrayIndexOutOfBoundsException e) {
+        } catch (ArrayIndexOutOfBoundsException ignored) {
         }
         // NOTE: Hessian2 throws ArrayIndexOutOfBoundsException instead of IOException, let's live with this.
     }
@@ -115,8 +110,7 @@ public class Hessian2SerializationTest extends AbstractSerializationPersonFailTe
         objectOutput.writeObject(data);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
         assertArrayEquals(data, (long[]) deserialize.readObject());
@@ -124,7 +118,7 @@ public class Hessian2SerializationTest extends AbstractSerializationPersonFailTe
         try {
             deserialize.readObject(long[].class);
             fail();
-        } catch (ArrayIndexOutOfBoundsException e) {
+        } catch (ArrayIndexOutOfBoundsException ignored) {
         }
         // NOTE: Hessian2 throws ArrayIndexOutOfBoundsException instead of IOException, let's live with this.
     }
@@ -137,8 +131,7 @@ public class Hessian2SerializationTest extends AbstractSerializationPersonFailTe
         objectOutput.writeObject(data);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
         assertArrayEquals(data, (float[]) deserialize.readObject(), 0.0001F);
@@ -146,7 +139,7 @@ public class Hessian2SerializationTest extends AbstractSerializationPersonFailTe
         try {
             deserialize.readObject(float[].class);
             fail();
-        } catch (ArrayIndexOutOfBoundsException e) {
+        } catch (ArrayIndexOutOfBoundsException ignored) {
         }
         // NOTE: Hessian2 throws ArrayIndexOutOfBoundsException instead of IOException, let's live with this.
     }
@@ -159,16 +152,15 @@ public class Hessian2SerializationTest extends AbstractSerializationPersonFailTe
         objectOutput.writeObject(data);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
-        assertArrayEquals(data, (double[]) deserialize.readObject(double[].class), 0.0001);
+        assertArrayEquals(data, deserialize.readObject(double[].class), 0.0001);
 
         try {
             deserialize.readObject(double[].class);
             fail();
-        } catch (ArrayIndexOutOfBoundsException e) {
+        } catch (ArrayIndexOutOfBoundsException ignored) {
         }
         // NOTE: Hessian2 throws ArrayIndexOutOfBoundsException instead of IOException, let's live with this.
     }
@@ -183,8 +175,7 @@ public class Hessian2SerializationTest extends AbstractSerializationPersonFailTe
         objectOutput.writeObject(data);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
         assertArrayEquals(data, deserialize.readObject(String[].class));
@@ -192,7 +183,7 @@ public class Hessian2SerializationTest extends AbstractSerializationPersonFailTe
         try {
             deserialize.readObject(String[].class);
             fail();
-        } catch (ArrayIndexOutOfBoundsException e) {
+        } catch (ArrayIndexOutOfBoundsException ignored) {
         }
         // NOTE: Hessian2 throws ArrayIndexOutOfBoundsException instead of IOException, let's live with this.
     }

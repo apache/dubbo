@@ -22,7 +22,6 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -53,12 +52,12 @@ public class AvroSerializationTest {
     @Test
     public void testObjectOutput() throws IOException {
         ObjectOutput objectOutput = avroSerialization.serialize(null, mock(OutputStream.class));
-        assertThat(objectOutput, Matchers.<ObjectOutput>instanceOf(AvroObjectOutput.class));
+        assertThat(objectOutput, Matchers.instanceOf(AvroObjectOutput.class));
     }
 
     @Test
     public void testObjectInput() throws IOException {
         ObjectInput objectInput = avroSerialization.deserialize(null, mock(InputStream.class));
-        assertThat(objectInput, Matchers.<ObjectInput>instanceOf(AvroObjectInput.class));
+        assertThat(objectInput, Matchers.instanceOf(AvroObjectInput.class));
     }
 }

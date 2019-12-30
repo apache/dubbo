@@ -34,7 +34,7 @@ public class Java8TimeSerializer<T> extends AbstractSerializer {
     }
 
     public static <T> Java8TimeSerializer<T> create(Class<T> handleType) {
-        return new Java8TimeSerializer<T>(handleType);
+        return new Java8TimeSerializer<>(handleType);
     }
 
     @Override
@@ -44,12 +44,12 @@ public class Java8TimeSerializer<T> extends AbstractSerializer {
             return;
         }
 
-        T handle = null;
+        T handle;
         try {
             Constructor<T> constructor = handleType.getConstructor(Object.class);
             handle = constructor.newInstance(obj);
         } catch (Exception e) {
-            throw new RuntimeException("the class :" + handleType.getName() + " construct failed:" + e.getMessage(), e);
+            throw new RuntimeException(String.format("the class :%s construct failed:%s", handleType.getName(), e.getMessage()), e);
         }
 
         out.writeObject(handle);

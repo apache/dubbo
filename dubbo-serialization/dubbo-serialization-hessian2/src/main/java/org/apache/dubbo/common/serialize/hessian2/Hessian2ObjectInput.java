@@ -16,9 +16,8 @@
  */
 package org.apache.dubbo.common.serialize.hessian2;
 
-import org.apache.dubbo.common.serialize.ObjectInput;
-
 import com.alibaba.com.caucho.hessian.io.Hessian2Input;
+import org.apache.dubbo.common.serialize.ObjectInput;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -87,8 +86,7 @@ public class Hessian2ObjectInput implements ObjectInput {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T> T readObject(Class<T> cls) throws IOException,
-            ClassNotFoundException {
+    public <T> T readObject(Class<T> cls) throws IOException, ClassNotFoundException {
         return (T) mH2i.readObject(cls);
     }
 

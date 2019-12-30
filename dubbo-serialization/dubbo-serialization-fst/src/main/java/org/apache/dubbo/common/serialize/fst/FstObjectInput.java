@@ -17,7 +17,6 @@
 package org.apache.dubbo.common.serialize.fst;
 
 import org.apache.dubbo.common.serialize.ObjectInput;
-
 import org.nustaq.serialization.FSTObjectInput;
 
 import java.io.IOException;

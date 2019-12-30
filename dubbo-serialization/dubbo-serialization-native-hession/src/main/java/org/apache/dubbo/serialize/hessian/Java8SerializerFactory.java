@@ -67,12 +67,7 @@ public class Java8SerializerFactory extends ExtSerializerFactory {
         }
     }
 
-    @Override
-    public Serializer getSerializer(Class cl) throws HessianProtocolException {
-        return isZoneId(cl) ? ZoneIdSerializer.getInstance() : super.getSerializer(cl);
-    }
-
-    private static boolean isZoneId(Class cl) {
+    private static boolean isZoneId(Class<?> cl) {
         try {
             return isJava8() && Class.forName("java.time.ZoneId").isAssignableFrom(cl);
         } catch (ClassNotFoundException e) {
@@ -83,6 +78,11 @@ public class Java8SerializerFactory extends ExtSerializerFactory {
 
     private static boolean isJava8() {
         String javaVersion = System.getProperty("java.specification.version");
-        return Double.valueOf(javaVersion) >= 1.8;
+        return Double.parseDouble(javaVersion) >= 1.8;
+    }
+
+    @Override
+    public Serializer getSerializer(Class cl) throws HessianProtocolException {
+        return isZoneId(cl) ? ZoneIdSerializer.getInstance() : super.getSerializer(cl);
     }
 }

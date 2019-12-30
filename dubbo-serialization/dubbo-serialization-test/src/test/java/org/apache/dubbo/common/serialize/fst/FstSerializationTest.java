@@ -18,7 +18,6 @@ package org.apache.dubbo.common.serialize.fst;
 
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
-
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,12 +51,12 @@ public class FstSerializationTest {
     @Test
     public void testSerialize() throws IOException {
         ObjectOutput objectOutput = fstSerialization.serialize(null, mock(OutputStream.class));
-        assertThat(objectOutput, Matchers.<ObjectOutput>instanceOf(FstObjectOutput.class));
+        assertThat(objectOutput, Matchers.instanceOf(FstObjectOutput.class));
     }
 
     @Test
     public void testDeserialize() throws IOException {
         ObjectInput objectInput = fstSerialization.deserialize(null, mock(InputStream.class));
-        assertThat(objectInput, Matchers.<ObjectInput>instanceOf(FstObjectInput.class));
+        assertThat(objectInput, Matchers.instanceOf(FstObjectInput.class));
     }
 }

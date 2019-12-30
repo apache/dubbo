@@ -21,11 +21,12 @@ import io.protostuff.GraphIOUtil;
 import io.protostuff.LinkedBuffer;
 import io.protostuff.Schema;
 import io.protostuff.runtime.RuntimeSchema;
+import org.apache.dubbo.common.serialize.ObjectOutput;
+import org.apache.dubbo.common.serialize.protostuff.utils.WrapperUtils;
+
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import org.apache.dubbo.common.serialize.ObjectOutput;
-import org.apache.dubbo.common.serialize.protostuff.utils.WrapperUtils;
 
 /**
  * Protostuff object output implementation
@@ -49,7 +50,7 @@ public class ProtostuffObjectOutput implements ObjectOutput {
         try {
             if (obj == null || WrapperUtils.needWrapper(obj)) {
                 Schema<Wrapper> schema = RuntimeSchema.getSchema(Wrapper.class);
-                Wrapper wrapper = new Wrapper(obj);
+                Wrapper<?> wrapper = new Wrapper<>(obj);
                 bytes = GraphIOUtil.toByteArray(wrapper, schema, buffer);
                 classNameBytes = Wrapper.class.getName().getBytes();
             } else {

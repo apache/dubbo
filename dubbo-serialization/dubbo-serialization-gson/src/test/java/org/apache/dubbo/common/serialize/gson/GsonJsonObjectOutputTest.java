@@ -18,7 +18,6 @@
 package org.apache.dubbo.common.serialize.gson;
 
 
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

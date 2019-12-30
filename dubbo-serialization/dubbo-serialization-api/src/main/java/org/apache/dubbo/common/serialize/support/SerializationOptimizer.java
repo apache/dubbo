@@ -27,6 +27,6 @@ public interface SerializationOptimizer {
      * Get serializable classes
      *
      * @return serializable classes
-     * */
-    Collection<Class> getSerializableClasses();
+     */
+    Collection<Class<?>> getSerializableClasses();
 }

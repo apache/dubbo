@@ -38,18 +38,22 @@ public class Image implements java.io.Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
 
         Image image = (Image) o;
 
-        if (height != image.height) return false;
-        if (width != image.width) return false;
-        if (size != image.size) return false;
-        if (title != null ? !title.equals(image.title) : image.title != null) return false;
-        if (uri != null ? !uri.equals(image.uri) : image.uri != null) return false;
-
-        return true;
+        if (height != image.height)
+            return false;
+        if (width != image.width)
+            return false;
+        if (size != image.size)
+            return false;
+        if (title != null ? !title.equals(image.title) : image.title != null)
+            return false;
+        return uri != null ? uri.equals(image.uri) : image.uri == null;
     }
 
     @Override
@@ -63,15 +67,7 @@ public class Image implements java.io.Serializable {
     }
 
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("[Image ");
-        sb.append("uri=").append(uri);
-        sb.append(", title=").append(title);
-        sb.append(", width=").append(width);
-        sb.append(", height=").append(height);
-        sb.append(", size=").append(size);
-        sb.append("]");
-        return sb.toString();
+        return "[Image " + "uri=" + uri + ", title=" + title + ", width=" + width + ", height=" + height + ", size=" + size + "]";
     }
 
     public String getUri() {

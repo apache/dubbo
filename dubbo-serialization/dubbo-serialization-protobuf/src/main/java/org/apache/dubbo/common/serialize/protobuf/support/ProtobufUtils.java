@@ -16,10 +16,6 @@
  */
 package org.apache.dubbo.common.serialize.protobuf.support;
 
-import org.apache.dubbo.common.serialize.protobuf.support.wrapper.MapValue;
-import org.apache.dubbo.common.serialize.protobuf.support.wrapper.ThrowablePB.StackTraceElementProto;
-import org.apache.dubbo.common.serialize.protobuf.support.wrapper.ThrowablePB.ThrowableProto;
-
 import com.google.common.base.Strings;
 import com.google.protobuf.BoolValue;
 import com.google.protobuf.BytesValue;
@@ -38,6 +34,9 @@ import com.google.protobuf.Parser;
 import com.google.protobuf.StringValue;
 import com.google.protobuf.util.JsonFormat;
 import com.google.protobuf.util.JsonFormat.Printer;
+import org.apache.dubbo.common.serialize.protobuf.support.wrapper.MapValue;
+import org.apache.dubbo.common.serialize.protobuf.support.wrapper.ThrowablePB.StackTraceElementProto;
+import org.apache.dubbo.common.serialize.protobuf.support.wrapper.ThrowablePB.ThrowableProto;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -48,48 +47,10 @@ import java.util.concurrent.ConcurrentMap;
 
 public class ProtobufUtils {
 
-    static boolean isSupported(Class<?> clazz) {
-        if (clazz == null) {
-            return false;
-        }
-
-        if (MessageLite.class.isAssignableFrom(clazz)) {
-            return true;
-        }
-        return false;
-    }
+    private static ConcurrentMap<Class<? extends MessageLite>, MessageMarshaller<? extends MessageLite>> marshallers = new ConcurrentHashMap<>();
+    private static ExtensionRegistryLite globalRegistry = ExtensionRegistryLite.getEmptyRegistry();
 
     /* Protobuf json */
-
-    static <T> T deserializeJson(String json, Class<T> requestClass) throws InvalidProtocolBufferException {
-        Builder builder;
-        try {
-            builder = getMessageBuilder(requestClass);
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Get google protobuf message builder from " + requestClass.getName() + "failed", e);
-        }
-        JsonFormat.parser().merge(json, builder);
-        return (T) builder.build();
-    }
-
-    static String serializeJson(Object value) throws InvalidProtocolBufferException {
-        Printer printer = JsonFormat.printer().omittingInsignificantWhitespace();
-        return printer.print((MessageOrBuilder) value);
-    }
-
-    private static Builder getMessageBuilder(Class<?> requestType) throws Exception {
-        Method method = requestType.getMethod("newBuilder");
-        return (Builder) method.invoke(null, null);
-    }
-
-
-    /* Protobuf */
-
-    private static ConcurrentMap<Class<? extends MessageLite>, MessageMarshaller> marshallers =
-            new ConcurrentHashMap<>();
-
-    private static volatile ExtensionRegistryLite globalRegistry =
-            ExtensionRegistryLite.getEmptyRegistry();
 
     static {
         // Built-in types need to be registered in advance
@@ -105,6 +66,41 @@ public class ProtobufUtils {
         marshaller(StringValue.getDefaultInstance());
     }
 
+    private ProtobufUtils() {
+    }
+
+    static boolean isSupported(Class<?> clazz) {
+        if (clazz == null) {
+            return false;
+        }
+
+        return MessageLite.class.isAssignableFrom(clazz);
+    }
+
+
+    /* Protobuf */
+
+    static <T> T deserializeJson(String json, Class<T> requestClass) throws InvalidProtocolBufferException {
+        Builder<?> builder;
+        try {
+            builder = getMessageBuilder(requestClass);
+        } catch (Exception e) {
+            throw new IllegalArgumentException(String.format("Get google protobuf message builder from %s failed", requestClass.getName()), e);
+        }
+        JsonFormat.parser().merge(json, builder);
+        return (T) builder.build();
+    }
+
+    static String serializeJson(Object value) throws InvalidProtocolBufferException {
+        Printer printer = JsonFormat.printer().omittingInsignificantWhitespace();
+        return printer.print((MessageOrBuilder) value);
+    }
+
+    private static Builder<?> getMessageBuilder(Class<?> requestType) throws Exception {
+        Method method = requestType.getMethod("newBuilder");
+        return (Builder<?>) method.invoke(null, (Object[]) null);
+    }
+
     public static <T extends MessageLite> void marshaller(T defaultInstance) {
         marshallers.put(defaultInstance.getClass(), new MessageMarshaller<>(defaultInstance));
     }
@@ -118,8 +114,7 @@ public class ProtobufUtils {
     static <T> T deserialize(InputStream is, Class<T> requestClass) throws InvalidProtocolBufferException {
         MessageMarshaller<?> marshaller = marshallers.get(requestClass);
         if (marshaller == null) {
-            throw new IllegalStateException(String.format("Protobuf classes should be registered in advance before " +
-                    "do serialization, class name: %s", requestClass.getName()));
+            throw new IllegalStateException(String.format("Protobuf classes should be registered in advance before do serialization, class name: %s", requestClass.getName()));
         }
         return (T) marshaller.parse(is);
     }
@@ -152,11 +147,7 @@ public class ProtobufUtils {
     }
 
     private static StackTraceElementProto toStackTraceElement(StackTraceElement element) {
-        final StackTraceElementProto.Builder builder =
-                StackTraceElementProto.newBuilder()
-                        .setClassName(element.getClassName())
-                        .setMethodName(element.getMethodName())
-                        .setLineNumber(element.getLineNumber());
+        final StackTraceElementProto.Builder builder = StackTraceElementProto.newBuilder().setClassName(element.getClassName()).setMethodName(element.getMethodName()).setLineNumber(element.getLineNumber());
         if (element.getFileName() != null) {
             builder.setFileName(element.getFileName());
         }
@@ -185,11 +176,11 @@ public class ProtobufUtils {
 
         public T parse(InputStream stream) throws InvalidProtocolBufferException {
             return parser.parseDelimitedFrom(stream, globalRegistry);
-//            CodedInputStream cis = CodedInputStream.newInstance(stream);
-//            // Pre-create the CodedInputStream so that we can remove the size limit restriction
-//            // when parsing.
-//            cis.setSizeLimit(Integer.MAX_VALUE);
-//            return parseFrom(cis);
+            //            CodedInputStream cis = CodedInputStream.newInstance(stream);
+            //            // Pre-create the CodedInputStream so that we can remove the size limit restriction
+            //            // when parsing.
+            //            cis.setSizeLimit(Integer.MAX_VALUE);
+            //            return parseFrom(cis);
         }
 
         private T parseFrom(CodedInputStream stream) throws InvalidProtocolBufferException {

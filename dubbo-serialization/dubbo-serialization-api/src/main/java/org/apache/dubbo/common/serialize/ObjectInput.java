@@ -29,7 +29,7 @@ public interface ObjectInput extends DataInput {
      * Consider use {@link #readObject(Class)} or {@link #readObject(Class, Type)} where possible
      *
      * @return object
-     * @throws IOException if an I/O error occurs
+     * @throws IOException            if an I/O error occurs
      * @throws ClassNotFoundException if an ClassNotFoundException occurs
      */
     @Deprecated
@@ -40,7 +40,7 @@ public interface ObjectInput extends DataInput {
      *
      * @param cls object class
      * @return object
-     * @throws IOException if an I/O error occurs
+     * @throws IOException            if an I/O error occurs
      * @throws ClassNotFoundException if an ClassNotFoundException occurs
      */
     <T> T readObject(Class<T> cls) throws IOException, ClassNotFoundException;
@@ -48,10 +48,10 @@ public interface ObjectInput extends DataInput {
     /**
      * read object
      *
-     * @param cls object class
+     * @param cls  object class
      * @param type object type
      * @return object
-     * @throws IOException if an I/O error occurs
+     * @throws IOException            if an I/O error occurs
      * @throws ClassNotFoundException if an ClassNotFoundException occurs
      */
     <T> T readObject(Class<T> cls, Type type) throws IOException, ClassNotFoundException;

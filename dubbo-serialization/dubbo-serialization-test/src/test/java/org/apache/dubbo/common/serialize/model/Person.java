@@ -88,8 +88,6 @@ public class Person {
                 return false;
         } else if (!name.equals(other.name))
             return false;
-        if (!Arrays.equals(value, other.value))
-            return false;
-        return true;
+        return Arrays.equals(value, other.value);
     }
 }

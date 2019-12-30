@@ -53,25 +53,36 @@ public class Media implements java.io.Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
 
         Media media = (Media) o;
 
-        if (bitrate != media.bitrate) return false;
-        if (duration != media.duration) return false;
-        if (hasBitrate != media.hasBitrate) return false;
-        if (height != media.height) return false;
-        if (size != media.size) return false;
-        if (width != media.width) return false;
-        if (copyright != null ? !copyright.equals(media.copyright) : media.copyright != null) return false;
-        if (format != null ? !format.equals(media.format) : media.format != null) return false;
-        if (persons != null ? !persons.equals(media.persons) : media.persons != null) return false;
-        if (player != media.player) return false;
-        if (title != null ? !title.equals(media.title) : media.title != null) return false;
-        if (uri != null ? !uri.equals(media.uri) : media.uri != null) return false;
-
-        return true;
+        if (bitrate != media.bitrate)
+            return false;
+        if (duration != media.duration)
+            return false;
+        if (hasBitrate != media.hasBitrate)
+            return false;
+        if (height != media.height)
+            return false;
+        if (size != media.size)
+            return false;
+        if (width != media.width)
+            return false;
+        if (copyright != null ? !copyright.equals(media.copyright) : media.copyright != null)
+            return false;
+        if (format != null ? !format.equals(media.format) : media.format != null)
+            return false;
+        if (persons != null ? !persons.equals(media.persons) : media.persons != null)
+            return false;
+        if (player != media.player)
+            return false;
+        if (title != null ? !title.equals(media.title) : media.title != null)
+            return false;
+        return uri != null ? uri.equals(media.uri) : media.uri == null;
     }
 
     @Override
@@ -92,22 +103,7 @@ public class Media implements java.io.Serializable {
     }
 
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("[Media ");
-        sb.append("uri=").append(uri);
-        sb.append(", title=").append(title);
-        sb.append(", width=").append(width);
-        sb.append(", height=").append(height);
-        sb.append(", format=").append(format);
-        sb.append(", duration=").append(duration);
-        sb.append(", size=").append(size);
-        sb.append(", hasBitrate=").append(hasBitrate);
-        sb.append(", bitrate=").append(String.valueOf(bitrate));
-        sb.append(", persons=").append(persons);
-        sb.append(", player=").append(player);
-        sb.append(", copyright=").append(copyright);
-        sb.append("]");
-        return sb.toString();
+        return "[Media " + "uri=" + uri + ", title=" + title + ", width=" + width + ", height=" + height + ", format=" + format + ", duration=" + duration + ", size=" + size + ", hasBitrate=" + hasBitrate + ", bitrate=" + bitrate + ", persons=" + persons + ", player=" + player + ", copyright=" + copyright + "]";
     }
 
     public String getUri() {

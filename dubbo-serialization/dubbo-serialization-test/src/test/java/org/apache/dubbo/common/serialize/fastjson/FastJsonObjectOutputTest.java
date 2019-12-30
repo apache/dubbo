@@ -17,7 +17,6 @@
 package org.apache.dubbo.common.serialize.fastjson;
 
 import org.apache.dubbo.common.serialize.model.media.Image;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -34,10 +33,9 @@ public class FastJsonObjectOutputTest {
     private FastJsonObjectOutput fastJsonObjectOutput;
     private FastJsonObjectInput fastJsonObjectInput;
     private ByteArrayOutputStream byteArrayOutputStream;
-    private ByteArrayInputStream byteArrayInputStream;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    public void setUp() {
         this.byteArrayOutputStream = new ByteArrayOutputStream();
         this.fastJsonObjectOutput = new FastJsonObjectOutput(byteArrayOutputStream);
     }
@@ -136,7 +134,7 @@ public class FastJsonObjectOutputTest {
 
     private void flushToInput() throws IOException {
         this.fastJsonObjectOutput.flushBuffer();
-        this.byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         this.fastJsonObjectInput = new FastJsonObjectInput(byteArrayInputStream);
     }
 }

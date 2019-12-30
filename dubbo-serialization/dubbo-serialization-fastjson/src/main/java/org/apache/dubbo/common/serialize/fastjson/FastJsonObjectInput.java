@@ -16,9 +16,8 @@
  */
 package org.apache.dubbo.common.serialize.fastjson;
 
-import org.apache.dubbo.common.serialize.ObjectInput;
-
 import com.alibaba.fastjson.JSON;
+import org.apache.dubbo.common.serialize.ObjectInput;
 
 import java.io.BufferedReader;
 import java.io.EOFException;
@@ -100,10 +99,9 @@ public class FastJsonObjectInput implements ObjectInput {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public <T> T readObject(Class<T> cls, Type type) throws IOException, ClassNotFoundException {
         String json = readLine();
-        return (T) JSON.parseObject(json, type);
+        return JSON.parseObject(json, type);
     }
 
     private String readLine() throws IOException, EOFException {

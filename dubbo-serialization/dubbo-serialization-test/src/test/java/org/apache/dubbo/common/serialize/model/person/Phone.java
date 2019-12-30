@@ -108,11 +108,9 @@ public class Phone implements Serializable {
         } else if (!extensionNumber.equals(other.extensionNumber))
             return false;
         if (number == null) {
-            if (other.number != null)
-                return false;
-        } else if (!number.equals(other.number))
-            return false;
-        return true;
+            return other.number == null;
+        } else
+            return number.equals(other.number);
     }
 
     @Override

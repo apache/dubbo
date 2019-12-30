@@ -27,7 +27,7 @@ import java.lang.reflect.Type;
  * Java object input implementation
  */
 public class JavaObjectInput extends NativeJavaObjectInput {
-    public final static int MAX_BYTE_ARRAY_LENGTH = 8 * 1024 * 1024;
+    public static final int MAX_BYTE_ARRAY_LENGTH = 8 * 1024 * 1024;
 
     public JavaObjectInput(InputStream is) throws IOException {
         super(new ObjectInputStream(is));
@@ -47,7 +47,7 @@ public class JavaObjectInput extends NativeJavaObjectInput {
             return new byte[0];
         }
         if (len > MAX_BYTE_ARRAY_LENGTH) {
-            throw new IOException("Byte array length too large. " + len);
+            throw new IOException(String.format("Byte array length too large. %d", len));
         }
 
         byte[] b = new byte[len];
@@ -77,8 +77,7 @@ public class JavaObjectInput extends NativeJavaObjectInput {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T> T readObject(Class<T> cls) throws IOException,
-            ClassNotFoundException {
+    public <T> T readObject(Class<T> cls) throws IOException, ClassNotFoundException {
         return (T) readObject();
     }
 

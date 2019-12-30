@@ -24,21 +24,25 @@ import com.esotericsoftware.kryo.Kryo;
  * @since 2.6.0
  */
 public class KryoUtils {
-    private static AbstractKryoFactory kryoFactory = new ThreadLocalKryoFactory();
+
+    private static final AbstractKryoFactory KRYO_FACTORY = new ThreadLocalKryoFactory();
+
+    private KryoUtils() {
+    }
 
     public static Kryo get() {
-        return kryoFactory.getKryo();
+        return KRYO_FACTORY.getKryo();
     }
 
     public static void release(Kryo kryo) {
-        kryoFactory.returnKryo(kryo);
+        KRYO_FACTORY.returnKryo(kryo);
     }
 
     public static void register(Class<?> clazz) {
-        kryoFactory.registerClass(clazz);
+        KRYO_FACTORY.registerClass(clazz);
     }
 
     public static void setRegistrationRequired(boolean registrationRequired) {
-        kryoFactory.setRegistrationRequired(registrationRequired);
+        KRYO_FACTORY.setRegistrationRequired(registrationRequired);
     }
 }

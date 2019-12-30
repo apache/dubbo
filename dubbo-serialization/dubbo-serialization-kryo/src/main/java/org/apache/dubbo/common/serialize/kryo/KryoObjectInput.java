@@ -16,13 +16,12 @@
  */
 package org.apache.dubbo.common.serialize.kryo;
 
-import org.apache.dubbo.common.serialize.Cleanable;
-import org.apache.dubbo.common.serialize.ObjectInput;
-import org.apache.dubbo.common.serialize.kryo.utils.KryoUtils;
-
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.KryoException;
 import com.esotericsoftware.kryo.io.Input;
+import org.apache.dubbo.common.serialize.Cleanable;
+import org.apache.dubbo.common.serialize.ObjectInput;
+import org.apache.dubbo.common.serialize.kryo.utils.KryoUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -148,7 +147,6 @@ public class KryoObjectInput implements ObjectInput, Cleanable {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public <T> T readObject(Class<T> clazz, Type type) throws IOException, ClassNotFoundException {
         // TODO optimization
         return readObject(clazz);

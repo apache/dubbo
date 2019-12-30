@@ -21,7 +21,6 @@ import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.serialize.protobuf.support.model.GooglePB;
-
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
@@ -49,8 +48,7 @@ public class AbstractProtobufSerializationTest {
         objectOutput.writeBool(false);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
         assertFalse(deserialize.readBool());
@@ -76,8 +74,7 @@ public class AbstractProtobufSerializationTest {
         }
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
         for (boolean b : array) {
@@ -98,8 +95,7 @@ public class AbstractProtobufSerializationTest {
         objectOutput.writeByte((byte) 123);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
         assertEquals((byte) 123, deserialize.readByte());
@@ -123,8 +119,7 @@ public class AbstractProtobufSerializationTest {
         }
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
         for (byte b : array) {
@@ -145,8 +140,7 @@ public class AbstractProtobufSerializationTest {
         objectOutput.writeShort((short) 123);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
         assertEquals((short) 123, deserialize.readShort());
@@ -165,8 +159,7 @@ public class AbstractProtobufSerializationTest {
         objectOutput.writeInt(1);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
         int i = deserialize.readInt();
@@ -186,8 +179,7 @@ public class AbstractProtobufSerializationTest {
         objectOutput.writeLong(123L);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
         assertEquals(123L, deserialize.readLong());
@@ -206,8 +198,7 @@ public class AbstractProtobufSerializationTest {
         objectOutput.writeFloat(1.28F);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
         assertEquals(1.28F, deserialize.readFloat());
@@ -228,8 +219,7 @@ public class AbstractProtobufSerializationTest {
         objectOutput.writeDouble(1.28);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
         assertEquals(1.28, deserialize.readDouble());
@@ -248,8 +238,7 @@ public class AbstractProtobufSerializationTest {
         objectOutput.writeUTF("123中华人民共和国");
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
         assertEquals("123中华人民共和国", deserialize.readUTF());
@@ -268,8 +257,7 @@ public class AbstractProtobufSerializationTest {
         objectOutput.writeBytes("123中华人民共和国".getBytes());
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
         assertArrayEquals("123中华人民共和国".getBytes(), deserialize.readBytes());
@@ -288,8 +276,7 @@ public class AbstractProtobufSerializationTest {
         objectOutput.writeBytes("123中华人民共和国-新疆维吾尔自治区".getBytes(), 1, 9);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
         byte[] expectedArray = new byte[9];
@@ -316,10 +303,7 @@ public class AbstractProtobufSerializationTest {
         for (int i = 0; i < 5; i++) {
             phoneNumberMap.put("phoneNumber" + i, GooglePB.PhoneNumber.newBuilder().setNumber(random.nextInt(bound) + "").setType(GooglePB.PhoneType.forNumber(random.nextInt(GooglePB.PhoneType.values().length - 1))).build());
         }
-        GooglePB.PBRequestType request = GooglePB.PBRequestType.newBuilder()
-                .setAge(15).setCash(10).setMoney(16.0).setNum(100L)
-                .addAllPhone(phoneNumberList).putAllDoubleMap(phoneNumberMap).build();
-        return request;
+        return GooglePB.PBRequestType.newBuilder().setAge(15).setCash(10).setMoney(16.0).setNum(100L).addAllPhone(phoneNumberList).putAllDoubleMap(phoneNumberMap).build();
     }
 
     @Test
@@ -330,8 +314,7 @@ public class AbstractProtobufSerializationTest {
         objectOutput.writeObject(request);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput objectInput = serialization.deserialize(url, byteArrayInputStream);
 
         GooglePB.PBRequestType derializedRequest = objectInput.readObject(GooglePB.PBRequestType.class);
@@ -351,8 +334,7 @@ public class AbstractProtobufSerializationTest {
         objectOutput.writeAttachments(attachments);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput objectInput = serialization.deserialize(url, byteArrayInputStream);
 
         Map<String, Object> derializedAttachments = objectInput.readAttachments();

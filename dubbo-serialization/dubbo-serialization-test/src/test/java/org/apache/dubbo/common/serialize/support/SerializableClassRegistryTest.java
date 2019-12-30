@@ -18,7 +18,6 @@ package org.apache.dubbo.common.serialize.support;
 
 import org.apache.dubbo.common.serialize.model.SerializablePerson;
 import org.apache.dubbo.common.serialize.model.person.Phone;
-
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -32,7 +31,7 @@ public class SerializableClassRegistryTest {
         SerializableClassRegistry.registerClass(SerializablePerson.class);
         SerializableClassRegistry.registerClass(Phone.class);
 
-        Map<Class, Object> registeredClasses = SerializableClassRegistry.getRegisteredClasses();
+        Map<Class<?>, Object> registeredClasses = SerializableClassRegistry.getRegisteredClasses();
         assertThat(registeredClasses.size(), equalTo(2));
     }
 }

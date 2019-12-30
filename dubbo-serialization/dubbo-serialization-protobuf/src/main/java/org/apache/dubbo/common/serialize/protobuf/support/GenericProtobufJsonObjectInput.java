@@ -16,10 +16,7 @@
  */
 package org.apache.dubbo.common.serialize.protobuf.support;
 
-import org.apache.dubbo.common.serialize.ObjectInput;
-import org.apache.dubbo.common.serialize.protobuf.support.wrapper.MapValue;
-import org.apache.dubbo.common.serialize.protobuf.support.wrapper.ThrowablePB;
-
+import com.google.common.collect.Maps;
 import com.google.protobuf.BoolValue;
 import com.google.protobuf.BytesValue;
 import com.google.protobuf.DoubleValue;
@@ -27,6 +24,9 @@ import com.google.protobuf.FloatValue;
 import com.google.protobuf.Int32Value;
 import com.google.protobuf.Int64Value;
 import com.google.protobuf.StringValue;
+import org.apache.dubbo.common.serialize.ObjectInput;
+import org.apache.dubbo.common.serialize.protobuf.support.wrapper.MapValue;
+import org.apache.dubbo.common.serialize.protobuf.support.wrapper.ThrowablePB;
 
 import java.io.BufferedReader;
 import java.io.EOFException;
@@ -34,7 +34,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
-import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.HEARTBEAT_EVENT;
@@ -106,7 +105,6 @@ public class GenericProtobufJsonObjectInput implements ObjectInput {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public <T> T readObject(Class<T> cls, Type type) throws IOException {
         return readObject(cls);
     }
@@ -121,7 +119,7 @@ public class GenericProtobufJsonObjectInput implements ObjectInput {
 
     private <T> T read(Class<T> cls) throws IOException {
         if (!ProtobufUtils.isSupported(cls)) {
-            throw new IllegalArgumentException("This serialization only support google protobuf entity, the class is :" + cls.getName());
+            throw new IllegalArgumentException(String.format("This serialization only support google protobuf entity, the class is : %s", cls.getName()));
         }
 
         String json = readLine();
@@ -146,10 +144,8 @@ public class GenericProtobufJsonObjectInput implements ObjectInput {
     public Map<String, Object> readAttachments() throws IOException, ClassNotFoundException {
         String json = readLine();
         Map<String, String> attachments = ProtobufUtils.deserializeJson(json, MapValue.Map.class).getAttachmentsMap();
-        Map<String, Object> genericAttachments = new HashMap<>();
-        attachments.forEach((k, v) -> {
-            genericAttachments.put(k, v);
-        });
+        Map<String, Object> genericAttachments = Maps.newHashMapWithExpectedSize(attachments.size());
+        attachments.forEach(genericAttachments::put);
         return genericAttachments;
     }
 

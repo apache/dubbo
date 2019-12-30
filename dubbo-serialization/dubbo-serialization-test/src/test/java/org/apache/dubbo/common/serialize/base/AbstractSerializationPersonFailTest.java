@@ -18,7 +18,6 @@ package org.apache.dubbo.common.serialize.base;
 
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.model.Person;
-
 import org.junit.jupiter.api.Test;
 
 import java.io.NotSerializableException;
@@ -51,7 +50,7 @@ public abstract class AbstractSerializationPersonFailTest extends AbstractSerial
 
     @Test
     public void test_PersonList() throws Exception {
-        List<Person> args = new ArrayList<Person>();
+        List<Person> args = new ArrayList<>();
         args.add(new Person());
         try {
             ObjectOutput objectOutput = serialization.serialize(url, byteArrayOutputStream);
@@ -80,7 +79,7 @@ public abstract class AbstractSerializationPersonFailTest extends AbstractSerial
 
     @Test
     public void test_IntPersonMap() throws Exception {
-        Map<Integer, Person> args = new HashMap<Integer, Person>();
+        Map<Integer, Person> args = new HashMap<>();
         args.put(1, new Person());
         try {
             ObjectOutput objectOutput = serialization.serialize(url, byteArrayOutputStream);
@@ -94,7 +93,7 @@ public abstract class AbstractSerializationPersonFailTest extends AbstractSerial
 
     @Test
     public void test_StringPersonMap() throws Exception {
-        Map<String, Person> args = new HashMap<String, Person>();
+        Map<String, Person> args = new HashMap<>();
         args.put("1", new Person());
         try {
             ObjectOutput objectOutput = serialization.serialize(url, byteArrayOutputStream);
@@ -108,9 +107,9 @@ public abstract class AbstractSerializationPersonFailTest extends AbstractSerial
 
     @Test
     public void test_StringPersonListMap() throws Exception {
-        Map<String, List<Person>> args = new HashMap<String, List<Person>>();
+        Map<String, List<Person>> args = new HashMap<>();
 
-        List<Person> sublist = new ArrayList<Person>();
+        List<Person> sublist = new ArrayList<>();
         sublist.add(new Person());
         args.put("1", sublist);
         try {
@@ -125,8 +124,8 @@ public abstract class AbstractSerializationPersonFailTest extends AbstractSerial
 
     @Test
     public void test_PersonListList() throws Exception {
-        List<List<Person>> args = new ArrayList<List<Person>>();
-        List<Person> sublist = new ArrayList<Person>();
+        List<List<Person>> args = new ArrayList<>();
+        List<Person> sublist = new ArrayList<>();
         sublist.add(new Person());
         args.add(sublist);
         try {

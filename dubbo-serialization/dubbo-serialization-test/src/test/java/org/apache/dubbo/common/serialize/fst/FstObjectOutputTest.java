@@ -34,7 +34,6 @@ public class FstObjectOutputTest {
     private FstObjectOutput fstObjectOutput;
     private FstObjectInput fstObjectInput;
     private ByteArrayOutputStream byteArrayOutputStream;
-    private ByteArrayInputStream byteArrayInputStream;
 
     @BeforeEach
     public void setUp() {
@@ -43,7 +42,7 @@ public class FstObjectOutputTest {
     }
 
     @AfterEach
-    public void tearDown() throws IOException {
+    public void tearDown() {
         new FstObjectInput(new ByteArrayInputStream(new byte[]{0}));
     }
 
@@ -180,7 +179,7 @@ public class FstObjectOutputTest {
 
     private void flushToInput() throws IOException {
         this.fstObjectOutput.flushBuffer();
-        this.byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         this.fstObjectInput = new FstObjectInput(byteArrayInputStream);
     }
 }

@@ -17,7 +17,6 @@
 package org.apache.dubbo.common.serialize.fst;
 
 import org.apache.dubbo.common.serialize.model.person.FullAddress;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -31,7 +30,7 @@ public class FstObjectInputTest {
     private FstObjectInput fstObjectInput;
 
     @Test
-    public void testWrongClassInput() throws IOException, ClassNotFoundException {
+    public void testWrongClassInput() {
         Assertions.assertThrows(IOException.class, () -> {
             this.fstObjectInput = new FstObjectInput(new ByteArrayInputStream("{animal: 'cat'}".getBytes()));
 

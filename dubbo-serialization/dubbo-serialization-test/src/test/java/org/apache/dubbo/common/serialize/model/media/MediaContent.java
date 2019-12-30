@@ -33,15 +33,16 @@ public class MediaContent implements java.io.Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
 
         MediaContent that = (MediaContent) o;
 
-        if (images != null ? !images.equals(that.images) : that.images != null) return false;
-        if (media != null ? !media.equals(that.media) : that.media != null) return false;
-
-        return true;
+        if (images != null ? !images.equals(that.images) : that.images != null)
+            return false;
+        return media != null ? media.equals(that.media) : that.media == null;
     }
 
     @Override
@@ -52,12 +53,7 @@ public class MediaContent implements java.io.Serializable {
     }
 
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("[MediaContent: ");
-        sb.append("media=").append(media);
-        sb.append(", images=").append(images);
-        sb.append("]");
-        return sb.toString();
+        return "[MediaContent: " + "media=" + media + ", images=" + images + "]";
     }
 
     public Media getMedia() {

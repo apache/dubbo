@@ -17,6 +17,5 @@
 package org.apache.dubbo.common.serialize.model.person;
 
 public enum PersonStatus {
-    ENABLED,
-    DISABLED
+    ENABLED, DISABLED
 }

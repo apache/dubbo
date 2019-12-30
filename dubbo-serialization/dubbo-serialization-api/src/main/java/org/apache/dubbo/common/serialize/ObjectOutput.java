@@ -39,7 +39,7 @@ public interface ObjectOutput extends DataOutput {
      * <p>
      * See how ProtobufSerialization, KryoSerialization implemented these methods for more details.
      * <p>
-     *
+     * <p>
      * The binding of RPC protocol and biz serialization protocol is not a good practice. Encoding of RPC protocol
      * should be highly independent and portable, easy to cross platforms and languages, for example, like the http headers,
      * restricting the content of headers / attachments to Ascii strings and uses ISO_8859_1 to encode them.

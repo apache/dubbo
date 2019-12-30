@@ -38,16 +38,23 @@ public class Image implements java.io.Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
 
         Image image = (Image) o;
 
-        if (height != image.height) return false;
-        if (width != image.width) return false;
-        if (size != image.size) return false;
-        if (title != null ? !title.equals(image.title) : image.title != null) return false;
-        if (uri != null ? !uri.equals(image.uri) : image.uri != null) return false;
+        if (height != image.height)
+            return false;
+        if (width != image.width)
+            return false;
+        if (size != image.size)
+            return false;
+        if (title != null ? !title.equals(image.title) : image.title != null)
+            return false;
+        if (uri != null ? !uri.equals(image.uri) : image.uri != null)
+            return false;
 
         return true;
     }

@@ -17,13 +17,8 @@
 package org.apache.dubbo.common.serialize.fastjson;
 
 import com.alibaba.fastjson.JSONObject;
-
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-import java.util.List;
 import org.apache.dubbo.common.serialize.model.Organization;
 import org.apache.dubbo.common.serialize.model.Person;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -31,12 +26,15 @@ import java.io.ByteArrayInputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.StringReader;
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.util.List;
 
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.core.Is.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.hamcrest.core.Is.is;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class FastJsonObjectInputTest {
     private FastJsonObjectInput fastJsonObjectInput;
@@ -129,7 +127,7 @@ public class FastJsonObjectInputTest {
     }
 
     @Test
-    public void testEmptyLine() throws IOException, ClassNotFoundException {
+    public void testEmptyLine() {
         Assertions.assertThrows(EOFException.class, () -> {
             fastJsonObjectInput = new FastJsonObjectInput(new StringReader(""));
 
@@ -138,7 +136,7 @@ public class FastJsonObjectInputTest {
     }
 
     @Test
-    public void testEmptySpace() throws IOException, ClassNotFoundException {
+    public void testEmptySpace() {
         Assertions.assertThrows(EOFException.class, () -> {
             fastJsonObjectInput = new FastJsonObjectInput(new StringReader("  "));
 
@@ -166,8 +164,8 @@ public class FastJsonObjectInputTest {
         Type type = methodReturnType.getGenericReturnType();
         List<Person> o = fastJsonObjectInput.readObject(List.class, type);
 
-        assertTrue(o instanceof List);
-        assertTrue(o.get(0) instanceof Person);
+        assertNotNull(o);
+        assertNotNull(o.get(0));
 
         assertThat(o.size(), is(2));
         assertThat(o.get(1).getName(), is("Born"));
@@ -181,9 +179,9 @@ public class FastJsonObjectInputTest {
         Type type = methodReturnType.getGenericReturnType();
         Organization<List<Person>> o = fastJsonObjectInput.readObject(Organization.class, type);
 
-        assertTrue(o instanceof Organization);
-        assertTrue(o.getData() instanceof List);
-        assertTrue(o.getData().get(0) instanceof Person);
+        assertNotNull(o);
+        assertNotNull(o.getData());
+        assertNotNull(o.getData().get(0));
 
         assertThat(o.getData().size(), is(2));
         assertThat(o.getData().get(1).getName(), is("Born"));

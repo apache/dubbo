@@ -16,11 +16,10 @@
  */
 package org.apache.dubbo.common.serialize.fastjson;
 
-import org.apache.dubbo.common.serialize.ObjectOutput;
-
 import com.alibaba.fastjson.serializer.JSONSerializer;
 import com.alibaba.fastjson.serializer.SerializeWriter;
 import com.alibaba.fastjson.serializer.SerializerFeature;
+import org.apache.dubbo.common.serialize.ObjectOutput;
 
 import java.io.IOException;
 import java.io.OutputStream;

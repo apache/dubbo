@@ -32,7 +32,6 @@ import org.apache.dubbo.common.serialize.model.person.FullAddress;
 import org.apache.dubbo.common.serialize.model.person.PersonInfo;
 import org.apache.dubbo.common.serialize.model.person.PersonStatus;
 import org.apache.dubbo.common.serialize.model.person.Phone;
-
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
@@ -79,7 +78,7 @@ public abstract class AbstractSerializationTest {
         bigPerson.setEmail("sm@1.com");
         bigPerson.setPenName("pname");
 
-        ArrayList<Phone> phones = new ArrayList<Phone>();
+        ArrayList<Phone> phones = new ArrayList<>();
         Phone phone1 = new Phone("86", "0571", "87654321", "001");
         Phone phone2 = new Phone("86", "0571", "87654322", "002");
         phones.add(phone1);
@@ -111,7 +110,7 @@ public abstract class AbstractSerializationTest {
         media.setDuration(93419235);
         media.setSize(3477897);
         media.setBitrate(94523);
-        List<String> persons = new ArrayList<String>();
+        List<String> persons = new ArrayList<>();
         persons.add("jerry");
         persons.add("tom");
         persons.add("lucy");
@@ -119,11 +118,12 @@ public abstract class AbstractSerializationTest {
         media.setCopyright("1999-2011");
         media.setPlayer(Media.Player.FLASH);
 
-        List<Image> images = new ArrayList<Image>();
+        List<Image> images = new ArrayList<>();
         for (int i = 0; i < 10; ++i) {
             Image image = new Image();
             image.setUri("url" + i);
-            if (i % 2 == 0) image.setTitle("title" + i);
+            if (i % 2 == 0)
+                image.setTitle("title" + i);
             image.setWidth(34 + i);
             image.setHeight(2323 + i);
             image.setSize((i % 2 == 0) ? Image.Size.SMALL : Image.Size.LARGE);
@@ -140,8 +140,7 @@ public abstract class AbstractSerializationTest {
         objectOutput.writeBool(false);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
         assertFalse(deserialize.readBool());
@@ -166,8 +165,7 @@ public abstract class AbstractSerializationTest {
         }
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
         for (boolean b : array) {
@@ -187,8 +185,7 @@ public abstract class AbstractSerializationTest {
         objectOutput.writeByte((byte) 123);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
         assertEquals((byte) 123, deserialize.readByte());
@@ -211,8 +208,7 @@ public abstract class AbstractSerializationTest {
         }
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
         for (byte b : array) {
@@ -232,8 +228,7 @@ public abstract class AbstractSerializationTest {
         objectOutput.writeShort((short) 123);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
         assertEquals((short) 123, deserialize.readShort());
@@ -251,8 +246,7 @@ public abstract class AbstractSerializationTest {
         objectOutput.writeInt(1);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
         int i = deserialize.readInt();
@@ -271,8 +265,7 @@ public abstract class AbstractSerializationTest {
         objectOutput.writeLong(123L);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
         assertEquals(123L, deserialize.readLong());
@@ -290,11 +283,10 @@ public abstract class AbstractSerializationTest {
         objectOutput.writeFloat(1.28F);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
-        assertEquals(1.28F,deserialize.readFloat());
+        assertEquals(1.28F, deserialize.readFloat());
 
         try {
             deserialize.readFloat();
@@ -311,11 +303,10 @@ public abstract class AbstractSerializationTest {
         objectOutput.writeDouble(1.28);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
-        assertEquals(1.28,deserialize.readDouble());
+        assertEquals(1.28, deserialize.readDouble());
 
         try {
             deserialize.readDouble();
@@ -330,8 +321,7 @@ public abstract class AbstractSerializationTest {
         objectOutput.writeUTF("123中华人民共和国");
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
         assertEquals("123中华人民共和国", deserialize.readUTF());
@@ -349,8 +339,7 @@ public abstract class AbstractSerializationTest {
         objectOutput.writeBytes("123中华人民共和国".getBytes());
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
         assertArrayEquals("123中华人民共和国".getBytes(), deserialize.readBytes());
@@ -368,8 +357,7 @@ public abstract class AbstractSerializationTest {
         objectOutput.writeBytes("123中华人民共和国-新疆维吾尔自治区".getBytes(), 1, 9);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
         byte[] expectedArray = new byte[9];
@@ -390,8 +378,7 @@ public abstract class AbstractSerializationTest {
         objectOutput.writeObject(data);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
         assertArrayEquals(data, clazz.cast(deserialize.readObject()));
@@ -408,8 +395,7 @@ public abstract class AbstractSerializationTest {
         objectOutput.writeObject(data);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
         assertArrayEquals(data, clazz.cast(deserialize.readObject(clazz)));
@@ -427,11 +413,10 @@ public abstract class AbstractSerializationTest {
         objectOutput.writeObject(data);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
-        assertEquals(data, (T) deserialize.readObject());
+        assertEquals(data, deserialize.readObject());
 
         try {
             deserialize.readObject();
@@ -445,11 +430,10 @@ public abstract class AbstractSerializationTest {
         objectOutput.writeObject(data);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
-        assertEquals(data, (T) deserialize.readObject(clazz));
+        assertEquals(data, deserialize.readObject(clazz));
 
         try {
             deserialize.readObject(clazz);
@@ -466,11 +450,10 @@ public abstract class AbstractSerializationTest {
         objectOutput.writeObject(data);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
-        assertTrue(Arrays.equals(data, (boolean[]) deserialize.readObject()));
+        assertArrayEquals(data, (boolean[]) deserialize.readObject());
 
         try {
             deserialize.readObject();
@@ -487,11 +470,10 @@ public abstract class AbstractSerializationTest {
         objectOutput.writeObject(data);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
-        assertTrue(Arrays.equals(data, (boolean[]) deserialize.readObject(boolean[].class)));
+        assertArrayEquals(data, deserialize.readObject(boolean[].class));
 
         try {
             deserialize.readObject(boolean[].class);
@@ -508,8 +490,7 @@ public abstract class AbstractSerializationTest {
         objectOutput.writeObject(data);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
         assertArrayEquals(data, (char[]) deserialize.readObject());
@@ -529,11 +510,10 @@ public abstract class AbstractSerializationTest {
         objectOutput.writeObject(data);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
-        assertArrayEquals(data, (char[]) deserialize.readObject(char[].class));
+        assertArrayEquals(data, deserialize.readObject(char[].class));
 
         try {
             deserialize.readObject(char[].class);
@@ -550,8 +530,7 @@ public abstract class AbstractSerializationTest {
         objectOutput.writeObject(data);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
         assertArrayEquals(data, (short[]) deserialize.readObject());
@@ -571,11 +550,10 @@ public abstract class AbstractSerializationTest {
         objectOutput.writeObject(data);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
-        assertArrayEquals(data, (short[]) deserialize.readObject(short[].class));
+        assertArrayEquals(data, deserialize.readObject(short[].class));
 
         try {
             deserialize.readObject(short[].class);
@@ -592,8 +570,7 @@ public abstract class AbstractSerializationTest {
         objectOutput.writeObject(data);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
         assertArrayEquals(data, (int[]) deserialize.readObject());
@@ -613,11 +590,10 @@ public abstract class AbstractSerializationTest {
         objectOutput.writeObject(data);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
-        assertArrayEquals(data, (int[]) deserialize.readObject(int[].class));
+        assertArrayEquals(data, deserialize.readObject(int[].class));
 
         try {
             deserialize.readObject(int[].class);
@@ -634,8 +610,7 @@ public abstract class AbstractSerializationTest {
         objectOutput.writeObject(data);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
         assertArrayEquals(data, (long[]) deserialize.readObject());
@@ -655,11 +630,10 @@ public abstract class AbstractSerializationTest {
         objectOutput.writeObject(data);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
-        assertArrayEquals(data, (long[]) deserialize.readObject(long[].class));
+        assertArrayEquals(data, deserialize.readObject(long[].class));
 
         try {
             deserialize.readObject(long[].class);
@@ -676,8 +650,7 @@ public abstract class AbstractSerializationTest {
         objectOutput.writeObject(data);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
         assertArrayEquals(data, (float[]) deserialize.readObject(), 0.0001F);
@@ -697,11 +670,10 @@ public abstract class AbstractSerializationTest {
         objectOutput.writeObject(data);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
-        assertArrayEquals(data, (float[]) deserialize.readObject(float[].class), 0.0001F);
+        assertArrayEquals(data, deserialize.readObject(float[].class), 0.0001F);
 
         try {
             deserialize.readObject(float[].class);
@@ -718,8 +690,7 @@ public abstract class AbstractSerializationTest {
         objectOutput.writeObject(data);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
         assertArrayEquals(data, (double[]) deserialize.readObject(), 0.0001);
@@ -739,11 +710,10 @@ public abstract class AbstractSerializationTest {
         objectOutput.writeObject(data);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
-        assertArrayEquals(data, (double[]) deserialize.readObject(double[].class), 0.0001);
+        assertArrayEquals(data, deserialize.readObject(double[].class), 0.0001);
 
         try {
             deserialize.readObject(double[].class);
@@ -802,8 +772,7 @@ public abstract class AbstractSerializationTest {
         objectOutput.writeObject(e);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
         Object read = deserialize.readObject();
@@ -818,12 +787,11 @@ public abstract class AbstractSerializationTest {
         objectOutput.writeObject(e);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
-        Object read = deserialize.readObject(BizException.class);
-        assertEquals("Hello", ((BizException) read).getMessage());
+        BizException read = deserialize.readObject(BizException.class);
+        assertEquals("Hello", read.getMessage());
     }
 
     @Test
@@ -834,8 +802,7 @@ public abstract class AbstractSerializationTest {
         objectOutput.writeObject(e);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
         Object read = deserialize.readObject();
@@ -850,12 +817,11 @@ public abstract class AbstractSerializationTest {
         objectOutput.writeObject(e);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
-        Object read = deserialize.readObject(BizExceptionNoDefaultConstructor.class);
-        assertEquals("Hello", ((BizExceptionNoDefaultConstructor) read).getMessage());
+        BizExceptionNoDefaultConstructor read = deserialize.readObject(BizExceptionNoDefaultConstructor.class);
+        assertEquals("Hello", read.getMessage());
     }
 
     @Test
@@ -890,22 +856,22 @@ public abstract class AbstractSerializationTest {
 
     @Test
     public void test_ByteWrap() throws Exception {
-        assertObject(new Byte((byte) 12));
+        assertObject((byte) 12);
     }
 
     @Test
     public void test_ByteWrap_withType() throws Exception {
-        assertObjectWithType(new Byte((byte) 12), Byte.class);
+        assertObjectWithType((byte) 12, Byte.class);
     }
 
     @Test
     public void test_LongWrap() throws Exception {
-        assertObject(new Long(12));
+        assertObject(12L);
     }
 
     @Test
     public void test_LongWrap_withType() throws Exception {
-        assertObjectWithType(new Long(12), Long.class);
+        assertObjectWithType(12L, Long.class);
     }
 
     @Test
@@ -930,21 +896,21 @@ public abstract class AbstractSerializationTest {
 
     @Test
     public void test_StringList_asListReturn() throws Exception {
-        List<String> args = Arrays.asList(new String[]{"1", "b"});
+        List<String> args = Arrays.asList("1", "b");
 
         assertObject(args);
     }
 
     @Test
     public void test_StringArrayList() throws Exception {
-        List<String> args = new ArrayList<String>(Arrays.asList(new String[]{"1", "b"}));
+        List<String> args = new ArrayList<>(Arrays.asList("1", "b"));
 
         assertObject(args);
     }
 
     @Test
     public void test_StringSet() throws Exception {
-        Set<String> args = new HashSet<String>();
+        Set<String> args = new HashSet<>();
         args.add("1");
 
         assertObject(args);
@@ -952,7 +918,7 @@ public abstract class AbstractSerializationTest {
 
     @Test
     public void test_LinkedHashMap() throws Exception {
-        LinkedHashMap<String, String> data = new LinkedHashMap<String, String>();
+        LinkedHashMap<String, String> data = new LinkedHashMap<>();
         data.put("1", "a");
         data.put("2", "b");
 
@@ -960,14 +926,12 @@ public abstract class AbstractSerializationTest {
         objectOutput.writeObject(data);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
         Object read = deserialize.readObject();
         assertTrue(read instanceof LinkedHashMap);
-        @SuppressWarnings("unchecked")
-        String key1 = ((LinkedHashMap<String, String>) read).entrySet().iterator().next().getKey();
+        @SuppressWarnings("unchecked") String key1 = ((LinkedHashMap<String, String>) read).entrySet().iterator().next().getKey();
         assertEquals("1", key1);
 
         assertEquals(data, read);
@@ -983,7 +947,7 @@ public abstract class AbstractSerializationTest {
 
     @Test
     public void test_SPersonList() throws Exception {
-        List<SerializablePerson> args = new ArrayList<SerializablePerson>();
+        List<SerializablePerson> args = new ArrayList<>();
         args.add(new SerializablePerson());
 
         assertObject(args);
@@ -991,7 +955,7 @@ public abstract class AbstractSerializationTest {
 
     @Test
     public void test_SPersonSet() throws Exception {
-        Set<SerializablePerson> args = new HashSet<SerializablePerson>();
+        Set<SerializablePerson> args = new HashSet<>();
         args.add(new SerializablePerson());
 
         assertObject(args);
@@ -1001,7 +965,7 @@ public abstract class AbstractSerializationTest {
 
     @Test
     public void test_IntSPersonMap() throws Exception {
-        Map<Integer, SerializablePerson> args = new HashMap<Integer, SerializablePerson>();
+        Map<Integer, SerializablePerson> args = new HashMap<>();
         args.put(1, new SerializablePerson());
 
         assertObject(args);
@@ -1009,7 +973,7 @@ public abstract class AbstractSerializationTest {
 
     @Test
     public void test_StringSPersonMap() throws Exception {
-        Map<String, SerializablePerson> args = new HashMap<String, SerializablePerson>();
+        Map<String, SerializablePerson> args = new HashMap<>();
         args.put("1", new SerializablePerson());
 
         assertObject(args);
@@ -1017,9 +981,9 @@ public abstract class AbstractSerializationTest {
 
     @Test
     public void test_StringSPersonListMap() throws Exception {
-        Map<String, List<SerializablePerson>> args = new HashMap<String, List<SerializablePerson>>();
+        Map<String, List<SerializablePerson>> args = new HashMap<>();
 
-        List<SerializablePerson> sublist = new ArrayList<SerializablePerson>();
+        List<SerializablePerson> sublist = new ArrayList<>();
         sublist.add(new SerializablePerson());
         args.put("1", sublist);
 
@@ -1028,8 +992,8 @@ public abstract class AbstractSerializationTest {
 
     @Test
     public void test_SPersonListList() throws Exception {
-        List<List<SerializablePerson>> args = new ArrayList<List<SerializablePerson>>();
-        List<SerializablePerson> sublist = new ArrayList<SerializablePerson>();
+        List<List<SerializablePerson>> args = new ArrayList<>();
+        List<SerializablePerson> sublist = new ArrayList<>();
         sublist.add(new SerializablePerson());
         args.add(sublist);
 
@@ -1066,8 +1030,7 @@ public abstract class AbstractSerializationTest {
         objectOutput.writeInt(-23);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
         assertFalse(deserialize.readBool());
@@ -1093,8 +1056,7 @@ public abstract class AbstractSerializationTest {
         objectOutput.writeInt(-23);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
         assertFalse(deserialize.readBool());
@@ -1163,9 +1125,9 @@ public abstract class AbstractSerializationTest {
 
 
     @Test
-    public void test_LoopReference() throws Exception {
+    public void test_LoopReference() {
         assertTimeout(ofMillis(3000), () -> {
-            Map<String, Object> map = new HashMap<String, Object>();
+            Map<String, Object> map = new HashMap<>();
             map.put("k1", "v1");
             map.put("self", map);
 
@@ -1174,11 +1136,9 @@ public abstract class AbstractSerializationTest {
             objectOutput.writeObject(map);
             objectOutput.flushBuffer();
 
-            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                    byteArrayOutputStream.toByteArray());
+            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
             ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
-            @SuppressWarnings("unchecked")
-            Map<String, Object> output = (Map<String, Object>) deserialize.readObject();
+            @SuppressWarnings("unchecked") Map<String, Object> output = (Map<String, Object>) deserialize.readObject();
 
             assertEquals("v1", output.get("k1"));
             assertSame(output, output.get("self"));
@@ -1195,11 +1155,10 @@ public abstract class AbstractSerializationTest {
         objectOutput.writeObject(data);
         objectOutput.flushBuffer();
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
-                byteArrayOutputStream.toByteArray());
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
-        URL actual = (URL) deserialize.readObject(URL.class);
+        URL actual = deserialize.readObject(URL.class);
         assertEquals(data, actual);
         assertEquals(data.getParameters(), actual.getParameters());
 

@@ -62,7 +62,7 @@ public class AvroObjectInputOutputTest {
     }
 
     @Test
-    public void testWriteReadBool() throws IOException, InterruptedException {
+    public void testWriteReadBool() throws IOException {
         avroObjectOutput.writeBool(true);
         avroObjectOutput.flushBuffer();
         pos.close();
@@ -190,7 +190,7 @@ public class AvroObjectInputOutputTest {
         Object result = avroObjectInput.readObject();
 
         assertThat(result, not(nullValue()));
-//		assertThat(result.getName(), is("abc"));
-//		assertThat(result.getAge(), is(30));
+        //		assertThat(result.getName(), is("abc"));
+        //		assertThat(result.getAge(), is(30));
     }
 }
