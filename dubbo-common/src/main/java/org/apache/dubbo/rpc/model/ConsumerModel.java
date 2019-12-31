@@ -66,6 +66,8 @@ public class ConsumerModel {
         if (attributes != null) {
             this.methodConfigs = attributes;
         }
+
+        initMethodModels();
     }
 
     /**
@@ -126,9 +128,14 @@ public class ConsumerModel {
 
         this(serviceKey, proxyObject, serviceModel, referenceConfig);
         this.serviceMetadata = metadata;
+    }
 
-        for (Method method : metadata.getServiceType().getMethods()) {
-            methodModels.put(method, new ConsumerMethodModel(method));
+    public void initMethodModels() {
+        Class[] interfaceList = serviceMetadata.getTarget().getClass().getInterfaces();
+        for (Class interfaceClass : interfaceList) {
+            for (Method method : interfaceClass.getMethods()) {
+                methodModels.put(method, new ConsumerMethodModel(method));
+            }
         }
     }
 
