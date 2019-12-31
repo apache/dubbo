@@ -396,10 +396,54 @@ public class DubboProtocol extends AbstractProtocol {
         optimizeSerialization(url);
 
         // create rpc invoker.
-        DubboInvoker<T> invoker = new DubboInvoker<T>(serviceType, url, getClients(url), invokers);
+        DubboInvoker<T> invoker = new DubboInvoker<T>(serviceType, url, getClientsV2(url), invokers);
         invokers.add(invoker);
 
         return invoker;
+    }
+
+    private ExchangeClient[] getClientsV2(URL url) {
+        int connections = url.getParameter(CONNECTIONS_KEY, 1);
+        boolean shareConnect = url.getParameter("shareConnection", true);
+
+        if (shareConnect) {
+            return getSharedClientV2(url, connections);
+        }
+
+        return getUnsharedClients(url, connections);
+    }
+
+    private ExchangeClient[] getSharedClientV2(URL url, int connectNum) {
+        String key = url.getAddress();
+        List<ReferenceCountExchangeClient> clients = referenceClientMap.get(key);
+        if (clients == null) {
+            clients = new ArrayList<>();
+        }
+
+        ExchangeClient[] sharedClients = new ExchangeClient[connectNum];
+        for (int i = 0; i < connectNum; i++) {
+            ReferenceCountExchangeClient sharedClient = clients.get(i);
+            if (sharedClient == null) {
+                //如果不够用，就再建一个放到池子里。
+                sharedClient = buildReferenceCountExchangeClient(url);
+                clients.add(sharedClient);
+            } else {
+                //如果是从池子里拿到的，引用+1
+                sharedClient.incrementAndGetCount();
+            }
+            sharedClients[i] = sharedClient;
+        }
+
+        return sharedClients;
+    }
+
+    private ExchangeClient[] getUnsharedClients(URL url, int connectNum) {
+        ExchangeClient[] clients = new ExchangeClient[connectNum];
+        for (int i = 0; i < clients.length; i++) {
+            clients[i] = initClient(url);
+        }
+
+        return clients;
     }
 
     private ExchangeClient[] getClients(URL url) {
