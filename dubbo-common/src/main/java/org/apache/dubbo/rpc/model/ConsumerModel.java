@@ -130,6 +130,14 @@ public class ConsumerModel {
         this.serviceMetadata = metadata;
     }
 
+    public static ConsumerModel from(String serviceKey, ConsumerModel consumerModel) {
+        ConsumerModel copy = new ConsumerModel(serviceKey, consumerModel.proxyObject, consumerModel.serviceModel,
+                consumerModel.referenceConfig);
+        copy.serviceMetadata = consumerModel.serviceMetadata;
+        copy.methodConfigs = consumerModel.methodConfigs;
+        return copy;
+    }
+
     public void initMethodModels() {
         Class[] interfaceList = serviceMetadata.getTarget().getClass().getInterfaces();
         for (Class interfaceClass : interfaceList) {

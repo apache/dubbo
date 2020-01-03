@@ -260,16 +260,23 @@ public class RegistryProtocol implements Protocol {
         URL registryUrl = getRegistryUrl(originInvoker);
         final URL newProviderUrl = getUrlToRegistry(newInvokerUrl, registryUrl);
 
-        ProviderModel.RegisterStatedURL statedUrl = getStatedUrl(registryUrl, getProviderUrl(originInvoker));
-
-        if (!newProviderUrl.equals(statedUrl.getProviderUrl())) {
-            if (statedUrl.isRegistered()) {
+        URL registeredUrl = exporter.getRegisterUrl();
+        if (!newProviderUrl.equals(registeredUrl)) {
+            if (getProviderUrl(originInvoker).getParameter(REGISTER_KEY, true)) {
                 Registry registry = getRegistry(originInvoker);
-                logger.info("Try to unregister old url: " + statedUrl.getProviderUrl());
-                registry.unregister(statedUrl.getProviderUrl());
+                logger.info("Try to unregister old url: " + registeredUrl);
+                registry.unregister(registeredUrl);
+
+                String registeredKey = registeredUrl.getServiceKey();
+                String newKey = newProviderUrl.getServiceKey();
+                if (!registeredKey.equals(newKey)) {
+                    ApplicationModel.getServiceRepository().reRegisterProvider(newKey, registeredKey);
+                }
+
                 logger.info("Try to register new url: " + newProviderUrl);
                 registry.register(newProviderUrl);
             }
+            ProviderModel.RegisterStatedURL statedUrl = getStatedUrl(registryUrl, newProviderUrl);
             statedUrl.setProviderUrl(newProviderUrl);
             exporter.setRegisterUrl(newProviderUrl);
         }
@@ -456,6 +463,12 @@ public class RegistryProtocol implements Protocol {
         Registry registry = directory.getRegistry();
         registry.unregister(directory.getRegisteredConsumerUrl());
         directory.unSubscribe(toSubscribeUrl(oldSubscribeUrl));
+
+        String oldKey = oldSubscribeUrl.getServiceKey();
+        String newKey = newSubscribeUrl.getServiceKey();
+        if (!oldKey.equals(newKey)) {
+            ApplicationModel.getServiceRepository().reRegisterConsumer(newKey, oldKey);
+        }
 
         directory.setRegisteredConsumerUrl(newSubscribeUrl);
         registry.register(directory.getRegisteredConsumerUrl());
@@ -757,6 +770,10 @@ public class RegistryProtocol implements Protocol {
 
         public void setRegisterUrl(URL registerUrl) {
             this.registerUrl = registerUrl;
+        }
+
+        public URL getRegisterUrl() {
+            return registerUrl;
         }
     }
 

@@ -96,6 +96,11 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt 
         );
     }
 
+    public void reRegisterConsumer(String newServiceKey, String serviceKey) {
+        ConsumerModel consumerModel = consumers.remove(serviceKey);
+        consumers.computeIfAbsent(newServiceKey, c -> ConsumerModel.from(newServiceKey, consumerModel));
+    }
+
     public void registerProvider(String serviceKey,
                                  Object serviceInstance,
                                  ServiceDescriptor serviceModel,
@@ -111,6 +116,11 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt 
                         serviceMetadata
                 )
         );
+    }
+
+    public void reRegisterProvider(String newServiceKey, String serviceKey) {
+        ProviderModel providerModel = providers.remove(serviceKey);
+        providers.computeIfAbsent(newServiceKey, p -> ProviderModel.from(newServiceKey, providerModel));
     }
 
     public List<ServiceDescriptor> getAllServices() {

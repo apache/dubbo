@@ -53,6 +53,15 @@ public class ProviderModel {
         this.urls = new ArrayList<>(1);
     }
 
+    public static ProviderModel from(String serviceKey, ProviderModel providerModel) {
+        ProviderModel copy = new ProviderModel(serviceKey, providerModel.getServiceInstance(),
+                providerModel.getServiceModel(), providerModel.getServiceConfig());
+        for (RegisterStatedURL url : providerModel.getStatedUrl()) {
+            copy.addStatedUrl(url);
+        }
+        return copy;
+    }
+
     public String getServiceKey() {
         return serviceKey;
     }
