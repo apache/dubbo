@@ -253,29 +253,42 @@ public class RegistryProtocol implements Protocol {
         }
     }
 
+    /**
+     * Reexport the invoker of the modified url
+     *
+     * @param originInvoker
+     * @param newInvokerUrl
+     * @param <T>
+     */
+    @SuppressWarnings("unchecked")
     public <T> void reExport(final Invoker<T> originInvoker, URL newInvokerUrl) {
-        // update local exporter
-        ExporterChangeableWrapper exporter = doChangeLocalExport(originInvoker, newInvokerUrl);
-        // update registry
-        URL registryUrl = getRegistryUrl(originInvoker);
-        final URL newProviderUrl = getUrlToRegistry(newInvokerUrl, registryUrl);
-
+        String key = getCacheKey(originInvoker);
+        ExporterChangeableWrapper<T> exporter = (ExporterChangeableWrapper<T>) bounds.get(key);
         URL registeredUrl = exporter.getRegisterUrl();
+
+        URL registryUrl = getRegistryUrl(originInvoker);
+        URL newProviderUrl = getUrlToRegistry(newInvokerUrl, registryUrl);
+        String registeredKey = registeredUrl.getServiceKey();
+        String newKey = newProviderUrl.getServiceKey();
+        if (!registeredKey.equals(newKey)) {
+            ApplicationModel.getServiceRepository().reRegisterProvider(newKey, registeredKey);
+        }
+
+        // update local exporter
+        Invoker<T> invokerDelegate = new InvokerDelegate<T>(originInvoker, newInvokerUrl);
+        exporter.setExporter(protocol.export(invokerDelegate));
+
+        // update registry
         if (!newProviderUrl.equals(registeredUrl)) {
             if (getProviderUrl(originInvoker).getParameter(REGISTER_KEY, true)) {
                 Registry registry = getRegistry(originInvoker);
                 logger.info("Try to unregister old url: " + registeredUrl);
                 registry.unregister(registeredUrl);
 
-                String registeredKey = registeredUrl.getServiceKey();
-                String newKey = newProviderUrl.getServiceKey();
-                if (!registeredKey.equals(newKey)) {
-                    ApplicationModel.getServiceRepository().reRegisterProvider(newKey, registeredKey);
-                }
-
                 logger.info("Try to register new url: " + newProviderUrl);
                 registry.register(newProviderUrl);
             }
+
             ProviderModel.RegisterStatedURL statedUrl = getStatedUrl(registryUrl, newProviderUrl);
             statedUrl.setProviderUrl(newProviderUrl);
             exporter.setRegisterUrl(newProviderUrl);
@@ -291,25 +304,6 @@ public class RegistryProtocol implements Protocol {
                 .filter(u -> u.getRegistryUrl().equals(registryUrl)
                         && u.getProviderUrl().getProtocol().equals(providerUrl.getProtocol()))
                 .findFirst().orElseThrow(() -> new IllegalStateException("There should have at least one registered url."));
-    }
-
-    /**
-     * Reexport the invoker of the modified url
-     *
-     * @param originInvoker
-     * @param newInvokerUrl
-     */
-    @SuppressWarnings("unchecked")
-    private <T> ExporterChangeableWrapper doChangeLocalExport(final Invoker<T> originInvoker, URL newInvokerUrl) {
-        String key = getCacheKey(originInvoker);
-        final ExporterChangeableWrapper<T> exporter = (ExporterChangeableWrapper<T>) bounds.get(key);
-        if (exporter == null) {
-            logger.warn(new IllegalStateException("error state, exporter should not be null"));
-        } else {
-            final Invoker<T> invokerDelegate = new InvokerDelegate<T>(originInvoker, newInvokerUrl);
-            exporter.setExporter(protocol.export(invokerDelegate));
-        }
-        return exporter;
     }
 
     /**

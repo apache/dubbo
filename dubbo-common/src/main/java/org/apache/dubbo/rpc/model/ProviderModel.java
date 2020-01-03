@@ -53,15 +53,6 @@ public class ProviderModel {
         this.urls = new ArrayList<>(1);
     }
 
-    public static ProviderModel from(String serviceKey, ProviderModel providerModel) {
-        ProviderModel copy = new ProviderModel(serviceKey, providerModel.getServiceInstance(),
-                providerModel.getServiceModel(), providerModel.getServiceConfig());
-        for (RegisterStatedURL url : providerModel.getStatedUrl()) {
-            copy.addStatedUrl(url);
-        }
-        return copy;
-    }
-
     public String getServiceKey() {
         return serviceKey;
     }
@@ -146,6 +137,16 @@ public class ProviderModel {
 
         this.serviceMetadata = serviceMetadata;
         initMethod(serviceModel.getServiceInterfaceClass());
+    }
+
+    public static ProviderModel from(String serviceKey, ProviderModel providerModel) {
+        ProviderModel copy = new ProviderModel(serviceKey, providerModel.serviceInstance,
+                providerModel.serviceModel, providerModel.serviceConfig,
+                ServiceMetadata.from(serviceKey, providerModel.serviceMetadata));
+        for (RegisterStatedURL url : providerModel.getStatedUrl()) {
+            copy.addStatedUrl(url);
+        }
+        return copy;
     }
 
     public String getServiceName() {

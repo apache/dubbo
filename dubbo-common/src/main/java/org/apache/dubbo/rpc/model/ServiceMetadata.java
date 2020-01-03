@@ -22,6 +22,8 @@ import org.apache.dubbo.common.URL;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.apache.dubbo.common.BaseServiceMetadata.interfaceFromServiceKey;
+
 /**
  * Notice, this class currently has no usage inside Dubbo.
  *
@@ -47,6 +49,15 @@ public class ServiceMetadata extends BaseServiceMetadata {
         this.version = version;
         this.serviceKey = URL.buildKey(serviceInterfaceName, group, version);
         this.serviceType = serviceType;
+    }
+
+    public static ServiceMetadata from(String serviceKey, ServiceMetadata serviceMetadata) {
+        ServiceMetadata copy = new ServiceMetadata(interfaceFromServiceKey(serviceKey), groupFromServiceKey(serviceKey),
+                versionFromServiceKey(serviceKey), serviceMetadata.serviceType);
+         copy.attachments.putAll(serviceMetadata.attachments);
+         copy.attributeMap.putAll(serviceMetadata.attributeMap);
+         copy.target = serviceMetadata.target;
+        return copy;
     }
 
     public ServiceMetadata() {

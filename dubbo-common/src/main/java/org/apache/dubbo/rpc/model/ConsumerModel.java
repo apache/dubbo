@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.config.ReferenceConfigBase;
+import org.apache.dubbo.config.annotation.Service;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -133,7 +134,7 @@ public class ConsumerModel {
     public static ConsumerModel from(String serviceKey, ConsumerModel consumerModel) {
         ConsumerModel copy = new ConsumerModel(serviceKey, consumerModel.proxyObject, consumerModel.serviceModel,
                 consumerModel.referenceConfig);
-        copy.serviceMetadata = consumerModel.serviceMetadata;
+        copy.serviceMetadata = ServiceMetadata.from(serviceKey, consumerModel.serviceMetadata);
         copy.methodConfigs = consumerModel.methodConfigs;
         return copy;
     }
