@@ -365,11 +365,13 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
         checkStubAndLocal(interfaceClass);
         checkMock(interfaceClass);
-        postProcessConfig(configInitializers);
+        postProcessConfig();
     }
 
-    private void postProcessConfig(List<ConfigInitializer> configInitializers) {
-        configInitializers.forEach(component -> component.postProcessServiceConfig(this));
+    private void postProcessConfig() {
+        List<ConfigPostProcessor> configPostProcessors =ExtensionLoader.getExtensionLoader(ConfigPostProcessor.class)
+                .getActivateExtension(URL.valueOf("configPostProcessor://"), (String[]) null);
+        configPostProcessors.forEach(component -> component.postProcessServiceConfig(this));
     }
 
     /**

@@ -25,10 +25,6 @@ import org.apache.dubbo.common.extension.SPI;
 @SPI
 public interface ConfigInitializer {
 
-    default void initApplicationConfig(ApplicationConfig applicationConfig) {
-
-    }
-
     default void initReferConfig(ReferenceConfig referenceConfig) {
 
     }
@@ -37,11 +33,4 @@ public interface ConfigInitializer {
 
     }
 
-    default void postProcessReferConfig(ReferenceConfig referenceConfig) {
-
-    }
-
-    default void postProcessServiceConfig(ServiceConfig serviceConfig) {
-
-    }
 }

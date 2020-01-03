@@ -230,13 +230,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 System.setProperty(SHUTDOWN_WAIT_SECONDS_KEY, wait.trim());
             }
         }
-        postProcessApplicationConfig();
-    }
-
-    private void postProcessApplicationConfig(){
-        List<ConfigInitializer> configInitializers = ExtensionLoader.getExtensionLoader(ConfigInitializer.class)
-                .getActivateExtension(URL.valueOf("configInitializer://"), (String[]) null);
-        configInitializers.forEach(e -> e.initApplicationConfig(application));
     }
 
     protected void checkMonitor() {

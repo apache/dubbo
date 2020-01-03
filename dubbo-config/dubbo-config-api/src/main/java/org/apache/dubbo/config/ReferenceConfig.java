@@ -262,11 +262,13 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
         resolveFile();
         checkApplication();
         checkMetadataReport();
-        postProcessConfig(configInitializers);
+        postProcessConfig();
     }
 
-    private void postProcessConfig(List<ConfigInitializer> configInitializers) {
-        configInitializers.forEach(component -> component.postProcessReferConfig(this));
+    private void postProcessConfig() {
+        List<ConfigPostProcessor> configPostProcessors =ExtensionLoader.getExtensionLoader(ConfigPostProcessor.class)
+                .getActivateExtension(URL.valueOf("configPostProcessor://"), (String[]) null);
+        configPostProcessors.forEach(component -> component.postProcessReferConfig(this));
     }
 
     public synchronized T get() {
