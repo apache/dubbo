@@ -30,7 +30,7 @@ target/
 .DS_Store
 Thumbs.db
 *.orig
-BaseServiceMetadata.java
+
 # flatten ignore
 .flattened-pom.xml
 
