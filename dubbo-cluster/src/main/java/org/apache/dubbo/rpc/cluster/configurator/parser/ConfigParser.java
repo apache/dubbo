@@ -161,7 +161,7 @@ public class ConfigParser {
         }
 
         String interfaceName = serviceKey;
-        int i = interfaceName.indexOf("/");
+        int i = interfaceName.indexOf('/');
         if (i > 0) {
             sb.append("group=");
             sb.append(interfaceName, 0, i);
@@ -169,7 +169,7 @@ public class ConfigParser {
 
             interfaceName = interfaceName.substring(i + 1);
         }
-        int j = interfaceName.indexOf(":");
+        int j = interfaceName.indexOf(':');
         if (j > 0) {
             sb.append("version=");
             sb.append(interfaceName.substring(j + 1));
