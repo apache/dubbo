@@ -37,7 +37,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 
 /**
- * Consider implementing {@link Licycle} to enable executors shutdown when the process stops.
+ * Consider implementing {@code Licycle} to enable executors shutdown when the process stops.
  */
 public class DefaultExecutorRepository implements ExecutorRepository {
     private static final Logger logger = LoggerFactory.getLogger(DefaultExecutorRepository.class);
@@ -48,26 +48,59 @@ public class DefaultExecutorRepository implements ExecutorRepository {
 
     private Ring<ScheduledExecutorService> scheduledExecutors = new Ring<>();
 
+    private ScheduledExecutorService serviceExporterExecutor;
+
     private ScheduledExecutorService reconnectScheduledExecutor;
 
-    private ConcurrentMap<String, ConcurrentMap<String, ExecutorService>> data = new ConcurrentHashMap<>();
+    private ConcurrentMap<String, ConcurrentMap<Integer, ExecutorService>> data = new ConcurrentHashMap<>();
 
     public DefaultExecutorRepository() {
-        for (int i = 0; i < DEFAULT_SCHEDULER_SIZE; i++) {
-            ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-framework-scheduler"));
-            scheduledExecutors.addItem(scheduler);
-        }
-
-        reconnectScheduledExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-reconnect-scheduler"));
+//        for (int i = 0; i < DEFAULT_SCHEDULER_SIZE; i++) {
+//            ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-framework-scheduler"));
+//            scheduledExecutors.addItem(scheduler);
+//        }
+//
+//        reconnectScheduledExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-reconnect-scheduler"));
+        serviceExporterExecutor = Executors.newScheduledThreadPool(1, new NamedThreadFactory("Dubbo-exporter-scheduler"));
     }
 
-    public ExecutorService createExecutorIfAbsent(URL url) {
+    public synchronized ExecutorService createExecutorIfAbsent(URL url) {
         String componentKey = EXECUTOR_SERVICE_COMPONENT_KEY;
         if (CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY))) {
             componentKey = CONSUMER_SIDE;
         }
-        Map<String, ExecutorService> executors = data.computeIfAbsent(componentKey, k -> new ConcurrentHashMap<>());
-        return executors.computeIfAbsent(Integer.toString(url.getPort()), k -> (ExecutorService) ExtensionLoader.getExtensionLoader(ThreadPool.class).getAdaptiveExtension().getExecutor(url));
+        Map<Integer, ExecutorService> executors = data.computeIfAbsent(componentKey, k -> new ConcurrentHashMap<>());
+        Integer portKey = url.getPort();
+        ExecutorService executor = executors.computeIfAbsent(portKey, k -> createExecutor(url));
+        // If executor has been shut down, create a new one
+        if (executor.isShutdown() || executor.isTerminated()) {
+            executors.remove(portKey);
+            executor = createExecutor(url);
+            executors.put(portKey, executor);
+        }
+        return executor;
+    }
+
+    public ExecutorService getExecutor(URL url) {
+        String componentKey = EXECUTOR_SERVICE_COMPONENT_KEY;
+        if (CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY))) {
+            componentKey = CONSUMER_SIDE;
+        }
+        Map<Integer, ExecutorService> executors = data.get(componentKey);
+        if (executors == null) {
+            return null;
+        }
+
+        Integer portKey = url.getPort();
+        ExecutorService executor = executors.get(portKey);
+        if (executor != null) {
+            if (executor.isShutdown() || executor.isTerminated()) {
+                executors.remove(portKey);
+                executor = createExecutor(url);
+                executors.put(portKey, executor);
+            }
+        }
+        return executor;
     }
 
     @Override
@@ -104,8 +137,17 @@ public class DefaultExecutorRepository implements ExecutorRepository {
     }
 
     @Override
+    public ScheduledExecutorService getServiceExporterExecutor() {
+        return serviceExporterExecutor;
+    }
+
+    @Override
     public ExecutorService getSharedExecutor() {
         return SHARED_EXECUTOR;
+    }
+
+    private ExecutorService createExecutor(URL url) {
+        return (ExecutorService) ExtensionLoader.getExtensionLoader(ThreadPool.class).getAdaptiveExtension().getExecutor(url);
     }
 
 }

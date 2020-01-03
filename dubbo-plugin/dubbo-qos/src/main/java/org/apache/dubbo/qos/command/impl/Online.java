@@ -25,21 +25,21 @@ import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.command.annotation.Cmd;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
-import org.apache.dubbo.registry.support.ProviderConsumerRegTable;
-import org.apache.dubbo.registry.support.ProviderInvokerWrapper;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
+import org.apache.dubbo.rpc.model.ServiceRepository;
 
 import java.util.Collection;
-import java.util.Set;
+import java.util.List;
 
 @Cmd(name = "online", summary = "online dubbo", example = {
         "online dubbo",
         "online xx.xx.xxx.service"
 })
 public class Online implements BaseCommand {
-    private Logger logger = LoggerFactory.getLogger(Online.class);
+    private static final Logger logger = LoggerFactory.getLogger(Online.class);
     private static RegistryFactory registryFactory = ExtensionLoader.getExtensionLoader(RegistryFactory.class).getAdaptiveExtension();
+    private static ServiceRepository serviceRepository = ApplicationModel.getServiceRepository();
 
     @Override
     public String execute(CommandContext commandContext, String[] args) {
@@ -50,32 +50,31 @@ public class Online implements BaseCommand {
         }
 
         boolean hasService = online(servicePattern);
-
         if (hasService) {
             return "OK";
         } else {
             return "service not found";
         }
-
     }
 
-    public static boolean online(String servicePattern){
+    public static boolean online(String servicePattern) {
         boolean hasService = false;
-        Collection<ProviderModel> providerModelList = ApplicationModel.allProviderModels();
+
+        Collection<ProviderModel> providerModelList = serviceRepository.getExportedServices();
         for (ProviderModel providerModel : providerModelList) {
             if (providerModel.getServiceMetadata().getDisplayServiceKey().matches(servicePattern)) {
                 hasService = true;
-                Set<ProviderInvokerWrapper> providerInvokerWrapperSet = ProviderConsumerRegTable.getProviderInvoker(providerModel.getServiceMetadata().getServiceKey());
-                for (ProviderInvokerWrapper providerInvokerWrapper : providerInvokerWrapperSet) {
-                    if (providerInvokerWrapper.isReg()) {
-                        continue;
+                List<ProviderModel.RegisterStatedURL> statedUrls = providerModel.getStatedUrl();
+                for (ProviderModel.RegisterStatedURL statedURL : statedUrls) {
+                    if (!statedURL.isRegistered()) {
+                        Registry registry = registryFactory.getRegistry(statedURL.getRegistryUrl());
+                        registry.register(statedURL.getProviderUrl());
+                        statedURL.setRegistered(true);
                     }
-                    Registry registry = registryFactory.getRegistry(providerInvokerWrapper.getRegistryUrl());
-                    registry.register(providerInvokerWrapper.getProviderUrl());
-                    providerInvokerWrapper.setReg(true);
                 }
             }
         }
+
         return hasService;
     }
 }

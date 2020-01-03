@@ -16,11 +16,15 @@
  */
 package org.apache.dubbo.rpc;
 
-import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * {@link AsyncRpcResult} is introduced in 3.0.0 to replace RpcResult, and RpcResult is replaced with {@link AppResponse}:
@@ -41,7 +45,7 @@ import java.util.function.BiConsumer;
  *
  * @serial Do not change the class name and properties.
  */
-public class AppResponse extends AbstractResult implements Serializable {
+public class AppResponse implements Result {
 
     private static final long serialVersionUID = -6925924956850004727L;
 
@@ -156,6 +160,21 @@ public class AppResponse extends AbstractResult implements Serializable {
 
     @Override
     public Result whenCompleteWithContext(BiConsumer<Result, Throwable> fn) {
+        throw new UnsupportedOperationException("AppResponse represents an concrete business response, there will be no status changes, you should get internal values directly.");
+    }
+
+    @Override
+    public <U> CompletableFuture<U> thenApply(Function<Result, ? extends U> fn) {
+        throw new UnsupportedOperationException("AppResponse represents an concrete business response, there will be no status changes, you should get internal values directly.");
+    }
+
+    @Override
+    public Result get() throws InterruptedException, ExecutionException {
+        throw new UnsupportedOperationException("AppResponse represents an concrete business response, there will be no status changes, you should get internal values directly.");
+    }
+
+    @Override
+    public Result get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
         throw new UnsupportedOperationException("AppResponse represents an concrete business response, there will be no status changes, you should get internal values directly.");
     }
 

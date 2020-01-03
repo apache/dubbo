@@ -31,6 +31,7 @@ import static org.apache.dubbo.remoting.Constants.DEFAULT_EXCHANGER;
 
 /**
  * HttpClientConnectionFactory
+ * TODO, Consider using connection pool
  */
 public class HttpClientConnectionFactory implements HessianConnectionFactory {
 

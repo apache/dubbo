@@ -28,7 +28,7 @@ import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.Server;
+import org.apache.dubbo.remoting.RemotingServer;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.ExchangeServer;
 import org.apache.dubbo.remoting.exchange.Request;
@@ -40,6 +40,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.Collections.unmodifiableCollection;
+import static org.apache.dubbo.common.constants.CommonConstants.READONLY_EVENT;
 import static org.apache.dubbo.remoting.Constants.HEARTBEAT_CHECK_TICK;
 import static org.apache.dubbo.remoting.Constants.LEAST_HEARTBEAT_DURATION;
 import static org.apache.dubbo.remoting.Constants.TICKS_PER_WHEEL;
@@ -53,7 +54,7 @@ public class HeaderExchangeServer implements ExchangeServer {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final Server server;
+    private final RemotingServer server;
     private AtomicBoolean closed = new AtomicBoolean(false);
 
     private static final HashedWheelTimer IDLE_CHECK_TIMER = new HashedWheelTimer(new NamedThreadFactory("dubbo-server-idleCheck", true), 1,
@@ -61,13 +62,13 @@ public class HeaderExchangeServer implements ExchangeServer {
 
     private CloseTimerTask closeTimerTask;
 
-    public HeaderExchangeServer(Server server) {
+    public HeaderExchangeServer(RemotingServer server) {
         Assert.notNull(server, "server == null");
         this.server = server;
         startIdleCheckTask(getUrl());
     }
 
-    public Server getServer() {
+    public RemotingServer getServer() {
         return server;
     }
 
@@ -127,7 +128,7 @@ public class HeaderExchangeServer implements ExchangeServer {
 
     private void sendChannelReadOnlyEvent() {
         Request request = new Request();
-        request.setEvent(Request.READONLY_EVENT);
+        request.setEvent(READONLY_EVENT);
         request.setTwoWay(false);
         request.setVersion(Version.getProtocolVersion());
 

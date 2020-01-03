@@ -17,6 +17,66 @@
 
 package com.alibaba.dubbo.remoting;
 
+import org.apache.dubbo.common.extension.Adaptive;
+import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.remoting.RemotingServer;
+
+import com.alibaba.dubbo.common.URL;
+
 @Deprecated
 public interface Transporter extends org.apache.dubbo.remoting.Transporter {
+
+    @Adaptive({Constants.SERVER_KEY, Constants.TRANSPORTER_KEY})
+    Server bind(URL url, ChannelHandler handler) throws RemotingException;
+
+    @Override
+    default RemotingServer bind(org.apache.dubbo.common.URL url, org.apache.dubbo.remoting.ChannelHandler handler)
+            throws org.apache.dubbo.remoting.RemotingException {
+        return bind(new URL(url), new ChannelHandler() {
+            @Override
+            public void connected(Channel channel) throws RemotingException {
+                try {
+                    handler.connected(channel);
+                } catch (org.apache.dubbo.remoting.RemotingException e) {
+                    throw new RemotingException(e);
+                }
+            }
+
+            @Override
+            public void disconnected(Channel channel) throws RemotingException {
+                try {
+                    handler.disconnected(channel);
+                } catch (org.apache.dubbo.remoting.RemotingException e) {
+                    throw new RemotingException(e);
+                }
+            }
+
+            @Override
+            public void sent(Channel channel, Object message) throws RemotingException {
+                try {
+                    handler.sent(channel, message);
+                } catch (org.apache.dubbo.remoting.RemotingException e) {
+                    throw new RemotingException(e);
+                }
+            }
+
+            @Override
+            public void received(Channel channel, Object message) throws RemotingException {
+                try {
+                    handler.received(channel, message);
+                } catch (org.apache.dubbo.remoting.RemotingException e) {
+                    throw new RemotingException(e);
+                }
+            }
+
+            @Override
+            public void caught(Channel channel, Throwable exception) throws RemotingException {
+                try {
+                    handler.caught(channel, exception);
+                } catch (org.apache.dubbo.remoting.RemotingException e) {
+                    throw new RemotingException(e);
+                }
+            }
+        });
+    }
 }

@@ -18,7 +18,12 @@
 package com.alibaba.dubbo.rpc;
 
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 @Deprecated
 public interface Result extends org.apache.dubbo.rpc.Result {
@@ -33,10 +38,30 @@ public interface Result extends org.apache.dubbo.rpc.Result {
 
     }
 
-    abstract class AbstractResult extends org.apache.dubbo.rpc.AbstractResult implements Result {
+    abstract class AbstractResult implements Result {
+
+        @Override
+        public void setValue(Object value) {
+
+        }
 
         @Override
         public org.apache.dubbo.rpc.Result whenCompleteWithContext(BiConsumer<org.apache.dubbo.rpc.Result, Throwable> fn) {
+            return null;
+        }
+
+        @Override
+        public <U> CompletableFuture<U> thenApply(Function<org.apache.dubbo.rpc.Result, ? extends U> fn) {
+            return null;
+        }
+
+        @Override
+        public org.apache.dubbo.rpc.Result get() throws InterruptedException, ExecutionException {
+            return null;
+        }
+
+        @Override
+        public org.apache.dubbo.rpc.Result get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
             return null;
         }
     }
@@ -98,13 +123,13 @@ public interface Result extends org.apache.dubbo.rpc.Result {
         }
 
         @Override
-        public Object getAttachment(String key) {
-            return delegate.getAttachment(key);
+        public String getAttachment(String key) {
+            return (String) delegate.getAttachment(key);
         }
 
         @Override
-        public Object getAttachment(String key, Object defaultValue) {
-            return delegate.getAttachment(key, defaultValue);
+        public String getAttachment(String key, Object defaultValue) {
+            return (String) delegate.getAttachment(key, defaultValue);
         }
 
         @Override

@@ -30,9 +30,17 @@ target/
 .DS_Store
 Thumbs.db
 *.orig
-
+BaseServiceMetadata.java
 # flatten ignore
 .flattened-pom.xml
 
 # license check result
 license-list
+
+# grpc compiler
+compiler/gradle.properties
+compiler/build/*
+compiler/.gradle/*
+
+# protobuf
+dubbo-serialization/dubbo-serialization-protobuf/build/*

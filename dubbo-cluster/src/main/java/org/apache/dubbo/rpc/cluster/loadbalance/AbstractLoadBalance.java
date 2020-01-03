@@ -25,6 +25,8 @@ import org.apache.dubbo.rpc.cluster.LoadBalance;
 import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_SERVICE_REFERENCE_PATH;
 import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_WARMUP;
 import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_WEIGHT;
 import static org.apache.dubbo.rpc.cluster.Constants.WARMUP_KEY;
@@ -71,17 +73,24 @@ public abstract class AbstractLoadBalance implements LoadBalance {
      * @return weight
      */
     int getWeight(Invoker<?> invoker, Invocation invocation) {
-        int weight = invoker.getUrl().getMethodParameter(invocation.getMethodName(), WEIGHT_KEY, DEFAULT_WEIGHT);
-        if (weight > 0) {
-            long timestamp = invoker.getUrl().getParameter(TIMESTAMP_KEY, 0L);
-            if (timestamp > 0L) {
-                long uptime = System.currentTimeMillis() - timestamp;
-                if (uptime < 0) {
-                    return 1;
-                }
-                int warmup = invoker.getUrl().getParameter(WARMUP_KEY, DEFAULT_WARMUP);
-                if (uptime > 0 && uptime < warmup) {
-                    weight = calculateWarmupWeight((int)uptime, warmup, weight);
+        int weight;
+        URL url = invoker.getUrl();
+        // Multiple registry scenario, load balance among multiple registries.
+        if (REGISTRY_SERVICE_REFERENCE_PATH.equals(url.getServiceInterface())) {
+            weight = url.getParameter(REGISTRY_KEY + "." + WEIGHT_KEY, DEFAULT_WEIGHT);
+        } else {
+            weight = url.getMethodParameter(invocation.getMethodName(), WEIGHT_KEY, DEFAULT_WEIGHT);
+            if (weight > 0) {
+                long timestamp = invoker.getUrl().getParameter(TIMESTAMP_KEY, 0L);
+                if (timestamp > 0L) {
+                    long uptime = System.currentTimeMillis() - timestamp;
+                    if (uptime < 0) {
+                        return 1;
+                    }
+                    int warmup = invoker.getUrl().getParameter(WARMUP_KEY, DEFAULT_WARMUP);
+                    if (uptime > 0 && uptime < warmup) {
+                        weight = calculateWarmupWeight((int)uptime, warmup, weight);
+                    }
                 }
             }
         }

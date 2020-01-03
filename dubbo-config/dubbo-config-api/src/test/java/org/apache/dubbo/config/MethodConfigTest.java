@@ -30,11 +30,11 @@ import java.util.List;
 import java.util.Map;
 
 import static org.apache.dubbo.config.Constants.ON_INVOKE_INSTANCE_KEY;
+import static org.apache.dubbo.config.Constants.ON_INVOKE_METHOD_KEY;
 import static org.apache.dubbo.config.Constants.ON_RETURN_INSTANCE_KEY;
 import static org.apache.dubbo.config.Constants.ON_RETURN_METHOD_KEY;
 import static org.apache.dubbo.config.Constants.ON_THROW_INSTANCE_KEY;
 import static org.apache.dubbo.config.Constants.ON_THROW_METHOD_KEY;
-import static org.apache.dubbo.config.Constants.ON_INVOKE_METHOD_KEY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
