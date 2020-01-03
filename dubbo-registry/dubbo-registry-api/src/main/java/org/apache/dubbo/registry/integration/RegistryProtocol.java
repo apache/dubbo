@@ -126,8 +126,6 @@ public class RegistryProtocol implements Protocol {
     //To solve the problem of RMI repeated exposure port conflicts, the services that have been exposed are no longer exposed.
     //providerurl <--> exporter
     private final ConcurrentMap<String, ExporterChangeableWrapper<?>> bounds = new ConcurrentHashMap<>();
-    // keep invoker in wrappers when registry protocol listeners are found
-    private ConcurrentMap<String, RegistryInvokerWrapper<?>> invokerWrappers = new ConcurrentHashMap<>();
     private Cluster cluster;
     private Protocol protocol;
     private RegistryFactory registryFactory;
@@ -212,20 +210,20 @@ public class RegistryProtocol implements Protocol {
         // Deprecated! Subscribe to override rules in 2.6.x or before.
         registry.subscribe(overrideSubscribeUrl, overrideSubscribeListener);
 
-        notifyExport(originInvoker, registeredProviderUrl);
-
         exporter.setRegisterUrl(registeredProviderUrl);
         exporter.setSubscribeUrl(overrideSubscribeUrl);
+
+        notifyExport(exporter);
         //Ensure that a new exporter instance is returned every time export
         return new DestroyableExporter<>(exporter);
     }
 
-    private <T> void notifyExport(Invoker<T> originInvoker, URL registeredUrl) {
+    private <T> void notifyExport(ExporterChangeableWrapper<T> exporter) {
         List<RegistryProtocolListener> listeners = ExtensionLoader.getExtensionLoader(RegistryProtocolListener.class)
-                .getActivateExtension(registeredUrl, "registry.protocol.listener");
+                .getActivateExtension(exporter.getOriginInvoker().getUrl(), "registry.protocol.listener");
         if (CollectionUtils.isNotEmpty(listeners)) {
             for (RegistryProtocolListener listener : listeners) {
-                listener.onExport(this, originInvoker, registeredUrl);
+                listener.onExport(this, exporter);
             }
         }
     }
@@ -245,6 +243,14 @@ public class RegistryProtocol implements Protocol {
             Invoker<?> invokerDelegate = new InvokerDelegate<>(originInvoker, providerUrl);
             return new ExporterChangeableWrapper<>((Exporter<T>) protocol.export(invokerDelegate), originInvoker);
         });
+    }
+
+    public <T> void reExport(Exporter<T> exporter, URL newInvokerUrl) {
+        if (exporter instanceof ExporterChangeableWrapper) {
+            ExporterChangeableWrapper<T> exporterWrapper = (ExporterChangeableWrapper<T>) exporter;
+            Invoker<T> originInvoker = exporterWrapper.getOriginInvoker();
+            reExport(originInvoker, newInvokerUrl);
+        }
     }
 
     public <T> void reExport(final Invoker<T> originInvoker, URL newInvokerUrl) {
@@ -427,40 +433,37 @@ public class RegistryProtocol implements Protocol {
         directory.subscribe(toSubscribeUrl(subscribeUrl));
 
         Invoker<T> invoker = cluster.join(directory);
-        List<RegistryProtocolListener> listeners = findRegistryProtocolListeners(subscribeUrl);
+        List<RegistryProtocolListener> listeners = findRegistryProtocolListeners(url);
         if (CollectionUtils.isEmpty(listeners)) {
             return invoker;
         }
 
-        String key = subscribeUrl.toFullString();
-        RegistryInvokerWrapper<T> registryInvokerWrapper = (RegistryInvokerWrapper<T>) invokerWrappers.computeIfAbsent(key,
-                s -> new RegistryInvokerWrapper<>(directory, cluster, invoker));
-        registryInvokerWrapper.setInvoker(invoker);
+        RegistryInvokerWrapper<T> registryInvokerWrapper = new RegistryInvokerWrapper<>(directory, cluster, invoker, subscribeUrl);
         for (RegistryProtocolListener listener : listeners) {
-            listener.onRefer(this, subscribeUrl);
+            listener.onRefer(this, registryInvokerWrapper);
         }
         return registryInvokerWrapper;
     }
 
-    public <T> void reRefer(URL oldSubscribeUrl, URL newSubscribeUrl) {
-        RegistryInvokerWrapper<T> invoker = (RegistryInvokerWrapper<T>) invokerWrappers.get(oldSubscribeUrl.toFullString());
-        if (invoker == null) {
+    public <T> void reRefer(Invoker<T> invoker, URL newSubscribeUrl) {
+        if (!(invoker instanceof RegistryInvokerWrapper)) {
             return;
         }
 
-        RegistryDirectory<T> directory = invoker.getDirectory();
+        RegistryInvokerWrapper<T> invokerWrapper = (RegistryInvokerWrapper<T>) invoker;
+        URL oldSubscribeUrl = invokerWrapper.getUrl();
+        RegistryDirectory<T> directory = invokerWrapper.getDirectory();
         Registry registry = directory.getRegistry();
         registry.unregister(directory.getRegisteredConsumerUrl());
         directory.unSubscribe(toSubscribeUrl(oldSubscribeUrl));
-        invokerWrappers.remove(oldSubscribeUrl.toFullString());
 
         directory.setRegisteredConsumerUrl(newSubscribeUrl);
         registry.register(directory.getRegisteredConsumerUrl());
         directory.buildRouterChain(newSubscribeUrl);
         directory.subscribe(toSubscribeUrl(newSubscribeUrl));
 
-        invoker.setInvoker(invoker.getCluster().join(directory));
-        invokerWrappers.put(newSubscribeUrl.toFullString(), invoker);
+        invokerWrapper.setInvoker(invokerWrapper.getCluster().join(directory));
+        invokerWrapper.setUrl(newSubscribeUrl);
     }
 
     private static URL toSubscribeUrl(URL url) {

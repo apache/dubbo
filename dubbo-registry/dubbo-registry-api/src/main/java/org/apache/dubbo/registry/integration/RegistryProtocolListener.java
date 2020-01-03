@@ -2,6 +2,7 @@ package org.apache.dubbo.registry.integration;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 
 /**
@@ -14,17 +15,17 @@ public interface RegistryProtocolListener {
      * Notify RegistryProtocol's listeners when a service is registered
      *
      * @param registryProtocol RegistryProtocol instance
-     * @param invoker          original invoker used to export
-     * @param url              provider's URL used to register on registry center
+     * @param exporter         exporter
      * @see RegistryProtocol#export(org.apache.dubbo.rpc.Invoker)
      */
-    void onExport(RegistryProtocol registryProtocol, Invoker<?> invoker, URL url);
+    void onExport(RegistryProtocol registryProtocol, Exporter<?> exporter);
 
     /**
      * Notify RegistryProtocol's listeners when a service is subscribed
      *
      * @param registryProtocol RegistryProtocol instance
-     * @param url              consumer's URL used to subscribe on registry center
+     * @param invoker          invoker
+     * @see RegistryProtocol#refer(Class, URL)
      */
-    void onRefer(RegistryProtocol registryProtocol, URL url);
+    void onRefer(RegistryProtocol registryProtocol, Invoker<?> invoker);
 }

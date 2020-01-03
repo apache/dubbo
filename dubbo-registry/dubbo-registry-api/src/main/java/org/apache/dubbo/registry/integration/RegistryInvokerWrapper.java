@@ -11,11 +11,13 @@ class RegistryInvokerWrapper<T> implements Invoker<T> {
     private RegistryDirectory<T> directory;
     private Cluster cluster;
     private Invoker<T> invoker;
+    private URL url;
 
-    public RegistryInvokerWrapper(RegistryDirectory<T> directory, Cluster cluster, Invoker<T> invoker) {
+    public RegistryInvokerWrapper(RegistryDirectory<T> directory, Cluster cluster, Invoker<T> invoker, URL url) {
         this.directory = directory;
         this.cluster = cluster;
         this.invoker = invoker;
+        this.url = url;
     }
 
     @Override
@@ -30,17 +32,11 @@ class RegistryInvokerWrapper<T> implements Invoker<T> {
 
     @Override
     public URL getUrl() {
-        return invoker.getUrl();
+        return url;
     }
 
-    @Override
-    public boolean isAvailable() {
-        return invoker.isAvailable();
-    }
-
-    @Override
-    public void destroy() {
-        invoker.destroy();
+    public void setUrl(URL url) {
+        this.url = url;
     }
 
     public void setInvoker(Invoker<T> invoker) {
@@ -53,5 +49,15 @@ class RegistryInvokerWrapper<T> implements Invoker<T> {
 
     public Cluster getCluster() {
         return cluster;
+    }
+
+    @Override
+    public boolean isAvailable() {
+        return invoker.isAvailable();
+    }
+
+    @Override
+    public void destroy() {
+        invoker.destroy();
     }
 }
