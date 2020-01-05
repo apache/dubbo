@@ -25,6 +25,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.PojoUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
+
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -32,6 +33,7 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.service.GenericException;
+import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
@@ -43,6 +45,7 @@ import java.lang.reflect.Type;
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE_ASYNC;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_INVOCATION_PREFIX;
+import static org.apache.dubbo.config.Constants.INTERFACE;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 
 /**
@@ -139,7 +142,15 @@ public class GenericImplFilter implements Filter, Filter.Listener {
             if (!appResponse.hasException()) {
                 Object value = appResponse.getValue();
                 try {
-                    Method method = invoker.getInterface().getMethod(methodName, parameterTypes);
+                    Method method;
+                    if (invoker.getInterface().isAssignableFrom(GenericService.class)
+                            && !$INVOKE.equals(methodName)
+                            && !$INVOKE_ASYNC.equals(methodName)) {
+                        String invokeInterface = invoker.getUrl().getParameter(INTERFACE);
+                        method = ReflectUtils.forName(invokeInterface).getMethod(methodName, parameterTypes);
+                    } else {
+                        method = invoker.getInterface().getMethod(methodName, parameterTypes);
+                    }
                     if (ProtocolUtils.isBeanGenericSerialization(generic)) {
                         if (value == null) {
                             appResponse.setValue(value);

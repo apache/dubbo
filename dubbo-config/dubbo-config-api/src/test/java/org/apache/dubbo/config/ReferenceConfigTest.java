@@ -27,6 +27,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
+
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 
 public class ReferenceConfigTest {
@@ -86,14 +89,21 @@ public class ReferenceConfigTest {
         ApplicationConfig application = new ApplicationConfig();
         application.setName("test-reference-retry");
         RegistryConfig registry = new RegistryConfig();
-        registry.setAddress("multicast://224.5.6.7:1234");
+        registry.setAddress("multicast://224.5.6.8:1234");
         ProtocolConfig protocol = new ProtocolConfig();
-        protocol.setName("mockprotocol");
+        protocol.setName("mockprotocol3");
 
+        // delete cache file to ensure test pass
+        String defaultFilename = System.getProperty("user.home") + "/.dubbo/dubbo-registry-" + application.getName() + "-224.5.6.7-1234.cache";
+        File file = new File(defaultFilename);
+        if (file.exists()) {
+            file.delete();
+        }
         ReferenceConfig<DemoService> rc = new ReferenceConfig<DemoService>();
         rc.setApplication(application);
         rc.setRegistry(registry);
         rc.setInterface(DemoService.class.getName());
+        rc.setProtocol("mockprotocol3");
 
         boolean success = false;
         DemoService demoService = null;
@@ -128,6 +138,47 @@ public class ReferenceConfigTest {
 
     }
 
+    /**
+     * Test set generic with true to a ReferenceConfig with a Generic Parameter that not GenericService
+     */
+    @Test
+    public void testNormalReferenceSetGeneric() {
+        ApplicationConfig application = new ApplicationConfig();
+        application.setName("test-reference-set-generic");
+        RegistryConfig registry = new RegistryConfig();
+        registry.setAddress("multicast://224.5.6.7:1234");
+        ProtocolConfig protocol = new ProtocolConfig();
+        protocol.setName("mockprotocol");
+
+        ReferenceConfig<DemoService> rc = new ReferenceConfig<DemoService>();
+        rc.setApplication(application);
+        rc.setRegistry(registry);
+        rc.setInterface(DemoService.class.getName());
+        rc.setGeneric("true");
+
+        ServiceConfig<DemoService> sc = new ServiceConfig<DemoService>();
+        sc.setInterface(DemoService.class);
+        sc.setRef(new DemoServiceImpl());
+        sc.setApplication(application);
+        sc.setRegistry(registry);
+        sc.setProtocol(protocol);
+
+        boolean success = false;
+        DemoService demoService = null;
+        try {
+            System.setProperty("java.net.preferIPv4Stack", "true");
+            sc.export();
+            demoService = rc.get();
+            success = true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            System.clearProperty("java.net.preferIPv4Stack");
+        }
+        Assertions.assertTrue(success);
+        Assertions.assertNotNull(demoService);
+    }
+
     @Test
     public void testConstructWithReferenceAnnotation() throws NoSuchFieldException {
         Reference reference = getClass().getDeclaredField("innerTest").getAnnotation(Reference.class);
@@ -145,7 +196,6 @@ public class ReferenceConfigTest {
         Assertions.assertEquals(((MethodConfig) referenceConfig.getMethods().get(0)).getOnthrow(), "t");
         Assertions.assertEquals(((MethodConfig) referenceConfig.getMethods().get(0)).getCache(), "c");
     }
-
 
     @Reference(methods = {@Method(name = "sayHello", timeout = 1300, retries = 4, loadbalance = "random", async = true,
             actives = 3, executes = 5, deprecated = true, sticky = true, oninvoke = "i", onthrow = "t", onreturn = "r", cache = "c", validation = "v",

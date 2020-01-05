@@ -76,6 +76,7 @@ import static org.apache.dubbo.common.utils.NetUtils.isInvalidLocalHost;
 import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
 import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
+import static org.apache.dubbo.rpc.Constants.INTERFACES;
 import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 
@@ -382,6 +383,21 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         }
         if (ProtocolUtils.isGeneric(generic)) {
             interfaceClass = GenericService.class;
+            // Let the reference support both generic and normal invoke
+            if (!interfaceClass.getName().equals(interfaceName)) {
+                if (parameters == null) {
+                    parameters = new HashMap<>();
+                }
+                String interfaces = parameters.get(INTERFACES);
+                if (StringUtils.isBlank(interfaces)) {
+                    interfaces = interfaceName;
+                } else {
+                    interfaces = new StringBuilder(interfaces)
+                            .append(COMMA_SEPARATOR)
+                            .append(interfaceName).toString();
+                }
+                parameters.put(INTERFACES, interfaces);
+            }
         } else {
             try {
                 interfaceClass = Class.forName(interfaceName, true, Thread.currentThread()

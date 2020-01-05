@@ -117,4 +117,25 @@ public class GenericImplFilterTest {
         Assertions.assertEquals("true", invocation.getAttachment(GENERIC_KEY));
 
     }
+
+    @Test
+    public void testNormalInvokeInGenericService() throws Exception {
+
+        RpcInvocation invocation = new RpcInvocation("getPerson", GenericService.class.getName(),
+                new Class[]{Person.class}, new Object[]{new Person("dubbo", 10)});
+
+        URL url = URL.valueOf("test://test:11/org.apache.dubbo.rpc.support.DemoService?" +
+                "accesslog=true&group=dubbo&version=1.1&generic=true&interface=org.apache.dubbo.rpc.support.DemoService");
+        Invoker invoker = Mockito.mock(Invoker.class);
+
+        AppResponse mockRpcResult = new AppResponse("dubbo");
+        when(invoker.invoke(any(Invocation.class))).thenReturn(AsyncRpcResult.newDefaultAsyncResult(mockRpcResult, invocation));
+        when(invoker.getUrl()).thenReturn(url);
+        when(invoker.getInterface()).thenReturn(GenericService.class);
+
+        Result asyncResult = genericImplFilter.invoke(invoker, invocation);
+        Result result = asyncResult.get();
+        genericImplFilter.onMessage(result, invoker, invocation);
+        Assertions.assertEquals(result.getValue(), "dubbo");
+    }
 }

@@ -1,2 +1,3 @@
 mockprotocol=org.apache.dubbo.config.mock.MockProtocol
 mockprotocol2=org.apache.dubbo.config.mock.MockProtocol2
+mockprotocol3=org.apache.dubbo.config.mock.MockProtocol3
