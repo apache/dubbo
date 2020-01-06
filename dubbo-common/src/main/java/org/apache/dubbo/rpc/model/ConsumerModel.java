@@ -136,6 +136,7 @@ public class ConsumerModel {
                 consumerModel.referenceConfig);
         copy.serviceMetadata = ServiceMetadata.from(serviceKey, consumerModel.serviceMetadata);
         copy.methodConfigs = consumerModel.methodConfigs;
+        copy.methodModels = consumerModel.methodModels;
         return copy;
     }
 
