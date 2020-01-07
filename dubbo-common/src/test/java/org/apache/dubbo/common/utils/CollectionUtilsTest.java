@@ -141,7 +141,7 @@ public class CollectionUtilsTest {
 
     @Test
     public void testJoinList() throws Exception {
-        List<String> list = Arrays.asList();
+        List<String> list = emptyList();
         assertEquals("", CollectionUtils.join(list, "/"));
 
         list = Arrays.asList("x");
