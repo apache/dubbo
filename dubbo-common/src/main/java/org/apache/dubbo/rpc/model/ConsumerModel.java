@@ -54,7 +54,6 @@ public class ConsumerModel {
             , ReferenceConfigBase<?> referenceConfig) {
 
         Assert.notEmptyString(serviceKey, "Service name can't be null or blank");
-//        Assert.notNull(proxyObject, "Proxy object can't be null");
 
         this.serviceKey = serviceKey;
         this.proxyObject = proxyObject;
@@ -172,7 +171,7 @@ public class ConsumerModel {
     }
 
     /**
-     * @param method   metodName
+     * @param method   methodName
      * @param argsType method arguments type
      * @return
      */
