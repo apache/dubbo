@@ -455,7 +455,7 @@ public class RegistryProtocol implements Protocol {
 
         directory.setRegisteredConsumerUrl(newSubscribeUrl);
         registry.register(directory.getRegisteredConsumerUrl());
-        directory.buildRouterChain(newSubscribeUrl);
+        
         directory.subscribe(toSubscribeUrl(newSubscribeUrl));
 
         invokerWrapper.setInvoker(invokerWrapper.getCluster().join(directory));

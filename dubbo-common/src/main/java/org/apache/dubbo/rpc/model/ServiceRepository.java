@@ -93,7 +93,7 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt 
         ConsumerModel consumerModel = new ConsumerModel(serviceMetadata.getServiceKey(), proxy, serviceDescriptor, rc,
                 serviceMetadata);
         consumers.putIfAbsent(serviceKey, consumerModel);
-        consumers.putIfAbsent(keyWithoutGroup(serviceKey), consumerModel);
+        consumersWithoutGroup.putIfAbsent(keyWithoutGroup(serviceKey), consumerModel);
     }
 
     public void reRegisterConsumer(String newServiceKey, String serviceKey) {
