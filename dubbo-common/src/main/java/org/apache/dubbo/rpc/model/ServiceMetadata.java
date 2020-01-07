@@ -51,15 +51,6 @@ public class ServiceMetadata extends BaseServiceMetadata {
         this.serviceType = serviceType;
     }
 
-    public static ServiceMetadata from(String serviceKey, ServiceMetadata serviceMetadata) {
-        ServiceMetadata copy = new ServiceMetadata(interfaceFromServiceKey(serviceKey), groupFromServiceKey(serviceKey),
-                versionFromServiceKey(serviceKey), serviceMetadata.serviceType);
-         copy.attachments.putAll(serviceMetadata.attachments);
-         copy.attributeMap.putAll(serviceMetadata.attributeMap);
-         copy.target = serviceMetadata.target;
-        return copy;
-    }
-
     public ServiceMetadata() {
     }
 

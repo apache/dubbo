@@ -268,11 +268,6 @@ public class RegistryProtocol implements Protocol {
 
         URL registryUrl = getRegistryUrl(originInvoker);
         URL newProviderUrl = getUrlToRegistry(newInvokerUrl, registryUrl);
-        String registeredKey = registeredUrl.getServiceKey();
-        String newKey = newProviderUrl.getServiceKey();
-        if (!registeredKey.equals(newKey)) {
-            ApplicationModel.getServiceRepository().reRegisterProvider(newKey, registeredKey);
-        }
 
         // update local exporter
         Invoker<T> invokerDelegate = new InvokerDelegate<T>(originInvoker, newInvokerUrl);
@@ -457,12 +452,6 @@ public class RegistryProtocol implements Protocol {
         Registry registry = directory.getRegistry();
         registry.unregister(directory.getRegisteredConsumerUrl());
         directory.unSubscribe(toSubscribeUrl(oldSubscribeUrl));
-
-        String oldKey = oldSubscribeUrl.getServiceKey();
-        String newKey = newSubscribeUrl.getServiceKey();
-        if (!oldKey.equals(newKey)) {
-            ApplicationModel.getServiceRepository().reRegisterConsumer(newKey, oldKey);
-        }
 
         directory.setRegisteredConsumerUrl(newSubscribeUrl);
         registry.register(directory.getRegisteredConsumerUrl());
