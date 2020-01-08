@@ -46,7 +46,7 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt 
     // providers
     private ConcurrentMap<String, ProviderModel> providers = new ConcurrentHashMap<>();
 
-    private ConcurrentMap<String, ConsumerModel> consumersWithoutGroup = new ConcurrentHashMap<>();
+    // useful to find a provider model quickly with serviceInterfaceName:version
     private ConcurrentMap<String, ProviderModel> providersWithoutGroup = new ConcurrentHashMap<>();
 
     public ServiceRepository() {
@@ -93,7 +93,6 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt 
         ConsumerModel consumerModel = new ConsumerModel(serviceMetadata.getServiceKey(), proxy, serviceDescriptor, rc,
                 serviceMetadata);
         consumers.putIfAbsent(serviceKey, consumerModel);
-        consumersWithoutGroup.putIfAbsent(keyWithoutGroup(serviceKey), consumerModel);
     }
 
     public void reRegisterConsumer(String newServiceKey, String serviceKey) {
@@ -167,10 +166,6 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt 
         return consumers.get(serviceKey);
     }
 
-    public ConsumerModel lookupReferredServiceWithoutGroup(String key) {
-        return consumersWithoutGroup.get(key);
-    }
-
     @Override
     public void destroy() throws IllegalStateException {
         // currently works for unit test
@@ -178,6 +173,5 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt 
         consumers.clear();
         providers.clear();
         providersWithoutGroup.clear();
-        consumersWithoutGroup.clear();
     }
 }
