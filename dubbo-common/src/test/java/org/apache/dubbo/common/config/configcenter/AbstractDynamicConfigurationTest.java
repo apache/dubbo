@@ -18,6 +18,7 @@ package org.apache.dubbo.common.config.configcenter;
 
 import org.apache.dubbo.common.URL;
 
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -146,5 +147,18 @@ public class AbstractDynamicConfigurationTest {
     @Test
     public void testClose() throws Exception {
         configuration.close();
+    }
+
+    @Test
+    public void testgetDynamicConfiguration(){
+        DynamicConfiguration dynamicConfiguration = DynamicConfiguration.getDynamicConfiguration();
+        assertEquals("NopDynamicConfiguration",  dynamicConfiguration.getClass().getSimpleName());
+    }
+
+    @Test
+    public void testgetDynamicConfiguration_URL (){
+        URL url = URL.valueOf("zookeeper://127.0.0.1:2181");
+        DynamicConfiguration dynamicConfiguration = DynamicConfiguration.getDynamicConfiguration(url);
+        assertEquals("ZookeeperDynamicConfiguration",  dynamicConfiguration.getClass().getSimpleName());
     }
 }
