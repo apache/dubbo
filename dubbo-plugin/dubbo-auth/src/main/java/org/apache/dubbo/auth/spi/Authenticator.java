@@ -23,7 +23,7 @@ import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.rpc.Invocation;
 
 @SPI("accessKey")
-public interface AuthenticationHelper {
+public interface Authenticator {
 
     /**
      * give a sign to request
@@ -31,7 +31,7 @@ public interface AuthenticationHelper {
      * @param invocation
      * @param url
      */
-    void signForRequest(Invocation invocation, URL url);
+    void sign(Invocation invocation, URL url);
 
 
     /**
@@ -40,5 +40,5 @@ public interface AuthenticationHelper {
      * @param url
      * @throws RpcAuthenticationException when failed to authenticate current invocation
      */
-    void authenticateRequest(Invocation invocation, URL url) throws RpcAuthenticationException;
+    void authenticate(Invocation invocation, URL url) throws RpcAuthenticationException;
 }

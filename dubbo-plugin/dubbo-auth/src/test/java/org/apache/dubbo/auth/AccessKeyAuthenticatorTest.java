@@ -38,7 +38,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 
-class AccessKeyAuthenticationHelperTest {
+class AccessKeyAuthenticatorTest {
 
     @Test
     void testSignForRequest() {
@@ -48,15 +48,15 @@ class AccessKeyAuthenticationHelperTest {
                 .addParameter(Constants.SECRET_ACCESS_KEY_KEY, "sk");
         Invocation invocation = new RpcInvocation();
 
-        AccessKeyAuthenticationHelper helper = mock(AccessKeyAuthenticationHelper.class);
-        doCallRealMethod().when(helper).signForRequest(invocation, url);
+        AccessKeyAuthenticator helper = mock(AccessKeyAuthenticator.class);
+        doCallRealMethod().when(helper).sign(invocation, url);
         when(helper.getSignature(eq(url), eq(invocation), eq("sk"), anyString())).thenReturn("dubbo");
 
         AccessKeyPair accessKeyPair = mock(AccessKeyPair.class);
         when(accessKeyPair.getSecretKey()).thenReturn("sk");
         when(helper.getAccessKeyPair(invocation, url)).thenReturn(accessKeyPair);
 
-        helper.signForRequest(invocation, url);
+        helper.sign(invocation, url);
         assertEquals(String.valueOf(invocation.getAttachment(CommonConstants.CONSUMER)), url.getParameter(CommonConstants.APPLICATION_KEY));
         assertNotNull(invocation.getAttachments().get(Constants.REQUEST_SIGNATURE_KEY));
         assertEquals(invocation.getAttachments().get(Constants.REQUEST_SIGNATURE_KEY), "dubbo");
@@ -74,15 +74,15 @@ class AccessKeyAuthenticationHelperTest {
         invocation.setAttachment(Constants.REQUEST_TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));
         invocation.setAttachment(CommonConstants.CONSUMER, "test");
 
-        AccessKeyAuthenticationHelper helper = mock(AccessKeyAuthenticationHelper.class);
-        doCallRealMethod().when(helper).authenticateRequest(invocation, url);
+        AccessKeyAuthenticator helper = mock(AccessKeyAuthenticator.class);
+        doCallRealMethod().when(helper).authenticate(invocation, url);
         when(helper.getSignature(eq(url), eq(invocation), eq("sk"), anyString())).thenReturn("dubbo");
 
         AccessKeyPair accessKeyPair = mock(AccessKeyPair.class);
         when(accessKeyPair.getSecretKey()).thenReturn("sk");
         when(helper.getAccessKeyPair(invocation, url)).thenReturn(accessKeyPair);
 
-        assertDoesNotThrow(() -> helper.authenticateRequest(invocation, url));
+        assertDoesNotThrow(() -> helper.authenticate(invocation, url));
     }
 
     @Test
@@ -92,15 +92,15 @@ class AccessKeyAuthenticationHelperTest {
                 .addParameter(CommonConstants.APPLICATION_KEY, "test")
                 .addParameter(Constants.SECRET_ACCESS_KEY_KEY, "sk");
         Invocation invocation = new RpcInvocation();
-        AccessKeyAuthenticationHelper helper = new AccessKeyAuthenticationHelper();
-        assertThrows(RpcAuthenticationException.class, () -> helper.authenticateRequest(invocation, url));
+        AccessKeyAuthenticator helper = new AccessKeyAuthenticator();
+        assertThrows(RpcAuthenticationException.class, () -> helper.authenticate(invocation, url));
     }
 
     @Test
     void testGetAccessKeyPairFailed() {
         URL url = URL.valueOf("dubbo://10.10.10.10:2181")
                 .addParameter(Constants.ACCESS_KEY_ID_KEY, "ak");
-        AccessKeyAuthenticationHelper helper = new AccessKeyAuthenticationHelper();
+        AccessKeyAuthenticator helper = new AccessKeyAuthenticator();
         Invocation invocation = mock(Invocation.class);
         assertThrows(RuntimeException.class, () -> helper.getAccessKeyPair(invocation, url));
     }
@@ -110,7 +110,7 @@ class AccessKeyAuthenticationHelperTest {
         URL url = mock(URL.class);
         Invocation invocation = mock(Invocation.class);
         String secretKey = "123456";
-        AccessKeyAuthenticationHelper helper = new AccessKeyAuthenticationHelper();
+        AccessKeyAuthenticator helper = new AccessKeyAuthenticator();
         String signature = helper.getSignature(url, invocation, secretKey, String.valueOf(System.currentTimeMillis()));
         assertNotNull(signature);
     }
@@ -118,12 +118,12 @@ class AccessKeyAuthenticationHelperTest {
     @Test
     void testGetSignatureWithParameter() {
         URL url = mock(URL.class);
-        when(url.getParameter(Constants.PARAMTER_ENCRYPT_ENABLE_KEY, false)).thenReturn(true);
+        when(url.getParameter(Constants.PARAMTER_SIGNATURE_ENABLE_KEY, false)).thenReturn(true);
         Invocation invocation = mock(Invocation.class);
         String secretKey = "123456";
         Object[] params = {"dubbo", new ArrayList()};
         when(invocation.getArguments()).thenReturn(params);
-        AccessKeyAuthenticationHelper helper = new AccessKeyAuthenticationHelper();
+        AccessKeyAuthenticator helper = new AccessKeyAuthenticator();
         String signature = helper.getSignature(url, invocation, secretKey, String.valueOf(System.currentTimeMillis()));
         assertNotNull(signature);
 

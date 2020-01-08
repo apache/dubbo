@@ -17,7 +17,7 @@
 package org.apache.dubbo.auth.filter;
 
 import org.apache.dubbo.auth.Constants;
-import org.apache.dubbo.auth.spi.AuthenticationHelper;
+import org.apache.dubbo.auth.spi.Authenticator;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
@@ -37,10 +37,10 @@ public class ProviderAuthFilter implements Filter {
         URL url = invoker.getUrl();
         boolean shouldAuth = url.getParameter(Constants.SERVICE_AUTH, false);
         if (shouldAuth) {
-            AuthenticationHelper authenticationHelper = ExtensionLoader.getExtensionLoader(AuthenticationHelper.class)
+            Authenticator authenticator = ExtensionLoader.getExtensionLoader(Authenticator.class)
                     .getExtension(url.getParameter(Constants.AUTH_HELPER, Constants.DEFAULT_AUTH_HELPER));
             try {
-                authenticationHelper.authenticateRequest(invocation, url);
+                authenticator.authenticate(invocation, url);
             } catch (Exception e) {
                 return AsyncRpcResult.newDefaultAsyncResult(e, invocation);
             }
