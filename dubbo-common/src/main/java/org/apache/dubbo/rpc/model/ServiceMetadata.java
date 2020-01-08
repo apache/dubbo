@@ -22,8 +22,6 @@ import org.apache.dubbo.common.URL;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.apache.dubbo.common.BaseServiceMetadata.interfaceFromServiceKey;
-
 /**
  * Notice, this class currently has no usage inside Dubbo.
  *
