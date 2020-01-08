@@ -27,5 +27,10 @@ public class PropertiesConfigurationTest {
         PropertiesConfiguration configuration = new PropertiesConfiguration("test", null);
         Assertions.assertTrue(configuration.getInternalProperty("testKey").equals("999"));
     }
+    @Test
+    public void testPropertiesConfiguration() {
+        PropertiesConfiguration configuration = new PropertiesConfiguration();
+        Assertions.assertTrue(configuration.getInternalProperty("testKey").equals("999"));
+    }
 
 }
