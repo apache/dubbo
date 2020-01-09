@@ -58,6 +58,13 @@ public interface ExecutorRepository {
     ScheduledExecutorService getServiceExporterExecutor();
 
     /**
+     * Scheduled executor handle registry notification.
+     *
+     * @return
+     */
+    ScheduledExecutorService getRegistryNotificationExecutor();
+
+    /**
      * Get the default shared threadpool.
      *
      * @return

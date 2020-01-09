@@ -264,7 +264,7 @@ public class JEtcdClient extends AbstractEtcdClient<JEtcdClient.EtcdWatcher> {
                     }
                 }
                 if (modified > 0) {
-                    notifyExecutor.execute(() -> listener.childChanged(path, new ArrayList<>(urls)));
+                    listener.childChanged(path, new ArrayList<>(urls));
                 }
 
             }

@@ -25,7 +25,16 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
+import org.apache.dubbo.registry.RegistryNotifier;
 import org.apache.dubbo.registry.support.FailbackRegistry;
+
+import com.alibaba.nacos.api.exception.NacosException;
+import com.alibaba.nacos.api.naming.NamingService;
+import com.alibaba.nacos.api.naming.listener.Event;
+import com.alibaba.nacos.api.naming.listener.EventListener;
+import com.alibaba.nacos.api.naming.listener.NamingEvent;
+import com.alibaba.nacos.api.naming.pojo.Instance;
+import com.alibaba.nacos.api.naming.pojo.ListView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,13 +51,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-
-import com.alibaba.nacos.api.exception.NacosException;
-import com.alibaba.nacos.api.naming.NamingService;
-import com.alibaba.nacos.api.naming.listener.EventListener;
-import com.alibaba.nacos.api.naming.listener.NamingEvent;
-import com.alibaba.nacos.api.naming.pojo.Instance;
-import com.alibaba.nacos.api.naming.pojo.ListView;
 
 import static java.util.Collections.singleton;
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
@@ -524,4 +526,26 @@ public class NacosRegistry extends FailbackRegistry {
         void callback(NamingService namingService) throws NacosException;
 
     }
+
+    private class RegistryChildListenerImpl implements EventListener {
+        private RegistryNotifier notifier;
+
+        public RegistryChildListenerImpl(URL consumerUrl, NotifyListener listener) {
+            notifier = new RegistryNotifier(NacosRegistry.this) {
+                @Override
+                protected void doNotify(Object rawAddresses) {
+                    NacosRegistry.this.notifySubscriber(consumerUrl, listener, (List<Instance>) rawAddresses);
+                }
+            };
+        }
+
+        @Override
+        public void onEvent(Event event) {
+            if (event instanceof NamingEvent) {
+                NamingEvent e = (NamingEvent) event;
+                notifier.notify(e.getInstances());
+            }
+        }
+    }
+
 }

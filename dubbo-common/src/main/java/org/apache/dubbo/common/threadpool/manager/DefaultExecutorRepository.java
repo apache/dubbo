@@ -50,6 +50,8 @@ public class DefaultExecutorRepository implements ExecutorRepository {
 
     private ScheduledExecutorService serviceExporterExecutor;
 
+    public ScheduledExecutorService registryNotificationExecutor;
+
     private ScheduledExecutorService reconnectScheduledExecutor;
 
     private ConcurrentMap<String, ConcurrentMap<Integer, ExecutorService>> data = new ConcurrentHashMap<>();
@@ -62,6 +64,7 @@ public class DefaultExecutorRepository implements ExecutorRepository {
 //
 //        reconnectScheduledExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-reconnect-scheduler"));
         serviceExporterExecutor = Executors.newScheduledThreadPool(1, new NamedThreadFactory("Dubbo-exporter-scheduler"));
+        registryNotificationExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-registry-notification"));
     }
 
     public synchronized ExecutorService createExecutorIfAbsent(URL url) {
@@ -139,6 +142,11 @@ public class DefaultExecutorRepository implements ExecutorRepository {
     @Override
     public ScheduledExecutorService getServiceExporterExecutor() {
         return serviceExporterExecutor;
+    }
+
+    @Override
+    public ScheduledExecutorService getRegistryNotificationExecutor() {
+        return registryNotificationExecutor;
     }
 
     @Override

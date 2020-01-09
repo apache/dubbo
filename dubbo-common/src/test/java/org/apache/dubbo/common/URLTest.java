@@ -767,4 +767,20 @@ public class URLTest {
         URL.valueOf("dubbo://10.20.130.230:20880");
         URL.valueOf("dubbo://10.20.130.230:20880/path");
     }
+
+    @Test
+    public void testEquals() {
+        URL url1 = URL.valueOf("10.20.130.230:20880/context/path?interface=org.apache.dubbo.test.interfaceName&group=group&version=1.0.0");
+        URL url2 = URL.valueOf("10.20.130.230:20880/context/path?interface=org.apache.dubbo.test.interfaceName&group=group&version=1.0.0");
+        Assertions.assertEquals(url1, url2);
+
+        URL url3 = URL.valueOf("10.20.130.230:20881/context/path?interface=org.apache.dubbo.test.interfaceName&group=group&version=1.0.0");
+        Assertions.assertNotEquals(url1, url3);
+
+        URL url4 = URL.valueOf("10.20.130.230:20880/context/path?interface=org.apache.dubbo.test.interfaceName&weight=10&group=group&version=1.0.0");
+        Assertions.assertNotEquals(url1, url4);
+
+        URL url5 = URL.valueOf("10.20.130.230:20880/context/path?interface=org.apache.dubbo.test.interfaceName&weight=10&group=group&version=1.0.0");
+        Assertions.assertNotEquals(url4, url5);
+    }
 }
