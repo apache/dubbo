@@ -65,6 +65,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static com.alibaba.spring.util.AnnotatedBeanDefinitionRegistryUtils.registerBeans;
+import static com.alibaba.spring.util.AnnotatedBeanDefinitionRegistryUtils.isPresentBean;
 import static com.alibaba.spring.util.ObjectUtils.of;
 import static org.apache.dubbo.config.spring.beans.factory.annotation.ServiceBeanNameBuilder.create;
 import static org.apache.dubbo.config.spring.util.DubboAnnotationUtils.resolveServiceInterfaceClass;
@@ -108,9 +109,11 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
 
     @Override
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
-
-        // @since 2.7.5
-        registerBeans(registry, DubboBootstrapApplicationListener.class);
+        //when bean dubboBootstrapApplicationListener.class is not register , do registerBeans
+        if (!isPresentBean(registry, DubboBootstrapApplicationListener.class)) {
+            // @since 2.7.5
+            registerBeans(registry, DubboBootstrapApplicationListener.class);
+        }
 
         Set<String> resolvedPackagesToScan = resolvePackagesToScan(packagesToScan);
 
