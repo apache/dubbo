@@ -175,6 +175,15 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
         }
     };
 
+    public static void removeDestroyedRegistry(Registry toRm){
+        LOCK.lock();
+        try {
+            REGISTRIES.entrySet().removeIf(entry -> entry.getValue().equals(toRm));
+        } finally {
+            LOCK.unlock();
+        }
+    }
+
     // for unit test
     public static void clearRegistryNotDestroy() {
         REGISTRIES.clear();
