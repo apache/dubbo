@@ -38,7 +38,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
  * EventFilter
  */
 @Activate(group = CommonConstants.CONSUMER)
-public class FutureFilter implements Filter, Filter.Listener {
+public class FutureFilter implements Filter, Filter.Listener2 {
 
     protected static final Logger logger = LoggerFactory.getLogger(FutureFilter.class);
 

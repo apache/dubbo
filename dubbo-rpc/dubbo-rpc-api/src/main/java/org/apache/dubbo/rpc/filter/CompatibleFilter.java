@@ -45,7 +45,7 @@ import static org.apache.dubbo.remoting.Constants.SERIALIZATION_KEY;
  * @see Filter
  *
  */
-public class CompatibleFilter implements Filter, Filter.Listener {
+public class CompatibleFilter implements Filter, Filter.Listener2 {
 
     private static Logger logger = LoggerFactory.getLogger(CompatibleFilter.class);
 
