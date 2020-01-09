@@ -68,7 +68,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.RELEASE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
@@ -106,7 +105,7 @@ public class RegistryProtocol implements Protocol {
     public static final String[] DEFAULT_REGISTER_PROVIDER_KEYS = {
             APPLICATION_KEY, CODEC_KEY, EXCHANGER_KEY, SERIALIZATION_KEY, CLUSTER_KEY, CONNECTIONS_KEY, DEPRECATED_KEY,
             GROUP_KEY, LOADBALANCE_KEY, MOCK_KEY, PATH_KEY, TIMEOUT_KEY, TOKEN_KEY, VERSION_KEY, WARMUP_KEY,
-            WEIGHT_KEY, TIMESTAMP_KEY, DUBBO_VERSION_KEY, RELEASE_KEY
+            WEIGHT_KEY, DUBBO_VERSION_KEY, RELEASE_KEY
     };
 
     public static final String[] DEFAULT_REGISTER_CONSUMER_KEYS = {
@@ -328,13 +327,15 @@ public class RegistryProtocol implements Protocol {
         String[] extraKeyArrays = COMMA_SPLIT_PATTERN.split(extraKeys);
         String[] paramsToRegistry = getParamsToRegistry(DEFAULT_REGISTER_PROVIDER_KEYS, extraKeyArrays);
         // TODO, avoid creation of URL
-        URL urlToRegistry = URL.valueOf(providerUrl, paramsToRegistry, providerUrl.getParameter(METHODS_KEY, (String[]) null));
         //The address you see at the registry
+        URL urlToRegistry;
         if (registryUrl.getParameter(SIMPLIFIED_KEY, false)) {
             // FIXME, compute the right revision of url
-            String revision = "111"; // urlToRegistry
+            String revision = "unknown"; // urlToRegistry
             urlToRegistry = URL.valueOf(providerUrl, extraKeyArrays, providerUrl.getParameter(METHODS_KEY, (String[]) null));
             urlToRegistry.addParameter(REVISION_KEY, revision);
+        } else {
+            urlToRegistry = URL.valueOf(providerUrl, paramsToRegistry, providerUrl.getParameter(METHODS_KEY, (String[]) null));
         }
 
         urlToRegistry.froze();
