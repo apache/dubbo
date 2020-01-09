@@ -30,7 +30,7 @@
     <artifactId>dubbo-metadata-report-etcd</artifactId>
 
     <properties>
-        <skip_integration_test>true</skip_integration_test>
+        <skipIntegrationTests>true</skipIntegrationTests>
     </properties>
 
     <dependencies>
@@ -61,9 +61,8 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>${maven_surefire_version}</version>
                 <configuration>
-                    <skipTests>${skip_integration_test}</skipTests>
+                    <skipTests>${skipIntegrationTests}</skipTests>
                 </configuration>
             </plugin>
         </plugins>
