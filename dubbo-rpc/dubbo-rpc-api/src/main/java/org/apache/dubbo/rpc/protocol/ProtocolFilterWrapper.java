@@ -85,8 +85,8 @@ public class ProtocolFilterWrapper implements Protocol {
                                 if (listener != null) {
                                     listener.onError(e, invoker, invocation);
                                 }
-                            } else if (filter instanceof Filter.Listener) {
-                                Filter.Listener listener = (Filter.Listener) filter;
+                            } else if (filter instanceof Filter.Listener2) {
+                                Filter.Listener2 listener = (Filter.Listener2) filter;
                                 listener.onError(e, invoker, invocation);
                             }
                             throw e;
@@ -98,13 +98,13 @@ public class ProtocolFilterWrapper implements Protocol {
                                 Filter.Listener listener = ((ListenableFilter) filter).listener();
                                 if (listener != null) {
                                     if (t == null) {
-                                        listener.onMessage(r, invoker, invocation);
+                                        listener.onResponse(r, invoker, invocation);
                                     } else {
                                         listener.onError(t, invoker, invocation);
                                     }
                                 }
-                            } else if (filter instanceof Filter.Listener) {
-                                Filter.Listener listener = (Filter.Listener) filter;
+                            } else if (filter instanceof Filter.Listener2) {
+                                Filter.Listener2 listener = (Filter.Listener2) filter;
                                 if (t == null) {
                                     listener.onMessage(r, invoker, invocation);
                                 } else {

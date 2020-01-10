@@ -18,7 +18,7 @@ package org.apache.dubbo.rpc;
 
 /**
  * This abstract will be removed soon from one future release.
- * Please implementing Filter.Listener directly for callback registration,
+ * Please implementing Filter.Listener2 directly for callback registration,
  * check the default implementation, see {@link org.apache.dubbo.rpc.filter.ExceptionFilter}, for example.
  */
 @Deprecated

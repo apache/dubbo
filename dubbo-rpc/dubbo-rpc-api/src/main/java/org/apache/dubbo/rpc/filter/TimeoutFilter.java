@@ -32,7 +32,7 @@ import java.util.Arrays;
  * Log any invocation timeout, but don't stop server from running
  */
 @Activate(group = CommonConstants.PROVIDER)
-public class TimeoutFilter implements Filter, Filter.Listener {
+public class TimeoutFilter implements Filter, Filter.Listener2 {
 
     private static final Logger logger = LoggerFactory.getLogger(TimeoutFilter.class);
 
