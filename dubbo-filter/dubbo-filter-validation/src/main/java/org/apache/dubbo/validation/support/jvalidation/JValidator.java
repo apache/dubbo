@@ -60,7 +60,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -95,18 +94,6 @@ public class JValidator implements Validator {
         }
         this.validator = factory.getValidator();
         this.methodClassMap = new ConcurrentHashMap<>();
-    }
-
-    private static boolean isPrimitives(Class<?> cls) {
-        if (cls.isArray()) {
-            return isPrimitive(cls.getComponentType());
-        }
-        return isPrimitive(cls);
-    }
-
-    private static boolean isPrimitive(Class<?> cls) {
-        return cls.isPrimitive() || cls == String.class || cls == Boolean.class || cls == Character.class
-                || Number.class.isAssignableFrom(cls) || Date.class.isAssignableFrom(cls);
     }
 
     private static Object getMethodParameterBean(Class<?> clazz, Method method, Object[] args) {
@@ -320,7 +307,7 @@ public class JValidator implements Validator {
     }
 
     private void validate(Set<ConstraintViolation<?>> violations, Object arg, Class<?>... groups) {
-        if (arg != null && !isPrimitives(arg.getClass())) {
+        if (arg != null && !ReflectUtils.isPrimitives(arg.getClass())) {
             if (arg instanceof Object[]) {
                 for (Object item : (Object[]) arg) {
                     validate(violations, item, groups);

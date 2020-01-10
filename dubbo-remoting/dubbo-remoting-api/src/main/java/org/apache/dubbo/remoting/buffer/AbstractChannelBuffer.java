@@ -315,6 +315,11 @@ public abstract class AbstractChannelBuffer implements ChannelBuffer {
     }
 
     @Override
+    public int hashCode() {
+        return ChannelBuffers.hasCode(this);
+    }
+
+    @Override
     public int compareTo(ChannelBuffer that) {
         return ChannelBuffers.compare(this, that);
     }

@@ -16,11 +16,11 @@
  */
 package org.apache.dubbo.configcenter.support.zookeeper;
 
+import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
+import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
+import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.configcenter.ConfigChangeEvent;
-import org.apache.dubbo.configcenter.ConfigChangeType;
-import org.apache.dubbo.configcenter.ConfigurationListener;
 import org.apache.dubbo.remoting.zookeeper.DataListener;
 import org.apache.dubbo.remoting.zookeeper.EventType;
 
@@ -76,6 +76,19 @@ public class CacheListener implements DataListener {
         return groupKey.substring(groupKey.indexOf(DOT_SEPARATOR) + 1);
     }
 
+    private String getGroup(String path) {
+        if (!StringUtils.isEmpty(path)) {
+            int beginIndex = path.indexOf(rootPath + PATH_SEPARATOR);
+            if (beginIndex > -1) {
+                int endIndex = path.indexOf(PATH_SEPARATOR, beginIndex);
+                if (endIndex > beginIndex) {
+                    return path.substring(beginIndex, endIndex);
+                }
+            }
+        }
+        return path;
+    }
+
 
     @Override
     public void dataChanged(String path, Object value, EventType eventType) {
@@ -111,7 +124,7 @@ public class CacheListener implements DataListener {
                     return;
             }
 
-            ConfigChangeEvent configChangeEvent = new ConfigChangeEvent(key, (String) value, changeType);
+            ConfigChangedEvent configChangeEvent = new ConfigChangedEvent(key, getGroup(path), (String) value, changeType);
             Set<ConfigurationListener> listeners = keyListeners.get(path);
             if (CollectionUtils.isNotEmpty(listeners)) {
                 listeners.forEach(listener -> listener.process(configChangeEvent));
