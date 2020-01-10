@@ -31,7 +31,6 @@ import com.google.protobuf.StringValue;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
-import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.HEARTBEAT_EVENT;
@@ -134,13 +133,7 @@ public class GenericProtobufObjectInput implements ObjectInput {
     }
 
     @Override
-    public Map<String, Object> readAttachments() throws IOException {
-        Map<String, String> stringAttachments = ProtobufUtils.deserialize(is, MapValue.Map.class).getAttachmentsMap();
-        Map<String, Object> attachments = new HashMap<>();
-
-        if (stringAttachments != null) {
-            stringAttachments.forEach((k, v) -> attachments.put(k, v));
-        }
-        return attachments;
+    public Map<String, String> readAttachments() throws IOException {
+        return ProtobufUtils.deserialize(is, MapValue.Map.class).getAttachmentsMap();
     }
 }

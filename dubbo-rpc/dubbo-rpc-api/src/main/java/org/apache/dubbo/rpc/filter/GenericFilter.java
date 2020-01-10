@@ -74,10 +74,10 @@ public class GenericFilter implements Filter, Filter.Listener {
                 if (args.length != types.length) {
                     throw new RpcException("args.length != types.length");
                 }
-                String generic = (String) inv.getAttachment(GENERIC_KEY);
-              
+                String generic = inv.getAttachment(GENERIC_KEY);
+
                 if (StringUtils.isBlank(generic)) {
-                    generic = (String) RpcContext.getContext().getAttachment(GENERIC_KEY);
+                    generic = RpcContext.getContext().getAttachment(GENERIC_KEY);
                 }
 
                 if (StringUtils.isEmpty(generic)
@@ -139,7 +139,7 @@ public class GenericFilter implements Filter, Filter.Listener {
                                         args[0].getClass().getName());
                     }
                 }
-              
+
                 RpcInvocation rpcInvocation = new RpcInvocation(method, invoker.getInterface().getName(), args, inv.getAttachments(), inv.getAttributes());
                 rpcInvocation.setInvoker(inv.getInvoker());
                 rpcInvocation.setTargetServiceUniqueName(inv.getTargetServiceUniqueName());
@@ -159,9 +159,9 @@ public class GenericFilter implements Filter, Filter.Listener {
                 && inv.getArguments().length == 3
                 && !GenericService.class.isAssignableFrom(invoker.getInterface())) {
 
-            String generic = (String) inv.getAttachment(GENERIC_KEY);
+            String generic = inv.getAttachment(GENERIC_KEY);
             if (StringUtils.isBlank(generic)) {
-                generic = (String) RpcContext.getContext().getAttachment(GENERIC_KEY);
+                generic = RpcContext.getContext().getAttachment(GENERIC_KEY);
             }
 
             if (appResponse.hasException() && !(appResponse.getException() instanceof GenericException)) {

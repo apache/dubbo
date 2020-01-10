@@ -107,6 +107,10 @@ public class DefaultFuture extends CompletableFuture<Object> {
     public static DefaultFuture newFuture(Channel channel, Request request, int timeout, ExecutorService executor) {
         final DefaultFuture future = new DefaultFuture(channel, request, timeout);
         future.setExecutor(executor);
+        // ThreadlessExecutor needs to hold the waiting future in case of circuit return.
+        if (executor instanceof ThreadlessExecutor) {
+            ((ThreadlessExecutor) executor).setWaitingFuture(future);
+        }
         // timeout check
         timeoutCheck(future);
         return future;
@@ -138,6 +142,11 @@ public class DefaultFuture extends CompletableFuture<Object> {
             if (channel.equals(entry.getValue())) {
                 DefaultFuture future = getFuture(entry.getKey());
                 if (future != null && !future.isDone()) {
+                    ExecutorService futureExecutor = future.getExecutor();
+                    if (futureExecutor != null && !futureExecutor.isTerminated()) {
+                        futureExecutor.shutdownNow();
+                    }
+
                     Response disconnectResponse = new Response(future.getId());
                     disconnectResponse.setStatus(Response.CHANNEL_INACTIVE);
                     disconnectResponse.setErrorMessage("Channel " +
@@ -208,7 +217,8 @@ public class DefaultFuture extends CompletableFuture<Object> {
         if (executor != null && executor instanceof ThreadlessExecutor) {
             ThreadlessExecutor threadlessExecutor = (ThreadlessExecutor) executor;
             if (threadlessExecutor.isWaiting()) {
-                threadlessExecutor.notifyReturn();
+                threadlessExecutor.notifyReturn(new IllegalStateException("The result has returned, but the biz thread is still waiting" +
+                        " which is not an expected state, interrupt the thread manually by returning an exception."));
             }
         }
     }

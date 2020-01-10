@@ -96,8 +96,9 @@ public class AsyncRpcResult implements Result {
                 responseFuture.complete(appResponse);
             }
         } catch (Exception e) {
-            // This should never happen;
-            logger.error("Got exception when trying to change the value of the underlying result from AsyncRpcResult.", e);
+            // This should not happen in normal request process;
+            logger.error("Got exception when trying to fetch the underlying result from AsyncRpcResult.");
+            throw new RpcException(e);
         }
     }
 
@@ -117,8 +118,9 @@ public class AsyncRpcResult implements Result {
                 responseFuture.complete(appResponse);
             }
         } catch (Exception e) {
-            // This should never happen;
-            logger.error("Got exception when trying to change the value of the underlying result from AsyncRpcResult.", e);
+            // This should not happen in normal request process;
+            logger.error("Got exception when trying to fetch the underlying result from AsyncRpcResult.");
+            throw new RpcException(e);
         }
     }
 
@@ -141,8 +143,9 @@ public class AsyncRpcResult implements Result {
                 return responseFuture.get();
             }
         } catch (Exception e) {
-            // This should never happen;
-            logger.error("Got exception when trying to fetch the underlying result from AsyncRpcResult.", e);
+            // This should not happen in normal request process;
+            logger.error("Got exception when trying to fetch the underlying result from AsyncRpcResult.");
+            throw new RpcException(e);
         }
         return new AppResponse();
     }
@@ -158,7 +161,7 @@ public class AsyncRpcResult implements Result {
      */
     @Override
     public Result get() throws InterruptedException, ExecutionException {
-        if (executor != null) {
+        if (executor != null && executor instanceof ThreadlessExecutor) {
             ThreadlessExecutor threadlessExecutor = (ThreadlessExecutor) executor;
             threadlessExecutor.waitAndDrain();
         }
@@ -167,7 +170,7 @@ public class AsyncRpcResult implements Result {
 
     @Override
     public Result get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-        if (executor != null) {
+        if (executor != null && executor instanceof ThreadlessExecutor) {
             ThreadlessExecutor threadlessExecutor = (ThreadlessExecutor) executor;
             threadlessExecutor.waitAndDrain();
         }
@@ -199,32 +202,32 @@ public class AsyncRpcResult implements Result {
     }
 
     @Override
-    public Map<String, Object> getAttachments() {
+    public Map<String, String> getAttachments() {
         return getAppResponse().getAttachments();
     }
 
     @Override
-    public void setAttachments(Map<String, Object> map) {
+    public void setAttachments(Map<String, String> map) {
         getAppResponse().setAttachments(map);
     }
 
     @Override
-    public void addAttachments(Map<String, Object> map) {
+    public void addAttachments(Map<String, String> map) {
         getAppResponse().addAttachments(map);
     }
 
     @Override
-    public Object getAttachment(String key) {
+    public String getAttachment(String key) {
         return getAppResponse().getAttachment(key);
     }
 
     @Override
-    public Object getAttachment(String key, Object defaultValue) {
+    public String getAttachment(String key, String defaultValue) {
         return getAppResponse().getAttachment(key, defaultValue);
     }
 
     @Override
-    public void setAttachment(String key, Object value) {
+    public void setAttachment(String key, String value) {
         getAppResponse().setAttachment(key, value);
     }
 

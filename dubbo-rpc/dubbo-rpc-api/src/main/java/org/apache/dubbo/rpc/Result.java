@@ -90,37 +90,37 @@ public interface Result extends Serializable {
      *
      * @return attachments.
      */
-    Map<String, Object> getAttachments();
+    Map<String, String> getAttachments();
 
     /**
      * Add the specified map to existing attachments in this instance.
      *
      * @param map
      */
-    void addAttachments(Map<String, Object> map);
+    void addAttachments(Map<String, String> map);
 
     /**
      * Replace the existing attachments with the specified param.
      *
      * @param map
      */
-    void setAttachments(Map<String, Object> map);
+    void setAttachments(Map<String, String> map);
 
     /**
      * get attachment by key.
      *
      * @return attachment value.
      */
-    Object getAttachment(String key);
+    String getAttachment(String key);
 
     /**
      * get attachment by key with default value.
      *
      * @return attachment value.
      */
-    Object getAttachment(String key, Object defaultValue);
+    String getAttachment(String key, String defaultValue);
 
-    void setAttachment(String key, Object value);
+    void setAttachment(String key, String value);
 
     /**
      * Add a callback which can be triggered when the RPC call finishes.

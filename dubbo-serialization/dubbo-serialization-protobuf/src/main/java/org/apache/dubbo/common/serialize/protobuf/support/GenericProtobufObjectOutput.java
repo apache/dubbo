@@ -31,7 +31,6 @@ import com.google.protobuf.StringValue;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.HEARTBEAT_EVENT;
@@ -137,15 +136,12 @@ public class GenericProtobufObjectOutput implements ObjectOutput {
     }
 
     @Override
-    public void writeAttachments(Map<String, Object> attachments) throws IOException {
+    public void writeAttachments(Map<String, String> attachments) throws IOException {
         if (attachments == null) {
             return;
         }
 
-        Map<String, String> stringAttachments = new HashMap<>();
-        attachments.forEach((k, v) -> stringAttachments.put(k, (String) v));
-
-        ProtobufUtils.serialize(MapValue.Map.newBuilder().putAllAttachments(stringAttachments).build(), os);
+        ProtobufUtils.serialize(MapValue.Map.newBuilder().putAllAttachments(attachments).build(), os);
         os.flush();
     }
 
