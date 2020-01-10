@@ -266,6 +266,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
                         protocolConfig.setId(id);
                         protocolConfig.refresh();
                         tmpProtocols.add(protocolConfig);
+                        ApplicationModel.getConfigManager().addProtocol(protocolConfig);
                     }
                 }
             });
