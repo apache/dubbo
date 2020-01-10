@@ -109,7 +109,7 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
 
     @Override
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
-        //when bean dubboBootstrapApplicationListener.class is not register , do registerBeans
+        //when bean dubboBootstrapApplicationListener.class is not registered , do registerBeans
         if (!isPresentBean(registry, DubboBootstrapApplicationListener.class)) {
             // @since 2.7.5
             registerBeans(registry, DubboBootstrapApplicationListener.class);
