@@ -28,7 +28,6 @@ import org.apache.dubbo.remoting.http.HttpServer;
 public class ServletHttpBinder implements HttpBinder {
 
     @Override
-    @Adaptive()
     public HttpServer bind(URL url, HttpHandler handler) {
         return new ServletHttpServer(url, handler);
     }
