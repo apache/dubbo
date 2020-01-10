@@ -32,7 +32,7 @@
         <javax.ws.rs.version>2.1</javax.ws.rs.version>
         <argline>-Dnetwork_interface_denylist=docker0</argline>
     </properties>
-    
+
     <dependencies>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
@@ -59,13 +59,6 @@
             </exclusions>
         </dependency>
 
-        <!-- Test Libraries -->
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-config-api</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-rpc-dubbo</artifactId>

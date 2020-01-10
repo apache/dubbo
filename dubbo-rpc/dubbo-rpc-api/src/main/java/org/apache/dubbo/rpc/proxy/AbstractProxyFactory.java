@@ -20,9 +20,14 @@ import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.service.Destroyable;
 import org.apache.dubbo.rpc.service.GenericService;
 
 import com.alibaba.dubbo.rpc.service.EchoService;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.rpc.Constants.INTERFACES;
@@ -31,6 +36,9 @@ import static org.apache.dubbo.rpc.Constants.INTERFACES;
  * AbstractProxyFactory
  */
 public abstract class AbstractProxyFactory implements ProxyFactory {
+    private static final Class<?>[] INTERNAL_INTERFACES = new Class<?>[]{
+            EchoService.class, Destroyable.class
+    };
 
     @Override
     public <T> T getProxy(Invoker<T> invoker) throws RpcException {
@@ -39,33 +47,27 @@ public abstract class AbstractProxyFactory implements ProxyFactory {
 
     @Override
     public <T> T getProxy(Invoker<T> invoker, boolean generic) throws RpcException {
-        Class<?>[] interfaces = null;
+        Set<Class<?>> interfaces = new HashSet<>();
+
         String config = invoker.getUrl().getParameter(INTERFACES);
         if (config != null && config.length() > 0) {
             String[] types = COMMA_SPLIT_PATTERN.split(config);
             if (types != null && types.length > 0) {
-                interfaces = new Class<?>[types.length + 2];
-                interfaces[0] = invoker.getInterface();
-                interfaces[1] = EchoService.class;
                 for (int i = 0; i < types.length; i++) {
                     // TODO can we load successfully for a different classloader?.
-                    interfaces[i + 2] = ReflectUtils.forName(types[i]);
+                    interfaces.add(ReflectUtils.forName(types[i]));
                 }
             }
         }
-        if (interfaces == null) {
-            interfaces = new Class<?>[]{invoker.getInterface(), EchoService.class};
-        }
 
         if (!GenericService.class.isAssignableFrom(invoker.getInterface()) && generic) {
-            int len = interfaces.length;
-            Class<?>[] temp = interfaces;
-            interfaces = new Class<?>[len + 1];
-            System.arraycopy(temp, 0, interfaces, 0, len);
-            interfaces[len] = com.alibaba.dubbo.rpc.service.GenericService.class;
+            interfaces.add(com.alibaba.dubbo.rpc.service.GenericService.class);
         }
 
-        return getProxy(invoker, interfaces);
+        interfaces.add(invoker.getInterface());
+        interfaces.addAll(Arrays.asList(INTERNAL_INTERFACES));
+
+        return getProxy(invoker, interfaces.toArray(new Class<?>[0]));
     }
 
     public abstract <T> T getProxy(Invoker<T> invoker, Class<?>[] types);

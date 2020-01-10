@@ -21,6 +21,7 @@
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-rpc</artifactId>
         <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>dubbo-rpc-xml</artifactId>
@@ -35,7 +36,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <skip_maven_deploy>false</skip_maven_deploy>
     </properties>
-    <url>https://github.com/apache/incubator-dubbo</url>
+    <url>https://github.com/apache/dubbo</url>
 
     <dependencies>
         <dependency>

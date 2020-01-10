@@ -23,7 +23,7 @@ import org.apache.dubbo.monitor.MonitorService;
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.Test;
 
-import static org.apache.dubbo.common.constants.ConfigConstants.DUBBO_PROTOCOL;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;

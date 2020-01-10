@@ -101,10 +101,10 @@ public class UrlUtils {
     }
 
     public static int getHeartbeat(URL url) {
-        return org.apache.dubbo.common.utils.UrlUtils.getHeartbeat(url.getOriginalURL());
+        return org.apache.dubbo.remoting.utils.UrlUtils.getHeartbeat(url.getOriginalURL());
     }
 
     public static int getIdleTimeout(URL url) {
-        return org.apache.dubbo.common.utils.UrlUtils.getIdleTimeout(url.getOriginalURL());
+        return org.apache.dubbo.remoting.utils.UrlUtils.getIdleTimeout(url.getOriginalURL());
     }
 }

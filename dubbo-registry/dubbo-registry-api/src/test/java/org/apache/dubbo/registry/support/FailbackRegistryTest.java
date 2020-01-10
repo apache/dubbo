@@ -30,8 +30,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMER_PROTOCOL;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_RETRY_PERIOD_KEY;
+import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
+import static org.apache.dubbo.registry.Constants.REGISTRY_RETRY_PERIOD_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class FailbackRegistryTest {
@@ -164,7 +164,7 @@ public class FailbackRegistryTest {
             public void notify(List<URL> urls) {
                 count.incrementAndGet();
                 //The exception is thrown for the first time to see if the back will be called again to incrementAndGet
-                if (count.get() == 1l) {
+                if (count.get() == 1L) {
                     throw new RuntimeException("test exception please ignore");
                 }
             }
@@ -203,7 +203,7 @@ public class FailbackRegistryTest {
         countDownLatch.await();
         Assertions.assertEquals(0, mockRegistry.getFailedRegistered().size());
         FailbackRegistry.Holder h = new FailbackRegistry.Holder(registryUrl, listener);
-        Assertions.assertEquals(null, mockRegistry.getFailedSubscribed().get(h));
+        Assertions.assertNull(mockRegistry.getFailedSubscribed().get(h));
         Assertions.assertEquals(countDownLatch.getCount(), 0);
     }
 

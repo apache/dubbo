@@ -19,7 +19,6 @@ package org.apache.dubbo.config.spring.context.annotation;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ServiceAnnotationBeanPostProcessor;
-import org.apache.dubbo.config.spring.util.BeanRegistrar;
 
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -37,6 +36,7 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import static com.alibaba.spring.util.BeanRegistrar.registerInfrastructureBean;
 import static org.springframework.beans.factory.support.BeanDefinitionBuilder.rootBeanDefinition;
 
 /**
@@ -87,7 +87,7 @@ public class DubboComponentScanRegistrar implements ImportBeanDefinitionRegistra
     private void registerReferenceAnnotationBeanPostProcessor(BeanDefinitionRegistry registry) {
 
         // Register @Reference Annotation Bean Processor
-        BeanRegistrar.registerInfrastructureBean(registry,
+        registerInfrastructureBean(registry,
                 ReferenceAnnotationBeanPostProcessor.BEAN_NAME, ReferenceAnnotationBeanPostProcessor.class);
 
     }

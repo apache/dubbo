@@ -24,9 +24,10 @@ import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.remoting.exchange.ExchangeHandler;
-import org.apache.dubbo.remoting.exchange.ResponseFuture;
 
 import java.net.InetSocketAddress;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.dubbo.remoting.Constants.RECONNECT_KEY;
@@ -56,7 +57,7 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
     }
 
     @Override
-    public ResponseFuture request(Object request) throws RemotingException {
+    public CompletableFuture<Object> request(Object request) throws RemotingException {
         return client.request(request);
     }
 
@@ -76,8 +77,18 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
     }
 
     @Override
-    public ResponseFuture request(Object request, int timeout) throws RemotingException {
+    public CompletableFuture<Object> request(Object request, int timeout) throws RemotingException {
         return client.request(request, timeout);
+    }
+
+    @Override
+    public CompletableFuture<Object> request(Object request, ExecutorService executor) throws RemotingException {
+        return client.request(request, executor);
+    }
+
+    @Override
+    public CompletableFuture<Object> request(Object request, int timeout, ExecutorService executor) throws RemotingException {
+        return client.request(request, timeout, executor);
     }
 
     @Override
@@ -192,6 +203,9 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
         return client.isClosed();
     }
 
+    /**
+     * The reference count of current ExchangeClient, connection will be closed if all invokers destroyed.
+     */
     public void incrementAndGetCount() {
         referenceCount.incrementAndGet();
     }

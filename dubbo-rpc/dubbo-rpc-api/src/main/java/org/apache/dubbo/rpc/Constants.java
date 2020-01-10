@@ -42,14 +42,6 @@ public interface Constants {
 
     String FORCE_USE_TAG = "dubbo.force.tag";
 
-    String GENERIC_SERIALIZATION_NATIVE_JAVA = "nativejava";
-
-    String GENERIC_SERIALIZATION_DEFAULT = "true";
-
-    String GENERIC_SERIALIZATION_BEAN = "bean";
-
-    String GENERIC_SERIALIZATION_PROTOBUF = "protobuf-json";
-
     String TPS_LIMIT_RATE_KEY = "tps";
 
     String TPS_LIMIT_INTERVAL_KEY = "tps.interval";
@@ -57,8 +49,6 @@ public interface Constants {
     long DEFAULT_TPS_LIMIT_INTERVAL = 60 * 1000;
 
     String AUTO_ATTACH_INVOCATIONID_KEY = "invocationid.autoattach";
-
-    String STUB_EVENT_KEY = "dubbo.stub.event";
 
     boolean DEFAULT_STUB_EVENT = false;
 
@@ -68,14 +58,6 @@ public interface Constants {
 
     String EXECUTES_KEY = "executes";
 
-    String REFERENCE_FILTER_KEY = "reference.filter";
-
-    String INVOKER_LISTENER_KEY = "invoker.listener";
-
-    String SERVICE_FILTER_KEY = "service.filter";
-
-    String EXPORTER_LISTENER_KEY = "exporter.listener";
-
     String ACCESS_LOG_KEY = "accesslog";
 
     String ACTIVES_KEY = "actives";
@@ -83,10 +65,6 @@ public interface Constants {
     String ID_KEY = "id";
 
     String ASYNC_KEY = "async";
-
-    String FUTURE_GENERATED_KEY = "future_generated";
-
-    String FUTURE_RETURNTYPE_KEY = "future_returntype";
 
     String RETURN_KEY = "return";
 
@@ -103,8 +81,8 @@ public interface Constants {
     String SCOPE_KEY = "scope";
     String SCOPE_LOCAL = "local";
     String SCOPE_REMOTE = "remote";
-    /**
-     * To decide whether to make connection when the client is created
-     */
-    String LAZY_CONNECT_KEY = "lazy";
+
+    String INPUT_KEY = "input";
+    String OUTPUT_KEY = "output";
+
 }

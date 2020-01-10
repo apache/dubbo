@@ -38,9 +38,9 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.FILE_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMER_PROTOCOL;
-import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_REGISTRY_RETRY_PERIOD;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_RETRY_PERIOD_KEY;
+import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
+import static org.apache.dubbo.registry.Constants.DEFAULT_REGISTRY_RETRY_PERIOD;
+import static org.apache.dubbo.registry.Constants.REGISTRY_RETRY_PERIOD_KEY;
 
 /**
  * FailbackRegistry. (SPI, Prototype, ThreadSafe)
@@ -138,7 +138,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         }
     }
 
-    private void addFailedSubscribed(URL url, NotifyListener listener) {
+    protected void addFailedSubscribed(URL url, NotifyListener listener) {
         Holder h = new Holder(url, listener);
         FailedSubscribedTask oldOne = failedSubscribed.get(h);
         if (oldOne != null) {
@@ -228,6 +228,10 @@ public abstract class FailbackRegistry extends AbstractRegistry {
 
     @Override
     public void register(URL url) {
+        if (!acceptable(url)) {
+            logger.info("URL " + url + " will not be registered to Registry. Registry " + url + " does not accept service of this protocol type.");
+            return;
+        }
         super.register(url);
         removeFailedRegistered(url);
         removeFailedUnregistered(url);

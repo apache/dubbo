@@ -25,7 +25,6 @@ import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.etcd.RetryPolicy;
 import org.apache.dubbo.remoting.etcd.StateListener;
-import org.apache.dubbo.remoting.etcd.option.Constants;
 
 import io.etcd.jetcd.ByteSequence;
 import io.etcd.jetcd.Client;
@@ -44,7 +43,6 @@ import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
-import io.grpc.util.RoundRobinLoadBalancerFactory;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -68,11 +66,13 @@ import java.util.function.Consumer;
 import static java.util.stream.Collectors.toList;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
-import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_REGISTRY_RECONNECT_PERIOD;
-import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_REGISTRY_RETRY_PERIOD;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_RETRY_PERIOD_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.SESSION_TIMEOUT_KEY;
-import static org.apache.dubbo.remoting.etcd.option.Constants.DEFAULT_KEEPALIVE_TIMEOUT;
+import static org.apache.dubbo.remoting.etcd.Constants.DEFAULT_KEEPALIVE_TIMEOUT;
+import static org.apache.dubbo.remoting.etcd.Constants.DEFAULT_RECONNECT_PERIOD;
+import static org.apache.dubbo.remoting.etcd.Constants.DEFAULT_RETRY_PERIOD;
+import static org.apache.dubbo.remoting.etcd.Constants.HTTP_KEY;
+import static org.apache.dubbo.remoting.etcd.Constants.HTTP_SUBFIX_KEY;
+import static org.apache.dubbo.remoting.etcd.Constants.RETRY_PERIOD_KEY;
+import static org.apache.dubbo.remoting.etcd.Constants.SESSION_TIMEOUT_KEY;
 
 public class JEtcdClientWrapper {
 
@@ -127,7 +127,7 @@ public class JEtcdClientWrapper {
         this.retryPolicy = new RetryNTimes(1, 1000, TimeUnit.MILLISECONDS);
 
         this.failed = new IllegalStateException("Etcd3 registry is not connected yet, url:" + url);
-        int retryPeriod = url.getParameter(REGISTRY_RETRY_PERIOD_KEY, DEFAULT_REGISTRY_RETRY_PERIOD);
+        int retryPeriod = url.getParameter(RETRY_PERIOD_KEY, DEFAULT_RETRY_PERIOD);
 
         this.retryFuture = retryExecutor.scheduleWithFixedDelay(() -> {
             try {
@@ -145,8 +145,8 @@ public class JEtcdClientWrapper {
             maxInboundSize = Integer.valueOf(System.getProperty(GRPC_MAX_INBOUND_SIZE_KEY));
         }
 
+        // TODO, uses default pick-first round robin.
         ClientBuilder clientBuilder = Client.builder()
-                .loadBalancerFactory(RoundRobinLoadBalancerFactory.getInstance())
                 .endpoints(endPoints(url.getBackupAddress()))
                 .maxInboundMessageSize(maxInboundSize);
 
@@ -488,9 +488,9 @@ public class JEtcdClientWrapper {
     public String[] endPoints(String backupAddress) {
         String[] endpoints = backupAddress.split(COMMA_SEPARATOR);
         List<String> addresses = Arrays.stream(endpoints)
-                .map(address -> address.contains(Constants.HTTP_SUBFIX_KEY)
+                .map(address -> address.contains(HTTP_SUBFIX_KEY)
                         ? address
-                        : Constants.HTTP_KEY + address)
+                        : HTTP_KEY + address)
                 .collect(toList());
         Collections.shuffle(addresses);
         return addresses.toArray(new String[0]);
@@ -536,7 +536,7 @@ public class JEtcdClientWrapper {
                         }
                         connectState = connected;
                     }
-                }, DEFAULT_REGISTRY_RECONNECT_PERIOD, DEFAULT_REGISTRY_RECONNECT_PERIOD, TimeUnit.MILLISECONDS);
+                }, DEFAULT_RECONNECT_PERIOD, DEFAULT_RECONNECT_PERIOD, TimeUnit.MILLISECONDS);
             } catch (Throwable t) {
                 logger.error("monitor reconnect status failed.", t);
             }
@@ -664,6 +664,26 @@ public class JEtcdClientWrapper {
             // ignore
         }
         return false;
+    }
+
+    public boolean putEphemeral(final String key, String value) {
+        try {
+            return RetryLoops.invokeWithRetry(
+                    () -> {
+                        requiredNotNull(client, failed);
+                        // recovery an retry
+                        keepAlive();
+                        final long leaseId = globalLeaseId;
+                        client.getKVClient()
+                                .put(ByteSequence.from(key, UTF_8)
+                                        , ByteSequence.from(String.valueOf(value), UTF_8)
+                                        , PutOption.newBuilder().withLeaseId(leaseId).build())
+                                .get(DEFAULT_REQUEST_TIMEOUT, TimeUnit.MILLISECONDS);
+                        return true;
+                    }, retryPolicy);
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 
     private void retry() {

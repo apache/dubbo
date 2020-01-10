@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
@@ -64,6 +65,7 @@ public class PojoUtils {
     private static final Logger logger = LoggerFactory.getLogger(PojoUtils.class);
     private static final ConcurrentMap<String, Method> NAME_METHODS_CACHE = new ConcurrentHashMap<String, Method>();
     private static final ConcurrentMap<Class<?>, ConcurrentMap<String, Field>> CLASS_FIELD_CACHE = new ConcurrentHashMap<Class<?>, ConcurrentMap<String, Field>>();
+    private static final boolean GENERIC_WITH_CLZ = Boolean.parseBoolean(ConfigUtils.getProperty(CommonConstants.GENERIC_WITH_CLZ_KEY,"true"));
 
     public static Object[] generalize(Object[] objs) {
         Object[] dests = new Object[objs.length];
@@ -164,7 +166,9 @@ public class PojoUtils {
         }
         Map<String, Object> map = new HashMap<String, Object>();
         history.put(pojo, map);
-        map.put("class", pojo.getClass().getName());
+        if (GENERIC_WITH_CLZ) {
+            map.put("class", pojo.getClass().getName());
+        }
         for (Method method : pojo.getClass().getMethods()) {
             if (ReflectUtils.isBeanPropertyReadMethod(method)) {
                 try {
@@ -366,7 +370,7 @@ public class PojoUtils {
                 history.put(pojo, dest);
                 for (Object obj : src) {
                     Type keyType = getGenericClassByIndex(genericType, 0);
-                    Class<?> keyClazz = obj.getClass();
+                    Class<?> keyClazz = obj == null ? null : obj.getClass();
                     if (keyType instanceof Class) {
                         keyClazz = (Class<?>) keyType;
                     }
@@ -401,7 +405,9 @@ public class PojoUtils {
                     map = (Map<Object, Object>) type.newInstance();
                     Map<Object, Object> mapPojo = (Map<Object, Object>) pojo;
                     map.putAll(mapPojo);
-                    map.remove("class");
+                    if (GENERIC_WITH_CLZ) {
+                        map.remove("class");
+                    }
                 } catch (Exception e) {
                     //ignore error
                     map = (Map<Object, Object>) pojo;
@@ -561,10 +567,10 @@ public class PojoUtils {
      * @return
      */
     private static Object getDefaultValue(Class<?> parameterType) {
-        if (parameterType.getName().equals("char")) {
+        if ("char".equals(parameterType.getName())) {
             return Character.MIN_VALUE;
         }
-        if (parameterType.getName().equals("bool")) {
+        if ("bool".equals(parameterType.getName())) {
             return false;
         }
         return parameterType.isPrimitive() ? 0 : null;
@@ -580,6 +586,7 @@ public class PojoUtils {
                 for (Method m : cls.getMethods()) {
                     if (ReflectUtils.isBeanPropertyWriteMethod(m) && m.getName().equals(name)) {
                         method = m;
+                        break;
                     }
                 }
             }
@@ -607,12 +614,7 @@ public class PojoUtils {
             }
         }
         if (result != null) {
-            ConcurrentMap<String, Field> fields = CLASS_FIELD_CACHE.get(cls);
-            if (fields == null) {
-                fields = new ConcurrentHashMap<String, Field>();
-                CLASS_FIELD_CACHE.putIfAbsent(cls, fields);
-            }
-            fields = CLASS_FIELD_CACHE.get(cls);
+            ConcurrentMap<String, Field> fields = CLASS_FIELD_CACHE.computeIfAbsent(cls, k -> new ConcurrentHashMap<>());
             fields.putIfAbsent(fieldName, result);
         }
         return result;

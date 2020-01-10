@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.dubbo.decode;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.remoting.Codec2;
 import org.apache.dubbo.remoting.buffer.ChannelBuffer;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
@@ -28,6 +29,7 @@ import org.apache.dubbo.remoting.transport.DecodeHandler;
 import org.apache.dubbo.remoting.transport.MultiMessageHandler;
 import org.apache.dubbo.remoting.transport.netty4.NettyBackedChannelBuffer;
 import org.apache.dubbo.remoting.transport.netty4.NettyCodecAdapter;
+import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.dubbo.DecodeableRpcInvocation;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboCodec;
@@ -84,7 +86,7 @@ public class DubboTelnetDecodeTest {
                                             if (checkDubboDecoded(msg)) {
                                                 dubbo.incrementAndGet();
                                             }
-                                            return null;
+                                            return getDefaultFuture();
                                         }
                                     }))));
 
@@ -114,7 +116,7 @@ public class DubboTelnetDecodeTest {
      */
     @Test
     public void testTelnetDecode() throws InterruptedException {
-        ByteBuf telnetByteBuf = Unpooled.wrappedBuffer("ls\r\n".getBytes());
+        ByteBuf telnetByteBuf = Unpooled.wrappedBuffer("test\r\n".getBytes());
 
         EmbeddedChannel ch = null;
         try {
@@ -132,7 +134,7 @@ public class DubboTelnetDecodeTest {
                                     new HeaderExchangeHandler(new ExchangeHandlerAdapter() {
                                         @Override
                                         public CompletableFuture<Object> reply(ExchangeChannel channel, Object msg) {
-                                            return null;
+                                            return getDefaultFuture();
                                         }
                                     }))));
 
@@ -178,7 +180,7 @@ public class DubboTelnetDecodeTest {
     public void testTelnetDubboDecoded() throws InterruptedException, IOException {
         ByteBuf dubboByteBuf = createDubboByteBuf();
 
-        ByteBuf telnetByteBuf = Unpooled.wrappedBuffer("ls\r".getBytes());
+        ByteBuf telnetByteBuf = Unpooled.wrappedBuffer("test\r".getBytes());
         EmbeddedChannel ch = null;
         try {
             Codec2 codec = ExtensionLoader.getExtensionLoader(Codec2.class).getExtension("dubbo");
@@ -198,7 +200,8 @@ public class DubboTelnetDecodeTest {
                                             if (checkDubboDecoded(msg)) {
                                                 telnetDubbo.incrementAndGet();
                                             }
-                                            return null;
+
+                                            return getDefaultFuture();
                                         }
                                     }))));
 
@@ -265,7 +268,7 @@ public class DubboTelnetDecodeTest {
                                     new HeaderExchangeHandler(new ExchangeHandlerAdapter() {
                                         @Override
                                         public CompletableFuture<Object> reply(ExchangeChannel channel, Object msg) {
-                                            return null;
+                                            return getDefaultFuture();
                                         }
                                     }))));
 
@@ -335,7 +338,7 @@ public class DubboTelnetDecodeTest {
                                             if (checkDubboDecoded(msg)) {
                                                 dubboDubbo.incrementAndGet();
                                             }
-                                            return null;
+                                            return getDefaultFuture();
                                         }
                                     }))));
 
@@ -406,7 +409,7 @@ public class DubboTelnetDecodeTest {
                                             if (checkDubboDecoded(msg)) {
                                                 dubboTelnet.incrementAndGet();
                                             }
-                                            return null;
+                                            return getDefaultFuture();
                                         }
                                     }))));
 
@@ -435,6 +438,7 @@ public class DubboTelnetDecodeTest {
         RpcInvocation rpcInvocation = new RpcInvocation();
         rpcInvocation.setMethodName("sayHello");
         rpcInvocation.setParameterTypes(new Class[]{String.class});
+        rpcInvocation.setParameterTypesDesc(ReflectUtils.getDesc(new Class[]{String.class}));
         rpcInvocation.setArguments(new String[]{"dubbo"});
         rpcInvocation.setAttachment("path", DemoService.class.getName());
         rpcInvocation.setAttachment("interface", DemoService.class.getName());
@@ -452,7 +456,7 @@ public class DubboTelnetDecodeTest {
     }
 
     private static boolean checkTelnetDecoded(Object msg) {
-        if (msg != null && msg instanceof String && !msg.toString().contains("Unsupported command:")) {
+        if (msg instanceof String && !msg.toString().contains("Unsupported command:")) {
             return true;
         }
         return false;
@@ -473,5 +477,13 @@ public class DubboTelnetDecodeTest {
             }
         }
         return false;
+    }
+
+    private static CompletableFuture<Object> getDefaultFuture() {
+        CompletableFuture<Object> future = new CompletableFuture<>();
+        AppResponse result = new AppResponse();
+        result.setValue("default result");
+        future.complete(result);
+        return future;
     }
 }

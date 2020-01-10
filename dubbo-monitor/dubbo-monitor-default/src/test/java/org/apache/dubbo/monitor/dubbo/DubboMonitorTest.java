@@ -38,7 +38,7 @@ import org.mockito.ArgumentCaptor;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.apache.dubbo.common.constants.ConfigConstants.DUBBO_PROTOCOL;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -70,6 +70,7 @@ public class DubboMonitorTest {
             return false;
         }
 
+        @Override
         public Result invoke(Invocation invocation) throws RpcException {
             return null;
         }
