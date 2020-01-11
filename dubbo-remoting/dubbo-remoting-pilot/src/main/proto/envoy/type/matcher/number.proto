@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package envoy.type.matcher;
+
+option java_outer_classname = "NumberProto";
+option java_multiple_files = true;
+option java_package = "io.envoyproxy.envoy.type.matcher";
+option go_package = "matcher";
+
+import "envoy/type/range.proto";
+
+import "validate/validate.proto";
+
+// [#protodoc-title: NumberMatcher]
+
+// Specifies the way to match a double value.
+message DoubleMatcher {
+  oneof match_pattern {
+    option (validate.required) = true;
+
+    // If specified, the input double value must be in the range specified here.
+    // Note: The range is using half-open interval semantics [start, end).
+    envoy.type.DoubleRange range = 1;
+
+    // If specified, the input double value must be equal to the value specified here.
+    double exact = 2;
+  }
+}

@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package envoy.config.accesslog.v2;
+
+option java_outer_classname = "FileProto";
+option java_multiple_files = true;
+option java_package = "io.envoyproxy.envoy.config.accesslog.v2";
+option go_package = "v2";
+
+import "validate/validate.proto";
+import "google/protobuf/struct.proto";
+
+// [#protodoc-title: File access log]
+
+// Custom configuration for an :ref:`AccessLog <envoy_api_msg_config.filter.accesslog.v2.AccessLog>`
+// that writes log entries directly to a file. Configures the built-in *envoy.file_access_log*
+// AccessLog.
+message FileAccessLog {
+  // A path to a local file to which to write the access log entries.
+  string path = 1 [(validate.rules).string.min_bytes = 1];
+
+  // Access log format. Envoy supports :ref:`custom access log formats
+  // <config_access_log_format>` as well as a :ref:`default format
+  // <config_access_log_default_format>`.
+  oneof access_log_format {
+    // Access log :ref:`format string<config_access_log_format_strings>`
+    string format = 2;
+
+    // Access log :ref:`format dictionary<config_access_log_format_dictionaries>`
+    google.protobuf.Struct json_format = 3;
+  }
+}

@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+package envoy.config.filter.network.redis_proxy.v2;
+
+option java_outer_classname = "RedisProxyProto";
+option java_multiple_files = true;
+option java_package = "io.envoyproxy.envoy.config.filter.network.redis_proxy.v2";
+option go_package = "v2";
+
+import "google/protobuf/duration.proto";
+
+import "validate/validate.proto";
+import "gogoproto/gogo.proto";
+
+// [#protodoc-title: Redis Proxy]
+// Redis Proxy :ref:`configuration overview <config_network_filters_redis_proxy>`.
+
+message RedisProxy {
+  // The prefix to use when emitting :ref:`statistics <config_network_filters_redis_proxy_stats>`.
+  string stat_prefix = 1 [(validate.rules).string.min_bytes = 1];
+
+  // Name of cluster from cluster manager. See the :ref:`configuration section
+  // <arch_overview_redis_configuration>` of the architecture overview for recommendations on
+  // configuring the backing cluster.
+  string cluster = 2 [(validate.rules).string.min_bytes = 1];
+
+  // Redis connection pool settings.
+  message ConnPoolSettings {
+    // Per-operation timeout in milliseconds. The timer starts when the first
+    // command of a pipeline is written to the backend connection. Each response received from Redis
+    // resets the timer since it signifies that the next command is being processed by the backend.
+    // The only exception to this behavior is when a connection to a backend is not yet established.
+    // In that case, the connect timeout on the cluster will govern the timeout until the connection
+    // is ready.
+    google.protobuf.Duration op_timeout = 1
+        [(validate.rules).duration.required = true, (gogoproto.stdduration) = true];
+
+    // Use hash tagging on every redis key to guarantee that keys with the same hash tag will be
+    // forwarded to the same upstream. The hash key used for determining the upstream in a
+    // consistent hash ring configuration will be computed from the hash tagged key instead of the
+    // whole key. The algorithm used to compute the hash tag is identical to the `redis-cluster
+    // implementation <https://redis.io/topics/cluster-spec#keys-hash-tags>`_.
+    //
+    // Examples:
+    //
+    // * '{user1000}.following' and '{user1000}.followers' **will** be sent to the same upstream
+    // * '{user1000}.following' and '{user1001}.following' **might** be sent to the same upstream
+    bool enable_hashtagging = 2;
+  }
+
+  // Network settings for the connection pool to the upstream cluster.
+  ConnPoolSettings settings = 3 [(validate.rules).message.required = true];
+
+  // Indicates that latency stat should be computed in microseconds. By default it is computed in
+  // milliseconds.
+  bool latency_in_micros = 4;
+}

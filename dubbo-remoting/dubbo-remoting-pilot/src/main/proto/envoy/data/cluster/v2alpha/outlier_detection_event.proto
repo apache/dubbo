@@ -1,0 +1,77 @@
+syntax = "proto3";
+
+package envoy.data.cluster.v2alpha;
+
+option java_outer_classname = "OutlierDetectionEventProto";
+option java_multiple_files = true;
+option java_package = "io.envoyproxy.envoy.data.cluster.v2alpha";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
+import "validate/validate.proto";
+import "gogoproto/gogo.proto";
+
+option (gogoproto.equal_all) = true;
+
+// [#protodoc-title: Outlier detection logging events]
+// :ref:`Outlier detection logging <arch_overview_outlier_detection_logging>`.
+
+message OutlierDetectionEvent {
+  // In case of eject represents type of ejection that took place.
+  OutlierEjectionType type = 1 [(validate.rules).enum.defined_only = true];
+  // Timestamp for event.
+  google.protobuf.Timestamp timestamp = 2 [(gogoproto.stdtime) = true];
+  // The time in seconds since the last action (either an ejection or unejection) took place.
+  google.protobuf.UInt64Value secs_since_last_action = 3;
+  // The :ref:`cluster <envoy_api_msg_Cluster>` that owns the ejected host.
+  string cluster_name = 4 [(validate.rules).string.min_bytes = 1];
+  // The URL of the ejected host. E.g., ``tcp://1.2.3.4:80``.
+  string upstream_url = 5 [(validate.rules).string.min_bytes = 1];
+  // The action that took place.
+  Action action = 6 [(validate.rules).enum.defined_only = true];
+  // If ``action`` is ``eject``, specifies the number of times the host has been ejected (local to
+  // that Envoy and gets reset if the host gets removed from the upstream cluster for any reason and
+  // then re-added).
+  uint32 num_ejections = 7;
+  // If ``action`` is ``eject``, specifies if the ejection was enforced. ``true`` means the host was
+  // ejected. ``false`` means the event was logged but the host was not actually ejected.
+  bool enforced = 8;
+
+  oneof event {
+    option (validate.required) = true;
+    OutlierEjectSuccessRate eject_success_rate_event = 9;
+    OutlierEjectConsecutive eject_consecutive_event = 10;
+  }
+}
+
+// Type of ejection that took place
+enum OutlierEjectionType {
+  // In case upstream host returns certain number of consecutive 5xx
+  CONSECUTIVE_5XX = 0;
+  // In case upstream host returns certain number of consecutive gateway errors
+  CONSECUTIVE_GATEWAY_FAILURE = 1;
+  // Runs over aggregated success rate statistics from every host in cluster
+  SUCCESS_RATE = 2;
+}
+
+// Represents possible action applied to upstream host
+enum Action {
+  // In case host was excluded from service
+  EJECT = 0;
+  // In case host was brought back into service
+  UNEJECT = 1;
+}
+
+message OutlierEjectSuccessRate {
+  // Host’s success rate at the time of the ejection event on a 0-100 range.
+  uint32 host_success_rate = 1 [(validate.rules).uint32.lte = 100];
+  // Average success rate of the hosts in the cluster at the time of the ejection event on a 0-100
+  // range.
+  uint32 cluster_average_success_rate = 2 [(validate.rules).uint32.lte = 100];
+  // Success rate ejection threshold at the time of the ejection event.
+  uint32 cluster_success_rate_ejection_threshold = 3 [(validate.rules).uint32.lte = 100];
+}
+
+message OutlierEjectConsecutive {
+}

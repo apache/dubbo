@@ -1,0 +1,113 @@
+syntax = "proto3";
+
+package envoy.api.v2;
+
+option java_outer_classname = "EdsProto";
+option java_multiple_files = true;
+option java_package = "io.envoyproxy.envoy.api.v2";
+
+option java_generic_services = true;
+
+import "envoy/api/v2/discovery.proto";
+import "envoy/api/v2/endpoint/endpoint.proto";
+import "envoy/type/percent.proto";
+
+import "google/api/annotations.proto";
+
+import "validate/validate.proto";
+import "gogoproto/gogo.proto";
+import "google/protobuf/wrappers.proto";
+
+option (gogoproto.equal_all) = true;
+option (gogoproto.stable_marshaler_all) = true;
+
+// [#protodoc-title: EDS]
+// Endpoint discovery :ref:`architecture overview <arch_overview_service_discovery_types_eds>`
+
+service EndpointDiscoveryService {
+  // The resource_names field in DiscoveryRequest specifies a list of clusters
+  // to subscribe to updates for.
+  rpc StreamEndpoints(stream DiscoveryRequest) returns (stream DiscoveryResponse) {
+  }
+
+  rpc FetchEndpoints(DiscoveryRequest) returns (DiscoveryResponse) {
+    option (google.api.http) = {
+      post: "/v2/discovery:endpoints"
+      body: "*"
+    };
+  }
+}
+
+// Each route from RDS will map to a single cluster or traffic split across
+// clusters using weights expressed in the RDS WeightedCluster.
+//
+// With EDS, each cluster is treated independently from a LB perspective, with
+// LB taking place between the Localities within a cluster and at a finer
+// granularity between the hosts within a locality. For a given cluster, the
+// effective weight of a host is its load_balancing_weight multiplied by the
+// load_balancing_weight of its Locality.
+message ClusterLoadAssignment {
+  // Name of the cluster. This will be the :ref:`service_name
+  // <envoy_api_field_Cluster.EdsClusterConfig.service_name>` value if specified
+  // in the cluster :ref:`EdsClusterConfig
+  // <envoy_api_msg_Cluster.EdsClusterConfig>`.
+  string cluster_name = 1 [(validate.rules).string.min_bytes = 1];
+
+  // List of endpoints to load balance to.
+  repeated endpoint.LocalityLbEndpoints endpoints = 2 [(gogoproto.nullable) = false];
+
+  // Map of named endpoints that can be referenced in LocalityLbEndpoints.
+  map<string, endpoint.Endpoint> named_endpoints = 5;
+
+  // Load balancing policy settings.
+  message Policy {
+    reserved 1;
+
+    message DropOverload {
+      // Identifier for the policy specifying the drop.
+      string category = 1 [(validate.rules).string.min_bytes = 1];
+
+      // Percentage of traffic that should be dropped for the category.
+      envoy.type.FractionalPercent drop_percentage = 2;
+    }
+    // Action to trim the overall incoming traffic to protect the upstream
+    // hosts. This action allows protection in case the hosts are unable to
+    // recover from an outage, or unable to autoscale or unable to handle
+    // incoming traffic volume for any reason.
+    //
+    // At the client each category is applied one after the other to generate
+    // the 'actual' drop percentage on all outgoing traffic. For example:
+    //
+    // .. code-block:: json
+    //
+    //  { "drop_overloads": [
+    //      { "category": "throttle", "drop_percentage": 60 }
+    //      { "category": "lb", "drop_percentage": 50 }
+    //  ]}
+    //
+    // The actual drop percentages applied to the traffic at the clients will be
+    //    "throttle"_drop = 60%
+    //    "lb"_drop = 20%  // 50% of the remaining 'actual' load, which is 40%.
+    //    actual_outgoing_load = 20% // remaining after applying all categories.
+    repeated DropOverload drop_overloads = 2;
+
+    // Priority levels and localities are considered overprovisioned with this
+    // factor (in percentage). This means that we don't consider a priority
+    // level or locality unhealthy until the percentage of healthy hosts
+    // multiplied by the overprovisioning factor drops below 100.
+    // With the default value 140(1.4), Envoy doesn't consider a priority level
+    // or a locality unhealthy until their percentage of healthy hosts drops
+    // below 72%. For example:
+    //
+    // .. code-block:: json
+    //
+    //  { "overprovisioning_factor": 100 }
+    //
+    // Read more at :ref:`priority levels <arch_overview_load_balancing_priority_levels>` and
+    // :ref:`localities <arch_overview_load_balancing_locality_weighted_lb>`.
+    google.protobuf.UInt32Value overprovisioning_factor = 3 [(validate.rules).uint32.gt = 0];
+  }
+
+  // Load balancing policy settings.
+  Policy policy = 4;
+}

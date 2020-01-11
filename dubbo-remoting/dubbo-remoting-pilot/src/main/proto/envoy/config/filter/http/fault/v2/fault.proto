@@ -1,0 +1,89 @@
+syntax = "proto3";
+
+package envoy.config.filter.http.fault.v2;
+
+option java_outer_classname = "FaultProto";
+option java_multiple_files = true;
+option java_package = "io.envoyproxy.envoy.config.filter.http.fault.v2";
+option go_package = "v2";
+
+import "envoy/api/v2/route/route.proto";
+import "envoy/config/filter/fault/v2/fault.proto";
+import "envoy/type/percent.proto";
+
+import "google/protobuf/wrappers.proto";
+
+import "validate/validate.proto";
+
+// [#protodoc-title: Fault Injection]
+// Fault Injection :ref:`configuration overview <config_http_filters_fault_injection>`.
+
+message FaultAbort {
+  reserved 1;
+
+  oneof error_type {
+    option (validate.required) = true;
+
+    // HTTP status code to use to abort the HTTP request.
+    uint32 http_status = 2 [(validate.rules).uint32 = {gte: 200, lt: 600}];
+  }
+
+  // The percentage of requests/operations/connections that will be aborted with the error code
+  // provided.
+  type.FractionalPercent percentage = 3;
+}
+
+message HTTPFault {
+  // If specified, the filter will inject delays based on the values in the
+  // object.
+  filter.fault.v2.FaultDelay delay = 1;
+
+  // If specified, the filter will abort requests based on the values in
+  // the object. At least *abort* or *delay* must be specified.
+  FaultAbort abort = 2;
+
+  // Specifies the name of the (destination) upstream cluster that the
+  // filter should match on. Fault injection will be restricted to requests
+  // bound to the specific upstream cluster.
+  string upstream_cluster = 3;
+
+  // Specifies a set of headers that the filter should match on. The fault
+  // injection filter can be applied selectively to requests that match a set of
+  // headers specified in the fault filter config. The chances of actual fault
+  // injection further depend on the value of the :ref:`percentage
+  // <envoy_api_field_config.filter.http.fault.v2.FaultAbort.percentage>` field.
+  // The filter will check the request's headers against all the specified
+  // headers in the filter config. A match will happen if all the headers in the
+  // config are present in the request with the same values (or based on
+  // presence if the *value* field is not in the config).
+  repeated envoy.api.v2.route.HeaderMatcher headers = 4;
+
+  // Faults are injected for the specified list of downstream hosts. If this
+  // setting is not set, faults are injected for all downstream nodes.
+  // Downstream node name is taken from :ref:`the HTTP
+  // x-envoy-downstream-service-node
+  // <config_http_conn_man_headers_downstream-service-node>` header and compared
+  // against downstream_nodes list.
+  repeated string downstream_nodes = 5;
+
+  // The maximum number of faults that can be active at a single time via the configured fault
+  // filter. Note that because this setting can be overridden at the route level, it's possible
+  // for the number of active faults to be greater than this value (if injected via a different
+  // route). If not specified, defaults to unlimited. This setting can be overridden via
+  // `runtime <config_http_filters_fault_injection_runtime>` and any faults that are not injected
+  // due to overflow will be indicated via the `faults_overflow
+  // <config_http_filters_fault_injection_stats>` stat.
+  //
+  // .. attention::
+  //   Like other :ref:`circuit breakers <arch_overview_circuit_break>` in Envoy, this is a fuzzy
+  //   limit. It's possible for the number of active faults to rise slightly above the configured
+  //   amount due to the implementation details.
+  google.protobuf.UInt32Value max_active_faults = 6;
+
+  // The response rate limit to be applied to the response body of the stream.
+  //
+  // .. attention::
+  //  This is a per-stream limit versus a connection level limit. This means that concurrent streams
+  //  will each get an independent limit.
+  filter.fault.v2.FaultRateLimit response_rate_limit = 7;
+}

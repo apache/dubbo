@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package envoy.config.resource_monitor.injected_resource.v2alpha;
+
+option java_outer_classname = "InjectedResourceProto";
+option java_multiple_files = true;
+option java_package = "io.envoyproxy.envoy.config.resource_monitor.injected_resource.v2alpha";
+option go_package = "v2alpha";
+
+import "validate/validate.proto";
+
+// [#protodoc-title: Injected resource]
+
+// The injected resource monitor allows injecting a synthetic resource pressure into Envoy
+// via a text file, which must contain a floating-point number in the range [0..1] representing
+// the resource pressure and be updated atomically by a symbolic link swap.
+// This is intended primarily for integration tests to force Envoy into an overloaded state.
+message InjectedResourceConfig {
+  string filename = 1 [(validate.rules).string.min_bytes = 1];
+}

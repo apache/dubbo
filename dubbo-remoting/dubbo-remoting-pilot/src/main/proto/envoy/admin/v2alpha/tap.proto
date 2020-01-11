@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+import "envoy/service/tap/v2alpha/common.proto";
+import "validate/validate.proto";
+
+package envoy.admin.v2alpha;
+
+option java_outer_classname = "TapProto";
+option java_multiple_files = true;
+option java_package = "io.envoyproxy.envoy.admin.v2alpha";
+
+// The /tap admin request body that is used to configure an active tap session.
+message TapRequest {
+  // The opaque configuration ID used to match the configuration to a loaded extension.
+  // A tap extension configures a similar opaque ID that is used to match.
+  string config_id = 1 [(validate.rules).string.min_bytes = 1];
+
+  // The tap configuration to load.
+  service.tap.v2alpha.TapConfig tap_config = 2 [(validate.rules).message.required = true];
+}

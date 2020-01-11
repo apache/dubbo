@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+package envoy.type.matcher;
+
+option java_outer_classname = "StringProto";
+option java_multiple_files = true;
+option java_package = "io.envoyproxy.envoy.type.matcher";
+option go_package = "matcher";
+
+import "validate/validate.proto";
+
+// [#protodoc-title: StringMatcher]
+
+// Specifies the way to match a string.
+message StringMatcher {
+  oneof match_pattern {
+    option (validate.required) = true;
+
+    // The input string must match exactly the string specified here.
+    //
+    // Examples:
+    //
+    // * *abc* only matches the value *abc*.
+    string exact = 1;
+
+    // The input string must have the prefix specified here.
+    // Note: empty prefix is not allowed, please use regex instead.
+    //
+    // Examples:
+    //
+    // * *abc* matches the value *abc.xyz*
+    string prefix = 2 [(validate.rules).string.min_bytes = 1];
+
+    // The input string must have the suffix specified here.
+    // Note: empty prefix is not allowed, please use regex instead.
+    //
+    // Examples:
+    //
+    // * *abc* matches the value *xyz.abc*
+    string suffix = 3 [(validate.rules).string.min_bytes = 1];
+
+    // The input string must match the regular expression specified here.
+    // The regex grammar is defined `here
+    // <https://en.cppreference.com/w/cpp/regex/ecmascript>`_.
+    //
+    // Examples:
+    //
+    // * The regex *\d{3}* matches the value *123*
+    // * The regex *\d{3}* does not match the value *1234*
+    // * The regex *\d{3}* does not match the value *123.456*
+    string regex = 4 [(validate.rules).string.max_bytes = 1024];
+  }
+}
+
+// Specifies a list of ways to match a string.
+message ListStringMatcher {
+  repeated StringMatcher patterns = 1 [(validate.rules).repeated .min_items = 1];
+}

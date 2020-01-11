@@ -1,0 +1,124 @@
+syntax = "proto3";
+
+package envoy.api.v2.core;
+
+option java_outer_classname = "ConfigSourceProto";
+option java_multiple_files = true;
+option java_package = "io.envoyproxy.envoy.api.v2.core";
+
+import "envoy/api/v2/core/grpc_service.proto";
+
+import "google/protobuf/duration.proto";
+import "google/protobuf/wrappers.proto";
+
+import "validate/validate.proto";
+import "gogoproto/gogo.proto";
+
+option (gogoproto.equal_all) = true;
+
+// [#protodoc-title: Configuration sources]
+
+// API configuration source. This identifies the API type and cluster that Envoy
+// will use to fetch an xDS API.
+message ApiConfigSource {
+  // APIs may be fetched via either REST or gRPC.
+  enum ApiType {
+    // Ideally this would be 'reserved 0' but one can't reserve the default
+    // value. Instead we throw an exception if this is ever used.
+    UNSUPPORTED_REST_LEGACY = 0 [deprecated = true];
+    // REST-JSON v2 API. The `canonical JSON encoding
+    // <https://developers.google.com/protocol-buffers/docs/proto3#json>`_ for
+    // the v2 protos is used.
+    REST = 1;
+    // gRPC v2 API.
+    GRPC = 2;
+    // Using the delta xDS gRPC service, i.e. DeltaDiscovery{Request,Response}
+    // rather than Discovery{Request,Response}. Rather than sending Envoy the entire state
+    // with every update, the xDS server only sends what has changed since the last update.
+    //
+    // DELTA_GRPC is not yet entirely implemented! Initially, only CDS is available.
+    // Do not use for other xDSes. TODO(fredlas) update/remove this warning when appropriate.
+    DELTA_GRPC = 3;
+  }
+  ApiType api_type = 1 [(validate.rules).enum.defined_only = true];
+  // Cluster names should be used only with REST. If > 1
+  // cluster is defined, clusters will be cycled through if any kind of failure
+  // occurs.
+  //
+  // .. note::
+  //
+  //  The cluster with name ``cluster_name`` must be statically defined and its
+  //  type must not be ``EDS``.
+  repeated string cluster_names = 2;
+
+  // Multiple gRPC services be provided for GRPC. If > 1 cluster is defined,
+  // services will be cycled through if any kind of failure occurs.
+  repeated GrpcService grpc_services = 4;
+
+  // For REST APIs, the delay between successive polls.
+  google.protobuf.Duration refresh_delay = 3 [(gogoproto.stdduration) = true];
+
+  // For REST APIs, the request timeout. If not set, a default value of 1s will be used.
+  google.protobuf.Duration request_timeout = 5
+      [(validate.rules).duration.gt.seconds = 0, (gogoproto.stdduration) = true];
+
+  // For GRPC APIs, the rate limit settings. If present, discovery requests made by Envoy will be
+  // rate limited.
+  RateLimitSettings rate_limit_settings = 6;
+}
+
+// Aggregated Discovery Service (ADS) options. This is currently empty, but when
+// set in :ref:`ConfigSource <envoy_api_msg_core.ConfigSource>` can be used to
+// specify that ADS is to be used.
+message AggregatedConfigSource {
+}
+
+// Rate Limit settings to be applied for discovery requests made by Envoy.
+message RateLimitSettings {
+  // Maximum number of tokens to be used for rate limiting discovery request calls. If not set, a
+  // default value of 100 will be used.
+  google.protobuf.UInt32Value max_tokens = 1;
+
+  // Rate at which tokens will be filled per second. If not set, a default fill rate of 10 tokens
+  // per second will be used.
+  google.protobuf.DoubleValue fill_rate = 2 [(validate.rules).double.gt = 0.0];
+}
+
+// Configuration for :ref:`listeners <config_listeners>`, :ref:`clusters
+// <config_cluster_manager>`, :ref:`routes
+// <envoy_api_msg_RouteConfiguration>`, :ref:`endpoints
+// <arch_overview_service_discovery>` etc. may either be sourced from the
+// filesystem or from an xDS API source. Filesystem configs are watched with
+// inotify for updates.
+message ConfigSource {
+  oneof config_source_specifier {
+    option (validate.required) = true;
+    // Path on the filesystem to source and watch for configuration updates.
+    //
+    // .. note::
+    //
+    //  The path to the source must exist at config load time.
+    //
+    // .. note::
+    //
+    //   Envoy will only watch the file path for *moves.* This is because in general only moves
+    //   are atomic. The same method of swapping files as is demonstrated in the
+    //   :ref:`runtime documentation <config_runtime_symbolic_link_swap>` can be used here also.
+    string path = 1;
+    // API configuration source.
+    ApiConfigSource api_config_source = 2;
+    // When set, ADS will be used to fetch resources. The ADS API configuration
+    // source in the bootstrap configuration is used.
+    AggregatedConfigSource ads = 3;
+  }
+
+  // Optional initialization timeout.
+  // When this timeout is specified, Envoy will wait no longer than the specified time for first
+  // config response on this xDS subscription during the :ref:`initialization process
+  // <arch_overview_initialization>`. After reaching the timeout, Envoy will move to the next
+  // initialization phase, even if the first config is not delivered yet. The timer is activated
+  // when the xDS API subscription starts, and is disarmed on first config update or on error. 0
+  // means no timeout - Envoy will wait indefinitely for the first xDS config (unless another
+  // timeout applies). Default 0.
+  google.protobuf.Duration initial_fetch_timeout = 4;
+}

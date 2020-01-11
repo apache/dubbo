@@ -1,0 +1,181 @@
+syntax = "proto3";
+
+package envoy.api.v2;
+
+option java_outer_classname = "LdsProto";
+option java_multiple_files = true;
+option java_package = "io.envoyproxy.envoy.api.v2";
+
+option java_generic_services = true;
+
+import "envoy/api/v2/core/address.proto";
+import "envoy/api/v2/core/base.proto";
+import "envoy/api/v2/discovery.proto";
+import "envoy/api/v2/listener/listener.proto";
+
+import "google/api/annotations.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/wrappers.proto";
+
+import "validate/validate.proto";
+import "gogoproto/gogo.proto";
+
+option (gogoproto.equal_all) = true;
+
+// [#protodoc-title: Listener]
+// Listener :ref:`configuration overview <config_listeners>`
+
+// The Envoy instance initiates an RPC at startup to discover a list of
+// listeners. Updates are delivered via streaming from the LDS server and
+// consist of a complete update of all listeners. Existing connections will be
+// allowed to drain from listeners that are no longer present.
+service ListenerDiscoveryService {
+  rpc StreamListeners(stream DiscoveryRequest) returns (stream DiscoveryResponse) {
+  }
+
+  rpc FetchListeners(DiscoveryRequest) returns (DiscoveryResponse) {
+    option (google.api.http) = {
+      post: "/v2/discovery:listeners"
+      body: "*"
+    };
+  }
+}
+
+// [#comment:next free field: 16]
+message Listener {
+  // The unique name by which this listener is known. If no name is provided,
+  // Envoy will allocate an internal UUID for the listener. If the listener is to be dynamically
+  // updated or removed via :ref:`LDS <config_listeners_lds>` a unique name must be provided.
+  // By default, the maximum length of a listener's name is limited to 60 characters. This limit can
+  // be increased by setting the :option:`--max-obj-name-len` command line argument to the desired
+  // value.
+  string name = 1;
+
+  // The address that the listener should listen on. In general, the address must be unique, though
+  // that is governed by the bind rules of the OS. E.g., multiple listeners can listen on port 0 on
+  // Linux as the actual port will be allocated by the OS.
+  core.Address address = 2 [(validate.rules).message.required = true, (gogoproto.nullable) = false];
+
+  // A list of filter chains to consider for this listener. The
+  // :ref:`FilterChain <envoy_api_msg_listener.FilterChain>` with the most specific
+  // :ref:`FilterChainMatch <envoy_api_msg_listener.FilterChainMatch>` criteria is used on a
+  // connection.
+  //
+  // Example using SNI for filter chain selection can be found in the
+  // :ref:`FAQ entry <faq_how_to_setup_sni>`.
+  repeated listener.FilterChain filter_chains = 3
+      [(validate.rules).repeated .min_items = 1, (gogoproto.nullable) = false];
+
+  // If a connection is redirected using *iptables*, the port on which the proxy
+  // receives it might be different from the original destination address. When this flag is set to
+  // true, the listener hands off redirected connections to the listener associated with the
+  // original destination address. If there is no listener associated with the original destination
+  // address, the connection is handled by the listener that receives it. Defaults to false.
+  //
+  // .. attention::
+  //
+  //   This field is deprecated. Use :ref:`an original_dst <config_listener_filters_original_dst>`
+  //   :ref:`listener filter <envoy_api_field_Listener.listener_filters>` instead.
+  //
+  //   Note that hand off to another listener is *NOT* performed without this flag. Once
+  //   :ref:`FilterChainMatch <envoy_api_msg_listener.FilterChainMatch>` is implemented this flag
+  //   will be removed, as filter chain matching can be used to select a filter chain based on the
+  //   restored destination address.
+  google.protobuf.BoolValue use_original_dst = 4 [deprecated = true];
+
+  // Soft limit on size of the listener’s new connection read and write buffers.
+  // If unspecified, an implementation defined default is applied (1MiB).
+  google.protobuf.UInt32Value per_connection_buffer_limit_bytes = 5;
+
+  // Listener metadata.
+  core.Metadata metadata = 6;
+
+  // [#not-implemented-hide:]
+  message DeprecatedV1 {
+    // Whether the listener should bind to the port. A listener that doesn't
+    // bind can only receive connections redirected from other listeners that
+    // set use_original_dst parameter to true. Default is true.
+    //
+    // [V2-API-DIFF] This is deprecated in v2, all Listeners will bind to their
+    // port. An additional filter chain must be created for every original
+    // destination port this listener may redirect to in v2, with the original
+    // port specified in the FilterChainMatch destination_port field.
+    //
+    // [#comment:TODO(PiotrSikora): Remove this once verified that we no longer need it.]
+    google.protobuf.BoolValue bind_to_port = 1;
+  }
+
+  // [#not-implemented-hide:]
+  DeprecatedV1 deprecated_v1 = 7;
+
+  enum DrainType {
+    // Drain in response to calling /healthcheck/fail admin endpoint (along with the health check
+    // filter), listener removal/modification, and hot restart.
+    DEFAULT = 0;
+    // Drain in response to listener removal/modification and hot restart. This setting does not
+    // include /healthcheck/fail. This setting may be desirable if Envoy is hosting both ingress
+    // and egress listeners.
+    MODIFY_ONLY = 1;
+  }
+
+  // The type of draining to perform at a listener-wide level.
+  DrainType drain_type = 8;
+
+  // Listener filters have the opportunity to manipulate and augment the connection metadata that
+  // is used in connection filter chain matching, for example. These filters are run before any in
+  // :ref:`filter_chains <envoy_api_field_Listener.filter_chains>`. Order matters as the
+  // filters are processed sequentially right after a socket has been accepted by the listener, and
+  // before a connection is created.
+  repeated listener.ListenerFilter listener_filters = 9 [(gogoproto.nullable) = false];
+
+  // The timeout to wait for all listener filters to complete operation. If the timeout is reached,
+  // the accepted socket is closed without a connection being created. Specify 0 to disable the
+  // timeout. If not specified, a default timeout of 15s is used.
+  google.protobuf.Duration listener_filters_timeout = 15 [(gogoproto.stdduration) = true];
+
+  // Whether the listener should be set as a transparent socket.
+  // When this flag is set to true, connections can be redirected to the listener using an
+  // *iptables* *TPROXY* target, in which case the original source and destination addresses and
+  // ports are preserved on accepted connections. This flag should be used in combination with
+  // :ref:`an original_dst <config_listener_filters_original_dst>` :ref:`listener filter
+  // <envoy_api_field_Listener.listener_filters>` to mark the connections' local addresses as
+  // "restored." This can be used to hand off each redirected connection to another listener
+  // associated with the connection's destination address. Direct connections to the socket without
+  // using *TPROXY* cannot be distinguished from connections redirected using *TPROXY* and are
+  // therefore treated as if they were redirected.
+  // When this flag is set to false, the listener's socket is explicitly reset as non-transparent.
+  // Setting this flag requires Envoy to run with the *CAP_NET_ADMIN* capability.
+  // When this flag is not set (default), the socket is not modified, i.e. the transparent option
+  // is neither set nor reset.
+  google.protobuf.BoolValue transparent = 10;
+
+  // Whether the listener should set the *IP_FREEBIND* socket option. When this
+  // flag is set to true, listeners can be bound to an IP address that is not
+  // configured on the system running Envoy. When this flag is set to false, the
+  // option *IP_FREEBIND* is disabled on the socket. When this flag is not set
+  // (default), the socket is not modified, i.e. the option is neither enabled
+  // nor disabled.
+  google.protobuf.BoolValue freebind = 11;
+
+  // Additional socket options that may not be present in Envoy source code or
+  // precompiled binaries.
+  repeated core.SocketOption socket_options = 13;
+
+  // Whether the listener should accept TCP Fast Open (TFO) connections.
+  // When this flag is set to a value greater than 0, the option TCP_FASTOPEN is enabled on
+  // the socket, with a queue length of the specified size
+  // (see `details in RFC7413 <https://tools.ietf.org/html/rfc7413#section-5.1>`_).
+  // When this flag is set to 0, the option TCP_FASTOPEN is disabled on the socket.
+  // When this flag is not set (default), the socket is not modified,
+  // i.e. the option is neither enabled nor disabled.
+  //
+  // On Linux, the net.ipv4.tcp_fastopen kernel parameter must include flag 0x2 to enable
+  // TCP_FASTOPEN.
+  // See `ip-sysctl.txt <https://www.kernel.org/doc/Documentation/networking/ip-sysctl.txt>`_.
+  //
+  // On macOS, only values of 0, 1, and unset are valid; other values may result in an error.
+  // To set the queue length on macOS, set the net.inet.tcp.fastopen_backlog kernel parameter.
+  google.protobuf.UInt32Value tcp_fast_open_queue_length = 12;
+
+  reserved 14;
+}

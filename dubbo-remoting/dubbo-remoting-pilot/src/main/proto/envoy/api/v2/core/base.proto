@@ -1,0 +1,256 @@
+syntax = "proto3";
+
+package envoy.api.v2.core;
+
+option java_outer_classname = "BaseProto";
+option java_multiple_files = true;
+option java_package = "io.envoyproxy.envoy.api.v2.core";
+option go_package = "core";
+
+import "google/protobuf/any.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/wrappers.proto";
+
+import "validate/validate.proto";
+import "gogoproto/gogo.proto";
+
+import "envoy/type/percent.proto";
+
+option (gogoproto.equal_all) = true;
+option (gogoproto.stable_marshaler_all) = true;
+
+// [#protodoc-title: Common types]
+
+// Identifies location of where either Envoy runs or where upstream hosts run.
+message Locality {
+  // Region this :ref:`zone <envoy_api_field_core.Locality.zone>` belongs to.
+  string region = 1;
+
+  // Defines the local service zone where Envoy is running. Though optional, it
+  // should be set if discovery service routing is used and the discovery
+  // service exposes :ref:`zone data <envoy_api_field_endpoint.LocalityLbEndpoints.locality>`,
+  // either in this message or via :option:`--service-zone`. The meaning of zone
+  // is context dependent, e.g. `Availability Zone (AZ)
+  // <https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html>`_
+  // on AWS, `Zone <https://cloud.google.com/compute/docs/regions-zones/>`_ on
+  // GCP, etc.
+  string zone = 2;
+
+  // When used for locality of upstream hosts, this field further splits zone
+  // into smaller chunks of sub-zones so they can be load balanced
+  // independently.
+  string sub_zone = 3;
+}
+
+// Identifies a specific Envoy instance. The node identifier is presented to the
+// management server, which may use this identifier to distinguish per Envoy
+// configuration for serving.
+message Node {
+  // An opaque node identifier for the Envoy node. This also provides the local
+  // service node name. It should be set if any of the following features are
+  // used: :ref:`statsd <arch_overview_statistics>`, :ref:`CDS
+  // <config_cluster_manager_cds>`, and :ref:`HTTP tracing
+  // <arch_overview_tracing>`, either in this message or via
+  // :option:`--service-node`.
+  string id = 1;
+
+  // Defines the local service cluster name where Envoy is running. Though
+  // optional, it should be set if any of the following features are used:
+  // :ref:`statsd <arch_overview_statistics>`, :ref:`health check cluster
+  // verification <envoy_api_field_core.HealthCheck.HttpHealthCheck.service_name>`,
+  // :ref:`runtime override directory <envoy_api_msg_config.bootstrap.v2.Runtime>`,
+  // :ref:`user agent addition
+  // <envoy_api_field_config.filter.network.http_connection_manager.v2.HttpConnectionManager.add_user_agent>`,
+  // :ref:`HTTP global rate limiting <config_http_filters_rate_limit>`,
+  // :ref:`CDS <config_cluster_manager_cds>`, and :ref:`HTTP tracing
+  // <arch_overview_tracing>`, either in this message or via
+  // :option:`--service-cluster`.
+  string cluster = 2;
+
+  // Opaque metadata extending the node identifier. Envoy will pass this
+  // directly to the management server.
+  google.protobuf.Struct metadata = 3;
+
+  // Locality specifying where the Envoy instance is running.
+  Locality locality = 4;
+
+  // This is motivated by informing a management server during canary which
+  // version of Envoy is being tested in a heterogeneous fleet. This will be set
+  // by Envoy in management server RPCs.
+  string build_version = 5;
+}
+
+// Metadata provides additional inputs to filters based on matched listeners,
+// filter chains, routes and endpoints. It is structured as a map, usually from
+// filter name (in reverse DNS format) to metadata specific to the filter. Metadata
+// key-values for a filter are merged as connection and request handling occurs,
+// with later values for the same key overriding earlier values.
+//
+// An example use of metadata is providing additional values to
+// http_connection_manager in the envoy.http_connection_manager.access_log
+// namespace.
+//
+// Another example use of metadata is to per service config info in cluster metadata, which may get
+// consumed by multiple filters.
+//
+// For load balancing, Metadata provides a means to subset cluster endpoints.
+// Endpoints have a Metadata object associated and routes contain a Metadata
+// object to match against. There are some well defined metadata used today for
+// this purpose:
+//
+// * ``{"envoy.lb": {"canary": <bool> }}`` This indicates the canary status of an
+//   endpoint and is also used during header processing
+//   (x-envoy-upstream-canary) and for stats purposes.
+message Metadata {
+  // Key is the reverse DNS filter name, e.g. com.acme.widget. The envoy.*
+  // namespace is reserved for Envoy's built-in filters.
+  map<string, google.protobuf.Struct> filter_metadata = 1;
+}
+
+// Runtime derived uint32 with a default when not specified.
+message RuntimeUInt32 {
+  // Default value if runtime value is not available.
+  uint32 default_value = 2;
+
+  // Runtime key to get value for comparison. This value is used if defined.
+  string runtime_key = 3 [(validate.rules).string.min_bytes = 1];
+}
+
+// Envoy supports :ref:`upstream priority routing
+// <arch_overview_http_routing_priority>` both at the route and the virtual
+// cluster level. The current priority implementation uses different connection
+// pool and circuit breaking settings for each priority level. This means that
+// even for HTTP/2 requests, two physical connections will be used to an
+// upstream host. In the future Envoy will likely support true HTTP/2 priority
+// over a single upstream connection.
+enum RoutingPriority {
+  DEFAULT = 0;
+  HIGH = 1;
+}
+
+// HTTP request method.
+enum RequestMethod {
+  option (gogoproto.goproto_enum_prefix) = false;
+  METHOD_UNSPECIFIED = 0;
+  GET = 1;
+  HEAD = 2;
+  POST = 3;
+  PUT = 4;
+  DELETE = 5;
+  CONNECT = 6;
+  OPTIONS = 7;
+  TRACE = 8;
+}
+
+// Header name/value pair.
+message HeaderValue {
+  // Header name.
+  string key = 1 [(validate.rules).string = {min_bytes: 1, max_bytes: 16384}];
+
+  // Header value.
+  //
+  // The same :ref:`format specifier <config_access_log_format>` as used for
+  // :ref:`HTTP access logging <config_access_log>` applies here, however
+  // unknown header values are replaced with the empty string instead of `-`.
+  string value = 2 [(validate.rules).string.max_bytes = 16384];
+}
+
+// Header name/value pair plus option to control append behavior.
+message HeaderValueOption {
+  // Header name/value pair that this option applies to.
+  HeaderValue header = 1 [(validate.rules).message.required = true];
+
+  // Should the value be appended? If true (default), the value is appended to
+  // existing values.
+  google.protobuf.BoolValue append = 2;
+}
+
+// Wrapper for a set of headers.
+message HeaderMap {
+  repeated HeaderValue headers = 1;
+}
+
+// Data source consisting of either a file or an inline value.
+message DataSource {
+  oneof specifier {
+    option (validate.required) = true;
+
+    // Local filesystem data source.
+    string filename = 1 [(validate.rules).string.min_bytes = 1];
+
+    // Bytes inlined in the configuration.
+    bytes inline_bytes = 2 [(validate.rules).bytes.min_len = 1];
+
+    // String inlined in the configuration.
+    string inline_string = 3 [(validate.rules).string.min_bytes = 1];
+  }
+}
+
+// Configuration for transport socket in :ref:`listeners <config_listeners>` and
+// :ref:`clusters <envoy_api_msg_Cluster>`. If the configuration is
+// empty, a default transport socket implementation and configuration will be
+// chosen based on the platform and existence of tls_context.
+message TransportSocket {
+  // The name of the transport socket to instantiate. The name must match a supported transport
+  // socket implementation.
+  string name = 1 [(validate.rules).string.min_bytes = 1];
+
+  // Implementation specific configuration which depends on the implementation being instantiated.
+  // See the supported transport socket implementations for further documentation.
+  oneof config_type {
+    google.protobuf.Struct config = 2 [deprecated = true];
+
+    google.protobuf.Any typed_config = 3;
+  }
+}
+
+// Generic socket option message. This would be used to set socket options that
+// might not exist in upstream kernels or precompiled Envoy binaries.
+message SocketOption {
+  // An optional name to give this socket option for debugging, etc.
+  // Uniqueness is not required and no special meaning is assumed.
+  string description = 1;
+  // Corresponding to the level value passed to setsockopt, such as IPPROTO_TCP
+  int64 level = 2;
+  // The numeric name as passed to setsockopt
+  int64 name = 3;
+  oneof value {
+    option (validate.required) = true;
+
+    // Because many sockopts take an int value.
+    int64 int_value = 4;
+    // Otherwise it's a byte buffer.
+    bytes buf_value = 5;
+  }
+  enum SocketState {
+    option (gogoproto.goproto_enum_prefix) = false;
+    // Socket options are applied after socket creation but before binding the socket to a port
+    STATE_PREBIND = 0;
+    // Socket options are applied after binding the socket to a port but before calling listen()
+    STATE_BOUND = 1;
+    // Socket options are applied after calling listen()
+    STATE_LISTENING = 2;
+  }
+  // The state in which the option will be applied. When used in BindConfig
+  // STATE_PREBIND is currently the only valid value.
+  SocketState state = 6
+      [(validate.rules).message.required = true, (validate.rules).enum.defined_only = true];
+}
+
+// Runtime derived FractionalPercent with defaults for when the numerator or denominator is not
+// specified via a runtime key.
+message RuntimeFractionalPercent {
+  // Default value if the runtime value's for the numerator/denominator keys are not available.
+  envoy.type.FractionalPercent default_value = 1 [(validate.rules).message.required = true];
+
+  // Runtime key for a YAML representation of a FractionalPercent.
+  string runtime_key = 2;
+}
+
+// Identifies a specific ControlPlane instance that Envoy is connected to.
+message ControlPlane {
+  // An opaque control plane identifier that uniquely identifies an instance
+  // of control plane. This can be used to identify which control plane instance,
+  // the Envoy is connected to.
+  string identifier = 1;
+}

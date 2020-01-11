@@ -1,0 +1,1 @@
+grpc=org.apache.dubbo.remoting.pilot.grpc.GrpcTransporter

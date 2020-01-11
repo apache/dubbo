@@ -1,0 +1,104 @@
+syntax = "proto3";
+
+package envoy.api.v2;
+
+option java_outer_classname = "RdsProto";
+option java_multiple_files = true;
+option java_package = "io.envoyproxy.envoy.api.v2";
+
+option java_generic_services = true;
+
+import "envoy/api/v2/core/base.proto";
+import "envoy/api/v2/discovery.proto";
+import "envoy/api/v2/route/route.proto";
+
+import "google/api/annotations.proto";
+import "google/protobuf/wrappers.proto";
+
+import "validate/validate.proto";
+import "gogoproto/gogo.proto";
+
+option (gogoproto.equal_all) = true;
+
+// [#protodoc-title: HTTP route configuration]
+// * Routing :ref:`architecture overview <arch_overview_http_routing>`
+// * HTTP :ref:`router filter <config_http_filters_router>`
+
+// The resource_names field in DiscoveryRequest specifies a route configuration.
+// This allows an Envoy configuration with multiple HTTP listeners (and
+// associated HTTP connection manager filters) to use different route
+// configurations. Each listener will bind its HTTP connection manager filter to
+// a route table via this identifier.
+service RouteDiscoveryService {
+  rpc StreamRoutes(stream DiscoveryRequest) returns (stream DiscoveryResponse) {
+  }
+
+  rpc DeltaRoutes(stream DeltaDiscoveryRequest) returns (stream DeltaDiscoveryResponse) {
+  }
+
+  rpc FetchRoutes(DiscoveryRequest) returns (DiscoveryResponse) {
+    option (google.api.http) = {
+      post: "/v2/discovery:routes"
+      body: "*"
+    };
+  }
+}
+
+// [#comment:next free field: 9]
+message RouteConfiguration {
+  // The name of the route configuration. For example, it might match
+  // :ref:`route_config_name
+  // <envoy_api_field_config.filter.network.http_connection_manager.v2.Rds.route_config_name>` in
+  // :ref:`envoy_api_msg_config.filter.network.http_connection_manager.v2.Rds`.
+  string name = 1;
+
+  // An array of virtual hosts that make up the route table.
+  repeated route.VirtualHost virtual_hosts = 2 [(gogoproto.nullable) = false];
+
+  // Optionally specifies a list of HTTP headers that the connection manager
+  // will consider to be internal only. If they are found on external requests they will be cleaned
+  // prior to filter invocation. See :ref:`config_http_conn_man_headers_x-envoy-internal` for more
+  // information.
+  repeated string internal_only_headers = 3;
+
+  // Specifies a list of HTTP headers that should be added to each response that
+  // the connection manager encodes. Headers specified at this level are applied
+  // after headers from any enclosed :ref:`envoy_api_msg_route.VirtualHost` or
+  // :ref:`envoy_api_msg_route.RouteAction`. For more information, including details on
+  // header value syntax, see the documentation on :ref:`custom request headers
+  // <config_http_conn_man_headers_custom_request_headers>`.
+  repeated core.HeaderValueOption response_headers_to_add = 4
+      [(validate.rules).repeated .max_items = 1000];
+
+  // Specifies a list of HTTP headers that should be removed from each response
+  // that the connection manager encodes.
+  repeated string response_headers_to_remove = 5;
+
+  // Specifies a list of HTTP headers that should be added to each request
+  // routed by the HTTP connection manager. Headers specified at this level are
+  // applied after headers from any enclosed :ref:`envoy_api_msg_route.VirtualHost` or
+  // :ref:`envoy_api_msg_route.RouteAction`. For more information, including details on
+  // header value syntax, see the documentation on :ref:`custom request headers
+  // <config_http_conn_man_headers_custom_request_headers>`.
+  repeated core.HeaderValueOption request_headers_to_add = 6
+      [(validate.rules).repeated .max_items = 1000];
+
+  // Specifies a list of HTTP headers that should be removed from each request
+  // routed by the HTTP connection manager.
+  repeated string request_headers_to_remove = 8;
+
+  // An optional boolean that specifies whether the clusters that the route
+  // table refers to will be validated by the cluster manager. If set to true
+  // and a route refers to a non-existent cluster, the route table will not
+  // load. If set to false and a route refers to a non-existent cluster, the
+  // route table will load and the router filter will return a 404 if the route
+  // is selected at runtime. This setting defaults to true if the route table
+  // is statically defined via the :ref:`route_config
+  // <envoy_api_field_config.filter.network.http_connection_manager.v2.HttpConnectionManager.route_config>`
+  // option. This setting default to false if the route table is loaded dynamically via the
+  // :ref:`rds
+  // <envoy_api_field_config.filter.network.http_connection_manager.v2.HttpConnectionManager.rds>`
+  // option. Users may which to override the default behavior in certain cases (for example when
+  // using CDS with a static route table).
+  google.protobuf.BoolValue validate_clusters = 7;
+}

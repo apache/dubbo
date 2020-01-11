@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package envoy.service.discovery.v2;
+
+option java_outer_classname = "AdsProto";
+option java_multiple_files = true;
+option java_package = "io.envoyproxy.envoy.service.discovery.v2";
+option go_package = "v2";
+option java_generic_services = true;
+
+import "envoy/api/v2/discovery.proto";
+
+// [#not-implemented-hide:] Not configuration. Workaround c++ protobuf issue with importing
+// services: https://github.com/google/protobuf/issues/4221
+message AdsDummy {
+}
+
+// [#not-implemented-hide:] Discovery services for endpoints, clusters, routes,
+// and listeners are retained in the package `envoy.api.v2` for backwards
+// compatibility with existing management servers. New development in discovery
+// services should proceed in the package `envoy.service.discovery.v2`.
+
+// See https://github.com/lyft/envoy-api#apis for a description of the role of
+// ADS and how it is intended to be used by a management server. ADS requests
+// have the same structure as their singleton xDS counterparts, but can
+// multiplex many resource types on a single stream. The type_url in the
+// DiscoveryRequest/DiscoveryResponse provides sufficient information to recover
+// the multiplexed singleton APIs at the Envoy instance and management server.
+service AggregatedDiscoveryService {
+  // This is a gRPC-only API.
+  rpc StreamAggregatedResources(stream envoy.api.v2.DiscoveryRequest)
+      returns (stream envoy.api.v2.DiscoveryResponse) {
+  }
+
+  rpc DeltaAggregatedResources(stream envoy.api.v2.DeltaDiscoveryRequest)
+      returns (stream envoy.api.v2.DeltaDiscoveryResponse) {
+  }
+}

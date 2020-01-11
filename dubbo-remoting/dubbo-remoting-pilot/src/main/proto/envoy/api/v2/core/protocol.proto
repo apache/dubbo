@@ -1,0 +1,99 @@
+// [#protodoc-title: Protocol options]
+
+syntax = "proto3";
+
+package envoy.api.v2.core;
+
+option java_outer_classname = "ProtocolProto";
+option java_multiple_files = true;
+option java_package = "io.envoyproxy.envoy.api.v2.core";
+
+import "google/protobuf/duration.proto";
+import "google/protobuf/wrappers.proto";
+
+import "validate/validate.proto";
+import "gogoproto/gogo.proto";
+
+option (gogoproto.equal_all) = true;
+
+// [#protodoc-title: Protocol options]
+
+// [#not-implemented-hide:]
+message TcpProtocolOptions {
+}
+
+message HttpProtocolOptions {
+  // The idle timeout for upstream connection pool connections. The idle timeout is defined as the
+  // period in which there are no active requests. If not set, there is no idle timeout. When the
+  // idle timeout is reached the connection will be closed. Note that request based timeouts mean
+  // that HTTP/2 PINGs will not keep the connection alive.
+  google.protobuf.Duration idle_timeout = 1 [(gogoproto.stdduration) = true];
+}
+
+message Http1ProtocolOptions {
+  // Handle HTTP requests with absolute URLs in the requests. These requests
+  // are generally sent by clients to forward/explicit proxies. This allows clients to configure
+  // envoy as their HTTP proxy. In Unix, for example, this is typically done by setting the
+  // *http_proxy* environment variable.
+  google.protobuf.BoolValue allow_absolute_url = 1;
+
+  // Handle incoming HTTP/1.0 and HTTP 0.9 requests.
+  // This is off by default, and not fully standards compliant. There is support for pre-HTTP/1.1
+  // style connect logic, dechunking, and handling lack of client host iff
+  // *default_host_for_http_10* is configured.
+  bool accept_http_10 = 2;
+
+  // A default host for HTTP/1.0 requests. This is highly suggested if *accept_http_10* is true as
+  // Envoy does not otherwise support HTTP/1.0 without a Host header.
+  // This is a no-op if *accept_http_10* is not true.
+  string default_host_for_http_10 = 3;
+}
+
+message Http2ProtocolOptions {
+  // `Maximum table size <https://httpwg.org/specs/rfc7541.html#rfc.section.4.2>`_
+  // (in octets) that the encoder is permitted to use for the dynamic HPACK table. Valid values
+  // range from 0 to 4294967295 (2^32 - 1) and defaults to 4096. 0 effectively disables header
+  // compression.
+  google.protobuf.UInt32Value hpack_table_size = 1;
+
+  // `Maximum concurrent streams <https://httpwg.org/specs/rfc7540.html#rfc.section.5.1.2>`_
+  // allowed for peer on one HTTP/2 connection. Valid values range from 1 to 2147483647 (2^31 - 1)
+  // and defaults to 2147483647.
+  google.protobuf.UInt32Value max_concurrent_streams = 2
+      [(validate.rules).uint32 = {gte: 1, lte: 2147483647}];
+
+  // `Initial stream-level flow-control window
+  // <https://httpwg.org/specs/rfc7540.html#rfc.section.6.9.2>`_ size. Valid values range from 65535
+  // (2^16 - 1, HTTP/2 default) to 2147483647 (2^31 - 1, HTTP/2 maximum) and defaults to 268435456
+  // (256 * 1024 * 1024).
+  //
+  // NOTE: 65535 is the initial window size from HTTP/2 spec. We only support increasing the default
+  // window size now, so it's also the minimum.
+
+  // This field also acts as a soft limit on the number of bytes Envoy will buffer per-stream in the
+  // HTTP/2 codec buffers. Once the buffer reaches this pointer, watermark callbacks will fire to
+  // stop the flow of data to the codec buffers.
+  google.protobuf.UInt32Value initial_stream_window_size = 3
+      [(validate.rules).uint32 = {gte: 65535, lte: 2147483647}];
+
+  // Similar to *initial_stream_window_size*, but for connection-level flow-control
+  // window. Currently, this has the same minimum/maximum/default as *initial_stream_window_size*.
+  google.protobuf.UInt32Value initial_connection_window_size = 4
+      [(validate.rules).uint32 = {gte: 65535, lte: 2147483647}];
+
+  // Allows proxying Websocket and other upgrades over H2 connect.
+  bool allow_connect = 5;
+
+  // [#not-implemented-hide:] Hiding until envoy has full metadata support.
+  // Still under implementation. DO NOT USE.
+  //
+  // Allows metadata. See [metadata
+  // docs](https://github.com/envoyproxy/envoy/blob/master/source/docs/h2_metadata.md) for more
+  // information.
+  bool allow_metadata = 6;
+}
+
+// [#not-implemented-hide:]
+message GrpcProtocolOptions {
+  Http2ProtocolOptions http2_protocol_options = 1;
+}

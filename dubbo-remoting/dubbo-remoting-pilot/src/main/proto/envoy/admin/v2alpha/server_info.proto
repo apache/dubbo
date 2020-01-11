@@ -1,0 +1,134 @@
+syntax = "proto3";
+
+package envoy.admin.v2alpha;
+
+option java_outer_classname = "ServerInfoProto";
+option java_multiple_files = true;
+option java_package = "io.envoyproxy.envoy.admin.v2alpha";
+
+import "google/protobuf/duration.proto";
+
+// [#protodoc-title: Server State]
+
+// Proto representation of the value returned by /server_info, containing
+// server version/server status information.
+message ServerInfo {
+  // Server version.
+  string version = 1;
+
+  enum State {
+    // Server is live and serving traffic.
+    LIVE = 0;
+    // Server is draining listeners in response to external health checks failing.
+    DRAINING = 1;
+    // Server has not yet completed cluster manager initialization.
+    PRE_INITIALIZING = 2;
+    // Server is running the cluster manager initialization callbacks (e.g., RDS).
+    INITIALIZING = 3;
+  }
+
+  // State of the server.
+  State state = 2;
+
+  // Uptime since current epoch was started.
+  google.protobuf.Duration uptime_current_epoch = 3;
+
+  // Uptime since the start of the first epoch.
+  google.protobuf.Duration uptime_all_epochs = 4;
+
+  // Command line options the server is currently running with.
+  CommandLineOptions command_line_options = 6;
+}
+
+message CommandLineOptions {
+  // See :option:`--base-id` for details.
+  uint64 base_id = 1;
+
+  // See :option:`--concurrency` for details.
+  uint32 concurrency = 2;
+
+  // See :option:`--config-path` for details.
+  string config_path = 3;
+
+  // See :option:`--config-yaml` for details.
+  string config_yaml = 4;
+
+  // See :option:`--allow-unknown-fields` for details.
+  bool allow_unknown_fields = 5;
+
+  // See :option:`--admin-address-path` for details.
+  string admin_address_path = 6;
+
+  enum IpVersion {
+    v4 = 0;
+    v6 = 1;
+  }
+
+  // See :option:`--local-address-ip-version` for details.
+  IpVersion local_address_ip_version = 7;
+
+  // See :option:`--log-level` for details.
+  string log_level = 8;
+
+  // See :option:`--component-log-level` for details.
+  string component_log_level = 9;
+
+  // See :option:`--log-format` for details.
+  string log_format = 10;
+
+  // See :option:`--log-path` for details.
+  string log_path = 11;
+
+  // See :option:`--hot-restart-version` for details.
+  bool hot_restart_version = 12;
+
+  // See :option:`--service-cluster` for details.
+  string service_cluster = 13;
+
+  // See :option:`--service-node` for details.
+  string service_node = 14;
+
+  // See :option:`--service-zone` for details.
+  string service_zone = 15;
+
+  // See :option:`--file-flush-interval-msec` for details.
+  google.protobuf.Duration file_flush_interval = 16;
+
+  // See :option:`--drain-time-s` for details.
+  google.protobuf.Duration drain_time = 17;
+
+  // See :option:`--parent-shutdown-time-s` for details.
+  google.protobuf.Duration parent_shutdown_time = 18;
+
+  enum Mode {
+    // Validate configs and then serve traffic normally.
+    Serve = 0;
+
+    // Validate configs and exit.
+    Validate = 1;
+
+    // Completely load and initialize the config, and then exit without running the listener loop.
+    InitOnly = 2;
+  }
+
+  // See :option:`--mode` for details.
+  Mode mode = 19;
+
+  // See :option:`--max-stats` for details.
+  uint64 max_stats = 20;
+
+  // See :option:`--max-obj-name-len` for details.
+  uint64 max_obj_name_len = 21;
+
+  // See :option:`--disable-hot-restart` for details.
+  bool disable_hot_restart = 22;
+
+  // See :option:`--enable-mutex-tracing` for details.
+  bool enable_mutex_tracing = 23;
+
+  // See :option:`--restart-epoch` for details.
+  uint32 restart_epoch = 24;
+
+  // See :option:`--cpuset-threads` for details.
+  bool cpuset_threads = 25;
+}

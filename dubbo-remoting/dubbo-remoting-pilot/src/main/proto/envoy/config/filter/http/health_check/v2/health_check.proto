@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package envoy.config.filter.http.health_check.v2;
+
+option java_outer_classname = "HealthCheckProto";
+option java_multiple_files = true;
+option java_package = "io.envoyproxy.envoy.config.filter.http.health_check.v2";
+option go_package = "v2";
+
+import "google/protobuf/duration.proto";
+import "google/protobuf/wrappers.proto";
+
+import "envoy/api/v2/route/route.proto";
+import "envoy/type/percent.proto";
+
+import "validate/validate.proto";
+import "gogoproto/gogo.proto";
+
+option (gogoproto.stable_marshaler_all) = true;
+
+// [#protodoc-title: Health check]
+// Health check :ref:`configuration overview <config_http_filters_health_check>`.
+
+message HealthCheck {
+  // Specifies whether the filter operates in pass through mode or not.
+  google.protobuf.BoolValue pass_through_mode = 1 [(validate.rules).message.required = true];
+
+  reserved 2;
+  reserved "endpoint";
+
+  // If operating in pass through mode, the amount of time in milliseconds
+  // that the filter should cache the upstream response.
+  google.protobuf.Duration cache_time = 3 [(gogoproto.stdduration) = true];
+
+  // If operating in non-pass-through mode, specifies a set of upstream cluster
+  // names and the minimum percentage of servers in each of those clusters that
+  // must be healthy or degraded in order for the filter to return a 200.
+  map<string, envoy.type.Percent> cluster_min_healthy_percentages = 4;
+
+  // Specifies a set of health check request headers to match on. The health check filter will
+  // check a request’s headers against all the specified headers. To specify the health check
+  // endpoint, set the ``:path`` header to match on.
+  repeated envoy.api.v2.route.HeaderMatcher headers = 5;
+}

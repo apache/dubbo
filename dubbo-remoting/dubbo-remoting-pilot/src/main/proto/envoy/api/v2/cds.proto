@@ -1,0 +1,605 @@
+syntax = "proto3";
+
+package envoy.api.v2;
+
+option java_outer_classname = "CdsProto";
+option java_multiple_files = true;
+option java_package = "io.envoyproxy.envoy.api.v2";
+
+option java_generic_services = true;
+
+import "envoy/api/v2/core/address.proto";
+import "envoy/api/v2/auth/cert.proto";
+import "envoy/api/v2/core/base.proto";
+import "envoy/api/v2/core/config_source.proto";
+import "envoy/api/v2/discovery.proto";
+import "envoy/api/v2/core/health_check.proto";
+import "envoy/api/v2/core/protocol.proto";
+import "envoy/api/v2/cluster/circuit_breaker.proto";
+import "envoy/api/v2/cluster/outlier_detection.proto";
+import "envoy/api/v2/eds.proto";
+import "envoy/type/percent.proto";
+
+import "google/api/annotations.proto";
+import "google/protobuf/any.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/wrappers.proto";
+
+import "validate/validate.proto";
+import "gogoproto/gogo.proto";
+
+option (gogoproto.equal_all) = true;
+option (gogoproto.stable_marshaler_all) = true;
+
+// Return list of all clusters this proxy will load balance to.
+service ClusterDiscoveryService {
+  rpc StreamClusters(stream DiscoveryRequest) returns (stream DiscoveryResponse) {
+  }
+
+  rpc DeltaClusters(stream DeltaDiscoveryRequest) returns (stream DeltaDiscoveryResponse) {
+  }
+
+  rpc FetchClusters(DiscoveryRequest) returns (DiscoveryResponse) {
+    option (google.api.http) = {
+      post: "/v2/discovery:clusters"
+      body: "*"
+    };
+  }
+}
+
+// [#protodoc-title: Clusters]
+
+// Configuration for a single upstream cluster.
+// [#comment:next free field: 39]
+message Cluster {
+  // Supplies the name of the cluster which must be unique across all clusters.
+  // The cluster name is used when emitting
+  // :ref:`statistics <config_cluster_manager_cluster_stats>` if :ref:`alt_stat_name
+  // <envoy_api_field_Cluster.alt_stat_name>` is not provided.
+  // Any ``:`` in the cluster name will be converted to ``_`` when emitting statistics.
+  // By default, the maximum length of a cluster name is limited to 60
+  // characters. This limit can be increased by setting the
+  // :option:`--max-obj-name-len` command line argument to the desired value.
+  string name = 1 [(validate.rules).string.min_bytes = 1];
+
+  // An optional alternative to the cluster name to be used while emitting stats.
+  // Any ``:`` in the name will be converted to ``_`` when emitting statistics. This should not be
+  // confused with :ref:`Router Filter Header
+  // <config_http_filters_router_x-envoy-upstream-alt-stat-name>`.
+  string alt_stat_name = 28;
+
+  // Refer to :ref:`service discovery type <arch_overview_service_discovery_types>`
+  // for an explanation on each type.
+  enum DiscoveryType {
+    // Refer to the :ref:`static discovery type<arch_overview_service_discovery_types_static>`
+    // for an explanation.
+    STATIC = 0;
+
+    // Refer to the :ref:`strict DNS discovery
+    // type<arch_overview_service_discovery_types_strict_dns>`
+    // for an explanation.
+    STRICT_DNS = 1;
+
+    // Refer to the :ref:`logical DNS discovery
+    // type<arch_overview_service_discovery_types_logical_dns>`
+    // for an explanation.
+    LOGICAL_DNS = 2;
+
+    // Refer to the :ref:`service discovery type<arch_overview_service_discovery_types_eds>`
+    // for an explanation.
+    EDS = 3;
+
+    // Refer to the :ref:`original destination discovery
+    // type<arch_overview_service_discovery_types_original_destination>`
+    // for an explanation.
+    ORIGINAL_DST = 4;
+  }
+
+  // Extended cluster type.
+  message CustomClusterType {
+    // The type of the cluster to instantiate. The name must match a supported cluster type.
+    string name = 1 [(validate.rules).string.min_bytes = 1];
+
+    // Cluster specific configuration which depends on the cluster being instantiated.
+    // See the supported cluster for further documentation.
+    google.protobuf.Any typed_config = 2;
+  }
+
+  oneof cluster_discovery_type {
+    // The :ref:`service discovery type <arch_overview_service_discovery_types>`
+    // to use for resolving the cluster.
+    DiscoveryType type = 2 [(validate.rules).enum.defined_only = true];
+
+    // The custom cluster type.
+    CustomClusterType cluster_type = 38;
+  }
+
+  // Only valid when discovery type is EDS.
+  message EdsClusterConfig {
+    // Configuration for the source of EDS updates for this Cluster.
+    core.ConfigSource eds_config = 1;
+
+    // Optional alternative to cluster name to present to EDS. This does not
+    // have the same restrictions as cluster name, i.e. it may be arbitrary
+    // length.
+    string service_name = 2;
+  }
+  // Configuration to use for EDS updates for the Cluster.
+  EdsClusterConfig eds_cluster_config = 3;
+
+  // The timeout for new network connections to hosts in the cluster.
+  google.protobuf.Duration connect_timeout = 4 [
+    (validate.rules).duration.gt = {},
+    (gogoproto.stdduration) = true,
+    (gogoproto.nullable) = false
+  ];
+
+  // Soft limit on size of the cluster’s connections read and write buffers. If
+  // unspecified, an implementation defined default is applied (1MiB).
+  google.protobuf.UInt32Value per_connection_buffer_limit_bytes = 5;
+
+  // Refer to :ref:`load balancer type <arch_overview_load_balancing_types>` architecture
+  // overview section for information on each type.
+  enum LbPolicy {
+
+    // Refer to the :ref:`round robin load balancing
+    // policy<arch_overview_load_balancing_types_round_robin>`
+    // for an explanation.
+    ROUND_ROBIN = 0;
+
+    // Refer to the :ref:`least request load balancing
+    // policy<arch_overview_load_balancing_types_least_request>`
+    // for an explanation.
+    LEAST_REQUEST = 1;
+
+    // Refer to the :ref:`ring hash load balancing
+    // policy<arch_overview_load_balancing_types_ring_hash>`
+    // for an explanation.
+    RING_HASH = 2;
+
+    // Refer to the :ref:`random load balancing
+    // policy<arch_overview_load_balancing_types_random>`
+    // for an explanation.
+    RANDOM = 3;
+
+    // Refer to the :ref:`original destination load balancing
+    // policy<arch_overview_load_balancing_types_original_destination>`
+    // for an explanation.
+    ORIGINAL_DST_LB = 4;
+
+    // Refer to the :ref:`Maglev load balancing policy<arch_overview_load_balancing_types_maglev>`
+    // for an explanation.
+    MAGLEV = 5;
+  }
+  // The :ref:`load balancer type <arch_overview_load_balancing_types>` to use
+  // when picking a host in the cluster.
+  LbPolicy lb_policy = 6 [(validate.rules).enum.defined_only = true];
+
+  // If the service discovery type is
+  // :ref:`STATIC<envoy_api_enum_value_Cluster.DiscoveryType.STATIC>`,
+  // :ref:`STRICT_DNS<envoy_api_enum_value_Cluster.DiscoveryType.STRICT_DNS>`
+  // or :ref:`LOGICAL_DNS<envoy_api_enum_value_Cluster.DiscoveryType.LOGICAL_DNS>`,
+  // then hosts is required.
+  //
+  // .. attention::
+  //
+  //   **This field is deprecated**. Set the
+  //   :ref:`load_assignment<envoy_api_field_Cluster.load_assignment>` field instead.
+  //
+  repeated core.Address hosts = 7 [deprecated = true];
+
+  // Setting this is required for specifying members of
+  // :ref:`STATIC<envoy_api_enum_value_Cluster.DiscoveryType.STATIC>`,
+  // :ref:`STRICT_DNS<envoy_api_enum_value_Cluster.DiscoveryType.STRICT_DNS>`
+  // or :ref:`LOGICAL_DNS<envoy_api_enum_value_Cluster.DiscoveryType.LOGICAL_DNS>` clusters.
+  // This field supersedes :ref:`hosts<envoy_api_field_Cluster.hosts>` field.
+  // [#comment:TODO(dio): Deprecate the hosts field and add it to DEPRECATED.md
+  // once load_assignment is implemented.]
+  //
+  // .. attention::
+  //
+  //   Setting this allows non-EDS cluster types to contain embedded EDS equivalent
+  //   :ref:`endpoint assignments<envoy_api_msg_ClusterLoadAssignment>`.
+  //   Setting this overrides :ref:`hosts<envoy_api_field_Cluster.hosts>` values.
+  //
+  ClusterLoadAssignment load_assignment = 33;
+
+  // Optional :ref:`active health checking <arch_overview_health_checking>`
+  // configuration for the cluster. If no
+  // configuration is specified no health checking will be done and all cluster
+  // members will be considered healthy at all times.
+  repeated core.HealthCheck health_checks = 8;
+
+  // Optional maximum requests for a single upstream connection. This parameter
+  // is respected by both the HTTP/1.1 and HTTP/2 connection pool
+  // implementations. If not specified, there is no limit. Setting this
+  // parameter to 1 will effectively disable keep alive.
+  google.protobuf.UInt32Value max_requests_per_connection = 9;
+
+  // Optional :ref:`circuit breaking <arch_overview_circuit_break>` for the cluster.
+  cluster.CircuitBreakers circuit_breakers = 10;
+
+  // The TLS configuration for connections to the upstream cluster. If no TLS
+  // configuration is specified, TLS will not be used for new connections.
+  //
+  // .. attention::
+  //
+  //   Server certificate verification is not enabled by default. Configure
+  //   :ref:`trusted_ca<envoy_api_field_auth.CertificateValidationContext.trusted_ca>` to enable
+  //   verification.
+  auth.UpstreamTlsContext tls_context = 11;
+
+  reserved 12;
+
+  // Additional options when handling HTTP requests. These options will be applicable to both
+  // HTTP1 and HTTP2 requests.
+  core.HttpProtocolOptions common_http_protocol_options = 29;
+
+  // Additional options when handling HTTP1 requests.
+  core.Http1ProtocolOptions http_protocol_options = 13;
+
+  // Even if default HTTP2 protocol options are desired, this field must be
+  // set so that Envoy will assume that the upstream supports HTTP/2 when
+  // making new HTTP connection pool connections. Currently, Envoy only
+  // supports prior knowledge for upstream connections. Even if TLS is used
+  // with ALPN, `http2_protocol_options` must be specified. As an aside this allows HTTP/2
+  // connections to happen over plain text.
+  core.Http2ProtocolOptions http2_protocol_options = 14;
+
+  // The extension_protocol_options field is used to provide extension-specific protocol options
+  // for upstream connections. The key should match the extension filter name, such as
+  // "envoy.filters.network.thrift_proxy". See the extension's documentation for details on
+  // specific options.
+  map<string, google.protobuf.Struct> extension_protocol_options = 35 [deprecated = true];
+
+  // The extension_protocol_options field is used to provide extension-specific protocol options
+  // for upstream connections. The key should match the extension filter name, such as
+  // "envoy.filters.network.thrift_proxy". See the extension's documentation for details on
+  // specific options.
+  map<string, google.protobuf.Any> typed_extension_protocol_options = 36;
+
+  reserved 15;
+
+  // If the DNS refresh rate is specified and the cluster type is either
+  // :ref:`STRICT_DNS<envoy_api_enum_value_Cluster.DiscoveryType.STRICT_DNS>`,
+  // or :ref:`LOGICAL_DNS<envoy_api_enum_value_Cluster.DiscoveryType.LOGICAL_DNS>`,
+  // this value is used as the cluster’s DNS refresh
+  // rate. If this setting is not specified, the value defaults to 5000ms. For
+  // cluster types other than
+  // :ref:`STRICT_DNS<envoy_api_enum_value_Cluster.DiscoveryType.STRICT_DNS>`
+  // and :ref:`LOGICAL_DNS<envoy_api_enum_value_Cluster.DiscoveryType.LOGICAL_DNS>`
+  // this setting is ignored.
+  google.protobuf.Duration dns_refresh_rate = 16
+      [(validate.rules).duration.gt = {}, (gogoproto.stdduration) = true];
+
+  // When V4_ONLY is selected, the DNS resolver will only perform a lookup for
+  // addresses in the IPv4 family. If V6_ONLY is selected, the DNS resolver will
+  // only perform a lookup for addresses in the IPv6 family. If AUTO is
+  // specified, the DNS resolver will first perform a lookup for addresses in
+  // the IPv6 family and fallback to a lookup for addresses in the IPv4 family.
+  // For cluster types other than
+  // :ref:`STRICT_DNS<envoy_api_enum_value_Cluster.DiscoveryType.STRICT_DNS>` and
+  // :ref:`LOGICAL_DNS<envoy_api_enum_value_Cluster.DiscoveryType.LOGICAL_DNS>`,
+  // this setting is
+  // ignored.
+  enum DnsLookupFamily {
+    AUTO = 0;
+    V4_ONLY = 1;
+    V6_ONLY = 2;
+  }
+
+  // The DNS IP address resolution policy. If this setting is not specified, the
+  // value defaults to
+  // :ref:`AUTO<envoy_api_enum_value_Cluster.DnsLookupFamily.AUTO>`.
+  DnsLookupFamily dns_lookup_family = 17 [(validate.rules).enum.defined_only = true];
+
+  // If DNS resolvers are specified and the cluster type is either
+  // :ref:`STRICT_DNS<envoy_api_enum_value_Cluster.DiscoveryType.STRICT_DNS>`,
+  // or :ref:`LOGICAL_DNS<envoy_api_enum_value_Cluster.DiscoveryType.LOGICAL_DNS>`,
+  // this value is used to specify the cluster’s dns resolvers.
+  // If this setting is not specified, the value defaults to the default
+  // resolver, which uses /etc/resolv.conf for configuration. For cluster types
+  // other than
+  // :ref:`STRICT_DNS<envoy_api_enum_value_Cluster.DiscoveryType.STRICT_DNS>`
+  // and :ref:`LOGICAL_DNS<envoy_api_enum_value_Cluster.DiscoveryType.LOGICAL_DNS>`
+  // this setting is ignored.
+  repeated core.Address dns_resolvers = 18;
+
+  // If specified, outlier detection will be enabled for this upstream cluster.
+  // Each of the configuration values can be overridden via
+  // :ref:`runtime values <config_cluster_manager_cluster_runtime_outlier_detection>`.
+  cluster.OutlierDetection outlier_detection = 19;
+
+  // The interval for removing stale hosts from a cluster type
+  // :ref:`ORIGINAL_DST<envoy_api_enum_value_Cluster.DiscoveryType.ORIGINAL_DST>`.
+  // Hosts are considered stale if they have not been used
+  // as upstream destinations during this interval. New hosts are added
+  // to original destination clusters on demand as new connections are
+  // redirected to Envoy, causing the number of hosts in the cluster to
+  // grow over time. Hosts that are not stale (they are actively used as
+  // destinations) are kept in the cluster, which allows connections to
+  // them remain open, saving the latency that would otherwise be spent
+  // on opening new connections. If this setting is not specified, the
+  // value defaults to 5000ms. For cluster types other than
+  // :ref:`ORIGINAL_DST<envoy_api_enum_value_Cluster.DiscoveryType.ORIGINAL_DST>`
+  // this setting is ignored.
+  google.protobuf.Duration cleanup_interval = 20
+      [(validate.rules).duration.gt = {}, (gogoproto.stdduration) = true];
+
+  // Optional configuration used to bind newly established upstream connections.
+  // This overrides any bind_config specified in the bootstrap proto.
+  // If the address and port are empty, no bind will be performed.
+  core.BindConfig upstream_bind_config = 21;
+
+  // Optionally divide the endpoints in this cluster into subsets defined by
+  // endpoint metadata and selected by route and weighted cluster metadata.
+  message LbSubsetConfig {
+
+    // If NO_FALLBACK is selected, a result
+    // equivalent to no healthy hosts is reported. If ANY_ENDPOINT is selected,
+    // any cluster endpoint may be returned (subject to policy, health checks,
+    // etc). If DEFAULT_SUBSET is selected, load balancing is performed over the
+    // endpoints matching the values from the default_subset field.
+    enum LbSubsetFallbackPolicy {
+      NO_FALLBACK = 0;
+      ANY_ENDPOINT = 1;
+      DEFAULT_SUBSET = 2;
+    }
+
+    // The behavior used when no endpoint subset matches the selected route's
+    // metadata. The value defaults to
+    // :ref:`NO_FALLBACK<envoy_api_enum_value_Cluster.LbSubsetConfig.LbSubsetFallbackPolicy.NO_FALLBACK>`.
+    LbSubsetFallbackPolicy fallback_policy = 1 [(validate.rules).enum.defined_only = true];
+
+    // Specifies the default subset of endpoints used during fallback if
+    // fallback_policy is
+    // :ref:`DEFAULT_SUBSET<envoy_api_enum_value_Cluster.LbSubsetConfig.LbSubsetFallbackPolicy.DEFAULT_SUBSET>`.
+    // Each field in default_subset is
+    // compared to the matching LbEndpoint.Metadata under the *envoy.lb*
+    // namespace. It is valid for no hosts to match, in which case the behavior
+    // is the same as a fallback_policy of
+    // :ref:`NO_FALLBACK<envoy_api_enum_value_Cluster.LbSubsetConfig.LbSubsetFallbackPolicy.NO_FALLBACK>`.
+    google.protobuf.Struct default_subset = 2;
+
+    // Specifications for subsets.
+    message LbSubsetSelector {
+      // List of keys to match with the weighted cluster metadata.
+      repeated string keys = 1;
+    }
+
+    // For each entry, LbEndpoint.Metadata's
+    // *envoy.lb* namespace is traversed and a subset is created for each unique
+    // combination of key and value. For example:
+    //
+    // .. code-block:: json
+    //
+    //   { "subset_selectors": [
+    //       { "keys": [ "version" ] },
+    //       { "keys": [ "stage", "hardware_type" ] }
+    //   ]}
+    //
+    // A subset is matched when the metadata from the selected route and
+    // weighted cluster contains the same keys and values as the subset's
+    // metadata. The same host may appear in multiple subsets.
+    repeated LbSubsetSelector subset_selectors = 3;
+
+    // If true, routing to subsets will take into account the localities and locality weights of the
+    // endpoints when making the routing decision.
+    //
+    // There are some potential pitfalls associated with enabling this feature, as the resulting
+    // traffic split after applying both a subset match and locality weights might be undesirable.
+    //
+    // Consider for example a situation in which you have 50/50 split across two localities X/Y
+    // which have 100 hosts each without subsetting. If the subset LB results in X having only 1
+    // host selected but Y having 100, then a lot more load is being dumped on the single host in X
+    // than originally anticipated in the load balancing assignment delivered via EDS.
+    bool locality_weight_aware = 4;
+
+    // When used with locality_weight_aware, scales the weight of each locality by the ratio
+    // of hosts in the subset vs hosts in the original subset. This aims to even out the load
+    // going to an individual locality if said locality is disproportionally affected by the
+    // subset predicate.
+    bool scale_locality_weight = 5;
+
+    // If true, when a fallback policy is configured and its corresponding subset fails to find
+    // a host this will cause any host to be selected instead.
+    //
+    // This is useful when using the default subset as the fallback policy, given the default
+    // subset might become empty. With this option enabled, if that happens the LB will attempt
+    // to select a host from the entire cluster.
+    bool panic_mode_any = 6;
+  }
+
+  // Configuration for load balancing subsetting.
+  LbSubsetConfig lb_subset_config = 22;
+
+  // Specific configuration for the LeastRequest load balancing policy.
+  message LeastRequestLbConfig {
+    // The number of random healthy hosts from which the host with the fewest active requests will
+    // be chosen. Defaults to 2 so that we perform two-choice selection if the field is not set.
+    google.protobuf.UInt32Value choice_count = 1 [(validate.rules).uint32.gte = 2];
+  }
+
+  // Specific configuration for the :ref:`RingHash<arch_overview_load_balancing_types_ring_hash>`
+  // load balancing policy.
+  message RingHashLbConfig {
+    // Minimum hash ring size. The larger the ring is (that is, the more hashes there are for each
+    // provided host) the better the request distribution will reflect the desired weights. Defaults
+    // to 1024 entries, and limited to 8M entries. See also
+    // :ref:`maximum_ring_size<envoy_api_field_Cluster.RingHashLbConfig.maximum_ring_size>`.
+    google.protobuf.UInt64Value minimum_ring_size = 1 [(validate.rules).uint64.lte = 8388608];
+
+    // [#not-implemented-hide:] Hide from docs.
+    message DeprecatedV1 {
+      // Defaults to false, meaning that `xxHash <https://github.com/Cyan4973/xxHash>`_
+      // is to hash hosts onto the ketama ring.
+      google.protobuf.BoolValue use_std_hash = 1;
+    }
+
+    // Deprecated settings from v1 config.
+    // [#not-implemented-hide:] Hide from docs.
+    DeprecatedV1 deprecated_v1 = 2 [deprecated = true];
+
+    // The hash function used to hash hosts onto the ketama ring.
+    enum HashFunction {
+      // Use `xxHash <https://github.com/Cyan4973/xxHash>`_, this is the default hash function.
+      XX_HASH = 0;
+      // Use `MurmurHash2 <https://sites.google.com/site/murmurhash/>`_, this is compatible with
+      // std:hash<string> in GNU libstdc++ 3.4.20 or above. This is typically the case when compiled
+      // on Linux and not macOS.
+      MURMUR_HASH_2 = 1;
+    }
+
+    // The hash function used to hash hosts onto the ketama ring. The value defaults to
+    // :ref:`XX_HASH<envoy_api_enum_value_Cluster.RingHashLbConfig.HashFunction.XX_HASH>`.
+    HashFunction hash_function = 3 [(validate.rules).enum.defined_only = true];
+
+    // Maximum hash ring size. Defaults to 8M entries, and limited to 8M entries, but can be lowered
+    // to further constrain resource use. See also
+    // :ref:`minimum_ring_size<envoy_api_field_Cluster.RingHashLbConfig.minimum_ring_size>`.
+    google.protobuf.UInt64Value maximum_ring_size = 4 [(validate.rules).uint64.lte = 8388608];
+  }
+
+  // Specific configuration for the
+  // :ref:`Original Destination <arch_overview_load_balancing_types_original_destination>`
+  // load balancing policy.
+  message OriginalDstLbConfig {
+    // When true, :ref:`x-envoy-original-dst-host
+    // <config_http_conn_man_headers_x-envoy-original-dst-host>` can be used to override destination
+    // address.
+    //
+    // .. attention::
+    //
+    //   This header isn't sanitized by default, so enabling this feature allows HTTP clients to
+    //   route traffic to arbitrary hosts and/or ports, which may have serious security
+    //   consequences.
+    bool use_http_header = 1;
+  }
+
+  // Optional configuration for the load balancing algorithm selected by
+  // LbPolicy. Currently only
+  // :ref:`RING_HASH<envoy_api_enum_value_Cluster.LbPolicy.RING_HASH>` and
+  // :ref:`LEAST_REQUEST<envoy_api_enum_value_Cluster.LbPolicy.LEAST_REQUEST>`
+  // has additional configuration options.
+  // Specifying ring_hash_lb_config or least_request_lb_config without setting the corresponding
+  // LbPolicy will generate an error at runtime.
+  oneof lb_config {
+    // Optional configuration for the Ring Hash load balancing policy.
+    RingHashLbConfig ring_hash_lb_config = 23;
+    // Optional configuration for the Original Destination load balancing policy.
+    OriginalDstLbConfig original_dst_lb_config = 34;
+    // Optional configuration for the LeastRequest load balancing policy.
+    LeastRequestLbConfig least_request_lb_config = 37;
+  }
+
+  // Common configuration for all load balancer implementations.
+  message CommonLbConfig {
+    // Configures the :ref:`healthy panic threshold <arch_overview_load_balancing_panic_threshold>`.
+    // If not specified, the default is 50%.
+    //
+    // .. note::
+    //   The specified percent will be truncated to the nearest 1%.
+    envoy.type.Percent healthy_panic_threshold = 1;
+    // Configuration for :ref:`zone aware routing
+    // <arch_overview_load_balancing_zone_aware_routing>`.
+    message ZoneAwareLbConfig {
+      // Configures percentage of requests that will be considered for zone aware routing
+      // if zone aware routing is configured. If not specified, the default is 100%.
+      // * :ref:`runtime values <config_cluster_manager_cluster_runtime_zone_routing>`.
+      // * :ref:`Zone aware routing support <arch_overview_load_balancing_zone_aware_routing>`.
+      envoy.type.Percent routing_enabled = 1;
+      // Configures minimum upstream cluster size required for zone aware routing
+      // If upstream cluster size is less than specified, zone aware routing is not performed
+      // even if zone aware routing is configured. If not specified, the default is 6.
+      // * :ref:`runtime values <config_cluster_manager_cluster_runtime_zone_routing>`.
+      // * :ref:`Zone aware routing support <arch_overview_load_balancing_zone_aware_routing>`.
+      google.protobuf.UInt64Value min_cluster_size = 2;
+    }
+    // Configuration for :ref:`locality weighted load balancing
+    // <arch_overview_load_balancing_locality_weighted_lb>`
+    message LocalityWeightedLbConfig {
+    }
+    oneof locality_config_specifier {
+      ZoneAwareLbConfig zone_aware_lb_config = 2;
+      LocalityWeightedLbConfig locality_weighted_lb_config = 3;
+    }
+    // If set, all health check/weight/metadata updates that happen within this duration will be
+    // merged and delivered in one shot when the duration expires. The start of the duration is when
+    // the first update happens. This is useful for big clusters, with potentially noisy deploys
+    // that might trigger excessive CPU usage due to a constant stream of healthcheck state changes
+    // or metadata updates. The first set of updates to be seen apply immediately (e.g.: a new
+    // cluster).
+    //
+    // If this is not set, we default to a merge window of 1000ms. To disable it, set the merge
+    // window to 0.
+    //
+    // Note: merging does not apply to cluster membership changes (e.g.: adds/removes); this is
+    // because merging those updates isn't currently safe. See
+    // https://github.com/envoyproxy/envoy/pull/3941.
+    google.protobuf.Duration update_merge_window = 4;
+  }
+
+  // Common configuration for all load balancer implementations.
+  CommonLbConfig common_lb_config = 27;
+
+  // Optional custom transport socket implementation to use for upstream connections.
+  core.TransportSocket transport_socket = 24;
+
+  // The Metadata field can be used to provide additional information about the
+  // cluster. It can be used for stats, logging, and varying filter behavior.
+  // Fields should use reverse DNS notation to denote which entity within Envoy
+  // will need the information. For instance, if the metadata is intended for
+  // the Router filter, the filter name should be specified as *envoy.router*.
+  core.Metadata metadata = 25;
+
+  enum ClusterProtocolSelection {
+    // Cluster can only operate on one of the possible upstream protocols (HTTP1.1, HTTP2).
+    // If :ref:`http2_protocol_options <envoy_api_field_Cluster.http2_protocol_options>` are
+    // present, HTTP2 will be used, otherwise HTTP1.1 will be used.
+    USE_CONFIGURED_PROTOCOL = 0;
+    // Use HTTP1.1 or HTTP2, depending on which one is used on the downstream connection.
+    USE_DOWNSTREAM_PROTOCOL = 1;
+  }
+
+  // Determines how Envoy selects the protocol used to speak to upstream hosts.
+  ClusterProtocolSelection protocol_selection = 26;
+
+  // Optional options for upstream connections.
+  envoy.api.v2.UpstreamConnectionOptions upstream_connection_options = 30;
+
+  // If an upstream host becomes unhealthy (as determined by the configured health checks
+  // or outlier detection), immediately close all connections to the failed host.
+  //
+  // .. note::
+  //
+  //   This is currently only supported for connections created by tcp_proxy.
+  //
+  // .. note::
+  //
+  //   The current implementation of this feature closes all connections immediately when
+  //   the unhealthy status is detected. If there are a large number of connections open
+  //   to an upstream host that becomes unhealthy, Envoy may spend a substantial amount of
+  //   time exclusively closing these connections, and not processing any other traffic.
+  bool close_connections_on_host_health_failure = 31;
+
+  // If this cluster uses EDS or STRICT_DNS to configure its hosts, immediately drain
+  // connections from any hosts that are removed from service discovery.
+  //
+  // This only affects behavior for hosts that are being actively health checked.
+  // If this flag is not set to true, Envoy will wait until the hosts fail active health
+  // checking before removing it from the cluster.
+  bool drain_connections_on_host_removal = 32;
+}
+
+// An extensible structure containing the address Envoy should bind to when
+// establishing upstream connections.
+message UpstreamBindConfig {
+  // The address Envoy should bind to when establishing upstream connections.
+  core.Address source_address = 1;
+}
+
+message UpstreamConnectionOptions {
+  // If set then set SO_KEEPALIVE on the socket to enable TCP Keepalives.
+  core.TcpKeepalive tcp_keepalive = 1;
+}

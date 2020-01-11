@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package envoy.config.filter.http.router.v2;
+
+option java_outer_classname = "RouterProto";
+option java_multiple_files = true;
+option java_package = "io.envoyproxy.envoy.config.filter.http.router.v2";
+option go_package = "v2";
+
+import "envoy/config/filter/accesslog/v2/accesslog.proto";
+
+import "google/protobuf/wrappers.proto";
+
+// [#protodoc-title: Router]
+// Router :ref:`configuration overview <config_http_filters_router>`.
+
+message Router {
+  // Whether the router generates dynamic cluster statistics. Defaults to
+  // true. Can be disabled in high performance scenarios.
+  google.protobuf.BoolValue dynamic_stats = 1;
+
+  // Whether to start a child span for egress routed calls. This can be
+  // useful in scenarios where other filters (auth, ratelimit, etc.) make
+  // outbound calls and have child spans rooted at the same ingress
+  // parent. Defaults to false.
+  bool start_child_span = 2;
+
+  // Configuration for HTTP upstream logs emitted by the router. Upstream logs
+  // are configured in the same way as access logs, but each log entry represents
+  // an upstream request. Presuming retries are configured, multiple upstream
+  // requests may be made for each downstream (inbound) request.
+  repeated envoy.config.filter.accesslog.v2.AccessLog upstream_log = 3;
+
+  // Do not add any additional *x-envoy-* headers to requests or responses. This
+  // only affects the :ref:`router filter generated *x-envoy-* headers
+  // <config_http_filters_router_headers_set>`, other Envoy filters and the HTTP
+  // connection manager may continue to set *x-envoy-* headers.
+  bool suppress_envoy_headers = 4;
+}

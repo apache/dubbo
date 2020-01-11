@@ -1,0 +1,85 @@
+syntax = "proto3";
+
+package envoy.admin.v2alpha;
+
+option java_outer_classname = "ClustersProto";
+option java_multiple_files = true;
+option java_package = "io.envoyproxy.envoy.admin.v2alpha";
+
+import "envoy/admin/v2alpha/metrics.proto";
+import "envoy/api/v2/core/address.proto";
+import "envoy/api/v2/core/health_check.proto";
+import "envoy/type/percent.proto";
+
+// [#protodoc-title: Clusters]
+
+// Admin endpoint uses this wrapper for `/clusters` to display cluster status information.
+// See :ref:`/clusters <operations_admin_interface_clusters>` for more information.
+message Clusters {
+  // Mapping from cluster name to each cluster's status.
+  repeated ClusterStatus cluster_statuses = 1;
+}
+
+// Details an individual cluster's current status.
+message ClusterStatus {
+  // Name of the cluster.
+  string name = 1;
+
+  // Denotes whether this cluster was added via API or configured statically.
+  bool added_via_api = 2;
+
+  // The success rate threshold used in the last interval. The threshold is used to eject hosts
+  // based on their success rate. See
+  // :ref:`Cluster outlier detection <arch_overview_outlier_detection>` statistics
+  //
+  // Note: this field may be omitted in any of the three following cases:
+  //
+  // 1. There were not enough hosts with enough request volume to proceed with success rate based
+  //    outlier ejection.
+  // 2. The threshold is computed to be < 0 because a negative value implies that there was no
+  //    threshold for that interval.
+  // 3. Outlier detection is not enabled for this cluster.
+  envoy.type.Percent success_rate_ejection_threshold = 3;
+
+  // Mapping from host address to the host's current status.
+  repeated HostStatus host_statuses = 4;
+}
+
+// Current state of a particular host.
+message HostStatus {
+  // Address of this host.
+  envoy.api.v2.core.Address address = 1;
+
+  // List of stats specific to this host.
+  repeated SimpleMetric stats = 2;
+
+  // The host's current health status.
+  HostHealthStatus health_status = 3;
+
+  // Request success rate for this host over the last calculated interval.
+  //
+  // Note: the message will not be present if host did not have enough request volume to calculate
+  // success rate or the cluster did not have enough hosts to run through success rate outlier
+  // ejection.
+  envoy.type.Percent success_rate = 4;
+
+  // The host's weight. If not configured, the value defaults to 1.
+  uint32 weight = 5;
+}
+
+// Health status for a host.
+message HostHealthStatus {
+  // The host is currently failing active health checks.
+  bool failed_active_health_check = 1;
+
+  // The host is currently considered an outlier and has been ejected.
+  bool failed_outlier_check = 2;
+
+  // The host is currently being marked as degraded through active health checking.
+  bool failed_active_degraded_check = 4;
+
+  // Health status as reported by EDS. Note: only HEALTHY and UNHEALTHY are currently supported
+  // here.
+  // TODO(mrice32): pipe through remaining EDS health status possibilities.
+  envoy.api.v2.core.HealthStatus eds_health_status = 3;
+}
