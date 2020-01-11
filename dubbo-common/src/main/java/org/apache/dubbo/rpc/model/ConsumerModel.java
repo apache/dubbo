@@ -54,7 +54,6 @@ public class ConsumerModel {
             , ReferenceConfigBase<?> referenceConfig) {
 
         Assert.notEmptyString(serviceKey, "Service name can't be null or blank");
-//        Assert.notNull(proxyObject, "Proxy object can't be null");
 
         this.serviceKey = serviceKey;
         this.proxyObject = proxyObject;
@@ -66,6 +65,8 @@ public class ConsumerModel {
         if (attributes != null) {
             this.methodConfigs = attributes;
         }
+
+        initMethodModels();
     }
 
     /**
@@ -126,9 +127,14 @@ public class ConsumerModel {
 
         this(serviceKey, proxyObject, serviceModel, referenceConfig);
         this.serviceMetadata = metadata;
+    }
 
-        for (Method method : metadata.getServiceType().getMethods()) {
-            methodModels.put(method, new ConsumerMethodModel(method));
+    public void initMethodModels() {
+        Class[] interfaceList = serviceMetadata.getTarget().getClass().getInterfaces();
+        for (Class interfaceClass : interfaceList) {
+            for (Method method : interfaceClass.getMethods()) {
+                methodModels.put(method, new ConsumerMethodModel(method));
+            }
         }
     }
 
@@ -165,7 +171,7 @@ public class ConsumerModel {
     }
 
     /**
-     * @param method   metodName
+     * @param method   methodName
      * @param argsType method arguments type
      * @return
      */

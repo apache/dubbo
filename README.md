@@ -29,20 +29,20 @@ We are now collecting dubbo user info in order to help us to improve Dubbo bette
 
 ## Getting started
 
-The following code snippet comes from [Dubbo Samples](https://github.com/apache/dubbo-samples/tree/master/dubbo-samples-api). You may clone the sample project and step into `dubbo-samples-api` sub directory before read on.
+The following code snippet comes from [Dubbo Samples](https://github.com/apache/dubbo-samples/tree/master/java/dubbo-samples-api). You may clone the sample project and step into `dubbo-samples-api` sub directory before read on.
 
 ```bash
 # git clone https://github.com/apache/dubbo-samples.git
-# cd dubbo-samples/dubbo-samples-api
+# cd dubbo-samples/java/dubbo-samples-api
 ```
 
-There's a [README](https://github.com/apache/dubbo-samples/tree/master/dubbo-samples-api/README.md) file under `dubbo-samples-api` directory. Read it and try this sample out by following the instructions.
+There's a [README](https://github.com/apache/dubbo-samples/tree/master/java/dubbo-samples-api/README.md) file under `dubbo-samples-api` directory. Read it and try this sample out by following the instructions.
 
 ### Maven dependency
 
 ```xml
 <properties>
-    <dubbo.version>2.7.4.1</dubbo.version>
+    <dubbo.version>2.7.5</dubbo.version>
 </properties>
     
 <dependencies>
