@@ -42,7 +42,7 @@ import static org.apache.dubbo.rpc.Constants.ACTIVES_KEY;
  * @see Filter
  */
 @Activate(group = CONSUMER, value = ACTIVES_KEY)
-public class ActiveLimitFilter implements Filter, Filter.Listener2 {
+public class ActiveLimitFilter implements Filter, Filter.Listener {
 
     private static final String ACTIVELIMIT_FILTER_START_TIME = "activelimit_filter_start_time";
 

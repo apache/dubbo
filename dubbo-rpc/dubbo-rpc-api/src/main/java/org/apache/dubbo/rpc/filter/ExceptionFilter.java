@@ -44,7 +44,7 @@ import java.lang.reflect.Method;
  * </ol>
  */
 @Activate(group = CommonConstants.PROVIDER)
-public class ExceptionFilter implements Filter, Filter.Listener2 {
+public class ExceptionFilter implements Filter, Filter.Listener {
     private Logger logger = LoggerFactory.getLogger(ExceptionFilter.class);
 
     @Override
