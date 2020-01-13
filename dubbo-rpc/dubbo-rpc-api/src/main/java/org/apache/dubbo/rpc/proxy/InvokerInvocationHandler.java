@@ -20,6 +20,8 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ConsumerModel;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -55,7 +57,12 @@ public class InvokerInvocationHandler implements InvocationHandler {
             return invoker.equals(args[0]);
         }
         RpcInvocation rpcInvocation = new RpcInvocation(method, invoker.getInterface().getName(), args);
-        rpcInvocation.setTargetServiceUniqueName(invoker.getUrl().getServiceKey());
+        String serviceKey = invoker.getUrl().getServiceKey();
+        if (serviceKey != null) {
+            rpcInvocation.setTargetServiceUniqueName(serviceKey);
+            ConsumerModel consumerModel = ApplicationModel.getConsumerModel(serviceKey);
+            rpcInvocation.put("consumerModel", consumerModel);
+        }
 
         return invoker.invoke(rpcInvocation).recreate();
     }
