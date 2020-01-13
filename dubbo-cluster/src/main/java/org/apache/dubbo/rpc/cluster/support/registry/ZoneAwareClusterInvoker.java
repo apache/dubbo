@@ -56,14 +56,8 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
     @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
     public Result doInvoke(Invocation invocation, final List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
-        // First, pick the invoker (XXXClusterInvoker) that comes from the local registry, distinguish by a 'preferred' key.
-        for (Invoker<T> invoker : invokers) {
-            if (invoker.isAvailable() && invoker.getUrl().getParameter(REGISTRY_KEY + "." + PREFERRED_KEY, false)) {
-                return invoker.invoke(invocation);
-            }
-        }
 
-        // providers in the registry with the same
+        //First: providers in the registry with the same
         String zone = (String) invocation.getAttachment(REGISTRY_ZONE);
         if (StringUtils.isNotEmpty(zone)) {
             for (Invoker<T> invoker : invokers) {
@@ -79,6 +73,12 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
             }
         }
 
+        // Second: pick the invoker (XXXClusterInvoker) that comes from the local registry, distinguish by a 'preferred' key.
+        for (Invoker<T> invoker : invokers) {
+            if (invoker.isAvailable() && invoker.getUrl().getParameter(REGISTRY_KEY + "." + PREFERRED_KEY, false)) {
+                return invoker.invoke(invocation);
+            }
+        }
 
         // load balance among all registries, with registry weight count in.
         Invoker<T> balancedInvoker = select(loadbalance, invocation, invokers, null);
