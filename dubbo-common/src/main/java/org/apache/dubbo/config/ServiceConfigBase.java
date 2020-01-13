@@ -197,45 +197,6 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         return ref.getClass();
     }
 
-    public void completeCompoundConfigs() {
-        if (provider != null) {
-            if (application == null) {
-                setApplication(provider.getApplication());
-            }
-            if (module == null) {
-                setModule(provider.getModule());
-            }
-            if (registries == null) {
-                setRegistries(provider.getRegistries());
-            }
-            if (monitor == null) {
-                setMonitor(provider.getMonitor());
-            }
-            if (protocols == null) {
-                setProtocols(provider.getProtocols());
-            }
-            if (configCenter == null) {
-                setConfigCenter(provider.getConfigCenter());
-            }
-        }
-        if (module != null) {
-            if (registries == null) {
-                setRegistries(module.getRegistries());
-            }
-            if (monitor == null) {
-                setMonitor(module.getMonitor());
-            }
-        }
-        if (application != null) {
-            if (registries == null) {
-                setRegistries(application.getRegistries());
-            }
-            if (monitor == null) {
-                setMonitor(application.getMonitor());
-            }
-        }
-    }
-
     public void checkDefault() {
         createProviderIfAbsent();
     }
@@ -262,6 +223,23 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         convertProtocolIdsToProtocols();
     }
 
+    public void completeCompoundConfigs() {
+    	super.completeCompoundConfigs(provider);
+    	if(provider != null) {
+            if (protocols == null) {
+                setProtocols(provider.getProtocols());
+            }
+            if (configCenter == null) {
+                setConfigCenter(provider.getConfigCenter());
+            }
+            if (StringUtils.isEmpty(registryIds)) {
+                setRegistryIds(provider.getRegistryIds());
+            }
+            if (StringUtils.isEmpty(protocolIds)) {
+                setProtocolIds(provider.getProtocolIds());
+            }
+    	}
+    }
     private void convertProtocolIdsToProtocols() {
         computeValidProtocolIds();
         if (StringUtils.isEmpty(protocolIds)) {
@@ -277,7 +255,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
             }
         } else {
             String[] arr = COMMA_SPLIT_PATTERN.split(protocolIds);
-            List<ProtocolConfig> tmpProtocols = CollectionUtils.isNotEmpty(protocols) ? protocols : new ArrayList<>();
+            List<ProtocolConfig> tmpProtocols = new ArrayList<>();
             Arrays.stream(arr).forEach(id -> {
                 if (tmpProtocols.stream().noneMatch(prot -> prot.getId().equals(id))) {
                     Optional<ProtocolConfig> globalProtocol = ApplicationModel.getConfigManager().getProtocol(id);

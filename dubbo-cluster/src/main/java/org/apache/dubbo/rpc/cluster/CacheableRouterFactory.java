@@ -30,8 +30,7 @@ public abstract class CacheableRouterFactory implements RouterFactory {
 
     @Override
     public Router getRouter(URL url) {
-        routerMap.computeIfAbsent(url.getServiceKey(), k -> createRouter(url));
-        return routerMap.get(url.getServiceKey());
+        return routerMap.computeIfAbsent(url.getServiceKey(), k -> createRouter(url));
     }
 
     protected abstract Router createRouter(URL url);

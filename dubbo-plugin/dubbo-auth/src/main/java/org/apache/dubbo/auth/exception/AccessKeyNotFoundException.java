@@ -14,33 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring.util;
+package org.apache.dubbo.auth.exception;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.GenericApplicationContext;
 
-import static org.apache.dubbo.config.spring.util.ApplicationContextUtils.addApplicationListener;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.apache.dubbo.auth.model.AccessKeyPair;
 
 /**
- * {@link ApplicationContextUtils} Test
- *
- * @since 2.5.7
+ * Signals that an attempt to get the {@link AccessKeyPair} has failed.
  */
-public class ApplicationContextUtilsTest {
+public class AccessKeyNotFoundException extends Exception {
+    private static final long serialVersionUID = 7106108446396804404L;
 
-    private ApplicationContext applicationContext;
-
-    @BeforeEach
-    public void init() {
-        applicationContext = new GenericApplicationContext();
+    public AccessKeyNotFoundException() {
     }
 
-    @Test
-    public void testAddApplicationListener() {
-        assertTrue(addApplicationListener(applicationContext, event -> {
-        }));
+    public AccessKeyNotFoundException(String message) {
+        super(message);
     }
+
+
 }

@@ -49,7 +49,7 @@ import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
  * GenericImplInvokerFilter
  */
 @Activate(group = CommonConstants.CONSUMER, value = GENERIC_KEY, order = 20000)
-public class GenericImplFilter implements Filter, Filter.Listener {
+public class GenericImplFilter implements Filter, Filter.Listener2 {
 
     private static final Logger logger = LoggerFactory.getLogger(GenericImplFilter.class);
 

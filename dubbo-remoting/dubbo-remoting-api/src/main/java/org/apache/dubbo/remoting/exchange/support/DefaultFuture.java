@@ -270,17 +270,22 @@ public class DefaultFuture extends CompletableFuture<Object> {
             if (future == null || future.isDone()) {
                 return;
             }
+
             if (future.getExecutor() != null) {
-                future.getExecutor().execute(() -> {
-                    // create exception response.
-                    Response timeoutResponse = new Response(future.getId());
-                    // set timeout status.
-                    timeoutResponse.setStatus(future.isSent() ? Response.SERVER_TIMEOUT : Response.CLIENT_TIMEOUT);
-                    timeoutResponse.setErrorMessage(future.getTimeoutMessage(true));
-                    // handle response.
-                    DefaultFuture.received(future.getChannel(), timeoutResponse, true);
-                });
+                future.getExecutor().execute(() -> notifyTimeout(future));
+            } else {
+                notifyTimeout(future);
             }
+        }
+
+        private void notifyTimeout(DefaultFuture future) {
+            // create exception response.
+            Response timeoutResponse = new Response(future.getId());
+            // set timeout status.
+            timeoutResponse.setStatus(future.isSent() ? Response.SERVER_TIMEOUT : Response.CLIENT_TIMEOUT);
+            timeoutResponse.setErrorMessage(future.getTimeoutMessage(true));
+            // handle response.
+            DefaultFuture.received(future.getChannel(), timeoutResponse, true);
         }
     }
 }

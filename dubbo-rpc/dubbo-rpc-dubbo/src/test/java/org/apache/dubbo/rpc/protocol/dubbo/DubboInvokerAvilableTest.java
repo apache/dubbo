@@ -43,7 +43,7 @@ import static org.junit.jupiter.api.Assertions.fail;
  * Check available status for dubboInvoker
  */
 public class DubboInvokerAvilableTest {
-    private static DubboProtocol protocol = DubboProtocol.getDubboProtocol();
+    private static DubboProtocol protocol;
     private static ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
 
     @BeforeAll
@@ -52,6 +52,7 @@ public class DubboInvokerAvilableTest {
 
     @BeforeEach
     public void setUp() throws Exception {
+        protocol = new DubboProtocol();
     }
 
     @AfterAll
@@ -97,10 +98,10 @@ public class DubboInvokerAvilableTest {
 
         long start = System.currentTimeMillis();
 
-        try{
+        try {
             System.setProperty(SHUTDOWN_WAIT_KEY, "2000");
             protocol.destroy();
-        }finally {
+        } finally {
             System.getProperties().remove(SHUTDOWN_WAIT_KEY);
         }
 
@@ -130,8 +131,11 @@ public class DubboInvokerAvilableTest {
 
         AsyncToSyncInvoker<?> invoker = (AsyncToSyncInvoker) protocol.refer(IDemoService.class, url);
         Assertions.assertTrue(invoker.isAvailable());
+
+        ExchangeClient exchangeClient = getClients((DubboInvoker<?>) invoker.getInvoker())[0];
+        Assertions.assertFalse(exchangeClient.isClosed());
         try {
-            getClients((DubboInvoker<?>) invoker.getInvoker())[0].setAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY, Boolean.TRUE);
+            exchangeClient.setAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY, Boolean.TRUE);
             fail();
         } catch (IllegalStateException e) {
 
@@ -141,7 +145,7 @@ public class DubboInvokerAvilableTest {
         Assertions.assertEquals("ok", service.get());
 
         Assertions.assertTrue(invoker.isAvailable());
-        getClients((DubboInvoker<?>) invoker.getInvoker())[0].setAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY, Boolean.TRUE);
+        exchangeClient.setAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY, Boolean.TRUE);
         Assertions.assertFalse(invoker.isAvailable());
     }
 
