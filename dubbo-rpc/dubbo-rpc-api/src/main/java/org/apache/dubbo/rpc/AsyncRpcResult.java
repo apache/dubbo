@@ -19,6 +19,10 @@ package org.apache.dubbo.rpc;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
+import org.apache.dubbo.common.utils.ReflectUtils;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ConsumerModel;
+import org.apache.dubbo.rpc.model.MethodDescriptor;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -144,7 +148,12 @@ public class AsyncRpcResult implements Result {
             // This should never happen;
             logger.error("Got exception when trying to fetch the underlying result from AsyncRpcResult.", e);
         }
-        return new AppResponse();
+
+        ConsumerModel consumerModel = ApplicationModel.getConsumerModel(invocation.getTargetServiceUniqueName());
+        String methodName = invocation.getMethodName();
+        String params = ReflectUtils.getDesc(invocation.getParameterTypes());
+        MethodDescriptor method = consumerModel.getServiceModel().getMethod(methodName, params);
+        return new AppResponse(ReflectUtils.defaultReturn(method.getReturnClass()));
     }
 
     /**
