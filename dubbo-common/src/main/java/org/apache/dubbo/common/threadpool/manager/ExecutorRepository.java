@@ -31,12 +31,20 @@ public interface ExecutorRepository {
     /**
      * Called by both Client and Server. TODO, consider separate these two parts.
      * When the Client or Server starts for the first time, generate a new threadpool according to the parameters specified.
+     * If executor has been shut down, create a new one.
      *
      * @param url
      * @return
      */
     ExecutorService createExecutorIfAbsent(URL url);
 
+    /**
+     * Return executorService , return null if not exist.
+     * If executor has been shut down, create a new one.
+     *
+     * @param url
+     * @return executorService
+     */
     ExecutorService getExecutor(URL url);
 
     /**
