@@ -52,7 +52,7 @@ import static org.apache.dubbo.rpc.Constants.OUTPUT_KEY;
  * MonitorFilter. (SPI, Singleton, ThreadSafe)
  */
 @Activate(group = {PROVIDER, CONSUMER})
-public class MonitorFilter implements Filter, Filter.Listener {
+public class MonitorFilter implements Filter, Filter.Listener2 {
 
     private static final Logger logger = LoggerFactory.getLogger(MonitorFilter.class);
     private static final String MONITOR_FILTER_START_TIME = "monitor_filter_start_time";

@@ -53,7 +53,7 @@ import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
  * GenericInvokerFilter.
  */
 @Activate(group = CommonConstants.PROVIDER, order = -20000)
-public class GenericFilter implements Filter, Filter.Listener {
+public class GenericFilter implements Filter, Filter.Listener2 {
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation inv) throws RpcException {
