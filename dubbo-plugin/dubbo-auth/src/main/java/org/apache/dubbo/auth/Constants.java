@@ -21,9 +21,9 @@ public interface Constants {
 
     String SERVICE_AUTH = "auth";
 
-    String AUTH_HELPER = "auth.helper";
+    String AUTHENTICATOR = "authenticator";
 
-    String DEFAULT_AUTH_HELPER = "accesskey";
+    String DEFAULT_AUTHENTICATOR = "accesskey";
 
     String DEFAULT_ACCESS_KEY_STORAGE = "urlstorage";
 

@@ -46,7 +46,7 @@ class ProviderAuthFilterTest {
         when(invoker.getUrl()).thenReturn(url);
         ProviderAuthFilter providerAuthFilter = new ProviderAuthFilter();
         providerAuthFilter.invoke(invoker, invocation);
-        verify(url, never()).getParameter(eq(Constants.AUTH_HELPER), eq(Constants.DEFAULT_AUTH_HELPER));
+        verify(url, never()).getParameter(eq(Constants.AUTHENTICATOR), eq(Constants.DEFAULT_AUTHENTICATOR));
     }
 
     @Test
