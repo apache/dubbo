@@ -857,7 +857,9 @@ public class DubboBootstrap extends GenericEventListener {
     }
 
     private void unexportMetadataService() {
-        metadataServiceExporter.unexport();
+        if (metadataServiceExporter != null && metadataServiceExporter.isExported()) {
+            metadataServiceExporter.unexport();
+        }
     }
 
     private void exportServices() {
