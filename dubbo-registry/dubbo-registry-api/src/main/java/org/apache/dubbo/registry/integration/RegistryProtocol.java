@@ -45,9 +45,11 @@ import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.protocol.InvokerWrapper;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
@@ -482,6 +484,14 @@ public class RegistryProtocol implements Protocol {
 
     @Override
     public void destroy() {
+        List<RegistryProtocolListener> listeners = ExtensionLoader.getExtensionLoader(RegistryProtocolListener.class)
+                .getLoadedExtensionInstances();
+        if (CollectionUtils.isNotEmpty(listeners)) {
+            for (RegistryProtocolListener listener : listeners) {
+                listener.onDestroy();
+            }
+        }
+
         List<Exporter<?>> exporters = new ArrayList<Exporter<?>>(bounds.values());
         for (Exporter<?> exporter : exporters) {
             exporter.unexport();
