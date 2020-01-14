@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.proxy.wrapper;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.Version;
@@ -35,6 +34,13 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.service.GenericService;
 
 import java.lang.reflect.Constructor;
+
+import static org.apache.dubbo.common.constants.CommonConstants.STUB_EVENT_KEY;
+import static org.apache.dubbo.rpc.Constants.DEFAULT_STUB_EVENT;
+import static org.apache.dubbo.rpc.Constants.IS_SERVER_KEY;
+import static org.apache.dubbo.rpc.Constants.LOCAL_KEY;
+import static org.apache.dubbo.rpc.Constants.STUB_EVENT_METHODS_KEY;
+import static org.apache.dubbo.rpc.Constants.STUB_KEY;
 
 /**
  * StubProxyFactoryWrapper
@@ -66,11 +72,11 @@ public class StubProxyFactoryWrapper implements ProxyFactory {
         T proxy = proxyFactory.getProxy(invoker);
         if (GenericService.class != invoker.getInterface()) {
             URL url = invoker.getUrl();
-            String stub = url.getParameter(Constants.STUB_KEY, url.getParameter(Constants.LOCAL_KEY));
+            String stub = url.getParameter(STUB_KEY, url.getParameter(LOCAL_KEY));
             if (ConfigUtils.isNotEmpty(stub)) {
                 Class<?> serviceType = invoker.getInterface();
                 if (ConfigUtils.isDefault(stub)) {
-                    if (url.hasParameter(Constants.STUB_KEY)) {
+                    if (url.hasParameter(STUB_KEY)) {
                         stub = serviceType.getName() + "Stub";
                     } else {
                         stub = serviceType.getName() + "Local";
@@ -86,9 +92,9 @@ public class StubProxyFactoryWrapper implements ProxyFactory {
                         proxy = (T) constructor.newInstance(new Object[]{proxy});
                         //export stub service
                         URLBuilder urlBuilder = URLBuilder.from(url);
-                        if (url.getParameter(Constants.STUB_EVENT_KEY, Constants.DEFAULT_STUB_EVENT)) {
-                            urlBuilder.addParameter(Constants.STUB_EVENT_METHODS_KEY, StringUtils.join(Wrapper.getWrapper(proxy.getClass()).getDeclaredMethodNames(), ","));
-                            urlBuilder.addParameter(Constants.IS_SERVER_KEY, Boolean.FALSE.toString());
+                        if (url.getParameter(STUB_EVENT_KEY, DEFAULT_STUB_EVENT)) {
+                            urlBuilder.addParameter(STUB_EVENT_METHODS_KEY, StringUtils.join(Wrapper.getWrapper(proxy.getClass()).getDeclaredMethodNames(), ","));
+                            urlBuilder.addParameter(IS_SERVER_KEY, Boolean.FALSE.toString());
                             try {
                                 export(proxy, (Class) invoker.getInterface(), urlBuilder.build());
                             } catch (Exception e) {

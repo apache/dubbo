@@ -17,8 +17,6 @@
 
 package org.apache.dubbo.remoting.etcd.jetcd;
 
-import io.grpc.ManagedChannel;
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -39,6 +37,7 @@ import io.etcd.jetcd.api.WatchGrpc;
 import io.etcd.jetcd.api.WatchRequest;
 import io.etcd.jetcd.api.WatchResponse;
 import io.etcd.jetcd.common.exception.ClosedClientException;
+import io.grpc.ManagedChannel;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import io.netty.util.internal.ConcurrentSet;
@@ -60,6 +59,14 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static java.util.stream.Collectors.toList;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
+import static org.apache.dubbo.remoting.etcd.Constants.DEFAULT_ETCD3_NOTIFY_QUEUES_KEY;
+import static org.apache.dubbo.remoting.etcd.Constants.DEFAULT_ETCD3_NOTIFY_THREADS;
+import static org.apache.dubbo.remoting.etcd.Constants.DEFAULT_GRPC_QUEUES;
+import static org.apache.dubbo.remoting.etcd.Constants.DEFAULT_RETRY_PERIOD;
+import static org.apache.dubbo.remoting.etcd.Constants.DEFAULT_SESSION_TIMEOUT;
+import static org.apache.dubbo.remoting.etcd.Constants.ETCD3_NOTIFY_MAXTHREADS_KEYS;
+import static org.apache.dubbo.remoting.etcd.Constants.RETRY_PERIOD_KEY;
 import static org.apache.dubbo.remoting.etcd.jetcd.JEtcdClientWrapper.UTF_8;
 
 /**
@@ -86,16 +93,16 @@ public class JEtcdClient extends AbstractEtcdClient<JEtcdClient.EtcdWatcher> {
                     JEtcdClient.this.stateChanged(StateListener.DISCONNECTED);
                 }
             });
-            delayPeriod = getUrl().getParameter(Constants.REGISTRY_RETRY_PERIOD_KEY, Constants.DEFAULT_REGISTRY_RETRY_PERIOD);
+            delayPeriod = getUrl().getParameter(RETRY_PERIOD_KEY, DEFAULT_RETRY_PERIOD);
             reconnectSchedule = Executors.newScheduledThreadPool(1,
                     new NamedThreadFactory("etcd3-watch-auto-reconnect"));
 
             notifyExecutor = new ThreadPoolExecutor(
                     1
-                    , url.getParameter(Constants.ETCD3_NOTIFY_MAXTHREADS_KEYS, Constants.DEFAULT_ETCD3_NOTIFY_THREADS)
-                    , Constants.DEFAULT_SESSION_TIMEOUT
+                    , url.getParameter(ETCD3_NOTIFY_MAXTHREADS_KEYS, DEFAULT_ETCD3_NOTIFY_THREADS)
+                    , DEFAULT_SESSION_TIMEOUT
                     , TimeUnit.MILLISECONDS
-                    , new LinkedBlockingQueue<Runnable>(url.getParameter(Constants.DEFAULT_ETCD3_NOTIFY_QUEUES_KEY, Constants.DEFAULT_GRPC_QUEUES * 3))
+                    , new LinkedBlockingQueue<Runnable>(url.getParameter(DEFAULT_ETCD3_NOTIFY_QUEUES_KEY, DEFAULT_GRPC_QUEUES * 3))
                     , new NamedThreadFactory("etcd3-notify", true));
 
             clientWrapper.start();
@@ -196,6 +203,11 @@ public class JEtcdClient extends AbstractEtcdClient<JEtcdClient.EtcdWatcher> {
         return clientWrapper.put(key, value);
     }
 
+    @Override
+    public boolean putEphemeral(String key, String value) {
+        return clientWrapper.putEphemeral(key, value);
+    }
+
     public ManagedChannel getChannel() {
         return clientWrapper.getChannel();
     }
@@ -271,7 +283,14 @@ public class JEtcdClient extends AbstractEtcdClient<JEtcdClient.EtcdWatcher> {
             }
 
             try {
-                this.listener = null;
+                /**
+                 * issue : https://github.com/apache/dubbo/issues/4115
+                 *
+                 * When the network is reconnected, the listener is empty
+                 * and the data cannot be received.
+                 */
+                // this.listener = null;
+
                 if (watchRequest != null) {
                     WatchCancelRequest watchCancelRequest =
                             WatchCancelRequest.newBuilder().setWatchId(watchId).build();
@@ -334,7 +353,7 @@ public class JEtcdClient extends AbstractEtcdClient<JEtcdClient.EtcdWatcher> {
 
             int len = path.length(), index = len, count = 0;
             if (key.length() >= index) {
-                for (; (index = key.indexOf(Constants.PATH_SEPARATOR, index)) != -1; ++index) {
+                for (; (index = key.indexOf(PATH_SEPARATOR, index)) != -1; ++index) {
                     if (count++ > 1) {
                         break;
                     }
@@ -366,7 +385,7 @@ public class JEtcdClient extends AbstractEtcdClient<JEtcdClient.EtcdWatcher> {
                     .filter(child -> {
                         int index = len, count = 0;
                         if (child.length() > len) {
-                            for (; (index = child.indexOf(Constants.PATH_SEPARATOR, index)) != -1; ++index) {
+                            for (; (index = child.indexOf(PATH_SEPARATOR, index)) != -1; ++index) {
                                 if (count++ > 1) {
                                     break;
                                 }
@@ -433,8 +452,17 @@ public class JEtcdClient extends AbstractEtcdClient<JEtcdClient.EtcdWatcher> {
             if (this.watchRequest == null) {
                 return;
             }
-            this.watchRequest.onCompleted();
-            this.watchRequest = null;
+
+            try {
+                WatchCancelRequest watchCancelRequest =
+                        WatchCancelRequest.newBuilder().setWatchId(watchId).build();
+                WatchRequest cancelRequest = WatchRequest.newBuilder()
+                        .setCancelRequest(watchCancelRequest).build();
+                watchRequest.onNext(cancelRequest);
+            } finally {
+                this.watchRequest.onCompleted();
+                this.watchRequest = null;
+            }
         }
 
         @Override

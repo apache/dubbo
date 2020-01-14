@@ -16,12 +16,10 @@
  */
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.config.annotation.Argument;
 import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.api.DemoService;
-import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 
 import org.junit.jupiter.api.AfterEach;
@@ -29,16 +27,18 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
+
 public class ReferenceConfigTest {
 
     @BeforeEach
     public void setUp() {
-        ConfigManager.getInstance().clear();
+//        ApplicationModel.getConfigManager().clear();
     }
 
     @AfterEach
     public void tearDown() {
-        ConfigManager.getInstance().clear();
+//        ApplicationModel.getConfigManager().clear();
     }
 
     @Test
@@ -70,7 +70,7 @@ public class ReferenceConfigTest {
             System.setProperty("java.net.preferIPv4Stack", "true");
             demoService.export();
             rc.get();
-            Assertions.assertTrue(!Constants.LOCAL_PROTOCOL.equalsIgnoreCase(
+            Assertions.assertTrue(!LOCAL_PROTOCOL.equalsIgnoreCase(
                     rc.getInvoker().getUrl().getProtocol()));
         } finally {
             System.clearProperty("java.net.preferIPv4Stack");
@@ -132,13 +132,13 @@ public class ReferenceConfigTest {
     public void testConstructWithReferenceAnnotation() throws NoSuchFieldException {
         Reference reference = getClass().getDeclaredField("innerTest").getAnnotation(Reference.class);
         ReferenceConfig referenceConfig = new ReferenceConfig(reference);
-        Assertions.assertTrue(referenceConfig.getMethods().size() == 1);
+        Assertions.assertEquals(1, referenceConfig.getMethods().size());
         Assertions.assertEquals(((MethodConfig) referenceConfig.getMethods().get(0)).getName(), "sayHello");
-        Assertions.assertTrue(((MethodConfig) referenceConfig.getMethods().get(0)).getTimeout() == 1300);
-        Assertions.assertTrue(((MethodConfig) referenceConfig.getMethods().get(0)).getRetries() == 4);
+        Assertions.assertEquals(1300, (int) ((MethodConfig) referenceConfig.getMethods().get(0)).getTimeout());
+        Assertions.assertEquals(4, (int) ((MethodConfig) referenceConfig.getMethods().get(0)).getRetries());
         Assertions.assertEquals(((MethodConfig) referenceConfig.getMethods().get(0)).getLoadbalance(), "random");
-        Assertions.assertTrue(((MethodConfig) referenceConfig.getMethods().get(0)).getActives() == 3);
-        Assertions.assertTrue(((MethodConfig) referenceConfig.getMethods().get(0)).getExecutes() == 5);
+        Assertions.assertEquals(3, (int) ((MethodConfig) referenceConfig.getMethods().get(0)).getActives());
+        Assertions.assertEquals(5, (int) ((MethodConfig) referenceConfig.getMethods().get(0)).getExecutes());
         Assertions.assertTrue(((MethodConfig) referenceConfig.getMethods().get(0)).isAsync());
         Assertions.assertEquals(((MethodConfig) referenceConfig.getMethods().get(0)).getOninvoke(), "i");
         Assertions.assertEquals(((MethodConfig) referenceConfig.getMethods().get(0)).getOnreturn(), "r");

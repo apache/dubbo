@@ -106,6 +106,7 @@ public class NetUtilsTest {
 
     @Test
     public void testIsValidAddress() throws Exception {
+        assertFalse(NetUtils.isValidV4Address((InetAddress) null));
         InetAddress address = mock(InetAddress.class);
         when(address.isLoopbackAddress()).thenReturn(true);
         assertFalse(NetUtils.isValidV4Address(address));
@@ -132,6 +133,7 @@ public class NetUtilsTest {
     public void testGetLocalAddress() throws Exception {
         InetAddress address = NetUtils.getLocalAddress();
         assertNotNull(address);
+        assertTrue(NetUtils.isValidLocalHost(address.getHostAddress()));
     }
 
     @Test
@@ -189,7 +191,7 @@ public class NetUtilsTest {
         System.setProperty("java.net.preferIPv6Addresses", "true");
         InetAddress address = NetUtils.getLocalAddress();
         if (address instanceof Inet6Address) {
-            assertThat(NetUtils.isValidV6Address((Inet6Address) address), equalTo(true));
+            assertThat(NetUtils.isPreferIPV6Address(), equalTo(true));
         }
         System.setProperty("java.net.preferIPv6Addresses", saved);
     }
@@ -297,5 +299,12 @@ public class NetUtilsTest {
 
         assertFalse(NetUtils.matchIpRange("192.168.1.1-61:90", "192.168.1.62", 90));
         assertFalse(NetUtils.matchIpRange("192.168.1.62:90", "192.168.1.63", 90));
+    }
+
+    @Test
+    public void testLocalHost() {
+        assertEquals(NetUtils.getLocalHost(), NetUtils.getLocalAddress().getHostAddress());
+        assertTrue(NetUtils.isValidLocalHost(NetUtils.getLocalHost()));
+        assertFalse(NetUtils.isInvalidLocalHost(NetUtils.getLocalHost()));
     }
 }

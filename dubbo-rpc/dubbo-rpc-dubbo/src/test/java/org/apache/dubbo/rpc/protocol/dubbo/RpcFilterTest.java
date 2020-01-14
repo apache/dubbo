@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoService;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoServiceImpl;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
@@ -41,7 +42,8 @@ public class RpcFilterTest {
     @Test
     public void testRpcFilter() throws Exception {
         DemoService service = new DemoServiceImpl();
-        URL url = URL.valueOf("dubbo://127.0.0.1:9010/org.apache.dubbo.rpc.DemoService?service.filter=echo");
+        URL url = URL.valueOf("dubbo://127.0.0.1:9010/org.apache.dubbo.rpc.protocol.dubbo.support.DemoService?service.filter=echo");
+        ApplicationModel.getServiceRepository().registerService(DemoService.class);
         protocol.export(proxy.getInvoker(service, DemoService.class, url));
         service = proxy.getProxy(protocol.refer(DemoService.class, url));
         Assertions.assertEquals("123", service.echo("123"));

@@ -123,6 +123,11 @@ public class DemoServiceImpl implements DemoService {
     }
 
     @Override
+    public String getRemoteApplicationName() {
+        return RpcContext.getContext().getRemoteApplicationName();
+    }
+
+    @Override
     public Float getFloatNumber(Float f) {
         return f;
     }

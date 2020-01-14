@@ -17,7 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.hessian;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.RpcContext;
 
 import com.caucho.hessian.client.HessianConnection;
@@ -33,7 +33,7 @@ public class DubboHessianURLConnectionFactory extends HessianURLConnectionFactor
         HessianConnection connection = super.open(url);
         RpcContext context = RpcContext.getContext();
         for (String key : context.getAttachments().keySet()) {
-            connection.addHeader(Constants.DEFAULT_EXCHANGER + key, context.getAttachment(key));
+            connection.addHeader(Constants.DEFAULT_EXCHANGER + key, (String) context.getAttachment(key));
         }
 
         return connection;

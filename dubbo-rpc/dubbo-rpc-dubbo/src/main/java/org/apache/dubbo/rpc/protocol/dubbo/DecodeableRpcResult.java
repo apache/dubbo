@@ -28,17 +28,17 @@ import org.apache.dubbo.remoting.Codec;
 import org.apache.dubbo.remoting.Decodeable;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.transport.CodecSupport;
+import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.RpcResult;
+import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Type;
-import java.util.Map;
 
-public class DecodeableRpcResult extends RpcResult implements Codec, Decodeable {
+public class DecodeableRpcResult extends AppResponse implements Codec, Decodeable {
 
     private static final Logger log = LoggerFactory.getLogger(DecodeableRpcResult.class);
 
@@ -72,6 +72,11 @@ public class DecodeableRpcResult extends RpcResult implements Codec, Decodeable 
 
     @Override
     public Object decode(Channel channel, InputStream input) throws IOException {
+        if (log.isDebugEnabled()) {
+            Thread thread = Thread.currentThread();
+            log.debug("Decoding in thread -- [" + thread.getName() + "#" + thread.getId() + "]");
+        }
+
         ObjectInput in = CodecSupport.getSerialization(channel.getUrl(), serializationType)
                 .deserialize(channel.getUrl(), input);
 
@@ -97,7 +102,7 @@ public class DecodeableRpcResult extends RpcResult implements Codec, Decodeable 
                 handleAttachment(in);
                 break;
             default:
-                throw new IOException("Unknown result flag, expect '0' '1' '2', get " + flag);
+                throw new IOException("Unknown result flag, expect '0' '1' '2' '3' '4' '5', but received: " + flag);
         }
         if (in instanceof Cleanable) {
             ((Cleanable) in).cleanup();
@@ -124,9 +129,15 @@ public class DecodeableRpcResult extends RpcResult implements Codec, Decodeable 
 
     private void handleValue(ObjectInput in) throws IOException {
         try {
-            Type[] returnTypes = RpcUtils.getReturnTypes(invocation);
+            Type[] returnTypes;
+            if (invocation instanceof RpcInvocation) {
+                returnTypes = ((RpcInvocation) invocation).getReturnTypes();
+            } else {
+                returnTypes = RpcUtils.getReturnTypes(invocation);
+            }
             Object value = null;
             if (ArrayUtils.isEmpty(returnTypes)) {
+                // This almost never happens?
                 value = in.readObject();
             } else if (returnTypes.length == 1) {
                 value = in.readObject((Class<?>) returnTypes[0]);
@@ -141,11 +152,7 @@ public class DecodeableRpcResult extends RpcResult implements Codec, Decodeable 
 
     private void handleException(ObjectInput in) throws IOException {
         try {
-            Object obj = in.readObject();
-            if (!(obj instanceof Throwable)) {
-                throw new IOException("Response data error, expect Throwable, but get " + obj);
-            }
-            setException((Throwable) obj);
+            setException(in.readThrowable());
         } catch (ClassNotFoundException e) {
             rethrow(e);
         }
@@ -153,7 +160,7 @@ public class DecodeableRpcResult extends RpcResult implements Codec, Decodeable 
 
     private void handleAttachment(ObjectInput in) throws IOException {
         try {
-            setAttachments((Map<String, String>) in.readObject(Map.class));
+            setAttachments(in.readAttachments());
         } catch (ClassNotFoundException e) {
             rethrow(e);
         }

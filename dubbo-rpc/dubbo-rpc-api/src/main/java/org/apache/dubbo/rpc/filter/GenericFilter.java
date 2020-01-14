@@ -16,10 +16,10 @@
  */
 package org.apache.dubbo.rpc.filter;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.beanutil.JavaBeanAccessor;
 import org.apache.dubbo.common.beanutil.JavaBeanDescriptor;
 import org.apache.dubbo.common.beanutil.JavaBeanSerializeUtil;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.io.UnsafeByteArrayInputStream;
@@ -35,7 +35,6 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.service.GenericException;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
@@ -43,15 +42,22 @@ import org.apache.dubbo.rpc.support.ProtocolUtils;
 import java.io.IOException;
 import java.lang.reflect.Method;
 
+import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
+import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE_ASYNC;
+import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_BEAN;
+import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_NATIVE_JAVA;
+import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_PROTOBUF;
+import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
+
 /**
  * GenericInvokerFilter.
  */
-@Activate(group = Constants.PROVIDER, order = -20000)
-public class GenericFilter implements Filter {
+@Activate(group = CommonConstants.PROVIDER, order = -20000)
+public class GenericFilter implements Filter, Filter.Listener2 {
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation inv) throws RpcException {
-        if (inv.getMethodName().equals(Constants.$INVOKE)
+        if ((inv.getMethodName().equals($INVOKE) || inv.getMethodName().equals($INVOKE_ASYNC))
                 && inv.getArguments() != null
                 && inv.getArguments().length == 3
                 && !GenericService.class.isAssignableFrom(invoker.getInterface())) {
@@ -64,21 +70,26 @@ public class GenericFilter implements Filter {
                 if (args == null) {
                     args = new Object[params.length];
                 }
-                String generic = inv.getAttachment(Constants.GENERIC_KEY);
 
+                if (args.length != types.length) {
+                    throw new RpcException("args.length != types.length");
+                }
+                String generic = (String) inv.getAttachment(GENERIC_KEY);
+              
                 if (StringUtils.isBlank(generic)) {
-                    generic = RpcContext.getContext().getAttachment(Constants.GENERIC_KEY);
+                    generic = (String) RpcContext.getContext().getAttachment(GENERIC_KEY);
                 }
 
                 if (StringUtils.isEmpty(generic)
-                        || ProtocolUtils.isDefaultGenericSerialization(generic)) {
+                        || ProtocolUtils.isDefaultGenericSerialization(generic)
+                        || ProtocolUtils.isGenericReturnRawResult(generic)) {
                     args = PojoUtils.realize(args, params, method.getGenericParameterTypes());
                 } else if (ProtocolUtils.isJavaGenericSerialization(generic)) {
                     for (int i = 0; i < args.length; i++) {
                         if (byte[].class == args[i].getClass()) {
-                            try(UnsafeByteArrayInputStream is = new UnsafeByteArrayInputStream((byte[]) args[i])) {
+                            try (UnsafeByteArrayInputStream is = new UnsafeByteArrayInputStream((byte[]) args[i])) {
                                 args[i] = ExtensionLoader.getExtensionLoader(Serialization.class)
-                                        .getExtension(Constants.GENERIC_SERIALIZATION_NATIVE_JAVA)
+                                        .getExtension(GENERIC_SERIALIZATION_NATIVE_JAVA)
                                         .deserialize(null, is).readObject();
                             } catch (Exception e) {
                                 throw new RpcException("Deserialize argument [" + (i + 1) + "] failed.", e);
@@ -86,7 +97,7 @@ public class GenericFilter implements Filter {
                         } else {
                             throw new RpcException(
                                     "Generic serialization [" +
-                                            Constants.GENERIC_SERIALIZATION_NATIVE_JAVA +
+                                            GENERIC_SERIALIZATION_NATIVE_JAVA +
                                             "] only support message type " +
                                             byte[].class +
                                             " and your message type is " +
@@ -100,41 +111,97 @@ public class GenericFilter implements Filter {
                         } else {
                             throw new RpcException(
                                     "Generic serialization [" +
-                                            Constants.GENERIC_SERIALIZATION_BEAN +
+                                            GENERIC_SERIALIZATION_BEAN +
                                             "] only support message type " +
                                             JavaBeanDescriptor.class.getName() +
                                             " and your message type is " +
                                             args[i].getClass().getName());
                         }
                     }
-                }
-                Result result = invoker.invoke(new RpcInvocation(method, args, inv.getAttachments()));
-                if (result.hasException()
-                        && !(result.getException() instanceof GenericException)) {
-                    return new RpcResult(new GenericException(result.getException()));
-                }
-                if (ProtocolUtils.isJavaGenericSerialization(generic)) {
-                    try {
-                        UnsafeByteArrayOutputStream os = new UnsafeByteArrayOutputStream(512);
-                        ExtensionLoader.getExtensionLoader(Serialization.class)
-                                .getExtension(Constants.GENERIC_SERIALIZATION_NATIVE_JAVA)
-                                .serialize(null, os).writeObject(result.getValue());
-                        return new RpcResult(os.toByteArray());
-                    } catch (IOException e) {
-                        throw new RpcException("Serialize result failed.", e);
+                } else if (ProtocolUtils.isProtobufGenericSerialization(generic)) {
+                    // as proto3 only accept one protobuf parameter
+                    if (args.length == 1 && args[0] instanceof String) {
+                        try (UnsafeByteArrayInputStream is =
+                                     new UnsafeByteArrayInputStream(((String) args[0]).getBytes())) {
+                            args[0] = ExtensionLoader.getExtensionLoader(Serialization.class)
+                                    .getExtension(GENERIC_SERIALIZATION_PROTOBUF)
+                                    .deserialize(null, is).readObject(method.getParameterTypes()[0]);
+                        } catch (Exception e) {
+                            throw new RpcException("Deserialize argument failed.", e);
+                        }
+                    } else {
+                        throw new RpcException(
+                                "Generic serialization [" +
+                                        GENERIC_SERIALIZATION_PROTOBUF +
+                                        "] only support one " + String.class.getName() +
+                                        " argument and your message size is " +
+                                        args.length + " and type is" +
+                                        args[0].getClass().getName());
                     }
-                } else if (ProtocolUtils.isBeanGenericSerialization(generic)) {
-                    return new RpcResult(JavaBeanSerializeUtil.serialize(result.getValue(), JavaBeanAccessor.METHOD));
-                } else {
-                    return new RpcResult(PojoUtils.generalize(result.getValue()));
                 }
-            } catch (NoSuchMethodException e) {
-                throw new RpcException(e.getMessage(), e);
-            } catch (ClassNotFoundException e) {
+              
+                RpcInvocation rpcInvocation = new RpcInvocation(method, invoker.getInterface().getName(), args, inv.getAttachments(), inv.getAttributes());
+                rpcInvocation.setInvoker(inv.getInvoker());
+                rpcInvocation.setTargetServiceUniqueName(inv.getTargetServiceUniqueName());
+
+                return invoker.invoke(rpcInvocation);
+            } catch (NoSuchMethodException | ClassNotFoundException e) {
                 throw new RpcException(e.getMessage(), e);
             }
         }
         return invoker.invoke(inv);
     }
 
+    @Override
+    public void onMessage(Result appResponse, Invoker<?> invoker, Invocation inv) {
+        if ((inv.getMethodName().equals($INVOKE) || inv.getMethodName().equals($INVOKE_ASYNC))
+                && inv.getArguments() != null
+                && inv.getArguments().length == 3
+                && !GenericService.class.isAssignableFrom(invoker.getInterface())) {
+
+            String generic = (String) inv.getAttachment(GENERIC_KEY);
+            if (StringUtils.isBlank(generic)) {
+                generic = (String) RpcContext.getContext().getAttachment(GENERIC_KEY);
+            }
+
+            if (appResponse.hasException() && !(appResponse.getException() instanceof GenericException)) {
+                appResponse.setException(new GenericException(appResponse.getException()));
+            }
+            if (ProtocolUtils.isJavaGenericSerialization(generic)) {
+                try {
+                    UnsafeByteArrayOutputStream os = new UnsafeByteArrayOutputStream(512);
+                    ExtensionLoader.getExtensionLoader(Serialization.class).getExtension(GENERIC_SERIALIZATION_NATIVE_JAVA).serialize(null, os).writeObject(appResponse.getValue());
+                    appResponse.setValue(os.toByteArray());
+                } catch (IOException e) {
+                    throw new RpcException(
+                            "Generic serialization [" +
+                                    GENERIC_SERIALIZATION_NATIVE_JAVA +
+                                    "] serialize result failed.", e);
+                }
+            } else if (ProtocolUtils.isBeanGenericSerialization(generic)) {
+                appResponse.setValue(JavaBeanSerializeUtil.serialize(appResponse.getValue(), JavaBeanAccessor.METHOD));
+            } else if (ProtocolUtils.isProtobufGenericSerialization(generic)) {
+                try {
+                    UnsafeByteArrayOutputStream os = new UnsafeByteArrayOutputStream(512);
+                    ExtensionLoader.getExtensionLoader(Serialization.class)
+                            .getExtension(GENERIC_SERIALIZATION_PROTOBUF)
+                            .serialize(null, os).writeObject(appResponse.getValue());
+                    appResponse.setValue(os.toString());
+                } catch (IOException e) {
+                    throw new RpcException("Generic serialization [" +
+                            GENERIC_SERIALIZATION_PROTOBUF +
+                            "] serialize result failed.", e);
+                }
+            } else if(ProtocolUtils.isGenericReturnRawResult(generic)) {
+                return;
+            } else {
+                appResponse.setValue(PojoUtils.generalize(appResponse.getValue()));
+            }
+        }
+    }
+
+    @Override
+    public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
+
+    }
 }

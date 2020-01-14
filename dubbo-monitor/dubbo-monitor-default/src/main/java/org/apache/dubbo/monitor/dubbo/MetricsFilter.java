@@ -16,6 +16,23 @@
  */
 package org.apache.dubbo.monitor.dubbo;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.store.DataStore;
+import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.monitor.MetricsService;
+import org.apache.dubbo.rpc.AsyncRpcResult;
+import org.apache.dubbo.rpc.Filter;
+import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.Protocol;
+import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.RpcContext;
+import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.support.RpcUtils;
+
 import com.alibaba.fastjson.JSON;
 import com.alibaba.metrics.FastCompass;
 import com.alibaba.metrics.MetricLevel;
@@ -26,33 +43,29 @@ import com.alibaba.metrics.common.CollectLevel;
 import com.alibaba.metrics.common.MetricObject;
 import com.alibaba.metrics.common.MetricsCollector;
 import com.alibaba.metrics.common.MetricsCollectorFactory;
-import org.apache.dubbo.common.Constants;
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.store.DataStore;
-import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.monitor.MetricsService;
-import org.apache.dubbo.rpc.Filter;
-import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.Protocol;
-import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.RpcContext;
-import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.RpcResult;
-import org.apache.dubbo.rpc.support.RpcUtils;
-import java.util.Collections;
-import java.util.SortedMap;
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_PROTOCOL;
+import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METRICS_PORT;
+import static org.apache.dubbo.common.constants.CommonConstants.METRICS_PROTOCOL;
+import static org.apache.dubbo.monitor.Constants.DUBBO_CONSUMER;
+import static org.apache.dubbo.monitor.Constants.DUBBO_CONSUMER_METHOD;
+import static org.apache.dubbo.monitor.Constants.DUBBO_GROUP;
+import static org.apache.dubbo.monitor.Constants.DUBBO_PROVIDER;
+import static org.apache.dubbo.monitor.Constants.DUBBO_PROVIDER_METHOD;
+import static org.apache.dubbo.monitor.Constants.METHOD;
+import static org.apache.dubbo.monitor.Constants.SERVICE;
 
 public class MetricsFilter implements Filter {
 
@@ -64,13 +77,13 @@ public class MetricsFilter implements Filter {
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         if (exported.compareAndSet(false, true)) {
-            this.protocolName = invoker.getUrl().getParameter(Constants.METRICS_PROTOCOL) == null ?
-                    Constants.DEFAULT_PROTOCOL : invoker.getUrl().getParameter(Constants.METRICS_PROTOCOL);
+            this.protocolName = invoker.getUrl().getParameter(METRICS_PROTOCOL) == null ?
+                    DEFAULT_PROTOCOL : invoker.getUrl().getParameter(METRICS_PROTOCOL);
 
             Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(protocolName);
 
-            this.port = invoker.getUrl().getParameter(Constants.METRICS_PORT) == null ?
-                    protocol.getDefaultPort() : Integer.valueOf(invoker.getUrl().getParameter(Constants.METRICS_PORT));
+            this.port = invoker.getUrl().getParameter(METRICS_PORT) == null ?
+                    protocol.getDefaultPort() : Integer.valueOf(invoker.getUrl().getParameter(METRICS_PORT));
 
             Invoker<MetricsService> metricsInvoker = initMetricsInvoker();
 
@@ -137,23 +150,23 @@ public class MetricsFilter implements Filter {
         MetricName global;
         MetricName method;
         if (isProvider) {
-            global = new MetricName(Constants.DUBBO_PROVIDER, MetricLevel.MAJOR);
-            method = new MetricName(Constants.DUBBO_PROVIDER_METHOD, new HashMap<String, String>(4) {
+            global = new MetricName(DUBBO_PROVIDER, MetricLevel.MAJOR);
+            method = new MetricName(DUBBO_PROVIDER_METHOD, new HashMap<String, String>(4) {
                 {
-                    put(Constants.SERVICE, serviceName);
-                    put(Constants.METHOD, methodName);
+                    put(SERVICE, serviceName);
+                    put(METHOD, methodName);
                 }
             }, MetricLevel.NORMAL);
         } else {
-            global = new MetricName(Constants.DUBBO_CONSUMER, MetricLevel.MAJOR);
-            method = new MetricName(Constants.DUBBO_CONSUMER_METHOD, new HashMap<String, String>(4) {
+            global = new MetricName(DUBBO_CONSUMER, MetricLevel.MAJOR);
+            method = new MetricName(DUBBO_CONSUMER_METHOD, new HashMap<String, String>(4) {
                 {
-                    put(Constants.SERVICE, serviceName);
-                    put(Constants.METHOD, methodName);
+                    put(SERVICE, serviceName);
+                    put(METHOD, methodName);
                 }
             }, MetricLevel.NORMAL);
         }
-        setCompassQuantity(Constants.DUBBO_GROUP, result, duration, global, method);
+        setCompassQuantity(DUBBO_GROUP, result, duration, global, method);
     }
 
     private void setCompassQuantity(String groupName, String result, long duration, MetricName... metricNames) {
@@ -165,7 +178,7 @@ public class MetricsFilter implements Filter {
 
     private List<MetricObject> getThreadPoolMessage() {
         DataStore dataStore = ExtensionLoader.getExtensionLoader(DataStore.class).getDefaultExtension();
-        Map<String, Object> executors = dataStore.get(Constants.EXECUTOR_SERVICE_COMPONENT_KEY);
+        Map<String, Object> executors = dataStore.get(EXECUTOR_SERVICE_COMPONENT_KEY);
 
         List<MetricObject> threadPoolMtricList = new ArrayList<>();
         for (Map.Entry<String, Object> entry : executors.entrySet()) {
@@ -173,10 +186,6 @@ public class MetricsFilter implements Filter {
             ExecutorService executor = (ExecutorService) entry.getValue();
             if (executor instanceof ThreadPoolExecutor) {
                 ThreadPoolExecutor tp = (ThreadPoolExecutor) executor;
-                // ignore metrcis service
-                if (port.equals(this.port + "")) {
-                    continue;
-                }
 
                 threadPoolMtricList.add(value2MetricObject("threadPool.active", tp.getActiveCount(), MetricLevel.MAJOR));
                 threadPoolMtricList.add(value2MetricObject("threadPool.core", tp.getCorePoolSize(), MetricLevel.MAJOR));
@@ -189,8 +198,9 @@ public class MetricsFilter implements Filter {
     }
 
     private MetricObject value2MetricObject(String metric, Integer value, MetricLevel level) {
-        if (metric == null || value == null || level == null)
+        if (metric == null || value == null || level == null) {
             return null;
+        }
 
         return new MetricObject
                 .Builder(metric)
@@ -225,12 +235,9 @@ public class MetricsFilter implements Filter {
                     collector.collect(entry.getKey(), entry.getValue(), timestamp);
                 }
 
-                RpcResult result = new RpcResult();
-
                 List res = collector.build();
                 res.addAll(getThreadPoolMessage());
-                result.setValue(JSON.toJSONString(res));
-                return result;
+                return AsyncRpcResult.newDefaultAsyncResult(JSON.toJSONString(res), invocation);
             }
 
             @Override

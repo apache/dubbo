@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.hessian;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.rpc.RpcContext;
 
 import com.caucho.hessian.client.HessianConnection;
@@ -28,8 +27,11 @@ import org.apache.http.impl.client.HttpClientBuilder;
 
 import java.net.URL;
 
+import static org.apache.dubbo.remoting.Constants.DEFAULT_EXCHANGER;
+
 /**
  * HttpClientConnectionFactory
+ * TODO, Consider using connection pool
  */
 public class HttpClientConnectionFactory implements HessianConnectionFactory {
 
@@ -49,7 +51,7 @@ public class HttpClientConnectionFactory implements HessianConnectionFactory {
         HttpClientConnection httpClientConnection = new HttpClientConnection(httpClient, url);
         RpcContext context = RpcContext.getContext();
         for (String key : context.getAttachments().keySet()) {
-            httpClientConnection.addHeader(Constants.DEFAULT_EXCHANGER + key, context.getAttachment(key));
+            httpClientConnection.addHeader(DEFAULT_EXCHANGER + key, (String) context.getAttachment(key));
         }
         return httpClientConnection;
     }

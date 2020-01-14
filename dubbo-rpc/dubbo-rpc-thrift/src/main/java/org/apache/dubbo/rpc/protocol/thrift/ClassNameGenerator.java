@@ -24,8 +24,8 @@ import org.apache.dubbo.common.extension.SPI;
 @SPI(DubboClassNameGenerator.NAME)
 public interface ClassNameGenerator {
 
-    public String generateArgsClassName(String serviceName, String methodName);
+    String generateArgsClassName(String serviceName, String methodName);
 
-    public String generateResultClassName(String serviceName, String methodName);
+    String generateResultClassName(String serviceName, String methodName);
 
 }

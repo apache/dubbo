@@ -65,5 +65,7 @@ public interface DemoService {
 
     String getPerson(Man man);
 
+    String getRemoteApplicationName();
+
     Float getFloatNumber(Float f);
 }

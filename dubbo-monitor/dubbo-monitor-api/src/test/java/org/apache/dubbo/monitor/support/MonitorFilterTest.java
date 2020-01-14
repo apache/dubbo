@@ -16,18 +16,19 @@
  */
 package org.apache.dubbo.monitor.support;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.monitor.Monitor;
 import org.apache.dubbo.monitor.MonitorFactory;
 import org.apache.dubbo.monitor.MonitorService;
+import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -37,6 +38,10 @@ import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -60,7 +65,7 @@ public class MonitorFilterTest {
 
         public URL getUrl() {
             try {
-                return URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":20880?" + Constants.APPLICATION_KEY + "=abc&" + Constants.SIDE_KEY + "=" + Constants.CONSUMER_SIDE + "&" + Constants.MONITOR_KEY + "=" + URLEncoder.encode("dubbo://" + NetUtils.getLocalHost() + ":7070", "UTF-8"));
+                return URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":20880?" + APPLICATION_KEY + "=abc&" + SIDE_KEY + "=" + CONSUMER_SIDE + "&" + MONITOR_KEY + "=" + URLEncoder.encode("dubbo://" + NetUtils.getLocalHost() + ":7070", "UTF-8"));
             } catch (UnsupportedEncodingException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
@@ -71,9 +76,10 @@ public class MonitorFilterTest {
             return false;
         }
 
+        @Override
         public Result invoke(Invocation invocation) throws RpcException {
             lastInvocation = invocation;
-            return null;
+            return AsyncRpcResult.newDefaultAsyncResult(invocation);
         }
 
         @Override
@@ -113,9 +119,16 @@ public class MonitorFilterTest {
     public void testFilter() throws Exception {
         MonitorFilter monitorFilter = new MonitorFilter();
         monitorFilter.setMonitorFactory(monitorFactory);
-        Invocation invocation = new RpcInvocation("aaa", new Class<?>[0], new Object[0]);
+        Invocation invocation = new RpcInvocation("aaa", MonitorService.class.getName(), new Class<?>[0], new Object[0]);
         RpcContext.getContext().setRemoteAddress(NetUtils.getLocalHost(), 20880).setLocalAddress(NetUtils.getLocalHost(), 2345);
-        monitorFilter.invoke(serviceInvoker, invocation);
+        Result result = monitorFilter.invoke(serviceInvoker, invocation);
+        result.whenCompleteWithContext((r, t) -> {
+            if (t == null) {
+                monitorFilter.onMessage(r, serviceInvoker, invocation);
+            } else {
+                monitorFilter.onError(t, serviceInvoker, invocation);
+            }
+        });
         while (lastStatistics == null) {
             Thread.sleep(10);
         }
@@ -124,7 +137,7 @@ public class MonitorFilterTest {
         Assertions.assertEquals("aaa", lastStatistics.getParameter(MonitorService.METHOD));
         Assertions.assertEquals(NetUtils.getLocalHost() + ":20880", lastStatistics.getParameter(MonitorService.PROVIDER));
         Assertions.assertEquals(NetUtils.getLocalHost(), lastStatistics.getAddress());
-        Assertions.assertEquals(null, lastStatistics.getParameter(MonitorService.CONSUMER));
+        Assertions.assertNull(lastStatistics.getParameter(MonitorService.CONSUMER));
         Assertions.assertEquals(1, lastStatistics.getParameter(MonitorService.SUCCESS, 0));
         Assertions.assertEquals(0, lastStatistics.getParameter(MonitorService.FAILURE, 0));
         Assertions.assertEquals(1, lastStatistics.getParameter(MonitorService.CONCURRENT, 0));
@@ -136,9 +149,9 @@ public class MonitorFilterTest {
         MonitorFilter monitorFilter = new MonitorFilter();
         MonitorFactory mockMonitorFactory = mock(MonitorFactory.class);
         monitorFilter.setMonitorFactory(mockMonitorFactory);
-        Invocation invocation = new RpcInvocation("aaa", new Class<?>[0], new Object[0]);
+        Invocation invocation = new RpcInvocation("aaa", MonitorService.class.getName(), new Class<?>[0], new Object[0]);
         Invoker invoker = mock(Invoker.class);
-        given(invoker.getUrl()).willReturn(URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":20880?" + Constants.APPLICATION_KEY + "=abc&" + Constants.SIDE_KEY + "=" + Constants.CONSUMER_SIDE));
+        given(invoker.getUrl()).willReturn(URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":20880?" + APPLICATION_KEY + "=abc&" + SIDE_KEY + "=" + CONSUMER_SIDE));
 
         monitorFilter.invoke(invoker, invocation);
 
@@ -149,9 +162,16 @@ public class MonitorFilterTest {
     public void testGenericFilter() throws Exception {
         MonitorFilter monitorFilter = new MonitorFilter();
         monitorFilter.setMonitorFactory(monitorFactory);
-        Invocation invocation = new RpcInvocation("$invoke", new Class<?>[]{String.class, String[].class, Object[].class}, new Object[]{"xxx", new String[]{}, new Object[]{}});
+        Invocation invocation = new RpcInvocation("$invoke", MonitorService.class.getName(), new Class<?>[]{String.class, String[].class, Object[].class}, new Object[]{"xxx", new String[]{}, new Object[]{}});
         RpcContext.getContext().setRemoteAddress(NetUtils.getLocalHost(), 20880).setLocalAddress(NetUtils.getLocalHost(), 2345);
-        monitorFilter.invoke(serviceInvoker, invocation);
+        Result result = monitorFilter.invoke(serviceInvoker, invocation);
+        result.whenCompleteWithContext((r, t) -> {
+            if (t == null) {
+                monitorFilter.onMessage(r, serviceInvoker, invocation);
+            } else {
+                monitorFilter.onError(t, serviceInvoker, invocation);
+            }
+        });
         while (lastStatistics == null) {
             Thread.sleep(10);
         }
@@ -160,7 +180,7 @@ public class MonitorFilterTest {
         Assertions.assertEquals("xxx", lastStatistics.getParameter(MonitorService.METHOD));
         Assertions.assertEquals(NetUtils.getLocalHost() + ":20880", lastStatistics.getParameter(MonitorService.PROVIDER));
         Assertions.assertEquals(NetUtils.getLocalHost(), lastStatistics.getAddress());
-        Assertions.assertEquals(null, lastStatistics.getParameter(MonitorService.CONSUMER));
+        Assertions.assertNull(lastStatistics.getParameter(MonitorService.CONSUMER));
         Assertions.assertEquals(1, lastStatistics.getParameter(MonitorService.SUCCESS, 0));
         Assertions.assertEquals(0, lastStatistics.getParameter(MonitorService.FAILURE, 0));
         Assertions.assertEquals(1, lastStatistics.getParameter(MonitorService.CONCURRENT, 0));
@@ -176,7 +196,7 @@ public class MonitorFilterTest {
 
         monitorFilter.setMonitorFactory(mockMonitorFactory);
         given(mockMonitorFactory.getMonitor(any(URL.class))).willReturn(mockMonitor);
-        Invocation invocation = new RpcInvocation("aaa", new Class<?>[0], new Object[0]);
+        Invocation invocation = new RpcInvocation("aaa", MonitorService.class.getName(), new Class<?>[0], new Object[0]);
 
         monitorFilter.invoke(serviceInvoker, invocation);
     }

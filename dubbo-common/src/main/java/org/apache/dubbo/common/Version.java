@@ -18,7 +18,7 @@ package org.apache.dubbo.common;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.ClassHelper;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 
 import java.io.IOException;
@@ -37,11 +37,13 @@ import java.util.regex.Pattern;
  */
 public final class Version {
     private static final Logger logger = LoggerFactory.getLogger(Version.class);
-    
+
     private static final Pattern PREFIX_DIGITS_PATTERN = Pattern.compile("^([0-9]*).*");
 
     // Dubbo RPC protocol version, for compatibility, it must not be between 2.0.10 ~ 2.6.2
     public static final String DEFAULT_DUBBO_PROTOCOL_VERSION = "2.0.2";
+    // version 1.0.0 represents Dubbo rpc protocol before v2.6.2
+    public static final int LEGACY_DUBBO_PROTOCOL_VERSION = 10000; // 1.0.0
     // Dubbo implementation version, usually is jar version.
     private static final String VERSION = getVersion(Version.class, "");
 
@@ -100,7 +102,12 @@ public final class Version {
         // for previous dubbo version(2.0.10/020010~2.6.2/020602), this version is the jar's version, so they need to
         // be ignore
         int iVersion = getIntVersion(version);
-        if (iVersion >= 2001000 && iVersion <= 2060200) {
+        if (iVersion >= 2001000 && iVersion < 2060300) {
+            return false;
+        }
+
+        // 2.8.x is reserved for dubbox
+        if (iVersion >= 2080000 && iVersion < 2090000) {
             return false;
         }
 
@@ -110,10 +117,17 @@ public final class Version {
     public static int getIntVersion(String version) {
         Integer v = VERSION2INT.get(version);
         if (v == null) {
-            v = parseInt(version);
-            // e.g., version number 2.6.3 will convert to 2060300
-            if (version.split("\\.").length == 3) {
-                v = v * 100;
+            try {
+                v = parseInt(version);
+                // e.g., version number 2.6.3 will convert to 2060300
+                if (version.split("\\.").length == 3) {
+                    v = v * 100;
+                }
+            } catch (Exception e) {
+                logger.warn("Please make sure your version value has the right format: " +
+                        "\n 1. only contains digital number: 2.0.0; \n 2. with string suffix: 2.6.7-stable. " +
+                        "\nIf you are using Dubbo before v2.6.2, the version value is the same with the jar version.");
+                v = LEGACY_DUBBO_PROTOCOL_VERSION;
             }
             VERSION2INT.put(version, v);
         }
@@ -148,28 +162,28 @@ public final class Version {
             String version = null;
             if (pkg != null) {
                 version = pkg.getImplementationVersion();
-                if (!StringUtils.isEmpty(version)) {
+                if (StringUtils.isNotEmpty(version)) {
                     return version;
                 }
 
                 version = pkg.getSpecificationVersion();
-                if (!StringUtils.isEmpty(version)) {
+                if (StringUtils.isNotEmpty(version)) {
                     return version;
                 }
             }
-            
-            // guess version fro jar file name if nothing's found from MANIFEST.MF
+
+            // guess version from jar file name if nothing's found from MANIFEST.MF
             CodeSource codeSource = cls.getProtectionDomain().getCodeSource();
             if (codeSource == null) {
                 logger.info("No codeSource for class " + cls.getName() + " when getVersion, use default version " + defaultVersion);
                 return defaultVersion;
-            } 
-            
+            }
+
             String file = codeSource.getLocation().getFile();
             if (!StringUtils.isEmpty(file) && file.endsWith(".jar")) {
                 version = getFromFile(file);
             }
-            
+
             // return default version if no version info is found
             return StringUtils.isEmpty(version) ? defaultVersion : version;
         } catch (Throwable e) {
@@ -185,19 +199,19 @@ public final class Version {
     private static String getFromFile(String file) {
         // remove suffix ".jar": "path/to/group-module-x.y.z"
         file = file.substring(0, file.length() - 4);
-        
+
         // remove path: "group-module-x.y.z"
         int i = file.lastIndexOf('/');
         if (i >= 0) {
             file = file.substring(i + 1);
         }
-        
+
         // remove group: "module-x.y.z"
         i = file.indexOf("-");
         if (i >= 0) {
             file = file.substring(i + 1);
         }
-        
+
         // remove module: "x.y.z"
         while (file.length() > 0 && !Character.isDigit(file.charAt(0))) {
             i = file.indexOf("-");
@@ -240,13 +254,13 @@ public final class Version {
      * search resources in caller's classloader
      */
     private static Set<String> getResources(String path) throws IOException {
-        Enumeration<URL> urls = ClassHelper.getCallerClassLoader(Version.class).getResources(path);
+        Enumeration<URL> urls = ClassUtils.getCallerClassLoader(Version.class).getResources(path);
         Set<String> files = new HashSet<String>();
         while (urls.hasMoreElements()) {
             URL url = urls.nextElement();
             if (url != null) {
                 String file = url.getFile();
-                if (file != null && file.length() > 0) {
+                if (StringUtils.isNotEmpty(file)) {
                     files.add(file);
                 }
             }

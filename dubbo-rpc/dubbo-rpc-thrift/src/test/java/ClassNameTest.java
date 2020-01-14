@@ -16,7 +16,6 @@
  */
 
 import org.apache.dubbo.rpc.protocol.thrift.ThriftUtils;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
