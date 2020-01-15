@@ -18,17 +18,18 @@ package org.apache.dubbo.rpc.filter;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.ListenableFilter;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_APPLICATION_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+
 /**
  * ConsumerContextFilter set current RpcContext with invoker,invocation, local host, remote host and port
  * for consumer invoker.It does it to make the requires info available to execution thread's RpcContext.
@@ -37,11 +38,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
  * @see RpcContext
  */
 @Activate(group = CONSUMER, order = -10000)
-public class ConsumerContextFilter extends ListenableFilter {
-
-    public ConsumerContextFilter() {
-        super.listener = new ConsumerContextListener();
-    }
+public class ConsumerContextFilter implements Filter {
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
@@ -55,23 +52,7 @@ public class ConsumerContextFilter extends ListenableFilter {
         if (invocation instanceof RpcInvocation) {
             ((RpcInvocation) invocation).setInvoker(invoker);
         }
-        try {
-            RpcContext.removeServerContext();
-            return invoker.invoke(invocation);
-        } finally {
-            RpcContext.removeContext();
-        }
+        return invoker.invoke(invocation);
     }
 
-    static class ConsumerContextListener implements Listener {
-        @Override
-        public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
-            RpcContext.getServerContext().setAttachments(appResponse.getAttachments());
-        }
-
-        @Override
-        public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
-
-        }
-    }
 }

@@ -31,12 +31,12 @@ public class RestServerFactory {
         this.httpBinder = httpBinder;
     }
 
-    public RestServer createServer(String name) {
+    public RestProtocolServer createServer(String name) {
         // TODO move names to Constants
         if ("servlet".equalsIgnoreCase(name) || "jetty".equalsIgnoreCase(name) || "tomcat".equalsIgnoreCase(name)) {
-            return new DubboHttpServer(httpBinder);
+            return new DubboHttpProtocolServer(httpBinder);
         } else if ("netty".equalsIgnoreCase(name)) {
-            return new NettyServer();
+            return new NettyRestProtocolServer();
         } else {
             throw new IllegalArgumentException("Unrecognized server name: " + name);
         }

@@ -24,8 +24,7 @@ import org.springframework.core.env.PropertyResolver;
 import java.lang.annotation.Annotation;
 import java.util.Map;
 
-import static org.apache.dubbo.config.spring.util.AnnotationUtils.getAttributes;
-import static org.apache.dubbo.config.spring.util.AnnotationUtils.resolvePlaceholders;
+import static com.alibaba.spring.util.AnnotationUtils.getAttributes;
 
 /**
  * {@link Annotation} {@link PropertyValues} Adapter
@@ -46,7 +45,7 @@ class AnnotationPropertyValuesAdapter implements PropertyValues {
      */
     public AnnotationPropertyValuesAdapter(Map<String, Object> attributes, PropertyResolver propertyResolver,
                                            String... ignoreAttributeNames) {
-        this.delegate = new MutablePropertyValues(resolvePlaceholders(attributes, propertyResolver, ignoreAttributeNames));
+        this.delegate = new MutablePropertyValues(getAttributes(attributes, propertyResolver, ignoreAttributeNames));
     }
 
     public AnnotationPropertyValuesAdapter(Annotation annotation, PropertyResolver propertyResolver,

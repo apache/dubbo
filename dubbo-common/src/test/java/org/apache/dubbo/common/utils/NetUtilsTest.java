@@ -300,4 +300,11 @@ public class NetUtilsTest {
         assertFalse(NetUtils.matchIpRange("192.168.1.1-61:90", "192.168.1.62", 90));
         assertFalse(NetUtils.matchIpRange("192.168.1.62:90", "192.168.1.63", 90));
     }
+
+    @Test
+    public void testLocalHost() {
+        assertEquals(NetUtils.getLocalHost(), NetUtils.getLocalAddress().getHostAddress());
+        assertTrue(NetUtils.isValidLocalHost(NetUtils.getLocalHost()));
+        assertFalse(NetUtils.isInvalidLocalHost(NetUtils.getLocalHost()));
+    }
 }

@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.registry.dubbo;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -23,14 +24,17 @@ import org.apache.dubbo.registry.RegistryService;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ServiceDescriptor;
+import org.apache.dubbo.rpc.model.ServiceRepository;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 
-import static org.apache.dubbo.rpc.cluster.Constants.CLUSTER_STICKY_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.CALLBACK_INSTANCES_LIMIT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
-import static org.apache.dubbo.rpc.Constants.CALLBACK_INSTANCES_LIMIT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.CLUSTER_STICKY_KEY;
 
 /**
  * SimpleRegistryExporter
@@ -66,6 +70,18 @@ public class SimpleRegistryExporter {
                         .addParameter("subscribe.1.callback", "true")
                         .addParameter("unsubscribe.1.callback", "false")
                         .build()));
+    }
+
+    private void registerProvider(URL url, RegistryService registryService) {
+        ServiceRepository repository = ApplicationModel.getServiceRepository();
+        ServiceDescriptor serviceDescriptor = repository.registerService(RegistryService.class);
+        repository.registerProvider(
+                url.getServiceKey(),
+                registryService,
+                serviceDescriptor,
+                null,
+                null
+        );
     }
 
 }

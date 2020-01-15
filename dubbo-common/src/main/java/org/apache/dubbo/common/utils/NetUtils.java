@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.logger.support.FailsafeLogger;
 
 import java.io.IOException;
 import java.net.Inet4Address;
@@ -45,7 +46,14 @@ import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
  * IP and Port Helper for RPC
  */
 public class NetUtils {
-    private static final Logger logger = LoggerFactory.getLogger(NetUtils.class);
+    private static Logger logger;
+
+    {
+        logger = LoggerFactory.getLogger(NetUtils.class);
+        if (logger instanceof FailsafeLogger) {
+            logger = ((FailsafeLogger) logger).getLogger();
+        }
+    }
 
     // returned port range is [30000, 39999]
     private static final int RND_PORT_START = 30000;
@@ -131,12 +139,12 @@ public class NetUtils {
         if (address == null || address.isLoopbackAddress()) {
             return false;
         }
+
         String name = address.getHostAddress();
-        boolean result = (name != null
+        return (name != null
                 && IP_PATTERN.matcher(name).matches()
                 && !ANYHOST_VALUE.equals(name)
                 && !LOCALHOST_VALUE.equals(name));
-        return result;
     }
 
     /**
@@ -145,11 +153,7 @@ public class NetUtils {
      * @return true if it is reachable
      */
     static boolean isPreferIPV6Address() {
-        boolean preferIpv6 = Boolean.getBoolean("java.net.preferIPv6Addresses");
-        if (!preferIpv6) {
-            return false;
-        }
-        return false;
+        return Boolean.getBoolean("java.net.preferIPv6Addresses");
     }
 
     /**
@@ -180,9 +184,18 @@ public class NetUtils {
         return address;
     }
 
+    private static volatile String HOST_ADDRESS;
+
     public static String getLocalHost() {
+        if (HOST_ADDRESS != null) {
+            return HOST_ADDRESS;
+        }
+
         InetAddress address = getLocalAddress();
-        return address == null ? LOCALHOST_VALUE : address.getHostAddress();
+        if (address != null) {
+            return HOST_ADDRESS = address.getHostAddress();
+        }
+        return LOCALHOST_VALUE;
     }
 
     public static String filterLocalHost(String host) {
@@ -272,7 +285,7 @@ public class NetUtils {
                             Optional<InetAddress> addressOp = toValidAddress(addresses.nextElement());
                             if (addressOp.isPresent()) {
                                 try {
-                                    if(addressOp.get().isReachable(100)){
+                                    if (addressOp.get().isReachable(100)) {
                                         return addressOp.get();
                                     }
                                 } catch (IOException e) {
@@ -372,7 +385,7 @@ public class NetUtils {
                 InetAddress address = (InetAddress) addresses.nextElement();
                 if (preferIpv6 && address instanceof Inet6Address) {
                     try {
-                        if(address.isReachable(100)){
+                        if (address.isReachable(100)) {
                             multicastSocket.setInterface(address);
                             interfaceSet = true;
                             break;
@@ -382,7 +395,7 @@ public class NetUtils {
                     }
                 } else if (!preferIpv6 && address instanceof Inet4Address) {
                     try {
-                        if(address.isReachable(100)){
+                        if (address.isReachable(100)) {
                             multicastSocket.setInterface(address);
                             interfaceSet = true;
                             break;
@@ -487,7 +500,7 @@ public class NetUtils {
     private static void checkHostPattern(String pattern, String[] mask, boolean isIpv4) {
         if (!isIpv4) {
             if (mask.length != 8 && ipPatternContainExpression(pattern)) {
-                throw new IllegalArgumentException("If you config ip expression that contains '*' or '-', please fill qulified ip pattern like 234e:0:4567:0:0:0:3d:*. ");
+                throw new IllegalArgumentException("If you config ip expression that contains '*' or '-', please fill qualified ip pattern like 234e:0:4567:0:0:0:3d:*. ");
             }
             if (mask.length != 8 && !pattern.contains("::")) {
                 throw new IllegalArgumentException("The host is ipv6, but the pattern is not ipv6 pattern : " + pattern);

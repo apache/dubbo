@@ -24,6 +24,8 @@ import org.apache.dubbo.demo.DemoService;
 
 import org.springframework.stereotype.Component;
 
+import java.util.concurrent.CompletableFuture;
+
 @Component("demoServiceComponent")
 public class DemoServiceComponent implements DemoService {
     @Reference
@@ -32,5 +34,10 @@ public class DemoServiceComponent implements DemoService {
     @Override
     public String sayHello(String name) {
         return demoService.sayHello(name);
+    }
+
+    @Override
+    public CompletableFuture<String> sayHelloAsync(String name) {
+        return null;
     }
 }
