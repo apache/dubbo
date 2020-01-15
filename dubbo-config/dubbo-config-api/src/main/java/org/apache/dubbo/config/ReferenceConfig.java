@@ -139,6 +139,11 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
     private DubboBootstrap bootstrap;
 
+    static {
+        // backward compatibility: make sure DubboShutdownHook registered when DubboBootstrap is not used.
+        DubboShutdownHook.getDubboShutdownHook().register();
+    }
+
     public ReferenceConfig() {
         super();
         this.repository = ApplicationModel.getServiceRepository();

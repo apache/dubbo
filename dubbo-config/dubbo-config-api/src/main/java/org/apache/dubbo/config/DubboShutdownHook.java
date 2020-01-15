@@ -25,6 +25,7 @@ import org.apache.dubbo.config.event.DubboShutdownHookRegisteredEvent;
 import org.apache.dubbo.config.event.DubboShutdownHookUnregisteredEvent;
 import org.apache.dubbo.event.Event;
 import org.apache.dubbo.event.EventDispatcher;
+import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 import org.apache.dubbo.rpc.Protocol;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -91,6 +92,11 @@ public class DubboShutdownHook extends Thread {
             DubboShutdownHook dubboShutdownHook = getDubboShutdownHook();
             Runtime.getRuntime().addShutdownHook(dubboShutdownHook);
             dispatch(new DubboShutdownHookRegisteredEvent(dubboShutdownHook));
+            ShutdownHookCallbacks.INSTANCE.addCallback(() -> {
+                // backward compatibility: make sure shutdown logic takes effect when DubboBootstrap is not used.
+                AbstractRegistryFactory.destroyAll();
+                this.destroyProtocols();
+            });
         }
     }
 
