@@ -88,6 +88,18 @@ public class RegistryConfig extends AbstractConfig {
     // if it's default
     private Boolean isDefault;
 
+    /** The region where the registry belongs, usually used to isolate traffics */
+    private String zone;
+
+    /** Always use this registry first if set to true, useful when subscribe to multiple registries */
+    private Boolean preferred;
+
+    /**
+     * Affects traffic distribution among registries, useful when subscribe to multiple registries
+     * Take effect only when no preferred registry is specified.
+     */
+    private Integer weight;
+
     public RegistryConfig() {
     }
 
@@ -321,4 +333,47 @@ public class RegistryConfig extends AbstractConfig {
         this.isDefault = isDefault;
     }
 
+    public String getZone() {
+        return zone;
+    }
+
+    public void setZone(String zone) {
+        this.zone = zone;
+    }
+
+    public Boolean getPreferred() {
+        return preferred;
+    }
+
+    public void setPreferred(Boolean preferred) {
+        this.preferred = preferred;
+    }
+
+    public Integer getWeight() {
+        return weight;
+    }
+
+    public void setWeight(Integer weight) {
+        this.weight = weight;
+    }
+
+    public Boolean getCheck() {
+        return check;
+    }
+
+    public Boolean getDynamic() {
+        return dynamic;
+    }
+
+    public Boolean getRegister() {
+        return register;
+    }
+
+    public Boolean getSubscribe() {
+        return subscribe;
+    }
+
+    public Boolean getDefault() {
+        return isDefault;
+    }
 }
