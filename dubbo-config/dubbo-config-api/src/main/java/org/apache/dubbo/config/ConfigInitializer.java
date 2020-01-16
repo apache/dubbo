@@ -23,12 +23,14 @@ import org.apache.dubbo.common.extension.SPI;
  */
 
 @SPI
-public interface AppendParametersComponent {
-    default void appendReferParameters(ReferenceConfig referenceConfig) {
+public interface ConfigInitializer {
+
+    default void initReferConfig(ReferenceConfig referenceConfig) {
 
     }
 
-    default void appendExportParameters(ServiceConfig serviceConfig) {
+    default void initServiceConfig(ServiceConfig serviceConfig) {
 
     }
+
 }
