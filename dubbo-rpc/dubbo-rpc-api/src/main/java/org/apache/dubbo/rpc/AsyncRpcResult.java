@@ -19,9 +19,7 @@ package org.apache.dubbo.rpc;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
-import org.apache.dubbo.common.utils.ReflectUtils;
-import org.apache.dubbo.rpc.model.ConsumerModel;
-import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.rpc.model.ConsumerMethodModel;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -31,6 +29,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+
+import static org.apache.dubbo.common.utils.ReflectUtils.defaultReturn;
 
 /**
  * This class represents an unfinished RPC call, it will hold some context information for this call, for example RpcContext and Invocation,
@@ -290,11 +290,8 @@ public class AsyncRpcResult implements Result {
     }
 
     private static Result createDefaultValue(Invocation invocation) {
-        ConsumerModel consumerModel = (ConsumerModel) invocation.get(Constants.CONSUMER_MODEL);
-        String methodName = invocation.getMethodName();
-        String params = ReflectUtils.getDesc(invocation.getParameterTypes());
-        MethodDescriptor method = consumerModel.getServiceModel().getMethod(methodName, params);
-        return new AppResponse(ReflectUtils.defaultReturn(method.getReturnClass()));
+        ConsumerMethodModel method = (ConsumerMethodModel) invocation.get(Constants.METHOD_MODEL);
+        return method != null ? new AppResponse(defaultReturn(method.getReturnClass())) : new AppResponse();
     }
 }
 

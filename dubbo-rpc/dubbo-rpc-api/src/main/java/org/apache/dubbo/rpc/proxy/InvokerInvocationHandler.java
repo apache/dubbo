@@ -67,6 +67,7 @@ public class InvokerInvocationHandler implements InvocationHandler {
         rpcInvocation.setTargetServiceUniqueName(serviceKey);
         if (consumerModel != null) {
             rpcInvocation.put(Constants.CONSUMER_MODEL, consumerModel);
+            rpcInvocation.put(Constants.METHOD_MODEL, consumerModel.getMethodModel(method));
         }
 
         return invoker.invoke(rpcInvocation).recreate();

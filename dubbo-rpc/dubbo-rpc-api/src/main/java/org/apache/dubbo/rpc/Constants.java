@@ -86,5 +86,5 @@ public interface Constants {
     String OUTPUT_KEY = "output";
 
     String CONSUMER_MODEL = "consumerModel";
-
+    String METHOD_MODEL = "methodModel";
 }
