@@ -20,7 +20,6 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
 import org.apache.dubbo.common.utils.ReflectUtils;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 
@@ -149,11 +148,7 @@ public class AsyncRpcResult implements Result {
             logger.error("Got exception when trying to fetch the underlying result from AsyncRpcResult.", e);
         }
 
-        ConsumerModel consumerModel = ApplicationModel.getConsumerModel(invocation.getTargetServiceUniqueName());
-        String methodName = invocation.getMethodName();
-        String params = ReflectUtils.getDesc(invocation.getParameterTypes());
-        MethodDescriptor method = consumerModel.getServiceModel().getMethod(methodName, params);
-        return new AppResponse(ReflectUtils.defaultReturn(method.getReturnClass()));
+        return createDefaultValue(invocation);
     }
 
     /**
@@ -249,8 +244,8 @@ public class AsyncRpcResult implements Result {
      * tmp context to use when the thread switch to Dubbo thread.
      */
     private RpcContext tmpContext;
-    private RpcContext tmpServerContext;
 
+    private RpcContext tmpServerContext;
     private BiConsumer<Result, Throwable> beforeContext = (appResponse, t) -> {
         tmpContext = RpcContext.getContext();
         tmpServerContext = RpcContext.getServerContext();
@@ -292,6 +287,14 @@ public class AsyncRpcResult implements Result {
         }
         future.complete(result);
         return new AsyncRpcResult(future, invocation);
+    }
+
+    private static Result createDefaultValue(Invocation invocation) {
+        ConsumerModel consumerModel = (ConsumerModel) invocation.get(Constants.CONSUMER_MODEL);
+        String methodName = invocation.getMethodName();
+        String params = ReflectUtils.getDesc(invocation.getParameterTypes());
+        MethodDescriptor method = consumerModel.getServiceModel().getMethod(methodName, params);
+        return new AppResponse(ReflectUtils.defaultReturn(method.getReturnClass()));
     }
 }
 
