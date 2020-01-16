@@ -532,7 +532,13 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         if (monitor != null) {
             return monitor;
         }
-        return ApplicationModel.getConfigManager().getMonitor().orElse(null);
+        ConfigManager configManager = ApplicationModel.getConfigManager();
+
+        return configManager.getMonitor().orElseGet(() -> {
+            MonitorConfig monitorConfig = new MonitorConfig();
+            configManager.setMonitor(monitorConfig);
+            return monitorConfig;
+        });
     }
 
     @Deprecated

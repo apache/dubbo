@@ -864,7 +864,6 @@ public class DubboBootstrap extends GenericEventListener {
         configManager.getServices().forEach(sc -> {
             // TODO, compatible with ServiceConfig.export()
             ServiceConfig serviceConfig = (ServiceConfig) sc;
-            serviceConfig.setBootstrap(this);
 
             if (exportAsync) {
                 ExecutorService executor = executorRepository.getServiceExporterExecutor();
@@ -902,7 +901,6 @@ public class DubboBootstrap extends GenericEventListener {
         configManager.getReferences().forEach(rc -> {
             // TODO, compatible with  ReferenceConfig.refer()
             ReferenceConfig referenceConfig = (ReferenceConfig) rc;
-            referenceConfig.setBootstrap(this);
 
             if (rc.shouldInit()) {
                 if (referAsync) {

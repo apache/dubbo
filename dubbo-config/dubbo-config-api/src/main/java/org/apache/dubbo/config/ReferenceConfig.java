@@ -28,7 +28,6 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.annotation.Reference;
-import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.event.ReferenceConfigDestroyedEvent;
 import org.apache.dubbo.config.event.ReferenceConfigInitializedEvent;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
@@ -137,8 +136,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
     private final ServiceRepository repository;
 
-    private DubboBootstrap bootstrap;
-
     static {
         // backward compatibility: make sure DubboShutdownHook registered when DubboBootstrap is not used.
         DubboShutdownHook.getDubboShutdownHook().register();
@@ -187,11 +184,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     public synchronized void init() {
         if (initialized) {
             return;
-        }
-
-        if (bootstrap == null) {
-            bootstrap = DubboBootstrap.getInstance();
-            bootstrap.init();
         }
 
         checkAndUpdateSubConfigs();
@@ -454,14 +446,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
      */
     protected void dispatch(Event event) {
         EventDispatcher.getDefaultExtension().dispatch(event);
-    }
-
-    public DubboBootstrap getBootstrap() {
-        return bootstrap;
-    }
-
-    public void setBootstrap(DubboBootstrap bootstrap) {
-        this.bootstrap = bootstrap;
     }
 
     @SuppressWarnings("unused")

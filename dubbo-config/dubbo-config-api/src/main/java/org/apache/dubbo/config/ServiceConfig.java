@@ -29,7 +29,6 @@ import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Service;
-import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.event.ServiceConfigExportedEvent;
 import org.apache.dubbo.config.event.ServiceConfigUnexportedEvent;
 import org.apache.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
@@ -132,8 +131,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
      */
     private transient volatile boolean unexported;
 
-    private DubboBootstrap bootstrap;
-
     /**
      * The exported services
      */
@@ -187,11 +184,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     public synchronized void export() {
         if (!shouldExport()) {
             return;
-        }
-
-        if (bootstrap == null) {
-            bootstrap = DubboBootstrap.getInstance();
-            bootstrap.init();
         }
 
         checkAndUpdateSubConfigs();
@@ -702,13 +694,5 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
      */
     private void dispatch(Event event) {
         EventDispatcher.getDefaultExtension().dispatch(event);
-    }
-
-    public DubboBootstrap getBootstrap() {
-        return bootstrap;
-    }
-
-    public void setBootstrap(DubboBootstrap bootstrap) {
-        this.bootstrap = bootstrap;
     }
 }

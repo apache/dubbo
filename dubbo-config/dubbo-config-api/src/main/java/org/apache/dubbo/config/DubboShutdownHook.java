@@ -69,6 +69,10 @@ public class DubboShutdownHook extends Thread {
         if (logger.isInfoEnabled()) {
             logger.info("Run shutdown hook now.");
         }
+
+        // backward compatibility: make sure shutdown logic takes effect when DubboBootstrap is not used.
+        destroyAll();
+
         callback();
         doDestroy();
     }
@@ -116,9 +120,6 @@ public class DubboShutdownHook extends Thread {
 
         // dispatch the DubboDestroyedEvent @since 2.7.5
         dispatch(new DubboServiceDestroyedEvent(this));
-
-        // backward compatibility: make sure shutdown logic takes effect when DubboBootstrap is not used.
-        destroyAll();
     }
 
     public static void destroyAll() {
