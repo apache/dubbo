@@ -748,14 +748,6 @@ public class ExtensionLoader<T> {
         String value = defaultAnnotation.value();
         if ((value = value.trim()).length() > 0) {
             cachedDefaultName = value;
-           /* String[] names = NAME_SEPARATOR.split(value);
-            if (names.length > 1) {
-                throw new IllegalStateException("More than 1 default extension name on extension " + type.getName()
-                        + ": " + Arrays.toString(names));
-            }
-            if (names.length == 1) {
-                cachedDefaultName = names[0];
-            }*/
         }
     }
 
