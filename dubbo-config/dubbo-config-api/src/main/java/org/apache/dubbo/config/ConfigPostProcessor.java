@@ -14,23 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.config;
 
-package org.apache.dubbo.common.serialize;
+import org.apache.dubbo.common.extension.SPI;
 
-public interface Constants {
-    byte HESSIAN2_SERIALIZATION_ID = 2;
-    byte JAVA_SERIALIZATION_ID = 3;
-    byte COMPACTED_JAVA_SERIALIZATION_ID = 4;
-    byte FASTJSON_SERIALIZATION_ID = 6;
-    byte NATIVE_JAVA_SERIALIZATION_ID = 7;
-    byte KRYO_SERIALIZATION_ID = 8;
-    byte FST_SERIALIZATION_ID = 9;
-    byte NATIVE_HESSIAN_SERIALIZATION_ID = 10;
-    byte PROTOSTUFF_SERIALIZATION_ID = 12;
-    byte AVRO_SERIALIZATION_ID = 11;
-    byte GSON_SERIALIZATION_ID = 16;
-    byte PROTOBUF_JSON_SERIALIZATION_ID = 21;
+/**
+ * 2019/12/30
+ */
 
-    byte PROTOBUF_SERIALIZATION_ID = 22;
-    byte KRYO_SERIALIZATION2_ID = 25;
+@SPI
+public interface ConfigPostProcessor {
+
+    default void postProcessReferConfig(ReferenceConfig referenceConfig) {
+
+    }
+
+    default void postProcessServiceConfig(ServiceConfig serviceConfig) {
+
+    }
 }

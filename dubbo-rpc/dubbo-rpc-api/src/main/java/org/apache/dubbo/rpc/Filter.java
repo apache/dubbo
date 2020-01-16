@@ -48,7 +48,7 @@ public interface Filter {
     Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException;
 
     /**
-     * Please use {@link Listener#onMessage(Result, Invoker, Invocation)} instead.
+     * Please use {@link Listener2#onMessage(Result, Invoker, Invocation)} instead.
      * This method is kept only for compatibility and may get removed at any version in the future.
      *
      * @param appResponse
@@ -60,11 +60,19 @@ public interface Filter {
         return appResponse;
     }
 
+    @Deprecated
     interface Listener {
+
+        void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation);
+
+        void onError(Throwable t, Invoker<?> invoker, Invocation invocation);
+    }
+    interface Listener2 {
 
         void onMessage(Result appResponse, Invoker<?> invoker, Invocation invocation);
 
         void onError(Throwable t, Invoker<?> invoker, Invocation invocation);
     }
+
 
 }

@@ -79,6 +79,7 @@ public class BaseServiceMetadata {
 
     /**
      * revert of org.apache.dubbo.common.ServiceDescriptor#getDisplayServiceKey()
+     *
      * @param displayKey
      * @return
      */
