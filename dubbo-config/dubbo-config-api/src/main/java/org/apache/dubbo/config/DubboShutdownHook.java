@@ -92,11 +92,6 @@ public class DubboShutdownHook extends Thread {
             DubboShutdownHook dubboShutdownHook = getDubboShutdownHook();
             Runtime.getRuntime().addShutdownHook(dubboShutdownHook);
             dispatch(new DubboShutdownHookRegisteredEvent(dubboShutdownHook));
-            ShutdownHookCallbacks.INSTANCE.addCallback(() -> {
-                // backward compatibility: make sure shutdown logic takes effect when DubboBootstrap is not used.
-                AbstractRegistryFactory.destroyAll();
-                this.destroyProtocols();
-            });
         }
     }
 
@@ -121,6 +116,14 @@ public class DubboShutdownHook extends Thread {
 
         // dispatch the DubboDestroyedEvent @since 2.7.5
         dispatch(new DubboServiceDestroyedEvent(this));
+
+        // backward compatibility: make sure shutdown logic takes effect when DubboBootstrap is not used.
+        destroyAll();
+    }
+
+    public static void destroyAll() {
+        AbstractRegistryFactory.destroyAll();
+        destroyProtocols();
     }
 
     private void dispatch(Event event) {
@@ -130,7 +133,7 @@ public class DubboShutdownHook extends Thread {
     /**
      * Destroy all the protocols.
      */
-    private void destroyProtocols() {
+    private static void destroyProtocols() {
         ExtensionLoader<Protocol> loader = ExtensionLoader.getExtensionLoader(Protocol.class);
         for (String protocolName : loader.getLoadedExtensions()) {
             try {
@@ -143,6 +146,4 @@ public class DubboShutdownHook extends Thread {
             }
         }
     }
-
-
 }
