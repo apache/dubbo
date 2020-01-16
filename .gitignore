@@ -6,6 +6,7 @@ target/
 *.zip
 *.tar
 *.tar.gz
+.flattened-pom.xml
 
 # eclipse ignore
 .settings/
@@ -35,3 +36,11 @@ Thumbs.db
 
 # license check result
 license-list
+
+# grpc compiler
+compiler/gradle.properties
+compiler/build/*
+compiler/.gradle/*
+
+# protobuf
+dubbo-serialization/dubbo-serialization-protobuf/build/*

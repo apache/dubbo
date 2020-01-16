@@ -229,7 +229,7 @@ public class ConfigUtilsTest {
     }
 
 
-    @Disabled("see http://code.alibabatech.com/jira/browse/DUBBO-133")
+    @Disabled("Not know why disabled, the original link explaining this was reachable.")
     @Test
     public void testLoadPropertiesMultiFileNotRootPathException() throws Exception {
         try {

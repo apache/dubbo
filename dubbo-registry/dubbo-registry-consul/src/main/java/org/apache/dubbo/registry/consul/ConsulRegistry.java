@@ -55,26 +55,21 @@ import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.PROVIDER_PROTOCOL;
+import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.CHECK_PASS_INTERVAL;
+import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.DEFAULT_CHECK_PASS_INTERVAL;
+import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.DEFAULT_DEREGISTER_TIME;
+import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.DEFAULT_PORT;
+import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.DEFAULT_WATCH_TIMEOUT;
+import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.DEREGISTER_AFTER;
+import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.SERVICE_TAG;
+import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.URL_META_KEY;
+import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.WATCH_TIMEOUT;
 
 /**
  * registry center implementation for consul
  */
 public class ConsulRegistry extends FailbackRegistry {
     private static final Logger logger = LoggerFactory.getLogger(ConsulRegistry.class);
-
-    private static final String SERVICE_TAG = "dubbo";
-    private static final String URL_META_KEY = "url";
-    private static final String WATCH_TIMEOUT = "consul-watch-timeout";
-    private static final String CHECK_PASS_INTERVAL = "consul-check-pass-interval";
-    private static final String DEREGISTER_AFTER = "consul-deregister-critical-service-after";
-
-    private static final int DEFAULT_PORT = 8500;
-    // default watch timeout in millisecond
-    private static final int DEFAULT_WATCH_TIMEOUT = 60 * 1000;
-    // default time-to-live in millisecond
-    private static final long DEFAULT_CHECK_PASS_INTERVAL = 16000L;
-    // default deregister critical server after
-    private static final String DEFAULT_DEREGISTER_TIME = "20s";
 
     private ConsulClient client;
     private long checkPassInterval;
@@ -229,9 +224,9 @@ public class ConsulRegistry extends FailbackRegistry {
     }
 
     private List<HealthService> getHealthServices(Map<String, List<String>> services) {
-        return services.keySet().stream()
-                .filter(s -> services.get(s).contains(SERVICE_TAG))
-                .map(s -> getHealthServices(s, -1, -1).getValue())
+        return services.entrySet().stream()
+                .filter(s -> s.getValue().contains(SERVICE_TAG))
+                .map(s -> getHealthServices(s.getKey(), -1, -1).getValue())
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList());
     }
@@ -284,8 +279,8 @@ public class ConsulRegistry extends FailbackRegistry {
 
     private List<String> buildTags(URL url) {
         Map<String, String> params = url.getParameters();
-        List<String> tags = params.keySet().stream()
-                .map(k -> k + "=" + params.get(k))
+        List<String> tags = params.entrySet().stream()
+                .map(k -> k.getKey() + "=" + k.getValue())
                 .collect(Collectors.toList());
         tags.add(SERVICE_TAG);
         return tags;

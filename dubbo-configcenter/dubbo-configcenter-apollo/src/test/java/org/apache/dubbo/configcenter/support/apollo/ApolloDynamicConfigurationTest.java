@@ -16,21 +16,22 @@
  */
 package org.apache.dubbo.configcenter.support.apollo;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
+import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
+
+import com.ctrip.framework.apollo.mockserver.EmbeddedApollo;
+import com.google.common.util.concurrent.SettableFuture;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Test;
+
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
-
-import com.ctrip.framework.apollo.mockserver.EmbeddedApollo;
-import com.google.common.util.concurrent.SettableFuture;
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.configcenter.ConfigChangeType;
-import org.apache.dubbo.configcenter.ConfigurationListener;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -59,9 +60,26 @@ public class ApolloDynamicConfigurationTest {
     @Before
     public void setUp() {
         String apolloUrl = System.getProperty("apollo.configService");
-        String urlForDubbo = "apollo://" + apolloUrl.substring(apolloUrl.lastIndexOf("/") + 1) + "/org.apache.dubbo.apollo.testService?config.namespace=dubbo";
+        String urlForDubbo = "apollo://" + apolloUrl.substring(apolloUrl.lastIndexOf("/") + 1) + "/org.apache.dubbo.apollo.testService?namespace=dubbo&check=true";
         url = URL.valueOf(urlForDubbo).addParameter(SESSION_TIMEOUT_KEY, 15000);
     }
+
+//    /**
+//     * Embedded Apollo does not work as expected.
+//     */
+//    @Test
+//    public void testProperties() {
+//        URL url = this.url.addParameter(GROUP_KEY, "dubbo")
+//                .addParameter("namespace", "governance");
+//
+//        apolloDynamicConfiguration = new ApolloDynamicConfiguration(url);
+//        putData("dubbo", "dubbo.registry.address", "zookeeper://127.0.0.1:2181");
+//        assertEquals("zookeeper://127.0.0.1:2181", apolloDynamicConfiguration.getProperties(null, "dubbo"));
+//
+//        putData("governance", "router.tag", "router tag rule");
+//        assertEquals("router tag rule", apolloDynamicConfiguration.getConfig("router.tag", "governance"));
+//
+//    }
 
     /**
      * Test get rule.
@@ -72,10 +90,10 @@ public class ApolloDynamicConfigurationTest {
         String mockValue = String.valueOf(new Random().nextInt());
         putMockRuleData(mockKey, mockValue, DEFAULT_NAMESPACE);
         apolloDynamicConfiguration = new ApolloDynamicConfiguration(url);
-        assertEquals(mockValue, apolloDynamicConfiguration.getRule(mockKey, DEFAULT_NAMESPACE, 3000L));
+        assertEquals(mockValue, apolloDynamicConfiguration.getConfig(mockKey, DEFAULT_NAMESPACE, 3000L));
 
         mockKey = "notExistKey";
-        assertNull(apolloDynamicConfiguration.getRule(mockKey, DEFAULT_NAMESPACE, 3000L));
+        assertNull(apolloDynamicConfiguration.getConfig(mockKey, DEFAULT_NAMESPACE, 3000L));
     }
 
     /**
@@ -110,22 +128,26 @@ public class ApolloDynamicConfigurationTest {
         String mockKey = "mockKey3";
         String mockValue = String.valueOf(new Random().nextInt());
 
-        final SettableFuture<org.apache.dubbo.configcenter.ConfigChangeEvent> future = SettableFuture.create();
+        final SettableFuture<org.apache.dubbo.common.config.configcenter.ConfigChangedEvent> future = SettableFuture.create();
 
         apolloDynamicConfiguration = new ApolloDynamicConfiguration(url);
 
         apolloDynamicConfiguration.addListener(mockKey, DEFAULT_NAMESPACE, new ConfigurationListener() {
             @Override
-            public void process(org.apache.dubbo.configcenter.ConfigChangeEvent event) {
+            public void process(org.apache.dubbo.common.config.configcenter.ConfigChangedEvent event) {
                 future.set(event);
             }
         });
 
         putData(mockKey, mockValue);
-        org.apache.dubbo.configcenter.ConfigChangeEvent result = future.get(3000, TimeUnit.MILLISECONDS);
-        assertEquals(mockValue, result.getValue());
+        org.apache.dubbo.common.config.configcenter.ConfigChangedEvent result = future.get(3000, TimeUnit.MILLISECONDS);
+        assertEquals(mockValue, result.getContent());
         assertEquals(mockKey, result.getKey());
         assertEquals(ConfigChangeType.MODIFIED, result.getChangeType());
+    }
+
+    private static void putData(String namespace, String key, String value) {
+        embeddedApollo.addOrModifyProperty(namespace, key, value);
     }
 
     private static void putData(String key, String value) {

@@ -106,16 +106,8 @@ public abstract class AbstractEtcdClient<WatcherListener> implements EtcdClient 
 
     @Override
     public List<String> addChildListener(String path, final ChildListener listener) {
-        ConcurrentMap<ChildListener, WatcherListener> listeners = childListeners.get(path);
-        if (listeners == null) {
-            childListeners.putIfAbsent(path, new ConcurrentHashMap<>());
-            listeners = childListeners.get(path);
-        }
-        WatcherListener targetListener = listeners.get(listener);
-        if (targetListener == null) {
-            listeners.putIfAbsent(listener, createChildWatcherListener(path, listener));
-            targetListener = listeners.get(listener);
-        }
+        ConcurrentMap<ChildListener, WatcherListener> listeners = childListeners.computeIfAbsent(path, k -> new ConcurrentHashMap<>());
+        WatcherListener targetListener = listeners.computeIfAbsent(listener, k -> createChildWatcherListener(path, k));
         return addChildWatcherListener(path, targetListener);
     }
 
@@ -125,12 +117,7 @@ public abstract class AbstractEtcdClient<WatcherListener> implements EtcdClient 
         if (listeners == null) {
             return null;
         }
-        WatcherListener targetListener = listeners.get(listener);
-        if (targetListener == null) {
-            listeners.putIfAbsent(listener, createChildWatcherListener(path, listener));
-            targetListener = listeners.get(listener);
-        }
-        return targetListener;
+        return listeners.computeIfAbsent(listener, k -> createChildWatcherListener(path, k));
     }
 
     @Override

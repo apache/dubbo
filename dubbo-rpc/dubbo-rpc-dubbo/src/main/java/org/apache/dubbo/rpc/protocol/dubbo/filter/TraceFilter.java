@@ -57,11 +57,7 @@ public class TraceFilter implements Filter {
         channel.setAttribute(TRACE_MAX, max);
         channel.setAttribute(TRACE_COUNT, new AtomicInteger());
         String key = method != null && method.length() > 0 ? type.getName() + "." + method : type.getName();
-        Set<Channel> channels = tracers.get(key);
-        if (channels == null) {
-            tracers.putIfAbsent(key, new ConcurrentHashSet<>());
-            channels = tracers.get(key);
-        }
+        Set<Channel> channels = tracers.computeIfAbsent(key, k -> new ConcurrentHashSet<>());
         channels.add(channel);
     }
 

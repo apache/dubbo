@@ -30,10 +30,11 @@ import org.apache.cxf.transport.http.HttpDestinationFactory;
 import org.apache.cxf.wsdl.service.factory.AbstractServiceConfiguration;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.remoting.RemotingServer;
 import org.apache.dubbo.remoting.http.HttpBinder;
 import org.apache.dubbo.remoting.http.HttpHandler;
-import org.apache.dubbo.remoting.http.HttpServer;
 import org.apache.dubbo.remoting.http.servlet.DispatcherServlet;
+import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.AbstractProxyProtocol;
@@ -55,8 +56,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.SocketTimeoutException;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
@@ -67,8 +66,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 public class WebServiceProtocol extends AbstractProxyProtocol {
 
     public static final int DEFAULT_PORT = 80;
-
-    private final Map<String, HttpServer> serverMap = new ConcurrentHashMap<String, HttpServer>();
 
     private final ExtensionManagerBus bus = new ExtensionManagerBus();
 
@@ -102,10 +99,10 @@ public class WebServiceProtocol extends AbstractProxyProtocol {
         transportFactory = new SoapTransportFactory();
         destinationRegistry  = new DestinationRegistryImpl();
         String addr = getAddr(url);
-        HttpServer httpServer = serverMap.get(addr);
-        if (httpServer == null) {
-            httpServer = httpBinder.bind(url, new WebServiceHandler());
-            serverMap.put(addr, httpServer);
+        ProtocolServer protocolServer = serverMap.get(addr);
+        if (protocolServer == null) {
+            RemotingServer remotingServer = httpBinder.bind(url, new WebServiceHandler());
+            serverMap.put(addr, new ProxyProtocolServer(remotingServer));
         }
         serverFactoryBean = new ServerFactoryBean();
         serverFactoryBean.setAddress(url.getAbsolutePath());
@@ -124,7 +121,7 @@ public class WebServiceProtocol extends AbstractProxyProtocol {
                 if(serverFactoryBean.getBus()!=null) {
                     serverFactoryBean.getBus().shutdown(true);
                 }
-                HttpServer httpServer = serverMap.get(addr);
+                ProtocolServer httpServer = serverMap.get(addr);
                 if(httpServer != null){
                     httpServer.close();
                     serverMap.remove(addr);

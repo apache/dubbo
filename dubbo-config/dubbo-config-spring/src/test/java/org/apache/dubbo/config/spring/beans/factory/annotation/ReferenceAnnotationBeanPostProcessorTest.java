@@ -21,6 +21,7 @@ import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.api.HelloService;
+import org.apache.dubbo.config.utils.ReferenceConfigCache;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -81,7 +82,7 @@ public class ReferenceAnnotationBeanPostProcessorTest {
     private HelloService helloServiceImpl;
 
     // #4 ReferenceBean (Field Injection #2)
-    @Reference(id = "helloService", methods = @Method(name = "sayName", timeout = 100))
+    @Reference(id = "helloService", methods = @Method(name = "sayHello", timeout = 100))
     private HelloService helloService;
 
     // #5 ReferenceBean (Field Injection #3)
@@ -96,17 +97,19 @@ public class ReferenceAnnotationBeanPostProcessorTest {
         TestBean testBean = context.getBean(TestBean.class);
 
         DemoService demoService = testBean.getDemoService();
-
-        Assert.assertEquals("Hello,Mercy", demoService.sayName("Mercy"));
-        Assert.assertEquals("Greeting, Mercy", defaultHelloService.sayHello("Mercy"));
-        Assert.assertEquals("Hello, Mercy", helloServiceImpl.sayHello("Mercy"));
-
-        Assert.assertEquals("Greeting, Mercy", helloService.sayHello("Mercy"));
+        Map<String, DemoService> demoServicesMap = context.getBeansOfType(DemoService.class);
 
         Assert.assertNotNull(testBean.getDemoServiceFromAncestor());
         Assert.assertNotNull(testBean.getDemoServiceFromParent());
         Assert.assertNotNull(testBean.getDemoService());
         Assert.assertNotNull(testBean.autowiredDemoService);
+        Assert.assertEquals(1, demoServicesMap.size());
+
+        Assert.assertEquals("Hello,Mercy", demoService.sayName("Mercy"));
+        Assert.assertEquals("Greeting, Mercy", defaultHelloService.sayHello("Mercy"));
+        Assert.assertEquals("Hello, Mercy", helloServiceImpl.sayHello("Mercy"));
+        Assert.assertEquals("Greeting, Mercy", helloService.sayHello("Mercy"));
+
 
         Assert.assertEquals("Hello,Mercy", testBean.getDemoServiceFromAncestor().sayName("Mercy"));
         Assert.assertEquals("Hello,Mercy", testBean.getDemoServiceFromParent().sayName("Mercy"));
@@ -117,9 +120,6 @@ public class ReferenceAnnotationBeanPostProcessorTest {
 
         Assert.assertEquals("Hello,Mercy", myDemoService.sayName("Mercy"));
 
-        Map<String, DemoService> demoServicesMap = context.getBeansOfType(DemoService.class);
-
-        Assert.assertEquals(1, demoServicesMap.size());
 
         for (DemoService demoService1 : demoServicesMap.values()) {
 
@@ -145,7 +145,7 @@ public class ReferenceAnnotationBeanPostProcessorTest {
 
         ReferenceBean<?> referenceBean = referenceBeans.iterator().next();
 
-        Assert.assertNotNull(referenceBean.get());
+        Assert.assertNotNull(ReferenceConfigCache.getCache().get(referenceBean));
 
     }
 
@@ -164,7 +164,7 @@ public class ReferenceAnnotationBeanPostProcessorTest {
 
             InjectionMetadata.InjectedElement injectedElement = entry.getKey();
 
-            Assert.assertEquals("org.apache.dubbo.config.spring.beans.factory.annotation.AnnotationInjectedBeanPostProcessor$AnnotatedFieldElement",
+            Assert.assertEquals("com.alibaba.spring.beans.factory.annotation.AbstractAnnotationBeanPostProcessor$AnnotatedFieldElement",
                     injectedElement.getClass().getName());
 
         }
@@ -186,7 +186,7 @@ public class ReferenceAnnotationBeanPostProcessorTest {
 
             InjectionMetadata.InjectedElement injectedElement = entry.getKey();
 
-            Assert.assertEquals("org.apache.dubbo.config.spring.beans.factory.annotation.AnnotationInjectedBeanPostProcessor$AnnotatedMethodElement",
+            Assert.assertEquals("com.alibaba.spring.beans.factory.annotation.AbstractAnnotationBeanPostProcessor$AnnotatedMethodElement",
                     injectedElement.getClass().getName());
 
         }
