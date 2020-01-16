@@ -727,10 +727,12 @@ public class ExtensionLoader<T> {
         cacheDefaultExtensionName();
 
         Map<String, Class<?>> extensionClasses = new HashMap<>();
-
+        String typeName = type.getName();
         for (LoadingStrategy strategy : strategies) {
-            loadDirectory(extensionClasses, strategy.directory(), type.getName(), strategy.preferExtensionClassLoader(), strategy.excludedPackages());
-            loadDirectory(extensionClasses, strategy.directory(), type.getName().replace("org.apache", "com.alibaba"), strategy.preferExtensionClassLoader(), strategy.excludedPackages());
+            loadDirectory(extensionClasses, strategy.directory(), typeName, strategy.preferExtensionClassLoader(), strategy.excludedPackages());
+            if (typeName.startsWith("org.apache")) {
+                loadDirectory(extensionClasses, strategy.directory(), typeName.replace("org.apache", "com.alibaba"), strategy.preferExtensionClassLoader(), strategy.excludedPackages());
+            }
         }
 
         return extensionClasses;
