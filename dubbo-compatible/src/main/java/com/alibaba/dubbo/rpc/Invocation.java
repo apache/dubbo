@@ -30,11 +30,11 @@ public interface Invocation extends org.apache.dubbo.rpc.Invocation {
     }
 
     @Override
-    default void setAttachmentIfAbsent(String key, String value) {
+    default void setAttachmentIfAbsent(String key, Object value) {
     }
 
     @Override
-    default void setAttachment(String key, String value) {
+    default void setAttachment(String key, Object value) {
 
     }
 
@@ -65,6 +65,21 @@ public interface Invocation extends org.apache.dubbo.rpc.Invocation {
 
     @Override
     default Map<Object, Object> getAttributes() {
+        return null;
+    }
+
+    @Override
+    default Map<String, Object> getObjectAttachments() {
+        return null;
+    }
+
+    @Override
+    default Object getObjectAttachment(String key) {
+        return null;
+    }
+
+    @Override
+    default Object getObjectAttachment(String key, Object defaultValue) {
         return null;
     }
 

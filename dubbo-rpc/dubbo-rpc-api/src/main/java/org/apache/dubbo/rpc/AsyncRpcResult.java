@@ -197,7 +197,7 @@ public class AsyncRpcResult implements Result {
     }
 
     @Override
-    public <U> CompletableFuture<U> thenApply(Function<Result,? extends U> fn) {
+    public <U> CompletableFuture<U> thenApply(Function<Result, ? extends U> fn) {
         return this.responseFuture.thenApply(fn);
     }
 
@@ -207,13 +207,29 @@ public class AsyncRpcResult implements Result {
     }
 
     @Override
+    public Map<String, Object> getObjectAttachments() {
+        return getAppResponse().getObjectAttachments();
+    }
+
+    @Override
     public void setAttachments(Map<String, String> map) {
         getAppResponse().setAttachments(map);
     }
 
     @Override
+    public void setObjectAttachments(Map<String, Object> map) {
+        getAppResponse().setObjectAttachments(map);
+    }
+
+    @Deprecated
+    @Override
     public void addAttachments(Map<String, String> map) {
         getAppResponse().addAttachments(map);
+    }
+
+    @Override
+    public void addObjectAttachments(Map<String, Object> map) {
+        getAppResponse().addObjectAttachments(map);
     }
 
     @Override
@@ -222,12 +238,22 @@ public class AsyncRpcResult implements Result {
     }
 
     @Override
+    public Object getObjectAttachment(String key) {
+        return getAppResponse().getObjectAttachment(key);
+    }
+
+    @Override
     public String getAttachment(String key, String defaultValue) {
         return getAppResponse().getAttachment(key, defaultValue);
     }
 
     @Override
-    public void setAttachment(String key, String value) {
+    public Object getObjectAttachment(String key, Object defaultValue) {
+        return getAppResponse().getObjectAttachment(key, defaultValue);
+    }
+
+    @Override
+    public void setAttachment(String key, Object value) {
         getAppResponse().setAttachment(key, value);
     }
 

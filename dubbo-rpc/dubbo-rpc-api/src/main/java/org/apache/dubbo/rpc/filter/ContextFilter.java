@@ -54,7 +54,7 @@ public class ContextFilter implements Filter, Filter.Listener2 {
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        Map<String, String> attachments = invocation.getAttachments();
+        Map<String, Object> attachments = invocation.getObjectAttachments();
         if (attachments != null) {
             attachments = new HashMap<>(attachments);
             attachments.remove(PATH_KEY);
@@ -87,10 +87,10 @@ public class ContextFilter implements Filter, Filter.Listener2 {
         // merged from dubbox
         // we may already added some attachments into RpcContext before this filter (e.g. in rest protocol)
         if (attachments != null) {
-            if (RpcContext.getContext().getAttachments() != null) {
-                RpcContext.getContext().getAttachments().putAll(attachments);
+            if (RpcContext.getContext().getObjectAttachments() != null) {
+                RpcContext.getContext().getObjectAttachments().putAll(attachments);
             } else {
-                RpcContext.getContext().setAttachments(attachments);
+                RpcContext.getContext().setObjectAttachments(attachments);
             }
         }
 
@@ -111,7 +111,7 @@ public class ContextFilter implements Filter, Filter.Listener2 {
     @Override
     public void onMessage(Result appResponse, Invoker<?> invoker, Invocation invocation) {
         // pass attachments to result
-        appResponse.addAttachments(RpcContext.getServerContext().getAttachments());
+        appResponse.addObjectAttachments(RpcContext.getServerContext().getObjectAttachments());
     }
 
     @Override

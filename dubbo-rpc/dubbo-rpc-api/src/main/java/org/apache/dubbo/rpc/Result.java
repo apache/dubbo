@@ -90,21 +90,45 @@ public interface Result extends Serializable {
      *
      * @return attachments.
      */
+    @Deprecated
     Map<String, String> getAttachments();
+
+    /**
+     * get attachments.
+     *
+     * @return attachments.
+     */
+    Map<String, Object> getObjectAttachments();
 
     /**
      * Add the specified map to existing attachments in this instance.
      *
      * @param map
      */
+    @Deprecated
     void addAttachments(Map<String, String> map);
+
+    /**
+     * Add the specified map to existing attachments in this instance.
+     *
+     * @param map
+     */
+    void addObjectAttachments(Map<String, Object> map);
 
     /**
      * Replace the existing attachments with the specified param.
      *
      * @param map
      */
+    @Deprecated
     void setAttachments(Map<String, String> map);
+
+    /**
+     * Replace the existing attachments with the specified param.
+     *
+     * @param map
+     */
+    void setObjectAttachments(Map<String, Object> map);
 
     /**
      * get attachment by key.
@@ -114,13 +138,27 @@ public interface Result extends Serializable {
     String getAttachment(String key);
 
     /**
+     * get attachment by key.
+     *
+     * @return attachment value.
+     */
+    Object getObjectAttachment(String key);
+
+    /**
      * get attachment by key with default value.
      *
      * @return attachment value.
      */
     String getAttachment(String key, String defaultValue);
 
-    void setAttachment(String key, String value);
+    /**
+     * get attachment by key with default value.
+     *
+     * @return attachment value.
+     */
+    Object getObjectAttachment(String key, Object defaultValue);
+
+    void setAttachment(String key, Object value);
 
     /**
      * Add a callback which can be triggered when the RPC call finishes.

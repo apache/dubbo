@@ -55,21 +55,21 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
 
     private final URL url;
 
-    private final Map<String, String> attachment;
+    private final Map<String, Object> attachment;
 
     private volatile boolean available = true;
 
     private AtomicBoolean destroyed = new AtomicBoolean(false);
 
     public AbstractInvoker(Class<T> type, URL url) {
-        this(type, url, (Map<String, String>) null);
+        this(type, url, (Map<String, Object>) null);
     }
 
     public AbstractInvoker(Class<T> type, URL url, String[] keys) {
         this(type, url, convertAttachment(url, keys));
     }
 
-    public AbstractInvoker(Class<T> type, URL url, Map<String, String> attachment) {
+    public AbstractInvoker(Class<T> type, URL url, Map<String, Object> attachment) {
         if (type == null) {
             throw new IllegalArgumentException("service type == null");
         }
@@ -81,11 +81,11 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         this.attachment = attachment == null ? null : Collections.unmodifiableMap(attachment);
     }
 
-    private static Map<String, String> convertAttachment(URL url, String[] keys) {
+    private static Map<String, Object> convertAttachment(URL url, String[] keys) {
         if (ArrayUtils.isEmpty(keys)) {
             return null;
         }
-        Map<String, String> attachment = new HashMap<String, String>();
+        Map<String, Object> attachment = new HashMap<>();
         for (String key : keys) {
             String value = url.getParameter(key);
             if (value != null && value.length() > 0) {
@@ -141,9 +141,9 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         RpcInvocation invocation = (RpcInvocation) inv;
         invocation.setInvoker(this);
         if (CollectionUtils.isNotEmptyMap(attachment)) {
-            invocation.addAttachmentsIfAbsent(attachment);
+            invocation.addObjectAttachmentsIfAbsent(attachment);
         }
-        Map<String, String> contextAttachments = RpcContext.getContext().getAttachments();
+        Map<String, Object> contextAttachments = RpcContext.getContext().getObjectAttachments();
         if (CollectionUtils.isNotEmptyMap(contextAttachments)) {
             /**
              * invocation.addAttachmentsIfAbsent(context){@link RpcInvocation#addAttachmentsIfAbsent(Map)}should not be used here,
@@ -151,7 +151,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
              * by the built-in retry mechanism of the Dubbo. The attachment to update RpcContext will no longer work, which is
              * a mistake in most cases (for example, through Filter to RpcContext output traceId and spanId and other information).
              */
-            invocation.addAttachments(contextAttachments);
+            invocation.addObjectAttachments(contextAttachments);
         }
 
         invocation.setInvokeMode(RpcUtils.getInvokeMode(url, invocation));

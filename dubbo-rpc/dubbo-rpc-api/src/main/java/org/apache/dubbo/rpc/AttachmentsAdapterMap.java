@@ -14,44 +14,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.rest;
+package org.apache.dubbo.rpc;
 
-
-import org.apache.dubbo.rpc.RpcContext;
-
+import java.util.HashMap;
 import java.util.Map;
 
-public class DemoServiceImpl implements DemoService {
-    private static Map<String, Object> context;
-    private boolean called;
+public class AttachmentsAdapterMap extends HashMap<String, String> {
+    private Map<String, Object> attachments;
 
-    public String sayHello(String name) {
-        called = true;
-        return "Hello, " + name;
-    }
-
-
-    public boolean isCalled() {
-        return called;
+    public AttachmentsAdapterMap(Map<String, Object> attachments) {
+        this.attachments = attachments;
     }
 
     @Override
-    public Integer hello(Integer a, Integer b) {
-        context = RpcContext.getContext().getObjectAttachments();
-        return a + b;
+    public String get(Object key) {
+        Object obj = attachments.get(key);
+        return convert(obj);
     }
 
     @Override
-    public String error() {
-        throw new RuntimeException();
-    }
-
-    public static Map<String, Object> getAttachments() {
-        return context;
+    public String put(String key, String value) {
+        Object obj = attachments.put(key, value);
+        return convert(obj);
     }
 
     @Override
-    public String getRemoteApplicationName() {
-        return RpcContext.getContext().getRemoteApplicationName();
+    public String remove(Object key) {
+        Object obj = attachments.remove(key);
+        return convert(obj);
+    }
+
+    private String convert(Object obj) {
+        if (obj instanceof String) {
+            return (String) obj;
+        }
+        return null; // or JSON.toString(obj);
     }
 }

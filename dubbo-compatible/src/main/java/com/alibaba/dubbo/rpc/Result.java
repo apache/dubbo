@@ -38,6 +38,31 @@ public interface Result extends org.apache.dubbo.rpc.Result {
 
     }
 
+    @Override
+    default Map<String, Object> getObjectAttachments() {
+        return null;
+    }
+
+    @Override
+    default void addObjectAttachments(Map<String, Object> map) {
+
+    }
+
+    @Override
+    default void setObjectAttachments(Map<String, Object> map) {
+
+    }
+
+    @Override
+    default Object getObjectAttachment(String key) {
+        return null;
+    }
+
+    @Override
+    default Object getObjectAttachment(String key, Object defaultValue) {
+        return null;
+    }
+
     abstract class AbstractResult implements Result {
 
         @Override
@@ -133,7 +158,7 @@ public interface Result extends org.apache.dubbo.rpc.Result {
         }
 
         @Override
-        public void setAttachment(String key, String value) {
+        public void setAttachment(String key, Object value) {
             delegate.setAttachment(key, value);
         }
     }

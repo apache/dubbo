@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.service;
 
+import org.apache.dubbo.rpc.AttachmentsAdapter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 
@@ -36,8 +37,18 @@ public class MockInvocation implements Invocation {
 
     private String arg0;
 
+    private Map<String, Object> attachments;
+
     public MockInvocation(String arg0) {
         this.arg0 = arg0;
+
+        attachments = new HashMap<>();
+        attachments.put(PATH_KEY, "dubbo");
+        attachments.put(GROUP_KEY, "dubbo");
+        attachments.put(VERSION_KEY, "1.0.0");
+        attachments.put(DUBBO_VERSION_KEY, "1.0.0");
+        attachments.put(TOKEN_KEY, "sfag");
+        attachments.put(TIMEOUT_KEY, "1000");
     }
 
     @Override
@@ -63,24 +74,22 @@ public class MockInvocation implements Invocation {
     }
 
     public Map<String, String> getAttachments() {
-        Map<String, String> attachments = new HashMap<>();
-        attachments.put(PATH_KEY, "dubbo");
-        attachments.put(GROUP_KEY, "dubbo");
-        attachments.put(VERSION_KEY, "1.0.0");
-        attachments.put(DUBBO_VERSION_KEY, "1.0.0");
-        attachments.put(TOKEN_KEY, "sfag");
-        attachments.put(TIMEOUT_KEY, "1000");
+        return new AttachmentsAdapter.ObjectToStringMap(attachments);
+    }
+
+    @Override
+    public Map<String, Object> getObjectAttachments() {
         return attachments;
     }
 
     @Override
-    public void setAttachment(String key, String value) {
-
+    public void setAttachment(String key, Object value) {
+        attachments.put(key, value);
     }
 
     @Override
-    public void setAttachmentIfAbsent(String key, String value) {
-
+    public void setAttachmentIfAbsent(String key, Object value) {
+        attachments.put(key, value);
     }
 
     public Invoker<?> getInvoker() {
@@ -103,11 +112,24 @@ public class MockInvocation implements Invocation {
     }
 
     public String getAttachment(String key) {
-        return getAttachments().get(key);
+        return (String) getObjectAttachments().get(key);
+    }
+
+    @Override
+    public Object getObjectAttachment(String key) {
+        return attachments.get(key);
     }
 
     public String getAttachment(String key, String defaultValue) {
-        return getAttachments().get(key);
+        return (String) getObjectAttachments().get(key);
     }
 
+    @Override
+    public Object getObjectAttachment(String key, Object defaultValue) {
+        Object result = attachments.get(key);
+        if (result == null) {
+            return defaultValue;
+        }
+        return result;
+    }
 }

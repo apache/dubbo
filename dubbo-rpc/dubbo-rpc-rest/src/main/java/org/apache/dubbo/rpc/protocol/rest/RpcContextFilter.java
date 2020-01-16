@@ -70,9 +70,9 @@ public class RpcContextFilter implements ContainerRequestFilter, ClientRequestFi
     @Override
     public void filter(ClientRequestContext requestContext) throws IOException {
         int size = 0;
-        for (Map.Entry<String, String> entry : RpcContext.getContext().getAttachments().entrySet()) {
+        for (Map.Entry<String, Object> entry : RpcContext.getContext().getObjectAttachments().entrySet()) {
             String key = entry.getKey();
-            String value = entry.getValue();
+            String value = (String) entry.getValue();
             if (illegalHttpHeaderKey(key) || illegalHttpHeaderValue(value)) {
                 throw new IllegalArgumentException("The attachments of " + RpcContext.class.getSimpleName() + " must not contain ',' or '=' when using rest protocol");
             }

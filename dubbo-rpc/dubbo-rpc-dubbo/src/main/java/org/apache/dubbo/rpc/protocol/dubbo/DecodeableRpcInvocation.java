@@ -146,14 +146,14 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
             }
             setParameterTypes(pts);
 
-            Map<String, String> map = in.readAttachments();
+            Map<String, Object> map = in.readAttachments();
             if (map != null && map.size() > 0) {
-                Map<String, String> attachment = getAttachments();
+                Map<String, Object> attachment = getObjectAttachments();
                 if (attachment == null) {
-                    attachment = new HashMap<String, String>();
+                    attachment = new HashMap<>();
                 }
                 attachment.putAll(map);
-                setAttachments(attachment);
+                setObjectAttachments(attachment);
             }
 
             //decode argument ,may be callback

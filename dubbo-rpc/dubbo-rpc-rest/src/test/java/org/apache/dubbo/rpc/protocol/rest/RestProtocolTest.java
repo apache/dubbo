@@ -224,7 +224,7 @@ public class RestProtocolTest {
 
         assertThat(result, is(3));
 
-        Map<String, String> attachment = DemoServiceImpl.getAttachments();
+        Map<String, Object> attachment = DemoServiceImpl.getAttachments();
         assertThat(attachment.get("key1"), nullValue());
         assertThat(attachment.get("key2"), equalTo("value"));
         assertThat(attachment.get("key3"), equalTo("=value"));
