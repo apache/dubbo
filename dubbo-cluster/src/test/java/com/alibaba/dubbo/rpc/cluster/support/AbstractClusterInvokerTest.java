@@ -184,18 +184,17 @@ public class AbstractClusterInvokerTest {
         invokers.clear();
         invokers.add(invoker2);
         invokers.add(invoker4);
-        LoadBalance loadbalance = ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(Constants.DEFAULT_LOADBALANCE);
         {
             selectedInvokers.clear();
             selectedInvokers.add(invoker4);
 
-            Invoker invoker = cluster.select(loadbalance, invocation, invokers, selectedInvokers);
+            Invoker invoker = cluster.select(null, invocation, invokers, selectedInvokers);
             Assert.assertEquals(invoker2, invoker);
         }
         {
             selectedInvokers.clear();
             selectedInvokers.add(invoker2);
-            Invoker invoker = cluster.select(loadbalance, invocation, invokers, selectedInvokers);
+            Invoker invoker = cluster.select(null, invocation, invokers, selectedInvokers);
             Assert.assertEquals(invoker4, invoker);
         }
     }
