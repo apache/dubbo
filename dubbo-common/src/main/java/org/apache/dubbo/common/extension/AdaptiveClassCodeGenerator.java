@@ -75,7 +75,7 @@ public class AdaptiveClassCodeGenerator {
     }
 
     /**
-     * test if given type has at least one method annotated with <code>SPI</code>
+     * test if given type has at least one method annotated with <code>Adaptive</code>
      */
     private boolean hasAdaptiveMethod() {
         return Arrays.stream(type.getMethods()).anyMatch(m -> m.isAnnotationPresent(Adaptive.class));
