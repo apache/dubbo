@@ -159,7 +159,8 @@ public class AbstractClusterInvokerTest {
                     throws RpcException {
                 // attachment will be bind to invocation
                 String value = invocation.getAttachment(attachKey);
-                Assertions.assertTrue(value != null && value.equals(attachValue),"binding attachment failed!");
+                Assertions.assertNotNull(value);
+                Assertions.assertEquals(attachValue, value, "binding attachment failed!");
                 return null;
             }
         };
