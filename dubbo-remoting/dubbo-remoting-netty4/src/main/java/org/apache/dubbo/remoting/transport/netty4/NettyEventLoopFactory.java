@@ -20,6 +20,7 @@ import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.epoll.EpollSocketChannel;
@@ -51,7 +52,7 @@ public class NettyEventLoopFactory {
         Configuration configuration = ApplicationModel.getEnvironment().getConfiguration();
         if (configuration.getBoolean("netty.epoll.enable", false)) {
             String osName = configuration.getString("os.name");
-            return osName.toLowerCase().contains("linux");
+            return osName.toLowerCase().contains("linux") && Epoll.isAvailable();
         }
 
         return false;
