@@ -41,5 +41,4 @@ public class DemoServiceImpl implements DemoService {
     public CompletableFuture<String> sayHelloAsync(String name) {
         return null;
     }
-
 }
