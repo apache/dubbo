@@ -637,7 +637,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 }
             }
         }
-        logger.warn("No provider available for the service " + queryMap.get(INTERFACE_KEY));
+        logger.warn("No provider available for the whole service " + queryMap.get(INTERFACE_KEY));
         return false;
     }
 
