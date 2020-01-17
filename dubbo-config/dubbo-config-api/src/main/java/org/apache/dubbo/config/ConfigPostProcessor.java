@@ -14,19 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.serialize.support;
+package org.apache.dubbo.config;
 
-import java.util.Collection;
+import org.apache.dubbo.common.extension.SPI;
 
 /**
- * Interface defining serialization optimizer, there are nothing implementations for now.
+ * 2019/12/30
  */
-public interface SerializationOptimizer {
 
-    /**
-     * Get serializable classes
-     *
-     * @return serializable classes
-     * */
-    Collection<Class<?>> getSerializableClasses();
+@SPI
+public interface ConfigPostProcessor {
+
+    default void postProcessReferConfig(ReferenceConfig referenceConfig) {
+
+    }
+
+    default void postProcessServiceConfig(ServiceConfig serviceConfig) {
+
+    }
 }

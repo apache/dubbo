@@ -126,7 +126,7 @@ public class ActiveLimitFilterTest {
                             activeLimitFilter.onMessage(result, invoker, invocation);
                         } catch (RpcException expected) {
                             count.incrementAndGet();
-//                            activeLimitFilter.listener().onError(expected, invoker, invocation);
+//                            activeLimitFilter.Listener2().onError(expected, invoker, invocation);
                         } catch (Exception e) {
                             fail();
                         }

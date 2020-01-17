@@ -17,14 +17,13 @@
 package org.apache.dubbo.common.serialize.protobuf.support;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.serialize.Constants;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.Serialization;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static org.apache.dubbo.common.serialize.Constants.PROTOBUF_JSON_SERIALIZATION_ID;
 
 /**
  * <p>
@@ -44,7 +43,7 @@ public class GenericProtobufSerialization implements Serialization {
 
     @Override
     public byte getContentTypeId() {
-        return PROTOBUF_JSON_SERIALIZATION_ID;
+        return Constants.PROTOBUF_SERIALIZATION_ID;
     }
 
     @Override
