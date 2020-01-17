@@ -83,7 +83,7 @@ public class ConfigParser {
             urlBuilder.append("&configVersion=").append(config.getConfigVersion());
 
             List<String> apps = item.getApplications();
-            if (apps != null && apps.size() > 0) {
+            if (CollectionUtils.isNotEmpty(apps)) {
                 apps.forEach(app -> urls.add(URL.valueOf(urlBuilder.append("&application=").append(app).toString())));
             } else {
                 urls.add(URL.valueOf(urlBuilder.toString()));
@@ -103,7 +103,7 @@ public class ConfigParser {
             if (services == null) {
                 services = new ArrayList<>();
             }
-            if (services.size() == 0) {
+            if (services.isEmpty()) {
                 services.add("*");
             }
             for (String s : services) {
@@ -195,7 +195,7 @@ public class ConfigParser {
         if (addresses == null) {
             addresses = new ArrayList<>();
         }
-        if (addresses.size() == 0) {
+        if (addresses.isEmpty()) {
             addresses.add(ANYHOST_VALUE);
         }
         return addresses;

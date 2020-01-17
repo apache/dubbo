@@ -23,7 +23,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -54,7 +53,6 @@ public class ConsumerModel {
             , ReferenceConfigBase<?> referenceConfig) {
 
         Assert.notEmptyString(serviceKey, "Service name can't be null or blank");
-//        Assert.notNull(proxyObject, "Proxy object can't be null");
 
         this.serviceKey = serviceKey;
         this.proxyObject = proxyObject;
@@ -118,7 +116,7 @@ public class ConsumerModel {
     /* *************** Start, metadata compatible **************** */
 
     private ServiceMetadata serviceMetadata;
-    private Map<Method, ConsumerMethodModel> methodModels = new IdentityHashMap<Method, ConsumerMethodModel>();
+    private Map<Method, ConsumerMethodModel> methodModels = new HashMap<>();
 
     public ConsumerModel(String serviceKey
             , Object proxyObject
@@ -172,7 +170,7 @@ public class ConsumerModel {
     }
 
     /**
-     * @param method   metodName
+     * @param method   methodName
      * @param argsType method arguments type
      * @return
      */
