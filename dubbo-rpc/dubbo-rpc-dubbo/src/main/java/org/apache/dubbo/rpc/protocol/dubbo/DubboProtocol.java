@@ -104,11 +104,6 @@ public class DubboProtocol extends AbstractProtocol {
     private final Map<String, List<ReferenceCountExchangeClient>> referenceClientMap = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, Object> locks = new ConcurrentHashMap<>();
     private final Set<String> optimizers = new ConcurrentHashSet<>();
-    /**
-     * consumer side export a stub service for dispatching event
-     * servicekey-stubmethods
-     */
-    private final ConcurrentMap<String, String> stubServiceMethodsMap = new ConcurrentHashMap<>();
 
     private ExchangeHandler requestHandler = new ExchangeHandlerAdapter() {
 
@@ -297,8 +292,6 @@ public class DubboProtocol extends AbstractProtocol {
                             "], has set stubproxy support event ,but no stub methods founded."));
                 }
 
-            } else {
-                stubServiceMethodsMap.put(url.getServiceKey(), stubServiceMethods);
             }
         }
 
@@ -636,7 +629,6 @@ public class DubboProtocol extends AbstractProtocol {
             }
         }
 
-        stubServiceMethodsMap.clear();
         super.destroy();
     }
 

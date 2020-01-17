@@ -136,6 +136,20 @@ public final class ReflectUtils {
 
     private static final ConcurrentMap<String, Method> Signature_METHODS_CACHE = new ConcurrentHashMap<String, Method>();
 
+    private static Map<Class<?>, Object> primitiveDefaults = new HashMap<>();
+
+    static {
+        primitiveDefaults.put(int.class, 0);
+        primitiveDefaults.put(long.class, 0L);
+        primitiveDefaults.put(byte.class, (byte) 0);
+        primitiveDefaults.put(char.class, (char) 0);
+        primitiveDefaults.put(short.class, (short) 0);
+        primitiveDefaults.put(float.class, (float) 0);
+        primitiveDefaults.put(double.class, (double) 0);
+        primitiveDefaults.put(boolean.class, false);
+        primitiveDefaults.put(void.class, null);
+    }
+
     private ReflectUtils() {
     }
 
@@ -1062,6 +1076,22 @@ public final class ReflectUtils {
             }
             return value;
         } catch (Throwable e) {
+            return null;
+        }
+    }
+
+    public static Object defaultReturn(Method m) {
+        if (m.getReturnType().isPrimitive()) {
+            return primitiveDefaults.get(m.getReturnType());
+        } else {
+            return null;
+        }
+    }
+
+    public static Object defaultReturn(Class<?> classType) {
+        if (classType != null && classType.isPrimitive()) {
+            return primitiveDefaults.get(classType);
+        } else {
             return null;
         }
     }
