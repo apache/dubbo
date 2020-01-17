@@ -539,6 +539,34 @@ public class DubboBootstrap extends GenericEventListener {
         for (MetadataReportConfig metadataReportConfig : metadatas) {
             ConfigValidationUtils.validateMetadataConfig(metadataReportConfig);
         }
+
+        // check Provider
+        Collection<ProviderConfig> providers = configManager.getProviders();
+        if (CollectionUtils.isEmpty(providers)) {
+            configManager.getDefaultProvider().orElseGet(() -> {
+                ProviderConfig providerConfig = new ProviderConfig();
+                configManager.addProvider(providerConfig);
+                providerConfig.refresh();
+                return providerConfig;
+            });
+        }
+        for (ProviderConfig providerConfig : providers) {
+            ConfigValidationUtils.validateProviderConfig(providerConfig);
+        }
+        // check Consumer
+        Collection<ConsumerConfig> consumers = configManager.getConsumers();
+        if (CollectionUtils.isEmpty(consumers)) {
+            configManager.getDefaultConsumer().orElseGet(() -> {
+                ConsumerConfig consumerConfig = new ConsumerConfig();
+                configManager.addConsumer(consumerConfig);
+                consumerConfig.refresh();
+                return consumerConfig;
+            });
+        }
+        for (ConsumerConfig consumerConfig : consumers) {
+            ConfigValidationUtils.validateConsumerConfig(consumerConfig);
+        }
+
         // check Monitor
         ConfigValidationUtils.validateMonitorConfig(getMonitor());
         // check Metrics
