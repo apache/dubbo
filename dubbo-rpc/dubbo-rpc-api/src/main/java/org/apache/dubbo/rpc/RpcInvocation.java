@@ -260,7 +260,7 @@ public class RpcInvocation implements Invocation, Serializable {
     @Deprecated
     @Override
     public Map<String, String> getAttachments() {
-        return new AttachmentsAdapterMap(attachments);
+        return new AttachmentsAdapter.ObjectToStringMap(attachments);
     }
 
     @Deprecated

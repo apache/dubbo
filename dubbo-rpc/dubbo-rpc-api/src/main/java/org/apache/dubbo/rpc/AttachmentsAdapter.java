@@ -19,6 +19,10 @@ package org.apache.dubbo.rpc;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * This class provides map adapters to support attachments in RpcContext, Invocation and Result switch from
+ * <String, String> to <String, Object>
+ */
 public class AttachmentsAdapter {
 
     public static class ObjectToStringMap extends HashMap<String, String> {
