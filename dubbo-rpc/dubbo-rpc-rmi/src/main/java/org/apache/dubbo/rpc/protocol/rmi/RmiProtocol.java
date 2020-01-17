@@ -86,17 +86,17 @@ public class RmiProtocol extends AbstractProxyProtocol {
           3. if the provider version is lower than v2.6.3, does not use customized RemoteInvocation.
          */
         if (isRelease270OrHigher(url.getParameter(RELEASE_KEY))) {
-            rmiProxyFactoryBean.setRemoteInvocationFactory((methodInvocation) -> {
+            rmiProxyFactoryBean.setRemoteInvocationFactory(methodInvocation -> {
                 RemoteInvocation invocation = new RmiRemoteInvocation(methodInvocation);
-                if (invocation != null && isGeneric) {
+                if (isGeneric) {
                     invocation.addAttribute(GENERIC_KEY, generic);
                 }
                 return invocation;
             });
         } else if (isRelease263OrHigher(url.getParameter(DUBBO_VERSION_KEY))) {
-            rmiProxyFactoryBean.setRemoteInvocationFactory((methodInvocation) -> {
+            rmiProxyFactoryBean.setRemoteInvocationFactory(methodInvocation -> {
                 RemoteInvocation invocation = new com.alibaba.dubbo.rpc.protocol.rmi.RmiRemoteInvocation(methodInvocation);
-                if (invocation != null && isGeneric) {
+                if (isGeneric) {
                     invocation.addAttribute(GENERIC_KEY, generic);
                 }
                 return invocation;
