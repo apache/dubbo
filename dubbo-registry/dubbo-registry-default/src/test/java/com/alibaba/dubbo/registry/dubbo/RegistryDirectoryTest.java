@@ -113,7 +113,7 @@ public class RegistryDirectoryTest {
         field.setAccessible(true);
         Map<String, String> queryMap = (Map<String, String>) field.get(reg);
         Assert.assertEquals("bar", queryMap.get("foo"));
-        Assert.assertEquals(url.clearParameters().addParameter("foo", "bar"), reg.getUrl());
+        Assert.assertEquals(url.clearParameters().addParameter("foo", "bar").addParameter("registry.a", "b"), reg.getUrl());
     }
 
     @Test
