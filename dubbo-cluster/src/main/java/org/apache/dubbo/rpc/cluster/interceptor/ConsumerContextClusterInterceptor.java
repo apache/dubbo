@@ -31,7 +31,7 @@ public class ConsumerContextClusterInterceptor implements ClusterInterceptor, Cl
     public void before(AbstractClusterInvoker<?> invoker, Invocation invocation) {
         RpcContext.getContext()
                 .setInvocation(invocation)
-                .setLocalAddress(NetUtils.getHostAddress(), 0);
+                .setLocalAddress(NetUtils.getLocalHost(), 0);
         if (invocation instanceof RpcInvocation) {
             ((RpcInvocation) invocation).setInvoker(invoker);
         }
@@ -44,7 +44,7 @@ public class ConsumerContextClusterInterceptor implements ClusterInterceptor, Cl
     }
 
     @Override
-    public void onResponse(Result appResponse, AbstractClusterInvoker<?> invoker, Invocation invocation) {
+    public void onMessage(Result appResponse, AbstractClusterInvoker<?> invoker, Invocation invocation) {
         RpcContext.getServerContext().setAttachments(appResponse.getAttachments());
     }
 

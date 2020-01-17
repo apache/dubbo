@@ -155,6 +155,8 @@ public class DubboBootstrap extends GenericEventListener {
 
     private AtomicBoolean started = new AtomicBoolean(false);
 
+    private AtomicBoolean destroyed = new AtomicBoolean(false);
+
     private volatile ServiceInstance serviceInstance;
 
     private volatile MetadataService metadataService;
@@ -181,6 +183,7 @@ public class DubboBootstrap extends GenericEventListener {
         configManager = ApplicationModel.getConfigManager();
         environment = ApplicationModel.getEnvironment();
 
+        DubboShutdownHook.getDubboShutdownHook().register();
         ShutdownHookCallbacks.INSTANCE.addCallback(new ShutdownHookCallback() {
             @Override
             public void callback() throws Throwable {
@@ -189,8 +192,8 @@ public class DubboBootstrap extends GenericEventListener {
         });
     }
 
-    public void registerShutdownHook() {
-        DubboShutdownHook.getDubboShutdownHook().register();
+    public void unRegisterShutdownHook() {
+        DubboShutdownHook.getDubboShutdownHook().unregister();
     }
 
     private boolean isOnlyRegisterProvider() {
@@ -498,7 +501,7 @@ public class DubboBootstrap extends GenericEventListener {
             return;
         }
 
-        ApplicationModel.iniFrameworkExts();
+        ApplicationModel.initFrameworkExts();
 
         startConfigCenter();
 
@@ -615,6 +618,9 @@ public class DubboBootstrap extends GenericEventListener {
                     cc.setNamespace(registryConfig.getGroup());
                     cc.setUsername(registryConfig.getUsername());
                     cc.setPassword(registryConfig.getPassword());
+                    if (registryConfig.getTimeout() != null) {
+                        cc.setTimeout(registryConfig.getTimeout().longValue());
+                    }
                     cc.setHighestPriority(false);
                     configManager.addConfigCenter(cc);
                 });
@@ -987,7 +993,8 @@ public class DubboBootstrap extends GenericEventListener {
     }
 
     public void destroy() {
-        if (started.compareAndSet(true, false)) {
+        if (started.compareAndSet(true, false)
+                && destroyed.compareAndSet(false, true)) {
             unregisterServiceInstance();
             unexportMetadataService();
             unexportServices();

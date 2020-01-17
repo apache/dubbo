@@ -14,21 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config;
+package org.apache.dubbo.common.extension;
 
-import org.apache.dubbo.common.extension.SPI;
+public interface LoadingStrategy {
+    String directory();
 
-/**
- * Dynamically add some parameters / check config
- */
-
-@SPI
-public interface AppendParametersComponent {
-    default void appendReferParameters(ReferenceConfig referenceConfig) {
-
+    default boolean preferExtensionClassLoader() {
+        return false;
     }
 
-    default void appendExportParameters(ServiceConfig serviceConfig) {
-
+    default String[] excludedPackages() {
+        return null;
     }
 }

@@ -14,24 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring.beans.factory;
+package org.apache.dubbo.config;
 
-import org.apache.dubbo.config.spring.ServiceBean;
+import org.apache.dubbo.common.extension.SPI;
 
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.config.BeanPostProcessor;
+/**
+ * Dynamically add some parameters / check config
+ */
 
-public class ServiceBeanPostProcessor implements BeanPostProcessor {
-    @Override
-    public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-        return bean;
+@SPI
+public interface ConfigInitializer {
+
+    default void initReferConfig(ReferenceConfig referenceConfig) {
+
     }
 
-    @Override
-    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-        if (bean instanceof ServiceBean) {
-            ((ServiceBean) bean).export();
-        }
-        return bean;
+    default void initServiceConfig(ServiceConfig serviceConfig) {
+
     }
+
 }

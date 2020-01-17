@@ -207,10 +207,15 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     }
 
     private void checkAndUpdateSubConfigs() {
-        // Use default configs defined explicitly on global scope
+        // Use default configs defined explicitly with global scope
         completeCompoundConfigs();
         checkDefault();
         checkProtocol();
+        // init some null configuration.
+        List<ConfigInitializer> configInitializers = ExtensionLoader.getExtensionLoader(ConfigInitializer.class)
+                .getActivateExtension(URL.valueOf("configInitializer://"), (String[]) null);
+        configInitializers.forEach(e -> e.initServiceConfig(this));
+
         // if protocol is not injvm checkRegistry
         if (!isOnlyInJvm()) {
             checkRegistry();
@@ -268,7 +273,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         checkStubAndLocal(interfaceClass);
         ConfigValidationUtils.checkMock(interfaceClass, this);
         ConfigValidationUtils.validateServiceConfig(this);
-        appendParameters();
+        postProcessConfig();
     }
 
 
@@ -683,10 +688,10 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         }
     }
 
-    public void appendParameters() {
-        URL appendParametersUrl = URL.valueOf("appendParameters://");
-        List<AppendParametersComponent> appendParametersComponents = ExtensionLoader.getExtensionLoader(AppendParametersComponent.class).getActivateExtension(appendParametersUrl, (String[]) null);
-        appendParametersComponents.forEach(component -> component.appendExportParameters(this));
+    private void postProcessConfig() {
+        List<ConfigPostProcessor> configPostProcessors =ExtensionLoader.getExtensionLoader(ConfigPostProcessor.class)
+                .getActivateExtension(URL.valueOf("configPostProcessor://"), (String[]) null);
+        configPostProcessors.forEach(component -> component.postProcessServiceConfig(this));
     }
 
     /**

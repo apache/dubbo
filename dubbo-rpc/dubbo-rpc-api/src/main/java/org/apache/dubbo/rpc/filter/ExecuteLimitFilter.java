@@ -37,7 +37,7 @@ import static org.apache.dubbo.rpc.Constants.EXECUTES_KEY;
  *
  */
 @Activate(group = CommonConstants.PROVIDER, value = EXECUTES_KEY)
-public class ExecuteLimitFilter implements Filter, Filter.Listener {
+public class ExecuteLimitFilter implements Filter, Filter.Listener2 {
 
     private static final String EXECUTELIMIT_FILTER_START_TIME = "execugtelimit_filter_start_time";
 

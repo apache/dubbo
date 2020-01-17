@@ -224,9 +224,9 @@ public class ConsulRegistry extends FailbackRegistry {
     }
 
     private List<HealthService> getHealthServices(Map<String, List<String>> services) {
-        return services.keySet().stream()
-                .filter(s -> services.get(s).contains(SERVICE_TAG))
-                .map(s -> getHealthServices(s, -1, -1).getValue())
+        return services.entrySet().stream()
+                .filter(s -> s.getValue().contains(SERVICE_TAG))
+                .map(s -> getHealthServices(s.getKey(), -1, -1).getValue())
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList());
     }
@@ -279,8 +279,8 @@ public class ConsulRegistry extends FailbackRegistry {
 
     private List<String> buildTags(URL url) {
         Map<String, String> params = url.getParameters();
-        List<String> tags = params.keySet().stream()
-                .map(k -> k + "=" + params.get(k))
+        List<String> tags = params.entrySet().stream()
+                .map(k -> k.getKey() + "=" + k.getValue())
                 .collect(Collectors.toList());
         tags.add(SERVICE_TAG);
         return tags;

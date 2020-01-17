@@ -52,8 +52,8 @@ public interface Constants {
     String DEFAULT_CHARSET = "UTF-8";
 
     /**
-     * Every heartbeat duration / HEATBEAT_CHECK_TICK, check if a heartbeat should be sent. Every heartbeat timeout
-     * duration / HEATBEAT_CHECK_TICK, check if a connection should be closed on server side, and if reconnect on
+     * Every heartbeat duration / HEARTBEAT_CHECK_TICK, check if a heartbeat should be sent. Every heartbeat timeout
+     * duration / HEARTBEAT_CHECK_TICK, check if a connection should be closed on server side, and if reconnect on
      * client side
      */
     int HEARTBEAT_CHECK_TICK = 3;

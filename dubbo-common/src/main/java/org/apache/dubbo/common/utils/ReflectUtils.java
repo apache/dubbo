@@ -136,6 +136,20 @@ public final class ReflectUtils {
 
     private static final ConcurrentMap<String, Method> SIGNATURE_METHODS_CACHE = new ConcurrentHashMap<String, Method>();
 
+    private static Map<Class<?>, Object> primitiveDefaults = new HashMap<>();
+
+    static {
+        primitiveDefaults.put(int.class, 0);
+        primitiveDefaults.put(long.class, 0L);
+        primitiveDefaults.put(byte.class, (byte) 0);
+        primitiveDefaults.put(char.class, (char) 0);
+        primitiveDefaults.put(short.class, (short) 0);
+        primitiveDefaults.put(float.class, (float) 0);
+        primitiveDefaults.put(double.class, (double) 0);
+        primitiveDefaults.put(boolean.class, false);
+        primitiveDefaults.put(void.class, null);
+    }
+
     private ReflectUtils() {
     }
 
@@ -1066,6 +1080,22 @@ public final class ReflectUtils {
         }
     }
 
+    public static Object defaultReturn(Method m) {
+        if (m.getReturnType().isPrimitive()) {
+            return primitiveDefaults.get(m.getReturnType());
+        } else {
+            return null;
+        }
+    }
+
+    public static Object defaultReturn(Class<?> classType) {
+        if (classType != null && classType.isPrimitive()) {
+            return primitiveDefaults.get(classType);
+        } else {
+            return null;
+        }
+    }
+
     public static boolean isBeanPropertyReadMethod(Method method) {
         return method != null
                 && Modifier.isPublic(method.getModifiers())
@@ -1204,7 +1234,7 @@ public final class ReflectUtils {
     }
 
     /**
-     * Find the hierarchical types form the source {@link Class class} by specified {@link Class type}.
+     * Find the hierarchical types from the source {@link Class class} by specified {@link Class type}.
      *
      * @param sourceClass the source {@link Class class}
      * @param matchType   the type to match
