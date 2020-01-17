@@ -70,9 +70,6 @@ public class DubboShutdownHook extends Thread {
             logger.info("Run shutdown hook now.");
         }
 
-        // backward compatibility: make sure shutdown logic takes effect when DubboBootstrap is not used.
-        destroyAll();
-
         callback();
         doDestroy();
     }
