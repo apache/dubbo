@@ -35,7 +35,6 @@ import com.alibaba.dubbo.rpc.ProxyFactory;
 import com.alibaba.dubbo.rpc.StaticContext;
 import com.alibaba.dubbo.rpc.cluster.Cluster;
 import com.alibaba.dubbo.rpc.cluster.directory.StaticDirectory;
-import com.alibaba.dubbo.rpc.cluster.support.AvailableCluster;
 import com.alibaba.dubbo.rpc.cluster.support.ClusterUtils;
 import com.alibaba.dubbo.rpc.cluster.support.registry.ZoneAwareCluster;
 import com.alibaba.dubbo.rpc.protocol.injvm.InjvmProtocol;
