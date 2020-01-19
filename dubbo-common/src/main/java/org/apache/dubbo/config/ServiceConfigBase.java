@@ -201,7 +201,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         if (provider == null) {
             provider = ApplicationModel.getConfigManager()
                     .getDefaultProvider()
-                    .orElseThrow(() -> new IllegalStateException("At lease one ProviderConfig should has been initiated in DubboBootstrap."));
+                    .orElse(new ProviderConfig());
         }
     }
 

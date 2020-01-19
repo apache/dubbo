@@ -115,7 +115,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         if (consumer == null) {
             consumer = ApplicationModel.getConfigManager()
                     .getDefaultConsumer()
-                    .orElseThrow(() -> new IllegalStateException("At lease one ConsumerConfig should has been initiated in DubboBootstrap."));
+                    .orElse(new ConsumerConfig());
         }
     }
 
