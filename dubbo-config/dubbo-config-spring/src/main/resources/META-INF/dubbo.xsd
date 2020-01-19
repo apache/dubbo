@@ -617,6 +617,11 @@
                 <xsd:documentation><![CDATA[ Is this registry the preferred one. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="weight" type="xsd:integer">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ weight of registry. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
     </xsd:complexType>
 
     <xsd:complexType name="metadataReportType">
