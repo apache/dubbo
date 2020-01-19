@@ -235,7 +235,7 @@ public class ExtensionLoader<T> {
      * @see org.apache.dubbo.common.extension.Activate
      */
     public List<T> getActivateExtension(URL url, String[] values, String group) {
-        List<T> exts = new ArrayList<>();
+        List<T> activateExtensions = new ArrayList<>();
         List<String> names = values == null ? new ArrayList<>(0) : Arrays.asList(values);
         if (!names.contains(REMOVE_VALUE_PREFIX + DEFAULT_KEY)) {
             getExtensionClasses();
@@ -258,30 +258,30 @@ public class ExtensionLoader<T> {
                         && !names.contains(name)
                         && !names.contains(REMOVE_VALUE_PREFIX + name)
                         && isActive(activateValue, url)) {
-                    exts.add(getExtension(name));
+                    activateExtensions.add(getExtension(name));
                 }
             }
-            exts.sort(ActivateComparator.COMPARATOR);
+            activateExtensions.sort(ActivateComparator.COMPARATOR);
         }
-        List<T> usrs = new ArrayList<>();
+        List<T> loadedExtensions = new ArrayList<>();
         for (int i = 0; i < names.size(); i++) {
             String name = names.get(i);
             if (!name.startsWith(REMOVE_VALUE_PREFIX)
                     && !names.contains(REMOVE_VALUE_PREFIX + name)) {
                 if (DEFAULT_KEY.equals(name)) {
-                    if (!usrs.isEmpty()) {
-                        exts.addAll(0, usrs);
-                        usrs.clear();
+                    if (!loadedExtensions.isEmpty()) {
+                        activateExtensions.addAll(0, loadedExtensions);
+                        loadedExtensions.clear();
                     }
                 } else {
-                    usrs.add(getExtension(name));
+                    loadedExtensions.add(getExtension(name));
                 }
             }
         }
-        if (!usrs.isEmpty()) {
-            exts.addAll(usrs);
+        if (!loadedExtensions.isEmpty()) {
+            activateExtensions.addAll(loadedExtensions);
         }
-        return exts;
+        return activateExtensions;
     }
 
     private boolean isMatchGroup(String group, String[] groups) {
