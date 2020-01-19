@@ -242,42 +242,21 @@ public class AdaptiveClassCodeGenerator {
      * generate extName assigment code
      */
     private String generateExtNameAssignment(String[] value, boolean hasInvocation) {
-        // TODO: refactor it
         String getNameCode = null;
+        String formatedExtName=defaultExtName==null?null:"\""+defaultExtName+"\"";
+        String lastExtName = formatedExtName;
+
         for (int i = value.length - 1; i >= 0; --i) {
-            if (i == value.length - 1) {
-                if (null != defaultExtName) {
-                    if (!"protocol".equals(value[i])) {
-                        if (hasInvocation) {
-                            getNameCode = String.format("url.getMethodParameter(methodName, \"%s\", \"%s\")", value[i], defaultExtName);
-                        } else {
-                            getNameCode = String.format("url.getParameter(\"%s\", \"%s\")", value[i], defaultExtName);
-                        }
-                    } else {
-                        getNameCode = String.format("( url.getProtocol() == null ? \"%s\" : url.getProtocol() )", defaultExtName);
-                    }
+            if (!"protocol".equals(value[i])) {
+                if (hasInvocation) {
+                    getNameCode = String.format("url.getMethodParameter(methodName, \"%s\", %s)", value[i], formatedExtName);
                 } else {
-                    if (!"protocol".equals(value[i])) {
-                        if (hasInvocation) {
-                            getNameCode = String.format("url.getMethodParameter(methodName, \"%s\", \"%s\")", value[i], defaultExtName);
-                        } else {
-                            getNameCode = String.format("url.getParameter(\"%s\")", value[i]);
-                        }
-                    } else {
-                        getNameCode = "url.getProtocol()";
-                    }
+                    getNameCode = String.format("url.getParameter(\"%s\", %s)", value[i], lastExtName);
                 }
             } else {
-                if (!"protocol".equals(value[i])) {
-                    if (hasInvocation) {
-                        getNameCode = String.format("url.getMethodParameter(methodName, \"%s\", \"%s\")", value[i], defaultExtName);
-                    } else {
-                        getNameCode = String.format("url.getParameter(\"%s\", %s)", value[i], getNameCode);
-                    }
-                } else {
-                    getNameCode = String.format("url.getProtocol() == null ? (%s) : url.getProtocol()", getNameCode);
-                }
+                getNameCode = String.format("( url.getProtocol() == null ? %s : url.getProtocol() )", lastExtName);
             }
+            lastExtName = getNameCode;
         }
 
         return String.format(CODE_EXT_NAME_ASSIGNMENT, getNameCode);
