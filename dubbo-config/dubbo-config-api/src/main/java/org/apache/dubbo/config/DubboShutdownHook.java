@@ -25,6 +25,7 @@ import org.apache.dubbo.config.event.DubboShutdownHookRegisteredEvent;
 import org.apache.dubbo.config.event.DubboShutdownHookUnregisteredEvent;
 import org.apache.dubbo.event.Event;
 import org.apache.dubbo.event.EventDispatcher;
+import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 import org.apache.dubbo.rpc.Protocol;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -68,6 +69,7 @@ public class DubboShutdownHook extends Thread {
         if (logger.isInfoEnabled()) {
             logger.info("Run shutdown hook now.");
         }
+
         callback();
         doDestroy();
     }
@@ -117,6 +119,11 @@ public class DubboShutdownHook extends Thread {
         dispatch(new DubboServiceDestroyedEvent(this));
     }
 
+    public static void destroyAll() {
+        AbstractRegistryFactory.destroyAll();
+        destroyProtocols();
+    }
+
     private void dispatch(Event event) {
         eventDispatcher.dispatch(event);
     }
@@ -124,7 +131,7 @@ public class DubboShutdownHook extends Thread {
     /**
      * Destroy all the protocols.
      */
-    private void destroyProtocols() {
+    private static void destroyProtocols() {
         ExtensionLoader<Protocol> loader = ExtensionLoader.getExtensionLoader(Protocol.class);
         for (String protocolName : loader.getLoadedExtensions()) {
             try {
@@ -137,6 +144,4 @@ public class DubboShutdownHook extends Thread {
             }
         }
     }
-
-
 }
