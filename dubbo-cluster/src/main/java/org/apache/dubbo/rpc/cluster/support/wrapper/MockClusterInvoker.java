@@ -50,7 +50,7 @@ public class MockClusterInvoker<T> implements Invoker<T> {
 
     @Override
     public URL getUrl() {
-        return directory.getUrl();
+        return directory.getConsumerUrl();
     }
 
     @Override
