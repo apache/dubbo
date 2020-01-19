@@ -345,7 +345,7 @@ public class AbstractProtobufSerializationTest {
      */
     @Test
     public void testPbMap() throws Exception {
-        Map<String, String> attachments = new HashMap<>();
+        Map<String, Object> attachments = new HashMap<>();
         attachments.put("key", "value");
         ObjectOutput objectOutput = serialization.serialize(url, byteArrayOutputStream);
         objectOutput.writeAttachments(attachments);
@@ -355,7 +355,7 @@ public class AbstractProtobufSerializationTest {
                 byteArrayOutputStream.toByteArray());
         ObjectInput objectInput = serialization.deserialize(url, byteArrayInputStream);
 
-        Map<String, String> derializedAttachments = objectInput.readAttachments();
+        Map<String, Object> derializedAttachments = objectInput.readAttachments();
         assertEquals(attachments, derializedAttachments);
     }
 
