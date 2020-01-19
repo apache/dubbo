@@ -412,7 +412,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
         resolveFile();
         ConfigValidationUtils.validateReferenceConfig(this);
-        appendParameters();
+        postProcessConfig();
     }
 
 
@@ -479,10 +479,10 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         }
     };
 
-    public void appendParameters() {
-        URL appendParametersUrl = URL.valueOf("appendParameters://");
-        List<AppendParametersComponent> appendParametersComponents = ExtensionLoader.getExtensionLoader(AppendParametersComponent.class).getActivateExtension(appendParametersUrl, (String[]) null);
-        appendParametersComponents.forEach(component -> component.appendReferParameters(this));
+    private void postProcessConfig() {
+        List<ConfigPostProcessor> configPostProcessors =ExtensionLoader.getExtensionLoader(ConfigPostProcessor.class)
+                .getActivateExtension(URL.valueOf("configPostProcessor://"), (String[]) null);
+        configPostProcessors.forEach(component -> component.postProcessReferConfig(this));
     }
 
     // just for test

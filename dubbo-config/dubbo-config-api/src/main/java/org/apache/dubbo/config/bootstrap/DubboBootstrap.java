@@ -993,6 +993,9 @@ public class DubboBootstrap extends GenericEventListener {
     }
 
     public void destroy() {
+        // for compatibility purpose
+        DubboShutdownHook.destroyAll();
+
         if (started.compareAndSet(true, false)
                 && destroyed.compareAndSet(false, true)) {
             unregisterServiceInstance();

@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
+import org.apache.dubbo.rpc.model.ConsumerMethodModel;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -28,6 +29,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+
+import static org.apache.dubbo.common.utils.ReflectUtils.defaultReturn;
 
 /**
  * This class represents an unfinished RPC call, it will hold some context information for this call, for example RpcContext and Invocation,
@@ -147,7 +150,8 @@ public class AsyncRpcResult implements Result {
             logger.error("Got exception when trying to fetch the underlying result from AsyncRpcResult.");
             throw new RpcException(e);
         }
-        return new AppResponse();
+
+        return createDefaultValue(invocation);
     }
 
     /**
@@ -269,8 +273,8 @@ public class AsyncRpcResult implements Result {
      * tmp context to use when the thread switch to Dubbo thread.
      */
     private RpcContext tmpContext;
-    private RpcContext tmpServerContext;
 
+    private RpcContext tmpServerContext;
     private BiConsumer<Result, Throwable> beforeContext = (appResponse, t) -> {
         tmpContext = RpcContext.getContext();
         tmpServerContext = RpcContext.getServerContext();
@@ -312,6 +316,11 @@ public class AsyncRpcResult implements Result {
         }
         future.complete(result);
         return new AsyncRpcResult(future, invocation);
+    }
+
+    private static Result createDefaultValue(Invocation invocation) {
+        ConsumerMethodModel method = (ConsumerMethodModel) invocation.get(Constants.METHOD_MODEL);
+        return method != null ? new AppResponse(defaultReturn(method.getReturnClass())) : new AppResponse();
     }
 }
 
