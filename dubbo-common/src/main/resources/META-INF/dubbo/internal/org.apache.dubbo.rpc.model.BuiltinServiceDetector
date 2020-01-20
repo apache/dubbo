@@ -1,0 +1,2 @@
+echo=org.apache.dubbo.rpc.service.EchoServiceDetector
+generic=org.apache.dubbo.rpc.service.GenericServiceDetector
