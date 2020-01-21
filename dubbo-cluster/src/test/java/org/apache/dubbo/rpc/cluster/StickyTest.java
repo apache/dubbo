@@ -45,7 +45,7 @@ public class StickyTest {
 
 
     private Invoker<StickyTest> invoker1 = mock(Invoker.class);
-    private  Invoker<StickyTest> invoker2 = mock(Invoker.class);
+    private Invoker<StickyTest> invoker2 = mock(Invoker.class);
     private RpcInvocation invocation;
     private Directory<StickyTest> dic;
     private Result result = new AppResponse();
