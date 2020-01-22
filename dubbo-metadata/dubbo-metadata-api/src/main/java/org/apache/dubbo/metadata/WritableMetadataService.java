@@ -19,10 +19,15 @@ package org.apache.dubbo.metadata;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.store.InMemoryWritableMetadataService;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.Map;
+
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
+import static org.apache.dubbo.common.constants.CommonConstants.METADATA_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METADATA_TYPE_KEY;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 
 /**
@@ -94,6 +99,29 @@ public interface WritableMetadataService extends MetadataService {
      */
     static WritableMetadataService getDefaultExtension() {
         return getExtensionLoader(WritableMetadataService.class).getDefaultExtension();
+    }
+
+    /**
+     * Get
+     *
+     * @param paramMap
+     * @return
+     */
+    static WritableMetadataService getExtensionForCompatible(Map<String, String> paramMap){
+        String metadataType = paramMap.get(METADATA_TYPE_KEY);
+        if(StringUtils.isEmpty(metadataType)){
+            /**
+             * Since 2.7.5  in dubbo.xsd "metadata" has been modified to "metadata-type".
+             * But a bug occurs which leads  "metadata-type" not work, some developers maybe
+             * use self-defined such as flowing to make metadata reporter work:
+             * <dubbo:parameter key="metadata" value="remote"/>
+             * @see https://github.com/apache/dubbo/issues/5667
+             *
+             * The following code aims to be compatible with this case.
+             */
+            metadataType = paramMap.get(METADATA_KEY);
+        }
+        return getExtension(StringUtils.isEmpty(metadataType) ? DEFAULT_METADATA_STORAGE_TYPE : metadataType);
     }
 
     static WritableMetadataService getExtension(String name) {
