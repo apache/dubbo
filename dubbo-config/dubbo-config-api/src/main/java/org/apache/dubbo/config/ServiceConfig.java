@@ -489,8 +489,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                  * @since 2.7.0
                  * ServiceData Store
                  */
-                WritableMetadataService metadataService = WritableMetadataService.getExtension(url.getParameter(METADATA_KEY, DEFAULT_METADATA_STORAGE_TYPE));
-                if (metadataService != null) {
+                WritableMetadataService metadataService = WritableMetadataService.getExtensionForCompatible(url.getParameters());                if (metadataService != null) {
                     metadataService.publishServiceDefinition(url);
                 }
             }

@@ -170,7 +170,16 @@ public interface CommonConstants {
 
     String METADATA_REVISION = "metadata.revision";
 
+    /**
+     * since 2.7.5  in dubbo.xsd "metadata" has been modified to "metadata-type"
+     */
+    @Deprecated
     String METADATA_KEY = "metadata";
+
+    /**
+     * since 2.7.5  in dubbo.xsd "metadata" has been modified to "metadata-type"
+     */
+    String METADATA_TYPE_KEY = "metadata.type";
 
     String DEFAULT_METADATA_STORAGE_TYPE = "local";
 
