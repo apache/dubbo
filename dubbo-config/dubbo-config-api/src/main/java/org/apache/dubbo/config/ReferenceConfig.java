@@ -350,8 +350,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
          * @since 2.7.0
          * ServiceData Store
          */
-        String metadata = map.get(METADATA_KEY);
-        WritableMetadataService metadataService = WritableMetadataService.getExtension(metadata == null ? DEFAULT_METADATA_STORAGE_TYPE : metadata);
+        WritableMetadataService metadataService = WritableMetadataService.getExtensionForCompatible(map);
         if (metadataService != null) {
             URL consumerURL = new URL(CONSUMER_PROTOCOL, map.remove(REGISTER_IP_KEY), 0, map.get(INTERFACE_KEY), map);
             metadataService.publishServiceDefinition(consumerURL);
