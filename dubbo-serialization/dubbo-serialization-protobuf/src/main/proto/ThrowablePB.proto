@@ -1,0 +1,64 @@
+// Licensed to the Apache Software Foundation (ASF) under one or more
+// contributor license agreements.  See the NOTICE file distributed with
+// this work for additional information regarding copyright ownership.
+// The ASF licenses this file to You under the Apache License, Version 2.0
+// (the "License"); you may not use this file except in compliance with
+// the License.  You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Messages used for transporting debug information between server and client.
+
+syntax = "proto3";
+
+package org.apache.dubbo.common.serialize.protobuf.support.wrapper;
+
+option java_package = "org.apache.dubbo.common.serialize.protobuf.support.wrapper";
+option java_multiple_files = false;
+
+// An element in a stack trace, based on the Java type of the same name.
+//
+// See: https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/StackTraceElement.html
+message StackTraceElementProto {
+    // The fully qualified name of the class containing the execution point
+    // represented by the stack trace element.
+    string class_name = 1;
+
+    // The name of the method containing the execution point represented by the
+    // stack trace element
+    string method_name = 2;
+
+    // The name of the file containing the execution point represented by the
+    // stack trace element, or null if this information is unavailable.
+    string file_name = 3;
+
+    // The line number of the source line containing the execution point represented
+    // by this stack trace element, or a negative number if this information is
+    // unavailable.
+    int32 line_number = 4;
+}
+
+// An exception that was thrown by some code, based on the Java type of the same name.
+//
+// See: https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/Throwable.html
+message ThrowableProto {
+    // The name of the class of the exception that was actually thrown. Downstream readers
+    // of this message may or may not have the actual class available to initialize, so
+    // this is just used to prefix the message of a generic exception type.
+    string original_class_name = 1;
+
+    // The message of this throwable. Not filled if there is no message.
+    string original_message = 2;
+
+    // The stack trace of this Throwable.
+    repeated StackTraceElementProto stack_trace = 3;
+
+    // The cause of this Throwable. Not filled if there is no cause.
+    ThrowableProto cause = 4;
+}

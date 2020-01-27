@@ -27,7 +27,6 @@ import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
-import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.RpcInvocation;
 
@@ -49,12 +48,12 @@ public class CacheTest {
 
     @BeforeEach
     public void setUp() {
-        ConfigManager.getInstance().clear();
+//        ApplicationModel.getConfigManager().clear();
     }
 
     @AfterEach
     public void tearDown() {
-        ConfigManager.getInstance().clear();
+//        ApplicationModel.getConfigManager().clear();
     }
 
     private void testCache(String type) throws Exception {
@@ -132,7 +131,7 @@ public class CacheTest {
         parameters.put("findCache.cache", "threadlocal");
         URL url = new URL("dubbo", "127.0.0.1", 29582, "org.apache.dubbo.config.cache.CacheService", parameters);
 
-        Invocation invocation = new RpcInvocation("findCache", new Class[]{String.class}, new String[]{"0"}, null, null);
+        Invocation invocation = new RpcInvocation("findCache", CacheService.class.getName(), new Class[]{String.class}, new String[]{"0"}, null, null);
 
         Cache cache = cacheFactory.getCache(url, invocation);
         assertTrue(cache instanceof ThreadLocalCache);

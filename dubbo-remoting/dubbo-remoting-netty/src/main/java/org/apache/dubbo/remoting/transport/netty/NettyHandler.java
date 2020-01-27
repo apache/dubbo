@@ -17,6 +17,8 @@
 package org.apache.dubbo.remoting.transport.netty;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
@@ -37,6 +39,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Sharable
 public class NettyHandler extends SimpleChannelHandler {
+
+    private static final Logger logger = LoggerFactory.getLogger(NettyHandler.class);
 
     private final Map<String, Channel> channels = new ConcurrentHashMap<String, Channel>(); // <ip:port, channel>
 
@@ -70,6 +74,10 @@ public class NettyHandler extends SimpleChannelHandler {
         } finally {
             NettyChannel.removeChannelIfDisconnected(ctx.getChannel());
         }
+
+        if (logger.isInfoEnabled()) {
+            logger.info("The connection between " + channel.getRemoteAddress() + " and " + channel.getLocalAddress() + " is established");
+        }
     }
 
     @Override
@@ -80,6 +88,10 @@ public class NettyHandler extends SimpleChannelHandler {
             handler.disconnected(channel);
         } finally {
             NettyChannel.removeChannelIfDisconnected(ctx.getChannel());
+        }
+
+        if (logger.isInfoEnabled()) {
+            logger.info("The connection between " + channel.getRemoteAddress() + " and " + channel.getLocalAddress() + " is disconnected");
         }
     }
 

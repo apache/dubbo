@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.common.constants;
 
+import java.util.concurrent.ExecutorService;
 import java.util.regex.Pattern;
 
 public interface CommonConstants {
@@ -50,6 +51,8 @@ public interface CommonConstants {
 
     String COMMA_SEPARATOR = ",";
 
+    String DOT_SEPARATOR = ".";
+
     Pattern COMMA_SPLIT_PATTERN = Pattern.compile("\\s*[,]+\\s*");
 
     String PATH_SEPARATOR = "/";
@@ -60,9 +63,13 @@ public interface CommonConstants {
 
     Pattern REGISTRY_SPLIT_PATTERN = Pattern.compile("\\s*[|;]+\\s*");
 
+    Pattern D_REGISTRY_SPLIT_PATTERN = Pattern.compile("\\s*[|]+\\s*");
+
     String SEMICOLON_SEPARATOR = ";";
 
     Pattern SEMICOLON_SPLIT_PATTERN = Pattern.compile("\\s*[;]+\\s*");
+
+    Pattern EQUAL_SPLIT_PATTERN = Pattern.compile("\\s*[=]+\\s*");
 
     String DEFAULT_PROXY = "javassist";
 
@@ -77,6 +84,8 @@ public interface CommonConstants {
     int DEFAULT_CORE_THREADS = 0;
 
     int DEFAULT_THREADS = 200;
+
+    String EXECUTOR_SERVICE_COMPONENT_KEY = ExecutorService.class.getName();
 
     String THREADPOOL_KEY = "threadpool";
 
@@ -108,13 +117,21 @@ public interface CommonConstants {
 
     String PROPERTIES_CHAR_SEPERATOR = "-";
 
+    String UNDERLINE_SEPARATOR = "_";
+
+    String SEPARATOR_REGEX = "_|-";
+
     String GROUP_CHAR_SEPERATOR = ":";
 
     String HIDE_KEY_PREFIX = ".";
 
+    String DOT_REGEX = "\\.";
+
     String DEFAULT_KEY_PREFIX = "default.";
 
     String DEFAULT_KEY = "default";
+
+    String PREFERRED_KEY = "preferred";
 
     /**
      * Default timeout value in milliseconds for server shutdown
@@ -159,6 +176,25 @@ public interface CommonConstants {
 
     String REVISION_KEY = "revision";
 
+    String METADATA_REVISION = "metadata.revision";
+
+    String METADATA_KEY = "metadata";
+
+    String DEFAULT_METADATA_STORAGE_TYPE = "local";
+
+    String REMOTE_METADATA_STORAGE_TYPE = "remote";
+
+    /**
+     * Consumer side 's proxy class
+     */
+    String PROXY_CLASS_REF = "refClass";
+
+    /**
+     * generic call
+     */
+    String $INVOKE = "$invoke";
+    String $INVOKE_ASYNC = "$invokeAsync";
+
     /**
      * package version in the manifest
      */
@@ -177,4 +213,95 @@ public interface CommonConstants {
     String SHUTDOWN_WAIT_SECONDS_KEY = "dubbo.service.shutdown.wait.seconds";
     String SHUTDOWN_WAIT_KEY = "dubbo.service.shutdown.wait";
     String DUBBO_PROTOCOL = "dubbo";
+
+    String DUBBO_LABELS = "dubbo.labels";
+    String DUBBO_ENV_KEYS = "dubbo.env.keys";
+
+    String CONFIG_CONFIGFILE_KEY = "config-file";
+    String CONFIG_ENABLE_KEY = "highest-priority";
+    String CONFIG_NAMESPACE_KEY = "namespace";
+    String CHECK_KEY = "check";
+
+    String BACKLOG_KEY = "backlog";
+
+    String HEARTBEAT_EVENT = null;
+    String MOCK_HEARTBEAT_EVENT = "H";
+    String READONLY_EVENT = "R";
+
+    String REFERENCE_FILTER_KEY = "reference.filter";
+
+    String INVOKER_LISTENER_KEY = "invoker.listener";
+
+    String DUBBO_VERSION_KEY = "dubbo";
+
+    String TAG_KEY = "dubbo.tag";
+
+    /**
+     * To decide whether to make connection when the client is created
+     */
+    String LAZY_CONNECT_KEY = "lazy";
+
+    String STUB_EVENT_KEY = "dubbo.stub.event";
+
+    String REFERENCE_INTERCEPTOR_KEY = "reference.interceptor";
+
+    String SERVICE_FILTER_KEY = "service.filter";
+
+    String EXPORTER_LISTENER_KEY = "exporter.listener";
+
+    String METRICS_PORT = "metrics.port";
+
+    String METRICS_PROTOCOL = "metrics.protocol";
+
+    /**
+     * After simplify the registry, should add some parameter individually for provider.
+     *
+     * @since 2.7.0
+     */
+    String EXTRA_KEYS_KEY = "extra-keys";
+
+    String GENERIC_SERIALIZATION_NATIVE_JAVA = "nativejava";
+
+    String GENERIC_SERIALIZATION_DEFAULT = "true";
+
+    String GENERIC_SERIALIZATION_BEAN = "bean";
+
+    String GENERIC_RAW_RETURN = "raw.return";
+
+    String GENERIC_SERIALIZATION_PROTOBUF = "protobuf-json";
+
+    String GENERIC_WITH_CLZ_KEY = "generic.include.class";
+
+    /**
+     * The limit of callback service instances for one interface on every client
+     */
+    String CALLBACK_INSTANCES_LIMIT_KEY = "callbacks";
+
+    /**
+     * The default limit number for callback service instances
+     *
+     * @see #CALLBACK_INSTANCES_LIMIT_KEY
+     */
+    int DEFAULT_CALLBACK_INSTANCES = 1;
+
+    String LOADBALANCE_KEY = "loadbalance";
+
+    String DEFAULT_LOADBALANCE = "random";
+
+    String RETRIES_KEY = "retries";
+
+    String FORKS_KEY = "forks";
+
+    int DEFAULT_RETRIES = 2;
+
+    int DEFAULT_FAILBACK_TIMES = 3;
+
+    String REGISTER_KEY = "register";
+
+    String DUBBO_INVOCATION_PREFIX = "_DUBBO_IGNORE_ATTACH_";
+
+    String INTERFACES = "interfaces";
+
+    String SSL_ENABLED_KEY = "ssl-enabled";
+
 }

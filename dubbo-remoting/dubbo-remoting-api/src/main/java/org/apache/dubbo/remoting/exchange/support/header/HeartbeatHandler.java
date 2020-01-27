@@ -27,6 +27,8 @@ import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.transport.AbstractChannelHandlerDelegate;
 
+import static org.apache.dubbo.common.constants.CommonConstants.HEARTBEAT_EVENT;
+
 public class HeartbeatHandler extends AbstractChannelHandlerDelegate {
 
     private static final Logger logger = LoggerFactory.getLogger(HeartbeatHandler.class);
@@ -66,7 +68,7 @@ public class HeartbeatHandler extends AbstractChannelHandlerDelegate {
             Request req = (Request) message;
             if (req.isTwoWay()) {
                 Response res = new Response(req.getId(), req.getVersion());
-                res.setEvent(Response.HEARTBEAT_EVENT);
+                res.setEvent(HEARTBEAT_EVENT);
                 channel.send(res);
                 if (logger.isInfoEnabled()) {
                     int heartbeat = channel.getUrl().getParameter(Constants.HEARTBEAT_KEY, 0);

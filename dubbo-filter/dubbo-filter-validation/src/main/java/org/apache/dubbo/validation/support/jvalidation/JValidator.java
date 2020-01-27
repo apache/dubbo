@@ -60,7 +60,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -97,18 +96,6 @@ public class JValidator implements Validator {
         this.methodClassMap = new ConcurrentHashMap<>();
     }
 
-    private static boolean isPrimitives(Class<?> cls) {
-        if (cls.isArray()) {
-            return isPrimitive(cls.getComponentType());
-        }
-        return isPrimitive(cls);
-    }
-
-    private static boolean isPrimitive(Class<?> cls) {
-        return cls.isPrimitive() || cls == String.class || cls == Boolean.class || cls == Character.class
-                || Number.class.isAssignableFrom(cls) || Date.class.isAssignableFrom(cls);
-    }
-
     private static Object getMethodParameterBean(Class<?> clazz, Method method, Object[] args) {
         if (!hasConstraintParameter(method)) {
             return null;
@@ -119,8 +106,41 @@ public class JValidator implements Validator {
             try {
                 parameterClass = Class.forName(parameterClassName, true, clazz.getClassLoader());
             } catch (ClassNotFoundException e) {
-                ClassPool pool = ClassGenerator.getClassPool(clazz.getClassLoader());
-                CtClass ctClass = pool.makeClass(parameterClassName);
+                parameterClass = generateMethodParameterClass(clazz, method, parameterClassName);
+            }
+            Object parameterBean = parameterClass.newInstance();
+            for (int i = 0; i < args.length; i++) {
+                Field field = parameterClass.getField(method.getName() + "Argument" + i);
+                field.set(parameterBean, args[i]);
+            }
+            return parameterBean;
+        } catch (Throwable e) {
+            logger.warn(e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
+     * try to generate methodParameterClass.
+     *
+     * @param clazz interface class
+     * @param method invoke method
+     * @param parameterClassName generated parameterClassName
+     * @return Class<?> generated methodParameterClass
+     * @throws Exception
+     */
+    private static Class<?> generateMethodParameterClass(Class<?> clazz, Method method, String parameterClassName)
+        throws Exception {
+        ClassPool pool = ClassGenerator.getClassPool(clazz.getClassLoader());
+        synchronized (parameterClassName.intern()) {
+            CtClass ctClass = null;
+            try {
+                ctClass = pool.getCtClass(parameterClassName);
+            } catch (NotFoundException ignore) {
+            }
+
+            if (null == ctClass) {
+                ctClass = pool.makeClass(parameterClassName);
                 ClassFile classFile = ctClass.getClassFile();
                 classFile.setVersionToJava5();
                 ctClass.addConstructor(CtNewConstructor.defaultConstructor(pool.getCtClass(parameterClassName)));
@@ -134,16 +154,16 @@ public class JValidator implements Validator {
                     for (Annotation annotation : annotations) {
                         if (annotation.annotationType().isAnnotationPresent(Constraint.class)) {
                             javassist.bytecode.annotation.Annotation ja = new javassist.bytecode.annotation.Annotation(
-                                    classFile.getConstPool(), pool.getCtClass(annotation.annotationType().getName()));
+                                classFile.getConstPool(), pool.getCtClass(annotation.annotationType().getName()));
                             Method[] members = annotation.annotationType().getMethods();
                             for (Method member : members) {
                                 if (Modifier.isPublic(member.getModifiers())
-                                        && member.getParameterTypes().length == 0
-                                        && member.getDeclaringClass() == annotation.annotationType()) {
+                                    && member.getParameterTypes().length == 0
+                                    && member.getDeclaringClass() == annotation.annotationType()) {
                                     Object value = member.invoke(annotation);
                                     if (null != value) {
                                         MemberValue memberValue = createMemberValue(
-                                                classFile.getConstPool(), pool.get(member.getReturnType().getName()), value);
+                                            classFile.getConstPool(), pool.get(member.getReturnType().getName()), value);
                                         ja.addMemberValue(member.getName(), memberValue);
                                     }
                                 }
@@ -156,17 +176,10 @@ public class JValidator implements Validator {
                     ctField.getFieldInfo().addAttribute(attribute);
                     ctClass.addField(ctField);
                 }
-                parameterClass = ctClass.toClass(clazz.getClassLoader(), null);
+                return ctClass.toClass(clazz.getClassLoader(), null);
+            } else {
+                return Class.forName(parameterClassName, true, clazz.getClassLoader());
             }
-            Object parameterBean = parameterClass.newInstance();
-            for (int i = 0; i < args.length; i++) {
-                Field field = parameterClass.getField(method.getName() + "Argument" + i);
-                field.set(parameterBean, args[i]);
-            }
-            return parameterBean;
-        } catch (Throwable e) {
-            logger.warn(e.getMessage(), e);
-            return null;
         }
     }
 
@@ -294,7 +307,7 @@ public class JValidator implements Validator {
     }
 
     private void validate(Set<ConstraintViolation<?>> violations, Object arg, Class<?>... groups) {
-        if (arg != null && !isPrimitives(arg.getClass())) {
+        if (arg != null && !ReflectUtils.isPrimitives(arg.getClass())) {
             if (arg instanceof Object[]) {
                 for (Object item : (Object[]) arg) {
                     validate(violations, item, groups);

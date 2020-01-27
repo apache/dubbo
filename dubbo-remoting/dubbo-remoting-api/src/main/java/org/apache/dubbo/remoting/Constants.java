@@ -18,8 +18,6 @@
 package org.apache.dubbo.remoting;
 
 
-import java.util.concurrent.ExecutorService;
-
 public interface Constants {
 
     String BUFFER_KEY = "buffer";
@@ -36,7 +34,9 @@ public interface Constants {
     String IDLE_TIMEOUT_KEY = "idle.timeout";
 
     int DEFAULT_IDLE_TIMEOUT = 600 * 1000;
-
+    /**
+     * max size of channel. default value is zero that means unlimited.
+     */
     String ACCEPTS_KEY = "accepts";
 
     int DEFAULT_ACCEPTS = 0;
@@ -52,8 +52,8 @@ public interface Constants {
     String DEFAULT_CHARSET = "UTF-8";
 
     /**
-     * Every heartbeat duration / HEATBEAT_CHECK_TICK, check if a heartbeat should be sent. Every heartbeat timeout
-     * duration / HEATBEAT_CHECK_TICK, check if a connection should be closed on server side, and if reconnect on
+     * Every heartbeat duration / HEARTBEAT_CHECK_TICK, check if a heartbeat should be sent. Every heartbeat timeout
+     * duration / HEARTBEAT_CHECK_TICK, check if a connection should be closed on server side, and if reconnect on
      * client side
      */
     int HEARTBEAT_CHECK_TICK = 3;
@@ -82,6 +82,8 @@ public interface Constants {
     String DEFAULT_REMOTING_SERIALIZATION = "hessian2";
 
     String CODEC_KEY = "codec";
+
+    String CODEC_VERSION_KEY = "codec.version";
 
     String SERVER_KEY = "server";
 
@@ -115,8 +117,6 @@ public interface Constants {
 
     String CHANNEL_SEND_READONLYEVENT_KEY = "channel.readonly.send";
 
-    String EXECUTOR_SERVICE_COMPONENT_KEY = ExecutorService.class.getName();
-
     String RECONNECT_KEY = "reconnect";
 
     int DEFAULT_RECONNECT_PERIOD = 2000;
@@ -133,5 +133,6 @@ public interface Constants {
     int DEFAULT_HEARTBEAT = 60 * 1000;
     String HEARTBEAT_TIMEOUT_KEY = "heartbeat.timeout";
     String CONNECTIONS_KEY = "connections";
-    String DUBBO_VERSION_KEY = "dubbo";
+
+    int DEFAULT_BACKLOG = 1024;
 }

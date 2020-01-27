@@ -17,9 +17,15 @@
 
 package com.alibaba.dubbo.rpc;
 
+import org.apache.dubbo.rpc.FutureContext;
+
+import com.alibaba.dubbo.rpc.protocol.dubbo.FutureAdapter;
+
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
+
 @Deprecated
 public class RpcContext extends org.apache.dubbo.rpc.RpcContext {
-
 
     public static RpcContext getContext() {
         return newInstance(org.apache.dubbo.rpc.RpcContext.getContext());
@@ -29,7 +35,7 @@ public class RpcContext extends org.apache.dubbo.rpc.RpcContext {
         RpcContext copy = new RpcContext();
         copy.getAttachments().putAll(rpcContext.getAttachments());
         copy.get().putAll(rpcContext.get());
-        copy.setFuture(rpcContext.getCompletableFuture());
+
         copy.setUrls(rpcContext.getUrls());
         copy.setUrl(rpcContext.getUrl());
         copy.setMethodName(rpcContext.getMethodName());
@@ -47,5 +53,19 @@ public class RpcContext extends org.apache.dubbo.rpc.RpcContext {
         copy.setAsyncContext(rpcContext.getAsyncContext());
 
         return copy;
+    }
+
+    @Override
+    public <T> Future<T> getFuture() {
+        CompletableFuture completableFuture = FutureContext.getContext().getCompatibleCompletableFuture();
+        if (completableFuture == null) {
+            return null;
+        }
+        return new FutureAdapter(completableFuture);
+    }
+
+    @Override
+    public void setFuture(CompletableFuture<?> future) {
+        FutureContext.getContext().setCompatibleFuture(future);
     }
 }

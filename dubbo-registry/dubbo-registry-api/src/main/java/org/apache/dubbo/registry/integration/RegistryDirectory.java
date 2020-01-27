@@ -19,6 +19,7 @@ package org.apache.dubbo.registry.integration;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -27,7 +28,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
-import org.apache.dubbo.configcenter.DynamicConfiguration;
+import org.apache.dubbo.registry.AddressListener;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.remoting.Constants;
@@ -42,6 +43,7 @@ import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.cluster.RouterFactory;
 import org.apache.dubbo.rpc.cluster.directory.AbstractDirectory;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
+import org.apache.dubbo.rpc.cluster.governance.GovernanceRuleRepository;
 import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.protocol.InvokerWrapper;
@@ -58,22 +60,19 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.apache.dubbo.rpc.cluster.Constants.ROUTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DISABLED_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
-import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PREFERRED_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.APP_DYNAMIC_CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.COMPATIBLE_CONFIG_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
-import static org.apache.dubbo.registry.Constants.CONFIGURATORS_SUFFIX;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
@@ -81,6 +80,9 @@ import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATE
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.ROUTE_PROTOCOL;
+import static org.apache.dubbo.registry.Constants.CONFIGURATORS_SUFFIX;
+import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.ROUTER_KEY;
 
 
 /**
@@ -145,9 +147,9 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     private URL turnRegistryUrlToConsumerUrl(URL url) {
         // save any parameter in registry that will be useful to the new url.
-        String isDefault = url.getParameter(DEFAULT_KEY);
+        String isDefault = url.getParameter(PREFERRED_KEY);
         if (StringUtils.isNotEmpty(isDefault)) {
-            queryMap.put(REGISTRY_KEY + "." + DEFAULT_KEY, isDefault);
+            queryMap.put(REGISTRY_KEY + "." + PREFERRED_KEY, isDefault);
         }
         return URLBuilder.from(url)
                 .setPath(url.getServiceInterface())
@@ -192,7 +194,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             if (getConsumerUrl() != null && registry != null && registry.isAvailable()) {
                 registry.unsubscribe(getConsumerUrl(), this);
             }
-            DynamicConfiguration.getDynamicConfiguration()
+            ExtensionLoader.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension()
                     .removeListener(ApplicationModel.getApplication(), CONSUMER_CONFIGURATION_LISTENER);
         } catch (Throwable t) {
             logger.warn("unexpected error when unsubscribe service " + serviceKey + "from registry" + registry.getUrl(), t);
@@ -211,16 +213,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 .filter(Objects::nonNull)
                 .filter(this::isValidCategory)
                 .filter(this::isNotCompatibleFor26x)
-                .collect(Collectors.groupingBy(url -> {
-                    if (UrlUtils.isConfigurator(url)) {
-                        return CONFIGURATORS_CATEGORY;
-                    } else if (UrlUtils.isRoute(url)) {
-                        return ROUTERS_CATEGORY;
-                    } else if (UrlUtils.isProvider(url)) {
-                        return PROVIDERS_CATEGORY;
-                    }
-                    return "";
-                }));
+                .collect(Collectors.groupingBy(this::judgeCategory));
 
         List<URL> configuratorURLs = categoryUrls.getOrDefault(CONFIGURATORS_CATEGORY, Collections.emptyList());
         this.configurators = Configurator.toConfigurators(configuratorURLs).orElse(this.configurators);
@@ -230,7 +223,28 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
         // providers
         List<URL> providerURLs = categoryUrls.getOrDefault(PROVIDERS_CATEGORY, Collections.emptyList());
+        /**
+         * 3.x added for extend URL address
+         */
+        ExtensionLoader<AddressListener> addressListenerExtensionLoader = ExtensionLoader.getExtensionLoader(AddressListener.class);
+        List<AddressListener> supportedListeners = addressListenerExtensionLoader.getActivateExtension(getUrl(), (String[]) null);
+        if (supportedListeners != null && !supportedListeners.isEmpty()) {
+            for (AddressListener addressListener : supportedListeners) {
+                providerURLs = addressListener.notify(providerURLs, getUrl(),this);
+            }
+        }
         refreshOverrideAndInvoker(providerURLs);
+    }
+
+    private String judgeCategory(URL url) {
+        if (UrlUtils.isConfigurator(url)) {
+            return CONFIGURATORS_CATEGORY;
+        } else if (UrlUtils.isRoute(url)) {
+            return ROUTERS_CATEGORY;
+        } else if (UrlUtils.isProvider(url)) {
+            return PROVIDERS_CATEGORY;
+        }
+        return "";
     }
 
     private void refreshOverrideAndInvoker(List<URL> urls) {
@@ -580,28 +594,17 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             logger.error("Failed to execute router: " + getUrl() + ", cause: " + t.getMessage(), t);
         }
 
-
-        // FIXME Is there any need of failing back to Constants.ANY_VALUE or the first available method invokers when invokers is null?
-        /*Map<String, List<Invoker<T>>> localMethodInvokerMap = this.methodInvokerMap; // local reference
-        if (localMethodInvokerMap != null && localMethodInvokerMap.size() > 0) {
-            String methodName = RpcUtils.getMethodName(invocation);
-            invokers = localMethodInvokerMap.get(methodName);
-            if (invokers == null) {
-                invokers = localMethodInvokerMap.get(Constants.ANY_VALUE);
-            }
-            if (invokers == null) {
-                Iterator<List<Invoker<T>>> iterator = localMethodInvokerMap.values().iterator();
-                if (iterator.hasNext()) {
-                    invokers = iterator.next();
-                }
-            }
-        }*/
         return invokers == null ? Collections.emptyList() : invokers;
     }
 
     @Override
     public Class<T> getInterface() {
         return serviceType;
+    }
+
+    @Override
+    public List<Invoker<T>> getAllInvokers() {
+        return invokers;
     }
 
     @Override
@@ -711,7 +714,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         ReferenceConfigurationListener(RegistryDirectory directory, URL url) {
             this.directory = directory;
             this.url = url;
-            this.initWith(url.getEncodedServiceKey() + CONFIGURATORS_SUFFIX);
+            this.initWith(DynamicConfiguration.getRuleKey(url) + CONFIGURATORS_SUFFIX);
         }
 
         @Override

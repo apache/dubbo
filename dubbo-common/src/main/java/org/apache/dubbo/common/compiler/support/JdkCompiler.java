@@ -43,7 +43,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -73,7 +72,7 @@ public class JdkCompiler extends AbstractCompiler {
         StandardJavaFileManager manager = compiler.getStandardFileManager(diagnosticCollector, null, null);
         final ClassLoader loader = Thread.currentThread().getContextClassLoader();
         if (loader instanceof URLClassLoader
-                && (!loader.getClass().getName().equals("sun.misc.Launcher$AppClassLoader"))) {
+                && (!"sun.misc.Launcher$AppClassLoader".equals(loader.getClass().getName()))) {
             try {
                 URLClassLoader urlClassLoader = (URLClassLoader) loader;
                 List<File> files = new ArrayList<File>();
@@ -208,11 +207,6 @@ public class JdkCompiler extends AbstractCompiler {
             Iterable<JavaFileObject> result = super.list(location, packageName, kinds, recurse);
 
             ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
-            List<URL> urlList = new ArrayList<URL>();
-            Enumeration<URL> e = contextClassLoader.getResources("com");
-            while (e.hasMoreElements()) {
-                urlList.add(e.nextElement());
-            }
 
             ArrayList<JavaFileObject> files = new ArrayList<JavaFileObject>();
 

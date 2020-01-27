@@ -19,20 +19,21 @@ package org.apache.dubbo.rpc.protocol;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ListenableFilter;
 import org.apache.dubbo.rpc.Protocol;
+import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 
 import java.util.List;
 
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
-import static org.apache.dubbo.rpc.Constants.REFERENCE_FILTER_KEY;
-import static org.apache.dubbo.rpc.Constants.SERVICE_FILTER_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_FILTER_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_FILTER_KEY;
 
 /**
  * ListenerProtocol
@@ -47,8 +48,6 @@ public class ProtocolFilterWrapper implements Protocol {
         }
         this.protocol = protocol;
     }
-
-
 
     private static <T> Invoker<T> buildInvokerChain(final Invoker<T> invoker, String key, String group) {
         Invoker<T> last = invoker;
@@ -81,16 +80,40 @@ public class ProtocolFilterWrapper implements Protocol {
                         try {
                             asyncResult = filter.invoke(next, invocation);
                         } catch (Exception e) {
-                            // onError callback
-                            if (filter instanceof ListenableFilter) {
+                            if (filter instanceof ListenableFilter) {// Deprecated!
                                 Filter.Listener listener = ((ListenableFilter) filter).listener();
                                 if (listener != null) {
                                     listener.onError(e, invoker, invocation);
                                 }
+                            } else if (filter instanceof Filter.Listener2) {
+                                Filter.Listener2 listener = (Filter.Listener2) filter;
+                                listener.onError(e, invoker, invocation);
                             }
                             throw e;
+                        } finally {
+
                         }
-                        return asyncResult;
+                        return asyncResult.whenCompleteWithContext((r, t) -> {
+                            if (filter instanceof ListenableFilter) {// Deprecated!
+                                Filter.Listener listener = ((ListenableFilter) filter).listener();
+                                if (listener != null) {
+                                    if (t == null) {
+                                        listener.onResponse(r, invoker, invocation);
+                                    } else {
+                                        listener.onError(t, invoker, invocation);
+                                    }
+                                }
+                            } else if (filter instanceof Filter.Listener2) {
+                                Filter.Listener2 listener = (Filter.Listener2) filter;
+                                if (t == null) {
+                                    listener.onMessage(r, invoker, invocation);
+                                } else {
+                                    listener.onError(t, invoker, invocation);
+                                }
+                            } else {// Deprecated!
+                                filter.onResponse(r, invoker, invocation);
+                            }
+                        });
                     }
 
                     @Override
@@ -106,7 +129,7 @@ public class ProtocolFilterWrapper implements Protocol {
             }
         }
 
-        return new CallbackRegistrationInvoker<>(last, filters);
+        return last;
     }
 
     @Override
@@ -116,7 +139,7 @@ public class ProtocolFilterWrapper implements Protocol {
 
     @Override
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
-        if (REGISTRY_PROTOCOL.equals(invoker.getUrl().getProtocol())) {
+        if (UrlUtils.isRegistry(invoker.getUrl())) {
             return protocol.export(invoker);
         }
         return protocol.export(buildInvokerChain(invoker, SERVICE_FILTER_KEY, CommonConstants.PROVIDER));
@@ -124,7 +147,7 @@ public class ProtocolFilterWrapper implements Protocol {
 
     @Override
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
-        if (REGISTRY_PROTOCOL.equals(url.getProtocol())) {
+        if (UrlUtils.isRegistry(url)) {
             return protocol.refer(type, url);
         }
         return buildInvokerChain(protocol.refer(type, url), REFERENCE_FILTER_KEY, CommonConstants.CONSUMER);
@@ -135,57 +158,9 @@ public class ProtocolFilterWrapper implements Protocol {
         protocol.destroy();
     }
 
-    static class CallbackRegistrationInvoker<T> implements Invoker<T> {
-
-        private final Invoker<T> filterInvoker;
-        private final List<Filter> filters;
-
-        public CallbackRegistrationInvoker(Invoker<T> filterInvoker, List<Filter> filters) {
-            this.filterInvoker = filterInvoker;
-            this.filters = filters;
-        }
-
-        @Override
-        public Result invoke(Invocation invocation) throws RpcException {
-            Result asyncResult = filterInvoker.invoke(invocation);
-
-            asyncResult.thenApplyWithContext(r -> {
-                for (int i = filters.size() - 1; i >= 0; i--) {
-                    Filter filter = filters.get(i);
-                    // onResponse callback
-                    if (filter instanceof ListenableFilter) {
-                        Filter.Listener listener = ((ListenableFilter) filter).listener();
-                        if (listener != null) {
-                            listener.onResponse(r, filterInvoker, invocation);
-                        }
-                    } else {
-                        filter.onResponse(r, filterInvoker, invocation);
-                    }
-                }
-                return r;
-            });
-
-            return asyncResult;
-        }
-
-        @Override
-        public Class<T> getInterface() {
-            return filterInvoker.getInterface();
-        }
-
-        @Override
-        public URL getUrl() {
-            return filterInvoker.getUrl();
-        }
-
-        @Override
-        public boolean isAvailable() {
-            return filterInvoker.isAvailable();
-        }
-
-        @Override
-        public void destroy() {
-            filterInvoker.destroy();
-        }
+    @Override
+    public List<ProtocolServer> getServers() {
+        return protocol.getServers();
     }
+
 }

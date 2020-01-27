@@ -24,6 +24,6 @@
 
 public interface ClassNameTestDubbo {
 
-    public String echo(String arg);
+    String echo(String arg);
 
 }

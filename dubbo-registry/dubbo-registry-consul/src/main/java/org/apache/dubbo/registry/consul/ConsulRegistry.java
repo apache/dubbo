@@ -18,9 +18,12 @@
 package org.apache.dubbo.registry.consul;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
+import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.support.FailbackRegistry;
 import org.apache.dubbo.rpc.RpcException;
@@ -49,28 +52,25 @@ import java.util.stream.Collectors;
 
 import static java.util.concurrent.Executors.newCachedThreadPool;
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
+import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.PROVIDER_PROTOCOL;
+import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.CHECK_PASS_INTERVAL;
+import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.DEFAULT_CHECK_PASS_INTERVAL;
+import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.DEFAULT_DEREGISTER_TIME;
+import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.DEFAULT_PORT;
+import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.DEFAULT_WATCH_TIMEOUT;
+import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.DEREGISTER_AFTER;
+import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.SERVICE_TAG;
+import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.URL_META_KEY;
+import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.WATCH_TIMEOUT;
 
 /**
  * registry center implementation for consul
  */
 public class ConsulRegistry extends FailbackRegistry {
     private static final Logger logger = LoggerFactory.getLogger(ConsulRegistry.class);
-
-    private static final String SERVICE_TAG = "dubbo";
-    private static final String URL_META_KEY = "url";
-    private static final String WATCH_TIMEOUT = "consul-watch-timeout";
-    private static final String CHECK_PASS_INTERVAL = "consul-check-pass-interval";
-    private static final String DEREGISTER_AFTER = "consul-deregister-critical-service-after";
-
-    private static final int DEFAULT_PORT = 8500;
-    // default watch timeout in millisecond
-    private static final int DEFAULT_WATCH_TIMEOUT = 60 * 1000;
-    // default time-to-live in millisecond
-    private static final long DEFAULT_CHECK_PASS_INTERVAL = 16000L;
-    // default deregister critical server after
-    private static final String DEFAULT_DEREGISTER_TIME = "20s";
 
     private ConsulClient client;
     private long checkPassInterval;
@@ -136,12 +136,12 @@ public class ConsulRegistry extends FailbackRegistry {
             Response<Map<String, List<String>>> response = getAllServices(-1, buildWatchTimeout(url));
             index = response.getConsulIndex();
             List<HealthService> services = getHealthServices(response.getValue());
-            urls = convert(services);
+            urls = convert(services, url);
         } else {
-            String service = url.getServiceKey();
+            String service = url.getServiceInterface();
             Response<List<HealthService>> response = getHealthServices(service, -1, buildWatchTimeout(url));
             index = response.getConsulIndex();
-            urls = convert(response.getValue());
+            urls = convert(response.getValue(), url);
         }
 
         notify(url, listener, urls);
@@ -175,7 +175,7 @@ public class ConsulRegistry extends FailbackRegistry {
             if (result == null || result.getValue() == null || result.getValue().isEmpty()) {
                 return new ArrayList<>();
             } else {
-                return  convert(result.getValue());
+                return convert(result.getValue(), url);
             }
         } catch (Throwable e) {
             throw new RpcException("Failed to lookup " + url + " from consul " + getUrl() + ", cause: " + e.getMessage(), e);
@@ -225,9 +225,9 @@ public class ConsulRegistry extends FailbackRegistry {
     }
 
     private List<HealthService> getHealthServices(Map<String, List<String>> services) {
-        return services.keySet().stream()
-                .filter(s -> services.get(s).contains(SERVICE_TAG))
-                .map(s -> getHealthServices(s, -1, -1).getValue())
+        return services.entrySet().stream()
+                .filter(s -> s.getValue().contains(SERVICE_TAG))
+                .map(s -> getHealthServices(s.getKey(), -1, -1).getValue())
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList());
     }
@@ -241,7 +241,10 @@ public class ConsulRegistry extends FailbackRegistry {
         return url.getProtocol().equals(PROVIDER_PROTOCOL);
     }
 
-    private List<URL> convert(List<HealthService> services) {
+    private List<URL> convert(List<HealthService> services, URL consumerURL) {
+        if (CollectionUtils.isEmpty(services)) {
+            return emptyURL(consumerURL);
+        }
         return services.stream()
                 .map(HealthService::getService)
                 .filter(Objects::nonNull)
@@ -249,7 +252,19 @@ public class ConsulRegistry extends FailbackRegistry {
                 .filter(m -> m != null && m.containsKey(URL_META_KEY))
                 .map(m -> m.get(URL_META_KEY))
                 .map(URL::valueOf)
+                .filter(url -> UrlUtils.isMatch(consumerURL, url))
                 .collect(Collectors.toList());
+    }
+
+    private List<URL> emptyURL(URL consumerURL) {
+        // No Category Parameter
+        URL empty = URLBuilder.from(consumerURL)
+                .setProtocol(EMPTY_PROTOCOL)
+                .removeParameter(CATEGORY_KEY)
+                .build();
+        List<URL> result = new ArrayList<URL>();
+        result.add(empty);
+        return result;
     }
 
     private NewService buildService(URL url) {
@@ -266,8 +281,8 @@ public class ConsulRegistry extends FailbackRegistry {
 
     private List<String> buildTags(URL url) {
         Map<String, String> params = url.getParameters();
-        List<String> tags = params.keySet().stream()
-                .map(k -> k + "=" + params.get(k))
+        List<String> tags = params.entrySet().stream()
+                .map(k -> k.getKey() + "=" + k.getValue())
                 .collect(Collectors.toList());
         tags.add(SERVICE_TAG);
         return tags;
@@ -318,7 +333,7 @@ public class ConsulRegistry extends FailbackRegistry {
             if (currentIndex != null && currentIndex > consulIndex) {
                 consulIndex = currentIndex;
                 List<HealthService> services = response.getValue();
-                List<URL> urls = convert(services);
+                List<URL> urls = convert(services, url);
                 for (NotifyListener listener : getSubscribed().get(url)) {
                     doNotify(url, listener, urls);
                 }
@@ -331,7 +346,7 @@ public class ConsulRegistry extends FailbackRegistry {
             if (currentIndex != null && currentIndex > consulIndex) {
                 consulIndex = currentIndex;
                 List<HealthService> services = getHealthServices(response.getValue());
-                List<URL> urls = convert(services);
+                List<URL> urls = convert(services, url);
                 for (NotifyListener listener : getSubscribed().get(url)) {
                     doNotify(url, listener, urls);
                 }

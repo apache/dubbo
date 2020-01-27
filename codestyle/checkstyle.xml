@@ -22,6 +22,8 @@
         <module name="UnusedImports"/>
         <module name="RedundantImport"/>
 
+        <module name="EqualsHashCode"/>
+
         <!--<module name="CustomImportOrder">-->
         <!--<property name="specialImportsRegExp" value="org.apache.dubbo.*"/>-->
         <!--<property name="sortImportsInGroupAlphabetically" value="false"/>-->

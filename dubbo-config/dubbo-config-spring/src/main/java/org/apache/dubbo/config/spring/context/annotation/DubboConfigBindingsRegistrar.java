@@ -18,6 +18,7 @@ package org.apache.dubbo.config.spring.context.annotation;
 
 import org.apache.dubbo.config.AbstractConfig;
 
+import com.alibaba.spring.beans.factory.annotation.ConfigurationBeanBindingsRegister;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
@@ -33,7 +34,9 @@ import org.springframework.util.Assert;
  * @see EnableDubboConfigBindings
  * @see DubboConfigBindingRegistrar
  * @since 2.5.8
+ * @deprecated it will be removed in future, please use {@link ConfigurationBeanBindingsRegister} for replacement
  */
+@Deprecated
 public class DubboConfigBindingsRegistrar implements ImportBeanDefinitionRegistrar, EnvironmentAware {
 
     private ConfigurableEnvironment environment;

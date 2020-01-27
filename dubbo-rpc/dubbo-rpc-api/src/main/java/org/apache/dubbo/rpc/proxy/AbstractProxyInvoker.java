@@ -27,7 +27,6 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.CompletableFuture;
@@ -84,8 +83,7 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
         try {
             Object value = doInvoke(proxy, invocation.getMethodName(), invocation.getParameterTypes(), invocation.getArguments());
             CompletableFuture<Object> future = wrapWithFuture(value, invocation);
-            AsyncRpcResult asyncRpcResult = new AsyncRpcResult(invocation);
-            future.whenComplete((obj, t) -> {
+            CompletableFuture<AppResponse> appResponseFuture = future.handle((obj, t) -> {
                 AppResponse result = new AppResponse();
                 if (t != null) {
                     if (t instanceof CompletionException) {
@@ -96,9 +94,9 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
                 } else {
                     result.setValue(obj);
                 }
-                asyncRpcResult.complete(result);
+                return result;
             });
-            return asyncRpcResult;
+            return new AsyncRpcResult(appResponseFuture, invocation);
         } catch (InvocationTargetException e) {
             if (RpcContext.getContext().isAsyncStarted() && !RpcContext.getContext().stopAsync()) {
                 logger.error("Provider async started, but got an exception from the original method, cannot write the exception back to consumer because an async result may have returned the new thread.", e);
@@ -112,10 +110,7 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
     private CompletableFuture<Object> wrapWithFuture (Object value, Invocation invocation) {
         if (RpcContext.getContext().isAsyncStarted()) {
             return ((AsyncContextImpl)(RpcContext.getContext().getAsyncContext())).getInternalFuture();
-        } else if (RpcUtils.isReturnTypeFuture(invocation)) {
-            if (value == null) {
-                return CompletableFuture.completedFuture(null);
-            }
+        } else if (value instanceof CompletableFuture) {
             return (CompletableFuture<Object>) value;
         }
         return CompletableFuture.completedFuture(value);

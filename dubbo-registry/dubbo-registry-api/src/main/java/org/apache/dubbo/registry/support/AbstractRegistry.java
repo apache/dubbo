@@ -23,6 +23,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
@@ -36,6 +37,7 @@ import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -53,7 +55,9 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.FILE_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.ACCEPTS_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
@@ -92,7 +96,8 @@ public abstract class AbstractRegistry implements Registry {
         setUrl(url);
         // Start file save timer
         syncSaveFile = url.getParameter(REGISTRY_FILESAVE_SYNC_KEY, false);
-        String filename = url.getParameter(FILE_KEY, System.getProperty("user.home") + "/.dubbo/dubbo-registry-" + url.getParameter(APPLICATION_KEY) + "-" + url.getAddress() + ".cache");
+        String defaultFilename = System.getProperty("user.home") + "/.dubbo/dubbo-registry-" + url.getParameter(APPLICATION_KEY) + "-" + url.getAddress().replaceAll(":", "-") + ".cache";
+        String filename = url.getParameter(FILE_KEY, defaultFilename);
         File file = null;
         if (ConfigUtils.isNotEmpty(filename)) {
             file = new File(filename);
@@ -229,9 +234,9 @@ public abstract class AbstractRegistry implements Registry {
         for (Map.Entry<Object, Object> entry : properties.entrySet()) {
             String key = (String) entry.getKey();
             String value = (String) entry.getValue();
-            if (key != null && key.length() > 0 && key.equals(url.getServiceKey())
+            if (StringUtils.isNotEmpty(key) && key.equals(url.getServiceKey())
                     && (Character.isLetter(key.charAt(0)) || key.charAt(0) == '_')
-                    && value != null && value.length() > 0) {
+                    && StringUtils.isNotEmpty(value)) {
                 String[] arr = value.trim().split(URL_SPLIT);
                 List<URL> urls = new ArrayList<>();
                 for (String u : arr) {
@@ -247,7 +252,7 @@ public abstract class AbstractRegistry implements Registry {
     public List<URL> lookup(URL url) {
         List<URL> result = new ArrayList<>();
         Map<String, List<URL>> notifiedUrls = getNotified().get(url);
-        if (notifiedUrls != null && notifiedUrls.size() > 0) {
+        if (CollectionUtils.isNotEmptyMap(notifiedUrls)) {
             for (List<URL> urls : notifiedUrls.values()) {
                 for (URL u : urls) {
                     if (!EMPTY_PROTOCOL.equals(u.getProtocol())) {
@@ -488,6 +493,16 @@ public abstract class AbstractRegistry implements Registry {
                 }
             }
         }
+    }
+
+    protected boolean acceptable(URL urlToRegistry) {
+        String pattern = registryUrl.getParameter(ACCEPTS_KEY);
+        if (StringUtils.isEmpty(pattern)) {
+            return true;
+        }
+
+        return Arrays.stream(COMMA_SPLIT_PATTERN.split(pattern))
+                .anyMatch(p -> p.equalsIgnoreCase(urlToRegistry.getProtocol()));
     }
 
     @Override
