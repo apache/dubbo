@@ -67,7 +67,8 @@ public class ContextFilter implements Filter, Filter.Listener2 {
         context.setInvoker(invoker)
                 .setInvocation(invocation)
 //                .setAttachments(attachments)  // merged from dubbox
-                .setLocalAddress(invoker.getUrl().getHost(), invoker.getUrl().getPort());
+                .setLocalAddress(invoker.getUrl().getHost(), invoker.getUrl().getPort())
+                .setConsumerApplicationName((String) attachments.get(CONSUMER_APPLICATION_KEY));
         String remoteApplication = (String) invocation.getAttachment(REMOTE_APPLICATION_KEY);
         if (StringUtils.isNotEmpty(remoteApplication)) {
             context.setRemoteApplicationName(remoteApplication);
@@ -95,7 +96,8 @@ public class ContextFilter implements Filter, Filter.Listener2 {
             return invoker.invoke(invocation);
         } finally {
             RpcContext.getContext().clearAfterEachInvoke(true);
-            // IMPORTANT! For async scenario, we must remove context from current thread, so we always create a new RpcContext for the next invoke for the same thread.
+            // IMPORTANT! For async scenario, we must remove context from current thread, so we always create a new
+            // RpcContext for the next invoke for the same thread.
             RpcContext.removeContext();
             RpcContext.removeServerContext();
         }
