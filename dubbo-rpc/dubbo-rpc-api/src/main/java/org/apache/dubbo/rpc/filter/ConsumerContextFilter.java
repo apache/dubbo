@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.filter;
 
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.Filter;
@@ -27,7 +26,9 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 
-import static org.apache.dubbo.common.constants.CommonConstants.*;
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
+import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_APPLICATION_KEY;
 
 /**
  * ConsumerContextFilter set current RpcContext with invoker,invocation, local host, remote host and port
@@ -41,24 +42,14 @@ public class ConsumerContextFilter implements Filter {
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-
-        URL url = invoker.getUrl();
-
-        /**
-         * Pass the consumer's application name to the provider, so the provider can be used to analyze the caller (ie consumer)
-         */
-        String application = url.getParameter(APPLICATION_KEY);
-        if (application != null) {
-            RpcContext.getContext().setAttachment(CONSUMER_APPLICATION_KEY, application);
-        }
-
         RpcContext.getContext()
                 .setInvoker(invoker)
                 .setInvocation(invocation)
                 .setLocalAddress(NetUtils.getLocalHost(), 0)
                 .setRemoteAddress(invoker.getUrl().getHost(), invoker.getUrl().getPort())
-                .setConsumerApplicationName(url.getParameter(REMOTE_APPLICATION_KEY))
-                .setAttachment(REMOTE_APPLICATION_KEY, url.getParameter(APPLICATION_KEY));
+                .setRemoteApplicationName(invoker.getUrl().getParameter(REMOTE_APPLICATION_KEY))
+                .setConsumerApplicationName(invoker.getUrl().getParameter(APPLICATION_KEY))
+                .setAttachment(REMOTE_APPLICATION_KEY, invoker.getUrl().getParameter(APPLICATION_KEY));
         if (invocation instanceof RpcInvocation) {
             ((RpcInvocation) invocation).setInvoker(invoker);
         }

@@ -43,6 +43,7 @@ public class RpcContext extends org.apache.dubbo.rpc.RpcContext {
         copy.setArguments(rpcContext.getArguments());
         copy.setLocalAddress(rpcContext.getLocalAddress());
         copy.setRemoteAddress(rpcContext.getRemoteAddress());
+        copy.setRemoteApplicationName(rpcContext.getRemoteApplicationName());
         copy.setConsumerApplicationName(rpcContext.getConsumerApplicationName());
         copy.setInvokers(rpcContext.getInvokers());
         copy.setInvoker(rpcContext.getInvoker());

@@ -35,9 +35,8 @@ public interface CommonConstants {
      * This constant is used when the consumer calls the provider, and the application name of the consumer is passed to the consumer.
      * The provider can be used to analyze which consumer applications are called by the consumer.
      *
-     * Note that the "_" is added here to avoid the same as the user-defined parameter name.
      */
-    String CONSUMER_APPLICATION_KEY = "_consumerApplication";
+    String CONSUMER_APPLICATION_KEY = "consumer.application";
 
     String ENABLED_KEY = "enabled";
 

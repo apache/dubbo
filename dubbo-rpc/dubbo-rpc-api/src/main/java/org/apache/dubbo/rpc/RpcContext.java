@@ -90,6 +90,8 @@ public class RpcContext {
 
     private InetSocketAddress remoteAddress;
 
+    private String remoteApplicationName;
+
     /**
      * This field is used to pass the applicationName of the consumer to the Provider
      */
@@ -402,6 +404,15 @@ public class RpcContext {
      */
     public RpcContext setRemoteAddress(InetSocketAddress address) {
         this.remoteAddress = address;
+        return this;
+    }
+
+    public String getRemoteApplicationName() {
+        return remoteApplicationName;
+    }
+
+    public RpcContext setRemoteApplicationName(String remoteApplicationName) {
+        this.remoteApplicationName = remoteApplicationName;
         return this;
     }
 
