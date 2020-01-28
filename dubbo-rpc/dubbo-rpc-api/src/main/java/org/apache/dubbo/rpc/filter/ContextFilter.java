@@ -67,8 +67,15 @@ public class ContextFilter implements Filter, Filter.Listener2 {
         context.setInvoker(invoker)
                 .setInvocation(invocation)
 //                .setAttachments(attachments)  // merged from dubbox
-                .setLocalAddress(invoker.getUrl().getHost(), invoker.getUrl().getPort())
-                .setConsumerApplicationName(invoker.getUrl().getParameter(CONSUMER_APPLICATION_KEY));
+                .setLocalAddress(invoker.getUrl().getHost(), invoker.getUrl().getPort());
+        String remoteApplication = (String) invocation.getAttachment(REMOTE_APPLICATION_KEY);
+        if (StringUtils.isNotEmpty(remoteApplication)) {
+            context.setRemoteApplicationName(remoteApplication);
+        } else {
+            context.setRemoteApplicationName((String) RpcContext.getContext().getAttachment(REMOTE_APPLICATION_KEY));
+
+        }
+
 
         // merged from dubbox
         // we may already added some attachments into RpcContext before this filter (e.g. in rest protocol)
