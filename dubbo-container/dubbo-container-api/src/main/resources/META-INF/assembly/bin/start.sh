@@ -90,9 +90,11 @@ if [ "${JAVA_VERSION}" -ge ${JAVA_8_VERSION} ]; then
     VM_ARGS=${VM_ARGS_METASPACE_SIZE}
 fi
 
+# MaxInlineLevel=15 is the default since JDK 14 and can be removed once older JDKs are no longer supported
 BITS=`java -version 2>&1 | grep -i 64-bit`
 if [ -n "$BITS" ]; then
-    JAVA_MEM_OPTS=" -server -Xmx2g -Xms2g -Xmn256m -XX:${VM_ARGS}=128m -Xss256k -XX:+DisableExplicitGC -XX:+UseConcMarkSweepGC -XX:+CMSParallelRemarkEnabled -XX:+UseCMSCompactAtFullCollection -XX:LargePageSizeInBytes=128m -XX:+UseFastAccessorMethods -XX:+UseCMSInitiatingOccupancyOnly -XX:CMSInitiatingOccupancyFraction=70 "
+#    JAVA_MEM_OPTS=" -server -Xmx2g -Xms2g -Xmn256m -XX:${VM_ARGS}=128m -Xss256k -XX:+DisableExplicitGC -XX:+UseConcMarkSweepGC -XX:+CMSParallelRemarkEnabled -XX:+UseCMSCompactAtFullCollection -XX:LargePageSizeInBytes=128m -XX:+UseFastAccessorMethods -XX:+UseCMSInitiatingOccupancyOnly -XX:CMSInitiatingOccupancyFraction=70 "
+    JAVA_MEM_OPTS=" -server -Xmx2g -Xms2g -Xmn256m -XX:${VM_ARGS}=128m -Xss256k -XX:LargePageSizeInBytes=128m -XX:+DisableExplicitGC -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:G1HeapRegionSize=16m -XX:G1ReservePercent=25 -XX:InitiatingHeapOccupancyPercent=30 -XX:SoftRefLRUPolicyMSPerMB=0 -XX:SurvivorRatio=8 -XX:G1ReservePercent=15 "
 else
     JAVA_MEM_OPTS=" -server -Xms1g -Xmx1g -XX:${VM_ARGS}=128m -XX:SurvivorRatio=2 -XX:+UseParallelGC "
 fi
