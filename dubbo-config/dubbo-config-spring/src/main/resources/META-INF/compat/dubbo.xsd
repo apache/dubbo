@@ -1040,6 +1040,11 @@
                 <xsd:documentation><![CDATA[ The thread pool type. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="threadname" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The thread pool name. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
         <xsd:attribute name="threads" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The thread pool size. ]]></xsd:documentation>
@@ -1214,6 +1219,11 @@
                 <xsd:attribute name="threadpool" type="xsd:string">
                     <xsd:annotation>
                         <xsd:documentation><![CDATA[ The thread pool type. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+                <xsd:attribute name="threadname" type="xsd:string">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ The thread pool name. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
                 <xsd:attribute name="threads" type="xsd:string">
