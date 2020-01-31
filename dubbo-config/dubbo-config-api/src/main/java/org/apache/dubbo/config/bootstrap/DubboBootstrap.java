@@ -550,7 +550,7 @@ public class DubboBootstrap extends GenericEventListener {
                 return providerConfig;
             });
         }
-        for (ProviderConfig providerConfig : providers) {
+        for (ProviderConfig providerConfig : configManager.getProviders()) {
             ConfigValidationUtils.validateProviderConfig(providerConfig);
         }
         // check Consumer
@@ -563,7 +563,7 @@ public class DubboBootstrap extends GenericEventListener {
                 return consumerConfig;
             });
         }
-        for (ConsumerConfig consumerConfig : consumers) {
+        for (ConsumerConfig consumerConfig : configManager.getConsumers()) {
             ConfigValidationUtils.validateConsumerConfig(consumerConfig);
         }
 
