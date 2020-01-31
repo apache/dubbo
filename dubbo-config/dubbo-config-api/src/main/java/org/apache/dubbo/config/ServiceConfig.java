@@ -412,6 +412,14 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 map.put(METHODS_KEY, StringUtils.join(new HashSet<String>(Arrays.asList(methods)), ","));
             }
         }
+
+        /**
+         * Here the token value configured by the provider is used to assign the value to ServiceConfig#token
+         */
+        if(ConfigUtils.isEmpty(token) && provider != null) {
+            token = provider.getToken();
+        }
+
         if (!ConfigUtils.isEmpty(token)) {
             if (ConfigUtils.isDefault(token)) {
                 map.put(TOKEN_KEY, UUID.randomUUID().toString());
