@@ -17,12 +17,13 @@
 package org.apache.dubbo.auth.spi;
 
 
+import org.apache.dubbo.auth.exception.RpcAuthenticationException;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.rpc.Invocation;
 
 @SPI("accessKey")
-public interface AuthenticationHelper {
+public interface Authenticator {
 
     /**
      * give a sign to request
@@ -30,14 +31,14 @@ public interface AuthenticationHelper {
      * @param invocation
      * @param url
      */
-    void signForRequest(Invocation invocation, URL url);
+    void sign(Invocation invocation, URL url);
+
 
     /**
      * verify the signature of the request is valid or not
-     *
      * @param invocation
      * @param url
-     * @return true if the signature is valid
+     * @throws RpcAuthenticationException when failed to authenticate current invocation
      */
-    boolean authenticateRequest(Invocation invocation, URL url);
+    void authenticate(Invocation invocation, URL url) throws RpcAuthenticationException;
 }
