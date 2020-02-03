@@ -14,32 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.auth;
+package org.apache.dubbo.auth.exception;
 
 
-public interface Constants {
+public class RpcAuthenticationException extends Exception {
+    public RpcAuthenticationException() {
+    }
 
-    String SERVICE_AUTH = "auth";
+    public RpcAuthenticationException(String message) {
+        super(message);
+    }
 
-    String AUTHENTICATOR = "authenticator";
-
-    String DEFAULT_AUTHENTICATOR = "accesskey";
-
-    String DEFAULT_ACCESS_KEY_STORAGE = "urlstorage";
-
-    String ACCESS_KEY_STORAGE_KEY = "accessKey.storage";
-
-    String ACCESS_KEY_ID_KEY = "accessKeyId";
-
-    String SECRET_ACCESS_KEY_KEY = "secretAccessKey";
-
-    String REQUEST_TIMESTAMP_KEY = "timestamp";
-
-    String REQUEST_SIGNATURE_KEY = "signature";
-
-    String AK_KEY = "ak";
-
-    String SIGNATURE_STRING_FORMAT = "%s#%s#%s#%s";
-
-    String PARAMTER_SIGNATURE_ENABLE_KEY = "param.sign";
+    public RpcAuthenticationException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

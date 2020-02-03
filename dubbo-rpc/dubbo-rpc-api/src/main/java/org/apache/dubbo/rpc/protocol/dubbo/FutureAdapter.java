@@ -26,7 +26,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 /**
- * FutureAdapter
+ * This is the type of the Future instance users get in an async call:
+ * 1. unwrap AppResponse in appResponseFuture and convert to plain biz result represented by FutureAdapter.
+ * 2. customized behaviors meaningful for RPC, for example, {@link #cancel(boolean)}
  */
 public class FutureAdapter<V> extends CompletableFuture<V> {
 

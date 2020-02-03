@@ -197,23 +197,12 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         return ref.getClass();
     }
 
-    public void checkDefault() {
-        createProviderIfAbsent();
-    }
-
-    private void createProviderIfAbsent() {
-        if (provider != null) {
-            return;
+    public void checkDefault() throws IllegalStateException {
+        if (provider == null) {
+            provider = ApplicationModel.getConfigManager()
+                    .getDefaultProvider()
+                    .orElse(new ProviderConfig());
         }
-        setProvider(
-                ApplicationModel.getConfigManager()
-                        .getDefaultProvider()
-                        .orElseGet(() -> {
-                            ProviderConfig providerConfig = new ProviderConfig();
-                            providerConfig.refresh();
-                            return providerConfig;
-                        })
-        );
     }
 
     public void checkProtocol() {
@@ -413,6 +402,8 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
 
     @Parameter(excluded = true)
     public String getUniqueServiceName() {
+        String group = StringUtils.isEmpty(this.group) ? provider.getGroup() : this.group;
+        String version = StringUtils.isEmpty(this.version) ? provider.getVersion() : this.version;
         return URL.buildKey(interfaceName, group, version);
     }
 
