@@ -168,9 +168,7 @@ public interface CommonConstants {
 
     String REVISION_KEY = "revision";
 
-    String METADATA_REVISION = "metadata.revision";
-
-    String METADATA_KEY = "metadata";
+    String METADATA_KEY = "metadata-type";
 
     String DEFAULT_METADATA_STORAGE_TYPE = "local";
 
@@ -246,7 +244,7 @@ public interface CommonConstants {
     String METRICS_PROTOCOL = "metrics.protocol";
 
     /**
-     * After simplify the registry, should add some paramter individually for provider.
+     * After simplify the registry, should add some parameter individually for provider.
      *
      * @since 2.7.0
      */
