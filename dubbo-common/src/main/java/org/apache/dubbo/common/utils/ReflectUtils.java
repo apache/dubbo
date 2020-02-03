@@ -134,7 +134,21 @@ public final class ReflectUtils {
 
     private static final ConcurrentMap<String, Class<?>> NAME_CLASS_CACHE = new ConcurrentHashMap<String, Class<?>>();
 
-    private static final ConcurrentMap<String, Method> Signature_METHODS_CACHE = new ConcurrentHashMap<String, Method>();
+    private static final ConcurrentMap<String, Method> SIGNATURE_METHODS_CACHE = new ConcurrentHashMap<String, Method>();
+
+    private static Map<Class<?>, Object> primitiveDefaults = new HashMap<>();
+
+    static {
+        primitiveDefaults.put(int.class, 0);
+        primitiveDefaults.put(long.class, 0L);
+        primitiveDefaults.put(byte.class, (byte) 0);
+        primitiveDefaults.put(char.class, (char) 0);
+        primitiveDefaults.put(short.class, (short) 0);
+        primitiveDefaults.put(float.class, (float) 0);
+        primitiveDefaults.put(double.class, (double) 0);
+        primitiveDefaults.put(boolean.class, false);
+        primitiveDefaults.put(void.class, null);
+    }
 
     private ReflectUtils() {
     }
@@ -897,7 +911,7 @@ public final class ReflectUtils {
         if (parameterTypes != null && parameterTypes.length > 0) {
             signature += StringUtils.join(parameterTypes);
         }
-        Method method = Signature_METHODS_CACHE.get(signature);
+        Method method = SIGNATURE_METHODS_CACHE.get(signature);
         if (method != null) {
             return method;
         }
@@ -925,7 +939,7 @@ public final class ReflectUtils {
             method = clazz.getMethod(methodName, types);
 
         }
-        Signature_METHODS_CACHE.put(signature, method);
+        SIGNATURE_METHODS_CACHE.put(signature, method);
         return method;
     }
 
@@ -1062,6 +1076,22 @@ public final class ReflectUtils {
             }
             return value;
         } catch (Throwable e) {
+            return null;
+        }
+    }
+
+    public static Object defaultReturn(Method m) {
+        if (m.getReturnType().isPrimitive()) {
+            return primitiveDefaults.get(m.getReturnType());
+        } else {
+            return null;
+        }
+    }
+
+    public static Object defaultReturn(Class<?> classType) {
+        if (classType != null && classType.isPrimitive()) {
+            return primitiveDefaults.get(classType);
+        } else {
             return null;
         }
     }
@@ -1204,7 +1234,7 @@ public final class ReflectUtils {
     }
 
     /**
-     * Find the hierarchical types form the source {@link Class class} by specified {@link Class type}.
+     * Find the hierarchical types from the source {@link Class class} by specified {@link Class type}.
      *
      * @param sourceClass the source {@link Class class}
      * @param matchType   the type to match

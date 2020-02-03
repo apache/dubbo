@@ -86,7 +86,10 @@ public class DubboMonitor implements Monitor {
     }
 
     public void send() {
-        logger.debug("Send statistics to monitor " + getUrl());
+        if (logger.isDebugEnabled()) {
+            logger.debug("Send statistics to monitor " + getUrl());
+        }
+
         String timestamp = String.valueOf(System.currentTimeMillis());
         for (Map.Entry<Statistics, AtomicReference<long[]>> entry : statisticsMap.entrySet()) {
             // get statistics data
@@ -157,11 +160,7 @@ public class DubboMonitor implements Monitor {
         int concurrent = url.getParameter(MonitorService.CONCURRENT, 0);
         // init atomic reference
         Statistics statistics = new Statistics(url);
-        AtomicReference<long[]> reference = statisticsMap.get(statistics);
-        if (reference == null) {
-            statisticsMap.putIfAbsent(statistics, new AtomicReference<long[]>());
-            reference = statisticsMap.get(statistics);
-        }
+        AtomicReference<long[]> reference = statisticsMap.computeIfAbsent(statistics, k -> new AtomicReference<>());
         // use CompareAndSet to sum
         long[] current;
         long[] update = new long[LENGTH];

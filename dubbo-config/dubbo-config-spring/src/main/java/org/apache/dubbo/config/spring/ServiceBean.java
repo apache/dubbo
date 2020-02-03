@@ -21,6 +21,7 @@ import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.context.event.ServiceBeanExportedEvent;
 import org.apache.dubbo.config.spring.extension.SpringExtensionFactory;
+import org.apache.dubbo.config.support.Parameter;
 
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.BeanNameAware;
@@ -98,6 +99,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
      * @return {@link ServiceBean}'s name
      * @since 2.6.5
      */
+    @Parameter(excluded = true)
     public String getBeanName() {
         return this.beanName;
     }

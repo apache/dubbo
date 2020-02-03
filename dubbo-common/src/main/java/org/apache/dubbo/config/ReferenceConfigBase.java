@@ -111,47 +111,11 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         return shouldInit;
     }
 
-    public void checkDefault() {
-        if (consumer != null) {
-            return;
-        }
-        setConsumer(ApplicationModel.getConfigManager().getDefaultConsumer().orElseGet(() -> {
-            ConsumerConfig consumerConfig = new ConsumerConfig();
-            consumerConfig.refresh();
-            return consumerConfig;
-        }));
-    }
-
-    public void completeCompoundConfigs() {
-        if (consumer != null) {
-            if (application == null) {
-                setApplication(consumer.getApplication());
-            }
-            if (module == null) {
-                setModule(consumer.getModule());
-            }
-            if (registries == null) {
-                setRegistries(consumer.getRegistries());
-            }
-            if (monitor == null) {
-                setMonitor(consumer.getMonitor());
-            }
-        }
-        if (module != null) {
-            if (registries == null) {
-                setRegistries(module.getRegistries());
-            }
-            if (monitor == null) {
-                setMonitor(module.getMonitor());
-            }
-        }
-        if (application != null) {
-            if (registries == null) {
-                setRegistries(application.getRegistries());
-            }
-            if (monitor == null) {
-                setMonitor(application.getMonitor());
-            }
+    public void checkDefault() throws IllegalStateException {
+        if (consumer == null) {
+            consumer = ApplicationModel.getConfigManager()
+                    .getDefaultConsumer()
+                    .orElse(new ConsumerConfig());
         }
     }
 
@@ -304,6 +268,8 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
 
     @Parameter(excluded = true)
     public String getUniqueServiceName() {
+        String group = StringUtils.isEmpty(this.group) ? consumer.getGroup() : this.group;
+        String version = StringUtils.isEmpty(this.version) ? consumer.getVersion() : this.version;
         return URL.buildKey(interfaceName, group, version);
     }
 

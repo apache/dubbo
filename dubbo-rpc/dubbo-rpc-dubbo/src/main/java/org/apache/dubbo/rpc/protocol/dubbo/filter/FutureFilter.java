@@ -26,18 +26,20 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.AsyncMethodInfo;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
+import static org.apache.dubbo.rpc.protocol.dubbo.Constants.ASYNC_METHOD_INFO;
 
 /**
  * EventFilter
  */
 @Activate(group = CommonConstants.CONSUMER)
-public class FutureFilter implements Filter, Filter.Listener {
+public class FutureFilter implements Filter, Filter.Listener2 {
 
     protected static final Logger logger = LoggerFactory.getLogger(FutureFilter.class);
 
@@ -64,7 +66,7 @@ public class FutureFilter implements Filter, Filter.Listener {
     }
 
     private void fireInvokeCallback(final Invoker<?> invoker, final Invocation invocation) {
-        final ConsumerModel.AsyncMethodInfo asyncMethodInfo = getAsyncMethodInfo(invoker, invocation);
+        final AsyncMethodInfo asyncMethodInfo = getAsyncMethodInfo(invoker, invocation);
         if (asyncMethodInfo == null) {
             return;
         }
@@ -92,7 +94,7 @@ public class FutureFilter implements Filter, Filter.Listener {
     }
 
     private void fireReturnCallback(final Invoker<?> invoker, final Invocation invocation, final Object result) {
-        final ConsumerModel.AsyncMethodInfo asyncMethodInfo = getAsyncMethodInfo(invoker, invocation);
+        final AsyncMethodInfo asyncMethodInfo = getAsyncMethodInfo(invoker, invocation);
         if (asyncMethodInfo == null) {
             return;
         }
@@ -138,7 +140,7 @@ public class FutureFilter implements Filter, Filter.Listener {
     }
 
     private void fireThrowCallback(final Invoker<?> invoker, final Invocation invocation, final Throwable exception) {
-        final ConsumerModel.AsyncMethodInfo asyncMethodInfo = getAsyncMethodInfo(invoker, invocation);
+        final AsyncMethodInfo asyncMethodInfo = getAsyncMethodInfo(invoker, invocation);
         if (asyncMethodInfo == null) {
             return;
         }
@@ -184,8 +186,13 @@ public class FutureFilter implements Filter, Filter.Listener {
         }
     }
 
-    private ConsumerModel.AsyncMethodInfo getAsyncMethodInfo(Invoker<?> invoker, Invocation invocation) {
-        final ConsumerModel consumerModel = ApplicationModel.getConsumerModel(invoker.getUrl().getServiceKey());
+    private AsyncMethodInfo getAsyncMethodInfo(Invoker<?> invoker, Invocation invocation) {
+        AsyncMethodInfo asyncMethodInfo = (AsyncMethodInfo) invocation.get(ASYNC_METHOD_INFO);
+        if (asyncMethodInfo != null) {
+            return asyncMethodInfo;
+        }
+
+        ConsumerModel consumerModel = ApplicationModel.getConsumerModel(invoker.getUrl().getServiceKey());
         if (consumerModel == null) {
             return null;
         }
@@ -195,12 +202,7 @@ public class FutureFilter implements Filter, Filter.Listener {
             methodName = (String) invocation.getArguments()[0];
         }
 
-        final ConsumerModel.AsyncMethodInfo asyncMethodInfo = consumerModel.getMethodConfig(methodName);
-        if (asyncMethodInfo == null) {
-            return null;
-        }
-
-        return asyncMethodInfo;
+        return consumerModel.getAsyncInfo(methodName);
     }
 
 }

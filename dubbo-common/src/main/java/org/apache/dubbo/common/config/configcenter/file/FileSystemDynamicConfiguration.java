@@ -124,14 +124,14 @@ public class FileSystemDynamicConfiguration extends AbstractDynamicConfiguration
      *
      * @see #detectPoolingBasedWatchService(Optional)
      */
-    private static final boolean basedPoolingWatchService;
+    private static final boolean BASED_POOLING_WATCH_SERVICE;
 
-    private static final WatchEvent.Modifier[] modifiers;
+    private static final WatchEvent.Modifier[] MODIFIERS;
 
     /**
      * the delay to action in seconds. If null, execute indirectly
      */
-    private static final Integer delay;
+    private static final Integer DELAY;
 
     /**
      * The thread pool for {@link WatchEvent WatchEvents} loop
@@ -139,15 +139,15 @@ public class FileSystemDynamicConfiguration extends AbstractDynamicConfiguration
      *
      * @see ThreadPoolExecutor
      */
-    private static final ThreadPoolExecutor watchEventsLoopThreadPool;
+    private static final ThreadPoolExecutor WATCH_EVENTS_LOOP_THREAD_POOL;
 
     // static initialization
     static {
         watchService = newWatchService();
-        basedPoolingWatchService = detectPoolingBasedWatchService(watchService);
-        modifiers = initWatchEventModifiers();
-        delay = initDelay(modifiers);
-        watchEventsLoopThreadPool = newWatchEventsLoopThreadPool();
+        BASED_POOLING_WATCH_SERVICE = detectPoolingBasedWatchService(watchService);
+        MODIFIERS = initWatchEventModifiers();
+        DELAY = initDelay(MODIFIERS);
+        WATCH_EVENTS_LOOP_THREAD_POOL = newWatchEventsLoopThreadPool();
     }
 
     /**
@@ -221,7 +221,7 @@ public class FileSystemDynamicConfiguration extends AbstractDynamicConfiguration
                     File configDirectory = configFile.getParentFile();
                     if (configDirectory != null) {
                         // Register the configDirectory
-                        configDirectory.toPath().register(watchService.get(), INTEREST_PATH_KINDS, modifiers);
+                        configDirectory.toPath().register(watchService.get(), INTEREST_PATH_KINDS, MODIFIERS);
                     }
                 });
             }
@@ -485,7 +485,7 @@ public class FileSystemDynamicConfiguration extends AbstractDynamicConfiguration
     }
 
     protected Integer getDelay() {
-        return delay;
+        return DELAY;
     }
 
     /**
@@ -497,11 +497,11 @@ public class FileSystemDynamicConfiguration extends AbstractDynamicConfiguration
      * @see #detectPoolingBasedWatchService(Optional)
      */
     protected static boolean isBasedPoolingWatchService() {
-        return basedPoolingWatchService;
+        return BASED_POOLING_WATCH_SERVICE;
     }
 
     protected static ThreadPoolExecutor getWatchEventsLoopThreadPool() {
-        return watchEventsLoopThreadPool;
+        return WATCH_EVENTS_LOOP_THREAD_POOL;
     }
 
     protected ThreadPoolExecutor getWorkersThreadPool() {

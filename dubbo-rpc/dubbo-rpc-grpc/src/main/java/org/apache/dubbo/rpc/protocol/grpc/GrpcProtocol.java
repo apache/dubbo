@@ -18,12 +18,9 @@ package org.apache.dubbo.rpc.protocol.grpc;/*
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.rpc.Exporter;
-import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ProtocolServer;
-import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
@@ -42,8 +39,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
-import static org.apache.dubbo.rpc.Constants.INTERFACES;
 
 /**
  *
@@ -101,11 +96,6 @@ public class GrpcProtocol extends AbstractProxyProtocol {
     }
 
     @Override
-    public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
-        return super.export(new GrpcServerProxyInvoker<>(invoker));
-    }
-
-    @Override
     protected <T> Invoker<T> protocolBindingRefer(final Class<T> type, final URL url) throws RpcException {
         Class<?> enclosingClass = type.getEnclosingClass();
 
@@ -116,7 +106,8 @@ public class GrpcProtocol extends AbstractProxyProtocol {
 
         final Method dubboStubMethod;
         try {
-            dubboStubMethod = enclosingClass.getDeclaredMethod("getDubboStub", Channel.class, CallOptions.class);
+            dubboStubMethod = enclosingClass.getDeclaredMethod("getDubboStub", Channel.class, CallOptions.class,
+                    URL.class, ReferenceConfigBase.class);
         } catch (NoSuchMethodException e) {
             throw new IllegalArgumentException("Does not find getDubboStub in " + enclosingClass.getName() + ", please use the customized protoc-gen-dubbo-java to update the generated classes.");
         }
@@ -128,7 +119,12 @@ public class GrpcProtocol extends AbstractProxyProtocol {
 
         // CallOptions
         try {
-            @SuppressWarnings("unchecked") final T stub = (T) dubboStubMethod.invoke(null, channel, GrpcOptionsUtils.buildCallOptions(url));
+            @SuppressWarnings("unchecked") final T stub = (T) dubboStubMethod.invoke(null,
+                    channel,
+                    GrpcOptionsUtils.buildCallOptions(url),
+                    url,
+                    ApplicationModel.getConsumerModel(url.getServiceKey()).getReferenceConfig()
+            );
             final Invoker<T> target = proxyFactory.getInvoker(stub, type, url);
             GrpcInvoker<T> grpcInvoker = new GrpcInvoker<>(type, url, target, channel);
             invokers.add(grpcInvoker);
@@ -201,52 +197,6 @@ public class GrpcProtocol extends AbstractProxyProtocol {
         @Override
         public void close() {
             originalServer.shutdown();
-        }
-    }
-
-    /**
-     * TODO, If IGreeter extends BindableService we can avoid the existence of this wrapper invoker.
-     *
-     * @param <T>
-     */
-    private class GrpcServerProxyInvoker<T> implements Invoker<T> {
-
-        private Invoker<T> invoker;
-
-        public GrpcServerProxyInvoker(Invoker<T> invoker) {
-            this.invoker = invoker;
-        }
-
-        @Override
-        public Class<T> getInterface() {
-            return invoker.getInterface();
-        }
-
-        @Override
-        public Result invoke(Invocation invocation) throws RpcException {
-            return invoker.invoke(invocation);
-        }
-
-        @Override
-        public URL getUrl() {
-            URL url = invoker.getUrl();
-            String interfaces = url.getParameter(INTERFACES);
-            if (StringUtils.isNotEmpty(interfaces)) {
-                interfaces += ("," + BindableService.class.getName());
-            } else {
-                interfaces = BindableService.class.getName();
-            }
-            return url.addParameter(INTERFACES, interfaces);
-        }
-
-        @Override
-        public boolean isAvailable() {
-            return invoker.isAvailable();
-        }
-
-        @Override
-        public void destroy() {
-            invoker.destroy();
         }
     }
 

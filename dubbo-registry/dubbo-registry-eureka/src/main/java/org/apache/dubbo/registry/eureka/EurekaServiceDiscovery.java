@@ -223,7 +223,7 @@ public class EurekaServiceDiscovery implements ServiceDiscovery {
 
     @Override
     public void unregister(ServiceInstance serviceInstance) throws RuntimeException {
-        setInstanceStatus(InstanceInfo.InstanceStatus.UP);
+        setInstanceStatus(InstanceInfo.InstanceStatus.OUT_OF_SERVICE);
     }
 
     @Override

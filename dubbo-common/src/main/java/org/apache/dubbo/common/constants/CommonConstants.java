@@ -168,9 +168,7 @@ public interface CommonConstants {
 
     String REVISION_KEY = "revision";
 
-    String METADATA_REVISION = "metadata.revision";
-
-    String METADATA_KEY = "metadata";
+    String METADATA_KEY = "metadata-type";
 
     String DEFAULT_METADATA_STORAGE_TYPE = "local";
 
@@ -246,7 +244,7 @@ public interface CommonConstants {
     String METRICS_PROTOCOL = "metrics.protocol";
 
     /**
-     * After simplify the registry, should add some paramter individually for provider.
+     * After simplify the registry, should add some parameter individually for provider.
      *
      * @since 2.7.0
      */
@@ -261,6 +259,8 @@ public interface CommonConstants {
     String GENERIC_RAW_RETURN = "raw.return";
 
     String GENERIC_SERIALIZATION_PROTOBUF = "protobuf-json";
+
+    String GENERIC_WITH_CLZ_KEY = "generic.include.class";
 
     /**
      * The limit of callback service instances for one interface on every client
@@ -289,5 +289,9 @@ public interface CommonConstants {
     String REGISTER_KEY = "register";
 
     String DUBBO_INVOCATION_PREFIX = "_DUBBO_IGNORE_ATTACH_";
+
+    String INTERFACES = "interfaces";
+
+    String SSL_ENABLED_KEY = "ssl-enabled";
 
 }

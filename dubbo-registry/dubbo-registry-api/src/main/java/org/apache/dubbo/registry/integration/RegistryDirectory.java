@@ -213,16 +213,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 .filter(Objects::nonNull)
                 .filter(this::isValidCategory)
                 .filter(this::isNotCompatibleFor26x)
-                .collect(Collectors.groupingBy(url -> {
-                    if (UrlUtils.isConfigurator(url)) {
-                        return CONFIGURATORS_CATEGORY;
-                    } else if (UrlUtils.isRoute(url)) {
-                        return ROUTERS_CATEGORY;
-                    } else if (UrlUtils.isProvider(url)) {
-                        return PROVIDERS_CATEGORY;
-                    }
-                    return "";
-                }));
+                .collect(Collectors.groupingBy(this::judgeCategory));
 
         List<URL> configuratorURLs = categoryUrls.getOrDefault(CONFIGURATORS_CATEGORY, Collections.emptyList());
         this.configurators = Configurator.toConfigurators(configuratorURLs).orElse(this.configurators);
@@ -243,6 +234,17 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             }
         }
         refreshOverrideAndInvoker(providerURLs);
+    }
+
+    private String judgeCategory(URL url) {
+        if (UrlUtils.isConfigurator(url)) {
+            return CONFIGURATORS_CATEGORY;
+        } else if (UrlUtils.isRoute(url)) {
+            return ROUTERS_CATEGORY;
+        } else if (UrlUtils.isProvider(url)) {
+            return PROVIDERS_CATEGORY;
+        }
+        return "";
     }
 
     private void refreshOverrideAndInvoker(List<URL> urls) {

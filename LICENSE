@@ -242,7 +242,3 @@ https://github.com/edazdarevic/CIDRUtils. The project is licensed under a MIT Li
     * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
     * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
     * THE SOFTWARE.
-
-This product contains a modified portion of 'proto-gen-grpc-java' - a protobuf plugin used to generate grpc-java stubs,
- under a "Apache License 2.0" license, see https://github.com/grpc/grpc-java/blob/v1.22.1/NOTICE.txt. All files are placed
- under '/dubbo/compiler'
