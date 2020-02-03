@@ -107,7 +107,7 @@ public class ReferenceConfigCache {
         String key = generator.generateKey(referenceConfig);
         Class<?> type = referenceConfig.getInterfaceClass();
 
-        proxies.computeIfAbsent(type, _t -> new ConcurrentHashMap());
+        proxies.computeIfAbsent(type, _t -> new ConcurrentHashMap<>());
 
         ConcurrentMap<String, Object> proxiesOfType = proxies.get(type);
         proxiesOfType.computeIfAbsent(key, _k -> {
