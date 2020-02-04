@@ -168,9 +168,7 @@ public interface CommonConstants {
 
     String REVISION_KEY = "revision";
 
-    String METADATA_REVISION = "metadata.revision";
-
-    String METADATA_KEY = "metadata";
+    String METADATA_KEY = "metadata-type";
 
     String DEFAULT_METADATA_STORAGE_TYPE = "local";
 

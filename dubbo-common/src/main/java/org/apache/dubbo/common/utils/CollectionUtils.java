@@ -30,6 +30,13 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.unmodifiableSet;
 
+/**
+ * Miscellaneous collection utility methods.
+ * Mainly for internal use within the framework.
+ *
+ * @author william.liangf
+ * @since 2.0.7
+ */
 public class CollectionUtils {
 
     private static final Comparator<String> SIMPLE_NAME_COMPARATOR = new Comparator<String>() {
@@ -211,18 +218,46 @@ public class CollectionUtils {
         return ret;
     }
 
+    /**
+     * Return {@code true} if the supplied Collection is {@code null} or empty.
+     * Otherwise, return {@code false}.
+     *
+     * @param collection the Collection to check
+     * @return whether the given Collection is empty
+     */
     public static boolean isEmpty(Collection<?> collection) {
         return collection == null || collection.isEmpty();
     }
 
+    /**
+     * Return {@code true} if the supplied Collection is {@code not null} or not empty.
+     * Otherwise, return {@code false}.
+     *
+     * @param collection the Collection to check
+     * @return whether the given Collection is not empty
+     */
     public static boolean isNotEmpty(Collection<?> collection) {
         return !isEmpty(collection);
     }
 
+    /**
+     * Return {@code true} if the supplied Map is {@code null} or empty.
+     * Otherwise, return {@code false}.
+     *
+     * @param map the Map to check
+     * @return whether the given Map is empty
+     */
     public static boolean isEmptyMap(Map map) {
         return map == null || map.size() == 0;
     }
 
+    /**
+     * Return {@code true} if the supplied Map is {@code not null} or not empty.
+     * Otherwise, return {@code false}.
+     *
+     * @param map the Map to check
+     * @return whether the given Map is not empty
+     */
     public static boolean isNotEmptyMap(Map map) {
         return !isEmptyMap(map);
     }
