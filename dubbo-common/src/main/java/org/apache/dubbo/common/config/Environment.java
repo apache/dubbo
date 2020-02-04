@@ -22,7 +22,9 @@ import org.apache.dubbo.common.context.FrameworkExt;
 import org.apache.dubbo.common.context.LifecycleAdapter;
 import org.apache.dubbo.common.extension.DisableInject;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
+import org.apache.dubbo.config.context.ConfigConfigurationAdapter;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
@@ -31,15 +33,19 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public class Environment extends LifecycleAdapter implements FrameworkExt {
     public static final String NAME = "environment";
 
-    private Map<String, PropertiesConfiguration> propertiesConfigs = new ConcurrentHashMap<>();
-    private Map<String, SystemConfiguration> systemConfigs = new ConcurrentHashMap<>();
-    private Map<String, EnvironmentConfiguration> environmentConfigs = new ConcurrentHashMap<>();
-    private Map<String, InmemoryConfiguration> externalConfigs = new ConcurrentHashMap<>();
-    private Map<String, InmemoryConfiguration> appExternalConfigs = new ConcurrentHashMap<>();
+    private final PropertiesConfiguration propertiesConfiguration;
+    private final SystemConfiguration systemConfiguration;
+    private final EnvironmentConfiguration environmentConfiguration;
+    private final InmemoryConfiguration externalConfiguration;
+    private final InmemoryConfiguration appExternalConfiguration;
+
+    private final ConcurrentMap<AbstractConfig, CompositeConfiguration> prefixedConfigurations = new ConcurrentHashMap<>();
+    private CompositeConfiguration globalConfiguration;
 
     private Map<String, String> externalConfigurationMap = new HashMap<>();
     private Map<String, String> appExternalConfigurationMap = new HashMap<>();
@@ -47,6 +53,14 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
     private boolean configCenterFirst = true;
 
     private DynamicConfiguration dynamicConfiguration;
+
+    public Environment() {
+        this.propertiesConfiguration = new PropertiesConfiguration();
+        this.systemConfiguration = new SystemConfiguration();
+        this.environmentConfiguration = new EnvironmentConfiguration();
+        this.externalConfiguration = new InmemoryConfiguration();
+        this.appExternalConfiguration = new InmemoryConfiguration();
+    }
 
     @Override
     public void initialize() throws IllegalStateException {
@@ -58,34 +72,9 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
                 this.setAppExternalConfigMap(config.getAppExternalConfiguration());
             }
         });
-    }
 
-    public PropertiesConfiguration getPropertiesConfig(String prefix, String id) {
-        return propertiesConfigs.computeIfAbsent(toKey(prefix, id), k -> new PropertiesConfiguration(prefix, id));
-    }
-
-    public SystemConfiguration getSystemConfig(String prefix, String id) {
-        return systemConfigs.computeIfAbsent(toKey(prefix, id), k -> new SystemConfiguration(prefix, id));
-    }
-
-    public InmemoryConfiguration getExternalConfig(String prefix, String id) {
-        return externalConfigs.computeIfAbsent(toKey(prefix, id), k -> {
-            InmemoryConfiguration configuration = new InmemoryConfiguration(prefix, id);
-            configuration.setProperties(externalConfigurationMap);
-            return configuration;
-        });
-    }
-
-    public InmemoryConfiguration getAppExternalConfig(String prefix, String id) {
-        return appExternalConfigs.computeIfAbsent(toKey(prefix, id), k -> {
-            InmemoryConfiguration configuration = new InmemoryConfiguration(prefix, id);
-            configuration.setProperties(appExternalConfigurationMap);
-            return configuration;
-        });
-    }
-
-    public EnvironmentConfiguration getEnvironmentConfig(String prefix, String id) {
-        return environmentConfigs.computeIfAbsent(toKey(prefix, id), k -> new EnvironmentConfiguration(prefix, id));
+        this.externalConfiguration.setProperties(externalConfigurationMap);
+        this.appExternalConfiguration.setProperties(appExternalConfigurationMap);
     }
 
     @DisableInject
@@ -119,27 +108,60 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
     }
 
     /**
-     * Create new instance for each call, since it will be called only at startup, I think there's no big deal of the potential cost.
-     * Otherwise, if use cache, we should make sure each Config has a unique id which is difficult to guarantee because is on the user's side,
-     * especially when it comes to ServiceConfig and ReferenceConfig.
+     * At start-up, Dubbo is driven by various configuration, such as Application, Registry, Protocol, etc.
+     * All configurations will be converged into a data bus - URL, and then drive the subsequent process.
+     * <p>
+     * At present, there are many configuration sources, including AbstractConfig (API, XML, annotation), - D, config center, etc.
+     * This method helps us to filter out the most priority values from various configuration sources.
      *
-     * @param prefix
-     * @param id
+     * @param config
      * @return
      */
-    public CompositeConfiguration getConfiguration(String prefix, String id) {
-        CompositeConfiguration compositeConfiguration = new CompositeConfiguration();
-        // Config center has the highest priority
-        compositeConfiguration.addConfiguration(this.getSystemConfig(prefix, id));
-        compositeConfiguration.addConfiguration(this.getEnvironmentConfig(prefix, id));
-        compositeConfiguration.addConfiguration(this.getAppExternalConfig(prefix, id));
-        compositeConfiguration.addConfiguration(this.getExternalConfig(prefix, id));
-        compositeConfiguration.addConfiguration(this.getPropertiesConfig(prefix, id));
-        return compositeConfiguration;
+    public CompositeConfiguration getPrefixedConfiguration(AbstractConfig config) {
+        prefixedConfigurations.putIfAbsent(config, new CompositeConfiguration(config.getPrefix(), config.getId()));
+        CompositeConfiguration prefixedConfiguration = prefixedConfigurations.get(config);
+        Configuration configuration = new ConfigConfigurationAdapter(config);
+        if (this.isConfigCenterFirst()) {
+            // The sequence would be: SystemConfiguration -> AppExternalConfiguration -> ExternalConfiguration -> AbstractConfig -> PropertiesConfiguration
+            // Config center has the highest priority
+            prefixedConfiguration.addConfiguration(systemConfiguration);
+            prefixedConfiguration.addConfiguration(environmentConfiguration);
+            prefixedConfiguration.addConfiguration(appExternalConfiguration);
+            prefixedConfiguration.addConfiguration(externalConfiguration);
+            prefixedConfiguration.addConfiguration(configuration);
+            prefixedConfiguration.addConfiguration(propertiesConfiguration);
+        } else {
+            // The sequence would be: SystemConfiguration -> AbstractConfig -> AppExternalConfiguration -> ExternalConfiguration -> PropertiesConfiguration
+            // Config center has the highest priority
+            prefixedConfiguration.addConfiguration(systemConfiguration);
+            prefixedConfiguration.addConfiguration(environmentConfiguration);
+            prefixedConfiguration.addConfiguration(configuration);
+            prefixedConfiguration.addConfiguration(appExternalConfiguration);
+            prefixedConfiguration.addConfiguration(externalConfiguration);
+            prefixedConfiguration.addConfiguration(propertiesConfiguration);
+        }
+        return prefixedConfiguration;
     }
 
+    /**
+     * There are two ways to get configuration during exposure / reference or at runtime:
+     * 1. URL, The value in the URL is relatively fixed. we can get value directly.
+     * 2. The configuration exposed in this method is convenient for us to query the latest configuration values
+     * from multiple prioritized configuration sources, it also guarantees that configs changed dynamically can take effect on the fly.
+     */
     public Configuration getConfiguration() {
-        return getConfiguration(null, null);
+        if (globalConfiguration == null) {
+            globalConfiguration = new CompositeConfiguration();
+            if (dynamicConfiguration != null) {
+                globalConfiguration.addConfiguration(dynamicConfiguration);
+            }
+            globalConfiguration.addConfiguration(systemConfiguration);
+            globalConfiguration.addConfiguration(environmentConfiguration);
+            globalConfiguration.addConfiguration(appExternalConfiguration);
+            globalConfiguration.addConfiguration(externalConfiguration);
+            globalConfiguration.addConfiguration(propertiesConfiguration);
+        }
+        return globalConfiguration;
     }
 
     private static String toKey(String prefix, String id) {
@@ -187,13 +209,13 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
 
     // For test
     public void clearExternalConfigs() {
-        this.externalConfigs.clear();
+        this.externalConfiguration.clear();
         this.externalConfigurationMap.clear();
     }
 
     // For test
     public void clearAppExternalConfigs() {
-        this.appExternalConfigs.clear();
+        this.appExternalConfiguration.clear();
         this.appExternalConfigurationMap.clear();
     }
 }

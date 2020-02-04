@@ -305,6 +305,7 @@ public class AbstractConfigTest {
             // @Parameter(key="key2", useKeyAsProperty=true)
             external.put("dubbo.override.key2", "external");
             ApplicationModel.getEnvironment().setExternalConfigMap(external);
+            ApplicationModel.getEnvironment().initialize();
 
             System.setProperty("dubbo.override.address", "system://127.0.0.1:2181");
             System.setProperty("dubbo.override.protocol", "system");
@@ -401,6 +402,7 @@ public class AbstractConfigTest {
             // @Parameter(key="key2", useKeyAsProperty=true)
             external.put("dubbo.override.key2", "external");
             ApplicationModel.getEnvironment().setExternalConfigMap(external);
+            ApplicationModel.getEnvironment().initialize();
 
             overrideConfig.refresh();
 
@@ -435,6 +437,7 @@ public class AbstractConfigTest {
             // @Parameter(key="key2", useKeyAsProperty=true)
             external.put("dubbo.override.key2", "external");
             ApplicationModel.getEnvironment().setExternalConfigMap(external);
+            ApplicationModel.getEnvironment().initialize();
 
             ConfigCenterConfig configCenter = new ConfigCenterConfig();
             overrideConfig.setConfigCenter(configCenter);
@@ -464,6 +467,7 @@ public class AbstractConfigTest {
             Map<String, String> external = new HashMap<>();
             external.put("dubbo.override.parameters", "[{key3:value3},{key4:value4},{key2:value5}]");
             ApplicationModel.getEnvironment().setExternalConfigMap(external);
+            ApplicationModel.getEnvironment().initialize();
 
             ConfigCenterConfig configCenter = new ConfigCenterConfig();
             overrideConfig.setConfigCenter(configCenter);
