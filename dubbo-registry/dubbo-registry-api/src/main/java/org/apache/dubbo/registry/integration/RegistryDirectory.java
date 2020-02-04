@@ -73,6 +73,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.APP_DYNAMIC_CO
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.COMPATIBLE_CONFIG_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
@@ -81,6 +82,10 @@ import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.ROUTE_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.CONFIGURATORS_SUFFIX;
+import static org.apache.dubbo.registry.Constants.REGISTER_KEY;
+import static org.apache.dubbo.registry.Constants.SIMPLIFIED_KEY;
+import static org.apache.dubbo.registry.integration.RegistryProtocol.DEFAULT_REGISTER_CONSUMER_KEYS;
+import static org.apache.dubbo.remoting.Constants.CHECK_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.ROUTER_KEY;
 
@@ -105,6 +110,8 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     private Protocol protocol; // Initialization at the time of injection, the assertion is not null
     private Registry registry; // Initialization at the time of injection, the assertion is not null
     private volatile boolean forbidden = false;
+    private boolean shouldRegister;
+    private boolean shouldSimplified;
 
     private volatile URL overrideDirectoryUrl; // Initialization at construction time, assertion not null, and always assign non null value
 
@@ -134,6 +141,9 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         if (serviceType == null) {
             throw new IllegalArgumentException("service type is null.");
         }
+
+        shouldRegister = !ANY_VALUE.equals(url.getServiceInterface()) && url.getParameter(REGISTER_KEY, true);
+        shouldSimplified = !url.getParameter(SIMPLIFIED_KEY, false);
         if (url.getServiceKey() == null || url.getServiceKey().length() == 0) {
             throw new IllegalArgumentException("registry serviceKey is null.");
         }
@@ -167,11 +177,26 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         this.registry = registry;
     }
 
+    public Registry getRegistry() {
+        return registry;
+    }
+
+    public boolean isShouldRegister() {
+        return shouldRegister;
+    }
+
     public void subscribe(URL url) {
         setConsumerUrl(url);
         CONSUMER_CONFIGURATION_LISTENER.addNotifyListener(this);
         serviceConfigurationListener = new ReferenceConfigurationListener(this, url);
         registry.subscribe(url, this);
+    }
+
+    public void unSubscribe(URL url) {
+        setConsumerUrl(null);
+        CONSUMER_CONFIGURATION_LISTENER.removeNotifyListener(this);
+        serviceConfigurationListener.stop();
+        registry.unsubscribe(url, this);
     }
 
 
@@ -230,7 +255,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         List<AddressListener> supportedListeners = addressListenerExtensionLoader.getActivateExtension(getUrl(), (String[]) null);
         if (supportedListeners != null && !supportedListeners.isEmpty()) {
             for (AddressListener addressListener : supportedListeners) {
-                providerURLs = addressListener.notify(providerURLs, getUrl(),this);
+                providerURLs = addressListener.notify(providerURLs, getConsumerUrl(),this);
             }
         }
         refreshOverrideAndInvoker(providerURLs);
@@ -616,8 +641,14 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         return registeredConsumerUrl;
     }
 
-    public void setRegisteredConsumerUrl(URL registeredConsumerUrl) {
-        this.registeredConsumerUrl = registeredConsumerUrl;
+    public void setRegisteredConsumerUrl(URL url) {
+        if (!shouldSimplified) {
+            this.registeredConsumerUrl = url.addParameters(CATEGORY_KEY, CONSUMERS_CATEGORY, CHECK_KEY,
+                    String.valueOf(false));
+        } else {
+            this.registeredConsumerUrl = URL.valueOf(url, DEFAULT_REGISTER_CONSUMER_KEYS, null).addParameters(
+                    CATEGORY_KEY, CONSUMERS_CATEGORY, CHECK_KEY, String.valueOf(false));
+        }
     }
 
     @Override
@@ -717,6 +748,10 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             this.initWith(DynamicConfiguration.getRuleKey(url) + CONFIGURATORS_SUFFIX);
         }
 
+        void stop() {
+            this.stopListen(DynamicConfiguration.getRuleKey(url) + CONFIGURATORS_SUFFIX);
+        }
+
         @Override
         protected void notifyOverrides() {
             // to notify configurator/router changes
@@ -733,6 +768,10 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
         void addNotifyListener(RegistryDirectory listener) {
             this.listeners.add(listener);
+        }
+
+        void removeNotifyListener(RegistryDirectory listener) {
+            this.listeners.remove(listener);
         }
 
         @Override
