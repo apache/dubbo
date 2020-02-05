@@ -99,6 +99,41 @@ public class AbstractZookeeperTransporterTest {
         checkFetchAndUpdateCacheNotNull(url2);
         URL url3 = URL.valueOf("zookeeper://127.0.0.1:8778/org.apache.dubbo.metadata.store.MetadataReport?backup=127.0.0.1:" + zkServerPort3 + "&address=zookeeper://127.0.0.1:2181&application=metadatareport-local-xml-provider2&cycle-report=false&interface=org.apache.dubbo.metadata.store.MetadataReport&retry-period=4590&retry-times=23&sync-report=true");
         checkFetchAndUpdateCacheNotNull(url3);
+        Assertions.assertTrue(checkFetchAndUpdateCacheTheSame(url2, url3));
+        Assertions.assertTrue(checkFetchAndUpdateCacheTheSame(url2, url));
+        zkServer2.stop();
+        zkServer3.stop();
+    }
+
+    @Test
+    public void testFetchAndUpdateZookeeperClientCacheWhenDiffUser() throws Exception {
+        int zkServerPort2 = NetUtils.getAvailablePort();
+        TestingServer zkServer2 = new TestingServer(zkServerPort2, true);
+
+        int zkServerPort3 = NetUtils.getAvailablePort();
+        TestingServer zkServer3 = new TestingServer(zkServerPort3, true);
+
+        URL url = URL.valueOf("zookeeper://u1:p1@127.0.0.1:" + zkServerPort + "/org.apache.dubbo.registry.RegistryService?backup=127.0.0.1:" + zkServerPort3 + ",127.0.0.1:" + zkServerPort2 + "&application=metadatareport-local-xml-provider2&dubbo=2.0.2&interface=org.apache.dubbo.registry.RegistryService&pid=47418&specVersion=2.7.0-SNAPSHOT&timestamp=1547102428828");
+        ZookeeperClient newZookeeperClient = abstractZookeeperTransporter.connect(url);
+        //just for connected
+        newZookeeperClient.getContent("/dubbo/test");
+        Assertions.assertEquals(abstractZookeeperTransporter.getZookeeperClientMap().size(), 3);
+        Assertions.assertEquals(abstractZookeeperTransporter.getZookeeperClientMap().get("u1@127.0.0.1:" + zkServerPort), newZookeeperClient);
+        Assertions.assertNull(abstractZookeeperTransporter.getZookeeperClientMap().get("127.0.0.1:" + zkServerPort));
+
+        URL url2 = URL.valueOf("zookeeper://u1:p1@127.0.0.1:" + zkServerPort + "/org.apache.dubbo.metadata.store.MetadataReport?address=zookeeper://127.0.0.1:2181&application=metadatareport-local-xml-provider2&cycle-report=false&interface=org.apache.dubbo.metadata.store.MetadataReport&retry-period=4590&retry-times=23&sync-report=true");
+        checkFetchAndUpdateCacheNotNull(url2);
+        URL url3 = URL.valueOf("zookeeper://u2:p2@127.0.0.1:8778/org.apache.dubbo.metadata.store.MetadataReport?backup=127.0.0.1:" + zkServerPort3 + "&address=zookeeper://127.0.0.1:2181&application=metadatareport-local-xml-provider2&cycle-report=false&interface=org.apache.dubbo.metadata.store.MetadataReport&retry-period=4590&retry-times=23&sync-report=true");
+        checkFetchAndUpdateCacheNull(url3);
+        abstractZookeeperTransporter.connect(url3);
+        checkFetchAndUpdateCacheNotNull(url3);
+        URL url4 = URL.valueOf("zookeeper://127.0.0.1:8778/org.apache.dubbo.metadata.store.MetadataReport?backup=127.0.0.1:" + zkServerPort3 + "&address=zookeeper://127.0.0.1:2181&application=metadatareport-local-xml-provider2&cycle-report=false&interface=org.apache.dubbo.metadata.store.MetadataReport&retry-period=4590&retry-times=23&sync-report=true");
+        checkFetchAndUpdateCacheNull(url4);
+        abstractZookeeperTransporter.connect(url4);
+        checkFetchAndUpdateCacheNotNull(url4);
+        Assertions.assertTrue(checkFetchAndUpdateCacheTheSame(url2, url));
+        Assertions.assertFalse(checkFetchAndUpdateCacheTheSame(url, url3));
+        Assertions.assertFalse(checkFetchAndUpdateCacheTheSame(url4, url3));
 
         zkServer2.stop();
         zkServer3.stop();
@@ -106,8 +141,20 @@ public class AbstractZookeeperTransporterTest {
 
     private void checkFetchAndUpdateCacheNotNull(URL url) {
         List<String> addressList = abstractZookeeperTransporter.getURLBackupAddress(url);
-        ZookeeperClient zookeeperClient = abstractZookeeperTransporter.fetchAndUpdateZookeeperClientCache(addressList);
+        ZookeeperClient zookeeperClient = abstractZookeeperTransporter.fetchAndUpdateZookeeperClientCache(addressList, url.getUsername());
         Assertions.assertNotNull(zookeeperClient);
+    }
+    private void checkFetchAndUpdateCacheNull(URL url) {
+        List<String> addressList = abstractZookeeperTransporter.getURLBackupAddress(url);
+        ZookeeperClient zookeeperClient = abstractZookeeperTransporter.fetchAndUpdateZookeeperClientCache(addressList, url.getUsername());
+        Assertions.assertNull(zookeeperClient);
+    }
+
+    private boolean checkFetchAndUpdateCacheTheSame(URL url1, URL url2) {
+        List<String> addressList1 = abstractZookeeperTransporter.getURLBackupAddress(url1);
+        List<String> addressList2 = abstractZookeeperTransporter.getURLBackupAddress(url2);
+        return abstractZookeeperTransporter.fetchAndUpdateZookeeperClientCache(addressList1, url1.getUsername())
+                == abstractZookeeperTransporter.fetchAndUpdateZookeeperClientCache(addressList2, url2.getUsername());
     }
 
     @Test

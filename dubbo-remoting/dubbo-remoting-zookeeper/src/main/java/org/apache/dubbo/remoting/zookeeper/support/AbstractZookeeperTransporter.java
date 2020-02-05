@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 
@@ -54,20 +55,20 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
         ZookeeperClient zookeeperClient;
         List<String> addressList = getURLBackupAddress(url);
         // The field define the zookeeper server , including protocol, host, port, username, password
-        if ((zookeeperClient = fetchAndUpdateZookeeperClientCache(addressList)) != null && zookeeperClient.isConnected()) {
+        if ((zookeeperClient = fetchAndUpdateZookeeperClientCache(addressList, url.getUsername())) != null && zookeeperClient.isConnected()) {
             logger.info("find valid zookeeper client from the cache for address: " + url);
             return zookeeperClient;
         }
         // avoid creating too many connections， so add lock
         synchronized (zookeeperClientMap) {
-            if ((zookeeperClient = fetchAndUpdateZookeeperClientCache(addressList)) != null && zookeeperClient.isConnected()) {
+            if ((zookeeperClient = fetchAndUpdateZookeeperClientCache(addressList, url.getUsername())) != null && zookeeperClient.isConnected()) {
                 logger.info("find valid zookeeper client from the cache for address: " + url);
                 return zookeeperClient;
             }
 
             zookeeperClient = createZookeeperClient(url);
             logger.info("No valid zookeeper client found from cache, therefore create a new client for url. " + url);
-            writeToClientMap(addressList, zookeeperClient);
+            writeToClientMap(addressList, url.getUsername(), zookeeperClient);
         }
         return zookeeperClient;
     }
@@ -88,16 +89,17 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
      * @param addressList
      * @return
      */
-    ZookeeperClient fetchAndUpdateZookeeperClientCache(List<String> addressList) {
+    ZookeeperClient fetchAndUpdateZookeeperClientCache(List<String> addressList, String userName) {
 
         ZookeeperClient zookeeperClient = null;
         for (String address : addressList) {
-            if ((zookeeperClient = zookeeperClientMap.get(address)) != null && zookeeperClient.isConnected()) {
+            if ((zookeeperClient = zookeeperClientMap.get(getZookeeperMapKey(userName, address))) != null
+                    && zookeeperClient.isConnected()) {
                 break;
             }
         }
         if (zookeeperClient != null && zookeeperClient.isConnected()) {
-            writeToClientMap(addressList, zookeeperClient);
+            writeToClientMap(addressList, userName, zookeeperClient);
         }
         return zookeeperClient;
     }
@@ -122,9 +124,9 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
      * @param addressList
      * @param zookeeperClient
      */
-    void writeToClientMap(List<String> addressList, ZookeeperClient zookeeperClient) {
+    void writeToClientMap(List<String> addressList, String userName, ZookeeperClient zookeeperClient) {
         for (String address : addressList) {
-            zookeeperClientMap.put(address, zookeeperClient);
+            zookeeperClientMap.put(getZookeeperMapKey(userName, address), zookeeperClient);
         }
     }
 
@@ -155,5 +157,12 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
      */
     Map<String, ZookeeperClient> getZookeeperClientMap() {
         return zookeeperClientMap;
+    }
+
+    private String getZookeeperMapKey(String userName, String address) {
+        if (StringUtils.isEmpty(userName)) {
+            return address;
+        }
+        return userName + "@" + address;
     }
 }
