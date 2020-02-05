@@ -17,11 +17,9 @@
 package org.apache.dubbo.common.config;
 
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
-import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.context.FrameworkExt;
 import org.apache.dubbo.common.context.LifecycleAdapter;
 import org.apache.dubbo.common.extension.DisableInject;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.config.context.ConfigConfigurationAdapter;
@@ -146,8 +144,8 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
     /**
      * There are two ways to get configuration during exposure / reference or at runtime:
      * 1. URL, The value in the URL is relatively fixed. we can get value directly.
-     * 2. The configuration exposed in this method is convenient for us to query the latest configuration values
-     * from multiple prioritized configuration sources, it also guarantees that configs changed dynamically can take effect on the fly.
+     * 2. The configuration exposed in this method is convenient for us to query the latest values from multiple
+     * prioritized sources, it also guarantees that configs changed dynamically can take effect on the fly.
      */
     public Configuration getConfiguration() {
         if (globalConfiguration == null) {
@@ -162,25 +160,6 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
             globalConfiguration.addConfiguration(propertiesConfiguration);
         }
         return globalConfiguration;
-    }
-
-    private static String toKey(String prefix, String id) {
-        StringBuilder sb = new StringBuilder();
-        if (StringUtils.isNotEmpty(prefix)) {
-            sb.append(prefix);
-        }
-        if (StringUtils.isNotEmpty(id)) {
-            sb.append(id);
-        }
-
-        if (sb.length() > 0 && sb.charAt(sb.length() - 1) != '.') {
-            sb.append(".");
-        }
-
-        if (sb.length() > 0) {
-            return sb.toString();
-        }
-        return CommonConstants.DUBBO;
     }
 
     public boolean isConfigCenterFirst() {
