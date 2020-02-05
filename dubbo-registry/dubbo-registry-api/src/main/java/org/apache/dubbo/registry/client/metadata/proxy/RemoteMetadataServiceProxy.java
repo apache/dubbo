@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.registry.client.metadata.proxy;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.function.ThrowableFunction;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.UrlUtils;
@@ -29,8 +31,10 @@ import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.function.Supplier;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.registry.client.metadata.URLRevisionResolver.NO_REVISION;
@@ -56,8 +60,18 @@ public class RemoteMetadataServiceProxy implements MetadataService {
 
     @Override
     public SortedSet<String> getExportedURLs(String serviceInterface, String group, String version, String protocol) {
-        return toSortedStrings(getMetadataReport().getExportedURLs(
-                new ServiceMetadataIdentifier(serviceInterface, group, version, PROVIDER_SIDE, revision, protocol)));
+        List<String> r = ThrowableFunction.execute(
+                new ServiceMetadataIdentifier(serviceInterface, group, version, PROVIDER_SIDE, revision, protocol), m -> {
+            for (MetadataReport metadataReport : MetadataReportInstance.getMetadataReports(true)) {
+                try {
+                    return metadataReport.getExportedURLs(m);
+                } catch (Exception e) {
+                    logger.error("some error happened when try to getServiceDefinition", e);
+                }
+            }
+            return null;
+        });
+        return toSortedStrings(r);
     }
 
     private static SortedSet<String> toSortedStrings(Collection<String> values) {
@@ -66,8 +80,17 @@ public class RemoteMetadataServiceProxy implements MetadataService {
 
     @Override
     public String getServiceDefinition(String interfaceName, String version, String group) {
-        return getMetadataReport().getServiceDefinition(new MetadataIdentifier(interfaceName,
-                version, group, PROVIDER_SIDE, serviceName));
+        return ThrowableFunction.execute(new MetadataIdentifier(interfaceName,
+                version, group, PROVIDER_SIDE, serviceName), m -> {
+            for (MetadataReport metadataReport : MetadataReportInstance.getMetadataReports(true)) {
+                try {
+                    return metadataReport.getServiceDefinition(m);
+                } catch (Exception e) {
+                    logger.error("some error happened when try to getServiceDefinition", e);
+                }
+            }
+            return null;
+        });
     }
 
     @Override
@@ -83,13 +106,17 @@ public class RemoteMetadataServiceProxy implements MetadataService {
         if (services.length > 2) {
             group = services[2];
         }
-        return getMetadataReport().getServiceDefinition(new MetadataIdentifier(serviceInterface,
-                version, group, PROVIDER_SIDE, serviceName));
+        return ThrowableFunction.execute(new MetadataIdentifier(serviceInterface,
+                version, group, PROVIDER_SIDE, serviceName), m -> {
+            for (MetadataReport metadataReport : MetadataReportInstance.getMetadataReports(true)) {
+                try {
+                    return metadataReport.getServiceDefinition(m);
+                } catch (Exception e) {
+                    logger.error("some error happened when try to getServiceDefinition", e);
+                }
+            }
+            return null;
+        });
     }
-
-    MetadataReport getMetadataReport() {
-        return MetadataReportInstance.getMetadataReport(true);
-    }
-
 
 }

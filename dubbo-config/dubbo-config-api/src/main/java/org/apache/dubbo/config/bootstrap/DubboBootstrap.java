@@ -604,13 +604,15 @@ public class DubboBootstrap extends GenericEventListener {
             }
             return;
         }
-        MetadataReportConfig metadataReportConfig = metadataReportConfigs.iterator().next();
-        ConfigValidationUtils.validateMetadataConfig(metadataReportConfig);
-        if (!metadataReportConfig.isValid()) {
-            return;
-        }
-
-        MetadataReportInstance.init(metadataReportConfig.toUrl());
+        List<URL> metadataReportUrls = new ArrayList<>(metadataReportConfigs.size());
+        metadataReportConfigs.forEach(metadataReportConfig -> {
+            ConfigValidationUtils.validateMetadataConfig(metadataReportConfig);
+            if (!metadataReportConfig.isValid()) {
+                return;
+            }
+            metadataReportUrls.add(metadataReportConfig.toUrl());
+        });
+        MetadataReportInstance.init(metadataReportUrls);
     }
 
     /**

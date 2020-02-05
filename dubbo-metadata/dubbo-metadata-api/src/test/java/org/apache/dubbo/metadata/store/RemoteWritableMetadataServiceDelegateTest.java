@@ -48,6 +48,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.SortedSet;
 
 
@@ -65,7 +66,7 @@ public class RemoteWritableMetadataServiceDelegateTest {
 
     @BeforeAll
     public static void beforeAll() {
-        MetadataReportInstance.init(metadataURL);
+        MetadataReportInstance.init(Arrays.asList(metadataURL));
     }
 
     @BeforeEach
@@ -150,7 +151,7 @@ public class RemoteWritableMetadataServiceDelegateTest {
         metadataReportService.exportURL(publishUrl);
         metadataReportService.exportURL(publishUrl2);
         String exportedRevision = "9999";
-        JTestMetadataReport4Test jTestMetadataReport4Test = (JTestMetadataReport4Test) MetadataReportInstance.getMetadataReport(true);
+        JTestMetadataReport4Test jTestMetadataReport4Test = (JTestMetadataReport4Test) MetadataReportInstance.getMetadataReports(true).get(0);
         int origSize = jTestMetadataReport4Test.store.size();
         int num = countNum();
         Assertions.assertTrue(metadataReportService.refreshMetadata(exportedRevision, "1109"));

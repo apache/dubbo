@@ -20,6 +20,8 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_DIRECTORY;
@@ -32,33 +34,42 @@ public class MetadataReportInstance {
 
     private static AtomicBoolean init = new AtomicBoolean(false);
 
-    private static MetadataReport metadataReport;
+    private static List<MetadataReport> metadataReports;
 
-    public static void init(URL metadataReportURL) {
+    public static void init(List<URL> metadataReportURLs) {
         if (init.get()) {
             return;
         }
-        MetadataReportFactory metadataReportFactory = ExtensionLoader.getExtensionLoader(MetadataReportFactory.class).getAdaptiveExtension();
-        if (METADATA_REPORT_KEY.equals(metadataReportURL.getProtocol())) {
-            String protocol = metadataReportURL.getParameter(METADATA_REPORT_KEY, DEFAULT_DIRECTORY);
-            metadataReportURL = URLBuilder.from(metadataReportURL)
-                    .setProtocol(protocol)
-                    .removeParameter(METADATA_REPORT_KEY)
-                    .build();
+        if(metadataReportURLs == null || metadataReportURLs.isEmpty()){
+            return;
         }
-        metadataReport = metadataReportFactory.getMetadataReport(metadataReportURL);
+        MetadataReportFactory metadataReportFactory = ExtensionLoader.getExtensionLoader(MetadataReportFactory.class).getAdaptiveExtension();
+
+        metadataReports = new ArrayList<>(metadataReportURLs.size());
+        for(URL url : metadataReportURLs){
+            if (METADATA_REPORT_KEY.equals(url.getProtocol())){
+                String protocol = url.getParameter(METADATA_REPORT_KEY, DEFAULT_DIRECTORY);
+                url = URLBuilder.from(url)
+                        .setProtocol(protocol)
+                        .removeParameter(METADATA_REPORT_KEY)
+                        .build();
+            }
+            MetadataReport metadataReport = metadataReportFactory.getMetadataReport(url);
+            metadataReports.add(metadataReport);
+        }
+
         init.set(true);
     }
 
-    public static MetadataReport getMetadataReport() {
-        return getMetadataReport(false);
+    public static List<MetadataReport> getMetadataReports() {
+        return getMetadataReports(false);
     }
 
-    public static MetadataReport getMetadataReport(boolean checked) {
+    public static List<MetadataReport> getMetadataReports(boolean checked) {
         if (checked) {
             checkInit();
         }
-        return metadataReport;
+        return metadataReports;
     }
 
     private static void checkInit() {

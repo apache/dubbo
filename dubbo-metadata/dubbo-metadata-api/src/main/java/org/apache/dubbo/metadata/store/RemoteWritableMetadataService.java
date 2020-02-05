@@ -35,6 +35,7 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.function.BiConsumer;
@@ -68,8 +69,8 @@ public class RemoteWritableMetadataService implements WritableMetadataService {
         this.writableMetadataService = writableMetadataService;
     }
 
-    public MetadataReport getMetadataReport() {
-        return MetadataReportInstance.getMetadataReport(true);
+    public List<MetadataReport> getMetadataReports() {
+        return MetadataReportInstance.getMetadataReports(true);
     }
 
     @Override
@@ -77,12 +78,15 @@ public class RemoteWritableMetadataService implements WritableMetadataService {
         try {
             String interfaceName = providerUrl.getParameter(INTERFACE_KEY);
             if (StringUtils.isNotEmpty(interfaceName)
-                    && !ProtocolUtils.isGeneric(providerUrl.getParameter(GENERIC_KEY))) {
+                    && !ProtocolUtils.isGeneric(providerUrl.getParameter(GENERIC_KEY))
+                    && !CollectionUtils.isEmpty(getMetadataReports())) {
                 Class interfaceClass = Class.forName(interfaceName);
                 ServiceDefinition serviceDefinition = ServiceDefinitionBuilder.build(interfaceClass);
-                getMetadataReport().storeProviderMetadata(new MetadataIdentifier(providerUrl.getServiceInterface(),
-                        providerUrl.getParameter(VERSION_KEY), providerUrl.getParameter(GROUP_KEY),
-                        null, null), serviceDefinition);
+                for (MetadataReport metadataReport : getMetadataReports()) {
+                    metadataReport.storeProviderMetadata(new MetadataIdentifier(providerUrl.getServiceInterface(),
+                            providerUrl.getParameter(VERSION_KEY), providerUrl.getParameter(GROUP_KEY),
+                            null, null), serviceDefinition);
+                }
                 return;
             }
             logger.error("publishProvider interfaceName is empty . providerUrl: " + providerUrl.toFullString());
@@ -104,13 +108,15 @@ public class RemoteWritableMetadataService implements WritableMetadataService {
 
         try {
             String interfaceName = providerUrl.getParameter(INTERFACE_KEY);
-            if (StringUtils.isNotEmpty(interfaceName)) {
+            if (StringUtils.isNotEmpty(interfaceName) && !CollectionUtils.isEmpty(getMetadataReports())) {
                 Class interfaceClass = Class.forName(interfaceName);
                 FullServiceDefinition fullServiceDefinition = ServiceDefinitionBuilder.buildFullDefinition(interfaceClass,
                         providerUrl.getParameters());
-                getMetadataReport().storeProviderMetadata(new MetadataIdentifier(providerUrl.getServiceInterface(),
-                        providerUrl.getParameter(VERSION_KEY), providerUrl.getParameter(GROUP_KEY),
-                        PROVIDER_SIDE, providerUrl.getParameter(APPLICATION_KEY)), fullServiceDefinition);
+                for (MetadataReport metadataReport : getMetadataReports()) {
+                    metadataReport.storeProviderMetadata(new MetadataIdentifier(providerUrl.getServiceInterface(),
+                            providerUrl.getParameter(VERSION_KEY), providerUrl.getParameter(GROUP_KEY),
+                            PROVIDER_SIDE, providerUrl.getParameter(APPLICATION_KEY)), fullServiceDefinition);
+                }
                 return;
             }
             logger.error("publishProvider interfaceName is empty . providerUrl: " + providerUrl.toFullString());
@@ -124,9 +130,11 @@ public class RemoteWritableMetadataService implements WritableMetadataService {
     public void publishConsumer(URL consumerURL) throws RpcException {
         consumerURL = consumerURL.removeParameters(PID_KEY, TIMESTAMP_KEY, Constants.BIND_IP_KEY,
                 Constants.BIND_PORT_KEY, TIMESTAMP_KEY);
-        getMetadataReport().storeConsumerMetadata(new MetadataIdentifier(consumerURL.getServiceInterface(),
-                consumerURL.getParameter(VERSION_KEY), consumerURL.getParameter(GROUP_KEY), CONSUMER_SIDE,
-                consumerURL.getParameter(APPLICATION_KEY)), consumerURL.getParameters());
+        for (MetadataReport metadataReport : getMetadataReports()) {
+            metadataReport.storeConsumerMetadata(new MetadataIdentifier(consumerURL.getServiceInterface(),
+                    consumerURL.getParameter(VERSION_KEY), consumerURL.getParameter(GROUP_KEY), CONSUMER_SIDE,
+                    consumerURL.getParameter(APPLICATION_KEY)), consumerURL.getParameters());
+        }
     }
 
     @Override
@@ -139,7 +147,11 @@ public class RemoteWritableMetadataService implements WritableMetadataService {
         ServiceMetadataIdentifier metadataIdentifier = new ServiceMetadataIdentifier(url);
         metadataIdentifier.setRevision(exportedRevision);
         metadataIdentifier.setProtocol(url.getProtocol());
-        return throwableAction(getMetadataReport()::removeServiceMetadata, metadataIdentifier);
+        return throwableAction(m -> {
+            for (MetadataReport metadataReport : getMetadataReports()) {
+                metadataReport.removeServiceMetadata(m);
+            }
+        }, metadataIdentifier);
     }
 
     @Override
@@ -168,7 +180,11 @@ public class RemoteWritableMetadataService implements WritableMetadataService {
             SubscriberMetadataIdentifier metadataIdentifier = new SubscriberMetadataIdentifier();
             metadataIdentifier.setApplication(serviceName());
             metadataIdentifier.setRevision(subscribedRevision);
-            boolean executeResult = throwableAction(getMetadataReport()::saveSubscribedData, metadataIdentifier,
+            boolean executeResult = throwableAction((s, urls) -> {
+                        for (MetadataReport metadataReport : getMetadataReports()) {
+                            metadataReport.saveSubscribedData(s, urls);
+                        }
+                    }, metadataIdentifier,
                     writableMetadataService.getSubscribedURLs());
             if (!executeResult) {
                 result = false;
@@ -188,7 +204,11 @@ public class RemoteWritableMetadataService implements WritableMetadataService {
                 metadataIdentifier.setRevision(exportedRevision);
                 metadataIdentifier.setProtocol(url.getProtocol());
 
-                boolean tmpResult = throwableAction(getMetadataReport()::saveServiceMetadata, metadataIdentifier, url);
+                boolean tmpResult = throwableAction((s, tmp) -> {
+                    for (MetadataReport metadataReport : getMetadataReports()) {
+                        metadataReport.saveServiceMetadata(s, tmp);
+                    }
+                }, metadataIdentifier, url);
                 if (!tmpResult) result = tmpResult;
             }
         }

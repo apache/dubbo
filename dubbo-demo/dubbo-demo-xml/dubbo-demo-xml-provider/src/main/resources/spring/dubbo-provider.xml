@@ -23,6 +23,7 @@
 
     <dubbo:application metadata-type="remote" name="demo-provider"/>
     <dubbo:metadata-report address="zookeeper://127.0.0.1:2181"/>
+    <dubbo:metadata-report address="redis://127.0.0.1:6379"/>
 
     <dubbo:registry address="zookeeper://127.0.0.1:2181"/>
 
