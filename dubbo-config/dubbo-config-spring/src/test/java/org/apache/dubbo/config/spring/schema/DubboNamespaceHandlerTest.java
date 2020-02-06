@@ -88,7 +88,7 @@ public class DubboNamespaceHandlerTest {
         for (Configuration configuration : compositeConfiguration.getConfigList()) {
             System.out.println("configuration name: " + configuration.getClass().getName() + " " + configuration);
             System.out.println("dubbo.protocol.port: " + configuration.getString("dubbo.protocol.port"));
-            System.out.println("dubbo.protocol.id.port: " + configuration.getString("dubbo.protocol" + rmiProtocolConfig.getId() + ".port"));
+            System.out.println("dubbo.protocol." + rmiProtocolConfig.getId() + ".port:" + configuration.getString("dubbo.protocol." + rmiProtocolConfig.getId() + ".port"));
         }
 
         assertThat(rmiProtocolConfig.getPort(), is(10991));
