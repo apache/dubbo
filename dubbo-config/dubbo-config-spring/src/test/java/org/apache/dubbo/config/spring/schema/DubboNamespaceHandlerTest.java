@@ -16,9 +16,6 @@
  */
 package org.apache.dubbo.config.spring.schema;
 
-import org.apache.dubbo.common.config.CompositeConfiguration;
-import org.apache.dubbo.common.config.Configuration;
-import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.MonitorConfig;
@@ -82,15 +79,6 @@ public class DubboNamespaceHandlerTest {
         assertThat(protocolConfigMap.size(), is(2));
 
         ProtocolConfig rmiProtocolConfig = protocolConfigMap.get("rmi");
-
-        Environment env = ApplicationModel.getEnvironment();
-        CompositeConfiguration compositeConfiguration = env.getPrefixedConfiguration(rmiProtocolConfig);
-        for (Configuration configuration : compositeConfiguration.getConfigList()) {
-            System.out.println("configuration name: " + configuration.getClass().getName() + " " + configuration);
-            System.out.println("dubbo.protocol.port: " + configuration.getString("dubbo.protocol.port"));
-            System.out.println("dubbo.protocol." + rmiProtocolConfig.getId() + ".port:" + configuration.getString("dubbo.protocol." + rmiProtocolConfig.getId() + ".port"));
-        }
-
         assertThat(rmiProtocolConfig.getPort(), is(10991));
 
         ProtocolConfig dubboProtocolConfig = protocolConfigMap.get("dubbo");
