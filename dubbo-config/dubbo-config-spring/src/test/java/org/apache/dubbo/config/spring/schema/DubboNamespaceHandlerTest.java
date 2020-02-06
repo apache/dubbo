@@ -82,7 +82,7 @@ public class DubboNamespaceHandlerTest {
         assertThat(protocolConfigMap.size(), is(2));
 
         ProtocolConfig rmiProtocolConfig = protocolConfigMap.get("rmi");
-
+        System.out.println("rmi protocol: " + rmiProtocolConfig.getId() + ":" + rmiProtocolConfig.getName());
         Environment env = ApplicationModel.getEnvironment();
         CompositeConfiguration compositeConfiguration = env.getPrefixedConfiguration(rmiProtocolConfig);
         for (Configuration configuration : compositeConfiguration.getConfigList()) {
