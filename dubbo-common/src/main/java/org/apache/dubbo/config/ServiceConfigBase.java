@@ -92,10 +92,6 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         setMethods(MethodConfig.constructMethodConfig(service.methods()));
     }
 
-    public void exported() {
-
-    }
-
     @Deprecated
     private static List<ProtocolConfig> convertProviderToProtocol(List<ProviderConfig> providers) {
         if (CollectionUtils.isEmpty(providers)) {
