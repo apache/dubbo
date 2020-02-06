@@ -139,7 +139,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
 
         cacheInjectedReferenceBean(referenceBean, injectedElement);
 
-        return getOrCreateProxy(referencedBeanName, referenceBeanName, referenceBean, injectedType);
+        return getOrCreateProxy(referencedBeanName, referenceBeanName, attributes, injectedType);
     }
 
     /**
@@ -232,21 +232,25 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
      *
      * @param referencedBeanName   The name of bean that annotated Dubbo's {@link Service @Service} in the Spring {@link ApplicationContext}
      * @param referenceBeanName    the bean name of {@link ReferenceBean}
-     * @param referenceBean        the instance of {@link ReferenceBean}
+     * @param attributes           the {@link AnnotationAttributes attributes} of {@link Reference @Reference}
      * @param serviceInterfaceType the type of Dubbo service interface
      * @return non-null
      * @since 2.7.4
      */
-    private Object getOrCreateProxy(String referencedBeanName, String referenceBeanName, ReferenceBean referenceBean, Class<?> serviceInterfaceType) {
-        if (existsServiceBean(referencedBeanName)) { // If the local @Service Bean exists, build a proxy of ReferenceBean
+    private Object getOrCreateProxy(String referencedBeanName, String referenceBeanName, AnnotationAttributes attributes, Class<?> serviceInterfaceType) {
+
+        String beanName = getReferenceBeanName(attributes, serviceInterfaceType);
+
+        ConfigurableListableBeanFactory beanFactory = getBeanFactory();
+        // Get remote or local @Service Bean
+        Object bean = beanFactory.getBean(beanName);
+
+        if (existsServiceBean(referencedBeanName)) {
+            // If the local @Service Bean exists, build a proxy of ReferenceBean
             return newProxyInstance(getClassLoader(), new Class[]{serviceInterfaceType},
-                    wrapInvocationHandler(referenceBeanName, referenceBean));
-        } else { // ReferenceBean should be initialized and get immediately
-            /**
-             * TODO, if we can make sure this happens after {@link DubboLifecycleComponentApplicationListener},
-             * TODO, then we can avoid starting bootstrap in here, because bootstrap should has been started.
-             */
-            return referenceBean.get();
+                    wrapInvocationHandler(referenceBeanName, bean));
+        } else {
+            return bean;
         }
     }
 
@@ -259,39 +263,29 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
      * @return non-null
      * @since 2.7.4
      */
-    private InvocationHandler wrapInvocationHandler(String referenceBeanName, ReferenceBean referenceBean) {
+    private InvocationHandler wrapInvocationHandler(String referenceBeanName, Object referenceBean) {
         return localReferenceBeanInvocationHandlerCache.computeIfAbsent(referenceBeanName, name ->
                 new ReferenceBeanInvocationHandler(referenceBean));
     }
 
     private static class ReferenceBeanInvocationHandler implements InvocationHandler {
 
-        private final ReferenceBean referenceBean;
-
         private Object bean;
 
-        private ReferenceBeanInvocationHandler(ReferenceBean referenceBean) {
-            this.referenceBean = referenceBean;
+        private ReferenceBeanInvocationHandler(Object bean) {
+            this.bean = bean;
         }
 
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
             Object result;
             try {
-                if (bean == null) { // If the bean is not initialized, invoke init()
-                    // issue: https://github.com/apache/dubbo/issues/3429
-                    init();
-                }
                 result = method.invoke(bean, args);
             } catch (InvocationTargetException e) {
                 // re-throws the actual Exception.
                 throw e.getTargetException();
             }
             return result;
-        }
-
-        private void init() {
-            this.bean = referenceBean.get();
         }
     }
 
@@ -361,11 +355,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
     private void initReferenceBeanInvocationHandler(ServiceBean serviceBean) {
         String serviceBeanName = serviceBean.getBeanName();
         // Remove ServiceBean when it's exported
-        ReferenceBeanInvocationHandler handler = localReferenceBeanInvocationHandlerCache.remove(serviceBeanName);
-        // Initialize
-        if (handler != null) {
-            handler.init();
-        }
+        localReferenceBeanInvocationHandlerCache.remove(serviceBeanName);
     }
 
 
