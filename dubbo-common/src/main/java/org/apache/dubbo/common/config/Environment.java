@@ -116,12 +116,13 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
      * @return
      */
     public synchronized CompositeConfiguration getPrefixedConfiguration(AbstractConfig config) {
-        CompositeConfiguration prefixedConfiguration =
-                prefixedConfigurations.putIfAbsent(config, new CompositeConfiguration(config.getPrefix(), config.getId()));
-        if (prefixedConfiguration != null) {
-            return prefixedConfiguration;
-        }
-        prefixedConfiguration = prefixedConfigurations.get(config);
+//        CompositeConfiguration prefixedConfiguration =
+//                prefixedConfigurations.putIfAbsent(config, new CompositeConfiguration(config.getPrefix(), config.getId()));
+//        if (prefixedConfiguration != null) {
+//            return prefixedConfiguration;
+//        }
+//        prefixedConfiguration = prefixedConfigurations.get(config);
+        CompositeConfiguration prefixedConfiguration = new CompositeConfiguration(config.getPrefix(), config.getId());
         Configuration configuration = new ConfigConfigurationAdapter(config);
         if (this.isConfigCenterFirst()) {
             // The sequence would be: SystemConfiguration -> AppExternalConfiguration -> ExternalConfiguration -> AbstractConfig -> PropertiesConfiguration
