@@ -113,4 +113,8 @@ public class CompositeConfiguration implements Configuration {
         }
         return value != null ? value : defaultValue;
     }
+
+    public List<Configuration> getConfigList() {
+        return configList;
+    }
 }
