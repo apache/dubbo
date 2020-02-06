@@ -38,6 +38,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -45,7 +46,6 @@ import java.util.concurrent.ConcurrentMap;
 import static com.alibaba.spring.util.AnnotationUtils.getAttribute;
 import static com.alibaba.spring.util.AnnotationUtils.getAttributes;
 import static java.lang.reflect.Proxy.newProxyInstance;
-import static java.util.Collections.unmodifiableMap;
 import static org.apache.dubbo.config.spring.beans.factory.annotation.ServiceBeanNameBuilder.create;
 import static org.springframework.util.StringUtils.hasText;
 
@@ -106,7 +106,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
      * @since 2.5.11
      */
     public Map<InjectionMetadata.InjectedElement, ReferenceBean<?>> getInjectedFieldReferenceBeanMap() {
-        return unmodifiableMap(injectedFieldReferenceBeanCache);
+        return Collections.unmodifiableMap(injectedFieldReferenceBeanCache);
     }
 
     /**
@@ -116,7 +116,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
      * @since 2.5.11
      */
     public Map<InjectionMetadata.InjectedElement, ReferenceBean<?>> getInjectedMethodReferenceBeanMap() {
-        return unmodifiableMap(injectedMethodReferenceBeanCache);
+        return Collections.unmodifiableMap(injectedMethodReferenceBeanCache);
     }
 
     @Override
@@ -395,7 +395,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
     public void destroy() throws Exception {
         super.destroy();
         this.referenceBeanCache.clear();
-        referencedBeanInvocationHandlersCache.clear();
+        this.referencedBeanInvocationHandlersCache.clear();
         this.injectedFieldReferenceBeanCache.clear();
         this.injectedMethodReferenceBeanCache.clear();
     }
