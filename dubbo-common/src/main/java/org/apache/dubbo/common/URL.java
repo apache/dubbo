@@ -91,8 +91,6 @@ class URL implements Serializable {
 
     private static final long serialVersionUID = -1985165475234910535L;
 
-    private volatile transient boolean frozen;
-
     protected String protocol;
 
     protected String username;
@@ -132,18 +130,6 @@ class URL implements Serializable {
     private transient String serviceKey;
 
     private transient String address;
-
-    public boolean isFrozen() {
-        return frozen;
-    }
-
-    public void froze() {
-        this.frozen = true;
-    }
-
-    public void deFroze() {
-        this.frozen = false;
-    }
 
     protected URL() {
         this.protocol = null;
@@ -389,11 +375,7 @@ class URL implements Serializable {
     }
 
     public URL setProtocol(String protocol) {
-        if (frozen) {
-            return new URL(protocol, username, password, host, port, path, getParameters());
-        }
-        this.protocol = protocol;
-        return this;
+        return new URL(protocol, username, password, host, port, path, getParameters());
     }
 
     public String getUsername() {
@@ -401,11 +383,7 @@ class URL implements Serializable {
     }
 
     public URL setUsername(String username) {
-        if (frozen) {
-            return new URL(protocol, username, password, host, port, path, getParameters());
-        }
-        this.username = username;
-        return this;
+        return new URL(protocol, username, password, host, port, path, getParameters());
     }
 
     public String getPassword() {
@@ -413,11 +391,7 @@ class URL implements Serializable {
     }
 
     public URL setPassword(String password) {
-        if (frozen) {
-            return new URL(protocol, username, password, host, port, path, getParameters());
-        }
-        this.password = password;
-        return this;
+        return new URL(protocol, username, password, host, port, path, getParameters());
     }
 
     public String getAuthority() {
@@ -434,11 +408,7 @@ class URL implements Serializable {
     }
 
     public URL setHost(String host) {
-        if (frozen) {
-            return new URL(protocol, username, password, host, port, path, getParameters());
-        }
-        this.host = host;
-        return this;
+        return new URL(protocol, username, password, host, port, path, getParameters());
     }
 
     /**
@@ -521,15 +491,7 @@ class URL implements Serializable {
     }
 
     public URL setPath(String path) {
-        if (frozen) {
-            return new URL(protocol, username, password, host, port, path, getParameters());
-        }
-        // trim the beginning "/"
-        while (path != null && path.startsWith("/")) {
-            path = path.substring(1);
-        }
-        this.path = path;
-        return this;
+        return new URL(protocol, username, password, host, port, path, getParameters());
     }
 
     public String getAbsolutePath() {
@@ -1084,7 +1046,10 @@ class URL implements Serializable {
             return this;
         }
 
-        return addParameter0(key, value);
+        Map<String, String> map = new HashMap<>(getParameters());
+        map.put(key, value);
+
+        return new URL(protocol, username, password, host, port, path, map);
     }
 
     public URL addParameterIfAbsent(String key, String value) {
@@ -1095,23 +1060,11 @@ class URL implements Serializable {
         if (hasParameter(key)) {
             return this;
         }
+        Map<String, String> map = new HashMap<>(getParameters());
+        map.put(key, value);
 
-        return addParameter0(key, value);
+        return new URL(protocol, username, password, host, port, path, map);
     }
-
-    private URL addParameter0(String key, String value) {
-        if (frozen) {
-            Map<String, String> map = new HashMap<>(getParameters());
-            map.put(key, value);
-
-            return new URL(protocol, username, password, host, port, path, map);
-        } else {
-            parameters.put(key, value);
-            resetMethodParameters();
-            return this;
-        }
-    }
-
     /**
      * Add parameters to a new url.
      *
@@ -1143,34 +1096,18 @@ class URL implements Serializable {
             return this;
         }
 
-        if (frozen) {
-            Map<String, String> map = new HashMap<>(getParameters());
-            map.putAll(parameters);
-            return new URL(protocol, username, password, host, port, path, map);
-        } else {
-            getParameters().putAll(parameters);
-            resetMethodParameters();
-            return this;
-        }
+        Map<String, String> map = new HashMap<>(getParameters());
+        map.putAll(parameters);
+        return new URL(protocol, username, password, host, port, path, map);
     }
 
     public URL addParametersIfAbsent(Map<String, String> parameters) {
         if (CollectionUtils.isEmptyMap(parameters)) {
             return this;
         }
-        if (frozen) {
-            Map<String, String> map = new HashMap<>(parameters);
-            map.putAll(getParameters());
-            return new URL(protocol, username, password, host, port, path, map);
-        } else {
-            for (String key : parameters.keySet()) {
-                if (!getParameters().containsKey(key)) {
-                    getParameters().put(key, parameters.get(key));
-                }
-            }
-            resetMethodParameters();
-            return this;
-        }
+        Map<String, String> map = new HashMap<>(parameters);
+        map.putAll(getParameters());
+        return new URL(protocol, username, password, host, port, path, map);
     }
 
     public URL addParameters(String... pairs) {
@@ -1213,32 +1150,18 @@ class URL implements Serializable {
         if (keys == null || keys.length == 0) {
             return this;
         }
-        if (frozen) {
-            Map<String, String> map = new HashMap<>(getParameters());
-            for (String key : keys) {
-                map.remove(key);
-            }
-            if (map.size() == getParameters().size()) {
-                return this;
-            }
-            return new URL(protocol, username, password, host, port, path, map);
-        } else {
-            for (String key : keys) {
-                getParameters().remove(key);
-            }
-            resetMethodParameters();
+        Map<String, String> map = new HashMap<>(getParameters());
+        for (String key : keys) {
+            map.remove(key);
+        }
+        if (map.size() == getParameters().size()) {
             return this;
         }
+        return new URL(protocol, username, password, host, port, path, map);
     }
 
     public URL clearParameters() {
-        if (frozen) {
-            return new URL(protocol, username, password, host, port, path, new HashMap<>());
-        } else {
-            getParameters().clear();
-            resetMethodParameters();
-            return this;
-        }
+        return new URL(protocol, username, password, host, port, path, new HashMap<>());
     }
 
     public String getRawParameter(String key) {

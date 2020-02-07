@@ -440,7 +440,9 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 continue;
             }
             URL url = mergeUrl(providerUrl);
-            url.froze();
+            if (url instanceof URLBuilder) {
+                url = ((URLBuilder) url).build();
+            }
 
             if (keys.contains(url)) { // Repeated url
                 continue;

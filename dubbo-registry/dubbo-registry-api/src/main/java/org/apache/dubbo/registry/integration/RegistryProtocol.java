@@ -188,13 +188,12 @@ public class RegistryProtocol implements Protocol {
         overrideListeners.put(overrideSubscribeUrl, overrideSubscribeListener);
 
         providerUrl = overrideUrlWithConfig(providerUrl, overrideSubscribeListener);
-        providerUrl.froze();
+        providerUrl = UrlUtils.unmodifiableUrl(providerUrl);
 
         //export invoker
         final ExporterChangeableWrapper<T> exporter = doLocalExport(originInvoker, providerUrl);
 
         // url to registry
-        final Registry registry = getRegistry(originInvoker);
         final URL registeredProviderUrl = getUrlToRegistry(providerUrl, registryUrl);
         // decide if we need to delay publish
         boolean register = providerUrl.getParameter(REGISTER_KEY, true);
@@ -203,6 +202,7 @@ public class RegistryProtocol implements Protocol {
         }
 
         // Deprecated! Subscribe to override rules in 2.6.x or before.
+        final Registry registry = registryFactory.getRegistry(registryUrl);
         registry.subscribe(overrideSubscribeUrl, overrideSubscribeListener);
 
         exporter.setRegisterUrl(registeredProviderUrl);
@@ -291,16 +291,16 @@ public class RegistryProtocol implements Protocol {
     }
 
     protected URL getRegistryUrl(Invoker<?> originInvoker) {
-        URL registryUrl = originInvoker.getUrl();
-        if (REGISTRY_PROTOCOL.equals(registryUrl.getProtocol())) {
-            String protocol = registryUrl.getParameter(REGISTRY_KEY, DEFAULT_REGISTRY);
-            registryUrl = registryUrl.setProtocol(protocol).removeParameter(REGISTRY_KEY);
+        URLBuilder builder = UrlUtils.newModifiableUrl(originInvoker.getUrl());
+        if (REGISTRY_PROTOCOL.equals(builder.getProtocol())) {
+            String protocol = builder.getParameter(REGISTRY_KEY, DEFAULT_REGISTRY);
+            builder.setProtocol(protocol).removeParameter(REGISTRY_KEY);
         }
-        return registryUrl;
+        return builder.build();
     }
 
     protected URL getRegistryUrl(URL url) {
-        return URLBuilder.from(url)
+        return UrlUtils.newModifiableUrl(url)
                 .setProtocol(url.getParameter(REGISTRY_KEY, DEFAULT_REGISTRY))
                 .removeParameter(REGISTRY_KEY)
                 .build();
@@ -338,16 +338,13 @@ public class RegistryProtocol implements Protocol {
             urlToRegistry = URL.valueOf(providerUrl, paramsToRegistry, providerUrl.getParameter(METHODS_KEY, (String[]) null));
         }
 
-        urlToRegistry.froze();
-
         return urlToRegistry;
     }
 
     private URL getSubscribedOverrideUrl(URL registeredProviderUrl) {
-        return URLBuilder.from(registeredProviderUrl)
+        return UrlUtils.newModifiableUrl(registeredProviderUrl)
                 .setProtocol(PROVIDER_PROTOCOL)
                 .addParameters(CATEGORY_KEY, CONFIGURATORS_CATEGORY, CHECK_KEY, String.valueOf(false))
-                .freeze()
                 .build();
     }
 
@@ -362,7 +359,7 @@ public class RegistryProtocol implements Protocol {
         if (export == null || export.length() == 0) {
             throw new IllegalArgumentException("The registry export url is null! registry: " + originInvoker.getUrl());
         }
-        return URL.valueOf(export);
+        return UrlUtils.newModifiableUrl(export);
     }
 
     /**
@@ -405,8 +402,7 @@ public class RegistryProtocol implements Protocol {
         directory.setProtocol(protocol);
 
         URL subscribeUrl = new URL(CONSUMER_PROTOCOL, parameters.get(REGISTER_IP_KEY), 0, type.getName(), parameters);
-        subscribeUrl.addParameter(CATEGORY_KEY, PROVIDERS_CATEGORY + "," + CONFIGURATORS_CATEGORY + "," + ROUTERS_CATEGORY);
-        subscribeUrl.froze();
+        subscribeUrl = subscribeUrl.addParameter(CATEGORY_KEY, PROVIDERS_CATEGORY + "," + CONFIGURATORS_CATEGORY + "," + ROUTERS_CATEGORY);
 
         if (!ANY_VALUE.equals(url.getServiceInterface()) && url.getParameter(REGISTER_KEY, true)) {
             directory.setRegisteredConsumerUrl(getRegisteredConsumerUrl(subscribeUrl, url));

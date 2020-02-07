@@ -24,33 +24,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public final class URLBuilder {
-    private String protocol;
-
-    private String username;
-
-    private String password;
-
-    // by default, host to registry
-    private String host;
-
-    // by default, port to registry
-    private int port;
-
-    private String path;
-
-    private Map<String, String> parameters;
-
-    private boolean freeze;
+public final class URLBuilder extends URL {
 
     public URLBuilder() {
-        protocol = null;
-        username = null;
-        password = null;
-        host = null;
-        port = 0;
-        path = null;
-        parameters = new HashMap<>();
+        super();
     }
 
     public URLBuilder(String protocol, String host, int port) {
@@ -83,13 +60,7 @@ public final class URLBuilder {
                       String host,
                       int port,
                       String path, Map<String, String> parameters) {
-        this.protocol = protocol;
-        this.username = username;
-        this.password = password;
-        this.host = host;
-        this.port = port;
-        this.path = path;
-        this.parameters = parameters != null ? parameters : new HashMap<>();
+        super(protocol, username, password, host, port, path, parameters);
     }
 
     public static URLBuilder from(URL url) {
@@ -130,10 +101,6 @@ public final class URLBuilder {
 
         URL url = new URL(protocol, username, password, host, port, path);
         url.parameters = this.parameters;
-
-        if (freeze) {
-            url.froze();
-        }
 
         return url;
     }
@@ -309,11 +276,6 @@ public final class URLBuilder {
         return addParameters(map);
     }
 
-    public URLBuilder freeze() {
-        this.freeze = true;
-        return this;
-    }
-
     public URLBuilder addParameterString(String query) {
         if (StringUtils.isEmpty(query)) {
             return this;
@@ -357,6 +319,94 @@ public final class URLBuilder {
 
     public String getParameter(String key) {
         return parameters.get(key);
+    }
+
+    /**
+     * Parse url string
+     *
+     * @param url URL string
+     * @return URL instance
+     * @see URL
+     */
+    public static URLBuilder valueOf(String url) {
+        if (url == null || (url = url.trim()).length() == 0) {
+            throw new IllegalArgumentException("url == null");
+        }
+        String protocol = null;
+        String username = null;
+        String password = null;
+        String host = null;
+        int port = 0;
+        String path = null;
+        Map<String, String> parameters = null;
+        int i = url.indexOf('?'); // separator between body and parameters
+        if (i >= 0) {
+            String[] parts = url.substring(i + 1).split("&");
+            parameters = new HashMap<>();
+            for (String part : parts) {
+                part = part.trim();
+                if (part.length() > 0) {
+                    int j = part.indexOf('=');
+                    if (j >= 0) {
+                        parameters.put(part.substring(0, j), part.substring(j + 1));
+                    } else {
+                        parameters.put(part, part);
+                    }
+                }
+            }
+            url = url.substring(0, i);
+        }
+        i = url.indexOf("://");
+        if (i >= 0) {
+            if (i == 0) {
+                throw new IllegalStateException("url missing protocol: \"" + url + "\"");
+            }
+            protocol = url.substring(0, i);
+            url = url.substring(i + 3);
+        } else {
+            // case: file:/path/to/file.txt
+            i = url.indexOf(":/");
+            if (i >= 0) {
+                if (i == 0) {
+                    throw new IllegalStateException("url missing protocol: \"" + url + "\"");
+                }
+                protocol = url.substring(0, i);
+                url = url.substring(i + 1);
+            }
+        }
+
+        i = url.indexOf('/');
+        if (i >= 0) {
+            path = url.substring(i + 1);
+            url = url.substring(0, i);
+        }
+        i = url.lastIndexOf('@');
+        if (i >= 0) {
+            username = url.substring(0, i);
+            int j = username.indexOf(':');
+            if (j >= 0) {
+                password = username.substring(j + 1);
+                username = username.substring(0, j);
+            }
+            url = url.substring(i + 1);
+        }
+        i = url.lastIndexOf(':');
+        if (i >= 0 && i < url.length() - 1) {
+            if (url.lastIndexOf('%') > i) {
+                // ipv6 address with scope id
+                // e.g. fe80:0:0:0:894:aeec:f37d:23e1%en0
+                // see https://howdoesinternetwork.com/2013/ipv6-zone-id
+                // ignore
+            } else {
+                port = Integer.parseInt(url.substring(i + 1));
+                url = url.substring(0, i);
+            }
+        }
+        if (url.length() > 0) {
+            host = url;
+        }
+
+        return new URLBuilder(protocol, username, password, host, port, path, parameters);
     }
 
 }
