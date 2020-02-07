@@ -244,7 +244,8 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
      * @revised 2.7.6
      */
     private boolean existsServiceBean(String referencedBeanName) {
-        return applicationContext.isTypeMatch(referencedBeanName, ServiceBean.class);
+        return applicationContext.containsBean(referencedBeanName) &&
+                applicationContext.isTypeMatch(referencedBeanName, ServiceBean.class);
 
     }
 
