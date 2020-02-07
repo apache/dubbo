@@ -439,10 +439,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                         ExtensionLoader.getExtensionLoader(Protocol.class).getSupportedExtensions()));
                 continue;
             }
-            URL url = mergeUrl(providerUrl);
-            if (url instanceof URLBuilder) {
-                url = ((URLBuilder) url).build();
-            }
+            URL url = UrlUtils.unmodifiableUrl(mergeUrl(providerUrl));
 
             if (keys.contains(url)) { // Repeated url
                 continue;
@@ -697,7 +694,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     private void overrideDirectoryUrl() {
         // merge override parameters
-        this.overrideDirectoryUrl = directoryUrl;
+        this.overrideDirectoryUrl = UrlUtils.newModifiableUrl(directoryUrl);
         List<Configurator> localConfigurators = this.configurators; // local reference
         doOverrideUrl(localConfigurators);
         List<Configurator> localAppDynamicConfigurators = CONSUMER_CONFIGURATION_LISTENER.getConfigurators(); // local reference
