@@ -51,7 +51,7 @@ public abstract class RegistryNotifier {
         if (delta >= 0) {
             scheduler.submit(new NotificationTask(this, notifyTime));
         } else {
-            scheduler.schedule(new NotificationTask(this, notifyTime), delta, TimeUnit.MILLISECONDS);
+            scheduler.schedule(new NotificationTask(this, notifyTime), -delta, TimeUnit.MILLISECONDS);
         }
     }
 
