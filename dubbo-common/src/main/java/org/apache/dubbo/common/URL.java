@@ -1013,9 +1013,11 @@ class URL implements Serializable {
             return this;
         }
 
-        Map<String, String> map = new HashMap<>(getParameters());
-        map.putAll(parameters);
-        return new URL(protocol, username, password, host, port, path, map);
+        Map<String, String> srcParams = getParameters();
+        Map<String, String> newMap = new HashMap<>((int) ((srcParams.size() + parameters.size()) / 0.75 + 1));
+        newMap.putAll(srcParams);
+        newMap.putAll(parameters);
+        return new URL(protocol, username, password, host, port, path, newMap);
     }
 
     public URL addParametersIfAbsent(Map<String, String> parameters) {

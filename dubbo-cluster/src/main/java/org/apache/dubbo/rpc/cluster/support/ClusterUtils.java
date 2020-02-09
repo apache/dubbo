@@ -30,6 +30,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_APPLICATI
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
+import static org.apache.dubbo.common.utils.CollectionUtils.isNotEmptyMap;
+import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
 import static org.apache.dubbo.remoting.Constants.TRANSPORTER_KEY;
 
 /**
@@ -56,22 +58,20 @@ public class ClusterUtils {
         remoteMap.remove(ALIVE_KEY);
         remoteMap.remove(TRANSPORTER_KEY);
 
-        if (localMap != null && localMap.size() > 0) {
-            String remoteApplication = remoteMap.get(APPLICATION_KEY);
+        remoteMap.put(REMOTE_APPLICATION_KEY, remoteMap.get(APPLICATION_KEY));
+
+        if (isNotEmptyMap(localMap)) {
             remoteMap.putAll(localMap);
-            remoteMap.put(REMOTE_APPLICATION_KEY, remoteApplication);
 
             // Combine filters and listeners on Provider and Consumer
             String remoteFilter = remoteMap.get(REFERENCE_FILTER_KEY);
             String localFilter = localMap.get(REFERENCE_FILTER_KEY);
-            if (remoteFilter != null && remoteFilter.length() > 0
-                    && localFilter != null && localFilter.length() > 0) {
+            if (isNotEmpty(remoteFilter) && isNotEmpty(localFilter)) {
                 remoteMap.put(REFERENCE_FILTER_KEY, remoteFilter + "," + localFilter);
             }
             String remoteListener = remoteMap.get(INVOKER_LISTENER_KEY);
             String localListener = localMap.get(INVOKER_LISTENER_KEY);
-            if (remoteListener != null && remoteListener.length() > 0
-                    && localListener != null && localListener.length() > 0) {
+            if (isNotEmpty(remoteListener) && isNotEmpty(localListener)) {
                 remoteMap.put(INVOKER_LISTENER_KEY, remoteListener + "," + localListener);
             }
         }
