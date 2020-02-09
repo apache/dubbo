@@ -23,8 +23,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public abstract class RegistryNotifier {
-    private long lastExecuteTime;
-    private long lastEventTime;
+
+    private volatile long lastExecuteTime;
+    private volatile long lastEventTime;
 
     private Object rawAddresses;
     private Registry registry;
@@ -44,7 +45,14 @@ public abstract class RegistryNotifier {
         this.rawAddresses = rawAddresses;
         long notifyTime = System.currentTimeMillis();
         this.lastEventTime = notifyTime;
-        scheduler.submit(new NotificationTask(this, notifyTime));
+
+        int delayTime = getRegistry().getDelay();
+        long delta = (System.currentTimeMillis() - lastExecuteTime) - delayTime;
+        if (delta >= 0) {
+            scheduler.submit(new NotificationTask(this, notifyTime));
+        } else {
+            scheduler.schedule(new NotificationTask(this, notifyTime), delta, TimeUnit.MILLISECONDS);
+        }
     }
 
     protected abstract void doNotify(Object rawAddresses);
@@ -60,15 +68,7 @@ public abstract class RegistryNotifier {
 
         @Override
         public void run() {
-            int delayTime = getRegistry().getDelay();
-            if (this.time < listener.lastEventTime) {
-                return;
-            } else if (delayTime <= 0) {
-                listener.doNotify(listener.rawAddresses);
-                listener.lastExecuteTime = System.currentTimeMillis();
-            } else if (System.currentTimeMillis() - listener.lastExecuteTime < delayTime) {
-                scheduler.schedule(new NotificationTask(this.listener, this.time), System.currentTimeMillis() - listener.lastExecuteTime, TimeUnit.MILLISECONDS);
-            } else {
+            if (this.time == listener.lastEventTime) {
                 listener.doNotify(listener.rawAddresses);
                 listener.lastExecuteTime = System.currentTimeMillis();
             }

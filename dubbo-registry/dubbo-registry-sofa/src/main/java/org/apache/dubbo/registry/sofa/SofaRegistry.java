@@ -175,11 +175,7 @@ public class SofaRegistry extends CacheableFailbackRegistry {
 
         final CountDownLatch latch = new CountDownLatch(1);
         SubscriberRegistration subscriberRegistration = new SubscriberRegistration(serviceName,
-                (dataId, data) -> {
-                    //record change
-                    printAddressData(dataId, data);
-                    handleRegistryData(url, data, listener, latch);
-                });
+                new RegistryChildListenerImpl(url, serviceName, listener, latch));
 
         addAttributesForSub(subscriberRegistration);
         listSubscriber = registryClient.register(subscriberRegistration);

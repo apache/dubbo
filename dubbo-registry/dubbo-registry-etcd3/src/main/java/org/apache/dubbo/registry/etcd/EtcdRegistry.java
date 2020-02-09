@@ -38,7 +38,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CountDownLatch;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
@@ -196,7 +195,6 @@ public class EtcdRegistry extends CacheableFailbackRegistry {
                             CHECK_KEY, String.valueOf(false)), listener);
                 }
             } else {
-                CountDownLatch latch = new CountDownLatch(1);
                 List<URL> urls = new ArrayList<>();
                 for (String path : toCategoriesPath(url)) {
 

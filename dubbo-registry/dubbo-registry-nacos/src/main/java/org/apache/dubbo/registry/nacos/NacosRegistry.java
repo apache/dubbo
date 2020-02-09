@@ -401,12 +401,7 @@ public class NacosRegistry extends FailbackRegistry {
     private void subscribeEventListener(String serviceName, final URL url, final NotifyListener listener)
             throws NacosException {
         if (!nacosListeners.containsKey(serviceName)) {
-            EventListener eventListener = event -> {
-                if (event instanceof NamingEvent) {
-                    NamingEvent e = (NamingEvent) event;
-                    notifySubscriber(url, listener, e.getInstances());
-                }
-            };
+            EventListener eventListener = new RegistryChildListenerImpl(url, listener);
             namingService.subscribe(serviceName, eventListener);
             nacosListeners.put(serviceName, eventListener);
         }

@@ -302,10 +302,7 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
                     if (delayTime <= 0) {
                         this.doNotify(rawAddresses);
                     } else {
-                        long tmpLastExecute = lastExecuteTime;
-                        lastExecuteTime = System.currentTimeMillis();
-                        this.doNotify(rawAddresses);
-                        long interval = delayTime - (System.currentTimeMillis() - tmpLastExecute);
+                        long interval = delayTime - (System.currentTimeMillis() - lastExecuteTime);
                         if (interval > 0) {
                             try {
                                 Thread.sleep(interval);
@@ -313,6 +310,8 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
                                 // ignore
                             }
                         }
+                        lastExecuteTime = System.currentTimeMillis();
+                        this.doNotify(rawAddresses);
                     }
                 }
 
