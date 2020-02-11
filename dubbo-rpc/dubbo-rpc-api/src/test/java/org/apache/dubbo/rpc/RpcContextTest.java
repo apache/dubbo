@@ -23,6 +23,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 public class RpcContextTest {
 
@@ -149,10 +151,29 @@ public class RpcContextTest {
         Assertions.assertTrue(rpcContext.isAsyncStarted());
 
         asyncContext.write(new Object());
-        Assertions.assertTrue(((AsyncContextImpl)asyncContext).getInternalFuture().isDone());
+        Assertions.assertTrue(((AsyncContextImpl) asyncContext).getInternalFuture().isDone());
 
         rpcContext.stopAsync();
         Assertions.assertTrue(rpcContext.isAsyncStarted());
     }
 
+    @Test
+    public void testAsyncCall() {
+        CompletableFuture<String> rpcFuture = RpcContext.getContext().asyncCall(() -> {
+            throw new NullPointerException();
+        });
+
+        rpcFuture.whenComplete((rpcResult, throwable) -> {
+            System.out.println(throwable.toString());
+            Assertions.assertNull(rpcResult);
+            Assertions.assertTrue(throwable instanceof RpcException);
+            Assertions.assertTrue(throwable.getCause() instanceof NullPointerException);
+        });
+
+        Assertions.assertThrows(ExecutionException.class, rpcFuture::get);
+
+        rpcFuture = rpcFuture.exceptionally(throwable -> "mock success");
+
+        Assertions.assertEquals("mock success", rpcFuture.join());
+    }
 }

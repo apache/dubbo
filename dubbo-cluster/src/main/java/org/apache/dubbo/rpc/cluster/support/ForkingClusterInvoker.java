@@ -65,8 +65,8 @@ public class ForkingClusterInvoker<T> extends AbstractClusterInvoker<T> {
         try {
             checkInvokers(invokers, invocation);
             final List<Invoker<T>> selected;
-            final int forks = getUrl().getParameter(FORKS_KEY, DEFAULT_FORKS);
-            final int timeout = getUrl().getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT);
+            final int forks = getConsumerUrl().getParameter(FORKS_KEY, DEFAULT_FORKS);
+            final int timeout = getConsumerUrl().getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT);
             if (forks <= 0 || forks >= invokers.size()) {
                 selected = invokers;
             } else {
