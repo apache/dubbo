@@ -149,10 +149,33 @@ public class RpcContextTest {
         Assertions.assertTrue(rpcContext.isAsyncStarted());
 
         asyncContext.write(new Object());
-        Assertions.assertTrue(((AsyncContextImpl)asyncContext).getInternalFuture().isDone());
+        Assertions.assertTrue(((AsyncContextImpl) asyncContext).getInternalFuture().isDone());
 
         rpcContext.stopAsync();
         Assertions.assertTrue(rpcContext.isAsyncStarted());
     }
 
+    @Test
+    public void testObjectAttachment() {
+        RpcContext rpcContext = RpcContext.getContext();
+
+        rpcContext.setAttachment("objectKey1", "value1");
+        rpcContext.setAttachment("objectKey2", "value2");
+        rpcContext.setAttachment("objectKey3", 1); // object
+
+        Assertions.assertEquals("value1", rpcContext.getObjectAttachment("objectKey1"));
+        Assertions.assertEquals("value2", rpcContext.getAttachment("objectKey2"));
+        Assertions.assertNull(rpcContext.getAttachment("objectKey3"));
+        Assertions.assertEquals(1, rpcContext.getObjectAttachment("objectKey3"));
+        Assertions.assertEquals(3, rpcContext.getObjectAttachments().size());
+
+        rpcContext.clearAttachments();
+        Assertions.assertEquals(0, rpcContext.getObjectAttachments().size());
+
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("mapKey1", 1);
+        map.put("mapKey2", "mapValue2");
+        rpcContext.setObjectAttachments(map);
+        Assertions.assertEquals(map, rpcContext.getObjectAttachments());
+    }
 }
