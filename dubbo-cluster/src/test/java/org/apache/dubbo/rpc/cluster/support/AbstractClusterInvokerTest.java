@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc.cluster.support;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
@@ -66,6 +65,7 @@ public class AbstractClusterInvokerTest {
     StaticDirectory<IHelloService> dic;
     RpcInvocation invocation = new RpcInvocation();
     URL url = URL.valueOf("registry://localhost:9090/org.apache.dubbo.rpc.cluster.support.AbstractClusterInvokerTest.IHelloService?refer=" + URL.encode("application=abstractClusterInvokerTest"));
+    URL tmpUrl = url.removeParameter(REFER_KEY).removeParameter(MONITOR_KEY);
 
     Invoker<IHelloService> invoker1;
     Invoker<IHelloService> invoker2;
@@ -124,6 +124,7 @@ public class AbstractClusterInvokerTest {
 
         invokers.add(invoker1);
         dic = new StaticDirectory<IHelloService>(url, invokers, null);
+
         cluster = new AbstractClusterInvoker(dic) {
             @Override
             protected Result doInvoke(Invocation invocation, List invokers, LoadBalance loadbalance)
@@ -225,8 +226,6 @@ public class AbstractClusterInvokerTest {
     @Test
     public void testCloseAvailablecheck() {
         LoadBalance lb = mock(LoadBalance.class);
-        Map<String, String> queryMap = StringUtils.parseQueryString(url.getParameterAndDecoded(REFER_KEY));
-        URL tmpUrl = url.addParameters(queryMap).removeParameter(MONITOR_KEY);
         given(lb.select(invokers, tmpUrl, invocation)).willReturn(invoker1);
         initlistsize5();
 
