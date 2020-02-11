@@ -169,9 +169,9 @@ class ProviderAuthFilterTest {
                 .addParameter(Constants.SERVICE_AUTH, true);
         Invoker invoker = mock(Invoker.class);
         Invocation invocation = mock(Invocation.class);
-        when(invocation.getObjectAttachment(Constants.AK_KEY)).thenReturn("ak");
-        when(invocation.getObjectAttachment(CommonConstants.CONSUMER)).thenReturn("test-consumer");
-        when(invocation.getObjectAttachment(Constants.REQUEST_TIMESTAMP_KEY)).thenReturn(currentTimeMillis);
+        when(invocation.getAttachment(Constants.AK_KEY)).thenReturn("ak");
+        when(invocation.getAttachment(CommonConstants.CONSUMER)).thenReturn("test-consumer");
+        when(invocation.getAttachment(Constants.REQUEST_TIMESTAMP_KEY)).thenReturn(String.valueOf(currentTimeMillis));
         when(invocation.getMethodName()).thenReturn(method);
         when(invoker.getUrl()).thenReturn(url);
 
@@ -179,7 +179,7 @@ class ProviderAuthFilterTest {
         String requestString = String.format(Constants.SIGNATURE_STRING_FORMAT,
                 url.getColonSeparatedKey(), invocation.getMethodName(), "sk", currentTimeMillis);
         String sign = SignatureUtils.sign(requestString, "sk");
-        when(invocation.getObjectAttachment(Constants.REQUEST_SIGNATURE_KEY)).thenReturn(sign);
+        when(invocation.getAttachment(Constants.REQUEST_SIGNATURE_KEY)).thenReturn(sign);
 
         ProviderAuthFilter providerAuthFilter = new ProviderAuthFilter();
         Result result = providerAuthFilter.invoke(invoker, invocation);

@@ -117,6 +117,7 @@ public class AppResponse implements Result {
     }
 
     @Override
+    @Deprecated
     public Map<String, String> getAttachments() {
         return new AttachmentsAdapter.ObjectToStringMap(attachments);
     }
