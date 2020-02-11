@@ -357,7 +357,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             metadataService.publishServiceDefinition(consumerURL);
         }
         // create service proxy
-        return (T) PROXY_FACTORY.getProxy(invoker);
+        return (T) PROXY_FACTORY.getProxy(invoker, ProtocolUtils.isGeneric(generic));
     }
 
     /**

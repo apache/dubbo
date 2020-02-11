@@ -30,10 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
@@ -496,6 +493,7 @@ public class RpcContext {
     public Object getObjectAttachment(String key) {
         return attachments.get(key);
     }
+
     /**
      * set attachment.
      *
@@ -570,7 +568,6 @@ public class RpcContext {
         }
         return this;
     }
-
 
     public void clearAttachments() {
         this.attachments.clear();
@@ -720,34 +717,9 @@ public class RpcContext {
                 removeAttachment(ASYNC_KEY);
             }
         } catch (final RpcException e) {
-            return new CompletableFuture<T>() {
-                @Override
-                public boolean cancel(boolean mayInterruptIfRunning) {
-                    return false;
-                }
-
-                @Override
-                public boolean isCancelled() {
-                    return false;
-                }
-
-                @Override
-                public boolean isDone() {
-                    return true;
-                }
-
-                @Override
-                public T get() throws InterruptedException, ExecutionException {
-                    throw new ExecutionException(e.getCause());
-                }
-
-                @Override
-                public T get(long timeout, TimeUnit unit)
-                        throws InterruptedException, ExecutionException,
-                        TimeoutException {
-                    return get();
-                }
-            };
+            CompletableFuture<T> exceptionFuture = new CompletableFuture<>();
+            exceptionFuture.completeExceptionally(e);
+            return exceptionFuture;
         }
         return ((CompletableFuture<T>) getContext().getFuture());
     }

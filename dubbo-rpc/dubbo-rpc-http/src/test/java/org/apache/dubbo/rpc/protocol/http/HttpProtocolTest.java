@@ -24,6 +24,8 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 
+import org.apache.dubbo.rpc.service.GenericService;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -62,6 +64,23 @@ public class HttpProtocolTest {
         String result = client.sayHello("haha");
         assertTrue(server.isCalled());
         assertEquals("Hello, haha", result);
+        invoker.destroy();
+        exporter.unexport();
+    }
+
+    @Test
+    public void testGenericInvoke() {
+        HttpServiceImpl server = new HttpServiceImpl();
+        Assertions.assertFalse(server.isCalled());
+        ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+        Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+        URL url = URL.valueOf("http://127.0.0.1:5342/" + HttpService.class.getName() + "?release=2.7.0");
+        Exporter<HttpService> exporter = protocol.export(proxyFactory.getInvoker(server, HttpService.class, url));
+        Invoker<GenericService> invoker = protocol.refer(GenericService.class, url);
+        GenericService client = proxyFactory.getProxy(invoker, true);
+        String result = (String) client.$invoke("sayHello", new String[]{"java.lang.String"}, new Object[]{"haha"});
+        Assertions.assertTrue(server.isCalled());
+        Assertions.assertEquals("Hello, haha", result);
         invoker.destroy();
         exporter.unexport();
     }
