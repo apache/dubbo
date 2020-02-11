@@ -19,10 +19,21 @@ package org.apache.dubbo.common.utils;
 
 import java.lang.reflect.Array;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.function.Predicate;
+
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptySet;
+import static java.util.Collections.unmodifiableSet;
+import static java.util.stream.Collectors.toList;
+import static org.apache.dubbo.common.function.Streams.filterAll;
+import static org.apache.dubbo.common.utils.ArrayUtils.isNotEmpty;
 
 public class ClassUtils {
     /**
@@ -284,5 +295,148 @@ public class ClassUtils {
             return false;
         }
         return true;
+    }
+
+    /**
+     * Get all super classes from the specified type
+     *
+     * @param type         the specified type
+     * @param classFilters the filters for classes
+     * @return non-null read-only {@link Set}
+     * @since 2.7.6
+     */
+    public static Set<Class<?>> getAllSuperClasses(Class<?> type, Predicate<Class<?>>... classFilters) {
+
+        Set<Class<?>> allSuperClasses = new LinkedHashSet<>();
+
+        Class<?> superClass = type.getSuperclass();
+
+        if (superClass != null) {
+            // add current super class
+            allSuperClasses.add(superClass);
+            // add ancestor classes
+            allSuperClasses.addAll(getAllSuperClasses(superClass));
+        }
+
+        return unmodifiableSet(filterAll(allSuperClasses, classFilters));
+    }
+
+    /**
+     * Get all interfaces from the specified type
+     *
+     * @param type             the specified type
+     * @param interfaceFilters the filters for interfaces
+     * @return non-null read-only {@link Set}
+     * @since 2.7.6
+     */
+    public static Set<Class<?>> getAllInterfaces(Class<?> type, Predicate<Class<?>>... interfaceFilters) {
+
+        if (type == null || type.isPrimitive()) {
+            return emptySet();
+        }
+
+        Set<Class<?>> allInterfaces = new LinkedHashSet<>();
+
+        Class<?>[] interfaces = type.getInterfaces();
+
+        if (isNotEmpty(interfaces)) {
+            // add current interfaces
+            allInterfaces.addAll(asList(interfaces));
+        }
+
+        // add all super interfaces
+        getAllSuperClasses(type).forEach(superType -> allInterfaces.addAll(getAllInterfaces(superType)));
+
+        // add all super interfaces from all interfaces
+        allInterfaces.stream()
+                .map(ClassUtils::getAllInterfaces)
+                .flatMap(Collection::stream)
+                .collect(toList())
+                .forEach(allInterfaces::add);
+
+        return filterAll(allInterfaces, interfaceFilters);
+    }
+
+    /**
+     * Get all inherited types from the specified type
+     *
+     * @param type        the specified type
+     * @param typeFilters the filters for types
+     * @return non-null read-only {@link Set}
+     * @since 2.7.6
+     */
+    public static Set<Class<?>> getAllInheritedTypes(Class<?> type, Predicate<Class<?>>... typeFilters) {
+        // Add all super classes
+        Set<Class<?>> types = new LinkedHashSet<>(getAllSuperClasses(type, typeFilters));
+        // Add all interface classes
+        types.addAll(getAllInterfaces(type, typeFilters));
+        return unmodifiableSet(types);
+    }
+
+
+    /**
+     * the semantics is same as {@link Class#isAssignableFrom(Class)}
+     *
+     * @param superType  the super type
+     * @param targetType the target type
+     * @return see {@link Class#isAssignableFrom(Class)}
+     * @since 2.7.6
+     */
+    public static boolean isAssignableFrom(Class<?> superType, Class<?> targetType) {
+        // any argument is null
+        if (superType == null || targetType == null) {
+            return false;
+        }
+        // equals
+        if (Objects.equals(superType, targetType)) {
+            return true;
+        }
+        // isAssignableFrom
+        return superType.isAssignableFrom(targetType);
+    }
+
+    /**
+     * Test the specified class name is present in the {@link ClassLoader}
+     *
+     * @param className   the name of {@link Class}
+     * @param classLoader {@link ClassLoader}
+     * @return If found, return <code>true</code>
+     * @since 2.7.6
+     */
+    public static boolean isPresent(String className, ClassLoader classLoader) {
+        try {
+            forName(className, classLoader);
+        } catch (Throwable ignored) { // Ignored
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Resolve the {@link Class} by the specified name and {@link ClassLoader}
+     *
+     * @param className   the name of {@link Class}
+     * @param classLoader {@link ClassLoader}
+     * @return If can't be resolved , return <code>null</code>
+     * @since 2.7.6
+     */
+    public static Class<?> resolveClass(String className, ClassLoader classLoader) {
+        Class<?> targetClass = null;
+        try {
+            targetClass = forName(className, classLoader);
+        } catch (Throwable ignored) { // Ignored
+        }
+        return targetClass;
+    }
+
+    /**
+     * Is generic class or not?
+     *
+     * @param type the target type
+     * @return if the target type is not null or <code>void</code> or Void.class, return <code>true</code>, or false
+     * @since 2.7.6
+     */
+    public static boolean isGenericClass(Class<?> type) {
+        return type != null && !void.class.equals(type) && !Void.class.equals(type);
     }
 }
