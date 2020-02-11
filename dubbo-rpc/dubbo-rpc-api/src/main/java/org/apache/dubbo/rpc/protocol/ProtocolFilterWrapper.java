@@ -85,9 +85,6 @@ public class ProtocolFilterWrapper implements Protocol {
                                 if (listener != null) {
                                     listener.onError(e, invoker, invocation);
                                 }
-                            } else if (filter instanceof Filter.Listener2) {
-                                Filter.Listener2 listener = (Filter.Listener2) filter;
-                                listener.onError(e, invoker, invocation);
                             }
                             throw e;
                         } finally {
@@ -103,15 +100,6 @@ public class ProtocolFilterWrapper implements Protocol {
                                         listener.onError(t, invoker, invocation);
                                     }
                                 }
-                            } else if (filter instanceof Filter.Listener2) {
-                                Filter.Listener2 listener = (Filter.Listener2) filter;
-                                if (t == null) {
-                                    listener.onMessage(r, invoker, invocation);
-                                } else {
-                                    listener.onError(t, invoker, invocation);
-                                }
-                            } else {// Deprecated!
-                                filter.onResponse(r, invoker, invocation);
                             }
                         });
                     }

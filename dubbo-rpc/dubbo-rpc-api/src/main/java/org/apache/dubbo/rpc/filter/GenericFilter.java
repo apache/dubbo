@@ -53,7 +53,7 @@ import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
  * GenericInvokerFilter.
  */
 @Activate(group = CommonConstants.PROVIDER, order = -20000)
-public class GenericFilter implements Filter, Filter.Listener2 {
+public class GenericFilter implements Filter, Filter.Listener {
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation inv) throws RpcException {
@@ -153,7 +153,7 @@ public class GenericFilter implements Filter, Filter.Listener2 {
     }
 
     @Override
-    public void onMessage(Result appResponse, Invoker<?> invoker, Invocation inv) {
+    public void onResponse(Result appResponse, Invoker<?> invoker, Invocation inv) {
         if ((inv.getMethodName().equals($INVOKE) || inv.getMethodName().equals($INVOKE_ASYNC))
                 && inv.getArguments() != null
                 && inv.getArguments().length == 3

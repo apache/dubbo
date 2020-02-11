@@ -52,7 +52,7 @@ import static org.apache.dubbo.rpc.Constants.OUTPUT_KEY;
  * MonitorFilter. (SPI, Singleton, ThreadSafe)
  */
 @Activate(group = {PROVIDER, CONSUMER})
-public class MonitorFilter implements Filter, Filter.Listener2 {
+public class MonitorFilter implements Filter, Filter.Listener {
 
     private static final Logger logger = LoggerFactory.getLogger(MonitorFilter.class);
     private static final String MONITOR_FILTER_START_TIME = "monitor_filter_start_time";
@@ -96,7 +96,7 @@ public class MonitorFilter implements Filter, Filter.Listener2 {
     }
 
     @Override
-    public void onMessage(Result result, Invoker<?> invoker, Invocation invocation) {
+    public void onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
         if (invoker.getUrl().hasParameter(MONITOR_KEY)) {
             collect(invoker, invocation, result, RpcContext.getContext().getRemoteHost(), (long) invocation.get(MONITOR_FILTER_START_TIME), false);
             getConcurrent(invoker, invocation).decrementAndGet(); // count down
