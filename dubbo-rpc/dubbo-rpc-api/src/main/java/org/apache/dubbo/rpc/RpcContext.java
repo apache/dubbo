@@ -479,7 +479,6 @@ public class RpcContext {
      * @param key
      * @return attachment
      */
-    @Deprecated
     public String getAttachment(String key) {
         Object value = attachments.get(key);
         if (value instanceof String) {

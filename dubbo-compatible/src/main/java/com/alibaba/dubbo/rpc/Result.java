@@ -17,6 +17,7 @@
 
 package com.alibaba.dubbo.rpc;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -40,7 +41,7 @@ public interface Result extends org.apache.dubbo.rpc.Result {
 
     @Override
     default Map<String, Object> getObjectAttachments() {
-        return null;
+        return Collections.emptyMap();
     }
 
     @Override

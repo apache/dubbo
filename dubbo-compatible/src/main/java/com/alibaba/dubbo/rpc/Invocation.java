@@ -17,6 +17,7 @@
 
 package com.alibaba.dubbo.rpc;
 
+import java.util.Collections;
 import java.util.Map;
 
 @Deprecated
@@ -70,7 +71,7 @@ public interface Invocation extends org.apache.dubbo.rpc.Invocation {
 
     @Override
     default Map<String, Object> getObjectAttachments() {
-        return null;
+        return Collections.emptyMap();
     }
 
     @Override
