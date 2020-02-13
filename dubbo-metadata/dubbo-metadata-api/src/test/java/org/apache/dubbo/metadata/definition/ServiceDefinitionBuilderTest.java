@@ -31,7 +31,7 @@ import java.util.List;
 /**
  * 2018/11/6
  */
-public class ServiceDefinitionBuildderTest {
+public class ServiceDefinitionBuilderTest {
 
     @Test
     public void testBuilderComplextObject() {
@@ -77,7 +77,7 @@ public class ServiceDefinitionBuildderTest {
             }
         }
         Assertions.assertEquals(topTypeDefinition.getProperties().get("v").getType(), "long");
-        Assertions.assertEquals(topTypeDefinition.getProperties().get("maps").getType(), "java.util.Map<java.lang.String, java.lang.String>");
+        Assertions.assertEquals(topTypeDefinition.getProperties().get("maps").getType(), "java.util.Map<java.lang.String,java.lang.String>");
         Assertions.assertEquals(topTypeDefinition.getProperties().get("innerObject").getType(), ComplexObject.InnerObject.class.getName());
         Assertions.assertEquals(topTypeDefinition.getProperties().get("intList").getType(), "java.util.List<java.lang.Integer>");
         Assertions.assertEquals(topTypeDefinition.getProperties().get("strArrays").getType(), "java.lang.String[]");
