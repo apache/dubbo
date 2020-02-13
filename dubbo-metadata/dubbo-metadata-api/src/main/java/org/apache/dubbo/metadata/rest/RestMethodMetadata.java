@@ -122,6 +122,15 @@ public class RestMethodMetadata implements Serializable {
     }
 
     public void addIndexToName(Integer index, String name) {
+        if (index == null) {
+            return;
+        }
+
+        if (name.startsWith("arg") && name.endsWith(index.toString())) {
+            // Ignore this value because of the Java byte-code without the metadata of method parameters
+            return;
+        }
+
         Map<Integer, Collection<String>> indexToName = getIndexToName();
         Collection<String> parameterNames = indexToName.computeIfAbsent(index, i -> new ArrayList<>(1));
         parameterNames.add(name);
@@ -159,14 +168,13 @@ public class RestMethodMetadata implements Serializable {
                 Objects.equals(getBodyIndex(), that.getBodyIndex()) &&
                 Objects.equals(getHeaderMapIndex(), that.getHeaderMapIndex()) &&
                 Objects.equals(getBodyType(), that.getBodyType()) &&
-                Objects.equals(getIndexToName(), that.getIndexToName()) &&
                 Objects.equals(getFormParams(), that.getFormParams()) &&
                 Objects.equals(getIndexToEncoded(), that.getIndexToEncoded());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getMethod(), getRequest(), getUrlIndex(), getBodyIndex(), getHeaderMapIndex(), getBodyType(), getIndexToName(), getFormParams(), getIndexToEncoded());
+        return Objects.hash(getMethod(), getRequest(), getUrlIndex(), getBodyIndex(), getHeaderMapIndex(), getBodyType(), getFormParams(), getIndexToEncoded());
     }
 
     @Override

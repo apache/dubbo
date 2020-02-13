@@ -25,7 +25,6 @@ import org.apache.dubbo.metadata.rest.SpringRestService;
 import org.apache.dubbo.metadata.rest.StandardRestService;
 import org.apache.dubbo.metadata.rest.jaxrs.JAXRSServiceRestMetadataResolver;
 
-import com.google.gson.Gson;
 import org.junit.jupiter.api.Test;
 
 import java.util.LinkedList;
@@ -79,10 +78,5 @@ public class JAXRSServiceRestMetadataResolverTest {
 
         assertEquals(expectedServiceRestMetadata, serviceRestMetadata);
 
-        assertEquals(expectedServiceRestMetadata.toString(), serviceRestMetadata.toString());
-
-        Gson gson = new Gson();
-        assertEquals(gson.toJson(expectedServiceRestMetadata), gson.toJson(serviceRestMetadata));
     }
-
 }

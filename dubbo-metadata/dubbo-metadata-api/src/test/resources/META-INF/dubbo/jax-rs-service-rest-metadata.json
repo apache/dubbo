@@ -238,7 +238,7 @@
         "method": {
           "name": "requestBodyMap",
           "parameterTypes": [
-            "java.util.Map\u003cjava.lang.String, java.lang.Object\u003e",
+            "java.util.Map\u003cjava.lang.String,java.lang.Object\u003e",
             "java.lang.String"
           ],
           "returnType": "org.apache.dubbo.metadata.rest.User",
@@ -299,7 +299,7 @@
           "parameterTypes": [
             "org.apache.dubbo.metadata.rest.User"
           ],
-          "returnType": "java.util.Map\u003cjava.lang.String, java.lang.Object\u003e",
+          "returnType": "java.util.Map\u003cjava.lang.String,java.lang.Object\u003e",
           "parameters": [
             {
               "type": "org.apache.dubbo.metadata.rest.User",

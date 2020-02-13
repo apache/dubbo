@@ -18,8 +18,11 @@ package org.apache.dubbo.common.utils;
 
 
 import java.lang.reflect.Array;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -34,6 +37,7 @@ import static java.util.Collections.unmodifiableSet;
 import static java.util.stream.Collectors.toList;
 import static org.apache.dubbo.common.function.Streams.filterAll;
 import static org.apache.dubbo.common.utils.ArrayUtils.isNotEmpty;
+import static org.apache.dubbo.common.utils.CollectionUtils.ofSet;
 
 public class ClassUtils {
     /**
@@ -54,6 +58,53 @@ public class ClassUtils {
      * as value, for example: Integer.class -> int.class.
      */
     private static final Map<Class<?>, Class<?>> PRIMITIVE_WRAPPER_TYPE_MAP = new HashMap<Class<?>, Class<?>>(16);
+
+    /**
+     * Simple Types (including primitive types)
+     *
+     * <ul>
+     *     <li>{@link Void}</li>
+     *     <li>{@link Boolean}</li>
+     *     <li>{@link Character}</li>
+     *     <li>{@link Byte}</li>
+     *     <li>{@link Integer}</li>
+     *     <li>{@link Float}</li>
+     *     <li>{@link Double}</li>
+     *     <li>{@link String}</li>
+     *     <li>{@link BigDecimal}</li>
+     *     <li>{@link BigInteger}</li>
+     *     <li>{@link Date}</li>
+     *     <li>{@link Object}</li>
+     * </ul>
+     *
+     * @see javax.management.openmbean.SimpleType
+     * @since 2.7.6
+     */
+    public static final Set<Class<?>> SIMPLE_TYPES = ofSet(
+            void.class,
+            Void.class,
+            boolean.class,
+            Boolean.class,
+            char.class,
+            Character.class,
+            byte.class,
+            Byte.class,
+            short.class,
+            Short.class,
+            int.class,
+            Integer.class,
+            long.class,
+            Long.class,
+            float.class,
+            Float.class,
+            double.class,
+            Double.class,
+            String.class,
+            BigDecimal.class,
+            BigInteger.class,
+            Date.class,
+            Object.class
+    );
 
     private static final char PACKAGE_SEPARATOR_CHAR = '.';
 
@@ -239,18 +290,25 @@ public class ClassUtils {
     }
 
 
+    /**
+     * @param type the type to test
+     * @return
+     * @deprecated as 2.7.6, use {@link #isSimpleType(Class)} instead
+     */
     public static boolean isPrimitive(Class<?> type) {
-        return type.isPrimitive()
-                || type == String.class
-                || type == Character.class
-                || type == Boolean.class
-                || type == Byte.class
-                || type == Short.class
-                || type == Integer.class
-                || type == Long.class
-                || type == Float.class
-                || type == Double.class
-                || type == Object.class;
+        return isSimpleType(type);
+    }
+
+    /**
+     * The specified type is simple type or not
+     *
+     * @param type the type to test
+     * @return if <code>type</code> is one element of {@link #SIMPLE_TYPES}, return <code>true</code>, or <code>false</code>
+     * @see #SIMPLE_TYPES
+     * @since 2.7.6
+     */
+    public static boolean isSimpleType(Class<?> type) {
+        return SIMPLE_TYPES.contains(type);
     }
 
     public static Object convertPrimitive(Class<?> type, String value) {
