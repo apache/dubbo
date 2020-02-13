@@ -46,9 +46,10 @@ import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
  * IP and Port Helper for RPC
  */
 public class NetUtils {
+
     private static Logger logger;
 
-    {
+    static {
         logger = LoggerFactory.getLogger(NetUtils.class);
         if (logger instanceof FailsafeLogger) {
             logger = ((FailsafeLogger) logger).getLogger();
@@ -123,7 +124,7 @@ public class NetUtils {
                 || host.length() == 0
                 || host.equalsIgnoreCase(LOCALHOST_KEY)
                 || host.equals(ANYHOST_VALUE)
-                || (LOCAL_IP_PATTERN.matcher(host).matches());
+                || host.startsWith("127.");
     }
 
     public static boolean isValidLocalHost(String host) {

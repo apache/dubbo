@@ -82,7 +82,7 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
     public Result invoke(Invocation invocation) throws RpcException {
         try {
             Object value = doInvoke(proxy, invocation.getMethodName(), invocation.getParameterTypes(), invocation.getArguments());
-            CompletableFuture<Object> future = wrapWithFuture(value, invocation);
+			CompletableFuture<Object> future = wrapWithFuture(value);
             CompletableFuture<AppResponse> appResponseFuture = future.handle((obj, t) -> {
                 AppResponse result = new AppResponse();
                 if (t != null) {
@@ -107,7 +107,7 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
         }
     }
 
-    private CompletableFuture<Object> wrapWithFuture (Object value, Invocation invocation) {
+	private CompletableFuture<Object> wrapWithFuture(Object value) {
         if (RpcContext.getContext().isAsyncStarted()) {
             return ((AsyncContextImpl)(RpcContext.getContext().getAsyncContext())).getInternalFuture();
         } else if (value instanceof CompletableFuture) {

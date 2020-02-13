@@ -92,10 +92,6 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         setMethods(MethodConfig.constructMethodConfig(service.methods()));
     }
 
-    public void exported() {
-
-    }
-
     @Deprecated
     private static List<ProtocolConfig> convertProviderToProtocol(List<ProviderConfig> providers) {
         if (CollectionUtils.isEmpty(providers)) {
@@ -197,23 +193,12 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         return ref.getClass();
     }
 
-    public void checkDefault() {
-        createProviderIfAbsent();
-    }
-
-    private void createProviderIfAbsent() {
-        if (provider != null) {
-            return;
+    public void checkDefault() throws IllegalStateException {
+        if (provider == null) {
+            provider = ApplicationModel.getConfigManager()
+                    .getDefaultProvider()
+                    .orElse(new ProviderConfig());
         }
-        setProvider(
-                ApplicationModel.getConfigManager()
-                        .getDefaultProvider()
-                        .orElseGet(() -> {
-                            ProviderConfig providerConfig = new ProviderConfig();
-                            providerConfig.refresh();
-                            return providerConfig;
-                        })
-        );
     }
 
     public void checkProtocol() {
@@ -248,8 +233,10 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
                 if (protocolConfigs.isEmpty()) {
                     protocolConfigs = new ArrayList<>(1);
                     ProtocolConfig protocolConfig = new ProtocolConfig();
+                    protocolConfig.setDefault(true);
                     protocolConfig.refresh();
                     protocolConfigs.add(protocolConfig);
+                    ApplicationModel.getConfigManager().addProtocol(protocolConfig);
                 }
                 setProtocols(protocolConfigs);
             }
@@ -411,6 +398,8 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
 
     @Parameter(excluded = true)
     public String getUniqueServiceName() {
+        String group = StringUtils.isEmpty(this.group) ? provider.getGroup() : this.group;
+        String version = StringUtils.isEmpty(this.version) ? provider.getVersion() : this.version;
         return URL.buildKey(interfaceName, group, version);
     }
 

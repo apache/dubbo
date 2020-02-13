@@ -23,6 +23,9 @@ import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.utils.ReferenceConfigCache;
 
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,6 +35,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.stereotype.Component;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -51,14 +56,28 @@ import static org.junit.Assert.assertTrue;
 @ContextConfiguration(
         classes = {
                 ServiceAnnotationTestConfiguration.class,
-                ReferenceAnnotationBeanPostProcessorTest.class
+                ReferenceAnnotationBeanPostProcessorTest.class,
+                ReferenceAnnotationBeanPostProcessorTest.TestAspect.class
         })
 @TestPropertySource(properties = {
         "packagesToScan = org.apache.dubbo.config.spring.context.annotation.provider",
         "consumer.version = ${demo.service.version}",
         "consumer.url = dubbo://127.0.0.1:12345?version=2.5.7",
 })
+@EnableAspectJAutoProxy(proxyTargetClass = true, exposeProxy = true)
 public class ReferenceAnnotationBeanPostProcessorTest {
+
+    private static final String AOP_SUFFIX = "(based on AOP)";
+
+    @Aspect
+    @Component
+    public static class TestAspect {
+
+        @Around("execution(* org.apache.dubbo.config.spring.context.annotation.provider.DemoServiceImpl.*(..))")
+        public Object aroundApi(ProceedingJoinPoint pjp) throws Throwable {
+            return pjp.proceed() + AOP_SUFFIX;
+        }
+    }
 
     @Bean
     public TestBean testBean() {
@@ -105,27 +124,29 @@ public class ReferenceAnnotationBeanPostProcessorTest {
         Assert.assertNotNull(testBean.autowiredDemoService);
         Assert.assertEquals(1, demoServicesMap.size());
 
-        Assert.assertEquals("Hello,Mercy", demoService.sayName("Mercy"));
+        String expectedResult = "Hello,Mercy" + AOP_SUFFIX;
+
+        Assert.assertEquals(expectedResult, testBean.autowiredDemoService.sayName("Mercy"));
+        Assert.assertEquals(expectedResult, demoService.sayName("Mercy"));
         Assert.assertEquals("Greeting, Mercy", defaultHelloService.sayHello("Mercy"));
         Assert.assertEquals("Hello, Mercy", helloServiceImpl.sayHello("Mercy"));
         Assert.assertEquals("Greeting, Mercy", helloService.sayHello("Mercy"));
 
 
-        Assert.assertEquals("Hello,Mercy", testBean.getDemoServiceFromAncestor().sayName("Mercy"));
-        Assert.assertEquals("Hello,Mercy", testBean.getDemoServiceFromParent().sayName("Mercy"));
-        Assert.assertEquals("Hello,Mercy", testBean.getDemoService().sayName("Mercy"));
-        Assert.assertEquals("Hello,Mercy", testBean.autowiredDemoService.sayName("Mercy"));
+        Assert.assertEquals(expectedResult, testBean.getDemoServiceFromAncestor().sayName("Mercy"));
+        Assert.assertEquals(expectedResult, testBean.getDemoServiceFromParent().sayName("Mercy"));
+        Assert.assertEquals(expectedResult, testBean.getDemoService().sayName("Mercy"));
 
         DemoService myDemoService = context.getBean("my-reference-bean", DemoService.class);
 
-        Assert.assertEquals("Hello,Mercy", myDemoService.sayName("Mercy"));
+        Assert.assertEquals(expectedResult, myDemoService.sayName("Mercy"));
 
 
         for (DemoService demoService1 : demoServicesMap.values()) {
 
             Assert.assertEquals(myDemoService, demoService1);
 
-            Assert.assertEquals("Hello,Mercy", demoService1.sayName("Mercy"));
+            Assert.assertEquals(expectedResult, demoService1.sayName("Mercy"));
         }
 
     }

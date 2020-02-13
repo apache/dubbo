@@ -41,6 +41,30 @@ public class BaseServiceMetadata {
         return buf.toString();
     }
 
+    public static String versionFromServiceKey(String serviceKey) {
+        int index = serviceKey.indexOf(":");
+        if (index == -1) {
+            return null;
+        }
+        return serviceKey.substring(index + 1);
+    }
+
+    public static String groupFromServiceKey(String serviceKey) {
+        int index = serviceKey.indexOf("/");
+        if (index == -1) {
+            return null;
+        }
+        return serviceKey.substring(0, index);
+    }
+
+    public static String interfaceFromServiceKey(String serviceKey) {
+        int groupIndex = serviceKey.indexOf("/");
+        int versionIndex = serviceKey.indexOf(":");
+        groupIndex = (groupIndex == -1) ? 0 : groupIndex + 1;
+        versionIndex = (versionIndex == -1) ? serviceKey.length() : versionIndex;
+        return serviceKey.substring(groupIndex, versionIndex);
+    }
+
     /**
      * Format : interface:version
      *
@@ -55,6 +79,7 @@ public class BaseServiceMetadata {
 
     /**
      * revert of org.apache.dubbo.common.ServiceDescriptor#getDisplayServiceKey()
+     *
      * @param displayKey
      * @return
      */

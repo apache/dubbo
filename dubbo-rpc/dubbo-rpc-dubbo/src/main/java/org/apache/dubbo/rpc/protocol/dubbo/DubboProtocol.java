@@ -413,7 +413,7 @@ public class DubboProtocol extends AbstractProtocol {
         if (connections == 0) {
             useShareConnect = true;
 
-            /**
+            /*
              * The xml configuration should have a higher priority than properties.
              */
             String shareConnectionsStr = url.getParameter(SHARE_CONNECTIONS_KEY, (String) null);
@@ -480,7 +480,7 @@ public class DubboProtocol extends AbstractProtocol {
                 }
             }
 
-            /**
+            /*
              * I understand that the purpose of the remove operation here is to avoid the expired url key
              * always occupying this memory space.
              */
@@ -650,7 +650,7 @@ public class DubboProtocol extends AbstractProtocol {
             client.close(ConfigurationUtils.getServerShutdownTimeout());
 
             // TODO
-            /**
+            /*
              * At this time, ReferenceCountExchangeClient#client has been replaced with LazyConnectExchangeClient.
              * Do you need to call client.close again to ensure that LazyConnectExchangeClient is also closed?
              */

@@ -48,10 +48,10 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractRegistryFactory.class);
 
     // The lock for the acquisition process of the registry
-    private static final ReentrantLock LOCK = new ReentrantLock();
+    protected static final ReentrantLock LOCK = new ReentrantLock();
 
     // Registry Collection Map<RegistryAddress, Registry>
-    private static final Map<String, Registry> REGISTRIES = new HashMap<>();
+    protected static final Map<String, Registry> REGISTRIES = new HashMap<>();
 
     private static final AtomicBoolean destroyed = new AtomicBoolean(false);
 
@@ -174,6 +174,15 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
             return null;
         }
     };
+
+    public static void removeDestroyedRegistry(Registry toRm){
+        LOCK.lock();
+        try {
+            REGISTRIES.entrySet().removeIf(entry -> entry.getValue().equals(toRm));
+        } finally {
+            LOCK.unlock();
+        }
+    }
 
     // for unit test
     public static void clearRegistryNotDestroy() {
