@@ -34,7 +34,6 @@ import org.apache.dubbo.service.DemoService;
 import org.apache.dubbo.service.DemoServiceImpl;
 
 import com.alibaba.fastjson.JSON;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -184,7 +183,7 @@ public class GenericServiceTest {
             }
         }
         Assertions.assertEquals(topTypeDefinition.getProperties().get("v").getType(), "long");
-        Assertions.assertEquals(topTypeDefinition.getProperties().get("maps").getType(), "java.util.Map<java.lang.String, java.lang.String>");
+        Assertions.assertEquals(topTypeDefinition.getProperties().get("maps").getType(), "java.util.Map<java.lang.String,java.lang.String>");
         Assertions.assertEquals(topTypeDefinition.getProperties().get("innerObject").getType(), "org.apache.dubbo.service.ComplexObject$InnerObject");
         Assertions.assertEquals(topTypeDefinition.getProperties().get("intList").getType(), "java.util.List<java.lang.Integer>");
         Assertions.assertEquals(topTypeDefinition.getProperties().get("strArrays").getType(), "java.lang.String[]");
