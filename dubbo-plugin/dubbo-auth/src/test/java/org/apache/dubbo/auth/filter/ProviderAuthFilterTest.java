@@ -130,7 +130,7 @@ class ProviderAuthFilterTest {
                 .addParameter(Constants.ACCESS_KEY_ID_KEY, "ak")
                 .addParameter(Constants.SECRET_ACCESS_KEY_KEY, "sk")
                 .addParameter(CommonConstants.APPLICATION_KEY, "test-provider")
-                .addParameter(Constants.PARAMTER_SIGNATURE_ENABLE_KEY, true)
+                .addParameter(Constants.PARAMETER_SIGNATURE_ENABLE_KEY, true)
                 .addParameter(Constants.SERVICE_AUTH, true);
 
         Invoker invoker = mock(Invoker.class);
