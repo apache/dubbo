@@ -288,7 +288,7 @@ public class ClassUtils {
      * @deprecated as 2.7.6, use {@link Class#isPrimitive()} plus {@link #isSimpleType(Class)} instead
      */
     public static boolean isPrimitive(Class<?> type) {
-        return type != null && type.isPrimitive() && isSimpleType(type);
+        return type != null && (type.isPrimitive() || isSimpleType(type));
     }
 
     /**
