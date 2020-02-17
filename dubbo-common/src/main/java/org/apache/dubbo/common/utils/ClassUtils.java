@@ -60,8 +60,7 @@ public class ClassUtils {
     private static final Map<Class<?>, Class<?>> PRIMITIVE_WRAPPER_TYPE_MAP = new HashMap<Class<?>, Class<?>>(16);
 
     /**
-     * Simple Types (including primitive types)
-     *
+     * Simple Types including:
      * <ul>
      *     <li>{@link Void}</li>
      *     <li>{@link Boolean}</li>
@@ -81,23 +80,14 @@ public class ClassUtils {
      * @since 2.7.6
      */
     public static final Set<Class<?>> SIMPLE_TYPES = ofSet(
-            void.class,
             Void.class,
-            boolean.class,
             Boolean.class,
-            char.class,
             Character.class,
-            byte.class,
             Byte.class,
-            short.class,
             Short.class,
-            int.class,
             Integer.class,
-            long.class,
             Long.class,
-            float.class,
             Float.class,
-            double.class,
             Double.class,
             String.class,
             BigDecimal.class,
@@ -291,12 +281,14 @@ public class ClassUtils {
 
 
     /**
+     * The specified type is primitive type or simple type
+     *
      * @param type the type to test
      * @return
-     * @deprecated as 2.7.6, use {@link #isSimpleType(Class)} instead
+     * @deprecated as 2.7.6, use {@link Class#isPrimitive()} plus {@link #isSimpleType(Class)} instead
      */
     public static boolean isPrimitive(Class<?> type) {
-        return isSimpleType(type);
+        return type != null && type.isPrimitive() && isSimpleType(type);
     }
 
     /**

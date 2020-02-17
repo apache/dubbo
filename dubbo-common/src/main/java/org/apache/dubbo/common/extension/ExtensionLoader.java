@@ -19,6 +19,7 @@ package org.apache.dubbo.common.extension;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.context.Lifecycle;
 import org.apache.dubbo.common.extension.support.ActivateComparator;
+import org.apache.dubbo.common.lang.Prioritized;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ArrayUtils;
@@ -40,7 +41,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -49,6 +51,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
 
+import static java.util.Collections.sort;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOVE_VALUE_PREFIX;
@@ -442,14 +445,16 @@ public class ExtensionLoader<T> {
     }
 
     public Set<T> getSupportedExtensionInstances() {
-        Set<T> instances = new HashSet<>();
+        List<T> instances = new LinkedList<>();
         Set<String> supportedExtensions = getSupportedExtensions();
         if (CollectionUtils.isNotEmpty(supportedExtensions)) {
             for (String name : supportedExtensions) {
                 instances.add(getExtension(name));
             }
         }
-        return instances;
+        // sort the Prioritized instances
+        sort(instances, Prioritized.COMPARATOR);
+        return new LinkedHashSet<>(instances);
     }
 
     /**

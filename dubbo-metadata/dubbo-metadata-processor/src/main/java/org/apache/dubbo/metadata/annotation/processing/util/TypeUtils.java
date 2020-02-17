@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.metadata.annotation.processing.util;
 
+import org.apache.dubbo.common.utils.ClassUtils;
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
@@ -28,11 +30,8 @@ import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
@@ -63,19 +62,10 @@ import static org.apache.dubbo.common.utils.MethodUtils.invokeMethod;
 public interface TypeUtils {
 
     List<String> SIMPLE_TYPES = asList(
-            Void.class.getName(),
-            Boolean.class.getName(),
-            Character.class.getName(),
-            Byte.class.getName(),
-            Short.class.getName(),
-            Integer.class.getName(),
-            Long.class.getName(),
-            Float.class.getName(),
-            Double.class.getName(),
-            String.class.getName(),
-            BigDecimal.class.getName(),
-            BigInteger.class.getName(),
-            Date.class.getName()
+            ClassUtils.SIMPLE_TYPES
+                    .stream()
+                    .map(Class::getName)
+                    .toArray(String[]::new)
     );
 
     static boolean isSimpleType(Element element) {

@@ -112,6 +112,7 @@ public class TypeUtilsTest extends AbstractAnnotationProcessingTest {
         assertTrue(isSimpleType(getType(BigDecimal.class)));
         assertTrue(isSimpleType(getType(BigInteger.class)));
         assertTrue(isSimpleType(getType(Date.class)));
+        assertTrue(isSimpleType(getType(Object.class)));
 
         assertFalse(isSimpleType(getType(getClass())));
         assertFalse(isSimpleType((TypeElement) null));
