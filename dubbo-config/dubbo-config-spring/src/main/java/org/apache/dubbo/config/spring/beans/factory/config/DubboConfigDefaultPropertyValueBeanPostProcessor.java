@@ -26,6 +26,7 @@ import org.springframework.beans.factory.support.MergedBeanDefinitionPostProcess
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.annotation.CommonAnnotationBeanPostProcessor;
 import org.springframework.core.Ordered;
+import org.springframework.core.PriorityOrdered;
 
 import javax.annotation.PostConstruct;
 import java.beans.PropertyDescriptor;
@@ -43,7 +44,7 @@ import static org.springframework.util.ReflectionUtils.invokeMethod;
  * @since 2.7.6
  */
 public class DubboConfigDefaultPropertyValueBeanPostProcessor extends GenericBeanPostProcessorAdapter<AbstractConfig>
-        implements MergedBeanDefinitionPostProcessor, Ordered {
+        implements MergedBeanDefinitionPostProcessor, PriorityOrdered {
 
     /**
      * The bean name of {@link DubboConfigDefaultPropertyValueBeanPostProcessor}
