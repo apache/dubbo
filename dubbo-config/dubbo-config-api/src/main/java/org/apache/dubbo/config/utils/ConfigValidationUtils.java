@@ -223,7 +223,7 @@ public class ConfigValidationUtils {
         ApplicationConfig application = interfaceConfig.getApplication();
         AbstractConfig.appendParameters(map, monitor);
         AbstractConfig.appendParameters(map, application);
-        String address = monitor.getAddress();
+        String address = monitor == null ? null : monitor.getAddress();
         String sysaddress = System.getProperty("dubbo.monitor.address");
         if (sysaddress != null && sysaddress.length() > 0) {
             address = sysaddress;
