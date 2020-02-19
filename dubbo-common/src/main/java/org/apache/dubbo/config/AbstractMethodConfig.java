@@ -62,7 +62,7 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
 
     /**
      * The name of mock class which gets called when a service fails to execute
-     *
+     * <p>
      * note that: the mock doesn't support on the provider side，and the mock is executed when a non-business exception
      * occurs after a remote service call
      */
@@ -156,19 +156,17 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
         return mock;
     }
 
-    public void setMock(String mock) {
+    /**
+     * Set the property "mock"
+     *
+     * @param mock the value of mock
+     * @since 2.7.6
+     */
+    public void setMock(Object mock) {
         if (mock == null) {
             return;
         }
-        this.mock = mock;
-    }
-
-    public void setMock(Boolean mock) {
-        if (mock == null) {
-            setMock((String) null);
-        } else {
-            setMock(mock.toString());
-        }
+        this.mock = String.valueOf(mock);
     }
 
     public String getMerger() {

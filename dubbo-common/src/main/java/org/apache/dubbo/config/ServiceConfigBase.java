@@ -361,12 +361,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
     }
 
     @Override
-    public void setMock(Boolean mock) {
-        throw new IllegalArgumentException("mock doesn't support on provider side");
-    }
-
-    @Override
-    public void setMock(String mock) {
+    public void setMock(Object mock) {
         throw new IllegalArgumentException("mock doesn't support on provider side");
     }
 
