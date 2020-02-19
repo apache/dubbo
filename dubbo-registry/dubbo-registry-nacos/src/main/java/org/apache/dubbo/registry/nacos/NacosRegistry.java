@@ -43,8 +43,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -122,12 +120,9 @@ public class NacosRegistry extends FailbackRegistry {
 
     private final NamingService namingService;
 
-    private final ConcurrentMap<String, EventListener> nacosListeners;
-
     public NacosRegistry(URL url, NamingService namingService) {
         super(url);
         this.namingService = namingService;
-        this.nacosListeners = new ConcurrentHashMap<>();
     }
 
     @Override
@@ -423,9 +418,6 @@ public class NacosRegistry extends FailbackRegistry {
 
     private void subscribeEventListener(String serviceName, final URL url, final NotifyListener listener)
             throws NacosException {
-        if (nacosListeners.containsKey(serviceName)) {
-            logger.info("nacosListeners contains serviceName:" + serviceName);
-        }
         EventListener eventListener = event -> {
             if (event instanceof NamingEvent) {
                 NamingEvent e = (NamingEvent) event;
@@ -433,7 +425,6 @@ public class NacosRegistry extends FailbackRegistry {
             }
         };
         namingService.subscribe(serviceName, eventListener);
-        nacosListeners.put(serviceName, eventListener);
     }
 
     /**
