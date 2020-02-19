@@ -27,6 +27,13 @@ import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.support.FailbackRegistry;
 
+import com.alibaba.nacos.api.exception.NacosException;
+import com.alibaba.nacos.api.naming.NamingService;
+import com.alibaba.nacos.api.naming.listener.EventListener;
+import com.alibaba.nacos.api.naming.listener.NamingEvent;
+import com.alibaba.nacos.api.naming.pojo.Instance;
+import com.alibaba.nacos.api.naming.pojo.ListView;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -43,16 +50,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import com.alibaba.nacos.api.exception.NacosException;
-import com.alibaba.nacos.api.naming.NamingService;
-import com.alibaba.nacos.api.naming.listener.EventListener;
-import com.alibaba.nacos.api.naming.listener.NamingEvent;
-import com.alibaba.nacos.api.naming.pojo.Instance;
-import com.alibaba.nacos.api.naming.pojo.ListView;
-
-import static java.util.Collections.singleton;
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
@@ -215,7 +215,10 @@ public class NacosRegistry extends FailbackRegistry {
         final Set<String> serviceNames;
 
         if (serviceName.isConcrete()) { // is the concrete service name
-            serviceNames = singleton(serviceName.toString());
+            serviceNames = new LinkedHashSet<>();
+            serviceNames.add(serviceName.toString());
+            // Add the legacy service name since 2.7.6
+            serviceNames.add(getLegacySubscribedServiceName(url));
         } else {
             serviceNames = filterServiceNames(serviceName);
         }
@@ -238,6 +241,28 @@ public class NacosRegistry extends FailbackRegistry {
         });
 
         return serviceNames;
+    }
+
+    /**
+     * Get the legacy subscribed service name for compatible with Dubbo 2.7.3 and below
+     *
+     * @param url {@link URL}
+     * @return non-null
+     * @since 2.7.6
+     */
+    private String getLegacySubscribedServiceName(URL url) {
+        StringBuilder serviceNameBuilder = new StringBuilder(DEFAULT_CATEGORY);
+        appendIfPresent(serviceNameBuilder, url, INTERFACE_KEY);
+        appendIfPresent(serviceNameBuilder, url, VERSION_KEY);
+        appendIfPresent(serviceNameBuilder, url, GROUP_KEY);
+        return serviceNameBuilder.toString();
+    }
+
+    private void appendIfPresent(StringBuilder target, URL url, String parameterName) {
+        String parameterValue = url.getParameter(parameterName);
+        if (!org.apache.commons.lang3.StringUtils.isBlank(parameterValue)) {
+            target.append(SERVICE_NAME_SEPARATOR).append(parameterValue);
+        }
     }
 
 
