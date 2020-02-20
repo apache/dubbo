@@ -156,6 +156,10 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
         return mock;
     }
 
+    public void setMock(String mock) {
+        this.mock = mock;
+    }
+
     /**
      * Set the property "mock"
      *
@@ -166,7 +170,7 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
         if (mock == null) {
             return;
         }
-        this.mock = String.valueOf(mock);
+        this.setMock(String.valueOf(mock));
     }
 
     public String getMerger() {
