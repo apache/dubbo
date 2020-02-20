@@ -51,7 +51,7 @@ public class SelectTelnetHandler implements TelnetHandler {
         if (!StringUtils.isInteger(message) || Integer.parseInt(message) < 1 || Integer.parseInt(message) > methodList.size()) {
             return "Illegal index ,please input select 1~" + methodList.size();
         }
-        Method method = methodList.get(Integer.parseInt(message));
+        Method method = methodList.get(Integer.parseInt(message) - 1);
         channel.setAttribute(SELECT_METHOD_KEY, method);
         channel.setAttribute(SELECT_KEY, Boolean.TRUE);
         String invokeMessage = (String) channel.getAttribute(InvokeTelnetHandler.INVOKE_MESSAGE_KEY);

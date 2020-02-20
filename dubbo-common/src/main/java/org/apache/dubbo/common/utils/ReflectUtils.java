@@ -55,6 +55,7 @@ import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableSet;
+import static org.apache.dubbo.common.utils.ArrayUtils.isEmpty;
 
 /**
  * ReflectUtils
@@ -1259,6 +1260,15 @@ public final class ReflectUtils {
         return unmodifiableSet(hierarchicalTypes);
     }
 
+    /**
+     * Get the value from the specified bean and its property.
+     *
+     * @param bean         the bean instance
+     * @param propertyName the name of property
+     * @param <T>          the type of property value
+     * @return
+     * @since 2.7.5
+     */
     public static <T> T getProperty(Object bean, String propertyName) {
         Class<?> beanClass = bean.getClass();
         BeanInfo beanInfo = null;
@@ -1282,4 +1292,28 @@ public final class ReflectUtils {
         return propertyValue;
     }
 
+    /**
+     * Resolve the types of the specified values
+     *
+     * @param values the values
+     * @return If can't be resolved, return {@link ReflectUtils#EMPTY_CLASS_ARRAY empty class array}
+     * @since 2.7.6
+     */
+    public static Class[] resolveTypes(Object... values) {
+
+        if (isEmpty(values)) {
+            return EMPTY_CLASS_ARRAY;
+        }
+
+        int size = values.length;
+
+        Class[] types = new Class[size];
+
+        for (int i = 0; i < size; i++) {
+            Object value = values[i];
+            types[i] = value == null ? null : value.getClass();
+        }
+
+        return types;
+    }
 }
