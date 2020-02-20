@@ -647,30 +647,28 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
      * @param invoker invoker
      * @return true:consumer <= provider ,false:consumer > provider
      */
-    private boolean isConMethodLessThanPro(Invoker<T> invoker) {
+    private void isConMethodLessThanPro(Invoker<T> invoker) {
         String consumerMethod = queryMap.get(METHODS_KEY);
         String providerMethod = invoker.getUrl().getParameter(METHODS_KEY);
         List<String> alertMethodList = new ArrayList<>();
         if (StringUtils.isNotEmpty(consumerMethod)) {
-            String[] newMethods = consumerMethod.split(",");
-            List<String> oldMethodList = new LinkedList<>();
+            String[] consumerMethods = consumerMethod.split(",");
+            List<String> registriedMethodList = new LinkedList<>();
             if (StringUtils.isNotEmpty(providerMethod)) {
-                String[] oldMethods = providerMethod.split(",");
-                oldMethodList.addAll(Arrays.asList(oldMethods));
+                String[] registriesMethods = providerMethod.split(",");
+                registriedMethodList.addAll(Arrays.asList(registriesMethods));
             }
-            for (String s : newMethods) {
-                if (oldMethodList.contains(s)) {
-                    oldMethodList.remove(s);
+            for (String s : consumerMethods) {
+                if (registriedMethodList.contains(s)) {
+                    registriedMethodList.remove(s);
                 } else {
                     alertMethodList.add(s);
                 }
             }
             if (CollectionUtils.isNotEmpty(alertMethodList)) {
                 logger.warn("No provider available for the service methods " + invoker.getUrl().getPath() + "#" + String.join(",", alertMethodList));
-                return false;
             }
         }
-        return true;
     }
 
     public void buildRouterChain(URL url) {
