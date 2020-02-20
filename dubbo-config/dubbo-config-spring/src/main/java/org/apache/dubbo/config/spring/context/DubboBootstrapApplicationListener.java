@@ -33,6 +33,13 @@ import org.springframework.core.Ordered;
 public class DubboBootstrapApplicationListener extends OneTimeExecutionApplicationContextEventListener
         implements Ordered {
 
+    /**
+     * The bean name of {@link DubboBootstrapApplicationListener}
+     *
+     * @since 2.7.6
+     */
+    public static final String BEAN_NAME = "dubboBootstrapApplicationListener";
+
     private final DubboBootstrap dubboBootstrap;
 
     public DubboBootstrapApplicationListener() {
