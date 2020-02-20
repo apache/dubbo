@@ -49,6 +49,7 @@
                 <exclude>**/.mvn/**</exclude>
                 <exclude>**/*.jar</exclude>
                 <exclude>**/mvnw*</exclude>
+                <exclude>**/invalid_data.ser</exclude>
             </excludes>
         </fileSet>
     </fileSets>
