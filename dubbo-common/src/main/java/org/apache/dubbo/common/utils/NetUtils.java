@@ -71,8 +71,8 @@ public class NetUtils {
     private static final Map<String, String> HOST_NAME_CACHE = new LRUCache<>(1000);
     private static volatile InetAddress LOCAL_ADDRESS = null;
 
-    private static final String SPLIT_IPV4_CHARECTER = "\\.";
-    private static final String SPLIT_IPV6_CHARECTER = ":";
+    private static final String SPLIT_IPV4_CHARACTER = "\\.";
+    private static final String SPLIT_IPV6_CHARACTER = ":";
 
     public static int getRandomPort() {
         return RND_PORT_START + ThreadLocalRandom.current().nextInt(RND_PORT_RANGE);
@@ -448,9 +448,9 @@ public class NetUtils {
         }
         pattern = hostAndPort[0];
 
-        String splitCharacter = SPLIT_IPV4_CHARECTER;
+        String splitCharacter = SPLIT_IPV4_CHARACTER;
         if (!isIpv4) {
-            splitCharacter = SPLIT_IPV6_CHARECTER;
+            splitCharacter = SPLIT_IPV6_CHARACTER;
         }
         String[] mask = pattern.split(splitCharacter);
         //check format of pattern

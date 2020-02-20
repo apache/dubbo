@@ -204,6 +204,13 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         } else {
             doExport();
         }
+
+        exported();
+    }
+
+    public void exported() {
+        // dispatch a ServiceConfigExportedEvent since 2.7.4
+        dispatch(new ServiceConfigExportedEvent(this));
     }
 
     private void checkAndUpdateSubConfigs() {
@@ -290,9 +297,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             path = interfaceName;
         }
         doExportUrls();
-
-        // dispatch a ServiceConfigExportedEvent since 2.7.4
-        dispatch(new ServiceConfigExportedEvent(this));
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})

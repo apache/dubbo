@@ -88,6 +88,10 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
         return directory.getUrl();
     }
 
+    protected URL getConsumerUrl() {
+        return directory.getConsumerUrl();
+    }
+
     @Override
     public boolean isAvailable() {
         Invoker<T> invoker = stickyInvoker;
@@ -251,7 +255,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
 
         List<Invoker<T>> invokers = list(invocation);
         LoadBalance loadbalance = initLoadBalance(invokers, invocation);
-        RpcUtils.attachInvocationIdIfAsync(getUrl(), invocation);
+        RpcUtils.attachInvocationIdIfAsync(getConsumerUrl(), invocation);
         return doInvoke(invocation, invokers, loadbalance);
     }
 
@@ -272,7 +276,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
         if (CollectionUtils.isEmpty(invokers)) {
             throw new RpcException(RpcException.NO_INVOKER_AVAILABLE_AFTER_FILTER, "Failed to invoke the method "
                     + invocation.getMethodName() + " in the service " + getInterface().getName()
-                    + ". No provider available for the service " + directory.getUrl().getServiceKey()
+                    + ". No provider available for the service " + directory.getConsumerUrl().getServiceKey()
                     + " from registry " + directory.getUrl().getAddress()
                     + " on the consumer " + NetUtils.getLocalHost()
                     + " using the dubbo version " + Version.getVersion()

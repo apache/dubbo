@@ -92,10 +92,6 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         setMethods(MethodConfig.constructMethodConfig(service.methods()));
     }
 
-    public void exported() {
-
-    }
-
     @Deprecated
     private static List<ProtocolConfig> convertProviderToProtocol(List<ProviderConfig> providers) {
         if (CollectionUtils.isEmpty(providers)) {
@@ -213,8 +209,8 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
     }
 
     public void completeCompoundConfigs() {
-    	super.completeCompoundConfigs(provider);
-    	if(provider != null) {
+        super.completeCompoundConfigs(provider);
+        if (provider != null) {
             if (protocols == null) {
                 setProtocols(provider.getProtocols());
             }
@@ -227,8 +223,9 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
             if (StringUtils.isEmpty(protocolIds)) {
                 setProtocolIds(provider.getProtocolIds());
             }
-    	}
+        }
     }
+
     private void convertProtocolIdsToProtocols() {
         computeValidProtocolIds();
         if (StringUtils.isEmpty(protocolIds)) {
@@ -365,12 +362,12 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
     }
 
     @Override
-    public void setMock(Boolean mock) {
+    public void setMock(String mock) {
         throw new IllegalArgumentException("mock doesn't support on provider side");
     }
 
     @Override
-    public void setMock(String mock) {
+    public void setMock(Object mock) {
         throw new IllegalArgumentException("mock doesn't support on provider side");
     }
 

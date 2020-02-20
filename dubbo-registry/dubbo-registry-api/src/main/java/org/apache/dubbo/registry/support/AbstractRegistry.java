@@ -493,6 +493,7 @@ public abstract class AbstractRegistry implements Registry {
                 }
             }
         }
+        AbstractRegistryFactory.removeDestroyedRegistry(this);
     }
 
     protected boolean acceptable(URL urlToRegistry) {
