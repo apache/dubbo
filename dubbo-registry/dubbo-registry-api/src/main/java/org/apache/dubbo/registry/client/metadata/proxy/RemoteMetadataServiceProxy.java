@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.registry.client.metadata.proxy;
 
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.function.ThrowableFunction;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -34,7 +33,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.function.Supplier;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.registry.client.metadata.URLRevisionResolver.NO_REVISION;
