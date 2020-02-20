@@ -18,6 +18,7 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.support.Parameter;
@@ -42,6 +43,7 @@ public class ConfigCenterConfig extends AbstractConfig {
 
     private String protocol;
     private String address;
+    private Integer port;
 
     /* The config center cluster, it's real meaning may very on different Config Center products. */
     private String cluster;
@@ -138,6 +140,26 @@ public class ConfigCenterConfig extends AbstractConfig {
 
     public void setAddress(String address) {
         this.address = address;
+        if (address != null) {
+            try {
+                URL url = URL.valueOf(address);
+                setUsername(url.getUsername());
+                setPassword(url.getPassword());
+                updateIdIfAbsent(url.getProtocol());
+                updateProtocolIfAbsent(url.getProtocol());
+                updatePortIfAbsent(url.getPort());
+                updateParameters(url.getParameters());
+            } catch (Exception ignored) {
+            }
+        }
+    }
+
+    public Integer getPort() {
+        return port;
+    }
+
+    public void setPort(Integer port) {
+        this.port = port;
     }
 
     public String getCluster() {
@@ -240,4 +262,28 @@ public class ConfigCenterConfig extends AbstractConfig {
 
         return address.contains("://") || StringUtils.isNotEmpty(protocol);
     }
+
+    protected void updatePortIfAbsent(Integer value) {
+        if (value != null && value > 0 && port == null) {
+            this.port = value;
+        }
+    }
+
+    protected void updateProtocolIfAbsent(String value) {
+        if (StringUtils.isNotEmpty(value) && StringUtils.isEmpty(protocol)) {
+            this.protocol = value;
+        }
+    }
+
+    public void updateParameters(Map<String, String> parameters) {
+        if (CollectionUtils.isEmptyMap(parameters)) {
+            return;
+        }
+        if (this.parameters == null) {
+            this.parameters = parameters;
+        } else {
+            this.parameters.putAll(parameters);
+        }
+    }
+
 }

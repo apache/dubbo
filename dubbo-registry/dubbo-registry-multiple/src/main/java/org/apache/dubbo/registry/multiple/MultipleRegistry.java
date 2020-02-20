@@ -55,35 +55,58 @@ public class MultipleRegistry extends AbstractRegistry {
     private URL registryUrl;
     private String applicationName;
 
-
     public MultipleRegistry(URL url) {
-        super(url);
-        this.registryUrl = url;
-        this.applicationName = url.getParameter(CommonConstants.APPLICATION_KEY);
-        init();
-        checkApplicationName(this.applicationName);
-        // This urls contain parameter and it donot inherit from the parameter of url in MultipleRegistry
-        origServiceRegistryURLs = url.getParameter(REGISTRY_FOR_SERVICE, new ArrayList<String>());
-        origReferenceRegistryURLs = url.getParameter(REGISTRY_FOR_REFERENCE, new ArrayList<String>());
-        effectServiceRegistryURLs = this.filterServiceRegistry(origServiceRegistryURLs);
-        effectReferenceRegistryURLs = this.filterReferenceRegistry(origReferenceRegistryURLs);
+        this(url, true, true);
 
         boolean defaultRegistry = url.getParameter(CommonConstants.DEFAULT_KEY, true);
         if (defaultRegistry && effectServiceRegistryURLs.isEmpty() && effectReferenceRegistryURLs.isEmpty()) {
             throw new IllegalArgumentException("Illegal registry url. You need to configure parameter " +
                     REGISTRY_FOR_SERVICE + " or " + REGISTRY_FOR_REFERENCE);
         }
-        Set<String> allURLs = new HashSet<String>(effectServiceRegistryURLs);
-        allURLs.addAll(effectReferenceRegistryURLs);
-        Map<String, Registry> tmpMap = new HashMap<String, Registry>(4);
-        for (String tmpUrl : allURLs) {
-            tmpMap.put(tmpUrl, registryFactory.getRegistry(URL.valueOf(tmpUrl)));
+    }
+
+    public MultipleRegistry(URL url, boolean initServiceRegistry, boolean initReferenceRegistry) {
+        super(url);
+        this.registryUrl = url;
+        this.applicationName = url.getParameter(CommonConstants.APPLICATION_KEY);
+        init();
+        checkApplicationName(this.applicationName);
+        // This urls contain parameter and it donot inherit from the parameter of url in MultipleRegistry
+
+        Map<String, Registry> registryMap = new HashMap<>();
+        if (initServiceRegistry) {
+            initServiceRegistry(url, registryMap);
         }
-        for (String serviceRegistyURL : effectServiceRegistryURLs) {
-            serviceRegistries.put(serviceRegistyURL, tmpMap.get(serviceRegistyURL));
+        if (initReferenceRegistry) {
+            initReferenceRegistry(url, registryMap);
         }
-        for (String referenceReigstyURL : effectReferenceRegistryURLs) {
-            referenceRegistries.put(referenceReigstyURL, tmpMap.get(referenceReigstyURL));
+    }
+
+    protected void initServiceRegistry(URL url, Map<String, Registry> registryMap) {
+        origServiceRegistryURLs = url.getParameter(REGISTRY_FOR_SERVICE, new ArrayList<String>());
+        effectServiceRegistryURLs = this.filterServiceRegistry(origServiceRegistryURLs);
+        for (String tmpUrl : effectServiceRegistryURLs) {
+            if (registryMap.get(tmpUrl) != null) {
+                serviceRegistries.put(tmpUrl, registryMap.get(tmpUrl));
+                continue;
+            }
+            Registry registry = registryFactory.getRegistry(URL.valueOf(tmpUrl));
+            registryMap.put(tmpUrl, registry);
+            serviceRegistries.put(tmpUrl, registry);
+        }
+    }
+
+    protected void initReferenceRegistry(URL url, Map<String, Registry> registryMap) {
+        origReferenceRegistryURLs = url.getParameter(REGISTRY_FOR_REFERENCE, new ArrayList<String>());
+        effectReferenceRegistryURLs = this.filterReferenceRegistry(origReferenceRegistryURLs);
+        for (String tmpUrl : effectReferenceRegistryURLs) {
+            if (registryMap.get(tmpUrl) != null) {
+                referenceRegistries.put(tmpUrl, registryMap.get(tmpUrl));
+                continue;
+            }
+            Registry registry = registryFactory.getRegistry(URL.valueOf(tmpUrl));
+            registryMap.put(tmpUrl, registry);
+            referenceRegistries.put(tmpUrl, registry);
         }
     }
 

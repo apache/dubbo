@@ -260,7 +260,7 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
         boolean published = false;
         String resolvedGroup = resolveGroup(group);
         try {
-            String value = configService.getConfig(key, resolvedGroup, -1L);
+            String value = configService.getConfig(key, resolvedGroup, DEFAULT_TIMEOUT);
             if (StringUtils.isNotEmpty(value)) {
                 content = value + "," + content;
             }

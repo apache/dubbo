@@ -81,8 +81,8 @@ public abstract class AbstractMetadataReport implements MetadataReport {
 
     protected final static String DEFAULT_ROOT = "dubbo";
 
-    private static final int ONE_DAY_IN_MIll = 60 * 24 * 60 * 1000;
-    private static final int FOUR_HOURS_IN_MIll = 60 * 4 * 60 * 1000;
+    private static final int ONE_DAY_IN_MILLISECONDS = 60 * 24 * 60 * 1000;
+    private static final int FOUR_HOURS_IN_MILLISECONDS = 60 * 4 * 60 * 1000;
     // Log output
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -126,7 +126,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         // cycle report the data switch
         if (reportServerURL.getParameter(CYCLE_REPORT_KEY, DEFAULT_METADATA_REPORT_CYCLE_REPORT)) {
             ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("DubboMetadataReportTimer", true));
-            scheduler.scheduleAtFixedRate(this::publishAll, calculateStartTime(), ONE_DAY_IN_MIll, TimeUnit.MILLISECONDS);
+            scheduler.scheduleAtFixedRate(this::publishAll, calculateStartTime(), ONE_DAY_IN_MILLISECONDS, TimeUnit.MILLISECONDS);
         }
     }
 
@@ -385,8 +385,8 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
-        long subtract = calendar.getTimeInMillis() + ONE_DAY_IN_MIll - nowMill;
-        return subtract + (FOUR_HOURS_IN_MIll / 2) + ThreadLocalRandom.current().nextInt(FOUR_HOURS_IN_MIll);
+        long subtract = calendar.getTimeInMillis() + ONE_DAY_IN_MILLISECONDS - nowMill;
+        return subtract + (FOUR_HOURS_IN_MILLISECONDS / 2) + ThreadLocalRandom.current().nextInt(FOUR_HOURS_IN_MILLISECONDS);
     }
 
     class MetadataReportRetry {

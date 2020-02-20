@@ -23,6 +23,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
+import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.support.FailbackRegistry;
 import org.apache.dubbo.rpc.RpcException;
@@ -137,7 +138,7 @@ public class ConsulRegistry extends FailbackRegistry {
             List<HealthService> services = getHealthServices(response.getValue());
             urls = convert(services, url);
         } else {
-            String service = url.getServiceKey();
+            String service = url.getServiceInterface();
             Response<List<HealthService>> response = getHealthServices(service, -1, buildWatchTimeout(url));
             index = response.getConsulIndex();
             urls = convert(response.getValue(), url);
@@ -251,6 +252,7 @@ public class ConsulRegistry extends FailbackRegistry {
                 .filter(m -> m != null && m.containsKey(URL_META_KEY))
                 .map(m -> m.get(URL_META_KEY))
                 .map(URL::valueOf)
+                .filter(url -> UrlUtils.isMatch(consumerURL, url))
                 .collect(Collectors.toList());
     }
 
@@ -270,7 +272,7 @@ public class ConsulRegistry extends FailbackRegistry {
         service.setAddress(url.getHost());
         service.setPort(url.getPort());
         service.setId(buildId(url));
-        service.setName(url.getServiceKey());
+        service.setName(url.getServiceInterface());
         service.setCheck(buildCheck(url));
         service.setTags(buildTags(url));
         service.setMeta(Collections.singletonMap(URL_META_KEY, url.toFullString()));
