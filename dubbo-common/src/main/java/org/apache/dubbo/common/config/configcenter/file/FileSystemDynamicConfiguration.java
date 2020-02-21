@@ -526,7 +526,11 @@ public class FileSystemDynamicConfiguration extends AbstractDynamicConfiguration
     }
 
     private static Integer initDelay(WatchEvent.Modifier[] modifiers) {
-        return 2;
+        if (isBasedPoolingWatchService()) {
+            return 2;
+        } else {
+            return null;
+        }
     }
 
     private static WatchEvent.Modifier[] initWatchEventModifiers() {
