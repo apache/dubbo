@@ -21,9 +21,11 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoService;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoServiceImpl;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -41,10 +43,12 @@ public class MultiThreadTest {
     @AfterEach
     public void after() {
         ProtocolUtils.closeAll();
+        ApplicationModel.getServiceRepository().destroy();
     }
 
     @Test
     public void testDubboMultiThreadInvoke() throws Exception {
+        ApplicationModel.getServiceRepository().registerService("TestService", DemoService.class);
         Exporter<?> rpcExporter = protocol.export(proxy.getInvoker(new DemoServiceImpl(), DemoService.class, URL.valueOf("dubbo://127.0.0.1:20259/TestService")));
 
         final AtomicInteger counter = new AtomicInteger();

@@ -23,6 +23,7 @@ import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoService;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoServiceImpl;
 import org.apache.dubbo.rpc.protocol.dubbo.support.NonSerialized;
@@ -144,6 +145,9 @@ public class DubboProtocolTest {
 //                3000L)));
 
         RemoteService remote = new RemoteServiceImpl();
+
+        ApplicationModel.getServiceRepository().registerService(RemoteService.class);
+
         protocol.export(proxy.getInvoker(remote, RemoteService.class, URL.valueOf("dubbo://127.0.0.1:9010/" + RemoteService.class.getName())));
         remote = proxy.getProxy(protocol.refer(RemoteService.class, URL.valueOf("dubbo://127.0.0.1:9010/" + RemoteService.class.getName()).addParameter("timeout",
                 3000L)));

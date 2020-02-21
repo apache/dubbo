@@ -85,6 +85,14 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt 
         return serviceDescriptor;
     }
 
+    public void unregisterService(Class<?> interfaceClazz) {
+        unregisterService(interfaceClazz.getName());
+    }
+
+    public void unregisterService(String path) {
+        services.remove(path);
+    }
+
     public void registerConsumer(String serviceKey,
                                  ServiceDescriptor serviceDescriptor,
                                  ReferenceConfigBase<?> rc,
