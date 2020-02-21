@@ -21,10 +21,11 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
-import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
 import java.util.Set;
+
+import static javax.lang.model.SourceVersion.latestSupported;
 
 /**
  * {@link Processor} for test
@@ -32,7 +33,6 @@ import java.util.Set;
  * @since 2.7.6
  */
 @SupportedAnnotationTypes("*")
-@SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class TestProcessor extends AbstractProcessor {
 
     @Override
@@ -42,5 +42,9 @@ public class TestProcessor extends AbstractProcessor {
 
     public ProcessingEnvironment getProcessingEnvironment() {
         return super.processingEnv;
+    }
+
+    public SourceVersion getSupportedSourceVersion(){
+        return latestSupported();
     }
 }
