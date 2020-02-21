@@ -669,7 +669,6 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
      * compare consumer methods and provider methods
      *
      * @param invoker invoker
-     * @return void
      */
     private void isConMethodLessThanPro(Invoker<T> invoker) {
         String consumerMethod = queryMap.get(METHODS_KEY);
