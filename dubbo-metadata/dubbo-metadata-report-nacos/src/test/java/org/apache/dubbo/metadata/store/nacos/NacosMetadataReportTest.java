@@ -88,7 +88,7 @@ public class NacosMetadataReportTest {
         FullServiceDefinition fullServiceDefinition = gson.fromJson(serverContent, FullServiceDefinition.class);
         Assertions.assertEquals(fullServiceDefinition.getParameters().get("paramTest"), "nacosTest");
 
-        //清除测试数据
+        //Clear test data
         configService.removeConfig(providerIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), NACOS_GROUP);
     }
 
@@ -103,7 +103,7 @@ public class NacosMetadataReportTest {
         Assertions.assertNotNull(serverContent);
         Assertions.assertEquals(serverContent, "{\"paramConsumerTest\":\"nacosConsumer\"}");
 
-        //清除测试数据
+        //clear test data
         configService.removeConfig(consumerIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), NACOS_GROUP);
     }
 
