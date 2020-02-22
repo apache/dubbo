@@ -25,6 +25,7 @@ import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 
 import com.alibaba.nacos.api.config.ConfigService;
 import com.google.gson.Gson;
+import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -52,7 +53,7 @@ public class NacosMetadataReportTest {
     public void setUp() {
         // timeout in 15 seconds.
         URL url = URL.valueOf("nacos://127.0.0.1:8848?group=" + NACOS_GROUP)
-                .addParameter(SESSION_TIMEOUT_KEY, 15000);
+                .addParameter(SESSION_TIMEOUT_KEY, 150000);
         nacosMetadataReportFactory = new NacosMetadataReportFactory();
         this.nacosMetadataReport = (NacosMetadataReport) nacosMetadataReportFactory.createMetadataReport(url);
         this.configService = nacosMetadataReport.buildConfigService(url);
@@ -60,6 +61,30 @@ public class NacosMetadataReportTest {
 
     @AfterEach
     public void tearDown() throws Exception {
+    }
+
+    @Test
+    public void testRemoveServiceMetadata() throws Exception {
+        String version = "1.0.0";
+        String group = null;
+        String application = "nacos-metadata-report-consumer-test";
+        URL url = URL.valueOf("xxx://" + NetUtils.getLocalAddress().getHostName() + ":4444/" + TEST_SERVICE +
+                "?paramTest=nacosTest&version=" + version + "&application="
+                + application + (group == null ? "" : "&group=" + group));
+        String revision = "90980";
+        String protocol = "xxx";
+        ServiceMetadataIdentifier serviceMetadataIdentifier = new ServiceMetadataIdentifier(TEST_SERVICE, version,
+                group, "provider", revision, protocol);
+        nacosMetadataReport.doSaveMetadata(serviceMetadataIdentifier, url);
+        Thread.sleep(1000);
+        String serviceMetaData = configService.getConfig(serviceMetadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), NACOS_GROUP, 5000L);
+        Assertions.assertNotNull(serviceMetaData);
+
+        nacosMetadataReport.doRemoveMetadata(serviceMetadataIdentifier);
+        Thread.sleep(1000);
+        serviceMetaData = configService.getConfig(serviceMetadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), NACOS_GROUP, 5000L);
+        Assertions.assertNull(serviceMetaData);
+
     }
 
     @Test
@@ -75,7 +100,12 @@ public class NacosMetadataReportTest {
         Gson gson = new Gson();
         FullServiceDefinition fullServiceDefinition = gson.fromJson(serverContent, FullServiceDefinition.class);
         Assertions.assertEquals(fullServiceDefinition.getParameters().get("paramTest"), "nacosTest");
+
+        //清除测试数据
+//        configService.removeConfig(providerIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), NACOS_GROUP);
     }
+
+
 
     @Test
     public void testStoreConsumer() throws Exception {
@@ -87,7 +117,12 @@ public class NacosMetadataReportTest {
         String serverContent = configService.getConfig(consumerIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), NACOS_GROUP, 5000L);
         Assertions.assertNotNull(serverContent);
         Assertions.assertEquals(serverContent, "{\"paramConsumerTest\":\"nacosConsumer\"}");
+
+        //清除测试数据
+//        configService.removeConfig(consumerIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), NACOS_GROUP);
     }
+
+
 
     private MetadataIdentifier storeProvider(NacosMetadataReport nacosMetadataReport, String interfaceName, String version,
                                              String group, String application)
