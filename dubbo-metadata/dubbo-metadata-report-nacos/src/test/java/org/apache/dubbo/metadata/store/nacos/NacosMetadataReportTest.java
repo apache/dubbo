@@ -47,13 +47,23 @@ public class NacosMetadataReportTest {
     private NacosMetadataReportFactory nacosMetadataReportFactory;
     private ConfigService configService;
 
-    private static final String NACOS_GROUP = "zzz";
+    private static final String NACOS_GROUP = "metadata_test";
+
+    /**
+     * timeout(ms) for nacos session
+     */
+    private static final int SESSION_TIMEOUT = 15 * 1000;
+
+    /**
+     * interval(ms) to make nacos cache refresh
+     */
+    private static final int INTERVAL_TO_MAKE_NACOS_REFRESH = 1000;
 
     @BeforeEach
     public void setUp() {
         // timeout in 15 seconds.
         URL url = URL.valueOf("nacos://127.0.0.1:8848?group=" + NACOS_GROUP)
-                .addParameter(SESSION_TIMEOUT_KEY, 150000);
+                .addParameter(SESSION_TIMEOUT_KEY, SESSION_TIMEOUT);
         nacosMetadataReportFactory = new NacosMetadataReportFactory();
         this.nacosMetadataReport = (NacosMetadataReport) nacosMetadataReportFactory.createMetadataReport(url);
         this.configService = nacosMetadataReport.buildConfigService(url);
@@ -63,29 +73,6 @@ public class NacosMetadataReportTest {
     public void tearDown() throws Exception {
     }
 
-    @Test
-    public void testRemoveServiceMetadata() throws Exception {
-        String version = "1.0.0";
-        String group = null;
-        String application = "nacos-metadata-report-consumer-test";
-        URL url = URL.valueOf("xxx://" + NetUtils.getLocalAddress().getHostName() + ":4444/" + TEST_SERVICE +
-                "?paramTest=nacosTest&version=" + version + "&application="
-                + application + (group == null ? "" : "&group=" + group));
-        String revision = "90980";
-        String protocol = "xxx";
-        ServiceMetadataIdentifier serviceMetadataIdentifier = new ServiceMetadataIdentifier(TEST_SERVICE, version,
-                group, "provider", revision, protocol);
-        nacosMetadataReport.doSaveMetadata(serviceMetadataIdentifier, url);
-        Thread.sleep(1000);
-        String serviceMetaData = configService.getConfig(serviceMetadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), NACOS_GROUP, 5000L);
-        Assertions.assertNotNull(serviceMetaData);
-
-        nacosMetadataReport.doRemoveMetadata(serviceMetadataIdentifier);
-        Thread.sleep(1000);
-        serviceMetaData = configService.getConfig(serviceMetadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), NACOS_GROUP, 5000L);
-        Assertions.assertNull(serviceMetaData);
-
-    }
 
     @Test
     public void testStoreProvider() throws Exception {
@@ -102,10 +89,8 @@ public class NacosMetadataReportTest {
         Assertions.assertEquals(fullServiceDefinition.getParameters().get("paramTest"), "nacosTest");
 
         //清除测试数据
-//        configService.removeConfig(providerIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), NACOS_GROUP);
+        configService.removeConfig(providerIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), NACOS_GROUP);
     }
-
-
 
     @Test
     public void testStoreConsumer() throws Exception {
@@ -119,10 +104,31 @@ public class NacosMetadataReportTest {
         Assertions.assertEquals(serverContent, "{\"paramConsumerTest\":\"nacosConsumer\"}");
 
         //清除测试数据
-//        configService.removeConfig(consumerIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), NACOS_GROUP);
+        configService.removeConfig(consumerIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), NACOS_GROUP);
     }
 
+    @Test
+    public void testRemoveServiceMetadata() throws Exception {
+        String version = "1.0.0";
+        String group = null;
+        String application = "nacos-metadata-report-consumer-test";
+        URL url = URL.valueOf("xxx://" + NetUtils.getLocalAddress().getHostName() + ":4444/" + TEST_SERVICE +
+                "?paramTest=nacosTest&version=" + version + "&application="
+                + application + (group == null ? "" : "&group=" + group));
+        String revision = "90980";
+        String protocol = "xxx";
+        ServiceMetadataIdentifier serviceMetadataIdentifier = new ServiceMetadataIdentifier(TEST_SERVICE, version,
+                group, "provider", revision, protocol);
+        nacosMetadataReport.doSaveMetadata(serviceMetadataIdentifier, url);
+        Thread.sleep(INTERVAL_TO_MAKE_NACOS_REFRESH);
+        String serviceMetaData = configService.getConfig(serviceMetadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), NACOS_GROUP, 5000L);
+        Assertions.assertNotNull(serviceMetaData);
 
+        nacosMetadataReport.doRemoveMetadata(serviceMetadataIdentifier);
+        Thread.sleep(INTERVAL_TO_MAKE_NACOS_REFRESH);
+        serviceMetaData = configService.getConfig(serviceMetadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), NACOS_GROUP, 5000L);
+        Assertions.assertNull(serviceMetaData);
+    }
 
     private MetadataIdentifier storeProvider(NacosMetadataReport nacosMetadataReport, String interfaceName, String version,
                                              String group, String application)
@@ -138,7 +144,7 @@ public class NacosMetadataReportTest {
                 ServiceDefinitionBuilder.buildFullDefinition(interfaceClass, url.getParameters());
 
         nacosMetadataReport.storeProviderMetadata(providerMetadataIdentifier, fullServiceDefinition);
-        Thread.sleep(1000);
+        Thread.sleep(INTERVAL_TO_MAKE_NACOS_REFRESH);
         return providerMetadataIdentifier;
     }
 
@@ -148,7 +154,7 @@ public class NacosMetadataReportTest {
         Map<String, String> tmp = new HashMap<>();
         tmp.put("paramConsumerTest", "nacosConsumer");
         nacosMetadataReport.storeConsumerMetadata(consumerIdentifier, tmp);
-        Thread.sleep(1000);
+        Thread.sleep(INTERVAL_TO_MAKE_NACOS_REFRESH);
         return consumerIdentifier;
     }
 }
