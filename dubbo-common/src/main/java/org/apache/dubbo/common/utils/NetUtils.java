@@ -46,9 +46,10 @@ import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
  * IP and Port Helper for RPC
  */
 public class NetUtils {
+
     private static Logger logger;
 
-    {
+    static {
         logger = LoggerFactory.getLogger(NetUtils.class);
         if (logger instanceof FailsafeLogger) {
             logger = ((FailsafeLogger) logger).getLogger();
@@ -70,8 +71,8 @@ public class NetUtils {
     private static final Map<String, String> HOST_NAME_CACHE = new LRUCache<>(1000);
     private static volatile InetAddress LOCAL_ADDRESS = null;
 
-    private static final String SPLIT_IPV4_CHARECTER = "\\.";
-    private static final String SPLIT_IPV6_CHARECTER = ":";
+    private static final String SPLIT_IPV4_CHARACTER = "\\.";
+    private static final String SPLIT_IPV6_CHARACTER = ":";
 
     public static int getRandomPort() {
         return RND_PORT_START + ThreadLocalRandom.current().nextInt(RND_PORT_RANGE);
@@ -123,7 +124,7 @@ public class NetUtils {
                 || host.length() == 0
                 || host.equalsIgnoreCase(LOCALHOST_KEY)
                 || host.equals(ANYHOST_VALUE)
-                || (LOCAL_IP_PATTERN.matcher(host).matches());
+                || host.startsWith("127.");
     }
 
     public static boolean isValidLocalHost(String host) {
@@ -447,9 +448,9 @@ public class NetUtils {
         }
         pattern = hostAndPort[0];
 
-        String splitCharacter = SPLIT_IPV4_CHARECTER;
+        String splitCharacter = SPLIT_IPV4_CHARACTER;
         if (!isIpv4) {
-            splitCharacter = SPLIT_IPV6_CHARECTER;
+            splitCharacter = SPLIT_IPV6_CHARACTER;
         }
         String[] mask = pattern.split(splitCharacter);
         //check format of pattern
