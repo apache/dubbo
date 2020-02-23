@@ -203,13 +203,13 @@ public class NacosMetadataReportTest {
                 + APPLICATION_NAME + (METADATA_GROUP == null ? "" : "&group=" + METADATA_GROUP));
         SubscriberMetadataIdentifier subscriberMetadataIdentifier = new SubscriberMetadataIdentifier(APPLICATION_NAME, REVISION);
         Gson gson = new Gson();
-        String urlListString = gson.toJson(Arrays.asList(url));
-        nacosMetadataReport.doSaveSubscriberData(subscriberMetadataIdentifier, urlListString);
+        String urlListJsonString = gson.toJson(Arrays.asList(url));
+        nacosMetadataReport.doSaveSubscriberData(subscriberMetadataIdentifier, urlListJsonString);
         Thread.sleep(INTERVAL_TO_MAKE_NACOS_REFRESH);
 
         String subscriberMetadata = configService.getConfig(subscriberMetadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), NACOS_GROUP, NACOS_READ_TIMEOUT);
         Assertions.assertNotNull(subscriberMetadata);
-        Assertions.assertEquals(subscriberMetadata, urlListString);
+        Assertions.assertEquals(subscriberMetadata, urlListJsonString);
 
         //clear test data
         configService.removeConfig(subscriberMetadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), NACOS_GROUP);
