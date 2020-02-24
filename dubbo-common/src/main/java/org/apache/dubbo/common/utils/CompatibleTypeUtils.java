@@ -21,6 +21,8 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -32,6 +34,7 @@ public class CompatibleTypeUtils {
 
     private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
+    private static final String LOCALDATE_FORMAT = "yyyy-MM-ddTHH:mm:ss";
     private CompatibleTypeUtils() {
     }
 
@@ -109,6 +112,18 @@ public class CompatibleTypeUtils {
                     throw new IllegalStateException("Failed to parse date " + value + " by format "
                             + DATE_FORMAT + ", cause: " + e.getMessage(), e);
                 }
+            }
+            if (type == java.time.LocalDateTime.class || type == java.time.LocalDate.class
+                    || type == java.time.LocalTime.class) {
+
+                LocalDateTime localDateTime = LocalDateTime.parse(string);
+                if (type == java.time.LocalDate.class) {
+                    return localDateTime.toLocalDate();
+                }
+                if (type == java.time.LocalTime.class) {
+                    return localDateTime.toLocalTime();
+                }
+                return localDateTime;
             }
             if (type == Class.class) {
                 try {
