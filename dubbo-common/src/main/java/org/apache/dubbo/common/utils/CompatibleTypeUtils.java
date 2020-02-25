@@ -33,7 +33,6 @@ public class CompatibleTypeUtils {
 
     private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
-    private static final String LOCALDATE_FORMAT = "yyyy-MM-ddTHH:mm:ss";
     private CompatibleTypeUtils() {
     }
 
