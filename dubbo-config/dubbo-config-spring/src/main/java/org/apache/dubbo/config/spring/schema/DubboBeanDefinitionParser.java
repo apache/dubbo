@@ -65,7 +65,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.HIDE_KEY_PREFIX;
 public class DubboBeanDefinitionParser implements BeanDefinitionParser {
 
     private static final Logger logger = LoggerFactory.getLogger(DubboBeanDefinitionParser.class);
-    private static final Pattern GROUP_AND_VERION = Pattern.compile("^[\\-.0-9_a-zA-Z]+(\\:[\\-.0-9_a-zA-Z]+)?$");
+    private static final Pattern GROUP_AND_VERSION = Pattern.compile("^[\\-.0-9_a-zA-Z]+(\\:[\\-.0-9_a-zA-Z]+)?$");
     private static final String ONRETURN = "onreturn";
     private static final String ONTHROW = "onthrow";
     private static final String ONINVOKE = "oninvoke";

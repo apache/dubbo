@@ -27,7 +27,6 @@ import org.apache.dubbo.common.function.ThrowableFunction;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 
-import com.sun.nio.file.SensitivityWatchEventModifier;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -527,20 +526,15 @@ public class FileSystemDynamicConfiguration extends AbstractDynamicConfiguration
     }
 
     private static Integer initDelay(WatchEvent.Modifier[] modifiers) {
-        return Stream.of(modifiers)
-                .filter(modifier -> modifier instanceof SensitivityWatchEventModifier)
-                .map(SensitivityWatchEventModifier.class::cast)
-                .map(SensitivityWatchEventModifier::sensitivityValueInSeconds)
-                .max(Integer::compareTo)
-                .orElse(null);
+        if (isBasedPoolingWatchService()) {
+            return 2;
+        } else {
+            return null;
+        }
     }
 
     private static WatchEvent.Modifier[] initWatchEventModifiers() {
-        if (isBasedPoolingWatchService()) { // If based on PollingWatchService, High sensitivity will be used
-            return of(SensitivityWatchEventModifier.HIGH);
-        } else {
-            return of();
-        }
+        return of();
     }
 
     /**

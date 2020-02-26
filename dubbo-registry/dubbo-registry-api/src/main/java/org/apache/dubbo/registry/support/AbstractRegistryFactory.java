@@ -109,7 +109,7 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
                 .addParameter(INTERFACE_KEY, RegistryService.class.getName())
                 .removeParameters(EXPORT_KEY, REFER_KEY)
                 .build();
-        String key = url.toServiceStringWithoutResolving();
+        String key = createRegistryCacheKey(url);
         // Lock the registry access process to ensure a single instance of the registry
         LOCK.lock();
         try {
@@ -128,6 +128,17 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
             // Release the lock
             LOCK.unlock();
         }
+    }
+
+    /**
+     * Create the key for the registries cache.
+     * This method may be override by the sub-class.
+     *
+     * @param url the registration {@link URL url}
+     * @return non-null
+     */
+    protected String createRegistryCacheKey(URL url) {
+        return url.toServiceStringWithoutResolving();
     }
 
     protected abstract Registry createRegistry(URL url);
@@ -175,7 +186,7 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
         }
     };
 
-    public static void removeDestroyedRegistry(Registry toRm){
+    public static void removeDestroyedRegistry(Registry toRm) {
         LOCK.lock();
         try {
             REGISTRIES.entrySet().removeIf(entry -> entry.getValue().equals(toRm));

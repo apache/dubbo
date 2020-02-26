@@ -23,7 +23,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
 
 /**
- *  The default implemention of {@link AccessKeyStorage}
+ *  The default implementation of {@link AccessKeyStorage}
  */
 public class DefaultAccessKeyStorage implements AccessKeyStorage {
     @Override
