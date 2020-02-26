@@ -118,7 +118,7 @@ class AccessKeyAuthenticatorTest {
     @Test
     void testGetSignatureWithParameter() {
         URL url = mock(URL.class);
-        when(url.getParameter(Constants.PARAMTER_SIGNATURE_ENABLE_KEY, false)).thenReturn(true);
+        when(url.getParameter(Constants.PARAMETER_SIGNATURE_ENABLE_KEY, false)).thenReturn(true);
         Invocation invocation = mock(Invocation.class);
         String secretKey = "123456";
         Object[] params = {"dubbo", new ArrayList()};

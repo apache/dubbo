@@ -98,7 +98,7 @@ public class RemoteWritableMetadataService implements WritableMetadataService {
     @Deprecated
     public void publishProvider(URL providerUrl) throws RpcException {
         //first add into the list
-        // remove the individul param
+        // remove the individual param
         providerUrl = providerUrl.removeParameters(PID_KEY, TIMESTAMP_KEY, Constants.BIND_IP_KEY,
                 Constants.BIND_PORT_KEY, TIMESTAMP_KEY);
 
