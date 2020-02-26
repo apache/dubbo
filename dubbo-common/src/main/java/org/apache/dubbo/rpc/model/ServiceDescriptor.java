@@ -34,7 +34,7 @@ import java.util.Set;
 public class ServiceDescriptor {
     private final String serviceName;
     private final Class<?> serviceInterfaceClass;
-    // to accelarate search
+    // to accelerate search
     private final Map<String, List<MethodDescriptor>> methods = new HashMap<>();
     private final Map<String, Map<String, MethodDescriptor>> descToMethods = new HashMap<>();
 
