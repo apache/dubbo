@@ -170,7 +170,7 @@ public class MockClusterInvoker<T> implements Invoker<T> {
                 if (logger.isInfoEnabled()) {
                     logger.info("Exception when try to invoke mock. Get mock invokers error for service:"
                             + getUrl().getServiceInterface() + ", method:" + invocation.getMethodName()
-                            + ", will contruct a new mock with 'new MockInvoker()'.", e);
+                            + ", will construct a new mock with 'new MockInvoker()'.", e);
                 }
             }
         }
