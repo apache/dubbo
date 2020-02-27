@@ -244,6 +244,14 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
 
     public void checkDefault() {
         createProviderIfAbsent();
+        if (provider != null) {
+            if (version == null) {
+                setVersion(provider.getVersion());
+            }
+            if (group == null) {
+                setGroup(provider.getGroup());
+            }
+        }
     }
 
     private void createProviderIfAbsent() {
