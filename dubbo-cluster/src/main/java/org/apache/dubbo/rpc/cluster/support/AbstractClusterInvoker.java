@@ -85,11 +85,11 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
 
     @Override
     public URL getUrl() {
-        return directory.getUrl();
+        return directory.getConsumerUrl();
     }
 
-    protected URL getConsumerUrl() {
-        return directory.getConsumerUrl();
+    public URL getRegistryUrl() {
+        return directory.getUrl();
     }
 
     @Override
@@ -255,7 +255,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
 
         List<Invoker<T>> invokers = list(invocation);
         LoadBalance loadbalance = initLoadBalance(invokers, invocation);
-        RpcUtils.attachInvocationIdIfAsync(getConsumerUrl(), invocation);
+        RpcUtils.attachInvocationIdIfAsync(getUrl(), invocation);
         return doInvoke(invocation, invokers, loadbalance);
     }
 
