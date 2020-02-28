@@ -51,7 +51,7 @@ import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
  * @see RpcContext
  */
 @Activate(group = PROVIDER, order = -10000)
-public class ContextFilter implements Filter, Filter.Listener2 {
+public class ContextFilter implements Filter, Filter.Listener {
 
     private static final String TAG_KEY = "dubbo.tag";
 
@@ -125,7 +125,7 @@ public class ContextFilter implements Filter, Filter.Listener2 {
     }
 
     @Override
-    public void onMessage(Result appResponse, Invoker<?> invoker, Invocation invocation) {
+    public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
         // pass attachments to result
         appResponse.addObjectAttachments(RpcContext.getServerContext().getObjectAttachments());
     }

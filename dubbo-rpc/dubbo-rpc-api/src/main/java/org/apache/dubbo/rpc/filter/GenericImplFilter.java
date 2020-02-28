@@ -49,7 +49,7 @@ import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
  * GenericImplInvokerFilter
  */
 @Activate(group = CommonConstants.CONSUMER, value = GENERIC_KEY, order = 20000)
-public class GenericImplFilter implements Filter, Filter.Listener2 {
+public class GenericImplFilter implements Filter, Filter.Listener {
 
     private static final Logger logger = LoggerFactory.getLogger(GenericImplFilter.class);
 
@@ -131,7 +131,7 @@ public class GenericImplFilter implements Filter, Filter.Listener2 {
     }
 
     @Override
-    public void onMessage(Result appResponse, Invoker<?> invoker, Invocation invocation) {
+    public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
         String generic = invoker.getUrl().getParameter(GENERIC_KEY);
         String methodName = invocation.getMethodName();
         Class<?>[] parameterTypes = invocation.getParameterTypes();
