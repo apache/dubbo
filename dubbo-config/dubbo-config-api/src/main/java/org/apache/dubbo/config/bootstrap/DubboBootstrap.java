@@ -169,8 +169,6 @@ public class DubboBootstrap extends GenericEventListener {
 
     private List<CompletableFuture<Object>> asyncReferringFutures = new ArrayList<>();
 
-    private volatile AtomicBoolean destroyClock = new AtomicBoolean(false);
-
     /**
      * See {@link ApplicationModel} and {@link ExtensionLoader} for why DubboBootstrap is designed to be singleton.
      */
@@ -1035,25 +1033,24 @@ public class DubboBootstrap extends GenericEventListener {
     }
 
     public void destroy() {
-        if (destroyClock.compareAndSet(false, true)) {
+
+        if (started.compareAndSet(true, false)
+                && destroyed.compareAndSet(false, true)) {
             // for compatibility purpose
             DubboShutdownHook.destroyAll();
 
-            if (started.compareAndSet(true, false)
-                    && destroyed.compareAndSet(false, true)) {
-                unregisterServiceInstance();
-                unexportMetadataService();
-                unexportServices();
-                unreferServices();
+            unregisterServiceInstance();
+            unexportMetadataService();
+            unexportServices();
+            unreferServices();
 
-                destroyRegistries();
-                destroyProtocols();
-                destroyServiceDiscoveries();
+            destroyRegistries();
+            destroyProtocols();
+            destroyServiceDiscoveries();
 
-                clear();
-                shutdown();
-                release();
-            }
+            clear();
+            shutdown();
+            release();
         }
     }
 
