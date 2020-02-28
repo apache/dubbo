@@ -32,7 +32,6 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.service.GenericException;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 import org.apache.dubbo.rpc.support.RpcUtils;
@@ -169,8 +168,8 @@ public class GenericImplFilter implements Filter, Filter.Listener2 {
                 } catch (NoSuchMethodException e) {
                     throw new RpcException(e.getMessage(), e);
                 }
-            } else if (appResponse.getException() instanceof GenericException) {
-                GenericException exception = (GenericException) appResponse.getException();
+            } else if (appResponse.getException() instanceof com.alibaba.dubbo.rpc.service.GenericException) {
+                com.alibaba.dubbo.rpc.service.GenericException exception = (com.alibaba.dubbo.rpc.service.GenericException) appResponse.getException();
                 try {
                     String className = exception.getExceptionClass();
                     Class<?> clazz = ReflectUtils.forName(className);

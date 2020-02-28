@@ -164,8 +164,16 @@ public class GenericFilter implements Filter, Filter.Listener2 {
                 generic = (String) RpcContext.getContext().getAttachment(GENERIC_KEY);
             }
 
-            if (appResponse.hasException() && !(appResponse.getException() instanceof GenericException)) {
-                appResponse.setException(new GenericException(appResponse.getException()));
+            if (appResponse.hasException()) {
+                Throwable appException = appResponse.getException();
+                if (appException instanceof GenericException) {
+                    GenericException tmp = (GenericException) appException;
+                    appException = new com.alibaba.dubbo.rpc.service.GenericException(tmp.getExceptionClass(), tmp.getExceptionMessage());
+                }
+                if (!(appException instanceof com.alibaba.dubbo.rpc.service.GenericException)) {
+                    appException = new com.alibaba.dubbo.rpc.service.GenericException(appException);
+                }
+                appResponse.setException(appException);
             }
             if (ProtocolUtils.isJavaGenericSerialization(generic)) {
                 try {
