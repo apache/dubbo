@@ -1044,10 +1044,21 @@ public class DubboBootstrap extends GenericEventListener {
         }
     }
 
+    /**
+     * Destroy all the protocols.
+     */
     private void destroyProtocols() {
-        configManager.getProtocols().forEach(protocolConfig -> {
-            ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(protocolConfig.getName()).destroy();
-        });
+        ExtensionLoader<Protocol> loader = ExtensionLoader.getExtensionLoader(Protocol.class);
+        for (String protocolName : loader.getLoadedExtensions()) {
+            try {
+                Protocol protocol = loader.getLoadedExtension(protocolName);
+                if (protocol != null) {
+                    protocol.destroy();
+                }
+            } catch (Throwable t) {
+                logger.warn(t.getMessage(), t);
+            }
+        }
         if (logger.isDebugEnabled()) {
             logger.debug(NAME + "'s all ProtocolConfigs have been destroyed.");
         }

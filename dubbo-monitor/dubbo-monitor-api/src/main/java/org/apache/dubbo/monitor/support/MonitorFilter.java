@@ -171,10 +171,10 @@ public class MonitorFilter implements Filter, Filter.Listener2 {
         }
         String input = "", output = "";
         if (invocation.getAttachment(INPUT_KEY) != null) {
-            input = (String) invocation.getAttachment(INPUT_KEY);
+            input = invocation.getAttachment(INPUT_KEY);
         }
         if (result != null && result.getAttachment(OUTPUT_KEY) != null) {
-            output = (String) result.getAttachment(OUTPUT_KEY);
+            output = result.getAttachment(OUTPUT_KEY);
         }
 
         return new URL(COUNT_PROTOCOL, NetUtils.getLocalHost(), localPort, service + PATH_SEPARATOR + method, MonitorService.APPLICATION, application, MonitorService.INTERFACE, service, MonitorService.METHOD, method, remoteKey, remoteValue, error ? MonitorService.FAILURE : MonitorService.SUCCESS, "1", MonitorService.ELAPSED, String.valueOf(elapsed), MonitorService.CONCURRENT, String.valueOf(concurrent), INPUT_KEY, input, OUTPUT_KEY, output, GROUP_KEY, group, VERSION_KEY, version);

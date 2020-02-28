@@ -402,10 +402,10 @@ public class ThriftCodecTest {
         protocol.writeI16(Short.MAX_VALUE);
         protocol.writeByte(ThriftCodec.VERSION);
         protocol.writeString(
-                (String) ((RpcInvocation) request.getData())
+                ((RpcInvocation) request.getData())
                         .getAttachment(INTERFACE_KEY));
         protocol.writeString(
-                (String) ((RpcInvocation) request.getData())
+                ((RpcInvocation) request.getData())
                         .getAttachment(PATH_KEY));
         protocol.writeI64(request.getId());
         protocol.getTransport().flush();
