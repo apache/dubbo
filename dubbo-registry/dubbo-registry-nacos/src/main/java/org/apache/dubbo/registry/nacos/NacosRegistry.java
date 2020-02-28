@@ -167,11 +167,12 @@ public class NacosRegistry extends FailbackRegistry {
 
     private void doSubscribe(final URL url, final NotifyListener listener, final Set<String> serviceNames) {
         execute(namingService -> {
+            List<Instance> instances = new LinkedList();
             for (String serviceName : serviceNames) {
-                List<Instance> instances = namingService.getAllInstances(serviceName);
-                notifySubscriber(url, listener, instances);
+                instances.addAll(namingService.getAllInstances(serviceName));
                 subscribeEventListener(serviceName, url, listener);
             }
+            notifySubscriber(url, listener, instances);
         });
     }
 
