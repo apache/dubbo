@@ -111,8 +111,6 @@ public class GrpcInvoker<T> extends AbstractInvoker<T> {
             Status status = statusException.getStatus();
             if (status.getCode() == Status.Code.DEADLINE_EXCEEDED) {
                 return RpcException.TIMEOUT_EXCEPTION;
-            } else if (status.getCode() == Status.Code.DEADLINE_EXCEEDED) {
-                //
             }
         }
         return RpcException.UNKNOWN_EXCEPTION;
