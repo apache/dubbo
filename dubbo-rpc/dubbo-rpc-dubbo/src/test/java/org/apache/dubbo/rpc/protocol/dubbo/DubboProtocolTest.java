@@ -35,6 +35,7 @@ import org.apache.dubbo.rpc.service.EchoService;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
@@ -54,6 +55,12 @@ public class DubboProtocolTest {
     @AfterAll
     public static void after() {
         ProtocolUtils.closeAll();
+        ApplicationModel.getServiceRepository().unregisterService(DemoService.class);
+    }
+
+    @BeforeAll
+    public static void setup() {
+        ApplicationModel.getServiceRepository().registerService(DemoService.class);
     }
 
     @Test
