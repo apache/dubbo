@@ -1038,6 +1038,7 @@ public class DubboBootstrap extends GenericEventListener {
 
         if (started.compareAndSet(true, false)
                 && destroyed.compareAndSet(false, true)) {
+
             unregisterServiceInstance();
             unexportMetadataService();
             unexportServices();
