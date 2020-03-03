@@ -1,5 +1,21 @@
 # Release Notes
 
+## 2.7.6 
+
+### Features
+* Support Service Authentication
+
+### Enhancement
+* Removing the internal JDK API from FileSystemDynamicConfiguration
+* Refactor the APT test-cases implementation of dubbo-metadata-processor in Java 9+
+* Remove feature envy
+* JsonRpcProtocol support Generalization 
+* Reduce object allocation for ProtocolUtils.serviceKey
+* Reduce object allocation for ContextFilter.invoke
+
+### Bugfixes
+* check 2.7.6 milestone for details.
+
 ## 2.7.5
 
 ### Features
