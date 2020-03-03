@@ -52,7 +52,7 @@ public class DubboShutdownHook extends Thread {
     /**
      * Has it already been destroyed or not?
      */
-    private final AtomicBoolean destroyed = new AtomicBoolean(false);
+    private static final AtomicBoolean destroyed = new AtomicBoolean(false);
 
     private final EventDispatcher eventDispatcher = EventDispatcher.getDefaultExtension();
 
@@ -111,17 +111,15 @@ public class DubboShutdownHook extends Thread {
      * Destroy all the resources, including registries and protocols.
      */
     public void doDestroy() {
-        if (!destroyed.compareAndSet(false, true)) {
-            return;
-        }
-
         // dispatch the DubboDestroyedEvent @since 2.7.5
         dispatch(new DubboServiceDestroyedEvent(this));
     }
 
     public static void destroyAll() {
-        AbstractRegistryFactory.destroyAll();
-        destroyProtocols();
+        if (destroyed.compareAndSet(false, true)) {
+            AbstractRegistryFactory.destroyAll();
+            destroyProtocols();
+        }
     }
 
     private void dispatch(Event event) {
