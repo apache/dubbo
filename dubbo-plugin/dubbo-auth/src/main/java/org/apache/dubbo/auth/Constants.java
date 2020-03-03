@@ -41,5 +41,5 @@ public interface Constants {
 
     String SIGNATURE_STRING_FORMAT = "%s#%s#%s#%s";
 
-    String PARAMTER_SIGNATURE_ENABLE_KEY = "param.sign";
+    String PARAMETER_SIGNATURE_ENABLE_KEY = "param.sign";
 }

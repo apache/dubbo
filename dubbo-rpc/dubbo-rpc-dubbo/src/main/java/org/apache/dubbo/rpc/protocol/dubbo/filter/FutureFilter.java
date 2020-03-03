@@ -39,7 +39,7 @@ import static org.apache.dubbo.rpc.protocol.dubbo.Constants.ASYNC_METHOD_INFO;
  * EventFilter
  */
 @Activate(group = CommonConstants.CONSUMER)
-public class FutureFilter implements Filter, Filter.Listener2 {
+public class FutureFilter implements Filter, Filter.Listener {
 
     protected static final Logger logger = LoggerFactory.getLogger(FutureFilter.class);
 
@@ -52,7 +52,7 @@ public class FutureFilter implements Filter, Filter.Listener2 {
     }
 
     @Override
-    public void onMessage(Result result, Invoker<?> invoker, Invocation invocation) {
+    public void onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
         if (result.hasException()) {
             fireThrowCallback(invoker, invocation, result.getException());
         } else {

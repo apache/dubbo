@@ -49,8 +49,9 @@ public class GrpcProtocol extends AbstractProxyProtocol {
 
     public final static int DEFAULT_PORT = 50051;
 
-    /* <address, gRPC channel> */
-    private final ConcurrentMap<String, ManagedChannel> channelMap = new ConcurrentHashMap<>();
+    /* <address, gRPC channels> */
+    private final ConcurrentMap<String, ReferenceCountManagedChannel> channelMap = new ConcurrentHashMap<>();
+    private final Object lock = new Object();
 
     @Override
     protected <T> Runnable doExport(T proxiedImpl, Class<T> type, URL url) throws RpcException {
@@ -113,9 +114,7 @@ public class GrpcProtocol extends AbstractProxyProtocol {
         }
 
         // Channel
-        ManagedChannel channel = channelMap.computeIfAbsent(url.getAddress(),
-                k -> GrpcOptionsUtils.buildManagedChannel(url)
-        );
+        ReferenceCountManagedChannel channel = getSharedChannel(url);
 
         // CallOptions
         try {
@@ -148,6 +147,41 @@ public class GrpcProtocol extends AbstractProxyProtocol {
         throw new UnsupportedOperationException("not used");
     }
 
+    /**
+     * Get shared channel connection
+     */
+    private ReferenceCountManagedChannel getSharedChannel(URL url) {
+        String key = url.getAddress();
+        ReferenceCountManagedChannel channel = channelMap.get(key);
+
+        if (channel != null && !channel.isTerminated()) {
+            channel.incrementAndGetCount();
+            return channel;
+        }
+
+        synchronized (lock) {
+            channel = channelMap.get(key);
+            // dubbo check
+            if (channel != null && !channel.isTerminated()) {
+                channel.incrementAndGetCount();
+            } else {
+                channel = new ReferenceCountManagedChannel(initChannel(url));
+                channelMap.put(key, channel);
+            }
+        }
+
+        return channel;
+    }
+
+    /**
+     * Create new connection
+     *
+     * @param url
+     */
+    private ManagedChannel initChannel(URL url) {
+        return GrpcOptionsUtils.buildManagedChannel(url);
+    }
+
     @Override
     public int getDefaultPort() {
         return DEFAULT_PORT;
@@ -156,9 +190,10 @@ public class GrpcProtocol extends AbstractProxyProtocol {
     @Override
     public void destroy() {
         serverMap.values().forEach(ProtocolServer::close);
-        channelMap.values().forEach(ManagedChannel::shutdown);
+        channelMap.values().forEach(ReferenceCountManagedChannel::shutdown);
         serverMap.clear();
         channelMap.clear();
+        super.destroy();
     }
 
     public class GrpcRemotingServer extends RemotingServerAdapter {
