@@ -62,7 +62,7 @@ public class FutureFilter implements Filter, Filter.Listener {
 
     @Override
     public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
-
+        fireThrowCallback(invoker, invocation, t);
     }
 
     private void fireInvokeCallback(final Invoker<?> invoker, final Invocation invocation) {
