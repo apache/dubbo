@@ -108,7 +108,7 @@ pipeline {
             steps {
                 timeout(40) {
                     sh './mvnw --version'
-                    sh './mvnw clean source:jar javadoc:jar package deploy -pl dubbo-dependencies-bom && ./mvnw clean package deploy -DskipTests=true'
+                    sh './mvnw clean package deploy -pl dubbo-dependencies-bom && ./mvnw clean source:jar javadoc:jar package deploy -DskipTests=true'
                 }
             }
         }
