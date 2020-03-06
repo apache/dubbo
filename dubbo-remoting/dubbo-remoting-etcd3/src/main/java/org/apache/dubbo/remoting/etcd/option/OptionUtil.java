@@ -20,8 +20,6 @@ import io.etcd.jetcd.ByteSequence;
 import io.grpc.Status;
 import io.netty.handler.codec.http2.Http2Exception;
 
-import java.util.Arrays;
-
 public class OptionUtil {
 
     public static final byte[] NO_PREFIX_END = {0};
