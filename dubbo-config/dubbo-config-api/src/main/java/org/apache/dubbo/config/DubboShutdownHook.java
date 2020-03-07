@@ -89,7 +89,7 @@ public class DubboShutdownHook extends Thread {
      * Register the ShutdownHook
      */
     public void register() {
-        if (!registered.get() && registered.compareAndSet(false, true)) {
+        if (registered.compareAndSet(false, true)) {
             DubboShutdownHook dubboShutdownHook = getDubboShutdownHook();
             Runtime.getRuntime().addShutdownHook(dubboShutdownHook);
             dispatch(new DubboShutdownHookRegisteredEvent(dubboShutdownHook));
@@ -100,7 +100,7 @@ public class DubboShutdownHook extends Thread {
      * Unregister the ShutdownHook
      */
     public void unregister() {
-        if (registered.get() && registered.compareAndSet(true, false)) {
+        if (registered.compareAndSet(true, false)) {
             DubboShutdownHook dubboShutdownHook = getDubboShutdownHook();
             Runtime.getRuntime().removeShutdownHook(dubboShutdownHook);
             dispatch(new DubboShutdownHookUnregisteredEvent(dubboShutdownHook));
