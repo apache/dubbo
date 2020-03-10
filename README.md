@@ -131,31 +131,34 @@ public class Application {
 ### Call remote service in consumer
 
 ```java
-package org.apache.dubbo.samples.provider;
+package org.apache.dubbo.samples.client;
 
 
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
-import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.config.utils.ReferenceConfigCache;
 import org.apache.dubbo.samples.api.GreetingsService;
 
 public class Application {
     private static String zookeeperHost = System.getProperty("zookeeper.address", "127.0.0.1");
 
-    public static void main(String[] args) {
-        ServiceConfig<GreetingsService> service = new ServiceConfig<>();
-        service.setInterface(GreetingsService.class);
-        service.setRef(new GreetingsServiceImpl());
 
+    public static void main(String[] args) {
+        ReferenceConfig<GreetingsService> reference = new ReferenceConfig<>();
+        reference.setInterface(GreetingsService.class);
         DubboBootstrap bootstrap = DubboBootstrap.getInstance();
-        bootstrap.application(new ApplicationConfig("dubbo-demo-api-provider"))
+        bootstrap.application(new ApplicationConfig("dubbo-demo-api-consumer"))
                 .registry(new RegistryConfig("zookeeper://" + zookeeperHost + ":2181"))
-                .service(service)
-                .start()
-                .await();
+                .reference(reference)
+                .start();
+        GreetingsService demoService = ReferenceConfigCache.getCache().get(reference);
+        String message = demoService.sayHi("dubbo");
+        System.out.println(message);
     }
 }
+
 ```
 *See [consumer/Application.java](https://github.com/apache/dubbo-samples/blob/master/dubbo-samples-api/src/main/java/org/apache/dubbo/samples/client/Application.java) on GitHub.*
 
