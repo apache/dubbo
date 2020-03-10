@@ -107,7 +107,9 @@ public class SerialDetector extends ObjectInputStream {
                         blacklist = loadBlacklistFile(blacklistFile);
                     }
                 }
-                blacklistPattern = new PatternList(Constants.COMMA_SPLIT_PATTERN.split(blacklist));
+                if (StringUtils.isNotEmpty(blacklist)) {
+                    blacklistPattern = new PatternList(Constants.COMMA_SPLIT_PATTERN.split(blacklist));
+                }
             } catch (Throwable t) {
                 logger.warn("Failed to initialize the Serialization Security Checker component!", t);
             }
