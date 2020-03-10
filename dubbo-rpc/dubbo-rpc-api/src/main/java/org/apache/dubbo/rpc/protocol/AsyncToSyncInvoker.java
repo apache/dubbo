@@ -53,6 +53,11 @@ public class AsyncToSyncInvoker<T> implements Invoker<T> {
 
         try {
             if (InvokeMode.SYNC == ((RpcInvocation) invocation).getInvokeMode()) {
+                /**
+                 * NOTICE!
+                 * must call {@link java.util.concurrent.CompletableFuture#get(long, TimeUnit)} because
+                 * {@link java.util.concurrent.CompletableFuture#get()} was proved to have serious performance drop.
+                 */
                 asyncResult.get(Integer.MAX_VALUE, TimeUnit.MILLISECONDS);
             }
         } catch (InterruptedException e) {

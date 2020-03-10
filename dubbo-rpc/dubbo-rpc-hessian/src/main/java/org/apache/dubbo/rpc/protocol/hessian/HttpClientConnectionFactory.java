@@ -50,8 +50,8 @@ public class HttpClientConnectionFactory implements HessianConnectionFactory {
     public HessianConnection open(URL url) {
         HttpClientConnection httpClientConnection = new HttpClientConnection(httpClient, url);
         RpcContext context = RpcContext.getContext();
-        for (String key : context.getAttachments().keySet()) {
-            httpClientConnection.addHeader(DEFAULT_EXCHANGER + key, (String) context.getAttachment(key));
+        for (String key : context.getObjectAttachments().keySet()) {
+            httpClientConnection.addHeader(DEFAULT_EXCHANGER + key, context.getAttachment(key));
         }
         return httpClientConnection;
     }

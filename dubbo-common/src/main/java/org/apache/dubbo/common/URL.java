@@ -591,7 +591,10 @@ class URL implements Serializable {
 
     private Map<String, Number> getNumbers() {
         // concurrent initialization is tolerant
-        return numbers == null ? new ConcurrentHashMap<>() : numbers;
+        if (numbers == null) {
+            numbers = new ConcurrentHashMap<>();
+        }
+        return numbers;
     }
 
     private Map<String, Map<String, Number>> getMethodNumbers() {
@@ -603,7 +606,10 @@ class URL implements Serializable {
 
     private Map<String, URL> getUrls() {
         // concurrent initialization is tolerant
-        return urls == null ? new ConcurrentHashMap<>() : urls;
+        if (urls == null) {
+            urls = new ConcurrentHashMap<>();
+        }
+        return urls;
     }
 
     public URL getUrlParameter(String key) {
@@ -1389,7 +1395,7 @@ class URL implements Serializable {
      */
     public String getColonSeparatedKey() {
         StringBuilder serviceNameBuilder = new StringBuilder();
-        append(serviceNameBuilder, INTERFACE_KEY, true);
+        serviceNameBuilder.append(this.getServiceInterface());
         append(serviceNameBuilder, VERSION_KEY, false);
         append(serviceNameBuilder, GROUP_KEY, false);
         return serviceNameBuilder.toString();

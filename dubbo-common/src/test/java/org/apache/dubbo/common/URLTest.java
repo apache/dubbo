@@ -758,6 +758,12 @@ public class URLTest {
 
         URL url4 = URL.valueOf("10.20.130.230:20880/context/path?interface=org.apache.dubbo.test.interfaceName");
         Assertions.assertEquals("org.apache.dubbo.test.interfaceName::", url4.getColonSeparatedKey());
+
+        URL url5 = URL.valueOf("10.20.130.230:20880/org.apache.dubbo.test.interfaceName");
+        Assertions.assertEquals("org.apache.dubbo.test.interfaceName::", url5.getColonSeparatedKey());
+
+        URL url6 = URL.valueOf("10.20.130.230:20880/org.apache.dubbo.test.interfaceName?interface=org.apache.dubbo.test.interfaceName1");
+        Assertions.assertEquals("org.apache.dubbo.test.interfaceName1::", url6.getColonSeparatedKey());
     }
 
     @Test

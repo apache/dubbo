@@ -78,7 +78,10 @@ public interface Invocation {
      * @return attachments.
      * @serial
      */
-    Map<String, Object> getAttachments();
+    @Deprecated
+    Map<String, String> getAttachments();
+
+    Map<String, Object> getObjectAttachments();
 
     void setAttachment(String key, Object value);
 
@@ -90,7 +93,9 @@ public interface Invocation {
      * @return attachment value.
      * @serial
      */
-    Object getAttachment(String key);
+    String getAttachment(String key);
+
+    Object getObjectAttachment(String key);
 
     /**
      * get attachment by key with default value.
@@ -98,7 +103,9 @@ public interface Invocation {
      * @return attachment value.
      * @serial
      */
-    Object getAttachment(String key, Object defaultValue);
+    String getAttachment(String key, String defaultValue);
+
+    Object getObjectAttachment(String key, Object defaultValue);
 
     /**
      * get the invoker in current context.
