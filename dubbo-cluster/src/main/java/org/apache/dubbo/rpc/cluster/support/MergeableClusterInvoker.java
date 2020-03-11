@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.support;
 
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -178,11 +177,6 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
     @Override
     public Class<T> getInterface() {
         return directory.getInterface();
-    }
-
-    @Override
-    public URL getUrl() {
-        return directory.getConsumerUrl();
     }
 
     @Override
