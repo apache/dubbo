@@ -115,15 +115,19 @@ public class DubboShutdownHook extends Thread {
         dispatch(new DubboServiceDestroyedEvent(this));
     }
 
+    private void dispatch(Event event) {
+        eventDispatcher.dispatch(event);
+    }
+
+    public boolean getRegistered() {
+        return registered.get();
+    }
+
     public static void destroyAll() {
         if (destroyed.compareAndSet(false, true)) {
             AbstractRegistryFactory.destroyAll();
             destroyProtocols();
         }
-    }
-
-    private void dispatch(Event event) {
-        eventDispatcher.dispatch(event);
     }
 
     /**

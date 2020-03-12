@@ -135,6 +135,8 @@ public class DubboBootstrap extends GenericEventListener {
 
     private final Condition condition = lock.newCondition();
 
+    private final Lock destroyLock = new ReentrantLock();
+
     private final ExecutorService executorService = newSingleThreadExecutor();
 
     private final EventDispatcher eventDispatcher = EventDispatcher.getDefaultExtension();
@@ -1033,24 +1035,29 @@ public class DubboBootstrap extends GenericEventListener {
     }
 
     public void destroy() {
-        // for compatibility purpose
-        DubboShutdownHook.destroyAll();
+        if (destroyLock.tryLock()) {
+            try {
+                DubboShutdownHook.destroyAll();
 
-        if (started.compareAndSet(true, false)
-                && destroyed.compareAndSet(false, true)) {
+                if (started.compareAndSet(true, false)
+                        && destroyed.compareAndSet(false, true)) {
 
-            unregisterServiceInstance();
-            unexportMetadataService();
-            unexportServices();
-            unreferServices();
+                    unregisterServiceInstance();
+                    unexportMetadataService();
+                    unexportServices();
+                    unreferServices();
 
-            destroyRegistries();
-            destroyProtocols();
-            destroyServiceDiscoveries();
+                    destroyRegistries();
+                    destroyProtocols();
+                    destroyServiceDiscoveries();
 
-            clear();
-            shutdown();
-            release();
+                    clear();
+                    shutdown();
+                    release();
+                }
+            } finally {
+                destroyLock.unlock();
+            }
         }
     }
 
