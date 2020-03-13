@@ -337,6 +337,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         }
 
         if (shouldCheck() && !invoker.isAvailable()) {
+            invoker.destroy();
             throw new IllegalStateException("Failed to check the status of the service "
                     + interfaceName
                     + ". No provider available for the service "
