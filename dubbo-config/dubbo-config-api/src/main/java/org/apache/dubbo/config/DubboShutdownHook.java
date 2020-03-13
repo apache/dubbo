@@ -133,7 +133,7 @@ public class DubboShutdownHook extends Thread {
     /**
      * Destroy all the protocols.
      */
-    private static void destroyProtocols() {
+    public static void destroyProtocols() {
         ExtensionLoader<Protocol> loader = ExtensionLoader.getExtensionLoader(Protocol.class);
         for (String protocolName : loader.getLoadedExtensions()) {
             try {

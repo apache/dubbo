@@ -67,7 +67,6 @@ import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceDiscoveryRegistry;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
-import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.io.IOException;
@@ -1048,7 +1047,7 @@ public class DubboBootstrap extends GenericEventListener {
                     unreferServices();
 
                     destroyRegistries();
-                    destroyProtocols();
+                    DubboShutdownHook.destroyProtocols();
                     destroyServiceDiscoveries();
 
                     clear();
@@ -1058,26 +1057,6 @@ public class DubboBootstrap extends GenericEventListener {
             } finally {
                 destroyLock.unlock();
             }
-        }
-    }
-
-    /**
-     * Destroy all the protocols.
-     */
-    private void destroyProtocols() {
-        ExtensionLoader<Protocol> loader = ExtensionLoader.getExtensionLoader(Protocol.class);
-        for (String protocolName : loader.getLoadedExtensions()) {
-            try {
-                Protocol protocol = loader.getLoadedExtension(protocolName);
-                if (protocol != null) {
-                    protocol.destroy();
-                }
-            } catch (Throwable t) {
-                logger.warn(t.getMessage(), t);
-            }
-        }
-        if (logger.isDebugEnabled()) {
-            logger.debug(NAME + "'s all ProtocolConfigs have been destroyed.");
         }
     }
 
