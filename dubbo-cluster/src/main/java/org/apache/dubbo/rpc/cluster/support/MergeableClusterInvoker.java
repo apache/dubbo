@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.support;
 
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -71,7 +70,7 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
                         return invoker.invoke(invocation);
                     } catch (RpcException e) {
                         if (e.isNoInvokerAvailableAfterFilter()) {
-                            log.debug("No available provider for service" + directory.getUrl().getServiceKey() + " on group " + invoker.getUrl().getParameter(GROUP_KEY) + ", will continue to try another group.");
+                            log.debug("No available provider for service" + getUrl().getServiceKey() + " on group " + invoker.getUrl().getParameter(GROUP_KEY) + ", will continue to try another group.");
                         } else {
                             throw e;
                         }
@@ -178,11 +177,6 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
     @Override
     public Class<T> getInterface() {
         return directory.getInterface();
-    }
-
-    @Override
-    public URL getUrl() {
-        return directory.getUrl();
     }
 
     @Override
