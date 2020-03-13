@@ -159,8 +159,18 @@ public interface Result extends org.apache.dubbo.rpc.Result {
         }
 
         @Override
+        public void setAttachment(String key, String value) {
+            delegate.setAttachment(key, value);
+        }
+
+        @Override
         public void setAttachment(String key, Object value) {
             delegate.setAttachment(key, value);
+        }
+
+        @Override
+        public void setObjectAttachment(String key, Object value) {
+            delegate.setObjectAttachment(key, value);
         }
     }
 }

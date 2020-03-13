@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.rpc;
 
+import org.apache.dubbo.common.Experimental;
+
 import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -90,7 +92,6 @@ public interface Result extends Serializable {
      *
      * @return attachments.
      */
-    @Deprecated
     Map<String, String> getAttachments();
 
     /**
@@ -98,6 +99,7 @@ public interface Result extends Serializable {
      *
      * @return attachments.
      */
+    @Experimental("Experiment api for supporting Object transmission")
     Map<String, Object> getObjectAttachments();
 
     /**
@@ -105,7 +107,6 @@ public interface Result extends Serializable {
      *
      * @param map
      */
-    @Deprecated
     void addAttachments(Map<String, String> map);
 
     /**
@@ -113,6 +114,7 @@ public interface Result extends Serializable {
      *
      * @param map
      */
+    @Experimental("Experiment api for supporting Object transmission")
     void addObjectAttachments(Map<String, Object> map);
 
     /**
@@ -120,7 +122,6 @@ public interface Result extends Serializable {
      *
      * @param map
      */
-    @Deprecated
     void setAttachments(Map<String, String> map);
 
     /**
@@ -128,6 +129,7 @@ public interface Result extends Serializable {
      *
      * @param map
      */
+    @Experimental("Experiment api for supporting Object transmission")
     void setObjectAttachments(Map<String, Object> map);
 
     /**
@@ -142,6 +144,7 @@ public interface Result extends Serializable {
      *
      * @return attachment value.
      */
+    @Experimental("Experiment api for supporting Object transmission")
     Object getObjectAttachment(String key);
 
     /**
@@ -156,9 +159,16 @@ public interface Result extends Serializable {
      *
      * @return attachment value.
      */
+    @Experimental("Experiment api for supporting Object transmission")
     Object getObjectAttachment(String key, Object defaultValue);
 
+    void setAttachment(String key, String value);
+
+    @Experimental("Experiment api for supporting Object transmission")
     void setAttachment(String key, Object value);
+
+    @Experimental("Experiment api for supporting Object transmission")
+    void setObjectAttachment(String key, Object value);
 
     /**
      * Add a callback which can be triggered when the RPC call finishes.
