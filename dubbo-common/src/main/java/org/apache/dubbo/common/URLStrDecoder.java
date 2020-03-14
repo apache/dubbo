@@ -16,27 +16,30 @@
  */
 package org.apache.dubbo.common;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.apache.dubbo.common.utils.StringUtils.EMPTY_STRING;
 import static org.apache.dubbo.common.utils.StringUtils.decodeHexByte;
 import static org.apache.dubbo.common.utils.Utf8Utils.decodeUtf8;
 
-public class URLStrDecoder {
+public final class URLStrDecoder {
 
     private static final char SPACE = 0x20;
 
     private static final ThreadLocal<TempBuf> DECODE_TEMP_BUF = ThreadLocal.withInitial(() -> new TempBuf(1024));
 
-    private final String encodedURLStr;
-
-    public URLStrDecoder(String encodedURLStr) {
-        this.encodedURLStr = encodedURLStr;
+    private URLStrDecoder() {
+        //empty
     }
 
-    //url decode 后的格式: protocol://username:password@host:port/path?k1=v1&k2=v2
-    // [protocol://][username:password@][host:port]/[path][?k1=v1&k2=v2]
-    public URL decode() {
+    /**
+     * @param encodedURLStr : after {@link URL#encode(String)} string
+     *                      encodedURLStr after decode format: protocol://username:password@host:port/path?k1=v1&k2=v2
+     *                      [protocol://][username:password@][host:port]/[path][?k1=v1&k2=v2]
+     */
+    public static URL decode(String encodedURLStr) {
         Map<String, String> parameters = null;
         int pathEndIdx = encodedURLStr.indexOf("%3F");// '?'
         if (pathEndIdx >= 0) {
@@ -45,70 +48,95 @@ public class URLStrDecoder {
             pathEndIdx = encodedURLStr.length();
         }
 
-        TempBuf tempBuf = DECODE_TEMP_BUF.get();
-
-        //decodedURLBody format: [protocol://][username:password@][host:port]/[path]
-        String decodedURLBody = decodeComponent(encodedURLStr, 0, pathEndIdx, false, tempBuf);
-
-        int searchStartIdx = 0;
+        //decodedBody format: [protocol://][username:password@][host:port]/[path]
+        String decodedBody = decodeComponent(encodedURLStr, 0, pathEndIdx, false, DECODE_TEMP_BUF.get());
+        int starIdx = 0, endIdx = decodedBody.length();
         String protocol = null;
-        int protocolEndIdx = decodedURLBody.indexOf("://");
-        if (protocolEndIdx >= 0) {
-            if (protocolEndIdx == 0) {
+        int protoEndIdx = decodedBody.indexOf("://");
+        if (protoEndIdx >= 0) {
+            if (protoEndIdx == 0) {
                 throw new IllegalStateException("url missing protocol: \"" + encodedURLStr + "\"");
             }
-            protocol = decodedURLBody.substring(0, protocolEndIdx);
-            searchStartIdx = protocolEndIdx + 3;
+            protocol = decodedBody.substring(0, protoEndIdx);
+            starIdx = protoEndIdx + 3;
         } else {
             // case: file:/path/to/file.txt
-            protocolEndIdx = decodedURLBody.indexOf(":/");
-            if (protocolEndIdx >= 0) {
-                if (protocolEndIdx == 0) {
+            protoEndIdx = decodedBody.indexOf(":/");
+            if (protoEndIdx >= 0) {
+                if (protoEndIdx == 0) {
                     throw new IllegalStateException("url missing protocol: \"" + encodedURLStr + "\"");
                 }
-                protocol = decodedURLBody.substring(0, protocolEndIdx);
-                searchStartIdx = protocolEndIdx + 1;
+                protocol = decodedBody.substring(0, protoEndIdx);
+                starIdx = protoEndIdx + 1;
             }
         }
 
         String path = null;
-        int pathStartIdx = decodedURLBody.indexOf('/', searchStartIdx);
+        int pathStartIdx = indexOf(decodedBody, '/', starIdx, endIdx);
         if (pathStartIdx >= 0) {
-            path = decodedURLBody.substring(pathStartIdx + 1);
-        } else {
-            pathStartIdx = decodedURLBody.length();//no path
+            path = decodedBody.substring(pathStartIdx + 1);
+            endIdx = pathStartIdx;
         }
 
         String username = null;
         String password = null;
-        int pwdEndIdx = decodedURLBody.lastIndexOf('@', pathStartIdx);
+        int pwdEndIdx = lastIndexOf(decodedBody, '@', starIdx, endIdx);
         if (pwdEndIdx > 0) {
-            int userNameEndIdx = decodedURLBody.indexOf(':', searchStartIdx);
-            username = decodedURLBody.substring(searchStartIdx, userNameEndIdx);
-            password = decodedURLBody.substring(userNameEndIdx + 1, pwdEndIdx);
-            searchStartIdx = pwdEndIdx + 1;
+            int userNameEndIdx = indexOf(decodedBody, ':', starIdx, pwdEndIdx);
+            username = decodedBody.substring(starIdx, userNameEndIdx);
+            password = decodedBody.substring(userNameEndIdx + 1, pwdEndIdx);
+            starIdx = pwdEndIdx + 1;
         }
 
         String host = null;
         int port = 0;
-        int searchEndIdx = pathStartIdx;
-        int hostEndIdx = decodedURLBody.lastIndexOf(':');
-        if (hostEndIdx > 0 && hostEndIdx < decodedURLBody.length() - 1) {
-            if (decodedURLBody.lastIndexOf('%') > hostEndIdx) {
+        int hostEndIdx = lastIndexOf(decodedBody, ':', starIdx, endIdx);
+        if (hostEndIdx > 0 && hostEndIdx < decodedBody.length() - 1) {
+            if (lastIndexOf(decodedBody, '%', starIdx, endIdx) > hostEndIdx) {
                 // ipv6 address with scope id
                 // e.g. fe80:0:0:0:894:aeec:f37d:23e1%en0
                 // see https://howdoesinternetwork.com/2013/ipv6-zone-id
                 // ignore
             } else {
-                port = Integer.parseInt(decodedURLBody.substring(hostEndIdx + 1, searchEndIdx));
-                searchEndIdx = hostEndIdx;
+                port = Integer.parseInt(decodedBody.substring(hostEndIdx + 1, endIdx));
+                endIdx = hostEndIdx;
             }
         }
 
-        if (searchEndIdx > searchStartIdx) {
-            host = decodedURLBody.substring(searchStartIdx, searchEndIdx);
+        if (endIdx > starIdx) {
+            host = decodedBody.substring(starIdx, endIdx);
         }
         return new URL(protocol, username, password, host, port, path, parameters);
+    }
+
+    private static int indexOf(String str, char ch, int from, int toExclude) {
+        from = Math.max(from, 0);
+        toExclude = Math.min(toExclude, str.length());
+        if (from > toExclude) {
+            return -1;
+        }
+
+        for (int i = from; i < toExclude; i++) {
+            if (str.charAt(i) == ch) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private static int lastIndexOf(String str, char ch, int from, int toExclude) {
+        from = Math.max(from, 0);
+        toExclude = Math.min(toExclude, str.length() - 1);
+        if (from > toExclude) {
+            return -1;
+        }
+
+        for (int i = toExclude; i >= from; i--) {
+            if (str.charAt(i) == ch) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     private static Map<String, String> decodeParams(String str, int from) {
@@ -116,10 +144,6 @@ public class URLStrDecoder {
         if (from >= len) {
             return Collections.emptyMap();
         }
-
-//        if (str.charAt(from) == '?') {
-//            from++;
-//        }
 
         TempBuf tempBuf = DECODE_TEMP_BUF.get();
         Map<String, String> params = new HashMap<>();
@@ -157,8 +181,8 @@ public class URLStrDecoder {
         return params;
     }
 
-    private static boolean addParam(String str, int nameStart, int valueStart, int valueEnd,
-                                    Map<String, String> params, TempBuf tempBuf) {
+    private static boolean addParam(String str, int nameStart, int valueStart, int valueEnd, Map<String, String> params,
+                                    TempBuf tempBuf) {
         if (nameStart >= valueEnd) {
             return false;
         }
@@ -201,8 +225,8 @@ public class URLStrDecoder {
         return decodeUtf8Component(s, firstEscaped, toExcluded, isPath, buf, charBuf, charBufIdx);
     }
 
-    private static String decodeUtf8Component(String str, int firstEscaped, int toExcluded, boolean isPath,
-                                              byte[] buf, char[] charBuf, int charBufIdx) {
+    private static String decodeUtf8Component(String str, int firstEscaped, int toExcluded, boolean isPath, byte[] buf,
+                                              char[] charBuf, int charBufIdx) {
         int bufIdx;
         for (int i = firstEscaped; i < toExcluded; i++) {
             char c = str.charAt(i);

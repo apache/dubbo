@@ -19,7 +19,6 @@ package org.apache.dubbo.common;
 import org.junit.jupiter.api.Test;
 
 import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -32,12 +31,10 @@ public class URLStrDecoderTest {
     @Test
     public void test() throws UnsupportedEncodingException {
         String str = "dubbo%3A%2F%2Fadmin%3Aadmin123%40192.168.1.41%3A28113%2Forg.test.api.DemoService%24Iface%3Fanyhost%3Dtrue%26application%3Ddemo-service%26dubbo%3D2.6.1%26generic%3Dfalse%26interface%3Dorg.test.api.DemoService%24Iface%26methods%3DorbCompare%2CcheckText%2CcheckPicture%26pid%3D65557%26revision%3D1.4.17%26service.filter%3DbootMetrics%26side%3Dprovider%26status%3Dserver%26threads%3D200%26timestamp%3D1583136298859%26version%3D1.0.0";
-        URLStrDecoder decoder = new URLStrDecoder(str);
-        System.out.println(decoder.decode());
+        System.out.println(URLStrDecoder.decode(str));
 
-        URL url = URL.valueOf(URLDecoder.decode(str, "UTF-8"));
-        assertThat(decoder.decode(), equalTo(url));
+        URL url = URL.valueOf(URL.decode(str));
+        assertThat(URLStrDecoder.decode(str), equalTo(url));
     }
-
 
 }

@@ -67,9 +67,9 @@ public class URLTest {
     }
 
     private void assertURLStrDecoder(URL url) {
-        String encodedURLStr = URL.encode(url.toFullString());
-        URL newUrl = new URLStrDecoder(encodedURLStr).decode();
-        assertEquals(url, newUrl);
+        String fullURLStr = url.toFullString();
+        URL newUrl =  URLStrDecoder.decode(URL.encode(fullURLStr));
+        assertEquals(URL.valueOf(fullURLStr), newUrl);
     }
 
     @Test
@@ -317,7 +317,7 @@ public class URLTest {
 
         try {
             String encodedURLStr = URL.encode("://1.2.3.4:8080/path");
-            new URLStrDecoder(encodedURLStr).decode();
+            URLStrDecoder.decode(encodedURLStr);
             fail();
         } catch (IllegalStateException expected) {
             assertEquals("url missing protocol: \"://1.2.3.4:8080/path\"", URL.decode(expected.getMessage()));
