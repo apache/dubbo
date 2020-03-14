@@ -89,24 +89,24 @@ public class FastJsonObjectInput implements ObjectInput {
     }
 
     @Override
-    public Object readObject() throws IOException, ClassNotFoundException {
+    public Object readObject() throws IOException {
         String json = readLine();
         return JSON.parse(json);
     }
 
     @Override
-    public <T> T readObject(Class<T> cls) throws IOException, ClassNotFoundException {
+    public <T> T readObject(Class<T> cls) throws IOException {
         return read(cls);
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T> T readObject(Class<T> cls, Type type) throws IOException, ClassNotFoundException {
+    public <T> T readObject(Class<T> cls, Type type) throws IOException {
         String json = readLine();
         return (T) JSON.parseObject(json, type);
     }
 
-    private String readLine() throws IOException, EOFException {
+    private String readLine() throws IOException {
         String line = reader.readLine();
         if (line == null || line.trim().length() == 0) {
             throw new EOFException();
