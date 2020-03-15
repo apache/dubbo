@@ -191,6 +191,26 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
         clearAppExternalConfigs();
     }
 
+    public PropertiesConfiguration getPropertiesConfiguration() {
+        return propertiesConfiguration;
+    }
+
+    public SystemConfiguration getSystemConfiguration() {
+        return systemConfiguration;
+    }
+
+    public EnvironmentConfiguration getEnvironmentConfiguration() {
+        return environmentConfiguration;
+    }
+
+    public InmemoryConfiguration getExternalConfiguration() {
+        return externalConfiguration;
+    }
+
+    public InmemoryConfiguration getAppExternalConfiguration() {
+        return appExternalConfiguration;
+    }
+
     // For test
     public void clearExternalConfigs() {
         this.externalConfiguration.clear();

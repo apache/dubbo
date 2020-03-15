@@ -1,5 +1,38 @@
 # Release Notes
 
+## 2.7.5
+
+### Features
+* Support HTTP/2 through gRPC, offers all features supported by HTTP/2 and gRPC
+    * Stream communication: client stream, server stream and bi-stream.
+    * Reactive stream style RPC call.
+    * Back pressure based on HTTP/2 flow-control mechanism.
+    * TLS secure transport layer.
+    * Define service using IDL
+* Protobuf support for native Dubbo
+    * Define service using IDL
+    * Protobuf serialization
+* TLS for netty4 server
+* New SPI for dynamically adding extra parameters into provider URL, especially env parameters.
+* **[BETA]** Brand new Service Discovery mechanism: Service Reflection - instance (application) level service discovery.
+* **[BETA]** Brand new API for bootstraping Dubbo projects
+
+### Performance Tuning
+* Overall performance improved by nearly 30% compared to v2.7.3 (by QPS in certain circumstances)
+* Improved consumer side thread model to avoid thread allocation and context switch, especially useful for services serving big traffic.
+
+### Enhancement
+* Load balance strategy among multiple registries:
+    * Preferred
+    * Same zone first
+    * Weighted LB
+    * The first one available
+* New callback SPI for receiving address change notifications
+* Refactoring of config module
+
+### Bugfixes
+check 2.7.5 milestone for details.
+
 ## 2.7.4.1
 
 ### Enhancement

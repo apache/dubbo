@@ -104,7 +104,13 @@ class CallbackServiceCodec {
         // add method, for verifying against method, automatic fallback (see dubbo protocol)
         params.put(METHODS_KEY, StringUtils.join(Wrapper.getWrapper(clazz).getDeclaredMethodNames(), ","));
 
-        Map<String, String> tmpMap = new HashMap<>(url.getParameters());
+        Map<String, String> tmpMap = new HashMap<>();
+        if (url != null) {
+            Map<String, String> parameters = url.getParameters();
+            if (parameters != null && !parameters.isEmpty()) {
+                tmpMap.putAll(parameters);
+            }
+        }
         tmpMap.putAll(params);
         tmpMap.remove(VERSION_KEY);// doesn't need to distinguish version for callback
         tmpMap.put(INTERFACE_KEY, clazz.getName());
@@ -288,14 +294,14 @@ class CallbackServiceCodec {
         switch (callbackstatus) {
             case CallbackServiceCodec.CALLBACK_CREATE:
                 try {
-                    return referOrDestroyCallbackService(channel, url, pts[paraIndex], inv, Integer.parseInt((String) inv.getAttachment(INV_ATT_CALLBACK_KEY + paraIndex)), true);
+                    return referOrDestroyCallbackService(channel, url, pts[paraIndex], inv, Integer.parseInt(inv.getAttachment(INV_ATT_CALLBACK_KEY + paraIndex)), true);
                 } catch (Exception e) {
                     logger.error(e.getMessage(), e);
                     throw new IOException(StringUtils.toString(e));
                 }
             case CallbackServiceCodec.CALLBACK_DESTROY:
                 try {
-                    return referOrDestroyCallbackService(channel, url, pts[paraIndex], inv, Integer.parseInt((String) inv.getAttachment(INV_ATT_CALLBACK_KEY + paraIndex)), false);
+                    return referOrDestroyCallbackService(channel, url, pts[paraIndex], inv, Integer.parseInt(inv.getAttachment(INV_ATT_CALLBACK_KEY + paraIndex)), false);
                 } catch (Exception e) {
                     throw new IOException(StringUtils.toString(e));
                 }
