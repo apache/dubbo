@@ -17,10 +17,10 @@
 package org.apache.dubbo.metadata.annotation.processing;
 
 import org.apache.dubbo.metadata.annotation.processing.util.TypeUtils;
-import org.apache.dubbo.metadata.tools.Compiler;
-import org.apache.dubbo.metadata.tools.TestProcessor;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
@@ -28,7 +28,6 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
-import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -36,7 +35,10 @@ import java.util.Set;
  *
  * @since 2.7.6
  */
+@ExtendWith(CompilerInvocationInterceptor.class)
 public abstract class AbstractAnnotationProcessingTest {
+
+    static ThreadLocal<AbstractAnnotationProcessingTest> testInstanceHolder = new ThreadLocal<>();
 
     protected ProcessingEnvironment processingEnv;
 
@@ -46,17 +48,12 @@ public abstract class AbstractAnnotationProcessingTest {
 
     @BeforeEach
     public final void init() throws IOException {
-        Set<Class<?>> classesToBeCompiled = new LinkedHashSet<>();
-        classesToBeCompiled.add(getClass());
-        addCompiledClasses(classesToBeCompiled);
-        TestProcessor testProcessor = new TestProcessor();
-        Compiler compiler = new Compiler();
-        compiler.processors(testProcessor);
-        compiler.compile(classesToBeCompiled.toArray(new Class[0]));
-        processingEnv = testProcessor.getProcessingEnvironment();
-        elements = processingEnv.getElementUtils();
-        types = processingEnv.getTypeUtils();
-        beforeEach();
+        testInstanceHolder.set(this);
+    }
+
+    @AfterEach
+    public final void destroy() {
+        testInstanceHolder.remove();
     }
 
     protected abstract void addCompiledClasses(Set<Class<?>> classesToBeCompiled);

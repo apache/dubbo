@@ -85,11 +85,11 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
 
     @Override
     public URL getUrl() {
-        return directory.getUrl();
+        return directory.getConsumerUrl();
     }
 
-    protected URL getConsumerUrl() {
-        return directory.getConsumerUrl();
+    public URL getRegistryUrl() {
+        return directory.getUrl();
     }
 
     @Override
@@ -248,14 +248,14 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
         checkWhetherDestroyed();
 
         // binding attachments into invocation.
-        Map<String, Object> contextAttachments = RpcContext.getContext().getAttachments();
+        Map<String, Object> contextAttachments = RpcContext.getContext().getObjectAttachments();
         if (contextAttachments != null && contextAttachments.size() != 0) {
-            ((RpcInvocation) invocation).addAttachments(contextAttachments);
+            ((RpcInvocation) invocation).addObjectAttachments(contextAttachments);
         }
 
         List<Invoker<T>> invokers = list(invocation);
         LoadBalance loadbalance = initLoadBalance(invokers, invocation);
-        RpcUtils.attachInvocationIdIfAsync(getConsumerUrl(), invocation);
+        RpcUtils.attachInvocationIdIfAsync(getUrl(), invocation);
         return doInvoke(invocation, invokers, loadbalance);
     }
 

@@ -53,7 +53,7 @@ public class AppResponse implements Result {
 
     private Throwable exception;
 
-    private Map<String, Object> attachments = new HashMap<String, Object>();
+    private Map<String, Object> attachments = new HashMap<>();
 
     public AppResponse() {
     }
@@ -117,7 +117,13 @@ public class AppResponse implements Result {
     }
 
     @Override
-    public Map<String, Object> getAttachments() {
+    @Deprecated
+    public Map<String, String> getAttachments() {
+        return new AttachmentsAdapter.ObjectToStringMap(attachments);
+    }
+
+    @Override
+    public Map<String, Object> getObjectAttachments() {
         return attachments;
     }
 
@@ -126,27 +132,64 @@ public class AppResponse implements Result {
      *
      * @param map contains all key-value pairs to append
      */
-    public void setAttachments(Map<String, Object> map) {
-        this.attachments = map == null ? new HashMap<String, Object>() : map;
+    public void setAttachments(Map<String, String> map) {
+        this.attachments = map == null ? new HashMap<>() : new HashMap<>(map);
     }
 
-    public void addAttachments(Map<String, Object> map) {
+    @Override
+    public void setObjectAttachments(Map<String, Object> map) {
+        this.attachments = map == null ? new HashMap<>() : map;
+    }
+
+    public void addAttachments(Map<String, String> map) {
         if (map == null) {
             return;
         }
         if (this.attachments == null) {
-            this.attachments = new HashMap<String, Object>();
+            this.attachments = new HashMap<>();
         }
         this.attachments.putAll(map);
     }
 
     @Override
-    public Object getAttachment(String key) {
+    public void addObjectAttachments(Map<String, Object> map) {
+        if (map == null) {
+            return;
+        }
+        if (this.attachments == null) {
+            this.attachments = new HashMap<>();
+        }
+        this.attachments.putAll(map);
+    }
+
+    @Override
+    public String getAttachment(String key) {
+        Object value = attachments.get(key);
+        if (value instanceof String) {
+            return (String) value;
+        }
+        return null;
+    }
+
+    @Override
+    public Object getObjectAttachment(String key) {
         return attachments.get(key);
     }
 
     @Override
-    public Object getAttachment(String key, Object defaultValue) {
+    public String getAttachment(String key, String defaultValue) {
+        Object result = attachments.get(key);
+        if (result == null) {
+            return defaultValue;
+        }
+        if (result instanceof String) {
+            return (String) result;
+        }
+        return defaultValue;
+    }
+
+    @Override
+    public Object getObjectAttachment(String key, Object defaultValue) {
         Object result = attachments.get(key);
         if (result == null) {
             result = defaultValue;
@@ -154,6 +197,7 @@ public class AppResponse implements Result {
         return result;
     }
 
+    @Override
     public void setAttachment(String key, Object value) {
         attachments.put(key, value);
     }

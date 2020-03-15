@@ -105,12 +105,16 @@ public class Compiler {
 
     public boolean compile(Class<?>... sourceClasses) {
         JavaCompiler.CompilationTask task = javaCompiler.getTask(null, this.javaFileManager, null,
-                asList("-parameters"),
+                asList("-parameters", "-Xlint:unchecked", "-nowarn", "-Xlint:deprecation"),
 //                null,
                 null, getJavaFileObjects(sourceClasses));
         if (!processors.isEmpty()) {
             task.setProcessors(processors);
         }
         return task.call();
+    }
+
+    public JavaCompiler getJavaCompiler() {
+        return javaCompiler;
     }
 }

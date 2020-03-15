@@ -97,4 +97,7 @@ public class Hessian2ObjectInput implements ObjectInput {
         return readObject(cls);
     }
 
+    public InputStream readInputStream() throws IOException {
+        return mH2i.readInputStream();
+    }
 }
