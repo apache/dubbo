@@ -224,6 +224,8 @@ class URL implements Serializable {
     }
 
     /**
+     * NOTICE: This method allocate too much objects, we can use {@link URLStrParser#parseDecodedStr(String)} instead.
+     * <p>
      * Parse url string
      *
      * @param url URL string
