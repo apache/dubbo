@@ -101,13 +101,17 @@ public class RpcStatus {
         if (methodStatus.active.get() == Integer.MAX_VALUE) {
             return false;
         }
-        if (methodStatus.active.incrementAndGet() > max) {
-            methodStatus.active.decrementAndGet();
-            return false;
-        } else {
-            appStatus.active.incrementAndGet();
-            return true;
+        for (int i; ; ) {
+            i = methodStatus.active.get();
+            if (i + 1 > max) {
+                return false;
+            }
+            if (methodStatus.active.compareAndSet(i, i + 1)) {
+                break;
+            }
         }
+        appStatus.active.incrementAndGet();
+        return true;
     }
 
     /**
