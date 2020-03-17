@@ -52,7 +52,7 @@ public class ServiceRestMetadataStorage {
         });
         // Add all new ServiceRestMetadata
         allServiceRestMetadata.addAll(serviceRestMetadata);
-        write(serviceRestMetadata);
+        write(allServiceRestMetadata);
     }
 
     public void write(Set<ServiceRestMetadata> serviceRestMetadata) throws IOException {
