@@ -223,10 +223,15 @@ public final class URLStrParser {
             valueStart = valueEnd + 1;
         }
 
-        int nameEnd = isEncoded ? valueStart - 3 : valueStart - 1;
-        String name = decodeComponent(str, nameStart, nameEnd, false, tempBuf);
-        String value = decodeComponent(str, valueStart, valueEnd, false, tempBuf);
-        params.put(name, value);
+        if (isEncoded) {
+            String name = decodeComponent(str, nameStart, valueStart - 3, false, tempBuf);
+            String value = decodeComponent(str, valueStart, valueEnd, false, tempBuf);
+            params.put(name, value);
+        } else {
+            String name = str.substring(nameStart, valueStart -1);
+            String value = str.substring(valueStart, valueEnd);
+            params.put(name, value);
+        }
         return true;
     }
 
