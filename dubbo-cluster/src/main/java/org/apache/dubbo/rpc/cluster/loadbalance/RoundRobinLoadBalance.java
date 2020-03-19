@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -33,29 +32,35 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class RoundRobinLoadBalance extends AbstractLoadBalance {
     public static final String NAME = "roundrobin";
-    
+
     private static final int RECYCLE_PERIOD = 60000;
-    
+
     protected static class WeightedRoundRobin {
         private int weight;
         private AtomicLong current = new AtomicLong(0);
         private long lastUpdate;
+
         public int getWeight() {
             return weight;
         }
+
         public void setWeight(int weight) {
             this.weight = weight;
             current.set(0);
         }
+
         public long increaseCurrent() {
             return current.addAndGet(weight);
         }
+
         public void sel(int total) {
             current.addAndGet(-1 * total);
         }
+
         public long getLastUpdate() {
             return lastUpdate;
         }
+
         public void setLastUpdate(long lastUpdate) {
             this.lastUpdate = lastUpdate;
         }
@@ -67,7 +72,7 @@ public class RoundRobinLoadBalance extends AbstractLoadBalance {
      * get invoker addr list cached for specified invocation
      * <p>
      * <b>for unit test only</b>
-     * 
+     *
      * @param invokers
      * @param invocation
      * @return
@@ -80,7 +85,7 @@ public class RoundRobinLoadBalance extends AbstractLoadBalance {
         }
         return null;
     }
-    
+
     @Override
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
         String key = invokers.get(0).getUrl().getServiceKey() + "." + invocation.getMethodName();
