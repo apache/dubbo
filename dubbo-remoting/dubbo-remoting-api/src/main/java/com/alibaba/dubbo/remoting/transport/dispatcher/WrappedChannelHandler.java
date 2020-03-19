@@ -32,6 +32,9 @@ import com.alibaba.dubbo.remoting.transport.ChannelHandlerDelegate;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import static com.alibaba.dubbo.common.Constants.SHARED_CONSUMER_EXECUTOR_PORT;
+import static com.alibaba.dubbo.common.Constants.SHARE_EXECUTOR_KEY;
+
 public class WrappedChannelHandler implements ChannelHandlerDelegate {
 
     protected static final Logger logger = LoggerFactory.getLogger(WrappedChannelHandler.class);
@@ -44,17 +47,32 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
 
     protected final URL url;
 
+    protected DataStore dataStore = ExtensionLoader.getExtensionLoader(DataStore.class).getDefaultExtension();
+
     public WrappedChannelHandler(ChannelHandler handler, URL url) {
         this.handler = handler;
         this.url = url;
-        executor = (ExecutorService) ExtensionLoader.getExtensionLoader(ThreadPool.class).getAdaptiveExtension().getExecutor(url);
 
-        String componentKey = Constants.EXECUTOR_SERVICE_COMPONENT_KEY;
+        String componentKey;
         if (Constants.CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(Constants.SIDE_KEY))) {
             componentKey = Constants.CONSUMER_SIDE;
+            if (url.getParameter(SHARE_EXECUTOR_KEY, false)) {
+                ExecutorService cExecutor = (ExecutorService) dataStore.get(componentKey, SHARED_CONSUMER_EXECUTOR_PORT);
+                if (cExecutor == null) {
+                    cExecutor = (ExecutorService) ExtensionLoader.getExtensionLoader(ThreadPool.class).getAdaptiveExtension().getExecutor(url);
+                    dataStore.put(componentKey, SHARED_CONSUMER_EXECUTOR_PORT, cExecutor);
+                    cExecutor = (ExecutorService) dataStore.get(componentKey, SHARED_CONSUMER_EXECUTOR_PORT);
+                }
+                executor = cExecutor;
+            } else {
+                executor = (ExecutorService) ExtensionLoader.getExtensionLoader(ThreadPool.class).getAdaptiveExtension().getExecutor(url);
+                dataStore.put(componentKey, Integer.toString(url.getPort()), executor);
+            }
+        } else {
+            componentKey = Constants.EXECUTOR_SERVICE_COMPONENT_KEY;
+            executor = (ExecutorService) ExtensionLoader.getExtensionLoader(ThreadPool.class).getAdaptiveExtension().getExecutor(url);
+            dataStore.put(componentKey, Integer.toString(url.getPort()), executor);
         }
-        DataStore dataStore = ExtensionLoader.getExtensionLoader(DataStore.class).getDefaultExtension();
-        dataStore.put(componentKey, Integer.toString(url.getPort()), executor);
     }
 
     public void close() {
