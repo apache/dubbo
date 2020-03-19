@@ -107,13 +107,13 @@ public class WrappedChannelHandlerTest {
 
     @Test
     public void testShareConsumerExecutor() {
-        URL url1 = URL.valueOf("dubbo://10.20.30.40:1234/DemoService?side=consumer&share-executor=true&threadpool=fixed");
+        URL url1 = URL.valueOf("dubbo://10.20.30.40:1234/DemoService?side=consumer&share.threadpool=true&threadpool=fixed");
         WrappedChannelHandler handler1 = new WrappedChannelHandler(new BizChannelHander(true), url1);
         WrappedChannelHandler handler2 = new WrappedChannelHandler(new BizChannelHander(true), url1);
         Assert.assertEquals(200, ((ThreadPoolExecutor) (handler1.getExecutor())).getMaximumPoolSize());
         Assert.assertSame(handler1.getExecutor(), handler2.getExecutor());
 
-        URL url2 = URL.valueOf("dubbo://10.20.30.40:1234/DemoService?side=consumer&share-executor=false");
+        URL url2 = URL.valueOf("dubbo://10.20.30.40:1234/DemoService?side=consumer&share.threadpool=false");
         WrappedChannelHandler handler3 = new WrappedChannelHandler(new BizChannelHander(true), url2);
         WrappedChannelHandler handler4 = new WrappedChannelHandler(new BizChannelHander(true), url2);
         Assert.assertNotSame(handler3.getExecutor(), handler4.getExecutor());
