@@ -62,8 +62,7 @@ public class RoundRobinLoadBalance extends AbstractLoadBalance {
     }
 
     private ConcurrentMap<String, ConcurrentMap<String, WeightedRoundRobin>> methodWeightMap = new ConcurrentHashMap<String, ConcurrentMap<String, WeightedRoundRobin>>();
-    private AtomicBoolean updateLock = new AtomicBoolean();
-    
+
     /**
      * get invoker addr list cached for specified invocation
      * <p>
@@ -94,14 +93,12 @@ public class RoundRobinLoadBalance extends AbstractLoadBalance {
         for (Invoker<T> invoker : invokers) {
             String identifyString = invoker.getUrl().toIdentityString();
             int weight = getWeight(invoker, invocation);
-            WeightedRoundRobin weightedRoundRobin = map.get(identifyString);
+            WeightedRoundRobin weightedRoundRobin = map.computeIfAbsent(identifyString, k -> {
+                WeightedRoundRobin wrr = new WeightedRoundRobin();
+                wrr.setWeight(weight);
+                return wrr;
+            });
 
-            if (weightedRoundRobin == null) {
-                weightedRoundRobin = new WeightedRoundRobin();
-                weightedRoundRobin.setWeight(weight);
-                map.putIfAbsent(identifyString, weightedRoundRobin);
-                weightedRoundRobin = map.get(identifyString);
-            }
             if (weight != weightedRoundRobin.getWeight()) {
                 //weight changed
                 weightedRoundRobin.setWeight(weight);
@@ -115,17 +112,8 @@ public class RoundRobinLoadBalance extends AbstractLoadBalance {
             }
             totalWeight += weight;
         }
-        if (!updateLock.get() && invokers.size() != map.size()) {
-            if (updateLock.compareAndSet(false, true)) {
-                try {
-                    // copy -> modify -> update reference
-                    ConcurrentMap<String, WeightedRoundRobin> newMap = new ConcurrentHashMap<>(map);
-                    newMap.entrySet().removeIf(item -> now - item.getValue().getLastUpdate() > RECYCLE_PERIOD);
-                    methodWeightMap.put(key, newMap);
-                } finally {
-                    updateLock.set(false);
-                }
-            }
+        if (invokers.size() != map.size()) {
+            map.entrySet().removeIf(item -> now - item.getValue().getLastUpdate() > RECYCLE_PERIOD);
         }
         if (selectedInvoker != null) {
             selectedWRR.sel(totalWeight);
