@@ -37,7 +37,7 @@ public class DemoServiceImpl implements DemoService {
 
     @Override
     public Integer hello(Integer a, Integer b) {
-        context = RpcContext.getContext().getAttachments();
+        context = RpcContext.getContext().getObjectAttachments();
         return a + b;
     }
 

@@ -81,15 +81,15 @@ public class AccessKeyAuthenticator implements Authenticator {
         return accessKeyPair;
     }
 
-    String getSignature(URL url, Invocation invocation, String secrectKey, String time) {
-        boolean parameterEncrypt = url.getParameter(Constants.PARAMTER_SIGNATURE_ENABLE_KEY, false);
+    String getSignature(URL url, Invocation invocation, String secretKey, String time) {
+        boolean parameterEncrypt = url.getParameter(Constants.PARAMETER_SIGNATURE_ENABLE_KEY, false);
         String signature;
         String requestString = String.format(Constants.SIGNATURE_STRING_FORMAT,
-                url.getColonSeparatedKey(), invocation.getMethodName(), secrectKey, time);
+                url.getColonSeparatedKey(), invocation.getMethodName(), secretKey, time);
         if (parameterEncrypt) {
-            signature = SignatureUtils.sign(invocation.getArguments(), requestString, secrectKey);
+            signature = SignatureUtils.sign(invocation.getArguments(), requestString, secretKey);
         } else {
-            signature = SignatureUtils.sign(requestString, secrectKey);
+            signature = SignatureUtils.sign(requestString, secretKey);
         }
         return signature;
     }

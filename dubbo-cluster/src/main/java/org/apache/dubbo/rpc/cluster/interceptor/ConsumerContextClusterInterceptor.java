@@ -45,7 +45,7 @@ public class ConsumerContextClusterInterceptor implements ClusterInterceptor, Cl
 
     @Override
     public void onMessage(Result appResponse, AbstractClusterInvoker<?> invoker, Invocation invocation) {
-        RpcContext.getServerContext().setAttachments(appResponse.getAttachments());
+        RpcContext.getServerContext().setObjectAttachments(appResponse.getObjectAttachments());
     }
 
     @Override
