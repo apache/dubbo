@@ -321,13 +321,16 @@ class URL implements Serializable {
 
         String methodsString = parameters.get(METHODS_KEY);
         if (StringUtils.isNotEmpty(methodsString)) {
-            String[] methods = methodsString.split(",");
+            List<String> methods = StringUtils.splitToList(methodsString, ',');
             for (Map.Entry<String, String> entry : parameters.entrySet()) {
                 String key = entry.getKey();
-                for (String method : methods) {
-                    String methodPrefix = method + '.';
-                    if (key.startsWith(methodPrefix)) {
-                        String realKey = key.substring(methodPrefix.length());
+                for (int i = 0; i < methods.size(); i++) {
+                    String method = methods.get(i);
+                    int methodLen = method.length();
+                    if (key.length() > methodLen
+                            && key.startsWith(method)
+                            && key.charAt(methodLen) == '.') {//equals to: key.startsWith(method + '.')
+                        String realKey = key.substring(methodLen + 1);
                         URL.putMethodParameter(method, realKey, entry.getValue(), methodParameters);
                     }
                 }
