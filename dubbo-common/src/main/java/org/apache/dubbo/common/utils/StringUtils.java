@@ -92,7 +92,7 @@ public final class StringUtils {
     public static final String HYPHEN = valueOf(HYPHEN_CHAR);
 
     static {
-        HEX2B = new byte[Character.MAX_VALUE + 1];
+        HEX2B = new byte[128];
         Arrays.fill(HEX2B, (byte) -1);
         HEX2B['0'] = (byte) 0;
         HEX2B['1'] = (byte) 1;
@@ -1032,10 +1032,10 @@ public final class StringUtils {
     }
 
     public static int decodeHexNibble(final char c) {
-        assert HEX2B.length == (Character.MAX_VALUE + 1);
         // Character.digit() is not used here, as it addresses a larger
         // set of characters (both ASCII and full-width latin letters).
-        return HEX2B[c];
+        byte[] hex2b = HEX2B;
+        return c < hex2b.length ? hex2b[c] : -1;
     }
 
     /**
