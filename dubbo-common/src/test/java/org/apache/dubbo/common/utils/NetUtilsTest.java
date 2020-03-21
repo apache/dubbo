@@ -311,4 +311,10 @@ public class NetUtilsTest {
         assertTrue(NetUtils.isValidLocalHost(NetUtils.getLocalHost()));
         assertFalse(NetUtils.isInvalidLocalHost(NetUtils.getLocalHost()));
     }
+
+    @Test
+    public void testIsMulticastAddress() {
+        assertTrue(NetUtils.isMulticastAddress("224.0.0.1"));
+        assertFalse(NetUtils.isMulticastAddress("127.0.0.1"));
+    }
 }
