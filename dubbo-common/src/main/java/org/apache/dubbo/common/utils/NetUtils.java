@@ -351,7 +351,7 @@ public class NetUtils {
     /**
      * Get the suitable {@link NetworkInterface}
      *
-     * @return If no {@ink NetworkInterface} is available , return <code>null</code>
+     * @return If no {@link NetworkInterface} is available , return <code>null</code>
      * @since 2.7.6
      */
     public static NetworkInterface findNetworkInterface() {
@@ -566,6 +566,24 @@ public class NetUtils {
             }
         }
         return true;
+    }
+
+    /**
+     * is multicast address or not
+     *
+     * @param host ipv4 address
+     * @return {@code true} if is multicast address
+     */
+    public static boolean isMulticastAddress(String host) {
+        int i = host.indexOf('.');
+        if (i > 0) {
+            String prefix = host.substring(0, i);
+            if (StringUtils.isInteger(prefix)) {
+                int p = Integer.parseInt(prefix);
+                return p >= 224 && p <= 239;
+            }
+        }
+        return false;
     }
 
     private static boolean ipPatternContainExpression(String pattern) {
