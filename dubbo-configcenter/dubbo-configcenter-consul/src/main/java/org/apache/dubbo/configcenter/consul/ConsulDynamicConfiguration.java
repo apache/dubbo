@@ -151,7 +151,7 @@ public class ConsulDynamicConfiguration implements DynamicConfiguration {
     @Override
     public Object getInternalProperty(String key) {
         logger.info("getting config from: " + key);
-        return kvClient.getValueAsString(key, Charsets.UTF_8).orElseThrow(() -> new IllegalArgumentException(key + " does not exit."));
+        return kvClient.getValueAsString(key, Charsets.UTF_8).orElse(null);
     }
 
     @Override
