@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import redis.embedded.RedisServer;
+import redis.embedded.RedisServerBuilder;
 
 import java.util.List;
 import java.util.Map;
@@ -46,16 +47,24 @@ public class RedisRegistryTest {
     @BeforeEach
     public void setUp() throws Exception {
         int redisPort = NetUtils.getAvailablePort();
-        this.redisServer = new RedisServer(redisPort);
+        RedisServerBuilder builder = RedisServer.builder().port(redisPort);
+        if (isWindowsPlatform()) {
+            // set maxheap to fix Windows error 0x70 while starting redis
+            builder.setting("maxheap 128mb");
+        }
+        this.redisServer = builder.build();
         this.redisServer.start();
         this.registryUrl = URL.valueOf("redis://localhost:" + redisPort);
-
         redisRegistry = (RedisRegistry) new RedisRegistryFactory().createRegistry(registryUrl);
     }
 
     @AfterEach
     public void tearDown() throws Exception {
         this.redisServer.stop();
+    }
+
+    private boolean isWindowsPlatform() {
+        return System.getProperty("os.name").toLowerCase().contains("windows");
     }
 
     @Test

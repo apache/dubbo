@@ -38,6 +38,7 @@ import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.embedded.RedisServer;
+import redis.embedded.RedisServerBuilder;
 
 import java.io.ByteArrayInputStream;
 
@@ -57,10 +58,20 @@ public class RedisProtocolTest {
         String methodName = testInfo.getTestMethod().get().getName();
         if ("testAuthRedis".equals(methodName) || ("testWrongAuthRedis".equals(methodName))) {
             String password = "123456";
-            this.redisServer = RedisServer.builder().port(redisPort).setting("requirepass " + password).build();
+            RedisServerBuilder builder = RedisServer.builder().port(redisPort).setting("requirepass " + password);
+            if (isWindowsPlatform()) {
+                // set maxheap to fix Windows error 0x70 while starting redis
+                builder.setting("maxheap 128mb");
+            }
+            redisServer = builder.build();
             this.registryUrl = URL.valueOf("redis://username:" + password + "@localhost:" + redisPort + "?db.index=0");
         } else {
-            this.redisServer = RedisServer.builder().port(redisPort).build();
+            RedisServerBuilder builder = RedisServer.builder().port(redisPort);
+            if (isWindowsPlatform()) {
+                // set maxheap to fix Windows error 0x70 while starting redis
+                builder.setting("maxheap 128mb");
+            }
+            redisServer = builder.build();
             this.registryUrl = URL.valueOf("redis://localhost:" + redisPort);
         }
         this.redisServer.start();
@@ -69,6 +80,10 @@ public class RedisProtocolTest {
     @AfterEach
     public void tearDown() {
         this.redisServer.stop();
+    }
+
+    private boolean isWindowsPlatform() {
+        return System.getProperty("os.name").toLowerCase().contains("windows");
     }
 
     @Test

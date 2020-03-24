@@ -67,7 +67,6 @@ public class RedisMetadataReportTest {
             redisServer = builder.build();
             registryUrl = URL.valueOf("redis://username:" + password + "@localhost:" + redisPort);
         } else {
-            // set maxheap to fix Windows error 0x70 while starting redis
             RedisServerBuilder builder = RedisServer.builder().port(redisPort);
             if (isWindowsPlatform()) {
                 // set maxheap to fix Windows error 0x70 while starting redis
