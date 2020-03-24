@@ -36,12 +36,12 @@ public class NacosInstanceManageUtil {
     /**
      * serviceName -> refreshed instance list
      */
-    private static final Map<String, List<Instance>> serviceInstanceListMap = Maps.newHashMap();
+    private static final Map<String, List<Instance>> serviceInstanceListMap = Maps.newConcurrentMap();
 
     /**
      * serviceName -> corresponding serviceName list
      */
-    private static final Map<String, Set<String>> correspondingServiceNamesMap = Maps.newHashMap();
+    private static final Map<String, Set<String>> correspondingServiceNamesMap = Maps.newConcurrentMap();
 
     public static void setCorrespondingServiceNames(String serviceName, Set<String> serviceNames) {
         correspondingServiceNamesMap.put(serviceName, serviceNames);
