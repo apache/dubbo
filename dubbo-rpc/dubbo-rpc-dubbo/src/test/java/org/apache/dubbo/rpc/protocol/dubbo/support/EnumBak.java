@@ -52,8 +52,8 @@ public class EnumBak {
         Invoker<DemoService> reference = protocol.refer(DemoService.class, consumerurl);
         DemoService demoProxy = (DemoService) proxy.getProxy(reference);
 //        System.out.println(demoProxy.getThreadName());
-        System.out.println(demoProxy.getbyte((byte) -128));
-        Assertions.assertEquals((byte) -128, demoProxy.getbyte((byte) -128));
+        System.out.println(demoProxy.getInt(Integer.MIN_VALUE));
+        Assertions.assertEquals(Integer.MIN_VALUE, demoProxy.getInt(Integer.MIN_VALUE));
 
 //        invoker.destroy();
         reference.destroy();
