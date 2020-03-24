@@ -74,7 +74,7 @@ public class NettyClientTest {
     @Test
     public void testServerClose() throws Exception {
         for (int i = 0; i < 100; i++) {
-            RemotingServer aServer = Exchangers.bind(URL.valueOf("exchange://localhost:" + NetUtils.getAvailablePort() + "?server=netty3"), new TelnetServerHandler());
+            RemotingServer aServer = Exchangers.bind(URL.valueOf("exchange://localhost:" + NetUtils.getAvailablePort(6000) + "?server=netty3"), new TelnetServerHandler());
             aServer.close();
         }
     }
