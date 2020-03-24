@@ -106,7 +106,7 @@ public class EnumBak {
     @Disabled
     @Test
     public void testEnumCompat() {
-        int port = 20880;
+        int port = NetUtils.getAvailablePort();
         URL consumerurl = URL.valueOf("dubbo://127.0.0.1:" + port + "/test?timeout=" + Integer.MAX_VALUE
         );
         Invoker<DemoService> reference = protocol.refer(DemoService.class, consumerurl);
@@ -121,7 +121,7 @@ public class EnumBak {
     @Disabled
     @Test
     public void testGenricEnumCompat() {
-        int port = 20880;
+        int port = NetUtils.getAvailablePort();
         URL consumerurl = URL.valueOf("dubbo://127.0.0.1:" + port + "/test?timeout=" + Integer.MAX_VALUE
         );
         Invoker<GenericService> reference = protocol.refer(GenericService.class, consumerurl);
@@ -137,7 +137,7 @@ public class EnumBak {
     @Test
     public void testGenricCustomArg() {
 
-        int port = 20880;
+        int port = NetUtils.getAvailablePort();
         URL consumerurl = URL.valueOf("dubbo://127.0.0.1:" + port + "/test?timeout=2000000"
         );
         Invoker<GenericService> reference = protocol.refer(GenericService.class, consumerurl);
@@ -156,7 +156,7 @@ public class EnumBak {
     @Test
     public void testGenericExport() throws InterruptedException {
         int port = NetUtils.getAvailablePort();
-        port = 20880;
+        //port = 20880;
         URL serviceurl = URL.valueOf("dubbo://127.0.0.1:" + port + "/test?timeout=" + Integer.MAX_VALUE
         );
         DemoService demo = new DemoServiceImpl();
