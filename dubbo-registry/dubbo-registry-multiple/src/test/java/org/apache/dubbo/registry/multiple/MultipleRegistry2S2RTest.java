@@ -67,13 +67,13 @@ public class MultipleRegistry2S2RTest {
         zookeeperRegistryURLStr = "zookeeper://127.0.0.1:" + zkServerPort;
 
         redisServerPort = NetUtils.getAvailablePort();
-        redisServer.start();
         RedisServerBuilder builder = RedisServer.builder().port(redisServerPort);
         if (isWindowsPlatform()) {
             // set maxheap to fix Windows error 0x70 while starting redis
             builder.setting("maxheap 128mb");
         }
         redisServer = builder.build();
+        redisServer.start();
         redisRegistryURLStr = "redis://127.0.0.1:" + redisServerPort;
 
 
