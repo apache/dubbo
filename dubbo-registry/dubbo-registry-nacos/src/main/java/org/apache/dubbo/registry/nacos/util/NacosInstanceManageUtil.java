@@ -36,29 +36,29 @@ public class NacosInstanceManageUtil {
     /**
      * serviceName -> refreshed instance list
      */
-    private static final Map<String, List<Instance>> serviceInstanceListMap = Maps.newConcurrentMap();
+    private static final Map<String, List<Instance>> SERVICE_INSTANCE_LIST_MAP = Maps.newConcurrentMap();
 
     /**
      * serviceName -> corresponding serviceName list
      */
-    private static final Map<String, Set<String>> correspondingServiceNamesMap = Maps.newConcurrentMap();
+    private static final Map<String, Set<String>> CORRESPONDING_SERVICE_NAMES_MAP = Maps.newConcurrentMap();
 
     public static void setCorrespondingServiceNames(String serviceName, Set<String> serviceNames) {
-        correspondingServiceNamesMap.put(serviceName, serviceNames);
+        CORRESPONDING_SERVICE_NAMES_MAP.put(serviceName, serviceNames);
     }
 
     public static void initOrRefreshServiceInstanceList(String serviceName, List<Instance> instanceList) {
-        serviceInstanceListMap.put(serviceName, instanceList);
+        SERVICE_INSTANCE_LIST_MAP.put(serviceName, instanceList);
     }
 
     public static List<Instance> getAllCorrespondingServiceInstanceList(String serviceName) {
-        if (!correspondingServiceNamesMap.containsKey(serviceName)) {
+        if (!CORRESPONDING_SERVICE_NAMES_MAP.containsKey(serviceName)) {
             return Lists.newArrayList();
         }
         List<Instance> allInstances = Lists.newArrayList();
-        for (String correspondingServiceName : correspondingServiceNamesMap.get(serviceName)) {
-            if (serviceInstanceListMap.containsKey(correspondingServiceName) && CollectionUtils.isNotEmpty(serviceInstanceListMap.get(correspondingServiceName))) {
-                allInstances.addAll(serviceInstanceListMap.get(correspondingServiceName));
+        for (String correspondingServiceName : CORRESPONDING_SERVICE_NAMES_MAP.get(serviceName)) {
+            if (SERVICE_INSTANCE_LIST_MAP.containsKey(correspondingServiceName) && CollectionUtils.isNotEmpty(SERVICE_INSTANCE_LIST_MAP.get(correspondingServiceName))) {
+                allInstances.addAll(SERVICE_INSTANCE_LIST_MAP.get(correspondingServiceName));
             }
         }
         return allInstances;
