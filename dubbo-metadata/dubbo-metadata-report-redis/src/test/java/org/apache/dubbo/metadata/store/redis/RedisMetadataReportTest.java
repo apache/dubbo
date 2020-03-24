@@ -34,6 +34,7 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.embedded.RedisServer;
+import redis.embedded.RedisServerBuilder;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -58,10 +59,21 @@ public class RedisMetadataReportTest {
         String methodName = testInfo.getTestMethod().get().getName();
         if ("testAuthRedisMetadata".equals(methodName) || ("testWrongAuthRedisMetadata".equals(methodName))) {
             String password = "チェリー";
-            redisServer = RedisServer.builder().port(redisPort).setting("requirepass " + password).build();
+            RedisServerBuilder builder = RedisServer.builder().port(redisPort).setting("requirepass " + password);
+            if (isWindowsPlatform()) {
+                // set maxheap to fix Windows error 0x70 while starting redis
+                builder.setting("maxheap 128mb");
+            }
+            redisServer = builder.build();
             registryUrl = URL.valueOf("redis://username:" + password + "@localhost:" + redisPort);
         } else {
-            redisServer = RedisServer.builder().port(redisPort).build();
+            // set maxheap to fix Windows error 0x70 while starting redis
+            RedisServerBuilder builder = RedisServer.builder().port(redisPort);
+            if (isWindowsPlatform()) {
+                // set maxheap to fix Windows error 0x70 while starting redis
+                builder.setting("maxheap 128mb");
+            }
+            redisServer = builder.build();
             registryUrl = URL.valueOf("redis://localhost:" + redisPort);
         }
 
@@ -74,6 +86,10 @@ public class RedisMetadataReportTest {
     @AfterEach
     public void tearDown() throws Exception {
         this.redisServer.stop();
+    }
+
+    private boolean isWindowsPlatform() {
+        return System.getProperty("os.name").toLowerCase().contains("windows");
     }
 
 
