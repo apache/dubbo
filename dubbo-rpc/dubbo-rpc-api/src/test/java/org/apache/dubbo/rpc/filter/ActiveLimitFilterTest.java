@@ -123,10 +123,9 @@ public class ActiveLimitFilterTest {
                         try {
                             Result asyncResult = activeLimitFilter.invoke(invoker, invocation);
                             Result result = asyncResult.get();
-                            activeLimitFilter.onMessage(result, invoker, invocation);
+                            activeLimitFilter.onResponse(result, invoker, invocation);
                         } catch (RpcException expected) {
                             count.incrementAndGet();
-//                            activeLimitFilter.Listener2().onError(expected, invoker, invocation);
                         } catch (Exception e) {
                             fail();
                         }
@@ -171,7 +170,7 @@ public class ActiveLimitFilterTest {
                         try {
                             Result asyncResult = activeLimitFilter.invoke(invoker, invocation);
                             Result result = asyncResult.get();
-                            activeLimitFilter.onMessage(result, invoker, invocation);
+                            activeLimitFilter.onResponse(result, invoker, invocation);
                         } catch (RpcException expected) {
                             count.incrementAndGet();
                             activeLimitFilter.onError(expected, invoker, invocation);

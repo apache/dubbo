@@ -124,7 +124,7 @@ public class MonitorFilterTest {
         Result result = monitorFilter.invoke(serviceInvoker, invocation);
         result.whenCompleteWithContext((r, t) -> {
             if (t == null) {
-                monitorFilter.onMessage(r, serviceInvoker, invocation);
+                monitorFilter.onResponse(r, serviceInvoker, invocation);
             } else {
                 monitorFilter.onError(t, serviceInvoker, invocation);
             }
@@ -167,7 +167,7 @@ public class MonitorFilterTest {
         Result result = monitorFilter.invoke(serviceInvoker, invocation);
         result.whenCompleteWithContext((r, t) -> {
             if (t == null) {
-                monitorFilter.onMessage(r, serviceInvoker, invocation);
+                monitorFilter.onResponse(r, serviceInvoker, invocation);
             } else {
                 monitorFilter.onError(t, serviceInvoker, invocation);
             }

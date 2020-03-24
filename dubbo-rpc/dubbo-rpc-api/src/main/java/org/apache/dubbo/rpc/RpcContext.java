@@ -70,7 +70,7 @@ public class RpcContext {
         }
     };
 
-    private final Map<String, Object> attachments = new HashMap<String, Object>();
+    protected final Map<String, Object> attachments = new HashMap<>();
     private final Map<String, Object> values = new HashMap<String, Object>();
 
     private List<URL> urls;
@@ -471,12 +471,26 @@ public class RpcContext {
     }
 
     /**
+     * use {@link #getObjectAttachment(String)} instead.
+     *
+     * @param key
+     * @return attachment
+     */
+    public String getAttachment(String key) {
+        Object value = attachments.get(key);
+        if (value instanceof String) {
+            return (String) value;
+        }
+        return null; // or JSON.toString(value);
+    }
+
+    /**
      * get attachment.
      *
      * @param key
      * @return attachment
      */
-    public Object getAttachment(String key) {
+    public Object getObjectAttachment(String key) {
         return attachments.get(key);
     }
 
@@ -512,7 +526,17 @@ public class RpcContext {
      *
      * @return attachments
      */
-    public Map<String, Object> getAttachments() {
+    @Deprecated
+    public Map<String, String> getAttachments() {
+        return new AttachmentsAdapter.ObjectToStringMap(this.getObjectAttachments());
+    }
+
+    /**
+     * get attachments.
+     *
+     * @return attachments
+     */
+    public Map<String, Object> getObjectAttachments() {
         return attachments;
     }
 
@@ -522,7 +546,22 @@ public class RpcContext {
      * @param attachment
      * @return context
      */
-    public RpcContext setAttachments(Map<String, Object> attachment) {
+    @Deprecated
+    public RpcContext setAttachments(Map<String, String> attachment) {
+        this.attachments.clear();
+        if (attachment != null && attachment.size() > 0) {
+            this.attachments.putAll(attachment);
+        }
+        return this;
+    }
+
+    /**
+     * set attachments
+     *
+     * @param attachment
+     * @return context
+     */
+    public RpcContext setObjectAttachments(Map<String, Object> attachment) {
         this.attachments.clear();
         if (attachment != null && attachment.size() > 0) {
             this.attachments.putAll(attachment);
