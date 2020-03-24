@@ -31,6 +31,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import redis.embedded.RedisServer;
+import redis.embedded.RedisServerBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,8 +67,13 @@ public class MultipleRegistry2S2RTest {
         zookeeperRegistryURLStr = "zookeeper://127.0.0.1:" + zkServerPort;
 
         redisServerPort = NetUtils.getAvailablePort();
-        redisServer = new RedisServer(redisServerPort);
         redisServer.start();
+        RedisServerBuilder builder = RedisServer.builder().port(redisServerPort);
+        if (isWindowsPlatform()) {
+            // set maxheap to fix Windows error 0x70 while starting redis
+            builder.setting("maxheap 128mb");
+        }
+        redisServer = builder.build();
         redisRegistryURLStr = "redis://127.0.0.1:" + redisServerPort;
 
 
@@ -80,6 +86,10 @@ public class MultipleRegistry2S2RTest {
         zookeeperClient = new CuratorZookeeperClient(URL.valueOf(zookeeperRegistryURLStr));
         zookeeperRegistry = MultipleRegistryTestUtil.getZookeeperRegistry(multipleRegistry.getServiceRegistries().values());
         redisRegistry = MultipleRegistryTestUtil.getRedisRegistry(multipleRegistry.getServiceRegistries().values());
+    }
+
+    private static boolean isWindowsPlatform() {
+        return System.getProperty("os.name").toLowerCase().contains("windows");
     }
 
     @AfterAll
