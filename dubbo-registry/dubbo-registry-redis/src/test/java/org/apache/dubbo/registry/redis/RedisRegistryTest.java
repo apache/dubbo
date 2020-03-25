@@ -28,7 +28,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import redis.embedded.RedisServer;
 import redis.embedded.RedisServerBuilder;
-import sun.plugin2.util.SystemUtil;
 
 import java.util.List;
 import java.util.Map;
