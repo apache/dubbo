@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.registry.multiple;
 
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.registry.NotifyListener;
@@ -68,7 +69,7 @@ public class MultipleRegistry2S2RTest {
 
         redisServerPort = NetUtils.getAvailablePort();
         RedisServerBuilder builder = RedisServer.builder().port(redisServerPort);
-        if (isWindowsPlatform()) {
+        if (SystemUtils.IS_OS_WINDOWS) {
             // set maxheap to fix Windows error 0x70 while starting redis
             builder.setting("maxheap 128mb");
         }
@@ -86,10 +87,6 @@ public class MultipleRegistry2S2RTest {
         zookeeperClient = new CuratorZookeeperClient(URL.valueOf(zookeeperRegistryURLStr));
         zookeeperRegistry = MultipleRegistryTestUtil.getZookeeperRegistry(multipleRegistry.getServiceRegistries().values());
         redisRegistry = MultipleRegistryTestUtil.getRedisRegistry(multipleRegistry.getServiceRegistries().values());
-    }
-
-    private static boolean isWindowsPlatform() {
-        return System.getProperty("os.name").toLowerCase().contains("windows");
     }
 
     @AfterAll

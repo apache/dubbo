@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.redis;
 
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.serialize.ObjectInput;
@@ -59,7 +60,7 @@ public class RedisProtocolTest {
         if ("testAuthRedis".equals(methodName) || ("testWrongAuthRedis".equals(methodName))) {
             String password = "123456";
             RedisServerBuilder builder = RedisServer.builder().port(redisPort).setting("requirepass " + password);
-            if (isWindowsPlatform()) {
+            if (SystemUtils.IS_OS_WINDOWS) {
                 // set maxheap to fix Windows error 0x70 while starting redis
                 builder.setting("maxheap 128mb");
             }
@@ -67,7 +68,7 @@ public class RedisProtocolTest {
             this.registryUrl = URL.valueOf("redis://username:" + password + "@localhost:" + redisPort + "?db.index=0");
         } else {
             RedisServerBuilder builder = RedisServer.builder().port(redisPort);
-            if (isWindowsPlatform()) {
+            if (SystemUtils.IS_OS_WINDOWS) {
                 // set maxheap to fix Windows error 0x70 while starting redis
                 builder.setting("maxheap 128mb");
             }
@@ -81,11 +82,6 @@ public class RedisProtocolTest {
     public void tearDown() {
         this.redisServer.stop();
     }
-
-    private boolean isWindowsPlatform() {
-        return System.getProperty("os.name").toLowerCase().contains("windows");
-    }
-
     @Test
     public void testReferClass() {
         Invoker<IDemoService> refer = protocol.refer(IDemoService.class, registryUrl);

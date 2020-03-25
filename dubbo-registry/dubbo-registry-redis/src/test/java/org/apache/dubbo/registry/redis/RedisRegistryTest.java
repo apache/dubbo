@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.registry.redis;
 
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.registry.NotifyListener;
@@ -27,6 +28,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import redis.embedded.RedisServer;
 import redis.embedded.RedisServerBuilder;
+import sun.plugin2.util.SystemUtil;
 
 import java.util.List;
 import java.util.Map;
@@ -48,7 +50,7 @@ public class RedisRegistryTest {
     public void setUp() throws Exception {
         int redisPort = NetUtils.getAvailablePort();
         RedisServerBuilder builder = RedisServer.builder().port(redisPort);
-        if (isWindowsPlatform()) {
+        if (SystemUtils.IS_OS_WINDOWS) {
             // set maxheap to fix Windows error 0x70 while starting redis
             builder.setting("maxheap 128mb");
         }
@@ -61,10 +63,6 @@ public class RedisRegistryTest {
     @AfterEach
     public void tearDown() throws Exception {
         this.redisServer.stop();
-    }
-
-    private boolean isWindowsPlatform() {
-        return System.getProperty("os.name").toLowerCase().contains("windows");
     }
 
     @Test

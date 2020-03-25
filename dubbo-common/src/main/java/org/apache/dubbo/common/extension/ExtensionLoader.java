@@ -115,6 +115,7 @@ public class ExtensionLoader<T> {
     private static LoadingStrategy SERVICES_STRATEGY = () -> SERVICES_DIRECTORY;
 
     private static LoadingStrategy[] strategies = new LoadingStrategy[] { DUBBO_INTERNAL_STRATEGY, DUBBO_STRATEGY, SERVICES_STRATEGY };
+    private Enumeration<java.net.URL> resources;
 
     public static void setLoadingStrategies(LoadingStrategy... strategies) {
         ExtensionLoader.strategies = strategies;
@@ -784,7 +785,8 @@ public class ExtensionLoader<T> {
             
             if(urls == null || !urls.hasMoreElements()) {
                 if (classLoader != null) {
-                    urls = classLoader.getResources(fileName);
+                    resources = classLoader.getResources(fileName);
+                    urls = resources;
                 } else {
                     urls = ClassLoader.getSystemResources(fileName);
                 }

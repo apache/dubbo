@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.metadata.store.redis;
 
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
@@ -60,7 +61,7 @@ public class RedisMetadataReportTest {
         if ("testAuthRedisMetadata".equals(methodName) || ("testWrongAuthRedisMetadata".equals(methodName))) {
             String password = "チェリー";
             RedisServerBuilder builder = RedisServer.builder().port(redisPort).setting("requirepass " + password);
-            if (isWindowsPlatform()) {
+            if (SystemUtils.IS_OS_WINDOWS) {
                 // set maxheap to fix Windows error 0x70 while starting redis
                 builder.setting("maxheap 128mb");
             }
@@ -68,7 +69,7 @@ public class RedisMetadataReportTest {
             registryUrl = URL.valueOf("redis://username:" + password + "@localhost:" + redisPort);
         } else {
             RedisServerBuilder builder = RedisServer.builder().port(redisPort);
-            if (isWindowsPlatform()) {
+            if (SystemUtils.IS_OS_WINDOWS) {
                 // set maxheap to fix Windows error 0x70 while starting redis
                 builder.setting("maxheap 128mb");
             }
@@ -86,11 +87,6 @@ public class RedisMetadataReportTest {
     public void tearDown() throws Exception {
         this.redisServer.stop();
     }
-
-    private boolean isWindowsPlatform() {
-        return System.getProperty("os.name").toLowerCase().contains("windows");
-    }
-
 
     @Test
     public void testAsyncStoreProvider() throws ClassNotFoundException {
