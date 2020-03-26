@@ -37,7 +37,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CALLBACK_INSTANCES_LIMIT_KEY;
 
-public class ExplicitCallbackTest {
+public class ArgumentCallbackTest {
 
     protected Exporter<IDemoService> exporter = null;
     protected Exporter<IHelloService> hello_exporter = null;
@@ -243,8 +243,8 @@ public class ExplicitCallbackTest {
     @Test
     public void startProvider() throws Exception {
         exportService();
-        synchronized (ExplicitCallbackTest.class) {
-            ExplicitCallbackTest.class.wait();
+        synchronized (ArgumentCallbackTest.class) {
+            ArgumentCallbackTest.class.wait();
         }
     }
 
