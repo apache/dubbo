@@ -232,12 +232,12 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             logger.info("URL " + url + " will not be registered to Registry. Registry " + url + " does not accept service of this protocol type.");
             return;
         }
-        super.register(url);
-        removeFailedRegistered(url);
-        removeFailedUnregistered(url);
         try {
             // Sending a registration request to the server side
             doRegister(url);
+            super.register(url);
+            removeFailedRegistered(url);
+            removeFailedUnregistered(url);
         } catch (Exception e) {
             Throwable t = e;
 
@@ -262,12 +262,12 @@ public abstract class FailbackRegistry extends AbstractRegistry {
 
     @Override
     public void unregister(URL url) {
-        super.unregister(url);
-        removeFailedRegistered(url);
-        removeFailedUnregistered(url);
         try {
             // Sending a cancellation request to the server side
             doUnregister(url);
+            super.unregister(url);
+            removeFailedRegistered(url);
+            removeFailedUnregistered(url);
         } catch (Exception e) {
             Throwable t = e;
 
