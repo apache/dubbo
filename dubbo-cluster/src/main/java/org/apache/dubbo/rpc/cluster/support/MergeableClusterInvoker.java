@@ -54,7 +54,6 @@ import static org.apache.dubbo.rpc.Constants.MERGER_KEY;
 public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
     private static final Logger log = LoggerFactory.getLogger(MergeableClusterInvoker.class);
-    private ExecutorService executor = Executors.newCachedThreadPool(new NamedThreadFactory("mergeable-cluster-executor", true));
 
     public MergeableClusterInvoker(Directory<T> directory) {
         super(directory);
