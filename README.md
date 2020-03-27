@@ -14,6 +14,8 @@ Apache Dubbo is a high-performance, Java based open source RPC framework. Please
 
 We are now collecting dubbo user info in order to help us to improve Dubbo better, pls. kindly help us by providing yours on [issue#1012: Wanted: who's using dubbo](https://github.com/apache/dubbo/issues/1012), thanks :)
 
+[使用文档](http://dubbo.apache.org/zh-cn/docs/user/new-features-in-a-glance.html)/[Documentation](http://dubbo.apache.org/en-us/docs/user/quick-start.html)
+
 ## Architecture
 
 ![Architecture](http://dubbo.apache.org/img/architecture.png)
