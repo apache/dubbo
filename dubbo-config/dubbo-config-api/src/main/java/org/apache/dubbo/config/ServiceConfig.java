@@ -76,6 +76,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTER_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
@@ -113,7 +114,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
      */
     private static final ScheduledExecutorService DELAY_EXPORT_EXECUTOR = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("DubboServiceDelayExporter", true));
 
-    private static final Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+    private static final Protocol PROTOCOL = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
 
     /**
      * A {@link ProxyFactory} implementation that will generate a exported service proxy,the JavassistProxyFactory is its
@@ -203,6 +204,13 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         } else {
             doExport();
         }
+
+        exported();
+    }
+
+    public void exported() {
+        // dispatch a ServiceConfigExportedEvent since 2.7.4
+        dispatch(new ServiceConfigExportedEvent(this));
     }
 
     private void checkAndUpdateSubConfigs() {
@@ -210,6 +218,11 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         completeCompoundConfigs();
         checkDefault();
         checkProtocol();
+        // init some null configuration.
+        List<ConfigInitializer> configInitializers = ExtensionLoader.getExtensionLoader(ConfigInitializer.class)
+                .getActivateExtension(URL.valueOf("configInitializer://"), (String[]) null);
+        configInitializers.forEach(e -> e.initServiceConfig(this));
+
         // if protocol is not injvm checkRegistry
         if (!isOnlyInJvm()) {
             checkRegistry();
@@ -267,7 +280,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         checkStubAndLocal(interfaceClass);
         ConfigValidationUtils.checkMock(interfaceClass, this);
         ConfigValidationUtils.validateServiceConfig(this);
-        appendParameters();
+        postProcessConfig();
     }
 
 
@@ -284,9 +297,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             path = interfaceName;
         }
         doExportUrls();
-
-        // dispatch a ServiceConfigExportedEvent since 2.7.4
-        dispatch(new ServiceConfigExportedEvent(this));
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -333,6 +343,10 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         AbstractConfig.appendParameters(map, provider);
         AbstractConfig.appendParameters(map, protocolConfig);
         AbstractConfig.appendParameters(map, this);
+        MetadataReportConfig metadataReportConfig = getMetadataReportConfig();
+        if (metadataReportConfig != null && metadataReportConfig.isValid()) {
+            map.putIfAbsent(METADATA_KEY, REMOTE_METADATA_STORAGE_TYPE);
+        }
         if (CollectionUtils.isNotEmpty(getMethods())) {
             for (MethodConfig method : getMethods()) {
                 AbstractConfig.appendParameters(map, method, method.getName());
@@ -350,7 +364,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                         if (argument.getType() != null && argument.getType().length() > 0) {
                             Method[] methods = interfaceClass.getMethods();
                             // visit all methods
-                            if (methods != null && methods.length > 0) {
+                            if (methods.length > 0) {
                                 for (int i = 0; i < methods.length; i++) {
                                     String methodName = methods[i].getName();
                                     // target the method, and get its signature
@@ -406,6 +420,14 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 map.put(METHODS_KEY, StringUtils.join(new HashSet<String>(Arrays.asList(methods)), ","));
             }
         }
+
+        /**
+         * Here the token value configured by the provider is used to assign the value to ServiceConfig#token
+         */
+        if(ConfigUtils.isEmpty(token) && provider != null) {
+            token = provider.getToken();
+        }
+
         if (!ConfigUtils.isEmpty(token)) {
             if (ConfigUtils.isDefault(token)) {
                 map.put(TOKEN_KEY, UUID.randomUUID().toString());
@@ -464,7 +486,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                         }
 
                         Invoker<?> invoker = PROXY_FACTORY.getInvoker(ref, (Class) interfaceClass, registryURL.addParameterAndEncoded(EXPORT_KEY, url.toFullString()));
-                        Exporter<?> exporter = protocol.export(invoker);
+                        Exporter<?> exporter = PROTOCOL.export(invoker);
                         exporters.add(exporter);
                     }
                 } else {
@@ -472,7 +494,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                         logger.info("Export dubbo service " + interfaceClass.getName() + " to url " + url);
                     }
                     Invoker<?> invoker = PROXY_FACTORY.getInvoker(ref, (Class) interfaceClass, url);
-                    Exporter<?> exporter = protocol.export(invoker);
+                    Exporter<?> exporter = PROTOCOL.export(invoker);
                     exporters.add(exporter);
                 }
                 /**
@@ -498,7 +520,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 .setHost(LOCALHOST_VALUE)
                 .setPort(0)
                 .build();
-        Exporter<?> exporter = protocol.export(
+        Exporter<?> exporter = PROTOCOL.export(
                 PROXY_FACTORY.getInvoker(ref, (Class) interfaceClass, local));
         exporters.add(exporter);
         logger.info("Export dubbo service " + interfaceClass.getName() + " to local registry url : " + local);
@@ -618,7 +640,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             if (portToBind == null || portToBind == 0) {
                 portToBind = defaultPort;
             }
-            if (portToBind == null || portToBind <= 0) {
+            if (portToBind <= 0) {
                 portToBind = getRandomPort(name);
                 if (portToBind == null || portToBind < 0) {
                     portToBind = getAvailablePort(defaultPort);
@@ -658,11 +680,11 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
     private String getValueFromConfig(ProtocolConfig protocolConfig, String key) {
         String protocolPrefix = protocolConfig.getName().toUpperCase() + "_";
-        String port = ConfigUtils.getSystemProperty(protocolPrefix + key);
-        if (StringUtils.isEmpty(port)) {
-            port = ConfigUtils.getSystemProperty(key);
+        String value = ConfigUtils.getSystemProperty(protocolPrefix + key);
+        if (StringUtils.isEmpty(value)) {
+            value = ConfigUtils.getSystemProperty(key);
         }
-        return port;
+        return value;
     }
 
     private Integer getRandomPort(String protocol) {
@@ -678,10 +700,10 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         }
     }
 
-    public void appendParameters() {
-        URL appendParametersUrl = URL.valueOf("appendParameters://");
-        List<AppendParametersComponent> appendParametersComponents = ExtensionLoader.getExtensionLoader(AppendParametersComponent.class).getActivateExtension(appendParametersUrl, (String[]) null);
-        appendParametersComponents.forEach(component -> component.appendExportParameters(this));
+    private void postProcessConfig() {
+        List<ConfigPostProcessor> configPostProcessors =ExtensionLoader.getExtensionLoader(ConfigPostProcessor.class)
+                .getActivateExtension(URL.valueOf("configPostProcessor://"), (String[]) null);
+        configPostProcessors.forEach(component -> component.postProcessServiceConfig(this));
     }
 
     /**

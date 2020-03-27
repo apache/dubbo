@@ -45,7 +45,7 @@ public class TimeoutFilter implements Filter, Filter.Listener {
     }
 
     @Override
-    public void onMessage(Result appResponse, Invoker<?> invoker, Invocation invocation) {
+    public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
         Object startTime = invocation.get(TIMEOUT_FILTER_START_TIME);
         if (startTime != null) {
             long elapsed = System.currentTimeMillis() - (Long) startTime;

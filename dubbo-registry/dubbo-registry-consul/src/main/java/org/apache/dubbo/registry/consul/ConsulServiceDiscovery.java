@@ -110,7 +110,9 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
 
     @Override
     public void destroy() {
-        notifier.stop();
+        if (notifier != null) {
+            notifier.stop();
+        }
         notifier = null;
         notifierExecutor.shutdownNow();
         ttlScheduler.stop();

@@ -150,6 +150,8 @@ public class InvokerTelnetHandlerTest {
         result = select.telnet(mockChannel, "1");
         //result dependent on method order.
         assertTrue(result.contains("result: 8") || result.contains("result: \"Dubbo\""));
+        result = select.telnet(mockChannel, "2");
+        assertTrue(result.contains("result: 8") || result.contains("result: \"Dubbo\""));
     }
 
     @Test

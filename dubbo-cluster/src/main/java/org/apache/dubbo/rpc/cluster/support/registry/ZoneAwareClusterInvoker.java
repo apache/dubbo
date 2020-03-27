@@ -26,6 +26,7 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
+import org.apache.dubbo.rpc.cluster.support.wrapper.MockClusterInvoker;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -58,24 +59,28 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
     public Result doInvoke(Invocation invocation, final List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
         // First, pick the invoker (XXXClusterInvoker) that comes from the local registry, distinguish by a 'preferred' key.
         for (Invoker<T> invoker : invokers) {
-            if (invoker.isAvailable() && invoker.getUrl().getParameter(REGISTRY_KEY + "." + PREFERRED_KEY, false)) {
-                return invoker.invoke(invocation);
+            // FIXME, the invoker is a cluster invoker representing one Registry, so it will automatically wrapped by MockClusterInvoker.
+            MockClusterInvoker<T> mockClusterInvoker = (MockClusterInvoker<T>) invoker;
+            if (mockClusterInvoker.isAvailable() && mockClusterInvoker.getRegistryUrl()
+                    .getParameter(REGISTRY_KEY + "." + PREFERRED_KEY, false)) {
+                return mockClusterInvoker.invoke(invocation);
             }
         }
 
-        // providers in the registry with the same
+        // providers in the registry with the same zone
         String zone = (String) invocation.getAttachment(REGISTRY_ZONE);
         if (StringUtils.isNotEmpty(zone)) {
             for (Invoker<T> invoker : invokers) {
-                if (invoker.isAvailable() && zone.equals(invoker.getUrl().getParameter(REGISTRY_KEY + "." + ZONE_KEY))) {
-                    return invoker.invoke(invocation);
+                MockClusterInvoker<T> mockClusterInvoker = (MockClusterInvoker<T>) invoker;
+                if (mockClusterInvoker.isAvailable() && zone.equals(mockClusterInvoker.getRegistryUrl().getParameter(REGISTRY_KEY + "." + ZONE_KEY))) {
+                    return mockClusterInvoker.invoke(invocation);
                 }
             }
             String force = (String) invocation.getAttachment(REGISTRY_ZONE_FORCE);
             if (StringUtils.isNotEmpty(force) && "true".equalsIgnoreCase(force)) {
                 throw new IllegalStateException("No registry instance in zone or no available providers in the registry, zone: "
                         + zone
-                        + ", registries: " + invokers.stream().map(i -> i.getUrl().toString()).collect(Collectors.joining(",")));
+                        + ", registries: " + invokers.stream().map(invoker -> ((MockClusterInvoker<T>) invoker).getRegistryUrl().toString()).collect(Collectors.joining(",")));
             }
         }
 
@@ -88,8 +93,9 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
         // If none of the invokers has a preferred signal or is picked by the loadbalancer, pick the first one available.
         for (Invoker<T> invoker : invokers) {
-            if (invoker.isAvailable()) {
-                return invoker.invoke(invocation);
+            MockClusterInvoker<T> mockClusterInvoker = (MockClusterInvoker<T>) invoker;
+            if (mockClusterInvoker.isAvailable()) {
+                return mockClusterInvoker.invoke(invocation);
             }
         }
         throw new RpcException("No provider available in " + invokers);

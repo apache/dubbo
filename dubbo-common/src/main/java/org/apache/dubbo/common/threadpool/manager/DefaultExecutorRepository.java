@@ -67,6 +67,12 @@ public class DefaultExecutorRepository implements ExecutorRepository {
         registryNotificationExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-registry-notification"));
     }
 
+    /**
+     * Get called when the server or client instance initiating.
+     *
+     * @param url
+     * @return
+     */
     public synchronized ExecutorService createExecutorIfAbsent(URL url) {
         String componentKey = EXECUTOR_SERVICE_COMPONENT_KEY;
         if (CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY))) {
@@ -90,7 +96,14 @@ public class DefaultExecutorRepository implements ExecutorRepository {
             componentKey = CONSUMER_SIDE;
         }
         Map<Integer, ExecutorService> executors = data.get(componentKey);
+
+        /**
+         * It's guaranteed that this method is called after {@link #createExecutorIfAbsent(URL)}, so data should already
+         * have Executor instances generated and stored.
+         */
         if (executors == null) {
+            logger.warn("No available executors, this is not expected, framework should call createExecutorIfAbsent first " +
+                    "before coming to here.");
             return null;
         }
 

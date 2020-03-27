@@ -129,7 +129,7 @@ public class ExceptionFilterTest {
         Result asyncResult = exceptionFilter.invoke(invoker, invocation);
 
         AppResponse appResponse = (AppResponse) asyncResult.get();
-        exceptionFilter.onMessage(appResponse, invoker, invocation);
+        exceptionFilter.onResponse(appResponse, invoker, invocation);
 
         Assertions.assertFalse(appResponse.getException() instanceof HessianException);
 
