@@ -31,9 +31,6 @@ target/
 Thumbs.db
 *.orig
 
-# flatten ignore
-.flattened-pom.xml
-
 # license check result
 license-list
 
