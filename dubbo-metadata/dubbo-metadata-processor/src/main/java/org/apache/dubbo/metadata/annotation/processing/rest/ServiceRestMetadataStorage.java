@@ -42,16 +42,13 @@ public class ServiceRestMetadataStorage {
     }
 
     public void append(Set<ServiceRestMetadata> serviceRestMetadata) throws IOException {
-        Set<ServiceRestMetadata> allServiceRestMetadata = new LinkedHashSet<>();
         storage.read(SERVICE_REST_METADATA_RESOURCE_PATH, reader -> {
             Gson gson = new Gson();
             return (List) gson.fromJson(reader, getParameterized(List.class, ServiceRestMetadata.class).getType());
         }).ifPresent(existedMetadata -> {
             // Add all existed ServiceRestMetadata
-            allServiceRestMetadata.addAll(existedMetadata);
+            serviceRestMetadata.addAll(existedMetadata);
         });
-        // Add all new ServiceRestMetadata
-        allServiceRestMetadata.addAll(serviceRestMetadata);
         write(serviceRestMetadata);
     }
 
