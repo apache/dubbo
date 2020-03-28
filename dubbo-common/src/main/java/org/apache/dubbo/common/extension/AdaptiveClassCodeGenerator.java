@@ -65,9 +65,9 @@ public class AdaptiveClassCodeGenerator {
     private static final String CODE_EXT_NAME_NULL_CHECK = "if(extName == null) "
             + "throw new IllegalStateException(\"Failed to get extension (%s) name from url (\" + url.toString() + \") use keys(%s)\");\n";
 
-    private static final String CODE_EXT_NAME_GET_BY_METHOD_PARAMETER = "url.getMethodParameter(methodName, \"%s\", (%s))";
+    private static final String CODE_EXT_NAME_GET_BY_METHOD_PARAMETER = "url.getMethodParameter(methodName, \"%s\", (String)(%s))";
 
-    private static final String CODE_EXT_NAME_GET_BY_PARAMETER = "url.getParameter(\"%s\", (%s))";
+    private static final String CODE_EXT_NAME_GET_BY_PARAMETER = "url.getParameter(\"%s\", (String)(%s))";
 
     private static final String CODE_EXT_NAME_GET_BY_PROTOCOL = "( url.getProtocol() == null ? (%s) : url.getProtocol() )";
 
