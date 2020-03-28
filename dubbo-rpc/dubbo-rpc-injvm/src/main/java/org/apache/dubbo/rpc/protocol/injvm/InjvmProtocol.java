@@ -17,7 +17,6 @@
 package org.apache.dubbo.rpc.protocol.injvm;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.rpc.Exporter;
@@ -29,11 +28,11 @@ import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import java.util.Map;
 
+import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
+import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 import static org.apache.dubbo.rpc.Constants.SCOPE_KEY;
 import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
 import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
-import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
-import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 
 /**
  * InjvmProtocol
@@ -51,7 +50,11 @@ public class InjvmProtocol extends AbstractProtocol implements Protocol {
 
     public static InjvmProtocol getInjvmProtocol() {
         if (INSTANCE == null) {
-            ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(InjvmProtocol.NAME); // load
+            synchronized (InjvmProtocol.class) {
+                if (INSTANCE == null) {
+                    INSTANCE = new InjvmProtocol();
+                }
+            }
         }
         return INSTANCE;
     }
