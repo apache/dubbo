@@ -14,13 +14,46 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.extension.adaptive.impl;
+
+package org.apache.dubbo.common.extension.adaptive;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.adaptive.HasAdaptiveExt;
+import org.apache.dubbo.common.extension.Adaptive;
+import org.apache.dubbo.common.extension.SPI;
 
-public class HasAdaptiveExtImpl1 implements HasAdaptiveExt {
-    public String echo(URL url, String s) {
-        return "Hello " + s;
+@SPI
+public interface AdaptiveExt_InnerUrl {
+    @Adaptive
+    String echo1(InnerUrl1 innerUrl, String s);
+
+    @Adaptive({"adaptive", "protocol"})
+    String echo2(String s, InnerUrl2 innerUrl);
+
+    class InnerUrl1 {
+        private URL url;
+
+        public URL getUrl() {
+            return url;
+        }
+
+        public void setUrl(URL url) {
+            this.url = url;
+        }
+    }
+
+    class InnerUrl2 {
+        private URL url;
+
+        private URL getUrl() {
+            return url;
+        }
+
+        public URL returnUrl() {
+            return url;
+        }
+
+        public void setUrl(URL url) {
+            this.url = url;
+        }
     }
 }

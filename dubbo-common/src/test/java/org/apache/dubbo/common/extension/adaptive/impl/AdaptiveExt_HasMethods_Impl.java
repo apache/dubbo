@@ -14,13 +14,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.dubbo.common.extension.adaptive.impl;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.adaptive.HasAdaptiveExt;
+import org.apache.dubbo.common.extension.adaptive.AdaptiveExt_HasMethods;
+import org.apache.dubbo.rpc.Invocation;
 
-public class HasAdaptiveExtImpl1 implements HasAdaptiveExt {
-    public String echo(URL url, String s) {
+import org.junit.jupiter.api.Assertions;
+
+public class AdaptiveExt_HasMethods_Impl implements AdaptiveExt_HasMethods {
+    @Override
+    public String echo1(URL url, String s) {
         return "Hello " + s;
+    }
+
+    @Override
+    public String echo2(URL url, String s) {
+        return "Hello " + s;
+    }
+
+    @Override
+    public String echo3(URL url, String s, Invocation invocation) {
+        return "Hello " + s;
+    }
+
+    @Override
+    public void echo4(URL url, String s) {
+        Assertions.assertNotNull(s);
+    }
+
+    @Override
+    public String getName() throws Exception {
+        throw new Exception("Test");
     }
 }

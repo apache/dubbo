@@ -14,13 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.extension.adaptive.impl;
+package org.apache.dubbo.rpc;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.adaptive.HasAdaptiveExt;
+/**
+ * Invocation. (API, Prototype, NonThreadSafe)
+ * A copy of org.apache.dubbo.rpc.Invocation from dubbo-rcp-api module
+ * Only used to test AdaptiveClassCodeGenerator
+ */
+public interface Invocation {
 
-public class HasAdaptiveExtImpl1 implements HasAdaptiveExt {
-    public String echo(URL url, String s) {
-        return "Hello " + s;
-    }
+    String getMethodName();
 }

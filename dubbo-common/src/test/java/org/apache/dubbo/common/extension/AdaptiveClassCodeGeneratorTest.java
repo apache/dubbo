@@ -16,18 +16,17 @@
  */
 package org.apache.dubbo.common.extension;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.adaptive.AdaptiveExt_HasMethods;
+import org.apache.dubbo.common.extension.adaptive.AdaptiveExt_InnerUrl;
+import org.apache.dubbo.common.extension.adaptive.AdaptiveExt_NoneUrl;
 import org.apache.dubbo.common.extension.adaptive.HasAdaptiveExt;
-import org.apache.dubbo.common.utils.IOUtils;
+import org.apache.dubbo.common.extension.adaptive.NoneAdaptiveExt;
+import org.apache.dubbo.common.utils.ClassUtils;
+import org.apache.dubbo.rpc.Invocation;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * {@link AdaptiveClassCodeGenerator} Test
@@ -37,15 +36,76 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class AdaptiveClassCodeGeneratorTest {
 
     @Test
-    public void testGenerate() throws IOException {
+    public void testFail() {
+        AdaptiveClassCodeGenerator generate = new AdaptiveClassCodeGenerator(NoneAdaptiveExt.class, "adaptive");
+        Assertions.assertThrows(IllegalStateException.class, generate::generate);
+
+        generate = new AdaptiveClassCodeGenerator(AdaptiveExt_NoneUrl.class, "adaptive");
+        Assertions.assertThrows(IllegalStateException.class, generate::generate);
+    }
+
+    @Test
+    public void testGenerate() throws Exception {
         AdaptiveClassCodeGenerator generator = new AdaptiveClassCodeGenerator(HasAdaptiveExt.class, "adaptive");
-        String value = generator.generate();
-        URL url = getClass().getResource("/org/apache/dubbo/common/extension/adaptive/HasAdaptiveExt$Adaptive");
-        try (InputStream inputStream = url.openStream()) {
-            String content = IOUtils.read(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
-            // in Windows platform content get from resource contains \r delimiter
-            content = content.replaceAll("\r","");
-            assertTrue(content.contains(value));
-        }
+        String code = generator.generate();
+        // compile and test
+        Object object = compileClass(code);
+        Assertions.assertEquals("Hello Echo1",
+                object.getClass().getDeclaredMethod("echo", URL.class, String.class)
+                        .invoke(object,
+                                URL.valueOf("dubbo://1.2.3.4:1234/HasAdaptiveExt?has.adaptive.ext=impl1"),
+                                "Echo1"));
+
+        generator = new AdaptiveClassCodeGenerator(AdaptiveExt_HasMethods.class, "impl");
+        code = generator.generate();
+        // compile and test
+        object = compileClass(code);
+        Assertions.assertEquals("Hello Echo2",
+                object.getClass().getDeclaredMethod("echo1", URL.class, String.class)
+                        .invoke(object,
+                                URL.valueOf("dubbo://1.2.3.4:1234/AdaptiveExt_HasMethods?adaptive.ext_.has.methods=impl"),
+                                "Echo2"));
+        Assertions.assertEquals("Hello Echo2",
+                object.getClass().getDeclaredMethod("echo2", URL.class, String.class)
+                        .invoke(object,
+                                URL.valueOf("dubbo://1.2.3.4:1234/AdaptiveExt_HasMethods?adaptive.ext_.has.methods=impl"),
+                                "Echo2"));
+        Assertions.assertEquals("Hello Echo3",
+                object.getClass().getDeclaredMethod("echo3", URL.class, String.class, Invocation.class)
+                        .invoke(object,
+                                URL.valueOf("dubbo://1.2.3.4:1234/AdaptiveExt_HasMethods?adaptive.ext_.has.methods=impl"),
+                                "Echo3",
+                                (Invocation) () -> "AdaptiveExt_HasMethods"));
+        // void return
+        object.getClass().getDeclaredMethod("echo4", URL.class, String.class)
+                .invoke(object,
+                        URL.valueOf("dubbo://1.2.3.4:1234/AdaptiveExt_HasMethods?adaptive.ext_.has.methods=impl"),
+                        "Echo4");
+
+        generator = new AdaptiveClassCodeGenerator(AdaptiveExt_InnerUrl.class, "impl");
+        code = generator.generate();
+        // compile and test
+        object = compileClass(code);
+        AdaptiveExt_InnerUrl.InnerUrl1 innerUrl1 = new AdaptiveExt_InnerUrl.InnerUrl1();
+        innerUrl1.setUrl(URL.valueOf("dubbo://1.2.3.4:1234/AdaptiveExt_InnerUrl?adaptive.ext_.inner_url=impl"));
+        Assertions.assertEquals("Hello Echo1",
+                object.getClass().getDeclaredMethod("echo1", AdaptiveExt_InnerUrl.InnerUrl1.class, String.class)
+                        .invoke(object,
+                                innerUrl1,
+                                "Echo1"));
+        AdaptiveExt_InnerUrl.InnerUrl2 innerUrl2 = new AdaptiveExt_InnerUrl.InnerUrl2();
+        innerUrl2.setUrl(URL.valueOf("dubbo://1.2.3.4:1234/AdaptiveExt_InnerUrl?adaptive=impl"));
+        Assertions.assertEquals("Hello Echo2",
+                object.getClass().getDeclaredMethod("echo2", String.class, AdaptiveExt_InnerUrl.InnerUrl2.class)
+                        .invoke(object,
+                                "Echo2",
+                                innerUrl2));
+    }
+
+    private Object compileClass(String code) throws InstantiationException, IllegalAccessException {
+        ClassLoader classLoader = ClassUtils.getClassLoader(AdaptiveClassCodeGeneratorTest.class);
+        org.apache.dubbo.common.compiler.Compiler compiler = ExtensionLoader.getExtensionLoader(org.apache.dubbo.common.compiler.Compiler.class).getAdaptiveExtension();
+        Class<?> aClass = compiler.compile(code, classLoader);
+        return aClass.newInstance();
     }
 }

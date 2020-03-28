@@ -14,13 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.extension.adaptive.impl;
+
+package org.apache.dubbo.common.extension.adaptive;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.adaptive.HasAdaptiveExt;
+import org.apache.dubbo.common.extension.Adaptive;
+import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.rpc.Invocation;
 
-public class HasAdaptiveExtImpl1 implements HasAdaptiveExt {
-    public String echo(URL url, String s) {
-        return "Hello " + s;
-    }
+@SPI
+public interface AdaptiveExt_HasMethods {
+    @Adaptive
+    String echo1(URL url, String s);
+
+    @Adaptive
+    String echo2(URL url, String s);
+
+    @Adaptive
+    String echo3(URL url, String s, Invocation invocation);
+
+    @Adaptive
+    void echo4(URL url, String s);
+
+    String getName() throws Exception;
 }

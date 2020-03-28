@@ -14,13 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.extension.adaptive.impl;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.adaptive.HasAdaptiveExt;
+package org.apache.dubbo.common.extension.adaptive;
 
-public class HasAdaptiveExtImpl1 implements HasAdaptiveExt {
-    public String echo(URL url, String s) {
-        return "Hello " + s;
-    }
+import org.apache.dubbo.common.extension.Adaptive;
+
+public interface AdaptiveExt_NoneUrl {
+    @Adaptive
+    String echo(String s);
 }

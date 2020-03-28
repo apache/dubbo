@@ -14,13 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.dubbo.common.extension.adaptive.impl;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.adaptive.HasAdaptiveExt;
+import org.apache.dubbo.common.extension.adaptive.AdaptiveExt_InnerUrl;
 
-public class HasAdaptiveExtImpl1 implements HasAdaptiveExt {
-    public String echo(URL url, String s) {
+public class AdaptiveExt_InnerUrl_Impl implements AdaptiveExt_InnerUrl {
+    @Override
+    public String echo1(InnerUrl1 innerUrl, String s) {
+        return "Hello " + s;
+    }
+
+    @Override
+    public String echo2(String s, InnerUrl2 innerUrl) {
         return "Hello " + s;
     }
 }
