@@ -1,5 +1,26 @@
 # Release Notes
 
+## 2.7.6 
+
+### Features
+* Support Service Authentication https://github.com/apache/dubbo/issues/5461
+
+### Enhancement
+* Removing the internal JDK API from FileSystemDynamicConfiguration
+* Refactor the APT test-cases implementation of dubbo-metadata-processor in Java 9+
+* Remove feature envy
+* JsonRpcProtocol support Generalization 
+* Reduce object allocation for ProtocolUtils.serviceKey
+* Reduce object allocation for ContextFilter.invoke
+
+### Bugfixes
+* Fixed bugs reported from 2.7.5 or lower versions, check [2.7.6 milestone](https://github.com/apache/dubbo/milestone/30) for details.
+
+### Compatibility
+1. Filter refactor, the callback method `onResponse` annotated as @Deprecated has been removed, users of lower versions that 
+have extended Filter implementations and enabled Filter callbacks should be careful of this change.
+2. RpcContext added some experimental APIs to support generic Object transmission.
+
 ## 2.7.5
 
 ### Features

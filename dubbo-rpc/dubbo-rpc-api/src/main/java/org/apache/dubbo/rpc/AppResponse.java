@@ -198,7 +198,17 @@ public class AppResponse implements Result {
     }
 
     @Override
+    public void setAttachment(String key, String value) {
+        setObjectAttachment(key, value);
+    }
+
+    @Override
     public void setAttachment(String key, Object value) {
+        setObjectAttachment(key, value);
+    }
+
+    @Override
+    public void setObjectAttachment(String key, Object value) {
         attachments.put(key, value);
     }
 
