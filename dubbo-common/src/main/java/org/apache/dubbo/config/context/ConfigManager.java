@@ -503,7 +503,8 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     }
 
     static <C extends AbstractConfig> boolean isDefaultConfig(C config) {
-        Boolean isDefault = getProperty(config, "default");
+        Boolean isDefault = getProperty(config, "isDefault");
+//        isDefault = isDefault == null ? getProperty(config, "isDefault") : isDefault;
         return isDefault == null || TRUE.equals(isDefault);
     }
 

@@ -23,7 +23,6 @@ import javassist.NotFoundException;
 
 import java.beans.BeanInfo;
 import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -1273,16 +1272,18 @@ public final class ReflectUtils {
         Class<?> beanClass = bean.getClass();
         BeanInfo beanInfo = null;
         T propertyValue = null;
+
+        beanClass.getDeclaredFields();
         try {
             beanInfo = Introspector.getBeanInfo(beanClass);
-            propertyValue = (T) Stream.of(beanInfo.getPropertyDescriptors())
-                    .filter(propertyDescriptor -> propertyName.equals(propertyDescriptor.getName()))
-                    .map(PropertyDescriptor::getReadMethod)
+            propertyValue = (T) Stream.of(beanInfo.getMethodDescriptors())
+                    .filter(methodDescriptor -> propertyName.equals(methodDescriptor.getName()))
                     .findFirst()
                     .map(method -> {
                         try {
-                            return method.invoke(bean);
+                            return method.getMethod().invoke(bean);
                         } catch (Exception e) {
+                            //ignore
                         }
                         return null;
                     }).get();
