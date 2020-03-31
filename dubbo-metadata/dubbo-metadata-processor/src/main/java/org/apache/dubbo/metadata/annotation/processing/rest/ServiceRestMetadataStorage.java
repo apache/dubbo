@@ -23,7 +23,6 @@ import com.google.gson.Gson;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import java.io.IOException;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
