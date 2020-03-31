@@ -82,7 +82,7 @@ public class EnableDubboConfigTest {
         Assertions.assertEquals("netty", consumerConfig.getClient());
 
         // asserts aliases
-        assertTrue(hasAlias(context, "org.apache.dubbo.config.RegistryConfig#0", "zookeeper"));
+        assertFalse(hasAlias(context, "org.apache.dubbo.config.RegistryConfig#0", "zookeeper"));
         assertFalse(hasAlias(context, "org.apache.dubbo.config.MonitorConfig#0", "zookeeper"));
     }
 

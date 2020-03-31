@@ -18,6 +18,7 @@ package org.apache.dubbo.common.utils;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.logger.support.FailsafeLogger;
@@ -30,25 +31,33 @@ import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
 import java.net.NetworkInterface;
 import java.net.ServerSocket;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Enumeration;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Pattern;
 
+import static java.util.Collections.emptyList;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_IP_TO_BIND;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PREFERRED_NETWORK_INTERFACE;
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
+import static org.apache.dubbo.common.utils.CollectionUtils.first;
 
 /**
  * IP and Port Helper for RPC
  */
 public class NetUtils {
+
     private static Logger logger;
 
-    {
+    static {
         logger = LoggerFactory.getLogger(NetUtils.class);
         if (logger instanceof FailsafeLogger) {
             logger = ((FailsafeLogger) logger).getLogger();
@@ -70,8 +79,8 @@ public class NetUtils {
     private static final Map<String, String> HOST_NAME_CACHE = new LRUCache<>(1000);
     private static volatile InetAddress LOCAL_ADDRESS = null;
 
-    private static final String SPLIT_IPV4_CHARECTER = "\\.";
-    private static final String SPLIT_IPV6_CHARECTER = ":";
+    private static final String SPLIT_IPV4_CHARACTER = "\\.";
+    private static final String SPLIT_IPV6_CHARACTER = ":";
 
     public static int getRandomPort() {
         return RND_PORT_START + ThreadLocalRandom.current().nextInt(RND_PORT_RANGE);
@@ -123,7 +132,7 @@ public class NetUtils {
                 || host.length() == 0
                 || host.equalsIgnoreCase(LOCALHOST_KEY)
                 || host.equals(ANYHOST_VALUE)
-                || (LOCAL_IP_PATTERN.matcher(host).matches());
+                || host.startsWith("127.");
     }
 
     public static boolean isValidLocalHost(String host) {
@@ -258,6 +267,27 @@ public class NetUtils {
 
     private static InetAddress getLocalAddress0() {
         InetAddress localAddress = null;
+
+        // @since 2.7.6, choose the {@link NetworkInterface} first
+        try {
+            NetworkInterface networkInterface = findNetworkInterface();
+            Enumeration<InetAddress> addresses = networkInterface.getInetAddresses();
+            while (addresses.hasMoreElements()) {
+                Optional<InetAddress> addressOp = toValidAddress(addresses.nextElement());
+                if (addressOp.isPresent()) {
+                    try {
+                        if (addressOp.get().isReachable(100)) {
+                            return addressOp.get();
+                        }
+                    } catch (IOException e) {
+                        // ignore
+                    }
+                }
+            }
+        } catch (Throwable e) {
+            logger.warn(e);
+        }
+
         try {
             localAddress = InetAddress.getLocalHost();
             Optional<InetAddress> addressOp = toValidAddress(localAddress);
@@ -268,42 +298,86 @@ public class NetUtils {
             logger.warn(e);
         }
 
+
+        return localAddress;
+    }
+
+    /**
+     * @param networkInterface {@link NetworkInterface}
+     * @return if the specified {@link NetworkInterface} should be ignored, return <code>true</code>
+     * @throws SocketException SocketException if an I/O error occurs.
+     * @since 2.7.6
+     */
+    private static boolean ignoreNetworkInterface(NetworkInterface networkInterface) throws SocketException {
+        return networkInterface == null
+                || networkInterface.isLoopback()
+                || networkInterface.isVirtual()
+                || !networkInterface.isUp();
+    }
+
+    /**
+     * Get the valid {@link NetworkInterface network interfaces}
+     *
+     * @return non-null
+     * @throws SocketException SocketException if an I/O error occurs.
+     * @since 2.7.6
+     */
+    private static List<NetworkInterface> getValidNetworkInterfaces() throws SocketException {
+        List<NetworkInterface> validNetworkInterfaces = new LinkedList<>();
+        Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+        while (interfaces.hasMoreElements()) {
+            NetworkInterface networkInterface = interfaces.nextElement();
+            if (ignoreNetworkInterface(networkInterface)) { // ignore
+                continue;
+            }
+            validNetworkInterfaces.add(networkInterface);
+        }
+        return validNetworkInterfaces;
+    }
+
+    /**
+     * Is preferred {@link NetworkInterface} or not
+     *
+     * @param networkInterface {@link NetworkInterface}
+     * @return if the name of the specified {@link NetworkInterface} matches
+     * the property value from {@link CommonConstants#DUBBO_PREFERRED_NETWORK_INTERFACE}, return <code>true</code>,
+     * or <code>false</code>
+     */
+    public static boolean isPreferredNetworkInterface(NetworkInterface networkInterface) {
+        String preferredNetworkInterface = System.getProperty(DUBBO_PREFERRED_NETWORK_INTERFACE);
+        return Objects.equals(networkInterface.getDisplayName(), preferredNetworkInterface);
+    }
+
+    /**
+     * Get the suitable {@link NetworkInterface}
+     *
+     * @return If no {@ink NetworkInterface} is available , return <code>null</code>
+     * @since 2.7.6
+     */
+    public static NetworkInterface findNetworkInterface() {
+
+        List<NetworkInterface> validNetworkInterfaces = emptyList();
         try {
-            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
-            if (null == interfaces) {
-                return localAddress;
-            }
-            while (interfaces.hasMoreElements()) {
-                try {
-                    NetworkInterface network = interfaces.nextElement();
-                    if (network.isLoopback() || network.isVirtual() || !network.isUp()) {
-                        continue;
-                    }
-                    Enumeration<InetAddress> addresses = network.getInetAddresses();
-                    while (addresses.hasMoreElements()) {
-                        try {
-                            Optional<InetAddress> addressOp = toValidAddress(addresses.nextElement());
-                            if (addressOp.isPresent()) {
-                                try {
-                                    if (addressOp.get().isReachable(100)) {
-                                        return addressOp.get();
-                                    }
-                                } catch (IOException e) {
-                                    // ignore
-                                }
-                            }
-                        } catch (Throwable e) {
-                            logger.warn(e);
-                        }
-                    }
-                } catch (Throwable e) {
-                    logger.warn(e);
-                }
-            }
+            validNetworkInterfaces = getValidNetworkInterfaces();
         } catch (Throwable e) {
             logger.warn(e);
         }
-        return localAddress;
+
+        NetworkInterface result = null;
+
+        // Try to find the preferred one
+        for (NetworkInterface networkInterface : validNetworkInterfaces) {
+            if (isPreferredNetworkInterface(networkInterface)) {
+                result = networkInterface;
+                break;
+            }
+        }
+
+        if (result == null) { // If not found, try to get the first one
+            result = first(validNetworkInterfaces);
+        }
+
+        return result;
     }
 
     public static String getHostName(String address) {
@@ -369,7 +443,8 @@ public class NetUtils {
         return sb.toString();
     }
 
-    public static void joinMulticastGroup(MulticastSocket multicastSocket, InetAddress multicastAddress) throws IOException {
+    public static void joinMulticastGroup(MulticastSocket multicastSocket, InetAddress multicastAddress) throws
+            IOException {
         setInterface(multicastSocket, multicastAddress instanceof Inet6Address);
         multicastSocket.setLoopbackMode(false);
         multicastSocket.joinGroup(multicastAddress);
@@ -447,9 +522,9 @@ public class NetUtils {
         }
         pattern = hostAndPort[0];
 
-        String splitCharacter = SPLIT_IPV4_CHARECTER;
+        String splitCharacter = SPLIT_IPV4_CHARACTER;
         if (!isIpv4) {
-            splitCharacter = SPLIT_IPV6_CHARECTER;
+            splitCharacter = SPLIT_IPV6_CHARACTER;
         }
         String[] mask = pattern.split(splitCharacter);
         //check format of pattern

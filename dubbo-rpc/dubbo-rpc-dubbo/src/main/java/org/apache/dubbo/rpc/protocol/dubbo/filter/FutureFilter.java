@@ -33,6 +33,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
+import static org.apache.dubbo.rpc.protocol.dubbo.Constants.ASYNC_METHOD_INFO;
 
 /**
  * EventFilter
@@ -51,7 +52,7 @@ public class FutureFilter implements Filter, Filter.Listener {
     }
 
     @Override
-    public void onMessage(Result result, Invoker<?> invoker, Invocation invocation) {
+    public void onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
         if (result.hasException()) {
             fireThrowCallback(invoker, invocation, result.getException());
         } else {
@@ -61,7 +62,7 @@ public class FutureFilter implements Filter, Filter.Listener {
 
     @Override
     public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
-
+        fireThrowCallback(invoker, invocation, t);
     }
 
     private void fireInvokeCallback(final Invoker<?> invoker, final Invocation invocation) {
@@ -186,7 +187,12 @@ public class FutureFilter implements Filter, Filter.Listener {
     }
 
     private AsyncMethodInfo getAsyncMethodInfo(Invoker<?> invoker, Invocation invocation) {
-        final ConsumerModel consumerModel = ApplicationModel.getConsumerModel(invoker.getUrl().getServiceKey());
+        AsyncMethodInfo asyncMethodInfo = (AsyncMethodInfo) invocation.get(ASYNC_METHOD_INFO);
+        if (asyncMethodInfo != null) {
+            return asyncMethodInfo;
+        }
+
+        ConsumerModel consumerModel = ApplicationModel.getConsumerModel(invoker.getUrl().getServiceKey());
         if (consumerModel == null) {
             return null;
         }

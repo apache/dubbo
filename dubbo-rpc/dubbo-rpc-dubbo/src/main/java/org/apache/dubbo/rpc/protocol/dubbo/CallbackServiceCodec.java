@@ -56,7 +56,7 @@ class CallbackServiceCodec {
     private static final Logger logger = LoggerFactory.getLogger(CallbackServiceCodec.class);
 
     private static final ProxyFactory PROXY_FACTORY = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
-    private static final DubboProtocol protocol = DubboProtocol.getDubboProtocol();
+    private static final DubboProtocol PROTOCOL = DubboProtocol.getDubboProtocol();
     private static final byte CALLBACK_NONE = 0x0;
     private static final byte CALLBACK_CREATE = 0x1;
     private static final byte CALLBACK_DESTROY = 0x2;
@@ -119,7 +119,7 @@ class CallbackServiceCodec {
                 if (!isInstancesOverLimit(channel, url, clazz.getName(), instid, false)) {
                     Invoker<?> invoker = PROXY_FACTORY.getInvoker(inst, clazz, exportUrl);
                     // should destroy resource?
-                    Exporter<?> exporter = protocol.export(invoker);
+                    Exporter<?> exporter = PROTOCOL.export(invoker);
                     // this is used for tracing if instid has published service or not.
                     channel.setAttribute(cacheKey, exporter);
                     logger.info("Export a callback service :" + exportUrl + ", on " + channel + ", url is: " + url);
@@ -288,14 +288,14 @@ class CallbackServiceCodec {
         switch (callbackstatus) {
             case CallbackServiceCodec.CALLBACK_CREATE:
                 try {
-                    return referOrDestroyCallbackService(channel, url, pts[paraIndex], inv, Integer.parseInt((String) inv.getAttachment(INV_ATT_CALLBACK_KEY + paraIndex)), true);
+                    return referOrDestroyCallbackService(channel, url, pts[paraIndex], inv, Integer.parseInt(inv.getAttachment(INV_ATT_CALLBACK_KEY + paraIndex)), true);
                 } catch (Exception e) {
                     logger.error(e.getMessage(), e);
                     throw new IOException(StringUtils.toString(e));
                 }
             case CallbackServiceCodec.CALLBACK_DESTROY:
                 try {
-                    return referOrDestroyCallbackService(channel, url, pts[paraIndex], inv, Integer.parseInt((String) inv.getAttachment(INV_ATT_CALLBACK_KEY + paraIndex)), false);
+                    return referOrDestroyCallbackService(channel, url, pts[paraIndex], inv, Integer.parseInt(inv.getAttachment(INV_ATT_CALLBACK_KEY + paraIndex)), false);
                 } catch (Exception e) {
                     throw new IOException(StringUtils.toString(e));
                 }

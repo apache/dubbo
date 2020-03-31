@@ -41,6 +41,13 @@ import static org.springframework.beans.factory.BeanFactoryUtils.beansOfTypeIncl
  */
 public class DubboLifecycleComponentApplicationListener extends OneTimeExecutionApplicationContextEventListener {
 
+    /**
+     * The bean name of {@link DubboLifecycleComponentApplicationListener}
+     *
+     * @since 2.7.6
+     */
+    public static final String BEAN_NAME = "dubboLifecycleComponentApplicationListener";
+
     private List<Lifecycle> lifecycleComponents = emptyList();
 
     @Override

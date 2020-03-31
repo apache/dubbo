@@ -35,6 +35,8 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPubSub;
+import redis.clients.jedis.JedisSentinelPool;
+import redis.clients.util.Pool;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,10 +65,10 @@ import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
-import static org.apache.dubbo.registry.Constants.DEFAULT_REGISTRY_RECONNECT_PERIOD;
-import static org.apache.dubbo.registry.Constants.DEFAULT_SESSION_TIMEOUT;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
+import static org.apache.dubbo.registry.Constants.DEFAULT_REGISTRY_RECONNECT_PERIOD;
+import static org.apache.dubbo.registry.Constants.DEFAULT_SESSION_TIMEOUT;
 import static org.apache.dubbo.registry.Constants.REGISTER;
 import static org.apache.dubbo.registry.Constants.REGISTRY_RECONNECT_PERIOD_KEY;
 import static org.apache.dubbo.registry.Constants.SESSION_TIMEOUT_KEY;
@@ -83,13 +85,15 @@ public class RedisRegistry extends FailbackRegistry {
 
     private final static String DEFAULT_ROOT = "dubbo";
 
+    private static final String REDIS_MASTER_NAME_KEY = "master-name";
+
     private final ScheduledExecutorService expireExecutor = Executors.newScheduledThreadPool(1, new NamedThreadFactory("DubboRegistryExpireTimer", true));
 
     private final ScheduledFuture<?> expireFuture;
 
     private final String root;
 
-    private final Map<String, JedisPool> jedisPools = new ConcurrentHashMap<>();
+    private final Map<String, Pool<Jedis>> jedisPools = new ConcurrentHashMap<>();
 
     private final ConcurrentMap<String, Notifier> notifiers = new ConcurrentHashMap<>();
 
@@ -147,21 +151,33 @@ public class RedisRegistry extends FailbackRegistry {
         if (ArrayUtils.isNotEmpty(backups)) {
             addresses.addAll(Arrays.asList(backups));
         }
-
-        for (String address : addresses) {
-            int i = address.indexOf(':');
-            String host;
-            int port;
-            if (i > 0) {
-                host = address.substring(0, i);
-                port = Integer.parseInt(address.substring(i + 1));
-            } else {
-                host = address;
-                port = DEFAULT_REDIS_PORT;
+        //获得Redis主节点名称
+        String masterName = url.getParameter(REDIS_MASTER_NAME_KEY);
+        if (StringUtils.isEmpty(masterName)) {
+            //单机版redis
+            for (String address : addresses) {
+                int i = address.indexOf(':');
+                String host;
+                int port;
+                if (i > 0) {
+                    host = address.substring(0, i);
+                    port = Integer.parseInt(address.substring(i + 1));
+                } else {
+                    host = address;
+                    port = DEFAULT_REDIS_PORT;
+                }
+                this.jedisPools.put(address, new JedisPool(config, host, port,
+                        url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT), StringUtils.isEmpty(url.getPassword()) ? null : url.getPassword(),
+                        url.getParameter("db.index", 0)));
             }
-            this.jedisPools.put(address, new JedisPool(config, host, port,
-                    url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT), StringUtils.isEmpty(url.getPassword()) ? null : url.getPassword(),
-                    url.getParameter("db.index", 0)));
+        } else {
+            //哨兵版redis
+            Set<String> sentinelSet = new HashSet<>(addresses);
+            int index = url.getParameter("db.index", 0);
+            int timeout = url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT);
+            String password = StringUtils.isEmpty(url.getPassword()) ? null : url.getPassword();
+            JedisSentinelPool pool = new JedisSentinelPool(masterName, sentinelSet, config, timeout, password, index);
+            this.jedisPools.put(masterName, pool);
         }
 
         this.reconnectPeriod = url.getParameter(REGISTRY_RECONNECT_PERIOD_KEY, DEFAULT_REGISTRY_RECONNECT_PERIOD);
@@ -185,8 +201,8 @@ public class RedisRegistry extends FailbackRegistry {
     }
 
     private void deferExpired() {
-        for (Map.Entry<String, JedisPool> entry : jedisPools.entrySet()) {
-            JedisPool jedisPool = entry.getValue();
+        for (Map.Entry<String, Pool<Jedis>> entry : jedisPools.entrySet()) {
+            Pool<Jedis> jedisPool = entry.getValue();
             try {
                 try (Jedis jedis = jedisPool.getResource()) {
                     for (URL url : new HashSet<>(getRegistered())) {
@@ -242,7 +258,7 @@ public class RedisRegistry extends FailbackRegistry {
 
     @Override
     public boolean isAvailable() {
-        for (JedisPool jedisPool : jedisPools.values()) {
+        for (Pool<Jedis> jedisPool : jedisPools.values()) {
             try (Jedis jedis = jedisPool.getResource()) {
                 if (jedis.isConnected()) {
                     return true; // At least one single machine is available.
@@ -268,8 +284,8 @@ public class RedisRegistry extends FailbackRegistry {
         } catch (Throwable t) {
             logger.warn(t.getMessage(), t);
         }
-        for (Map.Entry<String, JedisPool> entry : jedisPools.entrySet()) {
-            JedisPool jedisPool = entry.getValue();
+        for (Map.Entry<String, Pool<Jedis>> entry : jedisPools.entrySet()) {
+            Pool<Jedis> jedisPool = entry.getValue();
             try {
                 jedisPool.destroy();
             } catch (Throwable t) {
@@ -286,8 +302,8 @@ public class RedisRegistry extends FailbackRegistry {
         String expire = String.valueOf(System.currentTimeMillis() + expirePeriod);
         boolean success = false;
         RpcException exception = null;
-        for (Map.Entry<String, JedisPool> entry : jedisPools.entrySet()) {
-            JedisPool jedisPool = entry.getValue();
+        for (Map.Entry<String, Pool<Jedis>> entry : jedisPools.entrySet()) {
+            Pool<Jedis> jedisPool = entry.getValue();
             try {
                 try (Jedis jedis = jedisPool.getResource()) {
                     jedis.hset(key, value, expire);
@@ -316,8 +332,8 @@ public class RedisRegistry extends FailbackRegistry {
         String value = url.toFullString();
         RpcException exception = null;
         boolean success = false;
-        for (Map.Entry<String, JedisPool> entry : jedisPools.entrySet()) {
-            JedisPool jedisPool = entry.getValue();
+        for (Map.Entry<String, Pool<Jedis>> entry : jedisPools.entrySet()) {
+            Pool<Jedis> jedisPool = entry.getValue();
             try {
                 try (Jedis jedis = jedisPool.getResource()) {
                     jedis.hdel(key, value);
@@ -354,8 +370,8 @@ public class RedisRegistry extends FailbackRegistry {
         }
         boolean success = false;
         RpcException exception = null;
-        for (Map.Entry<String, JedisPool> entry : jedisPools.entrySet()) {
-            JedisPool jedisPool = entry.getValue();
+        for (Map.Entry<String, Pool<Jedis>> entry : jedisPools.entrySet()) {
+            Pool<Jedis> jedisPool = entry.getValue();
             try {
                 try (Jedis jedis = jedisPool.getResource()) {
                     if (service.endsWith(ANY_VALUE)) {
@@ -485,9 +501,9 @@ public class RedisRegistry extends FailbackRegistry {
 
     private class NotifySub extends JedisPubSub {
 
-        private final JedisPool jedisPool;
+        private final Pool<Jedis> jedisPool;
 
-        public NotifySub(JedisPool jedisPool) {
+        public NotifySub(Pool<Jedis> jedisPool) {
             this.jedisPool = jedisPool;
         }
 
@@ -579,10 +595,16 @@ public class RedisRegistry extends FailbackRegistry {
                 try {
                     if (!isSkip()) {
                         try {
-                            for (Map.Entry<String, JedisPool> entry : jedisPools.entrySet()) {
-                                JedisPool jedisPool = entry.getValue();
+                            for (Map.Entry<String, Pool<Jedis>> entry : jedisPools.entrySet()) {
+                                Pool<Jedis> jedisPool = entry.getValue();
                                 try {
+                                    if (jedisPool.isClosed()) {
+                                        continue;
+                                    }
                                     jedis = jedisPool.getResource();
+                                    if (!jedis.isConnected()) {
+                                        continue;
+                                    }
                                     try {
                                         if (service.endsWith(ANY_VALUE)) {
                                             if (first) {

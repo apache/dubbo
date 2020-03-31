@@ -60,7 +60,7 @@ public abstract class AbstractMonitorFactory implements MonitorFactory {
     /**
      * The monitor create executor
      */
-    private static final ExecutorService executor = new ThreadPoolExecutor(0, 10, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), new NamedThreadFactory("DubboMonitorCreator", true));
+    private static final ExecutorService EXECUTOR = new ThreadPoolExecutor(0, 10, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), new NamedThreadFactory("DubboMonitorCreator", true));
 
     public static Collection<Monitor> getMonitors() {
         return Collections.unmodifiableCollection(MONITORS.values());
@@ -87,7 +87,7 @@ public abstract class AbstractMonitorFactory implements MonitorFactory {
             final URL monitorUrl = url;
             final CompletableFuture<Monitor> completableFuture = CompletableFuture.supplyAsync(() -> AbstractMonitorFactory.this.createMonitor(monitorUrl));
             FUTURES.put(key, completableFuture);
-            completableFuture.thenRunAsync(new MonitorListener(key), executor);
+            completableFuture.thenRunAsync(new MonitorListener(key), EXECUTOR);
 
             return null;
         } finally {

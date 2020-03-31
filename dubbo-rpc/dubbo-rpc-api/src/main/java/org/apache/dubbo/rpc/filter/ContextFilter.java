@@ -27,7 +27,9 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
@@ -50,27 +52,42 @@ import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
  */
 @Activate(group = PROVIDER, order = -10000)
 public class ContextFilter implements Filter, Filter.Listener {
+
     private static final String TAG_KEY = "dubbo.tag";
+
+    private static final Set<String> UNLOADING_KEYS;
+
+    static {
+        UNLOADING_KEYS = new HashSet<>(128);
+        UNLOADING_KEYS.add(PATH_KEY);
+        UNLOADING_KEYS.add(INTERFACE_KEY);
+        UNLOADING_KEYS.add(GROUP_KEY);
+        UNLOADING_KEYS.add(VERSION_KEY);
+        UNLOADING_KEYS.add(DUBBO_VERSION_KEY);
+        UNLOADING_KEYS.add(TOKEN_KEY);
+        UNLOADING_KEYS.add(TIMEOUT_KEY);
+
+        // Remove async property to avoid being passed to the following invoke chain.
+        UNLOADING_KEYS.add(ASYNC_KEY);
+        UNLOADING_KEYS.add(TAG_KEY);
+        UNLOADING_KEYS.add(FORCE_USE_TAG);
+    }
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        Map<String, Object> attachments = invocation.getAttachments();
+        Map<String, Object> attachments = invocation.getObjectAttachments();
         if (attachments != null) {
-            attachments = new HashMap<>(attachments);
-            attachments.remove(PATH_KEY);
-            attachments.remove(INTERFACE_KEY);
-            attachments.remove(GROUP_KEY);
-            attachments.remove(VERSION_KEY);
-            attachments.remove(DUBBO_VERSION_KEY);
-            attachments.remove(TOKEN_KEY);
-            attachments.remove(TIMEOUT_KEY);
-            // Remove async property to avoid being passed to the following invoke chain.
-            attachments.remove(ASYNC_KEY);
-            attachments.remove(TAG_KEY);
-            attachments.remove(FORCE_USE_TAG);
+            Map<String, Object> newAttach = new HashMap<>(attachments.size());
+            for (Map.Entry<String, Object> entry : attachments.entrySet()) {
+                String key = entry.getKey();
+                if (!UNLOADING_KEYS.contains(key)) {
+                    newAttach.put(key, entry.getValue());
+                }
+            }
+            attachments = newAttach;
         }
-        RpcContext context = RpcContext.getContext();
 
+        RpcContext context = RpcContext.getContext();
         context.setInvoker(invoker)
                 .setInvocation(invocation)
 //                .setAttachments(attachments)  // merged from dubbox
@@ -79,29 +96,28 @@ public class ContextFilter implements Filter, Filter.Listener {
         if (StringUtils.isNotEmpty(remoteApplication)) {
             context.setRemoteApplicationName(remoteApplication);
         } else {
-            context.setRemoteApplicationName((String) RpcContext.getContext().getAttachment(REMOTE_APPLICATION_KEY));
-
+            context.setRemoteApplicationName((String) context.getAttachment(REMOTE_APPLICATION_KEY));
         }
-
 
         // merged from dubbox
         // we may already added some attachments into RpcContext before this filter (e.g. in rest protocol)
         if (attachments != null) {
-            if (RpcContext.getContext().getAttachments() != null) {
-                RpcContext.getContext().getAttachments().putAll(attachments);
+            if (context.getObjectAttachments() != null) {
+                context.getObjectAttachments().putAll(attachments);
             } else {
-                RpcContext.getContext().setAttachments(attachments);
+                context.setObjectAttachments(attachments);
             }
         }
 
         if (invocation instanceof RpcInvocation) {
             ((RpcInvocation) invocation).setInvoker(invoker);
         }
+
         try {
-            RpcContext.getContext().clearAfterEachInvoke(false);
+            context.clearAfterEachInvoke(false);
             return invoker.invoke(invocation);
         } finally {
-            RpcContext.getContext().clearAfterEachInvoke(true);
+            context.clearAfterEachInvoke(true);
             // IMPORTANT! For async scenario, we must remove context from current thread, so we always create a new RpcContext for the next invoke for the same thread.
             RpcContext.removeContext();
             RpcContext.removeServerContext();
@@ -109,9 +125,9 @@ public class ContextFilter implements Filter, Filter.Listener {
     }
 
     @Override
-    public void onMessage(Result appResponse, Invoker<?> invoker, Invocation invocation) {
+    public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
         // pass attachments to result
-        appResponse.addAttachments(RpcContext.getServerContext().getAttachments());
+        appResponse.addObjectAttachments(RpcContext.getServerContext().getObjectAttachments());
     }
 
     @Override
