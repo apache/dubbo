@@ -1260,15 +1260,15 @@ public final class ReflectUtils {
     }
 
     /**
-     * Get the value from the specified bean and its property.
+     * Get the value from the specified bean and its getter method.
      *
-     * @param bean         the bean instance
-     * @param propertyName the name of property
-     * @param <T>          the type of property value
+     * @param bean       the bean instance
+     * @param methodName the name of getter
+     * @param <T>        the type of property value
      * @return
      * @since 2.7.5
      */
-    public static <T> T getProperty(Object bean, String propertyName) {
+    public static <T> T getProperty(Object bean, String methodName) {
         Class<?> beanClass = bean.getClass();
         BeanInfo beanInfo = null;
         T propertyValue = null;
@@ -1277,7 +1277,7 @@ public final class ReflectUtils {
         try {
             beanInfo = Introspector.getBeanInfo(beanClass);
             propertyValue = (T) Stream.of(beanInfo.getMethodDescriptors())
-                    .filter(methodDescriptor -> propertyName.equals(methodDescriptor.getName()))
+                    .filter(methodDescriptor -> methodName.equals(methodDescriptor.getName()))
                     .findFirst()
                     .map(method -> {
                         try {
