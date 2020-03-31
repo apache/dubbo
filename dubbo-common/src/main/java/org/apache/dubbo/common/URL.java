@@ -251,7 +251,13 @@ class URL implements Serializable {
                 if (part.length() > 0) {
                     int j = part.indexOf('=');
                     if (j >= 0) {
-                        parameters.put(part.substring(0, j), part.substring(j + 1));
+                        String key = part.substring(0, j);
+                        String value = part.substring(j + 1);
+                        parameters.put(key, value);
+                        // compatible with lower versions registering "default." keys
+                        if (key.startsWith(DEFAULT_KEY_PREFIX)) {
+                            parameters.putIfAbsent(key.substring(DEFAULT_KEY_PREFIX.length()), value);
+                        }
                     } else {
                         parameters.put(part, part);
                     }
