@@ -94,22 +94,17 @@ public class CompatibleTypeUtils {
             }
             if (type == Date.class || type == java.sql.Date.class || type == java.sql.Timestamp.class
                     || type == java.sql.Time.class) {
-                try {
-                    Date date = new SimpleDateFormat(DATE_FORMAT).parse(string);
-                    if (type == java.sql.Date.class) {
-                        return new java.sql.Date(date.getTime());
-                    }
-                    if (type == java.sql.Timestamp.class) {
-                        return new java.sql.Timestamp(date.getTime());
-                    }
-                    if (type == java.sql.Time.class) {
-                        return new java.sql.Time(date.getTime());
-                    }
-                    return date;
-                } catch (ParseException e) {
-                    throw new IllegalStateException("Failed to parse date " + value + " by format "
-                            + DATE_FORMAT + ", cause: " + e.getMessage(), e);
+                Date date = DatePattern.parse(string);
+                if (type == java.sql.Date.class) {
+                    return new java.sql.Date(date.getTime());
                 }
+                if (type == java.sql.Timestamp.class) {
+                    return new java.sql.Timestamp(date.getTime());
+                }
+                if (type == java.sql.Time.class) {
+                    return new java.sql.Time(date.getTime());
+                }
+                return date;
             }
             if (type == java.time.LocalDateTime.class || type == java.time.LocalDate.class
                     || type == java.time.LocalTime.class) {
