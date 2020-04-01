@@ -314,7 +314,7 @@ public class JEtcdClientWrapper {
     /**
      * create new ephemeral path save to etcd .
      * if node disconnect from etcd, it will be deleted
-     * automatically by etcd when sessian timeout.
+     * automatically by etcd when session timeout.
      *
      * @param path the path to be saved
      * @return the lease of current path.

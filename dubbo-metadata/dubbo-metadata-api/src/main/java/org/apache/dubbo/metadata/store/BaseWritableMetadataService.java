@@ -48,9 +48,9 @@ public class BaseWritableMetadataService {
      * whose key is the return value of {@link URL#getServiceKey()} method and value is
      * the {@link SortedSet sorted set} of the {@link URL URLs}
      */
-    final static ConcurrentNavigableMap<String, SortedSet<URL>> subscribedServiceURLs = new ConcurrentSkipListMap<>();
+    final static ConcurrentNavigableMap<String, SortedSet<URL>> SUBSCRIBED_SERVICE_URLS = new ConcurrentSkipListMap<>();
 
-    final static ConcurrentNavigableMap<String, String> serviceDefinitions = new ConcurrentSkipListMap<>();
+    final static ConcurrentNavigableMap<String, String> SERVICE_DEFINITIONS = new ConcurrentSkipListMap<>();
 
 
     boolean throwableAction(Consumer<URL> consumer, URL url) {
@@ -64,7 +64,7 @@ public class BaseWritableMetadataService {
     }
 
     public SortedSet<String> getSubscribedURLs() {
-        return getAllUnmodifiableServiceURLs(subscribedServiceURLs);
+        return getAllUnmodifiableServiceURLs(SUBSCRIBED_SERVICE_URLS);
     }
 
     static SortedSet<String> getAllUnmodifiableServiceURLs(Map<String, SortedSet<URL>> serviceURLs) {

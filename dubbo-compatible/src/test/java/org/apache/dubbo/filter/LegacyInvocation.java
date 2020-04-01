@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.filter;
 
-
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 
@@ -58,8 +57,8 @@ public class LegacyInvocation implements Invocation {
         return new Object[]{arg0};
     }
 
-    public Map<String, Object> getAttachments() {
-        Map<String, Object> attachments = new HashMap<String, Object>();
+    public Map<String, String> getAttachments() {
+        Map<String, String> attachments = new HashMap<String, String>();
         attachments.put(PATH_KEY, "dubbo");
         attachments.put(GROUP_KEY, "dubbo");
         attachments.put(VERSION_KEY, "1.0.0");
@@ -88,11 +87,11 @@ public class LegacyInvocation implements Invocation {
         return null;
     }
 
-    public Object getAttachment(String key) {
+    public String getAttachment(String key) {
         return getAttachments().get(key);
     }
 
-    public Object getAttachment(String key, Object defaultValue) {
+    public String getAttachment(String key, String defaultValue) {
         return getAttachments().get(key);
     }
 
