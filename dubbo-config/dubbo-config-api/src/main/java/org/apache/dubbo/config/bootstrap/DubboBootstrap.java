@@ -156,6 +156,8 @@ public class DubboBootstrap extends GenericEventListener {
 
     private AtomicBoolean started = new AtomicBoolean(false);
 
+    private AtomicBoolean ready = new AtomicBoolean(true);
+
     private AtomicBoolean destroyed = new AtomicBoolean(false);
 
     private volatile ServiceInstance serviceInstance;
@@ -737,6 +739,7 @@ public class DubboBootstrap extends GenericEventListener {
      */
     public DubboBootstrap start() {
         if (started.compareAndSet(false, true)) {
+            ready.set(false);
             initialize();
             if (logger.isInfoEnabled()) {
                 logger.info(NAME + " is starting...");
@@ -753,7 +756,24 @@ public class DubboBootstrap extends GenericEventListener {
             }
 
             referServices();
-
+            if (asyncExportingFutures.size() > 0) {
+                new Thread(() -> {
+                    try {
+                        this.awaitFinish();
+                    } catch (Exception e) {
+                        logger.warn(NAME + " exportAsync occurred an exception.");
+                    }
+                    ready.set(true);
+                    if (logger.isInfoEnabled()) {
+                        logger.info(NAME + " is ready.");
+                    }
+                }).start();
+            } else {
+                ready.set(true);
+                if (logger.isInfoEnabled()) {
+                    logger.info(NAME + " is ready.");
+                }
+            }
             if (logger.isInfoEnabled()) {
                 logger.info(NAME + " has started.");
             }
@@ -812,6 +832,10 @@ public class DubboBootstrap extends GenericEventListener {
 
     public boolean isStarted() {
         return started.get();
+    }
+
+    public boolean isReady() {
+        return ready.get();
     }
 
     public DubboBootstrap stop() throws IllegalStateException {
