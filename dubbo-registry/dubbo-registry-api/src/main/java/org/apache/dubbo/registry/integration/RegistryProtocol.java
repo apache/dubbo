@@ -70,6 +70,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.OVERRIDE_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
@@ -461,6 +462,16 @@ public class RegistryProtocol implements Protocol {
 
     private static URL toSubscribeUrl(URL url) {
         return url.addParameter(CATEGORY_KEY, PROVIDERS_CATEGORY + "," + CONFIGURATORS_CATEGORY + "," + ROUTERS_CATEGORY);
+    }
+
+    public URL getRegisteredConsumerUrl(final URL consumerUrl, URL registryUrl) {
+        if (!registryUrl.getParameter(SIMPLIFIED_KEY, false)) {
+            return consumerUrl.addParameters(CATEGORY_KEY, CONSUMERS_CATEGORY,
+                    CHECK_KEY, String.valueOf(false));
+        } else {
+            return URL.valueOf(consumerUrl, DEFAULT_REGISTER_CONSUMER_KEYS, null).addParameters(
+                    CATEGORY_KEY, CONSUMERS_CATEGORY, CHECK_KEY, String.valueOf(false));
+        }
     }
 
     private List<RegistryProtocolListener> findRegistryProtocolListeners(URL url) {
