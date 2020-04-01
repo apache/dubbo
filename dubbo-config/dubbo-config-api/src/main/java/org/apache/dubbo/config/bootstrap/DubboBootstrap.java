@@ -631,8 +631,9 @@ public class DubboBootstrap extends GenericEventListener {
     }
 
     /**
-     * For compatibility purpose, use registry as the default config center when the registry protocol is zookeeper and
-     * there's no config center specified explicitly.
+     * For compatibility purpose, use registry as the default config center when
+     * there's no config center specified explicitly and
+     * useAsConfigCenter of registryConfig is null or true
      */
     private void useRegistryAsConfigCenterIfNecessary() {
         // we use the loading status of DynamicConfiguration to decide whether ConfigCenter has been initiated.
