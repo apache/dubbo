@@ -16,23 +16,30 @@
  */
 package org.apache.dubbo.config.spring.registry.nacos.nacos;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.registry.nacos.NacosServiceName;
-
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
+import static org.apache.dubbo.common.constants.CommonConstants.*;
+import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
+import static org.apache.dubbo.registry.nacos.NacosServiceName.DEFAULT_PARAM_VALUE;
 import static org.apache.dubbo.registry.nacos.NacosServiceName.WILDCARD;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.*;
 
 /**
  * {@link NacosServiceName} Test
  *
  * @since 2.7.3
  */
-public class NacosServiceNameTest {
+class NacosServiceNameTest {
+
+    public static final String NAME_SEPARATOR = ":";
 
     private static final String category = DEFAULT_CATEGORY;
 
@@ -42,14 +49,18 @@ public class NacosServiceNameTest {
 
     private static final String group = "default";
 
-    private final NacosServiceName name = new NacosServiceName();
+    private NacosServiceName name;
+
 
     @BeforeEach
     public void init() {
-        name.setCategory(category);
-        name.setServiceInterface(serviceInterface);
-        name.setVersion(version);
-        name.setGroup(group);
+        URL mockUrl = mock(URL.class);
+        when(mockUrl.getParameter(INTERFACE_KEY)).thenReturn(serviceInterface);
+        when(mockUrl.getParameter(CATEGORY_KEY)).thenReturn(category);
+        when(mockUrl.getParameter(VERSION_KEY, DEFAULT_PARAM_VALUE)).thenReturn(version);
+        when(mockUrl.getParameter(GROUP_KEY, DEFAULT_PARAM_VALUE)).thenReturn(group);
+        name = spy(new NacosServiceName(mockUrl));
+
     }
 
     @Test
@@ -58,31 +69,40 @@ public class NacosServiceNameTest {
         assertEquals(serviceInterface, name.getServiceInterface());
         assertEquals(version, name.getVersion());
         assertEquals(group, name.getGroup());
-        assertEquals("providers:org.apache.dubbo.registry.nacos.NacosServiceName:1.0.0:default", name.getValue());
+        assertEquals(new StringBuilder(category)
+                .append(NAME_SEPARATOR).append(serviceInterface)
+                .append(NAME_SEPARATOR).append(version)
+                .append(NAME_SEPARATOR).append(group)
+                .toString(), name.getValue());
+    }
+
+    @ParameterizedTest(name = " testIsConcrete with value {0} ")
+    @ValueSource(strings = {WILDCARD, "1.0.0,2.0.0"})
+    public void testIsConcrete(String v) {
+        Assertions.assertTrue(name.isConcrete());
+
+        name.setGroup(v);
+        Assertions.assertFalse(name.isConcrete());
+        name.setGroup(group);
+
+        name.setVersion(v);
+        Assertions.assertFalse(name.isConcrete());
+        name.setVersion(version);
+
+        name.setServiceInterface(v);
+        Assertions.assertFalse(name.isConcrete());
+        name.setServiceInterface(serviceInterface);
+
+        Assertions.assertTrue(name.isConcrete());
     }
 
     @Test
-    public void testToString() {
-        assertEquals("providers:org.apache.dubbo.registry.nacos.NacosServiceName:1.0.0:default", name.toString());
-    }
+    public void testEquals() {
+        NacosServiceName nameByValue = new NacosServiceName(name.getValue());
 
-    @Test
-    public void testIsConcrete() {
-
-        assertTrue(name.isConcrete());
-
-        name.setGroup(WILDCARD);
-        assertFalse(name.isConcrete());
-
-        init();
-        name.setVersion(WILDCARD);
-        assertFalse(name.isConcrete());
-
-        init();
-        name.setGroup(null);
-        name.setVersion(null);
-        assertTrue(name.isConcrete());
-
+        Assertions.assertTrue(name.isCompatible(nameByValue));
+        // becase name has been spied , so first param MUST `nameByValue`
+        assertEquals(nameByValue, name);
     }
 
     @Test
@@ -90,36 +110,36 @@ public class NacosServiceNameTest {
 
         NacosServiceName concrete = new NacosServiceName();
 
-        assertFalse(name.isCompatible(concrete));
+        Assertions.assertFalse(name.isCompatible(concrete));
 
         // set category
         concrete.setCategory(category);
-        assertFalse(name.isCompatible(concrete));
+        Assertions.assertFalse(name.isCompatible(concrete));
 
         concrete.setServiceInterface(serviceInterface);
-        assertFalse(name.isCompatible(concrete));
+        Assertions.assertFalse(name.isCompatible(concrete));
 
         concrete.setVersion(version);
-        assertFalse(name.isCompatible(concrete));
+        Assertions.assertFalse(name.isCompatible(concrete));
 
         concrete.setGroup(group);
-        assertTrue(name.isCompatible(concrete));
+        Assertions.assertTrue(name.isCompatible(concrete));
 
         // wildcard cases
         name.setGroup(WILDCARD);
-        assertTrue(name.isCompatible(concrete));
+        Assertions.assertTrue(name.isCompatible(concrete));
 
         init();
         name.setVersion(WILDCARD);
-        assertTrue(name.isCompatible(concrete));
+        Assertions.assertTrue(name.isCompatible(concrete));
 
         // range cases
         init();
         name.setGroup(group + ",2.0.0");
-        assertTrue(name.isCompatible(concrete));
+        Assertions.assertTrue(name.isCompatible(concrete));
 
         init();
         name.setVersion(version + ",2.0.0");
-        assertTrue(name.isCompatible(concrete));
+        Assertions.assertTrue(name.isCompatible(concrete));
     }
 }
