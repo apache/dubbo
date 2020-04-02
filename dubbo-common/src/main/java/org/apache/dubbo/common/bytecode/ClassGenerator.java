@@ -101,11 +101,9 @@ public final class ClassGenerator {
         StringBuilder modifier = new StringBuilder();
         if (Modifier.isPublic(mod)) {
             modifier.append("public");
-        }
-        if (Modifier.isProtected(mod)) {
+        } else if (Modifier.isProtected(mod)) {
             modifier.append("protected");
-        }
-        if (Modifier.isPrivate(mod)) {
+        } else if (Modifier.isPrivate(mod)) {
             modifier.append("private");
         }
 

@@ -93,4 +93,8 @@ public class Hessian2ObjectOutput implements ObjectOutput {
     public void flushBuffer() throws IOException {
         mH2o.flushBuffer();
     }
+
+    public OutputStream getOutputStream() throws IOException {
+        return mH2o.getBytesOutputStream();
+    }
 }

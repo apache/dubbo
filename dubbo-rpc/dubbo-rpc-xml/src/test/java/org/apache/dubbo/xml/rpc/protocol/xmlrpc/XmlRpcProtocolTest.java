@@ -18,6 +18,7 @@ package org.apache.dubbo.xml.rpc.protocol.xmlrpc;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -35,7 +36,8 @@ public class XmlRpcProtocolTest {
         Assertions.assertFalse(server.isCalled());
         ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
-        URL url = URL.valueOf("xmlrpc://127.0.0.1:5342/" + XmlRpcService.class.getName() + "?version=1.0.0");
+        int port = NetUtils.getAvailablePort();
+        URL url = URL.valueOf("xmlrpc://127.0.0.1:" + port + "/" + XmlRpcService.class.getName() + "?version=1.0.0");
         Exporter<XmlRpcService> exporter = protocol.export(proxyFactory.getInvoker(server, XmlRpcService.class, url));
         Invoker<XmlRpcService> invoker = protocol.refer(XmlRpcService.class, url);
         XmlRpcService client = proxyFactory.getProxy(invoker);
@@ -52,7 +54,8 @@ public class XmlRpcProtocolTest {
         Assertions.assertFalse(server.isCalled());
         ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
-        URL url = URL.valueOf("xmlrpc://127.0.0.1:5342/" + XmlRpcService.class.getName() + "?version=1.0.0&server=jetty9");
+        int port = NetUtils.getAvailablePort();
+        URL url = URL.valueOf("xmlrpc://127.0.0.1:" + port + "/" + XmlRpcService.class.getName() + "?version=1.0.0&server=jetty9");
         Exporter<XmlRpcService> exporter = protocol.export(proxyFactory.getInvoker(server, XmlRpcService.class, url));
         Invoker<XmlRpcService> invoker = protocol.refer(XmlRpcService.class, url);
         XmlRpcService client = proxyFactory.getProxy(invoker);
@@ -69,7 +72,8 @@ public class XmlRpcProtocolTest {
         XmlRpcServiceImpl server = new XmlRpcServiceImpl();
         ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
-        URL url = URL.valueOf("xmlrpc://127.0.0.1:5342/" +
+        int port = NetUtils.getAvailablePort();
+        URL url = URL.valueOf("xmlrpc://127.0.0.1:" + port + "/" +
                 XmlRpcService.class.getName() + "?version=1.0.0&server=jetty9");
         Exporter<XmlRpcService> exporter = protocol.export(proxyFactory.getInvoker(server, XmlRpcService.class, url));
         Invoker<XmlRpcService> invoker = protocol.refer(XmlRpcService.class, url);

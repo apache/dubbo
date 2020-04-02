@@ -146,7 +146,7 @@ public class RegistryConfig extends AbstractConfig {
      */
     private Boolean simplified;
     /**
-     * After simplify the registry, should add some paramter individually. just for provider.
+     * After simplify the registry, should add some parameter individually. just for provider.
      * <p>
      * such as: extra-keys = A,b,c,d
      *
@@ -213,7 +213,7 @@ public class RegistryConfig extends AbstractConfig {
                 URL url = URL.valueOf(address);
                 setUsername(url.getUsername());
                 setPassword(url.getPassword());
-                updateIdIfAbsent(url.getProtocol());
+//                updateIdIfAbsent(url.getProtocol());
                 updateProtocolIfAbsent(url.getProtocol());
                 updatePortIfAbsent(url.getPort());
                 updateParameters(url.getParameters());

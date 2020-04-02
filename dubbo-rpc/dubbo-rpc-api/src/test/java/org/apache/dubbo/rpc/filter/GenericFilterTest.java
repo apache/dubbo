@@ -67,7 +67,7 @@ public class GenericFilterTest {
         Result asyncResult = genericFilter.invoke(invoker, invocation);
 
         AppResponse appResponse = (AppResponse) asyncResult.get();
-        genericFilter.onMessage(appResponse, invoker, invocation);
+        genericFilter.onResponse(appResponse, invoker, invocation);
         Assertions.assertEquals(HashMap.class, appResponse.getValue().getClass());
         Assertions.assertEquals(10, ((HashMap) appResponse.getValue()).get("age"));
 

@@ -1,6 +1,6 @@
 namespace java org.apache.dubbo.rpc.protocol.nativethrift
 namespace go demo
-/*Demo service define file,can be generated to inteface files*/
+/*Demo service define file,can be generated to interface files*/
 /*Here test the 7 kind of data type*/
 service DemoService {
     string sayHello(1:required string name);

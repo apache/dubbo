@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.model;
 
+import org.apache.dubbo.common.BaseServiceMetadata;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.config.ReferenceConfigBase;
 
@@ -23,7 +24,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -33,7 +33,7 @@ import java.util.Set;
  * This model is bound to your reference's configuration, for example, group, version or method level configuration.
  */
 public class ConsumerModel {
-    private final String serviceKey;
+    private String serviceKey;
     private final ServiceDescriptor serviceModel;
     private final ReferenceConfigBase<?> referenceConfig;
 
@@ -54,7 +54,6 @@ public class ConsumerModel {
             , ReferenceConfigBase<?> referenceConfig) {
 
         Assert.notEmptyString(serviceKey, "Service name can't be null or blank");
-//        Assert.notNull(proxyObject, "Proxy object can't be null");
 
         this.serviceKey = serviceKey;
         this.proxyObject = proxyObject;
@@ -66,6 +65,8 @@ public class ConsumerModel {
         if (attributes != null) {
             this.methodConfigs = attributes;
         }
+
+        initMethodModels();
     }
 
     /**
@@ -116,7 +117,7 @@ public class ConsumerModel {
     /* *************** Start, metadata compatible **************** */
 
     private ServiceMetadata serviceMetadata;
-    private Map<Method, ConsumerMethodModel> methodModels = new IdentityHashMap<Method, ConsumerMethodModel>();
+    private Map<Method, ConsumerMethodModel> methodModels = new HashMap<>();
 
     public ConsumerModel(String serviceKey
             , Object proxyObject
@@ -126,9 +127,22 @@ public class ConsumerModel {
 
         this(serviceKey, proxyObject, serviceModel, referenceConfig);
         this.serviceMetadata = metadata;
+    }
 
-        for (Method method : metadata.getServiceType().getMethods()) {
-            methodModels.put(method, new ConsumerMethodModel(method));
+    public void setServiceKey(String serviceKey) {
+        this.serviceKey = serviceKey;
+        if (serviceMetadata != null) {
+            serviceMetadata.setServiceKey(serviceKey);
+            serviceMetadata.setGroup(BaseServiceMetadata.groupFromServiceKey(serviceKey));
+        }
+    }
+
+    public void initMethodModels() {
+        Class[] interfaceList = serviceMetadata.getTarget().getClass().getInterfaces();
+        for (Class interfaceClass : interfaceList) {
+            for (Method method : interfaceClass.getMethods()) {
+                methodModels.put(method, new ConsumerMethodModel(method));
+            }
         }
     }
 
@@ -165,7 +179,7 @@ public class ConsumerModel {
     }
 
     /**
-     * @param method   metodName
+     * @param method   methodName
      * @param argsType method arguments type
      * @return
      */

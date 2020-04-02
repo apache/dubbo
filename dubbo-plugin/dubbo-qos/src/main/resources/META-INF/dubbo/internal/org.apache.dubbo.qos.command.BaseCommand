@@ -3,3 +3,5 @@ help=org.apache.dubbo.qos.command.impl.Help
 quit=org.apache.dubbo.qos.command.impl.Quit
 ls=org.apache.dubbo.qos.command.impl.Ls
 offline=org.apache.dubbo.qos.command.impl.Offline
+ready=org.apache.dubbo.qos.command.impl.Ready
+version=org.apache.dubbo.qos.command.impl.Version

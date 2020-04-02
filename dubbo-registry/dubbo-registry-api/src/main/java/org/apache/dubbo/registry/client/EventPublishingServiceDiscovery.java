@@ -44,7 +44,7 @@ import static java.util.Optional.empty;
 import static java.util.Optional.of;
 
 /**
- * The decorating implementation of {@link ServiceDiscovery} to publishe the {@link Event Dubbo event} when some actions are
+ * The decorating implementation of {@link ServiceDiscovery} to published the {@link Event Dubbo event} when some actions are
  * executing, including:
  * <ul>
  * <li>Lifecycle actions:</li>
