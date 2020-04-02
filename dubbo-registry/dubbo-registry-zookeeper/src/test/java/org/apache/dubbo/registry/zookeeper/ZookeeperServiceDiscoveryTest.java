@@ -17,6 +17,7 @@
 package org.apache.dubbo.registry.zookeeper;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.event.EventDispatcher;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
@@ -74,7 +75,7 @@ public class ZookeeperServiceDiscoveryTest {
     @Test
     public void testRegistration() {
 
-        DefaultServiceInstance serviceInstance = createServiceInstance(SERVICE_NAME, LOCALHOST, 8080);
+        DefaultServiceInstance serviceInstance = createServiceInstance(SERVICE_NAME, LOCALHOST, NetUtils.getAvailablePort());
 
         discovery.register(serviceInstance);
 

@@ -31,12 +31,32 @@ public interface Invocation extends org.apache.dubbo.rpc.Invocation {
     }
 
     @Override
-    default void setAttachmentIfAbsent(String key, Object value) {
+    default void setAttachment(String key, String value) {
+        setObjectAttachment(key, value);
+    }
+
+    @Override
+    default void setAttachmentIfAbsent(String key, String value) {
+        setObjectAttachmentIfAbsent(key, value);
+    }
+
+    @Override
+    default void setObjectAttachmentIfAbsent(String key, Object value) {
+    }
+
+    @Override
+    default void setObjectAttachment(String key, Object value) {
+
     }
 
     @Override
     default void setAttachment(String key, Object value) {
+        setObjectAttachment(key, value);
+    }
 
+    @Override
+    default void setAttachmentIfAbsent(String key, Object value) {
+        setObjectAttachmentIfAbsent(key, value);
     }
 
     @Override

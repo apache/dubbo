@@ -28,13 +28,13 @@ public class NettyTransporter implements Transporter {
     public static final String NAME = "netty3";
 
     @Override
-    public RemotingServer bind(URL url, ChannelHandler listener) throws RemotingException {
-        return new NettyServer(url, listener);
+    public RemotingServer bind(URL url, ChannelHandler handler) throws RemotingException {
+        return new NettyServer(url, handler);
     }
 
     @Override
-    public Client connect(URL url, ChannelHandler listener) throws RemotingException {
-        return new NettyClient(url, listener);
+    public Client connect(URL url, ChannelHandler handler) throws RemotingException {
+        return new NettyClient(url, handler);
     }
 
 }

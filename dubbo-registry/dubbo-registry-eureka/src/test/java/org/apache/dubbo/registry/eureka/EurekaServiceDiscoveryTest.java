@@ -17,6 +17,7 @@
 package org.apache.dubbo.registry.eureka;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
 
@@ -37,13 +38,13 @@ public class EurekaServiceDiscoveryTest {
 
     private ServiceInstance serviceInstance;
 
-    private URL registryURL = URL.valueOf("eureka://127.0.0.1:8761/eureka");
+    private URL registryURL = URL.valueOf("eureka://127.0.0.1:" + NetUtils.getAvailablePort() + "/eureka");
 
     @BeforeEach
     public void init() throws Exception {
         serviceDiscovery = new EurekaServiceDiscovery();
         serviceDiscovery.initialize(registryURL);
-        serviceInstance = new DefaultServiceInstance("test", "127.0.0.1", 8080);
+        serviceInstance = new DefaultServiceInstance("test", "127.0.0.1", NetUtils.getAvailablePort());
         serviceDiscovery.register(serviceInstance);
     }
 
