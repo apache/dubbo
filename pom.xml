@@ -21,7 +21,7 @@
     <parent>
         <groupId>org.apache</groupId>
         <artifactId>apache</artifactId>
-        <version>21</version>
+        <version>23</version>
     </parent>
 
     <groupId>org.apache.dubbo</groupId>
@@ -103,6 +103,7 @@
         <skip_maven_deploy>false</skip_maven_deploy>
         <updateReleaseInfo>true</updateReleaseInfo>
         <project.build.sourceEncoding>${file_encoding}</project.build.sourceEncoding>
+        <project.build.outputTimestamp>2020-04-01T08:04:00Z</project.build.outputTimestamp>
 
         <profile.name>oss</profile.name>
         <!-- for maven compiler plugin -->
@@ -110,11 +111,11 @@
         <java_target_version>1.8</java_target_version>
         <file_encoding>UTF-8</file_encoding>
         <!-- Maven plugins -->
-        <maven_jar_version>3.0.2</maven_jar_version>
+        <maven_jar_version>3.2.0</maven_jar_version>
         <maven_surefire_version>2.22.1</maven_surefire_version>
         <maven_deploy_version>2.8.2</maven_deploy_version>
         <maven_compiler_version>3.6.0</maven_compiler_version>
-        <maven_source_version>3.0.1</maven_source_version>
+        <maven_source_version>3.2.1</maven_source_version>
         <maven_javadoc_version>3.0.1</maven_javadoc_version>
         <maven_jetty_version>9.4.11.v20180605</maven_jetty_version>
         <maven_checkstyle_version>3.0.0</maven_checkstyle_version>
@@ -569,7 +570,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
-                <version>2.5.3</version>
+                <version>3.0.0-M1</version>
                 <configuration>
                     <autoVersionSubmodules>true</autoVersionSubmodules>
                     <useReleaseProfile>false</useReleaseProfile>
@@ -653,7 +654,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-shade-plugin</artifactId>
-                    <version>2.4.3</version>
+                    <version>3.2.2</version>
                     <configuration>
                         <createDependencyReducedPom>false</createDependencyReducedPom>
                     </configuration>

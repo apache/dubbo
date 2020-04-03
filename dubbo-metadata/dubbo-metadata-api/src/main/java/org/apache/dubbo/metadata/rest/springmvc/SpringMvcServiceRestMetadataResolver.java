@@ -34,7 +34,7 @@ import static org.apache.dubbo.common.utils.AnnotationUtils.getAttribute;
 import static org.apache.dubbo.common.utils.AnnotationUtils.isAnnotationPresent;
 import static org.apache.dubbo.common.utils.ArrayUtils.isEmpty;
 import static org.apache.dubbo.common.utils.ArrayUtils.isNotEmpty;
-import static org.apache.dubbo.common.utils.HttpUtils.buildPath;
+import static org.apache.dubbo.common.utils.PathUtils.buildPath;
 import static org.apache.dubbo.metadata.rest.RestMetadataConstants.SPRING_MVC.CONTROLLER_ANNOTATION_CLASS_NAME;
 import static org.apache.dubbo.metadata.rest.RestMetadataConstants.SPRING_MVC.REQUEST_MAPPING_ANNOTATION_CLASS_NAME;
 

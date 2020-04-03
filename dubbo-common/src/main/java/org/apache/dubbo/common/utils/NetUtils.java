@@ -100,7 +100,7 @@ public class NetUtils {
             return getAvailablePort();
         }
         for (int i = port; i < MAX_PORT; i++) {
-            try (ServerSocket ss = new ServerSocket(i)) {
+            try (ServerSocket ignored = new ServerSocket(i)) {
                 return i;
             } catch (IOException e) {
                 // continue
@@ -515,7 +515,7 @@ public class NetUtils {
         }
 
         InetAddress inetAddress = InetAddress.getByName(host);
-        boolean isIpv4 = isValidV4Address(inetAddress) ? true : false;
+        boolean isIpv4 = isValidV4Address(inetAddress);
         String[] hostAndPort = getPatternHostAndPort(pattern, isIpv4);
         if (hostAndPort[1] != null && !hostAndPort[1].equals(String.valueOf(port))) {
             return false;
@@ -531,25 +531,22 @@ public class NetUtils {
         checkHostPattern(pattern, mask, isIpv4);
 
         host = inetAddress.getHostAddress();
-
-        String[] ipAddress = host.split(splitCharacter);
         if (pattern.equals(host)) {
             return true;
         }
+
         // short name condition
         if (!ipPatternContainExpression(pattern)) {
             InetAddress patternAddress = InetAddress.getByName(pattern);
-            if (patternAddress.getHostAddress().equals(host)) {
-                return true;
-            } else {
-                return false;
+            return patternAddress.getHostAddress().equals(host);
             }
-        }
+
+        String[] ipAddress = host.split(splitCharacter);
         for (int i = 0; i < mask.length; i++) {
             if ("*".equals(mask[i]) || mask[i].equals(ipAddress[i])) {
                 continue;
             } else if (mask[i].contains("-")) {
-                String[] rangeNumStrs = mask[i].split("-");
+                String[] rangeNumStrs = StringUtils.split(mask[i], '-');
                 if (rangeNumStrs.length != 2) {
                     throw new IllegalArgumentException("There is wrong format of ip Address: " + mask[i]);
                 }

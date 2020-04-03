@@ -14,49 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.rest;
+package org.apache.dubbo.qos.command.impl;
 
-import java.io.Serializable;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.qos.command.BaseCommand;
+import org.apache.dubbo.qos.command.CommandContext;
+import org.apache.dubbo.qos.command.annotation.Cmd;
 
-/**
- * User Entity
- *
- * @since 2.7.6
- */
-public class User implements Serializable {
-
-    private Long id;
-
-    private String name;
-
-    private Integer age;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public Integer getAge() {
-        return age;
-    }
-
-    public void setAge(Integer age) {
-        this.age = age;
-    }
+@Cmd(name = "start",summary = "Judge if service has started? ")
+public class Ready implements BaseCommand {
 
     @Override
-    public String toString() {
-        return "User{" + "id=" + id + ", name='" + name + '\'' + ", age=" + age + '}';
+    public String execute(CommandContext commandContext, String[] args) {
+        return DubboBootstrap.getInstance().isReady() ? "true" : "false";
     }
+
 }

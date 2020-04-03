@@ -14,49 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.rest;
+package org.apache.dubbo.cache.support.lfu;
 
-import java.io.Serializable;
+import org.apache.dubbo.cache.Cache;
+import org.apache.dubbo.cache.support.AbstractCacheFactory;
+import org.apache.dubbo.common.URL;
 
 /**
- * User Entity
+ * Implement {@link org.apache.dubbo.cache.CacheFactory} by extending {@link AbstractCacheFactory} and provide
+ * instance of new {@link LfuCache}.
  *
- * @since 2.7.6
+ * @see AbstractCacheFactory
+ * @see LfuCache
+ * @see Cache
  */
-public class User implements Serializable {
+public class LfuCacheFactory extends AbstractCacheFactory {
 
-    private Long id;
-
-    private String name;
-
-    private Integer age;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public Integer getAge() {
-        return age;
-    }
-
-    public void setAge(Integer age) {
-        this.age = age;
-    }
-
+    /**
+     * Takes url as an method argument and return new instance of cache store implemented by LfuCache.
+     * @param url url of the method
+     * @return ThreadLocalCache instance of cache
+     */
     @Override
-    public String toString() {
-        return "User{" + "id=" + id + ", name='" + name + '\'' + ", age=" + age + '}';
+    protected Cache createCache(URL url) {
+        return new LfuCache(url);
     }
+
 }

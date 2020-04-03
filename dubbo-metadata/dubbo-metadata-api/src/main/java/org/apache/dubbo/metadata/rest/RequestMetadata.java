@@ -30,7 +30,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import static java.util.Collections.unmodifiableMap;
-import static org.apache.dubbo.common.utils.HttpUtils.normalizePath;
+import static org.apache.dubbo.common.utils.PathUtils.normalize;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 
 /**
@@ -73,7 +73,7 @@ public class RequestMetadata implements Serializable {
     }
 
     public void setPath(String path) {
-        this.path = normalizePath(path);
+        this.path = normalize(path);
     }
 
     public Map<String, List<String>> getParams() {

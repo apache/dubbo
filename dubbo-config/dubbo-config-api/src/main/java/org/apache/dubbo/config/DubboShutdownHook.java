@@ -115,6 +115,14 @@ public class DubboShutdownHook extends Thread {
         dispatch(new DubboServiceDestroyedEvent(this));
     }
 
+    private void dispatch(Event event) {
+        eventDispatcher.dispatch(event);
+    }
+
+    public boolean getRegistered() {
+        return registered.get();
+    }
+
     public static void destroyAll() {
         if (destroyed.compareAndSet(false, true)) {
             AbstractRegistryFactory.destroyAll();
@@ -122,14 +130,10 @@ public class DubboShutdownHook extends Thread {
         }
     }
 
-    private void dispatch(Event event) {
-        eventDispatcher.dispatch(event);
-    }
-
     /**
      * Destroy all the protocols.
      */
-    private static void destroyProtocols() {
+    public static void destroyProtocols() {
         ExtensionLoader<Protocol> loader = ExtensionLoader.getExtensionLoader(Protocol.class);
         for (String protocolName : loader.getLoadedExtensions()) {
             try {
