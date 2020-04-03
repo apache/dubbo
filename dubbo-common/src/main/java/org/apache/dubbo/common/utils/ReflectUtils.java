@@ -1273,7 +1273,6 @@ public final class ReflectUtils {
         BeanInfo beanInfo = null;
         T propertyValue = null;
 
-        beanClass.getDeclaredFields();
         try {
             beanInfo = Introspector.getBeanInfo(beanClass);
             propertyValue = (T) Stream.of(beanInfo.getMethodDescriptors())
