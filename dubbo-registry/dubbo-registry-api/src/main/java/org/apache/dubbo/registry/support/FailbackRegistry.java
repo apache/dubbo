@@ -372,7 +372,13 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         }
     }
 
-    protected void doNotify(URL url, NotifyListener listener, List<URL> urls) {
+    /**
+     * TODO describe why we change protected to public(to use in FailedNotifiedTask)
+     * @param url
+     * @param listener
+     * @param urls
+     */
+    public void doNotify(URL url, NotifyListener listener, List<URL> urls) {
         super.notify(url, listener, urls);
     }
 

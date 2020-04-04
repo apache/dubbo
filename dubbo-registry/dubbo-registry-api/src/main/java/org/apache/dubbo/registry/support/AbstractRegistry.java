@@ -95,13 +95,39 @@ public abstract class AbstractRegistry implements Registry {
 
     /**
      * Store the lastest notification data
-     * key: holder(consumerUrl, linstner, category)
+     * key: holder(subscribeUrl, linstner, category)
      * value: the latest urls to nitify
      *
      * warning: the ref value(urls list) can not be changed due to avoid notification order problem(https://github.com/apache/dubbo/issues/5961)
      *          When updated value, get the ref of value at first, update data with operation(such as clear, all, allALl) on the ref
      */
     private final ConcurrentMap<NotifyHolder, List<URL>> urlsToNotifyMap = new ConcurrentHashMap<>();
+
+    /**
+     * key: holder(subscribeUrl, linstner, category)
+     * value: the latest version of data received on consumer side
+     */
+    private final ConcurrentMap<NotifyHolder, AtomicLong> receivedNotificationVersionMap = new ConcurrentHashMap<>();
+
+    /**
+     * key: holder(subscribeUrl, linstner, category)
+     * value: the latest version of data which is already notified(NotifyListener.notify)
+     * warning: Under certain concurrent situation, data version which are actually notified may be bigger than version in this map.
+     *          And we can grantee version in this map is no bigger than actual successful notification version
+     */
+    private final ConcurrentMap<NotifyHolder, Long> notifiedVersionMap = new ConcurrentHashMap<>();
+
+    /**
+     * The version of notification data received on consumer side init with 1
+     */
+    private static final long INITIAL_RECEIVED_NOTIFICATION_VERSION = 1;
+
+    /**
+     * The version of notification data which is already notified(NotifyListener.notify) init with 0
+     * 0 -> no successful notification has occurred yet
+     */
+    private static final long INITIAL_NOTIFIED_VERSION = 0;
+
 
     /**
      * update notification data when receive new data every time
@@ -124,12 +150,16 @@ public abstract class AbstractRegistry implements Registry {
             }
         }
         for (String category : categoryUrlsMap.keySet()) {
-            if (urlsToNotifyMap.containsKey(category)) {
+            NotifyHolder notifyHolder = new NotifyHolder(consumerUrl, notifyListener, category);
+            if (urlsToNotifyMap.containsKey(notifyHolder)) {
                 List<URL> categoryUrls = urlsToNotifyMap.get(category);
                 categoryUrls.clear();
                 categoryUrls.addAll(categoryUrlsMap.get(category));
+                receivedNotificationVersionMap.get(notifyHolder).incrementAndGet();
             } else {
-                urlsToNotifyMap.put(new NotifyHolder(consumerUrl, notifyListener, category), categoryUrlsMap.get(category));
+                urlsToNotifyMap.put(notifyHolder, categoryUrlsMap.get(category));
+                receivedNotificationVersionMap.put(notifyHolder, new AtomicLong(INITIAL_RECEIVED_NOTIFICATION_VERSION));
+                notifiedVersionMap.put(notifyHolder, INITIAL_NOTIFIED_VERSION);
             }
         }
     }
@@ -466,7 +496,25 @@ public abstract class AbstractRegistry implements Registry {
             List<URL> categoryList = entry.getValue();
             categoryNotified.put(category, categoryList);
             NotifyHolder holder = new NotifyHolder(url, listener, category);
-            listener.notify(urlsToNotifyMap.get(holder));
+            try {
+                long urlsVersionToNotify = receivedNotificationVersionMap.get(holder).longValue();
+                long notifiedUrlsVersion = notifiedVersionMap.get(holder);
+                if (notifiedUrlsVersion >= urlsVersionToNotify) {
+                    //To avoid useless notify operation (which may be triggered by FailedNotifiedTask)
+                    break;
+                }
+                listener.notify(urlsToNotifyMap.get(holder));
+                /**
+                 *  notify with success
+                 *  Under certain concurrent situation, data version which are actually notified may be bigger than urlsVersionToNotify
+                 *  And we can grantee urlsVersionToNotify is no bigger than actual successful notification version
+                 */
+                notifiedVersionMap.put(holder, urlsVersionToNotify);
+            } catch (Exception e) {
+                // when notify with exception, throw to the upper layer(such as FailbackRegistry)
+                logger.error("Notify urls with failure for subscribe url " + url + ", urls: " + urls, e);
+                throw e;
+            }
             // We will update our cache file after each notification.
             // When our Registry has a subscribe failure due to network jitter, we can return at least the existing cache URL.
             saveProperties(url);
@@ -575,7 +623,7 @@ public abstract class AbstractRegistry implements Registry {
      */
     private class NotifyHolder {
 
-        private final URL consumerUrl;
+        private final URL subscribeUrl;
 
         private final NotifyListener notifyListener;
 
@@ -586,21 +634,21 @@ public abstract class AbstractRegistry implements Registry {
             if (url == null || notifyListener == null) {
                 throw new IllegalArgumentException();
             }
-            this.consumerUrl = url;
+            this.subscribeUrl = url;
             this.notifyListener = notifyListener;
             this.category= category;
         }
 
         @Override
         public int hashCode() {
-            return consumerUrl.hashCode() + notifyListener.hashCode() + category.hashCode();
+            return subscribeUrl.hashCode() + notifyListener.hashCode() + category.hashCode();
         }
 
         @Override
         public boolean equals(Object obj) {
             if (obj instanceof NotifyHolder) {
                 NotifyHolder h = (NotifyHolder) obj;
-                return this.consumerUrl.equals(h.consumerUrl) && this.notifyListener.equals(h.notifyListener)&& category.equals(h.category);
+                return this.subscribeUrl.equals(h.subscribeUrl) && this.notifyListener.equals(h.notifyListener)&& category.equals(h.category);
             } else {
                 return false;
             }
