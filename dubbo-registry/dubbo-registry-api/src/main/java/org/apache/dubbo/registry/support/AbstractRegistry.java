@@ -109,26 +109,26 @@ public abstract class AbstractRegistry implements Registry {
      * @param notifyListener
      * @param urls
      */
-    protected void updateUrlsToNotify(URL consumerUrl, NotifyListener notifyListener, List<URL> urls){
+    protected void updateUrlsToNotify(URL consumerUrl, NotifyListener notifyListener, List<URL> urls) {
         Map<String, List<URL>> categoryUrlsMap = new ConcurrentHashMap<>();
         for (URL u : urls) {
             if (UrlUtils.isMatch(consumerUrl, u)) {
                 String category = u.getParameter(CATEGORY_KEY, DEFAULT_CATEGORY);
-                if(categoryUrlsMap.get(category) == null){
+                if (categoryUrlsMap.get(category) == null) {
                     List<URL> categoryUrls = new ArrayList<>();
                     categoryUrls.add(u);
                     categoryUrlsMap.put(category, categoryUrls);
-                }else{
+                } else {
                     categoryUrlsMap.get(category).add(u);
                 }
             }
         }
-        for(String category:categoryUrlsMap.keySet()){
-            if(urlsToNotifyMap.containsKey(category)){
+        for (String category : categoryUrlsMap.keySet()) {
+            if (urlsToNotifyMap.containsKey(category)) {
                 List<URL> categoryUrls = urlsToNotifyMap.get(category);
                 categoryUrls.clear();
                 categoryUrls.addAll(categoryUrlsMap.get(category));
-            }else{
+            } else {
                 urlsToNotifyMap.put(new NotifyHolder(consumerUrl, notifyListener, category), categoryUrlsMap.get(category));
             }
         }
@@ -598,7 +598,7 @@ public abstract class AbstractRegistry implements Registry {
 
         @Override
         public boolean equals(Object obj) {
-            if (obj instanceof FailbackRegistry.Holder) {
+            if (obj instanceof NotifyHolder) {
                 NotifyHolder h = (NotifyHolder) obj;
                 return this.consumerUrl.equals(h.consumerUrl) && this.notifyListener.equals(h.notifyListener)&& category.equals(h.category);
             } else {
