@@ -630,6 +630,11 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         return this.overrideDirectoryUrl;
     }
 
+    @Override
+    public URL getUrl () {
+        return this.overrideDirectoryUrl;
+    }
+
     public URL getRegisteredConsumerUrl() {
         return registeredConsumerUrl;
     }
