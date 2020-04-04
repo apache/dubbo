@@ -361,6 +361,9 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             throw new IllegalArgumentException("notify listener == null");
         }
         try {
+            //update notification data at first to avoid order problem as mentioned in the issue(https://github.com/apache/dubbo/issues/5961)
+            updateUrlsToNotify(url, listener, urls);
+
             doNotify(url, listener, urls);
         } catch (Exception t) {
             // Record a failed registration request to a failed list, retry regularly

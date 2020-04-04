@@ -93,6 +93,48 @@ public abstract class AbstractRegistry implements Registry {
     // Local disk cache file
     private File file;
 
+    /**
+     * Store the lastest notification data
+     * key: holder(consumerUrl, linstner, category)
+     * value: the latest urls to nitify
+     *
+     * warning: the ref value(urls list) can not be changed due to avoid notification order problem(https://github.com/apache/dubbo/issues/5961)
+     *          When updated value, get the ref of value at first, update data with operation(such as clear, all, allALl) on the ref
+     */
+    private final ConcurrentMap<NotifyHolder, List<URL>> urlsToNotifyMap = new ConcurrentHashMap<>();
+
+    /**
+     * update notification data when receive new data every time
+     * @param consumerUrl
+     * @param notifyListener
+     * @param urls
+     */
+    protected void updateUrlsToNotify(URL consumerUrl, NotifyListener notifyListener, List<URL> urls){
+        Map<String, List<URL>> categoryUrlsMap = new ConcurrentHashMap<>();
+        for (URL u : urls) {
+            if (UrlUtils.isMatch(consumerUrl, u)) {
+                String category = u.getParameter(CATEGORY_KEY, DEFAULT_CATEGORY);
+                if(categoryUrlsMap.get(category) == null){
+                    List<URL> categoryUrls = new ArrayList<>();
+                    categoryUrls.add(u);
+                    categoryUrlsMap.put(category, categoryUrls);
+                }else{
+                    categoryUrlsMap.get(category).add(u);
+                }
+            }
+        }
+        for(String category:categoryUrlsMap.keySet()){
+            if(urlsToNotifyMap.containsKey(category)){
+                List<URL> categoryUrls = urlsToNotifyMap.get(category);
+                categoryUrls.clear();
+                categoryUrls.addAll(categoryUrlsMap.get(category));
+            }else{
+                urlsToNotifyMap.put(new NotifyHolder(consumerUrl, notifyListener, category), categoryUrlsMap.get(category));
+            }
+        }
+    }
+
+
     public AbstractRegistry(URL url) {
         setUrl(url);
         if (url.getParameter(REGISTRY__LOCAL_FILE_CACHE_ENABLED, true)) {
@@ -423,7 +465,8 @@ public abstract class AbstractRegistry implements Registry {
             String category = entry.getKey();
             List<URL> categoryList = entry.getValue();
             categoryNotified.put(category, categoryList);
-            listener.notify(categoryList);
+            NotifyHolder holder = new NotifyHolder(url, listener, category);
+            listener.notify(urlsToNotifyMap.get(holder));
             // We will update our cache file after each notification.
             // When our Registry has a subscribe failure due to network jitter, we can return at least the existing cache URL.
             saveProperties(url);
@@ -524,6 +567,43 @@ public abstract class AbstractRegistry implements Registry {
         @Override
         public void run() {
             doSaveProperties(version);
+        }
+    }
+
+    /**
+     * key of notifyUrls
+     */
+    private class NotifyHolder {
+
+        private final URL consumerUrl;
+
+        private final NotifyListener notifyListener;
+
+        //category for urls to notify
+        private final String category;
+
+        NotifyHolder(URL url, NotifyListener notifyListener, String category) {
+            if (url == null || notifyListener == null) {
+                throw new IllegalArgumentException();
+            }
+            this.consumerUrl = url;
+            this.notifyListener = notifyListener;
+            this.category= category;
+        }
+
+        @Override
+        public int hashCode() {
+            return consumerUrl.hashCode() + notifyListener.hashCode() + category.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof FailbackRegistry.Holder) {
+                NotifyHolder h = (NotifyHolder) obj;
+                return this.consumerUrl.equals(h.consumerUrl) && this.notifyListener.equals(h.notifyListener)&& category.equals(h.category);
+            } else {
+                return false;
+            }
         }
     }
 
