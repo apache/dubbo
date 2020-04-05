@@ -30,6 +30,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
 import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.REGISTRY_RETRY_PERIOD_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -154,7 +156,7 @@ public class FailbackRegistryTest {
     }
 
     @Test
-    public void testDoRetry_nofify() throws Exception {
+    public void testDoRetry_notify() throws Exception {
 
         //Initial value 0
         final AtomicInteger count = new AtomicInteger(0);
@@ -184,7 +186,7 @@ public class FailbackRegistryTest {
     }
 
     @Test
-    public void testDoRetry_nofify_for_3_times() throws Exception {
+    public void testDoRetry_notify_with_multiple_retry() throws Exception {
 
         //Initial value 0
         final AtomicInteger count = new AtomicInteger(0);
@@ -205,6 +207,36 @@ public class FailbackRegistryTest {
         assertEquals(1, count.get()); //Make sure that the subscribe call has just been called once count.incrementAndGet after the call is completed
         //Wait for the timer.
         Thread.sleep(FAILED_PERIOD*(trytimes+1));
+
+        assertEquals(3, count.get());
+    }
+
+    @Test
+    public void testDoRetry_notify_with_multiple_subscribe() throws Exception {
+
+        //Initial value 0
+        final AtomicInteger count = new AtomicInteger(0);
+
+        NotifyListener listner = new NotifyListener() {
+            @Override
+            public void notify(List<URL> urls) {
+                count.incrementAndGet();
+                //The exception is thrown for the first time to see if the back will be called again to incrementAndGet
+//                if (count.get() == 1L || count.get() == 2L) {
+                    throw new RuntimeException("test exception please ignore");
+//                }
+            }
+        };
+        registry = new MockRegistry(registryUrl, new CountDownLatch(0));
+        URL subscribeUrl = URL.valueOf("consumer://127.0.0.1/demoservice?check=false&method=get&retry.period=200");
+        URL providerUrl = URL.valueOf("remote://127.0.0.1/demoservice?method=get&retry.period=200");
+        registry.notify(subscribeUrl, listner, Arrays.asList(new URL[]{providerUrl}));
+        registry.notify(subscribeUrl, listner, Arrays.asList(new URL[]{providerUrl}));
+
+        //Wait for the timer.
+//        Thread.sleep(FAILED_PERIOD*(trytimes+1));
+        Thread.sleep(1000000);
+
 
         assertEquals(3, count.get());
     }
@@ -250,6 +282,11 @@ public class FailbackRegistryTest {
          */
         public void setBad(boolean bad) {
             this.bad = bad;
+        }
+
+        @Override
+        public void notify(URL url, NotifyListener listener, List<URL> urls) {
+            super.notify(url, listener, urls);
         }
 
         @Override

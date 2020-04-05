@@ -152,7 +152,7 @@ public abstract class AbstractRegistry implements Registry {
         for (String category : categoryUrlsMap.keySet()) {
             NotifyHolder notifyHolder = new NotifyHolder(consumerUrl, notifyListener, category);
             if (urlsToNotifyMap.containsKey(notifyHolder)) {
-                List<URL> categoryUrls = urlsToNotifyMap.get(category);
+                List<URL> categoryUrls = urlsToNotifyMap.get(notifyHolder);
                 categoryUrls.clear();
                 categoryUrls.addAll(categoryUrlsMap.get(category));
                 receivedNotificationVersionMap.get(notifyHolder).incrementAndGet();
