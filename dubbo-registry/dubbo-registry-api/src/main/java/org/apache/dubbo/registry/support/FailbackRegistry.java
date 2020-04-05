@@ -188,6 +188,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         Holder h = new Holder(url, listener);
         FailedNotifiedTask newTask = new FailedNotifiedTask(url, this, listener);
         newTask.addUrlToRetry(urls);
+        //add retryTask to timer
         retryTimer.newTimeout(newTask, retryPeriod, TimeUnit.MILLISECONDS);
     }
 

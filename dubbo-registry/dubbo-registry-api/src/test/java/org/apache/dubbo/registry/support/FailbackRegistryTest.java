@@ -57,8 +57,6 @@ public class FailbackRegistryTest {
 
     /**
      * Test method for retry
-     *
-     * @throws Exception
      */
     @Test
     public void testDoRetry() throws Exception {
@@ -149,7 +147,6 @@ public class FailbackRegistryTest {
                 break;
             Thread.sleep(sleeptime);
         }
-//        Thread.sleep(100000);
         assertEquals(0, latch.getCount());
         //The failedsubcribe corresponding key will be cleared when unsubscribing
         assertEquals(true, notified.get());
