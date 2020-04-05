@@ -49,7 +49,7 @@ public class FailbackRegistryTest {
     @BeforeEach
     public void setUp() throws Exception {
         service = "org.apache.dubbo.test.DemoService";
-        serviceUrl = URL.valueOf("remote://127.0.0.1/demoservice?method=get");
+        serviceUrl = URL.valueOf("remote://127.0.0.1/demoservice?method=get").addParameter(REGISTRY_RETRY_PERIOD_KEY, String.valueOf(FAILED_PERIOD));
         registryUrl = URL.valueOf("http://1.2.3.4:9090/registry?check=false&file=N/A").addParameter(REGISTRY_RETRY_PERIOD_KEY, String.valueOf(FAILED_PERIOD));
     }
 
@@ -181,6 +181,32 @@ public class FailbackRegistryTest {
             Thread.sleep(sleeptime);
         }
         assertEquals(2, count.get());
+    }
+
+    @Test
+    public void testDoRetry_nofify_for_3_times() throws Exception {
+
+        //Initial value 0
+        final AtomicInteger count = new AtomicInteger(0);
+
+        NotifyListener listner = new NotifyListener() {
+            @Override
+            public void notify(List<URL> urls) {
+                count.incrementAndGet();
+                //The exception is thrown for the first time to see if the back will be called again to incrementAndGet
+                if (count.get() == 1L || count.get() == 2L) {
+                    throw new RuntimeException("test exception please ignore");
+                }
+            }
+        };
+        registry = new MockRegistry(registryUrl, new CountDownLatch(0));
+        registry.subscribe(serviceUrl.setProtocol(CONSUMER_PROTOCOL).addParameters(CollectionUtils.toStringMap("check", "false")), listner);
+
+        assertEquals(1, count.get()); //Make sure that the subscribe call has just been called once count.incrementAndGet after the call is completed
+        //Wait for the timer.
+        Thread.sleep(FAILED_PERIOD*(trytimes+1));
+
+        assertEquals(3, count.get());
     }
 
     @Test

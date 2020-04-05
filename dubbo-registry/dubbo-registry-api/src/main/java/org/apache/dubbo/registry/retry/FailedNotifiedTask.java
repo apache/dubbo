@@ -65,6 +65,7 @@ public final class FailedNotifiedTask extends AbstractRetryTask {
                 //When notify with success, clear urls and stop this task
                 urls.clear();
                 this.cancel();
+                logger.info("Retry to notify with success for subscribe " + url);
             } catch (Exception e) {
                 //When notify with failure, retry again
                 reput(timeout, retryPeriod);
