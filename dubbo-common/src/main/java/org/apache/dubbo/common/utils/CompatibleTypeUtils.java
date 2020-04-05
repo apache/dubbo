@@ -29,8 +29,6 @@ import java.util.Set;
 
 public class CompatibleTypeUtils {
 
-    private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
-
     private CompatibleTypeUtils() {
     }
 
