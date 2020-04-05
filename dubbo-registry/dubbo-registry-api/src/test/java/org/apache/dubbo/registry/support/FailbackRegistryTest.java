@@ -202,7 +202,6 @@ public class FailbackRegistryTest {
         registry.subscribe(serviceUrl.setProtocol(CONSUMER_PROTOCOL).addParameters(CollectionUtils.toStringMap("check", "false")), listner);
 
         assertEquals(1, count.get()); //Make sure that the subscribe call has just been called once count.incrementAndGet after the call is completed
-        //Wait for the timer.
         Thread.sleep(FAILED_PERIOD*(trytimes+1));
 
         assertEquals(3, count.get());
