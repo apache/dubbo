@@ -186,7 +186,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
 
     private void addFailedNotified(URL url, NotifyListener listener, List<URL> urls) {
         Holder h = new Holder(url, listener);
-        FailedNotifiedTask newTask = new FailedNotifiedTask(url, listener);
+        FailedNotifiedTask newTask = new FailedNotifiedTask(url, this, listener);
         FailedNotifiedTask f = failedNotified.putIfAbsent(h, newTask);
         if (f == null) {
             // never has a retry task. then start a new task for retry.

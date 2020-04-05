@@ -37,8 +37,8 @@ public final class FailedNotifiedTask extends AbstractRetryTask {
 
     private final List<URL> urls = new CopyOnWriteArrayList<>();
 
-    public FailedNotifiedTask(URL url, NotifyListener listener) {
-        super(url, null, NAME);
+    public FailedNotifiedTask(URL url, FailbackRegistry registry, NotifyListener listener) {
+        super(url, registry, NAME);
         if (listener == null) {
             throw new IllegalArgumentException();
         }
