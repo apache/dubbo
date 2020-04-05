@@ -36,7 +36,7 @@ import static org.mockito.Mockito.*;
  *
  * @since 2.7.3
  */
-class NacosServiceNameTest {
+public class NacosServiceNameTest {
 
     public static final String NAME_SEPARATOR = ":";
 
