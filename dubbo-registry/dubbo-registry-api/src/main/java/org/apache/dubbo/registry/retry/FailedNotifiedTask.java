@@ -59,10 +59,17 @@ public final class FailedNotifiedTask extends AbstractRetryTask {
     @Override
     protected void doRetry(URL url, FailbackRegistry registry, Timeout timeout) {
         if (CollectionUtils.isNotEmpty(urls)) {
-            //TODO describe bug with privious code listener.notify(urls);
-            registry.doNotify(url, listener, urls);
-            urls.clear();
+            try {
+                registry.doNotify(url, listener, urls);
+
+                //When notify with success, clear urls and stop this task
+                urls.clear();
+                this.cancel();
+            } catch (Exception e) {
+                //When notify with failure, retry again
+                reput(timeout, retryPeriod);
+                logger.error("Retry to notify with failure(will retry again) for subscribe " + url + ", waiting for retry, cause: " + e.getMessage(), e);
+            }
         }
-        reput(timeout, retryPeriod);
     }
 }
