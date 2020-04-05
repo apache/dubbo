@@ -187,16 +187,8 @@ public abstract class FailbackRegistry extends AbstractRegistry {
     private void addFailedNotified(URL url, NotifyListener listener, List<URL> urls) {
         Holder h = new Holder(url, listener);
         FailedNotifiedTask newTask = new FailedNotifiedTask(url, this, listener);
-        FailedNotifiedTask oldNotifiedTask = failedNotified.putIfAbsent(h, newTask);
-        if (oldNotifiedTask == null) {
-            // never has a retry task. then start a new task for retry.
-            newTask.addUrlToRetry(urls);
-            retryTimer.newTimeout(newTask, retryPeriod, TimeUnit.MILLISECONDS);
-        } else {
-            // just add urls which needs retry.
-            //FIXME newTask maybe will not be executed, and oldNotifiedTask may has been stopped(notify with success or run more times than retry time)should we also add it to retryTimer?
-            newTask.addUrlToRetry(urls);
-        }
+        newTask.addUrlToRetry(urls);
+        retryTimer.newTimeout(newTask, retryPeriod, TimeUnit.MILLISECONDS);
     }
 
     private void removeFailedNotified(URL url, NotifyListener listener) {

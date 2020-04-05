@@ -211,34 +211,68 @@ public class FailbackRegistryTest {
         assertEquals(3, count.get());
     }
 
+    /**
+     * Test Case for issue https://github.com/apache/dubbo/issues/5961
+     * @throws Exception
+     */
     @Test
-    public void testDoRetry_notify_with_multiple_subscribe() throws Exception {
+    public void testDoRetry_notify_with_multiple_notify_and_order_guarantee() throws Exception {
 
         //Initial value 0
-        final AtomicInteger count = new AtomicInteger(0);
+        final AtomicInteger notifyCount = new AtomicInteger(0);
+        final AtomicInteger dataVersion = new AtomicInteger(0);
 
         NotifyListener listner = new NotifyListener() {
             @Override
             public void notify(List<URL> urls) {
-                count.incrementAndGet();
+                notifyCount.incrementAndGet();
                 //The exception is thrown for the first time to see if the back will be called again to incrementAndGet
-//                if (count.get() == 1L || count.get() == 2L) {
+                if (notifyCount.get() == 1L ) {
                     throw new RuntimeException("test exception please ignore");
-//                }
+                }
+                URL providerUrl = urls.get(0);
+                dataVersion.set(Integer.valueOf(providerUrl.getParameter("dataVersion")));
             }
         };
         registry = new MockRegistry(registryUrl, new CountDownLatch(0));
         URL subscribeUrl = URL.valueOf("consumer://127.0.0.1/demoservice?check=false&method=get&retry.period=200");
-        URL providerUrl = URL.valueOf("remote://127.0.0.1/demoservice?method=get&retry.period=200");
-        registry.notify(subscribeUrl, listner, Arrays.asList(new URL[]{providerUrl}));
-        registry.notify(subscribeUrl, listner, Arrays.asList(new URL[]{providerUrl}));
+        URL providerUrl1 = URL.valueOf("remote://127.0.0.1/demoservice?method=get&retry.period=200&dataVersion=1");
+        URL providerUrl2 = URL.valueOf("remote://127.0.0.1/demoservice?method=get&retry.period=200&dataVersion=2");
+        registry.notify(subscribeUrl, listner, Arrays.asList(new URL[]{providerUrl1}));
+        registry.notify(subscribeUrl, listner, Arrays.asList(new URL[]{providerUrl2}));
 
         //Wait for the timer.
-//        Thread.sleep(FAILED_PERIOD*(trytimes+1));
-        Thread.sleep(1000000);
+        Thread.sleep(FAILED_PERIOD*(trytimes*2));
 
+        assertEquals(2, notifyCount.get());
+        assertEquals(2, dataVersion.get());
+    }
 
-        assertEquals(3, count.get());
+    @Test
+    public void testDoRetry_notify_with_multiple_notify_max_retry() throws Exception {
+
+        //Initial value 0
+        final AtomicInteger notifyCount = new AtomicInteger(0);
+
+        NotifyListener listner = new NotifyListener() {
+            @Override
+            public void notify(List<URL> urls) {
+                notifyCount.incrementAndGet();
+                //The exception is thrown for the first time to see if the back will be called again to incrementAndGet
+                throw new RuntimeException("test exception please ignore");
+            }
+        };
+        registry = new MockRegistry(registryUrl, new CountDownLatch(0));
+        URL subscribeUrl = URL.valueOf("consumer://127.0.0.1/demoservice?check=false&method=get&retry.period=200");
+        URL providerUrl1 = URL.valueOf("remote://127.0.0.1/demoservice?method=get&retry.period=200&dataVersion=1");
+        URL providerUrl2 = URL.valueOf("remote://127.0.0.1/demoservice?method=get&retry.period=200&dataVersion=2");
+        registry.notify(subscribeUrl, listner, Arrays.asList(new URL[]{providerUrl1}));
+        registry.notify(subscribeUrl, listner, Arrays.asList(new URL[]{providerUrl2}));
+
+        //Wait for the timer.
+        Thread.sleep(FAILED_PERIOD*(trytimes*2));
+
+        assertEquals(8, notifyCount.get());
     }
 
     @Test
