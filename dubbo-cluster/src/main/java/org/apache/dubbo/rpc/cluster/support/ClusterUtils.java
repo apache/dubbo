@@ -117,4 +117,14 @@ public class ClusterUtils {
         return remoteUrl.clearParameters().addParameters(map);
     }
 
+    public static Map<String, String> filterProviderParameters(Map<String, String> parameters) {
+        if (null == parameters || parameters.size() == 0) {
+            return parameters;
+        }
+        Map<String, String> map = new HashMap<>(parameters);
+        // provider tag should not merge to consumer's parameters
+        map.remove(TAG_KEY);
+        return map;
+    }
+
 }
