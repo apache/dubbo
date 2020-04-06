@@ -182,6 +182,14 @@ public class FailbackRegistryTest {
         assertEquals(2, count.get());
     }
 
+    /**
+     * Notify with the following steps:
+     * 1. Notify in main loop -> fail with exception
+     * 2. Notify in FailedNotifiedTask for the first time -> fail with exception
+     * 3. Notify in FailedNotifiedTask for the second time -> succeed
+     * assert that:notify 3 times in total
+     * @throws Exception
+     */
     @Test
     public void testDoRetry_notify_with_multiple_retry() throws Exception {
 
@@ -190,7 +198,7 @@ public class FailbackRegistryTest {
 
         NotifyListener listner = new NotifyListener() {
             @Override
-            public void notify(List<URL> urls) {
+            public synchronized void notify(List<URL> urls) {
                 count.incrementAndGet();
                 //The exception is thrown for the first time to see if the back will be called again to incrementAndGet
                 if (count.get() == 1L || count.get() == 2L) {
@@ -202,13 +210,21 @@ public class FailbackRegistryTest {
         registry.subscribe(serviceUrl.setProtocol(CONSUMER_PROTOCOL).addParameters(CollectionUtils.toStringMap("check", "false")), listner);
 
         assertEquals(1, count.get()); //Make sure that the subscribe call has just been called once count.incrementAndGet after the call is completed
-        Thread.sleep(FAILED_PERIOD*(trytimes+2));
+        Thread.sleep(FAILED_PERIOD * 2);
 
         assertEquals(3, count.get());
     }
 
     /**
      * Test Case for issue https://github.com/apache/dubbo/issues/5961
+     * Notify with the following steps:
+     * 1. Notify in main loop (dataVersion 1)-> fail with exception
+     * 2. Notify in main loop (dataVersion 2)-> succeed
+     * 3. Notify in FailedNotifiedTask(dataVersion 1) for the first time
+     *    -> dataVersion is already 2, so useless notify is avoided
+     *  assert that:
+     *  1. notify 2 times in total
+     *  2. dataVersion is 2
      * @throws Exception
      */
     @Test
@@ -220,7 +236,7 @@ public class FailbackRegistryTest {
 
         NotifyListener listner = new NotifyListener() {
             @Override
-            public void notify(List<URL> urls) {
+            public synchronized void notify(List<URL> urls) {
                 notifyCount.incrementAndGet();
                 //The exception is thrown for the first time to see if the back will be called again to incrementAndGet
                 if (notifyCount.get() == 1L ) {
@@ -238,12 +254,25 @@ public class FailbackRegistryTest {
         registry.notify(subscribeUrl, listner, Arrays.asList(new URL[]{providerUrl2}));
 
         //Wait for the timer.
-        Thread.sleep(FAILED_PERIOD*(trytimes*2));
+        Thread.sleep(FAILED_PERIOD* 2);
 
         assertEquals(2, notifyCount.get());
         assertEquals(2, dataVersion.get());
     }
 
+    /**
+     * Notify with the following steps:
+     * 1. Notify in main loop (dataVersion 1) -> fail with exception
+     * 2. Notify in main loop (dataVersion 1) -> fail with exception
+     * 3. Notify in FailedNotifiedTask(dataVersion 1) for 3(actual retryTimes) time
+     *    -> with exception
+     * 4. Notify in FailedNotifiedTask(dataVersion 2) for 3(actual retryTimes) time
+     *    -> with exception
+     * 3 and 4 are executed in parallel
+     *  assert that:
+     *  1. notify 8 times in total
+     * @throws Exception
+     */
     @Test
     public void testDoRetry_notify_with_multiple_notify_max_retry() throws Exception {
 
@@ -252,7 +281,7 @@ public class FailbackRegistryTest {
 
         NotifyListener listner = new NotifyListener() {
             @Override
-            public void notify(List<URL> urls) {
+            public synchronized void notify(List<URL> urls) {
                 notifyCount.incrementAndGet();
                 //The exception is thrown for the first time to see if the back will be called again to incrementAndGet
                 throw new RuntimeException("test exception please ignore");
@@ -266,7 +295,7 @@ public class FailbackRegistryTest {
         registry.notify(subscribeUrl, listner, Arrays.asList(new URL[]{providerUrl2}));
 
         //Wait for the timer.
-        Thread.sleep(FAILED_PERIOD*(trytimes*2));
+        Thread.sleep(FAILED_PERIOD * 6);
 
         assertEquals(8, notifyCount.get());
     }
