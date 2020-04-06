@@ -370,7 +370,6 @@ public abstract class FailbackRegistry extends AbstractRegistry {
 
             doNotify(url, listener, urls);
         } catch (Exception t) {
-            // , retry for
             /**
              * Record a failed notify request to a failed list
              * Retry for retryTimes util notify with success
