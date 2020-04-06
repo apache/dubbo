@@ -28,6 +28,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * FailedNotifiedTask
+ * Retry to notify failed urls util:
+ * 1. notify with success
+ * or
+ * 2. retry for (retryTimes) times
+ * Disorder problem of notify (https://github.com/apache/dubbo/issues/5961) has been fixed since 2.7.7
  */
 public final class FailedNotifiedTask extends AbstractRetryTask {
 
@@ -58,6 +63,18 @@ public final class FailedNotifiedTask extends AbstractRetryTask {
 
     @Override
     protected void doRetry(URL url, FailbackRegistry registry, Timeout timeout) {
+        /**
+         * Rewrite this method in 2.7.7, to resolve the following problems:
+         * 1. call NotifyListener.notify directly is not clean:
+         *     a. will not do some necessary steps:
+         *          i. url check(such as UrlUtils.isMatch(url, u))
+         *          ii. update our cache file after each successful notification
+         *     b. keep notify codes in two place(main loop and here) will
+         *        make it easy to produce bug
+         * 2. do not stop the task when notify with success
+         * 3. do not keep urls to retry when notify with failure
+         * We have resolved the above problem in 2.7.7
+         */
         if (CollectionUtils.isNotEmpty(urls)) {
             try {
                 registry.doNotify(url, listener, urls);
