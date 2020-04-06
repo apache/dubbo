@@ -507,9 +507,9 @@ public abstract class AbstractRegistry implements Registry {
                 long notifiedUrlsVersion = notifiedVersionMap.get(holder);
                 if (notifiedUrlsVersion >= urlsVersionToNotify) {
                     /**
-                     *
+                     * To avoid useless notify operation may be triggered by
+                     * FailedNotifiedTask or main loop
                      */
-                    //To avoid useless notify operation (which may be triggered by FailedNotifiedTask)
                     break;
                 }
                 listener.notify(urlsToNotifyMap.get(holder));
