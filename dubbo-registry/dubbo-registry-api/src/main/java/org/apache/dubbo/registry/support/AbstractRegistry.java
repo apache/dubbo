@@ -495,11 +495,20 @@ public abstract class AbstractRegistry implements Registry {
             String category = entry.getKey();
             List<URL> categoryList = entry.getValue();
             categoryNotified.put(category, categoryList);
+            /**
+             * Rewrite the following codes since 2.7.7 of notify for reasons:
+             * 1. Resolve disorder problem mentioned in
+             *      issue(https://github.com/apache/dubbo/issues/5961)
+             * 2. Add version compare to avoid useless notify
+             */
             NotifyHolder holder = new NotifyHolder(url, listener, category);
             try {
                 long urlsVersionToNotify = receivedNotificationVersionMap.get(holder).longValue();
                 long notifiedUrlsVersion = notifiedVersionMap.get(holder);
                 if (notifiedUrlsVersion >= urlsVersionToNotify) {
+                    /**
+                     *
+                     */
                     //To avoid useless notify operation (which may be triggered by FailedNotifiedTask)
                     break;
                 }
@@ -511,7 +520,10 @@ public abstract class AbstractRegistry implements Registry {
                  */
                 notifiedVersionMap.put(holder, urlsVersionToNotify);
             } catch (Exception e) {
-                // when notify with exception, throw to the upper layer(such as FailbackRegistry)
+                //
+                /**
+                 * When notify with exception, log and throw to the upper layer(FailbackRegistry)
+                 */
                 logger.error("Notify urls with failure for subscribe url " + url + ", urls: " + urls, e);
                 throw e;
             }
