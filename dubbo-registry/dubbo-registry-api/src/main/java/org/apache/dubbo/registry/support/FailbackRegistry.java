@@ -186,6 +186,13 @@ public abstract class FailbackRegistry extends AbstractRegistry {
 
     private void addFailedNotified(URL url, NotifyListener listener, List<URL> urls) {
         Holder h = new Holder(url, listener);
+        /**
+         * Rewrite the following code for the following reason:
+         * 1. To adaptive change with construct method of FailedNotifiedTask
+         * 2. if we don't add newTask to retryTimer, newTask will not be executed yet.
+         *      If oldTask has been stopped, notify of new urls will not retry
+         * We have resolved the above problems since 2.7.7
+         */
         FailedNotifiedTask newTask = new FailedNotifiedTask(url, this, listener);
         newTask.addUrlToRetry(urls);
         //Add retry task to timer
@@ -355,12 +362,19 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             throw new IllegalArgumentException("notify listener == null");
         }
         try {
-            //update notification data at first to avoid order problem as mentioned in the issue(https://github.com/apache/dubbo/issues/5961)
+            /**
+             * Update notification data at first to avoid disorder problem as mentioned
+             * in issue(https://github.com/apache/dubbo/issues/5961)
+             */
             updateUrlsToNotify(url, listener, urls);
 
             doNotify(url, listener, urls);
         } catch (Exception t) {
-            // Record a failed registration request to a failed list, retry regularly
+            // , retry for
+            /**
+             * Record a failed notify request to a failed list
+             * Retry for retryTimes util notify with success
+             */
             addFailedNotified(url, listener, urls);
             logger.error("Failed to notify for subscribe " + url + ", waiting for retry, cause: " + t.getMessage(), t);
         }
