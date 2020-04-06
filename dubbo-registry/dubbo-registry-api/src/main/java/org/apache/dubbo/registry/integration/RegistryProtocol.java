@@ -31,6 +31,7 @@ import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.registry.RegistryService;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -95,6 +96,7 @@ import static org.apache.dubbo.remoting.Constants.CHECK_KEY;
 import static org.apache.dubbo.remoting.Constants.CODEC_KEY;
 import static org.apache.dubbo.remoting.Constants.CONNECTIONS_KEY;
 import static org.apache.dubbo.remoting.Constants.EXCHANGER_KEY;
+import static org.apache.dubbo.remoting.Constants.PAYLOAD_KEY;
 import static org.apache.dubbo.remoting.Constants.SERIALIZATION_KEY;
 import static org.apache.dubbo.rpc.Constants.DEPRECATED_KEY;
 import static org.apache.dubbo.rpc.Constants.INTERFACES;
@@ -356,6 +358,15 @@ public class RegistryProtocol implements Protocol {
                     extraKeys += ",";
                 }
                 extraKeys += INTERFACE_KEY;
+            }
+            /**
+             * @see <a href=https://github.com/apache/dubbo/issues/5830>issue 5830</a>
+             */
+            if (providerUrl.getParameter(PAYLOAD_KEY, Constants.DEFAULT_PAYLOAD) > Constants.DEFAULT_PAYLOAD) {
+                if (StringUtils.isNotEmpty(extraKeys)) {
+                    extraKeys += ",";
+                }
+                extraKeys += PAYLOAD_KEY;
             }
             String[] paramsToRegistry = getParamsToRegistry(DEFAULT_REGISTER_PROVIDER_KEYS
                     , COMMA_SPLIT_PATTERN.split(extraKeys));
