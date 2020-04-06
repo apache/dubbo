@@ -200,7 +200,6 @@ public class FailbackRegistryTest {
             @Override
             public synchronized void notify(List<URL> urls) {
                 count.incrementAndGet();
-                //The exception is thrown for the first time to see if the back will be called again to incrementAndGet
                 if (count.get() == 1L || count.get() == 2L) {
                     throw new RuntimeException("test exception please ignore");
                 }
@@ -210,7 +209,7 @@ public class FailbackRegistryTest {
         registry.subscribe(serviceUrl.setProtocol(CONSUMER_PROTOCOL).addParameters(CollectionUtils.toStringMap("check", "false")), listner);
 
         assertEquals(1, count.get()); //Make sure that the subscribe call has just been called once count.incrementAndGet after the call is completed
-        Thread.sleep(FAILED_PERIOD * 2);
+        Thread.sleep(FAILED_PERIOD * 8);
 
         assertEquals(3, count.get());
     }
@@ -254,7 +253,7 @@ public class FailbackRegistryTest {
         registry.notify(subscribeUrl, listner, Arrays.asList(new URL[]{providerUrl2}));
 
         //Wait for the timer.
-        Thread.sleep(FAILED_PERIOD* 2);
+        Thread.sleep(FAILED_PERIOD * 2   );
 
         assertEquals(2, notifyCount.get());
         assertEquals(2, dataVersion.get());
@@ -283,7 +282,6 @@ public class FailbackRegistryTest {
             @Override
             public synchronized void notify(List<URL> urls) {
                 notifyCount.incrementAndGet();
-                //The exception is thrown for the first time to see if the back will be called again to incrementAndGet
                 throw new RuntimeException("test exception please ignore");
             }
         };
@@ -295,7 +293,7 @@ public class FailbackRegistryTest {
         registry.notify(subscribeUrl, listner, Arrays.asList(new URL[]{providerUrl2}));
 
         //Wait for the timer.
-        Thread.sleep(FAILED_PERIOD * 6);
+        Thread.sleep(FAILED_PERIOD * 8);
 
         assertEquals(8, notifyCount.get());
     }
