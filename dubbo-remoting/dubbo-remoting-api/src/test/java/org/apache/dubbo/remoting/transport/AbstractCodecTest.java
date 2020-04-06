@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.Channel;
 
 import org.hamcrest.CoreMatchers;
+import org.junit.jupiter.api.Test;
 import org.mockito.internal.verification.VerificationModeFactory;
 
 import java.io.IOException;
@@ -32,6 +33,7 @@ import static org.mockito.Mockito.verify;
 
 public class AbstractCodecTest  {
 
+    @Test
     public void test_checkPayload_default8M() throws Exception {
         Channel channel = mock(Channel.class);
         given(channel.getUrl()).willReturn(URL.valueOf("dubbo://1.1.1.1"));
@@ -50,6 +52,7 @@ public class AbstractCodecTest  {
         verify(channel, VerificationModeFactory.atLeastOnce()).getUrl();
     }
 
+    @Test
     public void test_checkPayload_minusPayloadNoLimit() throws Exception {
         Channel channel = mock(Channel.class);
         given(channel.getUrl()).willReturn(URL.valueOf("dubbo://1.1.1.1?payload=-1"));
@@ -57,5 +60,29 @@ public class AbstractCodecTest  {
         AbstractCodec.checkPayload(channel, 15 * 1024 * 1024);
 
         verify(channel, VerificationModeFactory.atLeastOnce()).getUrl();
+    }
+
+    //issue#5830 https://github.com/apache/dubbo/issues/5830
+    @Test
+    public void test_checkPayload_by_providerUrl() throws IOException {
+        Channel channel = mock(Channel.class);
+        given(channel.getUrl()).willReturn(URL.valueOf("dubbo://1.1.1.1?payload=104857600"));
+
+        AbstractCodec.checkPayload(channel, 9 * 1024 * 1024);
+
+        verify(channel, VerificationModeFactory.atLeastOnce()).getUrl();
+
+
+        given(channel.getUrl()).willReturn(URL.valueOf("dubbo://1.1.1.1"));
+
+        try {
+            AbstractCodec.checkPayload(channel, 9 * 1024 * 1024);
+        } catch (IOException expected) {
+            assertThat(expected.getMessage(), allOf(
+                    CoreMatchers.containsString("Data length too large: "),
+                    CoreMatchers.containsString("max payload: " + 8 * 1024 * 1024)
+            ));
+        }
+
     }
 }
