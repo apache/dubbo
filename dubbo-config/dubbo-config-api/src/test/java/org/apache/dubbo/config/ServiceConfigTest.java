@@ -168,7 +168,7 @@ public class ServiceConfigTest {
         delayService.export();
         assertTrue(delayService.getExportedUrls().isEmpty());
         //add 300ms to ensure that the delayService has been exported
-        TimeUnit.MILLISECONDS.sleep(delayService.getDelay() + 12000);
+        TimeUnit.MILLISECONDS.sleep(delayService.getDelay() + 300);
         assertThat(delayService.getExportedUrls(), hasSize(1));
     }
 
