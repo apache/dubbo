@@ -57,7 +57,7 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
         String methodName = RpcUtils.getMethodName(invocation);
         String key = invokers.get(0).getUrl().getServiceKey() + "." + methodName;
         // using the hashcode of list to compute the hash only pay attention to the elements in the list
-        int invokersHashCode = invokers.hashCode();
+        int invokersHashCode = getCorrespondingHashCode(invokers);
         ConsistentHashSelector<T> selector = (ConsistentHashSelector<T>) selectors.get(key);
         if (selector == null || selector.identityHashCode != invokersHashCode) {
             selectors.put(key, new ConsistentHashSelector<T>(invokers, methodName, invokersHashCode));
@@ -66,17 +66,19 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
         return selector.select(invocation);
     }
 
+    /**
+     * get hash code of invokers
+     * Make this method to public in order to use this method in test case
+     * @param invokers
+     * @return
+     */
+    public <T> int getCorrespondingHashCode(List<Invoker<T>> invokers){
+        return invokers.hashCode();
+    }
+
     private static final class ConsistentHashSelector<T> {
 
         private final TreeMap<Long, Invoker<T>> virtualInvokers;
-
-        private Map<String, Long> urlInvokeCountMap = new HashMap<>();
-
-        private int totalInvokeCount;
-
-        private int invokerCount;
-
-        private double overloadThread = 1.5F;
 
         private final int replicaNumber;
 
@@ -84,7 +86,27 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
 
         private final int[] argumentIndex;
 
+        /**
+         * key: server(invoker) address
+         * value: count of requests accept by certain server
+         */
+        private Map<String, Long> serverRequestCountMap = new HashMap<>();
 
+        /**
+         * count of total requests accept by all servers
+         */
+        private int totalRequestCount;
+
+        /**
+         * count of current servers(invokers)
+         */
+        private int serverCount;
+
+        /**
+         * the ratio which allow count of requests accept by each server
+         * overrate average (totalRequestCount/serverCount).
+         */
+        private double overloadRatioAllowed = 1.5F;
 
         ConsistentHashSelector(List<Invoker<T>> invokers, String methodName, int identityHashCode) {
             this.virtualInvokers = new TreeMap<Long, Invoker<T>>();
@@ -106,9 +128,10 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
                     }
                 }
             }
-            totalInvokeCount = 0;
-            invokerCount = invokers.size();
-            urlInvokeCountMap.clear();
+
+            totalRequestCount = 0;
+            serverCount = invokers.size();
+            serverRequestCountMap.clear();
         }
 
         public Invoker<T> select(Invocation invocation) {
@@ -128,30 +151,39 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
         }
 
         private Invoker<T> selectForKey(long hash) {
-            //TODO 要先加1吗？
-            ++totalInvokeCount;
+            ++totalRequestCount;
             Map.Entry<Long, Invoker<T>> entry = virtualInvokers.ceilingEntry(hash);
             if (entry == null) {
                 entry = virtualInvokers.firstEntry();
             }
-            //TODO FIXME 计算阈值要不要先加1
+            String serverAddress = entry.getValue().getUrl().getAddress();
+            double overloadThread = ((double) totalRequestCount / (double) serverCount) * overloadRatioAllowed;
 
-            while (urlInvokeCountMap.containsKey(entry.getValue().getUrl().getAddress()) && urlInvokeCountMap.get(entry.getValue().getUrl().getAddress()) > getVisitCountThread()) {
-                //遍历节点，找到不超限的节点
-                entry = getNextInvokerNode(virtualInvokers, entry);
+            /**
+             * Find a valid server node:
+             * 1. Not have accept request yet
+             * or
+             * 2. Not have overloaded (request count already accept < thread (average request count * overloadRatioAllowed ))
+             */
+            while (serverRequestCountMap.containsKey(serverAddress)
+                    && serverRequestCountMap.get(serverAddress) >= overloadThread) {
+                /**
+                 * If server node is not valid, get next node
+                 */
+                entry = virtualInvokers.higherEntry(entry.getKey());
+                if(entry == null){
+                    entry = virtualInvokers.firstEntry();
+                }
+                serverAddress = entry.getValue().getUrl().getAddress();
             }
 
-            if (!urlInvokeCountMap.containsKey(entry.getValue().getUrl().getAddress())) {
-                urlInvokeCountMap.put(entry.getValue().getUrl().getAddress(), 1L);
+            if (!serverRequestCountMap.containsKey(serverAddress)) {
+                //
+                serverRequestCountMap.put(serverAddress, 1L);
             } else {
-                urlInvokeCountMap.put(entry.getValue().getUrl().getAddress(), urlInvokeCountMap.get(entry.getValue().getUrl().getAddress()) + 1L);
+                serverRequestCountMap.put(serverAddress, serverRequestCountMap.get(entry.getValue().getUrl().getAddress()) + 1L);
             }
             return entry.getValue();
-        }
-
-        private long getVisitCountThread(){
-            //TODO FIXME 应该取上限
-            return (long) (((double) totalInvokeCount / (double) invokerCount) * overloadThread);
         }
 
         private Map.Entry<Long, Invoker<T>> getNextInvokerNode(TreeMap<Long, Invoker<T>> virtualInvokers, Map.Entry<Long, Invoker<T>> entry){
