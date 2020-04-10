@@ -16,10 +16,12 @@
  */
 package org.apache.dubbo.rpc.filter;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -27,6 +29,8 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 
 import java.util.Arrays;
+
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 
 /**
  * Log any invocation timeout, but don't stop server from running
@@ -49,9 +53,10 @@ public class TimeoutFilter implements Filter, Filter.Listener {
         Object startTime = invocation.get(TIMEOUT_FILTER_START_TIME);
         if (startTime != null) {
             long elapsed = System.currentTimeMillis() - (Long) startTime;
-            if (invoker.getUrl() != null && elapsed > invoker.getUrl().getMethodParameter(invocation.getMethodName(), "timeout", Integer.MAX_VALUE)) {
+            if (invoker.getUrl() != null && elapsed > getTimeout(invoker.getUrl(), invocation)) {
+                ((AppResponse) appResponse).clear(); // clear response in case of timeout.
                 if (logger.isWarnEnabled()) {
-                    logger.warn("invoke time out. method: " + invocation.getMethodName() + " arguments: " + Arrays.toString(invocation.getArguments()) + " , url is " + invoker.getUrl() + ", invoke elapsed " + elapsed + " ms.");
+                    logger.warn("invoke timed out. method: " + invocation.getMethodName() + " arguments: " + Arrays.toString(invocation.getArguments()) + " , url is " + invoker.getUrl() + ", invoke elapsed " + elapsed + " ms.");
                 }
             }
         }
@@ -60,5 +65,22 @@ public class TimeoutFilter implements Filter, Filter.Listener {
     @Override
     public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
 
+    }
+
+    private long getTimeout(URL url, Invocation invocation) {
+        long timeout = Integer.MAX_VALUE;
+        Object genericTimeout = invocation.getObjectAttachment(TIMEOUT_KEY);
+        if (genericTimeout != null) {
+            try {
+                if (genericTimeout instanceof String) {
+                    timeout = Long.parseLong((String) genericTimeout);
+                } else {
+                    timeout = (Long) genericTimeout;
+                }
+            } catch (Exception e) {
+                // ignore
+            }
+        }
+        return timeout;
     }
 }
