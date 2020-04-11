@@ -34,7 +34,6 @@ import java.util.function.Predicate;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.unmodifiableSet;
-import static java.util.stream.Collectors.toList;
 import static org.apache.dubbo.common.function.Streams.filterAll;
 import static org.apache.dubbo.common.utils.ArrayUtils.isNotEmpty;
 import static org.apache.dubbo.common.utils.CollectionUtils.ofSet;
@@ -401,7 +400,6 @@ public class ClassUtils {
         allInterfaces.stream()
                 .map(ClassUtils::getAllInterfaces)
                 .flatMap(Collection::stream)
-                .collect(toList())
                 .forEach(allInterfaces::add);
 
         return filterAll(allInterfaces, interfaceFilters);
