@@ -154,6 +154,12 @@ public abstract class Wrapper {
         // get all public method.
         boolean hasMethod = hasMethods(methods);
         if (hasMethod) {
+            Map<String, Integer> sameNameMethodCount = new HashMap<>();
+            for (Method m : methods) {
+                sameNameMethodCount.compute(m.getName(),
+                        (key, oldValue) -> oldValue == null ? 1 : oldValue + 1);
+            }
+            
             c3.append(" try{");
             for (Method m : methods) {
                 //ignore Object's method.
@@ -166,13 +172,7 @@ public abstract class Wrapper {
                 int len = m.getParameterTypes().length;
                 c3.append(" && ").append(" $3.length == ").append(len);
 
-                boolean override = false;
-                for (Method m2 : methods) {
-                    if (m != m2 && m.getName().equals(m2.getName())) {
-                        override = true;
-                        break;
-                    }
-                }
+                boolean override = sameNameMethodCount.get(m.getName()) > 1;
                 if (override) {
                     if (len > 0) {
                         for (int l = 0; l < len; l++) {
