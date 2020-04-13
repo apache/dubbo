@@ -168,16 +168,17 @@ public class RegistryProtocol implements Protocol {
         return overrideListeners;
     }
 
-    public void register(URL registryUrl, URL registeredProviderUrl) {
+    private void register(URL registryUrl, URL registeredProviderUrl) {
         Registry registry = registryFactory.getRegistry(registryUrl);
         registry.register(registeredProviderUrl);
+    }
 
+    private void registerStatedUrl(URL registryUrl, URL registeredProviderUrl, boolean registered) {
         ProviderModel model = ApplicationModel.getProviderModel(registeredProviderUrl.getServiceKey());
         model.addStatedUrl(new ProviderModel.RegisterStatedURL(
                 registeredProviderUrl,
                 registryUrl,
-                true
-        ));
+                registered));
     }
 
     @Override
@@ -201,11 +202,15 @@ public class RegistryProtocol implements Protocol {
         // url to registry
         final Registry registry = getRegistry(originInvoker);
         final URL registeredProviderUrl = getUrlToRegistry(providerUrl, registryUrl);
+
         // decide if we need to delay publish
         boolean register = providerUrl.getParameter(REGISTER_KEY, true);
         if (register) {
             register(registryUrl, registeredProviderUrl);
         }
+
+        // register stated url on provider model
+        registerStatedUrl(registryUrl, registeredProviderUrl, register);
 
         // Deprecated! Subscribe to override rules in 2.6.x or before.
         registry.subscribe(overrideSubscribeUrl, overrideSubscribeListener);
