@@ -44,8 +44,6 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
-
 /**
  * AbstractInvoker.
  */
@@ -145,9 +143,6 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         if (CollectionUtils.isNotEmptyMap(attachment)) {
             invocation.addObjectAttachmentsIfAbsent(attachment);
         }
-
-        // pass default timeout set by reference
-        invocation.setObjectAttachment(TIMEOUT_KEY, getUrl().getMethodParameter(inv.getMethodName(), TIMEOUT_KEY));
 
         Map<String, Object> contextAttachments = RpcContext.getContext().getObjectAttachments();
         if (CollectionUtils.isNotEmptyMap(contextAttachments)) {
