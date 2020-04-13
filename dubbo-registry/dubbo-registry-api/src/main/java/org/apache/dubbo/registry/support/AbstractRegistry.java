@@ -162,10 +162,6 @@ public abstract class AbstractRegistry implements Registry {
         return lastCacheChanged;
     }
 
-    public URL getRegistryUrl() {
-        return registryUrl;
-    }
-
     public void doSaveProperties(long version) {
         if (version < lastCacheChanged.get()) {
             return;
