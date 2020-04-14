@@ -560,6 +560,9 @@
                                 <exclude>
                                     **/org/apache/dubbo/common/serialize/protobuf/support/wrapper/ThrowablePB.java
                                 </exclude>
+                                <exclude>
+                                    **/org/apache/dubbo/common/utils/Utf8Utils.java
+                                </exclude>
                                 <exclude>.github/**</exclude>
                                 <exclude>compiler/**</exclude>
                             </excludes>
