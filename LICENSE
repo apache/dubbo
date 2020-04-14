@@ -243,11 +243,11 @@ https://github.com/edazdarevic/CIDRUtils. The project is licensed under a MIT Li
     * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
     * THE SOFTWARE.
 
-For :
+For the file org.apache.dubbo.common.utils.Utf8Utils.java:
 
-This product contains a file "org.apache.dubbo.common.utils.Utf8Utils.java" that form the Protocol Buffers project.
-Protocol Buffers is published at https://developers.google.com/protocol-buffers/ and is licensed under the following
-License:
+This product contains a portion of the Protocol Buffers project, which is published at
+https://developers.google.com/protocol-buffers/ and is licensed under the following License:
+
     Copyright 2008 Google Inc.  All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
