@@ -314,12 +314,7 @@ public class DubboProtocol extends AbstractProtocol {
         if (isServer) {
             ProtocolServer server = serverMap.get(key);
             if (server == null) {
-                synchronized (this) {
-                    server = serverMap.get(key);
-                    if (server == null) {
-                        serverMap.put(key, createServer(url));
-                    }
-                }
+                serverMap.computeIfAbsent(key, ignore -> createServer(url));
             } else {
                 // server supports reset, use together with override
                 server.reset(url);
