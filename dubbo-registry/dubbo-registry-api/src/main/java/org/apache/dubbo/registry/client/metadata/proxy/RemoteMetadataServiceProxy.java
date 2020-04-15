@@ -18,6 +18,7 @@ package org.apache.dubbo.registry.client.metadata.proxy;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.report.MetadataReport;
@@ -73,15 +74,15 @@ public class RemoteMetadataServiceProxy implements MetadataService {
     @Override
     public String getServiceDefinition(String serviceKey) {
         String[] services = UrlUtils.parseServiceKey(serviceKey);
-        String serviceInterface = services[0];
+        String serviceInterface = services[1];
         // if version or group is not exist
-        String version = null;
-        if (services.length > 1) {
-            version = services[1];
-        }
         String group = null;
-        if (services.length > 2) {
-            group = services[2];
+        if (StringUtils.isNotEmpty(services[0])) {
+            group = services[0];
+        }
+        String version = null;
+        if (StringUtils.isNotEmpty(services[2])) {
+            version = services[2];
         }
         return getMetadataReport().getServiceDefinition(new MetadataIdentifier(serviceInterface,
                 version, group, PROVIDER_SIDE, serviceName));
