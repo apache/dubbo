@@ -2,13 +2,10 @@ package org.apache.dubbo.registry.client.metadata.proxy;
 
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
-import org.apache.dubbo.registry.client.DefaultServiceInstance;
-import org.apache.dubbo.registry.client.ServiceInstance;
 
-import junit.framework.Assert;
 import org.junit.jupiter.api.Test;
 
-import static java.lang.String.valueOf;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * {@link RemoteMetadataServiceProxy} Test
@@ -32,9 +29,9 @@ public class RemoteMetadataServiceProxyTest {
         if (StringUtils.isNotEmpty(services[2])) {
             version = services[2];
         }
-        Assert.assertEquals(serviceInterface, "org.apache.dubbo.demo.DemoService");
-        Assert.assertEquals(version, "1.0.0");
-        Assert.assertEquals(group, "a");
+        assertEquals(serviceInterface, "org.apache.dubbo.demo.DemoService");
+        assertEquals(version, "1.0.0");
+        assertEquals(group, "a");
 
         serviceKey = "org.apache.dubbo.demo.DemoService";
 
@@ -49,8 +46,8 @@ public class RemoteMetadataServiceProxyTest {
         if (StringUtils.isNotEmpty(services[2])) {
             version = services[2];
         }
-        Assert.assertEquals(serviceInterface, "org.apache.dubbo.demo.DemoService");
-        Assert.assertEquals(version, null);
-        Assert.assertEquals(group, null);
+        assertEquals(serviceInterface, "org.apache.dubbo.demo.DemoService");
+        assertEquals(version, null);
+        assertEquals(group, null);
     }
 }
