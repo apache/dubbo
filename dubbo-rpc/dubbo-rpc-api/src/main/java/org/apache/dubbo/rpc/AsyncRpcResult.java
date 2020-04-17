@@ -55,7 +55,12 @@ public class AsyncRpcResult implements Result {
      */
     private RpcContext storedContext;
     private RpcContext storedServerContext;
+    private RpcContext tmpContext;
+    private RpcContext tmpServerContext;
+
     private Executor executor;
+
+    private boolean async;
 
     private Invocation invocation;
 
@@ -64,8 +69,12 @@ public class AsyncRpcResult implements Result {
     public AsyncRpcResult(CompletableFuture<AppResponse> future, Invocation invocation) {
         this.responseFuture = future;
         this.invocation = invocation;
-        this.storedContext = RpcContext.getContext();
-        this.storedServerContext = RpcContext.getServerContext();
+        RpcInvocation rpcInvocation = (RpcInvocation) invocation;
+        if (InvokeMode.SYNC != rpcInvocation.getInvokeMode()) {
+            async = true;
+            this.storedContext = RpcContext.getContext();
+            this.storedServerContext = RpcContext.getServerContext();
+        }
     }
 
     /**
@@ -193,9 +202,17 @@ public class AsyncRpcResult implements Result {
 
     public Result whenCompleteWithContext(BiConsumer<Result, Throwable> fn) {
         this.responseFuture = this.responseFuture.whenComplete((v, t) -> {
-            beforeContext.accept(v, t);
+            if (async) {
+                tmpContext = RpcContext.getContext();
+                tmpServerContext = RpcContext.getServerContext();
+                RpcContext.restoreContext(storedContext);
+                RpcContext.restoreServerContext(storedServerContext);
+            }
             fn.accept(v, t);
-            afterContext.accept(v, t);
+            if (async) {
+                RpcContext.restoreContext(tmpContext);
+                RpcContext.restoreServerContext(tmpServerContext);
+            }
         });
         return this;
     }
@@ -279,24 +296,6 @@ public class AsyncRpcResult implements Result {
     public void setExecutor(Executor executor) {
         this.executor = executor;
     }
-
-    /**
-     * tmp context to use when the thread switch to Dubbo thread.
-     */
-    private RpcContext tmpContext;
-
-    private RpcContext tmpServerContext;
-    private BiConsumer<Result, Throwable> beforeContext = (appResponse, t) -> {
-        tmpContext = RpcContext.getContext();
-        tmpServerContext = RpcContext.getServerContext();
-        RpcContext.restoreContext(storedContext);
-        RpcContext.restoreServerContext(storedServerContext);
-    };
-
-    private BiConsumer<Result, Throwable> afterContext = (appResponse, t) -> {
-        RpcContext.restoreContext(tmpContext);
-        RpcContext.restoreServerContext(tmpServerContext);
-    };
 
     /**
      * Some utility methods used to quickly generate default AsyncRpcResult instance.

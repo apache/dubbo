@@ -360,9 +360,11 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         if (listener == null) {
             throw new IllegalArgumentException("notify listener == null");
         }
+        removeFailedNotified(url, listener);
         try {
             doNotify(url, listener, urls);
         } catch (Exception t) {
+            // FIXME, we should distinguish different exceptions or this may cause endless retry.
             // Record a failed registration request to a failed list, retry regularly
             addFailedNotified(url, listener, urls);
             logger.error("Failed to notify for subscribe " + url + ", waiting for retry, cause: " + t.getMessage(), t);
