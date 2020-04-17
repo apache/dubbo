@@ -23,9 +23,12 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
+import org.apache.dubbo.rpc.model.ServiceDescriptor;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * InvokerHandler
@@ -34,12 +37,18 @@ public class InvokerInvocationHandler implements InvocationHandler {
     private static final Logger logger = LoggerFactory.getLogger(InvokerInvocationHandler.class);
     private final Invoker<?> invoker;
     private ConsumerModel consumerModel;
+    private ServiceDescriptor serviceDescriptor;
+    private String serviceKey;
+    private String serviceName;
 
     public InvokerInvocationHandler(Invoker<?> handler) {
         this.invoker = handler;
-        String serviceKey = invoker.getUrl().getServiceKey();
+        this.serviceKey = invoker.getUrl().getServiceKey();
+        this.serviceName = invoker.getUrl().getServiceInterface();
         if (serviceKey != null) {
             this.consumerModel = ApplicationModel.getConsumerModel(serviceKey);
+            this.serviceDescriptor = ApplicationModel.getServiceRepository()
+                    .lookupService(serviceName);
         }
     }
 
@@ -62,14 +71,19 @@ public class InvokerInvocationHandler implements InvocationHandler {
         } else if (parameterTypes.length == 1 && "equals".equals(methodName)) {
             return invoker.equals(args[0]);
         }
-        RpcInvocation rpcInvocation = new RpcInvocation(method, invoker.getInterface().getName(), args);
-        String serviceKey = invoker.getUrl().getServiceKey();
-        rpcInvocation.setTargetServiceUniqueName(serviceKey);
-      
+
+        Map<Object, Object> attributes = new HashMap<>(8);
         if (consumerModel != null) {
-            rpcInvocation.put(Constants.CONSUMER_MODEL, consumerModel);
-            rpcInvocation.put(Constants.METHOD_MODEL, consumerModel.getMethodModel(method));
+            attributes.put(Constants.CONSUMER_MODEL, consumerModel);
+            attributes.put(Constants.METHOD_MODEL, consumerModel.getMethodModel(method));
         }
+        if (serviceDescriptor != null) {
+            attributes.put(Constants.SERVICE_DESCRIPTOR, serviceDescriptor);
+            attributes.put(Constants.METHOD_DESCRIPTOR, serviceDescriptor.getMethod(method));
+        }
+
+        RpcInvocation rpcInvocation = new RpcInvocation(method, serviceName, args, null, attributes);
+        rpcInvocation.setTargetServiceUniqueName(serviceKey);
 
         return invoker.invoke(rpcInvocation).recreate();
     }

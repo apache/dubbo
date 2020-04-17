@@ -155,7 +155,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         }
 
         invocation.setInvokeMode(RpcUtils.getInvokeMode(url, invocation));
-        RpcUtils.attachInvocationIdIfAsync(getUrl(), invocation);
+//        RpcUtils.attachInvocationIdIfAsync(getUrl(), invocation);
 
         AsyncRpcResult asyncResult;
         try {

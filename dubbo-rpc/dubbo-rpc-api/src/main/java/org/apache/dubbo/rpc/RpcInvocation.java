@@ -147,17 +147,24 @@ public class RpcInvocation implements Invocation, Serializable {
     }
 
     private void initParameterDesc() {
-        ServiceRepository repository = ApplicationModel.getServiceRepository();
-        if (StringUtils.isNotEmpty(serviceName)) {
-            ServiceDescriptor serviceDescriptor = repository.lookupService(serviceName);
-            if (serviceDescriptor != null) {
-                MethodDescriptor methodDescriptor = serviceDescriptor.getMethod(methodName, parameterTypes);
-                if (methodDescriptor != null) {
-                    this.parameterTypesDesc = methodDescriptor.getParamDesc();
-                    this.compatibleParamSignatures = methodDescriptor.getCompatibleParamSignatures();
-                    this.returnTypes = methodDescriptor.getReturnTypes();
+        MethodDescriptor methodDescriptor = null;
+        Object o = get(Constants.METHOD_DESCRIPTOR);
+        if (o instanceof MethodDescriptor) {
+            methodDescriptor = (MethodDescriptor) o;
+        } else {
+            ServiceRepository repository = ApplicationModel.getServiceRepository();
+            if (StringUtils.isNotEmpty(serviceName)) {
+                ServiceDescriptor serviceDescriptor = repository.lookupService(serviceName);
+                if (serviceDescriptor != null) {
+                    methodDescriptor = serviceDescriptor.getMethod(methodName, parameterTypes);
                 }
             }
+        }
+
+        if (methodDescriptor != null) {
+            this.parameterTypesDesc = methodDescriptor.getParamDesc();
+            this.compatibleParamSignatures = methodDescriptor.getCompatibleParamSignatures();
+            this.returnTypes = methodDescriptor.getReturnTypes();
         }
 
         if (parameterTypesDesc == null) {

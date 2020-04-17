@@ -131,6 +131,8 @@ class URL implements Serializable {
 
     private transient String serviceKey;
 
+    private transient String serviceVersionKey;
+
     private transient String address;
 
     protected URL() {
@@ -1453,6 +1455,18 @@ class URL implements Serializable {
             return null;
         }
         return buildKey(inf, getParameter(GROUP_KEY), getParameter(VERSION_KEY));
+    }
+
+    public String getServiceVersionKey() {
+        if (serviceVersionKey != null) {
+            return serviceVersionKey;
+        }
+        String inf = getServiceInterface();
+        if (inf == null) {
+            return null;
+        }
+        serviceVersionKey = inf + ":" + getParameter(VERSION_KEY);
+        return serviceVersionKey;
     }
 
     public static String buildKey(String path, String group, String version) {

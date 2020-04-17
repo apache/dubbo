@@ -18,20 +18,24 @@ package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.BaseServiceMetadata;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.StringUtils;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Notice, this class currently has no usage inside Dubbo.
- *
+ * <p>
  * data related to service level such as name, version, classloader of business service,
  * security info, etc. Also with a AttributeMap for extension.
  */
 public class ServiceMetadata extends BaseServiceMetadata {
-
+    private static String NULL_VERSION = "0.0.0";
     private String defaultGroup;
     private Class<?> serviceType;
+    // in case service and version (no group) are used as the unique identifier.
+    private String serviceVersion; // {interface[:version]}, version is optional
+    private String serviceDefaultVersion;//{interface:{version|0.0.0}}
 
     private Object target;
 
@@ -47,6 +51,12 @@ public class ServiceMetadata extends BaseServiceMetadata {
         this.version = version;
         this.serviceKey = URL.buildKey(serviceInterfaceName, group, version);
         this.serviceType = serviceType;
+        if (StringUtils.isEmpty(version)) {
+            serviceVersion = serviceInterfaceName;
+            serviceDefaultVersion = serviceInterfaceName + ":" + NULL_VERSION;
+        } else {
+            serviceVersion = serviceDefaultVersion = serviceInterfaceName + ":" + version;
+        }
     }
 
     public ServiceMetadata() {
@@ -54,6 +64,20 @@ public class ServiceMetadata extends BaseServiceMetadata {
 
     public String getServiceKey() {
         return serviceKey;
+    }
+
+    /**
+     * @return {interface[:version}}, version is optional
+     */
+    public String getServiceVersionKey() {
+        return serviceVersion;
+    }
+
+    /**
+     * @return {interface:{version|0.0.0}}, version will always appear.
+     */
+    public String getServiceDefaultVersionKey() {
+        return serviceDefaultVersion;
     }
 
     public Map<String, Object> getAttachments() {

@@ -66,6 +66,10 @@ public class ConfigurationUtils {
         return ApplicationModel.getEnvironment().getConfiguration();
     }
 
+    public static Configuration getPropertiesConfiguration() {
+        return ApplicationModel.getEnvironment().getPropertiesConfiguration();
+    }
+
     // FIXME
     @SuppressWarnings("deprecation")
     public static int getServerShutdownTimeout() {
@@ -98,6 +102,10 @@ public class ConfigurationUtils {
 
     public static String getProperty(String property, String defaultValue) {
         return StringUtils.trim(ApplicationModel.getEnvironment().getConfiguration().getString(property, defaultValue));
+    }
+
+    public static boolean getBoolean(String key, Boolean defaultValue) {
+        return ApplicationModel.getEnvironment().getConfiguration().getBoolean(key, defaultValue);
     }
 
     public static Map<String, String> parseProperties(String content) throws IOException {

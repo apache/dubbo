@@ -204,5 +204,7 @@ public class ConsumerModel {
         return this.serviceMetadata.getServiceKey();
     }
 
-
+    public String getServiceDefaultVersionKey() {
+        return serviceMetadata.getServiceDefaultVersionKey();
+    }
 }

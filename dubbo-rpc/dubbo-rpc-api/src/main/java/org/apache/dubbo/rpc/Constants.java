@@ -89,4 +89,6 @@ public interface Constants {
 
     String CONSUMER_MODEL = "consumerModel";
     String METHOD_MODEL = "methodModel";
+    String SERVICE_DESCRIPTOR = "serviceDescriptor";
+    String METHOD_DESCRIPTOR = "methodDescriptor";
 }

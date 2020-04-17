@@ -61,6 +61,8 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
 
     private volatile Invoker<T> stickyInvoker = null;
 
+    private LoadBalance defaultLoadBalance;
+
     public AbstractClusterInvoker() {
     }
 
@@ -76,6 +78,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
         this.directory = directory;
         //sticky: invoker.isAvailable() should always be checked before using when availablecheck is true.
         this.availablecheck = url.getParameter(CLUSTER_AVAILABLE_CHECK_KEY, DEFAULT_CLUSTER_AVAILABLE_CHECK);
+        this.defaultLoadBalance = ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(DEFAULT_LOADBALANCE);
     }
 
     @Override
@@ -304,10 +307,12 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
      */
     protected LoadBalance initLoadBalance(List<Invoker<T>> invokers, Invocation invocation) {
         if (CollectionUtils.isNotEmpty(invokers)) {
-            return ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(invokers.get(0).getUrl()
-                    .getMethodParameter(RpcUtils.getMethodName(invocation), LOADBALANCE_KEY, DEFAULT_LOADBALANCE));
-        } else {
-            return ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(DEFAULT_LOADBALANCE);
+            String balanceStrategy = invokers.get(0).getUrl()
+                    .getMethodParameter(RpcUtils.getMethodName(invocation), LOADBALANCE_KEY);
+            if (StringUtils.isNotEmpty(balanceStrategy)) {
+                return ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(balanceStrategy);
+            }
         }
+        return defaultLoadBalance;
     }
 }

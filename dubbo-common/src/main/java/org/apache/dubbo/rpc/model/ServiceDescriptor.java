@@ -19,8 +19,8 @@ package org.apache.dubbo.rpc.model;
 import org.apache.dubbo.common.utils.CollectionUtils;
 
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -35,8 +35,9 @@ public class ServiceDescriptor {
     private final String serviceName;
     private final Class<?> serviceInterfaceClass;
     // to accelerate search
-    private final Map<String, List<MethodDescriptor>> methods = new HashMap<>();
+    private final Map<String, List<MethodDescriptor>> nameMethods = new HashMap<>();
     private final Map<String, Map<String, MethodDescriptor>> descToMethods = new HashMap<>();
+    private final Map<Method, MethodDescriptor> methods = new HashMap<>();
 
     public ServiceDescriptor(Class<?> interfaceClass) {
         this.serviceInterfaceClass = interfaceClass;
@@ -49,11 +50,14 @@ public class ServiceDescriptor {
         for (Method method : methodsToExport) {
             method.setAccessible(true);
 
-            List<MethodDescriptor> methodModels = methods.computeIfAbsent(method.getName(), (k) -> new ArrayList<>(1));
-            methodModels.add(new MethodDescriptor(method));
+            List<MethodDescriptor> methodModels = nameMethods.computeIfAbsent(method.getName(), (k) -> new ArrayList<>(1));
+
+            MethodDescriptor methodDescriptor = new MethodDescriptor(method);
+            methodModels.add(methodDescriptor);
+            methods.put(method, methodDescriptor);
         }
 
-        methods.forEach((methodName, methodList) -> {
+        nameMethods.forEach((methodName, methodList) -> {
             Map<String, MethodDescriptor> descMap = descToMethods.computeIfAbsent(methodName, k -> new HashMap<>());
             methodList.forEach(methodModel -> descMap.put(methodModel.getParamDesc(), methodModel));
 
@@ -72,8 +76,12 @@ public class ServiceDescriptor {
 
     public Set<MethodDescriptor> getAllMethods() {
         Set<MethodDescriptor> methodModels = new HashSet<>();
-        methods.forEach((k, v) -> methodModels.addAll(v));
+        nameMethods.forEach((k, v) -> methodModels.addAll(v));
         return methodModels;
+    }
+
+    public MethodDescriptor getMethod(Method method) {
+        return methods.get(method);
     }
 
     /**
@@ -99,7 +107,7 @@ public class ServiceDescriptor {
      * @return
      */
     public MethodDescriptor getMethod(String methodName, Class<?>[] paramTypes) {
-        List<MethodDescriptor> methodModels = methods.get(methodName);
+        List<MethodDescriptor> methodModels = nameMethods.get(methodName);
         if (CollectionUtils.isNotEmpty(methodModels)) {
             for (int i = 0; i < methodModels.size(); i++) {
                 MethodDescriptor descriptor = methodModels.get(i);
@@ -112,7 +120,7 @@ public class ServiceDescriptor {
     }
 
     public List<MethodDescriptor> getMethods(String methodName) {
-        return methods.get(methodName);
+        return nameMethods.get(methodName);
     }
 
 }

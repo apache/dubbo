@@ -49,6 +49,10 @@ public class ApplicationModel {
 
     private static AtomicBoolean INIT_FLAG = new AtomicBoolean(false);
 
+    private static ConfigManager configManager;
+    private static ServiceRepository serviceRepository;
+    private static Environment environment;
+
     public static void init() {
         if (INIT_FLAG.compareAndSet(false, true)) {
             ExtensionLoader<ApplicationInitListener> extensionLoader = ExtensionLoader.getExtensionLoader(ApplicationInitListener.class);
@@ -80,20 +84,38 @@ public class ApplicationModel {
     public static void initFrameworkExts() {
         Set<FrameworkExt> exts = ExtensionLoader.getExtensionLoader(FrameworkExt.class).getSupportedExtensionInstances();
         for (FrameworkExt ext : exts) {
-            ext.initialize();
+            checkInit(ext);
         }
     }
 
     public static Environment getEnvironment() {
-        return (Environment) LOADER.getExtension(Environment.NAME);
+        if (environment == null) {
+            environment = (Environment) LOADER.getExtension(Environment.NAME);
+            checkInit(environment);
+        }
+        return environment;
     }
 
     public static ConfigManager getConfigManager() {
-        return (ConfigManager) LOADER.getExtension(ConfigManager.NAME);
+        if (configManager == null) {
+            configManager = (ConfigManager) LOADER.getExtension(ConfigManager.NAME);
+            checkInit(configManager);
+        }
+        return configManager;
     }
 
     public static ServiceRepository getServiceRepository() {
-        return (ServiceRepository) LOADER.getExtension(ServiceRepository.NAME);
+        if (serviceRepository == null) {
+            serviceRepository = (ServiceRepository) LOADER.getExtension(ServiceRepository.NAME);
+            checkInit(serviceRepository);
+        }
+        return serviceRepository;
+    }
+
+    private static void checkInit(FrameworkExt ext) {
+        if (!ext.isInitialized()) {
+            ext.initialize();
+        }
     }
 
     public static ApplicationConfig getApplicationConfig() {

@@ -20,6 +20,7 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -192,9 +193,12 @@ public class FutureFilter implements Filter, Filter.Listener {
             return asyncMethodInfo;
         }
 
-        ConsumerModel consumerModel = ApplicationModel.getConsumerModel(invoker.getUrl().getServiceKey());
-        if (consumerModel == null) {
-            return null;
+        ConsumerModel consumerModel = null;
+        Object o = invocation.get(Constants.CONSUMER_MODEL);
+        if (o instanceof ConsumerModel) {
+            consumerModel = (ConsumerModel) o;
+        } else {
+            consumerModel = ApplicationModel.getConsumerModel(invoker.getUrl().getServiceKey());
         }
 
         String methodName = invocation.getMethodName();

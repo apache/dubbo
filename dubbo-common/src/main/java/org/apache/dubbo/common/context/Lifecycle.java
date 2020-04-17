@@ -31,6 +31,8 @@ public interface Lifecycle {
      */
     void initialize() throws IllegalStateException;
 
+    boolean isInitialized();
+
     /**
      * Start the component
      *

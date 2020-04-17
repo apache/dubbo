@@ -18,9 +18,16 @@ package org.apache.dubbo.common.context;
 
 public abstract class LifecycleAdapter implements Lifecycle {
 
+    private boolean initialized = false;
+
     @Override
     public void initialize() throws IllegalStateException {
+        initialized = true;
+    }
 
+    @Override
+    public boolean isInitialized() {
+        return initialized;
     }
 
     @Override
