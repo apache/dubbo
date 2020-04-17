@@ -406,6 +406,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         serviceMetadata.setServiceInterfaceName(interfaceName);
         // TODO, uncomment this line once service key is unified
         serviceMetadata.setServiceKey(URL.buildKey(interfaceName, group, version));
+        serviceMetadata.genServiceVersionKey();//
 
         ServiceRepository repository = ApplicationModel.getServiceRepository();
         ServiceDescriptor serviceDescriptor = repository.registerService(interfaceClass);

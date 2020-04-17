@@ -51,12 +51,7 @@ public class ServiceMetadata extends BaseServiceMetadata {
         this.version = version;
         this.serviceKey = URL.buildKey(serviceInterfaceName, group, version);
         this.serviceType = serviceType;
-        if (StringUtils.isEmpty(version)) {
-            serviceVersion = serviceInterfaceName;
-            serviceDefaultVersion = serviceInterfaceName + ":" + NULL_VERSION;
-        } else {
-            serviceVersion = serviceDefaultVersion = serviceInterfaceName + ":" + version;
-        }
+        genServiceVersionKey();
     }
 
     public ServiceMetadata() {
@@ -78,6 +73,15 @@ public class ServiceMetadata extends BaseServiceMetadata {
      */
     public String getServiceDefaultVersionKey() {
         return serviceDefaultVersion;
+    }
+
+    public void genServiceVersionKey() {
+        if (StringUtils.isEmpty(version)) {
+            serviceVersion = serviceInterfaceName;
+            serviceDefaultVersion = serviceInterfaceName + ":" + NULL_VERSION;
+        } else {
+            serviceVersion = serviceDefaultVersion = serviceInterfaceName + ":" + version;
+        }
     }
 
     public Map<String, Object> getAttachments() {
