@@ -19,10 +19,11 @@ package org.apache.dubbo.common.lang;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
-import static java.util.Collections.sort;
 import static org.apache.dubbo.common.function.ThrowableAction.execute;
 
 /**
@@ -47,10 +48,17 @@ public class ShutdownHookCallbacks {
         return this;
     }
 
+    public ShutdownHookCallbacks addCallbacks(Collection<ShutdownHookCallback> callbacks) {
+        synchronized (this) {
+            this.callbacks.addAll(callbacks);
+        }
+        return this;
+    }
+
     public Collection<ShutdownHookCallback> getCallbacks() {
         synchronized (this) {
-            sort(this.callbacks);
-            return this.callbacks;
+            return Collections.unmodifiableList(this.callbacks.stream()
+                    .sorted().collect(Collectors.toList()));
         }
     }
 
@@ -63,7 +71,7 @@ public class ShutdownHookCallbacks {
     private void loadCallbacks() {
         ExtensionLoader<ShutdownHookCallback> loader =
                 ExtensionLoader.getExtensionLoader(ShutdownHookCallback.class);
-        loader.getSupportedExtensionInstances().forEach(this::addCallback);
+        addCallbacks(loader.getSupportedExtensionInstances());
     }
 
     public void callback() {

@@ -21,7 +21,6 @@ import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.config.configcenter.wrapper.CompositeDynamicConfiguration;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.lang.ShutdownHookCallback;
 import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -187,12 +186,7 @@ public class DubboBootstrap extends GenericEventListener {
         environment = ApplicationModel.getEnvironment();
 
         DubboShutdownHook.getDubboShutdownHook().register();
-        ShutdownHookCallbacks.INSTANCE.addCallback(new ShutdownHookCallback() {
-            @Override
-            public void callback() throws Throwable {
-                DubboBootstrap.this.destroy();
-            }
-        });
+        ShutdownHookCallbacks.INSTANCE.addCallback(this::destroy);
     }
 
     public void unRegisterShutdownHook() {

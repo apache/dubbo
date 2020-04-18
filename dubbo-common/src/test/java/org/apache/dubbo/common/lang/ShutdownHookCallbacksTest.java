@@ -16,12 +16,22 @@
  */
 package org.apache.dubbo.common.lang;
 
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.concurrent.TimeUnit;
+
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 /**
  * {@link ShutdownHookCallbacks}
@@ -29,6 +39,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @since 2.7.5
  */
 public class ShutdownHookCallbacksTest {
+
+    private static final Logger logger = LoggerFactory.getLogger(ShutdownHookCallbacksTest.class);
 
     private ShutdownHookCallbacks callbacks;
 
@@ -47,6 +59,65 @@ public class ShutdownHookCallbacksTest {
         callbacks.callback();
         DefaultShutdownHookCallback callback = (DefaultShutdownHookCallback) callbacks.getCallbacks().iterator().next();
         assertTrue(callback.isExecuted());
+    }
+
+    @Test
+    public void testCallbackSorted() {
+        for (int i = 0; i < 5; i++) {
+            final int index = i;
+            logger.info("addCallback:" + index);
+            callbacks.addCallback(new ShutdownHookCallback() {
+                @Override
+                public void callback() {
+                    logger.info("callBack:" + index);
+                }
+
+                @Override
+                public int getPriority() {
+                    return index;
+                }
+            });
+            final int anotherIndex = i + 5;
+            logger.info("addCallback:" + anotherIndex);
+            callbacks.addCallback(new ShutdownHookCallback() {
+                @Override
+                public void callback() {
+                    logger.info("callBack:" + anotherIndex);
+                }
+
+                @Override
+                public int getPriority() {
+                    return anotherIndex;
+                }
+            });
+        }
+        Collection<ShutdownHookCallback> callbacks = this.callbacks.getCallbacks();
+        LinkedList<ShutdownHookCallback> listToSort = new LinkedList<>(callbacks);
+        Collections.sort(listToSort);
+        assertEquals(callbacks, listToSort);
+    }
+
+    @Test
+    public void testConcurrentCallback() throws InterruptedException {
+        int sizeBefore = callbacks.getCallbacks().size();
+        Thread addCallbackThread = new Thread(() -> {
+            for (int i = 0; i < 10; i++) {
+                try {
+                    TimeUnit.MILLISECONDS.sleep(100);
+                } catch (InterruptedException e) {
+                    break;
+                }
+                final int index = i;
+                logger.info("addCallback:" + index);
+                callbacks.addCallback(() -> logger.info("callBack:" + index));
+            }
+        });
+
+        addCallbackThread.start();
+        TimeUnit.MILLISECONDS.sleep(500);
+        assertDoesNotThrow(callbacks::callback);
+        addCallbackThread.join();
+        assertEquals(callbacks.getCallbacks().size(), sizeBefore + 10);
     }
 
     @AfterEach
