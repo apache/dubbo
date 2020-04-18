@@ -18,6 +18,7 @@ package org.apache.dubbo.config.spring.util;
 
 import org.apache.dubbo.config.spring.beans.factory.annotation.DubboConfigAliasPostProcessor;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
+import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceBeanFactoryPostProcessor;
 import org.apache.dubbo.config.spring.beans.factory.config.DubboConfigDefaultPropertyValueBeanPostProcessor;
 import org.apache.dubbo.config.spring.context.DubboBootstrapApplicationListener;
 import org.apache.dubbo.config.spring.context.DubboLifecycleComponentApplicationListener;
@@ -64,5 +65,9 @@ public interface DubboBeanUtils {
         // Since 2.7.6 Register DubboConfigDefaultPropertyValueBeanPostProcessor as an infrastructure Bean
         registerInfrastructureBean(registry, DubboConfigDefaultPropertyValueBeanPostProcessor.BEAN_NAME,
                 DubboConfigDefaultPropertyValueBeanPostProcessor.class);
+
+        // add ReferenceBeanFactoryPostProcessor
+        registerInfrastructureBean(registry, ReferenceBeanFactoryPostProcessor.BEAN_NAME,
+                ReferenceBeanFactoryPostProcessor.class);
     }
 }
