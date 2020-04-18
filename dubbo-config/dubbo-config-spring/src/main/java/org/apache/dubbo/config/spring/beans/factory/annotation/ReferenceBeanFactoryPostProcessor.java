@@ -48,6 +48,10 @@ public class ReferenceBeanFactoryPostProcessor implements BeanFactoryPostProcess
     private final Set<Class<? extends Annotation>> referenceAnnotationTypes = new LinkedHashSet<>(4);
     private final Set<Class<? extends Annotation>> autowiredAnnotationTypes = new LinkedHashSet<>(4);
 
+    /**
+     * store the bean names who has the ReferenceClass
+     * key is the ReferenceClass, Set are bean names
+     */
     private Map<String, Set<String>> referenceIdToBeanNames = new ConcurrentHashMap<>(256);
     private Map<String, Boolean> referenceHasInit = new ConcurrentHashMap<>(256);
 
@@ -107,17 +111,11 @@ public class ReferenceBeanFactoryPostProcessor implements BeanFactoryPostProcess
                                     method);
                         }
                     }
-                    if (callBack instanceof FindCallback){
-                        String name = method.getReturnType().getName();
+                    Class<?>[] parameterTypes = method.getParameterTypes();
+                    for (Class<?> clazz : parameterTypes){
+                        String name = clazz.getName();
                         callBack.callback(name, beanName);
-                    }else {
-                        Class<?>[] parameterTypes = method.getParameterTypes();
-                        for (Class<?> clazz : parameterTypes){
-                            String name = clazz.getName();
-                            callBack.callback(name, beanName);
-                        }
                     }
-
                 }
             });
 
@@ -172,9 +170,18 @@ public class ReferenceBeanFactoryPostProcessor implements BeanFactoryPostProcess
         findOrInjectAnnotation(beanType, (InjectCallback) this::doInitReference, beanName, this.autowiredAnnotationTypes, Autowired.class.getName());
     }
 
+    /**
+     * call getBean
+     * @param name the ReferenceClass name.
+     * @param beanName bean wait to init
+     */
     private void doInitReference(String name, String beanName) {
         if (this.referenceIdToBeanNames.containsKey(name) && !referenceHasInit.get(name)){
             Set<String> beanNames = referenceIdToBeanNames.get(name);
+            if(beanNames.contains(beanName)){
+                referenceHasInit.put(name, Boolean.TRUE);
+                return;
+            }
             beanNames.forEach(t->beanFactory.getBean(t));
             referenceHasInit.put(name, Boolean.TRUE);
         }
