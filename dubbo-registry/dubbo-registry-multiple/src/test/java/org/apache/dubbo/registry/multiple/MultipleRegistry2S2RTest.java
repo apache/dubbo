@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.registry.multiple;
 
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.registry.NotifyListener;
@@ -31,6 +32,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import redis.embedded.RedisServer;
+import redis.embedded.RedisServerBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,7 +68,12 @@ public class MultipleRegistry2S2RTest {
         zookeeperRegistryURLStr = "zookeeper://127.0.0.1:" + zkServerPort;
 
         redisServerPort = NetUtils.getAvailablePort();
-        redisServer = new RedisServer(redisServerPort);
+        RedisServerBuilder builder = RedisServer.builder().port(redisServerPort);
+        if (SystemUtils.IS_OS_WINDOWS) {
+            // set maxheap to fix Windows error 0x70 while starting redis
+            builder.setting("maxheap 128mb");
+        }
+        redisServer = builder.build();
         redisServer.start();
         redisRegistryURLStr = "redis://127.0.0.1:" + redisServerPort;
 

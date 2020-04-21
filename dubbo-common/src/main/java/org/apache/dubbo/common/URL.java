@@ -43,6 +43,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY_PREFIX;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
@@ -224,6 +225,8 @@ class URL implements Serializable {
     }
 
     /**
+     * NOTICE: This method allocate too much objects, we can use {@link URLStrParser#parseDecodedStr(String)} instead.
+     * <p>
      * Parse url string
      *
      * @param url URL string
@@ -250,7 +253,13 @@ class URL implements Serializable {
                 if (part.length() > 0) {
                     int j = part.indexOf('=');
                     if (j >= 0) {
-                        parameters.put(part.substring(0, j), part.substring(j + 1));
+                        String key = part.substring(0, j);
+                        String value = part.substring(j + 1);
+                        parameters.put(key, value);
+                        // compatible with lower versions registering "default." keys
+                        if (key.startsWith(DEFAULT_KEY_PREFIX)) {
+                            parameters.putIfAbsent(key.substring(DEFAULT_KEY_PREFIX.length()), value);
+                        }
                     } else {
                         parameters.put(part, part);
                     }
@@ -319,13 +328,16 @@ class URL implements Serializable {
 
         String methodsString = parameters.get(METHODS_KEY);
         if (StringUtils.isNotEmpty(methodsString)) {
-            String[] methods = methodsString.split(",");
+            List<String> methods = StringUtils.splitToList(methodsString, ',');
             for (Map.Entry<String, String> entry : parameters.entrySet()) {
                 String key = entry.getKey();
-                for (String method : methods) {
-                    String methodPrefix = method + '.';
-                    if (key.startsWith(methodPrefix)) {
-                        String realKey = key.substring(methodPrefix.length());
+                for (int i = 0; i < methods.size(); i++) {
+                    String method = methods.get(i);
+                    int methodLen = method.length();
+                    if (key.length() > methodLen
+                            && key.startsWith(method)
+                            && key.charAt(methodLen) == '.') {//equals to: key.startsWith(method + '.')
+                        String realKey = key.substring(methodLen + 1);
                         URL.putMethodParameter(method, realKey, entry.getValue(), methodParameters);
                     }
                 }

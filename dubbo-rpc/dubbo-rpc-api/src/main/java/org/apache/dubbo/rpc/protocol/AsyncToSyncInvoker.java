@@ -61,13 +61,19 @@ public class AsyncToSyncInvoker<T> implements Invoker<T> {
                 asyncResult.get(Integer.MAX_VALUE, TimeUnit.MILLISECONDS);
             }
         } catch (InterruptedException e) {
-            throw new RpcException("Interrupted unexpectedly while waiting for remoting result to return!  method: " + invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage(), e);
+            throw new RpcException("Interrupted unexpectedly while waiting for remote result to return!  method: " +
+                    invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage(), e);
         } catch (ExecutionException e) {
             Throwable t = e.getCause();
             if (t instanceof TimeoutException) {
-                throw new RpcException(RpcException.TIMEOUT_EXCEPTION, "Invoke remote method timeout. method: " + invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage(), e);
+                throw new RpcException(RpcException.TIMEOUT_EXCEPTION, "Invoke remote method timeout. method: " +
+                        invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage(), e);
             } else if (t instanceof RemotingException) {
-                throw new RpcException(RpcException.NETWORK_EXCEPTION, "Failed to invoke remote method: " + invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage(), e);
+                throw new RpcException(RpcException.NETWORK_EXCEPTION, "Failed to invoke remote method: " +
+                        invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage(), e);
+            } else {
+                throw new RpcException(RpcException.UNKNOWN_EXCEPTION, "Fail to invoke remote method: " +
+                        invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage(), e);
             }
         } catch (Throwable e) {
             throw new RpcException(e.getMessage(), e);

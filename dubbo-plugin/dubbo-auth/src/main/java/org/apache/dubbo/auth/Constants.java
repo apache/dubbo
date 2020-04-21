@@ -28,10 +28,10 @@ public interface Constants {
     String DEFAULT_ACCESS_KEY_STORAGE = "urlstorage";
 
     String ACCESS_KEY_STORAGE_KEY = "accessKey.storage";
-
-    String ACCESS_KEY_ID_KEY = "accessKeyId";
-
-    String SECRET_ACCESS_KEY_KEY = "secretAccessKey";
+    // the key starting  with "." shouldn't be output
+    String ACCESS_KEY_ID_KEY = ".accessKeyId";
+    // the key starting  with "." shouldn't be output
+    String SECRET_ACCESS_KEY_KEY = ".secretAccessKey";
 
     String REQUEST_TIMESTAMP_KEY = "timestamp";
 

@@ -685,11 +685,11 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
     private String getValueFromConfig(ProtocolConfig protocolConfig, String key) {
         String protocolPrefix = protocolConfig.getName().toUpperCase() + "_";
-        String port = ConfigUtils.getSystemProperty(protocolPrefix + key);
-        if (StringUtils.isEmpty(port)) {
-            port = ConfigUtils.getSystemProperty(key);
+        String value = ConfigUtils.getSystemProperty(protocolPrefix + key);
+        if (StringUtils.isEmpty(value)) {
+            value = ConfigUtils.getSystemProperty(key);
         }
-        return port;
+        return value;
     }
 
     private Integer getRandomPort(String protocol) {
