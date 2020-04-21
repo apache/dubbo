@@ -32,7 +32,7 @@ import java.util.Arrays;
  * Log any invocation timeout, but don't stop server from running
  */
 @Activate(group = CommonConstants.PROVIDER)
-public class TimeoutFilter implements Filter, Filter.Listener2 {
+public class TimeoutFilter implements Filter, Filter.Listener {
 
     private static final Logger logger = LoggerFactory.getLogger(TimeoutFilter.class);
 
@@ -45,7 +45,7 @@ public class TimeoutFilter implements Filter, Filter.Listener2 {
     }
 
     @Override
-    public void onMessage(Result appResponse, Invoker<?> invoker, Invocation invocation) {
+    public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
         Object startTime = invocation.get(TIMEOUT_FILTER_START_TIME);
         if (startTime != null) {
             long elapsed = System.currentTimeMillis() - (Long) startTime;

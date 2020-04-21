@@ -54,7 +54,7 @@ public class ScriptRouter extends AbstractRouter {
     private static final int SCRIPT_ROUTER_DEFAULT_PRIORITY = 0;
     private static final Logger logger = LoggerFactory.getLogger(ScriptRouter.class);
 
-    private static final Map<String, ScriptEngine> engines = new ConcurrentHashMap<>();
+    private static final Map<String, ScriptEngine> ENGINES = new ConcurrentHashMap<>();
 
     private final ScriptEngine engine;
 
@@ -96,7 +96,7 @@ public class ScriptRouter extends AbstractRouter {
     private ScriptEngine getEngine(URL url) {
         String type = url.getParameter(TYPE_KEY, DEFAULT_SCRIPT_TYPE_KEY);
 
-        return engines.computeIfAbsent(type, t -> {
+        return ENGINES.computeIfAbsent(type, t -> {
             ScriptEngine scriptEngine = new ScriptEngineManager().getEngineByName(type);
             if (scriptEngine == null) {
                 throw new IllegalStateException("unsupported route engine type: " + type);

@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.model;
 
+import org.apache.dubbo.common.BaseServiceMetadata;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.config.ReferenceConfigBase;
 
@@ -32,7 +33,7 @@ import java.util.Set;
  * This model is bound to your reference's configuration, for example, group, version or method level configuration.
  */
 public class ConsumerModel {
-    private final String serviceKey;
+    private String serviceKey;
     private final ServiceDescriptor serviceModel;
     private final ReferenceConfigBase<?> referenceConfig;
 
@@ -126,6 +127,14 @@ public class ConsumerModel {
 
         this(serviceKey, proxyObject, serviceModel, referenceConfig);
         this.serviceMetadata = metadata;
+    }
+
+    public void setServiceKey(String serviceKey) {
+        this.serviceKey = serviceKey;
+        if (serviceMetadata != null) {
+            serviceMetadata.setServiceKey(serviceKey);
+            serviceMetadata.setGroup(BaseServiceMetadata.groupFromServiceKey(serviceKey));
+        }
     }
 
     public void initMethodModels() {
