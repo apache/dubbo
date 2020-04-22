@@ -24,6 +24,7 @@ import com.alibaba.fastjson.JSON;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -60,6 +61,8 @@ public final class StringUtils {
     private static final Pattern PARAMETERS_PATTERN = Pattern.compile("^\\[((\\s*\\{\\s*[\\w_\\-\\.]+\\s*:\\s*.+?\\s*\\}\\s*,?\\s*)+)\\s*\\]$");
     private static final Pattern PAIR_PARAMETERS_PATTERN = Pattern.compile("^\\{\\s*([\\w-_\\.]+)\\s*:\\s*(.+)\\s*\\}$");
     private static final int PAD_LIMIT = 8192;
+    private static final byte[] HEX2B;
+
 
     /**
      * @since 2.7.5
@@ -87,6 +90,33 @@ public final class StringUtils {
     public static final char HYPHEN_CHAR = '-';
 
     public static final String HYPHEN = valueOf(HYPHEN_CHAR);
+
+    static {
+        HEX2B = new byte[128];
+        Arrays.fill(HEX2B, (byte) -1);
+        HEX2B['0'] = (byte) 0;
+        HEX2B['1'] = (byte) 1;
+        HEX2B['2'] = (byte) 2;
+        HEX2B['3'] = (byte) 3;
+        HEX2B['4'] = (byte) 4;
+        HEX2B['5'] = (byte) 5;
+        HEX2B['6'] = (byte) 6;
+        HEX2B['7'] = (byte) 7;
+        HEX2B['8'] = (byte) 8;
+        HEX2B['9'] = (byte) 9;
+        HEX2B['A'] = (byte) 10;
+        HEX2B['B'] = (byte) 11;
+        HEX2B['C'] = (byte) 12;
+        HEX2B['D'] = (byte) 13;
+        HEX2B['E'] = (byte) 14;
+        HEX2B['F'] = (byte) 15;
+        HEX2B['a'] = (byte) 10;
+        HEX2B['b'] = (byte) 11;
+        HEX2B['c'] = (byte) 12;
+        HEX2B['d'] = (byte) 13;
+        HEX2B['e'] = (byte) 14;
+        HEX2B['f'] = (byte) 15;
+    }
 
     private StringUtils() {
     }
@@ -1000,4 +1030,25 @@ public final class StringUtils {
         }
         return parameters;
     }
+
+    public static int decodeHexNibble(final char c) {
+        // Character.digit() is not used here, as it addresses a larger
+        // set of characters (both ASCII and full-width latin letters).
+        byte[] hex2b = HEX2B;
+        return c < hex2b.length ? hex2b[c] : -1;
+    }
+
+    /**
+     * Decode a 2-digit hex byte from within a string.
+     */
+    public static byte decodeHexByte(CharSequence s, int pos) {
+        int hi = decodeHexNibble(s.charAt(pos));
+        int lo = decodeHexNibble(s.charAt(pos + 1));
+        if (hi == -1 || lo == -1) {
+            throw new IllegalArgumentException(String.format(
+                    "invalid hex byte '%s' at index %d of '%s'", s.subSequence(pos, pos + 2), pos, s));
+        }
+        return (byte) ((hi << 4) + lo);
+    }
+
 }

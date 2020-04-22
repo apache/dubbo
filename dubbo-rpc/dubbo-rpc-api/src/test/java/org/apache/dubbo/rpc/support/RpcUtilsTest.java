@@ -23,6 +23,8 @@ import org.apache.dubbo.rpc.RpcInvocation;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -108,6 +110,44 @@ public class RpcUtilsTest {
     }
 
     @Test
+    public void testGetReturnType() {
+        Class<?> demoServiceClass = DemoService.class;
+        String serviceName = demoServiceClass.getName();
+        Invoker invoker = mock(Invoker.class);
+        given(invoker.getUrl()).willReturn(URL.valueOf("test://127.0.0.1:1/org.apache.dubbo.rpc.support.DemoService?interface=org.apache.dubbo.rpc.support.DemoService"));
+
+        // void sayHello(String name);
+        RpcInvocation inv = new RpcInvocation("sayHello", serviceName, new Class<?>[]{String.class}, null, null, invoker, null);
+        Class<?> returnType = RpcUtils.getReturnType(inv);
+        Assertions.assertNull(returnType);
+
+        //String echo(String text);
+        RpcInvocation inv1 = new RpcInvocation("echo", serviceName, new Class<?>[]{String.class}, null, null, invoker, null);
+        Class<?> returnType1 = RpcUtils.getReturnType(inv1);
+        Assertions.assertNotNull(returnType1);
+        Assertions.assertEquals(String.class, returnType1);
+
+        //int getSize(String[] strs);
+        RpcInvocation inv2 = new RpcInvocation("getSize", serviceName, new Class<?>[]{String[].class}, null, null, invoker, null);
+        Class<?> returnType2 = RpcUtils.getReturnType(inv2);
+        Assertions.assertNotNull(returnType2);
+        Assertions.assertEquals(int.class, returnType2);
+
+        //Person getPerson(Person person);
+        RpcInvocation inv3 = new RpcInvocation("getPerson", serviceName, new Class<?>[]{Person.class}, null, null, invoker, null);
+        Class<?> returnType3 = RpcUtils.getReturnType(inv3);
+        Assertions.assertNotNull(returnType3);
+        Assertions.assertEquals(Person.class, returnType3);
+
+        //List<String> testReturnType1(String str);
+        RpcInvocation inv4 = new RpcInvocation("testReturnType1", serviceName, new Class<?>[]{String.class}, null, null, invoker, null);
+        Class<?> returnType4 = RpcUtils.getReturnType(inv4);
+        Assertions.assertNotNull(returnType4);
+        Assertions.assertEquals(List.class, returnType4);
+
+    }
+
+    @Test
     public void testGetReturnTypes() throws Exception {
         Class<?> demoServiceClass = DemoService.class;
         String serviceName = demoServiceClass.getName();
@@ -164,4 +204,113 @@ public class RpcUtilsTest {
         Assertions.assertEquals(((ParameterizedType) genericReturnType5).getActualTypeArguments()[0], types5[1]);
         Assertions.assertArrayEquals(types5, inv5.getReturnTypes());
     }
+
+    @Test
+    public void testGetParameterTypes() {
+        Class<?> demoServiceClass = DemoService.class;
+        String serviceName = demoServiceClass.getName();
+        Invoker invoker = mock(Invoker.class);
+
+        // void sayHello(String name);
+        RpcInvocation inv1 = new RpcInvocation("sayHello", serviceName,
+                new Class<?>[]{String.class}, null, null, invoker, null);
+        Class<?>[] parameterTypes1 = RpcUtils.getParameterTypes(inv1);
+        Assertions.assertNotNull(parameterTypes1);
+        Assertions.assertEquals(1, parameterTypes1.length);
+        Assertions.assertEquals(String.class, parameterTypes1[0]);
+
+        //long timestamp();
+        RpcInvocation inv2 = new RpcInvocation("timestamp", serviceName, null, null, null, invoker, null);
+        Class<?>[] parameterTypes2 = RpcUtils.getParameterTypes(inv2);
+        Assertions.assertEquals(0, parameterTypes2.length);
+
+        //Type enumlength(Type... types);
+        RpcInvocation inv3 = new RpcInvocation("enumlength", serviceName,
+                new Class<?>[]{Type.class, Type.class}, null, null, invoker, null);
+        Class<?>[] parameterTypes3 = RpcUtils.getParameterTypes(inv3);
+        Assertions.assertNotNull(parameterTypes3);
+        Assertions.assertEquals(2, parameterTypes3.length);
+        Assertions.assertEquals(Type.class, parameterTypes3[0]);
+        Assertions.assertEquals(Type.class, parameterTypes3[1]);
+
+        //byte getbyte(byte arg);
+        RpcInvocation inv4 = new RpcInvocation("getbyte", serviceName,
+                new Class<?>[]{byte.class}, null, null, invoker, null);
+        Class<?>[] parameterTypes4 = RpcUtils.getParameterTypes(inv4);
+        Assertions.assertNotNull(parameterTypes4);
+        Assertions.assertEquals(1, parameterTypes4.length);
+        Assertions.assertEquals(byte.class, parameterTypes4[0]);
+
+        //void $invoke(String s1, String s2);
+        RpcInvocation inv5 = new RpcInvocation("$invoke", serviceName,
+                new Class<?>[]{String.class, String[].class},
+                new Object[]{"method", new String[]{"java.lang.String", "void", "java.lang.Object"}},
+                null, invoker, null);
+        Class<?>[] parameterTypes5 = RpcUtils.getParameterTypes(inv5);
+        Assertions.assertNotNull(parameterTypes5);
+        Assertions.assertEquals(3, parameterTypes5.length);
+        Assertions.assertEquals(String.class, parameterTypes5[0]);
+        Assertions.assertEquals(String.class, parameterTypes5[1]);
+        Assertions.assertEquals(String.class, parameterTypes5[2]);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "echo",
+            "stringLength",
+            "testReturnType"
+    })
+    public void testGetMethodName(String methodName) {
+        Class<?> demoServiceClass = DemoService.class;
+        String serviceName = demoServiceClass.getName();
+        Invoker invoker = mock(Invoker.class);
+
+        RpcInvocation inv1 = new RpcInvocation(methodName, serviceName,
+                new Class<?>[]{String.class}, null, null, invoker, null);
+        String actual = RpcUtils.getMethodName(inv1);
+        Assertions.assertNotNull(actual);
+        Assertions.assertEquals(methodName, actual);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "hello",
+            "apache",
+            "dubbo"
+    })
+    public void testGet_$invoke_MethodName(String method) {
+        Class<?> demoServiceClass = DemoService.class;
+        String serviceName = demoServiceClass.getName();
+        Invoker invoker = mock(Invoker.class);
+
+        RpcInvocation inv = new RpcInvocation("$invoke", serviceName,
+                new Class<?>[]{String.class, String[].class},
+                new Object[]{method, new String[]{"java.lang.String", "void", "java.lang.Object"}},
+                null, invoker, null);
+        String actual = RpcUtils.getMethodName(inv);
+        Assertions.assertNotNull(actual);
+        Assertions.assertEquals(method, actual);
+
+    }
+
+    @Test
+    public void testGet_$invoke_Arguments() {
+        Object[] args = new Object[]{"hello", "dubbo", 520};
+        Class<?> demoServiceClass = DemoService.class;
+        String serviceName = demoServiceClass.getName();
+        Invoker invoker = mock(Invoker.class);
+
+        RpcInvocation inv = new RpcInvocation("$invoke", serviceName,
+                new Class<?>[]{String.class, String[].class, Object[].class},
+                new Object[]{"method", new String[]{}, args},
+                null, invoker, null);
+
+        Object[] arguments = RpcUtils.getArguments(inv);
+        for (int i = 0; i < args.length; i++) {
+            Assertions.assertNotNull(arguments[i]);
+            Assertions.assertEquals(args[i].getClass().getName(), arguments[i].getClass().getName());
+            Assertions.assertEquals(args[i], arguments[i]);
+        }
+    }
+
 }
