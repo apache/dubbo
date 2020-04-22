@@ -88,6 +88,13 @@ public class RpcContext {
 
     private InetSocketAddress remoteAddress;
 
+    private transient String localHost;
+    private transient String localHostName;
+    private transient int localPort;
+    private transient String remoteHost;
+    private transient String remoteHostName;
+    private transient int remotePort;
+
     private String remoteApplicationName;
 
     @Deprecated
@@ -104,7 +111,6 @@ public class RpcContext {
     private AsyncContext asyncContext;
 
     private boolean remove = true;
-
 
     protected RpcContext() {
     }
@@ -323,7 +329,11 @@ public class RpcContext {
     public RpcContext setLocalAddress(String host, int port) {
         if (port < 0) {
             port = 0;
+        } else {
+            this.localPort = port;
         }
+
+        this.localHost = host;
         this.localAddress = InetSocketAddress.createUnresolved(host, port);
         return this;
     }
@@ -353,16 +363,23 @@ public class RpcContext {
     }
 
     /**
-     * get local host name.
+     * get local host name, return local ip address if empty
      *
      * @return local host name
      */
     public String getLocalHostName() {
+        if (localHostName != null) {
+            return localHostName;
+        }
+
         String host = localAddress == null ? null : localAddress.getHostName();
         if (StringUtils.isEmpty(host)) {
-            return getLocalHost();
+            localHostName = getLocalHost();
+        } else {
+            localHostName = host;
         }
-        return host;
+
+        return localHostName;
     }
 
     /**
@@ -375,7 +392,11 @@ public class RpcContext {
     public RpcContext setRemoteAddress(String host, int port) {
         if (port < 0) {
             port = 0;
+        } else {
+            this.remotePort = port;
         }
+
+        this.remoteHost = host;
         this.remoteAddress = InetSocketAddress.createUnresolved(host, port);
         return this;
     }
@@ -424,22 +445,33 @@ public class RpcContext {
      * @return remote host name
      */
     public String getRemoteHostName() {
-        return remoteAddress == null ? null : remoteAddress.getHostName();
+        if (remoteHostName != null) {
+            return remoteHostName;
+        }
+
+        return remoteHostName = (remoteAddress == null ? null : remoteAddress.getHostName());
     }
 
     /**
-     * get local host.
+     * get local ip address.
      *
-     * @return local host
+     * @return local ip address
      */
     public String getLocalHost() {
+        if (localHost != null) {
+            return localHost;
+        }
+
         String host = localAddress == null ? null :
                 localAddress.getAddress() == null ? localAddress.getHostName()
                         : NetUtils.filterLocalHost(localAddress.getAddress().getHostAddress());
         if (host == null || host.length() == 0) {
-            return NetUtils.getLocalHost();
+            localHost = NetUtils.getLocalHost();
+        } else {
+            localHost = host;
         }
-        return host;
+
+        return localHost;
     }
 
     /**
@@ -448,18 +480,30 @@ public class RpcContext {
      * @return port
      */
     public int getLocalPort() {
-        return localAddress == null ? 0 : localAddress.getPort();
+        if (localPort != 0) {
+            return localPort;
+        }
+        localPort = (localAddress == null ? 0 : localAddress.getPort());
+        return localPort;
     }
 
     /**
-     * get remote host.
+     * get remote host ip address.
      *
-     * @return remote host
+     * @return remote host ip address
      */
     public String getRemoteHost() {
-        return remoteAddress == null ? null :
+        if (remoteHost != null) {
+            return remoteHost;
+        }
+
+        String host = remoteAddress == null ? null :
                 remoteAddress.getAddress() == null ? remoteAddress.getHostName()
                         : NetUtils.filterLocalHost(remoteAddress.getAddress().getHostAddress());
+        if (host != null && host.length() > 0) {
+            remoteHost = host;
+        }
+        return remoteHost;
     }
 
     /**
@@ -468,7 +512,15 @@ public class RpcContext {
      * @return remote port
      */
     public int getRemotePort() {
-        return remoteAddress == null ? 0 : remoteAddress.getPort();
+        if (remotePort != 0) {
+            return remotePort;
+        }
+
+        int port = remoteAddress == null ? 0 : remoteAddress.getPort();
+        if (port != 0) {
+            remotePort = port;
+        }
+        return remotePort;
     }
 
     /**

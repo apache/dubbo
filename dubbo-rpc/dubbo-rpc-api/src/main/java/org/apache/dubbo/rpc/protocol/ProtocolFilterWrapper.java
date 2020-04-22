@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.rpc.Exporter;
@@ -38,6 +39,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_FILTER_K
 /**
  * ListenerProtocol
  */
+@Activate(order = 100)
 public class ProtocolFilterWrapper implements Protocol {
 
     private final Protocol protocol;
@@ -98,30 +100,7 @@ public class ProtocolFilterWrapper implements Protocol {
                         } finally {
 
                         }
-                        return asyncResult.whenCompleteWithContext((r, t) -> {
-                            if (filter instanceof ListenableFilter) {
-                                ListenableFilter listenableFilter = ((ListenableFilter) filter);
-                                Filter.Listener listener = listenableFilter.listener(invocation);
-                                try {
-                                    if (listener != null) {
-                                        if (t == null) {
-                                            listener.onResponse(r, invoker, invocation);
-                                        } else {
-                                            listener.onError(t, invoker, invocation);
-                                        }
-                                    }
-                                } finally {
-                                    listenableFilter.removeListener(invocation);
-                                }
-                            } else if (filter instanceof Filter.Listener) {
-                                Filter.Listener listener = (Filter.Listener) filter;
-                                if (t == null) {
-                                    listener.onResponse(r, invoker, invocation);
-                                } else {
-                                    listener.onError(t, invoker, invocation);
-                                }
-                            }
-                        });
+                        return asyncResult;
                     }
 
                     @Override
@@ -137,7 +116,73 @@ public class ProtocolFilterWrapper implements Protocol {
             }
         }
 
-        return last;
+        return new CallbackRegistrationInvoker<>(last, filters);
+    }
+
+    static class CallbackRegistrationInvoker<T> implements Invoker<T> {
+
+        private final Invoker<T> filterInvoker;
+        private final List<Filter> filters;
+
+        public CallbackRegistrationInvoker(Invoker<T> filterInvoker, List<Filter> filters) {
+            this.filterInvoker = filterInvoker;
+            this.filters = filters;
+        }
+
+        @Override
+        public Result invoke(Invocation invocation) throws RpcException {
+            Result asyncResult = filterInvoker.invoke(invocation);
+            asyncResult.whenCompleteWithContext((r, t) -> {
+                for (int i = filters.size() - 1; i >= 0; i--) {
+                    Filter filter = filters.get(i);
+                    // onResponse callback
+                    if (filter instanceof ListenableFilter) {
+                        ListenableFilter listenableFilter = ((ListenableFilter) filter);
+                        Filter.Listener listener = listenableFilter.listener(invocation);
+                        try {
+                            if (listener != null) {
+                                if (t == null) {
+                                    listener.onResponse(r, filterInvoker, invocation);
+                                } else {
+                                    listener.onError(t, filterInvoker, invocation);
+                                }
+                            }
+                        } finally {
+                            listenableFilter.removeListener(invocation);
+                        }
+                    } else if (filter instanceof Filter.Listener) {
+                        Filter.Listener listener = (Filter.Listener) filter;
+                        if (t == null) {
+                            listener.onResponse(r, filterInvoker, invocation);
+                        } else {
+                            listener.onError(t, filterInvoker, invocation);
+                        }
+                    }
+                }
+            });
+
+            return asyncResult;
+        }
+
+        @Override
+        public Class<T> getInterface() {
+            return filterInvoker.getInterface();
+        }
+
+        @Override
+        public URL getUrl() {
+            return filterInvoker.getUrl();
+        }
+
+        @Override
+        public boolean isAvailable() {
+            return filterInvoker.isAvailable();
+        }
+
+        @Override
+        public void destroy() {
+            filterInvoker.destroy();
+        }
     }
 
     @Override
