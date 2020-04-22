@@ -52,7 +52,7 @@ import static org.apache.dubbo.config.Constants.TEST_ENVIRONMENT;
  *
  * @export
  */
-public class ApplicationConfig extends AbstractConfig {
+public class ApplicationConfig extends AbstractParameterizedConfig {
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationConfig.class);
 
     private static final long serialVersionUID = 5508512956753757169L;
@@ -137,11 +137,6 @@ public class ApplicationConfig extends AbstractConfig {
      * Should we accept foreign ip or not?
      */
     private Boolean qosAcceptForeignIp;
-
-    /**
-     * Customized parameters
-     */
-    private Map<String, String> parameters;
 
     /**
      * Config the shutdown.wait
@@ -384,14 +379,6 @@ public class ApplicationConfig extends AbstractConfig {
         this.setQosAcceptForeignIp(qosAcceptForeignIp);
     }
 
-    public Map<String, String> getParameters() {
-        return parameters;
-    }
-
-    public void setParameters(Map<String, String> parameters) {
-        this.parameters = parameters;
-    }
-
     public String getShutwait() {
         return shutwait;
     }
@@ -452,8 +439,8 @@ public class ApplicationConfig extends AbstractConfig {
     }
 
     private void appendEnvironmentProperties() {
-        if (parameters == null) {
-            parameters = new HashMap<>();
+        if (getParameters() == null) {
+            setParameters(new HashMap<>());
         }
 
         Set<InfraAdapter> adapters = ExtensionLoader.getExtensionLoader(InfraAdapter.class).getSupportedExtensionInstances();
@@ -464,7 +451,7 @@ public class ApplicationConfig extends AbstractConfig {
             for (InfraAdapter adapter : adapters) {
                 Map<String, String> extraParameters = adapter.getExtraAttributes(inputParameters);
                 if (CollectionUtils.isNotEmptyMap(extraParameters)) {
-                    parameters.putAll(extraParameters);
+                    getParameters().putAll(extraParameters);
                 }
             }
         }
