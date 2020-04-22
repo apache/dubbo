@@ -17,11 +17,8 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
-
-import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.EXTRA_KEYS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
@@ -32,7 +29,7 @@ import static org.apache.dubbo.config.Constants.REGISTRIES_SUFFIX;
  *
  * @export
  */
-public class RegistryConfig extends AbstractConfig {
+public class RegistryConfig extends AbstractParameterizedConfig {
 
     public static final String NO_AVAILABLE = "N/A";
     private static final long serialVersionUID = 5508512956753757169L;
@@ -128,11 +125,6 @@ public class RegistryConfig extends AbstractConfig {
      * Whether allow to subscribe service on the register center
      */
     private Boolean subscribe;
-
-    /**
-     * The customized parameters
-     */
-    private Map<String, String> parameters;
 
     /**
      * Whether it's default
@@ -409,25 +401,6 @@ public class RegistryConfig extends AbstractConfig {
 
     public void setVersion(String version) {
         this.version = version;
-    }
-
-    public Map<String, String> getParameters() {
-        return parameters;
-    }
-
-    public void setParameters(Map<String, String> parameters) {
-        this.parameters = parameters;
-    }
-
-    public void updateParameters(Map<String, String> parameters) {
-        if (CollectionUtils.isEmptyMap(parameters)) {
-            return;
-        }
-        if (this.parameters == null) {
-            this.parameters = parameters;
-        } else {
-            this.parameters.putAll(parameters);
-        }
     }
 
     public Boolean isDefault() {

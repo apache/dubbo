@@ -19,8 +19,6 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 
-import java.util.Map;
-
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SSL_ENABLED_KEY;
 import static org.apache.dubbo.config.Constants.PROTOCOLS_SUFFIX;
@@ -30,7 +28,7 @@ import static org.apache.dubbo.config.Constants.PROTOCOLS_SUFFIX;
  *
  * @export
  */
-public class ProtocolConfig extends AbstractConfig {
+public class ProtocolConfig extends AbstractParameterizedConfig {
 
     private static final long serialVersionUID = 6913423882496634749L;
 
@@ -187,11 +185,6 @@ public class ProtocolConfig extends AbstractConfig {
      * The extension
      */
     private String extension;
-
-    /**
-     * The customized parameters
-     */
-    private Map<String, String> parameters;
 
     /**
      * If it's default
@@ -472,14 +465,6 @@ public class ProtocolConfig extends AbstractConfig {
 
     public void setNetworker(String networker) {
         this.networker = networker;
-    }
-
-    public Map<String, String> getParameters() {
-        return parameters;
-    }
-
-    public void setParameters(Map<String, String> parameters) {
-        this.parameters = parameters;
     }
 
     public Boolean isDefault() {

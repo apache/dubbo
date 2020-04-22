@@ -20,14 +20,12 @@ import org.apache.dubbo.common.constants.RegistryConstants;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 
-import java.util.Map;
-
 /**
  * MonitorConfig
  *
  * @export
  */
-public class MonitorConfig extends AbstractConfig {
+public class MonitorConfig extends AbstractParameterizedConfig {
 
     private static final long serialVersionUID = -1184681514659198203L;
 
@@ -57,11 +55,6 @@ public class MonitorConfig extends AbstractConfig {
     private String version;
 
     private String interval;
-
-    /**
-     * customized parameters
-     */
-    private Map<String, String> parameters;
 
     /**
      * If it's default
@@ -125,14 +118,6 @@ public class MonitorConfig extends AbstractConfig {
 
     public void setVersion(String version) {
         this.version = version;
-    }
-
-    public Map<String, String> getParameters() {
-        return parameters;
-    }
-
-    public void setParameters(Map<String, String> parameters) {
-        this.parameters = parameters;
     }
 
     public Boolean isDefault() {

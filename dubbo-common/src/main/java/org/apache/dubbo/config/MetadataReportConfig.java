@@ -31,7 +31,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROPERTIES_CHAR_
  *
  * @export
  */
-public class MetadataReportConfig extends AbstractConfig {
+public class MetadataReportConfig extends AbstractParameterizedConfig {
 
     private static final long serialVersionUID = 55233L;
     /**
@@ -56,9 +56,6 @@ public class MetadataReportConfig extends AbstractConfig {
      * The group the metadata in . It is the same as registry
      */
     private String group;
-
-    // Customized parameters
-    private Map<String, String> parameters;
 
     private Integer retryTimes;
 
@@ -132,14 +129,6 @@ public class MetadataReportConfig extends AbstractConfig {
 
     public void setTimeout(Integer timeout) {
         this.timeout = timeout;
-    }
-
-    public Map<String, String> getParameters() {
-        return parameters;
-    }
-
-    public void setParameters(Map<String, String> parameters) {
-        this.parameters = parameters;
     }
 
     @Parameter(key = "retry-times")

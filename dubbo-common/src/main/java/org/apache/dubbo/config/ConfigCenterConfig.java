@@ -18,7 +18,6 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.support.Parameter;
@@ -38,7 +37,7 @@ import static org.apache.dubbo.config.Constants.ZOOKEEPER_PROTOCOL;
 /**
  * ConfigCenterConfig
  */
-public class ConfigCenterConfig extends AbstractConfig {
+public class ConfigCenterConfig extends AbstractParameterizedConfig {
     private AtomicBoolean inited = new AtomicBoolean(false);
 
     private String protocol;
@@ -73,16 +72,8 @@ public class ConfigCenterConfig extends AbstractConfig {
     private String configFile = CommonConstants.DEFAULT_DUBBO_PROPERTIES;
 
     /* the .properties file under 'configFile' is global shared while .properties under this one is limited only to this application
-    */
-    private String appConfigFile;
-
-    /* If the Config Center product you use have some special parameters that is not covered by this class, you can add it to here.
-    For example, with XML:
-      <dubbo:config-center>
-           <dubbo:parameter key="{your key}" value="{your value}" />
-      </dubbo:config-center>
      */
-    private Map<String, String> parameters;
+    private String appConfigFile;
 
     private Map<String, String> externalConfiguration;
 
@@ -245,12 +236,17 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.appConfigFile = appConfigFile;
     }
 
-    public Map<String, String> getParameters() {
-        return parameters;
-    }
-
+    /**
+     * If the Config Center product you use have some special parameters that is not covered by this class, you can add it to here.
+     * For example, with XML:
+     * <dubbo:config-center>
+     * <dubbo:parameter key="{your key}" value="{your value}" />
+     * </dubbo:config-center>
+     *
+     * @param parameters
+     */
     public void setParameters(Map<String, String> parameters) {
-        this.parameters = parameters;
+        super.setParameters(parameters);
     }
 
     @Override
@@ -274,16 +270,4 @@ public class ConfigCenterConfig extends AbstractConfig {
             this.protocol = value;
         }
     }
-
-    public void updateParameters(Map<String, String> parameters) {
-        if (CollectionUtils.isEmptyMap(parameters)) {
-            return;
-        }
-        if (this.parameters == null) {
-            this.parameters = parameters;
-        } else {
-            this.parameters.putAll(parameters);
-        }
-    }
-
 }

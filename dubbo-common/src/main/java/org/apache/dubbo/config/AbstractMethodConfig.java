@@ -18,14 +18,12 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.config.support.Parameter;
 
-import java.util.Map;
-
 /**
  * AbstractMethodConfig
  *
  * @export
  */
-public abstract class AbstractMethodConfig extends AbstractConfig {
+public abstract class AbstractMethodConfig extends AbstractParameterizedConfig {
 
     private static final long serialVersionUID = 1L;
 
@@ -84,11 +82,6 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
      * be validated
      */
     protected String validation;
-
-    /**
-     * The customized parameters
-     */
-    protected Map<String, String> parameters;
 
     /**
      * Forks for forking cluster
@@ -196,13 +189,4 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
     public void setValidation(String validation) {
         this.validation = validation;
     }
-
-    public Map<String, String> getParameters() {
-        return parameters;
-    }
-
-    public void setParameters(Map<String, String> parameters) {
-        this.parameters = parameters;
-    }
-
 }
