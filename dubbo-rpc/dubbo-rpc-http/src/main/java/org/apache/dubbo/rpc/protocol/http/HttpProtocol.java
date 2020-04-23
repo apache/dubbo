@@ -16,6 +16,9 @@
  */
 package org.apache.dubbo.rpc.protocol.http;
 
+import com.googlecode.jsonrpc4j.HttpException;
+import com.googlecode.jsonrpc4j.JsonRpcClientException;
+import com.googlecode.jsonrpc4j.JsonRpcServer;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.RemotingServer;
 import org.apache.dubbo.remoting.http.HttpBinder;
@@ -24,15 +27,9 @@ import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.AbstractProxyProtocol;
-
-import com.googlecode.jsonrpc4j.HttpException;
-import com.googlecode.jsonrpc4j.JsonRpcClientException;
-import com.googlecode.jsonrpc4j.JsonRpcServer;
-import com.googlecode.jsonrpc4j.spring.JsonProxyFactoryBean;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 import org.springframework.remoting.RemoteAccessException;
-import org.springframework.remoting.support.RemoteInvocation;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -40,9 +37,11 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.apache.dubbo.remoting.Constants.DEFAULT_EXCHANGER;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 
 public class HttpProtocol extends AbstractProxyProtocol {
@@ -85,11 +84,20 @@ public class HttpProtocol extends AbstractProxyProtocol {
                 response.setHeader(ACCESS_CONTROL_ALLOW_METHODS_HEADER, "POST");
                 response.setHeader(ACCESS_CONTROL_ALLOW_HEADERS_HEADER, "*");
             }
-            if (request.getMethod().equalsIgnoreCase("OPTIONS")) {
+            if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
                 response.setStatus(200);
-            } else if (request.getMethod().equalsIgnoreCase("POST")) {
-
+            } else if ("POST".equalsIgnoreCase(request.getMethod())) {
                 RpcContext.getContext().setRemoteAddress(request.getRemoteAddr(), request.getRemotePort());
+
+                Enumeration<String> enumeration = request.getHeaderNames();
+                while (enumeration.hasMoreElements()) {
+                    String key = enumeration.nextElement();
+                    if (key.startsWith(DEFAULT_EXCHANGER)) {
+                        RpcContext.getContext().setAttachment(key.substring(DEFAULT_EXCHANGER.length()),
+                                request.getHeader(key));
+                    }
+                }
+
                 try {
                     skeleton.handle(request.getInputStream(), response.getOutputStream());
                 } catch (Throwable e) {
@@ -127,15 +135,7 @@ public class HttpProtocol extends AbstractProxyProtocol {
     protected <T> T doRefer(final Class<T> serviceType, URL url) throws RpcException {
         final String generic = url.getParameter(GENERIC_KEY);
         final boolean isGeneric = ProtocolUtils.isGeneric(generic) || serviceType.equals(GenericService.class);
-        JsonProxyFactoryBean jsonProxyFactoryBean = new JsonProxyFactoryBean();
-        JsonRpcProxyFactoryBean jsonRpcProxyFactoryBean = new JsonRpcProxyFactoryBean(jsonProxyFactoryBean);
-        jsonRpcProxyFactoryBean.setRemoteInvocationFactory((methodInvocation) -> {
-            RemoteInvocation invocation = new JsonRemoteInvocation(methodInvocation);
-            if (isGeneric) {
-                invocation.addAttribute(GENERIC_KEY, generic);
-            }
-            return invocation;
-        });
+        JsonRpcProxyFactoryBean jsonRpcProxyFactoryBean = new JsonRpcProxyFactoryBean();
         String key = url.setProtocol("http").toIdentityString();
         if (isGeneric) {
             key = key + "/" + GENERIC_KEY;
@@ -144,10 +144,11 @@ public class HttpProtocol extends AbstractProxyProtocol {
         jsonRpcProxyFactoryBean.setServiceUrl(key);
         jsonRpcProxyFactoryBean.setServiceInterface(serviceType);
 
-        jsonProxyFactoryBean.afterPropertiesSet();
-        return (T) jsonProxyFactoryBean.getObject();
+        jsonRpcProxyFactoryBean.afterPropertiesSet();
+        return (T) jsonRpcProxyFactoryBean.getObject();
     }
 
+    @Override
     protected int getErrorCode(Throwable e) {
         if (e instanceof RemoteAccessException) {
             e = e.getCause();

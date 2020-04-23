@@ -20,67 +20,36 @@ package org.apache.dubbo.rpc.protocol.http;
 import com.googlecode.jsonrpc4j.spring.JsonProxyFactoryBean;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.rpc.RpcContext;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.remoting.support.RemoteInvocationBasedAccessor;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * JsonRpcProxyFactoryBean
  */
-public class JsonRpcProxyFactoryBean extends RemoteInvocationBasedAccessor
+public class JsonRpcProxyFactoryBean extends JsonProxyFactoryBean
         implements MethodInterceptor,
         InitializingBean,
         FactoryBean<Object>,
         ApplicationContextAware {
-    private final JsonProxyFactoryBean jsonProxyFactoryBean;
-
-    public JsonRpcProxyFactoryBean(JsonProxyFactoryBean factoryBean) {
-        this.jsonProxyFactoryBean = factoryBean;
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public void afterPropertiesSet() {
-        jsonProxyFactoryBean.afterPropertiesSet();
-    }
 
     @Override
     public Object invoke(MethodInvocation invocation)
             throws Throwable {
 
-        return jsonProxyFactoryBean.invoke(invocation);
-    }
+        RpcContext context = RpcContext.getContext();
+        Map<String, String> headers = new HashMap<>(context.getObjectAttachments().keySet().size() * 2);
+        for (String key : context.getObjectAttachments().keySet()) {
+            headers.put(Constants.DEFAULT_EXCHANGER + key, context.getAttachment(key));
+        }
+        this.setExtraHttpHeaders(headers);
 
-    @Override
-    public Object getObject() {
-        return jsonProxyFactoryBean.getObject();
-    }
-
-    @Override
-    public Class<?> getObjectType() {
-        return jsonProxyFactoryBean.getObjectType();
-    }
-
-    @Override
-    public boolean isSingleton() {
-        return jsonProxyFactoryBean.isSingleton();
-    }
-
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) {
-        jsonProxyFactoryBean.setApplicationContext(applicationContext);
-    }
-
-    @Override
-    public void setServiceUrl(String serviceUrl) {
-        jsonProxyFactoryBean.setServiceUrl(serviceUrl);
-    }
-
-    @Override
-    public void setServiceInterface(Class<?> serviceInterface) {
-        jsonProxyFactoryBean.setServiceInterface(serviceInterface);
+        return super.invoke(invocation);
     }
 
 }

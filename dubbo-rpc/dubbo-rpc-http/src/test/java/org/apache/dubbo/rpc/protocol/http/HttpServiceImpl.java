@@ -55,4 +55,9 @@ public class HttpServiceImpl implements HttpService {
     public String getRemoteApplicationName() {
         return RpcContext.getContext().getRemoteApplicationName();
     }
+
+    @Override
+    public String getRpcAttachment() {
+        return RpcContext.getContext().getAttachment("Custom-Attachment");
+    }
 }

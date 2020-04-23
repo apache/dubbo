@@ -24,4 +24,6 @@ public interface HttpService {
     String customException();
 
     String getRemoteApplicationName();
+
+    String getRpcAttachment();
 }
