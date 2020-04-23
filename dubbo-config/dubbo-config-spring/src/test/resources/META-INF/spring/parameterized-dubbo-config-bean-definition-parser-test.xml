@@ -162,4 +162,5 @@
     >
         <dubbo:parameter key="a" value="2"/>
     </dubbo:registry>
+
 </beans>

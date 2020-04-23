@@ -29,6 +29,9 @@ import org.springframework.beans.factory.support.ManagedMap;
 import org.springframework.beans.factory.xml.BeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+
+import java.util.Objects;
 
 import static org.apache.dubbo.common.constants.CommonConstants.HIDE_KEY_PREFIX;
 
@@ -58,7 +61,37 @@ public class ParameterizedDubboConfigBeanDefinitionParser extends GenericDubboCo
         }
     }
 
-    private void parseParameterElement(Element parameterElement, ParserContext parserContext, BeanDefinitionBuilder builder) {
+    @Override
+    protected boolean parseAttribute(Node attribute, Element element, ParserContext parserContext,
+                                     BeanDefinitionBuilder builder) {
+        if (!super.parseAttribute(attribute, element, parserContext, builder)) {
+            // If the element contains the extended parameter, the attribute name and value will put into parameters.
+            if (isExtendedParameter(attribute, element)) {
+                processExtendedParameter(attribute, element, parserContext, builder);
+            }
+        }
+        return true;
+    }
+
+    /**
+     * @param attribute the {@link Node attribute}
+     * @param element   {@link Element element}
+     * @return If the prefix of attribute's namespace is different with its owner element's, return <code>true</code>,
+     * or <code>false</code>
+     */
+    private boolean isExtendedParameter(Node attribute, Element element) {
+        String nsPrefix = attribute.getPrefix();
+        return !Objects.equals(element.getPrefix(), nsPrefix);
+    }
+
+    private void processExtendedParameter(Node attribute, Element element, ParserContext parserContext,
+                                          BeanDefinitionBuilder builder) {
+        PropertyValue propertyValue = getParametersPropertyValue(builder);
+        processParametersPropertyValue(propertyValue, attribute.getLocalName(),
+                resolvePropertyValue(attribute.getNodeValue(), parserContext), false);
+    }
+
+    private PropertyValue getParametersPropertyValue(BeanDefinitionBuilder builder) {
         AbstractBeanDefinition beanDefinition = builder.getRawBeanDefinition();
         MutablePropertyValues propertyValues = beanDefinition.getPropertyValues();
         String propertyName = "parameters";
@@ -68,16 +101,23 @@ public class ParameterizedDubboConfigBeanDefinitionParser extends GenericDubboCo
             propertyValue = new PropertyValue(propertyName, new ManagedMap());
             propertyValues.addPropertyValue(propertyValue);
         }
+        return propertyValue;
+    }
 
-        ManagedMap parameters = (ManagedMap) propertyValue.getValue();
+    private void parseParameterElement(Element parameterElement, ParserContext parserContext,
+                                       BeanDefinitionBuilder builder) {
+
+        PropertyValue propertyValue = getParametersPropertyValue(builder);
 
         String key = parameterElement.getAttribute("key");
         String value = resolvePropertyValue(parameterElement.getAttribute("value"), parserContext);
         boolean hide = "true".equals(parameterElement.getAttribute("hide"));
-        if (hide) {
-            key = HIDE_KEY_PREFIX + key;
-        }
 
-        parameters.put(key, new TypedStringValue(value, String.class));
+        processParametersPropertyValue(propertyValue, key, value, hide);
+    }
+
+    private void processParametersPropertyValue(PropertyValue propertyValue, String key, String value, boolean hide) {
+        ManagedMap parameters = (ManagedMap) propertyValue.getValue();
+        parameters.put(hide ? HIDE_KEY_PREFIX + key : key, new TypedStringValue(value, String.class));
     }
 }

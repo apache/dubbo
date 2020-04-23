@@ -150,20 +150,31 @@ public class GenericDubboConfigBeanDefinitionParser extends AbstractSingleBeanDe
         int attributesLength = attributes.getLength();
         for (int i = 0; i < attributesLength; i++) {
             Node attribute = attributes.item(i);
-            parseAttribute(attribute, parserContext, builder);
+            if (Node.ATTRIBUTE_NODE != attribute.getNodeType()) {
+                continue;
+            }
+            parseAttribute(attribute, element, parserContext, builder);
         }
     }
 
-    private void parseAttribute(Node attribute, ParserContext parserContext, BeanDefinitionBuilder builder) {
+    /**
+     * Parse the {@link Node attribute} on the target {@link Element element}
+     *
+     * @param attribute     the {@link Node attribute}
+     * @param element       {@link Element element}
+     * @param parserContext {@link ParserContext}
+     * @param builder       {@link BeanDefinitionBuilder}
+     * @return if parsing is successful, return <code>true</code>
+     */
+    protected boolean parseAttribute(Node attribute, Element element, ParserContext parserContext,
+                                     BeanDefinitionBuilder builder) {
         // Build {@link PropertyValue} if possible
-        addPropertyValue(attribute, parserContext, builder);
+        return addPropertyValue(attribute, element, parserContext, builder);
     }
 
-    private void addPropertyValue(Node attribute, ParserContext parserContext, BeanDefinitionBuilder builder) {
-        if (Node.ATTRIBUTE_NODE != attribute.getNodeType()) {
-            return;
-        }
-        String attributeName = attribute.getNodeName();
+    private boolean addPropertyValue(Node attribute, Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+
+        String attributeName = attribute.getLocalName();
         String attributeValue = attribute.getNodeValue();
         String propertyName = resolvePropertyName(attributeName);
         String propertyValue = resolvePropertyValue(attributeValue, parserContext);
@@ -173,13 +184,14 @@ public class GenericDubboConfigBeanDefinitionParser extends AbstractSingleBeanDe
         if (propertyDescriptor == null) { // The property of target bean type can't be found.
             if (logger.isWarnEnabled()) {
                 logger.warn(format("The property[name : %s] can't be found in the target config[type : %s]," +
-                                " however the attribute[name : %s , value : %s] was configured in the XML metadata configuration."
-                        , propertyName, configClass.getName(), attributeName, attributeValue));
+                                " however the attribute[xmlns : %s , name : %s , value : %s] was configured in the XML " +
+                                "metadata configuration.", propertyName, configClass.getName(), attribute.getNamespaceURI(),
+                        attribute.getNodeName(), attributeValue));
             }
-            return;
+            return false;
         }
-        Class<?> propertyType = propertyDescriptor.getPropertyType();
 
+        Class<?> propertyType = propertyDescriptor.getPropertyType();
 
         // If propertyType is the subtype of AbstractConfig, take the attribute value as the Spring Bean Name
         if (isConfigType(propertyType)) {
@@ -187,6 +199,8 @@ public class GenericDubboConfigBeanDefinitionParser extends AbstractSingleBeanDe
         } else {
             builder.addPropertyValue(propertyName, propertyValue);
         }
+
+        return true;
     }
 
     private boolean isConfigType(Class<?> propertyType) {
@@ -213,6 +227,17 @@ public class GenericDubboConfigBeanDefinitionParser extends AbstractSingleBeanDe
      */
     protected String resolvePropertyValue(String attributeValue, ParserContext parserContext) {
         PropertyResolver propertyResolver = parserContext.getReaderContext().getEnvironment();
+        return resolvePropertyValue(attributeValue, propertyResolver);
+    }
+
+    /**
+     * Resolve the property value of {@link PropertyValue}
+     *
+     * @param attributeValue   the value of attribute of XML element
+     * @param propertyResolver {@link PropertyResolver}
+     * @return Resolve the placeholders from <code>attributeValue</code>
+     */
+    protected String resolvePropertyValue(String attributeValue, PropertyResolver propertyResolver) {
         return propertyResolver.resolvePlaceholders(attributeValue);
     }
 
