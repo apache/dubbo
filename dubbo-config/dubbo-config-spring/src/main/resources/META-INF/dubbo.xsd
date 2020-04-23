@@ -6,7 +6,8 @@
             targetNamespace="http://dubbo.apache.org/schema/dubbo">
 
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
-    <xsd:import namespace="http://www.springframework.org/schema/beans" schemaLocation="http://www.springframework.org/schema/beans/spring-beans.xsd"/>
+    <xsd:import namespace="http://www.springframework.org/schema/beans"
+                schemaLocation="http://www.springframework.org/schema/beans/spring-beans.xsd"/>
     <xsd:import namespace="http://www.springframework.org/schema/tool"/>
 
     <xsd:annotation>
@@ -495,7 +496,7 @@
         </xsd:attribute>
         <xsd:attribute name="transport" type="xsd:string">
             <xsd:annotation>
-                <xsd:documentation><![CDATA[ The protocol transporter type. ]]></xsd:documentation>
+                <xsd:documentation><![CDATA[ Deprecated. The protocol transporter type. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="transporter" type="xsd:string">
@@ -525,7 +526,7 @@
         </xsd:attribute>
         <xsd:attribute name="forks" type="xsd:string">
             <xsd:annotation>
-                <xsd:documentation><![CDATA[ ForkingCluster forks. ]]></xsd:documentation>
+                <xsd:documentation><![CDATA[ Deprecated. ForkingCluster forks. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="group" type="xsd:string">
@@ -550,12 +551,12 @@
         </xsd:attribute>
         <xsd:attribute name="file" type="xsd:string">
             <xsd:annotation>
-                <xsd:documentation><![CDATA[ The registry adddress file store. ]]></xsd:documentation>
+                <xsd:documentation><![CDATA[ The registry address file store. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="wait" type="xsd:string">
             <xsd:annotation>
-                <xsd:documentation><![CDATA[ The wait time for shutdown. ]]></xsd:documentation>
+                <xsd:documentation><![CDATA[ Deprecated. The wait time for shutdown. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="check" type="xsd:string">
@@ -690,6 +691,11 @@
         <xsd:sequence minOccurs="0" maxOccurs="unbounded">
             <xsd:element ref="parameter" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
+        <xsd:attribute name="id" type="xsd:ID">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The unique identifier for a bean. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
         <xsd:attribute name="protocol" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The config center protocol. ]]></xsd:documentation>
@@ -702,7 +708,8 @@
         </xsd:attribute>
         <xsd:attribute name="cluster" type="xsd:string" use="optional">
             <xsd:annotation>
-                <xsd:documentation><![CDATA[ The config center cluster, it's real meaning may very on different Config Center products. ]]></xsd:documentation>
+                <xsd:documentation>
+                    <![CDATA[ The config center cluster, it's real meaning may very on different Config Center products. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="namespace" type="xsd:string" use="optional">
@@ -766,6 +773,11 @@
         <xsd:sequence minOccurs="0" maxOccurs="unbounded">
             <xsd:element ref="parameter" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
+        <xsd:attribute name="id" type="xsd:ID">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The unique identifier for a bean. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
         <xsd:attribute name="address" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The monitor address. ]]></xsd:documentation>
@@ -827,6 +839,11 @@
     </xsd:complexType>
 
     <xsd:complexType name="metricsType">
+        <xsd:attribute name="id" type="xsd:ID">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The unique identifier for a bean. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
         <xsd:attribute name="port" type="xsd:string" use="required">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The metrics service port. ]]></xsd:documentation>
@@ -945,7 +962,8 @@
                 </xsd:attribute>
                 <xsd:attribute name="threadpool" type="xsd:string">
                     <xsd:annotation>
-                        <xsd:documentation><![CDATA[ Consumer threadpool: cached, fixed, limited, eager]]></xsd:documentation>
+                        <xsd:documentation>
+                            <![CDATA[ Consumer threadpool: cached, fixed, limited, eager]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
                 <xsd:attribute name="corethreads" type="xsd:string">
@@ -1087,6 +1105,11 @@
         </xsd:attribute>
         <xsd:attribute name="keepalive" type="xsd:boolean">
             <xsd:annotation>
+                <xsd:documentation><![CDATA[ Deprecated. The protocol keepAlive. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="keep-alive" type="xsd:boolean">
+            <xsd:annotation>
                 <xsd:documentation><![CDATA[ The protocol keepAlive. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
@@ -1178,7 +1201,7 @@
         <xsd:attribute name="path" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation>
-                    <![CDATA[ The protocol context path. replace to "contextpath". ]]></xsd:documentation>
+                    <![CDATA[ Deprecated. The protocol context path. replace to "contextpath". ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="contextpath" type="xsd:string">

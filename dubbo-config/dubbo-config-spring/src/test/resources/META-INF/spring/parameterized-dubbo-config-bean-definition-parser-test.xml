@@ -1,0 +1,165 @@
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  -->
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:dubbo="http://dubbo.apache.org/schema/dubbo"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+    http://dubbo.apache.org/schema/dubbo http://dubbo.apache.org/schema/dubbo/dubbo.xsd
+    ">
+
+    <dubbo:application name="dubbo-application-test"
+                       version="${a}.${b}"
+                       owner="mercyblitz"
+                       organization="Apache"
+                       architecture="Dubbo"
+                       environment="product"
+                       compiler="jdk"
+                       logger="slf4j"
+                       registry="dubbo-registry-test"
+                       monitor="dubbo-monitor-test"
+                       default="true"
+                       metadata-type="local"
+                       register-consumer="false"
+    >
+        <dubbo:parameter key="a" value="${a}"/>
+        <dubbo:parameter key="b" value="${b}"/>
+        <dubbo:parameter key="c" value="${c:3}"/>
+    </dubbo:application>
+
+    <dubbo:monitor id="dubbo-monitor-test"
+                   address="${dubbo.monitor.address}"
+                   protocol="dubbo"
+                   username="${user.name}"
+                   password="${user.password}"
+                   group="default"
+                   version="${a}.${b}"
+                   interval="30"
+                   default="true"
+    >
+        <dubbo:parameter key="userName" value="${user.name}"/>
+    </dubbo:monitor>
+
+    <dubbo:config-center id="dubbo-config-center-test"
+                         protocol="dubbo"
+                         address="${dubbo.config-center.address}"
+                         cluster="c1"
+                         namespace="n1"
+                         group="default"
+                         config-file="/home/mercybltz/dubbo/config-file"
+                         app-config-file="/home/mercybltz/dubbo/app-config-config"
+                         username="${user.name}"
+                         password="${user.password}"
+                         timeout="${timeout}"
+                         highest-priority="true"
+                         include-spring-env="true"
+                         check="true"
+    >
+        <dubbo:parameter key="user.name" value="${user.name}"/>
+    </dubbo:config-center>
+
+    <dubbo:metadata-report id="dubbo-metadata-report-test"
+                           address="${dubbo.metadata-center.address}"
+                           username="${user.name}"
+                           password="${user.password}"
+                           timeout="${timeout}"
+                           group="metadata"
+                           retry-times="1"
+                           retry-period="2"
+                           cycle-report="true"
+                           sync-report="true"
+                           cluster="true"
+    >
+        <dubbo:parameter key="user.name" value="xiaomage"/>
+    </dubbo:metadata-report>
+
+    <dubbo:protocol id="dubbo-protocol-test"
+                    name="dubbo"
+                    host="127.0.0.1"
+                    port="20880"
+                    threadpool="fixed"
+                    threadname="thread-pool-name"
+                    threads="100"
+                    corethreads="20"
+                    iothreads="30"
+                    queues="99999"
+                    accepts="20"
+                    codec="netty"
+                    serialization="hession"
+                    keepalive="true"
+                    keep-alive="true"
+                    optimizer="my-optimizer"
+                    extension="none"
+                    charset="UTF-8"
+                    payload="12345"
+                    buffer="1024"
+                    heartbeat="30"
+                    accesslog="/home/mercyblitz/dubbo/access-log.log"
+                    telnet="qos"
+                    prompt="Hello,World"
+                    status="UP"
+                    transporter="netty"
+                    exchanger="abc"
+                    dispatcher="dispatcher"
+                    networker="networker"
+                    server="server"
+                    client="client"
+                    path="/home/mercyblitz/dubbo/"
+                    contextpath="/home/mercyblitz/dubbo/"
+                    register="true"
+                    default="true"
+                    ssl-enabled="true"
+
+    >
+
+        <dubbo:parameter key="a" value="1"/>
+    </dubbo:protocol>
+
+    <dubbo:registry id="dubbo-registry-test"
+                    address="zookeeper://127.0.0.1:2181"
+                    port="2181"
+                    protocol="zookeeper"
+                    username="${user.name}"
+                    password="${user.password}"
+                    transport="netty"
+                    transporter="netty"
+                    server="server"
+                    client="client"
+                    cluster="cluster"
+                    zone="zone"
+                    forks="forks"
+                    group="default"
+                    version="${a}.${b}"
+                    timeout="${timeout}"
+                    session="${timeout}"
+                    file="/home/mercyblitz/dubbo/registry"
+                    wait="999"
+                    check="true"
+                    dynamic="true"
+                    register="true"
+                    subscribe="true"
+                    default="true"
+                    simplified="true"
+                    extra-keys="a,b,c"
+                    use-as-config-center="true"
+                    use-as-metadata-center="true"
+                    accepts="9"
+                    preferred="true"
+                    weight="99"
+    >
+        <dubbo:parameter key="a" value="2"/>
+    </dubbo:registry>
+</beans>

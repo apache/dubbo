@@ -484,8 +484,17 @@ public class ProtocolConfig extends AbstractParameterizedConfig {
         this.sslEnabled = sslEnabled;
     }
 
+    @Deprecated
+    public Boolean getKeepalive() {
+        return getKeepAlive();
+    }
+
     public Boolean getKeepAlive() {
         return keepAlive;
+    }
+
+    public void setKeepalive(Boolean keepalive) {
+        setKeepAlive(keepalive);
     }
 
     public void setKeepAlive(Boolean keepAlive) {

@@ -134,8 +134,12 @@ public class ConfigCenterConfig extends AbstractParameterizedConfig {
         if (address != null) {
             try {
                 URL url = URL.valueOf(address);
-                setUsername(url.getUsername());
-                setPassword(url.getPassword());
+                if (getUsername() == null) {
+                    setUsername(url.getUsername());
+                }
+                if (getPassword() == null) {
+                    setPassword(url.getPassword());
+                }
                 updateIdIfAbsent(url.getProtocol());
                 updateProtocolIfAbsent(url.getProtocol());
                 updatePortIfAbsent(url.getPort());

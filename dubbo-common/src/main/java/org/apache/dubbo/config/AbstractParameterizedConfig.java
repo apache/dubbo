@@ -18,6 +18,7 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -34,7 +35,23 @@ public abstract class AbstractParameterizedConfig extends AbstractConfig {
     private Map<String, String> parameters;
 
     public Map<String, String> getParameters() {
+        if (parameters == null) {
+            parameters = new LinkedHashMap<>();
+        }
         return parameters;
+    }
+
+    public String getParameter(String name) {
+        return getParameter(name, null);
+    }
+
+    public String getParameter(String name, String defaultValue) {
+        return getParameters().getOrDefault(name, defaultValue);
+    }
+
+    public AbstractParameterizedConfig setParameter(String name, String value) {
+        getParameters().put(name, value);
+        return this;
     }
 
     public void setParameters(Map<String, String> parameters) {

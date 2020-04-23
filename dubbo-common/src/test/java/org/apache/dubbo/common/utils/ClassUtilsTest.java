@@ -20,11 +20,17 @@ package org.apache.dubbo.common.utils;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.util.AbstractList;
+import java.util.Map;
+
+import static org.apache.dubbo.common.utils.ClassUtils.isConcreteClass;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.hamcrest.Matchers.startsWith;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 
 public class ClassUtilsTest {
@@ -150,6 +156,35 @@ public class ClassUtilsTest {
         assertThat(ClassUtils.convertPrimitive(double.class, ""), equalTo(null));
         assertThat(ClassUtils.convertPrimitive(double.class, null), equalTo(null));
         assertThat(ClassUtils.convertPrimitive(double.class, "10.1"), equalTo(new Double(10.1)));
+    }
+
+    @Test
+    public void testIsConcreteClass() {
+
+        assertTrue(isConcreteClass(String.class));
+
+        // null case
+        assertFalse(isConcreteClass(null));
+
+        // primitive type cases
+        assertFalse(isConcreteClass(Boolean.TYPE));
+        assertFalse(isConcreteClass(Byte.TYPE));
+        assertFalse(isConcreteClass(Character.TYPE));
+        assertFalse(isConcreteClass(Short.TYPE));
+        assertFalse(isConcreteClass(Integer.TYPE));
+        assertFalse(isConcreteClass(Long.TYPE));
+        assertFalse(isConcreteClass(Float.TYPE));
+        assertFalse(isConcreteClass(Double.TYPE));
+        assertFalse(isConcreteClass(Void.TYPE));
+
+        // interface case
+        assertFalse(isConcreteClass(Map.class));
+
+        // annotation case
+        assertFalse(isConcreteClass(Override.class));
+
+        // abstract class case
+        assertFalse(isConcreteClass(AbstractList.class));
     }
 
 }

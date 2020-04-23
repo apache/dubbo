@@ -31,6 +31,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
 
+import static java.lang.reflect.Modifier.isAbstract;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.unmodifiableSet;
@@ -483,10 +484,40 @@ public class ClassUtils {
      * Is generic class or not?
      *
      * @param type the target type
-     * @return if the target type is not null or <code>void</code> or Void.class, return <code>true</code>, or false
+     * @return if the target type is not null or <code>void</code> or Void.class, return <code>true</code>, or <code>false</code>
      * @since 2.7.6
      */
     public static boolean isGenericClass(Class<?> type) {
         return type != null && !void.class.equals(type) && !Void.class.equals(type);
+    }
+
+    /**
+     * Is concrete class or not
+     *
+     * @param type the target type
+     * @return if the target type is and only is a concrete one, return <code>true</code>, or <code>false</code>
+     * @since 2.7.7
+     */
+    public static boolean isConcreteClass(Class<?> type) {
+
+        if (type == null) {
+            return false;
+        }
+
+        if (type.isPrimitive()) {
+            return false;
+        }
+
+        if (type.isInterface()) {
+            return false;
+        }
+
+        if (type.isAnnotation()) {
+            return false;
+        }
+
+        int modifiers = type.getModifiers();
+
+        return !isAbstract(modifiers);
     }
 }
