@@ -1,0 +1,1 @@
+in-memory =org.apache.dubbo.metadata.report.memory.InMemoryMetadataReportFactory
