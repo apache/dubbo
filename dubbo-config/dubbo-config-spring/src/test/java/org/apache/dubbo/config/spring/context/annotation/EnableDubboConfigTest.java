@@ -23,9 +23,12 @@ import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.Assert;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.PropertySource;
@@ -43,6 +46,16 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @since 2.5.8
  */
 public class EnableDubboConfigTest {
+
+    @BeforeEach
+    public void setUp() {
+        ApplicationModel.getConfigManager().clear();
+    }
+
+    @AfterEach
+    public void tearDown() {
+        ApplicationModel.getConfigManager().clear();
+    }
 
     @Test
     public void testSingle() {

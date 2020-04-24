@@ -19,6 +19,9 @@ package org.apache.dubbo.config.spring.issues.i6036;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubboConfig;
 
+import org.apache.curator.test.TestingServer;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,12 +48,26 @@ import static org.junit.Assert.assertEquals;
 @EnableDubboConfig
 public class NoRegistryConfigFoundTest {
 
+    private static TestingServer testingServer;
+
+    @BeforeClass
+    public static void startup() throws Exception {
+        testingServer = new TestingServer(2181, true);
+
+    }
+
+    @AfterClass
+    public static void shutdown() throws Exception {
+        testingServer.stop();
+        testingServer.close();
+    }
+
     @Autowired
     @Qualifier("registry2")
     private RegistryConfig registryConfig;
 
     @Test
     public void testCase1() {
-        assertEquals("zookeeper://localhost:2181", registryConfig.getAddress());
+        assertEquals("zookeeper://127.0.0.1:2181", registryConfig.getAddress());
     }
 }
