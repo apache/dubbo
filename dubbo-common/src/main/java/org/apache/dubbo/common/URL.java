@@ -1465,7 +1465,13 @@ class URL implements Serializable {
         if (inf == null) {
             return null;
         }
-        serviceVersionKey = inf + ":" + getParameter(VERSION_KEY);
+
+        String version = this.getParameter(VERSION_KEY);
+        if (StringUtils.isEmpty(version)) {
+            serviceVersionKey = version;
+        } else {
+            serviceVersionKey = inf + ":" + getParameter(VERSION_KEY);
+        }
         return serviceVersionKey;
     }
 
