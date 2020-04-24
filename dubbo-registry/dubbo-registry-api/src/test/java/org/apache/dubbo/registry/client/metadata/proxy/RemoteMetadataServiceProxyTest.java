@@ -20,6 +20,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * {@link RemoteMetadataServiceProxy} Test
@@ -61,7 +62,7 @@ public class RemoteMetadataServiceProxyTest {
             version = services[2];
         }
         assertEquals(serviceInterface, "org.apache.dubbo.demo.DemoService");
-        assertEquals(version, null);
-        assertEquals(group, null);
+        assertNull(version);
+        assertNull(group);
     }
 }
