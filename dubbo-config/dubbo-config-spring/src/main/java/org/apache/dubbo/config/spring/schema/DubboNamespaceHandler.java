@@ -39,6 +39,7 @@ import org.apache.dubbo.config.spring.schema.config.ParameterizedDubboConfigBean
 import com.alibaba.spring.util.AnnotatedBeanDefinitionRegistryUtils;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.xml.BeanDefinitionParser;
 import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.context.ApplicationListener;
@@ -46,6 +47,10 @@ import org.springframework.context.annotation.AnnotationConfigUtils;
 import org.w3c.dom.Element;
 
 import static com.alibaba.spring.util.AnnotatedBeanDefinitionRegistryUtils.registerBeans;
+import static java.lang.Boolean.TRUE;
+import static java.lang.Boolean.parseBoolean;
+import static java.lang.System.getProperty;
+import static org.apache.dubbo.common.constants.CommonConstants.EXPERIMENTAL_PROPERTY_PREFIX;
 
 /**
  * DubboNamespaceHandler
@@ -54,23 +59,36 @@ import static com.alibaba.spring.util.AnnotatedBeanDefinitionRegistryUtils.regis
  */
 public class DubboNamespaceHandler extends NamespaceHandlerSupport implements ConfigurableSourceBeanMetadataElement {
 
+    /**
+     * The property name of the dubbo experimental {@link BeanDefinitionParser} implementation.
+     *
+     * @since 2.7.7
+     */
+    private static final String EXPERIMENTAL_BEAN_DEFINITION_PARSER_PROPERTY_NAME = EXPERIMENTAL_PROPERTY_PREFIX + "bean-definition-parser";
+
+    /**
+     * @since 2.7.7
+     */
+    private static boolean EXPERIMENTAL_BEAN_DEFINITION_PARSER = parseBoolean(getProperty(EXPERIMENTAL_BEAN_DEFINITION_PARSER_PROPERTY_NAME, TRUE.toString()));
+
     static {
         Version.checkDuplicate(DubboNamespaceHandler.class);
     }
 
     @Override
     public void init() {
-//        registerBeanDefinitionParser("application", new DubboBeanDefinitionParser(ApplicationConfig.class, true));
-//        registerBeanDefinitionParser("module", new DubboBeanDefinitionParser(ModuleConfig.class, true));
-//        registerBeanDefinitionParser("registry", new DubboBeanDefinitionParser(RegistryConfig.class, true));
-//        registerBeanDefinitionParser("config-center", new DubboBeanDefinitionParser(ConfigCenterBean.class, true));
-//        registerBeanDefinitionParser("metadata-report", new DubboBeanDefinitionParser(MetadataReportConfig.class, true));
-//        registerBeanDefinitionParser("monitor", new DubboBeanDefinitionParser(MonitorConfig.class, true));
-//        registerBeanDefinitionParser("metrics", new DubboBeanDefinitionParser(MetricsConfig.class, true));
-//        registerBeanDefinitionParser("ssl", new DubboBeanDefinitionParser(SslConfig.class, true));
+
+        registerBeanDefinitionParser("application", new DubboBeanDefinitionParser(ApplicationConfig.class, true));
+        registerBeanDefinitionParser("module", new DubboBeanDefinitionParser(ModuleConfig.class, true));
+        registerBeanDefinitionParser("registry", new DubboBeanDefinitionParser(RegistryConfig.class, true));
+        registerBeanDefinitionParser("config-center", new DubboBeanDefinitionParser(ConfigCenterBean.class, true));
+        registerBeanDefinitionParser("metadata-report", new DubboBeanDefinitionParser(MetadataReportConfig.class, true));
+        registerBeanDefinitionParser("monitor", new DubboBeanDefinitionParser(MonitorConfig.class, true));
+        registerBeanDefinitionParser("metrics", new DubboBeanDefinitionParser(MetricsConfig.class, true));
+        registerBeanDefinitionParser("ssl", new DubboBeanDefinitionParser(SslConfig.class, true));
         registerBeanDefinitionParser("provider", new DubboBeanDefinitionParser(ProviderConfig.class, true));
         registerBeanDefinitionParser("consumer", new DubboBeanDefinitionParser(ConsumerConfig.class, true));
-//        registerBeanDefinitionParser("protocol", new DubboBeanDefinitionParser(ProtocolConfig.class, true));
+        registerBeanDefinitionParser("protocol", new DubboBeanDefinitionParser(ProtocolConfig.class, true));
         registerBeanDefinitionParser("service", new DubboBeanDefinitionParser(ServiceBean.class, true));
         registerBeanDefinitionParser("reference", new DubboBeanDefinitionParser(ReferenceBean.class, false));
 
@@ -78,16 +96,20 @@ public class DubboNamespaceHandler extends NamespaceHandlerSupport implements Co
         registerBeanDefinitionParser("annotation", new AnnotationBeanDefinitionParser());
 
         // @since 2.7.7
-        registerBeanDefinitionParser("application", new ParameterizedDubboConfigBeanDefinitionParser(ApplicationConfig.class));
-        registerBeanDefinitionParser("registry", new ParameterizedDubboConfigBeanDefinitionParser(RegistryConfig.class));
-        registerBeanDefinitionParser("config-center", new ParameterizedDubboConfigBeanDefinitionParser(ConfigCenterBean.class));
-        registerBeanDefinitionParser("metadata-report", new ParameterizedDubboConfigBeanDefinitionParser(MetadataReportConfig.class));
-        registerBeanDefinitionParser("monitor", new ParameterizedDubboConfigBeanDefinitionParser(MonitorConfig.class));
-        registerBeanDefinitionParser("protocol", new ParameterizedDubboConfigBeanDefinitionParser(ProtocolConfig.class));
+        if (EXPERIMENTAL_BEAN_DEFINITION_PARSER) { // If the dubbo experimental {@link BeanDefinitionParser} is enabled,
+            // use the new implementations to override the old ones.
+            registerBeanDefinitionParser("application", new ParameterizedDubboConfigBeanDefinitionParser(ApplicationConfig.class));
+            registerBeanDefinitionParser("registry", new ParameterizedDubboConfigBeanDefinitionParser(RegistryConfig.class));
+            registerBeanDefinitionParser("config-center", new ParameterizedDubboConfigBeanDefinitionParser(ConfigCenterBean.class));
+            registerBeanDefinitionParser("metadata-report", new ParameterizedDubboConfigBeanDefinitionParser(MetadataReportConfig.class));
+            registerBeanDefinitionParser("monitor", new ParameterizedDubboConfigBeanDefinitionParser(MonitorConfig.class));
+            registerBeanDefinitionParser("protocol", new ParameterizedDubboConfigBeanDefinitionParser(ProtocolConfig.class));
 
-        registerBeanDefinitionParser("module", new GenericDubboConfigBeanDefinitionParser(ModuleConfig.class));
-        registerBeanDefinitionParser("metrics", new GenericDubboConfigBeanDefinitionParser(MetricsConfig.class));
-        registerBeanDefinitionParser("ssl", new GenericDubboConfigBeanDefinitionParser(SslConfig.class));
+            registerBeanDefinitionParser("module", new GenericDubboConfigBeanDefinitionParser(ModuleConfig.class));
+            registerBeanDefinitionParser("metrics", new GenericDubboConfigBeanDefinitionParser(MetricsConfig.class));
+            registerBeanDefinitionParser("ssl", new GenericDubboConfigBeanDefinitionParser(SslConfig.class));
+        }
+
     }
 
     /**

@@ -306,4 +306,11 @@ public interface CommonConstants {
 
     String SSL_ENABLED_KEY = "ssl-enabled";
 
+    /**
+     * The prefix of property for dubbo experimental features
+     *
+     * @since 2.7.7
+     */
+    String EXPERIMENTAL_PROPERTY_PREFIX = "dubbo.experimental.";
+
 }
