@@ -89,8 +89,8 @@ final class NettyChannel extends AbstractChannel {
             NettyChannel nettyChannel = new NettyChannel(ch, url, handler);
             if (ch.isActive()) {
                 nettyChannel.markActive(true);
-                ret = CHANNEL_MAP.putIfAbsent(ch, nettyChannel);
             }
+            ret = CHANNEL_MAP.putIfAbsent(ch, nettyChannel);
             if (ret == null) {
                 ret = nettyChannel;
             }
