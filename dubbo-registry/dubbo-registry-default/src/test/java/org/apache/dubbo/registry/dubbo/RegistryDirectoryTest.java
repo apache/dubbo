@@ -34,6 +34,8 @@ import org.apache.dubbo.rpc.cluster.loadbalance.LeastActiveLoadBalance;
 import org.apache.dubbo.rpc.cluster.loadbalance.RoundRobinLoadBalance;
 import org.apache.dubbo.rpc.cluster.router.script.ScriptRouterFactory;
 import org.apache.dubbo.rpc.cluster.support.wrapper.MockClusterInvoker;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.service.GenericService;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,27 +51,27 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
-import static org.apache.dubbo.rpc.cluster.Constants.INVOCATION_NEED_MOCK;
-import static org.apache.dubbo.rpc.cluster.Constants.LOADBALANCE_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.MOCK_PROTOCOL;
-import static org.apache.dubbo.rpc.cluster.Constants.ROUTER_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.RULE_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.TYPE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.DISABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.LOADBALANCE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.ROUTE_PROTOCOL;
-import static org.apache.dubbo.rpc.Constants.$INVOKE;
 import static org.apache.dubbo.rpc.Constants.MOCK_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.INVOCATION_NEED_MOCK;
+import static org.apache.dubbo.rpc.cluster.Constants.MOCK_PROTOCOL;
+import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.ROUTER_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.RULE_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.TYPE_KEY;
 import static org.junit.jupiter.api.Assertions.fail;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
@@ -90,7 +92,7 @@ public class RegistryDirectoryTest {
 
     @BeforeEach
     public void setUp() {
-
+        ApplicationModel.setApplication("RegistryDirectoryTest");
     }
 
     private RegistryDirectory getRegistryDirectory(URL url) {
@@ -143,7 +145,7 @@ public class RegistryDirectoryTest {
         field.setAccessible(true);
         Map<String, String> queryMap = (Map<String, String>) field.get(reg);
         Assertions.assertEquals("bar", queryMap.get("foo"));
-        Assertions.assertEquals(url.clearParameters().addParameter("foo", "bar"), reg.getUrl());
+        Assertions.assertEquals(url.clearParameters().addParameter("foo", "bar"), reg.getConsumerUrl());
     }
 
     @Test
@@ -411,7 +413,7 @@ public class RegistryDirectoryTest {
             serviceUrls.add(SERVICEURL.addParameter(MOCK_KEY, "true"));
             registryDirectory2.notify(serviceUrls);
 
-            Assertions.assertEquals("true", registryDirectory2.getUrl().getParameter("mock"));
+            Assertions.assertEquals("true", registryDirectory2.getConsumerUrl().getParameter("mock"));
         }
     }
 
@@ -482,7 +484,7 @@ public class RegistryDirectoryTest {
         registryDirectory.notify(serviceUrls);
 
         // Object $invoke(String method, String[] parameterTypes, Object[] args) throws GenericException;
-        invocation = new RpcInvocation($INVOKE, new Class[]{String.class, String[].class, Object[].class},
+        invocation = new RpcInvocation($INVOKE, GenericService.class.getName(), new Class[]{String.class, String[].class, Object[].class},
                 new Object[]{"getXXX1", "", new Object[]{}});
 
         List<Invoker> invokers = registryDirectory.list(invocation);
@@ -509,7 +511,7 @@ public class RegistryDirectoryTest {
 
         registryDirectory.notify(serviceUrls);
 
-        invocation = new RpcInvocation($INVOKE,
+        invocation = new RpcInvocation($INVOKE, GenericService.class.getName(),
                 new Class[]{String.class, String[].class, Object[].class},
                 new Object[]{"getXXX1", new String[]{"Enum"}, new Object[]{Param.MORGAN}});
 
@@ -781,7 +783,7 @@ public class RegistryDirectoryTest {
         List<URL> durls = new ArrayList<URL>();
         durls.add(SERVICEURL.setHost("10.20.30.140").addParameter("timeout", "1"));
         registryDirectory.notify(durls);
-        Assertions.assertNull(registryDirectory.getUrl().getParameter("mock"));
+        Assertions.assertNull(registryDirectory.getConsumerUrl().getParameter("mock"));
 
         //override
         durls = new ArrayList<URL>();
@@ -790,7 +792,7 @@ public class RegistryDirectoryTest {
         List<Invoker<?>> invokers = registryDirectory.list(invocation);
         Invoker<?> aInvoker = invokers.get(0);
         Assertions.assertEquals("1000", aInvoker.getUrl().getParameter("timeout"));
-        Assertions.assertEquals("fail", registryDirectory.getUrl().getParameter("mock"));
+        Assertions.assertEquals("fail", registryDirectory.getConsumerUrl().getParameter("mock"));
 
         //override clean
         durls = new ArrayList<URL>();
@@ -801,7 +803,7 @@ public class RegistryDirectoryTest {
         //Need to be restored to the original providerUrl
         Assertions.assertEquals("1", aInvoker.getUrl().getParameter("timeout"));
 
-        Assertions.assertNull(registryDirectory.getUrl().getParameter("mock"));
+        Assertions.assertNull(registryDirectory.getConsumerUrl().getParameter("mock"));
     }
 
     /**

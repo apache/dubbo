@@ -52,7 +52,8 @@ public class EnumBak {
         Invoker<DemoService> reference = protocol.refer(DemoService.class, consumerurl);
         DemoService demoProxy = (DemoService) proxy.getProxy(reference);
 //        System.out.println(demoProxy.getThreadName());
-        Assertions.assertEquals((byte) -128, demoProxy.getbyte((byte) -128));
+        System.out.println(demoProxy.getInt(Integer.MIN_VALUE));
+        Assertions.assertEquals(Integer.MIN_VALUE, demoProxy.getInt(Integer.MIN_VALUE));
 
 //        invoker.destroy();
         reference.destroy();
@@ -105,7 +106,7 @@ public class EnumBak {
     @Disabled
     @Test
     public void testEnumCompat() {
-        int port = 20880;
+        int port = NetUtils.getAvailablePort();
         URL consumerurl = URL.valueOf("dubbo://127.0.0.1:" + port + "/test?timeout=" + Integer.MAX_VALUE
         );
         Invoker<DemoService> reference = protocol.refer(DemoService.class, consumerurl);
@@ -120,7 +121,7 @@ public class EnumBak {
     @Disabled
     @Test
     public void testGenricEnumCompat() {
-        int port = 20880;
+        int port = NetUtils.getAvailablePort();
         URL consumerurl = URL.valueOf("dubbo://127.0.0.1:" + port + "/test?timeout=" + Integer.MAX_VALUE
         );
         Invoker<GenericService> reference = protocol.refer(GenericService.class, consumerurl);
@@ -136,7 +137,7 @@ public class EnumBak {
     @Test
     public void testGenricCustomArg() {
 
-        int port = 20880;
+        int port = NetUtils.getAvailablePort();
         URL consumerurl = URL.valueOf("dubbo://127.0.0.1:" + port + "/test?timeout=2000000"
         );
         Invoker<GenericService> reference = protocol.refer(GenericService.class, consumerurl);
@@ -155,7 +156,7 @@ public class EnumBak {
     @Test
     public void testGenericExport() throws InterruptedException {
         int port = NetUtils.getAvailablePort();
-        port = 20880;
+        //port = 20880;
         URL serviceurl = URL.valueOf("dubbo://127.0.0.1:" + port + "/test?timeout=" + Integer.MAX_VALUE
         );
         DemoService demo = new DemoServiceImpl();

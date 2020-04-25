@@ -32,6 +32,11 @@ import org.springframework.context.annotation.PropertySource;
 
 import java.util.Map;
 
+import static com.alibaba.spring.util.BeanRegistrar.hasAlias;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+
 /**
  * {@link EnableDubboConfig} Test
  *
@@ -76,6 +81,9 @@ public class EnableDubboConfigTest {
         ConsumerConfig consumerConfig = context.getBean(ConsumerConfig.class);
         Assertions.assertEquals("netty", consumerConfig.getClient());
 
+        // asserts aliases
+        assertFalse(hasAlias(context, "org.apache.dubbo.config.RegistryConfig#0", "zookeeper"));
+        assertFalse(hasAlias(context, "org.apache.dubbo.config.MonitorConfig#0", "zookeeper"));
     }
 
     @Test
@@ -88,6 +96,7 @@ public class EnableDubboConfigTest {
         // application
         ApplicationConfig applicationConfig = context.getBean("applicationBean", ApplicationConfig.class);
         Assertions.assertEquals("dubbo-demo-application", applicationConfig.getName());
+
 
         ApplicationConfig applicationBean2 = context.getBean("applicationBean2", ApplicationConfig.class);
         Assertions.assertEquals("dubbo-demo-application2", applicationBean2.getName());
@@ -102,6 +111,10 @@ public class EnableDubboConfigTest {
             ProtocolConfig protocol = entry.getValue();
             Assert.assertEquals(beanName, protocol.getName());
         }
+
+        // asserts aliases
+        assertTrue(hasAlias(context, "applicationBean2", "dubbo-demo-application2"));
+        assertTrue(hasAlias(context, "applicationBean3", "dubbo-demo-application3"));
 
     }
 

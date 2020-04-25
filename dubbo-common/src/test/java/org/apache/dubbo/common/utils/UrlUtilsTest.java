@@ -61,7 +61,7 @@ public class UrlUtilsTest {
     @Test
     public void testParseURLWithSpecial() {
         String address = "127.0.0.1:2181?backup=127.0.0.1:2182,127.0.0.1:2183";
-        assertEquals("dubbo://" + address,UrlUtils.parseURL(address, null).toString());
+        assertEquals("dubbo://" + address, UrlUtils.parseURL(address, null).toString());
     }
 
     @Test
@@ -362,5 +362,18 @@ public class UrlUtilsTest {
         assertTrue(UrlUtils.isMatchGlobPattern("*e", "value"));
         assertTrue(UrlUtils.isMatchGlobPattern("v*e", "value"));
         assertTrue(UrlUtils.isMatchGlobPattern("$key", "value", URL.valueOf("dubbo://localhost:8080/Foo?key=v*e")));
+    }
+
+    @Test
+    public void testIsMatchUrlWithDefaultPrefix() {
+        URL url = URL.valueOf("dubbo://127.0.0.1:20880/com.xxx.XxxService?default.version=1.0.0&default.group=test");
+        assertEquals("1.0.0", url.getParameter("version"));
+        assertEquals("1.0.0", url.getParameter("default.version"));
+
+        URL consumerUrl = URL.valueOf("consumer://127.0.0.1/com.xxx.XxxService?version=1.0.0&group=test");
+        assertTrue(UrlUtils.isMatch(consumerUrl, url));
+
+        URL consumerUrl1 = URL.valueOf("consumer://127.0.0.1/com.xxx.XxxService?default.version=1.0.0&default.group=test");
+        assertTrue(UrlUtils.isMatch(consumerUrl, url));
     }
 }

@@ -54,16 +54,14 @@ public interface Constants {
     String SIMPLIFIED_KEY = "simplified";
 
     /**
-     * After simplify the registry, should add some paramter individually for provider.
-     *
-     * @since 2.7.0
-     */
-    String EXTRA_KEYS_KEY = "extra-keys";
-
-    /**
      * To decide whether register center saves file synchronously, the default value is asynchronously
      */
     String REGISTRY_FILESAVE_SYNC_KEY = "save.file";
+
+    /**
+     * Whether to cache locally, default is true
+     */
+    String REGISTRY__LOCAL_FILE_CACHE_ENABLED = "file.cache";
 
     /**
      * Reconnection period in milliseconds for register center

@@ -18,11 +18,19 @@ package org.apache.dubbo.rpc;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.rpc.protocol.dubbo.FutureAdapter;
+import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
+import org.apache.dubbo.rpc.model.ConsumerMethodModel;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
+
+import static org.apache.dubbo.common.utils.ReflectUtils.defaultReturn;
 
 /**
  * This class represents an unfinished RPC call, it will hold some context information for this call, for example RpcContext and Invocation,
@@ -38,7 +46,7 @@ import java.util.function.BiConsumer;
  * {@link #getValue()} and {@link #getException()} are all inherited from {@link Result} interface, implementing them are mainly
  * for compatibility consideration. Because many legacy {@link Filter} implementation are most possibly to call getValue directly.
  */
-public class AsyncRpcResult extends AbstractResult {
+public class AsyncRpcResult implements Result {
     private static final Logger logger = LoggerFactory.getLogger(AsyncRpcResult.class);
 
     /**
@@ -47,19 +55,17 @@ public class AsyncRpcResult extends AbstractResult {
      */
     private RpcContext storedContext;
     private RpcContext storedServerContext;
+    private Executor executor;
 
     private Invocation invocation;
 
-    public AsyncRpcResult(Invocation invocation) {
+    private CompletableFuture<AppResponse> responseFuture;
+
+    public AsyncRpcResult(CompletableFuture<AppResponse> future, Invocation invocation) {
+        this.responseFuture = future;
         this.invocation = invocation;
         this.storedContext = RpcContext.getContext();
         this.storedServerContext = RpcContext.getServerContext();
-    }
-
-    public AsyncRpcResult(AsyncRpcResult asyncRpcResult) {
-        this.invocation = asyncRpcResult.getInvocation();
-        this.storedContext = asyncRpcResult.getStoredContext();
-        this.storedServerContext = asyncRpcResult.getStoredServerContext();
     }
 
     /**
@@ -85,16 +91,17 @@ public class AsyncRpcResult extends AbstractResult {
     @Override
     public void setValue(Object value) {
         try {
-            if (this.isDone()) {
-                this.get().setValue(value);
+            if (responseFuture.isDone()) {
+                responseFuture.get().setValue(value);
             } else {
                 AppResponse appResponse = new AppResponse();
                 appResponse.setValue(value);
-                this.complete(appResponse);
+                responseFuture.complete(appResponse);
             }
         } catch (Exception e) {
-            // This should never happen;
-            logger.error("Got exception when trying to change the value of the underlying result from AsyncRpcResult.", e);
+            // This should not happen in normal request process;
+            logger.error("Got exception when trying to fetch the underlying result from AsyncRpcResult.");
+            throw new RpcException(e);
         }
     }
 
@@ -106,16 +113,17 @@ public class AsyncRpcResult extends AbstractResult {
     @Override
     public void setException(Throwable t) {
         try {
-            if (this.isDone()) {
-                this.get().setException(t);
+            if (responseFuture.isDone()) {
+                responseFuture.get().setException(t);
             } else {
                 AppResponse appResponse = new AppResponse();
                 appResponse.setException(t);
-                this.complete(appResponse);
+                responseFuture.complete(appResponse);
             }
         } catch (Exception e) {
-            // This should never happen;
-            logger.error("Got exception when trying to change the value of the underlying result from AsyncRpcResult.", e);
+            // This should not happen in normal request process;
+            logger.error("Got exception when trying to fetch the underlying result from AsyncRpcResult.");
+            throw new RpcException(e);
         }
     }
 
@@ -124,56 +132,88 @@ public class AsyncRpcResult extends AbstractResult {
         return getAppResponse().hasException();
     }
 
+    public CompletableFuture<AppResponse> getResponseFuture() {
+        return responseFuture;
+    }
+
+    public void setResponseFuture(CompletableFuture<AppResponse> responseFuture) {
+        this.responseFuture = responseFuture;
+    }
+
     public Result getAppResponse() {
         try {
-            if (this.isDone()) {
-                return this.get();
+            if (responseFuture.isDone()) {
+                return responseFuture.get();
             }
         } catch (Exception e) {
-            // This should never happen;
-            logger.error("Got exception when trying to fetch the underlying result from AsyncRpcResult.", e);
+            // This should not happen in normal request process;
+            logger.error("Got exception when trying to fetch the underlying result from AsyncRpcResult.");
+            throw new RpcException(e);
         }
-        return new AppResponse();
+
+        return createDefaultValue(invocation);
+    }
+
+    /**
+     * This method will always return after a maximum 'timeout' waiting:
+     * 1. if value returns before timeout, return normally.
+     * 2. if no value returns after timeout, throw TimeoutException.
+     *
+     * @return
+     * @throws InterruptedException
+     * @throws ExecutionException
+     */
+    @Override
+    public Result get() throws InterruptedException, ExecutionException {
+        if (executor != null && executor instanceof ThreadlessExecutor) {
+            ThreadlessExecutor threadlessExecutor = (ThreadlessExecutor) executor;
+            threadlessExecutor.waitAndDrain();
+        }
+        return responseFuture.get();
+    }
+
+    @Override
+    public Result get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+        if (executor != null && executor instanceof ThreadlessExecutor) {
+            ThreadlessExecutor threadlessExecutor = (ThreadlessExecutor) executor;
+            threadlessExecutor.waitAndDrain();
+        }
+        return responseFuture.get(timeout, unit);
     }
 
     @Override
     public Object recreate() throws Throwable {
         RpcInvocation rpcInvocation = (RpcInvocation) invocation;
-        FutureAdapter future = new FutureAdapter(this);
-        RpcContext.getContext().setFuture(future);
         if (InvokeMode.FUTURE == rpcInvocation.getInvokeMode()) {
-            return future;
+            return RpcContext.getContext().getFuture();
         }
 
         return getAppResponse().recreate();
     }
 
-    @Override
     public Result whenCompleteWithContext(BiConsumer<Result, Throwable> fn) {
-        CompletableFuture<Result> future = this.whenComplete((v, t) -> {
+        this.responseFuture = this.responseFuture.whenComplete((v, t) -> {
             beforeContext.accept(v, t);
             fn.accept(v, t);
             afterContext.accept(v, t);
         });
-
-        AsyncRpcResult nextStage = new AsyncRpcResult(this);
-        nextStage.subscribeTo(future);
-        return nextStage;
-    }
-
-    public void subscribeTo(CompletableFuture<?> future) {
-        future.whenComplete((obj, t) -> {
-            if (t != null) {
-                this.completeExceptionally(t);
-            } else {
-                this.complete((Result) obj);
-            }
-        });
+        return this;
     }
 
     @Override
+    public <U> CompletableFuture<U> thenApply(Function<Result, ? extends U> fn) {
+        return this.responseFuture.thenApply(fn);
+    }
+
+    @Override
+    @Deprecated
     public Map<String, String> getAttachments() {
         return getAppResponse().getAttachments();
+    }
+
+    @Override
+    public Map<String, Object> getObjectAttachments() {
+        return getAppResponse().getObjectAttachments();
     }
 
     @Override
@@ -182,8 +222,19 @@ public class AsyncRpcResult extends AbstractResult {
     }
 
     @Override
+    public void setObjectAttachments(Map<String, Object> map) {
+        getAppResponse().setObjectAttachments(map);
+    }
+
+    @Deprecated
+    @Override
     public void addAttachments(Map<String, String> map) {
         getAppResponse().addAttachments(map);
+    }
+
+    @Override
+    public void addObjectAttachments(Map<String, Object> map) {
+        getAppResponse().addObjectAttachments(map);
     }
 
     @Override
@@ -192,33 +243,49 @@ public class AsyncRpcResult extends AbstractResult {
     }
 
     @Override
+    public Object getObjectAttachment(String key) {
+        return getAppResponse().getObjectAttachment(key);
+    }
+
+    @Override
     public String getAttachment(String key, String defaultValue) {
         return getAppResponse().getAttachment(key, defaultValue);
     }
 
     @Override
+    public Object getObjectAttachment(String key, Object defaultValue) {
+        return getAppResponse().getObjectAttachment(key, defaultValue);
+    }
+
+    @Override
     public void setAttachment(String key, String value) {
+        setObjectAttachment(key, value);
+    }
+
+    @Override
+    public void setAttachment(String key, Object value) {
+        setObjectAttachment(key, value);
+    }
+
+    @Override
+    public void setObjectAttachment(String key, Object value) {
         getAppResponse().setAttachment(key, value);
     }
 
-    public RpcContext getStoredContext() {
-        return storedContext;
+    public Executor getExecutor() {
+        return executor;
     }
 
-    public RpcContext getStoredServerContext() {
-        return storedServerContext;
-    }
-
-    public Invocation getInvocation() {
-        return invocation;
+    public void setExecutor(Executor executor) {
+        this.executor = executor;
     }
 
     /**
      * tmp context to use when the thread switch to Dubbo thread.
      */
     private RpcContext tmpContext;
-    private RpcContext tmpServerContext;
 
+    private RpcContext tmpServerContext;
     private BiConsumer<Result, Throwable> beforeContext = (appResponse, t) -> {
         tmpContext = RpcContext.getContext();
         tmpServerContext = RpcContext.getServerContext();
@@ -235,9 +302,7 @@ public class AsyncRpcResult extends AbstractResult {
      * Some utility methods used to quickly generate default AsyncRpcResult instance.
      */
     public static AsyncRpcResult newDefaultAsyncResult(AppResponse appResponse, Invocation invocation) {
-        AsyncRpcResult asyncRpcResult = new AsyncRpcResult(invocation);
-        asyncRpcResult.complete(appResponse);
-        return asyncRpcResult;
+        return new AsyncRpcResult(CompletableFuture.completedFuture(appResponse), invocation);
     }
 
     public static AsyncRpcResult newDefaultAsyncResult(Invocation invocation) {
@@ -253,15 +318,20 @@ public class AsyncRpcResult extends AbstractResult {
     }
 
     public static AsyncRpcResult newDefaultAsyncResult(Object value, Throwable t, Invocation invocation) {
-        AsyncRpcResult asyncRpcResult = new AsyncRpcResult(invocation);
-        AppResponse appResponse = new AppResponse();
+        CompletableFuture<AppResponse> future = new CompletableFuture<>();
+        AppResponse result = new AppResponse();
         if (t != null) {
-            appResponse.setException(t);
+            result.setException(t);
         } else {
-            appResponse.setValue(value);
+            result.setValue(value);
         }
-        asyncRpcResult.complete(appResponse);
-        return asyncRpcResult;
+        future.complete(result);
+        return new AsyncRpcResult(future, invocation);
+    }
+
+    private static Result createDefaultValue(Invocation invocation) {
+        ConsumerMethodModel method = (ConsumerMethodModel) invocation.get(Constants.METHOD_MODEL);
+        return method != null ? new AppResponse(defaultReturn(method.getReturnClass())) : new AppResponse();
     }
 }
 

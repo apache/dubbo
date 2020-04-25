@@ -30,6 +30,10 @@ import org.apache.dubbo.remoting.Decodeable;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.transport.CodecSupport;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.rpc.model.ServiceDescriptor;
+import org.apache.dubbo.rpc.model.ServiceRepository;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,10 +41,12 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.apache.dubbo.common.URL.buildKey;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.rpc.protocol.dubbo.CallbackServiceCodec.decodeInvocationArgument;
-import static org.apache.dubbo.remoting.Constants.DUBBO_VERSION_KEY;
 
 public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Decodeable {
 
@@ -97,19 +103,36 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
         request.setVersion(dubboVersion);
         setAttachment(DUBBO_VERSION_KEY, dubboVersion);
 
-        setAttachment(PATH_KEY, in.readUTF());
+        String path = in.readUTF();
+        setAttachment(PATH_KEY, path);
         setAttachment(VERSION_KEY, in.readUTF());
 
         setMethodName(in.readUTF());
+
+        String desc = in.readUTF();
+        setParameterTypesDesc(desc);
+
         try {
-            Object[] args;
-            Class<?>[] pts;
-            String desc = in.readUTF();
-            if (desc.length() == 0) {
-                pts = DubboCodec.EMPTY_CLASS_ARRAY;
-                args = DubboCodec.EMPTY_OBJECT_ARRAY;
-            } else {
-                pts = ReflectUtils.desc2classArray(desc);
+            Object[] args = DubboCodec.EMPTY_OBJECT_ARRAY;
+            Class<?>[] pts = DubboCodec.EMPTY_CLASS_ARRAY;
+            if (desc.length() > 0) {
+//                if (RpcUtils.isGenericCall(path, getMethodName()) || RpcUtils.isEcho(path, getMethodName())) {
+//                    pts = ReflectUtils.desc2classArray(desc);
+//                } else {
+                ServiceRepository repository = ApplicationModel.getServiceRepository();
+                ServiceDescriptor serviceDescriptor = repository.lookupService(path);
+                if (serviceDescriptor != null) {
+                    MethodDescriptor methodDescriptor = serviceDescriptor.getMethod(getMethodName(), desc);
+                    if (methodDescriptor != null) {
+                        pts = methodDescriptor.getParameterClasses();
+                        this.setReturnTypes(methodDescriptor.getReturnTypes());
+                    }
+                }
+                if (pts == DubboCodec.EMPTY_CLASS_ARRAY) {
+                    pts = ReflectUtils.desc2classArray(desc);
+                }
+//                }
+
                 args = new Object[pts.length];
                 for (int i = 0; i < args.length; i++) {
                     try {
@@ -123,22 +146,26 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
             }
             setParameterTypes(pts);
 
-            Map<String, String> map = (Map<String, String>) in.readObject(Map.class);
+            Map<String, Object> map = in.readAttachments();
             if (map != null && map.size() > 0) {
-                Map<String, String> attachment = getAttachments();
+                Map<String, Object> attachment = getObjectAttachments();
                 if (attachment == null) {
-                    attachment = new HashMap<String, String>();
+                    attachment = new HashMap<>();
                 }
                 attachment.putAll(map);
-                setAttachments(attachment);
+                setObjectAttachments(attachment);
             }
+
             //decode argument ,may be callback
             for (int i = 0; i < args.length; i++) {
                 args[i] = decodeInvocationArgument(channel, this, pts, i, args[i]);
             }
 
             setArguments(args);
-
+            String targetServiceName = buildKey((String) getAttachment(PATH_KEY),
+                    getAttachment(GROUP_KEY),
+                    getAttachment(VERSION_KEY));
+            setTargetServiceUniqueName(targetServiceName);
         } catch (ClassNotFoundException e) {
             throw new IOException(StringUtils.toString("Read invocation data failed.", e));
         } finally {

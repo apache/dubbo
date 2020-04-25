@@ -72,16 +72,8 @@ class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
                 currentClient.send(inv, getUrl().getMethodParameter(invocation.getMethodName(), SENT_KEY, false));
                 return AsyncRpcResult.newDefaultAsyncResult(invocation);
             } else {
-                CompletableFuture<Object> responseFuture = currentClient.request(inv);
-                AsyncRpcResult asyncRpcResult = new AsyncRpcResult(inv);
-                responseFuture.whenComplete((appResponse, t) -> {
-                    if (t != null) {
-                        asyncRpcResult.completeExceptionally(t);
-                    } else {
-                        asyncRpcResult.complete((AppResponse) appResponse);
-                    }
-                });
-                return asyncRpcResult;
+                CompletableFuture<AppResponse> appResponseFuture = currentClient.request(inv).thenApply(obj -> (AppResponse) obj);
+                return new AsyncRpcResult(appResponseFuture, inv);
             }
         } catch (RpcException e) {
             throw e;

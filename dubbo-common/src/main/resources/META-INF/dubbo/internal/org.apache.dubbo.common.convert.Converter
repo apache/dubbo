@@ -1,0 +1,11 @@
+# org.apache.dubbo.common.convert.Converter
+string-to-boolean=org.apache.dubbo.common.convert.StringToBooleanConverter
+string-to-character=org.apache.dubbo.common.convert.StringToCharacterConverter
+string-to-char-array=org.apache.dubbo.common.convert.StringToCharArrayConverter
+string-to-double=org.apache.dubbo.common.convert.StringToDoubleConverter
+string-to-float=org.apache.dubbo.common.convert.StringToFloatConverter
+string-to-integer=org.apache.dubbo.common.convert.StringToIntegerConverter
+string-to-long=org.apache.dubbo.common.convert.StringToLongConverter
+string-to-optional=org.apache.dubbo.common.convert.StringToOptionalConverter
+string-to-short=org.apache.dubbo.common.convert.StringToShortConverter
+string-to-string=org.apache.dubbo.common.convert.StringToStringConverter

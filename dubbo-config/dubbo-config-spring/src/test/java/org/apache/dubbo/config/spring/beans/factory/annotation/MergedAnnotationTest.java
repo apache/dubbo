@@ -33,12 +33,12 @@ public class MergedAnnotationTest {
 
     @Test
     public void testMergedReference() {
-        Field field = ReflectionUtils.findField(MergedAnnotationTest.TestBean1.class, "demoService");
+        Field field = ReflectionUtils.findField(TestBean1.class, "demoService");
         Reference reference = AnnotatedElementUtils.getMergedAnnotation(field, Reference.class);
         Assert.assertEquals("dubbo", reference.group());
         Assert.assertEquals("1.0.0", reference.version());
 
-        Field field2 = ReflectionUtils.findField(MergedAnnotationTest.TestBean2.class, "demoService");
+        Field field2 = ReflectionUtils.findField(TestBean2.class, "demoService");
         Reference reference2 = AnnotatedElementUtils.getMergedAnnotation(field2, Reference.class);
         Assert.assertEquals("group", reference2.group());
         Assert.assertEquals("2.0", reference2.version());
@@ -46,11 +46,11 @@ public class MergedAnnotationTest {
 
     @Test
     public void testMergedService() {
-        Service service1 = AnnotatedElementUtils.getMergedAnnotation(MergedAnnotationTest.DemoServiceImpl1.class, Service.class);
+        Service service1 = AnnotatedElementUtils.getMergedAnnotation(DemoServiceImpl1.class, Service.class);
         Assert.assertEquals("dubbo", service1.group());
         Assert.assertEquals("1.0.0", service1.version());
 
-        Service service2 = AnnotatedElementUtils.getMergedAnnotation(MergedAnnotationTest.DemoServiceImpl2.class, Service.class);
+        Service service2 = AnnotatedElementUtils.getMergedAnnotation(DemoServiceImpl2.class, Service.class);
         Assert.assertEquals("group", service2.group());
         Assert.assertEquals("2.0", service2.version());
     }

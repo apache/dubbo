@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.thrift;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.buffer.ChannelBuffer;
 import org.apache.dubbo.remoting.buffer.ChannelBuffers;
@@ -125,7 +126,8 @@ public class ThriftCodecTest {
     @Test
     public void testDecodeReplyResponse() throws Exception {
 
-        URL url = URL.valueOf(ThriftProtocol.NAME + "://127.0.0.1:40880/" + Demo.Iface.class.getName());
+        int port = NetUtils.getAvailablePort();
+        URL url = URL.valueOf(ThriftProtocol.NAME + "://127.0.0.1:" + port + "/" + Demo.Iface.class.getName());
 
         Channel channel = new MockedChannel(url);
 
@@ -133,7 +135,7 @@ public class ThriftCodecTest {
 
         Request request = createRequest();
 
-        DefaultFuture future = DefaultFuture.newFuture(channel, request, 10);
+        DefaultFuture future = DefaultFuture.newFuture(channel, request, 10, null);
 
         TMessage message = new TMessage("echoString", TMessageType.REPLY, ThriftCodec.getSeqId());
 
@@ -202,7 +204,8 @@ public class ThriftCodecTest {
     @Test
     public void testDecodeExceptionResponse() throws Exception {
 
-        URL url = URL.valueOf(ThriftProtocol.NAME + "://127.0.0.1:40880/" + Demo.class.getName());
+        int port = NetUtils.getAvailablePort();
+        URL url = URL.valueOf(ThriftProtocol.NAME + "://127.0.0.1:" + port + "/" + Demo.class.getName());
 
         Channel channel = new MockedChannel(url);
 
@@ -210,7 +213,7 @@ public class ThriftCodecTest {
 
         Request request = createRequest();
 
-        DefaultFuture future = DefaultFuture.newFuture(channel, request, 10);
+        DefaultFuture future = DefaultFuture.newFuture(channel, request, 10, null);
 
         TMessage message = new TMessage("echoString", TMessageType.EXCEPTION, ThriftCodec.getSeqId());
 
@@ -272,7 +275,8 @@ public class ThriftCodecTest {
     @Test
     public void testEncodeReplyResponse() throws Exception {
 
-        URL url = URL.valueOf(ThriftProtocol.NAME + "://127.0.0.1:40880/" + Demo.Iface.class.getName());
+        int port = NetUtils.getAvailablePort();
+        URL url = URL.valueOf(ThriftProtocol.NAME + "://127.0.0.1:" + port + "/" + Demo.Iface.class.getName());
 
         Channel channel = new MockedChannel(url);
 
@@ -330,7 +334,8 @@ public class ThriftCodecTest {
     @Test
     public void testEncodeExceptionResponse() throws Exception {
 
-        URL url = URL.valueOf(ThriftProtocol.NAME + "://127.0.0.1:40880/" + Demo.Iface.class.getName());
+        int port = NetUtils.getAvailablePort();
+        URL url = URL.valueOf(ThriftProtocol.NAME + "://127.0.0.1:" + port + "/" + Demo.Iface.class.getName());
 
         Channel channel = new MockedChannel(url);
 

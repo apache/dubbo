@@ -83,10 +83,8 @@ public class ConfigParser {
             urlBuilder.append("&configVersion=").append(config.getConfigVersion());
 
             List<String> apps = item.getApplications();
-            if (apps != null && apps.size() > 0) {
-                apps.forEach(app -> {
-                    urls.add(URL.valueOf(urlBuilder.append("&application=").append(app).toString()));
-                });
+            if (CollectionUtils.isNotEmpty(apps)) {
+                apps.forEach(app -> urls.add(URL.valueOf(urlBuilder.append("&application=").append(app).toString())));
             } else {
                 urls.add(URL.valueOf(urlBuilder.toString()));
             }
@@ -105,7 +103,7 @@ public class ConfigParser {
             if (services == null) {
                 services = new ArrayList<>();
             }
-            if (services.size() == 0) {
+            if (services.isEmpty()) {
                 services.add("*");
             }
             for (String s : services) {
@@ -163,7 +161,7 @@ public class ConfigParser {
         }
 
         String interfaceName = serviceKey;
-        int i = interfaceName.indexOf("/");
+        int i = interfaceName.indexOf('/');
         if (i > 0) {
             sb.append("group=");
             sb.append(interfaceName, 0, i);
@@ -171,7 +169,7 @@ public class ConfigParser {
 
             interfaceName = interfaceName.substring(i + 1);
         }
-        int j = interfaceName.indexOf(":");
+        int j = interfaceName.indexOf(':');
         if (j > 0) {
             sb.append("version=");
             sb.append(interfaceName.substring(j + 1));
@@ -197,7 +195,7 @@ public class ConfigParser {
         if (addresses == null) {
             addresses = new ArrayList<>();
         }
-        if (addresses.size() == 0) {
+        if (addresses.isEmpty()) {
             addresses.add(ANYHOST_VALUE);
         }
         return addresses;
