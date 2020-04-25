@@ -266,23 +266,13 @@ public class ExtensionLoader<T> {
             }
             activateExtensions.sort(ActivateComparator.COMPARATOR);
         }
-        List<T> loadedExtensions = new ArrayList<>();
-        for (int i = 0; i < names.size(); i++) {
-            String name = names.get(i);
-            if (!name.startsWith(REMOVE_VALUE_PREFIX)
-                    && !names.contains(REMOVE_VALUE_PREFIX + name)) {
-                if (DEFAULT_KEY.equals(name)) {
-                    if (!loadedExtensions.isEmpty()) {
-                        activateExtensions.addAll(0, loadedExtensions);
-                        loadedExtensions.clear();
-                    }
-                } else {
-                    loadedExtensions.add(getExtension(name));
+        for (String name : names) {
+            if (!DEFAULT_KEY.equals(name)) {
+                if (!name.startsWith(REMOVE_VALUE_PREFIX)
+                        && !names.contains(REMOVE_VALUE_PREFIX + name)) {
+                    activateExtensions.add(getExtension(name));
                 }
             }
-        }
-        if (!loadedExtensions.isEmpty()) {
-            activateExtensions.addAll(loadedExtensions);
         }
         return activateExtensions;
     }
