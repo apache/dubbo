@@ -43,7 +43,6 @@
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-validator</artifactId>
             <scope>test</scope>
-            <version>${hibernate_validator_version}</version>
         </dependency>
         <dependency>
             <groupId>javax.el</groupId>
@@ -55,19 +54,16 @@
             <groupId>javax.xml.bind</groupId>
             <artifactId>jaxb-api</artifactId>
             <scope>test</scope>
-            <version>${jaxb_api_version}</version>
         </dependency>
         <dependency>
             <groupId>com.sun.xml.bind</groupId>
             <artifactId>jaxb-impl</artifactId>
             <scope>test</scope>
-            <version>${jaxb_api_version}</version>
         </dependency>
         <dependency>
             <groupId>com.sun.xml.bind</groupId>
             <artifactId>jaxb-core</artifactId>
             <scope>test</scope>
-            <version>${jaxb_api_version}</version>
         </dependency>
     </dependencies>
 </project>
