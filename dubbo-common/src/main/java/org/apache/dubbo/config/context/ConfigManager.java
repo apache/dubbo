@@ -365,7 +365,6 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
         }
     }
 
-    // For test purpose
     public void clear() {
         write(() -> {
             this.configsCache.clear();
@@ -504,7 +503,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     }
 
     static <C extends AbstractConfig> boolean isDefaultConfig(C config) {
-        Boolean isDefault = getProperty(config, "default");
+        Boolean isDefault = getProperty(config, "isDefault");
         return isDefault == null || TRUE.equals(isDefault);
     }
 

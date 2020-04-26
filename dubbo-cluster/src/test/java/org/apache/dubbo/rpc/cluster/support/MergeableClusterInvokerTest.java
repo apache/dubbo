@@ -105,7 +105,7 @@ public class MergeableClusterInvokerTest {
         given(invocation.getMethodName()).willReturn("getMenu");
         given(invocation.getParameterTypes()).willReturn(new Class<?>[]{});
         given(invocation.getArguments()).willReturn(new Object[]{});
-        given(invocation.getAttachments()).willReturn(new HashMap<String, Object>())
+        given(invocation.getObjectAttachments()).willReturn(new HashMap<>())
                 ;
         given(invocation.getInvoker()).willReturn(firstInvoker);
 
@@ -143,6 +143,8 @@ public class MergeableClusterInvokerTest {
             }
         });
         given(directory.getUrl()).willReturn(url);
+        given(directory.getConsumerUrl()).willReturn(url);
+        given(directory.getConsumerUrl()).willReturn(url);
         given(directory.getInterface()).willReturn(MenuService.class);
 
         mergeableClusterInvoker = new MergeableClusterInvoker<MenuService>(directory);
@@ -182,7 +184,7 @@ public class MergeableClusterInvokerTest {
                 new Class<?>[]{String.class, List.class});
         given(invocation.getArguments()).willReturn(new Object[]{menu, menuItems})
                 ;
-        given(invocation.getAttachments()).willReturn(new HashMap<String, Object>())
+        given(invocation.getObjectAttachments()).willReturn(new HashMap<>())
                 ;
         given(invocation.getInvoker()).willReturn(firstInvoker);
 
@@ -208,6 +210,8 @@ public class MergeableClusterInvokerTest {
             }
         });
         given(directory.getUrl()).willReturn(url);
+        given(directory.getConsumerUrl()).willReturn(url);
+        given(directory.getConsumerUrl()).willReturn(url);
         given(directory.getInterface()).willReturn(MenuService.class);
 
         mergeableClusterInvoker = new MergeableClusterInvoker<MenuService>(directory);

@@ -623,6 +623,11 @@
                 <xsd:documentation><![CDATA[ Is this registry the preferred one. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="weight" type="xsd:integer">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ weight of registry. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
     </xsd:complexType>
 
     <xsd:complexType name="metadataReportType">
@@ -1040,6 +1045,11 @@
                 <xsd:documentation><![CDATA[ The thread pool type. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="threadname" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The thread pool name. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
         <xsd:attribute name="threads" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The thread pool size. ]]></xsd:documentation>
@@ -1214,6 +1224,11 @@
                 <xsd:attribute name="threadpool" type="xsd:string">
                     <xsd:annotation>
                         <xsd:documentation><![CDATA[ The thread pool type. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+                <xsd:attribute name="threadname" type="xsd:string">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ The thread pool name. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
                 <xsd:attribute name="threads" type="xsd:string">

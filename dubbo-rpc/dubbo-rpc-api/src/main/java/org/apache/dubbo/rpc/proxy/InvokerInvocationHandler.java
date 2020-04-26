@@ -18,8 +18,11 @@ package org.apache.dubbo.rpc.proxy;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ConsumerModel;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -30,9 +33,14 @@ import java.lang.reflect.Method;
 public class InvokerInvocationHandler implements InvocationHandler {
     private static final Logger logger = LoggerFactory.getLogger(InvokerInvocationHandler.class);
     private final Invoker<?> invoker;
+    private ConsumerModel consumerModel;
 
     public InvokerInvocationHandler(Invoker<?> handler) {
         this.invoker = handler;
+        String serviceKey = invoker.getUrl().getServiceKey();
+        if (serviceKey != null) {
+            this.consumerModel = ApplicationModel.getConsumerModel(serviceKey);
+        }
     }
 
     @Override
@@ -55,7 +63,13 @@ public class InvokerInvocationHandler implements InvocationHandler {
             return invoker.equals(args[0]);
         }
         RpcInvocation rpcInvocation = new RpcInvocation(method, invoker.getInterface().getName(), args);
-        rpcInvocation.setTargetServiceUniqueName(invoker.getUrl().getServiceKey());
+        String serviceKey = invoker.getUrl().getServiceKey();
+        rpcInvocation.setTargetServiceUniqueName(serviceKey);
+      
+        if (consumerModel != null) {
+            rpcInvocation.put(Constants.CONSUMER_MODEL, consumerModel);
+            rpcInvocation.put(Constants.METHOD_MODEL, consumerModel.getMethodModel(method));
+        }
 
         return invoker.invoke(rpcInvocation).recreate();
     }

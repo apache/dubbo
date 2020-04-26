@@ -71,7 +71,7 @@ public class ConsulDynamicConfigurationTest {
         assertEquals("bar", configuration.getConfig("foo", "dubbo"));
         // test does not block
         assertEquals("bar", configuration.getConfig("foo", "dubbo"));
-        Assertions.assertThrows(IllegalArgumentException.class, () -> configuration.getConfig("not-exist", "dubbo"));
+        Assertions.assertNull(configuration.getConfig("not-exist", "dubbo"));
     }
 
     @Test
