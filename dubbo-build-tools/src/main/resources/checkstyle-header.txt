@@ -14,21 +14,3 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting;
-
-/**
- * Indicate whether the implementation (for both server and client) has the ability to sense and handle idle connection.
- * If the server has the ability to handle idle connection, it should close the connection when it happens, and if
- * the client has the ability to handle idle connection, it should send the heartbeat to the server.
- */
-public interface IdleSensible {
-    /**
-     * Whether the implementation can sense and handle the idle connection. By default it's false, the implementation
-     * relies on dedicated timer to take care of idle connection.
-     *
-     * @return whether has the ability to handle idle connection
-     */
-    default boolean canHandleIdle() {
-        return false;
-    }
-}
