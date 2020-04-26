@@ -14,30 +14,3 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.qos.legacy.service.generic;
-
-import java.util.List;
-
-/**
- * DemoServiceImpl
- */
-public class DemoServiceImpl implements DemoService {
-
-    public String sayName(String name) {
-        return "say:" + name;
-    }
-
-
-    public void throwDemoException() throws DemoException {
-        throw new DemoException("DemoServiceImpl");
-    }
-
-    public List<User> getUsers(List<User> users) {
-        return users;
-    }
-
-    public int echo(int i) {
-        return i;
-    }
-
-}
