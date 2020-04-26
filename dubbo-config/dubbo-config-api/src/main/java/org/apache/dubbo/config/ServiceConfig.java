@@ -147,16 +147,19 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         super(service);
     }
 
+    @Override
     @Parameter(excluded = true)
     public boolean isExported() {
         return exported;
     }
 
+    @Override
     @Parameter(excluded = true)
     public boolean isUnexported() {
         return unexported;
     }
 
+    @Override
     public void unexport() {
         if (!exported) {
             return;
@@ -180,6 +183,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         dispatch(new ServiceConfigUnexportedEvent(this));
     }
 
+    @Override
     public synchronized void export() {
         if (!shouldExport()) {
             return;

@@ -51,6 +51,7 @@ public class DubboConfigDefaultPropertyValueBeanPostProcessor extends GenericBea
      */
     public static final String BEAN_NAME = "dubboConfigDefaultPropertyValueBeanPostProcessor";
 
+    @Override
     protected void processBeforeInitialization(AbstractConfig dubboConfigBean, String beanName) throws BeansException {
         // [Feature] https://github.com/apache/dubbo/issues/5721
         setBeanNameAsDefaultValue(dubboConfigBean, "id", beanName);

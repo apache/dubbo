@@ -100,6 +100,7 @@ public class RpcInvocation implements Invocation, Serializable {
         this.invoker = invoker;
     }
 
+    @Override
     public Invoker<?> getInvoker() {
         return invoker;
     }
@@ -108,6 +109,7 @@ public class RpcInvocation implements Invocation, Serializable {
         this.invoker = invoker;
     }
 
+    @Override
     public String getMethodName() {
         return methodName;
     }
@@ -116,6 +118,7 @@ public class RpcInvocation implements Invocation, Serializable {
         this.methodName = methodName;
     }
 
+    @Override
     public Class<?>[] getParameterTypes() {
         return parameterTypes;
     }
@@ -124,6 +127,7 @@ public class RpcInvocation implements Invocation, Serializable {
         this.parameterTypes = parameterTypes == null ? new Class<?>[0] : parameterTypes;
     }
 
+    @Override
     public Object[] getArguments() {
         return arguments;
     }
@@ -132,6 +136,7 @@ public class RpcInvocation implements Invocation, Serializable {
         this.arguments = arguments == null ? new Object[0] : arguments;
     }
 
+    @Override
     public Map<String, String> getAttachments() {
         return attachments;
     }
@@ -140,6 +145,7 @@ public class RpcInvocation implements Invocation, Serializable {
         this.attachments = attachments == null ? new HashMap<String, String>() : attachments;
     }
 
+    @Override
     public void setAttachment(String key, String value) {
         if (attachments == null) {
             attachments = new HashMap<String, String>();
@@ -147,6 +153,7 @@ public class RpcInvocation implements Invocation, Serializable {
         attachments.put(key, value);
     }
 
+    @Override
     public void setAttachmentIfAbsent(String key, String value) {
         if (attachments == null) {
             attachments = new HashMap<String, String>();
@@ -175,6 +182,7 @@ public class RpcInvocation implements Invocation, Serializable {
         }
     }
 
+    @Override
     public String getAttachment(String key) {
         if (attachments == null) {
             return null;
@@ -182,6 +190,7 @@ public class RpcInvocation implements Invocation, Serializable {
         return (String) attachments.get(key);
     }
 
+    @Override
     public String getAttachment(String key, String defaultValue) {
         if (attachments == null) {
             return defaultValue;

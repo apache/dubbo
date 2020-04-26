@@ -70,6 +70,7 @@ public class DefaultExecutorRepository implements ExecutorRepository {
      * @param url
      * @return
      */
+    @Override
     public synchronized ExecutorService createExecutorIfAbsent(URL url) {
         String componentKey = EXECUTOR_SERVICE_COMPONENT_KEY;
         if (CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY))) {
@@ -87,6 +88,7 @@ public class DefaultExecutorRepository implements ExecutorRepository {
         return executor;
     }
 
+    @Override
     public ExecutorService getExecutor(URL url) {
         String componentKey = EXECUTOR_SERVICE_COMPONENT_KEY;
         if (CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY))) {

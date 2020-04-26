@@ -148,6 +148,7 @@ public class HttpProtocol extends AbstractProxyProtocol {
         return (T) jsonProxyFactoryBean.getObject();
     }
 
+    @Override
     protected int getErrorCode(Throwable e) {
         if (e instanceof RemoteAccessException) {
             e = e.getCause();

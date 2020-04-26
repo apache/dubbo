@@ -52,6 +52,7 @@ public class ServiceMetadata extends BaseServiceMetadata {
     public ServiceMetadata() {
     }
 
+    @Override
     public String getServiceKey() {
         return serviceKey;
     }

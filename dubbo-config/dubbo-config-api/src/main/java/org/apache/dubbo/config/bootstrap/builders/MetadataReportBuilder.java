@@ -119,6 +119,7 @@ public class MetadataReportBuilder extends AbstractBuilder<MetadataReportConfig,
         return getThis();
     }
 
+    @Override
     public MetadataReportConfig build() {
         MetadataReportConfig metadataReport = new MetadataReportConfig();
         super.build(metadataReport);

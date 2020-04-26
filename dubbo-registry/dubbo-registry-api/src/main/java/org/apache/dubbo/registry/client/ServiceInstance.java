@@ -85,12 +85,14 @@ public interface ServiceInstance extends Serializable {
     /**
      * @return the hash code of current instance.
      */
+    @Override
     int hashCode();
 
     /**
      * @param another another {@link ServiceInstance}
      * @return if equals , return <code>true</code>, or <code>false</code>
      */
+    @Override
     boolean equals(Object another);
 
 }

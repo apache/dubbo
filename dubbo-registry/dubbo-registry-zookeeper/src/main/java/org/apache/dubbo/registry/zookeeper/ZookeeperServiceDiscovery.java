@@ -79,22 +79,26 @@ public class ZookeeperServiceDiscovery implements ServiceDiscovery, EventListene
         this.serviceDiscovery.start();
     }
 
+    @Override
     public void destroy() throws Exception {
         serviceDiscovery.close();
     }
 
+    @Override
     public void register(ServiceInstance serviceInstance) throws RuntimeException {
         doInServiceRegistry(serviceDiscovery -> {
             serviceDiscovery.registerService(build(serviceInstance));
         });
     }
 
+    @Override
     public void update(ServiceInstance serviceInstance) throws RuntimeException {
         doInServiceRegistry(serviceDiscovery -> {
             serviceDiscovery.updateService(build(serviceInstance));
         });
     }
 
+    @Override
     public void unregister(ServiceInstance serviceInstance) throws RuntimeException {
         doInServiceRegistry(serviceDiscovery -> {
             serviceDiscovery.unregisterService(build(serviceInstance));

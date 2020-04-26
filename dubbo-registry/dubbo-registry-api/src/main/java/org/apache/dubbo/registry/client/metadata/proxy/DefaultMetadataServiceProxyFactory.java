@@ -57,6 +57,7 @@ public class DefaultMetadataServiceProxyFactory extends BaseMetadataServiceProxy
     }
 
 
+    @Override
     protected MetadataService createProxy(ServiceInstance serviceInstance) {
         MetadataServiceURLBuilder builder = null;
         ExtensionLoader<MetadataServiceURLBuilder> loader

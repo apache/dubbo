@@ -267,5 +267,6 @@ public interface ServiceDiscovery extends Prioritized {
      *
      * @return The description.
      */
+    @Override
     String toString();
 }

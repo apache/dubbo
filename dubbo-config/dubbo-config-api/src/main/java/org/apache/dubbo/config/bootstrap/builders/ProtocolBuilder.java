@@ -189,6 +189,7 @@ public class ProtocolBuilder extends AbstractBuilder<ProtocolConfig, ProtocolBui
         return new ProtocolBuilder();
     }
 
+    @Override
     public ProtocolBuilder id(String id) {
         return super.id(id);
     }
@@ -380,6 +381,7 @@ public class ProtocolBuilder extends AbstractBuilder<ProtocolConfig, ProtocolBui
         return getThis();
     }
 
+    @Override
     public ProtocolConfig build() {
         ProtocolConfig protocolConfig = new ProtocolConfig();
         super.build(protocolConfig);

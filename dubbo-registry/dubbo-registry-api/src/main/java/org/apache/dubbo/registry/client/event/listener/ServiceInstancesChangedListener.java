@@ -41,6 +41,7 @@ public abstract class ServiceInstancesChangedListener implements ConditionalEven
      *
      * @param event {@link ServiceInstancesChangedEvent}
      */
+    @Override
     public abstract void onEvent(ServiceInstancesChangedEvent event);
 
     /**
@@ -56,6 +57,7 @@ public abstract class ServiceInstancesChangedListener implements ConditionalEven
      * @param event {@link ServiceInstancesChangedEvent event}
      * @return If service name matches, return <code>true</code>, or <code>false</code>
      */
+    @Override
     public final boolean accept(ServiceInstancesChangedEvent event) {
         return Objects.equals(getServiceName(), event.getServiceName());
     }

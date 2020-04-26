@@ -221,6 +221,7 @@ public class DubboProtocol extends AbstractProtocol {
         return INSTANCE;
     }
 
+    @Override
     public Collection<Exporter<?>> getExporters() {
         return Collections.unmodifiableCollection(exporterMap.values());
     }

@@ -35,6 +35,7 @@ abstract class OneTimeExecutionApplicationContextEventListener implements Applic
 
     private ApplicationContext applicationContext;
 
+    @Override
     public final void onApplicationEvent(ApplicationEvent event) {
         if (isOriginalEventSource(event) && event instanceof ApplicationContextEvent) {
             onApplicationContextEvent((ApplicationContextEvent) event);

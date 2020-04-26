@@ -205,6 +205,7 @@ public class MethodBuilder extends AbstractMethodBuilder<MethodConfig, MethodBui
         return getThis();
     }
 
+    @Override
     public MethodConfig build() {
         MethodConfig methodConfig = new MethodConfig();
         super.build(methodConfig);

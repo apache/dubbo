@@ -113,6 +113,7 @@ public class MonitorBuilder extends AbstractBuilder<MonitorConfig, MonitorBuilde
         return getThis();
     }
 
+    @Override
     public MonitorConfig build() {
         MonitorConfig monitorConfig = new MonitorConfig();
         super.build(monitorConfig);

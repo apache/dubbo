@@ -191,6 +191,7 @@ public class WebServiceProtocol extends AbstractProxyProtocol {
     }
 
     private class URLHashMethodNameSoapActionServiceConfiguration extends AbstractServiceConfiguration {
+        @Override
         public String getAction(OperationInfo op, Method method) {
             String uri = op.getName().getNamespaceURI();
             String action = op.getName().getLocalPart();

@@ -54,10 +54,12 @@ public class MetadataIdentifier extends BaseServiceMetadataIdentifier implements
         setApplication(url.getParameter(APPLICATION_KEY));
     }
 
+    @Override
     public String getUniqueKey(KeyTypeEnum keyType) {
         return super.getUniqueKey(keyType, application);
     }
 
+    @Override
     public String getIdentifierKey() {
         return super.getIdentifierKey(application);
     }

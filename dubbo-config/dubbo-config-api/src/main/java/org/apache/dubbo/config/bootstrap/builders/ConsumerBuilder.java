@@ -96,6 +96,7 @@ public class ConsumerBuilder extends AbstractReferenceBuilder<ConsumerConfig, Co
         return getThis();
     }
 
+    @Override
     public ConsumerConfig build() {
         ConsumerConfig consumer = new ConsumerConfig();
         super.build(consumer);

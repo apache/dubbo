@@ -113,6 +113,7 @@ public class ConfigCenterBuilder extends AbstractBuilder<ConfigCenterConfig, Con
         return getThis();
     }
 
+    @Override
     public ConfigCenterConfig build() {
         ConfigCenterConfig configCenter = new ConfigCenterConfig();
         super.build(configCenter);

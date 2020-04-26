@@ -159,12 +159,14 @@ public class RegistryBuilder extends AbstractBuilder<RegistryConfig, RegistryBui
      * Take effect only when no preferred registry is specified.
      */
     private Integer weight;
+    private String id;
 
     public static RegistryBuilder newBuilder() {
         return new RegistryBuilder();
     }
 
     public RegistryBuilder id(String id) {
+        this.id = id;
         return super.id(id);
     }
 
@@ -330,6 +332,7 @@ public class RegistryBuilder extends AbstractBuilder<RegistryConfig, RegistryBui
         return getThis();
     }
 
+    @Override
     public RegistryConfig build() {
         RegistryConfig registry = new RegistryConfig();
         super.build(registry);

@@ -42,10 +42,12 @@ public class SubscriberMetadataIdentifier extends BaseApplicationMetadataIdentif
         this.revision = url.getParameter(REVISION_KEY, "");
     }
 
+    @Override
     public String getUniqueKey(KeyTypeEnum keyType) {
         return super.getUniqueKey(keyType, revision);
     }
 
+    @Override
     public String getIdentifierKey() {
         return super.getIdentifierKey(revision);
     }

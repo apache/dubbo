@@ -172,6 +172,7 @@ public class ApplicationBuilder extends AbstractBuilder<ApplicationConfig, Appli
         return getThis();
     }
 
+    @Override
     public ApplicationConfig build() {
         ApplicationConfig config = new ApplicationConfig();
         super.build(config);

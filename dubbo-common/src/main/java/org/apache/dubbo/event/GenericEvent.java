@@ -28,6 +28,7 @@ public class GenericEvent<S> extends Event {
         super(source);
     }
 
+    @Override
     public S getSource() {
         return (S) super.getSource();
     }

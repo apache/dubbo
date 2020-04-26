@@ -55,10 +55,12 @@ public class ServiceMetadataIdentifier extends BaseServiceMetadataIdentifier imp
         this.protocol = url.getProtocol();
     }
 
+    @Override
     public String getUniqueKey(KeyTypeEnum keyType) {
         return super.getUniqueKey(keyType, protocol, KEY_REVISON_PREFIX + revision);
     }
 
+    @Override
     public String getIdentifierKey() {
         return super.getIdentifierKey(protocol, KEY_REVISON_PREFIX + revision);
     }

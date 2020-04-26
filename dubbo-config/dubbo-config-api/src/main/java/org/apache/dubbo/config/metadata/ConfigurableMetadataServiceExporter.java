@@ -106,6 +106,7 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
         return serviceConfig != null ? serviceConfig.getExportedUrls() : emptyList();
     }
 
+    @Override
     public boolean isExported() {
         return serviceConfig != null && serviceConfig.isExported();
     }

@@ -32,6 +32,7 @@ import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUti
 public abstract class AbstractRequestAnnotationParameterProcessor extends AbstractAnnotatedMethodParameterProcessor {
 
 
+    @Override
     protected abstract void process(String name, String defaultValue, AnnotationMirror annotation,
                                     VariableElement parameter, int parameterIndex,
                                     ExecutableElement method,
@@ -55,6 +56,7 @@ public abstract class AbstractRequestAnnotationParameterProcessor extends Abstra
         return name;
     }
 
+    @Override
     protected String getDefaultValue(AnnotationMirror annotation, VariableElement parameter, int parameterIndex) {
         String defaultValue = getAttribute(annotation, "defaultValue");
         if (isEmpty(defaultValue)) {

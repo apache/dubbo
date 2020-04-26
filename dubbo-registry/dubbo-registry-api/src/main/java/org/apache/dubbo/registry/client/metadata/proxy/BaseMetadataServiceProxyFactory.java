@@ -29,6 +29,7 @@ import java.util.Map;
 abstract class BaseMetadataServiceProxyFactory implements MetadataServiceProxyFactory {
     private final Map<String, MetadataService> proxies = new HashMap<>();
 
+    @Override
     public final MetadataService getProxy(ServiceInstance serviceInstance) {
         return proxies.computeIfAbsent(serviceInstance.getServiceName() + "##" +
                 ServiceInstanceMetadataUtils.getExportedServicesRevision(serviceInstance), id -> createProxy(serviceInstance));

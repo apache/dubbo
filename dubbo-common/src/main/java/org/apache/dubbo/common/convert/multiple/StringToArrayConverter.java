@@ -29,6 +29,7 @@ import static java.lang.reflect.Array.newInstance;
  */
 public class StringToArrayConverter implements StringToMultiValueConverter {
 
+    @Override
     public boolean accept(Class<String> type, Class<?> multiValueType) {
         if (multiValueType != null && multiValueType.isArray()) {
             return true;

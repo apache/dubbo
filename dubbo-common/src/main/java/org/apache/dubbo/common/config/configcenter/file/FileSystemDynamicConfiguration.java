@@ -503,6 +503,7 @@ public class FileSystemDynamicConfiguration extends AbstractDynamicConfiguration
         return WATCH_EVENTS_LOOP_THREAD_POOL;
     }
 
+    @Override
     protected ThreadPoolExecutor getWorkersThreadPool() {
         return super.getWorkersThreadPool();
     }

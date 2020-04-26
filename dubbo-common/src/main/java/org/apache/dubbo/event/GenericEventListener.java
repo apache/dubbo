@@ -74,6 +74,7 @@ public abstract class GenericEventListener implements EventListener<Event> {
         return eventMethods;
     }
 
+    @Override
     public final void onEvent(Event event) {
         Class<?> eventClass = event.getClass();
         handleEventMethods.getOrDefault(eventClass, emptySet()).forEach(method -> {

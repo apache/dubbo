@@ -69,6 +69,7 @@ public class ReferenceBuilder<T> extends AbstractReferenceBuilder<ReferenceConfi
         return new ReferenceBuilder();
     }
 
+    @Override
     public ReferenceBuilder<T> id(String id) {
         return super.id(id);
     }
@@ -119,6 +120,7 @@ public class ReferenceBuilder<T> extends AbstractReferenceBuilder<ReferenceConfi
         return getThis();
     }
 
+    @Override
     public ReferenceConfig<T> build() {
         ReferenceConfig<T> reference = new ReferenceConfig<>();
         super.build(reference);

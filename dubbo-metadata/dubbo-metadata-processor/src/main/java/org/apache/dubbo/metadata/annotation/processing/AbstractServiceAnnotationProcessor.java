@@ -46,6 +46,7 @@ public abstract class AbstractServiceAnnotationProcessor extends AbstractProcess
 
     private List<? extends Element> objectMembers;
 
+    @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
         this.elements = processingEnv.getElementUtils();

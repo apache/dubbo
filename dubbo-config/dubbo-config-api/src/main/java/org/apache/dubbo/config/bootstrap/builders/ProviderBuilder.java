@@ -255,6 +255,7 @@ public class ProviderBuilder extends AbstractServiceBuilder<ProviderConfig, Prov
         return getThis();
     }
 
+    @Override
     public ProviderConfig build() {
         ProviderConfig provider = new ProviderConfig();
         super.build(provider);

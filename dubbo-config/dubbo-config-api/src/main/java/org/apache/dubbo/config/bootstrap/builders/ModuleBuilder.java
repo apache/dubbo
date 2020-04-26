@@ -110,6 +110,7 @@ public class ModuleBuilder extends AbstractBuilder<ModuleConfig, ModuleBuilder> 
         return getThis();
     }
 
+    @Override
     public ModuleConfig build() {
         ModuleConfig moduleConfig = new ModuleConfig();
         super.build(moduleConfig);
