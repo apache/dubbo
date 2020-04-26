@@ -19,6 +19,9 @@ package org.apache.dubbo.rpc.support;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
 
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_RAW_RETURN;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_BEAN;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_DEFAULT;
@@ -29,6 +32,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 
 public class ProtocolUtils {
 
+    private static final ConcurrentMap<String, GroupServiceKeyCache> groupServiceKeyCacheMap = new ConcurrentHashMap<>();
+
     private ProtocolUtils() {
     }
 
@@ -38,24 +43,17 @@ public class ProtocolUtils {
     }
 
     public static String serviceKey(int port, String serviceName, String serviceVersion, String serviceGroup) {
-        StringBuilder buf = new StringBuilder();
-        if (StringUtils.isNotEmpty(serviceGroup)) {
-            buf.append(serviceGroup);
-            buf.append("/");
+        serviceGroup = serviceGroup == null ? "" : serviceGroup;
+        GroupServiceKeyCache groupServiceKeyCache = groupServiceKeyCacheMap.get(serviceGroup);
+        if (groupServiceKeyCache == null) {
+            groupServiceKeyCacheMap.putIfAbsent(serviceGroup, new GroupServiceKeyCache(serviceGroup));
+            groupServiceKeyCache = groupServiceKeyCacheMap.get(serviceGroup);
         }
-        buf.append(serviceName);
-        if (serviceVersion != null && serviceVersion.length() > 0 && !"0.0.0".equals(serviceVersion)) {
-            buf.append(":");
-            buf.append(serviceVersion);
-        }
-        buf.append(":");
-        buf.append(port);
-        return buf.toString();
+        return groupServiceKeyCache.getServiceKey(serviceName, serviceVersion, port);
     }
 
     public static boolean isGeneric(String generic) {
-        return generic != null
-                && !"".equals(generic)
+        return StringUtils.isNotEmpty(generic)
                 && (GENERIC_SERIALIZATION_DEFAULT.equalsIgnoreCase(generic)  /* Normal generalization cal */
                 || GENERIC_SERIALIZATION_NATIVE_JAVA.equalsIgnoreCase(generic) /* Streaming generalization call supporting jdk serialization */
                 || GENERIC_SERIALIZATION_BEAN.equalsIgnoreCase(generic)

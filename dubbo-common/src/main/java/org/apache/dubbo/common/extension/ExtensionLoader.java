@@ -19,6 +19,7 @@ package org.apache.dubbo.common.extension;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.context.Lifecycle;
 import org.apache.dubbo.common.extension.support.ActivateComparator;
+import org.apache.dubbo.common.lang.Prioritized;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ArrayUtils;
@@ -40,7 +41,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -49,6 +51,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
 
+import static java.util.Collections.sort;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOVE_VALUE_PREFIX;
@@ -84,9 +87,9 @@ public class ExtensionLoader<T> {
 
     private static final Pattern NAME_SEPARATOR = Pattern.compile("\\s*[,]+\\s*");
 
-    private static final ConcurrentMap<Class<?>, ExtensionLoader<?>> EXTENSION_LOADERS = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Class<?>, ExtensionLoader<?>> EXTENSION_LOADERS = new ConcurrentHashMap<>(64);
 
-    private static final ConcurrentMap<Class<?>, Object> EXTENSION_INSTANCES = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Class<?>, Object> EXTENSION_INSTANCES = new ConcurrentHashMap<>(64);
 
     private final Class<?> type;
 
@@ -106,6 +109,16 @@ public class ExtensionLoader<T> {
     private Set<Class<?>> cachedWrapperClasses;
 
     private Map<String, IllegalStateException> exceptions = new ConcurrentHashMap<>();
+
+    private static LoadingStrategy DUBBO_INTERNAL_STRATEGY =  () -> DUBBO_INTERNAL_DIRECTORY;
+    private static LoadingStrategy DUBBO_STRATEGY = () -> DUBBO_DIRECTORY;
+    private static LoadingStrategy SERVICES_STRATEGY = () -> SERVICES_DIRECTORY;
+
+    private static LoadingStrategy[] strategies = new LoadingStrategy[] { DUBBO_INTERNAL_STRATEGY, DUBBO_STRATEGY, SERVICES_STRATEGY };
+
+    public static void setLoadingStrategies(LoadingStrategy... strategies) {
+        ExtensionLoader.strategies = strategies;
+    }
 
     private ExtensionLoader(Class<?> type) {
         this.type = type;
@@ -225,7 +238,7 @@ public class ExtensionLoader<T> {
      * @see org.apache.dubbo.common.extension.Activate
      */
     public List<T> getActivateExtension(URL url, String[] values, String group) {
-        List<T> exts = new ArrayList<>();
+        List<T> activateExtensions = new ArrayList<>();
         List<String> names = values == null ? new ArrayList<>(0) : Arrays.asList(values);
         if (!names.contains(REMOVE_VALUE_PREFIX + DEFAULT_KEY)) {
             getExtensionClasses();
@@ -248,30 +261,30 @@ public class ExtensionLoader<T> {
                         && !names.contains(name)
                         && !names.contains(REMOVE_VALUE_PREFIX + name)
                         && isActive(activateValue, url)) {
-                    exts.add(getExtension(name));
+                    activateExtensions.add(getExtension(name));
                 }
             }
-            exts.sort(ActivateComparator.COMPARATOR);
+            activateExtensions.sort(ActivateComparator.COMPARATOR);
         }
-        List<T> usrs = new ArrayList<>();
+        List<T> loadedExtensions = new ArrayList<>();
         for (int i = 0; i < names.size(); i++) {
             String name = names.get(i);
             if (!name.startsWith(REMOVE_VALUE_PREFIX)
                     && !names.contains(REMOVE_VALUE_PREFIX + name)) {
                 if (DEFAULT_KEY.equals(name)) {
-                    if (!usrs.isEmpty()) {
-                        exts.addAll(0, usrs);
-                        usrs.clear();
+                    if (!loadedExtensions.isEmpty()) {
+                        activateExtensions.addAll(0, loadedExtensions);
+                        loadedExtensions.clear();
                     }
                 } else {
-                    usrs.add(getExtension(name));
+                    loadedExtensions.add(getExtension(name));
                 }
             }
         }
-        if (!usrs.isEmpty()) {
-            exts.addAll(usrs);
+        if (!loadedExtensions.isEmpty()) {
+            activateExtensions.addAll(loadedExtensions);
         }
-        return exts;
+        return activateExtensions;
     }
 
     private boolean isMatchGroup(String group, String[] groups) {
@@ -432,14 +445,16 @@ public class ExtensionLoader<T> {
     }
 
     public Set<T> getSupportedExtensionInstances() {
-        Set<T> instances = new HashSet<>();
+        List<T> instances = new LinkedList<>();
         Set<String> supportedExtensions = getSupportedExtensions();
         if (CollectionUtils.isNotEmpty(supportedExtensions)) {
             for (String name : supportedExtensions) {
                 instances.add(getExtension(name));
             }
         }
-        return instances;
+        // sort the Prioritized instances
+        sort(instances, Prioritized.COMPARATOR);
+        return new LinkedHashSet<>(instances);
     }
 
     /**
@@ -717,14 +732,12 @@ public class ExtensionLoader<T> {
         cacheDefaultExtensionName();
 
         Map<String, Class<?>> extensionClasses = new HashMap<>();
-        // internal extension load from ExtensionLoader's ClassLoader first
-        loadDirectory(extensionClasses, DUBBO_INTERNAL_DIRECTORY, type.getName(), true);
-        loadDirectory(extensionClasses, DUBBO_INTERNAL_DIRECTORY, type.getName().replace("org.apache", "com.alibaba"), true);
 
-        loadDirectory(extensionClasses, DUBBO_DIRECTORY, type.getName());
-        loadDirectory(extensionClasses, DUBBO_DIRECTORY, type.getName().replace("org.apache", "com.alibaba"));
-        loadDirectory(extensionClasses, SERVICES_DIRECTORY, type.getName());
-        loadDirectory(extensionClasses, SERVICES_DIRECTORY, type.getName().replace("org.apache", "com.alibaba"));
+        for (LoadingStrategy strategy : strategies) {
+            loadDirectory(extensionClasses, strategy.directory(), type.getName(), strategy.preferExtensionClassLoader(), strategy.excludedPackages());
+            loadDirectory(extensionClasses, strategy.directory(), type.getName().replace("org.apache", "com.alibaba"), strategy.preferExtensionClassLoader(), strategy.excludedPackages());
+        }
+
         return extensionClasses;
     }
 
@@ -754,12 +767,13 @@ public class ExtensionLoader<T> {
         loadDirectory(extensionClasses, dir, type, false);
     }
 
-    private void loadDirectory(Map<String, Class<?>> extensionClasses, String dir, String type, boolean extensionLoaderClassLoaderFirst) {
+    private void loadDirectory(Map<String, Class<?>> extensionClasses, String dir, String type,
+                               boolean extensionLoaderClassLoaderFirst, String... excludedPackages) {
         String fileName = dir + type;
         try {
             Enumeration<java.net.URL> urls = null;
             ClassLoader classLoader = findClassLoader();
-            
+
             // try to load from ExtensionLoader's ClassLoader first
             if (extensionLoaderClassLoaderFirst) {
                 ClassLoader extensionLoaderClassLoader = ExtensionLoader.class.getClassLoader();
@@ -767,7 +781,7 @@ public class ExtensionLoader<T> {
                     urls = extensionLoaderClassLoader.getResources(fileName);
                 }
             }
-            
+
             if(urls == null || !urls.hasMoreElements()) {
                 if (classLoader != null) {
                     urls = classLoader.getResources(fileName);
@@ -779,7 +793,7 @@ public class ExtensionLoader<T> {
             if (urls != null) {
                 while (urls.hasMoreElements()) {
                     java.net.URL resourceURL = urls.nextElement();
-                    loadResource(extensionClasses, classLoader, resourceURL);
+                    loadResource(extensionClasses, classLoader, resourceURL, excludedPackages);
                 }
             }
         } catch (Throwable t) {
@@ -788,7 +802,8 @@ public class ExtensionLoader<T> {
         }
     }
 
-    private void loadResource(Map<String, Class<?>> extensionClasses, ClassLoader classLoader, java.net.URL resourceURL) {
+    private void loadResource(Map<String, Class<?>> extensionClasses, ClassLoader classLoader,
+                              java.net.URL resourceURL, String... excludedPackages) {
         try {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(resourceURL.openStream(), StandardCharsets.UTF_8))) {
                 String line;
@@ -806,7 +821,7 @@ public class ExtensionLoader<T> {
                                 name = line.substring(0, i).trim();
                                 line = line.substring(i + 1).trim();
                             }
-                            if (line.length() > 0) {
+                            if (line.length() > 0 && !isExcluded(line, excludedPackages)) {
                                 loadClass(extensionClasses, resourceURL, Class.forName(line, true, classLoader), name);
                             }
                         } catch (Throwable t) {
@@ -820,6 +835,17 @@ public class ExtensionLoader<T> {
             logger.error("Exception occurred when loading extension class (interface: " +
                     type + ", class file: " + resourceURL + ") in " + resourceURL, t);
         }
+    }
+
+    private boolean isExcluded(String className, String... excludedPackages) {
+        if (excludedPackages != null) {
+            for (String excludePackage : excludedPackages) {
+                if (className.startsWith(excludePackage + ".")) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private void loadClass(Map<String, Class<?>> extensionClasses, java.net.URL resourceURL, Class<?> clazz, String name) throws NoSuchMethodException {

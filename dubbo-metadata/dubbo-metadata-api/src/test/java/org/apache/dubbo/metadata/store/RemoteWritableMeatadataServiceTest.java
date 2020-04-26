@@ -18,7 +18,6 @@ package org.apache.dubbo.metadata.store;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
@@ -33,8 +32,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
-
-import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 
 /**
  * 2018/9/14
@@ -54,7 +51,7 @@ public class RemoteWritableMeatadataServiceTest {
     @Test
     public void testPublishProviderNoInterfaceName() {
         URL publishUrl = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vicpubprovder&side=provider");
-        metadataReportService1.publishProvider(publishUrl);
+        metadataReportService1.publishServiceDefinition(publishUrl);
 
         Assertions.assertTrue(metadataReportService1.getMetadataReport() instanceof JTestMetadataReport4Test);
 
@@ -67,7 +64,7 @@ public class RemoteWritableMeatadataServiceTest {
     public void testPublishProviderWrongInterface() {
 
         URL publishUrl = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vicpu&interface=ccc&side=provider");
-        metadataReportService1.publishProvider(publishUrl);
+        metadataReportService1.publishServiceDefinition(publishUrl);
 
         Assertions.assertTrue(metadataReportService1.getMetadataReport() instanceof JTestMetadataReport4Test);
 
@@ -80,7 +77,7 @@ public class RemoteWritableMeatadataServiceTest {
     public void testPublishProviderContainInterface() throws InterruptedException {
 
         URL publishUrl = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.3&application=vicpubp&interface=org.apache.dubbo.metadata.store.InterfaceNameTestService&side=provider");
-        metadataReportService1.publishProvider(publishUrl);
+        metadataReportService1.publishServiceDefinition(publishUrl);
         Thread.sleep(300);
 
         Assertions.assertTrue(metadataReportService1.getMetadataReport() instanceof JTestMetadataReport4Test);
@@ -100,7 +97,7 @@ public class RemoteWritableMeatadataServiceTest {
     public void testPublishConsumer() throws InterruptedException {
 
         URL publishUrl = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.x&application=vicpubconsumer&side=consumer");
-        metadataReportService1.publishConsumer(publishUrl);
+        metadataReportService1.publishServiceDefinition(publishUrl);
         Thread.sleep(300);
 
         Assertions.assertTrue(metadataReportService1.getMetadataReport() instanceof JTestMetadataReport4Test);

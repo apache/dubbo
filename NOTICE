@@ -1,5 +1,5 @@
 Apache Dubbo
-Copyright 2018-2019 The Apache Software Foundation
+Copyright 2018-2020 The Apache Software Foundation
 
 This product includes software developed at
 The Apache Software Foundation (http://www.apache.org/).
@@ -13,12 +13,10 @@ Please visit the Netty web site for more information:
 
 Copyright 2014 The Netty Project
 
+The product contains code form the Google Protocol Buffers project:
 
-This product contains code for the gRPC Project:
+Please visit the following site for more information:
+https://developers.google.com/protocol-buffers/
 
-The gRPC Project
-=================
-Please visit the gRPC web site for more information:
-  * http://grpc.io/
+Copyright 2008 Google Inc.  All rights reserved.
 
-Copyright 2014 The gRPC Project

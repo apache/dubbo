@@ -18,20 +18,18 @@ package org.apache.dubbo.config.spring.context;
 
 
 import org.apache.dubbo.common.context.Lifecycle;
-import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.config.DubboShutdownHook;
-import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ApplicationContextEvent;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.SmartApplicationListener;
 
-import java.util.Map;
+import java.util.LinkedList;
+import java.util.List;
 
+import static java.util.Collections.emptyList;
 import static org.springframework.beans.factory.BeanFactoryUtils.beansOfTypeIncludingAncestors;
 
 /**
@@ -41,15 +39,19 @@ import static org.springframework.beans.factory.BeanFactoryUtils.beansOfTypeIncl
  * @see SmartApplicationListener
  * @since 2.7.5
  */
-public class DubboLifecycleComponentApplicationListener implements ApplicationListener {
+public class DubboLifecycleComponentApplicationListener extends OneTimeExecutionApplicationContextEventListener {
+
+    /**
+     * The bean name of {@link DubboLifecycleComponentApplicationListener}
+     *
+     * @since 2.7.6
+     */
+    public static final String BEAN_NAME = "dubboLifecycleComponentApplicationListener";
+
+    private List<Lifecycle> lifecycleComponents = emptyList();
 
     @Override
-    public void onApplicationEvent(ApplicationEvent event) {
-
-        if (!supportsEvent(event)) {
-            return;
-        }
-
+    protected void onApplicationContextEvent(ApplicationContextEvent event) {
         if (event instanceof ContextRefreshedEvent) {
             onContextRefreshedEvent((ContextRefreshedEvent) event);
         } else if (event instanceof ContextClosedEvent) {
@@ -58,40 +60,31 @@ public class DubboLifecycleComponentApplicationListener implements ApplicationLi
     }
 
     protected void onContextRefreshedEvent(ContextRefreshedEvent event) {
-        ApplicationContext context = event.getApplicationContext();
-        DubboBootstrap bootstrap = loadBootsttrapAsBean(context);
-        if (bootstrap == null) {
-            bootstrap = DubboBootstrap.getInstance();
-        }
-        bootstrap.start();
+        initLifecycleComponents(event);
+        startLifecycleComponents();
     }
 
     protected void onContextClosedEvent(ContextClosedEvent event) {
-        DubboShutdownHook.getDubboShutdownHook().doDestroy();
+        destroyLifecycleComponents();
     }
 
-    private DubboBootstrap loadBootsttrapAsBean(ApplicationContext context) {
-        Map<String, DubboBootstrap> beans = beansOfTypeIncludingAncestors(context, DubboBootstrap.class);
-        if (CollectionUtils.isNotEmptyMap(beans)) {
-            return beans.values().iterator().next();
-        }
-        return null;
+    private void initLifecycleComponents(ContextRefreshedEvent event) {
+        ApplicationContext context = event.getApplicationContext();
+        ClassLoader classLoader = context.getClassLoader();
+        lifecycleComponents = new LinkedList<>();
+        // load the Beans of Lifecycle from ApplicationContext
+        loadLifecycleComponents(lifecycleComponents, context);
     }
 
-    /**
-     * the specified {@link ApplicationEvent event} must be {@link ApplicationContextEvent} and
-     * its correlative {@link ApplicationContext} must be root
-     *
-     * @param event
-     * @return
-     */
-    private boolean supportsEvent(ApplicationEvent event) {
-        return event instanceof ApplicationContextEvent &&
-                isRootApplicationContext((ApplicationContextEvent) event);
+    private void loadLifecycleComponents(List<Lifecycle> lifecycleComponents, ApplicationContext context) {
+        lifecycleComponents.addAll(beansOfTypeIncludingAncestors(context, Lifecycle.class).values());
     }
 
+    private void startLifecycleComponents() {
+        lifecycleComponents.forEach(Lifecycle::start);
+    }
 
-    private boolean isRootApplicationContext(ApplicationContextEvent event) {
-        return event.getApplicationContext().getParent() == null;
+    private void destroyLifecycleComponents() {
+        lifecycleComponents.forEach(Lifecycle::destroy);
     }
 }

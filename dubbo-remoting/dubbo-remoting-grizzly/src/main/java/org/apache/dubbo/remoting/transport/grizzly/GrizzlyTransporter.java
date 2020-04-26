@@ -31,13 +31,13 @@ public class GrizzlyTransporter implements Transporter {
     public static final String NAME = "grizzly";
 
     @Override
-    public RemotingServer bind(URL url, ChannelHandler listener) throws RemotingException {
-        return new GrizzlyServer(url, listener);
+    public RemotingServer bind(URL url, ChannelHandler handler) throws RemotingException {
+        return new GrizzlyServer(url, handler);
     }
 
     @Override
-    public Client connect(URL url, ChannelHandler listener) throws RemotingException {
-        return new GrizzlyClient(url, listener);
+    public Client connect(URL url, ChannelHandler handler) throws RemotingException {
+        return new GrizzlyClient(url, handler);
     }
 
 }

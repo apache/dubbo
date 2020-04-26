@@ -29,7 +29,10 @@ import com.googlecode.jsonrpc4j.HttpException;
 import com.googlecode.jsonrpc4j.JsonRpcClientException;
 import com.googlecode.jsonrpc4j.JsonRpcServer;
 import com.googlecode.jsonrpc4j.spring.JsonProxyFactoryBean;
+import org.apache.dubbo.rpc.service.GenericService;
+import org.apache.dubbo.rpc.support.ProtocolUtils;
 import org.springframework.remoting.RemoteAccessException;
+import org.springframework.remoting.support.RemoteInvocation;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -40,8 +43,9 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class HttpProtocol extends AbstractProxyProtocol {
+import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 
+public class HttpProtocol extends AbstractProxyProtocol {
     public static final String ACCESS_CONTROL_ALLOW_ORIGIN_HEADER = "Access-Control-Allow-Origin";
     public static final String ACCESS_CONTROL_ALLOW_METHODS_HEADER = "Access-Control-Allow-Methods";
     public static final String ACCESS_CONTROL_ALLOW_HEADERS_HEADER = "Access-Control-Allow-Headers";
@@ -81,9 +85,9 @@ public class HttpProtocol extends AbstractProxyProtocol {
                 response.setHeader(ACCESS_CONTROL_ALLOW_METHODS_HEADER, "POST");
                 response.setHeader(ACCESS_CONTROL_ALLOW_HEADERS_HEADER, "*");
             }
-            if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            if (request.getMethod().equalsIgnoreCase("OPTIONS")) {
                 response.setStatus(200);
-            } else if ("POST".equalsIgnoreCase(request.getMethod())) {
+            } else if (request.getMethod().equalsIgnoreCase("POST")) {
 
                 RpcContext.getContext().setRemoteAddress(request.getRemoteAddr(), request.getRemotePort());
                 try {
@@ -107,17 +111,38 @@ public class HttpProtocol extends AbstractProxyProtocol {
             serverMap.put(addr, new ProxyProtocolServer(remotingServer));
         }
         final String path = url.getAbsolutePath();
+        final String genericPath = path + "/" + GENERIC_KEY;
         JsonRpcServer skeleton = new JsonRpcServer(impl, type);
+        JsonRpcServer genericServer = new JsonRpcServer(impl, GenericService.class);
         skeletonMap.put(path, skeleton);
-        return () -> skeletonMap.remove(path);
+        skeletonMap.put(genericPath, genericServer);
+        return () -> {
+            skeletonMap.remove(path);
+            skeletonMap.remove(genericPath);
+        };
     }
 
     @SuppressWarnings("unchecked")
     @Override
     protected <T> T doRefer(final Class<T> serviceType, URL url) throws RpcException {
+        final String generic = url.getParameter(GENERIC_KEY);
+        final boolean isGeneric = ProtocolUtils.isGeneric(generic) || serviceType.equals(GenericService.class);
         JsonProxyFactoryBean jsonProxyFactoryBean = new JsonProxyFactoryBean();
-        jsonProxyFactoryBean.setServiceUrl(url.setProtocol("http").toIdentityString());
-        jsonProxyFactoryBean.setServiceInterface(serviceType);
+        JsonRpcProxyFactoryBean jsonRpcProxyFactoryBean = new JsonRpcProxyFactoryBean(jsonProxyFactoryBean);
+        jsonRpcProxyFactoryBean.setRemoteInvocationFactory((methodInvocation) -> {
+            RemoteInvocation invocation = new JsonRemoteInvocation(methodInvocation);
+            if (isGeneric) {
+                invocation.addAttribute(GENERIC_KEY, generic);
+            }
+            return invocation;
+        });
+        String key = url.setProtocol("http").toIdentityString();
+        if (isGeneric) {
+            key = key + "/" + GENERIC_KEY;
+        }
+
+        jsonRpcProxyFactoryBean.setServiceUrl(key);
+        jsonRpcProxyFactoryBean.setServiceInterface(serviceType);
 
         jsonProxyFactoryBean.afterPropertiesSet();
         return (T) jsonProxyFactoryBean.getObject();
@@ -135,6 +160,10 @@ public class HttpProtocol extends AbstractProxyProtocol {
                 return RpcException.NETWORK_EXCEPTION;
             } else if (ClassNotFoundException.class.isAssignableFrom(cls)) {
                 return RpcException.SERIALIZATION_EXCEPTION;
+            }
+
+            if (e instanceof HttpProtocolErrorCode) {
+                return ((HttpProtocolErrorCode) e).getErrorCode();
             }
         }
         return super.getErrorCode(e);
@@ -157,5 +186,6 @@ public class HttpProtocol extends AbstractProxyProtocol {
             }
         }
     }
+
 
 }

@@ -18,6 +18,7 @@ package org.apache.dubbo.registry.zookeeper;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
+import org.apache.dubbo.common.URLStrParser;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -44,7 +45,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
-import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_SEPARATOR;
+import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_SEPARATOR_ENCODED;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMERS_CATEGORY;
@@ -145,25 +146,17 @@ public class ZookeeperRegistry extends FailbackRegistry {
         try {
             if (ANY_VALUE.equals(url.getServiceInterface())) {
                 String root = toRootPath();
-                ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.get(url);
-                if (listeners == null) {
-                    zkListeners.putIfAbsent(url, new ConcurrentHashMap<>());
-                    listeners = zkListeners.get(url);
-                }
-                ChildListener zkListener = listeners.get(listener);
-                if (zkListener == null) {
-                    listeners.putIfAbsent(listener, (parentPath, currentChilds) -> {
-                        for (String child : currentChilds) {
-                            child = URL.decode(child);
-                            if (!anyServices.contains(child)) {
-                                anyServices.add(child);
-                                subscribe(url.setPath(child).addParameters(INTERFACE_KEY, child,
-                                        Constants.CHECK_KEY, String.valueOf(false)), listener);
-                            }
+                ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.computeIfAbsent(url, k -> new ConcurrentHashMap<>());
+                ChildListener zkListener = listeners.computeIfAbsent(listener, k -> (parentPath, currentChilds) -> {
+                    for (String child : currentChilds) {
+                        child = URL.decode(child);
+                        if (!anyServices.contains(child)) {
+                            anyServices.add(child);
+                            subscribe(url.setPath(child).addParameters(INTERFACE_KEY, child,
+                                    Constants.CHECK_KEY, String.valueOf(false)), k);
                         }
-                    });
-                    zkListener = listeners.get(listener);
-                }
+                    }
+                });
                 zkClient.create(root, false);
                 List<String> services = zkClient.addChildListener(root, zkListener);
                 if (CollectionUtils.isNotEmpty(services)) {
@@ -177,16 +170,8 @@ public class ZookeeperRegistry extends FailbackRegistry {
             } else {
                 List<URL> urls = new ArrayList<>();
                 for (String path : toCategoriesPath(url)) {
-                    ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.get(url);
-                    if (listeners == null) {
-                        zkListeners.putIfAbsent(url, new ConcurrentHashMap<>());
-                        listeners = zkListeners.get(url);
-                    }
-                    ChildListener zkListener = listeners.get(listener);
-                    if (zkListener == null) {
-                        listeners.putIfAbsent(listener, (parentPath, currentChilds) -> ZookeeperRegistry.this.notify(url, listener, toUrlsWithEmpty(url, parentPath, currentChilds)));
-                        zkListener = listeners.get(listener);
-                    }
+                    ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.computeIfAbsent(url, k -> new ConcurrentHashMap<>());
+                    ChildListener zkListener = listeners.computeIfAbsent(listener, k -> (parentPath, currentChilds) -> ZookeeperRegistry.this.notify(url, k, toUrlsWithEmpty(url, parentPath, currentChilds)));
                     zkClient.create(path, false);
                     List<String> children = zkClient.addChildListener(path, zkListener);
                     if (children != null) {
@@ -282,9 +267,8 @@ public class ZookeeperRegistry extends FailbackRegistry {
         List<URL> urls = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(providers)) {
             for (String provider : providers) {
-                provider = URL.decode(provider);
-                if (provider.contains(PROTOCOL_SEPARATOR)) {
-                    URL url = URL.valueOf(provider);
+                if (provider.contains(PROTOCOL_SEPARATOR_ENCODED)) {
+                    URL url = URLStrParser.parseEncodedStr(provider);
                     if (UrlUtils.isMatch(consumer, url)) {
                         urls.add(url);
                     }

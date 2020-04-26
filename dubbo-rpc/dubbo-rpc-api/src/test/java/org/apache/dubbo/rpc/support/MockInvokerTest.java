@@ -62,7 +62,7 @@ public class MockInvokerTest {
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getSomething");
         Assertions.assertEquals(new HashMap<>(),
-                mockInvoker.invoke(invocation).getAttachments());
+                mockInvoker.invoke(invocation).getObjectAttachments());
     }
 
     @Test

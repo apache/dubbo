@@ -60,7 +60,7 @@ public class Server {
     private EventLoopGroup worker;
 
     private Server() {
-        this.welcome = DubboLogo.dubbo;
+        this.welcome = DubboLogo.DUBBO;
     }
 
     private String welcome;
@@ -90,8 +90,8 @@ public class Server {
         ServerBootstrap serverBootstrap = new ServerBootstrap();
         serverBootstrap.group(boss, worker);
         serverBootstrap.channel(NioServerSocketChannel.class);
+        serverBootstrap.option(ChannelOption.SO_REUSEADDR, true);
         serverBootstrap.childOption(ChannelOption.TCP_NODELAY, true);
-        serverBootstrap.childOption(ChannelOption.SO_REUSEADDR, true);
         serverBootstrap.childHandler(new ChannelInitializer<Channel>() {
 
             @Override

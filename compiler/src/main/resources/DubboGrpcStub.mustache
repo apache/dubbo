@@ -1,0 +1,312 @@
+{{#packageName}}
+    package {{packageName}};
+{{/packageName}}
+
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.config.ReferenceConfigBase;
+
+import java.util.concurrent.TimeUnit;
+
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+
+import static {{packageName}}.{{serviceName}}Grpc.getServiceDescriptor;
+import static io.grpc.stub.ServerCalls.asyncUnaryCall;
+import static io.grpc.stub.ServerCalls.asyncServerStreamingCall;
+import static io.grpc.stub.ServerCalls.asyncClientStreamingCall;
+import static io.grpc.stub.ServerCalls.asyncBidiStreamingCall;
+import static io.grpc.stub.ServerCalls.asyncUnimplementedStreamingCall;
+import static io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall;
+
+{{#deprecated}}
+    @java.lang.Deprecated
+{{/deprecated}}
+@javax.annotation.Generated(
+value = "by DubboGrpc generator",
+comments = "Source: {{protoName}}")
+public final class {{className}} {
+private {{className}}() {}
+
+public static class Dubbo{{serviceName}}Stub implements I{{serviceName}} {
+
+protected URL url;
+protected ReferenceConfigBase<?> referenceConfig;
+
+protected {{serviceName}}Grpc.{{serviceName}}BlockingStub blockingStub;
+protected {{serviceName}}Grpc.{{serviceName}}FutureStub futureStub;
+protected {{serviceName}}Grpc.{{serviceName}}Stub stub;
+
+public Dubbo{{serviceName}}Stub(io.grpc.Channel channel, io.grpc.CallOptions callOptions, URL url, ReferenceConfigBase<?> referenceConfig) {
+this.url = url;
+this.referenceConfig = referenceConfig;
+
+blockingStub = {{serviceName}}Grpc.newBlockingStub(channel).build(channel, callOptions);
+futureStub = {{serviceName}}Grpc.newFutureStub(channel).build(channel, callOptions);
+stub = {{serviceName}}Grpc.newStub(channel).build(channel, callOptions);
+}
+
+{{#unaryMethods}}
+    {{#javaDoc}}
+        {{{javaDoc}}}
+    {{/javaDoc}}
+    {{#deprecated}}
+        @java.lang.Deprecated
+    {{/deprecated}}
+    public {{outputType}} {{methodName}}({{inputType}} request) {
+    return blockingStub
+    .withDeadlineAfter(url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT), TimeUnit.MILLISECONDS)
+    .{{methodName}}(request);
+    }
+
+    public com.google.common.util.concurrent.ListenableFuture<{{outputType}}> {{methodName}}Async({{inputType}} request) {
+    return futureStub
+    .withDeadlineAfter(url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT), TimeUnit.MILLISECONDS)
+    .{{methodName}}(request);
+    }
+
+    public void {{methodName}}({{inputType}} request, io.grpc.stub.StreamObserver<{{outputType}}> responseObserver){
+    stub
+    .withDeadlineAfter(url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT), TimeUnit.MILLISECONDS)
+    .{{methodName}}(request, responseObserver);
+    }
+
+{{/unaryMethods}}
+{{#serverStreamingMethods}}
+    {{#javaDoc}}
+        {{{javaDoc}}}
+    {{/javaDoc}}
+    {{#deprecated}}
+        @java.lang.Deprecated
+    {{/deprecated}}
+    public java.util.Iterator<{{outputType}}> {{methodName}}({{inputType}} request) {
+    return blockingStub
+    .withDeadlineAfter(url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT), TimeUnit.MILLISECONDS)
+    .{{methodName}}(request);
+    }
+
+    public void {{methodName}}({{inputType}} request, io.grpc.stub.StreamObserver<{{outputType}}> responseObserver) {
+    stub
+    .withDeadlineAfter(url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT), TimeUnit.MILLISECONDS)
+    .{{methodName}}(request, responseObserver);
+    }
+
+{{/serverStreamingMethods}}
+{{#biStreamingMethods}}
+    {{#javaDoc}}
+        {{{javaDoc}}}
+    {{/javaDoc}}
+    {{#deprecated}}
+        @java.lang.Deprecated
+    {{/deprecated}}
+    public io.grpc.stub.StreamObserver<{{inputType}}> {{methodName}}(io.grpc.stub.StreamObserver<{{outputType}}> responseObserver) {
+    return stub
+    .withDeadlineAfter(url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT), TimeUnit.MILLISECONDS)
+    .{{methodName}}(responseObserver);
+    }
+{{/biStreamingMethods}}
+}
+
+public static Dubbo{{serviceName}}Stub getDubboStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions, URL url, ReferenceConfigBase<?> referenceConfig) {
+return new Dubbo{{serviceName}}Stub(channel, callOptions, url, referenceConfig);
+}
+
+public interface I{{serviceName}} {
+{{#unaryMethods}}
+    {{#javaDoc}}
+        {{{javaDoc}}}
+    {{/javaDoc}}
+    {{#deprecated}}
+        @java.lang.Deprecated
+    {{/deprecated}}
+    default public {{outputType}} {{methodName}}({{inputType}} request) {
+    throw new UnsupportedOperationException("No need to override this method, extend XxxImplBase and override all methods it allows.");
+    }
+
+    {{#javaDoc}}
+        {{{javaDoc}}}
+    {{/javaDoc}}
+    {{#deprecated}}
+        @java.lang.Deprecated
+    {{/deprecated}}
+    default public com.google.common.util.concurrent.ListenableFuture<{{outputType}}> {{methodName}}Async({{inputType}} request) {
+    throw new UnsupportedOperationException("No need to override this method, extend XxxImplBase and override all methods it allows.");
+    }
+
+    {{#javaDoc}}
+        {{{javaDoc}}}
+    {{/javaDoc}}
+    {{#deprecated}}
+        @java.lang.Deprecated
+    {{/deprecated}}
+    public void {{methodName}}({{inputType}} request, io.grpc.stub.StreamObserver<{{outputType}}> responseObserver);
+
+{{/unaryMethods}}
+{{#serverStreamingMethods}}
+    {{#javaDoc}}
+        {{{javaDoc}}}
+    {{/javaDoc}}
+    {{#deprecated}}
+        @java.lang.Deprecated
+    {{/deprecated}}
+    default public java.util.Iterator<{{outputType}}> {{methodName}}({{inputType}} request) {
+    throw new UnsupportedOperationException("No need to override this method, extend XxxImplBase and override all methods it allows.");
+    }
+
+    {{#javaDoc}}
+        {{{javaDoc}}}
+    {{/javaDoc}}
+    {{#deprecated}}
+        @java.lang.Deprecated
+    {{/deprecated}}
+    public void {{methodName}}({{inputType}} request, io.grpc.stub.StreamObserver<{{outputType}}> responseObserver);
+
+{{/serverStreamingMethods}}
+{{#biStreamingMethods}}
+    {{#javaDoc}}
+        {{{javaDoc}}}
+    {{/javaDoc}}
+    {{#deprecated}}
+        @java.lang.Deprecated
+    {{/deprecated}}
+    public io.grpc.stub.StreamObserver<{{inputType}}> {{methodName}}(io.grpc.stub.StreamObserver<{{outputType}}> responseObserver);
+
+{{/biStreamingMethods}}
+}
+
+{{#javaDoc}}
+    {{{javaDoc}}}
+{{/javaDoc}}
+public static abstract class {{serviceName}}ImplBase implements io.grpc.BindableService, I{{serviceName}} {
+
+private I{{serviceName}} proxiedImpl;
+
+public final void setProxiedImpl(I{{serviceName}} proxiedImpl) {
+this.proxiedImpl = proxiedImpl;
+}
+
+{{#unaryMethods}}
+    {{#javaDoc}}
+        {{{javaDoc}}}
+    {{/javaDoc}}
+    {{#deprecated}}
+        @java.lang.Deprecated
+    {{/deprecated}}
+    @java.lang.Override
+    public final {{outputType}} {{methodName}}({{inputType}} request) {
+    throw new UnsupportedOperationException("No need to override this method, extend XxxImplBase and override all methods it allows.");
+    }
+
+    {{#javaDoc}}
+        {{{javaDoc}}}
+    {{/javaDoc}}
+    {{#deprecated}}
+        @java.lang.Deprecated
+    {{/deprecated}}
+    @java.lang.Override
+    public final com.google.common.util.concurrent.ListenableFuture<{{outputType}}> {{methodName}}Async({{inputType}} request) {
+    throw new UnsupportedOperationException("No need to override this method, extend XxxImplBase and override all methods it allows.");
+    }
+
+{{/unaryMethods}}
+{{#serverStreamingMethods}}
+    {{#javaDoc}}
+        {{{javaDoc}}}
+    {{/javaDoc}}
+    {{#deprecated}}
+        @java.lang.Deprecated
+    {{/deprecated}}
+    @java.lang.Override
+    public final java.util.Iterator<{{outputType}}> {{methodName}}({{inputType}} request) {
+    throw new UnsupportedOperationException("No need to override this method, extend XxxImplBase and override all methods it allows.");
+    }
+
+{{/serverStreamingMethods}}
+{{#methods}}
+    {{#isManyInput}}
+        public io.grpc.stub.StreamObserver<{{inputType}}> {{methodName}}(
+        io.grpc.stub.StreamObserver<{{outputType}}> responseObserver) {
+        return asyncUnimplementedStreamingCall({{packageName}}.{{serviceName}}Grpc.get{{methodNamePascalCase}}Method(), responseObserver);
+        }
+    {{/isManyInput}}{{^isManyInput}}
+        public void {{methodName}}({{inputType}} request,
+        io.grpc.stub.StreamObserver<{{outputType}}> responseObserver) {
+        asyncUnimplementedUnaryCall({{packageName}}.{{serviceName}}Grpc.get{{methodNamePascalCase}}Method(), responseObserver);
+        }
+    {{/isManyInput}}
+{{/methods}}
+
+@java.lang.Override public final io.grpc.ServerServiceDefinition bindService() {
+return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
+{{#methods}}
+    .addMethod(
+    {{packageName}}.{{serviceName}}Grpc.get{{methodNamePascalCase}}Method(),
+    {{grpcCallsMethodName}}(
+    new MethodHandlers<
+    {{inputType}},
+    {{outputType}}>(
+    proxiedImpl, METHODID_{{methodNameUpperUnderscore}})))
+{{/methods}}
+.build();
+}
+}
+{{#methods}}
+    private static final int METHODID_{{methodNameUpperUnderscore}} = {{methodNumber}};
+{{/methods}}
+
+private static final class MethodHandlers
+<Req, Resp> implements
+io.grpc.stub.ServerCalls.UnaryMethod
+<Req, Resp>,
+io.grpc.stub.ServerCalls.ServerStreamingMethod
+<Req, Resp>,
+io.grpc.stub.ServerCalls.ClientStreamingMethod
+<Req, Resp>,
+io.grpc.stub.ServerCalls.BidiStreamingMethod
+<Req, Resp> {
+private final I{{serviceName}} serviceImpl;
+private final int methodId;
+
+MethodHandlers(I{{serviceName}} serviceImpl, int methodId) {
+this.serviceImpl = serviceImpl;
+this.methodId = methodId;
+}
+
+@java.lang.Override
+@java.lang.SuppressWarnings("unchecked")
+public void invoke(Req request, io.grpc.stub.StreamObserver
+<Resp> responseObserver) {
+    switch (methodId) {
+    {{#methods}}
+        {{^isManyInput}}
+            case METHODID_{{methodNameUpperUnderscore}}:
+            serviceImpl.{{methodName}}(({{inputType}}) request,
+            (io.grpc.stub.StreamObserver<{{outputType}}>) responseObserver);
+            break;
+        {{/isManyInput}}
+    {{/methods}}
+    default:
+    throw new java.lang.AssertionError();
+    }
+    }
+
+    @java.lang.Override
+    @java.lang.SuppressWarnings("unchecked")
+    public io.grpc.stub.StreamObserver
+    <Req> invoke(io.grpc.stub.StreamObserver
+        <Resp> responseObserver) {
+            switch (methodId) {
+            {{#methods}}
+                {{#isManyInput}}
+                    case METHODID_{{methodNameUpperUnderscore}}:
+                    return (io.grpc.stub.StreamObserver
+                <Req>) serviceImpl.{{methodName}}(
+                    (io.grpc.stub.StreamObserver<{{outputType}}>) responseObserver);
+                {{/isManyInput}}
+            {{/methods}}
+            default:
+            throw new java.lang.AssertionError();
+            }
+            }
+            }
+
+            }

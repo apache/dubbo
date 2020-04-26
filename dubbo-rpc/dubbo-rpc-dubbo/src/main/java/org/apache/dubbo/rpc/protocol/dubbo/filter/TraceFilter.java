@@ -51,17 +51,13 @@ public class TraceFilter implements Filter {
 
     private static final String TRACE_COUNT = "trace.count";
 
-    private static final ConcurrentMap<String, Set<Channel>> tracers = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<String, Set<Channel>> TRACERS = new ConcurrentHashMap<>();
 
     public static void addTracer(Class<?> type, String method, Channel channel, int max) {
         channel.setAttribute(TRACE_MAX, max);
         channel.setAttribute(TRACE_COUNT, new AtomicInteger());
         String key = method != null && method.length() > 0 ? type.getName() + "." + method : type.getName();
-        Set<Channel> channels = tracers.get(key);
-        if (channels == null) {
-            tracers.putIfAbsent(key, new ConcurrentHashSet<>());
-            channels = tracers.get(key);
-        }
+        Set<Channel> channels = TRACERS.computeIfAbsent(key, k -> new ConcurrentHashSet<>());
         channels.add(channel);
     }
 
@@ -69,7 +65,7 @@ public class TraceFilter implements Filter {
         channel.removeAttribute(TRACE_MAX);
         channel.removeAttribute(TRACE_COUNT);
         String key = method != null && method.length() > 0 ? type.getName() + "." + method : type.getName();
-        Set<Channel> channels = tracers.get(key);
+        Set<Channel> channels = TRACERS.get(key);
         if (channels != null) {
             channels.remove(channel);
         }
@@ -80,12 +76,12 @@ public class TraceFilter implements Filter {
         long start = System.currentTimeMillis();
         Result result = invoker.invoke(invocation);
         long end = System.currentTimeMillis();
-        if (tracers.size() > 0) {
+        if (TRACERS.size() > 0) {
             String key = invoker.getInterface().getName() + "." + invocation.getMethodName();
-            Set<Channel> channels = tracers.get(key);
+            Set<Channel> channels = TRACERS.get(key);
             if (channels == null || channels.isEmpty()) {
                 key = invoker.getInterface().getName();
-                channels = tracers.get(key);
+                channels = TRACERS.get(key);
             }
             if (CollectionUtils.isNotEmpty(channels)) {
                 for (Channel channel : new ArrayList<>(channels)) {

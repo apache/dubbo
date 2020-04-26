@@ -62,7 +62,7 @@ public class Offline implements BaseCommand {
 
         Collection<ProviderModel> providerModelList = serviceRepository.getExportedServices();
         for (ProviderModel providerModel : providerModelList) {
-            if (providerModel.getServiceKey().matches(servicePattern)) {
+            if (providerModel.getServiceMetadata().getDisplayServiceKey().matches(servicePattern)) {
                 hasService = true;
                 List<ProviderModel.RegisterStatedURL> statedUrls = providerModel.getStatedUrl();
                 for (ProviderModel.RegisterStatedURL statedURL : statedUrls) {

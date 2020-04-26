@@ -29,8 +29,7 @@ limitations under the License.
     <description>The protobuf serialization module of dubbo project</description>
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
-        <!-- /compiler/build.gradle -->
-        <proto_dubbo_plugin_version>1.19.0-SNAPSHOT</proto_dubbo_plugin_version>
+        <dubbo.compiler.version>0.0.1-SNAPSHOT</dubbo.compiler.version>
     </properties>
     <dependencies>
         <dependency>
@@ -61,24 +60,17 @@ limitations under the License.
                 <groupId>org.xolstice.maven.plugins</groupId>
                 <artifactId>protobuf-maven-plugin</artifactId>
                 <version>0.5.1</version>
+                <extensions>true</extensions>
                 <configuration>
                     <protocArtifact>com.google.protobuf:protoc:3.7.1:exe:${os.detected.classifier}</protocArtifact>
-                    <pluginId>grpc-java</pluginId>
-                    <pluginArtifact>
-                        org.apache.dubbo:protoc-gen-grpc-java:${proto_dubbo_plugin_version}:exe:${os.detected.classifier}
-                    </pluginArtifact>
                     <outputDirectory>build/generated/source/proto/main/java</outputDirectory>
                     <clearOutputDirectory>false</clearOutputDirectory>
-                    <!-- supports 'dubbo' and 'grpc' -->
-                    <pluginParameter>dubbo</pluginParameter>
                 </configuration>
                 <executions>
                     <execution>
                         <goals>
                             <goal>compile</goal>
-                            <goal>compile-custom</goal>
                             <goal>test-compile</goal>
-                            <goal>test-compile-custom</goal>
                         </goals>
                     </execution>
                 </executions>
