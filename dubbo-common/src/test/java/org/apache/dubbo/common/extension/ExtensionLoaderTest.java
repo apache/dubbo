@@ -17,6 +17,10 @@
 package org.apache.dubbo.common.extension;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.convert.Converter;
+import org.apache.dubbo.common.convert.StringToBooleanConverter;
+import org.apache.dubbo.common.convert.StringToDoubleConverter;
+import org.apache.dubbo.common.convert.StringToIntegerConverter;
 import org.apache.dubbo.common.extension.activate.ActivateExt1;
 import org.apache.dubbo.common.extension.activate.impl.ActivateExt1Impl1;
 import org.apache.dubbo.common.extension.activate.impl.GroupActivateExtImpl;
@@ -25,6 +29,9 @@ import org.apache.dubbo.common.extension.activate.impl.OldActivateExt1Impl3;
 import org.apache.dubbo.common.extension.activate.impl.OrderActivateExtImpl1;
 import org.apache.dubbo.common.extension.activate.impl.OrderActivateExtImpl2;
 import org.apache.dubbo.common.extension.activate.impl.ValueActivateExtImpl;
+import org.apache.dubbo.common.extension.convert.String2BooleanConverter;
+import org.apache.dubbo.common.extension.convert.String2DoubleConverter;
+import org.apache.dubbo.common.extension.convert.String2IntegerConverter;
 import org.apache.dubbo.common.extension.ext1.SimpleExt;
 import org.apache.dubbo.common.extension.ext1.impl.SimpleExtImpl1;
 import org.apache.dubbo.common.extension.ext1.impl.SimpleExtImpl2;
@@ -465,5 +472,29 @@ public class ExtensionLoaderTest {
         ExtensionLoader<InjectExt> loader = getExtensionLoader(InjectExt.class);
         assertEquals(1, loader.getSupportedExtensions().size());
         assertEquals(Collections.singleton("injection"), loader.getSupportedExtensions());
+    }
+
+    @Test
+    public void testOverridden() {
+        ExtensionLoader<Converter> loader = getExtensionLoader(Converter.class);
+
+        Converter converter = loader.getExtension("string-to-boolean");
+        assertEquals(String2BooleanConverter.class, converter.getClass());
+
+        converter = loader.getExtension("string-to-double");
+        assertEquals(String2DoubleConverter.class, converter.getClass());
+
+        converter = loader.getExtension("string-to-integer");
+        assertEquals(String2IntegerConverter.class, converter.getClass());
+
+        assertEquals("string-to-boolean", loader.getExtensionName(String2BooleanConverter.class));
+        assertEquals("string-to-boolean", loader.getExtensionName(StringToBooleanConverter.class));
+
+        assertEquals("string-to-double", loader.getExtensionName(String2DoubleConverter.class));
+        assertEquals("string-to-double", loader.getExtensionName(StringToDoubleConverter.class));
+
+        assertEquals("string-to-integer", loader.getExtensionName(String2IntegerConverter.class));
+        assertEquals("string-to-integer", loader.getExtensionName(StringToIntegerConverter.class));
+
     }
 }
