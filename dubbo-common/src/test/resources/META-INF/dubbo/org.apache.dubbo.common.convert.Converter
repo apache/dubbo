@@ -1,4 +1,3 @@
 # org.apache.dubbo.common.convert.Converter
-string-to-boolean=org.apache.dubbo.common.extension.convert.String2BooleanConverter
 string-to-double=org.apache.dubbo.common.extension.convert.String2DoubleConverter
 string-to-integer=org.apache.dubbo.common.extension.convert.String2IntegerConverter

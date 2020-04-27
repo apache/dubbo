@@ -56,6 +56,7 @@ import org.apache.dubbo.common.extension.ext9_empty.Ext9Empty;
 import org.apache.dubbo.common.extension.ext9_empty.impl.Ext9EmptyImpl;
 import org.apache.dubbo.common.extension.injection.InjectExt;
 import org.apache.dubbo.common.extension.injection.impl.InjectExtImpl;
+import org.apache.dubbo.common.lang.Prioritized;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -67,6 +68,7 @@ import java.util.Set;
 
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
+import static org.apache.dubbo.common.extension.ExtensionLoader.getLoadingStrategies;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -474,6 +476,9 @@ public class ExtensionLoaderTest {
         assertEquals(Collections.singleton("injection"), loader.getSupportedExtensions());
     }
 
+    /**
+     * @since 2.7.7
+     */
     @Test
     public void testOverridden() {
         ExtensionLoader<Converter> loader = getExtensionLoader(Converter.class);
@@ -495,6 +500,34 @@ public class ExtensionLoaderTest {
 
         assertEquals("string-to-integer", loader.getExtensionName(String2IntegerConverter.class));
         assertEquals("string-to-integer", loader.getExtensionName(StringToIntegerConverter.class));
+    }
 
+    /**
+     * @since 2.7.7
+     */
+    @Test
+    public void testGetLoadingStrategies() {
+        List<LoadingStrategy> strategies = getLoadingStrategies();
+
+        assertEquals(4, strategies.size());
+
+        int i = 0;
+
+        LoadingStrategy loadingStrategy = strategies.get(i++);
+        assertEquals(DubboInternalLoadingStrategy.class, loadingStrategy.getClass());
+        assertEquals(Prioritized.MAX_PRIORITY, loadingStrategy.getPriority());
+
+        loadingStrategy = strategies.get(i++);
+        assertEquals(DubboExternalLoadingStrategy.class, loadingStrategy.getClass());
+        assertEquals(Prioritized.MAX_PRIORITY + 1, loadingStrategy.getPriority());
+
+
+        loadingStrategy = strategies.get(i++);
+        assertEquals(DubboLoadingStrategy.class, loadingStrategy.getClass());
+        assertEquals(Prioritized.NORMAL_PRIORITY, loadingStrategy.getPriority());
+
+        loadingStrategy = strategies.get(i++);
+        assertEquals(ServicesLoadingStrategy.class, loadingStrategy.getClass());
+        assertEquals(Prioritized.MIN_PRIORITY, loadingStrategy.getPriority());
     }
 }

@@ -54,6 +54,8 @@ import java.util.regex.Pattern;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.sort;
+import static java.util.ServiceLoader.load;
+import static java.util.stream.StreamSupport.stream;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOVE_VALUE_PREFIX;
@@ -105,10 +107,36 @@ public class ExtensionLoader<T> {
 
     private Map<String, IllegalStateException> exceptions = new ConcurrentHashMap<>();
 
-    private static Iterable<LoadingStrategy> strategies = ServiceLoader.load(LoadingStrategy.class);
+    private static volatile LoadingStrategy[] strategies = loadLoadingStrategies();
 
     public static void setLoadingStrategies(LoadingStrategy... strategies) {
-        ExtensionLoader.strategies = asList(strategies);
+        if (ArrayUtils.isNotEmpty(strategies)) {
+            ExtensionLoader.strategies = strategies;
+        }
+    }
+
+    /**
+     * Load all {@link Prioritized prioritized} {@link LoadingStrategy Loading Strategies} via {@link ServiceLoader}
+     *
+     * @return non-null
+     * @since 2.7.7
+     */
+    private static LoadingStrategy[] loadLoadingStrategies() {
+        return stream(load(LoadingStrategy.class).spliterator(), false)
+                .sorted()
+                .toArray(LoadingStrategy[]::new);
+    }
+
+    /**
+     * Get all {@link LoadingStrategy Loading Strategies}
+     *
+     * @return non-null
+     * @see LoadingStrategy
+     * @see Prioritized
+     * @since 2.7.7
+     */
+    public static List<LoadingStrategy> getLoadingStrategies() {
+        return asList(strategies);
     }
 
     private ExtensionLoader(Class<?> type) {

@@ -17,15 +17,15 @@
 package org.apache.dubbo.common.extension;
 
 /**
- * Dubbo {@link LoadingStrategy}
+ * Dubbo external {@link LoadingStrategy} for testing
  *
  * @since 2.7.7
  */
-public class DubboLoadingStrategy implements LoadingStrategy {
+public class DubboExternalLoadingStrategy implements LoadingStrategy {
 
     @Override
     public String directory() {
-        return "META-INF/dubbo/";
+        return "META-INF/dubbo/external/";
     }
 
     @Override
@@ -35,8 +35,6 @@ public class DubboLoadingStrategy implements LoadingStrategy {
 
     @Override
     public int getPriority() {
-        return NORMAL_PRIORITY;
+        return MAX_PRIORITY + 1;
     }
-
-
 }
