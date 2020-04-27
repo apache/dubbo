@@ -35,4 +35,9 @@ public class DefaultHelloService implements HelloService {
         return "Greeting, " + name;
     }
 
+    @Override
+    public String retry() {
+        return "";
+    }
+
 }

@@ -21,6 +21,7 @@ import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.api.HelloService;
+import org.apache.dubbo.config.spring.impl.HelloServiceImpl;
 import org.apache.dubbo.config.utils.ReferenceConfigCache;
 
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -101,7 +102,7 @@ public class ReferenceAnnotationBeanPostProcessorTest {
     private HelloService helloServiceImpl;
 
     // #4 ReferenceBean (Field Injection #2)
-    @Reference(id = "helloService", methods = @Method(name = "sayHello", timeout = 100))
+    @Reference(id = "helloService", methods = @Method(name = "sayHello", timeout = 100, retries = 5))
     private HelloService helloService;
 
     // #5 ReferenceBean (Field Injection #3)
@@ -131,7 +132,8 @@ public class ReferenceAnnotationBeanPostProcessorTest {
         Assert.assertEquals("Greeting, Mercy", defaultHelloService.sayHello("Mercy"));
         Assert.assertEquals("Hello, Mercy", helloServiceImpl.sayHello("Mercy"));
         Assert.assertEquals("Greeting, Mercy", helloService.sayHello("Mercy"));
-
+        helloService.retry();
+        Assert.assertEquals(HelloServiceImpl.retries.get(), 5);
 
         Assert.assertEquals(expectedResult, testBean.getDemoServiceFromAncestor().sayName("Mercy"));
         Assert.assertEquals(expectedResult, testBean.getDemoServiceFromParent().sayName("Mercy"));

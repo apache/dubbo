@@ -19,4 +19,5 @@ package org.apache.dubbo.config.spring.api;
 
 public interface HelloService {
     String sayHello(String name);
+    String retry();
 }

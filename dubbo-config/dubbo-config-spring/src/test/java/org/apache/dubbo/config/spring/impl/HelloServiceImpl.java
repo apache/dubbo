@@ -18,9 +18,24 @@ package org.apache.dubbo.config.spring.impl;
 
 import org.apache.dubbo.config.spring.api.HelloService;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class HelloServiceImpl implements HelloService {
+
+    public static AtomicInteger retries = new AtomicInteger(0);
 
     public String sayHello(String name) {
         return "Hello, " + name;
+    }
+
+    @Override
+    public String retry() {
+        try {
+            retries.incrementAndGet();
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return "success";
     }
 }

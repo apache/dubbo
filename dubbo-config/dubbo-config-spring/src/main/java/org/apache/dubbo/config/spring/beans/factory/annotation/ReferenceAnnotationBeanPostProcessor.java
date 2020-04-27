@@ -33,6 +33,7 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationListener;
 import org.springframework.core.annotation.AnnotationAttributes;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -47,6 +48,8 @@ import static com.alibaba.spring.util.AnnotationUtils.getAttribute;
 import static com.alibaba.spring.util.AnnotationUtils.getAttributes;
 import static java.lang.reflect.Proxy.newProxyInstance;
 import static org.apache.dubbo.config.spring.beans.factory.annotation.ServiceBeanNameBuilder.create;
+import static org.springframework.core.annotation.AnnotatedElementUtils.findMergedAnnotation;
+import static org.springframework.core.annotation.AnnotationUtils.getAnnotationAttributes;
 import static org.springframework.util.StringUtils.hasText;
 
 /**
@@ -125,6 +128,9 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
         /**
          * The name of bean that annotated Dubbo's {@link Service @Service} in local Spring {@link ApplicationContext}
          */
+        Annotation reference = findReferenceAnnotation(injectedType);
+        AnnotationAttributes referenceAnnotationAttributes = getAnnotationAttributes(reference, false, false);
+        attributes.putAll(referenceAnnotationAttributes);
         String referencedBeanName = buildReferencedBeanName(attributes, injectedType);
 
         /**
@@ -141,6 +147,14 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
         cacheInjectedReferenceBean(referenceBean, injectedElement);
 
         return getOrCreateProxy(referencedBeanName, referenceBean, localServiceBean, injectedType);
+    }
+
+    private Annotation findReferenceAnnotation(Class<?> beanClass) {
+        Annotation reference = findMergedAnnotation(beanClass, Reference.class);
+        if (reference == null) {
+            reference = findMergedAnnotation(beanClass, com.alibaba.dubbo.config.annotation.Reference.class);
+        }
+        return reference;
     }
 
     /**

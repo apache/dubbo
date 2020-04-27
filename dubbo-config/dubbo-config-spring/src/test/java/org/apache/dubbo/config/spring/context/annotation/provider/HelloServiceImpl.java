@@ -20,6 +20,8 @@ import org.apache.dubbo.config.spring.api.HelloService;
 
 import com.alibaba.dubbo.config.annotation.Service;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * {@link HelloService} Implementation just annotating Dubbo's {@link Service}
  *
@@ -31,5 +33,10 @@ public class HelloServiceImpl implements HelloService {
     @Override
     public String sayHello(String name) {
         return "Hello, " + name;
+    }
+
+    @Override
+    public String retry() {
+        return "";
     }
 }
