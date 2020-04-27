@@ -17,16 +17,12 @@
 package org.apache.dubbo.common.extension.convert;
 
 import org.apache.dubbo.common.convert.Converter;
+import org.apache.dubbo.common.convert.StringToIntegerConverter;
 
 /**
  * A {@link Converter} implementation of {@linkg String} to {@link Integer}
  *
  * @since 2.7.7
  */
-public class String2IntegerConverter implements Converter<String, Boolean> {
-
-    @Override
-    public Boolean convert(String source) {
-        return null;
-    }
+public class String2IntegerConverter extends StringToIntegerConverter {
 }
