@@ -54,9 +54,4 @@ public class ZoneAwareClusterInterceptor implements ClusterInterceptor {
             invocation.setAttachment(REGISTRY_ZONE_FORCE, force);
         }
     }
-
-    @Override
-    public void after(AbstractClusterInvoker<?> clusterInvoker, Invocation invocation) {
-
-    }
 }

@@ -29,14 +29,30 @@ import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
 @SPI
 public interface ClusterInterceptor {
 
-    void before(AbstractClusterInvoker<?> clusterInvoker, Invocation invocation);
+    /**
+     * action before invoke
+     *
+     * @param clusterInvoker
+     * @param invocation
+     */
+    default void before(AbstractClusterInvoker<?> clusterInvoker, Invocation invocation) {
+    }
 
-    void after(AbstractClusterInvoker<?> clusterInvoker, Invocation invocation);
+    /**
+     * action after invoke
+     *
+     * @param clusterInvoker
+     * @param invocation
+     */
+    default void after(AbstractClusterInvoker<?> clusterInvoker, Invocation invocation) {
+    }
 
     /**
      * Does not need to override this method, override {@link #before(AbstractClusterInvoker, Invocation)}
      * and {@link #after(AbstractClusterInvoker, Invocation)}, methods to add your own logic expected to be
      * executed before and after invoke.
+     * <p>
+     * Override this method instead of override before() and after() if you want more control on invoke() method.
      *
      * @param clusterInvoker
      * @param invocation
@@ -49,8 +65,29 @@ public interface ClusterInterceptor {
 
     interface Listener {
 
-        void onMessage(Result appResponse, AbstractClusterInvoker<?> clusterInvoker, Invocation invocation);
+        /**
+         * Will be called when RPC returns, with normal result or exception.
+         *
+         * @param appResponse,   normal result or exception from provider.
+         * @param clusterInvoker
+         * @param invocation
+         */
+        default void onMessage(Result appResponse, AbstractClusterInvoker<?> clusterInvoker, Invocation invocation) {
 
-        void onError(Throwable t, AbstractClusterInvoker<?> clusterInvoker, Invocation invocation);
+        }
+
+        /**
+         * Called when Dubbo framework throws exception.
+         * Just add the action you want to do with the exception, no need to throw the exception again because it
+         * will be thrown automatically.
+         *
+         * @param t
+         * @param clusterInvoker
+         * @param invocation
+         * @return
+         */
+        default Throwable onError(Throwable t, AbstractClusterInvoker<?> clusterInvoker, Invocation invocation) {
+            return t;
+        }
     }
 }
