@@ -16,25 +16,28 @@
  */
 package org.apache.dubbo.config.annotation;
 
+
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_LOADBALANCE;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_RETRIES;
+
 /**
- * Reference
- * <p>
+ * Class-level annotation used for declaring Dubbo service
  *
- * @see DubboReference
- * @since 2.7.0
- * @deprecated Recommend {@link DubboReference} as the substitute
+ * @since 2.7.7
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD, ElementType.METHOD, ElementType.ANNOTATION_TYPE})
-@Deprecated
-public @interface Reference {
+@Target({ElementType.TYPE})
+@Inherited
+public @interface DubboService {
+
     /**
      * Interface class, default value is void.class
      */
@@ -56,66 +59,65 @@ public @interface Reference {
     String group() default "";
 
     /**
-     * Service target URL for direct invocation, if this is specified, then registry center takes no effect.
+     * Service path, default value is empty string
      */
-    String url() default "";
+    String path() default "";
 
     /**
-     * Client transport type, default value is "netty"
+     * Whether to export service, default value is true
      */
-    String client() default "";
+    boolean export() default true;
 
     /**
-     * Whether to enable generic invocation, default value is false
+     * Service token, default value is false
      */
-    boolean generic() default false;
+    String token() default "";
 
     /**
-     * When enable, prefer to call local service in the same JVM if it's present, default value is true
+     * Whether the service is deprecated, default value is false
      */
-    boolean injvm() default true;
+    boolean deprecated() default false;
 
     /**
-     * Check if service provider is available during boot up, default value is true
+     * Whether the service is dynamic, default value is true
      */
-    boolean check() default true;
+    boolean dynamic() default true;
 
     /**
-     * Whether eager initialize the reference bean when all properties are set, default value is false
+     * Access log for the service, default value is ""
      */
-    boolean init() default false;
+    String accesslog() default "";
 
     /**
-     * Whether to make connection when the client is created, the default value is false
+     * Maximum concurrent executes for the service, default value is 0 - no limits
      */
-    boolean lazy() default false;
+    int executes() default 0;
 
     /**
-     * Export an stub service for event dispatch, default value is false.
-     * <p>
-     * see org.apache.dubbo.rpc.Constants#STUB_EVENT_METHODS_KEY
+     * Whether to register the service to register center, default value is true
      */
-    boolean stubevent() default false;
+    boolean register() default true;
 
     /**
-     * Whether to reconnect if connection is lost, if not specify, reconnect is enabled by default, and the interval
-     * for retry connecting is 2000 ms
-     * <p>
-     * see org.apache.dubbo.remoting.Constants#DEFAULT_RECONNECT_PERIOD
+     * Service weight value, default value is 0
      */
-    String reconnect() default "";
+    int weight() default 0;
 
     /**
-     * Whether to stick to the same node in the cluster, the default value is false
-     * <p>
-     * see Constants#DEFAULT_CLUSTER_STICKY
+     * Service doc, default value is ""
      */
-    boolean sticky() default false;
+    String document() default "";
 
     /**
-     * How the proxy is generated, legal values include: jdk, javassist
+     * Delay time for service registration, default value is 0
      */
-    String proxy() default "";
+    int delay() default 0;
+
+    /**
+     * @see DubboService#stub()
+     * @deprecated
+     */
+    String local() default "";
 
     /**
      * Service stub name, use interface name + Local if not set
@@ -128,6 +130,11 @@ public @interface Reference {
     String cluster() default "";
 
     /**
+     * How the proxy is generated, legal values include: jdk, javassist
+     */
+    String proxy() default "";
+
+    /**
      * Maximum connections service provider can accept, default value is 0 - connection is shared
      */
     int connections() default 0;
@@ -137,7 +144,7 @@ public @interface Reference {
      * <p>
      * see org.apache.dubbo.rpc.Constants#DEFAULT_CALLBACK_INSTANCES
      */
-    int callbacks() default 0;
+    int callbacks() default org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CALLBACK_INSTANCES;
 
     /**
      * Callback method name when connected, default value is empty string
@@ -161,17 +168,17 @@ public @interface Reference {
 
     /**
      * Service invocation retry times
-     * <p>
-     * see Constants#DEFAULT_RETRIES
+     *
+     * @see org.apache.dubbo.common.constants.CommonConstants#DEFAULT_RETRIES
      */
-    int retries() default 2;
+    int retries() default DEFAULT_RETRIES;
 
     /**
      * Load balance strategy, legal values include: random, roundrobin, leastactive
-     * <p>
-     * see Constants#DEFAULT_LOADBALANCE
+     *
+     * @see org.apache.dubbo.common.constants.CommonConstants#DEFAULT_LOADBALANCE
      */
-    String loadbalance() default "";
+    String loadbalance() default DEFAULT_LOADBALANCE;
 
     /**
      * Whether to enable async invocation, default value is false
@@ -210,15 +217,15 @@ public @interface Reference {
 
     /**
      * Filters for service invocation
-     * <p>
-     * see Filter
+     *
+     * @see Filter
      */
     String[] filter() default {};
 
     /**
      * Listeners for service exporting and unexporting
-     * <p>
-     * see ExporterListener
+     *
+     * @see ExporterListener
      */
     String[] listener() default {};
 
@@ -228,37 +235,34 @@ public @interface Reference {
     String[] parameters() default {};
 
     /**
-     * Application associated name
+     * Application spring bean name
      */
     String application() default "";
 
     /**
-     * Module associated name
+     * Module spring bean name
      */
     String module() default "";
 
     /**
-     * Consumer associated name
+     * Provider spring bean name
      */
-    String consumer() default "";
+    String provider() default "";
 
     /**
-     * Monitor associated name
+     * Protocol spring bean names
+     */
+    String[] protocol() default {};
+
+    /**
+     * Monitor spring bean name
      */
     String monitor() default "";
 
     /**
-     * Registry associated name
+     * Registry spring bean name
      */
     String[] registry() default {};
-
-    /**
-     * The communication protocol of Dubbo Service
-     *
-     * @return the default value is ""
-     * @since 2.6.6
-     */
-    String protocol() default "";
 
     /**
      * Service tag name
@@ -271,12 +275,4 @@ public @interface Reference {
      * @return
      */
     Method[] methods() default {};
-
-    /**
-     * The id
-     *
-     * @return default value is empty
-     * @since 2.7.3
-     */
-    String id() default "";
 }

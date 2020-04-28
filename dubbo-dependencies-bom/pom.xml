@@ -110,6 +110,7 @@
         <thrift_version>0.12.0</thrift_version>
         <hessian_version>4.0.38</hessian_version>
         <protobuf-java_version>3.6.0</protobuf-java_version>
+        <javax_annotation-api_version>1.3.2</javax_annotation-api_version>
         <servlet_version>3.1.0</servlet_version>
         <jetty_version>9.4.11.v20180605</jetty_version>
         <validation_version>1.1.0.Final</validation_version>
@@ -328,6 +329,13 @@
                 <artifactId>protobuf-java-util</artifactId>
                 <version>${protobuf-java_version}</version>
             </dependency>
+            <!-- Common Annotations API -->
+            <dependency>
+                <groupId>javax.annotation</groupId>
+                <artifactId>javax.annotation-api</artifactId>
+                <version>${javax_annotation-api_version}</version>
+            </dependency>
+            <!-- Servlet API -->
             <dependency>
                 <groupId>javax.servlet</groupId>
                 <artifactId>javax.servlet-api</artifactId>
