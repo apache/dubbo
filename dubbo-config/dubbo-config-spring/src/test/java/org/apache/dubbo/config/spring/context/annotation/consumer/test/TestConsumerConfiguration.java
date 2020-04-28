@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.spring.context.annotation.consumer.test;
 
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
@@ -63,7 +64,7 @@ public class TestConsumerConfiguration {
 
     public static abstract class Ancestor {
 
-        @Reference(version = "2.5.7", url = remoteURL, application = "dubbo-demo-application")
+        @DubboReference(version = "2.5.7", url = remoteURL, application = "dubbo-demo-application")
         private DemoService demoServiceFromAncestor;
 
         public DemoService getDemoServiceFromAncestor() {
@@ -83,7 +84,7 @@ public class TestConsumerConfiguration {
             return demoServiceFromParent;
         }
 
-        @Reference(version = "2.5.7", url = remoteURL, application = "dubbo-demo-application")
+        @com.alibaba.dubbo.config.annotation.Reference(version = "2.5.7", url = remoteURL, application = "dubbo-demo-application")
         public void setDemoServiceFromParent(DemoService demoServiceFromParent) {
             this.demoServiceFromParent = demoServiceFromParent;
         }

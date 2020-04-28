@@ -20,6 +20,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.config.MethodConfig;
+import org.apache.dubbo.config.annotation.DubboService;
 import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.ServiceBean;
@@ -64,6 +65,7 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import static com.alibaba.spring.util.AnnotatedBeanDefinitionRegistryUtils.registerBeans;
@@ -88,9 +90,19 @@ import static org.springframework.util.ClassUtils.resolveClassName;
 public class ServiceClassPostProcessor implements BeanDefinitionRegistryPostProcessor, EnvironmentAware,
         ResourceLoaderAware, BeanClassLoaderAware {
 
+    private final static List<Class<? extends Annotation>> serviceAnnotationTypes = asList(
+            // @since 2.7.7 Add the @DubboService , the issue : https://github.com/apache/dubbo/issues/6007
+            DubboService.class,
+            // @since 2.7.0 the substitute @com.alibaba.dubbo.config.annotation.Service
+            Service.class,
+            // @since 2.7.3 Add the compatibility for legacy Dubbo's @Service , the issue : https://github.com/apache/dubbo/issues/4330
+            com.alibaba.dubbo.config.annotation.Service.class
+    );
+
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     protected final Set<String> packagesToScan;
+
 
     private Environment environment;
 
@@ -143,15 +155,10 @@ public class ServiceClassPostProcessor implements BeanDefinitionRegistryPostProc
 
         scanner.setBeanNameGenerator(beanNameGenerator);
 
-        scanner.addIncludeFilter(new AnnotationTypeFilter(Service.class));
-
-        /**
-         * Add the compatibility for legacy Dubbo's @Service
-         *
-         * The issue : https://github.com/apache/dubbo/issues/4330
-         * @since 2.7.3
-         */
-        scanner.addIncludeFilter(new AnnotationTypeFilter(com.alibaba.dubbo.config.annotation.Service.class));
+        // refactor @since 2.7.7
+        serviceAnnotationTypes.forEach(annotationType -> {
+            scanner.addIncludeFilter(new AnnotationTypeFilter(annotationType));
+        });
 
         for (String packageToScan : packagesToScan) {
 
@@ -316,11 +323,12 @@ public class ServiceClassPostProcessor implements BeanDefinitionRegistryPostProc
      * @since 2.7.3
      */
     private Annotation findServiceAnnotation(Class<?> beanClass) {
-        Annotation service = findMergedAnnotation(beanClass, Service.class);
-        if (service == null) {
-            service = findMergedAnnotation(beanClass, com.alibaba.dubbo.config.annotation.Service.class);
-        }
-        return service;
+        return serviceAnnotationTypes
+                .stream()
+                .map(annotationType -> findMergedAnnotation(beanClass, annotationType))
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse(null);
     }
 
     /**
