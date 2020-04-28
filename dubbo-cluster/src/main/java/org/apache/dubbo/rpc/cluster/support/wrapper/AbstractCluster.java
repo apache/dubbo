@@ -45,7 +45,7 @@ public abstract class AbstractCluster implements Cluster {
                 last = new InterceptorInvokerNode<>(clusterInvoker, interceptor, next);
             }
         }
-        return new CallbackRegistrationNode(last, interceptors);
+        return new CallbackRegistrationNode<T>(last, interceptors);
     }
 
     @Override
@@ -55,7 +55,7 @@ public abstract class AbstractCluster implements Cluster {
 
     protected abstract <T> AbstractClusterInvoker<T> doJoin(Directory<T> directory) throws RpcException;
 
-    protected class InterceptorInvokerNode<T> extends AbstractClusterInvoker<T> {
+    static class InterceptorInvokerNode<T> extends AbstractClusterInvoker<T> {
 
         private AbstractClusterInvoker<T> clusterInvoker;
         private ClusterInterceptor interceptor;
