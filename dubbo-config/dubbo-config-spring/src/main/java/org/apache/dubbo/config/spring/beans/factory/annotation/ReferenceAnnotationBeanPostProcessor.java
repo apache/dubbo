@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.ReferenceBean;
@@ -53,6 +54,9 @@ import static org.springframework.util.StringUtils.hasText;
  * {@link org.springframework.beans.factory.config.BeanPostProcessor} implementation
  * that Consumer service {@link Reference} annotated fields
  *
+ * @see DubboReference
+ * @see Reference
+ * @see com.alibaba.dubbo.config.annotation.Reference
  * @since 2.5.7
  */
 public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBeanPostProcessor implements
@@ -83,10 +87,12 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
     private ApplicationContext applicationContext;
 
     /**
-     * To support the legacy annotation that is @com.alibaba.dubbo.config.annotation.Reference since 2.7.3
+     * {@link com.alibaba.dubbo.config.annotation.Reference @com.alibaba.dubbo.config.annotation.Reference} has been supported since 2.7.3
+     * <p>
+     * {@link DubboReference @DubboReference} has been supported since 2.7.7
      */
     public ReferenceAnnotationBeanPostProcessor() {
-        super(Reference.class, com.alibaba.dubbo.config.annotation.Reference.class);
+        super(DubboReference.class, Reference.class, com.alibaba.dubbo.config.annotation.Reference.class);
     }
 
     /**

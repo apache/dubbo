@@ -30,7 +30,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_RETRIES;
 /**
  * Service annotation
  *
- * @export
+ * @see DubboService
+ * @since 2.7.0
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
@@ -141,7 +142,7 @@ public @interface Service {
 
     /**
      * The callback instance limit peer connection
-     *
+     * <p>
      * see org.apache.dubbo.rpc.Constants#DEFAULT_CALLBACK_INSTANCES
      */
     int callbacks() default org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CALLBACK_INSTANCES;
@@ -271,6 +272,7 @@ public @interface Service {
 
     /**
      * methods support
+     *
      * @return
      */
     Method[] methods() default {};
