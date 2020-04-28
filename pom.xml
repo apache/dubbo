@@ -279,6 +279,7 @@
                                         **/org/apache/dubbo/common/timer/Timeout.java,
                                         **/org/apache/dubbo/common/timer/HashedWheelTimer.java,
                                         **/org/apache/dubbo/common/utils/CIDRUtils.java,
+                                        **/org/apache/dubbo/common/utils/Utf8Utils.java,
                                         **/org/apache/dubbo/common/serialize/protobuf/support/wrapper/MapValue.java,
                                         **/org/apache/dubbo/common/serialize/protobuf/support/wrapper/ThrowablePB.java,
                                     </excludes>

@@ -120,9 +120,8 @@ public class EnableDubboConfigTest {
         Map<String, ProtocolConfig> protocolConfigs = context.getBeansOfType(ProtocolConfig.class);
 
         for (Map.Entry<String, ProtocolConfig> entry : protocolConfigs.entrySet()) {
-            String beanName = entry.getKey();
             ProtocolConfig protocol = entry.getValue();
-            Assert.assertEquals(beanName, protocol.getName());
+            Assert.assertEquals(protocol, context.getBean(protocol.getName(), ProtocolConfig.class));
         }
 
         // asserts aliases

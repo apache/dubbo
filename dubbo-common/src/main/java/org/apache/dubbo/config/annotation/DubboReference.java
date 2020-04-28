@@ -23,18 +23,15 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Reference
- * <p>
+ * An annotation used for referencing a Dubbo service
  *
- * @see DubboReference
- * @since 2.7.0
- * @deprecated Recommend {@link DubboReference} as the substitute
+ * @since 2.7.7
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD, ElementType.METHOD, ElementType.ANNOTATION_TYPE})
-@Deprecated
-public @interface Reference {
+public @interface DubboReference {
+
     /**
      * Interface class, default value is void.class
      */
