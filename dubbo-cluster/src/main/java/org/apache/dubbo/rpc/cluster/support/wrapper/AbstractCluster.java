@@ -90,13 +90,16 @@ public abstract class AbstractCluster implements Cluster {
             try {
                 interceptor.before(next, invocation);
                 asyncResult = interceptor.intercept(next, invocation);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 // onError callback
                 if (interceptor instanceof ClusterInterceptor.Listener) {
                     ClusterInterceptor.Listener listener = (ClusterInterceptor.Listener) interceptor;
-                    listener.onError(e, clusterInvoker, invocation);
+                    throw listener.onError(e, clusterInvoker, invocation);
                 }
-                throw e;
+                if (e instanceof RpcException) {
+                    throw (RpcException) e;
+                }
+                throw new RpcException(e);
             } finally {
                 interceptor.after(next, invocation);
             }

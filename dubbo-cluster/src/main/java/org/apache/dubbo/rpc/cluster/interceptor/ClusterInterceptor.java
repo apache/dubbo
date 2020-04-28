@@ -86,8 +86,18 @@ public interface ClusterInterceptor {
          * @param invocation
          * @return
          */
-        default Throwable onError(Throwable t, AbstractClusterInvoker<?> clusterInvoker, Invocation invocation) {
-            return t;
+        default RpcException onError(Throwable t, AbstractClusterInvoker<?> clusterInvoker, Invocation invocation) {
+            if (t instanceof RpcException) {
+                return (RpcException) t;
+            }
+            return new RpcException(t);
+        }
+
+        static RpcException toRpcException(Throwable t) {
+            if (t instanceof RpcException) {
+                return (RpcException) t;
+            }
+            return new RpcException(t);
         }
     }
 }

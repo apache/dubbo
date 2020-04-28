@@ -78,6 +78,11 @@ public /**final**/ class RpcException extends RuntimeException {
         this.code = code;
     }
 
+    public RpcException(String errorMsg, Throwable t, boolean stackFill) {
+        super(errorMsg, t, false, stackFill);
+        this.code = UNKNOWN_EXCEPTION;
+    }
+
     public int getCode() {
         return code;
     }
