@@ -24,13 +24,16 @@ import java.lang.annotation.Target;
 
 /**
  * Reference
+ * <p>
  *
  * @see DubboReference
  * @since 2.7.0
+ * @deprecated Recommend {@link DubboReference} as the substitute
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD, ElementType.METHOD, ElementType.ANNOTATION_TYPE})
+@Deprecated
 public @interface Reference {
     /**
      * Interface class, default value is void.class

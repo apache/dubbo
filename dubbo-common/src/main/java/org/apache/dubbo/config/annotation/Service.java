@@ -32,11 +32,13 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_RETRIES;
  *
  * @see DubboService
  * @since 2.7.0
+ * @deprecated Recommend {@link DubboService} as the substitute
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 @Inherited
+@Deprecated
 public @interface Service {
 
     /**
