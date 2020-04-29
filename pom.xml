@@ -150,6 +150,7 @@
         <module>dubbo-configcenter</module>
         <module>dubbo-dependencies</module>
         <module>dubbo-metadata</module>
+        <module>dubbo-build-tools</module>
     </modules>
 
     <dependencyManagement>
@@ -253,6 +254,11 @@
                                 <artifactId>checkstyle</artifactId>
                                 <version>8.9</version>
                             </dependency>
+                            <dependency>
+                                <groupId>org.apache.dubbo</groupId>
+                                <artifactId>dubbo-build-tools</artifactId>
+                                <version>1.0.0</version>
+                            </dependency>
                         </dependencies>
                         <executions>
                             <execution>
@@ -264,7 +270,19 @@
                                     <encoding>UTF-8</encoding>
                                     <consoleOutput>true</consoleOutput>
                                     <failOnViolation>true</failOnViolation>
-                                    <excludes>**/JSONWriter.java</excludes>
+                                    <excludes>
+                                        **/JSONWriter.java,
+                                        **/org/apache/dubbo/common/threadlocal/InternalThreadLocal.java,
+                                        **/org/apache/dubbo/common/threadlocal/InternalThreadLocalMap.java,
+                                        **/org/apache/dubbo/common/timer/TimerTask.java,
+                                        **/org/apache/dubbo/common/timer/Timer.java,
+                                        **/org/apache/dubbo/common/timer/Timeout.java,
+                                        **/org/apache/dubbo/common/timer/HashedWheelTimer.java,
+                                        **/org/apache/dubbo/common/utils/CIDRUtils.java,
+                                        **/org/apache/dubbo/common/utils/Utf8Utils.java,
+                                        **/org/apache/dubbo/common/serialize/protobuf/support/wrapper/MapValue.java,
+                                        **/org/apache/dubbo/common/serialize/protobuf/support/wrapper/ThrowablePB.java,
+                                    </excludes>
                                 </configuration>
                                 <goals>
                                     <goal>check</goal>

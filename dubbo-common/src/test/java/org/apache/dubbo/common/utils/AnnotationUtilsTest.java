@@ -17,6 +17,7 @@
 package org.apache.dubbo.common.utils;
 
 import org.apache.dubbo.common.extension.Adaptive;
+import org.apache.dubbo.config.annotation.DubboService;
 import org.apache.dubbo.config.annotation.Service;
 
 import org.junit.jupiter.api.Test;
@@ -148,8 +149,9 @@ public class AnnotationUtilsTest {
         assertEquals(Inherited.class, metaAnnotations.get(0).annotationType());
 
         metaAnnotations = getMetaAnnotations(Service.class);
-        assertEquals(1, metaAnnotations.size());
+        assertEquals(2, metaAnnotations.size());
         assertEquals(Inherited.class, metaAnnotations.get(0).annotationType());
+        assertEquals(Deprecated.class, metaAnnotations.get(1).annotationType());
     }
 
     @Test
@@ -164,7 +166,7 @@ public class AnnotationUtilsTest {
         assertEquals(Inherited.class, metaAnnotations.get(offset++).annotationType());
         assertEquals(Service2.class, metaAnnotations.get(offset++).annotationType());
         assertEquals(Inherited.class, metaAnnotations.get(offset++).annotationType());
-        assertEquals(Service.class, metaAnnotations.get(offset++).annotationType());
+        assertEquals(DubboService.class, metaAnnotations.get(offset++).annotationType());
         assertEquals(Inherited.class, metaAnnotations.get(offset++).annotationType());
 
         metaAnnotations = getAllMetaAnnotations(MyAdaptive.class);
@@ -218,14 +220,14 @@ public class AnnotationUtilsTest {
 
     @Test
     public void testFindMetaAnnotations() {
-        List<Service> services = findMetaAnnotations(B.class, Service.class);
+        List<DubboService> services = findMetaAnnotations(B.class, DubboService.class);
         assertEquals(1, services.size());
 
-        Service service = services.get(0);
+        DubboService service = services.get(0);
         assertEquals("", service.interfaceName());
         assertEquals(Cloneable.class, service.interfaceClass());
 
-        services = findMetaAnnotations(Service5.class, Service.class);
+        services = findMetaAnnotations(Service5.class, DubboService.class);
         assertEquals(1, services.size());
 
         service = services.get(0);
@@ -235,13 +237,13 @@ public class AnnotationUtilsTest {
 
     @Test
     public void testFindMetaAnnotation() {
-        Service service = findMetaAnnotation(B.class, Service.class);
+        DubboService service = findMetaAnnotation(B.class, DubboService.class);
         assertEquals(Cloneable.class, service.interfaceClass());
 
-        service = findMetaAnnotation(B.class, "org.apache.dubbo.config.annotation.Service");
+        service = findMetaAnnotation(B.class, "org.apache.dubbo.config.annotation.DubboService");
         assertEquals(Cloneable.class, service.interfaceClass());
 
-        service = findMetaAnnotation(Service5.class, Service.class);
+        service = findMetaAnnotation(Service5.class, DubboService.class);
         assertEquals(Cloneable.class, service.interfaceClass());
     }
 
@@ -262,7 +264,7 @@ public class AnnotationUtilsTest {
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.TYPE})
     @Inherited
-    @Service(interfaceClass = Cloneable.class)
+    @DubboService(interfaceClass = Cloneable.class)
     @interface Service2 {
 
 

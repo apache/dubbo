@@ -24,13 +24,16 @@ import java.lang.annotation.Target;
 
 /**
  * Reference
+ * <p>
  *
- * @export
+ * @see DubboReference
  * @since 2.7.0
+ * @deprecated Recommend {@link DubboReference} as the substitute
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD, ElementType.METHOD, ElementType.ANNOTATION_TYPE})
+@Deprecated
 public @interface Reference {
     /**
      * Interface class, default value is void.class
@@ -89,7 +92,7 @@ public @interface Reference {
 
     /**
      * Export an stub service for event dispatch, default value is false.
-     *
+     * <p>
      * see org.apache.dubbo.rpc.Constants#STUB_EVENT_METHODS_KEY
      */
     boolean stubevent() default false;
@@ -97,14 +100,14 @@ public @interface Reference {
     /**
      * Whether to reconnect if connection is lost, if not specify, reconnect is enabled by default, and the interval
      * for retry connecting is 2000 ms
-     *
+     * <p>
      * see org.apache.dubbo.remoting.Constants#DEFAULT_RECONNECT_PERIOD
      */
     String reconnect() default "";
 
     /**
      * Whether to stick to the same node in the cluster, the default value is false
-     *
+     * <p>
      * see Constants#DEFAULT_CLUSTER_STICKY
      */
     boolean sticky() default false;
@@ -131,7 +134,7 @@ public @interface Reference {
 
     /**
      * The callback instance limit peer connection
-     *
+     * <p>
      * see org.apache.dubbo.rpc.Constants#DEFAULT_CALLBACK_INSTANCES
      */
     int callbacks() default 0;
@@ -158,14 +161,14 @@ public @interface Reference {
 
     /**
      * Service invocation retry times
-     *
+     * <p>
      * see Constants#DEFAULT_RETRIES
      */
     int retries() default 2;
 
     /**
      * Load balance strategy, legal values include: random, roundrobin, leastactive
-     *
+     * <p>
      * see Constants#DEFAULT_LOADBALANCE
      */
     String loadbalance() default "";
@@ -207,14 +210,14 @@ public @interface Reference {
 
     /**
      * Filters for service invocation
-     *
+     * <p>
      * see Filter
      */
     String[] filter() default {};
 
     /**
      * Listeners for service exporting and unexporting
-     *
+     * <p>
      * see ExporterListener
      */
     String[] listener() default {};
