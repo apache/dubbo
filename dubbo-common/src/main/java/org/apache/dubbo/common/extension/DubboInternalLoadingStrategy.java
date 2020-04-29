@@ -16,27 +16,20 @@
  */
 package org.apache.dubbo.common.extension;
 
-import org.apache.dubbo.common.lang.Prioritized;
+/**
+ * Dubbo internal {@link LoadingStrategy}
+ *
+ * @since 2.7.7
+ */
+public class DubboInternalLoadingStrategy implements LoadingStrategy {
 
-public interface LoadingStrategy extends Prioritized {
-
-    String directory();
-
-    default boolean preferExtensionClassLoader() {
-        return false;
+    @Override
+    public String directory() {
+        return "META-INF/dubbo/internal/";
     }
 
-    default String[] excludedPackages() {
-        return null;
-    }
-
-    /**
-     * Indicates current {@link LoadingStrategy} supports overriding other lower prioritized instances or not.
-     *
-     * @return if supports, return <code>true</code>, or <code>false</code>
-     * @since 2.7.7
-     */
-    default boolean overridden() {
-        return false;
+    @Override
+    public int getPriority() {
+        return MAX_PRIORITY;
     }
 }
