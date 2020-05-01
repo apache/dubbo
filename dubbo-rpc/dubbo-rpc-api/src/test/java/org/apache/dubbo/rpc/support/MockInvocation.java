@@ -17,8 +17,8 @@
 package org.apache.dubbo.rpc.support;
 
 import org.apache.dubbo.rpc.AttachmentsAdapter;
-import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.RpcInvocation;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -33,7 +33,7 @@ import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 /**
  * MockInvocation.java
  */
-public class MockInvocation implements Invocation {
+public class MockInvocation extends RpcInvocation {
 
     private Map<String, Object> attachments;
 
