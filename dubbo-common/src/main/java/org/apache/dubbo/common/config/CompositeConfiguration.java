@@ -18,16 +18,20 @@ package org.apache.dubbo.common.config;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.StringUtils;
 
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
 /**
- *
+ * This is an abstraction specially customized for the sequence Dubbo retrieves properties.
  */
 public class CompositeConfiguration implements Configuration {
     private Logger logger = LoggerFactory.getLogger(CompositeConfiguration.class);
+
+    private String id;
+    private String prefix;
 
     /**
      * List holding all the configuration
@@ -35,10 +39,20 @@ public class CompositeConfiguration implements Configuration {
     private List<Configuration> configList = new LinkedList<Configuration>();
 
     public CompositeConfiguration() {
+        this(null, null);
+    }
 
+    public CompositeConfiguration(String prefix, String id) {
+        if (StringUtils.isNotEmpty(prefix) && !prefix.endsWith(".")) {
+            this.prefix = prefix + ".";
+        } else {
+            this.prefix = prefix;
+        }
+        this.id = id;
     }
 
     public CompositeConfiguration(Configuration... configurations) {
+        this();
         if (configurations != null && configurations.length > 0) {
             Arrays.stream(configurations).filter(config -> !configList.contains(config)).forEach(configList::add);
         }
@@ -82,5 +96,21 @@ public class CompositeConfiguration implements Configuration {
     @Override
     public boolean containsKey(String key) {
         return configList.stream().anyMatch(c -> c.containsKey(key));
+    }
+
+    @Override
+    public Object getProperty(String key, Object defaultValue) {
+        Object value = null;
+        if (StringUtils.isNotEmpty(prefix)) {
+            if (StringUtils.isNotEmpty(id)) {
+                value = getInternalProperty(prefix + id + "." + key);
+            }
+            if (value == null) {
+                value = getInternalProperty(prefix + key);
+            }
+        } else {
+            value = getInternalProperty(key);
+        }
+        return value != null ? value : defaultValue;
     }
 }

@@ -65,7 +65,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.HIDE_KEY_PREFIX;
 public class DubboBeanDefinitionParser implements BeanDefinitionParser {
 
     private static final Logger logger = LoggerFactory.getLogger(DubboBeanDefinitionParser.class);
-    private static final Pattern GROUP_AND_VERION = Pattern.compile("^[\\-.0-9_a-zA-Z]+(\\:[\\-.0-9_a-zA-Z]+)?$");
+    private static final Pattern GROUP_AND_VERSION = Pattern.compile("^[\\-.0-9_a-zA-Z]+(\\:[\\-.0-9_a-zA-Z]+)?$");
     private static final String ONRETURN = "onreturn";
     private static final String ONTHROW = "onthrow";
     private static final String ONINVOKE = "oninvoke";
@@ -129,7 +129,13 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                 parseProperties(element.getChildNodes(), classDefinition);
                 beanDefinition.getPropertyValues().addPropertyValue("ref", new BeanDefinitionHolder(classDefinition, id + "Impl"));
             }
-        } else if (ProviderConfig.class.equals(beanClass)) {
+        }  else if(ReferenceBean.class.equals(beanClass)){
+            String interfaceClassName = element.getAttribute("interface");
+            if(StringUtils.isNotEmpty(interfaceClassName)){
+                Class<?> interfaceClass = ReflectUtils.forName(interfaceClassName);
+                beanDefinition.setTargetType(interfaceClass);
+            }
+        }else if (ProviderConfig.class.equals(beanClass)) {
             parseNested(element, parserContext, ServiceBean.class, true, "service", "provider", id, beanDefinition);
         } else if (ConsumerConfig.class.equals(beanClass)) {
             parseNested(element, parserContext, ReferenceBean.class, false, "reference", "consumer", id, beanDefinition);

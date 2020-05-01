@@ -17,6 +17,9 @@
 
 package org.apache.dubbo.common.constants;
 
+import org.apache.dubbo.common.URL;
+
+import java.net.NetworkInterface;
 import java.util.concurrent.ExecutorService;
 import java.util.regex.Pattern;
 
@@ -50,6 +53,8 @@ public interface CommonConstants {
     String PATH_SEPARATOR = "/";
 
     String PROTOCOL_SEPARATOR = "://";
+
+    String PROTOCOL_SEPARATOR_ENCODED = URL.encode(PROTOCOL_SEPARATOR);
 
     String REGISTRY_SEPARATOR = "|";
 
@@ -199,6 +204,15 @@ public interface CommonConstants {
     String HOST_KEY = "host";
     String PORT_KEY = "port";
     String DUBBO_IP_TO_BIND = "DUBBO_IP_TO_BIND";
+
+    /**
+     * The property name for {@link NetworkInterface#getDisplayName() the name of network interface} that
+     * the Dubbo application prefers
+     *
+     * @since 2.7.6
+     */
+    String DUBBO_PREFERRED_NETWORK_INTERFACE = "dubbo.network.interface.preferred";
+
     @Deprecated
     String SHUTDOWN_WAIT_SECONDS_KEY = "dubbo.service.shutdown.wait.seconds";
     String SHUTDOWN_WAIT_KEY = "dubbo.service.shutdown.wait";
@@ -287,8 +301,6 @@ public interface CommonConstants {
     int DEFAULT_FAILBACK_TIMES = 3;
 
     String REGISTER_KEY = "register";
-
-    String DUBBO_INVOCATION_PREFIX = "_DUBBO_IGNORE_ATTACH_";
 
     String INTERFACES = "interfaces";
 

@@ -64,7 +64,7 @@ public class MetadataReportConfig extends AbstractConfig {
 
     private Integer retryPeriod;
     /**
-     * By default the metadatastore will store full metadata repeatly every day .
+     * By default the metadatastore will store full metadata repeatedly every day .
      */
     private Boolean cycleReport;
 

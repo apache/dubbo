@@ -23,7 +23,6 @@ import javassist.NotFoundException;
 
 import java.beans.BeanInfo;
 import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -55,6 +54,7 @@ import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableSet;
+import static org.apache.dubbo.common.utils.ArrayUtils.isEmpty;
 
 /**
  * ReflectUtils
@@ -1259,20 +1259,30 @@ public final class ReflectUtils {
         return unmodifiableSet(hierarchicalTypes);
     }
 
-    public static <T> T getProperty(Object bean, String propertyName) {
+    /**
+     * Get the value from the specified bean and its getter method.
+     *
+     * @param bean       the bean instance
+     * @param methodName the name of getter
+     * @param <T>        the type of property value
+     * @return
+     * @since 2.7.5
+     */
+    public static <T> T getProperty(Object bean, String methodName) {
         Class<?> beanClass = bean.getClass();
         BeanInfo beanInfo = null;
         T propertyValue = null;
+
         try {
             beanInfo = Introspector.getBeanInfo(beanClass);
-            propertyValue = (T) Stream.of(beanInfo.getPropertyDescriptors())
-                    .filter(propertyDescriptor -> propertyName.equals(propertyDescriptor.getName()))
-                    .map(PropertyDescriptor::getReadMethod)
+            propertyValue = (T) Stream.of(beanInfo.getMethodDescriptors())
+                    .filter(methodDescriptor -> methodName.equals(methodDescriptor.getName()))
                     .findFirst()
                     .map(method -> {
                         try {
-                            return method.invoke(bean);
+                            return method.getMethod().invoke(bean);
                         } catch (Exception e) {
+                            //ignore
                         }
                         return null;
                     }).get();
@@ -1282,4 +1292,28 @@ public final class ReflectUtils {
         return propertyValue;
     }
 
+    /**
+     * Resolve the types of the specified values
+     *
+     * @param values the values
+     * @return If can't be resolved, return {@link ReflectUtils#EMPTY_CLASS_ARRAY empty class array}
+     * @since 2.7.6
+     */
+    public static Class[] resolveTypes(Object... values) {
+
+        if (isEmpty(values)) {
+            return EMPTY_CLASS_ARRAY;
+        }
+
+        int size = values.length;
+
+        Class[] types = new Class[size];
+
+        for (int i = 0; i < size; i++) {
+            Object value = values[i];
+            types[i] = value == null ? null : value.getClass();
+        }
+
+        return types;
+    }
 }

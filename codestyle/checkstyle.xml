@@ -7,6 +7,11 @@
     <property name="charset" value="UTF-8"/>
     <property name="fileExtensions" value="java"/>
 
+    <module name="Header">
+        <property name="headerFile" value="/checkstyle-header.txt"/>
+        <property name="fileExtensions" value="java"/>
+    </module>
+
     <!-- TreeWalker Checks -->
     <module name="TreeWalker">
         <module name="SuppressWarningsHolder"/>

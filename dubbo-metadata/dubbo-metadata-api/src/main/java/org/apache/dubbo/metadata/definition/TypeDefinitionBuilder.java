@@ -29,6 +29,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.dubbo.common.utils.ClassUtils.isSimpleType;
+
 /**
  * 2015/1/27.
  */
@@ -55,7 +57,7 @@ public class TypeDefinitionBuilder {
             td = DefaultTypeBuilder.build(clazz, typeCache);
             td.setTypeBuilderName(DefaultTypeBuilder.class.getName());
         }
-        if (clazz.equals(String.class)) {
+        if (isSimpleType(clazz)) { // changed since 2.7.6
             td.setProperties(null);
         }
         return td;

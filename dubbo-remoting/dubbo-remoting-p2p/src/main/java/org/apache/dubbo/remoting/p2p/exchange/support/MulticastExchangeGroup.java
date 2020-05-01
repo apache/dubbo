@@ -17,7 +17,7 @@
 package org.apache.dubbo.remoting.p2p.exchange.support;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.ExchangeHandler;
 import org.apache.dubbo.remoting.p2p.exchange.ExchangePeer;
@@ -43,7 +43,7 @@ public class MulticastExchangeGroup extends AbstractExchangeGroup {
 
     public MulticastExchangeGroup(URL url) {
         super(url);
-        if (!isMulticastAddress(url.getHost())) {
+        if (!NetUtils.isMulticastAddress(url.getHost())) {
             throw new IllegalArgumentException("Invalid multicast address " + url.getHost() + ", scope: 224.0.0.0 - 239.255.255.255");
         }
         try {
@@ -71,18 +71,6 @@ public class MulticastExchangeGroup extends AbstractExchangeGroup {
         } catch (IOException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
-    }
-
-    private static boolean isMulticastAddress(String ip) {
-        int i = ip.indexOf('.');
-        if (i > 0) {
-            String prefix = ip.substring(0, i);
-            if (StringUtils.isInteger(prefix)) {
-                int p = Integer.parseInt(prefix);
-                return p >= 224 && p <= 239;
-            }
-        }
-        return false;
     }
 
     private void send(String msg) throws RemotingException {
