@@ -121,7 +121,7 @@ public class FileSystemServiceDiscovery implements ServiceDiscovery, EventListen
 
     @Override
     public List<ServiceInstance> getInstances(String serviceName) {
-        return dynamicConfiguration.getConfigKeys(DEFAULT_GROUP)
+        return dynamicConfiguration.getConfigKeys(serviceName)
                 .stream()
                 .map(serviceInstanceId -> dynamicConfiguration.getConfig(serviceInstanceId, serviceName))
                 .map(content -> JSON.parseObject(content, DefaultServiceInstance.class))
