@@ -337,6 +337,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         }
 
         if (shouldCheck() && !invoker.isAvailable()) {
+            invoker.destroy();
             throw new IllegalStateException("Failed to check the status of the service "
                     + interfaceName
                     + ". No provider available for the service "
@@ -463,26 +464,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     public void setBootstrap(DubboBootstrap bootstrap) {
         this.bootstrap = bootstrap;
     }
-
-    @SuppressWarnings("unused")
-    private final Object finalizerGuardian = new Object() {
-        @Override
-        protected void finalize() throws Throwable {
-            super.finalize();
-
-            if (!ReferenceConfig.this.destroyed) {
-                logger.warn("ReferenceConfig(" + url + ") is not DESTROYED when FINALIZE");
-
-                /* don't destroy for now
-                try {
-                    ReferenceConfig.this.destroy();
-                } catch (Throwable t) {
-                        logger.warn("Unexpected err when destroy invoker of ReferenceConfig(" + url + ") in finalize method!", t);
-                }
-                */
-            }
-        }
-    };
 
     private void postProcessConfig() {
         List<ConfigPostProcessor> configPostProcessors =ExtensionLoader.getExtensionLoader(ConfigPostProcessor.class)

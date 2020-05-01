@@ -17,6 +17,8 @@
 
 package org.apache.dubbo.common.constants;
 
+import org.apache.dubbo.common.URL;
+
 import java.net.NetworkInterface;
 import java.util.concurrent.ExecutorService;
 import java.util.regex.Pattern;
@@ -51,6 +53,8 @@ public interface CommonConstants {
     String PATH_SEPARATOR = "/";
 
     String PROTOCOL_SEPARATOR = "://";
+
+    String PROTOCOL_SEPARATOR_ENCODED = URL.encode(PROTOCOL_SEPARATOR);
 
     String REGISTRY_SEPARATOR = "|";
 

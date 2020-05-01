@@ -257,6 +257,11 @@ public class RpcInvocation implements Invocation, Serializable {
         return attachments;
     }
 
+    @Override
+    public void setAttachment(String key, String value) {
+        setObjectAttachment(key, value);
+    }
+
     @Deprecated
     @Override
     public Map<String, String> getAttachments() {
@@ -273,13 +278,28 @@ public class RpcInvocation implements Invocation, Serializable {
     }
 
     public void setAttachment(String key, Object value) {
+       setObjectAttachment(key, value);
+    }
+
+    @Override
+    public void setObjectAttachment(String key, Object value) {
         if (attachments == null) {
             attachments = new HashMap<>();
         }
         attachments.put(key, value);
     }
 
+    @Override
+    public void setAttachmentIfAbsent(String key, String value) {
+        setObjectAttachmentIfAbsent(key, value);
+    }
+
     public void setAttachmentIfAbsent(String key, Object value) {
+        setObjectAttachmentIfAbsent(key, value);
+    }
+
+    @Override
+    public void setObjectAttachmentIfAbsent(String key, Object value) {
         if (attachments == null) {
             attachments = new HashMap<>();
         }

@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.http;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -40,7 +41,8 @@ public class HttpProtocolTest {
         assertFalse(server.isCalled());
         ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
-        URL url = URL.valueOf("http://127.0.0.1:5342/" + HttpService.class.getName() + "?version=1.0.0");
+        int port = NetUtils.getAvailablePort();
+        URL url = URL.valueOf("http://127.0.0.1:" + port + "/" + HttpService.class.getName() + "?version=1.0.0");
         Exporter<HttpService> exporter = protocol.export(proxyFactory.getInvoker(server, HttpService.class, url));
         Invoker<HttpService> invoker = protocol.refer(HttpService.class, url);
         HttpService client = proxyFactory.getProxy(invoker);
@@ -57,7 +59,8 @@ public class HttpProtocolTest {
         assertFalse(server.isCalled());
         ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
-        URL url = URL.valueOf("http://127.0.0.1:5342/" + HttpService.class.getName() + "?version=1.0.0&server=jetty");
+        int port = NetUtils.getAvailablePort();
+        URL url = URL.valueOf("http://127.0.0.1:" + port + "/" + HttpService.class.getName() + "?version=1.0.0&server=jetty");
         Exporter<HttpService> exporter = protocol.export(proxyFactory.getInvoker(server, HttpService.class, url));
         Invoker<HttpService> invoker = protocol.refer(HttpService.class, url);
         HttpService client = proxyFactory.getProxy(invoker);
@@ -74,7 +77,8 @@ public class HttpProtocolTest {
         Assertions.assertFalse(server.isCalled());
         ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
-        URL url = URL.valueOf("http://127.0.0.1:5342/" + HttpService.class.getName() + "?release=2.7.0");
+        int port = NetUtils.getAvailablePort();
+        URL url = URL.valueOf("http://127.0.0.1:" + port + "/" + HttpService.class.getName() + "?release=2.7.0");
         Exporter<HttpService> exporter = protocol.export(proxyFactory.getInvoker(server, HttpService.class, url));
         Invoker<GenericService> invoker = protocol.refer(GenericService.class, url);
         GenericService client = proxyFactory.getProxy(invoker, true);

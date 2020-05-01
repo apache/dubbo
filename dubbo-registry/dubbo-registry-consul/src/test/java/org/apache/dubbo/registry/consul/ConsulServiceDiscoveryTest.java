@@ -19,6 +19,7 @@ package org.apache.dubbo.registry.consul;
 import com.pszymczyk.consul.ConsulProcess;
 import com.pszymczyk.consul.ConsulStarterBuilder;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.junit.jupiter.api.AfterEach;
@@ -60,7 +61,7 @@ public class ConsulServiceDiscoveryTest {
 
     @Test
     public void testRegistration() throws InterruptedException{
-        DefaultServiceInstance serviceInstance = createServiceInstance(SERVICE_NAME, LOCALHOST, 8012);
+        DefaultServiceInstance serviceInstance = createServiceInstance(SERVICE_NAME, LOCALHOST, NetUtils.getAvailablePort());
         consulServiceDiscovery.register(serviceInstance);
         Thread.sleep(5000);
 
@@ -86,13 +87,15 @@ public class ConsulServiceDiscoveryTest {
     public void testGetInstances() throws Exception {
         String serviceName = "ConsulTest77Service";
         assertTrue(consulServiceDiscovery.getInstances(serviceName).isEmpty());
-        consulServiceDiscovery.register(new DefaultServiceInstance(valueOf(System.nanoTime()), serviceName, "127.0.0.1", 8080));
-        consulServiceDiscovery.register(new DefaultServiceInstance(valueOf(System.nanoTime()), serviceName, "127.0.0.1", 9809));
+        int portA = NetUtils.getAvailablePort();
+        int portB = NetUtils.getAvailablePort();
+        consulServiceDiscovery.register(new DefaultServiceInstance(valueOf(System.nanoTime()), serviceName, "127.0.0.1", portA));
+        consulServiceDiscovery.register(new DefaultServiceInstance(valueOf(System.nanoTime()), serviceName, "127.0.0.1", portB));
         Thread.sleep(5000);
         Assertions.assertFalse(consulServiceDiscovery.getInstances(serviceName).isEmpty());
         List<String> r = convertToIpPort(consulServiceDiscovery.getInstances(serviceName));
-        assertTrue(r.contains("127.0.0.1:8080"));
-        assertTrue(r.contains("127.0.0.1:9809"));
+        assertTrue(r.contains("127.0.0.1:"+portA));
+        assertTrue(r.contains("127.0.0.1:"+portB));
     }
 
     private List<String> convertToIpPort(List<ServiceInstance> serviceInstances) {

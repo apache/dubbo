@@ -21,20 +21,19 @@ import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Queue;
 import java.util.Set;
 import java.util.function.Predicate;
 
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.unmodifiableSet;
-import static java.util.stream.Collectors.toList;
 import static org.apache.dubbo.common.function.Streams.filterAll;
 import static org.apache.dubbo.common.utils.ArrayUtils.isNotEmpty;
 import static org.apache.dubbo.common.utils.CollectionUtils.ofSet;
@@ -360,12 +359,10 @@ public class ClassUtils {
         Set<Class<?>> allSuperClasses = new LinkedHashSet<>();
 
         Class<?> superClass = type.getSuperclass();
-
-        if (superClass != null) {
+        while (superClass != null) {
             // add current super class
             allSuperClasses.add(superClass);
-            // add ancestor classes
-            allSuperClasses.addAll(getAllSuperClasses(superClass));
+            superClass = superClass.getSuperclass();
         }
 
         return unmodifiableSet(filterAll(allSuperClasses, classFilters));
@@ -380,29 +377,38 @@ public class ClassUtils {
      * @since 2.7.6
      */
     public static Set<Class<?>> getAllInterfaces(Class<?> type, Predicate<Class<?>>... interfaceFilters) {
-
         if (type == null || type.isPrimitive()) {
             return emptySet();
         }
 
         Set<Class<?>> allInterfaces = new LinkedHashSet<>();
+        Set<Class<?>> resolved = new LinkedHashSet<>();
+        Queue<Class<?>> waitResolve = new LinkedList<>();
 
-        Class<?>[] interfaces = type.getInterfaces();
+        resolved.add(type);
+        Class<?> clazz = type;
+        while (clazz != null) {
 
-        if (isNotEmpty(interfaces)) {
-            // add current interfaces
-            allInterfaces.addAll(asList(interfaces));
+            Class<?>[] interfaces = clazz.getInterfaces();
+
+            if (isNotEmpty(interfaces)) {
+                // add current interfaces
+                Arrays.stream(interfaces)
+                        .filter(resolved::add)
+                        .forEach(cls -> {
+                            allInterfaces.add(cls);
+                            waitResolve.add(cls);
+                        });
+            }
+
+            // add all super classes to waitResolve
+            getAllSuperClasses(clazz)
+                    .stream()
+                    .filter(resolved::add)
+                    .forEach(waitResolve::add);
+
+            clazz = waitResolve.poll();
         }
-
-        // add all super interfaces
-        getAllSuperClasses(type).forEach(superType -> allInterfaces.addAll(getAllInterfaces(superType)));
-
-        // add all super interfaces from all interfaces
-        allInterfaces.stream()
-                .map(ClassUtils::getAllInterfaces)
-                .flatMap(Collection::stream)
-                .collect(toList())
-                .forEach(allInterfaces::add);
 
         return filterAll(allInterfaces, interfaceFilters);
     }
