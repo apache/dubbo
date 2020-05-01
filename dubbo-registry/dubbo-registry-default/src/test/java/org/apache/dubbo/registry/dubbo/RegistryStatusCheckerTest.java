@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.status.Status;
 import org.apache.dubbo.registry.RegistryFactory;
+import org.apache.dubbo.registry.RegistryService;
 import org.apache.dubbo.registry.status.RegistryStatusChecker;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -47,6 +48,7 @@ public class RegistryStatusCheckerTest {
     @BeforeEach
     public void setUp() {
         AbstractRegistryFactory.clearRegistryNotDestroy();
+        ApplicationModel.getServiceRepository().registerService(RegistryService.class);
     }
 
     @Test
