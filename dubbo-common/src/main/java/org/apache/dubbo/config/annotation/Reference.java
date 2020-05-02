@@ -266,9 +266,12 @@ public @interface Reference {
     String tag() default "";
 
     /**
+     * Service merger
+     */
+    String merger() default "";
+
+    /**
      * methods support
-     *
-     * @return
      */
     Method[] methods() default {};
 
