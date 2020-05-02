@@ -269,8 +269,6 @@ public @interface DubboReference {
 
     /**
      * methods support
-     *
-     * @return
      */
     Method[] methods() default {};
 

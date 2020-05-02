@@ -272,8 +272,6 @@ public @interface Reference {
 
     /**
      * methods support
-     *
-     * @return
      */
     Method[] methods() default {};
 
