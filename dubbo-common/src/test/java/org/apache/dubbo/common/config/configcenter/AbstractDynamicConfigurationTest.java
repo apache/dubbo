@@ -33,6 +33,7 @@ import static org.apache.dubbo.common.config.configcenter.AbstractDynamicConfigu
 import static org.apache.dubbo.common.config.configcenter.AbstractDynamicConfiguration.THREAD_POOL_PREFIX_PARAM_NAME;
 import static org.apache.dubbo.common.config.configcenter.AbstractDynamicConfiguration.THREAD_POOL_SIZE_PARAM_NAME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -105,8 +106,8 @@ public class AbstractDynamicConfigurationTest {
 
     @Test
     public void testPublishConfig() {
-        assertThrows(UnsupportedOperationException.class, () -> configuration.publishConfig(null, null), "No support");
-        assertThrows(UnsupportedOperationException.class, () -> configuration.publishConfig(null, null, null), "No support");
+        assertFalse(configuration.publishConfig(null, null));
+        assertFalse(configuration.publishConfig(null, null, null));
     }
 
     @Test
