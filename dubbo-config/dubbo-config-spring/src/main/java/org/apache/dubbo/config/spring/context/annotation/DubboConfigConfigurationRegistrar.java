@@ -16,15 +16,17 @@
  */
 package org.apache.dubbo.config.spring.context.annotation;
 
+import com.alibaba.spring.beans.factory.annotation.ConfigurationBeanBindingsRegister;
 import org.apache.dubbo.config.AbstractConfig;
-
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.AnnotationAttributes;
+import org.springframework.core.env.Environment;
 import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.core.type.StandardAnnotationMetadata;
 
-import static com.alibaba.spring.util.AnnotatedBeanDefinitionRegistryUtils.registerBeans;
 import static org.apache.dubbo.config.spring.util.DubboBeanUtils.registerCommonBeans;
 
 /**
@@ -35,7 +37,14 @@ import static org.apache.dubbo.config.spring.util.DubboBeanUtils.registerCommonB
  * @see Ordered
  * @since 2.5.8
  */
-public class DubboConfigConfigurationRegistrar implements ImportBeanDefinitionRegistrar {
+public class DubboConfigConfigurationRegistrar implements ImportBeanDefinitionRegistrar, EnvironmentAware {
+
+    private Environment environment;
+
+    @Override
+    public void setEnvironment(Environment environment) {
+        this.environment = environment;
+    }
 
     @Override
     public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
@@ -46,10 +55,15 @@ public class DubboConfigConfigurationRegistrar implements ImportBeanDefinitionRe
         boolean multiple = attributes.getBoolean("multiple");
 
         // Single Config Bindings
-        registerBeans(registry, DubboConfigConfiguration.Single.class);
+        ConfigurationBeanBindingsRegister bindingsRegistrar = new ConfigurationBeanBindingsRegister();
+        bindingsRegistrar.setEnvironment(environment);
+
+        AnnotationMetadata metadataSingle = new StandardAnnotationMetadata(DubboConfigConfiguration.Single.class, true);
+        bindingsRegistrar.registerBeanDefinitions(metadataSingle, registry);
 
         if (multiple) { // Since 2.6.6 https://github.com/apache/dubbo/issues/3193
-            registerBeans(registry, DubboConfigConfiguration.Multiple.class);
+            AnnotationMetadata metadataMultiple = new StandardAnnotationMetadata(DubboConfigConfiguration.Multiple.class, true);
+            bindingsRegistrar.registerBeanDefinitions(metadataMultiple, registry);
         }
 
         // Since 2.7.6
