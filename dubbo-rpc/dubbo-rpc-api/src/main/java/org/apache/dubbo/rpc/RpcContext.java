@@ -24,11 +24,7 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -268,7 +264,7 @@ public class RpcContext {
     }
 
     public List<URL> getUrls() {
-        return urls == null && url != null ? (List<URL>) Arrays.asList(url) : urls;
+        return urls == null && url != null ? (List<URL>) Collections.singletonList(url) : urls;
     }
 
     public void setUrls(List<URL> urls) {
@@ -662,7 +658,7 @@ public class RpcContext {
     @Deprecated
     @SuppressWarnings({"unchecked", "rawtypes"})
     public List<Invoker<?>> getInvokers() {
-        return invokers == null && invoker != null ? (List) Arrays.asList(invoker) : invokers;
+        return invokers == null && invoker != null ? (List) Collections.singletonList(invoker) : invokers;
     }
 
     public RpcContext setInvokers(List<Invoker<?>> invokers) {

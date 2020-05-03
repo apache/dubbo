@@ -112,20 +112,17 @@ public class WebServiceProtocol extends AbstractProxyProtocol {
         serverFactoryBean.setDestinationFactory(transportFactory);
         serverFactoryBean.getServiceFactory().getConfigurations().add(new URLHashMethodNameSoapActionServiceConfiguration());
         server = serverFactoryBean.create();
-        return new Runnable() {
-            @Override
-            public void run() {
-                if(serverFactoryBean.getServer()!= null) {
-                    serverFactoryBean.getServer().destroy();
-                }
-                if(serverFactoryBean.getBus()!=null) {
-                    serverFactoryBean.getBus().shutdown(true);
-                }
-                ProtocolServer httpServer = serverMap.get(addr);
-                if(httpServer != null){
-                    httpServer.close();
-                    serverMap.remove(addr);
-                }
+        return () -> {
+            if(serverFactoryBean.getServer()!= null) {
+                serverFactoryBean.getServer().destroy();
+            }
+            if(serverFactoryBean.getBus()!=null) {
+                serverFactoryBean.getBus().shutdown(true);
+            }
+            ProtocolServer httpServer = serverMap.get(addr);
+            if(httpServer != null){
+                httpServer.close();
+                serverMap.remove(addr);
             }
         };
     }

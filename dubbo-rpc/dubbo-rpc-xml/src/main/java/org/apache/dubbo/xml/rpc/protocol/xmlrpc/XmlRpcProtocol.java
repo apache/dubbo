@@ -116,17 +116,7 @@ public class XmlRpcProtocol extends AbstractProxyProtocol {
         PropertyHandlerMapping propertyHandlerMapping = new PropertyHandlerMapping();
         try {
 
-            propertyHandlerMapping.setRequestProcessorFactoryFactory(new RequestProcessorFactoryFactory() {
-                @Override
-                public RequestProcessorFactory getRequestProcessorFactory(Class pClass) throws XmlRpcException {
-                    return new RequestProcessorFactory() {
-                        @Override
-                        public Object getRequestProcessor(XmlRpcRequest pRequest) throws XmlRpcException {
-                            return impl;
-                        }
-                    };
-                }
-            });
+            propertyHandlerMapping.setRequestProcessorFactoryFactory(pClass -> pRequest -> impl);
 
             propertyHandlerMapping.addHandler(XmlRpcProxyFactoryBean.replace(type.getName()), type);
 
@@ -140,12 +130,7 @@ public class XmlRpcProtocol extends AbstractProxyProtocol {
         xmlRpcServerConfig.setContentLengthOptional(false);
 
         skeletonMap.put(path, xmlRpcServer);
-        return new Runnable() {
-            @Override
-            public void run() {
-                skeletonMap.remove(path);
-            }
-        };
+        return () -> skeletonMap.remove(path);
     }
 
     @Override
