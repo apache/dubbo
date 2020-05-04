@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.utils;
 
+import com.alibaba.fastjson.JSONObject;
 import org.apache.dubbo.common.model.Person;
 import org.apache.dubbo.common.model.SerializablePerson;
 import org.apache.dubbo.common.model.User;
@@ -278,6 +279,22 @@ public class PojoUtilsTest {
         assertThat(message.getFrom(), equalTo("dubbo"));
         assertTrue(message.isUrgent());
     }
+
+    @Test
+    public void testJsonObjectToMap() throws Exception {
+        Method method = PojoUtilsTest.class.getMethod("setMap", Map.class);
+        assertNotNull(method);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("1", "test");
+        @SuppressWarnings("unchecked")
+        Map<Integer, Object> value = (Map<Integer, Object>)PojoUtils.realize(jsonObject,
+                method.getParameterTypes()[0],
+                method.getGenericParameterTypes()[0]);
+        method.invoke(new PojoUtilsTest(), value);
+        assertEquals("test", value.get(1));
+    }
+
+    public void setMap(Map<Integer, Object> map) {}
 
     @Test
     public void testException() throws Exception {
