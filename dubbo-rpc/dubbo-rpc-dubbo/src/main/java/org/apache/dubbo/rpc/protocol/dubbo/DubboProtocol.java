@@ -102,7 +102,6 @@ public class DubboProtocol extends AbstractProtocol {
      * <host:port,Exchanger>
      */
     private final Map<String, List<ReferenceCountExchangeClient>> referenceClientMap = new ConcurrentHashMap<>();
-    private final ConcurrentMap<String, Object> locks = new ConcurrentHashMap<>();
     private final Set<String> optimizers = new ConcurrentHashSet<>();
 
     private ExchangeHandler requestHandler = new ExchangeHandlerAdapter() {
@@ -454,24 +453,19 @@ public class DubboProtocol extends AbstractProtocol {
             batchClientRefIncr(clients);
             return clients;
         }
-
-        locks.putIfAbsent(key, new Object());
-        synchronized (locks.get(key)) {
+        synchronized (this) {
             clients = referenceClientMap.get(key);
             // dubbo check
             if (checkClientCanUse(clients)) {
                 batchClientRefIncr(clients);
                 return clients;
             }
-
             // connectNum must be greater than or equal to 1
             connectNum = Math.max(connectNum, 1);
-
             // If the clients is empty, then the first initialization is
             if (CollectionUtils.isEmpty(clients)) {
                 clients = buildReferenceCountExchangeClientList(url, connectNum);
                 referenceClientMap.put(key, clients);
-
             } else {
                 for (int i = 0; i < clients.size(); i++) {
                     ReferenceCountExchangeClient referenceCountExchangeClient = clients.get(i);
@@ -480,17 +474,9 @@ public class DubboProtocol extends AbstractProtocol {
                         clients.set(i, buildReferenceCountExchangeClient(url));
                         continue;
                     }
-
                     referenceCountExchangeClient.incrementAndGetCount();
                 }
             }
-
-            /*
-             * I understand that the purpose of the remove operation here is to avoid the expired url key
-             * always occupying this memory space.
-             */
-            locks.remove(key);
-
             return clients;
         }
     }
