@@ -1092,9 +1092,7 @@ public class DubboBootstrap extends GenericEventListener {
 
     private void destroyServiceDiscoveries() {
         getServiceDiscoveries().forEach(serviceDiscovery -> {
-            execute(() -> {
-                serviceDiscovery.destroy();
-            });
+            execute(serviceDiscovery::destroy);
         });
         if (logger.isDebugEnabled()) {
             logger.debug(NAME + "'s all ServiceDiscoveries have been destroyed.");
