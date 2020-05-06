@@ -91,7 +91,7 @@ public abstract class FailbackRegistry implements org.apache.dubbo.registry.Regi
 
     @Override
     public List<URL> lookup(URL url) {
-        return failbackRegistry.lookup(url.getOriginalURL()).stream().map(URL::new).collect(Collectors.toList());
+        return failbackRegistry.lookup(url.getOriginalURL()).stream().map(e -> new URL(e)).collect(Collectors.toList());
     }
 
     @Override
