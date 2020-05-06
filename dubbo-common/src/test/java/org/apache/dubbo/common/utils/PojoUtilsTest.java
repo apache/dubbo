@@ -294,7 +294,26 @@ public class PojoUtilsTest {
         assertEquals("test", value.get(1));
     }
 
+    @Test
+    public void testListJsonObjectToListMap() throws Exception {
+        Method method = PojoUtilsTest.class.getMethod("setListMap", List.class);
+        assertNotNull(method);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("1", "test");
+        List<JSONObject> list = new ArrayList<>(1);
+        list.add(jsonObject);
+        @SuppressWarnings("unchecked")
+        List<Map<Integer, Object>> result = (List<Map<Integer, Object>>)PojoUtils.realize(
+                list,
+                method.getParameterTypes()[0],
+                method.getGenericParameterTypes()[0]);
+        method.invoke(new PojoUtilsTest(), result);
+        assertEquals("test", result.get(0).get(1));
+    }
+
     public void setMap(Map<Integer, Object> map) {}
+
+    public void setListMap(List<Map<Integer, Object>> list) {}
 
     @Test
     public void testException() throws Exception {

@@ -419,20 +419,17 @@ public class PojoUtils {
             if (Map.class.isAssignableFrom(type) || type == Object.class) {
                 final Map<Object, Object> result;
                 // fix issue#5939
-                if (type.isInterface()) {
-                    Type typeKeyType = getGenericClassByIndex(genericType, 0);
-                    Type pojoKeyType = getKeyTypeForMap(map.getClass());
-                    boolean typeMismatch = typeKeyType instanceof Class
-                            && pojoKeyType instanceof Class
-                            && !typeKeyType.getTypeName().equals(pojoKeyType.getTypeName());
-                    if (typeMismatch) {
-                        result = createMap(new HashMap(0));
-                    } else {
-                        result = createMap(map);
-                    }
+                Type mapKeyType = getKeyTypeForMap(map.getClass());
+                Type typeKeyType = getGenericClassByIndex(genericType, 0);
+                boolean typeMismatch = mapKeyType instanceof Class
+                        && typeKeyType instanceof Class
+                        && !typeKeyType.getTypeName().equals(mapKeyType.getTypeName());
+                if (typeMismatch) {
+                    result = createMap(new HashMap(0));
                 } else {
                     result = createMap(map);
                 }
+
                 history.put(pojo, result);
                 for (Map.Entry<Object, Object> entry : map.entrySet()) {
                     Type keyType = getGenericClassByIndex(genericType, 0);
