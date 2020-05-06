@@ -76,12 +76,12 @@ public abstract class FailbackRegistry implements org.apache.dubbo.registry.Regi
     }
 
     protected void notify(URL url, NotifyListener listener, List<URL> urls) {
-        List<org.apache.dubbo.common.URL> urlResult = urls.stream().map(e -> e.getOriginalURL()).collect(Collectors.toList());
+        List<org.apache.dubbo.common.URL> urlResult = urls.stream().map(URL::getOriginalURL).collect(Collectors.toList());
         failbackRegistry.notify(url.getOriginalURL(), new com.alibaba.dubbo.registry.NotifyListener.ReverseCompatibleNotifyListener(listener), urlResult);
     }
 
     protected void doNotify(URL url, NotifyListener listener, List<URL> urls) {
-        List<org.apache.dubbo.common.URL> urlResult = urls.stream().map(e -> e.getOriginalURL()).collect(Collectors.toList());
+        List<org.apache.dubbo.common.URL> urlResult = urls.stream().map(URL::getOriginalURL).collect(Collectors.toList());
         failbackRegistry.doNotify(url.getOriginalURL(), new com.alibaba.dubbo.registry.NotifyListener.ReverseCompatibleNotifyListener(listener), urlResult);
     }
 
@@ -91,7 +91,7 @@ public abstract class FailbackRegistry implements org.apache.dubbo.registry.Regi
 
     @Override
     public List<URL> lookup(URL url) {
-        return failbackRegistry.lookup(url.getOriginalURL()).stream().map(e -> new URL(e)).collect(Collectors.toList());
+        return failbackRegistry.lookup(url.getOriginalURL()).stream().map(URL::new).collect(Collectors.toList());
     }
 
     @Override
