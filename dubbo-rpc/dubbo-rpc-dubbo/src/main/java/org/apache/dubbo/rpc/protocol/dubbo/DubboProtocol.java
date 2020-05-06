@@ -453,7 +453,7 @@ public class DubboProtocol extends AbstractProtocol {
             batchClientRefIncr(clients);
             return clients;
         }
-        synchronized (this) {
+        synchronized (referenceClientMap) {
             clients = referenceClientMap.get(key);
             // dubbo check
             if (checkClientCanUse(clients)) {
