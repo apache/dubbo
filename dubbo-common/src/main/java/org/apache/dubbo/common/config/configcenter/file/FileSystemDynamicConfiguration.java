@@ -507,7 +507,7 @@ public class FileSystemDynamicConfiguration extends AbstractDynamicConfiguration
         return super.getWorkersThreadPool();
     }
 
-    private <V> V executeMutually(Object mutex, Callable<V> callable) {
+    private <V> V executeMutually(final Object mutex, Callable<V> callable) {
         V value = null;
         synchronized (mutex) {
             try {
