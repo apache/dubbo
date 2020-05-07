@@ -404,12 +404,12 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
 
     @Override
     public String getGroup() {
-        return StringUtils.isEmpty(this.group) ? provider.getGroup() : this.group;
+        return StringUtils.isEmpty(this.group) ? (provider != null ? provider.getGroup() : this.group) : this.group;
     }
 
     @Override
     public String getVersion() {
-        return StringUtils.isEmpty(this.version) ? provider.getVersion() : this.version;
+        return StringUtils.isEmpty(this.version) ? (provider != null ? provider.getVersion() : this.version) : this.version;
     }
 
     private void computeValidProtocolIds() {

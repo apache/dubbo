@@ -273,12 +273,12 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
 
     @Override
     public String getVersion() {
-        return StringUtils.isEmpty(this.version) ? consumer.getVersion() : this.version;
+        return StringUtils.isEmpty(this.version) ? (consumer != null ? consumer.getVersion() : this.version) : this.version;
     }
 
     @Override
     public String getGroup() {
-        return StringUtils.isEmpty(this.group) ? consumer.getGroup() : this.group;
+        return StringUtils.isEmpty(this.group) ? (consumer != null ? consumer.getGroup() : this.group) : this.group;
     }
 
     public abstract T get();
