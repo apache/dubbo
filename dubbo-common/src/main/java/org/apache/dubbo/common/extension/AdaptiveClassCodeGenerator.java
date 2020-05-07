@@ -367,8 +367,10 @@ public class AdaptiveClassCodeGenerator {
                     + ": not found url parameter or url attribute in parameters of method " + method.getName());
         }
 
-        Integer index = getterReturnUrl.get("getUrl");
-        if (index != null) {
+        Integer index;
+        if ((index = getterReturnUrl.get("getConsumerUrl")) != null) {
+            return generateGetUrlNullCheck(index, pts[index], "getConsumerUrl");
+        } else if ((index = getterReturnUrl.get("getUrl")) != null) {
             return generateGetUrlNullCheck(index, pts[index], "getUrl");
         } else {
             Map.Entry<String, Integer> entry = getterReturnUrl.entrySet().iterator().next();
