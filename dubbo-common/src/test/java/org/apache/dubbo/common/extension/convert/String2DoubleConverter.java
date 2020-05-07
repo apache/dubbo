@@ -14,29 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.extension;
+package org.apache.dubbo.common.extension.convert;
 
-import org.apache.dubbo.common.lang.Prioritized;
+import org.apache.dubbo.common.convert.Converter;
+import org.apache.dubbo.common.convert.StringToDoubleConverter;
 
-public interface LoadingStrategy extends Prioritized {
-
-    String directory();
-
-    default boolean preferExtensionClassLoader() {
-        return false;
-    }
-
-    default String[] excludedPackages() {
-        return null;
-    }
-
-    /**
-     * Indicates current {@link LoadingStrategy} supports overriding other lower prioritized instances or not.
-     *
-     * @return if supports, return <code>true</code>, or <code>false</code>
-     * @since 2.7.7
-     */
-    default boolean overridden() {
-        return false;
-    }
+/**
+ * A {@link Converter} implementation of {@linkg String} to {@link Double}
+ *
+ * @since 2.7.7
+ */
+public class String2DoubleConverter extends StringToDoubleConverter {
 }

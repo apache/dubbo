@@ -21,6 +21,7 @@ import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.RegistryFactory;
+import org.apache.dubbo.registry.RegistryService;
 import org.apache.dubbo.registry.integration.RegistryProtocol;
 import org.apache.dubbo.registry.support.AbstractRegistry;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
@@ -72,6 +73,7 @@ public class RegistryProtocolTest {
     @BeforeEach
     public void setUp() {
         ApplicationModel.setApplication("RegistryProtocolTest");
+        ApplicationModel.getServiceRepository().registerService(RegistryService.class);
     }
 
     @Test
