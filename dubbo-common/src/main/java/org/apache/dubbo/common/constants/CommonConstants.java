@@ -110,6 +110,10 @@ public interface CommonConstants {
 
     int DEFAULT_TIMEOUT = 1000;
 
+    String TIME_COUNTDOWN_KEY = "timeout-countdown";
+
+    String ENABLE_TIMEOUT_COUNTDOWN_KEY = "enable-timeout-countdown";
+
     String REMOVE_VALUE_PREFIX = "-";
 
     String PROPERTIES_CHAR_SEPERATOR = "-";
