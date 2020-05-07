@@ -14,29 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.extension;
+package org.apache.dubbo.registry.retry;
 
-import org.apache.dubbo.common.lang.Prioritized;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.timer.Timeout;
+import org.apache.dubbo.registry.support.FailbackRegistry;
 
-public interface LoadingStrategy extends Prioritized {
+/**
+ *
+ */
+public class ReExportTask extends AbstractRetryTask {
 
-    String directory();
+    private static final String NAME = "retry re-export";
 
-    default boolean preferExtensionClassLoader() {
-        return false;
+    private Runnable runnable;
+
+    public ReExportTask(Runnable runnable, URL oldUrl, FailbackRegistry registry) {
+        super(oldUrl, registry, NAME);
+        this.runnable = runnable;
     }
 
-    default String[] excludedPackages() {
-        return null;
-    }
-
-    /**
-     * Indicates current {@link LoadingStrategy} supports overriding other lower prioritized instances or not.
-     *
-     * @return if supports, return <code>true</code>, or <code>false</code>
-     * @since 2.7.7
-     */
-    default boolean overridden() {
-        return false;
+    @Override
+    protected void doRetry(URL oldUrl, FailbackRegistry registry, Timeout timeout) {
+        runnable.run();
     }
 }
