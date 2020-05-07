@@ -29,7 +29,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
-import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_SEPARATOR;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 
@@ -51,12 +50,10 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
             for (String rawProvider : providers) {
                 URL cachedUrl = copyOfStringUrls.remove(rawProvider);
                 if (cachedUrl == null) {
-                    String decodedProvider = URL.decode(rawProvider);
-                    if (decodedProvider.contains(PROTOCOL_SEPARATOR)) {
-                        URL url = URL.valueOf(decodedProvider);
-                        if (isMatch(consumer, url)) {
-                            consumerStringUrls.put(rawProvider, url);
-                        }
+                    // parse encoded (URLEncoder.encode) url directly.
+                    URL url = URL.valueOf(rawProvider, true);
+                    if (isMatch(consumer, url)) {
+                        consumerStringUrls.put(rawProvider, url);
                     }
                 }
             }

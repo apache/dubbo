@@ -65,7 +65,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.LOADBALANCE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.RELEASE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
@@ -88,6 +87,7 @@ import static org.apache.dubbo.remoting.Constants.CHECK_KEY;
 import static org.apache.dubbo.remoting.Constants.CODEC_KEY;
 import static org.apache.dubbo.remoting.Constants.CONNECTIONS_KEY;
 import static org.apache.dubbo.remoting.Constants.EXCHANGER_KEY;
+import static org.apache.dubbo.remoting.Constants.PAYLOAD_KEY;
 import static org.apache.dubbo.remoting.Constants.SERIALIZATION_KEY;
 import static org.apache.dubbo.rpc.Constants.DEPRECATED_KEY;
 import static org.apache.dubbo.rpc.Constants.MOCK_KEY;
@@ -104,7 +104,7 @@ public class RegistryProtocol implements Protocol {
     public static final String[] DEFAULT_REGISTER_PROVIDER_KEYS = {
             APPLICATION_KEY, CODEC_KEY, EXCHANGER_KEY, SERIALIZATION_KEY, CLUSTER_KEY, CONNECTIONS_KEY, DEPRECATED_KEY,
             GROUP_KEY, LOADBALANCE_KEY, MOCK_KEY, PATH_KEY, TIMEOUT_KEY, TOKEN_KEY, VERSION_KEY, WARMUP_KEY,
-            WEIGHT_KEY, DUBBO_VERSION_KEY, RELEASE_KEY
+            WEIGHT_KEY, DUBBO_VERSION_KEY, RELEASE_KEY, PAYLOAD_KEY
     };
 
     public static final String[] DEFAULT_REGISTER_CONSUMER_KEYS = {
@@ -334,6 +334,9 @@ public class RegistryProtocol implements Protocol {
      * @return url to registry.
      */
     private URL getUrlToRegistry(final URL providerUrl, final URL registryUrl) {
+        if (!registryUrl.getParameter(SIMPLIFIED_KEY, false)) {
+            return providerUrl;
+        }
         String extraKeys = registryUrl.getParameter(EXTRA_KEYS_KEY, "");
         // if path is not the same as interface name then we should keep INTERFACE_KEY,
         // otherwise, the registry structure of zookeeper would be '/dubbo/path/providers',
@@ -348,17 +351,7 @@ public class RegistryProtocol implements Protocol {
         String[] paramsToRegistry = getParamsToRegistry(DEFAULT_REGISTER_PROVIDER_KEYS, extraKeyArrays);
         // TODO, avoid creation of URL
         //The address you see at the registry
-        URL urlToRegistry;
-        if (registryUrl.getParameter(SIMPLIFIED_KEY, false)) {
-            // FIXME, compute the right revision of url
-            String revision = "unknown"; // urlToRegistry
-            urlToRegistry = URL.valueOf(providerUrl, extraKeyArrays, providerUrl.getParameter(METHODS_KEY, (String[]) null));
-            urlToRegistry.addParameter(REVISION_KEY, revision);
-        } else {
-            urlToRegistry = URL.valueOf(providerUrl, paramsToRegistry, providerUrl.getParameter(METHODS_KEY, (String[]) null));
-        }
-
-        return urlToRegistry;
+        return URL.valueOf(providerUrl, paramsToRegistry, providerUrl.getParameter(METHODS_KEY, (String[]) null));
     }
 
     private URL getSubscribedOverrideUrl(URL registeredProviderUrl) {

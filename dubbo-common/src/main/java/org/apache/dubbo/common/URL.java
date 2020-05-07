@@ -23,7 +23,6 @@ import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.common.utils.UrlUtils;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
@@ -208,8 +207,30 @@ class URL implements Serializable {
         return port <= 0 ? host : host + ':' + port;
     }
 
+    /**
+     * parse decoded url string, formatted dubbo://host:port/path?param=value, into strutted URL.
+     *
+     * @param url, decoded url string
+     * @return
+     */
     public static URL valueOf(String url) {
-        return UrlUtils.valueOf(url, true);
+        return valueOf(url, false);
+    }
+
+    /**
+     * parse normal or encoded url string into strutted URL:
+     * - dubbo://host:port/path?param=value
+     * - URL.encode("dubbo://host:port/path?param=value")
+     *
+     * @param url,     url string
+     * @param encoded, encoded or decoded
+     * @return
+     */
+    public static URL valueOf(String url, boolean encoded) {
+        if (encoded) {
+            return URLStrParser.parseEncodedStr(url, false);
+        }
+        return URLStrParser.parseDecodedStr(url, false);
     }
 
     public static URL valueOf(String url, String... reserveParams) {

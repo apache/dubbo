@@ -18,7 +18,6 @@ package org.apache.dubbo.common;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.common.utils.UrlUtils;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -330,7 +329,7 @@ public final class URLBuilder extends URL {
      * @see URL
      */
     public static URLBuilder valueOf(String url) {
-        return (URLBuilder) UrlUtils.valueOf(url, true);
+        return (URLBuilder) URLStrParser.parseDecodedStr(url, true);
     }
 
 }
