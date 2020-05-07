@@ -24,34 +24,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public final class URLBuilder {
-    private String protocol;
-
-    private String username;
-
-    private String password;
-
-    // by default, host to registry
-    private String host;
-
-    // by default, port to registry
-    private int port;
-
-    private String path;
-
-    private Map<String, String> parameters;
-
-    private Map<String, Map<String, String>> methodParameters;
+public final class URLBuilder extends URL {
 
     public URLBuilder() {
-        protocol = null;
-        username = null;
-        password = null;
-        host = null;
-        port = 0;
-        path = null;
-        parameters = new HashMap<>();
-        methodParameters = new HashMap<>();
+        super();
     }
 
     public URLBuilder(String protocol, String host, int port) {
@@ -84,24 +60,7 @@ public final class URLBuilder {
                       String host,
                       int port,
                       String path, Map<String, String> parameters) {
-        this(protocol, username, password, host, port, path, parameters, URL.toMethodParameters(parameters));
-    }
-
-    public URLBuilder(String protocol,
-                      String username,
-                      String password,
-                      String host,
-                      int port,
-                      String path, Map<String, String> parameters,
-                      Map<String, Map<String, String>> methodParameters) {
-        this.protocol = protocol;
-        this.username = username;
-        this.password = password;
-        this.host = host;
-        this.port = port;
-        this.path = path;
-        this.parameters = parameters != null ? parameters : new HashMap<>();
-        this.methodParameters = (methodParameters != null ? methodParameters : new HashMap<>());
+        super(protocol, username, password, host, port, path, parameters);
     }
 
     public static URLBuilder from(URL url) {
@@ -112,7 +71,6 @@ public final class URLBuilder {
         int port = url.getPort();
         String path = url.getPath();
         Map<String, String> parameters = new HashMap<>(url.getParameters());
-        Map<String, Map<String, String>> methodParameters = new HashMap<>(url.getMethodParameters());
         return new URLBuilder(
                 protocol,
                 username,
@@ -120,8 +78,7 @@ public final class URLBuilder {
                 host,
                 port,
                 path,
-                parameters,
-                methodParameters);
+                parameters);
     }
 
     public URL build() {
@@ -141,13 +98,12 @@ public final class URLBuilder {
                 path = path.substring(firstNonSlash);
             }
         }
-        if (CollectionUtils.isEmptyMap(methodParameters)) {
-            return new URL(protocol, username, password, host, port, path, parameters);
-        } else {
-            return new URL(protocol, username, password, host, port, path, parameters, methodParameters);
-        }
-    }
 
+        URL url = new URL(protocol, username, password, host, port, path);
+        url.parameters = this.parameters;
+
+        return url;
+    }
 
     public URLBuilder setProtocol(String protocol) {
         this.protocol = protocol;
@@ -263,14 +219,6 @@ public final class URLBuilder {
         return this;
     }
 
-    public URLBuilder addMethodParameter(String method, String key, String value) {
-        if (StringUtils.isEmpty(method) || StringUtils.isEmpty(key) || StringUtils.isEmpty(value)) {
-            return this;
-        }
-        URL.putMethodParameter(method, key, value, methodParameters);
-        return this;
-    }
-
     public URLBuilder addParameterIfAbsent(String key, String value) {
         if (StringUtils.isEmpty(key) || StringUtils.isEmpty(value)) {
             return this;
@@ -279,17 +227,6 @@ public final class URLBuilder {
             return this;
         }
         parameters.put(key, value);
-        return this;
-    }
-
-    public URLBuilder addMethodParameterIfAbsent(String method, String key, String value) {
-        if (StringUtils.isEmpty(method) || StringUtils.isEmpty(key) || StringUtils.isEmpty(value)) {
-            return this;
-        }
-        if (hasMethodParameter(method, key)) {
-            return this;
-        }
-        URL.putMethodParameter(method, key, value, methodParameters);
         return this;
     }
 
@@ -313,15 +250,6 @@ public final class URLBuilder {
         }
 
         this.parameters.putAll(parameters);
-        return this;
-    }
-
-    public URLBuilder addMethodParameters(Map<String, Map<String, String>> methodParameters) {
-        if (CollectionUtils.isEmptyMap(methodParameters)) {
-            return this;
-        }
-
-        this.methodParameters.putAll(methodParameters);
         return this;
     }
 
@@ -389,39 +317,19 @@ public final class URLBuilder {
         return StringUtils.isNotEmpty(value);
     }
 
-    public boolean hasMethodParameter(String method, String key) {
-        if (method == null) {
-            String suffix = "." + key;
-            for (String fullKey : parameters.keySet()) {
-                if (fullKey.endsWith(suffix)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-        if (key == null) {
-            String prefix = method + ".";
-            for (String fullKey : parameters.keySet()) {
-                if (fullKey.startsWith(prefix)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-        String value = getMethodParameter(method, key);
-        return value != null && value.length() > 0;
-    }
-
     public String getParameter(String key) {
         return parameters.get(key);
     }
 
-    public String getMethodParameter(String method, String key) {
-        Map<String, String> keyMap = methodParameters.get(method);
-        String value = null;
-        if (keyMap != null) {
-            value =  keyMap.get(key);
-        }
-        return value;
+    /**
+     * Parse url string
+     *
+     * @param url URL string
+     * @return URL instance
+     * @see URL
+     */
+    public static URLBuilder valueOf(String url) {
+        return (URLBuilder) URLStrParser.parseDecodedStr(url, true);
     }
+
 }

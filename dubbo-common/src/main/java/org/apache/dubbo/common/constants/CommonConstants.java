@@ -310,4 +310,8 @@ public interface CommonConstants {
 
     String SSL_ENABLED_KEY = "ssl-enabled";
 
+    String REGISTRY_SNAPSHOT_KEY = "snapshot";
+
+    String REGISTRY_DELAY_NOTIFICATION_KEY = "delay-notification";
+
 }

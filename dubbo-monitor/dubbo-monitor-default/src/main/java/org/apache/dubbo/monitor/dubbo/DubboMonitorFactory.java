@@ -50,6 +50,12 @@ public class DubboMonitorFactory extends AbstractMonitorFactory {
 
     @Override
     protected Monitor createMonitor(URL url) {
+        Invoker<MonitorService> monitorInvoker = protocol.refer(MonitorService.class, buildMonitorURL(url));
+        MonitorService monitorService = proxyFactory.getProxy(monitorInvoker);
+        return new DubboMonitor(monitorInvoker, monitorService);
+    }
+
+    private URL buildMonitorURL(URL url) {
         URLBuilder urlBuilder = URLBuilder.from(url);
         urlBuilder.setProtocol(url.getParameter(PROTOCOL_KEY, DUBBO_PROTOCOL));
         if (StringUtils.isEmpty(url.getPath())) {
@@ -63,9 +69,7 @@ public class DubboMonitorFactory extends AbstractMonitorFactory {
         }
         urlBuilder.addParameters(CHECK_KEY, String.valueOf(false),
                 REFERENCE_FILTER_KEY, filter + "-monitor");
-        Invoker<MonitorService> monitorInvoker = protocol.refer(MonitorService.class, urlBuilder.build());
-        MonitorService monitorService = proxyFactory.getProxy(monitorInvoker);
-        return new DubboMonitor(monitorInvoker, monitorService);
+        return urlBuilder.build();
     }
 
 }

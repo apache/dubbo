@@ -24,6 +24,7 @@ import org.apache.dubbo.config.support.Parameter;
 import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.EXTRA_KEYS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_DELAY_NOTIFICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
 import static org.apache.dubbo.config.Constants.REGISTRIES_SUFFIX;
 
@@ -179,6 +180,8 @@ public class RegistryConfig extends AbstractConfig {
      * Take effect only when no preferred registry is specified.
      */
     private Integer weight;
+
+    private Integer lazyNotification;
 
     public RegistryConfig() {
     }
@@ -495,6 +498,15 @@ public class RegistryConfig extends AbstractConfig {
 
     public void setWeight(Integer weight) {
         this.weight = weight;
+    }
+
+    @Parameter(key = REGISTRY_DELAY_NOTIFICATION_KEY)
+    public Integer getLazyNotification() {
+        return lazyNotification;
+    }
+
+    public void setLazyNotification(Integer lazyNotification) {
+        this.lazyNotification = lazyNotification;
     }
 
     @Override
