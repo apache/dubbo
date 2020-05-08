@@ -17,7 +17,6 @@
 package org.apache.dubbo.common.utils;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.constants.RemotingConstants;
 
 import java.util.ArrayList;
@@ -553,16 +552,5 @@ public class UrlUtils {
         }
         arr[1] = serviceKey;
         return arr;
-    }
-
-    public static URLBuilder newModifiableUrl(URL url) {
-        return URLBuilder.from(url);
-    }
-
-    public static URL unmodifiableUrl(URL url) {
-        if (url instanceof URLBuilder) {
-            return ((URLBuilder) url).build();
-        }
-        return url;
     }
 }

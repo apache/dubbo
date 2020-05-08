@@ -440,7 +440,7 @@ public class RegistryDirectoryTest {
         registryDirectory.destroy();
 
         List<Invoker<RegistryDirectoryTest>> cachedInvokers = registryDirectory.getInvokers();
-        Map<URL, Invoker<RegistryDirectoryTest>> urlInvokerMap = registryDirectory.getUrlInvokerMap();
+        Map<String, Invoker<RegistryDirectoryTest>> urlInvokerMap = registryDirectory.getUrlInvokerMap();
 
         Assertions.assertNull(cachedInvokers);
         Assertions.assertEquals(0, urlInvokerMap.size());

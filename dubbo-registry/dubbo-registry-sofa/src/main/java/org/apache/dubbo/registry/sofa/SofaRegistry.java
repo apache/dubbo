@@ -21,15 +21,12 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.NotifyListener;
-import org.apache.dubbo.registry.RegistryNotifier;
-import org.apache.dubbo.registry.support.CacheableFailbackRegistry;
+import org.apache.dubbo.registry.support.FailbackRegistry;
 
 import com.alipay.sofa.registry.client.api.RegistryClient;
 import com.alipay.sofa.registry.client.api.RegistryClientConfig;
 import com.alipay.sofa.registry.client.api.Subscriber;
-import com.alipay.sofa.registry.client.api.SubscriberDataObserver;
 import com.alipay.sofa.registry.client.api.model.RegistryType;
 import com.alipay.sofa.registry.client.api.model.UserData;
 import com.alipay.sofa.registry.client.api.registration.PublisherRegistration;
@@ -45,10 +42,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
 import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.PROVIDER_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.REGISTER_KEY;
@@ -63,7 +60,7 @@ import static org.apache.dubbo.registry.sofa.SofaRegistryConstants.LOCAL_REGION;
  *
  * @since 2.7.2
  */
-public class SofaRegistry extends CacheableFailbackRegistry {
+public class SofaRegistry extends FailbackRegistry {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SofaRegistry.class);
 
@@ -168,14 +165,18 @@ public class SofaRegistry extends CacheableFailbackRegistry {
             LOGGER.warn("Service name [" + serviceName + "] have bean registered in SOFARegistry.");
 
             CountDownLatch countDownLatch = new CountDownLatch(1);
-            handleRegistryData(url, listSubscriber.peekData(), listener, countDownLatch);
+            handleRegistryData(listSubscriber.peekData(), listener, countDownLatch);
             waitAddress(serviceName, countDownLatch);
             return;
         }
 
         final CountDownLatch latch = new CountDownLatch(1);
         SubscriberRegistration subscriberRegistration = new SubscriberRegistration(serviceName,
-                new RegistryChildListenerImpl(url, serviceName, listener, latch));
+                (dataId, data) -> {
+                    //record change
+                    printAddressData(dataId, data);
+                    handleRegistryData(data, listener, latch);
+                });
 
         addAttributesForSub(subscriberRegistration);
         listSubscriber = registryClient.register(subscriberRegistration);
@@ -206,19 +207,26 @@ public class SofaRegistry extends CacheableFailbackRegistry {
         registryClient.unregister(serviceName, DEFAULT_GROUP, RegistryType.SUBSCRIBER);
     }
 
-    private void handleRegistryData(URL subscribeUrl, UserData data, NotifyListener notifyListener,
+    private void handleRegistryData(UserData data, NotifyListener notifyListener,
                                     CountDownLatch latch) {
         try {
-            List<URL> urls = toUrlsWithEmpty(subscribeUrl, PROVIDERS_CATEGORY, flatUserData(data));
+            List<URL> urls = new ArrayList<>();
+            if (null != data) {
+
+                List<String> datas = flatUserData(data);
+                for (String serviceUrl : datas) {
+                    URL url = URL.valueOf(serviceUrl);
+                    String serverApplication = url.getParameter(APPLICATION_KEY);
+                    if (StringUtils.isNotEmpty(serverApplication)) {
+                        url = url.addParameter("dstApp", serverApplication);
+                    }
+                    urls.add(url);
+                }
+            }
             notifyListener.notify(urls);
         } finally {
             latch.countDown();
         }
-    }
-
-    @Override
-    protected boolean isMatch(URL subscribeUrl, URL providerUrl) {
-        return UrlUtils.isMatch(subscribeUrl, providerUrl);
     }
 
     private String buildServiceName(URL url) {
@@ -281,9 +289,6 @@ public class SofaRegistry extends CacheableFailbackRegistry {
      */
     protected List<String> flatUserData(UserData userData) {
         List<String> result = new ArrayList<>();
-        if (userData == null) {
-            return result;
-        }
         Map<String, List<String>> zoneData = userData.getZoneData();
 
         for (Map.Entry<String, List<String>> entry : zoneData.entrySet()) {
@@ -291,25 +296,5 @@ public class SofaRegistry extends CacheableFailbackRegistry {
         }
 
         return result;
-    }
-
-    private class RegistryChildListenerImpl implements SubscriberDataObserver {
-        private RegistryNotifier notifier;
-
-        public RegistryChildListenerImpl(URL consumerUrl, String path, NotifyListener listener, CountDownLatch latch) {
-            notifier = new RegistryNotifier(SofaRegistry.this) {
-                @Override
-                protected void doNotify(Object rawAddresses) {
-                    //record change
-                    printAddressData(path, (UserData) rawAddresses);
-                    handleRegistryData(consumerUrl, (UserData) rawAddresses, listener, latch);
-                }
-            };
-        }
-
-        @Override
-        public void handleData(String dataId, UserData data) {
-            notifier.notify(data);
-        }
     }
 }
