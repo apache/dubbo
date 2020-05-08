@@ -145,18 +145,22 @@ public class ZookeeperRegistry extends FailbackRegistry {
     public void doSubscribe(final URL url, final NotifyListener listener) {
         try {
             if (ANY_VALUE.equals(url.getServiceInterface())) {
+                //订阅所有数据
                 String root = toRootPath();
                 ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.computeIfAbsent(url, k -> new ConcurrentHashMap<>());
                 ChildListener zkListener = listeners.computeIfAbsent(listener, k -> (parentPath, currentChilds) -> {
+                    //接口ChildListener的实现，不会立即执行，只会在触发变更通知时执行
                     for (String child : currentChilds) {
                         child = URL.decode(child);
                         if (!anyServices.contains(child)) {
+                            //如果存在子节点还未被订阅，说明是新的节点，则订阅
                             anyServices.add(child);
                             subscribe(url.setPath(child).addParameters(INTERFACE_KEY, child,
                                     Constants.CHECK_KEY, String.valueOf(false)), k);
                         }
                     }
                 });
+                //创建持久节点，接下来订阅持久节点的直接子节点
                 zkClient.create(root, false);
                 List<String> services = zkClient.addChildListener(root, zkListener);
                 if (CollectionUtils.isNotEmpty(services)) {
@@ -169,6 +173,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
                 }
             } else {
                 List<URL> urls = new ArrayList<>();
+                //首先根据URL的类别得到一组需要订阅的路径。如果类别是*，则会订阅四种类型的路径（provider、routers、consumers、configurators）
                 for (String path : toCategoriesPath(url)) {
                     ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.computeIfAbsent(url, k -> new ConcurrentHashMap<>());
                     ChildListener zkListener = listeners.computeIfAbsent(listener, k -> (parentPath, currentChilds) -> ZookeeperRegistry.this.notify(url, k, toUrlsWithEmpty(url, parentPath, currentChilds)));

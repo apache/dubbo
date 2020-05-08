@@ -30,13 +30,16 @@ public interface RegistryService {
 
     /**
      * Register data, such as : provider service, consumer address, route rule, override rule and other data.
+     * 注册数据，比如：provider服务，consumer地址，路由规则，override规则和其他数据
      * <p>
      * Registering is required to support the contract:<br>
+     *     注册需要支持以下规则
      * 1. When the URL sets the check=false parameter. When the registration fails, the exception is not thrown and retried in the background. Otherwise, the exception will be thrown.<br>
-     * 2. When URL sets the dynamic=false parameter, it needs to be stored persistently, otherwise, it should be deleted automatically when the registrant has an abnormal exit.<br>
-     * 3. When the URL sets category=routers, it means classified storage, the default category is providers, and the data can be notified by the classified section. <br>
-     * 4. When the registry is restarted, network jitter, data can not be lost, including automatically deleting data from the broken line.<br>
-     * 5. Allow URLs which have the same URL but different parameters to coexist,they can't cover each other.<br>
+     *     当URL设置了参数check=false，注册失败时则不抛错，并且要进行重试。check=true，则需要抛错
+     * 2. When the URL sets the dynamic（动态）=false parameter, it needs to be stored persistently（持久化存储）, otherwise, it should be deleted automatically（自动删除） when the registrant has an abnormal exit（异常退出）.<br>
+     * 3. When the URL sets category=routers, it means classified（分类） storage, the default category（类别） is providers, and the data can be notified（通知） by the classified section（部分）. <br>
+     * 4. When the registry is restarted, network jitter（网络抖动）, data can not be lost, including automatically deleting data from the broken line.<br>
+     * 5. Allow URLs which have the same URL but different parameters to coexist（共存）, they can't cover each other.<br>
      *
      * @param url  Registration information , is not allowed to be empty, e.g: dubbo://10.20.153.10/org.apache.dubbo.foo.BarService?version=1.0.0&application=kylin
      */
@@ -54,11 +57,11 @@ public interface RegistryService {
     void unregister(URL url);
 
     /**
-     * Subscribe to eligible registered data and automatically push when the registered data is changed.
+     * Subscribe to eligible（合格的） registered data and automatically push when the registered data is changed.
      * <p>
      * Subscribing need to support contracts:<br>
      * 1. When the URL sets the check=false parameter. When the registration fails, the exception is not thrown and retried in the background. <br>
-     * 2. When URL sets category=routers, it only notifies the specified classification data. Multiple classifications are separated by commas, and allows asterisk to match, which indicates that all categorical data are subscribed.<br>
+     * 2. When URL sets category=routers, it only notifies（通知） the specified（指定的） classification data. Multiple（多个） classifications are separated by commas（逗号）, and allows asterisk（星号） to match, which indicates（表示） that all categorical data are subscribed.<br>
      * 3. Allow interface, group, version, and classifier as a conditional query, e.g.: interface=org.apache.dubbo.foo.BarService&version=1.0.0<br>
      * 4. And the query conditions allow the asterisk to be matched, subscribe to all versions of all the packets of all interfaces, e.g. :interface=*&group=*&version=*&classifier=*<br>
      * 5. When the registry is restarted and network jitter, it is necessary to automatically restore the subscription request.<br>

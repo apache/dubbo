@@ -234,6 +234,7 @@ class URL implements Serializable {
      * @see URL
      */
     public static URL valueOf(String url) {
+        //eg. url = "zookeeper://zookeeper/org.apache.dubbo.test.injvmServie?notify=false&methods=test1,test2"
         if (url == null || (url = url.trim()).length() == 0) {
             throw new IllegalArgumentException("url == null");
         }
