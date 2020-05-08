@@ -20,7 +20,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.LogUtil;
 import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
@@ -47,7 +46,6 @@ import org.mockito.Mockito;
 import javax.script.ScriptEngineManager;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -98,8 +96,7 @@ public class RegistryDirectoryTest {
     }
 
     private RegistryDirectory getRegistryDirectory(URL url) {
-        Map<String, String> qs = Collections.unmodifiableMap(StringUtils.parseQueryString(url.getParameterAndDecoded(REFER_KEY)));
-        RegistryDirectory registryDirectory = new RegistryDirectory(URL.class, url, qs);
+        RegistryDirectory registryDirectory = new RegistryDirectory(URL.class, url);
         registryDirectory.setProtocol(protocol);
         registryDirectory.setRegistry(registry);
         registryDirectory.setRouterChain(RouterChain.buildChain(url));
@@ -118,22 +115,21 @@ public class RegistryDirectoryTest {
     @Test
     public void test_Constructor_WithErrorParam() {
         try {
-            new RegistryDirectory(null, null, null);
+            new RegistryDirectory(null, null);
             fail();
         } catch (IllegalArgumentException e) {
 
         }
         try {
-            Map<String, String> qs = Collections.unmodifiableMap(StringUtils.parseQueryString(noMeaningUrl.getParameterAndDecoded(REFER_KEY)));
             // null url
-            new RegistryDirectory(null, noMeaningUrl, qs);
+            new RegistryDirectory(null, noMeaningUrl);
             fail();
         } catch (IllegalArgumentException e) {
 
         }
         try {
             // no servicekey
-            new RegistryDirectory(RegistryDirectoryTest.class, URL.valueOf("dubbo://10.20.30.40:9090"), new HashMap<>());
+            new RegistryDirectory(RegistryDirectoryTest.class, URL.valueOf("dubbo://10.20.30.40:9090"));
             fail();
         } catch (IllegalArgumentException e) {
 
@@ -337,10 +333,9 @@ public class RegistryDirectoryTest {
         RegistryDirectory registryDirectory = getRegistryDirectory();
         URL regurl = noMeaningUrl.addParameter("test", "reg").addParameterAndEncoded(REFER_KEY,
                 "key=query&" + LOADBALANCE_KEY + "=" + LeastActiveLoadBalance.NAME);
-        Map<String, String> qs = Collections.unmodifiableMap(StringUtils.parseQueryString(regurl.getParameterAndDecoded(REFER_KEY)));
         RegistryDirectory<RegistryDirectoryTest> registryDirectory2 = new RegistryDirectory(
                 RegistryDirectoryTest.class,
-                regurl, qs);
+                regurl);
         registryDirectory2.setProtocol(protocol);
 
         List<URL> serviceUrls = new ArrayList<URL>();
