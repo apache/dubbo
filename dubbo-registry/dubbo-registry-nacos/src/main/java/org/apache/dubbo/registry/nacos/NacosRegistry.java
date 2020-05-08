@@ -27,18 +27,15 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
-import org.apache.dubbo.registry.RegistryNotifier;
 import org.apache.dubbo.registry.nacos.util.NacosInstanceManageUtil;
 import org.apache.dubbo.registry.support.FailbackRegistry;
 
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.NamingService;
-import com.alibaba.nacos.api.naming.listener.Event;
 import com.alibaba.nacos.api.naming.listener.EventListener;
 import com.alibaba.nacos.api.naming.listener.NamingEvent;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.api.naming.pojo.ListView;
-import com.google.common.collect.Lists;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -492,7 +489,24 @@ public class NacosRegistry extends FailbackRegistry {
 
     private void subscribeEventListener(String serviceName, final URL url, final NotifyListener listener)
             throws NacosException {
-        EventListener eventListener = new RegistryChildListenerImpl(serviceName, url, listener);
+        EventListener eventListener = event -> {
+            if (event instanceof NamingEvent) {
+                NamingEvent e = (NamingEvent) event;
+                List<Instance> instances = e.getInstances();
+
+
+                if (isServiceNamesWithCompatibleMode(url)) {
+                    /**
+                     * Get all instances with corresponding serviceNames to avoid instance overwrite and but with empty instance mentioned
+                     * in https://github.com/apache/dubbo/issues/5885 and https://github.com/apache/dubbo/issues/5899
+                     */
+                    NacosInstanceManageUtil.initOrRefreshServiceInstanceList(serviceName, instances);
+                    instances = NacosInstanceManageUtil.getAllCorrespondingServiceInstanceList(serviceName);
+                }
+
+                notifySubscriber(url, listener, instances);
+            }
+        };
         namingService.subscribe(serviceName,
                 getUrl().getParameter(GROUP_KEY, Constants.DEFAULT_GROUP),
                 eventListener);
@@ -612,35 +626,4 @@ public class NacosRegistry extends FailbackRegistry {
         void callback(NamingService namingService) throws NacosException;
 
     }
-
-    private class RegistryChildListenerImpl implements EventListener {
-        private RegistryNotifier notifier;
-
-        public RegistryChildListenerImpl(String serviceName, URL consumerUrl, NotifyListener listener) {
-            notifier = new RegistryNotifier(NacosRegistry.this) {
-                @Override
-                protected void doNotify(Object rawAddresses) {
-                    List<Instance> instances = (List<Instance>) rawAddresses;
-                    if (isServiceNamesWithCompatibleMode(consumerUrl)) {
-                        /**
-                         * Get all instances with corresponding serviceNames to avoid instance overwrite and but with empty instance mentioned
-                         * in https://github.com/apache/dubbo/issues/5885 and https://github.com/apache/dubbo/issues/5899
-                         */
-                        NacosInstanceManageUtil.initOrRefreshServiceInstanceList(serviceName, instances);
-                        instances = NacosInstanceManageUtil.getAllCorrespondingServiceInstanceList(serviceName);
-                    }
-                    NacosRegistry.this.notifySubscriber(consumerUrl, listener, instances);
-                }
-            };
-        }
-
-        @Override
-        public void onEvent(Event event) {
-            if (event instanceof NamingEvent) {
-                NamingEvent e = (NamingEvent) event;
-                notifier.notify(e.getInstances());
-            }
-        }
-    }
-
 }

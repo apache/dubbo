@@ -623,11 +623,6 @@
                 <xsd:documentation><![CDATA[ Is this registry the preferred one. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-        <xsd:attribute name="delay-notification" type="xsd:int">
-            <xsd:annotation>
-                <xsd:documentation><![CDATA[ The maximum time to wait before notification. ]]></xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
         <xsd:attribute name="weight" type="xsd:integer">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ weight of registry. ]]></xsd:documentation>
