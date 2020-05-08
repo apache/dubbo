@@ -17,7 +17,6 @@
 package org.apache.dubbo.registry.redis;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -28,7 +27,7 @@ import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.NotifyListener;
-import org.apache.dubbo.registry.support.FailbackRegistry;
+import org.apache.dubbo.registry.support.CacheableFailbackRegistry;
 import org.apache.dubbo.rpc.RpcException;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
@@ -57,7 +56,6 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
@@ -66,7 +64,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.DEFAULT_REGISTRY_RECONNECT_PERIOD;
 import static org.apache.dubbo.registry.Constants.DEFAULT_SESSION_TIMEOUT;
 import static org.apache.dubbo.registry.Constants.REGISTER;
@@ -77,7 +74,7 @@ import static org.apache.dubbo.registry.Constants.UNREGISTER;
 /**
  * RedisRegistry
  */
-public class RedisRegistry extends FailbackRegistry {
+public class RedisRegistry extends CacheableFailbackRegistry {
 
     private static final Logger logger = LoggerFactory.getLogger(RedisRegistry.class);
 
@@ -437,27 +434,17 @@ public class RedisRegistry extends FailbackRegistry {
             if (!categories.contains(ANY_VALUE) && !categories.contains(category)) {
                 continue;
             }
-            List<URL> urls = new ArrayList<>();
+
             Map<String, String> values = jedis.hgetAll(key);
+            List<String> rawUrls = new ArrayList<>(values.size());
             if (CollectionUtils.isNotEmptyMap(values)) {
                 for (Map.Entry<String, String> entry : values.entrySet()) {
-                    URL u = URL.valueOf(entry.getKey());
-                    if (!u.getParameter(DYNAMIC_KEY, true)
-                            || Long.parseLong(entry.getValue()) >= now) {
-                        if (UrlUtils.isMatch(url, u)) {
-                            urls.add(u);
-                        }
+                    if (Long.parseLong(entry.getValue()) >= now) {
+                        rawUrls.add(entry.getKey());
                     }
                 }
             }
-            if (urls.isEmpty()) {
-                urls.add(URLBuilder.from(url)
-                        .setProtocol(EMPTY_PROTOCOL)
-                        .setAddress(ANYHOST_VALUE)
-                        .setPath(toServiceName(key))
-                        .addParameter(CATEGORY_KEY, category)
-                        .build());
-            }
+            List<URL> urls = toUrlsWithEmpty(url, category, rawUrls);
             result.addAll(urls);
             if (logger.isInfoEnabled()) {
                 logger.info("redis notify: " + key + " = " + urls);
@@ -469,6 +456,11 @@ public class RedisRegistry extends FailbackRegistry {
         for (NotifyListener listener : listeners) {
             notify(url, listener, result);
         }
+    }
+
+    @Override
+    protected boolean isMatch(URL subscribeUrl, URL providerUrl) {
+        return !providerUrl.getParameter(DYNAMIC_KEY, true) && UrlUtils.isMatch(subscribeUrl, providerUrl);
     }
 
     private String toServiceName(String categoryPath) {

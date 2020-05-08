@@ -336,13 +336,25 @@ public class ExtensionLoader<T> {
             for (Map.Entry<String, String> entry : url.getParameters().entrySet()) {
                 String k = entry.getKey();
                 String v = entry.getValue();
-                if ((k.equals(key) || k.endsWith("." + key))
-                        && ((keyValue != null && keyValue.equals(v)) || (keyValue == null && ConfigUtils.isNotEmpty(v)))) {
+                if (isMatch(key, keyValue, k, v)) {
                     return true;
+                }
+            }
+
+            for (Map.Entry<String, Map<String, String>> entry : url.getMethodParameters().entrySet()) {
+                Map<String, String> methodKeyValues = entry.getValue();
+                for (Map.Entry<String, String> methodEntry : methodKeyValues.entrySet()) {
+                    String k = methodEntry.getKey();
+                    String v = methodEntry.getValue();
+                    return isMatch(key, keyValue, k, v);
                 }
             }
         }
         return false;
+    }
+
+    private boolean isMatch(String key, String value, String k, String v) {
+        return k.equals(key) && ((value != null && value.equals(v)) || (value == null && ConfigUtils.isNotEmpty(v)));
     }
 
     /**
