@@ -33,6 +33,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +43,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY_PREFIX;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
@@ -91,25 +93,25 @@ class URL implements Serializable {
 
     private static final long serialVersionUID = -1985165475234910535L;
 
-    protected String protocol;
+    private final String protocol;
 
-    protected String username;
+    private final String username;
 
-    protected String password;
+    private final String password;
 
     // by default, host to registry
-    protected String host;
+    private final String host;
 
     // by default, port to registry
-    protected int port;
+    private final int port;
 
-    protected String path;
+    private final String path;
 
-    protected Map<String, String> parameters;
+    private final Map<String, String> parameters;
+
+    private final Map<String, Map<String, String>> methodParameters;
 
     // ==== cache ====
-
-    private volatile transient Map<String, Map<String, String>> methodParameters;
 
     private volatile transient Map<String, Number> numbers;
 
@@ -140,6 +142,7 @@ class URL implements Serializable {
         this.address = null;
         this.path = null;
         this.parameters = null;
+        this.methodParameters = null;
     }
 
     public URL(String protocol, String host, int port) {
@@ -181,6 +184,17 @@ class URL implements Serializable {
                int port,
                String path,
                Map<String, String> parameters) {
+        this(protocol, username, password, host, port, path, parameters, toMethodParameters(parameters));
+    }
+
+    public URL(String protocol,
+               String username,
+               String password,
+               String host,
+               int port,
+               String path,
+               Map<String, String> parameters,
+               Map<String, Map<String, String>> methodParameters) {
         if (StringUtils.isEmpty(username)
                 && StringUtils.isNotEmpty(password)) {
             throw new IllegalArgumentException("Invalid url, password without username!");
@@ -190,6 +204,7 @@ class URL implements Serializable {
         this.password = password;
         this.host = host;
         this.port = Math.max(port, 0);
+        this.address = getAddress(this.host, this.port);
 
         // trim the beginning "/"
         while (path != null && path.startsWith("/")) {
@@ -197,10 +212,12 @@ class URL implements Serializable {
         }
         this.path = path;
         if (parameters == null) {
-            this.parameters = new HashMap<>();
+            parameters = new HashMap<>();
         } else {
-            this.parameters = new HashMap<>(parameters);
+            parameters = new HashMap<>(parameters);
         }
+        this.parameters = Collections.unmodifiableMap(parameters);
+        this.methodParameters = Collections.unmodifiableMap(methodParameters);
     }
 
     private static String getAddress(String host, int port) {
@@ -208,29 +225,135 @@ class URL implements Serializable {
     }
 
     /**
-     * parse decoded url string, formatted dubbo://host:port/path?param=value, into strutted URL.
+     * NOTICE: This method allocate too much objects, we can use {@link URLStrParser#parseDecodedStr(String)} instead.
+     * <p>
+     * Parse url string
      *
-     * @param url, decoded url string
-     * @return
+     * @param url URL string
+     * @return URL instance
+     * @see URL
      */
     public static URL valueOf(String url) {
-        return valueOf(url, false);
+        if (url == null || (url = url.trim()).length() == 0) {
+            throw new IllegalArgumentException("url == null");
+        }
+        String protocol = null;
+        String username = null;
+        String password = null;
+        String host = null;
+        int port = 0;
+        String path = null;
+        Map<String, String> parameters = null;
+        int i = url.indexOf('?'); // separator between body and parameters
+        if (i >= 0) {
+            String[] parts = url.substring(i + 1).split("&");
+            parameters = new HashMap<>();
+            for (String part : parts) {
+                part = part.trim();
+                if (part.length() > 0) {
+                    int j = part.indexOf('=');
+                    if (j >= 0) {
+                        String key = part.substring(0, j);
+                        String value = part.substring(j + 1);
+                        parameters.put(key, value);
+                        // compatible with lower versions registering "default." keys
+                        if (key.startsWith(DEFAULT_KEY_PREFIX)) {
+                            parameters.putIfAbsent(key.substring(DEFAULT_KEY_PREFIX.length()), value);
+                        }
+                    } else {
+                        parameters.put(part, part);
+                    }
+                }
+            }
+            url = url.substring(0, i);
+        }
+        i = url.indexOf("://");
+        if (i >= 0) {
+            if (i == 0) {
+                throw new IllegalStateException("url missing protocol: \"" + url + "\"");
+            }
+            protocol = url.substring(0, i);
+            url = url.substring(i + 3);
+        } else {
+            // case: file:/path/to/file.txt
+            i = url.indexOf(":/");
+            if (i >= 0) {
+                if (i == 0) {
+                    throw new IllegalStateException("url missing protocol: \"" + url + "\"");
+                }
+                protocol = url.substring(0, i);
+                url = url.substring(i + 1);
+            }
+        }
+
+        i = url.indexOf('/');
+        if (i >= 0) {
+            path = url.substring(i + 1);
+            url = url.substring(0, i);
+        }
+        i = url.lastIndexOf('@');
+        if (i >= 0) {
+            username = url.substring(0, i);
+            int j = username.indexOf(':');
+            if (j >= 0) {
+                password = username.substring(j + 1);
+                username = username.substring(0, j);
+            }
+            url = url.substring(i + 1);
+        }
+        i = url.lastIndexOf(':');
+        if (i >= 0 && i < url.length() - 1) {
+            if (url.lastIndexOf('%') > i) {
+                // ipv6 address with scope id
+                // e.g. fe80:0:0:0:894:aeec:f37d:23e1%en0
+                // see https://howdoesinternetwork.com/2013/ipv6-zone-id
+                // ignore
+            } else {
+                port = Integer.parseInt(url.substring(i + 1));
+                url = url.substring(0, i);
+            }
+        }
+        if (url.length() > 0) {
+            host = url;
+        }
+
+        return new URL(protocol, username, password, host, port, path, parameters);
     }
 
-    /**
-     * parse normal or encoded url string into strutted URL:
-     * - dubbo://host:port/path?param=value
-     * - URL.encode("dubbo://host:port/path?param=value")
-     *
-     * @param url,     url string
-     * @param encoded, encoded or decoded
-     * @return
-     */
-    public static URL valueOf(String url, boolean encoded) {
-        if (encoded) {
-            return URLStrParser.parseEncodedStr(url, false);
+    public static Map<String, Map<String, String>> toMethodParameters(Map<String, String> parameters) {
+        Map<String, Map<String, String>> methodParameters = new HashMap<>();
+        if (parameters == null) {
+            return methodParameters;
         }
-        return URLStrParser.parseDecodedStr(url, false);
+
+        String methodsString = parameters.get(METHODS_KEY);
+        if (StringUtils.isNotEmpty(methodsString)) {
+            List<String> methods = StringUtils.splitToList(methodsString, ',');
+            for (Map.Entry<String, String> entry : parameters.entrySet()) {
+                String key = entry.getKey();
+                for (int i = 0; i < methods.size(); i++) {
+                    String method = methods.get(i);
+                    int methodLen = method.length();
+                    if (key.length() > methodLen
+                            && key.startsWith(method)
+                            && key.charAt(methodLen) == '.') {//equals to: key.startsWith(method + '.')
+                        String realKey = key.substring(methodLen + 1);
+                        URL.putMethodParameter(method, realKey, entry.getValue(), methodParameters);
+                    }
+                }
+            }
+        } else {
+            for (Map.Entry<String, String> entry : parameters.entrySet()) {
+                String key = entry.getKey();
+                int methodSeparator = key.indexOf('.');
+                if (methodSeparator > 0) {
+                    String method = key.substring(0, methodSeparator);
+                    String realKey = key.substring(methodSeparator + 1);
+                    URL.putMethodParameter(method, realKey, entry.getValue(), methodParameters);
+                }
+            }
+        }
+        return methodParameters;
     }
 
     public static URL valueOf(String url, String... reserveParams) {
@@ -444,46 +567,6 @@ class URL implements Serializable {
     }
 
     public Map<String, Map<String, String>> getMethodParameters() {
-        if (methodParameters == null) {
-            methodParameters = initMethodParameters(this.parameters);
-        }
-        return methodParameters;
-    }
-
-    private void resetMethodParameters() {
-        this.methodParameters = null;
-    }
-
-    private Map<String, Map<String, String>> initMethodParameters(Map<String, String> parameters) {
-        Map<String, Map<String, String>> methodParameters = new HashMap<>();
-        if (parameters == null) {
-            return methodParameters;
-        }
-
-        String methodsString = parameters.get(METHODS_KEY);
-        if (StringUtils.isNotEmpty(methodsString)) {
-            String[] methods = methodsString.split(",");
-            for (Map.Entry<String, String> entry : parameters.entrySet()) {
-                String key = entry.getKey();
-                for (String method : methods) {
-                    String methodPrefix = method + '.';
-                    if (key.startsWith(methodPrefix)) {
-                        String realKey = key.substring(methodPrefix.length());
-                        URL.putMethodParameter(method, realKey, entry.getValue(), methodParameters);
-                    }
-                }
-            }
-        } else {
-            for (Map.Entry<String, String> entry : parameters.entrySet()) {
-                String key = entry.getKey();
-                int methodSeparator = key.indexOf('.');
-                if (methodSeparator > 0) {
-                    String method = key.substring(0, methodSeparator);
-                    String realKey = key.substring(methodSeparator + 1);
-                    URL.putMethodParameter(method, realKey, entry.getValue(), methodParameters);
-                }
-            }
-        }
         return methodParameters;
     }
 
@@ -711,7 +794,7 @@ class URL implements Serializable {
     }
 
     public String getMethodParameter(String method, String key) {
-        Map<String, String> keyMap = getMethodParameters().get(method);
+        Map<String, String> keyMap = methodParameters.get(method);
         String value = null;
         if (keyMap != null) {
             value = keyMap.get(key);
@@ -1009,6 +1092,40 @@ class URL implements Serializable {
 
         return new URL(protocol, username, password, host, port, path, map);
     }
+
+    public URL addMethodParameter(String method, String key, String value) {
+        if (StringUtils.isEmpty(method)
+                || StringUtils.isEmpty(key)
+                || StringUtils.isEmpty(value)) {
+            return this;
+        }
+
+        Map<String, String> map = new HashMap<>(getParameters());
+        map.put(method + "." + key, value);
+        Map<String, Map<String, String>> methodMap = toMethodParameters(map);
+        URL.putMethodParameter(method, key, value, methodMap);
+
+        return new URL(protocol, username, password, host, port, path, map, methodMap);
+    }
+
+    public URL addMethodParameterIfAbsent(String method, String key, String value) {
+        if (StringUtils.isEmpty(method)
+                || StringUtils.isEmpty(key)
+                || StringUtils.isEmpty(value)) {
+            return this;
+        }
+        if (hasMethodParameter(method, key)) {
+            return this;
+        }
+
+        Map<String, String> map = new HashMap<>(getParameters());
+        map.put(method + "." + key, value);
+        Map<String, Map<String, String>> methodMap = toMethodParameters(map);
+        URL.putMethodParameter(method, key, value, methodMap);
+
+        return new URL(protocol, username, password, host, port, path, map, methodMap);
+    }
+
     /**
      * Add parameters to a new url.
      *
@@ -1040,11 +1157,9 @@ class URL implements Serializable {
             return this;
         }
 
-        Map<String, String> srcParams = getParameters();
-        Map<String, String> newMap = new HashMap<>((int) ((srcParams.size() + parameters.size()) / 0.75 + 1));
-        newMap.putAll(srcParams);
-        newMap.putAll(parameters);
-        return new URL(protocol, username, password, host, port, path, newMap);
+        Map<String, String> map = new HashMap<>(getParameters());
+        map.putAll(parameters);
+        return new URL(protocol, username, password, host, port, path, map);
     }
 
     public URL addParametersIfAbsent(Map<String, String> parameters) {
