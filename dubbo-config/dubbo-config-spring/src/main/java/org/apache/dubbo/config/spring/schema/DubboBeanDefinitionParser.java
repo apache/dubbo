@@ -130,13 +130,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                 parseProperties(element.getChildNodes(), classDefinition, parserContext);
                 beanDefinition.getPropertyValues().addPropertyValue("ref", new BeanDefinitionHolder(classDefinition, id + "Impl"));
             }
-        } else if (ReferenceBean.class.equals(beanClass)) {
-            String interfaceClassName = resolveAttribute(element, "interface", parserContext);
-            if (StringUtils.isNotEmpty(interfaceClassName)) {
-                Class<?> interfaceClass = ReflectUtils.forName(interfaceClassName);
-                beanDefinition.setTargetType(interfaceClass);
-            }
-        } else if (ProviderConfig.class.equals(beanClass)) {
+        }  else if (ProviderConfig.class.equals(beanClass)) {
             parseNested(element, parserContext, ServiceBean.class, true, "service", "provider", id, beanDefinition);
         } else if (ConsumerConfig.class.equals(beanClass)) {
             parseNested(element, parserContext, ReferenceBean.class, false, "reference", "consumer", id, beanDefinition);
