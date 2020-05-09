@@ -17,20 +17,13 @@
 
 package com.alibaba.dubbo.rpc.protocol.dubbo;
 
-import org.apache.dubbo.rpc.AppResponse;
-import org.apache.dubbo.rpc.Result;
-
 import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.exchange.ResponseCallback;
 import com.alibaba.dubbo.remoting.exchange.ResponseFuture;
 import com.alibaba.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.Result;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 import java.util.function.BiConsumer;
 
 /**
@@ -42,7 +35,12 @@ public class FutureAdapter<V> implements Future<V> {
     private CompletableFuture<Object> future;
 
     public FutureAdapter(CompletableFuture<Object> future) {
-        this.future = future;
+        this.future = future.thenApply(o -> {
+            if (o instanceof org.apache.dubbo.rpc.Result) {
+                return new com.alibaba.dubbo.rpc.Result.CompatibleResult((org.apache.dubbo.rpc.Result) o);
+            }
+            return o;
+        });
     }
 
     public ResponseFuture getFuture() {
@@ -88,11 +86,11 @@ public class FutureAdapter<V> implements Future<V> {
                     }
                     callback.caught(t);
                 } else {
-                    AppResponse appResponse = (AppResponse)obj;
-                    if (appResponse.hasException()) {
-                        callback.caught(appResponse.getException());
+                    com.alibaba.dubbo.rpc.Result result = (com.alibaba.dubbo.rpc.Result) obj;
+                    if (result.hasException()) {
+                        callback.caught(result.getException());
                     } else {
-                        callback.done((V) appResponse.getValue());
+                        callback.done(result);
                     }
                 }
             }
