@@ -82,15 +82,16 @@ public abstract class AbstractRegistry implements Registry {
     private final Properties properties = new Properties();
     // File cache timing writing
     private final ExecutorService registryCacheExecutor = Executors.newFixedThreadPool(1, new NamedThreadFactory("DubboSaveRegistryCache", true));
-    // Is it synchronized to save the file
+    // Is it synchronized to save the file 同步更新缓存文件
     private boolean syncSaveFile;
     private final AtomicLong lastCacheChanged = new AtomicLong();
     private final AtomicInteger savePropertiesRetryTimes = new AtomicInteger();
     private final Set<URL> registered = new ConcurrentHashSet<>();
     private final ConcurrentMap<URL, Set<NotifyListener>> subscribed = new ConcurrentHashMap<>();
+    //内存中的服务缓存对象，外层map的key是url，内层map的key是分类，包括providers、consumers、routers、configurators四种，value是对应的服务列表。对于没有服务提供者提供服务的url，它会以特殊的empty://前缀开头
     private final ConcurrentMap<URL, Map<String, List<URL>>> notified = new ConcurrentHashMap<>();
     private URL registryUrl;
-    // Local disk cache file
+    // Local disk cache file 磁盘文件中的服务缓存对象
     private File file;
 
     public AbstractRegistry(URL url) {
@@ -110,8 +111,8 @@ public abstract class AbstractRegistry implements Registry {
                 }
             }
             this.file = file;
-            // When starting the subscription center,
-            // we need to read the local cache file for future Registry fault tolerance processing.
+            // When starting the subscription center, 在启动订阅中心时，
+            // we need to read the local cache file for future Registry fault tolerance processing（容错处理）.
             loadProperties();
             notify(url.getBackupUrls());
         }
@@ -163,6 +164,7 @@ public abstract class AbstractRegistry implements Registry {
     }
 
     public void doSaveProperties(long version) {
+        //Properties落地到磁盘缓存文件
         if (version < lastCacheChanged.get()) {
             return;
         }
@@ -211,6 +213,10 @@ public abstract class AbstractRegistry implements Registry {
     }
 
     private void loadProperties() {
+        //从本地磁盘文件中把持久化的注册数据读到Properties对象里，并加载到内存缓存中
+        //Properties中保存了所有服务提供者的url，使用URL#serviceKey()作为key，提供者列表、路由规则列表、路由规则列表、配置规则列表等作为value。由于value是列表，当存在多个的时候使用空格隔开。
+        //还有一个特殊的key.registies，保存所有的注册中心的地址。
+        //如果应用在启动过程中，注册中心无法连接或宕机，则dubbo框架会自动通过本地缓存加载invokers
         if (file != null && file.exists()) {
             InputStream in = null;
             try {
