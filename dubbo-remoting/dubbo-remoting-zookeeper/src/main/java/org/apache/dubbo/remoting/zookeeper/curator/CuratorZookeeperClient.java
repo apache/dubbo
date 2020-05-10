@@ -16,15 +16,6 @@
  */
 package org.apache.dubbo.remoting.zookeeper.curator;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.remoting.zookeeper.ChildListener;
-import org.apache.dubbo.remoting.zookeeper.DataListener;
-import org.apache.dubbo.remoting.zookeeper.EventType;
-import org.apache.dubbo.remoting.zookeeper.StateListener;
-import org.apache.dubbo.remoting.zookeeper.support.AbstractZookeeperClient;
-
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.api.CuratorWatcher;
@@ -34,7 +25,15 @@ import org.apache.curator.framework.recipes.cache.TreeCacheListener;
 import org.apache.curator.framework.state.ConnectionState;
 import org.apache.curator.framework.state.ConnectionStateListener;
 import org.apache.curator.retry.RetryNTimes;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.timer.HashedWheelTimer;
+import org.apache.dubbo.common.utils.NamedThreadFactory;
+import org.apache.dubbo.remoting.zookeeper.*;
+import org.apache.dubbo.remoting.zookeeper.support.AbstractZookeeperClient;
 import org.apache.zookeeper.CreateMode;
+import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.KeeperException.NoNodeException;
 import org.apache.zookeeper.KeeperException.NodeExistsException;
 import org.apache.zookeeper.WatchedEvent;
@@ -48,6 +47,8 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.remoting.zookeeper.Constants.DEFAULT_REGISTRY_RETRY_PERIOD;
+import static org.apache.dubbo.remoting.zookeeper.Constants.SUBSCRIBE_RETRY_PERIOD_KEY;
 
 public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZookeeperClient.CuratorWatcherImpl, CuratorZookeeperClient.CuratorWatcherImpl> {
 
@@ -57,6 +58,9 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
     static final Charset CHARSET = Charset.forName("UTF-8");
     private final CuratorFramework client;
     private Map<String, TreeCache> treeCacheMap = new ConcurrentHashMap<>();
+    private static HashedWheelTimer retryTimer = null;
+    private static int retryPeriod = 0;
+
 
     public CuratorZookeeperClient(URL url) {
         super(url);
@@ -79,6 +83,8 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
             if (!connected) {
                 throw new IllegalStateException("zookeeper not connected");
             }
+            retryPeriod = url.getParameter(SUBSCRIBE_RETRY_PERIOD_KEY, DEFAULT_REGISTRY_RETRY_PERIOD);
+            retryTimer = new HashedWheelTimer(new NamedThreadFactory("DubboResubscribeTimer", true), retryPeriod, TimeUnit.MILLISECONDS, 128);
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -257,7 +263,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
         listener.unwatch();
     }
 
-    static class CuratorWatcherImpl implements CuratorWatcher, TreeCacheListener {
+    public static class CuratorWatcherImpl implements CuratorWatcher, TreeCacheListener {
 
         private CuratorFramework client;
         private volatile ChildListener childListener;
@@ -288,11 +294,21 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
             if (event.getType() == Watcher.Event.EventType.None) {
                 return;
             }
-
-            if (childListener != null) {
-                childListener.childChanged(path, client.getChildren().usingWatcher(this).forPath(path));
+            try {
+                if (childListener != null) {
+                    childListener.childChanged(path, client.getChildren().usingWatcher(this).forPath(path));
+                }
+            } catch (KeeperException e) {
+                addReSubscribeTask(client, path, childListener, this);
             }
         }
+
+        public void addReSubscribeTask(CuratorFramework client, String path, ChildListener childListener, CuratorWatcherImpl curatorWatcher) {
+            ReWatchTask newTask = new ReWatchTask(client, path, childListener, curatorWatcher);
+            // never has a retry task. then start a new task for retry.
+            retryTimer.newTimeout(newTask, CuratorZookeeperClient.retryPeriod, TimeUnit.MILLISECONDS);
+        }
+
 
         @Override
         public void childEvent(CuratorFramework client, TreeCacheEvent event) throws Exception {
