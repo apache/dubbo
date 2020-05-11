@@ -134,6 +134,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
             if(StringUtils.isNotEmpty(interfaceClassName)){
                 Class<?> interfaceClass = ReflectUtils.forName(interfaceClassName);
                 beanDefinition.setTargetType(interfaceClass);
+                beanDefinition.setLazyInit(true);
             }
         }else if (ProviderConfig.class.equals(beanClass)) {
             parseNested(element, parserContext, ServiceBean.class, true, "service", "provider", id, beanDefinition);
