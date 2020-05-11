@@ -307,7 +307,9 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
         public void addReWatchTask(CuratorFramework client, String path, ChildListener childListener, CuratorWatcherImpl curatorWatcher) {
             ReWatchTask newTask = new ReWatchTask(client, path, childListener, curatorWatcher);
             // never has a retry task. then start a new task for retry.
-            retryTimer.newTimeout(newTask, CuratorZookeeperClient.retryPeriod, TimeUnit.MILLISECONDS);
+            if (!retryTimer.isStop()) {
+                retryTimer.newTimeout(newTask, CuratorZookeeperClient.retryPeriod, TimeUnit.MILLISECONDS);
+            }
         }
 
 
