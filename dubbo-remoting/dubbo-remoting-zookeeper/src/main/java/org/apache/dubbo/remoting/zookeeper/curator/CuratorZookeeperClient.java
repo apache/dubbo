@@ -84,7 +84,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
                 throw new IllegalStateException("zookeeper not connected");
             }
             retryPeriod = url.getParameter(SUBSCRIBE_RETRY_PERIOD_KEY, DEFAULT_REGISTRY_RETRY_PERIOD);
-            retryTimer = new HashedWheelTimer(new NamedThreadFactory("DubboResubscribeTimer", true), retryPeriod, TimeUnit.MILLISECONDS, 128);
+            retryTimer = new HashedWheelTimer(new NamedThreadFactory("DubboReWatchTimer", true), retryPeriod, TimeUnit.MILLISECONDS, 128);
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -299,11 +299,12 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
                     childListener.childChanged(path, client.getChildren().usingWatcher(this).forPath(path));
                 }
             } catch (KeeperException e) {
-                addReSubscribeTask(client, path, childListener, this);
+                logger.warn("Failed to watch " + path + ", waiting for retry, cause: " + e.getMessage(), e);
+                addReWatchTask(client, path, childListener, this);
             }
         }
 
-        public void addReSubscribeTask(CuratorFramework client, String path, ChildListener childListener, CuratorWatcherImpl curatorWatcher) {
+        public void addReWatchTask(CuratorFramework client, String path, ChildListener childListener, CuratorWatcherImpl curatorWatcher) {
             ReWatchTask newTask = new ReWatchTask(client, path, childListener, curatorWatcher);
             // never has a retry task. then start a new task for retry.
             retryTimer.newTimeout(newTask, CuratorZookeeperClient.retryPeriod, TimeUnit.MILLISECONDS);

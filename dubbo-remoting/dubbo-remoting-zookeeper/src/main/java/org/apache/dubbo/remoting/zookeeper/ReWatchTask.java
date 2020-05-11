@@ -17,6 +17,8 @@
 package org.apache.dubbo.remoting.zookeeper;
 
 import org.apache.curator.framework.CuratorFramework;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.timer.Timeout;
 import org.apache.dubbo.common.timer.TimerTask;
 import org.apache.dubbo.remoting.zookeeper.curator.CuratorZookeeperClient;
@@ -24,6 +26,8 @@ import org.apache.zookeeper.KeeperException;
 
 
 public class ReWatchTask implements TimerTask {
+
+    protected static final Logger logger = LoggerFactory.getLogger(ReWatchTask.class);
 
     private CuratorFramework client;
 
@@ -49,7 +53,8 @@ public class ReWatchTask implements TimerTask {
         try {
             childListener.childChanged(path, client.getChildren().usingWatcher(curatorWatcher).forPath(path));
         } catch (KeeperException e) {
-            curatorWatcher.addReSubscribeTask(client, path, childListener, curatorWatcher);
+            logger.warn("Failed to watch " + path + ", waiting for retry, cause: " + e.getMessage(), e);
+            curatorWatcher.addReWatchTask(client, path, childListener, curatorWatcher);
         }
     }
 }
