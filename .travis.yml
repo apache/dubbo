@@ -1,5 +1,4 @@
 language: java
-sudo: false # faster builds
 
 jdk:
   - openjdk11
