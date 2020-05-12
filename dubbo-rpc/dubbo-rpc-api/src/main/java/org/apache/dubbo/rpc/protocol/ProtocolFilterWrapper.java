@@ -80,10 +80,15 @@ public class ProtocolFilterWrapper implements Protocol {
                         try {
                             asyncResult = filter.invoke(next, invocation);
                         } catch (Exception e) {
-                            if (filter instanceof ListenableFilter) {// Deprecated!
-                                Filter.Listener listener = ((ListenableFilter) filter).listener();
-                                if (listener != null) {
-                                    listener.onError(e, invoker, invocation);
+                            if (filter instanceof ListenableFilter) {
+                                ListenableFilter listenableFilter = ((ListenableFilter) filter);
+                                try {
+                                    Filter.Listener listener = listenableFilter.listener(invocation);
+                                    if (listener != null) {
+                                        listener.onError(e, invoker, invocation);
+                                    }
+                                } finally {
+                                    listenableFilter.removeListener(invocation);
                                 }
                             } else if (filter instanceof Filter.Listener) {
                                 Filter.Listener listener = (Filter.Listener) filter;
@@ -94,24 +99,27 @@ public class ProtocolFilterWrapper implements Protocol {
 
                         }
                         return asyncResult.whenCompleteWithContext((r, t) -> {
-                            if (filter instanceof ListenableFilter) {// Deprecated!
-                                Filter.Listener listener = ((ListenableFilter) filter).listener();
-                                if (listener != null) {
-                                    if (t == null) {
-                                        listener.onMessage(r, invoker, invocation);
-                                    } else {
-                                        listener.onError(t, invoker, invocation);
+                            if (filter instanceof ListenableFilter) {
+                                ListenableFilter listenableFilter = ((ListenableFilter) filter);
+                                Filter.Listener listener = listenableFilter.listener(invocation);
+                                try {
+                                    if (listener != null) {
+                                        if (t == null) {
+                                            listener.onResponse(r, invoker, invocation);
+                                        } else {
+                                            listener.onError(t, invoker, invocation);
+                                        }
                                     }
+                                } finally {
+                                    listenableFilter.removeListener(invocation);
                                 }
                             } else if (filter instanceof Filter.Listener) {
                                 Filter.Listener listener = (Filter.Listener) filter;
                                 if (t == null) {
-                                    listener.onMessage(r, invoker, invocation);
+                                    listener.onResponse(r, invoker, invocation);
                                 } else {
                                     listener.onError(t, invoker, invocation);
                                 }
-                            } else {// Deprecated!
-                                filter.onResponse(r, invoker, invocation);
                             }
                         });
                     }

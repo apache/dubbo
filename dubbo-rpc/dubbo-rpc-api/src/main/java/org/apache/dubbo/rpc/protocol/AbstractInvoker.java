@@ -85,7 +85,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         if (ArrayUtils.isEmpty(keys)) {
             return null;
         }
-        Map<String, Object> attachment = new HashMap<String, Object>();
+        Map<String, Object> attachment = new HashMap<>();
         for (String key : keys) {
             String value = url.getParameter(key);
             if (value != null && value.length() > 0) {
@@ -141,17 +141,18 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         RpcInvocation invocation = (RpcInvocation) inv;
         invocation.setInvoker(this);
         if (CollectionUtils.isNotEmptyMap(attachment)) {
-            invocation.addAttachmentsIfAbsent(attachment);
+            invocation.addObjectAttachmentsIfAbsent(attachment);
         }
-        Map<String, Object> contextAttachments = RpcContext.getContext().getAttachments();
+
+        Map<String, Object> contextAttachments = RpcContext.getContext().getObjectAttachments();
         if (CollectionUtils.isNotEmptyMap(contextAttachments)) {
             /**
              * invocation.addAttachmentsIfAbsent(context){@link RpcInvocation#addAttachmentsIfAbsent(Map)}should not be used here,
-             * because the {@link RpcContext#setAttachment(String, Object)} is passed in the Filter when the call is triggered
+             * because the {@link RpcContext#setAttachment(String, String)} is passed in the Filter when the call is triggered
              * by the built-in retry mechanism of the Dubbo. The attachment to update RpcContext will no longer work, which is
              * a mistake in most cases (for example, through Filter to RpcContext output traceId and spanId and other information).
              */
-            invocation.addAttachments(contextAttachments);
+            invocation.addObjectAttachments(contextAttachments);
         }
 
         invocation.setInvokeMode(RpcUtils.getInvokeMode(url, invocation));

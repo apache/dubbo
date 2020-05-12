@@ -20,9 +20,12 @@ package org.apache.dubbo.rpc.cluster.merger;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.rpc.cluster.Merger;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ListMerger implements Merger<List<?>> {
 
@@ -31,13 +34,10 @@ public class ListMerger implements Merger<List<?>> {
         if (ArrayUtils.isEmpty(items)) {
             return Collections.emptyList();
         }
-        List<Object> result = new ArrayList<Object>();
-        for (List<?> item : items) {
-            if (item != null) {
-                result.addAll(item);
-            }
-        }
-        return result;
+        return Stream.of(items).filter(Objects::nonNull)
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
+
     }
 
 }

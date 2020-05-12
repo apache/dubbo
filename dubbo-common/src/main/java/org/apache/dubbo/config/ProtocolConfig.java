@@ -60,6 +60,11 @@ public class ProtocolConfig extends AbstractConfig {
     private String threadpool;
 
     /**
+     * Thread pool name
+     */
+    private String threadname;
+
+    /**
      * Thread pool core thread size
      */
     private Integer corethreads;
@@ -261,6 +266,14 @@ public class ProtocolConfig extends AbstractConfig {
 
     public void setThreadpool(String threadpool) {
         this.threadpool = threadpool;
+    }
+
+    public String getThreadname() {
+        return threadname;
+    }
+
+    public void setThreadname(String threadname) {
+        this.threadname = threadname;
     }
 
     public Integer getCorethreads() {

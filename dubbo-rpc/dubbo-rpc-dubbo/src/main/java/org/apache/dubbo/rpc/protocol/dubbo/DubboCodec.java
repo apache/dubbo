@@ -37,12 +37,12 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.rpc.protocol.dubbo.CallbackServiceCodec.encodeInvocationArgument;
 import static org.apache.dubbo.rpc.protocol.dubbo.Constants.DECODE_IN_IO_THREAD_KEY;
 import static org.apache.dubbo.rpc.protocol.dubbo.Constants.DEFAULT_DECODE_IN_IO_THREAD;
-import static org.apache.dubbo.rpc.support.RpcUtils.sieveUnnecessaryAttachments;
 
 /**
  * Dubbo codec.
@@ -169,8 +169,13 @@ public class DubboCodec extends ExchangeCodec {
         RpcInvocation inv = (RpcInvocation) data;
 
         out.writeUTF(version);
-        out.writeUTF((String) inv.getAttachment(PATH_KEY));
-        out.writeUTF((String) inv.getAttachment(VERSION_KEY));
+        // https://github.com/apache/dubbo/issues/6138
+        String serviceName = inv.getAttachment(INTERFACE_KEY);
+        if (serviceName == null) {
+            serviceName = inv.getAttachment(PATH_KEY);
+        }
+        out.writeUTF(serviceName);
+        out.writeUTF(inv.getAttachment(VERSION_KEY));
 
         out.writeUTF(inv.getMethodName());
         out.writeUTF(inv.getParameterTypesDesc());
@@ -180,7 +185,7 @@ public class DubboCodec extends ExchangeCodec {
                 out.writeObject(encodeInvocationArgument(channel, inv, i));
             }
         }
-        out.writeAttachments(sieveUnnecessaryAttachments(inv));
+        out.writeAttachments(inv.getObjectAttachments());
     }
 
     @Override
@@ -204,8 +209,8 @@ public class DubboCodec extends ExchangeCodec {
 
         if (attach) {
             // returns current version of Response to consumer side.
-            result.getAttachments().put(DUBBO_VERSION_KEY, Version.getProtocolVersion());
-            out.writeAttachments(result.getAttachments());
+            result.getObjectAttachments().put(DUBBO_VERSION_KEY, Version.getProtocolVersion());
+            out.writeAttachments(result.getObjectAttachments());
         }
     }
 }

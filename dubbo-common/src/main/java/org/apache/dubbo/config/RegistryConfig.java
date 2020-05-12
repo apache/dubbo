@@ -213,7 +213,7 @@ public class RegistryConfig extends AbstractConfig {
                 URL url = URL.valueOf(address);
                 setUsername(url.getUsername());
                 setPassword(url.getPassword());
-                updateIdIfAbsent(url.getProtocol());
+//                updateIdIfAbsent(url.getProtocol());
                 updateProtocolIfAbsent(url.getProtocol());
                 updatePortIfAbsent(url.getPort());
                 updateParameters(url.getParameters());

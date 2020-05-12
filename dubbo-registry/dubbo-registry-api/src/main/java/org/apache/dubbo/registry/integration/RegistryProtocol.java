@@ -23,6 +23,7 @@ import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.timer.HashedWheelTimer;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -31,6 +32,8 @@ import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.registry.RegistryService;
+import org.apache.dubbo.registry.retry.ReExportTask;
+import org.apache.dubbo.registry.support.SkipFailbackWrapperException;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -51,9 +54,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
-import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
@@ -77,7 +80,6 @@ import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
-import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.OVERRIDE_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
@@ -87,9 +89,11 @@ import static org.apache.dubbo.common.utils.UrlUtils.classifyUrls;
 import static org.apache.dubbo.registry.Constants.CONFIGURATORS_SUFFIX;
 import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.DEFAULT_REGISTRY;
+import static org.apache.dubbo.registry.Constants.DEFAULT_REGISTRY_RETRY_PERIOD;
 import static org.apache.dubbo.registry.Constants.PROVIDER_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
 import static org.apache.dubbo.registry.Constants.REGISTER_KEY;
+import static org.apache.dubbo.registry.Constants.REGISTRY_RETRY_PERIOD_KEY;
 import static org.apache.dubbo.registry.Constants.SIMPLIFIED_KEY;
 import static org.apache.dubbo.remoting.Constants.BIND_IP_KEY;
 import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
@@ -133,6 +137,9 @@ public class RegistryProtocol implements Protocol {
     private RegistryFactory registryFactory;
     private ProxyFactory proxyFactory;
 
+    private ConcurrentMap<URL, ReExportTask> reExportFailedTasks = new ConcurrentHashMap<>();
+    private HashedWheelTimer retryTimer = new HashedWheelTimer(new NamedThreadFactory("DubboReexportTimer", true), DEFAULT_REGISTRY_RETRY_PERIOD, TimeUnit.MILLISECONDS, 128);
+
     //Filter the parameters that do not need to be output in url(Starting with .)
     private static String[] getFilteredKeys(URL url) {
         Map<String, String> params = url.getParameters();
@@ -170,16 +177,17 @@ public class RegistryProtocol implements Protocol {
         return overrideListeners;
     }
 
-    public void register(URL registryUrl, URL registeredProviderUrl) {
+    private void register(URL registryUrl, URL registeredProviderUrl) {
         Registry registry = registryFactory.getRegistry(registryUrl);
         registry.register(registeredProviderUrl);
+    }
 
+    private void registerStatedUrl(URL registryUrl, URL registeredProviderUrl, boolean registered) {
         ProviderModel model = ApplicationModel.getProviderModel(registeredProviderUrl.getServiceKey());
         model.addStatedUrl(new ProviderModel.RegisterStatedURL(
                 registeredProviderUrl,
                 registryUrl,
-                true
-        ));
+                registered));
     }
 
     @Override
@@ -203,19 +211,35 @@ public class RegistryProtocol implements Protocol {
         // url to registry
         final Registry registry = getRegistry(originInvoker);
         final URL registeredProviderUrl = getUrlToRegistry(providerUrl, registryUrl);
+
         // decide if we need to delay publish
         boolean register = providerUrl.getParameter(REGISTER_KEY, true);
         if (register) {
             register(registryUrl, registeredProviderUrl);
         }
 
+        // register stated url on provider model
+        registerStatedUrl(registryUrl, registeredProviderUrl, register);
+
         // Deprecated! Subscribe to override rules in 2.6.x or before.
         registry.subscribe(overrideSubscribeUrl, overrideSubscribeListener);
 
         exporter.setRegisterUrl(registeredProviderUrl);
         exporter.setSubscribeUrl(overrideSubscribeUrl);
+
+        notifyExport(exporter);
         //Ensure that a new exporter instance is returned every time export
         return new DestroyableExporter<>(exporter);
+    }
+
+    private <T> void notifyExport(ExporterChangeableWrapper<T> exporter) {
+        List<RegistryProtocolListener> listeners = ExtensionLoader.getExtensionLoader(RegistryProtocolListener.class)
+                .getActivateExtension(exporter.getOriginInvoker().getUrl(), "registry.protocol.listener");
+        if (CollectionUtils.isNotEmpty(listeners)) {
+            for (RegistryProtocolListener listener : listeners) {
+                listener.onExport(this, exporter);
+            }
+        }
     }
 
     private URL overrideUrlWithConfig(URL providerUrl, OverrideListener listener) {
@@ -235,25 +259,79 @@ public class RegistryProtocol implements Protocol {
         });
     }
 
+    public <T> void reExport(Exporter<T> exporter, URL newInvokerUrl) {
+        if (exporter instanceof ExporterChangeableWrapper) {
+            ExporterChangeableWrapper<T> exporterWrapper = (ExporterChangeableWrapper<T>) exporter;
+            Invoker<T> originInvoker = exporterWrapper.getOriginInvoker();
+            reExport(originInvoker, newInvokerUrl);
+        }
+    }
+
+    /**
+     * Reexport the invoker of the modified url
+     *
+     * @param originInvoker
+     * @param newInvokerUrl
+     * @param <T>
+     */
+    @SuppressWarnings("unchecked")
     public <T> void reExport(final Invoker<T> originInvoker, URL newInvokerUrl) {
-        // update local exporter
-        ExporterChangeableWrapper exporter = doChangeLocalExport(originInvoker, newInvokerUrl);
-        // update registry
+        String key = getCacheKey(originInvoker);
+        ExporterChangeableWrapper<T> exporter = (ExporterChangeableWrapper<T>) bounds.get(key);
+        URL registeredUrl = exporter.getRegisterUrl();
+
         URL registryUrl = getRegistryUrl(originInvoker);
-        final URL newProviderUrl = getUrlToRegistry(newInvokerUrl, registryUrl);
+        URL newProviderUrl = getUrlToRegistry(newInvokerUrl, registryUrl);
 
-        ProviderModel.RegisterStatedURL statedUrl = getStatedUrl(registryUrl, newProviderUrl);
+        // update local exporter
+        Invoker<T> invokerDelegate = new InvokerDelegate<T>(originInvoker, newInvokerUrl);
+        exporter.setExporter(protocol.export(invokerDelegate));
 
-        if (!newProviderUrl.equals(statedUrl.getProviderUrl())) {
-            if (statedUrl.isRegistered()) {
-                Registry registry = getRegistry(originInvoker);
-                logger.info("Try to unregister old url: " + statedUrl.getProviderUrl());
-                registry.unregister(statedUrl.getProviderUrl());
-                logger.info("Try to register new url: " + newProviderUrl);
-                registry.register(newProviderUrl);
+        // update registry
+        if (!newProviderUrl.equals(registeredUrl)) {
+            try {
+                doReExport(originInvoker, exporter, registryUrl, registeredUrl, newProviderUrl);
+            } catch (Exception e) {
+                ReExportTask oldTask = reExportFailedTasks.get(registeredUrl);
+                if (oldTask != null) {
+                    return;
+                }
+                ReExportTask task = new ReExportTask(
+                        () -> doReExport(originInvoker, exporter, registryUrl, registeredUrl, newProviderUrl),
+                        registeredUrl,
+                        null
+                );
+                oldTask = reExportFailedTasks.putIfAbsent(registeredUrl, task);
+                if (oldTask == null) {
+                    // never has a retry task. then start a new task for retry.
+                    retryTimer.newTimeout(task, registryUrl.getParameter(REGISTRY_RETRY_PERIOD_KEY, DEFAULT_REGISTRY_RETRY_PERIOD), TimeUnit.MILLISECONDS);
+                }
             }
+        }
+    }
+
+    private <T> void doReExport(final Invoker<T> originInvoker, ExporterChangeableWrapper<T> exporter,
+                                URL registryUrl, URL oldProviderUrl, URL newProviderUrl) {
+        if (getProviderUrl(originInvoker).getParameter(REGISTER_KEY, true)) {
+            Registry registry = null;
+            try {
+                registry = getRegistry(originInvoker);
+            } catch (Exception e) {
+                throw new SkipFailbackWrapperException(e);
+            }
+
+            logger.info("Try to unregister old url: " + oldProviderUrl);
+            registry.reExportUnregister(oldProviderUrl);
+
+            logger.info("Try to register new url: " + newProviderUrl);
+            registry.reExportRegister(newProviderUrl);
+        }
+        try {
+            ProviderModel.RegisterStatedURL statedUrl = getStatedUrl(registryUrl, newProviderUrl);
             statedUrl.setProviderUrl(newProviderUrl);
             exporter.setRegisterUrl(newProviderUrl);
+        } catch (Exception e) {
+            throw new SkipFailbackWrapperException(e);
         }
     }
 
@@ -266,25 +344,6 @@ public class RegistryProtocol implements Protocol {
                 .filter(u -> u.getRegistryUrl().equals(registryUrl)
                         && u.getProviderUrl().getProtocol().equals(providerUrl.getProtocol()))
                 .findFirst().orElseThrow(() -> new IllegalStateException("There should have at least one registered url."));
-    }
-
-    /**
-     * Reexport the invoker of the modified url
-     *
-     * @param originInvoker
-     * @param newInvokerUrl
-     */
-    @SuppressWarnings("unchecked")
-    private <T> ExporterChangeableWrapper doChangeLocalExport(final Invoker<T> originInvoker, URL newInvokerUrl) {
-        String key = getCacheKey(originInvoker);
-        final ExporterChangeableWrapper<T> exporter = (ExporterChangeableWrapper<T>) bounds.get(key);
-        if (exporter == null) {
-            logger.warn(new IllegalStateException("error state, exporter should not be null"));
-        } else {
-            final Invoker<T> invokerDelegate = new InvokerDelegate<T>(originInvoker, newInvokerUrl);
-            exporter.setExporter(protocol.export(invokerDelegate));
-        }
-        return exporter;
     }
 
     /**
@@ -405,28 +464,56 @@ public class RegistryProtocol implements Protocol {
         directory.setRegistry(registry);
         directory.setProtocol(protocol);
         // all attributes of REFER_KEY
-        Map<String, String> parameters = new HashMap<String, String>(directory.getUrl().getParameters());
+        Map<String, String> parameters = new HashMap<String, String>(directory.getConsumerUrl().getParameters());
         URL subscribeUrl = new URL(CONSUMER_PROTOCOL, parameters.remove(REGISTER_IP_KEY), 0, type.getName(), parameters);
-        if (!ANY_VALUE.equals(url.getServiceInterface()) && url.getParameter(REGISTER_KEY, true)) {
-            directory.setRegisteredConsumerUrl(getRegisteredConsumerUrl(subscribeUrl, url));
+        if (directory.isShouldRegister()) {
+            directory.setRegisteredConsumerUrl(subscribeUrl);
             registry.register(directory.getRegisteredConsumerUrl());
         }
         directory.buildRouterChain(subscribeUrl);
-        directory.subscribe(subscribeUrl.addParameter(CATEGORY_KEY,
-                PROVIDERS_CATEGORY + "," + CONFIGURATORS_CATEGORY + "," + ROUTERS_CATEGORY));
+        directory.subscribe(toSubscribeUrl(subscribeUrl));
 
-        Invoker invoker = cluster.join(directory);
-        return invoker;
+        Invoker<T> invoker = cluster.join(directory);
+        List<RegistryProtocolListener> listeners = findRegistryProtocolListeners(url);
+        if (CollectionUtils.isEmpty(listeners)) {
+            return invoker;
+        }
+
+        RegistryInvokerWrapper<T> registryInvokerWrapper = new RegistryInvokerWrapper<>(directory, cluster, invoker, subscribeUrl);
+        for (RegistryProtocolListener listener : listeners) {
+            listener.onRefer(this, registryInvokerWrapper);
+        }
+        return registryInvokerWrapper;
     }
 
-    public URL getRegisteredConsumerUrl(final URL consumerUrl, URL registryUrl) {
-        if (!registryUrl.getParameter(SIMPLIFIED_KEY, false)) {
-            return consumerUrl.addParameters(CATEGORY_KEY, CONSUMERS_CATEGORY,
-                    CHECK_KEY, String.valueOf(false));
-        } else {
-            return URL.valueOf(consumerUrl, DEFAULT_REGISTER_CONSUMER_KEYS, null).addParameters(
-                    CATEGORY_KEY, CONSUMERS_CATEGORY, CHECK_KEY, String.valueOf(false));
+    public <T> void reRefer(Invoker<T> invoker, URL newSubscribeUrl) {
+        if (!(invoker instanceof RegistryInvokerWrapper)) {
+            return;
         }
+
+        RegistryInvokerWrapper<T> invokerWrapper = (RegistryInvokerWrapper<T>) invoker;
+        URL oldSubscribeUrl = invokerWrapper.getUrl();
+        RegistryDirectory<T> directory = invokerWrapper.getDirectory();
+        Registry registry = directory.getRegistry();
+        registry.unregister(directory.getRegisteredConsumerUrl());
+        directory.unSubscribe(toSubscribeUrl(oldSubscribeUrl));
+
+        directory.setRegisteredConsumerUrl(newSubscribeUrl);
+        registry.register(directory.getRegisteredConsumerUrl());
+        directory.buildRouterChain(newSubscribeUrl);
+        directory.subscribe(toSubscribeUrl(newSubscribeUrl));
+
+        invokerWrapper.setInvoker(invokerWrapper.getCluster().join(directory));
+        invokerWrapper.setUrl(newSubscribeUrl);
+    }
+
+    private static URL toSubscribeUrl(URL url) {
+        return url.addParameter(CATEGORY_KEY, PROVIDERS_CATEGORY + "," + CONFIGURATORS_CATEGORY + "," + ROUTERS_CATEGORY);
+    }
+
+    private List<RegistryProtocolListener> findRegistryProtocolListeners(URL url) {
+        return ExtensionLoader.getExtensionLoader(RegistryProtocolListener.class)
+                .getActivateExtension(url, "registry.protocol.listener");
     }
 
     // available to test
@@ -440,6 +527,14 @@ public class RegistryProtocol implements Protocol {
 
     @Override
     public void destroy() {
+        List<RegistryProtocolListener> listeners = ExtensionLoader.getExtensionLoader(RegistryProtocolListener.class)
+                .getLoadedExtensionInstances();
+        if (CollectionUtils.isNotEmpty(listeners)) {
+            for (RegistryProtocolListener listener : listeners) {
+                listener.onDestroy();
+            }
+        }
+
         List<Exporter<?>> exporters = new ArrayList<Exporter<?>>(bounds.values());
         for (Exporter<?> exporter : exporters) {
             exporter.unexport();
@@ -711,6 +806,10 @@ public class RegistryProtocol implements Protocol {
 
         public void setRegisterUrl(URL registerUrl) {
             this.registerUrl = registerUrl;
+        }
+
+        public URL getRegisterUrl() {
+            return registerUrl;
         }
     }
 
