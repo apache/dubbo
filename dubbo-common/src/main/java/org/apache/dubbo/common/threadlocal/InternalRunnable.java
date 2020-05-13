@@ -20,7 +20,7 @@ package org.apache.dubbo.common.threadlocal;
 
 /**
  * InternalRunnable
- * There is a risk of memory leak when using {@link InternalThreadLocal} without calling
+ * There is a risk of memory leak :when using {@link InternalThreadLocal} without calling
  * {@link InternalThreadLocal#removeAll()}.
  * This design is learning from {@see io.netty.util.concurrent.FastThreadLocalRunnable} which is in Netty.
  */
