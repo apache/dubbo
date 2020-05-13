@@ -40,6 +40,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_ATTACHENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIME_COUNTDOWN_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
@@ -70,6 +71,7 @@ public class ContextFilter implements Filter, Filter.Listener {
         UNLOADING_KEYS.add(DUBBO_VERSION_KEY);
         UNLOADING_KEYS.add(TOKEN_KEY);
         UNLOADING_KEYS.add(TIMEOUT_KEY);
+        UNLOADING_KEYS.add(TIMEOUT_ATTACHENT_KEY);
 
         // Remove async property to avoid being passed to the following invoke chain.
         UNLOADING_KEYS.add(ASYNC_KEY);
@@ -103,6 +105,11 @@ public class ContextFilter implements Filter, Filter.Listener {
             context.setRemoteApplicationName((String) context.getAttachment(REMOTE_APPLICATION_KEY));
         }
 
+        long timeout = RpcUtils.getTimeout(invocation, -1);
+        if (timeout != -1) {
+            context.set(TIME_COUNTDOWN_KEY, TimeoutCountDown.newCountDown(timeout, TimeUnit.MILLISECONDS));
+        }
+
         // merged from dubbox
         // we may already added some attachments into RpcContext before this filter (e.g. in rest protocol)
         if (attachments != null) {
@@ -115,11 +122,6 @@ public class ContextFilter implements Filter, Filter.Listener {
 
         if (invocation instanceof RpcInvocation) {
             ((RpcInvocation) invocation).setInvoker(invoker);
-        }
-
-        long timeout = RpcUtils.getTimeout(invocation, -1);
-        if (timeout != -1) {
-            context.set(TIME_COUNTDOWN_KEY, TimeoutCountDown.newCountDown(timeout, TimeUnit.MILLISECONDS));
         }
 
         try {
