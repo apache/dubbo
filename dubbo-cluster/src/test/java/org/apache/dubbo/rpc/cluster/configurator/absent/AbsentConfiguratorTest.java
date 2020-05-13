@@ -31,7 +31,7 @@ public class AbsentConfiguratorTest {
 
     @Test
     public void testOverrideApplication() {
-        AbsentConfigurator configurator = new AbsentConfigurator(URL.valueOf("override://foo@0.0.0.0/com.foo.BarService?timeout=200"));
+        AbsentConfigurator configurator = new AbsentConfigurator(URL.valueOf("override://bar:foo@0.0.0.0/com.foo.BarService?timeout=200"));
 
         URL url = configurator.configure(URL.valueOf(UrlConstant.URL_CONSUMER));
         Assertions.assertEquals("200", url.getParameter("timeout"));
@@ -39,10 +39,12 @@ public class AbsentConfiguratorTest {
         url = configurator.configure(URL.valueOf(UrlConstant.URL_ONE));
         Assertions.assertEquals("1000", url.getParameter("timeout"));
 
-        url = configurator.configure(URL.valueOf(UrlConstant.APPLICATION_BAR_SIDE_CONSUMER_11));
+        AbsentConfigurator applicationNotMatchConfigurator = new AbsentConfigurator(URL.valueOf("override://bar:foo@0.0.0.0/com.foo.BarService?application=foo&timeout=200"));
+
+        url = applicationNotMatchConfigurator.configure(URL.valueOf(UrlConstant.APPLICATION_BAR_SIDE_CONSUMER_11));
         Assertions.assertNull(url.getParameter("timeout"));
 
-        url = configurator.configure(URL.valueOf(UrlConstant.TIMEOUT_1000_SIDE_CONSUMER_11));
+        url = applicationNotMatchConfigurator.configure(URL.valueOf(UrlConstant.TIMEOUT_1000_SIDE_CONSUMER_11));
         Assertions.assertEquals("1000", url.getParameter("timeout"));
     }
 

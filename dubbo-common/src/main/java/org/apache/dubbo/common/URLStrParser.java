@@ -131,7 +131,9 @@ public final class URLStrParser {
         int pwdEndIdx = lastIndexOf(decodedBody, '@', starIdx, endIdx);
         if (pwdEndIdx > 0) {
             int userNameEndIdx = indexOf(decodedBody, ':', starIdx, pwdEndIdx);
-            username = decodedBody.substring(starIdx, userNameEndIdx);
+            if (userNameEndIdx != -1) {//tolerate incomplete user pwd input, like '1234@'
+                username = decodedBody.substring(starIdx, userNameEndIdx);
+            }
             password = decodedBody.substring(userNameEndIdx + 1, pwdEndIdx);
             starIdx = pwdEndIdx + 1;
         }

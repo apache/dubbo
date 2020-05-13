@@ -18,18 +18,26 @@ package org.apache.dubbo.rpc.cluster.support;
 
 import org.apache.dubbo.common.URL;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ALIVE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CORE_THREADS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INVOKER_LISTENER_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.QUEUES_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_FILTER_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.RELEASE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TAG_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.utils.CollectionUtils.isNotEmptyMap;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
 import static org.apache.dubbo.remoting.Constants.TRANSPORTER_KEY;
@@ -49,7 +57,7 @@ public class ClusterUtils {
             return remoteUrl.addParameters(localMap);
         }
 
-        // Remove configurations from provider, some items should not being affected by provider.
+        // Remove configurations from provider, some keys should not be affected by provider.
         remoteMap.remove(THREAD_NAME_KEY);
         remoteMap.remove(THREADPOOL_KEY);
         remoteMap.remove(CORE_THREADS_KEY);
@@ -61,8 +69,6 @@ public class ClusterUtils {
         remoteMap.put(REMOTE_APPLICATION_KEY, remoteMap.get(APPLICATION_KEY));
 
         if (isNotEmptyMap(localMap)) {
-            remoteMap.putAll(localMap);
-
             // Combine filters and listeners on Provider and Consumer
             String remoteFilter = remoteMap.get(REFERENCE_FILTER_KEY);
             String localFilter = localMap.get(REFERENCE_FILTER_KEY);
@@ -74,9 +80,27 @@ public class ClusterUtils {
             if (isNotEmpty(remoteListener) && isNotEmpty(localListener)) {
                 remoteMap.put(INVOKER_LISTENER_KEY, remoteListener + "," + localListener);
             }
+            for (Map.Entry<String, String> entry : localMap.entrySet()) {
+                if (!REFERENCE_FILTER_KEY.equals(entry.getKey()) &&
+                        !INVOKER_LISTENER_KEY.equals(entry.getKey())) {
+                    remoteMap.put(entry.getKey(), entry.getValue());
+                }
+            }
         }
 
         return remoteUrl;
+    }
+
+    public static Map<String, String> genMergeMap(Map<String, String> parameters) {
+        Map<String, String> copyOfParameters = new HashMap<>(parameters);
+        copyOfParameters.remove(GROUP_KEY);
+        copyOfParameters.remove(VERSION_KEY);
+        copyOfParameters.remove(RELEASE_KEY);
+        copyOfParameters.remove(DUBBO_VERSION_KEY);
+        copyOfParameters.remove(METHODS_KEY);
+        copyOfParameters.remove(TIMESTAMP_KEY);
+        copyOfParameters.remove(TAG_KEY);
+        return copyOfParameters;
     }
 
 }

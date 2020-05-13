@@ -100,7 +100,9 @@ public final class URLBuilder extends URL {
         }
 
         URL url = new URL(protocol, username, password, host, port, path);
-        url.parameters = this.parameters;
+        if (CollectionUtils.isNotEmptyMap(this.parameters)) {
+            url.parameters = this.parameters;
+        }
 
         return url;
     }
