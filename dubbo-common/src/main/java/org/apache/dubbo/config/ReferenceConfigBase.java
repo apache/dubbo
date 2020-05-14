@@ -268,9 +268,17 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
 
     @Parameter(excluded = true)
     public String getUniqueServiceName() {
-        String group = StringUtils.isEmpty(this.group) ? consumer.getGroup() : this.group;
-        String version = StringUtils.isEmpty(this.version) ? consumer.getVersion() : this.version;
-        return URL.buildKey(interfaceName, group, version);
+        return URL.buildKey(interfaceName, getGroup(), getVersion());
+    }
+
+    @Override
+    public String getVersion() {
+        return StringUtils.isEmpty(this.version) ? (consumer != null ? consumer.getVersion() : this.version) : this.version;
+    }
+
+    @Override
+    public String getGroup() {
+        return StringUtils.isEmpty(this.group) ? (consumer != null ? consumer.getGroup() : this.group) : this.group;
     }
 
     public abstract T get();
