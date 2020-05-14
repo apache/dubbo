@@ -23,68 +23,13 @@
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-parent</artifactId>
         <version>${revision}</version>
-        <relativePath>../pom.xml</relativePath>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <artifactId>dubbo-bom</artifactId>
     <packaging>pom</packaging>
 
     <name>dubbo-bom</name>
-    <description>Dubbo dependencies BOM</description>
-    <url>https://github.com/apache/dubbo</url>
-    <inceptionYear>2011</inceptionYear>
-    <licenses>
-        <license>
-            <name>Apache License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
-
-    <scm>
-        <url>https://github.com/apache/dubbo</url>
-        <connection>scm:git:https://github.com/apache/dubbo.git</connection>
-        <developerConnection>scm:git:https://github.com/apache/dubbo.git</developerConnection>
-        <tag>HEAD</tag>
-    </scm>
-    <mailingLists>
-        <mailingList>
-            <name>Development List</name>
-            <subscribe>dev-subscribe@dubbo.apache.org</subscribe>
-            <unsubscribe>dev-unsubscribe@dubbo.apache.org</unsubscribe>
-            <post>dev@dubbo.apache.org</post>
-        </mailingList>
-        <mailingList>
-            <name>Commits List</name>
-            <subscribe>commits-subscribe@dubbo.apache.org</subscribe>
-            <unsubscribe>commits-unsubscribe@dubbo.apache.org</unsubscribe>
-            <post>commits@dubbo.apache.org</post>
-        </mailingList>
-        <mailingList>
-            <name>Issues List</name>
-            <subscribe>issues-subscribe@dubbo.apache.org</subscribe>
-            <unsubscribe>issues-unsubscribe@dubbo.apache.org</unsubscribe>
-            <post>issues@dubbo.apache.org</post>
-        </mailingList>
-    </mailingLists>
-    <developers>
-        <developer>
-            <id>dubbo.io</id>
-            <name>The Dubbo Project Contributors</name>
-            <email>dev-subscribe@dubbo.apache.org</email>
-            <url>http://dubbo.apache.org/</url>
-        </developer>
-    </developers>
-
-    <organization>
-        <name>The Apache Software Foundation</name>
-        <url>http://www.apache.org/</url>
-    </organization>
-
-    <issueManagement>
-        <system>Github Issues</system>
-        <url>https://github.com/apache/dubbo/issues</url>
-    </issueManagement>
 
     <dependencyManagement>
         <dependencies>
