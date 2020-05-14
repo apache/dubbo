@@ -22,4 +22,9 @@
     <artifactId>dubbo-build-tools</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
+
+    <properties>
+      <maven.deploy.skip>true</maven.deploy.skip>
+    </properties>
+
 </project>
