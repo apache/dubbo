@@ -26,28 +26,11 @@ import java.util.Map;
 public class AttachmentsAdapter {
 
     public static class ObjectToStringMap extends HashMap<String, String> {
-        private Map<String, Object> attachments;
 
         public ObjectToStringMap(Map<String, Object> attachments) {
-            this.attachments = attachments;
-        }
-
-        @Override
-        public String get(Object key) {
-            Object obj = attachments.get(key);
-            return convert(obj);
-        }
-
-        @Override
-        public String put(String key, String value) {
-            Object obj = attachments.put(key, value);
-            return convert(obj);
-        }
-
-        @Override
-        public String remove(Object key) {
-            Object obj = attachments.remove(key);
-            return convert(obj);
+            for (Entry<String, Object> entry : attachments.entrySet()) {
+                super.put(entry.getKey(), convert(entry.getValue()));
+            }
         }
 
         private String convert(Object obj) {
@@ -59,28 +42,11 @@ public class AttachmentsAdapter {
     }
 
     public static class StringToObjectMap extends HashMap<String, Object> {
-        private Map<String, String> attachments;
 
         public StringToObjectMap(Map<String, String> attachments) {
-            this.attachments = attachments;
-        }
-
-        @Override
-        public Object get(Object key) {
-            return attachments.get(key);
-        }
-
-        @Override
-        public Object put(String key, Object value) {
-            if (value instanceof String) {
-                return attachments.put(key, (String) value);
+            for (Entry<String, String> entry : attachments.entrySet()) {
+                super.put(entry.getKey(), entry.getValue());
             }
-            return null; // or JSON.toString(obj);
-        }
-
-        @Override
-        public Object remove(Object key) {
-            return attachments.remove(key);
         }
     }
 }
