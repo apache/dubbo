@@ -54,6 +54,8 @@ public class DefaultExecutorRepository implements ExecutorRepository {
 
     private ConcurrentMap<String, ConcurrentMap<Integer, ExecutorService>> data = new ConcurrentHashMap<>();
 
+    private ConcurrentHashMap<Integer, Object> locks = new ConcurrentHashMap<>();
+
     public DefaultExecutorRepository() {
 //        for (int i = 0; i < DEFAULT_SCHEDULER_SIZE; i++) {
 //            ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-framework-scheduler"));
@@ -70,21 +72,24 @@ public class DefaultExecutorRepository implements ExecutorRepository {
      * @param url
      * @return
      */
-    public synchronized ExecutorService createExecutorIfAbsent(URL url) {
+    public ExecutorService createExecutorIfAbsent(URL url) {
         String componentKey = EXECUTOR_SERVICE_COMPONENT_KEY;
         if (CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY))) {
             componentKey = CONSUMER_SIDE;
         }
         Map<Integer, ExecutorService> executors = data.computeIfAbsent(componentKey, k -> new ConcurrentHashMap<>());
         Integer portKey = url.getPort();
-        ExecutorService executor = executors.computeIfAbsent(portKey, k -> createExecutor(url));
-        // If executor has been shut down, create a new one
-        if (executor.isShutdown() || executor.isTerminated()) {
-            executors.remove(portKey);
-            executor = createExecutor(url);
-            executors.put(portKey, executor);
+        locks.putIfAbsent(portKey, new Object());
+        synchronized (locks.get(portKey)) {
+            ExecutorService executor = executors.computeIfAbsent(portKey, k -> createExecutor(url));
+            // If executor has been shut down, create a new one
+            if (executor.isShutdown() || executor.isTerminated()) {
+                executors.remove(portKey);
+                executor = createExecutor(url);
+                executors.put(portKey, executor);
+            }
+            return executor;
         }
-        return executor;
     }
 
     public ExecutorService getExecutor(URL url) {
