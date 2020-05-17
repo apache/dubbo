@@ -221,7 +221,8 @@ public class GenericImplFilter implements Filter, Filter.Listener {
     }
 
     private boolean isMakingGenericCall(String generic, Invocation invocation) {
-        return (invocation.getMethodName().equals($INVOKE) || invocation.getMethodName().equals($INVOKE_ASYNC))
+    	String methodName = invocation.getMethodName();
+        return (methodName.equals($INVOKE) || methodName.equals($INVOKE_ASYNC))
                 && invocation.getArguments() != null
                 && invocation.getArguments().length == 3
                 && ProtocolUtils.isGeneric(generic);

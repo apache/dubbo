@@ -57,10 +57,7 @@ public class GenericFilter implements Filter, Filter.Listener {
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation inv) throws RpcException {
-        if ((inv.getMethodName().equals($INVOKE) || inv.getMethodName().equals($INVOKE_ASYNC))
-                && inv.getArguments() != null
-                && inv.getArguments().length == 3
-                && !GenericService.class.isAssignableFrom(invoker.getInterface())) {
+        if (isMakingGenericCall(invoker, inv)) {
             String name = ((String) inv.getArguments()[0]).trim();
             String[] types = (String[]) inv.getArguments()[1];
             Object[] args = (Object[]) inv.getArguments()[2];
@@ -152,12 +149,10 @@ public class GenericFilter implements Filter, Filter.Listener {
         return invoker.invoke(inv);
     }
 
+
     @Override
     public void onResponse(Result appResponse, Invoker<?> invoker, Invocation inv) {
-        if ((inv.getMethodName().equals($INVOKE) || inv.getMethodName().equals($INVOKE_ASYNC))
-                && inv.getArguments() != null
-                && inv.getArguments().length == 3
-                && !GenericService.class.isAssignableFrom(invoker.getInterface())) {
+    	if (isMakingGenericCall(invoker, inv)) {
 
             String generic = inv.getAttachment(GENERIC_KEY);
             if (StringUtils.isBlank(generic)) {
@@ -211,5 +206,12 @@ public class GenericFilter implements Filter, Filter.Listener {
     @Override
     public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
 
+    }
+    private boolean isMakingGenericCall(Invoker<?> invoker, Invocation inv) {
+    	String methodName = inv.getMethodName();
+    	return (methodName.equals($INVOKE) || methodName.equals($INVOKE_ASYNC))
+    			&& inv.getArguments() != null
+    			&& inv.getArguments().length == 3
+    			&& !GenericService.class.isAssignableFrom(invoker.getInterface());
     }
 }
