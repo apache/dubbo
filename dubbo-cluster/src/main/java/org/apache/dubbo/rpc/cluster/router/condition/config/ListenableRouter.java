@@ -92,7 +92,7 @@ public abstract class ListenableRouter extends AbstractRouter implements Configu
 
     @Override
     public int getPriority() {
-        return DEFAULT_PRIORITY;
+        return this.priority;
     }
 
     @Override
