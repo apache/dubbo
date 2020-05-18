@@ -25,6 +25,7 @@ import org.apache.dubbo.rpc.cluster.Directory;
  * mock impl
  *
  */
+//@Wrapper(mismatches = {ZoneAwareCluster.NAME})
 public class MockClusterWrapper implements Cluster {
 
     private Cluster cluster;
