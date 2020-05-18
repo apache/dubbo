@@ -25,7 +25,6 @@ import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.w3c.dom.Element;
 
-import static org.apache.dubbo.config.spring.util.DubboBeanUtils.registerCommonBeans;
 import static org.springframework.util.StringUtils.commaDelimitedListToStringArray;
 import static org.springframework.util.StringUtils.trimArrayElements;
 
@@ -58,8 +57,13 @@ public class AnnotationBeanDefinitionParser extends AbstractSingleBeanDefinition
 
         builder.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
 
-        // @since 2.7.6 Register the common beans
-        registerCommonBeans(parserContext.getRegistry());
+        /**
+         * @since 2.7.6 Register the common beans
+         * @since 2.7.8 comment this code line, and migrated to
+         * @see DubboNamespaceHandler#parse(Element, ParserContext)
+         * @see https://github.com/apache/dubbo/issues/6174
+         */
+        // registerCommonBeans(parserContext.getRegistry());
     }
 
     @Override

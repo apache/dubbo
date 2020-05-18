@@ -29,14 +29,12 @@ import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.ServiceBean;
-import org.apache.dubbo.config.spring.beans.factory.annotation.DubboConfigAliasPostProcessor;
 
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.config.TypedStringValue;
-import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.support.ManagedMap;
 import org.springframework.beans.factory.support.RootBeanDefinition;
@@ -55,7 +53,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import static com.alibaba.spring.util.BeanRegistrar.registerInfrastructureBean;
 import static org.apache.dubbo.common.constants.CommonConstants.HIDE_KEY_PREFIX;
 
 /**
@@ -130,7 +127,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                 parseProperties(element.getChildNodes(), classDefinition, parserContext);
                 beanDefinition.getPropertyValues().addPropertyValue("ref", new BeanDefinitionHolder(classDefinition, id + "Impl"));
             }
-        }  else if (ProviderConfig.class.equals(beanClass)) {
+        } else if (ProviderConfig.class.equals(beanClass)) {
             parseNested(element, parserContext, ServiceBean.class, true, "service", "provider", id, beanDefinition);
         } else if (ConsumerConfig.class.equals(beanClass)) {
             parseNested(element, parserContext, ReferenceBean.class, false, "reference", "consumer", id, beanDefinition);
@@ -395,20 +392,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
 
     @Override
     public BeanDefinition parse(Element element, ParserContext parserContext) {
-        // Register DubboConfigAliasPostProcessor
-        registerDubboConfigAliasPostProcessor(parserContext.getRegistry());
-
         return parse(element, parserContext, beanClass, required);
-    }
-
-    /**
-     * Register {@link DubboConfigAliasPostProcessor}
-     *
-     * @param registry {@link BeanDefinitionRegistry}
-     * @since 2.7.5 [Feature] https://github.com/apache/dubbo/issues/5093
-     */
-    private void registerDubboConfigAliasPostProcessor(BeanDefinitionRegistry registry) {
-        registerInfrastructureBean(registry, DubboConfigAliasPostProcessor.BEAN_NAME, DubboConfigAliasPostProcessor.class);
     }
 
     private static String resolveAttribute(Element element, String attributeName, ParserContext parserContext) {
