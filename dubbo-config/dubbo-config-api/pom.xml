@@ -190,6 +190,19 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-filter-cache</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-filter-validation</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>test</scope>
+        </dependency>
 
     </dependencies>
 </project>

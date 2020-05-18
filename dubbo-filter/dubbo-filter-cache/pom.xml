@@ -19,8 +19,7 @@
     <parent>
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-filter</artifactId>
-        <version>${revision}</version>
-        <relativePath>../pom.xml</relativePath>
+        <version>2.7.7-SNAPSHOT</version>
     </parent>
     <artifactId>dubbo-filter-cache</artifactId>
     <packaging>jar</packaging>

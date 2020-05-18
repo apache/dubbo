@@ -30,19 +30,12 @@
 
     <profiles>
         <profile>
-            <id>dubbo-mini</id>
-            <modules>
-                <module>dubbo-mini</module>
-            </modules>
-        </profile>
-        <profile>
             <id>release</id>
             <modules>
                 <module>dubbo-all</module>
                 <module>dubbo-apache-release</module>
                 <module>dubbo-bom</module>
                 <module>dubbo-core-spi</module>
-                <module>dubbo-mini</module>
             </modules>
         </profile>
         <profile>

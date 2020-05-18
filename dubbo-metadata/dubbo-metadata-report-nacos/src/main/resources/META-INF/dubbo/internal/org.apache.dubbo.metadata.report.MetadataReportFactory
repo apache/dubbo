@@ -1,1 +1,0 @@
-nacos=org.apache.dubbo.metadata.store.nacos.NacosMetadataReportFactory

@@ -1,2 +1,0 @@
-multicast=org.apache.dubbo.remoting.p2p.support.MulticastNetworker
-file=org.apache.dubbo.remoting.p2p.support.FileNetworker
