@@ -25,7 +25,6 @@
 
     <dubbo:registry address="zookeeper://127.0.0.1:2181"/>
 
-    <dubbo:reference retries="0" id="demoService" mock="org.apache.dubbo.demo.consumer.MockImpl" check="false"
-                     interface="org.apache.dubbo.demo.DemoService"/>
+    <dubbo:reference id="demoService" check="false" interface="org.apache.dubbo.demo.DemoService"/>
 
 </beans>
