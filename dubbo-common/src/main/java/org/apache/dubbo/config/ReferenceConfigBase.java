@@ -67,7 +67,6 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
      */
     protected String protocol;
 
-    protected ServiceMetadata serviceMetadata;
 
     public ReferenceConfigBase() {
         serviceMetadata = new ServiceMetadata();
