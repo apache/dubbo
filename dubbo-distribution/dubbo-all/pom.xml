@@ -544,6 +544,13 @@
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-auth</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
 
         <!-- Transitive dependencies -->
         <dependency>
@@ -681,6 +688,7 @@
                                     <include>org.apache.dubbo:dubbo-metadata-report-etcd</include>
                                     <include>org.apache.dubbo:dubbo-metadata-report-nacos</include>
                                     <include>org.apache.dubbo:dubbo-serialization-native-hession</include>
+                                    <include>org.apache.dubbo:dubbo-auth</include>
                                 </includes>
                             </artifactSet>
                             <transformers>
@@ -974,6 +982,18 @@
                                         implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>
                                         META-INF/services/org.apache.dubbo.common.extension.LoadingStrategy
+                                    </resource>
+                                </transformer>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>
+                                        META-INF/dubbo/internal/org.apache.dubbo.auth.spi.AccessKeyStorage
+                                    </resource>
+                                </transformer>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>
+                                        META-INF/dubbo/internal/org.apache.dubbo.auth.spi.Authenticator
                                     </resource>
                                 </transformer>
 

@@ -69,6 +69,20 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-remoting-netty</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-remoting-netty4</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-rpc-api</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
@@ -76,7 +90,28 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-rpc-dubbo</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-rpc-injvm</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-registry-api</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-registry-zookeeper</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
             <optional>true</optional>
@@ -102,6 +137,33 @@
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-serialization-hessian2</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-configcenter-zookeeper</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-compatible</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>hessian-lite</artifactId>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
         <!-- metadata -->
         <dependency>
             <groupId>org.apache.dubbo</groupId>
@@ -110,7 +172,20 @@
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
-
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-metadata-report-zookeeper</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-metadata-report-redis</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
         <!-- Transitive dependencies -->
         <dependency>
             <groupId>org.springframework</groupId>
@@ -166,6 +241,8 @@
                                     <include>org.apache.dubbo:dubbo-container-api</include>
                                     <include>org.apache.dubbo:dubbo-serialization-api</include>
                                     <include>org.apache.dubbo:dubbo-metadata-api</include>
+                                    <!-- always support injvm protocol -->
+                                    <include>org.apache.dubbo:dubbo-rpc-injvm</include>
                                     <!-- to support dubbo protocol -->
                                     <include>org.apache.dubbo:dubbo-rpc-dubbo</include>
                                     <include>org.apache.dubbo:dubbo-remoting-netty</include>
@@ -173,10 +250,9 @@
                                     <include>org.apache.dubbo:dubbo-serialization-hessian2</include>
                                     <include>org.apache.dubbo:dubbo-registry-zookeeper</include>
                                     <include>org.apache.dubbo:dubbo-configcenter-zookeeper</include>
-                                    <include>org.apache.dubbo:dubbo-metadata-zookeeper</include>
-                                    <!-- config-api dependens on the following two modules -->
-                                    <include>org.apache.dubbo:dubbo-filter-cache</include>
-                                    <include>org.apache.dubbo:dubbo-filter-validation</include>
+                                    <include>org.apache.dubbo:dubbo-metadata-report-zookeeper</include>
+                                    <!-- customized hessian -->
+                                    <include>com.alibaba:hessian-lite</include>
                                 </includes>
                             </artifactSet>
                             <transformers>
