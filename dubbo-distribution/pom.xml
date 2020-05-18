@@ -47,6 +47,9 @@
         </profile>
         <profile>
             <id>dubbo-all</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
             <modules>
                 <module>dubbo-all</module>
             </modules>
