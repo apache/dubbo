@@ -157,16 +157,26 @@
                                     <include>org.apache.dubbo:dubbo-config-api</include>
                                     <include>org.apache.dubbo:dubbo-config-spring</include>
                                     <include>org.apache.dubbo:dubbo-common</include>
+                                    <include>org.apache.dubbo:dubbo-cluster</include>
+                                    <include>org.apache.dubbo:dubbo-qos</include>
                                     <include>org.apache.dubbo:dubbo-remoting-api</include>
                                     <include>org.apache.dubbo:dubbo-rpc-api</include>
-                                    <include>org.apache.dubbo:dubbo-cluster</include>
                                     <include>org.apache.dubbo:dubbo-registry-api</include>
                                     <include>org.apache.dubbo:dubbo-monitor-api</include>
                                     <include>org.apache.dubbo:dubbo-container-api</include>
-                                    <include>org.apache.dubbo:dubbo-qos</include>
                                     <include>org.apache.dubbo:dubbo-serialization-api</include>
                                     <include>org.apache.dubbo:dubbo-metadata-api</include>
-                                    <include>org.apache.dubbo:dubbo-metadata-api</include>
+                                    <!-- to support dubbo protocol -->
+                                    <include>org.apache.dubbo:dubbo-rpc-dubbo</include>
+                                    <include>org.apache.dubbo:dubbo-remoting-netty</include>
+                                    <include>org.apache.dubbo:dubbo-remoting-netty4</include>
+                                    <include>org.apache.dubbo:dubbo-serialization-hessian2</include>
+                                    <include>org.apache.dubbo:dubbo-registry-zookeeper</include>
+                                    <include>org.apache.dubbo:dubbo-configcenter-zookeeper</include>
+                                    <include>org.apache.dubbo:dubbo-metadata-zookeeper</include>
+                                    <!-- config-api dependens on the following two modules -->
+                                    <include>org.apache.dubbo:dubbo-filter-cache</include>
+                                    <include>org.apache.dubbo:dubbo-filter-validation</include>
                                 </includes>
                             </artifactSet>
                             <transformers>
