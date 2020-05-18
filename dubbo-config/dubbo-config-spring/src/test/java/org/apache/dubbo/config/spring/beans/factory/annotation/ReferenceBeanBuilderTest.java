@@ -19,10 +19,13 @@ package org.apache.dubbo.config.spring.beans.factory.annotation;
 
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.spring.ReferenceBean;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -46,6 +49,16 @@ import static org.springframework.util.ReflectionUtils.findField;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = ReferenceBeanBuilderTest.class)
 public class ReferenceBeanBuilderTest {
+
+    @BeforeEach
+    public void setUp() {
+        ApplicationModel.reset();
+    }
+
+    @AfterEach
+    public void tearDown() {
+        ApplicationModel.reset();
+    }
 
     @Reference(
             interfaceClass = CharSequence.class,
