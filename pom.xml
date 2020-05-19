@@ -383,29 +383,6 @@
                             </execution>
                         </executions>
                     </plugin>
-                    <plugin>
-                        <groupId>org.jacoco</groupId>
-                        <artifactId>jacoco-maven-plugin</artifactId>
-                        <version>${maven_jacoco_version}</version>
-                        <executions>
-                            <execution>
-                                <id>jacoco-initialize</id>
-                                <goals>
-                                    <goal>prepare-agent</goal>
-                                </goals>
-                                <configuration>
-                                    <propertyName>jacocoArgLine</propertyName>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>report-aggregate</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>report-aggregate</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
                 </plugins>
             </build>
         </profile>
@@ -481,6 +458,29 @@
                         </manifestEntries>
                     </archive>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${maven_jacoco_version}</version>
+                <executions>
+                    <execution>
+                        <id>jacoco-initialize</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                        <configuration>
+                            <propertyName>jacocoArgLine</propertyName>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>report-aggregate</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>report-aggregate</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
