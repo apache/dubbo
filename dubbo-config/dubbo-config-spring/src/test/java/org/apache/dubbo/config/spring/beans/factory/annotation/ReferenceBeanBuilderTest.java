@@ -21,11 +21,11 @@ import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -50,12 +50,12 @@ import static org.springframework.util.ReflectionUtils.findField;
 @ContextConfiguration(classes = ReferenceBeanBuilderTest.class)
 public class ReferenceBeanBuilderTest {
 
-    @BeforeEach
+    @Before
     public void setUp() {
         ApplicationModel.reset();
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         ApplicationModel.reset();
     }

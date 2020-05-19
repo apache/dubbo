@@ -35,6 +35,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.config.TypedStringValue;
+import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.support.ManagedMap;
 import org.springframework.beans.factory.support.RootBeanDefinition;
@@ -77,7 +78,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
     }
 
     @SuppressWarnings("unchecked")
-    private static BeanDefinition parse(Element element, ParserContext parserContext, Class<?> beanClass, boolean required) {
+    private static RootBeanDefinition parse(Element element, ParserContext parserContext, Class<?> beanClass, boolean required) {
         RootBeanDefinition beanDefinition = new RootBeanDefinition();
         beanDefinition.setBeanClass(beanClass);
         beanDefinition.setLazyInit(false);
@@ -347,17 +348,35 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                 if (methods == null) {
                     methods = new ManagedList();
                 }
-                BeanDefinition methodBeanDefinition = parse(element,
+                RootBeanDefinition methodBeanDefinition = parse(element,
                         parserContext, MethodConfig.class, false);
-                String name = id + "." + methodName;
+                String beanName = id + "." + methodName;
+
+                // If the PropertyValue named "id" can't be found,
+                // bean name will be taken as the "id" PropertyValue for MethodConfig
+                if (!hasPropertyValue(methodBeanDefinition, "id")) {
+                    addPropertyValue(methodBeanDefinition, "id", beanName);
+                }
+
                 BeanDefinitionHolder methodBeanDefinitionHolder = new BeanDefinitionHolder(
-                        methodBeanDefinition, name);
+                        methodBeanDefinition, beanName);
                 methods.add(methodBeanDefinitionHolder);
             }
         }
         if (methods != null) {
             beanDefinition.getPropertyValues().addPropertyValue("methods", methods);
         }
+    }
+
+    private static boolean hasPropertyValue(AbstractBeanDefinition beanDefinition, String propertyName) {
+        return beanDefinition.getPropertyValues().contains(propertyName);
+    }
+
+    private static void addPropertyValue(AbstractBeanDefinition beanDefinition, String propertyName, String propertyValue) {
+        if (StringUtils.isBlank(propertyName) || StringUtils.isBlank(propertyValue)) {
+            return;
+        }
+        beanDefinition.getPropertyValues().addPropertyValue(propertyName, propertyValue);
     }
 
     @SuppressWarnings("unchecked")
