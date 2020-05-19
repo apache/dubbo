@@ -50,10 +50,10 @@ public interface Cluster {
         return getCluster(name, true);
     }
 
-    static Cluster getCluster(String name, boolean warp) {
+    static Cluster getCluster(String name, boolean wrap) {
         if (StringUtils.isEmpty(name)) {
             name = Cluster.DEFAULT;
         }
-        return ExtensionLoader.getExtensionLoader(Cluster.class).getExtension(name);
+        return ExtensionLoader.getExtensionLoader(Cluster.class).getExtension(name, wrap);
     }
 }
