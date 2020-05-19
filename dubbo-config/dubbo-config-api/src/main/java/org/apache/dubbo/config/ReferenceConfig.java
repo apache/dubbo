@@ -332,7 +332,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                     invoker = Cluster.getCluster(cluster, false).join(new StaticDirectory(registryURL, invokers));
                 } else { // not a registry url, must be direct invoke.
                     String cluster = CollectionUtils.isNotEmpty(invokers)
-                            ? invokers.get(0).getUrl().getParameter(CLUSTER_KEY, ZoneAwareCluster.NAME)
+                            ? (invokers.get(0).getUrl() != null ? invokers.get(0).getUrl().getParameter(CLUSTER_KEY, ZoneAwareCluster.NAME) : Cluster.DEFAULT)
                             : Cluster.DEFAULT;
                     invoker = Cluster.getCluster(cluster).join(new StaticDirectory(invokers));
                 }
