@@ -69,6 +69,8 @@ import static com.alibaba.nacos.api.PropertyKeyConst.NAMING_POLLING_THREAD_COUNT
 import static com.alibaba.nacos.api.PropertyKeyConst.RAM_ROLE_NAME;
 import static com.alibaba.nacos.api.PropertyKeyConst.SECRET_KEY;
 import static com.alibaba.nacos.api.PropertyKeyConst.SERVER_ADDR;
+import static com.alibaba.nacos.api.PropertyKeyConst.USERNAME;
+import static com.alibaba.nacos.api.PropertyKeyConst.PASSWORD;
 import static com.alibaba.nacos.client.naming.utils.UtilAndComs.NACOS_NAMING_LOG_NAME;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -177,6 +179,8 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
         putPropertyIfAbsent(url, properties, NAMING_LOAD_CACHE_AT_START, "true");
         putPropertyIfAbsent(url, properties, NAMING_CLIENT_BEAT_THREAD_COUNT);
         putPropertyIfAbsent(url, properties, NAMING_POLLING_THREAD_COUNT);
+        putPropertyIfAbsent(url, properties, USERNAME);
+        putPropertyIfAbsent(url, properties, PASSWORD);
     }
 
     private static void putPropertyIfAbsent(URL url, Properties properties, String propertyName) {
