@@ -27,6 +27,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.support.MockInvoker;
 
@@ -35,7 +36,7 @@ import java.util.List;
 import static org.apache.dubbo.rpc.Constants.MOCK_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.INVOCATION_NEED_MOCK;
 
-public class MockClusterInvoker<T> implements Invoker<T> {
+public class MockClusterInvoker<T> implements ClusterInvoker<T> {
 
     private static final Logger logger = LoggerFactory.getLogger(MockClusterInvoker.class);
 
@@ -55,6 +56,11 @@ public class MockClusterInvoker<T> implements Invoker<T> {
 
     public URL getRegistryUrl() {
         return directory.getUrl();
+    }
+
+    @Override
+    public Directory<T> getDirectory() {
+        return directory;
     }
 
     @Override
