@@ -98,5 +98,4 @@ public class StatusTelnetHandler implements TelnetHandler {
         Status stat = StatusUtils.getSummaryStatus(statuses);
         return String.valueOf(stat.getLevel());
     }
-
 }
