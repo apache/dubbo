@@ -18,6 +18,7 @@ package org.apache.dubbo.common.threadpool.manager;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -29,8 +30,8 @@ public class ExecutorRepositoryTest {
 
     @Test
     public void testGetExecutor() {
-        testGet(URL.valueOf("dubbo://127.0.0.1:12345"));
-        testGet(URL.valueOf("dubbo://127.0.0.1:12345?side=consumer"));
+        testGet(URL.valueOf("dubbo://testGetExecutor:12345"));
+        testGet(URL.valueOf("dubbo://testGetExecutor:12345?side=consumer"));
 
         Assertions.assertNotNull(executorRepository.getSharedExecutor());
         Assertions.assertNotNull(executorRepository.getServiceExporterExecutor());
