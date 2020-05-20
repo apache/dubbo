@@ -63,6 +63,7 @@ public class ExecutorRepositoryTest {
         executorService.setMaximumPoolSize(3);
         executorRepository.updateThreadpool(url, executorService);
 
+        executorService.setMaximumPoolSize(20);
         executorService.setCorePoolSize(10);
         executorRepository.updateThreadpool(url, executorService);
 
