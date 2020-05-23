@@ -53,10 +53,6 @@ public class GenericImplFilter implements Filter, Filter.Listener {
 
     private static final Logger logger = LoggerFactory.getLogger(GenericImplFilter.class);
 
-    private static final Class<?>[] GENERIC_PARAMETER_TYPES = new Class<?>[]{String.class, String[].class, Object[].class};
-
-    private static final String GENERIC_PARAMETER_DESC = "Ljava/lang/String;[Ljava/lang/String;[Ljava/lang/Object;";
-
     private static final String GENERIC_IMPL_MARKER = "GENERIC_IMPL";
 
     @Override
@@ -65,40 +61,8 @@ public class GenericImplFilter implements Filter, Filter.Listener {
         // calling a generic impl service
         if (isCallingGenericImpl(generic, invocation)) {
             RpcInvocation invocation2 = new RpcInvocation(invocation);
-
-            /**
-             * Mark this invocation as a generic impl call, this value will be removed automatically before passing on the wire.
-             * See {@link RpcUtils#sieveUnnecessaryAttachments(Invocation)}
-             */
             invocation2.put(GENERIC_IMPL_MARKER, true);
-
-            String methodName = invocation2.getMethodName();
-            Class<?>[] parameterTypes = invocation2.getParameterTypes();
-            Object[] arguments = invocation2.getArguments();
-
-            String[] types = new String[parameterTypes.length];
-            for (int i = 0; i < parameterTypes.length; i++) {
-                types[i] = ReflectUtils.getName(parameterTypes[i]);
-            }
-
-            Object[] args;
-            if (ProtocolUtils.isBeanGenericSerialization(generic)) {
-                args = new Object[arguments.length];
-                for (int i = 0; i < arguments.length; i++) {
-                    args[i] = JavaBeanSerializeUtil.serialize(arguments[i], JavaBeanAccessor.METHOD);
-                }
-            } else {
-                args = PojoUtils.generalize(arguments);
-            }
-
-            if (RpcUtils.isReturnTypeFuture(invocation)) {
-                invocation2.setMethodName($INVOKE_ASYNC);
-            } else {
-                invocation2.setMethodName($INVOKE);
-            }
-            invocation2.setParameterTypes(GENERIC_PARAMETER_TYPES);
-            invocation2.setParameterTypesDesc(GENERIC_PARAMETER_DESC);
-            invocation2.setArguments(new Object[]{methodName, types, args});
+            invocation2.makeGeneric(invocation, generic);
             return invoker.invoke(invocation2);
         }
         // making a generic call to a normal service

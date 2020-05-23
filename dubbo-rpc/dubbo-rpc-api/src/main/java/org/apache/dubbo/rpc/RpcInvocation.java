@@ -17,12 +17,16 @@
 package org.apache.dubbo.rpc;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.beanutil.JavaBeanAccessor;
+import org.apache.dubbo.common.beanutil.JavaBeanSerializeUtil;
+import org.apache.dubbo.common.utils.PojoUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceRepository;
+import org.apache.dubbo.rpc.support.ProtocolUtils;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.io.Serializable;
@@ -33,6 +37,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
+import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE_ASYNC;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
@@ -430,4 +436,39 @@ public class RpcInvocation implements Invocation, Serializable {
                 + ", attachments=" + attachments + "]";
     }
 
+    /**
+     * Mark this invocation as a generic impl call, this value will be removed automatically before passing on the wire.
+     * See {@link RpcUtils#sieveUnnecessaryAttachments(Invocation)}
+     */
+	public void makeGeneric(Invocation invocation, String generic) {	
+	    final String GENERIC_PARAMETER_DESC = "Ljava/lang/String;[Ljava/lang/String;[Ljava/lang/Object;";
+		String methodName = getMethodName();
+        String[] types = getTypes();
+        Object[] args = getArgs(generic);        
+        setMethodName(RpcUtils.isReturnTypeFuture(invocation)?$INVOKE_ASYNC:$INVOKE);
+        setParameterTypes(new Class<?>[]{String.class, String[].class, Object[].class});
+        setParameterTypesDesc(GENERIC_PARAMETER_DESC);
+        setArguments(new Object[]{methodName, types, args});
+	}
+	
+	private Object[] getArgs(String generic) {
+        Object[] args;
+        if (ProtocolUtils.isBeanGenericSerialization(generic)) {
+            args = new Object[arguments.length];
+            for (int i = 0; i < arguments.length; i++) {
+                args[i] = JavaBeanSerializeUtil.serialize(arguments[i], JavaBeanAccessor.METHOD);
+            }
+        } else {
+            args = PojoUtils.generalize(arguments);
+        }
+        return args;
+	}
+	
+	private String[] getTypes() {
+        String[] types = new String[parameterTypes.length];
+        for (int i = 0; i < parameterTypes.length; i++) {
+            types[i] = ReflectUtils.getName(parameterTypes[i]);
+        }
+        return types;
+	}
 }
