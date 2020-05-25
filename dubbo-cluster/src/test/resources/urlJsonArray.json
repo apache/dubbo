@@ -1,0 +1,3 @@
+[
+  "override://0.0.0.0:20880/com.xx.Service?category=configurators&timeout=6666&disabled=true&dynamic=false&enabled=true&group=dubbo&priority=1&version=1.0"
+]
