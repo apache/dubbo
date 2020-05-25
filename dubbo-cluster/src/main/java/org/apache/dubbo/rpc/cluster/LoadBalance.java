@@ -27,9 +27,13 @@ import org.apache.dubbo.rpc.cluster.loadbalance.RandomLoadBalance;
 import java.util.List;
 
 /**
- * LoadBalance. (SPI, Singleton, ThreadSafe)
- * <p>
- * <a href="http://en.wikipedia.org/wiki/Load_balancing_(computing)">Load-Balancing</a>
+ * 负载均衡接口
+ * 1.实现类
+ * (1) 轮训
+ * (2) 最短响应时间
+ * (3) 一致性hash
+ * (4) 最小活跃数
+ * (5) 随机
  *
  * @see org.apache.dubbo.rpc.cluster.Cluster#join(Directory)
  */

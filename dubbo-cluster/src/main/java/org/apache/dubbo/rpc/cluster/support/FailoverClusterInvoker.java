@@ -38,11 +38,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_RETRIES;
 import static org.apache.dubbo.common.constants.CommonConstants.RETRIES_KEY;
 
 /**
- * When invoke fails, log the initial error and retry other invokers (retry n times, which means at most n different invokers will be invoked)
- * Note that retry causes latency.
- * <p>
- * <a href="http://en.wikipedia.org/wiki/Failover">Failover</a>
- *
+ * 换一个 provider 重试
  */
 public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
 

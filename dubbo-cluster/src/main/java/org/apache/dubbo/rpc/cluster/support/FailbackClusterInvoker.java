@@ -41,10 +41,7 @@ import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_FAILBACK_TASKS;
 import static org.apache.dubbo.rpc.cluster.Constants.FAIL_BACK_TASKS_KEY;
 
 /**
- * When fails, record failure requests and schedule for retry on a regular interval.
- * Especially useful for services of notification.
- *
- * <a href="http://en.wikipedia.org/wiki/Failback">Failback</a>
+ * 定期重试  || 特别适用通知服务
  */
 public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
 

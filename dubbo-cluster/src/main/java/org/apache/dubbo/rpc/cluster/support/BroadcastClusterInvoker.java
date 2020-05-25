@@ -29,7 +29,7 @@ import org.apache.dubbo.rpc.cluster.LoadBalance;
 import java.util.List;
 
 /**
- * BroadcastClusterInvoker
+ * 广播,每个 provider 都调用
  *
  */
 public class BroadcastClusterInvoker<T> extends AbstractClusterInvoker<T> {

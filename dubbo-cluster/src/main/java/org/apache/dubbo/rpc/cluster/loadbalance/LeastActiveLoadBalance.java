@@ -27,10 +27,14 @@ import java.util.concurrent.ThreadLocalRandom;
 /**
  * LeastActiveLoadBalance
  * <p>
- * Filter the number of invokers with the least number of active calls and count the weights and quantities of these invokers.
- * If there is only one invoker, use the invoker directly;
- * if there are multiple invokers and the weights are not the same, then random according to the total weight;
- * if there are multiple invokers and the same weight, then randomly called.
+ * 过滤活动调用次数最少的调用者数量.
+ *
+ *
+ *
+ * 并计算这些调用者的权重和数量。
+ * 如果只有一个调用程序，则直接使用该调用程序；
+ * 如果有多个调用者并且权重不相同，则根据总权重随机；
+ * 如果有多个调用者且权重相同，则将被随机调用。
  */
 public class LeastActiveLoadBalance extends AbstractLoadBalance {
 

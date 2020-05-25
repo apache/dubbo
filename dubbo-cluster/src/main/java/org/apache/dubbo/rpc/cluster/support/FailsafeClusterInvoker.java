@@ -29,11 +29,7 @@ import org.apache.dubbo.rpc.cluster.LoadBalance;
 import java.util.List;
 
 /**
- * When invoke fails, log the error message and ignore this error by returning an empty Result.
- * Usually used to write audit logs and other operations
- *
- * <a href="http://en.wikipedia.org/wiki/Fail-safe">Fail-safe</a>
- *
+ * 安全  返回空,忽略错误  通常用于编写审核日志和其他操作
  */
 public class FailsafeClusterInvoker<T> extends AbstractClusterInvoker<T> {
     private static final Logger logger = LoggerFactory.getLogger(FailsafeClusterInvoker.class);

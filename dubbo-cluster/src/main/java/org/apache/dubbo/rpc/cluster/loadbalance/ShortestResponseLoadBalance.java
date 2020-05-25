@@ -26,11 +26,14 @@ import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * ShortestResponseLoadBalance
+ * <p>
+ * 过滤成功调用响应时间最短的调用者数量
+ *
+ * 并计算这些调用者的权重和数量。
+ * 如果只有一个调用程序，则直接使用该调用程序；
+ * 如果有多个调用者并且权重不相同，则根据总权重随机；
+ * 如果有多个调用者且权重相同，则将被随机调用。
  * </p>
- * Filter the number of invokers with the shortest response time of success calls and count the weights and quantities of these invokers.
- * If there is only one invoker, use the invoker directly;
- * if there are multiple invokers and the weights are not the same, then random according to the total weight;
- * if there are multiple invokers and the same weight, then randomly called.
  */
 public class ShortestResponseLoadBalance extends AbstractLoadBalance {
 
