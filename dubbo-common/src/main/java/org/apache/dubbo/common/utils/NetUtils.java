@@ -374,6 +374,25 @@ public class NetUtils {
         }
 
         if (result == null) { // If not found, try to get the first one
+            for (NetworkInterface networkInterface : validNetworkInterfaces) {
+                Enumeration<InetAddress> addresses = networkInterface.getInetAddresses();
+                while (addresses.hasMoreElements()) {
+                    Optional<InetAddress> addressOp = toValidAddress(addresses.nextElement());
+                    if (addressOp.isPresent()) {
+                        try {
+                            if (addressOp.get().isReachable(100)) {
+                                result = networkInterface;
+                                break;
+                            }
+                        } catch (IOException e) {
+                            // ignore
+                        }
+                    }
+                }
+            }
+        }
+
+        if (result == null) {
             result = first(validNetworkInterfaces);
         }
 
