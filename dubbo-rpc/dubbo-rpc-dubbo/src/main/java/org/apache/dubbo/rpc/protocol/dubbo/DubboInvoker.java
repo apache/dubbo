@@ -18,7 +18,7 @@ package org.apache.dubbo.rpc.protocol.dubbo;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.utils.AtomicPositiveInteger;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.TimeoutException;
@@ -59,13 +59,15 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
 
     private final ExchangeClient[] clients;
 
-    private final AtomicPositiveInteger index = new AtomicPositiveInteger();
-
     private final String version;
 
     private final ReentrantLock destroyLock = new ReentrantLock();
 
     private final Set<Invoker<?>> invokers;
+
+    private final ExchangeClientChooser exchangeClientChooser;
+
+    private static final ExchangeClientChooserFactory EXCHANGE_CLIENT_CHOOSER_FACTORY = ExtensionLoader.getExtensionLoader(ExchangeClientChooserFactory.class).getDefaultExtension();
 
     public DubboInvoker(Class<T> serviceType, URL url, ExchangeClient[] clients) {
         this(serviceType, url, clients, null);
@@ -77,6 +79,8 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
         // get version.
         this.version = url.getParameter(VERSION_KEY, "0.0.0");
         this.invokers = invokers;
+        //Strategy Pattern,improve efficiency in some cases(eg:2^n)
+        this.exchangeClientChooser = EXCHANGE_CLIENT_CHOOSER_FACTORY.newChooser(clients);
     }
 
     @Override
@@ -86,12 +90,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
         inv.setAttachment(PATH_KEY, getUrl().getPath());
         inv.setAttachment(VERSION_KEY, version);
 
-        ExchangeClient currentClient;
-        if (clients.length == 1) {
-            currentClient = clients[0];
-        } else {
-            currentClient = clients[index.getAndIncrement() % clients.length];
-        }
+        ExchangeClient currentClient = exchangeClientChooser.next();
         try {
             boolean isOneway = RpcUtils.isOneway(getUrl(), invocation);
             int timeout = calculateTimeout(invocation, methodName);
