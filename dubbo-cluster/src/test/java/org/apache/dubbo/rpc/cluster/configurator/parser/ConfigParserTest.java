@@ -174,4 +174,20 @@ public class ConfigParserTest {
         }
     }
 
+    @Test
+    public void parseURLJsonArrayCompatible() throws Exception {
+
+        try (InputStream jsonStream = this.getClass().getResourceAsStream("/urlJsonArray.json")) {
+            List<URL> urls = ConfigParser.parseConfigurators(streamToString(jsonStream));
+
+            Assertions.assertNotNull(urls);
+            Assertions.assertEquals(1, urls.size());
+            URL url = urls.get(0);
+
+            Assertions.assertEquals("0.0.0.0", url.getAddress());
+            Assertions.assertEquals("com.xx.Service", url.getServiceInterface());
+            Assertions.assertEquals(6666, url.getParameter(TIMEOUT_KEY, 0));
+        }
+    }
+
 }
