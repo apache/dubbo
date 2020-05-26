@@ -221,11 +221,11 @@ public class RegistryProtocol implements Protocol {
         // register stated url on provider model
         registerStatedUrl(registryUrl, registeredProviderUrl, register);
 
-        // Deprecated! Subscribe to override rules in 2.6.x or before.
-        registry.subscribe(overrideSubscribeUrl, overrideSubscribeListener);
-
         exporter.setRegisterUrl(registeredProviderUrl);
         exporter.setSubscribeUrl(overrideSubscribeUrl);
+
+        // Deprecated! Subscribe to override rules in 2.6.x or before.
+        registry.subscribe(overrideSubscribeUrl, overrideSubscribeListener);
 
         notifyExport(exporter);
         //Ensure that a new exporter instance is returned every time export
