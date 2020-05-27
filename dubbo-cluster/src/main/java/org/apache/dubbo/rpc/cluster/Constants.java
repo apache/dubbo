@@ -99,4 +99,14 @@ public interface Constants {
      * The key name for export URL in register center
      */
     String EXPORT_KEY = "export";
+
+    /**
+     * Specify the expression context builder in order for evaluating the expression
+     */
+    String CONTEXT_BUILDER_KEY = "context.builder";
+
+    /**
+     * The default strategy name for context builder
+     */
+    String DEFAULT_CONTEXT_BUILDER = "default";
 }
