@@ -58,6 +58,7 @@ public class LoadBalanceBaseTest {
     RpcStatus weightTestRpcStatus1;
     RpcStatus weightTestRpcStatus2;
     RpcStatus weightTestRpcStatus3;
+    RpcStatus weightTestRpcStatus5;
 
     RpcInvocation weightTestInvocation;
 
@@ -205,10 +206,13 @@ public class LoadBalanceBaseTest {
     }
 
     protected List<Invoker<LoadBalanceBaseTest>> weightInvokers = new ArrayList<Invoker<LoadBalanceBaseTest>>();
+    protected List<Invoker<LoadBalanceBaseTest>> weightInvokersSR= new ArrayList<Invoker<LoadBalanceBaseTest>>();
+
     protected Invoker<LoadBalanceBaseTest> weightInvoker1;
     protected Invoker<LoadBalanceBaseTest> weightInvoker2;
     protected Invoker<LoadBalanceBaseTest> weightInvoker3;
     protected Invoker<LoadBalanceBaseTest> weightInvokerTmp;
+    protected Invoker<LoadBalanceBaseTest> weightInvoker5;
 
     @BeforeEach
     public void before() throws Exception {
@@ -216,6 +220,7 @@ public class LoadBalanceBaseTest {
         weightInvoker2 = mock(Invoker.class, Mockito.withSettings().stubOnly());
         weightInvoker3 = mock(Invoker.class, Mockito.withSettings().stubOnly());
         weightInvokerTmp = mock(Invoker.class, Mockito.withSettings().stubOnly());
+        weightInvoker5 = mock(Invoker.class, Mockito.withSettings().stubOnly());
 
         weightTestInvocation = new RpcInvocation();
         weightTestInvocation.setMethodName("test");
@@ -224,6 +229,7 @@ public class LoadBalanceBaseTest {
         URL url2 = URL.valueOf("test2://127.0.0.1:12/DemoService?weight=9&active=0");
         URL url3 = URL.valueOf("test3://127.0.0.1:13/DemoService?weight=6&active=1");
         URL urlTmp = URL.valueOf("test4://127.0.0.1:9999/DemoService?weight=11&active=0");
+        URL url5 = URL.valueOf("test5://127.0.0.1:15/DemoService?weight=15&active=0");
 
         given(weightInvoker1.isAvailable()).willReturn(true);
         given(weightInvoker1.getInterface()).willReturn(LoadBalanceBaseTest.class);
@@ -241,16 +247,32 @@ public class LoadBalanceBaseTest {
         given(weightInvokerTmp.getInterface()).willReturn(LoadBalanceBaseTest.class);
         given(weightInvokerTmp.getUrl()).willReturn(urlTmp);
 
+        given(weightInvoker5.isAvailable()).willReturn(true);
+        given(weightInvoker5.getInterface()).willReturn(LoadBalanceBaseTest.class);
+        given(weightInvoker5.getUrl()).willReturn(url5);
+
         weightInvokers.add(weightInvoker1);
         weightInvokers.add(weightInvoker2);
         weightInvokers.add(weightInvoker3);
 
+        weightInvokersSR.add(weightInvoker1);
+        weightInvokersSR.add(weightInvoker2);
+        weightInvokersSR.add(weightInvoker5);
+
         weightTestRpcStatus1 = RpcStatus.getStatus(weightInvoker1.getUrl(), weightTestInvocation.getMethodName());
         weightTestRpcStatus2 = RpcStatus.getStatus(weightInvoker2.getUrl(), weightTestInvocation.getMethodName());
         weightTestRpcStatus3 = RpcStatus.getStatus(weightInvoker3.getUrl(), weightTestInvocation.getMethodName());
+        weightTestRpcStatus5 = RpcStatus.getStatus(weightInvoker5.getUrl(), weightTestInvocation.getMethodName());
+
 
         // weightTestRpcStatus3 active is 1
         RpcStatus.beginCount(weightInvoker3.getUrl(), weightTestInvocation.getMethodName());
+
+        // weightTestRpcStatus5 shortest response time of success calls is bigger than 0
+        // weightTestRpcStatus5 active is 1
+        RpcStatus.beginCount(weightInvoker5.getUrl(), weightTestInvocation.getMethodName());
+        RpcStatus.endCount(weightInvoker5.getUrl(), weightTestInvocation.getMethodName(), 5000L, true);
+        RpcStatus.beginCount(weightInvoker5.getUrl(), weightTestInvocation.getMethodName());
     }
 
     protected Map<Invoker, InvokeResult> getWeightedInvokeResult(int runs, String loadbalanceName) {

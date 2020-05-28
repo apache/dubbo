@@ -176,9 +176,9 @@ public class DefaultFuture extends CompletableFuture<Object> {
             } else {
                 logger.warn("The timeout response finally returned at "
                         + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date()))
-                        + ", response " + response
+                        + ", response status is " + response.getStatus()
                         + (channel == null ? "" : ", channel: " + channel.getLocalAddress()
-                        + " -> " + channel.getRemoteAddress()));
+                        + " -> " + channel.getRemoteAddress()) + ", please check provider side for detailed result.");
             }
         } finally {
             CHANNELS.remove(response.getId());
@@ -252,7 +252,7 @@ public class DefaultFuture extends CompletableFuture<Object> {
         return (sent > 0 ? "Waiting server-side response timeout" : "Sending request timeout in client-side")
                 + (scan ? " by scan timer" : "") + ". start time: "
                 + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(start))) + ", end time: "
-                + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date())) + ","
+                + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(nowTimestamp))) + ","
                 + (sent > 0 ? " client elapsed: " + (sent - start)
                 + " ms, server elapsed: " + (nowTimestamp - sent)
                 : " elapsed: " + (nowTimestamp - start)) + " ms, timeout: "

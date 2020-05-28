@@ -17,6 +17,8 @@
 
 package org.apache.dubbo.common.constants;
 
+import org.apache.dubbo.common.URL;
+
 import java.net.NetworkInterface;
 import java.util.concurrent.ExecutorService;
 import java.util.regex.Pattern;
@@ -51,6 +53,8 @@ public interface CommonConstants {
     String PATH_SEPARATOR = "/";
 
     String PROTOCOL_SEPARATOR = "://";
+
+    String PROTOCOL_SEPARATOR_ENCODED = URL.encode(PROTOCOL_SEPARATOR);
 
     String REGISTRY_SEPARATOR = "|";
 
@@ -105,6 +109,14 @@ public interface CommonConstants {
     String TIMEOUT_KEY = "timeout";
 
     int DEFAULT_TIMEOUT = 1000;
+
+    // used by invocation attachments to transfer timeout from Consumer to Provider.
+    // works as a replacement of TIMEOUT_KEY on wire, which seems to be totally useless in previous releases).
+    String TIMEOUT_ATTACHENT_KEY = "_TO";
+
+    String TIME_COUNTDOWN_KEY = "timeout-countdown";
+
+    String ENABLE_TIMEOUT_COUNTDOWN_KEY = "enable-timeout-countdown";
 
     String REMOVE_VALUE_PREFIX = "-";
 
