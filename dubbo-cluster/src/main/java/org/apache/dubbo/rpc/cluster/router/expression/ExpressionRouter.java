@@ -76,6 +76,9 @@ public class ExpressionRouter extends ObserverRouter {
     @Override
     public <T> List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
         String application = url.getParameter(CommonConstants.REMOTE_APPLICATION_KEY);
+        if(application == null){
+            return invokers;
+        }
         RuleSet ruleSet = ruleSets.get(application);
         if (logger.isTraceEnabled()) {
             logger.trace(ruleSet.toString());
