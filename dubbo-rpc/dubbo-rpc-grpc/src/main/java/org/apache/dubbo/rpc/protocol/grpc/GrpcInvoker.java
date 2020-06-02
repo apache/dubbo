@@ -23,21 +23,23 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 
-import io.grpc.ManagedChannel;
 import io.grpc.Status;
 import io.grpc.StatusException;
 
+import java.util.concurrent.locks.ReentrantLock;
+
 public class GrpcInvoker<T> extends AbstractInvoker<T> {
+    private final ReentrantLock destroyLock = new ReentrantLock();
 
     private final Invoker<T> target;
-    private ManagedChannel channel;
+    private ReferenceCountManagedChannel channel;
 
 //    private static List<Exception> grpcExceptions = new ArrayList<>();
 //    static {
 //        grpcExceptions.add();
 //    }
 
-    public GrpcInvoker(Class<T> type, URL url, Invoker<T> target, ManagedChannel channel) {
+    public GrpcInvoker(Class<T> type, URL url, Invoker<T> target, ReferenceCountManagedChannel channel) {
         super(type, url);
         this.target = target;
         this.channel = channel;
@@ -75,8 +77,19 @@ public class GrpcInvoker<T> extends AbstractInvoker<T> {
 
     @Override
     public void destroy() {
-        super.destroy();
-        channel.shutdown();
+        if (!super.isDestroyed()) {
+            // double check to avoid dup close
+            destroyLock.lock();
+            try {
+                if (super.isDestroyed()) {
+                    return;
+                }
+                super.destroy();
+                channel.shutdown();
+            } finally {
+                destroyLock.unlock();
+            }
+        }
     }
 
     private RpcException getRpcException(Class<?> type, URL url, Invocation invocation, Throwable e) {
@@ -98,8 +111,6 @@ public class GrpcInvoker<T> extends AbstractInvoker<T> {
             Status status = statusException.getStatus();
             if (status.getCode() == Status.Code.DEADLINE_EXCEEDED) {
                 return RpcException.TIMEOUT_EXCEPTION;
-            } else if (status.getCode() == Status.Code.DEADLINE_EXCEEDED) {
-                //
             }
         }
         return RpcException.UNKNOWN_EXCEPTION;

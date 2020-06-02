@@ -25,6 +25,7 @@ import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.EXTRA_KEYS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
+import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.apache.dubbo.config.Constants.REGISTRIES_SUFFIX;
 
 /**
@@ -213,10 +214,12 @@ public class RegistryConfig extends AbstractConfig {
                 URL url = URL.valueOf(address);
                 setUsername(url.getUsername());
                 setPassword(url.getPassword());
-                updateIdIfAbsent(url.getProtocol());
+//                updateIdIfAbsent(url.getProtocol());
                 updateProtocolIfAbsent(url.getProtocol());
                 updatePortIfAbsent(url.getPort());
-                updateParameters(url.getParameters());
+                Map<String, String> params = url.getParameters();
+                params.remove(BACKUP_KEY);
+                updateParameters(params);
             } catch (Exception ignored) {
             }
         }

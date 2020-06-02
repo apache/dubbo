@@ -205,4 +205,22 @@ public class ConfigManagerTest {
     public void testRefreshAll() {
         configManager.refreshAll();
     }
+
+    @Test
+    public void testDefaultConfig() {
+        ProviderConfig providerConfig = new ProviderConfig();
+        providerConfig.setDefault(false);
+        assertFalse(ConfigManager.isDefaultConfig(providerConfig));
+
+        ProviderConfig providerConfig1 = new ProviderConfig();
+        assertTrue(ConfigManager.isDefaultConfig(providerConfig1));
+
+        ProviderConfig providerConfig3 = new ProviderConfig();
+        providerConfig.setDefault(true);
+        assertTrue(ConfigManager.isDefaultConfig(providerConfig3));
+
+        ProtocolConfig protocolConfig = new ProtocolConfig();
+        protocolConfig.setDefault(false);
+        assertFalse(ConfigManager.isDefaultConfig(protocolConfig));
+    }
 }

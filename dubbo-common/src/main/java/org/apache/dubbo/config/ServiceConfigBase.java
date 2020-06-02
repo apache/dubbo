@@ -209,8 +209,8 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
     }
 
     public void completeCompoundConfigs() {
-    	super.completeCompoundConfigs(provider);
-    	if(provider != null) {
+        super.completeCompoundConfigs(provider);
+        if (provider != null) {
             if (protocols == null) {
                 setProtocols(provider.getProtocols());
             }
@@ -223,8 +223,9 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
             if (StringUtils.isEmpty(protocolIds)) {
                 setProtocolIds(provider.getProtocolIds());
             }
-    	}
+        }
     }
+
     private void convertProtocolIdsToProtocols() {
         computeValidProtocolIds();
         if (StringUtils.isEmpty(protocolIds)) {
@@ -305,9 +306,10 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
 
     public void setInterface(String interfaceName) {
         this.interfaceName = interfaceName;
-        if (StringUtils.isEmpty(id)) {
-            id = interfaceName;
-        }
+        // FIXME, add id strategy in ConfigManager
+//        if (StringUtils.isEmpty(id)) {
+//            id = interfaceName;
+//        }
     }
 
     public T getRef() {
@@ -361,12 +363,12 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
     }
 
     @Override
-    public void setMock(Boolean mock) {
+    public void setMock(String mock) {
         throw new IllegalArgumentException("mock doesn't support on provider side");
     }
 
     @Override
-    public void setMock(String mock) {
+    public void setMock(Object mock) {
         throw new IllegalArgumentException("mock doesn't support on provider side");
     }
 
@@ -398,9 +400,17 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
 
     @Parameter(excluded = true)
     public String getUniqueServiceName() {
-        String group = StringUtils.isEmpty(this.group) ? provider.getGroup() : this.group;
-        String version = StringUtils.isEmpty(this.version) ? provider.getVersion() : this.version;
-        return URL.buildKey(interfaceName, group, version);
+        return URL.buildKey(interfaceName, getGroup(), getVersion());
+    }
+
+    @Override
+    public String getGroup() {
+        return StringUtils.isEmpty(this.group) ? (provider != null ? provider.getGroup() : this.group) : this.group;
+    }
+
+    @Override
+    public String getVersion() {
+        return StringUtils.isEmpty(this.version) ? (provider != null ? provider.getVersion() : this.version) : this.version;
     }
 
     private void computeValidProtocolIds() {

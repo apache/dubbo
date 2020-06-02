@@ -69,6 +69,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.METADATA_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROXY_CLASS_REF;
+import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SEMICOLON_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
@@ -220,6 +221,10 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         // appendParameters(map, consumer, Constants.DEFAULT_KEY);
         AbstractConfig.appendParameters(map, consumer);
         AbstractConfig.appendParameters(map, this);
+        MetadataReportConfig metadataReportConfig = getMetadataReportConfig();
+        if (metadataReportConfig != null && metadataReportConfig.isValid()) {
+            map.putIfAbsent(METADATA_KEY, REMOTE_METADATA_STORAGE_TYPE);
+        }
         Map<String, AsyncMethodInfo> attributes = null;
         if (CollectionUtils.isNotEmpty(getMethods())) {
             attributes = new HashMap<>();
@@ -332,6 +337,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         }
 
         if (shouldCheck() && !invoker.isAvailable()) {
+            invoker.destroy();
             throw new IllegalStateException("Failed to check the status of the service "
                     + interfaceName
                     + ". No provider available for the service "
@@ -393,9 +399,9 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         }
 
         //init serivceMetadata
-        serviceMetadata.setVersion(version);
-        serviceMetadata.setGroup(group);
-        serviceMetadata.setDefaultGroup(group);
+        serviceMetadata.setVersion(getVersion());
+        serviceMetadata.setGroup(getGroup());
+        serviceMetadata.setDefaultGroup(getGroup());
         serviceMetadata.setServiceType(getActualInterface());
         serviceMetadata.setServiceInterfaceName(interfaceName);
         // TODO, uncomment this line once service key is unified
@@ -458,26 +464,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     public void setBootstrap(DubboBootstrap bootstrap) {
         this.bootstrap = bootstrap;
     }
-
-    @SuppressWarnings("unused")
-    private final Object finalizerGuardian = new Object() {
-        @Override
-        protected void finalize() throws Throwable {
-            super.finalize();
-
-            if (!ReferenceConfig.this.destroyed) {
-                logger.warn("ReferenceConfig(" + url + ") is not DESTROYED when FINALIZE");
-
-                /* don't destroy for now
-                try {
-                    ReferenceConfig.this.destroy();
-                } catch (Throwable t) {
-                        logger.warn("Unexpected err when destroy invoker of ReferenceConfig(" + url + ") in finalize method!", t);
-                }
-                */
-            }
-        }
-    };
 
     private void postProcessConfig() {
         List<ConfigPostProcessor> configPostProcessors =ExtensionLoader.getExtensionLoader(ConfigPostProcessor.class)
