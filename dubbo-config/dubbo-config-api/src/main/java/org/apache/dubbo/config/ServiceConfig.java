@@ -312,8 +312,10 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 serviceMetadata
         );
 
+        //获取当前服务对应的注册中心实例
         List<URL> registryURLs = ConfigValidationUtils.loadRegistries(this, true);
 
+        //如果服务指定暴露多个协议（Dubbo、REST...)，则依次暴露服务
         for (ProtocolConfig protocolConfig : protocols) {
             String pathKey = URL.buildKey(getContextPath(protocolConfig)
                     .map(p -> p + "/" + path)

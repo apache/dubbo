@@ -97,7 +97,7 @@ public class ExtensionLoader<T> {
     //扩展类与扩展名缓存
     private final ConcurrentMap<Class<?>, String> cachedNames = new ConcurrentHashMap<>();
 
-    //普通扩展类缓存，不包括自适应拓展类和Wrapper类
+    //普通扩展类缓存，不包括自适应扩展类和Wrapper类
     private final Holder<Map<String, Class<?>>> cachedClasses = new Holder<>();
 
     //扩展名与@Activate的缓存
@@ -418,6 +418,7 @@ public class ExtensionLoader<T> {
     /**
      * Find the extension with the given name. If the specified name is not found, then {@link IllegalStateException}
      * will be thrown.
+     * 先检查缓存中是否有现成的数据，没有则调用createExtension开始创建。这里有个特殊点，如果传入的参数name是true，则加载并返回默认扩展类
      */
     @SuppressWarnings("unchecked")
     public T getExtension(String name) {
@@ -637,12 +638,15 @@ public class ExtensionLoader<T> {
             throw findException(name);
         }
         try {
+            //根据传入的name找到对应的类并进行初始化。
             T instance = (T) EXTENSION_INSTANCES.get(clazz);
             if (instance == null) {
                 EXTENSION_INSTANCES.putIfAbsent(clazz, clazz.newInstance());
                 instance = (T) EXTENSION_INSTANCES.get(clazz);
             }
+            //向扩展类注入其依赖的属性，如扩展类A又依赖了扩展类B
             injectExtension(instance);
+            //扩展类完成初始化后，会检查一次包装扩展类cachedWrapperClasses，查找包含与扩展点类型相同的构造函数，为其注入刚初始化的扩展类
             Set<Class<?>> wrapperClasses = cachedWrapperClasses;
             if (CollectionUtils.isNotEmpty(wrapperClasses)) {
                 for (Class<?> wrapperClass : wrapperClasses) {
@@ -776,6 +780,8 @@ public class ExtensionLoader<T> {
      * extract and cache default extension name if exists
      */
     private void cacheDefaultExtensionName() {
+        //检查是否有SPI注解。如果有，则获取注解中填写的名称，并缓存为默认实现名。
+        //如@SPI("netty")会保存netty为默认实现
         final SPI defaultAnnotation = type.getAnnotation(SPI.class);
         if (defaultAnnotation == null) {
             return;
