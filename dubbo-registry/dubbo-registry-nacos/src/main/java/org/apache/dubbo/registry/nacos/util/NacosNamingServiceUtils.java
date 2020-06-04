@@ -27,6 +27,7 @@ import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.pojo.Instance;
+import com.alibaba.nacos.api.naming.utils.NamingUtils;
 
 import java.util.Properties;
 
@@ -90,7 +91,7 @@ public class NacosNamingServiceUtils {
      */
     public static ServiceInstance toServiceInstance(Instance instance) {
         DefaultServiceInstance serviceInstance = new DefaultServiceInstance(instance.getInstanceId(),
-                instance.getServiceName(), instance.getIp(), instance.getPort());
+                NamingUtils.getServiceName(instance.getServiceName()), instance.getIp(), instance.getPort());
         serviceInstance.setMetadata(instance.getMetadata());
         serviceInstance.setEnabled(instance.isEnabled());
         serviceInstance.setHealthy(instance.isHealthy());
