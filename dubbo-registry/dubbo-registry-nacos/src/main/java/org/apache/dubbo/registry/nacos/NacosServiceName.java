@@ -85,8 +85,8 @@ public class NacosServiceName {
     /**
      * Build an instance of {@link NacosServiceName}
      *
-     * @param url
-     * @return
+     * @param url {@link URL}
+     * @return {@link NacosServiceName} instance
      */
     public static NacosServiceName valueOf(URL url) {
         return new NacosServiceName(url);
