@@ -17,6 +17,7 @@
 package org.apache.dubbo.registry;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 
 import java.util.List;
 
@@ -41,4 +42,9 @@ public interface NotifyListener {
      */
     void notify(List<URL> urls);
 
+    default void addServiceListener(ServiceInstancesChangedListener instanceListener) {
+    }
+
+    default void notifyServiceInstances() {
+    }
 }

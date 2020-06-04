@@ -16,6 +16,9 @@
  */
 package org.apache.dubbo.registry.client;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.metadata.MetadataInfo;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -42,6 +45,8 @@ public class DefaultServiceInstance implements ServiceInstance {
     private boolean healthy;
 
     private Map<String, String> metadata = new HashMap<>();
+
+    private MetadataInfo serviceMetadata;
 
     public DefaultServiceInstance() {
     }
@@ -123,6 +128,19 @@ public class DefaultServiceInstance implements ServiceInstance {
 
     public void setMetadata(Map<String, String> metadata) {
         this.metadata = metadata;
+    }
+
+    public MetadataInfo getServiceMetadata() {
+        return serviceMetadata;
+    }
+
+    public void setServiceMetadata(MetadataInfo serviceMetadata) {
+        this.serviceMetadata = serviceMetadata;
+    }
+
+    @Override
+    public URL toURL(String protocol, String path, String interfaceName, String group, String version, String serviceKey) {
+        return new InstanceAddressURL(protocol, host, port, path, interfaceName, group, version, serviceKey);
     }
 
     @Override

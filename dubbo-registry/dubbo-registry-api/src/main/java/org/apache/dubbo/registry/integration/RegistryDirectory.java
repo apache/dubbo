@@ -31,6 +31,8 @@ import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.AddressListener;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
+import org.apache.dubbo.registry.client.ServiceInstance;
+import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -53,6 +55,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -68,6 +71,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.APP_DYNAMIC_CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.COMPATIBLE_CONFIG_KEY;
@@ -133,6 +137,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     private static final ConsumerConfigurationListener CONSUMER_CONFIGURATION_LISTENER = new ConsumerConfigurationListener();
     private ReferenceConfigurationListener serviceConfigurationListener;
 
+    private Set<ServiceInstancesChangedListener> serviceListeners;
 
     public RegistryDirectory(Class<T> serviceType, URL url) {
         super(url);
@@ -151,6 +156,34 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         this.overrideDirectoryUrl = this.directoryUrl = turnRegistryUrlToConsumerUrl(url);
         String group = directoryUrl.getParameter(GROUP_KEY, "");
         this.multiGroup = group != null && (ANY_VALUE.equals(group) || group.contains(","));
+
+        this.serviceListeners = new HashSet<>();
+    }
+
+    @Override
+    public void addServiceListener(ServiceInstancesChangedListener instanceListener) {
+        this.serviceListeners.add(instanceListener);
+    }
+
+    @Override
+    public void notifyServiceInstances() {
+        List<URL> urls = new LinkedList<>();
+        for (ServiceInstancesChangedListener listener : serviceListeners) {
+            List<ServiceInstance> instances = listener.getInstances(serviceKey);
+            for (ServiceInstance instance : instances) {
+                // FIXME, the right protocol? the right path?
+                urls.add(
+                        instance.toURL(
+                                "dubbo",
+                                serviceType.getName(),
+                                serviceType.getName(),
+                                queryMap.get(GROUP_KEY),
+                                queryMap.get(VERSION_KEY),
+                                serviceKey)
+                );
+            }
+        }
+        notify(urls);
     }
 
     private URL turnRegistryUrlToConsumerUrl(URL url) {

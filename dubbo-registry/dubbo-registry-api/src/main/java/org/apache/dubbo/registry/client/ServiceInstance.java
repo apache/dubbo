@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.registry.client;
 
+import org.apache.dubbo.common.URL;
+
 import java.io.Serializable;
 import java.util.Map;
 
@@ -92,5 +94,7 @@ public interface ServiceInstance extends Serializable {
      * @return if equals , return <code>true</code>, or <code>false</code>
      */
     boolean equals(Object another);
+
+    URL toURL(String protocol, String path, String interfaceName, String group, String version, String serviceKey);
 
 }
