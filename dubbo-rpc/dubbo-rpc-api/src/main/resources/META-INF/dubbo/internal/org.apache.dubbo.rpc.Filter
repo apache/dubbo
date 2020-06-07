@@ -12,3 +12,4 @@ executelimit=org.apache.dubbo.rpc.filter.ExecuteLimitFilter
 deprecated=org.apache.dubbo.rpc.filter.DeprecatedFilter
 compatible=org.apache.dubbo.rpc.filter.CompatibleFilter
 timeout=org.apache.dubbo.rpc.filter.TimeoutFilter
+tps=org.apache.dubbo.rpc.filter.TpsLimitFilter
