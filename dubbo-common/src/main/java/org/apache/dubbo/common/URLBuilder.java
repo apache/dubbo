@@ -39,9 +39,9 @@ public final class URLBuilder {
 
     private String path;
 
-    private Map<String, String> parameters;
+    private final Map<String, String> parameters;
 
-    private Map<String, Map<String, String>> methodParameters;
+    private final Map<String, Map<String, String>> methodParameters;
 
     public URLBuilder() {
         protocol = null;
@@ -128,7 +128,7 @@ public final class URLBuilder {
         if (StringUtils.isEmpty(username) && StringUtils.isNotEmpty(password)) {
             throw new IllegalArgumentException("Invalid url, password without username!");
         }
-        port = port < 0 ? 0 : port;
+        port = Math.max(port, 0);
         // trim the leading "/"
         int firstNonSlash = 0;
         if (path != null) {
@@ -263,6 +263,7 @@ public final class URLBuilder {
         return this;
     }
 
+    @SuppressWarnings("unused")
     public URLBuilder addMethodParameter(String method, String key, String value) {
         if (StringUtils.isEmpty(method) || StringUtils.isEmpty(key) || StringUtils.isEmpty(value)) {
             return this;
@@ -282,6 +283,7 @@ public final class URLBuilder {
         return this;
     }
 
+    @SuppressWarnings("unused")
     public URLBuilder addMethodParameterIfAbsent(String method, String key, String value) {
         if (StringUtils.isEmpty(method) || StringUtils.isEmpty(key) || StringUtils.isEmpty(value)) {
             return this;
@@ -315,7 +317,7 @@ public final class URLBuilder {
         this.parameters.putAll(parameters);
         return this;
     }
-
+    @SuppressWarnings("unused")
     public URLBuilder addMethodParameters(Map<String, Map<String, String>> methodParameters) {
         if (CollectionUtils.isEmptyMap(methodParameters)) {
             return this;
@@ -325,6 +327,7 @@ public final class URLBuilder {
         return this;
     }
 
+    @SuppressWarnings("unused")
     public URLBuilder addParametersIfAbsent(Map<String, String> parameters) {
         if (CollectionUtils.isEmptyMap(parameters)) {
             return this;
@@ -348,6 +351,7 @@ public final class URLBuilder {
         return addParameters(map);
     }
 
+    @SuppressWarnings("unused")
     public URLBuilder addParameterString(String query) {
         if (StringUtils.isEmpty(query)) {
             return this;
@@ -420,7 +424,7 @@ public final class URLBuilder {
         Map<String, String> keyMap = methodParameters.get(method);
         String value = null;
         if (keyMap != null) {
-            value =  keyMap.get(key);
+            value = keyMap.get(key);
         }
         return value;
     }
