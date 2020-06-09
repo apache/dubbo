@@ -303,12 +303,7 @@ class URL implements Serializable {
         }
         i = url.lastIndexOf(':');
         if (i >= 0 && i < url.length() - 1) {
-            if (url.lastIndexOf('%') > i) {
-                // ipv6 address with scope id
-                // e.g. fe80:0:0:0:894:aeec:f37d:23e1%en0
-                // see https://howdoesinternetwork.com/2013/ipv6-zone-id
-                // ignore
-            } else {
+            if (url.lastIndexOf('%') <= i) {
                 port = Integer.parseInt(url.substring(i + 1));
                 url = url.substring(0, i);
             }
@@ -331,8 +326,7 @@ class URL implements Serializable {
             List<String> methods = StringUtils.splitToList(methodsString, ',');
             for (Map.Entry<String, String> entry : parameters.entrySet()) {
                 String key = entry.getKey();
-                for (int i = 0; i < methods.size(); i++) {
-                    String method = methods.get(i);
+                for (String method : methods) {
                     int methodLen = method.length();
                     if (key.length() > methodLen
                             && key.startsWith(method)
@@ -1073,7 +1067,7 @@ class URL implements Serializable {
             return this;
         }
 
-        Map<String, String> map = new HashMap<>(getParameters());
+        Map<String, String> map = getParametersMap(getParameters());
         map.put(key, value);
 
         return new URL(protocol, username, password, host, port, path, map);
@@ -1087,12 +1081,12 @@ class URL implements Serializable {
         if (hasParameter(key)) {
             return this;
         }
-        Map<String, String> map = new HashMap<>(getParameters());
+        Map<String, String> map = getParametersMap(getParameters());
         map.put(key, value);
 
         return new URL(protocol, username, password, host, port, path, map);
     }
-
+    @SuppressWarnings("unused")
     public URL addMethodParameter(String method, String key, String value) {
         if (StringUtils.isEmpty(method)
                 || StringUtils.isEmpty(key)
@@ -1100,7 +1094,7 @@ class URL implements Serializable {
             return this;
         }
 
-        Map<String, String> map = new HashMap<>(getParameters());
+        Map<String, String> map = getParametersMap(getParameters());
         map.put(method + "." + key, value);
         Map<String, Map<String, String>> methodMap = toMethodParameters(map);
         URL.putMethodParameter(method, key, value, methodMap);
@@ -1108,6 +1102,7 @@ class URL implements Serializable {
         return new URL(protocol, username, password, host, port, path, map, methodMap);
     }
 
+    @SuppressWarnings("unused")
     public URL addMethodParameterIfAbsent(String method, String key, String value) {
         if (StringUtils.isEmpty(method)
                 || StringUtils.isEmpty(key)
@@ -1118,12 +1113,19 @@ class URL implements Serializable {
             return this;
         }
 
-        Map<String, String> map = new HashMap<>(getParameters());
+        Map<String, String> map = getParametersMap(getParameters());
         map.put(method + "." + key, value);
         Map<String, Map<String, String>> methodMap = toMethodParameters(map);
         URL.putMethodParameter(method, key, value, methodMap);
 
         return new URL(protocol, username, password, host, port, path, map, methodMap);
+    }
+
+    /**
+     * getParametersMap
+     */
+    private Map<String, String> getParametersMap(Map<String, String> parameters) {
+        return new HashMap<>(parameters);
     }
 
     /**
@@ -1157,7 +1159,7 @@ class URL implements Serializable {
             return this;
         }
 
-        Map<String, String> map = new HashMap<>(getParameters());
+        Map<String, String> map = getParametersMap(getParameters());
         map.putAll(parameters);
         return new URL(protocol, username, password, host, port, path, map);
     }
@@ -1166,7 +1168,7 @@ class URL implements Serializable {
         if (CollectionUtils.isEmptyMap(parameters)) {
             return this;
         }
-        Map<String, String> map = new HashMap<>(parameters);
+        Map<String, String> map = getParametersMap(parameters);
         map.putAll(getParameters());
         return new URL(protocol, username, password, host, port, path, map);
     }
@@ -1211,7 +1213,7 @@ class URL implements Serializable {
         if (keys == null || keys.length == 0) {
             return this;
         }
-        Map<String, String> map = new HashMap<>(getParameters());
+        Map<String, String> map = getParametersMap(getParameters());
         for (String key : keys) {
             map.remove(key);
         }
@@ -1248,7 +1250,7 @@ class URL implements Serializable {
     }
 
     public Map<String, String> toMap() {
-        Map<String, String> map = new HashMap<>(parameters);
+        Map<String, String> map = getParametersMap(parameters);
         if (protocol != null) {
             map.put(PROTOCOL_KEY, protocol);
         }
@@ -1403,7 +1405,7 @@ class URL implements Serializable {
     /**
      * The format is "{interface}:[version]:[group]"
      *
-     * @return
+     * @return colonSeparatedKey
      */
     public String getColonSeparatedKey() {
         StringBuilder serviceNameBuilder = new StringBuilder();
@@ -1428,7 +1430,7 @@ class URL implements Serializable {
     /**
      * The format of return value is '{group}/{interfaceName}:{version}'
      *
-     * @return
+     * @return  serviceKey
      */
     public String getServiceKey() {
         if (serviceKey != null) {
@@ -1445,7 +1447,7 @@ class URL implements Serializable {
     /**
      * The format of return value is '{group}/{path/interfaceName}:{version}'
      *
-     * @return
+     * @return pathKey
      */
     public String getPathKey() {
         String inf = StringUtils.isNotEmpty(path) ? path : getServiceInterface();
@@ -1570,6 +1572,7 @@ class URL implements Serializable {
         return getMethodParameter(method, key, defaultValue);
     }
 
+    @SuppressWarnings("unused")
     public Configuration toConfiguration() {
         InmemoryConfiguration configuration = new InmemoryConfiguration();
         configuration.addProperties(parameters);
@@ -1624,10 +1627,7 @@ class URL implements Serializable {
         if (!StringUtils.isEquals(protocol, other.protocol)) {
             return false;
         }
-        if (!StringUtils.isEquals(username, other.username)) {
-            return false;
-        }
-        return true;
+        return StringUtils.isEquals(username, other.username);
     }
 
     public static void putMethodParameter(String method, String key, String value, Map<String, Map<String, String>> methodParameters) {
