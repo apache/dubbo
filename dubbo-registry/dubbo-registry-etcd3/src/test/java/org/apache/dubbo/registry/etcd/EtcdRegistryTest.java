@@ -53,7 +53,9 @@ package org.apache.dubbo.registry.etcd;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.registry.ListenerRegistryWrapper;
 import org.apache.dubbo.registry.NotifyListener;
+import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 import org.apache.dubbo.remoting.Constants;
@@ -304,11 +306,20 @@ public class EtcdRegistryTest {
 
     @BeforeEach
     public void setUp() {
-        registry = (EtcdRegistry) registryFactory.getRegistry(registryUrl);
-        Assertions.assertNotNull(registry);
-        if (!registry.isAvailable()) {
+        Registry registry = registryFactory.getRegistry(registryUrl);
+        this.registry = getEtcRegistry(registry);
+        Assertions.assertNotNull(this.registry);
+        if (!this.registry.isAvailable()) {
             AbstractRegistryFactory.destroyAll();
-            registry = (EtcdRegistry) registryFactory.getRegistry(registryUrl);
+            this.registry = getEtcRegistry(registry);
+        }
+    }
+
+    private EtcdRegistry getEtcRegistry(Registry registry){
+        if(registry instanceof ListenerRegistryWrapper){
+           return (EtcdRegistry)((ListenerRegistryWrapper) registry).getRegistry();
+        }else {
+            return (EtcdRegistry) registry;
         }
     }
 
