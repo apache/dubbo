@@ -18,6 +18,8 @@ package org.apache.dubbo.config.bootstrap;
 
 import org.apache.dubbo.config.bootstrap.rest.UserService;
 
+import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
+
 /**
  * Dubbo Provider Bootstrap
  *
@@ -28,8 +30,8 @@ public class ZookeeperDubboServiceConsumerBootstrap {
     public static void main(String[] args) throws Exception {
 
         DubboBootstrap bootstrap = DubboBootstrap.getInstance()
-                .application("zookeeper-dubbo-consumer")
-                .registry("zookeeper", builder -> builder.address("zookeeper://127.0.0.1:2181?registry-type=service&subscribed-services=zookeeper-dubbo-provider"))
+                .application("zookeeper-dubbo-consumer", app -> app.metadata(REMOTE_METADATA_STORAGE_TYPE))
+                .registry("zookeeper", builder -> builder.address("zookeeper://127.0.0.1:2181?registry-type=service&subscribed-services=zookeeper-dubbo-provider").useAsMetadataCenter(true))
                 .reference("echo", builder -> builder.interfaceClass(EchoService.class).protocol("dubbo"))
                 .reference("user", builder -> builder.interfaceClass(UserService.class).protocol("rest"))
                 .start();

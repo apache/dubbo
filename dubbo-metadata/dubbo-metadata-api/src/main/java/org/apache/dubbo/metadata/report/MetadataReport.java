@@ -24,11 +24,11 @@ import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 
 import static org.apache.dubbo.rpc.model.ApplicationModel.getName;
 
@@ -54,30 +54,30 @@ public interface MetadataReport {
     String getServiceDefinition(MetadataIdentifier metadataIdentifier);
 
     /**
-     * Save the exported {@link URL urls} in bulk.
+     * Save the exported {@link URL#toFullString() strings} presenting the {@link URL URLs} in bulk.
      *
      * @param exportedURLs the exported {@link URL urls}
      * @return If successful, return <code>true</code>, or <code>false</code>
      * @since 2.7.8
      */
-    default boolean saveExportedURLs(Collection<URL> exportedURLs) {
+    default boolean saveExportedURLs(SortedSet<String> exportedURLs) {
         return saveExportedURLs(getName(), exportedURLs);
     }
 
     /**
-     * Save the exported {@link URL urls} in bulk.
+     * Save the exported {@link URL#toFullString() strings} presenting the {@link URL URLs} in bulk.
      *
      * @param serviceName  the specified Dubbo service name
      * @param exportedURLs the exported {@link URL urls}
      * @return If successful, return <code>true</code>, or <code>false</code>
      * @since 2.7.8
      */
-    default boolean saveExportedURLs(String serviceName, Collection<URL> exportedURLs) {
+    default boolean saveExportedURLs(String serviceName, SortedSet<String> exportedURLs) {
         return saveExportedURLs(serviceName, new URLRevisionResolver().resolve(exportedURLs), exportedURLs);
     }
 
     /**
-     * Save the exported {@link URL urls} in bulk.
+     * Save the exported {@link URL#toFullString() strings} presenting the {@link URL URLs} in bulk.
      *
      * @param serviceName              the specified Dubbo service name
      * @param exportedServicesRevision the revision of the exported Services
@@ -85,7 +85,7 @@ public interface MetadataReport {
      * @return If successful, return <code>true</code>, or <code>false</code>
      * @since 2.7.8
      */
-    default boolean saveExportedURLs(String serviceName, String exportedServicesRevision, Collection<URL> exportedURLs) {
+    default boolean saveExportedURLs(String serviceName, String exportedServicesRevision, SortedSet<String> exportedURLs) {
         return true;
     }
 
@@ -97,7 +97,7 @@ public interface MetadataReport {
      * @return non-null
      * @since 2.7.8
      */
-    default List<String> getExportedURLs(String serviceName, String exportedServicesRevision) {
-        return Collections.emptyList();
+    default SortedSet<String> getExportedURLs(String serviceName, String exportedServicesRevision) {
+        return Collections.emptySortedSet();
     }
 }

@@ -1,2 +1,4 @@
 service-instance=org.apache.dubbo.registry.client.event.listener.CustomizableServiceInstanceListener
 registry-logging=org.apache.dubbo.registry.client.event.listener.LoggingEventListener
+# "publishing-remote-metadata" in introduced since 2.7.8
+publishing-remote-metadata=org.apache.dubbo.registry.client.event.listener.PublishingRemoteMetadataListener
