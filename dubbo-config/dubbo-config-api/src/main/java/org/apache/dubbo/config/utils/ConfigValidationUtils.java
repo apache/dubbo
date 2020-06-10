@@ -297,7 +297,6 @@ public class ConfigValidationUtils {
         checkExtension(ProxyFactory.class, PROXY_KEY, config.getProxy());
         checkExtension(Cluster.class, CLUSTER_KEY, config.getCluster());
         checkMultiExtension(Filter.class, FILE_KEY, config.getFilter());
-        checkMultiExtension(InvokerListener.class, LISTENER_KEY, config.getListener());
         checkNameHasSymbol(LAYER_KEY, config.getLayer());
 
         List<MethodConfig> methods = config.getMethods();
@@ -312,7 +311,7 @@ public class ConfigValidationUtils {
         checkName(TOKEN_KEY, config.getToken());
         checkPathName(PATH_KEY, config.getPath());
 
-        checkMultiExtension(ExporterListener.class, "listener", config.getListener());
+        checkMultiExtension(ExporterListener.class, LISTENER_KEY, config.getListener());
 
         validateAbstractInterfaceConfig(config);
 
@@ -337,7 +336,7 @@ public class ConfigValidationUtils {
     }
 
     public static void validateReferenceConfig(ReferenceConfig config) {
-        checkMultiExtension(InvokerListener.class, "listener", config.getListener());
+        checkMultiExtension(InvokerListener.class, LISTENER_KEY, config.getListener());
         checkKey(VERSION_KEY, config.getVersion());
         checkKey(GROUP_KEY, config.getGroup());
         checkName(CLIENT_KEY, config.getClient());
