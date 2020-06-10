@@ -17,20 +17,15 @@
 package org.apache.dubbo.metadata.report;
 
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.metadata.URLRevisionResolver;
-import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
-import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
-import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
-import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
-
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.apache.dubbo.rpc.model.ApplicationModel.getName;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
+import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
+import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
+import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 
 /**
  *
@@ -52,52 +47,4 @@ public interface MetadataReport {
     List<String> getSubscribedURLs(SubscriberMetadataIdentifier subscriberMetadataIdentifier);
 
     String getServiceDefinition(MetadataIdentifier metadataIdentifier);
-
-    /**
-     * Save the exported {@link URL urls} in bulk.
-     *
-     * @param exportedURLs the exported {@link URL urls}
-     * @return If successful, return <code>true</code>, or <code>false</code>
-     * @since 2.7.8
-     */
-    default boolean saveExportedURLs(Collection<URL> exportedURLs) {
-        return saveExportedURLs(getName(), exportedURLs);
-    }
-
-    /**
-     * Save the exported {@link URL urls} in bulk.
-     *
-     * @param serviceName  the specified Dubbo service name
-     * @param exportedURLs the exported {@link URL urls}
-     * @return If successful, return <code>true</code>, or <code>false</code>
-     * @since 2.7.8
-     */
-    default boolean saveExportedURLs(String serviceName, Collection<URL> exportedURLs) {
-        return saveExportedURLs(serviceName, new URLRevisionResolver().resolve(exportedURLs), exportedURLs);
-    }
-
-    /**
-     * Save the exported {@link URL urls} in bulk.
-     *
-     * @param serviceName              the specified Dubbo service name
-     * @param exportedServicesRevision the revision of the exported Services
-     * @param exportedURLs             the exported {@link URL urls}
-     * @return If successful, return <code>true</code>, or <code>false</code>
-     * @since 2.7.8
-     */
-    default boolean saveExportedURLs(String serviceName, String exportedServicesRevision, Collection<URL> exportedURLs) {
-        return true;
-    }
-
-    /**
-     * Get the {@link URL#toFullString() strings} presenting the {@link URL URLs} that were exported by the provider
-     *
-     * @param serviceName              the specified Dubbo service name
-     * @param exportedServicesRevision the revision of the exported Services
-     * @return non-null
-     * @since 2.7.8
-     */
-    default List<String> getExportedURLs(String serviceName, String exportedServicesRevision) {
-        return Collections.emptyList();
-    }
 }
