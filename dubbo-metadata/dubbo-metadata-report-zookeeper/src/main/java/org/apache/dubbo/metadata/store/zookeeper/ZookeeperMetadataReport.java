@@ -19,6 +19,7 @@ package org.apache.dubbo.metadata.store.zookeeper;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.PathUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.report.identifier.BaseMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
@@ -29,13 +30,19 @@ import org.apache.dubbo.metadata.report.support.AbstractMetadataReport;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 
+import com.google.gson.Gson;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
+import static org.apache.dubbo.metadata.MetadataConstants.DEFAULT_PATH_TAG;
+import static org.apache.dubbo.metadata.MetadataConstants.EXPORTED_URLS_TAG;
 
 /**
  * ZookeeperMetadataReport
@@ -118,6 +125,31 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
 
     String getNodePath(BaseMetadataIdentifier metadataIdentifier) {
         return toRootDir() + metadataIdentifier.getUniqueKey(KeyTypeEnum.PATH);
+    }
+
+    @Override
+    public boolean saveExportedURLs(String serviceName, String exportedServicesRevision, SortedSet<String> exportedURLs) {
+        String path = buildExportedURLsMetadataPath(serviceName, exportedServicesRevision);
+        Gson gson = new Gson();
+        String content = gson.toJson(exportedURLs);
+        zkClient.create(path, content, false);
+        return true;
+    }
+
+    @Override
+    public SortedSet<String> getExportedURLs(String serviceName, String exportedServicesRevision) {
+        String path = buildExportedURLsMetadataPath(serviceName, exportedServicesRevision);
+        String content = zkClient.getContent(path);
+        Gson gson = new Gson();
+        return gson.fromJson(content, TreeSet.class);
+    }
+
+    private String buildExportedURLsMetadataPath(String serviceName, String exportedServicesRevision) {
+        return buildPath(DEFAULT_PATH_TAG, EXPORTED_URLS_TAG, serviceName, exportedServicesRevision);
+    }
+
+    private String buildPath(String... paths) {
+        return PathUtils.buildPath(toRootDir(), paths);
     }
 
 }

@@ -14,12 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.client.metadata;
+package org.apache.dubbo.metadata;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
+import java.util.Collection;
+
 import static java.util.Arrays.asList;
-import static org.apache.dubbo.registry.client.metadata.URLRevisionResolver.NO_REVISION;
+import static org.apache.dubbo.metadata.URLRevisionResolver.UNKNOWN_REVISION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
@@ -29,17 +32,17 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 public class URLRevisionResolverTest {
 
-    private static final String URL = "dubbo://192.168.0.102:20881/org.apache.dubbo.registry.client.metadata.URLRevisionResolverTest";
+    private static final String URL = "dubbo://192.168.0.102:20881/org.apache.dubbo.metadata.URLRevisionResolverTest";
 
     private final URLRevisionResolver resolver = new URLRevisionResolver();
 
     @Test
     public void testResolve() {
-        String revision = resolver.resolve(asList());
-        assertEquals(NO_REVISION, revision);
+        String revision = resolver.resolve(Arrays.<String>asList());
+        assertEquals(UNKNOWN_REVISION, revision);
 
-        revision = resolver.resolve(null);
-        assertEquals(NO_REVISION, revision);
+        revision = resolver.resolve((Collection<String>) null);
+        assertEquals(UNKNOWN_REVISION, revision);
 
         revision = resolver.resolve(asList(URL));
         assertEquals("7960327984321481979", revision);

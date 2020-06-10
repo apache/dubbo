@@ -101,9 +101,9 @@ import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
 
 /**
  * See {@link ApplicationModel} and {@link ExtensionLoader} for why this class is designed to be singleton.
- *
+ * <p>
  * The bootstrap class of Dubbo
- *
+ * <p>
  * Get singleton instance by calling static method {@link #getInstance()}.
  * Designed as singleton because some classes inside Dubbo, such as ExtensionLoader, are designed only for one instance per process.
  *
@@ -509,11 +509,12 @@ public class DubboBootstrap extends GenericEventListener {
 
         startConfigCenter();
 
-        useRegistryAsConfigCenterIfNecessary();
-
         loadRemoteConfigs();
 
         checkGlobalConfigs();
+
+        // @since 2.7.8
+        startMetadataCenter();
 
         initMetadataService();
 
@@ -583,6 +584,9 @@ public class DubboBootstrap extends GenericEventListener {
     }
 
     private void startConfigCenter() {
+
+        useRegistryAsConfigCenterIfNecessary();
+
         Collection<ConfigCenterConfig> configCenters = configManager.getConfigCenters();
 
         // check Config Center
@@ -610,7 +614,10 @@ public class DubboBootstrap extends GenericEventListener {
         configManager.refreshAll();
     }
 
-    private void startMetadataReport() {
+    private void startMetadataCenter() {
+
+        useRegistryAsMetadataCenterIfNecessary();
+
         ApplicationConfig applicationConfig = getApplication();
 
         String metadataType = applicationConfig.getMetadataType();
@@ -646,33 +653,87 @@ public class DubboBootstrap extends GenericEventListener {
             return;
         }
 
-        configManager.getDefaultRegistries().stream()
-                .filter(registryConfig -> registryConfig.getUseAsConfigCenter() == null || registryConfig.getUseAsConfigCenter())
-                .forEach(registryConfig -> {
-                    String protocol = registryConfig.getProtocol();
-                    String id = "config-center-" + protocol + "-" + registryConfig.getPort();
-                    ConfigCenterConfig cc = new ConfigCenterConfig();
-                    cc.setId(id);
-                    if (cc.getParameters() == null) {
-                        cc.setParameters(new HashMap<>());
-                    }
-                    if (registryConfig.getParameters() != null) {
-                        cc.getParameters().putAll(registryConfig.getParameters());
-                    }
-                    cc.getParameters().put(CLIENT_KEY, registryConfig.getClient());
-                    cc.setProtocol(registryConfig.getProtocol());
-                    cc.setPort(registryConfig.getPort());
-                    cc.setAddress(getRegistryCompatibleAddress(registryConfig.getAddress()));
-                    cc.setNamespace(registryConfig.getGroup());
-                    cc.setUsername(registryConfig.getUsername());
-                    cc.setPassword(registryConfig.getPassword());
-                    if (registryConfig.getTimeout() != null) {
-                        cc.setTimeout(registryConfig.getTimeout().longValue());
-                    }
-                    cc.setHighestPriority(false);
-                    configManager.addConfigCenter(cc);
-                });
-        startConfigCenter();
+        configManager
+                .getDefaultRegistries()
+                .stream()
+                .filter(this::isUsedRegistryAsConfigCenter)
+                .map(this::registryAsConfigCenter)
+                .forEach(configManager::addConfigCenter);
+    }
+
+    private boolean isUsedRegistryAsConfigCenter(RegistryConfig registryConfig) {
+        // TODO: confirm ? registryConfig.getUseAsConfigCenter() == null || registryConfig.getUseAsConfigCenter()
+        return Boolean.TRUE.equals(registryConfig.getUseAsConfigCenter());
+    }
+
+    private ConfigCenterConfig registryAsConfigCenter(RegistryConfig registryConfig) {
+        String protocol = registryConfig.getProtocol();
+        Integer port = registryConfig.getPort();
+        String id = "config-center-" + protocol + "-" + port;
+        ConfigCenterConfig cc = new ConfigCenterConfig();
+        cc.setId(id);
+        if (cc.getParameters() == null) {
+            cc.setParameters(new HashMap<>());
+        }
+        if (registryConfig.getParameters() != null) {
+            cc.getParameters().putAll(registryConfig.getParameters()); // copy the parameters
+        }
+        cc.getParameters().put(CLIENT_KEY, registryConfig.getClient());
+        cc.setProtocol(protocol);
+        cc.setPort(port);
+        cc.setGroup(registryConfig.getGroup());
+        cc.setAddress(getRegistryCompatibleAddress(registryConfig.getAddress()));
+        cc.setNamespace(registryConfig.getGroup());
+        cc.setUsername(registryConfig.getUsername());
+        cc.setPassword(registryConfig.getPassword());
+        if (registryConfig.getTimeout() != null) {
+            cc.setTimeout(registryConfig.getTimeout().longValue());
+        }
+        cc.setHighestPriority(false);
+        return cc;
+    }
+
+    private void useRegistryAsMetadataCenterIfNecessary() {
+
+        Collection<MetadataReportConfig> metadataConfigs = configManager.getMetadataConfigs();
+
+        if (CollectionUtils.isNotEmpty(metadataConfigs)) {
+            return;
+        }
+
+        configManager
+                .getDefaultRegistries()
+                .stream()
+                .filter(this::isUsedRegistryAsMetadataCenter)
+                .map(this::registryAsMetadataCenter)
+                .forEach(configManager::addMetadataReport);
+
+    }
+
+    private boolean isUsedRegistryAsMetadataCenter(RegistryConfig registryConfig) {
+        // TODO: confirm ? registryConfig.getUseAsMetadataCenter() == null || registryConfig.getUseAsMetadataCenter()
+        return Boolean.TRUE.equals(registryConfig.getUseAsMetadataCenter());
+    }
+
+    private MetadataReportConfig registryAsMetadataCenter(RegistryConfig registryConfig) {
+        String protocol = registryConfig.getProtocol();
+        Integer port = registryConfig.getPort();
+        String id = "metadata-center-" + protocol + "-" + port;
+        MetadataReportConfig metadataReportConfig = new MetadataReportConfig();
+        metadataReportConfig.setId(id);
+        if (metadataReportConfig.getParameters() == null) {
+            metadataReportConfig.setParameters(new HashMap<>());
+        }
+        if (registryConfig.getParameters() != null) {
+            metadataReportConfig.getParameters().putAll(registryConfig.getParameters()); // copy the parameters
+        }
+        metadataReportConfig.getParameters().put(CLIENT_KEY, registryConfig.getClient());
+        metadataReportConfig.setGroup(registryConfig.getGroup());
+        metadataReportConfig.setAddress(getRegistryCompatibleAddress(registryConfig.getAddress()));
+        metadataReportConfig.setUsername(registryConfig.getUsername());
+        metadataReportConfig.setPassword(registryConfig.getPassword());
+        metadataReportConfig.setTimeout(registryConfig.getTimeout());
+        return metadataReportConfig;
     }
 
     private String getRegistryCompatibleAddress(String registryAddress) {
@@ -722,7 +783,6 @@ public class DubboBootstrap extends GenericEventListener {
      * Initialize {@link MetadataService} from {@link WritableMetadataService}'s extension
      */
     private void initMetadataService() {
-        startMetadataReport();
         this.metadataService = getExtension(getMetadataType());
         this.metadataServiceExporter = new ConfigurableMetadataServiceExporter(metadataService);
     }

@@ -19,24 +19,19 @@ package org.apache.dubbo.metadata.store;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.metadata.URLRevisionResolver;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
-import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.RpcException;
 
-import java.util.Iterator;
-import java.util.Set;
 import java.util.SortedSet;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
@@ -58,12 +53,14 @@ import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 public class RemoteWritableMetadataService implements WritableMetadataService {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
-    private volatile String exportedRevision;
-    private volatile String subscribedRevision;
-    private InMemoryWritableMetadataService writableMetadataService;
 
-    public RemoteWritableMetadataService(InMemoryWritableMetadataService writableMetadataService) {
-        this.writableMetadataService = writableMetadataService;
+    private final InMemoryWritableMetadataService writableMetadataServiceDelegate;
+
+    private final URLRevisionResolver urlRevisionResolver;
+
+    public RemoteWritableMetadataService() {
+        this.writableMetadataServiceDelegate = (InMemoryWritableMetadataService) WritableMetadataService.getDefaultExtension();
+        urlRevisionResolver = URLRevisionResolver.INSTANCE;
     }
 
     public MetadataReport getMetadataReport() {
@@ -116,118 +113,58 @@ public class RemoteWritableMetadataService implements WritableMetadataService {
 
     @Override
     public boolean exportURL(URL url) {
-        // do nothing for one single url export, the actual report will be done in callback (refreshMetadata) after all urls are exported.
-        return true;
+        return writableMetadataServiceDelegate.exportURL(url);
     }
 
     @Override
     public boolean unexportURL(URL url) {
-        ServiceMetadataIdentifier metadataIdentifier = new ServiceMetadataIdentifier(url);
-        metadataIdentifier.setRevision(exportedRevision);
-        metadataIdentifier.setProtocol(url.getProtocol());
-        return throwableAction(getMetadataReport()::removeServiceMetadata, metadataIdentifier);
+        return writableMetadataServiceDelegate.unexportURL(url);
     }
 
     @Override
     public boolean subscribeURL(URL url) {
-        // do nothing for one single url export, the actual report will be done in callback (refreshMetadata) after all urls are exported.
-        return true;
+        return writableMetadataServiceDelegate.subscribeURL(url);
     }
 
     @Override
     public boolean unsubscribeURL(URL url) {
-        // do nothing for one single url export, the actual report will be done in callback (refreshMetadata) after all urls are exported.
-        return true;
+        return writableMetadataServiceDelegate.unsubscribeURL(url);
     }
-
-    @Override
-    public boolean refreshMetadata(String exportedRevision, String subscribedRevision) {
-        boolean result = true;
-        if (!StringUtils.isEmpty(exportedRevision) && !exportedRevision.equals(this.exportedRevision)) {
-            this.exportedRevision = exportedRevision;
-            boolean executeResult = saveServiceMetadata();
-            if (!executeResult) {
-                result = false;
-            }
-        }
-        if (!StringUtils.isEmpty(subscribedRevision) && !subscribedRevision.equals(this.subscribedRevision)
-                && CollectionUtils.isNotEmpty(writableMetadataService.getSubscribedURLs())) {
-            this.subscribedRevision = subscribedRevision;
-            SubscriberMetadataIdentifier metadataIdentifier = new SubscriberMetadataIdentifier();
-            metadataIdentifier.setApplication(serviceName());
-            metadataIdentifier.setRevision(subscribedRevision);
-            boolean executeResult = throwableAction(getMetadataReport()::saveSubscribedData, metadataIdentifier,
-                    writableMetadataService.getSubscribedURLs());
-            if (!executeResult) {
-                result = false;
-            }
-        }
-        return result;
-    }
-
-    private boolean saveServiceMetadata() {
-        boolean result = true;
-        for (SortedSet<URL> urls : writableMetadataService.exportedServiceURLs.values()) {
-            Iterator<URL> iterator = urls.iterator();
-            while (iterator.hasNext()) {
-                URL url = iterator.next();
-                // refresh revision in urls
-                ServiceMetadataIdentifier metadataIdentifier = new ServiceMetadataIdentifier(url);
-                metadataIdentifier.setRevision(exportedRevision);
-                metadataIdentifier.setProtocol(url.getProtocol());
-
-                boolean tmpResult = throwableAction(getMetadataReport()::saveServiceMetadata, metadataIdentifier, url);
-                if (!tmpResult) result = tmpResult;
-            }
-        }
-        return result;
-    }
-
 
     @Override
     public SortedSet<String> getExportedURLs(String serviceInterface, String group, String version, String protocol) {
-        return null;
-    }
-
-    @Override
-    public String getServiceDefinition(String interfaceName, String version, String group) {
-        return null;
+        return writableMetadataServiceDelegate.getExportedURLs(serviceInterface, group, version, protocol);
     }
 
     @Override
     public String getServiceDefinition(String serviceKey) {
-        return null;
+        return writableMetadataServiceDelegate.getServiceDefinition(serviceKey);
     }
 
-    boolean throwableAction(BiConsumer<ServiceMetadataIdentifier, URL> consumer,
-                            ServiceMetadataIdentifier metadataIdentifier, URL url) {
-        try {
-            consumer.accept(metadataIdentifier, url);
-        } catch (Exception e) {
-            logger.error("Failed to execute consumer, url is: " + url);
-            return false;
-        }
-        return true;
+    @Override
+    public SortedSet<String> getSubscribedURLs() {
+        return writableMetadataServiceDelegate.getSubscribedURLs();
     }
 
-    boolean throwableAction(BiConsumer<SubscriberMetadataIdentifier, Set<String>> consumer,
-                            SubscriberMetadataIdentifier metadataIdentifier, Set<String> urls) {
-        try {
-            consumer.accept(metadataIdentifier, urls);
-        } catch (Exception e) {
-            logger.error("Failed to execute consumer, url is: " + urls);
-            return false;
+    @Override
+    public boolean publishMetadata() {
+        String serviceName = writableMetadataServiceDelegate.serviceName();
+        if (publishServiceMetadata(serviceName)) {
+            return publicConsumerMetadata(serviceName);
         }
-        return true;
+        return false;
     }
 
-    boolean throwableAction(Consumer<ServiceMetadataIdentifier> consumer, ServiceMetadataIdentifier metadataIdentifier) {
-        try {
-            consumer.accept(metadataIdentifier);
-        } catch (Exception e) {
-            logger.error("Failed to remove url metadata to remote center, metadataIdentifier is: " + metadataIdentifier);
-            return false;
-        }
+    protected boolean publishServiceMetadata(String serviceName) {
+        SortedSet<String> exportedURLs = writableMetadataServiceDelegate.getExportedURLs();
+        String revision = urlRevisionResolver.resolve(exportedURLs);
+        return getMetadataReport().saveExportedURLs(serviceName, revision, exportedURLs);
+    }
+
+    protected boolean publicConsumerMetadata(String serviceName) {
+        SortedSet<String> subscribedURLs = writableMetadataServiceDelegate.getSubscribedURLs();
+        String revision = urlRevisionResolver.resolve(subscribedURLs);
+        getMetadataReport().saveSubscribedData(new SubscriberMetadataIdentifier(serviceName, revision), subscribedURLs);
         return true;
     }
 }
