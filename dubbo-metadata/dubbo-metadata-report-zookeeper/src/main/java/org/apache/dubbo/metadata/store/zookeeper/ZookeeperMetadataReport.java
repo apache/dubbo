@@ -30,14 +30,10 @@ import org.apache.dubbo.metadata.report.support.AbstractMetadataReport;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 
-import com.google.gson.Gson;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
@@ -128,20 +124,17 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
     }
 
     @Override
-    public boolean saveExportedURLs(String serviceName, String exportedServicesRevision, SortedSet<String> exportedURLs) {
+    public boolean saveExportedURLs(String serviceName, String exportedServicesRevision, String exportedURLsContent) {
         String path = buildExportedURLsMetadataPath(serviceName, exportedServicesRevision);
-        Gson gson = new Gson();
-        String content = gson.toJson(exportedURLs);
-        zkClient.create(path, content, false);
+        zkClient.create(path, exportedURLsContent, false);
         return true;
     }
 
     @Override
-    public SortedSet<String> getExportedURLs(String serviceName, String exportedServicesRevision) {
+    public String getExportedURLsContent(String serviceName, String exportedServicesRevision) {
         String path = buildExportedURLsMetadataPath(serviceName, exportedServicesRevision);
         String content = zkClient.getContent(path);
-        Gson gson = new Gson();
-        return gson.fromJson(content, TreeSet.class);
+        return content;
     }
 
     private String buildExportedURLsMetadataPath(String serviceName, String exportedServicesRevision) {
