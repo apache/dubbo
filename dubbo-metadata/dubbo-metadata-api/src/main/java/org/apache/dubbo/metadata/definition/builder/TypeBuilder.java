@@ -38,4 +38,10 @@ public interface TypeBuilder {
      */
     TypeDefinition build(Type type, Class<?> clazz, Map<Class<?>, TypeDefinition> typeCache);
 
+    /**
+     * Builder priority order
+     */
+    default int order() {
+        return 0;
+    }
 }
