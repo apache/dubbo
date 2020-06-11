@@ -35,10 +35,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
@@ -564,6 +566,24 @@ class URL implements Serializable {
 
     public Map<String, String> getParameters() {
         return parameters;
+    }
+
+    /**
+     * Get the parameters to be selected(filtered)
+     *
+     * @param nameToSelect the {@link Predicate} to select the parameter name
+     * @return non-null {@link Map}
+     * @since 2.7.8
+     */
+    public Map<String, String> getParameters(Predicate<String> nameToSelect) {
+        Map<String, String> selectedParameters = new LinkedHashMap<>();
+        for (Map.Entry<String, String> entry : getParameters().entrySet()) {
+            String name = entry.getKey();
+            if (nameToSelect.test(name)) {
+                selectedParameters.put(name, entry.getValue());
+            }
+        }
+        return Collections.unmodifiableMap(selectedParameters);
     }
 
     public Map<String, Map<String, String>> getMethodParameters() {
