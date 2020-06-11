@@ -20,9 +20,8 @@ import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.ExtensionFactory;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * AdaptiveExtensionFactory
@@ -34,22 +33,19 @@ public class AdaptiveExtensionFactory implements ExtensionFactory {
 
     public AdaptiveExtensionFactory() {
         ExtensionLoader<ExtensionFactory> loader = ExtensionLoader.getExtensionLoader(ExtensionFactory.class);
-        List<ExtensionFactory> list = new ArrayList<ExtensionFactory>();
-        for (String name : loader.getSupportedExtensions()) {
-            list.add(loader.getExtension(name));
-        }
-        factories = Collections.unmodifiableList(list);
+        factories = Collections.unmodifiableList(loader
+                .getSupportedExtensions()
+                .stream()
+                .map(loader::getExtension)
+                .collect(Collectors.toList()));
     }
 
     @Override
     public <T> T getExtension(Class<T> type, String name) {
-        for (ExtensionFactory factory : factories) {
-            T extension = factory.getExtension(type, name);
-            if (extension != null) {
-                return extension;
-            }
-        }
-        return null;
+        return factories.stream()
+                .filter(Objects::nonNull)
+                .findFirst()
+                .map(extensionFactory -> extensionFactory.getExtension(type, name))
+                .orElse(null);
     }
-
 }
