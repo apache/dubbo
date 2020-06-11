@@ -69,6 +69,11 @@ public class RemoteWritableMetadataService implements WritableMetadataService {
 
     @Override
     public void publishServiceDefinition(URL url) {
+
+        if (SERVICE_INTERFACE_NAME.equals(url.getServiceInterface())) { // Ignore the interface "MetadataService"
+            return;
+        }
+
         String side = url.getParameter(SIDE_KEY);
         if (PROVIDER_SIDE.equalsIgnoreCase(side)) {
             //TODO, the params part is duplicate with that stored by exportURL(url), can be further optimized in the future.
