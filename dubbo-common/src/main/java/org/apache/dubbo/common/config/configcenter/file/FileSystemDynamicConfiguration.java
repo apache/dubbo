@@ -378,8 +378,9 @@ public class FileSystemDynamicConfiguration extends AbstractDynamicConfiguration
         }
     }
 
-    public String removeConfig(String key, String group) {
-        return delay(key, group, configFile -> {
+    @Override
+    public boolean removeConfig(String key, String group) {
+        delay(key, group, configFile -> {
 
             String content = getConfig(configFile);
 
@@ -387,6 +388,7 @@ public class FileSystemDynamicConfiguration extends AbstractDynamicConfiguration
 
             return content;
         });
+        return true;
     }
 
     /**

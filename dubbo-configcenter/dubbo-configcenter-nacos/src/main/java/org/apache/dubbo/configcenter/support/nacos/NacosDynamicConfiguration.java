@@ -278,6 +278,19 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
         return keys;
     }
 
+    @Override
+    public boolean removeConfig(String key, String group) {
+        boolean removed = false;
+        try {
+            removed = configService.removeConfig(key, group);
+        } catch (NacosException e) {
+            if (logger.isErrorEnabled()) {
+                logger.error(e.getMessage(), e);
+            }
+        }
+        return removed;
+    }
+
     private Stream<String> toKeysStream(String content) {
         JSONObject jsonObject = JSON.parseObject(content);
         JSONArray pageItems = jsonObject.getJSONArray("pageItems");

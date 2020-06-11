@@ -18,8 +18,14 @@
 package org.apache.dubbo.metadata.store.nacos;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
+import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
 import org.apache.dubbo.metadata.report.MetadataReport;
+import org.apache.dubbo.metadata.report.MetadataReportFactory;
 import org.apache.dubbo.metadata.report.support.AbstractMetadataReportFactory;
+
+import static org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory.getDynamicConfigurationFactory;
+import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 
 /**
  * metadata report factory impl for nacos
@@ -27,6 +33,9 @@ import org.apache.dubbo.metadata.report.support.AbstractMetadataReportFactory;
 public class NacosMetadataReportFactory extends AbstractMetadataReportFactory {
     @Override
     protected MetadataReport createMetadataReport(URL url) {
-        return new NacosMetadataReport(url);
+        String extensionName = getExtensionLoader(MetadataReportFactory.class).getExtensionName(getClass());
+        DynamicConfigurationFactory dynamicConfigurationFactory = getDynamicConfigurationFactory(extensionName);
+        DynamicConfiguration dynamicConfiguration = dynamicConfigurationFactory.getDynamicConfiguration(url);
+        return new NacosMetadataReport(url, dynamicConfiguration);
     }
 }
