@@ -72,8 +72,8 @@ public @interface EnableDubboConfig {
     /**
      * It indicates whether binding to multiple Spring Beans.
      *
-     * @return the default value is <code>false</code>
-     * @revised 2.5.9
+     * @return the default value is <code>true</code>
+     * @revised 2.6.6
      */
     boolean multiple() default true;
 
