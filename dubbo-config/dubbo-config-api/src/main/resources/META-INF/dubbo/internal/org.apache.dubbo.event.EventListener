@@ -1,2 +1,4 @@
 service-mapping=org.apache.dubbo.config.event.listener.ServiceNameMappingListener
 config-logging=org.apache.dubbo.config.event.listener.LoggingEventListener
+# since 2.7.8
+publishing-service-definition=org.apache.dubbo.config.event.listener.PublishingServiceDefinitionListener

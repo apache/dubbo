@@ -27,6 +27,7 @@ import java.util.Set;
 
 import static java.lang.String.valueOf;
 import static java.util.Arrays.asList;
+import static org.apache.dubbo.common.utils.CollectionUtils.isNotEmpty;
 import static org.apache.dubbo.common.utils.StringUtils.SLASH;
 import static org.apache.dubbo.rpc.model.ApplicationModel.getName;
 
@@ -72,7 +73,9 @@ public class DynamicConfigurationServiceNameMapping implements ServiceNameMappin
         Set<String> serviceNames = new LinkedHashSet<>();
         execute(() -> {
             Set<String> keys = dynamicConfiguration.getConfigKeys(buildGroup(serviceInterface, group, version, protocol));
-            serviceNames.addAll(keys);
+            if (isNotEmpty(keys)) {
+                serviceNames.addAll(keys);
+            }
         });
         return Collections.unmodifiableSet(serviceNames);
     }
