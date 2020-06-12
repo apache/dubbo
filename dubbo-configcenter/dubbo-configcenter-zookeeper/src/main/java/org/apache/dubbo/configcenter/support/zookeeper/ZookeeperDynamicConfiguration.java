@@ -18,51 +18,21 @@ package org.apache.dubbo.configcenter.support.zookeeper;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
-import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
+import org.apache.dubbo.common.config.configcenter.TreePathDynamicConfiguration;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
-import org.apache.dubbo.common.utils.PathUtils;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.Collection;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import static java.util.Collections.emptySortedSet;
-import static java.util.Collections.unmodifiableSortedSet;
-import static org.apache.dubbo.common.config.configcenter.Constants.CONFIG_NAMESPACE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
-import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
-import static org.apache.dubbo.common.utils.StringUtils.EMPTY_STRING;
-
 /**
  *
  */
-public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
-
-    private static final Logger logger = LoggerFactory.getLogger(ZookeeperDynamicConfiguration.class);
-
-    /**
-     * The parameter name of URL for the config base path
-     *
-     * @since 2.7.8
-     */
-    public static final String CONFIG_BASE_PATH_PARAM_NAME = "config-base-path";
-
-    /**
-     * The default value of parameter of URL for the config base path
-     *
-     * @since 2.7.8
-     */
-    public static final String DEFAULT_CONFIG_BASE_PATH = "/config";
+public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration {
 
     private Executor executor;
     // The final root path would be: /configRootPath/"config"
@@ -75,6 +45,7 @@ public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
 
 
     ZookeeperDynamicConfiguration(URL url, ZookeeperTransporter zookeeperTransporter) {
+        super(url);
         this.url = url;
         rootPath = getRootPath(url);
 
@@ -98,98 +69,48 @@ public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
     }
 
     /**
-     * Get the root path from the specified {@link URL connection URl}
-     *
-     * @param url the specified {@link URL connection URl}
-     * @return non-null
-     * @since 2.7.8
-     */
-    private String getRootPath(URL url) {
-        String rootPath = PATH_SEPARATOR + getConfigNamespace(url) + getConfigBasePath(url);
-        rootPath = PathUtils.normalize(rootPath);
-        if (rootPath.endsWith(PATH_SEPARATOR)) {
-            rootPath = rootPath.substring(0, rootPath.length() - 1);
-        }
-        return rootPath;
-    }
-
-    /**
-     * Get the namespace from the specified {@link URL connection URl}
-     *
-     * @param url the specified {@link URL connection URl}
-     * @return non-null
-     * @since 2.7.8
-     */
-    private String getConfigNamespace(URL url) {
-        return url.getParameter(CONFIG_NAMESPACE_KEY, DEFAULT_GROUP);
-    }
-
-    /**
-     * Get the config base path from the specified {@link URL connection URl}
-     *
-     * @param url the specified {@link URL connection URl}
-     * @return non-null
-     * @since 2.7.8
-     */
-    private String getConfigBasePath(URL url) {
-        String configBasePath = url.getParameter(CONFIG_BASE_PATH_PARAM_NAME, DEFAULT_CONFIG_BASE_PATH);
-        if (StringUtils.isNotEmpty(configBasePath) && !configBasePath.startsWith(PATH_SEPARATOR)) {
-            configBasePath = PATH_SEPARATOR + configBasePath;
-        }
-        return configBasePath;
-    }
-
-    /**
      * @param key e.g., {service}.configurators, {service}.tagrouters, {group}.dubbo.properties
      * @return
      */
     @Override
-    public Object getInternalProperty(String key) {
+    public String getInternalProperty(String key) {
         return zkClient.getContent(key);
     }
 
-    /**
-     * For service governance, multi group is not supported by this implementation. So group is not used at present.
-     */
     @Override
-    public void addListener(String key, String group, ConfigurationListener listener) {
-        cacheListener.addListener(getPathKey(group, key), listener);
+    protected void doClose() throws Exception {
+        zkClient.close();
     }
 
     @Override
-    public void removeListener(String key, String group, ConfigurationListener listener) {
-        cacheListener.removeListener(getPathKey(group, key), listener);
-    }
-
-    @Override
-    public String getConfig(String key, String group, long timeout) throws IllegalStateException {
-        return (String) getInternalProperty(getPathKey(group, key));
-    }
-
-    @Override
-    public boolean publishConfig(String key, String group, String content) {
-        String path = getPathKey(group, key);
-        zkClient.create(path, content, false);
+    protected boolean doPublishConfig(String pathKey, String content) throws Exception {
+        zkClient.create(pathKey, content, false);
         return true;
     }
 
     @Override
-    public SortedSet<String> getConfigKeys(String group) {
-        String path = getPathKey(group, EMPTY_STRING);
-        List<String> nodes = zkClient.getChildren(path);
-        return isEmpty(nodes) ? emptySortedSet() : unmodifiableSortedSet(new TreeSet<>(nodes));
+    protected String doGetConfig(String pathKey) throws Exception {
+        return zkClient.getContent(pathKey);
     }
 
-    private String buildPath(String group) {
-        String actualGroup = StringUtils.isEmpty(group) ? DEFAULT_GROUP : group;
-        return rootPath + PATH_SEPARATOR + actualGroup;
+    @Override
+    protected boolean doRemoveConfig(String pathKey) throws Exception {
+        zkClient.delete(pathKey);
+        return true;
     }
 
-    private String getPathKey(String group, String key) {
-        if (StringUtils.isEmpty(key)) {
-            return buildPath(group);
-        }
-        return buildPath(group) + PATH_SEPARATOR + key;
+    @Override
+    protected Collection<String> doGetConfigKeys(String groupPath) {
+        return zkClient.getChildren(groupPath);
     }
 
+    @Override
+    protected void doAddListener(String pathKey, ConfigurationListener listener) {
+        cacheListener.addListener(pathKey, listener);
+    }
+
+    @Override
+    protected void doRemoveListener(String pathKey, ConfigurationListener listener) {
+        cacheListener.removeListener(pathKey, listener);
+    }
 }

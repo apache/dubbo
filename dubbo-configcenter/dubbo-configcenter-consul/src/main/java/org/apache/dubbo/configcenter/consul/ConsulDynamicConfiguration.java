@@ -25,6 +25,7 @@ import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.PathUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 
 import com.google.common.base.Charsets;
@@ -107,12 +108,6 @@ public class ConsulDynamicConfiguration implements DynamicConfiguration {
                     .forEach(configKeys::add);
         }
         return configKeys;
-//        SortedSet<String> configKeys = new TreeSet<>();
-//        String normalizedKey = convertKey(group, key);
-//        kvClient.getValueAsString(normalizedKey).ifPresent(v -> {
-//            Collections.addAll(configKeys, v.split(","));
-//        });
-//        return configKeys;
     }
 
     /**
@@ -120,32 +115,11 @@ public class ConsulDynamicConfiguration implements DynamicConfiguration {
      * @param group   the group where the key belongs to
      * @param content the content of configuration
      * @return
-     * @throws UnsupportedOperationException
      */
     @Override
-    public boolean publishConfig(String key, String group, String content) throws UnsupportedOperationException {
-//        String normalizedKey = convertKey(group, key);
-//        Value value = kvClient.getValue(normalizedKey).orElseThrow(() -> new IllegalArgumentException(normalizedKey + " does not exit."));
-//        Optional<String> old = value.getValueAsString();
-//        if (old.isPresent()) {
-//            content = old.get() + "," + content;
-//        }
-//
-//        while (!kvClient.putValue(key, content, value.getModifyIndex())) {
-//            value = kvClient.getValue(normalizedKey).orElseThrow(() -> new IllegalArgumentException(normalizedKey + " does not exit."));
-//            old = value.getValueAsString();
-//            if (old.isPresent()) {
-//                content = old.get() + "," + content;
-//            }
-//            try {
-//                Thread.sleep(10);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//        return true;
+    public boolean publishConfig(String key, String group, String content) {
         String normalizedKey = convertKey(group, key);
-        return kvClient.putValue(normalizedKey + PATH_SEPARATOR + content);
+        return kvClient.putValue(normalizedKey, content);
     }
 
     @Override
@@ -159,13 +133,9 @@ public class ConsulDynamicConfiguration implements DynamicConfiguration {
         client.destroy();
     }
 
-    private String buildPath(String group) {
-        String actualGroup = StringUtils.isEmpty(group) ? DEFAULT_GROUP : group;
-        return rootPath + PATH_SEPARATOR + actualGroup;
-    }
-
     private String convertKey(String group, String key) {
-        return buildPath(group) + PATH_SEPARATOR + key;
+        String actualGroup = StringUtils.isBlank(group) ? DEFAULT_GROUP : group;
+        return PathUtils.buildPath(rootPath, actualGroup, key);
     }
 
     private class ConsulListener implements KVCache.Listener<String, Value> {
