@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySortedSet;
 import static org.apache.dubbo.rpc.model.ApplicationModel.getName;
 
@@ -45,11 +46,28 @@ public interface MetadataReport {
 
     void storeConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, Map<String, String> serviceParameterMap);
 
-    void saveServiceMetadata(ServiceMetadataIdentifier metadataIdentifier, URL url);
+    /**
+     * @deprecated 2.7.8
+     */
+    @Deprecated
+    default void saveServiceMetadata(ServiceMetadataIdentifier metadataIdentifier, URL url) {
+    }
 
-    void removeServiceMetadata(ServiceMetadataIdentifier metadataIdentifier);
+    /**
+     * @deprecated 2.7.8
+     */
+    @Deprecated
+    default void removeServiceMetadata(ServiceMetadataIdentifier metadataIdentifier) {
 
-    List<String> getExportedURLs(ServiceMetadataIdentifier metadataIdentifier);
+    }
+
+    /**
+     * @deprecated 2.7.8
+     */
+    @Deprecated
+    default List<String> getExportedURLs(ServiceMetadataIdentifier metadataIdentifier) {
+        return emptyList();
+    }
 
     void saveSubscribedData(SubscriberMetadataIdentifier subscriberMetadataIdentifier, Set<String> urls);
 

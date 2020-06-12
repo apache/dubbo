@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
+import org.apache.dubbo.common.utils.PathUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
@@ -49,6 +50,20 @@ public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
 
     private static final Logger logger = LoggerFactory.getLogger(ZookeeperDynamicConfiguration.class);
 
+    /**
+     * The parameter name of URL for the config base path
+     *
+     * @since 2.7.8
+     */
+    public static final String CONFIG_BASE_PATH_PARAM_NAME = "config-base-path";
+
+    /**
+     * The default value of parameter of URL for the config base path
+     *
+     * @since 2.7.8
+     */
+    public static final String DEFAULT_CONFIG_BASE_PATH = "/config";
+
     private Executor executor;
     // The final root path would be: /configRootPath/"config"
     private String rootPath;
@@ -61,7 +76,7 @@ public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
 
     ZookeeperDynamicConfiguration(URL url, ZookeeperTransporter zookeeperTransporter) {
         this.url = url;
-        rootPath = PATH_SEPARATOR + url.getParameter(CONFIG_NAMESPACE_KEY, DEFAULT_GROUP) + "/config";
+        rootPath = getRootPath(url);
 
         initializedLatch = new CountDownLatch(1);
         this.cacheListener = new CacheListener(rootPath, initializedLatch);
@@ -80,6 +95,48 @@ public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
         } catch (InterruptedException e) {
             logger.warn("Failed to build local cache for config center (zookeeper)." + url);
         }
+    }
+
+    /**
+     * Get the root path from the specified {@link URL connection URl}
+     *
+     * @param url the specified {@link URL connection URl}
+     * @return non-null
+     * @since 2.7.8
+     */
+    private String getRootPath(URL url) {
+        String rootPath = PATH_SEPARATOR + getConfigNamespace(url) + getConfigBasePath(url);
+        rootPath = PathUtils.normalize(rootPath);
+        if (rootPath.endsWith(PATH_SEPARATOR)) {
+            rootPath = rootPath.substring(0, rootPath.length() - 1);
+        }
+        return rootPath;
+    }
+
+    /**
+     * Get the namespace from the specified {@link URL connection URl}
+     *
+     * @param url the specified {@link URL connection URl}
+     * @return non-null
+     * @since 2.7.8
+     */
+    private String getConfigNamespace(URL url) {
+        return url.getParameter(CONFIG_NAMESPACE_KEY, DEFAULT_GROUP);
+    }
+
+    /**
+     * Get the config base path from the specified {@link URL connection URl}
+     *
+     * @param url the specified {@link URL connection URl}
+     * @return non-null
+     * @since 2.7.8
+     */
+    private String getConfigBasePath(URL url) {
+        String configBasePath = url.getParameter(CONFIG_BASE_PATH_PARAM_NAME, DEFAULT_CONFIG_BASE_PATH);
+        if (StringUtils.isNotEmpty(configBasePath) && !configBasePath.startsWith(PATH_SEPARATOR)) {
+            configBasePath = PATH_SEPARATOR + configBasePath;
+        }
+        return configBasePath;
     }
 
     /**

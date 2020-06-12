@@ -28,6 +28,7 @@ import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 import org.apache.dubbo.metadata.report.support.AbstractMetadataReport;
+import org.apache.dubbo.metadata.report.support.ConfigCenterBasedMetadataReport;
 import org.apache.dubbo.rpc.RpcException;
 
 import java.util.ArrayList;
@@ -39,7 +40,10 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 
 /**
  * metadata report impl for nacos
+ *
+ * @deprecated 2.7.8 This class will be removed in the future, {@link ConfigCenterBasedMetadataReport} as a substitute.
  */
+@Deprecated
 public class NacosMetadataReport extends AbstractMetadataReport {
 
     private static final Logger logger = LoggerFactory.getLogger(NacosMetadataReport.class);

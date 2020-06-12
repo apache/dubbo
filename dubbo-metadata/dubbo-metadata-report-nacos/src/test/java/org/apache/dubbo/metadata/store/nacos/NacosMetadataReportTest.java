@@ -103,7 +103,7 @@ public class NacosMetadataReportTest {
         URL url = URL.valueOf("nacos://127.0.0.1:8848?group=" + NACOS_GROUP)
                 .addParameter(SESSION_TIMEOUT_KEY, SESSION_TIMEOUT);
         nacosMetadataReportFactory = new NacosMetadataReportFactory();
-        this.nacosMetadataReport = (NacosMetadataReport) nacosMetadataReportFactory.createMetadataReport(url);
+        this.nacosMetadataReport = (NacosMetadataReport) nacosMetadataReportFactory.getMetadataReport(url);
     }
 
     @AfterEach
