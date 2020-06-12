@@ -16,13 +16,8 @@
  */
 package org.apache.dubbo.metadata.store.zookeeper;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
 import org.apache.dubbo.metadata.report.support.ConfigCenterBasedMetadataReportFactory;
-
-import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
-import static org.apache.dubbo.configcenter.support.zookeeper.ZookeeperDynamicConfiguration.CONFIG_BASE_PATH_PARAM_NAME;
 
 /**
  * ZookeeperRegistryFactory.
@@ -33,17 +28,5 @@ public class ZookeeperMetadataReportFactory extends ConfigCenterBasedMetadataRep
 
     public ZookeeperMetadataReportFactory() {
         super(KeyTypeEnum.PATH);
-    }
-
-    /**
-     * @param url The {@link URL} of metadata report
-     * @return non-null
-     * @since 2.7.8
-     */
-    @Override
-    public MetadataReport getMetadataReport(URL url) {
-        // Change the "config base path"
-        URL newURL = url.addParameter(CONFIG_BASE_PATH_PARAM_NAME, PATH_SEPARATOR);
-        return super.getMetadataReport(newURL);
     }
 }

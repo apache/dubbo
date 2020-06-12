@@ -24,8 +24,9 @@ import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReentrantLock;
 
+import static org.apache.dubbo.common.config.configcenter.TreePathDynamicConfiguration.CONFIG_BASE_PATH_PARAM_NAME;
+import static org.apache.dubbo.metadata.MetadataConstants.DEFAULT_PATH_TAG;
 import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 
@@ -40,8 +41,10 @@ import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
  */
 public abstract class ConfigCenterBasedMetadataReportFactory implements MetadataReportFactory {
 
-    // The lock for the acquisition process of the registry
-    private static final ReentrantLock lock = new ReentrantLock();
+    /**
+     * org.apache.dubbo.metadata.report.MetadataReport
+     */
+    private static final String URL_PATH = MetadataReport.class.getName();
 
     // Registry Collection Map<metadataAddress, MetadataReport>
     private static final Map<String, MetadataReport> metadataReportCache = new ConcurrentHashMap<String, MetadataReport>();
@@ -57,8 +60,17 @@ public abstract class ConfigCenterBasedMetadataReportFactory implements Metadata
 
     @Override
     public MetadataReport getMetadataReport(URL url) {
-        URL actualURL = url.setPath(MetadataReport.class.getName()).removeParameters(EXPORT_KEY, REFER_KEY);
-        String key = url.toServiceString();
+
+        url = url.setPath(URL_PATH).removeParameters(EXPORT_KEY, REFER_KEY);
+
+        final URL actualURL;
+        if (url.getParameter(CONFIG_BASE_PATH_PARAM_NAME) == null) {
+            actualURL = url.addParameter(CONFIG_BASE_PATH_PARAM_NAME, DEFAULT_PATH_TAG);
+        } else {
+            actualURL = url;
+        }
+
+        String key = actualURL.toServiceString();
         // Lock the metadata access process to ensure a single instance of the metadata instance
         return metadataReportCache.computeIfAbsent(key, k -> new ConfigCenterBasedMetadataReport(actualURL, keyType));
     }
