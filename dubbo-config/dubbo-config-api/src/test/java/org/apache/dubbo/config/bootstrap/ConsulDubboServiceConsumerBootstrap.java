@@ -31,7 +31,7 @@ public class ConsulDubboServiceConsumerBootstrap {
 
         DubboBootstrap bootstrap = DubboBootstrap.getInstance()
                 .application("consul-dubbo-consumer", app -> app.metadata(REMOTE_METADATA_STORAGE_TYPE))
-                .registry("zookeeper", builder -> builder.address("zookeeper://127.0.0.1:8500?registry-type=service&subscribed-services=consul-dubbo-provider").useAsMetadataCenter(true))
+                .registry("zookeeper", builder -> builder.address("consul://127.0.0.1:8500?registry-type=service&subscribed-services=consul-dubbo-provider").useAsMetadataCenter(true))
                 .reference("echo", builder -> builder.interfaceClass(EchoService.class).protocol("dubbo"))
                 .reference("user", builder -> builder.interfaceClass(UserService.class).protocol("rest"))
                 .start();

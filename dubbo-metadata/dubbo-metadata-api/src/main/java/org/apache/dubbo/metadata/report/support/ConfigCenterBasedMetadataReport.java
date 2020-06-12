@@ -30,8 +30,6 @@ import java.util.List;
 
 import static org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory.getDynamicConfigurationFactory;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
-import static org.apache.dubbo.metadata.MetadataConstants.DEFAULT_PATH_TAG;
 import static org.apache.dubbo.metadata.MetadataConstants.EXPORTED_URLS_TAG;
 
 /**
@@ -47,15 +45,12 @@ public class ConfigCenterBasedMetadataReport extends AbstractMetadataReport {
 
     private final String group;
 
-    private final long timeout;
-
     private final DynamicConfiguration dynamicConfiguration;
 
     public ConfigCenterBasedMetadataReport(URL reportServerURL, KeyTypeEnum keyTypeEnum) {
         super(reportServerURL);
         this.keyType = keyTypeEnum;
         this.group = reportServerURL.getParameter(GROUP_KEY, DEFAULT_ROOT);
-        this.timeout = reportServerURL.getParameter(TIMEOUT_KEY, 1L);
         String extensionName = reportServerURL.getProtocol();
         DynamicConfigurationFactory dynamicConfigurationFactory = getDynamicConfigurationFactory(extensionName);
         dynamicConfiguration = dynamicConfigurationFactory.getDynamicConfiguration(reportServerURL);
@@ -105,17 +100,17 @@ public class ConfigCenterBasedMetadataReport extends AbstractMetadataReport {
     @Override
     public boolean saveExportedURLs(String serviceName, String exportedServicesRevision, String exportedURLsContent) {
         String key = buildExportedURLsMetadataKey(serviceName, exportedServicesRevision);
-        return dynamicConfiguration.publishConfig(key, exportedURLsContent);
+        return dynamicConfiguration.publishConfig(key, group, exportedURLsContent);
     }
 
     @Override
     public String getExportedURLsContent(String serviceName, String exportedServicesRevision) {
         String key = buildExportedURLsMetadataKey(serviceName, exportedServicesRevision);
-        return dynamicConfiguration.getConfig(key, group, timeout);
+        return dynamicConfiguration.getConfig(key, group);
     }
 
     private String buildExportedURLsMetadataKey(String serviceName, String exportedServicesRevision) {
-        return keyType.build(DEFAULT_PATH_TAG, EXPORTED_URLS_TAG, serviceName, exportedServicesRevision);
+        return keyType.build(EXPORTED_URLS_TAG, serviceName, exportedServicesRevision);
     }
 
     protected void saveMetadata(BaseMetadataIdentifier metadataIdentifier, String value) {
@@ -130,12 +125,12 @@ public class ConfigCenterBasedMetadataReport extends AbstractMetadataReport {
 
     protected String getMetadata(MetadataIdentifier metadataIdentifier) {
         String key = getKey(metadataIdentifier);
-        return dynamicConfiguration.getConfig(key, group, timeout);
+        return dynamicConfiguration.getConfig(key, group);
     }
 
     protected String getMetadata(SubscriberMetadataIdentifier metadataIdentifier) {
         String key = getKey(metadataIdentifier);
-        return dynamicConfiguration.getConfig(key, group, timeout);
+        return dynamicConfiguration.getConfig(key, group);
     }
 
     protected void removeMetadata(MetadataIdentifier metadataIdentifier) {
