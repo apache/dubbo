@@ -17,7 +17,6 @@
 package org.apache.dubbo.config.bootstrap;
 
 import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.bootstrap.rest.UserService;
 import org.apache.dubbo.config.bootstrap.rest.UserServiceImpl;
 
@@ -35,12 +34,10 @@ public class NacosDubboServiceProviderBootstrap {
         applicationConfig.setMetadataType(REMOTE_METADATA_STORAGE_TYPE);
         DubboBootstrap.getInstance()
                 .application(applicationConfig)
-                // Zookeeper in service registry type
+                // Nacos in service registry type
                 .registry("nacos", builder -> builder.address("nacos://127.0.0.1:8848?registry-type=service").useAsConfigCenter(true).useAsMetadataCenter(true))
-                // Nacos
-//                .registry("nacos", builder -> builder.address("nacos://127.0.0.1:8848?registry.type=service"))
-//                .registry(RegistryBuilder.newBuilder().address("etcd3://127.0.0.1:2379?registry.type=service").build())
-                .metadataReport(new MetadataReportConfig("nacos://127.0.0.1:8848"))
+                // Nacos in traditional registry type
+//                .registry("nacos-traditional", builder -> builder.address("nacos://127.0.0.1:8848"))
                 .protocol("dubbo", builder -> builder.port(20885).name("dubbo"))
                 .protocol("rest", builder -> builder.port(9090).name("rest"))
                 .service(builder -> builder.id("echo").interfaceClass(EchoService.class).ref(new EchoServiceImpl()).protocolIds("dubbo"))

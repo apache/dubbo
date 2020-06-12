@@ -26,8 +26,14 @@ import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
 import com.google.gson.Gson;
 
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PID_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.utils.ClassUtils.forName;
 import static org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder.buildFullDefinition;
+import static org.apache.dubbo.remoting.Constants.BIND_IP_KEY;
+import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 import static org.apache.dubbo.rpc.support.ProtocolUtils.isGeneric;
 
@@ -46,7 +52,23 @@ public abstract class AbstractAbstractWritableMetadataService implements Writabl
         if (SERVICE_INTERFACE_NAME.equals(url.getServiceInterface())) { // Ignore the interface "MetadataService"
             return;
         }
-        publishServiceDefinition(url.getServiceKey(), getServiceDefinition(url));
+
+        // Remove the useless parameters
+        url = url.removeParameters(PID_KEY, TIMESTAMP_KEY, BIND_IP_KEY, BIND_PORT_KEY, TIMESTAMP_KEY);
+
+        String side = url.getParameter(SIDE_KEY);
+        if (PROVIDER_SIDE.equalsIgnoreCase(side)) {
+            publishProviderServiceDefinition(url);
+        } else {
+            publishConsumerParameters(url);
+        }
+    }
+
+    protected void publishProviderServiceDefinition(URL url) {
+        String serviceDefinition = getServiceDefinition(url);
+        if (!StringUtils.isBlank(serviceDefinition)) {
+            publishServiceDefinition(url.getServiceKey(), serviceDefinition);
+        }
     }
 
     protected String getServiceDefinition(URL exportedURL) {
@@ -69,6 +91,10 @@ public abstract class AbstractAbstractWritableMetadataService implements Writabl
         return json;
     }
 
-    protected abstract void publishServiceDefinition(String key, String json);
+    protected void publishConsumerParameters(URL url) {
+    }
+
+    protected void publishServiceDefinition(String key, String json) {
+    }
 
 }

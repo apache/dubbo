@@ -18,7 +18,7 @@ package org.apache.dubbo.config.bootstrap;
 
 import org.apache.dubbo.config.bootstrap.rest.UserService;
 
-import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
 
 /**
  * Dubbo Provider Bootstrap
@@ -30,7 +30,7 @@ public class ConsulDubboServiceConsumerBootstrap {
     public static void main(String[] args) throws Exception {
 
         DubboBootstrap bootstrap = DubboBootstrap.getInstance()
-                .application("consul-dubbo-consumer", app -> app.metadata(REMOTE_METADATA_STORAGE_TYPE))
+                .application("consul-dubbo-consumer", app -> app.metadata(DEFAULT_METADATA_STORAGE_TYPE))
                 .registry("zookeeper", builder -> builder.address("consul://127.0.0.1:8500?registry-type=service&subscribed-services=consul-dubbo-provider").useAsMetadataCenter(true))
                 .reference("echo", builder -> builder.interfaceClass(EchoService.class).protocol("dubbo"))
                 .reference("user", builder -> builder.interfaceClass(UserService.class).protocol("rest"))
