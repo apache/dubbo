@@ -16,28 +16,22 @@
  */
 package org.apache.dubbo.config.bootstrap;
 
-import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.bootstrap.rest.UserService;
 
-import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
 
 /**
  * Dubbo Provider Bootstrap
  *
  * @since 2.7.5
  */
-public class NacosDubboServiceConsumerBootstrap {
+public class ConsulDubboServiceConsumerBootstrap {
 
     public static void main(String[] args) throws Exception {
 
-        ApplicationConfig applicationConfig = new ApplicationConfig("dubbo-nacos-consumer-demo");
-        applicationConfig.setMetadataType(REMOTE_METADATA_STORAGE_TYPE);
         DubboBootstrap bootstrap = DubboBootstrap.getInstance()
-                .application(applicationConfig)
-                // Nacos in service registry type
-                .registry("nacos", builder -> builder.address("nacos://127.0.0.1:8848?registry-type=service").useAsConfigCenter(true).useAsMetadataCenter(true))
-                // Nacos in traditional registry type
-//                .registry("nacos-traditional", builder -> builder.address("nacos://127.0.0.1:8848"))
+                .application("consul-dubbo-consumer", app -> app.metadata(DEFAULT_METADATA_STORAGE_TYPE))
+                .registry("zookeeper", builder -> builder.address("consul://127.0.0.1:8500?registry-type=service&subscribed-services=consul-dubbo-provider").useAsMetadataCenter(true))
                 .reference("echo", builder -> builder.interfaceClass(EchoService.class).protocol("dubbo"))
                 .reference("user", builder -> builder.interfaceClass(UserService.class).protocol("rest"))
                 .start();
@@ -50,5 +44,7 @@ public class NacosDubboServiceConsumerBootstrap {
             System.out.println(echoService.echo("Hello,World"));
             System.out.println(userService.getUser(i * 1L));
         }
+
+        bootstrap.stop();
     }
 }

@@ -17,16 +17,15 @@
 
 package org.apache.dubbo.metadata.store.consul;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.metadata.report.MetadataReport;
-import org.apache.dubbo.metadata.report.support.AbstractMetadataReportFactory;
+import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
+import org.apache.dubbo.metadata.report.support.ConfigCenterBasedMetadataReportFactory;
 
 /**
  * metadata report factory impl for consul
  */
-public class ConsulMetadataReportFactory extends AbstractMetadataReportFactory {
-    @Override
-    protected MetadataReport createMetadataReport(URL url) {
-        return new ConsulMetadataReport(url);
+public class ConsulMetadataReportFactory extends ConfigCenterBasedMetadataReportFactory {
+
+    public ConsulMetadataReportFactory() {
+        super(KeyTypeEnum.UNIQUE_KEY);
     }
 }

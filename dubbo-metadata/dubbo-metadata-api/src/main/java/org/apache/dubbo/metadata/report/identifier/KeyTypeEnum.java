@@ -16,9 +16,47 @@
  */
 package org.apache.dubbo.metadata.report.identifier;
 
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
+import static org.apache.dubbo.common.utils.PathUtils.buildPath;
+import static org.apache.dubbo.common.utils.StringUtils.EMPTY_STRING;
+import static org.apache.dubbo.common.utils.StringUtils.isBlank;
+import static org.apache.dubbo.metadata.MetadataConstants.KEY_SEPARATOR;
+
 /**
  * 2019-08-15
  */
 public enum KeyTypeEnum {
-    PATH, UNIQUE_KEY
+
+    PATH(PATH_SEPARATOR) {
+        public String build(String one, String... others) {
+            return buildPath(one, others);
+        }
+    },
+
+    UNIQUE_KEY(KEY_SEPARATOR) {
+        public String build(String one, String... others) {
+            StringBuilder keyBuilder = new StringBuilder(one);
+            for (String other : others) {
+                keyBuilder.append(separator).append(isBlank(other) ? EMPTY_STRING : other);
+            }
+            return keyBuilder.toString();
+        }
+    };
+
+    final String separator;
+
+    KeyTypeEnum(String separator) {
+        this.separator = separator;
+    }
+
+    /**
+     * Build Key
+     *
+     * @param one    one
+     * @param others the others
+     * @return
+     * @since 2.7.8
+     */
+    public abstract String build(String one, String... others);
+
 }

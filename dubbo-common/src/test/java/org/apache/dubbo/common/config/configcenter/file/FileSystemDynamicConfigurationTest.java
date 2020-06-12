@@ -141,7 +141,8 @@ public class FileSystemDynamicConfigurationTest {
 
 
         processedEvent.set(false);
-        File keyFile = configuration.configFile(KEY, DEFAULT_GROUP);
+        configuration.getRootDirectory();
+        File keyFile = new File(KEY, DEFAULT_GROUP);
         FileUtils.deleteQuietly(keyFile);
         while (!processedEvent.get()) {
             Thread.sleep(1 * 1000L);

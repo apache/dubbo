@@ -17,8 +17,6 @@
 package org.apache.dubbo.metadata.store;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.URLRevisionResolver;
 import org.apache.dubbo.metadata.WritableMetadataService;
@@ -28,8 +26,6 @@ import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
-import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.rpc.RpcException;
 
 import java.util.SortedSet;
 
@@ -37,10 +33,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.PID_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
-import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 
 /**
@@ -50,9 +43,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
  *
  * @since 2.7.5
  */
-public class RemoteWritableMetadataService implements WritableMetadataService {
-
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
+public class RemoteWritableMetadataService extends AbstractAbstractWritableMetadataService {
 
     private final InMemoryWritableMetadataService writableMetadataServiceDelegate;
 
@@ -68,47 +59,30 @@ public class RemoteWritableMetadataService implements WritableMetadataService {
     }
 
     @Override
-    public void publishServiceDefinition(URL url) {
-        String side = url.getParameter(SIDE_KEY);
-        if (PROVIDER_SIDE.equalsIgnoreCase(side)) {
-            //TODO, the params part is duplicate with that stored by exportURL(url), can be further optimized in the future.
-            publishProvider(url);
-        } else {
-            //TODO, only useful for ops showing the url parameters, this is duplicate with subscribeURL(url), can be removed in the future.
-            publishConsumer(url);
-        }
-    }
-
-    private void publishProvider(URL providerUrl) throws RpcException {
-        //first add into the list
-        // remove the individual param
-        providerUrl = providerUrl.removeParameters(PID_KEY, TIMESTAMP_KEY, Constants.BIND_IP_KEY,
-                Constants.BIND_PORT_KEY, TIMESTAMP_KEY);
-
-        try {
-            String interfaceName = providerUrl.getParameter(INTERFACE_KEY);
-            if (StringUtils.isNotEmpty(interfaceName)) {
-                Class interfaceClass = Class.forName(interfaceName);
-                FullServiceDefinition fullServiceDefinition = ServiceDefinitionBuilder.buildFullDefinition(interfaceClass,
-                        providerUrl.getParameters());
-                getMetadataReport().storeProviderMetadata(new MetadataIdentifier(providerUrl.getServiceInterface(),
-                        providerUrl.getParameter(VERSION_KEY), providerUrl.getParameter(GROUP_KEY),
-                        PROVIDER_SIDE, providerUrl.getParameter(APPLICATION_KEY)), fullServiceDefinition);
-                return;
-            }
-            logger.error("publishProvider interfaceName is empty . providerUrl: " + providerUrl.toFullString());
-        } catch (ClassNotFoundException e) {
-            //ignore error
-            logger.error("publishProvider getServiceDescriptor error. providerUrl: " + providerUrl.toFullString(), e);
-        }
-    }
-
-    private void publishConsumer(URL consumerURL) throws RpcException {
-        consumerURL = consumerURL.removeParameters(PID_KEY, TIMESTAMP_KEY, Constants.BIND_IP_KEY,
-                Constants.BIND_PORT_KEY, TIMESTAMP_KEY);
+    protected void publishConsumerParameters(URL consumerURL) {
         getMetadataReport().storeConsumerMetadata(new MetadataIdentifier(consumerURL.getServiceInterface(),
                 consumerURL.getParameter(VERSION_KEY), consumerURL.getParameter(GROUP_KEY), CONSUMER_SIDE,
                 consumerURL.getParameter(APPLICATION_KEY)), consumerURL.getParameters());
+    }
+
+    @Override
+    protected void publishProviderServiceDefinition(URL providerURL) {
+        try {
+            String interfaceName = providerURL.getParameter(INTERFACE_KEY);
+            if (StringUtils.isNotEmpty(interfaceName)) {
+                Class interfaceClass = Class.forName(interfaceName);
+                FullServiceDefinition fullServiceDefinition = ServiceDefinitionBuilder.buildFullDefinition(interfaceClass,
+                        providerURL.getParameters());
+                getMetadataReport().storeProviderMetadata(new MetadataIdentifier(providerURL.getServiceInterface(),
+                        providerURL.getParameter(VERSION_KEY), providerURL.getParameter(GROUP_KEY),
+                        PROVIDER_SIDE, providerURL.getParameter(APPLICATION_KEY)), fullServiceDefinition);
+                return;
+            }
+            logger.error("publishProvider interfaceName is empty . url: " + providerURL.toFullString());
+        } catch (ClassNotFoundException e) {
+            //ignore error
+            logger.error("publishProvider getServiceDescriptor error. url: " + providerURL.toFullString(), e);
+        }
     }
 
     @Override

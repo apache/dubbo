@@ -232,4 +232,14 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
     static String getRuleKey(URL url) {
         return url.getColonSeparatedKey();
     }
+
+    /**
+     * @param key   the key to represent a configuration
+     * @param group the group where the key belongs to
+     * @return <code>true</code> if success, or <code>false</code>
+     * @since 2.7.8
+     */
+    default boolean removeConfig(String key, String group) {
+        return true;
+    }
 }

@@ -14,19 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.store.zookeeper;
+package org.apache.dubbo.common.utils;
 
-import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
-import org.apache.dubbo.metadata.report.support.ConfigCenterBasedMetadataReportFactory;
+import org.junit.jupiter.api.Test;
+
+import java.util.function.Predicate;
+
+import static org.apache.dubbo.common.utils.StringConstantFieldValuePredicate.of;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * ZookeeperRegistryFactory.
+ * {@link StringConstantFieldValuePredicate} Test
  *
- * @revised 2.7.8 {@link ConfigCenterBasedMetadataReportFactory}
+ * @since 2.7.8
  */
-public class ZookeeperMetadataReportFactory extends ConfigCenterBasedMetadataReportFactory {
+public class StringConstantFieldValuePredicateTest {
 
-    public ZookeeperMetadataReportFactory() {
-        super(KeyTypeEnum.PATH);
+    public static final String S1 = "1";
+
+    public static final Object O1 = "2";
+
+    public static final Object O2 = 3;
+
+    @Test
+    public void test() {
+        Predicate<String> predicate = of(getClass());
+        assertTrue(predicate.test("1"));
+        assertTrue(predicate.test("2"));
+        assertFalse(predicate.test("3"));
     }
 }
