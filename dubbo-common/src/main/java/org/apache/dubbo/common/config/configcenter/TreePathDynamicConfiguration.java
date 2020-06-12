@@ -17,6 +17,7 @@
 package org.apache.dubbo.common.config.configcenter;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.configcenter.file.FileSystemDynamicConfiguration;
 import org.apache.dubbo.common.utils.PathUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 
@@ -34,9 +35,9 @@ import static org.apache.dubbo.common.utils.PathUtils.buildPath;
 /**
  * An abstract implementation of {@link DynamicConfiguration} is like "tree-structure" path :
  * <ul>
- *     <li>"zookeeper"</li>
- *     <li>"consul"</li>
- *     <li>"etcd"</li>
+ *     <li>{@link FileSystemDynamicConfiguration "file"}</li>
+ *     <li>{@link org.apache.dubbo.configcenter.support.zookeeper.ZookeeperDynamicConfiguration "zookeeper"}</li>
+ *     <li>{@link org.apache.dubbo.configcenter.consul.ConsulDynamicConfiguration "consul"}</li>
  * </ul>
  *
  * @see DynamicConfiguration
@@ -81,7 +82,7 @@ public abstract class TreePathDynamicConfiguration extends AbstractDynamicConfig
     @Override
     public final boolean publishConfig(String key, String group, String content) {
         String pathKey = buildPathKey(group, key);
-        return execute(() -> doPublishConfig(pathKey, content), -1L);
+        return execute(() -> doPublishConfig(pathKey, content), getDefaultTimeout());
     }
 
     @Override

@@ -301,6 +301,6 @@ public abstract class AbstractDynamicConfiguration implements DynamicConfigurati
      * @since 2.7.8
      */
     protected static long getTimeout(URL url) {
-        return getParameter(url, TIMEOUT_PARAM_NAME, TimeUnit.SECONDS.toMillis(1L));
+        return getParameter(url, TIMEOUT_PARAM_NAME, -1L);
     }
 }
