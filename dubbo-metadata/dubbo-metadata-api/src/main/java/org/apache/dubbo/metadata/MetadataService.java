@@ -174,6 +174,8 @@ public interface MetadataService {
      */
     String getServiceDefinition(String serviceKey);
 
+    MetadataInfo getMetadataInfo();
+
     /**
      * Is the {@link URL} for the {@link MetadataService} or not?
      *

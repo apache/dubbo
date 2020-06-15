@@ -18,6 +18,7 @@ package org.apache.dubbo.metadata.report;
 
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
@@ -27,24 +28,33 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/**
- *
- */
 public interface MetadataReport {
 
     void storeProviderMetadata(MetadataIdentifier providerMetadataIdentifier, ServiceDefinition serviceDefinition);
 
     void storeConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, Map<String, String> serviceParameterMap);
 
+    List<String> getExportedURLs(ServiceMetadataIdentifier metadataIdentifier);
+
+    String getServiceDefinition(MetadataIdentifier metadataIdentifier);
+
+    default void publishAppMetadata(SubscriberMetadataIdentifier identifier, MetadataInfo metadataInfo) {
+    }
+
+    default MetadataInfo getAppMetadata(SubscriberMetadataIdentifier identifier, Map<String, String> instanceMetadata) {
+        return null;
+    }
+
+    /**
+     * deprecated
+     **/
+
     void saveServiceMetadata(ServiceMetadataIdentifier metadataIdentifier, URL url);
 
     void removeServiceMetadata(ServiceMetadataIdentifier metadataIdentifier);
-
-    List<String> getExportedURLs(ServiceMetadataIdentifier metadataIdentifier);
 
     void saveSubscribedData(SubscriberMetadataIdentifier subscriberMetadataIdentifier, Set<String> urls);
 
     List<String> getSubscribedURLs(SubscriberMetadataIdentifier subscriberMetadataIdentifier);
 
-    String getServiceDefinition(MetadataIdentifier metadataIdentifier);
 }

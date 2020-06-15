@@ -16,21 +16,9 @@
  */
 package org.apache.dubbo.metadata;
 
-import org.apache.dubbo.metadata.store.InMemoryWritableMetadataService;
+import org.apache.dubbo.common.extension.SPI;
 
-import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-/**
- * {@link WritableMetadataService} Test
- *
- * @since 2.7.5
- */
-public class LocalMetadataServiceTest {
-
-    @Test
-    public void testDefaultExtension() {
-        assertEquals(InMemoryWritableMetadataService.class, WritableMetadataService.getDefaultExtension().getClass());
-    }
+@SPI
+public interface MetadataParamsFilter {
+   String[] include();
 }

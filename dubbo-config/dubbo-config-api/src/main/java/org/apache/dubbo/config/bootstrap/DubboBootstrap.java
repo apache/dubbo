@@ -66,6 +66,9 @@ import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceDiscoveryRegistry;
 import org.apache.dubbo.registry.client.ServiceInstance;
+import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
+import org.apache.dubbo.registry.client.metadata.MetadataUtils;
+import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
@@ -617,17 +620,18 @@ public class DubboBootstrap extends GenericEventListener {
         Collection<MetadataReportConfig> metadataReportConfigs = configManager.getMetadataConfigs();
         if (CollectionUtils.isEmpty(metadataReportConfigs)) {
             if (REMOTE_METADATA_STORAGE_TYPE.equals(metadataType)) {
-                throw new IllegalStateException("No MetadataConfig found, you must specify the remote Metadata Center address when 'metadata=remote' is enabled.");
+                throw new IllegalStateException("No MetadataConfig found, Metadata Center address is required when 'metadata=remote' is enabled.");
             }
             return;
         }
-        MetadataReportConfig metadataReportConfig = metadataReportConfigs.iterator().next();
-        ConfigValidationUtils.validateMetadataConfig(metadataReportConfig);
-        if (!metadataReportConfig.isValid()) {
-            return;
-        }
 
-        MetadataReportInstance.init(metadataReportConfig.toUrl());
+        for (MetadataReportConfig metadataReportConfig : metadataReportConfigs) {
+            ConfigValidationUtils.validateMetadataConfig(metadataReportConfig);
+            if (!metadataReportConfig.isValid()) {
+                return;
+            }
+            MetadataReportInstance.init(metadataReportConfig);
+        }
     }
 
     /**
@@ -1016,7 +1020,15 @@ public class DubboBootstrap extends GenericEventListener {
 
         ServiceInstance serviceInstance = createServiceInstance(serviceName, host, port);
 
+        // register metadata
+        publishMetadataToRemote(serviceInstance);
+
         getServiceDiscoveries().forEach(serviceDiscovery -> serviceDiscovery.register(serviceInstance));
+    }
+
+    private void publishMetadataToRemote(ServiceInstance serviceInstance) {
+        RemoteMetadataServiceImpl remoteMetadataService = MetadataUtils.getRemoteMetadataService();
+        remoteMetadataService.publishMetadata(serviceInstance);
     }
 
     private URL selectMetadataServiceExportedURL() {
@@ -1056,6 +1068,15 @@ public class DubboBootstrap extends GenericEventListener {
     private ServiceInstance createServiceInstance(String serviceName, String host, int port) {
         this.serviceInstance = new DefaultServiceInstance(serviceName, host, port);
         setMetadataStorageType(serviceInstance, getMetadataType());
+
+        ExtensionLoader<ServiceInstanceCustomizer> loader =
+                ExtensionLoader.getExtensionLoader(ServiceInstanceCustomizer.class);
+        // FIXME, sort customizer before apply
+        loader.getSupportedExtensionInstances().forEach(customizer -> {
+            // customizes
+            customizer.customize(this.serviceInstance);
+        });
+
         return this.serviceInstance;
     }
 

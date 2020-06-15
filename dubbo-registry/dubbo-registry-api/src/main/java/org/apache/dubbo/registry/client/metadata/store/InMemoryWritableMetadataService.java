@@ -14,12 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.store;
+package org.apache.dubbo.registry.client.metadata.store;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.metadata.MetadataInfo;
+import org.apache.dubbo.metadata.MetadataInfo.ServiceInfo;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
@@ -67,6 +69,7 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
      * and value is the {@link SortedSet sorted set} of the {@link URL URLs}
      */
     ConcurrentNavigableMap<String, SortedSet<URL>> exportedServiceURLs = new ConcurrentSkipListMap<>();
+    MetadataInfo metadataInfo;
 
     // ==================================================================================== //
 
@@ -80,6 +83,10 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
     ConcurrentNavigableMap<String, SortedSet<URL>> subscribedServiceURLs = new ConcurrentSkipListMap<>();
 
     ConcurrentNavigableMap<String, String> serviceDefinitions = new ConcurrentSkipListMap<>();
+
+    public InMemoryWritableMetadataService() {
+        this.metadataInfo = new MetadataInfo();
+    }
 
     @Override
     public SortedSet<String> getSubscribedURLs() {
@@ -112,11 +119,15 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
 
     @Override
     public boolean exportURL(URL url) {
+        ServiceInfo serviceInfo = new ServiceInfo(url);
+        metadataInfo.addService(serviceInfo);
         return addURL(exportedServiceURLs, url);
     }
 
     @Override
     public boolean unexportURL(URL url) {
+        ServiceInfo serviceInfo = new ServiceInfo(url);
+        metadataInfo.removeService(serviceInfo);
         return removeURL(exportedServiceURLs, url);
     }
 
@@ -158,6 +169,11 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
     @Override
     public String getServiceDefinition(String serviceKey) {
         return serviceDefinitions.get(serviceKey);
+    }
+
+    @Override
+    public MetadataInfo getMetadataInfo() {
+        return metadataInfo;
     }
 
     boolean addURL(Map<String, SortedSet<URL>> serviceURLs, URL url) {

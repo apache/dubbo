@@ -150,7 +150,7 @@ public class RemoteWritableMetadataServiceDelegateTest {
         metadataReportService.exportURL(publishUrl);
         metadataReportService.exportURL(publishUrl2);
         String exportedRevision = "9999";
-        JTestMetadataReport4Test jTestMetadataReport4Test = (JTestMetadataReport4Test) MetadataReportInstance.getMetadataReport(true);
+        JTestMetadataReport4Test jTestMetadataReport4Test = (JTestMetadataReport4Test) MetadataReportInstance.getMetadataReports(true);
         int origSize = jTestMetadataReport4Test.store.size();
         int num = countNum();
         Assertions.assertTrue(metadataReportService.refreshMetadata(exportedRevision, "1109"));
