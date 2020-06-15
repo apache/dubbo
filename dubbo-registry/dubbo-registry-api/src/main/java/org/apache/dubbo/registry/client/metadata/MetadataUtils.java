@@ -37,7 +37,6 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
 
 public class MetadataUtils {
 
-    private static final Object LOCK = new Object();
     private static final Object REMOTE_LOCK = new Object();
 
     public static ConcurrentMap<String, MetadataService> metadataServiceProxies = new ConcurrentHashMap<>();

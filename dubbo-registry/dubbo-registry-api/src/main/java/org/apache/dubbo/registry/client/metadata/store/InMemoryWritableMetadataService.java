@@ -26,6 +26,7 @@ import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import com.google.gson.Gson;
@@ -85,7 +86,7 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
     ConcurrentNavigableMap<String, String> serviceDefinitions = new ConcurrentSkipListMap<>();
 
     public InMemoryWritableMetadataService() {
-        this.metadataInfo = new MetadataInfo();
+        this.metadataInfo = new MetadataInfo(ApplicationModel.getName());
     }
 
     @Override
