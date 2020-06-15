@@ -53,7 +53,7 @@ public abstract class ServiceInstancesChangedListener implements ConditionalEven
 
     private final String serviceName;
     private final ServiceDiscovery serviceDiscovery;
-    private final URL url;
+    private URL url;
 
     private List<ServiceInstance> instances;
 
@@ -163,6 +163,10 @@ public abstract class ServiceInstancesChangedListener implements ConditionalEven
      */
     public final String getServiceName() {
         return serviceName;
+    }
+
+    public void setUrl(URL url) {
+        this.url = url;
     }
 
     public URL getUrl() {

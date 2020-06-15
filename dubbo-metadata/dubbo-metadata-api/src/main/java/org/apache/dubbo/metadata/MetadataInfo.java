@@ -42,7 +42,8 @@ public class MetadataInfo implements Serializable {
     private String revision;
     private Map<String, ServiceInfo> services;
 
-    public MetadataInfo() {
+    public MetadataInfo(String app) {
+        this.app = app;
         this.services = new HashMap<>();
     }
 
@@ -166,7 +167,7 @@ public class MetadataInfo implements Serializable {
                         String[] methods = url.getParameter(METHODS_KEY, (String[]) null);
                         if (methods != null) {
                             for (String method : methods) {
-                                String mValue = url.getMethodParameter(method, p);
+                                String mValue = url.getMethodParameterStrict(method, p);
                                 if (StringUtils.isNotEmpty(mValue)) {
                                     params.put(method + DOT_SEPARATOR + p, mValue);
                                 }

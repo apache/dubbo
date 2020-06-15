@@ -46,7 +46,7 @@ public class DefaultServiceInstance implements ServiceInstance {
 
     private Map<String, String> metadata = new HashMap<>();
 
-    private MetadataInfo serviceMetadata;
+    private transient MetadataInfo serviceMetadata;
 
     public DefaultServiceInstance() {
     }

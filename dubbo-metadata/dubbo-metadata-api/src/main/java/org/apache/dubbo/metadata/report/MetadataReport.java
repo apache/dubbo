@@ -24,20 +24,23 @@ import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public interface MetadataReport {
 
+    /**
+     * Service Definition -- START
+     **/
     void storeProviderMetadata(MetadataIdentifier providerMetadataIdentifier, ServiceDefinition serviceDefinition);
-
-    void storeConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, Map<String, String> serviceParameterMap);
-
-    List<String> getExportedURLs(ServiceMetadataIdentifier metadataIdentifier);
 
     String getServiceDefinition(MetadataIdentifier metadataIdentifier);
 
+    /**
+     * Application Metadata -- START
+     **/
     default void publishAppMetadata(SubscriberMetadataIdentifier identifier, MetadataInfo metadataInfo) {
     }
 
@@ -46,8 +49,22 @@ public interface MetadataReport {
     }
 
     /**
-     * deprecated
+     * Service<-->Application Mapping -- START
      **/
+    default Set<String> getServiceAppMapping(String serviceKey, URL url) {
+        return Collections.emptySet();
+    }
+
+    default void registerServiceAppMapping(String serviceKey, String application, URL url) {
+        return;
+    }
+
+    /**
+     * deprecated or need triage
+     **/
+    void storeConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, Map<String, String> serviceParameterMap);
+
+    List<String> getExportedURLs(ServiceMetadataIdentifier metadataIdentifier);
 
     void saveServiceMetadata(ServiceMetadataIdentifier metadataIdentifier, URL url);
 

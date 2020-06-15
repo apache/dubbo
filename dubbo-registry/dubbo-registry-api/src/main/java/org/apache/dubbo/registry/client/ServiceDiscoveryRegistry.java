@@ -23,7 +23,6 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.ServiceNameMapping;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.NotifyListener;
@@ -33,7 +32,6 @@ import org.apache.dubbo.registry.client.metadata.SubscribedURLsSynthesizer;
 import org.apache.dubbo.registry.support.FailbackRegistry;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -49,9 +47,9 @@ import static java.util.Collections.emptySet;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.of;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.MAPPING_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
@@ -79,20 +77,6 @@ import static org.apache.dubbo.registry.client.ServiceDiscoveryFactory.getExtens
  * protocol associates with a kind of {@link ServiceDiscovery}'s implementation if present, or the
  * {@link FileSystemServiceDiscovery} will be the default one. Obviously, it's also allowed to extend
  * {@link ServiceDiscovery} using {@link SPI the Dubbo SPI}.
- * <p>
- * In the {@link #subscribe(URL, NotifyListener) subscription phase}, the {@link ServiceDiscovery} instance will be used
- * to discovery the {@link ServiceInstance service instances} via the {@link ServiceDiscovery#getInstances(String)}.
- * However, the argument of this method requires the service name that the subscribed {@link URL} can't find, thus,
- * {@link ServiceNameMapping} will help to figure out one or more services that exported correlative Dubbo services. If
- * the service names can be found, the exported {@link URL URLs} will be get from the remote {@link MetadataService}
- * being deployed on all {@link ServiceInstance instances} of services. The whole process runs under the
- * {@link #subscribeURLs(URL, NotifyListener, String, Collection)} method. It's very expensive to invoke
- * {@link MetadataService} for each {@link ServiceInstance service instance}, thus {@link ServiceDiscoveryRegistry}
- * introduces a cache to optimize the calculation with "revisions". If the revisions of N
- * {@link ServiceInstance service instances} are same, {@link MetadataService} is invoked just only once, and then it
- * does return the exported {@link URL URLs} as a template by which others are
- * {@link #cloneExportedURLs(URL, Collection) cloned}.
- * <p>
  * In contrast, current {@link ServiceInstance service instance} will not be registered to the registry whether any
  * Dubbo service is exported or not.
  * <p>
@@ -130,7 +114,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         super(registryURL);
         this.serviceDiscovery = createServiceDiscovery(registryURL);
         this.subscribedServices = parseServices(registryURL.getParameter(SUBSCRIBED_SERVICE_NAMES_KEY));
-        this.serviceNameMapping = ServiceNameMapping.getDefaultExtension();
+        this.serviceNameMapping = ServiceNameMapping.getExtension(registryURL.getParameter(MAPPING_KEY));
         this.writableMetadataService = WritableMetadataService.getDefaultExtension();
     }
 
@@ -303,6 +287,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
                         listener.notifyServiceInstances();
                     }
                 });
+        serviceListener.setUrl(url);
         listener.addServiceListener(serviceListener);
         registerServiceInstancesChangedListener(url, serviceListener);
     }
@@ -392,11 +377,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
      * @return
      */
     protected Set<String> findMappedServices(URL subscribedURL) {
-        String serviceInterface = subscribedURL.getServiceInterface();
-        String group = subscribedURL.getParameter(GROUP_KEY);
-        String version = subscribedURL.getParameter(VERSION_KEY);
-        String protocol = subscribedURL.getParameter(PROTOCOL_KEY, DUBBO_PROTOCOL);
-        return serviceNameMapping.get(serviceInterface, group, version, protocol);
+        return serviceNameMapping.get(subscribedURL);
     }
 
     /**

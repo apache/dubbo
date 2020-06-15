@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 public class MetadataInfoTest {
     @Test
     public void revisionTest() {
-        MetadataInfo metadataInfo = new MetadataInfo();
+        MetadataInfo metadataInfo = new MetadataInfo("demo");
         metadataInfo.setApp("demo");
 
         URL url = URL.valueOf("dubbo://10.230.11.211:20880/org.apache.dubbo.metadata.DemoService?timeout=1000&testKey=aaa");

@@ -793,6 +793,15 @@ class URL implements Serializable {
         return URL.decode(getMethodParameter(method, key, defaultValue));
     }
 
+    public String getMethodParameterStrict(String method, String key) {
+        Map<String, String> keyMap = methodParameters.get(method);
+        String value = null;
+        if (keyMap != null) {
+            value = keyMap.get(key);
+        }
+        return value;
+    }
+
     public String getMethodParameter(String method, String key) {
         Map<String, String> keyMap = methodParameters.get(method);
         String value = null;
@@ -984,7 +993,7 @@ class URL implements Serializable {
             }
             return false;
         }
-        String value = getMethodParameter(method, key);
+        String value = getMethodParameterStrict(method, key);
         return StringUtils.isNotEmpty(value);
     }
 
