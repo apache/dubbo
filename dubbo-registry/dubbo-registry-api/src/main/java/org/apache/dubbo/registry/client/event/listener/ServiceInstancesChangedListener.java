@@ -17,12 +17,15 @@
 package org.apache.dubbo.registry.client.event.listener;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.event.ConditionalEventListener;
 import org.apache.dubbo.event.EventListener;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataInfo.ServiceInfo;
 import org.apache.dubbo.metadata.MetadataService;
+import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
@@ -50,6 +53,8 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
  * @since 2.7.5
  */
 public abstract class ServiceInstancesChangedListener implements ConditionalEventListener<ServiceInstancesChangedEvent> {
+
+    private static final Logger logger = LoggerFactory.getLogger(ServiceInstancesChangedListener.class);
 
     private final String serviceName;
     private final ServiceDiscovery serviceDiscovery;
@@ -87,14 +92,24 @@ public abstract class ServiceInstancesChangedListener implements ConditionalEven
             Collection<ServiceInstance> rInstances = localRevisionToInstances.computeIfAbsent(revision, r -> new ArrayList<>());
             rInstances.add(instance);
 
-            MetadataInfo metadata = revisionToMetadata.get(revision);
-            if (metadata != null) {
+            MetadataInfo metadata = null;
+            if (revisionToMetadata != null && ((metadata = revisionToMetadata.get(revision)) != null)) {
                 localRevisionToMetadata.put(revision, metadata);
             } else {
                 metadata = getMetadataInfo(instance);
-                localRevisionToMetadata.put(revision, getMetadataInfo(instance));
+                if (metadata != null) {
+                    localRevisionToMetadata.put(revision, getMetadataInfo(instance));
+                }
             }
-            parse(revision, metadata, localServiceToRevisions);
+
+            if (metadata != null) {
+                parse(revision, metadata, localServiceToRevisions);
+                ((DefaultServiceInstance) instance).setServiceMetadata(metadata);
+            } else {
+                logger.error("Failed to load service metadata for instance " + instance);
+                Set<String> set = localServiceToRevisions.computeIfAbsent(url.getServiceKey(), k -> new HashSet<>());
+                set.add(revision);
+            }
         }
 
         this.revisionToInstances = localRevisionToInstances;
@@ -126,8 +141,8 @@ public abstract class ServiceInstancesChangedListener implements ConditionalEven
 
     private Map<String, Set<String>> parse(String revision, MetadataInfo metadata, Map<String, Set<String>> localServiceToRevisions) {
         Map<String, ServiceInfo> serviceInfos = metadata.getServices();
-        for (Map.Entry<String, ServiceInfo> serviceInfo : serviceInfos.entrySet()) {
-            String serviceKey = serviceInfo.getValue().getServiceKey();
+        for (Map.Entry<String, ServiceInfo> entry : serviceInfos.entrySet()) {
+            String serviceKey = entry.getValue().getServiceKey();
             Set<String> set = localServiceToRevisions.computeIfAbsent(serviceKey, k -> new HashSet<>());
             set.add(revision);
         }

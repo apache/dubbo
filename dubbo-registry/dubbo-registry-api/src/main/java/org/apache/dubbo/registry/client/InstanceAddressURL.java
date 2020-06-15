@@ -72,7 +72,7 @@ public class InstanceAddressURL extends URL {
         }
 
         String value = super.getParameter(key);
-        if (StringUtils.isEmpty(value)) {
+        if (StringUtils.isEmpty(value) && metadataInfo != null) {
             value = metadataInfo.getParameter(key, this.getServiceKey());
         }
         return value;
@@ -112,7 +112,7 @@ public class InstanceAddressURL extends URL {
     @Override
     public Map<String, String> getParameters() {
         Map<String, String> instanceParams = super.getParameters();
-        Map<String, String> metadataParams = metadataInfo.getParameters(getServiceKey());
+        Map<String, String> metadataParams = (metadataInfo == null ? new HashMap<>() : metadataInfo.getParameters(getServiceKey()));
         int i = instanceParams == null ? 0 : instanceParams.size();
         int j = metadataParams == null ? 0 : metadataParams.size();
         Map<String, String> params = new HashMap<>((int) ((i + j) / 0.75) + 1);

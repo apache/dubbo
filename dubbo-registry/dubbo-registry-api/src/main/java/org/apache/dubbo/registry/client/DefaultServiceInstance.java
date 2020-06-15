@@ -140,7 +140,9 @@ public class DefaultServiceInstance implements ServiceInstance {
 
     @Override
     public URL toURL(String protocol, String path, String interfaceName, String group, String version, String serviceKey) {
-        return new InstanceAddressURL(protocol, host, port, path, interfaceName, group, version, serviceKey);
+        InstanceAddressURL url = new InstanceAddressURL(protocol, host, port, path, interfaceName, group, version, serviceKey);
+        url.setMetadata(this.getServiceMetadata());
+        return url;
     }
 
     @Override
