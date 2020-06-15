@@ -30,7 +30,6 @@ import com.alibaba.nacos.api.naming.listener.NamingEvent;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.api.naming.pojo.ListView;
 
-import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -121,7 +120,7 @@ public class NacosServiceDiscovery implements ServiceDiscovery {
 
     private void handleEvent(NamingEvent event, ServiceInstancesChangedListener listener) {
         String serviceName = event.getServiceName();
-        Collection<ServiceInstance> serviceInstances = event.getInstances()
+        List<ServiceInstance> serviceInstances = event.getInstances()
                 .stream()
                 .map(NacosNamingServiceUtils::toServiceInstance)
                 .collect(Collectors.toList());

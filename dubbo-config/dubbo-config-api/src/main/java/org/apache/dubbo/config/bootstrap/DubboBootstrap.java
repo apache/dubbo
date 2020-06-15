@@ -97,7 +97,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.function.ThrowableAction.execute;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
-import static org.apache.dubbo.metadata.WritableMetadataService.getExtension;
+import static org.apache.dubbo.metadata.WritableMetadataService.getDefaultExtension;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.setMetadataStorageType;
 import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
 
@@ -718,7 +718,7 @@ public class DubboBootstrap extends GenericEventListener {
      */
     private void initMetadataService() {
         startMetadataReport();
-        this.metadataService = getExtension(getMetadataType());
+        this.metadataService = getDefaultExtension();
         this.metadataServiceExporter = new ConfigurableMetadataServiceExporter(metadataService);
     }
 

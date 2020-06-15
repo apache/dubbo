@@ -17,15 +17,19 @@
 package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.compiler.support.ClassUtils;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DOT_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_CHAR_SEPERATOR;
@@ -39,6 +43,7 @@ public class MetadataInfo implements Serializable {
     private Map<String, ServiceInfo> services;
 
     public MetadataInfo() {
+        this.services = new HashMap<>();
     }
 
     public MetadataInfo(String app, String revision, Map<String, ServiceInfo> services) {
@@ -68,15 +73,6 @@ public class MetadataInfo implements Serializable {
         this.services.remove(key);
     }
 
-    public String revision() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(app);
-        for (Map.Entry<String, ServiceInfo> entry : services.entrySet()) {
-            sb.append(entry.getValue().toString());
-        }
-        return RevisionResolver.calRevision(sb.toString());
-    }
-
     public String getApp() {
         return app;
     }
@@ -86,6 +82,15 @@ public class MetadataInfo implements Serializable {
     }
 
     public String getRevision() {
+        if (revision != null) {
+            return revision;
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append(app);
+        for (Map.Entry<String, ServiceInfo> entry : services.entrySet()) {
+            sb.append(entry.getValue().toDescString());
+        }
+        this.revision = RevisionResolver.calRevision(sb.toString());
         return revision;
     }
 
@@ -159,10 +164,12 @@ public class MetadataInfo implements Serializable {
                             params.put(p, value);
                         }
                         String[] methods = url.getParameter(METHODS_KEY, (String[]) null);
-                        for (String method : methods) {
-                            String mValue = url.getMethodParameter(method, p);
-                            if (StringUtils.isNotEmpty(mValue)) {
-                                params.put(method + DOT_SEPARATOR + p, mValue);
+                        if (methods != null) {
+                            for (String method : methods) {
+                                String mValue = url.getMethodParameter(method, p);
+                                if (StringUtils.isNotEmpty(mValue)) {
+                                    params.put(method + DOT_SEPARATOR + p, mValue);
+                                }
                             }
                         }
                     }
@@ -276,6 +283,20 @@ public class MetadataInfo implements Serializable {
                 value = keyMap.get(key);
             }
             return value == null ? defaultValue : value;
+        }
+
+        public String toDescString() {
+            return this.getMatchKey() + getMethodSignaturesString() + getParams();
+        }
+
+        private String getMethodSignaturesString() {
+            SortedSet<String> methodStrings = new TreeSet();
+
+            Method[] methods = ClassUtils.forName(name).getMethods();
+            for (Method method : methods) {
+                methodStrings.add(method.toString());
+            }
+            return methodStrings.toString();
         }
     }
 }

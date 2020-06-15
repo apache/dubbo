@@ -44,6 +44,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.EXPORTED_SERVICES_REVISION_PROPERTY_NAME;
 
 public class RemoteMetadataServiceImpl {
 
@@ -59,14 +60,17 @@ public class RemoteMetadataServiceImpl {
     }
 
     public void publishMetadata(ServiceInstance instance) {
-        SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(instance.getServiceName(), ServiceInstanceMetadataUtils.getExportedServicesRevision(instance));
+        MetadataInfo metadataInfo = localMetadataService.getMetadataInfo();
+        SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(instance.getServiceName(), metadataInfo.getRevision());
         getMetadataReports().forEach(metadataReport -> {
-            metadataReport.publishAppMetadata(identifier, localMetadataService.getMetadataInfo());
+            instance.getMetadata().put(EXPORTED_SERVICES_REVISION_PROPERTY_NAME, metadataInfo.getRevision());
+            metadataReport.publishAppMetadata(identifier, metadataInfo);
         });
     }
 
     public MetadataInfo getMetadata(ServiceInstance instance) {
-        SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(instance.getServiceName(), ServiceInstanceMetadataUtils.getExportedServicesRevision(instance));
+        SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(instance.getServiceName(),
+                ServiceInstanceMetadataUtils.getExportedServicesRevision(instance));
         for (MetadataReport reporter : getMetadataReports()) {
             MetadataInfo metadataInfo = reporter.getAppMetadata(identifier, instance.getMetadata());
             if (metadataInfo != null) {

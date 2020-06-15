@@ -14,26 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.client.event.listener;
+package org.apache.dubbo.metadata;
 
-import org.apache.dubbo.registry.client.DefaultServiceInstanceTest;
-import org.apache.dubbo.registry.client.event.ServiceInstancePreRegisteredEvent;
+import org.apache.dubbo.common.URL;
 
 import org.junit.jupiter.api.Test;
 
-/**
- * {@link CustomizableServiceInstanceListener} Test
- *
- * @since 2.7.5
- */
-public class CustomizableServiceInstanceListenerTest {
-
-    private CustomizableServiceInstanceListener listener = new CustomizableServiceInstanceListener();
-
+public class MetadataInfoTest {
     @Test
-    public void testOnEvent() {
-        ServiceInstancePreRegisteredEvent event = new ServiceInstancePreRegisteredEvent(this, DefaultServiceInstanceTest.createInstance());
-        // breaking test
-        listener.onEvent(event);
+    public void revisionTest() {
+        MetadataInfo metadataInfo = new MetadataInfo();
+        metadataInfo.setApp("demo");
+
+        URL url = URL.valueOf("dubbo://10.230.11.211:20880/org.apache.dubbo.metadata.DemoService?timeout=1000&testKey=aaa");
+        MetadataInfo.ServiceInfo serviceInfo = new MetadataInfo.ServiceInfo(url);
+        metadataInfo.addService(serviceInfo);
+
+        System.out.println(serviceInfo.toDescString());
+        System.out.println(metadataInfo.getRevision());
     }
 }
