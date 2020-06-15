@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.rpc.cluster.configurator.parser;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONValidator;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -41,6 +43,11 @@ import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_CONFIG
 public class ConfigParser {
 
     public static List<URL> parseConfigurators(String rawConfig) {
+        // compatible url JsonArray, such as [ "override://xxx", "override://xxx" ]
+        if (isJsonArray(rawConfig)) {
+            return parseJsonArray(rawConfig);
+        }
+
         List<URL> urls = new ArrayList<>();
         ConfiguratorConfig configuratorConfig = parseObject(rawConfig);
 
@@ -52,6 +59,15 @@ public class ConfigParser {
         } else {
             // service scope by default.
             items.forEach(item -> urls.addAll(serviceItemToUrls(item, configuratorConfig)));
+        }
+        return urls;
+    }
+
+    private static List<URL> parseJsonArray(String rawConfig) {
+        List<URL> urls = new ArrayList<>();
+        List<String> list = JSON.parseArray(rawConfig, String.class);
+        if (!CollectionUtils.isEmpty(list)) {
+            list.forEach(u -> urls.add(URL.valueOf(u)));
         }
         return urls;
     }
@@ -199,5 +215,15 @@ public class ConfigParser {
             addresses.add(ANYHOST_VALUE);
         }
         return addresses;
+    }
+
+    private static boolean isJsonArray(String rawConfig) {
+        try {
+            JSONValidator validator = JSONValidator.from(rawConfig);
+            return validator.validate() && validator.getType() == JSONValidator.Type.Array;
+        } catch (Exception e) {
+            // ignore exception and return false
+        }
+        return false;
     }
 }

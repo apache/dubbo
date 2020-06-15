@@ -23,6 +23,7 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.service.GenericService;
 
 import org.junit.jupiter.api.Assertions;
@@ -45,6 +46,9 @@ public class EnumBak {
                 + "&timeout=" + Integer.MAX_VALUE
         );
         DemoService demo = new DemoServiceImpl();
+
+        ApplicationModel.getServiceRepository().registerService("test", DemoService.class);
+
         Invoker<DemoService> invoker = proxy.getInvoker(demo, DemoService.class, serviceurl);
         protocol.export(invoker);
 
@@ -88,6 +92,9 @@ public class EnumBak {
         URL serviceurl = URL.valueOf("dubbo://127.0.0.1:" + port + "/test?timeout=" + Integer.MAX_VALUE
         );
         DemoService demo = new DemoServiceImpl();
+
+        ApplicationModel.getServiceRepository().registerService("test", DemoService.class);
+
         Invoker<DemoService> invoker = proxy.getInvoker(demo, DemoService.class, serviceurl);
         protocol.export(invoker);
 
@@ -109,6 +116,9 @@ public class EnumBak {
         int port = NetUtils.getAvailablePort();
         URL consumerurl = URL.valueOf("dubbo://127.0.0.1:" + port + "/test?timeout=" + Integer.MAX_VALUE
         );
+
+        ApplicationModel.getServiceRepository().registerService(DemoService.class);
+
         Invoker<DemoService> reference = protocol.refer(DemoService.class, consumerurl);
         DemoService demoProxy = (DemoService) proxy.getProxy(reference);
         Type type = demoProxy.enumlength(Type.High);

@@ -23,6 +23,7 @@ import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.InvokeMode;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.service.GenericService;
 
@@ -33,6 +34,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE_ASYNC;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_ATTACHENT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.rpc.Constants.$ECHO;
 import static org.apache.dubbo.rpc.Constants.ASYNC_KEY;
 import static org.apache.dubbo.rpc.Constants.AUTO_ATTACH_INVOCATIONID_KEY;
@@ -210,5 +213,41 @@ public class RpcUtils {
             return null;
         }
         return method;
+    }
+
+    public static long getTimeout(Invocation invocation, long defaultTimeout) {
+        long timeout = defaultTimeout;
+        Object genericTimeout = invocation.getObjectAttachment(TIMEOUT_ATTACHENT_KEY);
+        if (genericTimeout != null) {
+            timeout = convertToNumber(genericTimeout, defaultTimeout);
+        }
+        return timeout;
+    }
+
+    public static long getTimeout(URL url, String methodName, RpcContext context, long defaultTimeout) {
+        long timeout = defaultTimeout;
+        Object genericTimeout = context.getObjectAttachment(TIMEOUT_KEY);
+        if (genericTimeout != null) {
+            timeout = convertToNumber(genericTimeout, defaultTimeout);
+        } else if (url != null) {
+            timeout = url.getMethodPositiveParameter(methodName, TIMEOUT_KEY, defaultTimeout);
+        }
+        return timeout;
+    }
+
+    private static long convertToNumber(Object obj, long defaultTimeout) {
+        long timeout = 0;
+        try {
+            if (obj instanceof String) {
+                timeout = Long.parseLong((String) obj);
+            } else if (obj instanceof Number) {
+                timeout = ((Number) obj).longValue();
+            } else {
+                timeout = Long.parseLong(obj.toString());
+            }
+        } catch (Exception e) {
+            // ignore
+        }
+        return timeout;
     }
 }

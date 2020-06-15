@@ -73,7 +73,7 @@ public class ServiceMetadata extends BaseServiceMetadata {
     }
 
     public void addAttachment(String key, Object value) {
-        this.attributeMap.put(key, value);
+        this.attachments.put(key, value);
     }
 
     public Class<?> getServiceType() {

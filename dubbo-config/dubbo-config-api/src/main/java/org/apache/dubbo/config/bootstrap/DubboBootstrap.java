@@ -91,6 +91,7 @@ import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static org.apache.dubbo.common.config.ConfigurationUtils.parseProperties;
 import static org.apache.dubbo.common.config.configcenter.DynamicConfiguration.getDynamicConfiguration;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
+import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.function.ThrowableAction.execute;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
@@ -661,7 +662,7 @@ public class DubboBootstrap extends GenericEventListener {
                     cc.getParameters().put(CLIENT_KEY, registryConfig.getClient());
                     cc.setProtocol(registryConfig.getProtocol());
                     cc.setPort(registryConfig.getPort());
-                    cc.setAddress(registryConfig.getAddress());
+                    cc.setAddress(getRegistryCompatibleAddress(registryConfig.getAddress()));
                     cc.setNamespace(registryConfig.getGroup());
                     cc.setUsername(registryConfig.getUsername());
                     cc.setPassword(registryConfig.getPassword());
@@ -672,6 +673,14 @@ public class DubboBootstrap extends GenericEventListener {
                     configManager.addConfigCenter(cc);
                 });
         startConfigCenter();
+    }
+
+    private String getRegistryCompatibleAddress(String registryAddress) {
+        String[] addresses = REGISTRY_SPLIT_PATTERN.split(registryAddress);
+        if (addresses == null || addresses.length == 0) {
+            throw new IllegalStateException("Invalid registry address found.");
+        }
+        return addresses[0];
     }
 
     private void loadRemoteConfigs() {
@@ -1092,9 +1101,7 @@ public class DubboBootstrap extends GenericEventListener {
 
     private void destroyServiceDiscoveries() {
         getServiceDiscoveries().forEach(serviceDiscovery -> {
-            execute(() -> {
-                serviceDiscovery.destroy();
-            });
+            execute(serviceDiscovery::destroy);
         });
         if (logger.isDebugEnabled()) {
             logger.debug(NAME + "'s all ServiceDiscoveries have been destroyed.");
