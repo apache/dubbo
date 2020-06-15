@@ -19,7 +19,10 @@ package org.apache.dubbo.metadata.report;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.config.MetadataReportConfig;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_DIRECTORY;
@@ -32,33 +35,34 @@ public class MetadataReportInstance {
 
     private static AtomicBoolean init = new AtomicBoolean(false);
 
-    private static MetadataReport metadataReport;
+    private static final List<MetadataReport> metadataReports = new ArrayList<>();
 
-    public static void init(URL metadataReportURL) {
+    public static void init(MetadataReportConfig config) {
         if (init.get()) {
             return;
         }
         MetadataReportFactory metadataReportFactory = ExtensionLoader.getExtensionLoader(MetadataReportFactory.class).getAdaptiveExtension();
-        if (METADATA_REPORT_KEY.equals(metadataReportURL.getProtocol())) {
-            String protocol = metadataReportURL.getParameter(METADATA_REPORT_KEY, DEFAULT_DIRECTORY);
-            metadataReportURL = URLBuilder.from(metadataReportURL)
+        URL url = config.toUrl();
+        if (METADATA_REPORT_KEY.equals(url.getProtocol())) {
+            String protocol = url.getParameter(METADATA_REPORT_KEY, DEFAULT_DIRECTORY);
+            url = URLBuilder.from(url)
                     .setProtocol(protocol)
                     .removeParameter(METADATA_REPORT_KEY)
                     .build();
         }
-        metadataReport = metadataReportFactory.getMetadataReport(metadataReportURL);
+        metadataReports.add(metadataReportFactory.getMetadataReport(url));
         init.set(true);
     }
 
-    public static MetadataReport getMetadataReport() {
-        return getMetadataReport(false);
+    public static List<MetadataReport> getMetadataReports() {
+        return getMetadataReports(false);
     }
 
-    public static MetadataReport getMetadataReport(boolean checked) {
+    public static List<MetadataReport> getMetadataReports(boolean checked) {
         if (checked) {
             checkInit();
         }
-        return metadataReport;
+        return metadataReports;
     }
 
     private static void checkInit() {

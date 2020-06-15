@@ -183,6 +183,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 );
             }
         }
+        // FIXME, filter out unmatched urls before notify: version, group, protocol, registry
         notify(urls);
     }
 

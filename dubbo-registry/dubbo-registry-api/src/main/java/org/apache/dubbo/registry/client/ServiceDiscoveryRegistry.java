@@ -29,6 +29,7 @@ import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
+import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.registry.client.metadata.SubscribedURLsSynthesizer;
 import org.apache.dubbo.registry.support.FailbackRegistry;
 
@@ -64,7 +65,6 @@ import static org.apache.dubbo.common.function.ThrowableAction.execute;
 import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 import static org.apache.dubbo.registry.client.ServiceDiscoveryFactory.getExtension;
-import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getMetadataStorageType;
 
 /**
  * Being different to the traditional registry, {@link ServiceDiscoveryRegistry} that is a new service-oriented
@@ -132,8 +132,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         this.serviceDiscovery = createServiceDiscovery(registryURL);
         this.subscribedServices = parseServices(registryURL.getParameter(SUBSCRIBED_SERVICE_NAMES_KEY));
         this.serviceNameMapping = ServiceNameMapping.getDefaultExtension();
-        String metadataStorageType = getMetadataStorageType(registryURL);
-        this.writableMetadataService = WritableMetadataService.getExtension(metadataStorageType);
+        this.writableMetadataService = MetadataUtils.getLocalMetadataService();
     }
 
     public ServiceDiscovery getServiceDiscovery() {
@@ -299,7 +298,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
     protected void subscribeURLs(URL url, NotifyListener listener, String serviceName) {
         // register ServiceInstancesChangedListener
         ServiceInstancesChangedListener serviceListener = serviceListeners.computeIfAbsent(serviceName,
-                k -> new ServiceInstancesChangedListener(serviceName) {
+                k -> new ServiceInstancesChangedListener(serviceName, serviceDiscovery, url) {
                     @Override
                     protected void notifyAddresses() {
                         listener.notifyServiceInstances();

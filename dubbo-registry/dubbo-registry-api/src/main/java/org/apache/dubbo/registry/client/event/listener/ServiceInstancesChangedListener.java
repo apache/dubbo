@@ -16,17 +16,19 @@
  */
 package org.apache.dubbo.registry.client.event.listener;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.event.ConditionalEventListener;
 import org.apache.dubbo.event.EventListener;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataInfo.ServiceInfo;
 import org.apache.dubbo.metadata.MetadataService;
-import org.apache.dubbo.metadata.MetadataUtils;
-import org.apache.dubbo.metadata.store.RemoteMetadataServiceImpl;
+import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
+import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
+import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -50,6 +52,8 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
 public abstract class ServiceInstancesChangedListener implements ConditionalEventListener<ServiceInstancesChangedEvent> {
 
     private final String serviceName;
+    private final ServiceDiscovery serviceDiscovery;
+    private final URL url;
 
     private List<ServiceInstance> instances;
 
@@ -61,8 +65,10 @@ public abstract class ServiceInstancesChangedListener implements ConditionalEven
 
     private Map<String, List<ServiceInstance>> serviceToInstances;
 
-    protected ServiceInstancesChangedListener(String serviceName) {
+    protected ServiceInstancesChangedListener(String serviceName, ServiceDiscovery serviceDiscovery, URL url) {
         this.serviceName = serviceName;
+        this.serviceDiscovery = serviceDiscovery;
+        this.url = url;
     }
 
     /**
@@ -131,16 +137,15 @@ public abstract class ServiceInstancesChangedListener implements ConditionalEven
 
     private MetadataInfo getMetadataInfo(ServiceInstance instance) {
         String metadataType = ServiceInstanceMetadataUtils.getMetadataStorageType(instance);
-        String cluster = ServiceInstanceMetadataUtils.getRemoteCluster(instance);
 
         MetadataInfo metadataInfo;
         try {
             if (REMOTE_METADATA_STORAGE_TYPE.equals(metadataType)) {
-                RemoteMetadataServiceImpl remoteMetadataService = MetadataUtils.getConsumerRemoteMetadataService(consumerUrl.getServiceKey());
-                metadataInfo = remoteMetadataService.getMetadata(serviceName, revision);
+                RemoteMetadataServiceImpl remoteMetadataService = MetadataUtils.getRemoteMetadataService();
+                metadataInfo = remoteMetadataService.getMetadata(instance);
             } else {
-                MetadataService localMetadataService = MetadataUtils.getLocalMetadataService();
-                metadataInfo = localMetadataService.getMetadataInfo();
+                MetadataService metadataServiceProxy = MetadataUtils.getMetadataServiceProxy(instance);
+                metadataInfo = metadataServiceProxy.getMetadataInfo();
             }
         } catch (Exception e) {
             // TODO, load metadata backup
@@ -148,7 +153,6 @@ public abstract class ServiceInstancesChangedListener implements ConditionalEven
         }
         return metadataInfo;
     }
-
 
     protected abstract void notifyAddresses();
 
@@ -159,6 +163,10 @@ public abstract class ServiceInstancesChangedListener implements ConditionalEven
      */
     public final String getServiceName() {
         return serviceName;
+    }
+
+    public URL getUrl() {
+        return url;
     }
 
     /**

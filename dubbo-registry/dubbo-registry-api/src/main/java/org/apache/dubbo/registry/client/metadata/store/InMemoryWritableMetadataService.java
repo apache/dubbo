@@ -14,13 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.store;
+package org.apache.dubbo.registry.client.metadata.store;
 
-import org.apache.dubbo.common.BaseServiceMetadata;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.metadata.MetadataInfo;
+import org.apache.dubbo.metadata.MetadataInfo.ServiceInfo;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.WritableMetadataService;
+import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
+import org.apache.dubbo.rpc.support.ProtocolUtils;
+
+import com.google.gson.Gson;
 
 import java.util.Comparator;
 import java.util.Map;
@@ -33,11 +41,12 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static java.util.Collections.emptySortedSet;
-import static java.util.Collections.unmodifiableSortedMap;
 import static java.util.Collections.unmodifiableSortedSet;
 import static org.apache.dubbo.common.URL.buildKey;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
+import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 
 /**
  * The {@link WritableMetadataService} implementation stores the metadata of Dubbo services in memory locally when they
@@ -47,7 +56,9 @@ import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
  * @see WritableMetadataService
  * @since 2.7.5
  */
-public class InMemoryWritableMetadataService extends AbstractAbstractWritableMetadataService {
+public class InMemoryWritableMetadataService implements WritableMetadataService {
+
+    final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final Lock lock = new ReentrantLock();
 
@@ -57,7 +68,8 @@ public class InMemoryWritableMetadataService extends AbstractAbstractWritableMet
      * All exported {@link URL urls} {@link Map} whose key is the return value of {@link URL#getServiceKey()} method
      * and value is the {@link SortedSet sorted set} of the {@link URL URLs}
      */
-    private final ConcurrentNavigableMap<String, SortedSet<URL>> exportedServiceURLs = new ConcurrentSkipListMap<>();
+    ConcurrentNavigableMap<String, SortedSet<URL>> exportedServiceURLs = new ConcurrentSkipListMap<>();
+    MetadataInfo metadataInfo;
 
     // ==================================================================================== //
 
@@ -68,13 +80,13 @@ public class InMemoryWritableMetadataService extends AbstractAbstractWritableMet
      * whose key is the return value of {@link URL#getServiceKey()} method and value is
      * the {@link SortedSet sorted set} of the {@link URL URLs}
      */
-    private final ConcurrentNavigableMap<String, SortedSet<URL>> subscribedServiceURLs = new ConcurrentSkipListMap<>();
+    ConcurrentNavigableMap<String, SortedSet<URL>> subscribedServiceURLs = new ConcurrentSkipListMap<>();
 
-    /**
-     * The {@link Map} caches the json of {@link ServiceDefinition} with
-     * {@link BaseServiceMetadata#buildServiceKey(String, String, String) the service key}
-     */
-    private final ConcurrentNavigableMap<String, String> serviceDefinitions = new ConcurrentSkipListMap<>();
+    ConcurrentNavigableMap<String, String> serviceDefinitions = new ConcurrentSkipListMap<>();
+
+    public InMemoryWritableMetadataService() {
+        this.metadataInfo = new MetadataInfo();
+    }
 
     @Override
     public SortedSet<String> getSubscribedURLs() {
@@ -107,11 +119,15 @@ public class InMemoryWritableMetadataService extends AbstractAbstractWritableMet
 
     @Override
     public boolean exportURL(URL url) {
+        ServiceInfo serviceInfo = new ServiceInfo(url);
+        metadataInfo.addService(serviceInfo);
         return addURL(exportedServiceURLs, url);
     }
 
     @Override
     public boolean unexportURL(URL url) {
+        ServiceInfo serviceInfo = new ServiceInfo(url);
+        metadataInfo.removeService(serviceInfo);
         return removeURL(exportedServiceURLs, url);
     }
 
@@ -126,25 +142,38 @@ public class InMemoryWritableMetadataService extends AbstractAbstractWritableMet
     }
 
     @Override
-    protected void publishServiceDefinition(String key, String json) {
-        serviceDefinitions.put(key, json);
+    public void publishServiceDefinition(URL providerUrl) {
+        try {
+            String interfaceName = providerUrl.getParameter(INTERFACE_KEY);
+            if (StringUtils.isNotEmpty(interfaceName)
+                    && !ProtocolUtils.isGeneric(providerUrl.getParameter(GENERIC_KEY))) {
+                Class interfaceClass = Class.forName(interfaceName);
+                ServiceDefinition serviceDefinition = ServiceDefinitionBuilder.build(interfaceClass);
+                Gson gson = new Gson();
+                String data = gson.toJson(serviceDefinition);
+                serviceDefinitions.put(providerUrl.getServiceKey(), data);
+                return;
+            }
+            logger.error("publishProvider interfaceName is empty . providerUrl: " + providerUrl.toFullString());
+        } catch (ClassNotFoundException e) {
+            //ignore error
+            logger.error("publishProvider getServiceDescriptor error. providerUrl: " + providerUrl.toFullString(), e);
+        }
     }
 
     @Override
-    public String getServiceDefinition(String serviceDefinitionKey) {
-        return serviceDefinitions.get(serviceDefinitionKey);
+    public String getServiceDefinition(String interfaceName, String version, String group) {
+        return serviceDefinitions.get(URL.buildKey(interfaceName, group, version));
     }
 
-    public Map<String, SortedSet<URL>> getExportedServiceURLs() {
-        return unmodifiableSortedMap(exportedServiceURLs);
+    @Override
+    public String getServiceDefinition(String serviceKey) {
+        return serviceDefinitions.get(serviceKey);
     }
 
-    public Map<String, SortedSet<URL>> getSubscribedServiceURLs() {
-        return unmodifiableSortedMap(subscribedServiceURLs);
-    }
-
-    public Map<String, String> getServiceDefinitions() {
-        return unmodifiableSortedMap(serviceDefinitions);
+    @Override
+    public MetadataInfo getMetadataInfo() {
+        return metadataInfo;
     }
 
     boolean addURL(Map<String, SortedSet<URL>> serviceURLs, URL url) {
@@ -209,6 +238,7 @@ public class InMemoryWritableMetadataService extends AbstractAbstractWritableMet
                 || protocol.equals(url.getParameter(PROTOCOL_KEY))
                 || protocol.equals(url.getProtocol());
     }
+
 
     static class URLComparator implements Comparator<URL> {
 
