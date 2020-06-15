@@ -23,7 +23,6 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.client.ServiceInstance;
-import org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataService;
 import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -55,27 +54,16 @@ public class MetadataUtils {
         if (remoteMetadataService == null) {
             synchronized (REMOTE_LOCK) {
                 if (remoteMetadataService == null) {
-                    remoteMetadataService = new RemoteMetadataServiceImpl(getLocalMetadataService());
+                    remoteMetadataService = new RemoteMetadataServiceImpl(WritableMetadataService.getDefaultExtension());
                 }
             }
         }
         return remoteMetadataService;
     }
 
-    public static WritableMetadataService getLocalMetadataService() {
-        if (localMetadataService == null) {
-            synchronized (LOCK) {
-                if (localMetadataService == null) {
-                    localMetadataService = new InMemoryWritableMetadataService();
-                }
-            }
-        }
-        return localMetadataService;
-    }
-
     public static void publishServiceDefinition(URL url) {
         // store in local
-        getLocalMetadataService().publishServiceDefinition(url);
+        WritableMetadataService.getDefaultExtension().publishServiceDefinition(url);
         // send to remote
         getRemoteMetadataService().publishServiceDefinition(url);
     }

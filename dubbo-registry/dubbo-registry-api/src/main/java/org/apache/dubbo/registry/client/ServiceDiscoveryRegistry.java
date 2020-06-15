@@ -29,7 +29,6 @@ import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
-import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.registry.client.metadata.SubscribedURLsSynthesizer;
 import org.apache.dubbo.registry.support.FailbackRegistry;
 
@@ -132,7 +131,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         this.serviceDiscovery = createServiceDiscovery(registryURL);
         this.subscribedServices = parseServices(registryURL.getParameter(SUBSCRIBED_SERVICE_NAMES_KEY));
         this.serviceNameMapping = ServiceNameMapping.getDefaultExtension();
-        this.writableMetadataService = MetadataUtils.getLocalMetadataService();
+        this.writableMetadataService = WritableMetadataService.getDefaultExtension();
     }
 
     public ServiceDiscovery getServiceDiscovery() {

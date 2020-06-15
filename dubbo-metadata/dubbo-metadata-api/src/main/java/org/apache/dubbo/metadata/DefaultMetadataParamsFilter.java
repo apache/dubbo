@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.metadata;
 
+import org.apache.dubbo.common.extension.Activate;
+
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
@@ -35,6 +37,7 @@ import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.WARMUP_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.WEIGHT_KEY;
 
+@Activate
 public class DefaultMetadataParamsFilter implements MetadataParamsFilter {
     @Override
     public String[] include() {
