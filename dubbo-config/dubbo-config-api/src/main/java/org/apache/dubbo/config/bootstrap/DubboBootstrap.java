@@ -66,6 +66,7 @@ import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceDiscoveryRegistry;
 import org.apache.dubbo.registry.client.ServiceInstance;
+import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
@@ -1085,7 +1086,35 @@ public class DubboBootstrap extends GenericEventListener {
 
         ServiceInstance serviceInstance = createServiceInstance(serviceName, host, port);
 
+        preRegisterServiceInstance(serviceInstance);
+
         getServiceDiscoveries().forEach(serviceDiscovery -> serviceDiscovery.register(serviceInstance));
+    }
+
+    /**
+     * Pre-register {@link ServiceInstance the service instance}
+     *
+     * @param serviceInstance {@link ServiceInstance the service instance}
+     * @since 2.7.8
+     */
+    private void preRegisterServiceInstance(ServiceInstance serviceInstance) {
+        customizeServiceInstance(serviceInstance);
+    }
+
+    /**
+     * Customize {@link ServiceInstance the service instance}
+     *
+     * @param serviceInstance {@link ServiceInstance the service instance}
+     * @since 2.7.8
+     */
+    private void customizeServiceInstance(ServiceInstance serviceInstance) {
+        ExtensionLoader<ServiceInstanceCustomizer> loader =
+                ExtensionLoader.getExtensionLoader(ServiceInstanceCustomizer.class);
+        // FIXME, sort customizer before apply
+        loader.getSupportedExtensionInstances().forEach(customizer -> {
+            // customizes
+            customizer.customize(serviceInstance);
+        });
     }
 
     private URL selectMetadataServiceExportedURL() {
