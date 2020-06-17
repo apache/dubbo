@@ -20,6 +20,7 @@ package org.apache.dubbo.common.constants;
 import org.apache.dubbo.common.URL;
 
 import java.net.NetworkInterface;
+import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.regex.Pattern;
 
@@ -43,6 +44,11 @@ public interface CommonConstants {
     String DEFAULT_DUBBO_PROPERTIES = "dubbo.properties";
 
     String ANY_VALUE = "*";
+
+    /**
+     * @since 2.7.8
+     */
+    char COMMA_SEPARATOR_CHAR = ',';
 
     String COMMA_SEPARATOR = ",";
 
@@ -313,5 +319,28 @@ public interface CommonConstants {
     String INTERFACES = "interfaces";
 
     String SSL_ENABLED_KEY = "ssl-enabled";
+
+
+    /**
+     * The parameter key for the class path of the ServiceNameMapping {@link Properties} file
+     *
+     * @since 2.7.8
+     */
+    String SERVICE_NAME_MAPPING_PROPERTIES_FILE_KEY = "service-name-mapping.properties-path";
+
+    /**
+     * The default class path of the ServiceNameMapping {@link Properties} file
+     *
+     * @since 2.7.8
+     */
+    String DEFAULT_SERVICE_NAME_MAPPING_PROPERTIES_PATH = "META-INF/dubbo/service-name-mapping.properties";
+
+    /**
+     * The parameter key of the subscribed services. If there is a multiple-values, the {@link #COMMA_SEPARATOR "comma"}
+     * is the separator.
+     *
+     * @since 2.7.8
+     */
+    String SUBSCRIBED_SERVICES_KEY = "subscribed-services";
 
 }

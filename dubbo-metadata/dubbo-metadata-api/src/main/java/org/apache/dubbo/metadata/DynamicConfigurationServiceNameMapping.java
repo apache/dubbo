@@ -36,6 +36,8 @@ import static org.apache.dubbo.rpc.model.ApplicationModel.getName;
 
 /**
  * The {@link ServiceNameMapping} implementation based on {@link DynamicConfiguration}
+ *
+ * @since 2.7.5
  */
 public class DynamicConfigurationServiceNameMapping implements ServiceNameMapping {
 
@@ -44,6 +46,12 @@ public class DynamicConfigurationServiceNameMapping implements ServiceNameMappin
     private static final List<String> IGNORED_SERVICE_INTERFACES = asList(MetadataService.class.getName());
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
+
+    /**
+     * The priority of {@link DynamicConfigurationServiceNameMapping} is
+     * lower than {@link ParameterizedServiceNameMapping}
+     */
+    static final int PRIORITY = PropertiesFileServiceNameMapping.PRIORITY + 1;
 
     @Override
     public void map(URL exportedURL) {
@@ -112,5 +120,10 @@ public class DynamicConfigurationServiceNameMapping implements ServiceNameMappin
                 logger.warn(e.getMessage(), e);
             }
         }
+    }
+
+    @Override
+    public int getPriority() {
+        return PRIORITY;
     }
 }
