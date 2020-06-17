@@ -24,8 +24,6 @@ import org.apache.dubbo.metadata.ServiceNameMapping;
 
 import java.util.List;
 
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.metadata.ServiceNameMapping.getDefaultExtension;
 
 /**
@@ -45,11 +43,7 @@ public class ServiceNameMappingListener implements EventListener<ServiceConfigEx
         ServiceConfig serviceConfig = event.getServiceConfig();
         List<URL> exportedURLs = serviceConfig.getExportedUrls();
         exportedURLs.forEach(url -> {
-            String serviceInterface = url.getServiceInterface();
-            String group = url.getParameter(GROUP_KEY);
-            String version = url.getParameter(VERSION_KEY);
-            String protocol = url.getProtocol();
-            serviceNameMapping.map(serviceInterface, group, version, protocol);
+            serviceNameMapping.map(url);
         });
     }
 }
