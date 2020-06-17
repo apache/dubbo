@@ -126,7 +126,11 @@ public class ConsulRegistry extends FailbackRegistry {
 
     @Override
     public void doUnregister(URL url) {
-        client.agentServiceDeregister(buildId(url));
+        if (token == null) {
+            client.agentServiceDeregister(buildId(url));
+        } else {
+            client.agentServiceDeregister(buildId(url), token);
+        }
     }
 
     @Override
