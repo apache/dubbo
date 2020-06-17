@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.metadata;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -27,6 +28,8 @@ import java.util.Set;
 
 import static java.lang.String.valueOf;
 import static java.util.Arrays.asList;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.utils.CollectionUtils.isNotEmpty;
 import static org.apache.dubbo.common.utils.StringUtils.SLASH;
 import static org.apache.dubbo.rpc.model.ApplicationModel.getName;
@@ -43,11 +46,17 @@ public class DynamicConfigurationServiceNameMapping implements ServiceNameMappin
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Override
-    public void map(String serviceInterface, String group, String version, String protocol) {
+    public void map(URL exportedURL) {
+
+        String serviceInterface = exportedURL.getServiceInterface();
 
         if (IGNORED_SERVICE_INTERFACES.contains(serviceInterface)) {
             return;
         }
+
+        String group = exportedURL.getParameter(GROUP_KEY);
+        String version = exportedURL.getParameter(VERSION_KEY);
+        String protocol = exportedURL.getProtocol();
 
         DynamicConfiguration dynamicConfiguration = DynamicConfiguration.getDynamicConfiguration();
 
@@ -66,9 +75,14 @@ public class DynamicConfigurationServiceNameMapping implements ServiceNameMappin
     }
 
     @Override
-    public Set<String> get(String serviceInterface, String group, String version, String protocol) {
+    public Set<String> get(URL subscribedURL) {
 
         DynamicConfiguration dynamicConfiguration = DynamicConfiguration.getDynamicConfiguration();
+
+        String serviceInterface = subscribedURL.getServiceInterface();
+        String group = subscribedURL.getParameter(GROUP_KEY);
+        String version = subscribedURL.getParameter(VERSION_KEY);
+        String protocol = subscribedURL.getProtocol();
 
         Set<String> serviceNames = new LinkedHashSet<>();
         execute(() -> {

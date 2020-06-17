@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.metadata;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
 import org.apache.dubbo.config.ApplicationConfig;
@@ -28,10 +29,13 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import static java.util.Arrays.asList;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 import static org.apache.dubbo.metadata.DynamicConfigurationServiceNameMapping.buildGroup;
 import static org.apache.dubbo.metadata.ServiceNameMapping.getDefaultExtension;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * {@link DynamicConfigurationServiceNameMapping} Test
@@ -62,6 +66,17 @@ public class DynamicConfigurationServiceNameMappingTest {
     }
 
     @Test
+    public void testAndGetOnFailed() {
+        assertThrows(UnsupportedOperationException.class, () -> {
+            serviceNameMapping.map(null, null, null, null);
+        });
+
+        assertThrows(UnsupportedOperationException.class, () -> {
+            serviceNameMapping.get(null, null, null, null);
+        });
+    }
+
+    @Test
     public void testMapAndGet() {
 
         String serviceName = "test";
@@ -74,14 +89,18 @@ public class DynamicConfigurationServiceNameMappingTest {
         String version = null;
         String protocol = null;
 
-        serviceNameMapping.map(serviceInterface, group, version, protocol);
+        URL url = URL.valueOf("dubbo://127.0.0.1:20880").setServiceInterface(serviceInterface)
+                .addParameter(GROUP_KEY, group)
+                .addParameter(VERSION_KEY, version);
+
+        serviceNameMapping.map(url);
 
         ApplicationModel.getConfigManager().removeConfig(new ApplicationConfig(serviceName));
         ApplicationModel.getConfigManager().setApplication(new ApplicationConfig(serviceName2));
 
-        serviceNameMapping.map(serviceInterface, group, version, protocol);
+        serviceNameMapping.map(url);
 
-        Set<String> serviceNames = serviceNameMapping.get(serviceInterface, group, version, protocol);
+        Set<String> serviceNames = serviceNameMapping.get(url);
 
         assertEquals(new TreeSet(asList(serviceName, serviceName2)), serviceNames);
 
