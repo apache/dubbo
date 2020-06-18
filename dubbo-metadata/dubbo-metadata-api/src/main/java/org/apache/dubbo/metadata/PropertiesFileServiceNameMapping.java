@@ -141,4 +141,8 @@ public class PropertiesFileServiceNameMapping extends ReadOnlyServiceNameMapping
         return propertyPath;
     }
 
+    @Override
+    public int getPriority() {
+        return PRIORITY;
+    }
 }

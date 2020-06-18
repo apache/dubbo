@@ -39,35 +39,39 @@ import static org.apache.dubbo.common.utils.CollectionUtils.isNotEmpty;
  */
 public class CompositeServiceNameMapping implements ServiceNameMapping {
 
-    private List<ServiceNameMapping> serviceNameMappings;
+    private volatile List<ServiceNameMapping> serviceNameMappings;
 
-    public CompositeServiceNameMapping() {
-        this.serviceNameMappings = initServiceNameMappings();
-    }
+    private List<ServiceNameMapping> getServiceNameMappings() {
+        if (this.serviceNameMappings == null) {
+            synchronized (this) {
+                if (this.serviceNameMappings == null) {
+                    Set<ServiceNameMapping> serviceNameMappings = getExtensionLoader(ServiceNameMapping.class)
+                            .getSupportedExtensionInstances();
 
-    private List<ServiceNameMapping> initServiceNameMappings() {
-        Set<ServiceNameMapping> serviceNameMappings = getExtensionLoader(ServiceNameMapping.class)
-                .getSupportedExtensionInstances();
+                    Iterator<ServiceNameMapping> iterator = serviceNameMappings.iterator();
 
-        Iterator<ServiceNameMapping> iterator = serviceNameMappings.iterator();
-
-        while (iterator.hasNext()) {
-            ServiceNameMapping serviceNameMapping = iterator.next();
-            if (this.getClass().equals(serviceNameMapping.getClass())) {
-                iterator.remove(); // remove self
+                    while (iterator.hasNext()) {
+                        ServiceNameMapping serviceNameMapping = iterator.next();
+                        if (this.getClass().equals(serviceNameMapping.getClass())) {
+                            iterator.remove(); // Exclude self
+                        }
+                    }
+                    this.serviceNameMappings = new LinkedList<>(serviceNameMappings);
+                }
             }
         }
-
-        return new LinkedList<>(serviceNameMappings);
+        return this.serviceNameMappings;
     }
 
     @Override
     public void map(URL exportedURL) {
+        List<ServiceNameMapping> serviceNameMappings = getServiceNameMappings();
         serviceNameMappings.forEach(serviceNameMapping -> serviceNameMapping.map(exportedURL));
     }
 
     @Override
     public Set<String> get(URL subscribedURL) {
+        List<ServiceNameMapping> serviceNameMappings = getServiceNameMappings();
         Set<String> serviceNames = null;
         for (ServiceNameMapping serviceNameMapping : serviceNameMappings) {
             serviceNames = serviceNameMapping.get(subscribedURL);
@@ -76,5 +80,10 @@ public class CompositeServiceNameMapping implements ServiceNameMapping {
             }
         }
         return serviceNames == null ? emptySet() : unmodifiableSet(serviceNames);
+    }
+
+    @Override
+    public int getPriority() {
+        return MIN_PRIORITY;
     }
 }
