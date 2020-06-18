@@ -19,18 +19,11 @@ package org.apache.dubbo.metadata;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.StringUtils;
 
-import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 
-import static java.util.Collections.emptySet;
-import static java.util.Collections.singleton;
-import static java.util.Collections.unmodifiableSet;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR_CHAR;
-import static org.apache.dubbo.common.utils.StringUtils.isBlank;
-import static org.apache.dubbo.common.utils.StringUtils.trim;
+import static org.apache.dubbo.common.utils.StringUtils.splitToSet;
 
 /**
  * Read-Only implementation of {@link ServiceNameMapping}
@@ -47,16 +40,6 @@ public abstract class ReadOnlyServiceNameMapping implements ServiceNameMapping {
     }
 
     protected Set<String> getValue(String rawValue) {
-        String value = trim(rawValue);
-        List<String> values = StringUtils.splitToList(value, COMMA_SEPARATOR_CHAR);
-        if (values.isEmpty()) {
-            return isBlank(value) ? emptySet() : singleton(value);
-        } else {
-            Set<String> result = new LinkedHashSet<>();
-            for (String v : values) {
-                result.add(trim(v));
-            }
-            return unmodifiableSet(result);
-        }
+        return splitToSet(rawValue, COMMA_SEPARATOR_CHAR, true);
     }
 }

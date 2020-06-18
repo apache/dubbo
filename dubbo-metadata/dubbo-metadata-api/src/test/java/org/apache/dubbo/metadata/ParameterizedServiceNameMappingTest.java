@@ -27,7 +27,7 @@ import java.util.Set;
 
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
-import static org.apache.dubbo.common.constants.CommonConstants.SUBSCRIBED_SERVICES_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.SUBSCRIBED_SERVICE_NAMES_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
@@ -58,10 +58,10 @@ public class ParameterizedServiceNameMappingTest {
         Set<String> serviceNames = serviceNameMapping.get(BASE_URL);
         assertEquals(emptySet(), serviceNames);
 
-        serviceNames = serviceNameMapping.get(BASE_URL.addParameter(SUBSCRIBED_SERVICES_KEY, "    Service1     "));
+        serviceNames = serviceNameMapping.get(BASE_URL.addParameter(SUBSCRIBED_SERVICE_NAMES_KEY, "    Service1     "));
         assertEquals(singleton("Service1"), serviceNames);
 
-        serviceNames = serviceNameMapping.get(BASE_URL.addParameter(SUBSCRIBED_SERVICES_KEY, "Service1 ,  Service2   "));
+        serviceNames = serviceNameMapping.get(BASE_URL.addParameter(SUBSCRIBED_SERVICE_NAMES_KEY, "Service1 ,  Service2   "));
         assertEquals(new LinkedHashSet(Arrays.asList("Service1", "Service2")), serviceNames);
     }
 }

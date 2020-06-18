@@ -35,7 +35,9 @@ public class NacosDubboServiceConsumerBootstrap {
         DubboBootstrap bootstrap = DubboBootstrap.getInstance()
                 .application(applicationConfig)
                 // Nacos in service registry type
-                .registry("nacos", builder -> builder.address("nacos://127.0.0.1:8848?registry-type=service").useAsConfigCenter(true).useAsMetadataCenter(true))
+                .registry("nacos", builder -> builder.address("nacos://127.0.0.1:8848?registry-type=service")
+                        .useAsConfigCenter(true)
+                        .useAsMetadataCenter(true))
                 // Nacos in traditional registry type
 //                .registry("nacos-traditional", builder -> builder.address("nacos://127.0.0.1:8848"))
                 .reference("echo", builder -> builder.interfaceClass(EchoService.class).protocol("dubbo"))

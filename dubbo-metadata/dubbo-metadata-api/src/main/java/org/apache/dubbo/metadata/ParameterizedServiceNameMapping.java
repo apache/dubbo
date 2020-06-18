@@ -20,7 +20,7 @@ import org.apache.dubbo.common.URL;
 
 import java.util.Set;
 
-import static org.apache.dubbo.common.constants.CommonConstants.SUBSCRIBED_SERVICES_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.SUBSCRIBED_SERVICE_NAMES_KEY;
 
 /**
  * The parameterized implementation of {@link ServiceNameMapping}
@@ -37,7 +37,7 @@ public class ParameterizedServiceNameMapping extends ReadOnlyServiceNameMapping 
 
     @Override
     public Set<String> get(URL subscribedURL) {
-        return getValue(subscribedURL.getParameter(SUBSCRIBED_SERVICES_KEY));
+        return getValue(subscribedURL.getParameter(SUBSCRIBED_SERVICE_NAMES_KEY));
     }
 
     @Override

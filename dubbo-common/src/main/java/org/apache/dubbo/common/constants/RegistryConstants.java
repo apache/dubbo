@@ -76,6 +76,8 @@ public interface RegistryConstants {
 
     /**
      * The parameter key of the subscribed service names for Service-Oriented Registry
+     * <p>
+     * If there is a multiple-values, the  "comma" is the separator.
      *
      * @since 2.7.5
      */

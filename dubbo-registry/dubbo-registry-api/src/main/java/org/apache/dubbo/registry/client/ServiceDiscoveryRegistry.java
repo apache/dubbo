@@ -22,7 +22,6 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.ServiceNameMapping;
@@ -57,12 +56,8 @@ import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
-import static java.util.Collections.emptySet;
-import static java.util.Collections.unmodifiableSet;
-import static java.util.stream.Collectors.toSet;
-import static java.util.stream.Stream.of;
 import static org.apache.dubbo.common.URLBuilder.from;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR_CHAR;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PID_KEY;
@@ -79,7 +74,7 @@ import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoad
 import static org.apache.dubbo.common.function.ThrowableAction.execute;
 import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
 import static org.apache.dubbo.common.utils.CollectionUtils.isNotEmpty;
-import static org.apache.dubbo.common.utils.StringUtils.isBlank;
+import static org.apache.dubbo.common.utils.StringUtils.splitToSet;
 import static org.apache.dubbo.metadata.MetadataService.toURLs;
 import static org.apache.dubbo.registry.client.ServiceDiscoveryFactory.getExtension;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getExportedServicesRevision;
@@ -129,7 +124,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
     private final ServiceDiscovery serviceDiscovery;
 
-    private final Set<String> subscribedServices;
+    private Set<String> subscribedServices;
 
     private final ServiceNameMapping serviceNameMapping;
 
@@ -151,7 +146,6 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
     public ServiceDiscoveryRegistry(URL registryURL) {
         super(registryURL);
         this.serviceDiscovery = createServiceDiscovery(registryURL);
-        this.subscribedServices = parseServices(registryURL.getParameter(SUBSCRIBED_SERVICE_NAMES_KEY));
         this.serviceNameMapping = ServiceNameMapping.getDefaultExtension();
         String metadataStorageType = getMetadataStorageType(registryURL);
         this.writableMetadataService = WritableMetadataService.getExtension(metadataStorageType);
@@ -169,12 +163,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
      * @return non-null
      */
     public static Set<String> getSubscribedServices(URL registryURL) {
-        String subscribedServiceNames = registryURL.getParameter(SUBSCRIBED_SERVICE_NAMES_KEY);
-        return isBlank(subscribedServiceNames) ? emptySet() :
-                unmodifiableSet(of(subscribedServiceNames.split(","))
-                        .map(String::trim)
-                        .filter(StringUtils::isNotEmpty)
-                        .collect(toSet()));
+        return parseServices(registryURL.getParameter(SUBSCRIBED_SERVICE_NAMES_KEY));
     }
 
     /**
@@ -326,9 +315,6 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         writableMetadataService.subscribeURL(url);
 
         Set<String> serviceNames = getServices(url);
-        if (CollectionUtils.isEmpty(serviceNames)) {
-            throw new IllegalStateException("Should has at least one way to know which services this interface belongs to, subscription url: " + url);
-        }
 
         serviceNames.forEach(serviceName -> subscribeURLs(url, listener, serviceName));
 
@@ -805,9 +791,11 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
      *
      * @param subscribedURL
      * @return
+     * @throws IllegalStateException If no service name is not found
      */
-    protected Set<String> getServices(URL subscribedURL) {
-        Set<String> subscribedServices = new LinkedHashSet<>();
+    protected Set<String> getServices(URL subscribedURL) throws IllegalStateException {
+
+        Set<String> subscribedServices = null;
 
         String serviceNames = subscribedURL.getParameter(PROVIDED_BY);
         if (StringUtils.isNotEmpty(serviceNames)) {
@@ -816,19 +804,21 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
         if (isEmpty(subscribedServices)) {
             subscribedServices = findMappedServices(subscribedURL);
-            if (isEmpty(subscribedServices)) {
-                subscribedServices = getSubscribedServices();
-            }
         }
+
+        if (isEmpty(subscribedServices)) {
+            subscribedServices = getSubscribedServices();
+        }
+
+        if (isEmpty(subscribedServices)) {
+            throw new IllegalStateException("Should has at least one way to know which services this interface belongs to, subscription url: " + subscribedURL);
+        }
+
         return subscribedServices;
     }
 
     public static Set<String> parseServices(String literalServices) {
-        return isBlank(literalServices) ? emptySet() :
-                unmodifiableSet(of(literalServices.split(","))
-                        .map(String::trim)
-                        .filter(StringUtils::isNotEmpty)
-                        .collect(toSet()));
+        return splitToSet(literalServices, COMMA_SEPARATOR_CHAR, true);
     }
 
     /**
@@ -837,21 +827,20 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
      * @return non-null
      */
     public Set<String> getSubscribedServices() {
+        if (subscribedServices == null) {
+            subscribedServices = findMappedServices(getUrl());
+        }
         return subscribedServices;
     }
 
     /**
      * Get the mapped services name by the specified {@link URL}
      *
-     * @param subscribedURL
-     * @return
+     * @param url the specified {@link URL}
+     * @return empty {@link Set} if not found
      */
-    protected Set<String> findMappedServices(URL subscribedURL) {
-        String serviceInterface = subscribedURL.getServiceInterface();
-        String group = subscribedURL.getParameter(GROUP_KEY);
-        String version = subscribedURL.getParameter(VERSION_KEY);
-        String protocol = subscribedURL.getParameter(PROTOCOL_KEY, DUBBO_PROTOCOL);
-        return serviceNameMapping.get(serviceInterface, group, version, protocol);
+    protected Set<String> findMappedServices(URL url) {
+        return serviceNameMapping.get(url);
     }
 
     /**

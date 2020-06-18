@@ -31,7 +31,7 @@ import java.util.Set;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.SUBSCRIBED_SERVICES_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.SUBSCRIBED_SERVICE_NAMES_KEY;
 import static org.apache.dubbo.metadata.DynamicConfigurationServiceNameMapping.buildGroup;
 import static org.apache.dubbo.metadata.ServiceNameMapping.getDefaultExtension;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -106,7 +106,7 @@ public class ServiceNameMappingTest {
         assertEquals(singleton("Service1"), serviceNames);
 
 
-        url = url.addParameter(SUBSCRIBED_SERVICES_KEY, "A , B , C  ");
+        url = url.addParameter(SUBSCRIBED_SERVICE_NAMES_KEY, "A , B , C  ");
         serviceNames = serviceNameMapping.get(url);
         assertEquals(new LinkedHashSet<>(asList("A", "B", "C")), serviceNames);
 

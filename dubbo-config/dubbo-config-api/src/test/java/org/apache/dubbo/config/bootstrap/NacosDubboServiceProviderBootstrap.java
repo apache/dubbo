@@ -21,6 +21,8 @@ import org.apache.dubbo.config.bootstrap.rest.UserService;
 import org.apache.dubbo.config.bootstrap.rest.UserServiceImpl;
 
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_TYPE;
 
 /**
  * Dubbo Provider Bootstrap
@@ -35,7 +37,10 @@ public class NacosDubboServiceProviderBootstrap {
         DubboBootstrap.getInstance()
                 .application(applicationConfig)
                 // Nacos in service registry type
-                .registry("nacos", builder -> builder.address("nacos://127.0.0.1:8848?registry-type=service").useAsConfigCenter(true).useAsMetadataCenter(true))
+                .registry("nacos", builder -> builder.address("nacos://127.0.0.1:8848")
+                        .parameter(REGISTRY_TYPE_KEY, SERVICE_REGISTRY_TYPE)
+                        .useAsConfigCenter(true)
+                        .useAsMetadataCenter(true))
                 // Nacos in traditional registry type
 //                .registry("nacos-traditional", builder -> builder.address("nacos://127.0.0.1:8848"))
                 .protocol("dubbo", builder -> builder.port(20885).name("dubbo"))

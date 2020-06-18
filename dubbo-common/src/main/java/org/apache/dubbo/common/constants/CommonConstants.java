@@ -335,12 +335,4 @@ public interface CommonConstants {
      */
     String DEFAULT_SERVICE_NAME_MAPPING_PROPERTIES_PATH = "META-INF/dubbo/service-name-mapping.properties";
 
-    /**
-     * The parameter key of the subscribed services. If there is a multiple-values, the {@link #COMMA_SEPARATOR "comma"}
-     * is the separator.
-     *
-     * @since 2.7.8
-     */
-    String SUBSCRIBED_SERVICES_KEY = "subscribed-services";
-
 }
