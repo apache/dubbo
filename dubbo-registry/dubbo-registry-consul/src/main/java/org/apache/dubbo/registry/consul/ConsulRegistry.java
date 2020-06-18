@@ -65,6 +65,7 @@ import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.DEREGISTER
 import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.SERVICE_TAG;
 import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.URL_META_KEY;
 import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.WATCH_TIMEOUT;
+import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 
 /**
  * registry center implementation for consul
@@ -78,10 +79,15 @@ public class ConsulRegistry extends FailbackRegistry {
             new NamedThreadFactory("dubbo-consul-notifier", true));
     private ConcurrentMap<URL, ConsulNotifier> notifiers = new ConcurrentHashMap<>();
     private ScheduledExecutorService ttlConsulCheckExecutor;
+    /**
+     * The ACL token
+     */
+    private String token;
 
 
     public ConsulRegistry(URL url) {
         super(url);
+        token = url.getParameter(TOKEN_KEY, (String) null);
         String host = url.getHost();
         int port = url.getPort() != 0 ? url.getPort() : DEFAULT_PORT;
         client = new ConsulClient(host, port);
@@ -102,7 +108,11 @@ public class ConsulRegistry extends FailbackRegistry {
 
     @Override
     public void doRegister(URL url) {
-        client.agentServiceRegister(buildService(url));
+        if (token == null) {
+            client.agentServiceRegister(buildService(url));
+        } else {
+            client.agentServiceRegister(buildService(url), token);
+        }
     }
 
     @Override
@@ -116,7 +126,11 @@ public class ConsulRegistry extends FailbackRegistry {
 
     @Override
     public void doUnregister(URL url) {
-        client.agentServiceDeregister(buildId(url));
+        if (token == null) {
+            client.agentServiceDeregister(buildId(url));
+        } else {
+            client.agentServiceDeregister(buildId(url), token);
+        }
     }
 
     @Override
@@ -198,12 +212,16 @@ public class ConsulRegistry extends FailbackRegistry {
         for (URL url : getRegistered()) {
             String checkId = buildId(url);
             try {
-                client.agentCheckPass("service:" + checkId);
+                if (token == null) {
+                    client.agentCheckPass("service:" + checkId);
+                } else {
+                    client.agentCheckPass("service:" + checkId, null, token);
+                }
                 if (logger.isDebugEnabled()) {
                     logger.debug("check pass for url: " + url + " with check id: " + checkId);
                 }
             } catch (Throwable t) {
-                logger.warn("fail to check pass for url: " + url + ", check id is: " + checkId);
+                logger.warn("fail to check pass for url: " + url + ", check id is: " + checkId, t);
             }
         }
     }
@@ -213,6 +231,7 @@ public class ConsulRegistry extends FailbackRegistry {
                 .setTag(SERVICE_TAG)
                 .setQueryParams(new QueryParams(watchTimeout, index))
                 .setPassing(true)
+                .setToken(token)
                 .build();
         return client.getHealthServices(service, request);
     }
@@ -220,6 +239,7 @@ public class ConsulRegistry extends FailbackRegistry {
     private Response<Map<String, List<String>>> getAllServices(long index, int watchTimeout) {
         CatalogServicesRequest request = CatalogServicesRequest.newBuilder()
                 .setQueryParams(new QueryParams(watchTimeout, index))
+                .setToken(token)
                 .build();
         return client.getCatalogServices(request);
     }
