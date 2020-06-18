@@ -45,8 +45,8 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -86,7 +86,7 @@ public class ConsulRegistry extends FailbackRegistry {
         int port = url.getPort() != 0 ? url.getPort() : DEFAULT_PORT;
         client = new ConsulClient(host, port);
         checkPassInterval = url.getParameter(CHECK_PASS_INTERVAL, DEFAULT_CHECK_PASS_INTERVAL);
-        ttlConsulCheckExecutor = Executors.newSingleThreadScheduledExecutor();
+        ttlConsulCheckExecutor = new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("Ttl-Consul-Check-Executor", true));
         ttlConsulCheckExecutor.scheduleAtFixedRate(this::checkPass, checkPassInterval / 8,
                 checkPassInterval / 8, TimeUnit.MILLISECONDS);
     }
