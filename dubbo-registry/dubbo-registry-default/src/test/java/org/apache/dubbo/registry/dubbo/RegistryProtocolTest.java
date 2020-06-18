@@ -30,7 +30,6 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.cluster.support.FailfastCluster;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
@@ -86,7 +85,7 @@ public class RegistryProtocolTest {
     public void testExportUrlNull() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             RegistryProtocol registryProtocol = getRegistryProtocol();
-            registryProtocol.setCluster(new FailfastCluster());
+//            registryProtocol.setCluster(new FailfastCluster());
 
             Protocol dubboProtocol = DubboProtocol.getDubboProtocol();
             registryProtocol.setProtocol(dubboProtocol);
@@ -99,7 +98,7 @@ public class RegistryProtocolTest {
     @Test
     public void testExport() {
         RegistryProtocol registryProtocol = getRegistryProtocol();
-        registryProtocol.setCluster(new FailfastCluster());
+//        registryProtocol.setCluster(new FailfastCluster());
         registryProtocol.setRegistryFactory(ExtensionLoader.getExtensionLoader(RegistryFactory.class).getAdaptiveExtension());
 
         Protocol dubboProtocol = DubboProtocol.getDubboProtocol();

@@ -36,7 +36,7 @@ import static org.apache.dubbo.rpc.cluster.Constants.MOCK_PROTOCOL;
 public class MockInvokersSelector extends AbstractRouter {
 
     public static final String NAME = "MOCK_ROUTER";
-    private static final int MOCK_INVOKERS_DEFAULT_PRIORITY = Integer.MIN_VALUE;
+    private static final int MOCK_INVOKERS_DEFAULT_PRIORITY = -100;
 
     public MockInvokersSelector() {
         this.priority = MOCK_INVOKERS_DEFAULT_PRIORITY;
