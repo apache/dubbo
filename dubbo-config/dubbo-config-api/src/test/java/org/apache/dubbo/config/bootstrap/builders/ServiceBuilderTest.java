@@ -91,22 +91,22 @@ class ServiceBuilderTest {
             builder.generic("illegal").build();
         });
     }
-
-    @Test
-    public void Mock() throws Exception {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            ServiceBuilder builder = new ServiceBuilder();
-            builder.mock("true");
-        });
-    }
-
-    @Test
-    public void Mock1() throws Exception {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            ServiceBuilder builder = new ServiceBuilder();
-            builder.mock(true);
-        });
-    }
+//
+//    @Test
+//    public void Mock() throws Exception {
+//        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+//            ServiceBuilder builder = new ServiceBuilder();
+//            builder.mock("true");
+//        });
+//    }
+//
+//    @Test
+//    public void Mock1() throws Exception {
+//        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+//            ServiceBuilder builder = new ServiceBuilder();
+//            builder.mock(true);
+//        });
+//    }
 
     @Test
     void build() {
