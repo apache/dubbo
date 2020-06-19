@@ -102,7 +102,7 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
  * {@link ServiceNameMapping} will help to figure out one or more services that exported correlative Dubbo services. If
  * the service names can be found, the exported {@link URL URLs} will be get from the remote {@link MetadataService}
  * being deployed on all {@link ServiceInstance instances} of services. The whole process runs under the
- * {@link #subscribeURLs(URL, NotifyListener, String, Collection)} method. It's very expensive to invoke
+ * {@link #subscribeURLs(URL, List, String, Collection)} method. It's very expensive to invoke
  * {@link MetadataService} for each {@link ServiceInstance service instance}, thus {@link ServiceDiscoveryRegistry}
  * introduces a cache to optimize the calculation with "revisions". If the revisions of N
  * {@link ServiceInstance service instances} are same, {@link MetadataService} is invoked just only once, and then it
@@ -316,24 +316,60 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
         Set<String> serviceNames = getServices(url);
 
-        serviceNames.forEach(serviceName -> subscribeURLs(url, listener, serviceName));
+        List<URL> subscribedURLs = new LinkedList<>();
+
+        serviceNames.forEach(serviceName -> {
+
+            subscribeURLs(url, subscribedURLs, serviceName);
+
+            // register ServiceInstancesChangedListener
+            registerServiceInstancesChangedListener(url, new ServiceInstancesChangedListener(serviceName) {
+
+                @Override
+                public void onEvent(ServiceInstancesChangedEvent event) {
+                    List<URL> subscribedURLs = new LinkedList<>();
+                    Set<String> others = new HashSet<>(serviceNames);
+                    others.remove(serviceName);
+
+                    // Collect the subscribedURLs
+                    subscribeURLs(url, subscribedURLs, serviceName, () -> event.getServiceInstances());
+                    subscribeURLs(url, subscribedURLs, others.toString(), () -> getServiceInstances(others));
+
+                    // Notify all
+                    listener.notify(subscribedURLs);
+                }
+            });
+        });
+
+        // Notify all
+        listener.notify(subscribedURLs);
 
     }
 
-    protected void subscribeURLs(URL url, NotifyListener listener, String serviceName) {
-
-        List<ServiceInstance> serviceInstances = serviceDiscovery.getInstances(serviceName);
-
-        subscribeURLs(url, listener, serviceName, serviceInstances);
-
-        // register ServiceInstancesChangedListener
-        registerServiceInstancesChangedListener(url, new ServiceInstancesChangedListener(serviceName) {
-
-            @Override
-            public void onEvent(ServiceInstancesChangedEvent event) {
-                subscribeURLs(url, listener, event.getServiceName(), new ArrayList<>(event.getServiceInstances()));
+    private List<ServiceInstance> getServiceInstances(Set<String> serviceNames) {
+        if (isEmpty(serviceNames)) {
+            return emptyList();
+        }
+        List<ServiceInstance> allServiceInstances = new LinkedList<>();
+        for (String serviceName : serviceNames) {
+            List<ServiceInstance> serviceInstances = serviceDiscovery.getInstances(serviceName);
+            if (!isEmpty(serviceInstances)) {
+                allServiceInstances.addAll(serviceInstances);
             }
-        });
+        }
+        return allServiceInstances;
+    }
+
+    protected void subscribeURLs(URL subscribedURL, List<URL> subscribedURLs,
+                                 String serviceName, Supplier<Collection<ServiceInstance>> serviceInstancesSupplier) {
+        Collection<ServiceInstance> serviceInstances = serviceInstancesSupplier.get();
+        subscribeURLs(subscribedURL, subscribedURLs, serviceName, serviceInstances);
+    }
+
+
+    protected void subscribeURLs(URL url, List<URL> subscribedURLs, String serviceName) {
+        List<ServiceInstance> serviceInstances = serviceDiscovery.getInstances(serviceName);
+        subscribeURLs(url, subscribedURLs, serviceName, serviceInstances);
     }
 
     /**
@@ -360,21 +396,19 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
      * the instances of {@link SubscribedURLsSynthesizer}
      *
      * @param subscribedURL    the subscribed {@link URL url}
-     * @param listener         {@link NotifyListener}
+     * @param subscribedURLs   {@link NotifyListener}
      * @param serviceName
      * @param serviceInstances
      * @see #getExportedURLs(URL, Collection)
      * @see #synthesizeSubscribedURLs(URL, Collection)
      */
-    protected void subscribeURLs(URL subscribedURL, NotifyListener listener, String serviceName,
+    protected void subscribeURLs(URL subscribedURL, List<URL> subscribedURLs, String serviceName,
                                  Collection<ServiceInstance> serviceInstances) {
 
         if (isEmpty(serviceInstances)) {
             logger.warn(format("There is no instance in service[name : %s]", serviceName));
             return;
         }
-
-        List<URL> subscribedURLs = new LinkedList<>();
 
         /**
          * Add the exported URLs from {@link MetadataService}
@@ -387,8 +421,6 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
              */
             subscribedURLs.addAll(synthesizeSubscribedURLs(subscribedURL, serviceInstances));
         }
-
-        listener.notify(subscribedURLs);
     }
 
     /**

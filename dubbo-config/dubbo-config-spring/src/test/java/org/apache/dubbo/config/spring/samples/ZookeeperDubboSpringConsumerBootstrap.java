@@ -32,7 +32,7 @@ import org.springframework.context.annotation.PropertySource;
 @PropertySource("classpath:/META-INF/service-introspection/zookeeper-dubbb-consumer.properties")
 public class ZookeeperDubboSpringConsumerBootstrap {
 
-    @DubboReference(services = "${dubbo.provider.name},${dubbo.provider.name}")
+    @DubboReference(services = "${dubbo.provider.name},${dubbo.provider.name1},${dubbo.provider.name2}")
     private DemoService demoService;
 
     public static void main(String[] args) throws Exception {
@@ -43,7 +43,10 @@ public class ZookeeperDubboSpringConsumerBootstrap {
 
         for (int i = 0; i < 100; i++) {
             System.out.println(bootstrap.demoService.sayName("Hello"));
+            Thread.sleep(1000L);
         }
+
+        System.in.read();
 
         context.close();
     }
