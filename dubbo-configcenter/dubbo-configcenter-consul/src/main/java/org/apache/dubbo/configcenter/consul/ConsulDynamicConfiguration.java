@@ -145,7 +145,7 @@ public class ConsulDynamicConfiguration implements DynamicConfiguration {
 //        }
 //        return true;
         String normalizedKey = convertKey(group, key);
-        return kvClient.putValue(normalizedKey + PATH_SEPARATOR + content);
+        return kvClient.putValue(normalizedKey, content);
     }
 
     @Override
