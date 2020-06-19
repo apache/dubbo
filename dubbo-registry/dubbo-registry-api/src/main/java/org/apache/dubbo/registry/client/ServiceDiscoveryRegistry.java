@@ -66,6 +66,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDED_BY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_TYPE;
@@ -336,14 +338,26 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
                     subscribeURLs(url, subscribedURLs, others.toString(), () -> getServiceInstances(others));
 
                     // Notify all
-                    listener.notify(subscribedURLs);
+                    notifyAllSubscribedURLs(url, subscribedURLs, listener);
+
                 }
             });
         });
 
         // Notify all
-        listener.notify(subscribedURLs);
+        notifyAllSubscribedURLs(url, subscribedURLs, listener);
 
+    }
+
+    private void notifyAllSubscribedURLs(URL url, List<URL> subscribedURLs, NotifyListener listener) {
+
+        if (subscribedURLs.isEmpty()) {
+            // Add the EMPTY_PROTOCOL URL
+            subscribedURLs.add(from(url).setProtocol(EMPTY_PROTOCOL).removeParameter(CATEGORY_KEY).build());
+        }
+
+        // Notify all
+        listener.notify(subscribedURLs);
     }
 
     private List<ServiceInstance> getServiceInstances(Set<String> serviceNames) {
