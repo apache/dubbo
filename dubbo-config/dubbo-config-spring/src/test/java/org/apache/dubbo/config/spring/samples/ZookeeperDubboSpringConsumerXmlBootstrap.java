@@ -16,33 +16,25 @@
  */
 package org.apache.dubbo.config.spring.samples;
 
-import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.spring.api.DemoService;
-import org.apache.dubbo.config.spring.context.annotation.EnableDubboConfig;
 
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
- * Zookeeper Dubbo Spring Provider Bootstrap
+ * Zookeeper Dubbo Spring Provider XML Bootstrap
  *
  * @since 2.7.8
  */
-@EnableDubboConfig
-@PropertySource("classpath:/META-INF/service-introspection/zookeeper-dubbb-consumer.properties")
-public class ZookeeperDubboSpringConsumerBootstrap {
-
-    @DubboReference(services = "${dubbo.provider.name},${dubbo.provider.name}")
-    private DemoService demoService;
+public class ZookeeperDubboSpringConsumerXmlBootstrap {
 
     public static void main(String[] args) throws Exception {
-        Class<?> beanType = ZookeeperDubboSpringConsumerBootstrap.class;
-        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(beanType);
+        String location = "classpath:/META-INF/service-introspection/zookeeper-dubbo-consumer.xml";
+        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(location);
 
-        ZookeeperDubboSpringConsumerBootstrap bootstrap = context.getBean(ZookeeperDubboSpringConsumerBootstrap.class);
+        DemoService demoService = context.getBean("demoService", DemoService.class);
 
         for (int i = 0; i < 100; i++) {
-            System.out.println(bootstrap.demoService.sayName("Hello"));
+            System.out.println(demoService.sayName("Hello"));
         }
 
         context.close();
