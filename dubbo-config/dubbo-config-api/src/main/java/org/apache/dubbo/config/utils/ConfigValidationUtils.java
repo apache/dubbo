@@ -89,6 +89,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_PROTOCOL;
+import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 import static org.apache.dubbo.common.utils.UrlUtils.isServiceDiscoveryRegistryType;
 import static org.apache.dubbo.config.Constants.ARCHITECTURE;
@@ -571,7 +572,9 @@ public class ConfigValidationUtils {
             return;
         }
         for (Map.Entry<String, String> entry : parameters.entrySet()) {
-            checkNameHasSymbol(entry.getKey(), entry.getValue());
+            if (!entry.getKey().equals(BACKUP_KEY)) {
+                checkNameHasSymbol(entry.getKey(), entry.getValue());
+            }
         }
     }
 
