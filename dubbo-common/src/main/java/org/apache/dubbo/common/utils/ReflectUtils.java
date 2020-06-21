@@ -21,6 +21,8 @@ import javassist.CtConstructor;
 import javassist.CtMethod;
 import javassist.NotFoundException;
 
+import java.beans.BeanInfo;
+import java.beans.Introspector;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -33,16 +35,26 @@ import java.net.URL;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static java.util.Arrays.asList;
+import static java.util.Collections.unmodifiableSet;
+import static org.apache.dubbo.common.utils.ArrayUtils.isEmpty;
 
 /**
  * ReflectUtils
@@ -122,7 +134,21 @@ public final class ReflectUtils {
 
     private static final ConcurrentMap<String, Class<?>> NAME_CLASS_CACHE = new ConcurrentHashMap<String, Class<?>>();
 
-    private static final ConcurrentMap<String, Method> Signature_METHODS_CACHE = new ConcurrentHashMap<String, Method>();
+    private static final ConcurrentMap<String, Method> SIGNATURE_METHODS_CACHE = new ConcurrentHashMap<String, Method>();
+
+    private static Map<Class<?>, Object> primitiveDefaults = new HashMap<>();
+
+    static {
+        primitiveDefaults.put(int.class, 0);
+        primitiveDefaults.put(long.class, 0L);
+        primitiveDefaults.put(byte.class, (byte) 0);
+        primitiveDefaults.put(char.class, (char) 0);
+        primitiveDefaults.put(short.class, (short) 0);
+        primitiveDefaults.put(float.class, (float) 0);
+        primitiveDefaults.put(double.class, (double) 0);
+        primitiveDefaults.put(boolean.class, false);
+        primitiveDefaults.put(void.class, null);
+    }
 
     private ReflectUtils() {
     }
@@ -414,6 +440,16 @@ public final class ReflectUtils {
         }
         ret.append(')').append(getDesc(m.getReturnType()));
         return ret.toString();
+    }
+
+    public static String[] getDescArray(final Method m) {
+        Class<?>[] parameterTypes = m.getParameterTypes();
+        String[] arr = new String[parameterTypes.length];
+
+        for (int i = 0; i < parameterTypes.length; i++) {
+            arr[i] = getDesc(parameterTypes[i]);
+        }
+        return arr;
     }
 
     /**
@@ -875,7 +911,7 @@ public final class ReflectUtils {
         if (parameterTypes != null && parameterTypes.length > 0) {
             signature += StringUtils.join(parameterTypes);
         }
-        Method method = Signature_METHODS_CACHE.get(signature);
+        Method method = SIGNATURE_METHODS_CACHE.get(signature);
         if (method != null) {
             return method;
         }
@@ -903,7 +939,7 @@ public final class ReflectUtils {
             method = clazz.getMethod(methodName, types);
 
         }
-        Signature_METHODS_CACHE.put(signature, method);
+        SIGNATURE_METHODS_CACHE.put(signature, method);
         return method;
     }
 
@@ -1044,6 +1080,22 @@ public final class ReflectUtils {
         }
     }
 
+    public static Object defaultReturn(Method m) {
+        if (m.getReturnType().isPrimitive()) {
+            return primitiveDefaults.get(m.getReturnType());
+        } else {
+            return null;
+        }
+    }
+
+    public static Object defaultReturn(Class<?> classType) {
+        if (classType != null && classType.isPrimitive()) {
+            return primitiveDefaults.get(classType);
+        } else {
+            return null;
+        }
+    }
+
     public static boolean isBeanPropertyReadMethod(Method method) {
         return method != null
                 && Modifier.isPublic(method.getModifiers())
@@ -1148,5 +1200,120 @@ public final class ReflectUtils {
             }
         }
         return new Type[]{returnType, genericReturnType};
+    }
+
+    /**
+     * Find the {@link Set} of {@link ParameterizedType}
+     *
+     * @param sourceClass the source {@link Class class}
+     * @return non-null read-only {@link Set}
+     * @since 2.7.5
+     */
+    public static Set<ParameterizedType> findParameterizedTypes(Class<?> sourceClass) {
+        // Add Generic Interfaces
+        List<Type> genericTypes = new LinkedList<>(asList(sourceClass.getGenericInterfaces()));
+        // Add Generic Super Class
+        genericTypes.add(sourceClass.getGenericSuperclass());
+
+        Set<ParameterizedType> parameterizedTypes = genericTypes.stream()
+                .filter(type -> type instanceof ParameterizedType)// filter ParameterizedType
+                .map(type -> ParameterizedType.class.cast(type))  // cast to ParameterizedType
+                .collect(Collectors.toSet());
+
+        if (parameterizedTypes.isEmpty()) { // If not found, try to search super types recursively
+            genericTypes.stream()
+                    .filter(type -> type instanceof Class)
+                    .map(type -> Class.class.cast(type))
+                    .forEach(superClass -> {
+                        parameterizedTypes.addAll(findParameterizedTypes(superClass));
+                    });
+        }
+
+        return unmodifiableSet(parameterizedTypes);                     // build as a Set
+
+    }
+
+    /**
+     * Find the hierarchical types from the source {@link Class class} by specified {@link Class type}.
+     *
+     * @param sourceClass the source {@link Class class}
+     * @param matchType   the type to match
+     * @param <T>         the type to match
+     * @return non-null read-only {@link Set}
+     * @since 2.7.5
+     */
+    public static <T> Set<Class<T>> findHierarchicalTypes(Class<?> sourceClass, Class<T> matchType) {
+        if (sourceClass == null) {
+            return Collections.emptySet();
+        }
+
+        Set<Class<T>> hierarchicalTypes = new LinkedHashSet<>();
+
+        if (matchType.isAssignableFrom(sourceClass)) {
+            hierarchicalTypes.add((Class<T>) sourceClass);
+        }
+
+        // Find all super classes
+        hierarchicalTypes.addAll(findHierarchicalTypes(sourceClass.getSuperclass(), matchType));
+
+        return unmodifiableSet(hierarchicalTypes);
+    }
+
+    /**
+     * Get the value from the specified bean and its getter method.
+     *
+     * @param bean       the bean instance
+     * @param methodName the name of getter
+     * @param <T>        the type of property value
+     * @return
+     * @since 2.7.5
+     */
+    public static <T> T getProperty(Object bean, String methodName) {
+        Class<?> beanClass = bean.getClass();
+        BeanInfo beanInfo = null;
+        T propertyValue = null;
+
+        try {
+            beanInfo = Introspector.getBeanInfo(beanClass);
+            propertyValue = (T) Stream.of(beanInfo.getMethodDescriptors())
+                    .filter(methodDescriptor -> methodName.equals(methodDescriptor.getName()))
+                    .findFirst()
+                    .map(method -> {
+                        try {
+                            return method.getMethod().invoke(bean);
+                        } catch (Exception e) {
+                            //ignore
+                        }
+                        return null;
+                    }).get();
+        } catch (Exception e) {
+
+        }
+        return propertyValue;
+    }
+
+    /**
+     * Resolve the types of the specified values
+     *
+     * @param values the values
+     * @return If can't be resolved, return {@link ReflectUtils#EMPTY_CLASS_ARRAY empty class array}
+     * @since 2.7.6
+     */
+    public static Class[] resolveTypes(Object... values) {
+
+        if (isEmpty(values)) {
+            return EMPTY_CLASS_ARRAY;
+        }
+
+        int size = values.length;
+
+        Class[] types = new Class[size];
+
+        for (int i = 0; i < size; i++) {
+            Object value = values[i];
+            types[i] = value == null ? null : value.getClass();
+        }
+
+        return types;
     }
 }

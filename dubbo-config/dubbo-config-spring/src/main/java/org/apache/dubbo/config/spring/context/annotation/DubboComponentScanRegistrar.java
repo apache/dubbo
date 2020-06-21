@@ -19,9 +19,7 @@ package org.apache.dubbo.config.spring.context.annotation;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ServiceAnnotationBeanPostProcessor;
-import org.apache.dubbo.config.spring.util.BeanRegistrar;
 
-import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -37,6 +35,7 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import static org.apache.dubbo.config.spring.util.DubboBeanUtils.registerCommonBeans;
 import static org.springframework.beans.factory.support.BeanDefinitionBuilder.rootBeanDefinition;
 
 /**
@@ -58,8 +57,8 @@ public class DubboComponentScanRegistrar implements ImportBeanDefinitionRegistra
 
         registerServiceAnnotationBeanPostProcessor(packagesToScan, registry);
 
-        registerReferenceAnnotationBeanPostProcessor(registry);
-
+        // @since 2.7.6 Register the common beans
+        registerCommonBeans(registry);
     }
 
     /**
@@ -76,19 +75,6 @@ public class DubboComponentScanRegistrar implements ImportBeanDefinitionRegistra
         builder.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
         AbstractBeanDefinition beanDefinition = builder.getBeanDefinition();
         BeanDefinitionReaderUtils.registerWithGeneratedName(beanDefinition, registry);
-
-    }
-
-    /**
-     * Registers {@link ReferenceAnnotationBeanPostProcessor} into {@link BeanFactory}
-     *
-     * @param registry {@link BeanDefinitionRegistry}
-     */
-    private void registerReferenceAnnotationBeanPostProcessor(BeanDefinitionRegistry registry) {
-
-        // Register @Reference Annotation Bean Processor
-        BeanRegistrar.registerInfrastructureBean(registry,
-                ReferenceAnnotationBeanPostProcessor.BEAN_NAME, ReferenceAnnotationBeanPostProcessor.class);
 
     }
 

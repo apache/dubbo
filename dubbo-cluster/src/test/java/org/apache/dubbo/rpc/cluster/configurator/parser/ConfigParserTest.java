@@ -30,13 +30,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-import static org.apache.dubbo.rpc.cluster.Constants.LOADBALANCE_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.OVERRIDE_PROVIDERS_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.WEIGHT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.LOADBALANCE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.OVERRIDE_PROVIDERS_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.WEIGHT_KEY;
 
 /**
  *
@@ -172,6 +172,22 @@ public class ConfigParserTest {
             Assertions.assertEquals("127.0.0.1:20880", url.getParameter(OVERRIDE_PROVIDERS_KEY));
             Assertions.assertEquals(url.getParameter(APPLICATION_KEY), "demo-consumer");
         }
+    }
+
+    @Test
+    public void parseURLJsonArrayCompatible() {
+
+        String configData = "[\"override://0.0.0.0/com.xx.Service?category=configurators&timeout=6666&disabled=true&dynamic=false&enabled=true&group=dubbo&priority=1&version=1.0\" ]";
+
+        List<URL> urls = ConfigParser.parseConfigurators(configData);
+
+        Assertions.assertNotNull(urls);
+        Assertions.assertEquals(1, urls.size());
+        URL url = urls.get(0);
+
+        Assertions.assertEquals("0.0.0.0", url.getAddress());
+        Assertions.assertEquals("com.xx.Service", url.getServiceInterface());
+        Assertions.assertEquals(6666, url.getParameter(TIMEOUT_KEY, 0));
     }
 
 }

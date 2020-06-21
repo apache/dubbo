@@ -43,7 +43,6 @@ import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
-import io.grpc.util.RoundRobinLoadBalancerFactory;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -146,8 +145,8 @@ public class JEtcdClientWrapper {
             maxInboundSize = Integer.valueOf(System.getProperty(GRPC_MAX_INBOUND_SIZE_KEY));
         }
 
+        // TODO, uses default pick-first round robin.
         ClientBuilder clientBuilder = Client.builder()
-                .loadBalancerFactory(RoundRobinLoadBalancerFactory.getInstance())
                 .endpoints(endPoints(url.getBackupAddress()))
                 .maxInboundMessageSize(maxInboundSize);
 
@@ -315,7 +314,7 @@ public class JEtcdClientWrapper {
     /**
      * create new ephemeral path save to etcd .
      * if node disconnect from etcd, it will be deleted
-     * automatically by etcd when sessian timeout.
+     * automatically by etcd when session timeout.
      *
      * @param path the path to be saved
      * @return the lease of current path.
@@ -665,6 +664,26 @@ public class JEtcdClientWrapper {
             // ignore
         }
         return false;
+    }
+
+    public boolean putEphemeral(final String key, String value) {
+        try {
+            return RetryLoops.invokeWithRetry(
+                    () -> {
+                        requiredNotNull(client, failed);
+                        // recovery an retry
+                        keepAlive();
+                        final long leaseId = globalLeaseId;
+                        client.getKVClient()
+                                .put(ByteSequence.from(key, UTF_8)
+                                        , ByteSequence.from(String.valueOf(value), UTF_8)
+                                        , PutOption.newBuilder().withLeaseId(leaseId).build())
+                                .get(DEFAULT_REQUEST_TIMEOUT, TimeUnit.MILLISECONDS);
+                        return true;
+                    }, retryPolicy);
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 
     private void retry() {

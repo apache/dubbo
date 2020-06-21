@@ -106,7 +106,7 @@ public class CompatibleFilterFilterTest {
 
         Result asyncResult = compatibleFilter.invoke(invoker, invocation);
         AppResponse appResponse = (AppResponse) asyncResult.get();
-        compatibleFilter.listener().onResponse(appResponse, invoker, invocation);
+        compatibleFilter.onResponse(appResponse, invoker, invocation);
         assertEquals(Type.High, appResponse.getValue());
     }
 
@@ -128,7 +128,7 @@ public class CompatibleFilterFilterTest {
 
         Result asyncResult = compatibleFilter.invoke(invoker, invocation);
         AppResponse appResponse = (AppResponse) asyncResult.get();
-        compatibleFilter.listener().onResponse(appResponse, invoker, invocation);
+        compatibleFilter.onResponse(appResponse, invoker, invocation);
         assertEquals(Type.High, appResponse.getValue());
     }
 

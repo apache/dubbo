@@ -48,9 +48,9 @@ public class LeastActiveLoadBalance extends AbstractLoadBalance {
         int[] leastIndexes = new int[length];
         // the weight of every invokers
         int[] weights = new int[length];
-        // The sum of the warmup weights of all the least active invokes
+        // The sum of the warmup weights of all the least active invokers
         int totalWeight = 0;
-        // The weight of the first least active invoke
+        // The weight of the first least active invoker
         int firstWeight = 0;
         // Every least active invoker has the same weight value?
         boolean sameWeight = true;
@@ -59,9 +59,9 @@ public class LeastActiveLoadBalance extends AbstractLoadBalance {
         // Filter out all the least active invokers
         for (int i = 0; i < length; i++) {
             Invoker<T> invoker = invokers.get(i);
-            // Get the active number of the invoke
+            // Get the active number of the invoker
             int active = RpcStatus.getStatus(invoker.getUrl(), invocation.getMethodName()).getActive();
-            // Get the weight of the invoke configuration. The default value is 100.
+            // Get the weight of the invoker's configuration. The default value is 100.
             int afterWarmup = getWeight(invoker, invocation);
             // save for later use
             weights[i] = afterWarmup;
@@ -86,8 +86,7 @@ public class LeastActiveLoadBalance extends AbstractLoadBalance {
                 // Accumulate the total weight of the least active invoker
                 totalWeight += afterWarmup;
                 // If every invoker has the same weight?
-                if (sameWeight && i > 0
-                        && afterWarmup != firstWeight) {
+                if (sameWeight && afterWarmup != firstWeight) {
                     sameWeight = false;
                 }
             }

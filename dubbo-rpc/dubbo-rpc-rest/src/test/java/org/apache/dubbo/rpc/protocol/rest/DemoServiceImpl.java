@@ -22,7 +22,7 @@ import org.apache.dubbo.rpc.RpcContext;
 import java.util.Map;
 
 public class DemoServiceImpl implements DemoService {
-    private static Map<String, String> context;
+    private static Map<String, Object> context;
     private boolean called;
 
     public String sayHello(String name) {
@@ -37,7 +37,7 @@ public class DemoServiceImpl implements DemoService {
 
     @Override
     public Integer hello(Integer a, Integer b) {
-        context = RpcContext.getContext().getAttachments();
+        context = RpcContext.getContext().getObjectAttachments();
         return a + b;
     }
 
@@ -46,7 +46,7 @@ public class DemoServiceImpl implements DemoService {
         throw new RuntimeException();
     }
 
-    public static Map<String, String> getAttachments() {
+    public static Map<String, Object> getAttachments() {
         return context;
     }
 

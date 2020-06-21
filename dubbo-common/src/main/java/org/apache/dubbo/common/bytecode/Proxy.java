@@ -155,7 +155,7 @@ public abstract class Proxy {
 
                 for (Method method : ics[i].getMethods()) {
                     String desc = ReflectUtils.getDesc(method);
-                    if (worked.contains(desc)) {
+                    if (worked.contains(desc) || Modifier.isStatic(method.getModifiers())) {
                         continue;
                     }
                     if (ics[i].isInterface() && Modifier.isStatic(method.getModifiers())) {

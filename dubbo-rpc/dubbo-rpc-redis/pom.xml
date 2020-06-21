@@ -20,6 +20,7 @@
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-rpc</artifactId>
         <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>dubbo-rpc-redis</artifactId>
     <packaging>jar</packaging>
@@ -47,6 +48,11 @@
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-serialization-jdk</artifactId>
             <version>${project.parent.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

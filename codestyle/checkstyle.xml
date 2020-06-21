@@ -7,6 +7,11 @@
     <property name="charset" value="UTF-8"/>
     <property name="fileExtensions" value="java"/>
 
+    <module name="Header">
+        <property name="headerFile" value="/checkstyle-header.txt"/>
+        <property name="fileExtensions" value="java"/>
+    </module>
+
     <!-- TreeWalker Checks -->
     <module name="TreeWalker">
         <module name="SuppressWarningsHolder"/>
@@ -21,6 +26,8 @@
         <module name="OuterTypeFilename"/>
         <module name="UnusedImports"/>
         <module name="RedundantImport"/>
+
+        <module name="EqualsHashCode"/>
 
         <!--<module name="CustomImportOrder">-->
         <!--<property name="specialImportsRegExp" value="org.apache.dubbo.*"/>-->

@@ -21,10 +21,15 @@
         <artifactId>dubbo-registry</artifactId>
         <groupId>org.apache.dubbo</groupId>
         <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>dubbo-registry-consul</artifactId>
+
+    <properties>
+        <skipIntegrationTests>true</skipIntegrationTests>
+    </properties>
 
     <dependencies>
         <dependency>
@@ -42,5 +47,17 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <skipTests>${skipIntegrationTests}</skipTests>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
