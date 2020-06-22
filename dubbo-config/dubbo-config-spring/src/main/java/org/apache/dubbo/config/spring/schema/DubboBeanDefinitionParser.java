@@ -42,6 +42,7 @@ import org.springframework.beans.factory.support.ManagedMap;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.beans.factory.xml.BeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
+import org.springframework.core.env.Environment;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -83,14 +84,14 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
         RootBeanDefinition beanDefinition = new RootBeanDefinition();
         beanDefinition.setBeanClass(beanClass);
         beanDefinition.setLazyInit(false);
-        String id = element.getAttribute("id");
+        String id = resolveAttribute(element, "id", parserContext);
         if (StringUtils.isEmpty(id) && required) {
-            String generatedBeanName = element.getAttribute("name");
+            String generatedBeanName = resolveAttribute(element, "name", parserContext);
             if (StringUtils.isEmpty(generatedBeanName)) {
                 if (ProtocolConfig.class.equals(beanClass)) {
                     generatedBeanName = "dubbo";
                 } else {
-                    generatedBeanName = element.getAttribute("interface");
+                    generatedBeanName = resolveAttribute(element, "interface", parserContext);
                 }
             }
             if (StringUtils.isEmpty(generatedBeanName)) {
@@ -121,21 +122,15 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                 }
             }
         } else if (ServiceBean.class.equals(beanClass)) {
-            String className = element.getAttribute("class");
+            String className = resolveAttribute(element, "class", parserContext);
             if (StringUtils.isNotEmpty(className)) {
                 RootBeanDefinition classDefinition = new RootBeanDefinition();
                 classDefinition.setBeanClass(ReflectUtils.forName(className));
                 classDefinition.setLazyInit(false);
-                parseProperties(element.getChildNodes(), classDefinition);
+                parseProperties(element.getChildNodes(), classDefinition, parserContext);
                 beanDefinition.getPropertyValues().addPropertyValue("ref", new BeanDefinitionHolder(classDefinition, id + "Impl"));
             }
-        }  else if(ReferenceBean.class.equals(beanClass)){
-            String interfaceClassName = element.getAttribute("interface");
-            if(StringUtils.isNotEmpty(interfaceClassName)){
-                Class<?> interfaceClass = ReflectUtils.forName(interfaceClassName);
-                beanDefinition.setTargetType(interfaceClass);
-            }
-        }else if (ProviderConfig.class.equals(beanClass)) {
+        }  else if (ProviderConfig.class.equals(beanClass)) {
             parseNested(element, parserContext, ServiceBean.class, true, "service", "provider", id, beanDefinition);
         } else if (ConsumerConfig.class.equals(beanClass)) {
             parseNested(element, parserContext, ReferenceBean.class, false, "reference", "consumer", id, beanDefinition);
@@ -169,13 +164,13 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                     continue;
                 }
                 if ("parameters".equals(property)) {
-                    parameters = parseParameters(element.getChildNodes(), beanDefinition);
+                    parameters = parseParameters(element.getChildNodes(), beanDefinition, parserContext);
                 } else if ("methods".equals(property)) {
                     parseMethods(id, element.getChildNodes(), beanDefinition, parserContext);
                 } else if ("arguments".equals(property)) {
                     parseArguments(id, element.getChildNodes(), beanDefinition, parserContext);
                 } else {
-                    String value = element.getAttribute(property);
+                    String value = resolveAttribute(element, property, parserContext);
                     if (value != null) {
                         value = value.trim();
                         if (value.length() > 0) {
@@ -267,7 +262,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                     || tag.equals(node.getLocalName())) {
                 if (first) {
                     first = false;
-                    String isDefault = element.getAttribute("default");
+                    String isDefault = resolveAttribute(element, "default", parserContext);
                     if (StringUtils.isEmpty(isDefault)) {
                         beanDefinition.getPropertyValues().addPropertyValue("default", "false");
                     }
@@ -280,7 +275,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
         }
     }
 
-    private static void parseProperties(NodeList nodeList, RootBeanDefinition beanDefinition) {
+    private static void parseProperties(NodeList nodeList, RootBeanDefinition beanDefinition, ParserContext parserContext) {
         if (nodeList == null) {
             return;
         }
@@ -291,10 +286,10 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
             Element element = (Element) nodeList.item(i);
             if ("property".equals(element.getNodeName())
                     || "property".equals(element.getLocalName())) {
-                String name = element.getAttribute("name");
+                String name = resolveAttribute(element, "name", parserContext);
                 if (StringUtils.isNotEmpty(name)) {
-                    String value = element.getAttribute("value");
-                    String ref = element.getAttribute("ref");
+                    String value = resolveAttribute(element, "value", parserContext);
+                    String ref = resolveAttribute(element, "ref", parserContext);
                     if (StringUtils.isNotEmpty(value)) {
                         beanDefinition.getPropertyValues().addPropertyValue(name, value);
                     } else if (StringUtils.isNotEmpty(ref)) {
@@ -308,7 +303,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
     }
 
     @SuppressWarnings("unchecked")
-    private static ManagedMap parseParameters(NodeList nodeList, RootBeanDefinition beanDefinition) {
+    private static ManagedMap parseParameters(NodeList nodeList, RootBeanDefinition beanDefinition, ParserContext parserContext) {
         if (nodeList == null) {
             return null;
         }
@@ -323,9 +318,9 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                 if (parameters == null) {
                     parameters = new ManagedMap();
                 }
-                String key = element.getAttribute("key");
-                String value = element.getAttribute("value");
-                boolean hide = "true".equals(element.getAttribute("hide"));
+                String key = resolveAttribute(element, "key", parserContext);
+                String value = resolveAttribute(element, "value", parserContext);
+                boolean hide = "true".equals(resolveAttribute(element, "hide", parserContext));
                 if (hide) {
                     key = HIDE_KEY_PREFIX + key;
                 }
@@ -348,7 +343,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
             }
             Element element = (Element) nodeList.item(i);
             if ("method".equals(element.getNodeName()) || "method".equals(element.getLocalName())) {
-                String methodName = element.getAttribute("name");
+                String methodName = resolveAttribute(element, "name", parserContext);
                 if (StringUtils.isEmpty(methodName)) {
                     throw new IllegalStateException("<dubbo:method> name attribute == null");
                 }
@@ -381,7 +376,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
             }
             Element element = (Element) nodeList.item(i);
             if ("argument".equals(element.getNodeName()) || "argument".equals(element.getLocalName())) {
-                String argumentIndex = element.getAttribute("index");
+                String argumentIndex = resolveAttribute(element, "index", parserContext);
                 if (arguments == null) {
                     arguments = new ManagedList();
                 }
@@ -414,5 +409,11 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
      */
     private void registerDubboConfigAliasPostProcessor(BeanDefinitionRegistry registry) {
         registerInfrastructureBean(registry, DubboConfigAliasPostProcessor.BEAN_NAME, DubboConfigAliasPostProcessor.class);
+    }
+
+    private static String resolveAttribute(Element element, String attributeName, ParserContext parserContext) {
+        String attributeValue = element.getAttribute(attributeName);
+        Environment environment = parserContext.getReaderContext().getEnvironment();
+        return environment.resolvePlaceholders(attributeValue);
     }
 }

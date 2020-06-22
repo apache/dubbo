@@ -193,9 +193,9 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         checkAndUpdateSubConfigs();
 
         //init serviceMetadata
-        serviceMetadata.setVersion(version);
-        serviceMetadata.setGroup(group);
-        serviceMetadata.setDefaultGroup(group);
+        serviceMetadata.setVersion(getVersion());
+        serviceMetadata.setGroup(getGroup());
+        serviceMetadata.setDefaultGroup(getGroup());
         serviceMetadata.setServiceType(getInterfaceClass());
         serviceMetadata.setServiceInterfaceName(getInterface());
         serviceMetadata.setTarget(getRef());

@@ -399,9 +399,9 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         }
 
         //init serivceMetadata
-        serviceMetadata.setVersion(version);
-        serviceMetadata.setGroup(group);
-        serviceMetadata.setDefaultGroup(group);
+        serviceMetadata.setVersion(getVersion());
+        serviceMetadata.setGroup(getGroup());
+        serviceMetadata.setDefaultGroup(getGroup());
         serviceMetadata.setServiceType(getActualInterface());
         serviceMetadata.setServiceInterfaceName(interfaceName);
         // TODO, uncomment this line once service key is unified
