@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
@@ -152,7 +153,7 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
      * @since 2.7.5
      */
     default boolean publishConfig(String key, String group, String content) throws UnsupportedOperationException {
-        throw new UnsupportedOperationException("No support");
+        return false;
     }
 
     /**
@@ -164,7 +165,7 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
      * @since 2.7.5
      */
     default SortedSet<String> getConfigKeys(String group) throws UnsupportedOperationException {
-        throw new UnsupportedOperationException("No support");
+        return Collections.emptySortedSet();
     }
 
     /**

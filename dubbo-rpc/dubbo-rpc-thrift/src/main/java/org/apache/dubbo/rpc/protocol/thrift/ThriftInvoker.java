@@ -64,7 +64,7 @@ public class ThriftInvoker<T> extends AbstractInvoker<T> {
     }
 
     public ThriftInvoker(Class<T> type, URL url, ExchangeClient[] clients, Set<Invoker<?>> invokers) {
-        super(type, url, new String[]{INTERFACE_KEY, GROUP_KEY, TOKEN_KEY, TIMEOUT_KEY});
+        super(type, url, new String[]{INTERFACE_KEY, GROUP_KEY, TOKEN_KEY});
         this.clients = clients;
         this.invokers = invokers;
     }
