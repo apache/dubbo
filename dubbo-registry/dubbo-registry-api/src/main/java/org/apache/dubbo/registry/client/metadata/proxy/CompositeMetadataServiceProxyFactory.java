@@ -61,7 +61,7 @@ public class CompositeMetadataServiceProxyFactory implements MetadataServiceProx
         private List<MetadataService> initMetadataServices(ServiceInstance serviceInstance,
                                                            MetadataServiceProxyFactory excluded) {
             return getExtensionLoader(MetadataServiceProxyFactory.class)
-                    .getLoadedExtensionInstances()
+                    .getSupportedExtensionInstances()
                     .stream()
                     .filter(factory -> !factory.equals(excluded))
                     .map(factory -> factory.getProxy(serviceInstance))
