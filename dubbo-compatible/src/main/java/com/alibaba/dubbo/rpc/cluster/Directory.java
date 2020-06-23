@@ -17,11 +17,11 @@
 
 package com.alibaba.dubbo.rpc.cluster;
 
-import com.alibaba.dubbo.common.URL;
-
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
+
+import com.alibaba.dubbo.common.URL;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 @Deprecated
 public interface Directory<T> extends org.apache.dubbo.rpc.cluster.Directory<T> {
 
+    @Override
     URL getUrl();
 
     List<com.alibaba.dubbo.rpc.Invoker<T>> list(com.alibaba.dubbo.rpc.Invocation invocation) throws com.alibaba.dubbo.rpc.RpcException;
@@ -36,6 +37,6 @@ public interface Directory<T> extends org.apache.dubbo.rpc.cluster.Directory<T> 
     @Override
     default List<Invoker<T>> list(Invocation invocation) throws RpcException {
         List<com.alibaba.dubbo.rpc.Invoker<T>> res = this.list(new com.alibaba.dubbo.rpc.Invocation.CompatibleInvocation(invocation));
-        return res.stream().map(i -> i.getOriginal()).collect(Collectors.toList());
+        return res.stream().map(com.alibaba.dubbo.rpc.Invoker::getOriginal).collect(Collectors.toList());
     }
 }

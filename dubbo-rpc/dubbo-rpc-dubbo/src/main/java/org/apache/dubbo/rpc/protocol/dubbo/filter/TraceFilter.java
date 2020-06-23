@@ -16,18 +16,21 @@
  */
 package org.apache.dubbo.rpc.protocol.dubbo.filter;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.remoting.Channel;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
+
 import com.alibaba.fastjson.JSON;
 
 import java.util.ArrayList;
@@ -39,7 +42,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * TraceFilter
  */
-@Activate(group = Constants.PROVIDER)
+@Activate(group = CommonConstants.PROVIDER)
 public class TraceFilter implements Filter {
 
     private static final Logger logger = LoggerFactory.getLogger(TraceFilter.class);
@@ -48,17 +51,13 @@ public class TraceFilter implements Filter {
 
     private static final String TRACE_COUNT = "trace.count";
 
-    private static final ConcurrentMap<String, Set<Channel>> tracers = new ConcurrentHashMap<String, Set<Channel>>();
+    private static final ConcurrentMap<String, Set<Channel>> TRACERS = new ConcurrentHashMap<>();
 
     public static void addTracer(Class<?> type, String method, Channel channel, int max) {
         channel.setAttribute(TRACE_MAX, max);
         channel.setAttribute(TRACE_COUNT, new AtomicInteger());
         String key = method != null && method.length() > 0 ? type.getName() + "." + method : type.getName();
-        Set<Channel> channels = tracers.get(key);
-        if (channels == null) {
-            tracers.putIfAbsent(key, new ConcurrentHashSet<Channel>());
-            channels = tracers.get(key);
-        }
+        Set<Channel> channels = TRACERS.computeIfAbsent(key, k -> new ConcurrentHashSet<>());
         channels.add(channel);
     }
 
@@ -66,7 +65,7 @@ public class TraceFilter implements Filter {
         channel.removeAttribute(TRACE_MAX);
         channel.removeAttribute(TRACE_COUNT);
         String key = method != null && method.length() > 0 ? type.getName() + "." + method : type.getName();
-        Set<Channel> channels = tracers.get(key);
+        Set<Channel> channels = TRACERS.get(key);
         if (channels != null) {
             channels.remove(channel);
         }
@@ -77,21 +76,21 @@ public class TraceFilter implements Filter {
         long start = System.currentTimeMillis();
         Result result = invoker.invoke(invocation);
         long end = System.currentTimeMillis();
-        if (tracers.size() > 0) {
+        if (TRACERS.size() > 0) {
             String key = invoker.getInterface().getName() + "." + invocation.getMethodName();
-            Set<Channel> channels = tracers.get(key);
+            Set<Channel> channels = TRACERS.get(key);
             if (channels == null || channels.isEmpty()) {
                 key = invoker.getInterface().getName();
-                channels = tracers.get(key);
+                channels = TRACERS.get(key);
             }
-            if (channels != null && !channels.isEmpty()) {
-                for (Channel channel : new ArrayList<Channel>(channels)) {
+            if (CollectionUtils.isNotEmpty(channels)) {
+                for (Channel channel : new ArrayList<>(channels)) {
                     if (channel.isConnected()) {
                         try {
                             int max = 1;
                             Integer m = (Integer) channel.getAttribute(TRACE_MAX);
                             if (m != null) {
-                                max = (int) m;
+                                max = m;
                             }
                             int count = 0;
                             AtomicInteger c = (AtomicInteger) channel.getAttribute(TRACE_COUNT);

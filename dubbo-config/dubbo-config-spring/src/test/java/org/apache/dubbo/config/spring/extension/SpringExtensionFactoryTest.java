@@ -20,13 +20,12 @@ import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.impl.DemoServiceImpl;
 import org.apache.dubbo.config.spring.impl.HelloServiceImpl;
-
 import org.apache.dubbo.rpc.Protocol;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -38,8 +37,9 @@ public class SpringExtensionFactoryTest {
     private AnnotationConfigApplicationContext context1;
     private AnnotationConfigApplicationContext context2;
 
-    @Before
+    @BeforeEach
     public void init() {
+        SpringExtensionFactory.clearContexts();
         context1 = new AnnotationConfigApplicationContext();
         context1.register(getClass());
         context1.refresh();
@@ -53,32 +53,18 @@ public class SpringExtensionFactoryTest {
     @Test
     public void testGetExtensionBySPI() {
         Protocol protocol = springExtensionFactory.getExtension(Protocol.class, "protocol");
-        Assert.assertNull(protocol);
+        Assertions.assertNull(protocol);
     }
 
     @Test
     public void testGetExtensionByName() {
         DemoService bean = springExtensionFactory.getExtension(DemoService.class, "bean1");
-        Assert.assertNotNull(bean);
+        Assertions.assertNotNull(bean);
+        HelloService hello = springExtensionFactory.getExtension(HelloService.class, "hello");
+        Assertions.assertNotNull(hello);
     }
 
-    @Test
-    public void testGetExtensionByTypeMultiple() {
-        try {
-            springExtensionFactory.getExtension(DemoService.class, "beanname-not-exist");
-        } catch (Exception e) {
-            e.printStackTrace();
-            Assert.assertTrue(e instanceof NoUniqueBeanDefinitionException);
-        }
-    }
-
-    @Test
-    public void testGetExtensionByType() {
-        HelloService bean = springExtensionFactory.getExtension(HelloService.class, "beanname-not-exist");
-        Assert.assertNotNull(bean);
-    }
-
-    @After
+    @AfterEach
     public void destroy() {
         SpringExtensionFactory.clearContexts();
         context1.close();

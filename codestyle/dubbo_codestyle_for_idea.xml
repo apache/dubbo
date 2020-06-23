@@ -5,8 +5,6 @@
         <value>
             <package name="org.apache.dubbo" withSubpackages="true" static="false"/>
             <emptyLine/>
-            <package name="com.taobao" withSubpackages="true" static="false"/>
-            <emptyLine/>
             <package name="" withSubpackages="true" static="false"/>
             <emptyLine/>
             <package name="javax" withSubpackages="true" static="false"/>

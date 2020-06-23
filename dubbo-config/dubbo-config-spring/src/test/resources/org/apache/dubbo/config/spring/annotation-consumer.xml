@@ -19,10 +19,10 @@
        xmlns:dubbo="http://dubbo.apache.org/schema/dubbo"
        xmlns="http://www.springframework.org/schema/beans"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
-        http://dubbo.apache.org/schema/dubbo http://dubbo.apache.org/schema/dubbo">
+        http://dubbo.apache.org/schema/dubbo http://dubbo.apache.org/schema/dubbo/dubbo.xsd">
 
     <dubbo:application name="annotation-consumer"/>
     <dubbo:registry address="127.0.0.1:4548"/>
-    <dubbo:annotation package="org.apache.dubbo.config.spring.annotation.consumer"/>
+    <dubbo:annotation package="org.apache.dubbo.config.spring.com.alibaba.dubbo.config.annotation.consumer"/>
 
 </beans>

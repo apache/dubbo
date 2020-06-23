@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.transport.grizzly;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -34,6 +33,9 @@ import org.glassfish.grizzly.strategies.SameThreadIOStrategy;
 import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
 
 import java.util.concurrent.TimeUnit;
+
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 
 /**
  * GrizzlyClient
@@ -66,7 +68,7 @@ public class GrizzlyClient extends AbstractClient {
                 .setMaxPoolSize(Integer.MAX_VALUE)
                 .setKeepAliveTime(60L, TimeUnit.SECONDS);
         builder.setTcpNoDelay(true).setKeepAlive(true)
-                .setConnectionTimeout(getTimeout())
+                .setConnectionTimeout(getConnectTimeout())
                 .setIOStrategy(SameThreadIOStrategy.getInstance());
         transport = builder.build();
         transport.setProcessor(filterChainBuilder.build());
@@ -77,7 +79,7 @@ public class GrizzlyClient extends AbstractClient {
     @Override
     protected void doConnect() throws Throwable {
         connection = transport.connect(getConnectAddress())
-                .get(getUrl().getPositiveParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT), TimeUnit.MILLISECONDS);
+                .get(getUrl().getPositiveParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT), TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -101,8 +103,9 @@ public class GrizzlyClient extends AbstractClient {
     @Override
     protected Channel getChannel() {
         Connection<?> c = connection;
-        if (c == null || !c.isOpen())
+        if (c == null || !c.isOpen()) {
             return null;
+        }
         return GrizzlyChannel.getOrAddChannel(c, getUrl(), this);
     }
 

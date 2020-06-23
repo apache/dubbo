@@ -19,18 +19,17 @@ package org.apache.dubbo.qos.command.impl;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.config.model.ApplicationModel;
-import org.apache.dubbo.config.model.ProviderModel;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.command.annotation.Cmd;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
-import org.apache.dubbo.registry.support.ProviderConsumerRegTable;
-import org.apache.dubbo.registry.support.ProviderInvokerWrapper;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ProviderModel;
+import org.apache.dubbo.rpc.model.ServiceRepository;
 
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 @Cmd(name = "offline", summary = "offline dubbo", example = {
         "offline dubbo",
@@ -38,7 +37,8 @@ import java.util.Set;
 })
 public class Offline implements BaseCommand {
     private Logger logger = LoggerFactory.getLogger(Offline.class);
-    private RegistryFactory registryFactory = ExtensionLoader.getExtensionLoader(RegistryFactory.class).getAdaptiveExtension();
+    private static RegistryFactory registryFactory = ExtensionLoader.getExtensionLoader(RegistryFactory.class).getAdaptiveExtension();
+    private static ServiceRepository serviceRepository = ApplicationModel.getServiceRepository();
 
     @Override
     public String execute(CommandContext commandContext, String[] args) {
@@ -47,28 +47,34 @@ public class Offline implements BaseCommand {
         if (args != null && args.length > 0) {
             servicePattern = args[0];
         }
-        boolean hasService = false;
 
-        List<ProviderModel> providerModelList = ApplicationModel.allProviderModels();
-        for (ProviderModel providerModel : providerModelList) {
-            if (providerModel.getServiceName().matches(servicePattern)) {
-                hasService = true;
-                Set<ProviderInvokerWrapper> providerInvokerWrapperSet = ProviderConsumerRegTable.getProviderInvoker(providerModel.getServiceName());
-                for (ProviderInvokerWrapper providerInvokerWrapper : providerInvokerWrapperSet) {
-                    if (!providerInvokerWrapper.isReg()) {
-                        continue;
-                    }
-                    Registry registry = registryFactory.getRegistry(providerInvokerWrapper.getRegistryUrl());
-                    registry.unregister(providerInvokerWrapper.getProviderUrl());
-                    providerInvokerWrapper.setReg(false);
-                }
-            }
-        }
+        boolean hasService = offline(servicePattern);
 
         if (hasService) {
             return "OK";
         } else {
             return "service not found";
         }
+    }
+
+    public static boolean offline(String servicePattern) {
+        boolean hasService = false;
+
+        Collection<ProviderModel> providerModelList = serviceRepository.getExportedServices();
+        for (ProviderModel providerModel : providerModelList) {
+            if (providerModel.getServiceMetadata().getDisplayServiceKey().matches(servicePattern)) {
+                hasService = true;
+                List<ProviderModel.RegisterStatedURL> statedUrls = providerModel.getStatedUrl();
+                for (ProviderModel.RegisterStatedURL statedURL : statedUrls) {
+                    if (statedURL.isRegistered()) {
+                        Registry registry = registryFactory.getRegistry(statedURL.getRegistryUrl());
+                        registry.unregister(statedURL.getProviderUrl());
+                        statedURL.setRegistered(false);
+                    }
+                }
+            }
+        }
+
+        return hasService;
     }
 }

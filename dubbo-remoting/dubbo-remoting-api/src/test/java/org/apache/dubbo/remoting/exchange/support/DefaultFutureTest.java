@@ -21,8 +21,10 @@ import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.handler.MockedChannel;
-import org.junit.Assert;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -35,17 +37,17 @@ public class DefaultFutureTest {
     @Test
     public void newFuture() {
         DefaultFuture future = defaultFuture(3000);
-        Assert.assertNotNull("new future return null", future);
+        Assertions.assertNotNull(future, "new future return null");
     }
 
     @Test
     public void isDone() {
         DefaultFuture future = defaultFuture(3000);
-        Assert.assertTrue("init future is finished!", !future.isDone());
+        Assertions.assertTrue(!future.isDone(), "init future is finished!");
 
         //cancel a future
         future.cancel();
-        Assert.assertTrue("cancel a future failed!", future.isDone());
+        Assertions.assertTrue(future.isDone(), "cancel a future failed!");
     }
 
     /**
@@ -58,6 +60,7 @@ public class DefaultFutureTest {
      * start time: 2018-06-21 15:13:02.215, end time: 2018-06-21 15:13:07.231...
      */
     @Test
+    @Disabled
     public void timeoutNotSend() throws Exception {
         final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         System.out.println("before a future is create , time is : " + LocalDateTime.now().format(formatter));
@@ -73,7 +76,7 @@ public class DefaultFutureTest {
         try {
             f.get();
         } catch (Exception e) {
-            Assert.assertTrue("catch exception is not timeout exception!", e instanceof TimeoutException);
+            Assertions.assertTrue(e.getCause() instanceof TimeoutException, "catch exception is not timeout exception!");
             System.out.println(e.getMessage());
         }
     }
@@ -88,13 +91,14 @@ public class DefaultFutureTest {
      * start time: 2018-06-21 15:12:38.337, end time: 2018-06-21 15:12:43.354...
      */
     @Test
+    @Disabled
     public void timeoutSend() throws Exception {
         final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         System.out.println("before a future is create , time is : " + LocalDateTime.now().format(formatter));
         // timeout after 5 seconds.
         Channel channel = new MockedChannel();
         Request request = new Request(10);
-        DefaultFuture f = DefaultFuture.newFuture(channel, request, 5000);
+        DefaultFuture f = DefaultFuture.newFuture(channel, request, 5000, null);
         //mark the future is sent
         DefaultFuture.sent(channel, request);
         while (!f.isDone()) {
@@ -107,7 +111,7 @@ public class DefaultFutureTest {
         try {
             f.get();
         } catch (Exception e) {
-            Assert.assertTrue("catch exception is not timeout exception!", e instanceof TimeoutException);
+            Assertions.assertTrue(e.getCause() instanceof TimeoutException, "catch exception is not timeout exception!");
             System.out.println(e.getMessage());
         }
     }
@@ -118,7 +122,7 @@ public class DefaultFutureTest {
     private DefaultFuture defaultFuture(int timeout) {
         Channel channel = new MockedChannel();
         Request request = new Request(index.getAndIncrement());
-        return DefaultFuture.newFuture(channel, request, timeout);
+        return DefaultFuture.newFuture(channel, request, timeout, null);
     }
 
 }

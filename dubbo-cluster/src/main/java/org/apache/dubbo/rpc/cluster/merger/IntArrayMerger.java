@@ -17,24 +17,22 @@
 
 package org.apache.dubbo.rpc.cluster.merger;
 
+import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.rpc.cluster.Merger;
+
+import java.util.Arrays;
+import java.util.Objects;
 
 public class IntArrayMerger implements Merger<int[]> {
 
     @Override
     public int[] merge(int[]... items) {
-        int totalLen = 0;
-        for (int[] item : items) {
-            totalLen += item.length;
+        if (ArrayUtils.isEmpty(items)) {
+            return new int[0];
         }
-        int[] result = new int[totalLen];
-        int index = 0;
-        for (int[] item : items) {
-            for (int i : item) {
-                result[index++] = i;
-            }
-        }
-        return result;
+        return Arrays.stream(items).filter(Objects::nonNull)
+                .flatMapToInt(Arrays::stream)
+                .toArray();
     }
 
 }

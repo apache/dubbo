@@ -16,12 +16,12 @@
   -->
 <assembly xmlns="http://maven.apache.org/ASSEMBLY/2.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.0.0 http://maven.apache.org/xsd/assembly-2.0.0.xsd">
-    <id>bin-release</id>
+    <id>bin</id>
     <formats>
         <format>zip</format>
     </formats>
     <includeBaseDirectory>true</includeBaseDirectory>
-    <baseDirectory>${project.build.finalName}-bin-release</baseDirectory>
+    <baseDirectory>${project.build.finalName}-bin</baseDirectory>
     <fileSets>
         <fileSet>
             <directory>../</directory>
@@ -31,20 +31,23 @@
                 <include>LICENSE</include>
             </includes>
         </fileSet>
+        <fileSet>
+            <directory>../dubbo-demo</directory>
+            <includes>
+                <include>README.md</include>
+            </includes>
+        </fileSet>
     </fileSets>
 
     <dependencySets>
         <dependencySet>
             <useProjectArtifact>true</useProjectArtifact>
             <unpack>false</unpack>
-            <outputDirectory>/libs</outputDirectory>
+            <outputDirectory>/dubbo-demo</outputDirectory>
             <scope>runtime</scope>
             <includes>
-                <include>org.apache.dubbo:*</include>
+                <include>org.apache.dubbo:dubbo-demo-api*</include>
             </includes>
-            <excludes>
-                <exclude>com.alibaba:fastjson</exclude>
-            </excludes>
         </dependencySet>
     </dependencySets>
 </assembly>

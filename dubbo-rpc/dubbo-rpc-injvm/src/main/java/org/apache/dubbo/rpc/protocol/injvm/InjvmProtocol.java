@@ -16,9 +16,9 @@
  */
 package org.apache.dubbo.rpc.protocol.injvm;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
@@ -29,12 +29,18 @@ import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import java.util.Map;
 
+import static org.apache.dubbo.rpc.Constants.SCOPE_KEY;
+import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
+import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
+import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
+import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
+
 /**
  * InjvmProtocol
  */
 public class InjvmProtocol extends AbstractProtocol implements Protocol {
 
-    public static final String NAME = Constants.LOCAL_PROTOCOL;
+    public static final String NAME = LOCAL_PROTOCOL;
 
     public static final int DEFAULT_PORT = 0;
     private static InjvmProtocol INSTANCE;
@@ -56,7 +62,7 @@ public class InjvmProtocol extends AbstractProtocol implements Protocol {
         if (!key.getServiceKey().contains("*")) {
             result = map.get(key.getServiceKey());
         } else {
-            if (map != null && !map.isEmpty()) {
+            if (CollectionUtils.isNotEmptyMap(map)) {
                 for (Exporter<?> exporter : map.values()) {
                     if (UrlUtils.isServiceKeyMatch(key, exporter.getInvoker().getUrl())) {
                         result = exporter;
@@ -69,7 +75,7 @@ public class InjvmProtocol extends AbstractProtocol implements Protocol {
         if (result == null) {
             return null;
         } else if (ProtocolUtils.isGeneric(
-                result.getInvoker().getUrl().getParameter(Constants.GENERIC_KEY))) {
+                result.getInvoker().getUrl().getParameter(GENERIC_KEY))) {
             return null;
         } else {
             return result;
@@ -87,32 +93,28 @@ public class InjvmProtocol extends AbstractProtocol implements Protocol {
     }
 
     @Override
-    public <T> Invoker<T> refer(Class<T> serviceType, URL url) throws RpcException {
+    public <T> Invoker<T> protocolBindingRefer(Class<T> serviceType, URL url) throws RpcException {
         return new InjvmInvoker<T>(serviceType, url, url.getServiceKey(), exporterMap);
     }
 
     public boolean isInjvmRefer(URL url) {
-        final boolean isJvmRefer;
-        String scope = url.getParameter(Constants.SCOPE_KEY);
+        String scope = url.getParameter(SCOPE_KEY);
         // Since injvm protocol is configured explicitly, we don't need to set any extra flag, use normal refer process.
-        if (Constants.LOCAL_PROTOCOL.toString().equals(url.getProtocol())) {
-            isJvmRefer = false;
-        } else if (Constants.SCOPE_LOCAL.equals(scope) || (url.getParameter(Constants.LOCAL_PROTOCOL, false))) {
+        if (SCOPE_LOCAL.equals(scope) || (url.getParameter(LOCAL_PROTOCOL, false))) {
             // if it's declared as local reference
             // 'scope=local' is equivalent to 'injvm=true', injvm will be deprecated in the future release
-            isJvmRefer = true;
-        } else if (Constants.SCOPE_REMOTE.equals(scope)) {
+            return true;
+        } else if (SCOPE_REMOTE.equals(scope)) {
             // it's declared as remote reference
-            isJvmRefer = false;
-        } else if (url.getParameter(Constants.GENERIC_KEY, false)) {
+            return false;
+        } else if (url.getParameter(GENERIC_KEY, false)) {
             // generic invocation is not local reference
-            isJvmRefer = false;
+            return false;
         } else if (getExporter(exporterMap, url) != null) {
             // by default, go through local reference if there's the service exposed locally
-            isJvmRefer = true;
+            return true;
         } else {
-            isJvmRefer = false;
+            return false;
         }
-        return isJvmRefer;
     }
 }

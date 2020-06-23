@@ -18,15 +18,18 @@ package org.apache.dubbo.rpc.protocol.webservice;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
-import org.apache.dubbo.rpc.service.EchoService;
-import org.junit.Test;
 
-import static junit.framework.Assert.assertEquals;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 
 /**
- * @author kimmking
+ *
  */
 
 public class WebserviceProtocolTest {
@@ -36,27 +39,30 @@ public class WebserviceProtocolTest {
     @Test
     public void testDemoProtocol() throws Exception {
         DemoService service = new DemoServiceImpl();
-        protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("webservice://127.0.0.1:9019/" + DemoService.class.getName() + "?codec=exchange")));
-        service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("webservice://127.0.0.1:9019/" + DemoService.class.getName() + "?codec=exchange")));
+        int port = NetUtils.getAvailablePort();
+        Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("webservice://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?codec=exchange")));
+        service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("webservice://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?codec=exchange&timeout=3000")));
         assertEquals(service.getSize(new String[]{"", "", ""}), 3);
+        exporter.unexport();
     }
 
     @Test
     public void testWebserviceProtocol() throws Exception {
         DemoService service = new DemoServiceImpl();
-        protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("webservice://127.0.0.1:9019/" + DemoService.class.getName())));
-        service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("webservice://127.0.0.1:9019/" + DemoService.class.getName())));
-        assertEquals(service.create(1,"kk").getName(), "kk");
+        int port = NetUtils.getAvailablePort();
+        protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("webservice://127.0.0.1:" + port + "/" + DemoService.class.getName())));
+        service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("webservice://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?timeout=3000")));
+        assertEquals(service.create(1, "kk").getName(), "kk");
         assertEquals(service.getSize(null), -1);
         assertEquals(service.getSize(new String[]{"", "", ""}), 3);
-        Object object = service.invoke("webservice://127.0.0.1:9019/" + DemoService.class.getName() + "", "invoke");
+        Object object = service.invoke("webservice://127.0.0.1:" + port + "/" + DemoService.class.getName() + "", "invoke");
         System.out.println(object);
-        assertEquals("webservice://127.0.0.1:9019/org.apache.dubbo.rpc.protocol.webservice.DemoService:invoke", object);
+        assertEquals("webservice://127.0.0.1:" + port + "/org.apache.dubbo.rpc.protocol.webservice.DemoService:invoke", object);
 
         StringBuffer buf = new StringBuffer();
         for (int i = 0; i < 1024 * 32 + 32; i++)
             buf.append('A');
-        assertEquals(32800,service.stringLength(buf.toString()));
+        assertEquals(32800, service.stringLength(buf.toString()));
 
 //  a method start with $ is illegal in soap
 //        // cast to EchoService

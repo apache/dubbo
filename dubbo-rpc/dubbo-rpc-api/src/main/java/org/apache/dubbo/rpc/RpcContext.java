@@ -16,10 +16,12 @@
  */
 package org.apache.dubbo.rpc;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.Experimental;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadlocal.InternalThreadLocal;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -29,10 +31,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+import static org.apache.dubbo.rpc.Constants.ASYNC_KEY;
+import static org.apache.dubbo.rpc.Constants.RETURN_KEY;
 
 
 /**
@@ -50,12 +55,15 @@ public class RpcContext {
     /**
      * use internal thread local to improve performance
      */
+    // FIXME REQUEST_CONTEXT
     private static final InternalThreadLocal<RpcContext> LOCAL = new InternalThreadLocal<RpcContext>() {
         @Override
         protected RpcContext initialValue() {
             return new RpcContext();
         }
     };
+
+    // FIXME RESPONSE_CONTEXT
     private static final InternalThreadLocal<RpcContext> SERVER_LOCAL = new InternalThreadLocal<RpcContext>() {
         @Override
         protected RpcContext initialValue() {
@@ -63,9 +71,8 @@ public class RpcContext {
         }
     };
 
-    private final Map<String, String> attachments = new HashMap<String, String>();
+    protected final Map<String, Object> attachments = new HashMap<>();
     private final Map<String, Object> values = new HashMap<String, Object>();
-    private Future<?> future;
 
     private List<URL> urls;
 
@@ -80,6 +87,9 @@ public class RpcContext {
     private InetSocketAddress localAddress;
 
     private InetSocketAddress remoteAddress;
+
+    private String remoteApplicationName;
+
     @Deprecated
     private List<Invoker<?>> invokers;
     @Deprecated
@@ -92,6 +102,9 @@ public class RpcContext {
     private Object request;
     private Object response;
     private AsyncContext asyncContext;
+
+    private boolean remove = true;
+
 
     protected RpcContext() {
     }
@@ -127,6 +140,14 @@ public class RpcContext {
         return LOCAL.get();
     }
 
+    public boolean canRemove() {
+        return remove;
+    }
+
+    public void clearAfterEachInvoke(boolean remove) {
+        this.remove = remove;
+    }
+
     public static void restoreContext(RpcContext oldContext) {
         LOCAL.set(oldContext);
     }
@@ -137,7 +158,18 @@ public class RpcContext {
      * @see org.apache.dubbo.rpc.filter.ContextFilter
      */
     public static void removeContext() {
-        LOCAL.remove();
+        removeContext(false);
+    }
+
+    /**
+     * customized for internal use.
+     *
+     * @param checkCanRemove if need check before remove
+     */
+    public static void removeContext(boolean checkCanRemove) {
+        if (LOCAL.get().canRemove()) {
+            LOCAL.remove();
+        }
     }
 
     /**
@@ -201,7 +233,7 @@ public class RpcContext {
      * @return consumer side.
      */
     public boolean isConsumerSide() {
-        return getUrl().getParameter(Constants.SIDE_KEY, Constants.PROVIDER_SIDE).equals(Constants.CONSUMER_SIDE);
+        return getUrl().getParameter(SIDE_KEY, PROVIDER_SIDE).equals(CONSUMER_SIDE);
     }
 
     /**
@@ -212,7 +244,7 @@ public class RpcContext {
      */
     @SuppressWarnings("unchecked")
     public <T> CompletableFuture<T> getCompletableFuture() {
-        return (CompletableFuture<T>) future;
+        return FutureContext.getContext().getCompletableFuture();
     }
 
     /**
@@ -223,7 +255,7 @@ public class RpcContext {
      */
     @SuppressWarnings("unchecked")
     public <T> Future<T> getFuture() {
-        return (Future<T>) future;
+        return FutureContext.getContext().getCompletableFuture();
     }
 
     /**
@@ -231,8 +263,8 @@ public class RpcContext {
      *
      * @param future
      */
-    public void setFuture(Future<?> future) {
-        this.future = future;
+    public void setFuture(CompletableFuture<?> future) {
+        FutureContext.getContext().setFuture(future);
     }
 
     public List<URL> getUrls() {
@@ -336,7 +368,7 @@ public class RpcContext {
      */
     public String getLocalHostName() {
         String host = localAddress == null ? null : localAddress.getHostName();
-        if (host == null || host.length() == 0) {
+        if (StringUtils.isEmpty(host)) {
             return getLocalHost();
         }
         return host;
@@ -374,6 +406,15 @@ public class RpcContext {
      */
     public RpcContext setRemoteAddress(InetSocketAddress address) {
         this.remoteAddress = address;
+        return this;
+    }
+
+    public String getRemoteApplicationName() {
+        return remoteApplicationName;
+    }
+
+    public RpcContext setRemoteApplicationName(String remoteApplicationName) {
+        this.remoteApplicationName = remoteApplicationName;
         return this;
     }
 
@@ -440,12 +481,27 @@ public class RpcContext {
     }
 
     /**
-     * get attachment.
+     * also see {@link #getObjectAttachment(String)}.
      *
      * @param key
      * @return attachment
      */
     public String getAttachment(String key) {
+        Object value = attachments.get(key);
+        if (value instanceof String) {
+            return (String) value;
+        }
+        return null; // or JSON.toString(value);
+    }
+
+    /**
+     * get attachment.
+     *
+     * @param key
+     * @return attachment
+     */
+    @Experimental("Experiment api for supporting Object transmission")
+    public Object getObjectAttachment(String key) {
         return attachments.get(key);
     }
 
@@ -457,6 +513,15 @@ public class RpcContext {
      * @return context
      */
     public RpcContext setAttachment(String key, String value) {
+        return setObjectAttachment(key, (Object) value);
+    }
+
+    public RpcContext setAttachment(String key, Object value) {
+        return setObjectAttachment(key, value);
+    }
+
+    @Experimental("Experiment api for supporting Object transmission")
+    public RpcContext setObjectAttachment(String key, Object value) {
         if (value == null) {
             attachments.remove(key);
         } else {
@@ -481,7 +546,18 @@ public class RpcContext {
      *
      * @return attachments
      */
+    @Deprecated
     public Map<String, String> getAttachments() {
+        return new AttachmentsAdapter.ObjectToStringMap(this.getObjectAttachments());
+    }
+
+    /**
+     * get attachments.
+     *
+     * @return attachments
+     */
+    @Experimental("Experiment api for supporting Object transmission")
+    public Map<String, Object> getObjectAttachments() {
         return attachments;
     }
 
@@ -492,6 +568,21 @@ public class RpcContext {
      * @return context
      */
     public RpcContext setAttachments(Map<String, String> attachment) {
+        this.attachments.clear();
+        if (attachment != null && attachment.size() > 0) {
+            this.attachments.putAll(attachment);
+        }
+        return this;
+    }
+
+    /**
+     * set attachments
+     *
+     * @param attachment
+     * @return context
+     */
+    @Experimental("Experiment api for supporting Object transmission")
+    public RpcContext setObjectAttachments(Map<String, Object> attachment) {
         this.attachments.clear();
         if (attachment != null && attachment.size() > 0) {
             this.attachments.putAll(attachment);
@@ -576,7 +667,7 @@ public class RpcContext {
 
     public RpcContext setInvokers(List<Invoker<?>> invokers) {
         this.invokers = invokers;
-        if (invokers != null && !invokers.isEmpty()) {
+        if (CollectionUtils.isNotEmpty(invokers)) {
             List<URL> urls = new ArrayList<URL>(invokers.size());
             for (Invoker<?> invoker : invokers) {
                 urls.add(invoker.getUrl());
@@ -630,51 +721,26 @@ public class RpcContext {
     public <T> CompletableFuture<T> asyncCall(Callable<T> callable) {
         try {
             try {
-                setAttachment(Constants.ASYNC_KEY, Boolean.TRUE.toString());
+                setAttachment(ASYNC_KEY, Boolean.TRUE.toString());
                 final T o = callable.call();
                 //local invoke will return directly
                 if (o != null) {
                     if (o instanceof CompletableFuture) {
                         return (CompletableFuture<T>) o;
                     }
-                    CompletableFuture.completedFuture(o);
+                    return CompletableFuture.completedFuture(o);
                 } else {
                     // The service has a normal sync method signature, should get future from RpcContext.
                 }
             } catch (Exception e) {
                 throw new RpcException(e);
             } finally {
-                removeAttachment(Constants.ASYNC_KEY);
+                removeAttachment(ASYNC_KEY);
             }
         } catch (final RpcException e) {
-            return new CompletableFuture<T>() {
-                @Override
-                public boolean cancel(boolean mayInterruptIfRunning) {
-                    return false;
-                }
-
-                @Override
-                public boolean isCancelled() {
-                    return false;
-                }
-
-                @Override
-                public boolean isDone() {
-                    return true;
-                }
-
-                @Override
-                public T get() throws InterruptedException, ExecutionException {
-                    throw new ExecutionException(e.getCause());
-                }
-
-                @Override
-                public T get(long timeout, TimeUnit unit)
-                        throws InterruptedException, ExecutionException,
-                        TimeoutException {
-                    return get();
-                }
-            };
+            CompletableFuture<T> exceptionFuture = new CompletableFuture<>();
+            exceptionFuture.completeExceptionally(e);
+            return exceptionFuture;
         }
         return ((CompletableFuture<T>) getContext().getFuture());
     }
@@ -686,13 +752,13 @@ public class RpcContext {
      */
     public void asyncCall(Runnable runnable) {
         try {
-            setAttachment(Constants.RETURN_KEY, Boolean.FALSE.toString());
+            setAttachment(RETURN_KEY, Boolean.FALSE.toString());
             runnable.run();
         } catch (Throwable e) {
             // FIXME should put exception in future?
             throw new RpcException("oneway call error ." + e.getMessage(), e);
         } finally {
-            removeAttachment(Constants.RETURN_KEY);
+            removeAttachment(RETURN_KEY);
         }
     }
 
@@ -703,12 +769,15 @@ public class RpcContext {
     @SuppressWarnings("unchecked")
     public static AsyncContext startAsync() throws IllegalStateException {
         RpcContext currentContext = getContext();
-        if (currentContext.asyncContext != null) {
-            currentContext.asyncContext.start();
-            return currentContext.asyncContext;
-        } else {
-            throw new IllegalStateException("This service does not support asynchronous operations, you should open async explicitly before use.");
+        if (currentContext.asyncContext == null) {
+            currentContext.asyncContext = new AsyncContextImpl();
         }
+        currentContext.asyncContext.start();
+        return currentContext.asyncContext;
+    }
+
+    protected void setAsyncContext(AsyncContext asyncContext) {
+        this.asyncContext = asyncContext;
     }
 
     public boolean isAsyncStarted() {
@@ -720,10 +789,6 @@ public class RpcContext {
 
     public boolean stopAsync() {
         return asyncContext.stop();
-    }
-
-    public void setAsyncContext(AsyncContext asyncContext) {
-        this.asyncContext = asyncContext;
     }
 
     public AsyncContext getAsyncContext() {

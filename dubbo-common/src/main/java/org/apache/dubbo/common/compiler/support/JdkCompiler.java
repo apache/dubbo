@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.compiler.support;
 
-import org.apache.dubbo.common.utils.ClassHelper;
 
 import javax.tools.DiagnosticCollector;
 import javax.tools.FileObject;
@@ -44,7 +43,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -74,7 +72,7 @@ public class JdkCompiler extends AbstractCompiler {
         StandardJavaFileManager manager = compiler.getStandardFileManager(diagnosticCollector, null, null);
         final ClassLoader loader = Thread.currentThread().getContextClassLoader();
         if (loader instanceof URLClassLoader
-                && (!loader.getClass().getName().equals("sun.misc.Launcher$AppClassLoader"))) {
+                && (!"sun.misc.Launcher$AppClassLoader".equals(loader.getClass().getName()))) {
             try {
                 URLClassLoader urlClassLoader = (URLClassLoader) loader;
                 List<File> files = new ArrayList<File>();
@@ -168,8 +166,9 @@ public class JdkCompiler extends AbstractCompiler {
         @Override
         public FileObject getFileForInput(Location location, String packageName, String relativeName) throws IOException {
             FileObject o = fileObjects.get(uri(location, packageName, relativeName));
-            if (o != null)
+            if (o != null) {
                 return o;
+            }
             return super.getFileForInput(location, packageName, relativeName);
         }
 
@@ -196,8 +195,9 @@ public class JdkCompiler extends AbstractCompiler {
 
         @Override
         public String inferBinaryName(Location loc, JavaFileObject file) {
-            if (file instanceof JavaFileObjectImpl)
+            if (file instanceof JavaFileObjectImpl) {
                 return file.getName();
+            }
             return super.inferBinaryName(loc, file);
         }
 
@@ -207,11 +207,6 @@ public class JdkCompiler extends AbstractCompiler {
             Iterable<JavaFileObject> result = super.list(location, packageName, kinds, recurse);
 
             ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
-            List<URL> urlList = new ArrayList<URL>();
-            Enumeration<URL> e = contextClassLoader.getResources("com");
-            while (e.hasMoreElements()) {
-                urlList.add(e.nextElement());
-            }
 
             ArrayList<JavaFileObject> files = new ArrayList<JavaFileObject>();
 
@@ -259,7 +254,7 @@ public class JdkCompiler extends AbstractCompiler {
                 return defineClass(qualifiedClassName, bytes, 0, bytes.length);
             }
             try {
-                return ClassHelper.forNameWithCallerClassLoader(qualifiedClassName, getClass());
+                return org.apache.dubbo.common.utils.ClassUtils.forNameWithCallerClassLoader(qualifiedClassName, getClass());
             } catch (ClassNotFoundException nf) {
                 return super.findClass(qualifiedClassName);
             }

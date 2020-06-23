@@ -33,7 +33,9 @@ public class SimpleDataStore implements DataStore {
     @Override
     public Map<String, Object> get(String componentName) {
         ConcurrentMap<String, Object> value = data.get(componentName);
-        if (value == null) return new HashMap<String, Object>();
+        if (value == null) {
+            return new HashMap<String, Object>();
+        }
 
         return new HashMap<String, Object>(value);
     }
@@ -48,11 +50,7 @@ public class SimpleDataStore implements DataStore {
 
     @Override
     public void put(String componentName, String key, Object value) {
-        Map<String, Object> componentData = data.get(componentName);
-        if (null == componentData) {
-            data.putIfAbsent(componentName, new ConcurrentHashMap<String, Object>());
-            componentData = data.get(componentName);
-        }
+        Map<String, Object> componentData = data.computeIfAbsent(componentName, k -> new ConcurrentHashMap<>());
         componentData.put(key, value);
     }
 

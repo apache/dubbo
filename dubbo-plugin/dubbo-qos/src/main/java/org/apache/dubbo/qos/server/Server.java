@@ -18,7 +18,9 @@ package org.apache.dubbo.qos.server;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.qos.server.handler.QosProcessHandler;
+
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
@@ -47,6 +49,8 @@ public class Server {
         return INSTANCE;
     }
 
+    private String host;
+
     private int port;
 
     private boolean acceptForeignIp = true;
@@ -56,7 +60,7 @@ public class Server {
     private EventLoopGroup worker;
 
     private Server() {
-        this.welcome = DubboLogo.dubbo;
+        this.welcome = DubboLogo.DUBBO;
     }
 
     private String welcome;
@@ -81,13 +85,13 @@ public class Server {
         if (!started.compareAndSet(false, true)) {
             return;
         }
-        boss = new NioEventLoopGroup(0, new DefaultThreadFactory("qos-boss", true));
+        boss = new NioEventLoopGroup(1, new DefaultThreadFactory("qos-boss", true));
         worker = new NioEventLoopGroup(0, new DefaultThreadFactory("qos-worker", true));
         ServerBootstrap serverBootstrap = new ServerBootstrap();
         serverBootstrap.group(boss, worker);
         serverBootstrap.channel(NioServerSocketChannel.class);
+        serverBootstrap.option(ChannelOption.SO_REUSEADDR, true);
         serverBootstrap.childOption(ChannelOption.TCP_NODELAY, true);
-        serverBootstrap.childOption(ChannelOption.SO_REUSEADDR, true);
         serverBootstrap.childHandler(new ChannelInitializer<Channel>() {
 
             @Override
@@ -96,7 +100,12 @@ public class Server {
             }
         });
         try {
-            serverBootstrap.bind(port).sync();
+            if (StringUtils.isBlank(host)) {
+                serverBootstrap.bind(port).sync();
+            } else {
+                serverBootstrap.bind(host, port).sync();
+            }
+
             logger.info("qos-server bind localhost:" + port);
         } catch (Throwable throwable) {
             logger.error("qos-server can not bind localhost:" + port, throwable);
@@ -115,6 +124,14 @@ public class Server {
         if (worker != null) {
             worker.shutdownGracefully();
         }
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public void setHost(String host) {
+        this.host = host;
     }
 
     public void setPort(int port) {

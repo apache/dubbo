@@ -31,6 +31,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * LogbackContainer. (SPI, Singleton, ThreadSafe)
+ *
+ * The container class implementation for Logback
  */
 public class LogbackContainer implements Container {
 
@@ -47,7 +49,7 @@ public class LogbackContainer implements Container {
         String file = ConfigUtils.getProperty(LOGBACK_FILE);
         if (file != null && file.length() > 0) {
             String level = ConfigUtils.getProperty(LOGBACK_LEVEL);
-            if (level == null || level.length() == 0) {
+            if (StringUtils.isEmpty(level)) {
                 level = DEFAULT_LOGBACK_LEVEL;
             }
             // maxHistory=0 Infinite history

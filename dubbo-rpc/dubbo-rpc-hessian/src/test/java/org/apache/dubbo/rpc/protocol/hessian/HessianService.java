@@ -32,4 +32,6 @@ public interface HessianService {
 
     String context(String name);
 
+    String getRemoteApplicationName();
+
 }

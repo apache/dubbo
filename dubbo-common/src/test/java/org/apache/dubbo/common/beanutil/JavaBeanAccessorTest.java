@@ -16,22 +16,22 @@
  */
 package org.apache.dubbo.common.beanutil;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class JavaBeanAccessorTest {
 
     @Test
     public void testIsAccessByMethod(){
-        Assert.assertTrue(JavaBeanAccessor.isAccessByMethod(JavaBeanAccessor.METHOD));
-        Assert.assertTrue(JavaBeanAccessor.isAccessByMethod(JavaBeanAccessor.ALL));
-        Assert.assertFalse(JavaBeanAccessor.isAccessByMethod(JavaBeanAccessor.FIELD));
+        Assertions.assertTrue(JavaBeanAccessor.isAccessByMethod(JavaBeanAccessor.METHOD));
+        Assertions.assertTrue(JavaBeanAccessor.isAccessByMethod(JavaBeanAccessor.ALL));
+        Assertions.assertFalse(JavaBeanAccessor.isAccessByMethod(JavaBeanAccessor.FIELD));
     }
 
     @Test
     public void testIsAccessByField(){
-        Assert.assertTrue(JavaBeanAccessor.isAccessByField(JavaBeanAccessor.FIELD));
-        Assert.assertTrue(JavaBeanAccessor.isAccessByField(JavaBeanAccessor.ALL));
-        Assert.assertFalse(JavaBeanAccessor.isAccessByField(JavaBeanAccessor.METHOD));
+        Assertions.assertTrue(JavaBeanAccessor.isAccessByField(JavaBeanAccessor.FIELD));
+        Assertions.assertTrue(JavaBeanAccessor.isAccessByField(JavaBeanAccessor.ALL));
+        Assertions.assertFalse(JavaBeanAccessor.isAccessByField(JavaBeanAccessor.METHOD));
     }
 }

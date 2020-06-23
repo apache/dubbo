@@ -19,6 +19,8 @@ package org.apache.dubbo.config.spring;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.RegistryService;
 
@@ -98,11 +100,7 @@ public abstract class AbstractRegistryService implements RegistryService {
         if (url == null) {
             throw new IllegalArgumentException("url == null");
         }
-        List<URL> urls = registered.get(service);
-        if (urls == null) {
-            registered.putIfAbsent(service, new CopyOnWriteArrayList<URL>());
-            urls = registered.get(service);
-        }
+        List<URL> urls = registered.computeIfAbsent(service, k -> new CopyOnWriteArrayList<>());
         if (!urls.contains(url)) {
             urls.add(url);
         }
@@ -162,12 +160,8 @@ public abstract class AbstractRegistryService implements RegistryService {
         if (listener == null) {
             return;
         }
-        List<NotifyListener> listeners = notifyListeners.get(service);
-        if (listeners == null) {
-            notifyListeners.putIfAbsent(service, new CopyOnWriteArrayList<NotifyListener>());
-            listeners = notifyListeners.get(service);
-        }
-        if (listeners != null && !listeners.contains(listener)) {
+        List<NotifyListener> listeners = notifyListeners.computeIfAbsent(service, k -> new CopyOnWriteArrayList<>());
+        if (!listeners.contains(listener)) {
             listeners.add(listener);
         }
     }
@@ -205,8 +199,8 @@ public abstract class AbstractRegistryService implements RegistryService {
     }
 
     protected final void notify(String service, List<URL> urls) {
-        if (service == null || service.length() == 0
-                || urls == null || urls.size() == 0) {
+        if (StringUtils.isEmpty(service)
+                || CollectionUtils.isEmpty(urls)) {
             return;
         }
         doNotify(service, urls);

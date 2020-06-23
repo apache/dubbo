@@ -17,8 +17,8 @@
 package org.apache.dubbo.remoting.handler;
 
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.remoting.Channel;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.ExchangeHandler;
@@ -26,11 +26,13 @@ import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.header.HeaderExchangeHandler;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.apache.dubbo.common.constants.CommonConstants.READONLY_EVENT;
 
 //TODO response test
 public class HeaderExchangeHandlerTest {
@@ -47,7 +49,7 @@ public class HeaderExchangeHandlerTest {
         ExchangeHandler exhandler = new MockedExchangeHandler() {
             @Override
             public void received(Channel channel, Object message) throws RemotingException {
-                Assert.assertEquals(requestdata, message);
+                Assertions.assertEquals(requestdata, message);
             }
         };
         HeaderExchangeHandler hexhandler = new HeaderExchangeHandler(exhandler);
@@ -66,11 +68,11 @@ public class HeaderExchangeHandlerTest {
             @Override
             public void send(Object message) throws RemotingException {
                 Response res = (Response) message;
-                Assert.assertEquals(request.getId(), res.getId());
-                Assert.assertEquals(request.getVersion(), res.getVersion());
-                Assert.assertEquals(Response.OK, res.getStatus());
-                Assert.assertEquals(requestdata, res.getResult());
-                Assert.assertEquals(null, res.getErrorMessage());
+                Assertions.assertEquals(request.getId(), res.getId());
+                Assertions.assertEquals(request.getVersion(), res.getVersion());
+                Assertions.assertEquals(Response.OK, res.getStatus());
+                Assertions.assertEquals(requestdata, res.getResult());
+                Assertions.assertNull(res.getErrorMessage());
                 count.incrementAndGet();
             }
         };
@@ -82,17 +84,17 @@ public class HeaderExchangeHandlerTest {
 
             @Override
             public void received(Channel channel, Object message) throws RemotingException {
-                Assert.fail();
+                Assertions.fail();
             }
         };
         HeaderExchangeHandler hexhandler = new HeaderExchangeHandler(exhandler);
         hexhandler.received(mchannel, request);
-        Assert.assertEquals(1, count.get());
+        Assertions.assertEquals(1, count.get());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void test_received_request_twoway_error_nullhandler() throws RemotingException {
-        new HeaderExchangeHandler(null);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> new HeaderExchangeHandler(null));
     }
 
     @Test
@@ -107,11 +109,11 @@ public class HeaderExchangeHandlerTest {
             @Override
             public void send(Object message) throws RemotingException {
                 Response res = (Response) message;
-                Assert.assertEquals(request.getId(), res.getId());
-                Assert.assertEquals(request.getVersion(), res.getVersion());
-                Assert.assertEquals(Response.SERVICE_ERROR, res.getStatus());
-                Assert.assertNull(res.getResult());
-                Assert.assertTrue(res.getErrorMessage().contains(BizException.class.getName()));
+                Assertions.assertEquals(request.getId(), res.getId());
+                Assertions.assertEquals(request.getVersion(), res.getVersion());
+                Assertions.assertEquals(Response.SERVICE_ERROR, res.getStatus());
+                Assertions.assertNull(res.getResult());
+                Assertions.assertTrue(res.getErrorMessage().contains(BizException.class.getName()));
                 count.incrementAndGet();
             }
         };
@@ -123,7 +125,7 @@ public class HeaderExchangeHandlerTest {
         };
         HeaderExchangeHandler hexhandler = new HeaderExchangeHandler(exhandler);
         hexhandler.received(mchannel, request);
-        Assert.assertEquals(1, count.get());
+        Assertions.assertEquals(1, count.get());
     }
 
     @Test
@@ -138,29 +140,29 @@ public class HeaderExchangeHandlerTest {
             @Override
             public void send(Object message) throws RemotingException {
                 Response res = (Response) message;
-                Assert.assertEquals(request.getId(), res.getId());
-                Assert.assertEquals(request.getVersion(), res.getVersion());
-                Assert.assertEquals(Response.BAD_REQUEST, res.getStatus());
-                Assert.assertNull(res.getResult());
-                Assert.assertTrue(res.getErrorMessage().contains(BizException.class.getName()));
+                Assertions.assertEquals(request.getId(), res.getId());
+                Assertions.assertEquals(request.getVersion(), res.getVersion());
+                Assertions.assertEquals(Response.BAD_REQUEST, res.getStatus());
+                Assertions.assertNull(res.getResult());
+                Assertions.assertTrue(res.getErrorMessage().contains(BizException.class.getName()));
                 count.incrementAndGet();
             }
         };
         HeaderExchangeHandler hexhandler = new HeaderExchangeHandler(new MockedExchangeHandler());
         hexhandler.received(mchannel, request);
-        Assert.assertEquals(1, count.get());
+        Assertions.assertEquals(1, count.get());
     }
 
     @Test
     public void test_received_request_event_readonly() throws RemotingException {
         final Request request = new Request();
         request.setTwoWay(true);
-        request.setEvent(Request.READONLY_EVENT);
+        request.setEvent(READONLY_EVENT);
 
         final Channel mchannel = new MockedChannel();
         HeaderExchangeHandler hexhandler = new HeaderExchangeHandler(new MockedExchangeHandler());
         hexhandler.received(mchannel, request);
-        Assert.assertTrue(mchannel.hasAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY));
+        Assertions.assertTrue(mchannel.hasAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY));
     }
 
     @Test
@@ -172,20 +174,20 @@ public class HeaderExchangeHandlerTest {
         final Channel mchannel = new MockedChannel() {
             @Override
             public void send(Object message) throws RemotingException {
-                Assert.fail();
+                Assertions.fail();
             }
         };
         HeaderExchangeHandler hexhandler = new HeaderExchangeHandler(new MockedExchangeHandler() {
 
             @Override
-            public CompletableFuture reply(ExchangeChannel channel, Object request) throws RemotingException {
-                Assert.fail();
+            public CompletableFuture<Object> reply(ExchangeChannel channel, Object request) throws RemotingException {
+                Assertions.fail();
                 throw new RemotingException(channel, "");
             }
 
             @Override
             public void received(Channel channel, Object message) throws RemotingException {
-                Assert.fail();
+                Assertions.fail();
                 throw new RemotingException(channel, "");
             }
         });

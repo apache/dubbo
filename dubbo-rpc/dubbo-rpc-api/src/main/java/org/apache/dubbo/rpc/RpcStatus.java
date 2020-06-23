@@ -16,12 +16,10 @@
  */
 package org.apache.dubbo.rpc;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -47,12 +45,6 @@ public class RpcStatus {
     private final AtomicLong failedMaxElapsed = new AtomicLong();
     private final AtomicLong succeededMaxElapsed = new AtomicLong();
 
-    /**
-     * Semaphore used to control concurrency limit set by `executes`
-     */
-    private volatile Semaphore executesLimit;
-    private volatile int executesPermits;
-
     private RpcStatus() {
     }
 
@@ -62,12 +54,7 @@ public class RpcStatus {
      */
     public static RpcStatus getStatus(URL url) {
         String uri = url.toIdentityString();
-        RpcStatus status = SERVICE_STATISTICS.get(uri);
-        if (status == null) {
-            SERVICE_STATISTICS.putIfAbsent(uri, new RpcStatus());
-            status = SERVICE_STATISTICS.get(uri);
-        }
-        return status;
+        return SERVICE_STATISTICS.computeIfAbsent(uri, key -> new RpcStatus());
     }
 
     /**
@@ -85,17 +72,8 @@ public class RpcStatus {
      */
     public static RpcStatus getStatus(URL url, String methodName) {
         String uri = url.toIdentityString();
-        ConcurrentMap<String, RpcStatus> map = METHOD_STATISTICS.get(uri);
-        if (map == null) {
-            METHOD_STATISTICS.putIfAbsent(uri, new ConcurrentHashMap<String, RpcStatus>());
-            map = METHOD_STATISTICS.get(uri);
-        }
-        RpcStatus status = map.get(methodName);
-        if (status == null) {
-            map.putIfAbsent(methodName, new RpcStatus());
-            status = map.get(methodName);
-        }
-        return status;
+        ConcurrentMap<String, RpcStatus> map = METHOD_STATISTICS.computeIfAbsent(uri, k -> new ConcurrentHashMap<>());
+        return map.computeIfAbsent(methodName, k -> new RpcStatus());
     }
 
     /**
@@ -109,16 +87,31 @@ public class RpcStatus {
         }
     }
 
+    public static void beginCount(URL url, String methodName) {
+        beginCount(url, methodName, Integer.MAX_VALUE);
+    }
+
     /**
      * @param url
      */
-    public static void beginCount(URL url, String methodName) {
-        beginCount(getStatus(url));
-        beginCount(getStatus(url, methodName));
-    }
-
-    private static void beginCount(RpcStatus status) {
-        status.active.incrementAndGet();
+    public static boolean beginCount(URL url, String methodName, int max) {
+        max = (max <= 0) ? Integer.MAX_VALUE : max;
+        RpcStatus appStatus = getStatus(url);
+        RpcStatus methodStatus = getStatus(url, methodName);
+        if (methodStatus.active.get() == Integer.MAX_VALUE) {
+            return false;
+        }
+        for (int i; ; ) {
+            i = methodStatus.active.get();
+            if (i + 1 > max) {
+                return false;
+            }
+            if (methodStatus.active.compareAndSet(i, i + 1)) {
+                break;
+            }
+        }
+        appStatus.active.incrementAndGet();
+        return true;
     }
 
     /**
@@ -312,26 +305,5 @@ public class RpcStatus {
         return getTotal();
     }
 
-    /**
-     * Get the semaphore for thread number. Semaphore's permits is decided by {@link Constants#EXECUTES_KEY}
-     *
-     * @param maxThreadNum value of {@link Constants#EXECUTES_KEY}
-     * @return thread number semaphore
-     */
-    public Semaphore getSemaphore(int maxThreadNum) {
-        if(maxThreadNum <= 0) {
-            return null;
-        }
 
-        if (executesLimit == null || executesPermits != maxThreadNum) {
-            synchronized (this) {
-                if (executesLimit == null || executesPermits != maxThreadNum) {
-                    executesLimit = new Semaphore(maxThreadNum);
-                    executesPermits = maxThreadNum;
-                }
-            }
-        }
-
-        return executesLimit;
-    }
 }

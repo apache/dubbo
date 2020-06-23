@@ -17,6 +17,32 @@
 
 package com.alibaba.dubbo.rpc;
 
+import org.apache.dubbo.rpc.ProtocolServer;
+
+import com.alibaba.dubbo.common.URL;
+
+import java.util.Collections;
+import java.util.List;
+
 @Deprecated
 public interface Protocol extends org.apache.dubbo.rpc.Protocol {
+
+    <T> Exporter<T> export(Invoker<T> invoker) throws RpcException;
+
+    <T> Invoker<T> refer(Class<T> aClass, URL url) throws RpcException;
+
+    @Override
+    default <T> org.apache.dubbo.rpc.Exporter<T> export(org.apache.dubbo.rpc.Invoker<T> invoker) throws RpcException {
+        return this.export(new Invoker.CompatibleInvoker<>(invoker));
+    }
+
+    @Override
+    default <T> org.apache.dubbo.rpc.Invoker<T> refer(Class<T> aClass, org.apache.dubbo.common.URL url) throws RpcException {
+        return this.refer(aClass, new URL(url));
+    }
+
+    @Override
+    default List<ProtocolServer> getServers() {
+        return Collections.emptyList();
+    }
 }

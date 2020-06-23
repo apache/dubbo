@@ -18,16 +18,16 @@ package org.apache.dubbo.common.extension;
 
 import org.apache.dubbo.common.compiler.support.AdaptiveCompiler;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 
 public class ExtensionLoader_Adaptive_UseJdkCompiler_Test extends ExtensionLoader_Adaptive_Test {
-    @BeforeClass
+    @BeforeAll
     public static void setUp() throws Exception {
         AdaptiveCompiler.setDefaultCompiler("jdk");
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDown() throws Exception {
         AdaptiveCompiler.setDefaultCompiler("javassist");
     }
