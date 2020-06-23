@@ -25,7 +25,6 @@ import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
-import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 
 import java.util.SortedSet;
 
@@ -120,25 +119,4 @@ public class RemoteWritableMetadataService extends AbstractAbstractWritableMetad
         return writableMetadataServiceDelegate.getSubscribedURLs();
     }
 
-    @Override
-    public boolean publishMetadata() {
-        String serviceName = writableMetadataServiceDelegate.serviceName();
-        if (publishServiceMetadata(serviceName)) {
-            return publicConsumerMetadata(serviceName);
-        }
-        return false;
-    }
-
-    protected boolean publishServiceMetadata(String serviceName) {
-        SortedSet<String> exportedURLs = writableMetadataServiceDelegate.getExportedURLs();
-        String revision = urlRevisionResolver.resolve(exportedURLs);
-        return getMetadataReport().saveExportedURLs(serviceName, revision, exportedURLs);
-    }
-
-    protected boolean publicConsumerMetadata(String serviceName) {
-        SortedSet<String> subscribedURLs = writableMetadataServiceDelegate.getSubscribedURLs();
-        String revision = urlRevisionResolver.resolve(subscribedURLs);
-        getMetadataReport().saveSubscribedData(new SubscriberMetadataIdentifier(serviceName, revision), subscribedURLs);
-        return true;
-    }
 }

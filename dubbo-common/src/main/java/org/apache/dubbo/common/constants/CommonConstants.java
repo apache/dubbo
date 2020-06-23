@@ -194,6 +194,14 @@ public interface CommonConstants {
     String REMOTE_METADATA_STORAGE_TYPE = "remote";
 
     /**
+     * The composite metadata storage type includes {@link #DEFAULT_METADATA_STORAGE_TYPE "local"} and
+     * {@link #REMOTE_METADATA_STORAGE_TYPE "remote"}.
+     *
+     * @since 2.7.8
+     */
+    String COMPOSITE_METADATA_STORAGE_TYPE = "composite";
+
+    /**
      * Consumer side 's proxy class
      */
     String PROXY_CLASS_REF = "refClass";
