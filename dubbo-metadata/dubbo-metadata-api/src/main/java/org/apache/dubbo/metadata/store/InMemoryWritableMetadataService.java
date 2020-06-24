@@ -143,7 +143,7 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
                 serviceDefinitions.put(providerUrl.getServiceKey(), data);
                 return;
             }
-            logger.error("publishProvider interfaceName is empty . providerUrl: " + providerUrl.toFullString());
+            logger.info("publishProvider interfaceName is empty . providerUrl: " + providerUrl.toFullString());
         } catch (ClassNotFoundException e) {
             //ignore error
             logger.error("publishProvider getServiceDescriptor error. providerUrl: " + providerUrl.toFullString(), e);
