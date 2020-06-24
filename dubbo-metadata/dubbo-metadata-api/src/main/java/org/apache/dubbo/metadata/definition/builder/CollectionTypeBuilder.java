@@ -32,6 +32,11 @@ import java.util.Map;
 public class CollectionTypeBuilder implements TypeBuilder {
 
     @Override
+    public int order(){
+        return 99;
+    }
+
+    @Override
     public boolean accept(Type type, Class<?> clazz) {
         if (clazz == null) {
             return false;

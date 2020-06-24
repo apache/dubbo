@@ -25,6 +25,7 @@ import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +37,7 @@ import static org.apache.dubbo.common.utils.ClassUtils.isSimpleType;
  */
 public class TypeDefinitionBuilder {
     private static final Logger logger = LoggerFactory.getLogger(TypeDefinitionBuilder.class);
-    private static final List<TypeBuilder> BUILDERS;
+    static final List<TypeBuilder> BUILDERS;
 
     static {
         List<TypeBuilder> builders = new ArrayList<>();
@@ -44,6 +45,12 @@ public class TypeDefinitionBuilder {
         for (String extensionName : extensionLoader.getSupportedExtensions()) {
             builders.add(extensionLoader.getExtension(extensionName));
         }
+        builders.sort(new Comparator<TypeBuilder>() {
+            @Override
+            public int compare(TypeBuilder o1, TypeBuilder o2) {
+                return o1.order() - o2.order();
+            }
+        });
         BUILDERS = builders;
     }
 

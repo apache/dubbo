@@ -28,6 +28,11 @@ import java.util.Map;
 @SPI
 public interface TypeBuilder {
 
+    // the smaller, it is have much more priority
+    default int order(){
+        return 100;
+    }
+
     /**
      * Whether the build accept the type or class passed in.
      */
