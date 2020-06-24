@@ -9,10 +9,10 @@ import java.util.Map;
 /**
  * test for sort
  */
-public class TestTypeBuilder implements TypeBuilder {
+public class Test3TypeBuilder implements TypeBuilder {
     // it is smaller than the implements of TypeBuilder
     public int getPriority(){
-        return -3;
+        return 10;
     }
 
     @Override

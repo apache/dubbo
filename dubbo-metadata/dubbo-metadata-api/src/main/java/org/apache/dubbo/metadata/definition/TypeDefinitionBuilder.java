@@ -29,6 +29,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.apache.dubbo.common.utils.ClassUtils.isSimpleType;
 
@@ -40,18 +41,9 @@ public class TypeDefinitionBuilder {
     static final List<TypeBuilder> BUILDERS;
 
     static {
-        List<TypeBuilder> builders = new ArrayList<>();
         ExtensionLoader<TypeBuilder> extensionLoader = ExtensionLoader.getExtensionLoader(TypeBuilder.class);
-        for (String extensionName : extensionLoader.getSupportedExtensions()) {
-            builders.add(extensionLoader.getExtension(extensionName));
-        }
-        builders.sort(new Comparator<TypeBuilder>() {
-            @Override
-            public int compare(TypeBuilder o1, TypeBuilder o2) {
-                return o1.order() - o2.order();
-            }
-        });
-        BUILDERS = builders;
+        Set<TypeBuilder> tbs = extensionLoader.getSupportedExtensionInstances();
+        BUILDERS = new ArrayList<>(tbs);
     }
 
     public static TypeDefinition build(Type type, Class<?> clazz, Map<Class<?>, TypeDefinition> typeCache) {

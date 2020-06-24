@@ -11,5 +11,8 @@ public class TypeDefinitionBuilderTest {
     public void testSortTypeBuilder(){
         TypeBuilder tb = TypeDefinitionBuilder.BUILDERS.get(0);
         Assertions.assertTrue(tb instanceof TestTypeBuilder);
+
+        tb = TypeDefinitionBuilder.BUILDERS.get(TypeDefinitionBuilder.BUILDERS.size()-1);
+        Assertions.assertTrue(tb instanceof Test3TypeBuilder);
     }
 }
