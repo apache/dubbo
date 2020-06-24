@@ -21,6 +21,7 @@ import org.apache.dubbo.common.config.configcenter.file.FileSystemDynamicConfigu
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -56,11 +57,15 @@ public class ServiceNameMappingTest {
     @BeforeEach
     public void init() {
 
+        ApplicationModel.reset();
+
         applicationName = getClass().getSimpleName();
 
         ApplicationModel.getConfigManager().setApplication(new ApplicationConfig(applicationName));
 
         configuration = new FileSystemDynamicConfiguration();
+
+        FileUtils.deleteQuietly(configuration.getRootDirectory());
 
         ApplicationModel.getEnvironment().setDynamicConfiguration(configuration);
 
@@ -68,7 +73,9 @@ public class ServiceNameMappingTest {
     }
 
     @AfterEach
-    public void reset() {
+    public void reset() throws Exception {
+        FileUtils.deleteQuietly(configuration.getRootDirectory());
+        configuration.close();
         ApplicationModel.reset();
     }
 

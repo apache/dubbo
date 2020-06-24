@@ -1222,7 +1222,7 @@ public class DubboBootstrap extends GenericEventListener {
     }
 
     private void clearConfigs() {
-        configManager.clear();
+        configManager.destroy();
         if (logger.isDebugEnabled()) {
             logger.debug(NAME + "'s configs have been clear.");
         }

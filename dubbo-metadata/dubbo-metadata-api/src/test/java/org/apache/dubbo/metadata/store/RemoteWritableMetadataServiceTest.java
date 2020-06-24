@@ -36,7 +36,7 @@ import java.util.Map;
 /**
  * 2018/9/14
  */
-public class RemoteWritableMeatadataServiceTest {
+public class RemoteWritableMetadataServiceTest {
     URL url = URL.valueOf("JTest://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic");
     RemoteWritableMetadataService metadataReportService1;
 
@@ -140,9 +140,9 @@ public class RemoteWritableMeatadataServiceTest {
         Assertions.assertTrue(metadataReportService1.refreshMetadata(exportedRevision, "1109"));
         Thread.sleep(200);
         int size = jTestMetadataReport4Test.store.size();
-        Assertions.assertTrue(size - origSize == 2);
-        Assertions.assertEquals(jTestMetadataReport4Test.store.get(getServiceMetadataIdentifier(publishUrl, exportedRevision).getUniqueKey(KeyTypeEnum.UNIQUE_KEY)), publishUrl.toFullString());
-        Assertions.assertEquals(jTestMetadataReport4Test.store.get(getServiceMetadataIdentifier(publishUrl2, exportedRevision).getUniqueKey(KeyTypeEnum.UNIQUE_KEY)), publishUrl2.toFullString());
+        Assertions.assertEquals(origSize, size);
+        Assertions.assertNull(jTestMetadataReport4Test.store.get(getServiceMetadataIdentifier(publishUrl, exportedRevision).getUniqueKey(KeyTypeEnum.UNIQUE_KEY)));
+        Assertions.assertNull(jTestMetadataReport4Test.store.get(getServiceMetadataIdentifier(publishUrl2, exportedRevision).getUniqueKey(KeyTypeEnum.UNIQUE_KEY)));
     }
 
     @Test
@@ -160,10 +160,10 @@ public class RemoteWritableMeatadataServiceTest {
         Assertions.assertTrue(metadataReportService1.refreshMetadata(exportedRevision, subscriberRevision));
         Thread.sleep(200);
         int size = jTestMetadataReport4Test.store.size();
-        Assertions.assertTrue(size - origSize == 1);
+        Assertions.assertEquals(origSize, size);
         String r = jTestMetadataReport4Test.store.get(getSubscriberMetadataIdentifier(
                 subscriberRevision).getUniqueKey(KeyTypeEnum.UNIQUE_KEY));
-        Assertions.assertNotNull(r);
+        Assertions.assertNull(r);
     }
 
     private ServiceMetadataIdentifier getServiceMetadataIdentifier(URL publishUrl, String exportedRevision) {

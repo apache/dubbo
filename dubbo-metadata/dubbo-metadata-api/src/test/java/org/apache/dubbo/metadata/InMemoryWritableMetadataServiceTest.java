@@ -17,10 +17,12 @@
 package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metadata.store.InMemoryWritableMetadataService;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Set;
@@ -54,9 +56,15 @@ public class InMemoryWritableMetadataServiceTest {
     private static final URL BASE_URL_GROUP_AND_VERSION = BASE_URL_GROUP.addParameter(VERSION_KEY, "1.0.0");
     private static final URL BASE_URL_GROUP_AND_VERSION_AND_PROTOCOL = BASE_URL_GROUP_AND_VERSION.addParameter(PROTOCOL_KEY, "rest");
 
-    @BeforeAll
-    public static void init() {
-        ApplicationModel.setApplication("test");
+    @BeforeEach
+    public void init() {
+        ApplicationConfig applicationConfig = new ApplicationConfig("test");
+        ApplicationModel.getConfigManager().setApplication(applicationConfig);
+    }
+
+    @AfterEach
+    public void reset() {
+        ApplicationModel.reset();
     }
 
     @Test
