@@ -49,7 +49,7 @@ public class ConfigManagerTest {
 
     @BeforeEach
     public void init() {
-        configManager.clear();
+        configManager.destroy();
     }
 
     @Test

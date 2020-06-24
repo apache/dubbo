@@ -45,6 +45,6 @@ public class URLRevisionResolverTest {
         assertEquals(UNKNOWN_REVISION, revision);
 
         revision = resolver.resolve(asList(URL));
-        assertEquals("7960327984321481979", revision);
+        assertEquals("2ca0638f189ce569", revision);
     }
 }

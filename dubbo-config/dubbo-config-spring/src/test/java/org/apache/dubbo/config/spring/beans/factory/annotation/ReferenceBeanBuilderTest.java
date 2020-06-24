@@ -19,8 +19,10 @@ package org.apache.dubbo.config.spring.beans.factory.annotation;
 
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.spring.ReferenceBean;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
@@ -68,6 +70,11 @@ public class ReferenceBeanBuilderTest {
 
     @Autowired
     private ApplicationContext context;
+
+    @Before
+    public void init() {
+        ApplicationModel.reset();
+    }
 
     @Test
     public void testBuild() throws Exception {

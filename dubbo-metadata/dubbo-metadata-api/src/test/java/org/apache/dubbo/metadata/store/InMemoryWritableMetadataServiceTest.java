@@ -78,8 +78,8 @@ public class InMemoryWritableMetadataServiceTest {
         URL url = URL.valueOf("subscriber://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.Test678Service?version=1.0.44&application=vicpubprovder&side=provider");
         inMemoryWritableMetadataService.subscribeURL(url);
 
-        Assertions.assertTrue(inMemoryWritableMetadataService.getExportedServiceURLs().size() == 1);
-        Assertions.assertEquals(inMemoryWritableMetadataService.getExportedServiceURLs().get(url.getServiceKey()).first(), url);
+        Assertions.assertTrue(inMemoryWritableMetadataService.getSubscribedServiceURLs().size() == 1);
+        Assertions.assertEquals(inMemoryWritableMetadataService.getSubscribedServiceURLs().get(url.getServiceKey()).first(), url);
     }
 
     @Test

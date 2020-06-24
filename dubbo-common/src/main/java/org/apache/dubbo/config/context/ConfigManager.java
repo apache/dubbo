@@ -372,6 +372,15 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     }
 
     /**
+     * @throws IllegalStateException
+     * @since 2.7.8
+     */
+    @Override
+    public void destroy() throws IllegalStateException {
+        clear();
+    }
+
+    /**
      * Add the dubbo {@link AbstractConfig config}
      *
      * @param config the dubbo {@link AbstractConfig config}

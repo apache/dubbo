@@ -35,14 +35,14 @@ public class ConfigTest {
 
     @AfterEach
     public void tearDown() {
-        ApplicationModel.getConfigManager().clear();
+        ApplicationModel.reset();
     }
 
     @BeforeEach
     public void setup() {
         // In IDE env, make sure adding the following argument to VM options
         System.setProperty("java.net.preferIPv4Stack", "true");
-        ApplicationModel.getConfigManager().clear();
+        ApplicationModel.reset();
     }
 
     @Test

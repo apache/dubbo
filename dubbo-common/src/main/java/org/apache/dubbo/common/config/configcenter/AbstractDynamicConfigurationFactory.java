@@ -35,7 +35,7 @@ public abstract class AbstractDynamicConfigurationFactory implements DynamicConf
 
     @Override
     public final DynamicConfiguration getDynamicConfiguration(URL url) {
-        String key = url == null ? DEFAULT_KEY : url.getAddress();
+        String key = url == null ? DEFAULT_KEY : url.toServiceString();
         return dynamicConfigurations.computeIfAbsent(key, k -> createDynamicConfiguration(url));
     }
 

@@ -18,6 +18,7 @@ package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.common.lang.Prioritized;
 
 import java.util.Set;
 
@@ -29,7 +30,7 @@ import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoad
  * @since 2.7.5
  */
 @SPI("default")
-public interface ServiceNameMapping {
+public interface ServiceNameMapping extends Prioritized {
 
     /**
      * Map the specified Dubbo service interface, group, version and protocol to current Dubbo service name

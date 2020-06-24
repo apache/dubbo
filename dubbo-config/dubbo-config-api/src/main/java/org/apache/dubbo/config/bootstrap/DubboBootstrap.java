@@ -52,7 +52,6 @@ import org.apache.dubbo.config.bootstrap.builders.ReferenceBuilder;
 import org.apache.dubbo.config.bootstrap.builders.RegistryBuilder;
 import org.apache.dubbo.config.bootstrap.builders.ServiceBuilder;
 import org.apache.dubbo.config.context.ConfigManager;
-import org.apache.dubbo.config.metadata.ConfigurableMetadataServiceExporter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.config.utils.ReferenceConfigCache;
 import org.apache.dubbo.event.EventDispatcher;
@@ -94,9 +93,9 @@ import static org.apache.dubbo.common.config.configcenter.DynamicConfiguration.g
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
+import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 import static org.apache.dubbo.common.function.ThrowableAction.execute;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
-import static org.apache.dubbo.metadata.WritableMetadataService.getExtension;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.setMetadataStorageType;
 import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
 
@@ -142,7 +141,7 @@ public class DubboBootstrap extends GenericEventListener {
 
     private final EventDispatcher eventDispatcher = EventDispatcher.getDefaultExtension();
 
-    private final ExecutorRepository executorRepository = ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
+    private final ExecutorRepository executorRepository = getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
 
     private final ConfigManager configManager;
 
@@ -166,7 +165,7 @@ public class DubboBootstrap extends GenericEventListener {
 
     private volatile MetadataService metadataService;
 
-    private volatile MetadataServiceExporter metadataServiceExporter;
+    private volatile Set<MetadataServiceExporter> metadataServiceExporters;
 
     private List<ServiceConfigBase<?>> exportedServices = new ArrayList<>();
 
@@ -501,7 +500,7 @@ public class DubboBootstrap extends GenericEventListener {
     /**
      * Initialize
      */
-    private void initialize() {
+    public void initialize() {
         if (!initialized.compareAndSet(false, true)) {
             return;
         }
@@ -518,6 +517,8 @@ public class DubboBootstrap extends GenericEventListener {
         startMetadataCenter();
 
         initMetadataService();
+
+        initMetadataServiceExports();
 
         initEventListener();
 
@@ -781,11 +782,17 @@ public class DubboBootstrap extends GenericEventListener {
 
 
     /**
-     * Initialize {@link MetadataService} from {@link WritableMetadataService}'s extension
+     * Initialize {@link #metadataService WritableMetadataService} from {@link WritableMetadataService}'s extension
      */
     private void initMetadataService() {
-        this.metadataService = getExtension(getMetadataType());
-        this.metadataServiceExporter = new ConfigurableMetadataServiceExporter(metadataService);
+        this.metadataService = WritableMetadataService.getExtension(getMetadataType());
+    }
+
+    /**
+     * Initialize {@link #metadataServiceExporters MetadataServiceExporter}
+     */
+    private void initMetadataServiceExports() {
+        this.metadataServiceExporters = getExtensionLoader(MetadataServiceExporter.class).getSupportedExtensionInstances();
     }
 
     /**
@@ -987,13 +994,21 @@ public class DubboBootstrap extends GenericEventListener {
      * export {@link MetadataService}
      */
     private void exportMetadataService() {
-        metadataServiceExporter.export();
+        metadataServiceExporters
+                .stream()
+                .filter(this::supports)
+                .forEach(MetadataServiceExporter::export);
     }
 
     private void unexportMetadataService() {
-        if (metadataServiceExporter != null && metadataServiceExporter.isExported()) {
-            metadataServiceExporter.unexport();
-        }
+        metadataServiceExporters
+                .stream()
+                .filter(this::supports)
+                .forEach(MetadataServiceExporter::unexport);
+    }
+
+    private boolean supports(MetadataServiceExporter exporter) {
+        return exporter.supports(getMetadataType());
     }
 
     private void exportServices() {
@@ -1109,7 +1124,7 @@ public class DubboBootstrap extends GenericEventListener {
      */
     private void customizeServiceInstance(ServiceInstance serviceInstance) {
         ExtensionLoader<ServiceInstanceCustomizer> loader =
-                ExtensionLoader.getExtensionLoader(ServiceInstanceCustomizer.class);
+                getExtensionLoader(ServiceInstanceCustomizer.class);
         // FIXME, sort customizer before apply
         loader.getSupportedExtensionInstances().forEach(customizer -> {
             // customizes
@@ -1207,7 +1222,7 @@ public class DubboBootstrap extends GenericEventListener {
     }
 
     private void clearConfigs() {
-        configManager.clear();
+        configManager.destroy();
         if (logger.isDebugEnabled()) {
             logger.debug(NAME + "'s configs have been clear.");
         }
