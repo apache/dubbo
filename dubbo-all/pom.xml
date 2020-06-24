@@ -981,6 +981,14 @@
                                     </resource>
                                 </transformer>
 
+                                <!-- @since 2.7.8 -->
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>
+                                        META-INF/dubbo/internal/org.apache.dubbo.metadata.MetadataServiceExporter
+                                    </resource>
+                                </transformer>
+
                             </transformers>
                             <filters>
                                 <filter>
