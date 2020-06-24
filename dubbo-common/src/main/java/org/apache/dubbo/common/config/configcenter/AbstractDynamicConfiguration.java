@@ -236,7 +236,7 @@ public abstract class AbstractDynamicConfiguration implements DynamicConfigurati
                                                        int threadPoolSize,
                                                        long keepAliveTime) {
         return new ThreadPoolExecutor(threadPoolSize, threadPoolSize, keepAliveTime,
-                TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), new NamedThreadFactory(threadPoolPrefixName));
+                TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), new NamedThreadFactory(threadPoolPrefixName, true));
     }
 
     protected static String getThreadPoolPrefixName(URL url) {
