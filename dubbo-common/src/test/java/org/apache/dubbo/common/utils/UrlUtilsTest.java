@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 
 import org.junit.jupiter.api.Test;
@@ -28,11 +27,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class UrlUtilsTest {
@@ -59,7 +61,7 @@ public class UrlUtilsTest {
     @Test
     public void testParseURLWithSpecial() {
         String address = "127.0.0.1:2181?backup=127.0.0.1:2182,127.0.0.1:2183";
-        assertEquals("dubbo://" + address,UrlUtils.parseURL(address, null).toString());
+        assertEquals("dubbo://" + address, UrlUtils.parseURL(address, null).toString());
     }
 
     @Test
@@ -331,16 +333,16 @@ public class UrlUtilsTest {
     @Test
     public void testIsServiceKeyMatch() throws Exception {
         URL url = URL.valueOf("test://127.0.0.1");
-        URL pattern = url.addParameter(Constants.GROUP_KEY, "test")
-                .addParameter(Constants.INTERFACE_KEY, "test")
-                .addParameter(Constants.VERSION_KEY, "test");
+        URL pattern = url.addParameter(GROUP_KEY, "test")
+                .addParameter(INTERFACE_KEY, "test")
+                .addParameter(VERSION_KEY, "test");
         URL value = pattern;
         assertTrue(UrlUtils.isServiceKeyMatch(pattern, value));
 
-        pattern = pattern.addParameter(Constants.GROUP_KEY, "*");
+        pattern = pattern.addParameter(GROUP_KEY, "*");
         assertTrue(UrlUtils.isServiceKeyMatch(pattern, value));
 
-        pattern = pattern.addParameter(Constants.VERSION_KEY, "*");
+        pattern = pattern.addParameter(VERSION_KEY, "*");
         assertTrue(UrlUtils.isServiceKeyMatch(pattern, value));
     }
 
@@ -360,5 +362,18 @@ public class UrlUtilsTest {
         assertTrue(UrlUtils.isMatchGlobPattern("*e", "value"));
         assertTrue(UrlUtils.isMatchGlobPattern("v*e", "value"));
         assertTrue(UrlUtils.isMatchGlobPattern("$key", "value", URL.valueOf("dubbo://localhost:8080/Foo?key=v*e")));
+    }
+
+    @Test
+    public void testIsMatchUrlWithDefaultPrefix() {
+        URL url = URL.valueOf("dubbo://127.0.0.1:20880/com.xxx.XxxService?default.version=1.0.0&default.group=test");
+        assertEquals("1.0.0", url.getParameter("version"));
+        assertEquals("1.0.0", url.getParameter("default.version"));
+
+        URL consumerUrl = URL.valueOf("consumer://127.0.0.1/com.xxx.XxxService?version=1.0.0&group=test");
+        assertTrue(UrlUtils.isMatch(consumerUrl, url));
+
+        URL consumerUrl1 = URL.valueOf("consumer://127.0.0.1/com.xxx.XxxService?default.version=1.0.0&default.group=test");
+        assertTrue(UrlUtils.isMatch(consumerUrl, url));
     }
 }

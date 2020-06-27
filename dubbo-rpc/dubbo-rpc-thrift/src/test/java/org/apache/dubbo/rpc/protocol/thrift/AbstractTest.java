@@ -24,7 +24,6 @@ import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.gen.dubbo.$__DemoStub;
 import org.apache.dubbo.rpc.gen.dubbo.Demo;
 import org.apache.dubbo.rpc.protocol.thrift.ext.MultiServiceProcessor;
-
 import org.apache.thrift.TProcessor;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.server.TServer;

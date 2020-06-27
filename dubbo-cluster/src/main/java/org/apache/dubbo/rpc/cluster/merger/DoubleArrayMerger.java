@@ -20,6 +20,9 @@ package org.apache.dubbo.rpc.cluster.merger;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.rpc.cluster.Merger;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 public class DoubleArrayMerger implements Merger<double[]> {
 
     @Override
@@ -27,21 +30,8 @@ public class DoubleArrayMerger implements Merger<double[]> {
         if (ArrayUtils.isEmpty(items)) {
             return new double[0];
         }
-        int total = 0;
-        for (double[] array : items) {
-            if (array != null) {
-                total += array.length;
-            }
-        }
-        double[] result = new double[total];
-        int index = 0;
-        for (double[] array : items) {
-            if (array != null) {
-                for (double item : array) {
-                    result[index++] = item;
-                }
-            }
-        }
-        return result;
+        return Arrays.stream(items).filter(Objects::nonNull)
+                .flatMapToDouble(Arrays::stream)
+                .toArray();
     }
 }

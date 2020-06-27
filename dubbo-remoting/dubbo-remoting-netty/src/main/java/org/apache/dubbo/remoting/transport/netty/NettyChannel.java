@@ -16,13 +16,13 @@
  */
 package org.apache.dubbo.remoting.transport.netty;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.transport.AbstractChannel;
+import org.apache.dubbo.remoting.utils.PayloadDropper;
 
 import org.jboss.netty.channel.ChannelFuture;
 
@@ -31,6 +31,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+
 /**
  * NettyChannel.
  */
@@ -38,7 +41,7 @@ final class NettyChannel extends AbstractChannel {
 
     private static final Logger logger = LoggerFactory.getLogger(NettyChannel.class);
 
-    private static final ConcurrentMap<org.jboss.netty.channel.Channel, NettyChannel> channelMap = new ConcurrentHashMap<org.jboss.netty.channel.Channel, NettyChannel>();
+    private static final ConcurrentMap<org.jboss.netty.channel.Channel, NettyChannel> CHANNEL_MAP = new ConcurrentHashMap<org.jboss.netty.channel.Channel, NettyChannel>();
 
     private final org.jboss.netty.channel.Channel channel;
 
@@ -56,11 +59,11 @@ final class NettyChannel extends AbstractChannel {
         if (ch == null) {
             return null;
         }
-        NettyChannel ret = channelMap.get(ch);
+        NettyChannel ret = CHANNEL_MAP.get(ch);
         if (ret == null) {
             NettyChannel nc = new NettyChannel(ch, url, handler);
             if (ch.isConnected()) {
-                ret = channelMap.putIfAbsent(ch, nc);
+                ret = CHANNEL_MAP.putIfAbsent(ch, nc);
             }
             if (ret == null) {
                 ret = nc;
@@ -71,7 +74,7 @@ final class NettyChannel extends AbstractChannel {
 
     static void removeChannelIfDisconnected(org.jboss.netty.channel.Channel ch) {
         if (ch != null && !ch.isConnected()) {
-            channelMap.remove(ch);
+            CHANNEL_MAP.remove(ch);
         }
     }
 
@@ -99,7 +102,7 @@ final class NettyChannel extends AbstractChannel {
         try {
             ChannelFuture future = channel.write(message);
             if (sent) {
-                timeout = getUrl().getPositiveParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
+                timeout = getUrl().getPositiveParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT);
                 success = future.await(timeout);
             }
             Throwable cause = future.getCause();
@@ -107,11 +110,11 @@ final class NettyChannel extends AbstractChannel {
                 throw cause;
             }
         } catch (Throwable e) {
-            throw new RemotingException(this, "Failed to send message " + message + " to " + getRemoteAddress() + ", cause: " + e.getMessage(), e);
+            throw new RemotingException(this, "Failed to send message " + PayloadDropper.getRequestWithoutData(message) + " to " + getRemoteAddress() + ", cause: " + e.getMessage(), e);
         }
 
         if (!success) {
-            throw new RemotingException(this, "Failed to send message " + message + " to " + getRemoteAddress()
+            throw new RemotingException(this, "Failed to send message " + PayloadDropper.getRequestWithoutData(message) + " to " + getRemoteAddress()
                     + "in timeout(" + timeout + "ms) limit");
         }
     }
@@ -183,6 +186,13 @@ final class NettyChannel extends AbstractChannel {
         if (obj == null) {
             return false;
         }
+
+        // FIXME: a hack to make org.apache.dubbo.remoting.exchange.support.DefaultFuture.closeChannel work
+        if (obj instanceof NettyClient) {
+            NettyClient client = (NettyClient) obj;
+            return channel.equals(client.getNettyChannel());
+        }
+
         if (getClass() != obj.getClass()) {
             return false;
         }

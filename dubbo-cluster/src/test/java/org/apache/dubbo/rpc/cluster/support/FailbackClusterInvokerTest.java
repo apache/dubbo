@@ -20,11 +20,11 @@ package org.apache.dubbo.rpc.cluster.support;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.DubboAppender;
 import org.apache.dubbo.common.utils.LogUtil;
+import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.cluster.Directory;
 
 import org.apache.log4j.Level;
@@ -59,7 +59,7 @@ public class FailbackClusterInvokerTest {
     Invoker<FailbackClusterInvokerTest> invoker = mock(Invoker.class);
     RpcInvocation invocation = new RpcInvocation();
     Directory<FailbackClusterInvokerTest> dic;
-    Result result = new RpcResult();
+    Result result = new AppResponse();
 
     /**
      * @throws java.lang.Exception
@@ -70,6 +70,7 @@ public class FailbackClusterInvokerTest {
 
         dic = mock(Directory.class);
         given(dic.getUrl()).willReturn(url);
+        given(dic.getConsumerUrl()).willReturn(url);
         given(dic.list(invocation)).willReturn(invokers);
         given(dic.getInterface()).willReturn(FailbackClusterInvokerTest.class);
 
@@ -128,6 +129,7 @@ public class FailbackClusterInvokerTest {
         dic = mock(Directory.class);
 
         given(dic.getUrl()).willReturn(url);
+        given(dic.getConsumerUrl()).willReturn(url);
         given(dic.list(invocation)).willReturn(null);
         given(dic.getInterface()).willReturn(FailbackClusterInvokerTest.class);
 

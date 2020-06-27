@@ -16,20 +16,18 @@
  */
 package org.apache.dubbo.rpc.cluster.support;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.cluster.Directory;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,6 +36,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.rpc.Constants.MERGER_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -100,45 +100,39 @@ public class MergeableClusterInvokerTest {
     public void testGetMenuSuccessfully() throws Exception {
 
         // setup
-        url = url.addParameter(Constants.MERGER_KEY, ".merge");
+        url = url.addParameter(MERGER_KEY, ".merge");
 
         given(invocation.getMethodName()).willReturn("getMenu");
         given(invocation.getParameterTypes()).willReturn(new Class<?>[]{});
         given(invocation.getArguments()).willReturn(new Object[]{});
-        given(invocation.getAttachments()).willReturn(new HashMap<String, String>())
+        given(invocation.getObjectAttachments()).willReturn(new HashMap<>())
                 ;
         given(invocation.getInvoker()).willReturn(firstInvoker);
 
-        firstInvoker = (Invoker) Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[]{Invoker.class}, new InvocationHandler() {
-
-            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                if ("getUrl".equals(method.getName())) {
-                    return url.addParameter(Constants.GROUP_KEY, "first");
-                }
-                if ("getInterface".equals(method.getName())) {
-                    return MenuService.class;
-                }
-                if ("invoke".equals(method.getName())) {
-                    return new RpcResult(firstMenu);
-                }
-                return null;
+        firstInvoker = (Invoker) Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[]{Invoker.class}, (proxy, method, args) -> {
+            if ("getUrl".equals(method.getName())) {
+                return url.addParameter(GROUP_KEY, "first");
             }
+            if ("getInterface".equals(method.getName())) {
+                return MenuService.class;
+            }
+            if ("invoke".equals(method.getName())) {
+                return AsyncRpcResult.newDefaultAsyncResult(firstMenu, invocation);
+            }
+            return null;
         });
 
-        secondInvoker = (Invoker) Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[]{Invoker.class}, new InvocationHandler() {
-
-            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                if ("getUrl".equals(method.getName())) {
-                    return url.addParameter(Constants.GROUP_KEY, "second");
-                }
-                if ("getInterface".equals(method.getName())) {
-                    return MenuService.class;
-                }
-                if ("invoke".equals(method.getName())) {
-                    return new RpcResult(secondMenu);
-                }
-                return null;
+        secondInvoker = (Invoker) Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[]{Invoker.class}, (proxy, method, args) -> {
+            if ("getUrl".equals(method.getName())) {
+                return url.addParameter(GROUP_KEY, "second");
             }
+            if ("getInterface".equals(method.getName())) {
+                return MenuService.class;
+            }
+            if ("invoke".equals(method.getName())) {
+                return AsyncRpcResult.newDefaultAsyncResult(secondMenu, invocation);
+            }
+            return null;
         });
 
         given(directory.list(invocation)).willReturn(new ArrayList() {
@@ -149,6 +143,8 @@ public class MergeableClusterInvokerTest {
             }
         });
         given(directory.getUrl()).willReturn(url);
+        given(directory.getConsumerUrl()).willReturn(url);
+        given(directory.getConsumerUrl()).willReturn(url);
         given(directory.getInterface()).willReturn(MenuService.class);
 
         mergeableClusterInvoker = new MergeableClusterInvoker<MenuService>(directory);
@@ -188,21 +184,21 @@ public class MergeableClusterInvokerTest {
                 new Class<?>[]{String.class, List.class});
         given(invocation.getArguments()).willReturn(new Object[]{menu, menuItems})
                 ;
-        given(invocation.getAttachments()).willReturn(new HashMap<String, String>())
+        given(invocation.getObjectAttachments()).willReturn(new HashMap<>())
                 ;
         given(invocation.getInvoker()).willReturn(firstInvoker);
 
         given(firstInvoker.getUrl()).willReturn(
-                url.addParameter(Constants.GROUP_KEY, "first"));
+                url.addParameter(GROUP_KEY, "first"));
         given(firstInvoker.getInterface()).willReturn(MenuService.class);
-        given(firstInvoker.invoke(invocation)).willReturn(new RpcResult())
+        given(firstInvoker.invoke(invocation)).willReturn(new AppResponse())
                 ;
         given(firstInvoker.isAvailable()).willReturn(true);
 
         given(secondInvoker.getUrl()).willReturn(
-                url.addParameter(Constants.GROUP_KEY, "second"));
+                url.addParameter(GROUP_KEY, "second"));
         given(secondInvoker.getInterface()).willReturn(MenuService.class);
-        given(secondInvoker.invoke(invocation)).willReturn(new RpcResult())
+        given(secondInvoker.invoke(invocation)).willReturn(new AppResponse())
                 ;
         given(secondInvoker.isAvailable()).willReturn(true);
 
@@ -214,6 +210,8 @@ public class MergeableClusterInvokerTest {
             }
         });
         given(directory.getUrl()).willReturn(url);
+        given(directory.getConsumerUrl()).willReturn(url);
+        given(directory.getConsumerUrl()).willReturn(url);
         given(directory.getInterface()).willReturn(MenuService.class);
 
         mergeableClusterInvoker = new MergeableClusterInvoker<MenuService>(directory);

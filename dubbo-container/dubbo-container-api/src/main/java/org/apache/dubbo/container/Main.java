@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.container;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -31,6 +30,8 @@ import java.util.List;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
+
 /**
  * Main. (API, Static, ThreadSafe)
  *
@@ -44,7 +45,7 @@ public class Main {
 
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
-    private static final ExtensionLoader<Container> loader = ExtensionLoader.getExtensionLoader(Container.class);
+    private static final ExtensionLoader<Container> LOADER = ExtensionLoader.getExtensionLoader(Container.class);
 
     private static final ReentrantLock LOCK = new ReentrantLock();
 
@@ -53,13 +54,13 @@ public class Main {
     public static void main(String[] args) {
         try {
             if (ArrayUtils.isEmpty(args)) {
-                String config = ConfigUtils.getProperty(CONTAINER_KEY, loader.getDefaultExtensionName());
-                args = Constants.COMMA_SPLIT_PATTERN.split(config);
+                String config = ConfigUtils.getProperty(CONTAINER_KEY, LOADER.getDefaultExtensionName());
+                args = COMMA_SPLIT_PATTERN.split(config);
             }
 
             final List<Container> containers = new ArrayList<Container>();
             for (int i = 0; i < args.length; i++) {
-                containers.add(loader.getExtension(args[i]));
+                containers.add(LOADER.getExtension(args[i]));
             }
             logger.info("Use container type(" + Arrays.toString(args) + ") to run dubbo serivce.");
 

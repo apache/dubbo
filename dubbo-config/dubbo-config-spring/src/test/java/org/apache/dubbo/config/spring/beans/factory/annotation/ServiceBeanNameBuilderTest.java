@@ -16,29 +16,31 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
-
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.api.DemoService;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.mock.env.MockEnvironment;
 import org.springframework.util.ReflectionUtils;
 
+import static org.apache.dubbo.config.spring.beans.factory.annotation.ServiceBeanNameBuilderTest.GROUP;
+import static org.apache.dubbo.config.spring.beans.factory.annotation.ServiceBeanNameBuilderTest.VERSION;
 
 /**
  * {@link ServiceBeanNameBuilder} Test
  *
  * @see ServiceBeanNameBuilder
- * @since 2.6.5
+ * @since 2.6.6
  */
-@Service(interfaceClass = DemoService.class, group = ServiceBeanNameBuilderTest.GROUP, version = ServiceBeanNameBuilderTest.VERSION,
+@Service(interfaceClass = DemoService.class, group = GROUP, version = VERSION,
         application = "application", module = "module", registry = {"1", "2", "3"})
 public class ServiceBeanNameBuilderTest {
 
-    @Reference(interfaceClass = DemoService.class, group = "DUBBO", version = "1.0.0",
+    @Reference(interfaceClass = DemoService.class, group = "DUBBO", version = "${dubbo.version}",
             application = "application", module = "module", registry = {"1", "2", "3"})
     static final Class<?> INTERFACE_CLASS = DemoService.class;
 
@@ -46,21 +48,22 @@ public class ServiceBeanNameBuilderTest {
 
     static final String VERSION = "1.0.0";
 
-    static final String BEAN_NAME = "ServiceBean:org.apache.dubbo.config.spring.api.DemoService:1.0.0:DUBBO";
+    private MockEnvironment environment;
 
-    private MockEnvironment environment = new MockEnvironment();
-
-    @Test
-    public void testRequiredAttributes() {
-        ServiceBeanNameBuilder builder = ServiceBeanNameBuilder.create(INTERFACE_CLASS, environment);
-        Assertions.assertEquals("ServiceBean:org.apache.dubbo.config.spring.api.DemoService", builder.build());
+    @Before
+    public void prepare() {
+        environment = new MockEnvironment();
+        environment.setProperty("dubbo.version", "1.0.0");
     }
 
     @Test
     public void testServiceAnnotation() {
         Service service = AnnotationUtils.getAnnotation(ServiceBeanNameBuilderTest.class, Service.class);
         ServiceBeanNameBuilder builder = ServiceBeanNameBuilder.create(service, INTERFACE_CLASS, environment);
-        Assertions.assertEquals(BEAN_NAME,
+        Assert.assertEquals("ServiceBean:org.apache.dubbo.config.spring.api.DemoService:1.0.0:DUBBO",
+                builder.build());
+
+        Assert.assertEquals("ServiceBean:org.apache.dubbo.config.spring.api.DemoService:1.0.0:DUBBO",
                 builder.build());
     }
 
@@ -68,7 +71,7 @@ public class ServiceBeanNameBuilderTest {
     public void testReferenceAnnotation() {
         Reference reference = AnnotationUtils.getAnnotation(ReflectionUtils.findField(ServiceBeanNameBuilderTest.class, "INTERFACE_CLASS"), Reference.class);
         ServiceBeanNameBuilder builder = ServiceBeanNameBuilder.create(reference, INTERFACE_CLASS, environment);
-        Assertions.assertEquals(BEAN_NAME,
+        Assert.assertEquals("ServiceBean:org.apache.dubbo.config.spring.api.DemoService:1.0.0:DUBBO",
                 builder.build());
     }
 

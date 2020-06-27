@@ -16,17 +16,17 @@
  */
 package org.apache.dubbo.rpc.protocol.thrift;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.buffer.ChannelBuffer;
 import org.apache.dubbo.remoting.buffer.ChannelBuffers;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture;
+import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.gen.thrift.Demo;
 import org.apache.dubbo.rpc.protocol.thrift.io.RandomAccessByteArrayOutputStream;
 
@@ -41,6 +41,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
+
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 
 public class ThriftCodecTest {
 
@@ -123,7 +126,8 @@ public class ThriftCodecTest {
     @Test
     public void testDecodeReplyResponse() throws Exception {
 
-        URL url = URL.valueOf(ThriftProtocol.NAME + "://127.0.0.1:40880/" + Demo.Iface.class.getName());
+        int port = NetUtils.getAvailablePort();
+        URL url = URL.valueOf(ThriftProtocol.NAME + "://127.0.0.1:" + port + "/" + Demo.Iface.class.getName());
 
         Channel channel = new MockedChannel(url);
 
@@ -131,7 +135,7 @@ public class ThriftCodecTest {
 
         Request request = createRequest();
 
-        DefaultFuture future = DefaultFuture.newFuture(channel, request, 10);
+        DefaultFuture future = DefaultFuture.newFuture(channel, request, 10, null);
 
         TMessage message = new TMessage("echoString", TMessageType.REPLY, ThriftCodec.getSeqId());
 
@@ -181,26 +185,27 @@ public class ThriftCodecTest {
 
         Assertions.assertNotNull(obj);
 
-        Assertions.assertEquals(true, obj instanceof Response);
+        Assertions.assertTrue(obj instanceof Response);
 
         Response response = (Response) obj;
 
         Assertions.assertEquals(request.getId(), response.getId());
 
-        Assertions.assertTrue(response.getResult() instanceof RpcResult);
+        Assertions.assertTrue(response.getResult() instanceof AppResponse);
 
-        RpcResult result = (RpcResult) response.getResult();
+        AppResponse result = (AppResponse) response.getResult();
 
-        Assertions.assertTrue(result.getResult() instanceof String);
+        Assertions.assertTrue(result.getValue() instanceof String);
 
-        Assertions.assertEquals(methodResult.success, result.getResult());
+        Assertions.assertEquals(methodResult.success, result.getValue());
 
     }
 
     @Test
     public void testDecodeExceptionResponse() throws Exception {
 
-        URL url = URL.valueOf(ThriftProtocol.NAME + "://127.0.0.1:40880/" + Demo.class.getName());
+        int port = NetUtils.getAvailablePort();
+        URL url = URL.valueOf(ThriftProtocol.NAME + "://127.0.0.1:" + port + "/" + Demo.class.getName());
 
         Channel channel = new MockedChannel(url);
 
@@ -208,7 +213,7 @@ public class ThriftCodecTest {
 
         Request request = createRequest();
 
-        DefaultFuture future = DefaultFuture.newFuture(channel, request, 10);
+        DefaultFuture future = DefaultFuture.newFuture(channel, request, 10, null);
 
         TMessage message = new TMessage("echoString", TMessageType.EXCEPTION, ThriftCodec.getSeqId());
 
@@ -257,9 +262,9 @@ public class ThriftCodecTest {
 
         Response response = (Response) obj;
 
-        Assertions.assertTrue(response.getResult() instanceof RpcResult);
+        Assertions.assertTrue(response.getResult() instanceof AppResponse);
 
-        RpcResult result = (RpcResult) response.getResult();
+        AppResponse result = (AppResponse) response.getResult();
 
         Assertions.assertTrue(result.hasException());
 
@@ -270,23 +275,24 @@ public class ThriftCodecTest {
     @Test
     public void testEncodeReplyResponse() throws Exception {
 
-        URL url = URL.valueOf(ThriftProtocol.NAME + "://127.0.0.1:40880/" + Demo.Iface.class.getName());
+        int port = NetUtils.getAvailablePort();
+        URL url = URL.valueOf(ThriftProtocol.NAME + "://127.0.0.1:" + port + "/" + Demo.Iface.class.getName());
 
         Channel channel = new MockedChannel(url);
 
         Request request = createRequest();
 
-        RpcResult rpcResult = new RpcResult();
-        rpcResult.setResult("Hello, World!");
+        AppResponse appResponse = new AppResponse();
+        appResponse.setValue("Hello, World!");
 
         Response response = new Response();
-        response.setResult(rpcResult);
+        response.setResult(appResponse);
         response.setId(request.getId());
         ChannelBuffer bos = ChannelBuffers.dynamicBuffer(1024);
 
         ThriftCodec.RequestData rd = ThriftCodec.RequestData.create(
                 ThriftCodec.getSeqId(), Demo.Iface.class.getName(), "echoString");
-        ThriftCodec.cachedRequest.putIfAbsent(request.getId(), rd);
+        ThriftCodec.CACHED_REQUEST.putIfAbsent(request.getId(), rd);
         codec.encode(channel, bos, response);
 
         byte[] buf = new byte[bos.writerIndex() - 4];
@@ -322,30 +328,31 @@ public class ThriftCodecTest {
         result.read(protocol);
         protocol.readMessageEnd();
 
-        Assertions.assertEquals(rpcResult.getValue(), result.getSuccess());
+        Assertions.assertEquals(appResponse.getValue(), result.getSuccess());
     }
 
     @Test
     public void testEncodeExceptionResponse() throws Exception {
 
-        URL url = URL.valueOf(ThriftProtocol.NAME + "://127.0.0.1:40880/" + Demo.Iface.class.getName());
+        int port = NetUtils.getAvailablePort();
+        URL url = URL.valueOf(ThriftProtocol.NAME + "://127.0.0.1:" + port + "/" + Demo.Iface.class.getName());
 
         Channel channel = new MockedChannel(url);
 
         Request request = createRequest();
 
-        RpcResult rpcResult = new RpcResult();
+        AppResponse appResponse = new AppResponse();
         String exceptionMessage = "failed";
-        rpcResult.setException(new RuntimeException(exceptionMessage));
+        appResponse.setException(new RuntimeException(exceptionMessage));
 
         Response response = new Response();
-        response.setResult(rpcResult);
+        response.setResult(appResponse);
         response.setId(request.getId());
         ChannelBuffer bos = ChannelBuffers.dynamicBuffer(1024);
 
         ThriftCodec.RequestData rd = ThriftCodec.RequestData.create(
                 ThriftCodec.getSeqId(), Demo.Iface.class.getName(), "echoString");
-        ThriftCodec.cachedRequest.put(request.getId(), rd);
+        ThriftCodec.CACHED_REQUEST.put(request.getId(), rd);
         codec.encode(channel, bos, response);
 
         byte[] buf = new byte[bos.writerIndex() - 4];
@@ -376,7 +383,7 @@ public class ThriftCodecTest {
         Assertions.assertEquals("echoString", message.name);
         Assertions.assertEquals(TMessageType.EXCEPTION, message.type);
         Assertions.assertEquals(ThriftCodec.getSeqId(), message.seqid);
-        TApplicationException exception = TApplicationException.read(protocol);
+        TApplicationException exception = TApplicationException.readFrom(protocol);
         protocol.readMessageEnd();
 
         Assertions.assertEquals(exceptionMessage, exception.getMessage());
@@ -401,10 +408,10 @@ public class ThriftCodecTest {
         protocol.writeByte(ThriftCodec.VERSION);
         protocol.writeString(
                 ((RpcInvocation) request.getData())
-                        .getAttachment(Constants.INTERFACE_KEY));
+                        .getAttachment(INTERFACE_KEY));
         protocol.writeString(
                 ((RpcInvocation) request.getData())
-                        .getAttachment(Constants.PATH_KEY));
+                        .getAttachment(PATH_KEY));
         protocol.writeI64(request.getId());
         protocol.getTransport().flush();
         headerLength = bos.size();
@@ -456,8 +463,8 @@ public class ThriftCodecTest {
 
         invocation.setParameterTypes(new Class<?>[]{String.class});
 
-        invocation.setAttachment(Constants.INTERFACE_KEY, Demo.Iface.class.getName());
-        invocation.setAttachment(Constants.PATH_KEY, Demo.Iface.class.getName());
+        invocation.setAttachment(INTERFACE_KEY, Demo.Iface.class.getName());
+        invocation.setAttachment(PATH_KEY, Demo.Iface.class.getName());
 
         Request request = new Request(1L);
 

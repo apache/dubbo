@@ -75,14 +75,12 @@ public class ActivateComparator implements Comparator<Object> {
                 }
             }
         }
-        int n1 = a1 == null ? 0 : a1.order;
-        int n2 = a2 == null ? 0 : a2.order;
         // never return 0 even if n1 equals n2, otherwise, o1 and o2 will override each other in collection like HashSet
-        return n1 > n2 ? 1 : -1;
+        return a1.order > a2.order ? 1 : -1;
     }
 
     private Class<?> findSpi(Class clazz) {
-        if (clazz.getInterfaces().length <= 0) {
+        if (clazz.getInterfaces().length == 0) {
             return null;
         }
 

@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -24,13 +23,15 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.ScheduledFuture;
+
+import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
 
 public class ExecutorUtil {
     private static final Logger logger = LoggerFactory.getLogger(ExecutorUtil.class);
-    private static final ThreadPoolExecutor shutdownExecutor = new ThreadPoolExecutor(0, 1,
+    private static final ThreadPoolExecutor SHUTDOWN_EXECUTOR = new ThreadPoolExecutor(0, 1,
             0L, TimeUnit.MILLISECONDS,
             new LinkedBlockingQueue<Runnable>(100),
             new NamedThreadFactory("Close-ExecutorService-Timer", true));
@@ -102,7 +103,7 @@ public class ExecutorUtil {
 
     private static void newThreadToCloseExecutor(final ExecutorService es) {
         if (!isTerminated(es)) {
-            shutdownExecutor.execute(new Runnable() {
+            SHUTDOWN_EXECUTOR.execute(new Runnable() {
                 @Override
                 public void run() {
                     try {
@@ -128,9 +129,9 @@ public class ExecutorUtil {
      * @return new url with updated thread name
      */
     public static URL setThreadName(URL url, String defaultName) {
-        String name = url.getParameter(Constants.THREAD_NAME_KEY, defaultName);
+        String name = url.getParameter(THREAD_NAME_KEY, defaultName);
         name = name + "-" + url.getAddress();
-        url = url.addParameter(Constants.THREAD_NAME_KEY, name);
+        url = url.addParameter(THREAD_NAME_KEY, name);
         return url;
     }
 

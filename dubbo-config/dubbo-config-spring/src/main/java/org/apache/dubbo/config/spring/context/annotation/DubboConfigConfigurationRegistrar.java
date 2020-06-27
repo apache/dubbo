@@ -24,7 +24,8 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.type.AnnotationMetadata;
 
-import static org.apache.dubbo.config.spring.util.AnnotatedBeanDefinitionRegistryUtils.registerBeans;
+import static com.alibaba.spring.util.AnnotatedBeanDefinitionRegistryUtils.registerBeans;
+import static org.apache.dubbo.config.spring.util.DubboBeanUtils.registerCommonBeans;
 
 /**
  * Dubbo {@link AbstractConfig Config} {@link ImportBeanDefinitionRegistrar register}, which order can be configured
@@ -44,11 +45,14 @@ public class DubboConfigConfigurationRegistrar implements ImportBeanDefinitionRe
 
         boolean multiple = attributes.getBoolean("multiple");
 
-        if (multiple) {
-            registerBeans(registry, DubboConfigConfiguration.Multiple.class);
-        } else {
-            registerBeans(registry, DubboConfigConfiguration.Single.class);
-        }
-    }
+        // Single Config Bindings
+        registerBeans(registry, DubboConfigConfiguration.Single.class);
 
+        if (multiple) { // Since 2.6.6 https://github.com/apache/dubbo/issues/3193
+            registerBeans(registry, DubboConfigConfiguration.Multiple.class);
+        }
+
+        // Since 2.7.6
+        registerCommonBeans(registry);
+    }
 }

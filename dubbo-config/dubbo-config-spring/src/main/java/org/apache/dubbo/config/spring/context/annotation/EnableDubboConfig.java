@@ -59,7 +59,7 @@ import java.lang.annotation.Target;
  *
  * @see EnableDubboConfigBinding
  * @see DubboConfigConfiguration
- * @see DubboConfigConfigurationSelector
+ * @see DubboConfigConfigurationRegistrar
  * @since 2.5.8
  */
 @Target({ElementType.TYPE})
@@ -75,6 +75,6 @@ public @interface EnableDubboConfig {
      * @return the default value is <code>false</code>
      * @revised 2.5.9
      */
-    boolean multiple() default false;
+    boolean multiple() default true;
 
 }

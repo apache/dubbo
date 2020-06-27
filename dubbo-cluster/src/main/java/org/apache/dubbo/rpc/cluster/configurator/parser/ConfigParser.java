@@ -16,7 +16,8 @@
  */
 package org.apache.dubbo.rpc.cluster.configurator.parser;
 
-import org.apache.dubbo.common.Constants;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONValidator;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -31,12 +32,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.dubbo.rpc.cluster.Constants.OVERRIDE_PROVIDERS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
+import static org.apache.dubbo.common.constants.RegistryConstants.APP_DYNAMIC_CONFIGURATORS_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_CONFIGURATORS_CATEGORY;
+
 /**
  * Config parser
  */
 public class ConfigParser {
 
     public static List<URL> parseConfigurators(String rawConfig) {
+        // compatible url JsonArray, such as [ "override://xxx", "override://xxx" ]
+        if (isJsonArray(rawConfig)) {
+            return parseJsonArray(rawConfig);
+        }
+
         List<URL> urls = new ArrayList<>();
         ConfiguratorConfig configuratorConfig = parseObject(rawConfig);
 
@@ -48,6 +59,15 @@ public class ConfigParser {
         } else {
             // service scope by default.
             items.forEach(item -> urls.addAll(serviceItemToUrls(item, configuratorConfig)));
+        }
+        return urls;
+    }
+
+    private static List<URL> parseJsonArray(String rawConfig) {
+        List<URL> urls = new ArrayList<>();
+        List<String> list = JSON.parseArray(rawConfig, String.class);
+        if (!CollectionUtils.isEmpty(list)) {
+            list.forEach(u -> urls.add(URL.valueOf(u)));
         }
         return urls;
     }
@@ -75,14 +95,12 @@ public class ConfigParser {
 
             parseEnabled(item, config, urlBuilder);
 
-            urlBuilder.append("&category=").append(Constants.DYNAMIC_CONFIGURATORS_CATEGORY);
+            urlBuilder.append("&category=").append(DYNAMIC_CONFIGURATORS_CATEGORY);
             urlBuilder.append("&configVersion=").append(config.getConfigVersion());
 
             List<String> apps = item.getApplications();
-            if (apps != null && apps.size() > 0) {
-                apps.forEach(app -> {
-                    urls.add(URL.valueOf(urlBuilder.append("&application=").append(app).toString()));
-                });
+            if (CollectionUtils.isNotEmpty(apps)) {
+                apps.forEach(app -> urls.add(URL.valueOf(urlBuilder.append("&application=").append(app).toString())));
             } else {
                 urls.add(URL.valueOf(urlBuilder.toString()));
             }
@@ -101,7 +119,7 @@ public class ConfigParser {
             if (services == null) {
                 services = new ArrayList<>();
             }
-            if (services.size() == 0) {
+            if (services.isEmpty()) {
                 services.add("*");
             }
             for (String s : services) {
@@ -112,7 +130,7 @@ public class ConfigParser {
 
                 parseEnabled(item, config, urlBuilder);
 
-                urlBuilder.append("&category=").append(Constants.APP_DYNAMIC_CONFIGURATORS_CATEGORY);
+                urlBuilder.append("&category=").append(APP_DYNAMIC_CONFIGURATORS_CATEGORY);
                 urlBuilder.append("&configVersion=").append(config.getConfigVersion());
 
                 urls.add(URL.valueOf(urlBuilder.toString()));
@@ -124,7 +142,7 @@ public class ConfigParser {
     private static String toParameterString(ConfigItem item) {
         StringBuilder sb = new StringBuilder();
         sb.append("category=");
-        sb.append(Constants.DYNAMIC_CONFIGURATORS_CATEGORY);
+        sb.append(DYNAMIC_CONFIGURATORS_CATEGORY);
         if (item.getSide() != null) {
             sb.append("&side=");
             sb.append(item.getSide());
@@ -144,7 +162,7 @@ public class ConfigParser {
 
         if (CollectionUtils.isNotEmpty(item.getProviderAddresses())) {
             sb.append("&");
-            sb.append(Constants.OVERRIDE_PROVIDERS_KEY);
+            sb.append(OVERRIDE_PROVIDERS_KEY);
             sb.append("=");
             sb.append(CollectionUtils.join(item.getProviderAddresses(), ","));
         }
@@ -159,7 +177,7 @@ public class ConfigParser {
         }
 
         String interfaceName = serviceKey;
-        int i = interfaceName.indexOf("/");
+        int i = interfaceName.indexOf('/');
         if (i > 0) {
             sb.append("group=");
             sb.append(interfaceName, 0, i);
@@ -167,7 +185,7 @@ public class ConfigParser {
 
             interfaceName = interfaceName.substring(i + 1);
         }
-        int j = interfaceName.indexOf(":");
+        int j = interfaceName.indexOf(':');
         if (j > 0) {
             sb.append("version=");
             sb.append(interfaceName.substring(j + 1));
@@ -193,9 +211,19 @@ public class ConfigParser {
         if (addresses == null) {
             addresses = new ArrayList<>();
         }
-        if (addresses.size() == 0) {
-            addresses.add(Constants.ANYHOST_VALUE);
+        if (addresses.isEmpty()) {
+            addresses.add(ANYHOST_VALUE);
         }
         return addresses;
+    }
+
+    private static boolean isJsonArray(String rawConfig) {
+        try {
+            JSONValidator validator = JSONValidator.from(rawConfig);
+            return validator.validate() && validator.getType() == JSONValidator.Type.Array;
+        } catch (Exception e) {
+            // ignore exception and return false
+        }
+        return false;
     }
 }
