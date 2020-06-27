@@ -197,6 +197,7 @@ public interface CommonConstants {
      */
     String $INVOKE = "$invoke";
     String $INVOKE_ASYNC = "$invokeAsync";
+    String GENERIC_PARAMETER_DESC = "Ljava/lang/String;[Ljava/lang/String;[Ljava/lang/Object;";
 
     /**
      * package version in the manifest
