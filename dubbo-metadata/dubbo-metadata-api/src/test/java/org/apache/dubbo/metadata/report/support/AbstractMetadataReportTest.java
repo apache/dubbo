@@ -110,7 +110,7 @@ public class AbstractMetadataReportTest {
         URL singleUrl = URL.valueOf("redis://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.metadata.store.InterfaceNameTestService?version=1.0.0&application=singleTest");
         NewMetadataReport singleMetadataReport = new NewMetadataReport(singleUrl);
 
-        Assertions.assertFalse(singleMetadataReport.file.exists());
+        Assertions.assertFalse(singleMetadataReport.localCacheFile.exists());
 
         String interfaceName = "org.apache.dubbo.metadata.store.InterfaceNameTestService";
         String version = "1.0.0";
@@ -119,7 +119,7 @@ public class AbstractMetadataReportTest {
         MetadataIdentifier providerMetadataIdentifier = storePrivider(singleMetadataReport, interfaceName, version, group, application);
 
         Thread.sleep(2000);
-        assertTrue(singleMetadataReport.file.exists());
+        assertTrue(singleMetadataReport.localCacheFile.exists());
         assertTrue(singleMetadataReport.properties.containsKey(providerMetadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY)));
     }
 

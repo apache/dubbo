@@ -27,9 +27,9 @@ import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 
 import com.google.gson.Gson;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -38,9 +38,11 @@ import static java.util.Collections.emptySortedSet;
 import static org.apache.dubbo.rpc.model.ApplicationModel.getName;
 
 /**
+ * The interface to report the metadata
  *
+ * @see AutoCloseable since 2.7.8
  */
-public interface MetadataReport {
+public interface MetadataReport extends AutoCloseable {
 
     void storeProviderMetadata(MetadataIdentifier providerMetadataIdentifier, ServiceDefinition serviceDefinition);
 
@@ -69,9 +71,9 @@ public interface MetadataReport {
         return emptyList();
     }
 
-    void saveSubscribedData(SubscriberMetadataIdentifier subscriberMetadataIdentifier, Set<String> urls);
+    void saveSubscribedData(SubscriberMetadataIdentifier subscriberMetadataIdentifier, Collection<String> urls);
 
-    List<String> getSubscribedURLs(SubscriberMetadataIdentifier subscriberMetadataIdentifier);
+    Collection<String> getSubscribedURLs(SubscriberMetadataIdentifier subscriberMetadataIdentifier);
 
     String getServiceDefinition(MetadataIdentifier metadataIdentifier);
 
@@ -154,4 +156,5 @@ public interface MetadataReport {
     default String getExportedURLsContent(String serviceName, String exportedServicesRevision) {
         return null;
     }
+
 }
