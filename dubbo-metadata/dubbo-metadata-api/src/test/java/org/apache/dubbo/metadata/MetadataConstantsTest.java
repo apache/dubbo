@@ -18,33 +18,18 @@ package org.apache.dubbo.metadata;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
-import java.util.Collection;
-
-import static java.util.Arrays.asList;
-import static org.apache.dubbo.metadata.URLRevisionResolver.UNKNOWN_REVISION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * {@link URLRevisionResolver} Test
+ * {@link MetadataConstants} Test-Cases
  *
- * @since 2.7.5
+ * @since 2.7.8
  */
-public class URLRevisionResolverTest {
-
-    private static final String URL = "dubbo://192.168.0.102:20881/org.apache.dubbo.metadata.URLRevisionResolverTest";
-
-    private final URLRevisionResolver resolver = URLRevisionResolver.INSTANCE;
+public class MetadataConstantsTest {
 
     @Test
-    public void testResolve() {
-        String revision = resolver.resolve(Arrays.<String>asList());
-        assertEquals(UNKNOWN_REVISION, revision);
-
-        revision = resolver.resolve((Collection<String>) null);
-        assertEquals(UNKNOWN_REVISION, revision);
-
-        revision = resolver.resolve(asList(URL));
-        assertEquals("2ca0638f189ce569", revision);
+    public void testConstants() {
+        assertEquals("exported-urls", MetadataConstants.EXPORTED_URLS_TAG);
+        assertEquals("subscribed-urls", MetadataConstants.SUBSCRIBED_URLS_TAG);
     }
 }

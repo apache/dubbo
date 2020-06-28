@@ -14,37 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata;
+package org.apache.dubbo.metadata.report.identifier;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
-import java.util.Collection;
-
-import static java.util.Arrays.asList;
-import static org.apache.dubbo.metadata.URLRevisionResolver.UNKNOWN_REVISION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * {@link URLRevisionResolver} Test
+ * {@link KeyTypeEnum} Test-Cases
  *
- * @since 2.7.5
+ * @since 2.7.8
  */
-public class URLRevisionResolverTest {
+public class KeyTypeEnumTest {
 
-    private static final String URL = "dubbo://192.168.0.102:20881/org.apache.dubbo.metadata.URLRevisionResolverTest";
-
-    private final URLRevisionResolver resolver = URLRevisionResolver.INSTANCE;
-
+    /**
+     * {@link KeyTypeEnum#build(String, String...)}
+     */
     @Test
-    public void testResolve() {
-        String revision = resolver.resolve(Arrays.<String>asList());
-        assertEquals(UNKNOWN_REVISION, revision);
-
-        revision = resolver.resolve((Collection<String>) null);
-        assertEquals(UNKNOWN_REVISION, revision);
-
-        revision = resolver.resolve(asList(URL));
-        assertEquals("2ca0638f189ce569", revision);
+    public void testBuild() {
+        assertEquals("/A/B/C", KeyTypeEnum.PATH.build("/A", "/B", "C"));
+        assertEquals("A:B:C", KeyTypeEnum.UNIQUE_KEY.build("A", "B", "C"));
     }
 }
