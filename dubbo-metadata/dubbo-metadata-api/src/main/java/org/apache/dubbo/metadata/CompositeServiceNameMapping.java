@@ -45,22 +45,29 @@ public class CompositeServiceNameMapping implements ServiceNameMapping {
         if (this.serviceNameMappings == null) {
             synchronized (this) {
                 if (this.serviceNameMappings == null) {
-                    Set<ServiceNameMapping> serviceNameMappings = getExtensionLoader(ServiceNameMapping.class)
-                            .getSupportedExtensionInstances();
+                    Set<ServiceNameMapping> serviceNameMappings = loadAllServiceNameMappings();
 
-                    Iterator<ServiceNameMapping> iterator = serviceNameMappings.iterator();
+                    removeSelf(serviceNameMappings);
 
-                    while (iterator.hasNext()) {
-                        ServiceNameMapping serviceNameMapping = iterator.next();
-                        if (this.getClass().equals(serviceNameMapping.getClass())) {
-                            iterator.remove(); // Exclude self
-                        }
-                    }
                     this.serviceNameMappings = new LinkedList<>(serviceNameMappings);
                 }
             }
         }
         return this.serviceNameMappings;
+    }
+
+    private Set<ServiceNameMapping> loadAllServiceNameMappings() {
+        return getExtensionLoader(ServiceNameMapping.class).getSupportedExtensionInstances();
+    }
+
+    private void removeSelf(Set<ServiceNameMapping> serviceNameMappings) {
+        Iterator<ServiceNameMapping> iterator = serviceNameMappings.iterator();
+        while (iterator.hasNext()) {
+            ServiceNameMapping serviceNameMapping = iterator.next();
+            if (this.getClass().equals(serviceNameMapping.getClass())) {
+                iterator.remove(); // Remove self
+            }
+        }
     }
 
     @Override
