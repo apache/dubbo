@@ -17,6 +17,7 @@
 package com.alibaba.dubbo.rpc.protocol.dubbo;
 
 import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.Version;
 import com.alibaba.dubbo.common.io.Bytes;
 import com.alibaba.dubbo.common.io.UnsafeByteArrayInputStream;
@@ -173,7 +174,19 @@ public class DubboCodec extends ExchangeCodec implements Codec2 {
         out.writeUTF(inv.getAttachment(Constants.VERSION_KEY));
 
         out.writeUTF(inv.getMethodName());
-        out.writeUTF(ReflectUtils.getDesc(inv.getParameterTypes()));
+        String remoteVersion=channel.getUrl().getParameter("dubbo");
+        log.debug("encodeRequestData protocolVersion="+version+",remoteVersion="+remoteVersion);
+        if("2.0.2".equals(version) && "2.8.4".equals(remoteVersion)){
+        	if (serializationType(channel.getUrl()) && !containComplexArguments(inv)) {
+                out.writeInt(inv.getParameterTypes().length);
+            } else {
+                out.writeInt(-1);
+                out.writeUTF(ReflectUtils.getDesc(inv.getParameterTypes()));
+            }
+        }else {
+        	out.writeUTF(ReflectUtils.getDesc(inv.getParameterTypes()));
+        }
+        
         Object[] args = inv.getArguments();
         if (args != null)
             for (int i = 0; i < args.length; i++) {
@@ -187,6 +200,16 @@ public class DubboCodec extends ExchangeCodec implements Codec2 {
         Result result = (Result) data;
         // currently, the version value in Response records the version of Request
         boolean attach = Version.isSupportResponseAttatchment(version);
+        //dubbox版本2.8.4会被认为可以带附件，但实际上不支持
+        URL url = channel.getUrl();
+        String remoteVersion=channel.getUrl().getParameter("dubbo");
+        log.debug("encodeResponseData protocolVersion="+version+",remoteVersion="+remoteVersion);
+        //从dubbox2.8.4访问到dubbo2.6.8时，protocolVersion is 2.8.4,remoteVersions is 2.0.2,dubbo version is 2.6.8
+        if("2.8.4".equals(version) && "2.0.2".equals(remoteVersion)){
+        	attach=false;
+        }else if("2.0.2".equals(version) && "2.8.4".equals(remoteVersion)) {
+        	attach=false;
+        }
         Throwable th = result.getException();
         if (th == null) {
             Object ret = result.getValue();
@@ -206,5 +229,20 @@ public class DubboCodec extends ExchangeCodec implements Codec2 {
             result.getAttachments().put(Constants.DUBBO_VERSION_KEY, Version.getProtocolVersion());
             out.writeObject(result.getAttachments());
         }
+    }
+    
+    private boolean containComplexArguments(RpcInvocation invocation) {
+        for (int i = 0; i < invocation.getParameterTypes().length; i++) {
+            Object argument = invocation.getArguments()[i];
+            if (argument  == null || invocation.getParameterTypes()[i] != argument.getClass()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean serializationType(URL url) {
+        String serialization = url.getParameter(Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION);
+        return "fst".equals(serialization) || "kryo".equals(serialization);
     }
 }

@@ -101,23 +101,52 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
         try {
             Object[] args;
             Class<?>[] pts;
+            //dubbox的协议号硬编码为2.0.2，desc中传递了int，这些作为组合条件判断属于dubbox请求
             String desc = in.readUTF();
-            if (desc.length() == 0) {
-                pts = DubboCodec.EMPTY_CLASS_ARRAY;
-                args = DubboCodec.EMPTY_OBJECT_ARRAY;
-            } else {
-                pts = ReflectUtils.desc2classArray(desc);
-                args = new Object[pts.length];
-                for (int i = 0; i < args.length; i++) {
-                    try {
-                        args[i] = in.readObject(pts[i]);
-                    } catch (Exception e) {
-                        if (log.isWarnEnabled()) {
-                            log.warn("Decode argument failed: " + e.getMessage(), e);
+            String protocolVersion=channel.getUrl().getParameter(Constants.DUBBO_VERSION_KEY);
+            String dubboxDescPattern = "-?[0-9]+.?[0-9]*";
+            Integer argNum = null;
+            log.debug("decode dubboVersion="+dubboVersion+",protocolVersion="+protocolVersion+",desc="+desc);
+            if("2.8.4".equals(dubboVersion) && "2.0.2".equals(protocolVersion) && desc.matches(dubboxDescPattern) && (argNum = Integer.parseInt(desc)) >= 0){
+            	log.debug("decode as dubbox");
+            	if (argNum == 0) {
+                    pts = DubboCodec.EMPTY_CLASS_ARRAY;
+                    args = DubboCodec.EMPTY_OBJECT_ARRAY;
+                } else {
+                    args = new Object[argNum];
+                    pts = new Class[argNum];
+                    for (int i = 0; i < args.length; i++) {
+                        try {
+                            args[i] = in.readObject();
+                            pts[i] = args[i].getClass();
+                        } catch (Exception e) {
+                            if (log.isWarnEnabled()) {
+                                log.warn("Decode argument failed: " + e.getMessage(), e);
+                            }
+                        }
+                    }
+                }
+            }else {
+            	log.debug("decode as ali dubbo");
+            	desc = argNum == null ? desc : in.readUTF();
+                if (desc.length() == 0) {
+                    pts = DubboCodec.EMPTY_CLASS_ARRAY;
+                    args = DubboCodec.EMPTY_OBJECT_ARRAY;
+                } else {
+                    pts = ReflectUtils.desc2classArray(desc);
+                    args = new Object[pts.length];
+                    for (int i = 0; i < args.length; i++) {
+                        try {
+                            args[i] = in.readObject(pts[i]);
+                        } catch (Exception e) {
+                            if (log.isWarnEnabled()) {
+                                log.warn("Decode argument failed: " + e.getMessage(), e);
+                            }
                         }
                     }
                 }
             }
+            
             setParameterTypes(pts);
 
             Map<String, String> map = (Map<String, String>) in.readObject(Map.class);
