@@ -220,7 +220,7 @@ class RegistryBuilderTest {
                 .transporter("transporter").server("server").client("client").cluster("cluster").group("group")
                 .version("version").timeout(1000).session(2000).file("file").wait(Integer.valueOf(10)).isCheck(true)
                 .isDynamic(false).register(true).subscribe(false).isDefault(true).simplified(false).extraKeys("A")
-                .appendParameter("default.num", "one").id("id").prefix("prefix");
+                .parameter("default.num", "one").id("id").prefix("prefix");
 
         RegistryConfig config = builder.build();
         RegistryConfig config2 = builder.build();

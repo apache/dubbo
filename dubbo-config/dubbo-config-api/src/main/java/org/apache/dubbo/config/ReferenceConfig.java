@@ -58,8 +58,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-import static java.util.Collections.unmodifiableList;
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
@@ -75,7 +75,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.SEMICOLON_SPLIT_
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SUBSCRIBED_SERVICE_NAMES_KEY;
 import static org.apache.dubbo.common.utils.NetUtils.isInvalidLocalHost;
-import static org.apache.dubbo.common.utils.StringUtils.splitToList;
+import static org.apache.dubbo.common.utils.StringUtils.splitToSet;
 import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
 import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
 import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
@@ -178,8 +178,8 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
      * @since 2.7.8
      */
     @Parameter(excluded = true)
-    public List<String> getSubscribedServices() {
-        return unmodifiableList(splitToList(getServices(), COMMA_SEPARATOR_CHAR));
+    public Set<String> getSubscribedServices() {
+        return splitToSet(getServices(), COMMA_SEPARATOR_CHAR);
     }
 
     /**

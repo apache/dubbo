@@ -26,6 +26,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 
+import static org.apache.dubbo.common.utils.CollectionUtils.ofSet;
+
 class ReferenceBuilderTest {
 
     @Test
@@ -95,8 +97,15 @@ class ReferenceBuilderTest {
         MethodConfig method = new MethodConfig();
 
         ReferenceBuilder<DemoService> builder = new ReferenceBuilder<>();
-        builder.id("id").interfaceClass(DemoService.class).protocol("protocol").client("client").url("url")
-                .consumer(consumer).addMethod(method);
+        builder.id("id")
+                .interfaceClass(DemoService.class)
+                .protocol("protocol")
+                .client("client")
+                .url("url")
+                .consumer(consumer)
+                .addMethod(method)
+                // introduced since 2.7.8
+                .services("test-service", "test-service2");
 
         ReferenceConfig config = builder.build();
         ReferenceConfig config2 = builder.build();
@@ -107,6 +116,8 @@ class ReferenceBuilderTest {
         Assertions.assertEquals("client", config.getClient());
         Assertions.assertEquals("url", config.getUrl());
         Assertions.assertEquals(consumer, config.getConsumer());
+        Assertions.assertEquals("test-service,test-service2", config.getServices());
+        Assertions.assertEquals(ofSet("test-service", "test-service2"), config.getSubscribedServices());
         Assertions.assertTrue(config.getMethods().contains(method));
         Assertions.assertEquals(1, config.getMethods().size());
         Assertions.assertNotSame(config, config2);

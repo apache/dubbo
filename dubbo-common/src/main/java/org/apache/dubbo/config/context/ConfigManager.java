@@ -67,9 +67,9 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 
     public static final String NAME = "config";
 
-    private final Map<String, Map<String, AbstractConfig>> configsCache = newMap();
-
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
+
+    final Map<String, Map<String, AbstractConfig>> configsCache = newMap();
 
     public ConfigManager() {
     }
