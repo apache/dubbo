@@ -138,7 +138,12 @@ public class ConsumerModel {
     }
 
     public void initMethodModels() {
-        Class[] interfaceList = serviceMetadata.getTarget().getClass().getInterfaces();
+        Class[] interfaceList = null;
+        if (proxyObject == null) {
+            interfaceList = new Class[]{referenceConfig.getActualInterface()};
+        } else {
+            interfaceList = proxyObject.getClass().getInterfaces();
+        }
         for (Class interfaceClass : interfaceList) {
             for (Method method : interfaceClass.getMethods()) {
                 methodModels.put(method, new ConsumerMethodModel(method));
