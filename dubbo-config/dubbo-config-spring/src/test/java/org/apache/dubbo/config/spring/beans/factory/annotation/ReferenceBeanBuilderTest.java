@@ -21,6 +21,7 @@ import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -48,6 +49,16 @@ import static org.springframework.util.ReflectionUtils.findField;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = ReferenceBeanBuilderTest.class)
 public class ReferenceBeanBuilderTest {
+
+    @Before
+    public void setUp() {
+        ApplicationModel.reset();
+    }
+
+    @After
+    public void tearDown() {
+        ApplicationModel.reset();
+    }
 
     @Reference(
             interfaceClass = CharSequence.class,
