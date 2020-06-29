@@ -38,7 +38,7 @@ public class MetadataServiceProxyFactoryTest {
         MetadataServiceProxyFactory factory = getExtension(DEFAULT_METADATA_STORAGE_TYPE);
         assertEquals(defaultFactory, factory);
 
-        assertEquals(DefaultMetadataServiceProxyFactory.class, factory.getClass());
+        assertEquals(MyMetadataServiceProxyFactory.class, factory.getClass());
 
         factory = getExtension(REMOTE_METADATA_STORAGE_TYPE);
         assertEquals(RemoteMetadataServiceProxyFactory.class, factory.getClass());
