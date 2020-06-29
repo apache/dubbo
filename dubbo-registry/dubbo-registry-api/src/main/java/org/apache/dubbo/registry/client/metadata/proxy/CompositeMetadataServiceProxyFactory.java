@@ -24,6 +24,7 @@ import org.apache.dubbo.registry.client.ServiceInstance;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
@@ -35,10 +36,12 @@ import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoad
  *
  * @since 2.7.8
  */
-public class CompositeMetadataServiceProxyFactory implements MetadataServiceProxyFactory {
+public class CompositeMetadataServiceProxyFactory extends BaseMetadataServiceProxyFactory {
+
+    private static final Logger logger = LoggerFactory.getLogger(CompositeMetadataServiceProxyFactory.class);
 
     @Override
-    public MetadataService getProxy(ServiceInstance serviceInstance) {
+    public MetadataService createProxy(ServiceInstance serviceInstance) {
         MetadataService metadataService = (MetadataService) newProxyInstance(
                 getClass().getClassLoader(),
                 new Class[]{MetadataService.class},
@@ -49,23 +52,56 @@ public class CompositeMetadataServiceProxyFactory implements MetadataServiceProx
 
     static class MetadataServiceInvocationHandler implements InvocationHandler {
 
-        private final List<MetadataService> metadataServices;
+        private final ServiceInstance serviceInstance;
 
-        private final Logger logger = LoggerFactory.getLogger(getClass());
+        private final MetadataServiceProxyFactory excluded;
+
+        private volatile List<MetadataService> metadataServices;
 
         MetadataServiceInvocationHandler(ServiceInstance serviceInstance,
                                          MetadataServiceProxyFactory excluded) {
-            this.metadataServices = initMetadataServices(serviceInstance, excluded);
+            this.serviceInstance = serviceInstance;
+            this.excluded = excluded;
         }
 
-        private List<MetadataService> initMetadataServices(ServiceInstance serviceInstance,
-                                                           MetadataServiceProxyFactory excluded) {
+        private List<MetadataService> loadMetadataServices() {
             return getExtensionLoader(MetadataServiceProxyFactory.class)
                     .getSupportedExtensionInstances()
                     .stream()
-                    .filter(factory -> !factory.equals(excluded))
-                    .map(factory -> factory.getProxy(serviceInstance))
+                    .filter(this::isRequiredFactory)
+                    .map(this::getProxy)
+                    .filter(Objects::nonNull)
                     .collect(Collectors.toList());
+        }
+
+        private List<MetadataService> getMetadataServices() {
+            if (metadataServices == null) {
+                metadataServices = loadMetadataServices();
+                if (metadataServices.isEmpty()) {
+                    throw new IllegalStateException(format("No valid proxy of %s can't be loaded.",
+                            MetadataService.class.getName()));
+                }
+            }
+            return metadataServices;
+        }
+
+        private boolean isRequiredFactory(MetadataServiceProxyFactory factory) {
+            return !factory.equals(excluded);
+        }
+
+        private MetadataService getProxy(MetadataServiceProxyFactory factory) {
+            MetadataService metadataService = null;
+            try {
+                metadataService = factory.getProxy(serviceInstance);
+            } catch (Exception e) {
+                if (logger.isErrorEnabled()) {
+                    logger.error(format("The proxy of %s can't be gotten by %s [from : %s].",
+                            MetadataService.class.getName(),
+                            factory.getClass().getName(),
+                            serviceInstance.toString()));
+                }
+            }
+            return metadataService;
         }
 
         @Override
@@ -77,7 +113,7 @@ public class CompositeMetadataServiceProxyFactory implements MetadataServiceProx
 
             Object result = null;
 
-            for (MetadataService metadataService : metadataServices) {
+            for (MetadataService metadataService : getMetadataServices()) {
                 try {
                     result = method.invoke(metadataService, args);
                     if (result != null) {
@@ -85,7 +121,7 @@ public class CompositeMetadataServiceProxyFactory implements MetadataServiceProx
                     }
                 } catch (Exception e) {
                     if (logger.isErrorEnabled()) {
-                        logger.error(format("MetadataService[type : %s] executes failed", metadataService.getClass().getName()), e);
+                        logger.error(format("MetadataService[type : %s] executes failed.", metadataService.getClass().getName()), e);
                     }
                 }
             }
