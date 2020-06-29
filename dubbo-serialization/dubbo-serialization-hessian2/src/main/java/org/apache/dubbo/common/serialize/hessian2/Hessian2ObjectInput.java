@@ -17,7 +17,6 @@
 package org.apache.dubbo.common.serialize.hessian2;
 
 import org.apache.dubbo.common.serialize.ObjectInput;
-import org.apache.dubbo.common.serialize.hessian2.dubbo.Hessian2FactoryInitializer;
 
 import com.alibaba.com.caucho.hessian.io.Hessian2Input;
 
@@ -32,7 +31,7 @@ public class Hessian2ObjectInput implements ObjectInput {
 
     private static ThreadLocal<Hessian2Input> INPUT_TL = ThreadLocal.withInitial(() -> {
         Hessian2Input h2i = new Hessian2Input(null);
-        h2i.setSerializerFactory(Hessian2FactoryInitializer.getInstance().getSerializerFactory());
+        h2i.setSerializerFactory(Hessian2SerializerFactory.SERIALIZER_FACTORY);
         h2i.setCloseStreamOnClose(true);
         return h2i;
     });
