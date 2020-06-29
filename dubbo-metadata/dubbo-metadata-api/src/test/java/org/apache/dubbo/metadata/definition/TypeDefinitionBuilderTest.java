@@ -14,29 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.definition.builder;
+package org.apache.dubbo.metadata.definition;
 
-import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.common.lang.Prioritized;
-import org.apache.dubbo.metadata.definition.model.TypeDefinition;
+import org.apache.dubbo.metadata.definition.builder.TypeBuilder;
 
-import java.lang.reflect.Type;
-import java.util.Map;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-/**
- * 2015/1/27.
- */
-@SPI
-public interface TypeBuilder extends Prioritized {
+public class TypeDefinitionBuilderTest {
 
-    /**
-     * Whether the build accept the type or class passed in.
-     */
-    boolean accept(Type type, Class<?> clazz);
+    @Test
+    public void testSortTypeBuilder(){
+        TypeBuilder tb = TypeDefinitionBuilder.BUILDERS.get(0);
+        Assertions.assertTrue(tb instanceof TestTypeBuilder);
 
-    /**
-     * Build type definition with the type or class.
-     */
-    TypeDefinition build(Type type, Class<?> clazz, Map<Class<?>, TypeDefinition> typeCache);
-
+        tb = TypeDefinitionBuilder.BUILDERS.get(TypeDefinitionBuilder.BUILDERS.size()-1);
+        Assertions.assertTrue(tb instanceof Test3TypeBuilder);
+    }
 }
