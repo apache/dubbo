@@ -32,14 +32,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PREFERRED_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_ZONE;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_ZONE_FORCE;
-import static org.apache.dubbo.common.constants.RegistryConstants.ZONE_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.*;
 
 /**
  * When there're more than one registry for subscription.
- *
+ * <p>
  * This extension provides a strategy to decide how to distribute traffics among them:
  * 1. registry marked as 'preferred=true' has the highest priority.
  * 2. check the zone the current request belongs, pick the registry that has the same zone first.
@@ -60,6 +57,9 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
         // First, pick the invoker (XXXClusterInvoker) that comes from the local registry, distinguish by a 'preferred' key.
         for (Invoker<T> invoker : invokers) {
             // FIXME, the invoker is a cluster invoker representing one Registry, so it will automatically wrapped by MockClusterInvoker.
+            if (!(invoker instanceof MockClusterInvoker)) {
+                throw new RpcException("invoker should be MockClusterInvoker but actual is " + invoker.getClass());
+            }
             MockClusterInvoker<T> mockClusterInvoker = (MockClusterInvoker<T>) invoker;
             if (mockClusterInvoker.isAvailable() && mockClusterInvoker.getRegistryUrl()
                     .getParameter(REGISTRY_KEY + "." + PREFERRED_KEY, false)) {
