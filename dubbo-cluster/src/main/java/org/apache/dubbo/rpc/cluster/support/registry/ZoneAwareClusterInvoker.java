@@ -57,9 +57,6 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
         // First, pick the invoker (XXXClusterInvoker) that comes from the local registry, distinguish by a 'preferred' key.
         for (Invoker<T> invoker : invokers) {
             // FIXME, the invoker is a cluster invoker representing one Registry, so it will automatically wrapped by MockClusterInvoker.
-            if (!(invoker instanceof MockClusterInvoker)) {
-                throw new RpcException("invoker should be MockClusterInvoker but actual is " + invoker.getClass());
-            }
             MockClusterInvoker<T> mockClusterInvoker = (MockClusterInvoker<T>) invoker;
             if (mockClusterInvoker.isAvailable() && mockClusterInvoker.getRegistryUrl()
                     .getParameter(REGISTRY_KEY + "." + PREFERRED_KEY, false)) {
