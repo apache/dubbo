@@ -14,34 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.client.metadata;
+package org.apache.dubbo.common.utils;
 
 import org.junit.jupiter.api.Test;
 
-import static java.util.Arrays.asList;
-import static org.apache.dubbo.registry.client.metadata.URLRevisionResolver.NO_REVISION;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.util.function.Predicate;
+
+import static org.apache.dubbo.common.utils.StringConstantFieldValuePredicate.of;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * {@link URLRevisionResolver} Test
+ * {@link StringConstantFieldValuePredicate} Test
  *
- * @since 2.7.5
+ * @since 2.7.8
  */
-public class URLRevisionResolverTest {
+public class StringConstantFieldValuePredicateTest {
 
-    private static final String URL = "dubbo://192.168.0.102:20881/org.apache.dubbo.registry.client.metadata.URLRevisionResolverTest";
+    public static final String S1 = "1";
 
-    private final URLRevisionResolver resolver = new URLRevisionResolver();
+    public static final Object O1 = "2";
+
+    public static final Object O2 = 3;
 
     @Test
-    public void testResolve() {
-        String revision = resolver.resolve(asList());
-        assertEquals(NO_REVISION, revision);
-
-        revision = resolver.resolve(null);
-        assertEquals(NO_REVISION, revision);
-
-        revision = resolver.resolve(asList(URL));
-        assertEquals("7960327984321481979", revision);
+    public void test() {
+        Predicate<String> predicate = of(getClass());
+        assertTrue(predicate.test("1"));
+        assertTrue(predicate.test("2"));
+        assertFalse(predicate.test("3"));
     }
 }

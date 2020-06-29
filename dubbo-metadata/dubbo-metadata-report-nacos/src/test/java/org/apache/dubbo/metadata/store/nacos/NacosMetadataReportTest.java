@@ -16,18 +16,18 @@
  */
 package org.apache.dubbo.metadata.store.nacos;
 
-import com.alibaba.nacos.api.exception.NacosException;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
-
-import com.alibaba.nacos.api.config.ConfigService;
-import com.google.gson.Gson;
 import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
+
+import com.alibaba.nacos.api.config.ConfigService;
+import com.alibaba.nacos.api.exception.NacosException;
+import com.google.gson.Gson;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -103,8 +103,7 @@ public class NacosMetadataReportTest {
         URL url = URL.valueOf("nacos://127.0.0.1:8848?group=" + NACOS_GROUP)
                 .addParameter(SESSION_TIMEOUT_KEY, SESSION_TIMEOUT);
         nacosMetadataReportFactory = new NacosMetadataReportFactory();
-        this.nacosMetadataReport = (NacosMetadataReport) nacosMetadataReportFactory.createMetadataReport(url);
-        this.configService = nacosMetadataReport.buildConfigService(url);
+        this.nacosMetadataReport = (NacosMetadataReport) nacosMetadataReportFactory.getMetadataReport(url);
     }
 
     @AfterEach

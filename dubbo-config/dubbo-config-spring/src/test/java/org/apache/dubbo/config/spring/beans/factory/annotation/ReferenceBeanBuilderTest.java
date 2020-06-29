@@ -82,6 +82,11 @@ public class ReferenceBeanBuilderTest {
     @Autowired
     private ApplicationContext context;
 
+    @Before
+    public void init() {
+        ApplicationModel.reset();
+    }
+
     @Test
     public void testBuild() throws Exception {
         Reference reference = findAnnotation(findField(getClass(), "TEST_FIELD"), Reference.class);

@@ -31,12 +31,12 @@ import org.apache.dubbo.config.spring.ConfigCenterBean;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.beans.factory.config.ConfigurableSourceBeanMetadataElement;
-import org.apache.dubbo.config.spring.util.DubboBeanUtils;
 
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
 import org.springframework.beans.factory.xml.ParserContext;
+import org.springframework.context.annotation.AnnotationConfigUtils;
 import org.w3c.dom.Element;
 
 import static org.apache.dubbo.config.spring.util.DubboBeanUtils.registerCommonBeans;
@@ -76,16 +76,30 @@ public class DubboNamespaceHandler extends NamespaceHandlerSupport implements Co
      * @param element       {@link Element}
      * @param parserContext {@link ParserContext}
      * @return
-     * @see DubboBeanUtils#registerCommonBeans(BeanDefinitionRegistry)
      * @since 2.7.5
      */
     @Override
     public BeanDefinition parse(Element element, ParserContext parserContext) {
         BeanDefinitionRegistry registry = parserContext.getRegistry();
-        // @since 2.7.8 https://github.com/apache/dubbo/issues/6174
+        registerAnnotationConfigProcessors(registry);
+        /**
+         * @since 2.7.8
+         * issue : https://github.com/apache/dubbo/issues/6275
+         */
         registerCommonBeans(registry);
         BeanDefinition beanDefinition = super.parse(element, parserContext);
         setSource(beanDefinition);
         return beanDefinition;
+    }
+
+    /**
+     * Register the processors for the Spring Annotation-Driven features
+     *
+     * @param registry {@link BeanDefinitionRegistry}
+     * @see AnnotationConfigUtils
+     * @since 2.7.5
+     */
+    private void registerAnnotationConfigProcessors(BeanDefinitionRegistry registry) {
+        AnnotationConfigUtils.registerAnnotationConfigProcessors(registry);
     }
 }

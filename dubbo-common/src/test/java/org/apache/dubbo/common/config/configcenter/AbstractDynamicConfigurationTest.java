@@ -33,10 +33,9 @@ import static org.apache.dubbo.common.config.configcenter.AbstractDynamicConfigu
 import static org.apache.dubbo.common.config.configcenter.AbstractDynamicConfiguration.THREAD_POOL_PREFIX_PARAM_NAME;
 import static org.apache.dubbo.common.config.configcenter.AbstractDynamicConfiguration.THREAD_POOL_SIZE_PARAM_NAME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * {@link AbstractDynamicConfiguration} Test
@@ -49,7 +48,7 @@ public class AbstractDynamicConfigurationTest {
 
     @BeforeEach
     public void init() {
-        configuration = new AbstractDynamicConfiguration() {
+        configuration = new AbstractDynamicConfiguration(null) {
             @Override
             protected String doGetConfig(String key, String group) throws Exception {
                 return null;
@@ -58,6 +57,11 @@ public class AbstractDynamicConfigurationTest {
             @Override
             protected void doClose() throws Exception {
 
+            }
+
+            @Override
+            protected boolean doRemoveConfig(String key, String group) throws Exception {
+                return false;
             }
         };
     }
@@ -90,6 +94,11 @@ public class AbstractDynamicConfigurationTest {
             @Override
             protected void doClose() throws Exception {
 
+            }
+
+            @Override
+            protected boolean doRemoveConfig(String key, String group) throws Exception {
+                return false;
             }
         };
 

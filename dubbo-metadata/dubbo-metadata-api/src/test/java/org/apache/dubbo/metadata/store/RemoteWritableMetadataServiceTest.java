@@ -36,15 +36,13 @@ import java.util.Map;
 /**
  * 2018/9/14
  */
-public class RemoteWritableMeatadataServiceTest {
+public class RemoteWritableMetadataServiceTest {
     URL url = URL.valueOf("JTest://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic");
     RemoteWritableMetadataService metadataReportService1;
-    InMemoryWritableMetadataService inMemoryWritableMetadataService;
 
     @BeforeEach
     public void before() {
-        inMemoryWritableMetadataService = new InMemoryWritableMetadataService();
-        metadataReportService1 = new RemoteWritableMetadataService(inMemoryWritableMetadataService);
+        metadataReportService1 = new RemoteWritableMetadataService();
         MetadataReportInstance.init(url);
     }
 
@@ -134,25 +132,25 @@ public class RemoteWritableMeatadataServiceTest {
     public void testRefreshMetadataService() throws InterruptedException {
         URL publishUrl = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestRefreshMetadataService?version=1.0.8&application=vicpubprovder&side=provider");
         URL publishUrl2 = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestRefreshMetadata2Service?version=1.0.5&application=vicpubprovder&side=provider");
-        inMemoryWritableMetadataService.exportURL(publishUrl);
-        inMemoryWritableMetadataService.exportURL(publishUrl2);
+        metadataReportService1.exportURL(publishUrl);
+        metadataReportService1.exportURL(publishUrl2);
         String exportedRevision = "9999";
         JTestMetadataReport4Test jTestMetadataReport4Test = (JTestMetadataReport4Test) metadataReportService1.getMetadataReport();
         int origSize = jTestMetadataReport4Test.store.size();
         Assertions.assertTrue(metadataReportService1.refreshMetadata(exportedRevision, "1109"));
         Thread.sleep(200);
         int size = jTestMetadataReport4Test.store.size();
-        Assertions.assertTrue(size - origSize == 2);
-        Assertions.assertEquals(jTestMetadataReport4Test.store.get(getServiceMetadataIdentifier(publishUrl, exportedRevision).getUniqueKey(KeyTypeEnum.UNIQUE_KEY)), publishUrl.toFullString());
-        Assertions.assertEquals(jTestMetadataReport4Test.store.get(getServiceMetadataIdentifier(publishUrl2, exportedRevision).getUniqueKey(KeyTypeEnum.UNIQUE_KEY)), publishUrl2.toFullString());
+        Assertions.assertEquals(origSize, size);
+        Assertions.assertNull(jTestMetadataReport4Test.store.get(getServiceMetadataIdentifier(publishUrl, exportedRevision).getUniqueKey(KeyTypeEnum.UNIQUE_KEY)));
+        Assertions.assertNull(jTestMetadataReport4Test.store.get(getServiceMetadataIdentifier(publishUrl2, exportedRevision).getUniqueKey(KeyTypeEnum.UNIQUE_KEY)));
     }
 
     @Test
     public void testRefreshMetadataSubscription() throws InterruptedException {
         URL subscriberUrl1 = URL.valueOf("subscriber://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestRefreshMetadata00Service?version=1.0.8&application=vicpubprovder&side=provider");
         URL subscriberUrl2 = URL.valueOf("subscriber://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestRefreshMetadata09Service?version=1.0.5&application=vicpubprovder&side=provider");
-        inMemoryWritableMetadataService.subscribeURL(subscriberUrl1);
-        inMemoryWritableMetadataService.subscribeURL(subscriberUrl2);
+        metadataReportService1.subscribeURL(subscriberUrl1);
+        metadataReportService1.subscribeURL(subscriberUrl2);
         String exportedRevision = "9999";
         String subscriberRevision = "2099";
         String applicationName = "wriableMetadataService";
@@ -162,10 +160,10 @@ public class RemoteWritableMeatadataServiceTest {
         Assertions.assertTrue(metadataReportService1.refreshMetadata(exportedRevision, subscriberRevision));
         Thread.sleep(200);
         int size = jTestMetadataReport4Test.store.size();
-        Assertions.assertTrue(size - origSize == 1);
+        Assertions.assertEquals(origSize, size);
         String r = jTestMetadataReport4Test.store.get(getSubscriberMetadataIdentifier(
                 subscriberRevision).getUniqueKey(KeyTypeEnum.UNIQUE_KEY));
-        Assertions.assertNotNull(r);
+        Assertions.assertNull(r);
     }
 
     private ServiceMetadataIdentifier getServiceMetadataIdentifier(URL publishUrl, String exportedRevision) {

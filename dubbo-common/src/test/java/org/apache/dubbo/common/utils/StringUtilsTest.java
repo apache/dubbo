@@ -18,19 +18,28 @@ package org.apache.dubbo.common.utils;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.utils.StringUtils.toCommaDelimitedString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class StringUtilsTest {
     @Test
@@ -361,6 +370,27 @@ public class StringUtilsTest {
         String illegalStr = "[{key=value},{aa:bb}]";
         Map<String, String> illegalMap = StringUtils.parseParameters(illegalStr);
         assertEquals(0, illegalMap.size());
+    }
+
+    @Test
+    public void testToCommaDelimitedString() {
+        String value = toCommaDelimitedString(null);
+        assertNull(value);
+
+        value = toCommaDelimitedString(null, null);
+        assertNull(value);
+
+        value = toCommaDelimitedString("");
+        assertEquals("", value);
+
+        value = toCommaDelimitedString("one");
+        assertEquals("one", value);
+
+        value = toCommaDelimitedString("one", "two");
+        assertEquals("one,two", value);
+
+        value = toCommaDelimitedString("one", "two", "three");
+        assertEquals("one,two,three", value);
     }
 
 }
