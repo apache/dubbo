@@ -17,6 +17,7 @@
 package org.apache.dubbo.metadata.report.identifier;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
+import static org.apache.dubbo.common.utils.PathUtils.buildPath;
 import static org.apache.dubbo.metadata.MetadataConstants.DEFAULT_PATH_TAG;
 import static org.apache.dubbo.metadata.MetadataConstants.KEY_SEPARATOR;
 
@@ -36,9 +37,7 @@ public class BaseApplicationMetadataIdentifier {
     }
 
     String getIdentifierKey(String... params) {
-
-        return application
-                + joinParams(KEY_SEPARATOR, params);
+        return application + joinParams(KEY_SEPARATOR, params);
     }
 
     private String joinParams(String joinChar, String... params) {
@@ -58,9 +57,7 @@ public class BaseApplicationMetadataIdentifier {
     }
 
     private String getFilePathKey(String pathTag, String... params) {
-        return pathTag
-                + application
-                + joinParams(PATH_SEPARATOR, params);
+        return buildPath(pathTag, application, joinParams(PATH_SEPARATOR, params));
     }
 
 }

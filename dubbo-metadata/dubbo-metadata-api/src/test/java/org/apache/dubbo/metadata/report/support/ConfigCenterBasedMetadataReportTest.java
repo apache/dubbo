@@ -22,10 +22,10 @@ import org.apache.dubbo.metadata.URLRevisionResolver;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
 import org.apache.dubbo.metadata.report.MetadataReport;
-import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
+import org.apache.dubbo.metadata.report.support.file.FileSystemMetadataReportFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.service.EchoService;
 
@@ -76,7 +76,7 @@ public class ConfigCenterBasedMetadataReportTest {
     @BeforeEach
     public void init() {
         ApplicationModel.getConfigManager().setApplication(new ApplicationConfig("test-service"));
-        this.metadataReport = new ConfigCenterBasedMetadataReport(REPORT_SERVER_URL, KeyTypeEnum.PATH);
+        this.metadataReport = new FileSystemMetadataReportFactory().getMetadataReport(REPORT_SERVER_URL);
     }
 
     @AfterEach
