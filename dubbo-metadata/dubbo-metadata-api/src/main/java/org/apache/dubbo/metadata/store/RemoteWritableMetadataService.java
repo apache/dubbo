@@ -100,9 +100,9 @@ public class RemoteWritableMetadataService implements WritableMetadataService {
                 return;
             }
             logger.error("publishProvider interfaceName is empty . providerUrl: " + providerUrl.toFullString());
-        } catch (ClassNotFoundException e) {
+        } catch (Throwable t) {
             //ignore error
-            logger.error("publishProvider getServiceDescriptor error. providerUrl: " + providerUrl.toFullString(), e);
+            logger.error("publishProvider getServiceDescriptor error. providerUrl: " + providerUrl.toFullString(), t.getCause());
         }
     }
 
