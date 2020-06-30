@@ -14,50 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring.schema;
+package org.apache.dubbo.config.spring.beans.factory.config;
 
-import org.apache.dubbo.config.spring.ReferenceBean;
-import org.apache.dubbo.config.spring.ServiceBean;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import static org.junit.Assert.assertNotNull;
-
 @RunWith(SpringRunner.class)
-@ContextConfiguration(classes = GenericServiceTest.class)
-@ImportResource(locations = "classpath:/META-INF/spring/dubbo-generic-consumer.xml")
-public class GenericServiceTest {
-
-    @Before
-    public void setUp() {
-        ApplicationModel.reset();
-    }
-
-    @After
-    public void tearDown() {
-        ApplicationModel.reset();
-    }
+@ContextConfiguration(classes = MultipleServicesWithMethodConfigsTest.class)
+@ImportResource(locations = "classpath:/META-INF/spring/multiple-services-with-methods.xml")
+public class MultipleServicesWithMethodConfigsTest {
 
     @Autowired
-    @Qualifier("demoServiceRef")
-    private ReferenceBean referenceBean;
-
-    @Autowired
-    @Qualifier("demoService")
-    private ServiceBean serviceBean;
+    private ApplicationContext applicationContext;
 
     @Test
-    public void testBeanDefinitionParser() {
-        assertNotNull(referenceBean);
-        assertNotNull(serviceBean);
+    public void test() {
+//        Map<String, MethodConfig> methodConfigs = applicationContext.getBeansOfType(MethodConfig.class);
+//        assertEquals(2, methodConfigs.size());
     }
 }
+
+
