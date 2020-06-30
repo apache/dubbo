@@ -523,8 +523,4 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
                 .collect(Collectors.toList());
     }
 
-    @Override
-    public void destroy() throws IllegalStateException {
-        clear();
-    }
 }
