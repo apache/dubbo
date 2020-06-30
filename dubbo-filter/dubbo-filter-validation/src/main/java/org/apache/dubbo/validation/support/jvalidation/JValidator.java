@@ -186,7 +186,7 @@ public class JValidator implements Validator {
     private static String generateMethodParameterClassName(Class<?> clazz, Method method) {
         StringBuilder builder = new StringBuilder().append(clazz.getName())
                 .append("_")
-                .append(toUpperMethoName(method.getName()))
+                .append(toUpperMethodName(method.getName()))
                 .append("Parameter");
 
         Class<?>[] parameterTypes = method.getParameterTypes();
@@ -211,7 +211,7 @@ public class JValidator implements Validator {
         return false;
     }
 
-    private static String toUpperMethoName(String methodName) {
+    private static String toUpperMethodName(String methodName) {
         return methodName.substring(0, 1).toUpperCase() + methodName.substring(1);
     }
 
@@ -292,7 +292,7 @@ public class JValidator implements Validator {
 
     private Class methodClass(String methodName) {
         Class<?> methodClass = null;
-        String methodClassName = clazz.getName() + "$" + toUpperMethoName(methodName);
+        String methodClassName = clazz.getName() + "$" + toUpperMethodName(methodName);
         Class cached = methodClassMap.get(methodClassName);
         if (cached != null) {
             return cached == clazz ? null : cached;

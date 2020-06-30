@@ -24,6 +24,7 @@ import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.config.configcenter.TreePathDynamicConfiguration;
 import org.apache.dubbo.common.function.ThrowableConsumer;
 import org.apache.dubbo.common.function.ThrowableFunction;
+import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 
@@ -146,6 +147,7 @@ public class FileSystemDynamicConfiguration extends TreePathDynamicConfiguration
         MODIFIERS = initWatchEventModifiers();
         DELAY = initDelay(MODIFIERS);
         WATCH_EVENTS_LOOP_THREAD_POOL = newWatchEventsLoopThreadPool();
+        registerDubboShutdownHook();
     }
 
     /**
@@ -227,6 +229,24 @@ public class FileSystemDynamicConfiguration extends TreePathDynamicConfiguration
                 // Nothing to return
                 return null;
             });
+        });
+    }
+
+    /**
+     * Register the Dubbo ShutdownHook
+     *
+     * @since 2.7.8
+     */
+    private static void registerDubboShutdownHook() {
+        ShutdownHookCallbacks.INSTANCE.addCallback(() -> {
+            watchService.ifPresent(w -> {
+                try {
+                    w.close();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+            getWatchEventsLoopThreadPool().shutdown();
         });
     }
 

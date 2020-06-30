@@ -14,29 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.client.event.listener;
+package org.apache.dubbo.metadata.definition;
 
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.event.EventListener;
-import org.apache.dubbo.metadata.MetadataService;
-import org.apache.dubbo.registry.client.event.ServiceInstancePreRegisteredEvent;
+import org.apache.dubbo.metadata.definition.builder.TypeBuilder;
+import org.apache.dubbo.metadata.definition.model.TypeDefinition;
+
+import java.lang.reflect.Type;
+import java.util.Map;
 
 /**
- * An {@link EventListener} of {@link ServiceInstancePreRegisteredEvent} for
- * Exporting the {@link MetadataService}
- *
- * @see EventListener
- * @see ServiceInstancePreRegisteredEvent
- * @see MetadataService
- * @since 2.7.8
+ * test for sort
  */
-public class ExportingMetadataServiceListener implements EventListener<ServiceInstancePreRegisteredEvent> {
-
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+public class Test3TypeBuilder implements TypeBuilder {
+    // it is smaller than the implements of TypeBuilder
+    public int getPriority(){
+        return 10;
+    }
 
     @Override
-    public void onEvent(ServiceInstancePreRegisteredEvent event) {
+    public boolean accept(Type type, Class<?> clazz) {
+        return false;
+    }
 
+    @Override
+    public TypeDefinition build(Type type, Class<?> clazz, Map<Class<?>, TypeDefinition> typeCache) {
+        return null;
     }
 }

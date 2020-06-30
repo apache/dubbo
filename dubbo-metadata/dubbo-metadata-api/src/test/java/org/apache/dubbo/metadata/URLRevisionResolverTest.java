@@ -34,7 +34,7 @@ public class URLRevisionResolverTest {
 
     private static final String URL = "dubbo://192.168.0.102:20881/org.apache.dubbo.metadata.URLRevisionResolverTest";
 
-    private final URLRevisionResolver resolver = new URLRevisionResolver();
+    private final URLRevisionResolver resolver = URLRevisionResolver.INSTANCE;
 
     @Test
     public void testResolve() {

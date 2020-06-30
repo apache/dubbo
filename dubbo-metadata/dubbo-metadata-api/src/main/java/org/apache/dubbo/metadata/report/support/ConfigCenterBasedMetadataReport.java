@@ -123,6 +123,11 @@ public class ConfigCenterBasedMetadataReport extends AbstractMetadataReport {
         dynamicConfiguration.publishConfig(key, group, value);
     }
 
+    protected String getMetadata(ServiceMetadataIdentifier metadataIdentifier) {
+        String key = getKey(metadataIdentifier);
+        return dynamicConfiguration.getConfig(key, group);
+    }
+
     protected String getMetadata(MetadataIdentifier metadataIdentifier) {
         String key = getKey(metadataIdentifier);
         return dynamicConfiguration.getConfig(key, group);
@@ -149,5 +154,9 @@ public class ConfigCenterBasedMetadataReport extends AbstractMetadataReport {
 
     protected String getKey(MetadataIdentifier metadataIdentifier) {
         return metadataIdentifier.getUniqueKey(keyType);
+    }
+
+    protected void doClose() throws Exception {
+        this.dynamicConfiguration.close();
     }
 }

@@ -53,6 +53,11 @@ public class ConfigManagerTest {
     }
 
     @Test
+    public void testDestroy() {
+        assertTrue(configManager.configsCache.isEmpty());
+    }
+
+    @Test
     public void testDefaultValues() {
         // assert single
         assertFalse(configManager.getApplication().isPresent());
