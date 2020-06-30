@@ -113,6 +113,12 @@ public class ConsulDynamicConfigurationTest {
     }
 
     @Test
+    public void testPublishConfig() {
+        configuration.publishConfig("foo", "value1");
+        Assertions.assertEquals("value1", configuration.getString("/dubbo/config/dubbo/foo"));
+    }
+
+    @Test
     public void testGetConfigKeys() {
         configuration.publishConfig("v1", "metadata", "1");
         configuration.publishConfig("v2", "metadata", "2");

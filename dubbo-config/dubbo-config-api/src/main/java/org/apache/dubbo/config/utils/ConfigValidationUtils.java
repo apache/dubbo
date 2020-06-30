@@ -97,7 +97,6 @@ import static org.apache.dubbo.config.Constants.CONTEXTPATH_KEY;
 import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
 import static org.apache.dubbo.config.Constants.ENVIRONMENT;
 import static org.apache.dubbo.config.Constants.LAYER_KEY;
-import static org.apache.dubbo.config.Constants.LISTENER_KEY;
 import static org.apache.dubbo.config.Constants.NAME;
 import static org.apache.dubbo.config.Constants.ORGANIZATION;
 import static org.apache.dubbo.config.Constants.OWNER;
@@ -297,7 +296,6 @@ public class ConfigValidationUtils {
         checkExtension(ProxyFactory.class, PROXY_KEY, config.getProxy());
         checkExtension(Cluster.class, CLUSTER_KEY, config.getCluster());
         checkMultiExtension(Filter.class, FILE_KEY, config.getFilter());
-        checkMultiExtension(InvokerListener.class, LISTENER_KEY, config.getListener());
         checkNameHasSymbol(LAYER_KEY, config.getLayer());
 
         List<MethodConfig> methods = config.getMethods();
