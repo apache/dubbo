@@ -522,9 +522,4 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
                 .filter(ConfigManager::isDefaultConfig)
                 .collect(Collectors.toList());
     }
-
-    @Override
-    public void destroy() throws IllegalStateException {
-        clear();
-    }
 }
