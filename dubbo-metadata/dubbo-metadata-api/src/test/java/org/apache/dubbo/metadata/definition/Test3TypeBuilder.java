@@ -14,29 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.definition.builder;
+package org.apache.dubbo.metadata.definition;
 
-import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.common.lang.Prioritized;
+import org.apache.dubbo.metadata.definition.builder.TypeBuilder;
 import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 
 import java.lang.reflect.Type;
 import java.util.Map;
 
 /**
- * 2015/1/27.
+ * test for sort
  */
-@SPI
-public interface TypeBuilder extends Prioritized {
+public class Test3TypeBuilder implements TypeBuilder {
+    // it is smaller than the implements of TypeBuilder
+    public int getPriority(){
+        return 10;
+    }
 
-    /**
-     * Whether the build accept the type or class passed in.
-     */
-    boolean accept(Type type, Class<?> clazz);
+    @Override
+    public boolean accept(Type type, Class<?> clazz) {
+        return false;
+    }
 
-    /**
-     * Build type definition with the type or class.
-     */
-    TypeDefinition build(Type type, Class<?> clazz, Map<Class<?>, TypeDefinition> typeCache);
-
+    @Override
+    public TypeDefinition build(Type type, Class<?> clazz, Map<Class<?>, TypeDefinition> typeCache) {
+        return null;
+    }
 }
