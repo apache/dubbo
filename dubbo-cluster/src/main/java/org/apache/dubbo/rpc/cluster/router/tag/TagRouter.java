@@ -193,6 +193,18 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
     }
 
     private <T> List<Invoker<T>> filterInvoker(List<Invoker<T>> invokers, Predicate<Invoker<T>> predicate) {
+        boolean filter = false;
+        for (int i = 0; i < invokers.size(); ++i) {
+            Invoker<T> invoker = invokers.get(i);
+            if (!predicate.test(invoker)) {
+                filter = true;
+                break;
+            }
+        }
+        if (!filter) {
+            return invokers;
+        }
+
         return invokers.stream()
                 .filter(predicate)
                 .collect(Collectors.toList());
