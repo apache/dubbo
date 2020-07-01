@@ -32,7 +32,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PREFERRED_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.*;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_ZONE;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_ZONE_FORCE;
+import static org.apache.dubbo.common.constants.RegistryConstants.ZONE_KEY;
 
 /**
  * When there're more than one registry for subscription.
