@@ -737,8 +737,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     
     public void setInterface(String interfaceName) {
         this.interfaceName = interfaceName;
-        if (StringUtils.isEmpty(id)) {
-            id = interfaceName;
-        }
+//         if (StringUtils.isEmpty(id)) {
+//             id = interfaceName;
+//         }
     }
 }
