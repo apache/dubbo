@@ -14,10 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.convert;
-
-import org.apache.dubbo.common.convert.Converter;
-import org.apache.dubbo.common.convert.StringToStringConverter;
+package org.apache.dubbo.common.convert;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,30 +22,34 @@ import org.junit.jupiter.api.Test;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * {@link StringToStringConverter} Test
+ * {@link StringToCharacterConverter} Test
  *
  * @since 2.7.6
  */
-public class StringToStringConverterTest {
+public class StringToCharacterConverterTest {
 
-    private StringToStringConverter converter;
+    private StringToCharacterConverter converter;
 
     @BeforeEach
     public void init() {
-        converter = (StringToStringConverter) getExtensionLoader(Converter.class).getExtension("string-to-string");
+        converter = (StringToCharacterConverter) getExtensionLoader(Converter.class).getExtension("string-to-character");
     }
 
     @Test
     public void testAccept() {
-        assertTrue(converter.accept(String.class, String.class));
+        assertTrue(converter.accept(String.class, Character.class));
     }
 
     @Test
     public void testConvert() {
-        assertEquals("1", converter.convert("1"));
+        assertEquals('t', converter.convert("t"));
         assertNull(converter.convert(null));
+        assertThrows(IllegalArgumentException.class, () -> {
+            converter.convert("ttt");
+        });
     }
 }

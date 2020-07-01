@@ -14,10 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.convert.multiple;
+package org.apache.dubbo.common.convert.multiple;
 
-import org.apache.dubbo.common.convert.multiple.MultiValueConverter;
-import org.apache.dubbo.common.convert.multiple.StringToListConverter;
 import org.apache.dubbo.common.utils.CollectionUtils;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -34,12 +32,12 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.TransferQueue;
 
-import static java.util.Arrays.asList;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -47,17 +45,18 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * {@link StringToListConverter} Test
+ * {@link StringToBlockingQueueConverter} Test
  *
+ * @see BlockingDeque
  * @since 2.7.6
  */
-public class StringToNavigableSetConverterTest {
+public class StringToBlockingQueueConverterTest {
 
     private MultiValueConverter converter;
 
     @BeforeEach
     public void init() {
-        converter = getExtensionLoader(MultiValueConverter.class).getExtension("string-to-navigable-set");
+        converter = getExtensionLoader(MultiValueConverter.class).getExtension("string-to-blocking-queue");
     }
 
     @Test
@@ -67,20 +66,20 @@ public class StringToNavigableSetConverterTest {
 
         assertFalse(converter.accept(String.class, List.class));
         assertFalse(converter.accept(String.class, AbstractList.class));
-        assertFalse(converter.accept(String.class, LinkedList.class));
         assertFalse(converter.accept(String.class, ArrayList.class));
+        assertFalse(converter.accept(String.class, LinkedList.class));
 
         assertFalse(converter.accept(String.class, Set.class));
         assertFalse(converter.accept(String.class, SortedSet.class));
-        assertTrue(converter.accept(String.class, NavigableSet.class));
-        assertTrue(converter.accept(String.class, TreeSet.class));
-        assertTrue(converter.accept(String.class, ConcurrentSkipListSet.class));
+        assertFalse(converter.accept(String.class, NavigableSet.class));
+        assertFalse(converter.accept(String.class, TreeSet.class));
+        assertFalse(converter.accept(String.class, ConcurrentSkipListSet.class));
 
         assertFalse(converter.accept(String.class, Queue.class));
-        assertFalse(converter.accept(String.class, BlockingQueue.class));
-        assertFalse(converter.accept(String.class, TransferQueue.class));
+        assertTrue(converter.accept(String.class, BlockingQueue.class));
+        assertTrue(converter.accept(String.class, TransferQueue.class));
         assertFalse(converter.accept(String.class, Deque.class));
-        assertFalse(converter.accept(String.class, BlockingDeque.class));
+        assertTrue(converter.accept(String.class, BlockingDeque.class));
 
         assertFalse(converter.accept(null, char[].class));
         assertFalse(converter.accept(null, String.class));
@@ -91,20 +90,25 @@ public class StringToNavigableSetConverterTest {
     @Test
     public void testConvert() {
 
-        Set values = new TreeSet(asList(1, 2, 3));
+        BlockingQueue values = new ArrayBlockingQueue(3);
+        values.offer(1);
+        values.offer(2);
+        values.offer(3);
 
-        NavigableSet result = (NavigableSet) converter.convert("1,2,3", List.class, Integer.class);
-
-        assertTrue(CollectionUtils.equals(values, result));
-
-        values = new TreeSet(asList("123"));
-
-        result = (NavigableSet) converter.convert("123", NavigableSet.class, String.class);
+        BlockingQueue<Integer> result = (BlockingQueue<Integer>) converter.convert("1,2,3", BlockingDeque.class, Integer.class);
 
         assertTrue(CollectionUtils.equals(values, result));
 
-        assertNull(converter.convert(null, Collection.class, Integer.class));
+        values.clear();
+        values.offer(123);
+
+        result = (BlockingQueue<Integer>) converter.convert("123", BlockingDeque.class, Integer.class);
+
+        assertTrue(CollectionUtils.equals(values, result));
+
+        assertNull(converter.convert(null, Collection.class, null));
         assertNull(converter.convert("", Collection.class, null));
+
     }
 
     @Test
@@ -114,6 +118,6 @@ public class StringToNavigableSetConverterTest {
 
     @Test
     public void testGetPriority() {
-        assertEquals(Integer.MAX_VALUE - 4, converter.getPriority());
+        assertEquals(Integer.MAX_VALUE - 3, converter.getPriority());
     }
 }

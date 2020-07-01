@@ -57,6 +57,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.PORT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.USERNAME_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.convert.Converter.convertIfPossible;
+import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 
 /**
  * URL - Uniform Resource Locator (Immutable, ThreadSafe)
@@ -619,6 +621,41 @@ class URL implements Serializable {
         }
         String[] strArray = COMMA_SPLIT_PATTERN.split(value);
         return Arrays.asList(strArray);
+    }
+
+    /**
+     * Get parameter
+     *
+     * @param key       the key of parameter
+     * @param valueType the type of parameter value
+     * @param <T>       the type of parameter value
+     * @return get the parameter if present, or <code>null</code>
+     * @since 2.7.8
+     */
+    public <T> T getParameter(String key, Class<T> valueType) {
+        return getParameter(key, valueType, null);
+    }
+
+    /**
+     * Get parameter
+     *
+     * @param key          the key of parameter
+     * @param valueType    the type of parameter value
+     * @param defaultValue the default value if parameter is absent
+     * @param <T>          the type of parameter value
+     * @return get the parameter if present, or <code>defaultValue</code> will be used.
+     * @since 2.7.8
+     */
+    public <T> T getParameter(String key, Class<T> valueType, T defaultValue) {
+        String value = getParameter(key);
+        T result = null;
+        if (!isBlank(value)) {
+            result = convertIfPossible(value, valueType);
+        }
+        if (result == null) {
+            result = defaultValue;
+        }
+        return result;
     }
 
     private Map<String, Number> getNumbers() {
@@ -1435,7 +1472,7 @@ class URL implements Serializable {
 
     private void append(StringBuilder target, String parameterName, boolean first) {
         String parameterValue = this.getParameter(parameterName);
-        if (!StringUtils.isBlank(parameterValue)) {
+        if (!isBlank(parameterValue)) {
             if (!first) {
                 target.append(":");
             }

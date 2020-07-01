@@ -14,11 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.convert.multiple;
-
-import org.apache.dubbo.common.convert.multiple.MultiValueConverter;
-import org.apache.dubbo.common.convert.multiple.StringToListConverter;
-import org.apache.dubbo.common.utils.CollectionUtils;
+package org.apache.dubbo.common.convert.multiple;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -47,40 +43,40 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * {@link StringToListConverter} Test
+ * {@link StringToCollectionConverter} Test
  *
  * @since 2.7.6
  */
-public class StringToSortedSetConverterTest {
+public class StringToCollectionConverterTest {
 
     private MultiValueConverter converter;
 
     @BeforeEach
     public void init() {
-        converter = getExtensionLoader(MultiValueConverter.class).getExtension("string-to-sorted-set");
+        converter = getExtensionLoader(MultiValueConverter.class).getExtension("string-to-collection");
     }
 
     @Test
     public void testAccept() {
 
-        assertFalse(converter.accept(String.class, Collection.class));
+        assertTrue(converter.accept(String.class, Collection.class));
 
-        assertFalse(converter.accept(String.class, List.class));
-        assertFalse(converter.accept(String.class, AbstractList.class));
-        assertFalse(converter.accept(String.class, LinkedList.class));
-        assertFalse(converter.accept(String.class, ArrayList.class));
+        assertTrue(converter.accept(String.class, List.class));
+        assertTrue(converter.accept(String.class, AbstractList.class));
+        assertTrue(converter.accept(String.class, ArrayList.class));
+        assertTrue(converter.accept(String.class, LinkedList.class));
 
-        assertFalse(converter.accept(String.class, Set.class));
+        assertTrue(converter.accept(String.class, Set.class));
         assertTrue(converter.accept(String.class, SortedSet.class));
         assertTrue(converter.accept(String.class, NavigableSet.class));
         assertTrue(converter.accept(String.class, TreeSet.class));
         assertTrue(converter.accept(String.class, ConcurrentSkipListSet.class));
 
-        assertFalse(converter.accept(String.class, Queue.class));
-        assertFalse(converter.accept(String.class, BlockingQueue.class));
-        assertFalse(converter.accept(String.class, TransferQueue.class));
-        assertFalse(converter.accept(String.class, Deque.class));
-        assertFalse(converter.accept(String.class, BlockingDeque.class));
+        assertTrue(converter.accept(String.class, Queue.class));
+        assertTrue(converter.accept(String.class, BlockingQueue.class));
+        assertTrue(converter.accept(String.class, TransferQueue.class));
+        assertTrue(converter.accept(String.class, Deque.class));
+        assertTrue(converter.accept(String.class, BlockingDeque.class));
 
         assertFalse(converter.accept(null, char[].class));
         assertFalse(converter.accept(null, String.class));
@@ -91,20 +87,21 @@ public class StringToSortedSetConverterTest {
     @Test
     public void testConvert() {
 
-        Set values = new TreeSet(asList(1, 2, 3));
+        List values = asList(1L, 2L, 3L);
 
-        SortedSet result = (SortedSet) converter.convert("1,2,3", List.class, Integer.class);
+        Collection result = (Collection<Long>) converter.convert("1,2,3", Collection.class, Long.class);
 
-        assertTrue(CollectionUtils.equals(values, result));
+        assertEquals(values, result);
 
-        values = new TreeSet(asList("123"));
+        values = asList(123);
 
-        result = (SortedSet) converter.convert("123", NavigableSet.class, String.class);
+        result = (Collection<Integer>) converter.convert("123", Collection.class, Integer.class);
 
-        assertTrue(CollectionUtils.equals(values, result));
+        assertEquals(values, result);
 
         assertNull(converter.convert(null, Collection.class, Integer.class));
-        assertNull(converter.convert("", Collection.class, null));
+        assertNull(converter.convert("", Collection.class, Integer.class));
+
     }
 
     @Test
@@ -114,6 +111,6 @@ public class StringToSortedSetConverterTest {
 
     @Test
     public void testGetPriority() {
-        assertEquals(Integer.MAX_VALUE - 3, converter.getPriority());
+        assertEquals(Integer.MAX_VALUE - 1, converter.getPriority());
     }
 }

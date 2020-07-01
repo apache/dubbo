@@ -14,10 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.convert;
-
-import org.apache.dubbo.common.convert.Converter;
-import org.apache.dubbo.common.convert.StringToLongConverter;
+package org.apache.dubbo.common.convert;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

@@ -14,10 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.convert.multiple;
+package org.apache.dubbo.common.convert.multiple;
 
-import org.apache.dubbo.common.convert.multiple.MultiValueConverter;
-import org.apache.dubbo.common.convert.multiple.StringToListConverter;
 import org.apache.dubbo.common.utils.CollectionUtils;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -37,7 +35,6 @@ import java.util.TreeSet;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.TransferQueue;
 
 import static java.util.Arrays.asList;
@@ -48,17 +45,17 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * {@link StringToListConverter} Test
+ * {@link StringToSortedSetConverter} Test
  *
  * @since 2.7.6
  */
-public class StringToTransferQueueConverterTest {
+public class StringToSortedSetConverterTest {
 
     private MultiValueConverter converter;
 
     @BeforeEach
     public void init() {
-        converter = getExtensionLoader(MultiValueConverter.class).getExtension("string-to-transfer-queue");
+        converter = getExtensionLoader(MultiValueConverter.class).getExtension("string-to-sorted-set");
     }
 
     @Test
@@ -72,16 +69,16 @@ public class StringToTransferQueueConverterTest {
         assertFalse(converter.accept(String.class, ArrayList.class));
 
         assertFalse(converter.accept(String.class, Set.class));
-        assertFalse(converter.accept(String.class, SortedSet.class));
-        assertFalse(converter.accept(String.class, NavigableSet.class));
-        assertFalse(converter.accept(String.class, TreeSet.class));
-        assertFalse(converter.accept(String.class, ConcurrentSkipListSet.class));
+        assertTrue(converter.accept(String.class, SortedSet.class));
+        assertTrue(converter.accept(String.class, NavigableSet.class));
+        assertTrue(converter.accept(String.class, TreeSet.class));
+        assertTrue(converter.accept(String.class, ConcurrentSkipListSet.class));
 
         assertFalse(converter.accept(String.class, Queue.class));
         assertFalse(converter.accept(String.class, BlockingQueue.class));
+        assertFalse(converter.accept(String.class, TransferQueue.class));
         assertFalse(converter.accept(String.class, Deque.class));
         assertFalse(converter.accept(String.class, BlockingDeque.class));
-        assertTrue(converter.accept(String.class, TransferQueue.class));
 
         assertFalse(converter.accept(null, char[].class));
         assertFalse(converter.accept(null, String.class));
@@ -92,17 +89,15 @@ public class StringToTransferQueueConverterTest {
     @Test
     public void testConvert() {
 
-        TransferQueue values = new LinkedTransferQueue(asList(1, 2, 3));
+        Set values = new TreeSet(asList(1, 2, 3));
 
-        TransferQueue result = (TransferQueue) converter.convert("1,2,3", List.class, Integer.class);
+        SortedSet result = (SortedSet) converter.convert("1,2,3", List.class, Integer.class);
 
         assertTrue(CollectionUtils.equals(values, result));
 
-        values.clear();
+        values = new TreeSet(asList("123"));
 
-        values.addAll(asList("123"));
-
-        result = (TransferQueue) converter.convert("123", NavigableSet.class, String.class);
+        result = (SortedSet) converter.convert("123", NavigableSet.class, String.class);
 
         assertTrue(CollectionUtils.equals(values, result));
 
@@ -117,6 +112,6 @@ public class StringToTransferQueueConverterTest {
 
     @Test
     public void testGetPriority() {
-        assertEquals(Integer.MAX_VALUE - 4, converter.getPriority());
+        assertEquals(Integer.MAX_VALUE - 3, converter.getPriority());
     }
 }

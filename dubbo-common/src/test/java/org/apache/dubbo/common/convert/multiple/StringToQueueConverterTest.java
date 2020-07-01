@@ -14,19 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.convert.multiple;
+package org.apache.dubbo.common.convert.multiple;
 
-import org.apache.dubbo.common.convert.multiple.StringToSetConverter;
 import org.apache.dubbo.common.utils.CollectionUtils;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.AbstractList;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Deque;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.NavigableSet;
@@ -46,17 +45,17 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * {@link StringToSetConverter} Test
+ * {@link StringToQueueConverter} Test
  *
  * @since 2.7.6
  */
-public class StringToSetConverterTest {
+public class StringToQueueConverterTest {
 
-    private StringToSetConverter converter;
+    private StringToQueueConverter converter;
 
     @BeforeEach
     public void init() {
-        converter = new StringToSetConverter();
+        converter = new StringToQueueConverter();
     }
 
     @Test
@@ -66,20 +65,20 @@ public class StringToSetConverterTest {
 
         assertFalse(converter.accept(String.class, List.class));
         assertFalse(converter.accept(String.class, AbstractList.class));
-        assertFalse(converter.accept(String.class, LinkedList.class));
+        assertTrue(converter.accept(String.class, LinkedList.class));
         assertFalse(converter.accept(String.class, ArrayList.class));
 
-        assertTrue(converter.accept(String.class, Set.class));
-        assertTrue(converter.accept(String.class, SortedSet.class));
-        assertTrue(converter.accept(String.class, NavigableSet.class));
-        assertTrue(converter.accept(String.class, TreeSet.class));
-        assertTrue(converter.accept(String.class, ConcurrentSkipListSet.class));
+        assertTrue(converter.accept(String.class, Queue.class));
+        assertTrue(converter.accept(String.class, BlockingQueue.class));
+        assertTrue(converter.accept(String.class, TransferQueue.class));
+        assertTrue(converter.accept(String.class, Deque.class));
+        assertTrue(converter.accept(String.class, BlockingDeque.class));
 
-        assertFalse(converter.accept(String.class, Queue.class));
-        assertFalse(converter.accept(String.class, BlockingQueue.class));
-        assertFalse(converter.accept(String.class, TransferQueue.class));
-        assertFalse(converter.accept(String.class, Deque.class));
-        assertFalse(converter.accept(String.class, BlockingDeque.class));
+        assertFalse(converter.accept(String.class, Set.class));
+        assertFalse(converter.accept(String.class, SortedSet.class));
+        assertFalse(converter.accept(String.class, NavigableSet.class));
+        assertFalse(converter.accept(String.class, TreeSet.class));
+        assertFalse(converter.accept(String.class, ConcurrentSkipListSet.class));
 
         assertFalse(converter.accept(null, char[].class));
         assertFalse(converter.accept(null, String.class));
@@ -89,16 +88,17 @@ public class StringToSetConverterTest {
 
     @Test
     public void testConvert() {
-        Set values = new HashSet(asList(1.0, 2.0, 3.0));
 
-        Set result = (Set<Double>) converter.convert("1.0,2.0,3.0", Queue.class, Double.class);
+        Queue values = new ArrayDeque(asList(1.0, 2.0, 3.0));
+
+        Queue result = (Queue<Double>) converter.convert("1.0,2.0,3.0", Queue.class, Double.class);
 
         assertTrue(CollectionUtils.equals(values, result));
 
         values.clear();
         values.add(123);
 
-        result = (Set) converter.convert("123", Queue.class, Integer.class);
+        result = (Queue) converter.convert("123", Queue.class, Integer.class);
 
         assertTrue(CollectionUtils.equals(values, result));
 

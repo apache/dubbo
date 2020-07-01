@@ -14,10 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.convert.multiple;
+package org.apache.dubbo.common.convert.multiple;
 
-import org.apache.dubbo.common.convert.multiple.MultiValueConverter;
-import org.apache.dubbo.common.convert.multiple.StringToBlockingDequeConverter;
 import org.apache.dubbo.common.utils.CollectionUtils;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -27,6 +25,7 @@ import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Deque;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.NavigableSet;
@@ -37,29 +36,26 @@ import java.util.TreeSet;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TransferQueue;
 
 import static java.util.Arrays.asList;
-import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * {@link StringToBlockingDequeConverter} Test
+ * {@link StringToSetConverter} Test
  *
- * @see BlockingDeque
  * @since 2.7.6
  */
-public class StringToBlockingDequeConverterTest {
+public class StringToSetConverterTest {
 
-    private MultiValueConverter converter;
+    private StringToSetConverter converter;
 
     @BeforeEach
     public void init() {
-        converter = getExtensionLoader(MultiValueConverter.class).getExtension("string-to-blocking-deque");
+        converter = new StringToSetConverter();
     }
 
     @Test
@@ -69,20 +65,20 @@ public class StringToBlockingDequeConverterTest {
 
         assertFalse(converter.accept(String.class, List.class));
         assertFalse(converter.accept(String.class, AbstractList.class));
-        assertFalse(converter.accept(String.class, ArrayList.class));
         assertFalse(converter.accept(String.class, LinkedList.class));
+        assertFalse(converter.accept(String.class, ArrayList.class));
 
-        assertFalse(converter.accept(String.class, Set.class));
-        assertFalse(converter.accept(String.class, SortedSet.class));
-        assertFalse(converter.accept(String.class, NavigableSet.class));
-        assertFalse(converter.accept(String.class, TreeSet.class));
-        assertFalse(converter.accept(String.class, ConcurrentSkipListSet.class));
+        assertTrue(converter.accept(String.class, Set.class));
+        assertTrue(converter.accept(String.class, SortedSet.class));
+        assertTrue(converter.accept(String.class, NavigableSet.class));
+        assertTrue(converter.accept(String.class, TreeSet.class));
+        assertTrue(converter.accept(String.class, ConcurrentSkipListSet.class));
 
         assertFalse(converter.accept(String.class, Queue.class));
         assertFalse(converter.accept(String.class, BlockingQueue.class));
         assertFalse(converter.accept(String.class, TransferQueue.class));
         assertFalse(converter.accept(String.class, Deque.class));
-        assertTrue(converter.accept(String.class, BlockingDeque.class));
+        assertFalse(converter.accept(String.class, BlockingDeque.class));
 
         assertFalse(converter.accept(null, char[].class));
         assertFalse(converter.accept(null, String.class));
@@ -91,23 +87,22 @@ public class StringToBlockingDequeConverterTest {
     }
 
     @Test
-    public void testConvert() throws NoSuchFieldException {
+    public void testConvert() {
+        Set values = new HashSet(asList(1.0, 2.0, 3.0));
 
-        BlockingQueue<Integer> values = new LinkedBlockingDeque(asList(1, 2, 3));
-
-        BlockingDeque<Integer> result = (BlockingDeque<Integer>) converter.convert("1,2,3", BlockingDeque.class, Integer.class);
-
-        assertTrue(CollectionUtils.equals(values, result));
-
-        values = new LinkedBlockingDeque(asList(123));
-
-        result = (BlockingDeque<Integer>) converter.convert("123", BlockingDeque.class, Integer.class);
+        Set result = (Set<Double>) converter.convert("1.0,2.0,3.0", Queue.class, Double.class);
 
         assertTrue(CollectionUtils.equals(values, result));
 
-        assertNull(converter.convert(null, Collection.class, null));
+        values.clear();
+        values.add(123);
+
+        result = (Set) converter.convert("123", Queue.class, Integer.class);
+
+        assertTrue(CollectionUtils.equals(values, result));
+
+        assertNull(converter.convert(null, Collection.class, Integer.class));
         assertNull(converter.convert("", Collection.class, null));
-
     }
 
     @Test
@@ -117,6 +112,6 @@ public class StringToBlockingDequeConverterTest {
 
     @Test
     public void testGetPriority() {
-        assertEquals(Integer.MAX_VALUE - 5, converter.getPriority());
+        assertEquals(Integer.MAX_VALUE - 2, converter.getPriority());
     }
 }

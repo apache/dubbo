@@ -14,9 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.convert.multiple;
-
-import org.apache.dubbo.common.convert.multiple.StringToArrayConverter;
+package org.apache.dubbo.common.convert.multiple;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

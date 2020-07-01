@@ -14,17 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.convert.multiple;
+package org.apache.dubbo.common.convert.multiple;
 
-import org.apache.dubbo.common.convert.multiple.MultiValueConverter;
-import org.apache.dubbo.common.convert.multiple.StringToDequeConverter;
 import org.apache.dubbo.common.utils.CollectionUtils;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.AbstractList;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Deque;
@@ -48,17 +45,17 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * {@link StringToDequeConverter} Test
+ * {@link StringToNavigableSetConverter} Test
  *
  * @since 2.7.6
  */
-public class StringToDequeConverterTest {
+public class StringToNavigableSetConverterTest {
 
     private MultiValueConverter converter;
 
     @BeforeEach
     public void init() {
-        converter = getExtensionLoader(MultiValueConverter.class).getExtension("string-to-deque");
+        converter = getExtensionLoader(MultiValueConverter.class).getExtension("string-to-navigable-set");
     }
 
     @Test
@@ -68,20 +65,20 @@ public class StringToDequeConverterTest {
 
         assertFalse(converter.accept(String.class, List.class));
         assertFalse(converter.accept(String.class, AbstractList.class));
-        assertTrue(converter.accept(String.class, LinkedList.class));
+        assertFalse(converter.accept(String.class, LinkedList.class));
         assertFalse(converter.accept(String.class, ArrayList.class));
+
+        assertFalse(converter.accept(String.class, Set.class));
+        assertFalse(converter.accept(String.class, SortedSet.class));
+        assertTrue(converter.accept(String.class, NavigableSet.class));
+        assertTrue(converter.accept(String.class, TreeSet.class));
+        assertTrue(converter.accept(String.class, ConcurrentSkipListSet.class));
 
         assertFalse(converter.accept(String.class, Queue.class));
         assertFalse(converter.accept(String.class, BlockingQueue.class));
         assertFalse(converter.accept(String.class, TransferQueue.class));
-        assertTrue(converter.accept(String.class, Deque.class));
-        assertTrue(converter.accept(String.class, BlockingDeque.class));
-
-        assertFalse(converter.accept(String.class, Set.class));
-        assertFalse(converter.accept(String.class, SortedSet.class));
-        assertFalse(converter.accept(String.class, NavigableSet.class));
-        assertFalse(converter.accept(String.class, TreeSet.class));
-        assertFalse(converter.accept(String.class, ConcurrentSkipListSet.class));
+        assertFalse(converter.accept(String.class, Deque.class));
+        assertFalse(converter.accept(String.class, BlockingDeque.class));
 
         assertFalse(converter.accept(null, char[].class));
         assertFalse(converter.accept(null, String.class));
@@ -92,15 +89,15 @@ public class StringToDequeConverterTest {
     @Test
     public void testConvert() {
 
-        Deque values = new ArrayDeque(asList(1, 2, 3));
+        Set values = new TreeSet(asList(1, 2, 3));
 
-        Deque result = (Deque) converter.convert("1,2,3", Deque.class, Integer.class);
+        NavigableSet result = (NavigableSet) converter.convert("1,2,3", List.class, Integer.class);
 
         assertTrue(CollectionUtils.equals(values, result));
 
-        values = new ArrayDeque(asList("123"));
+        values = new TreeSet(asList("123"));
 
-        result = (Deque) converter.convert("123", Deque.class, String.class);
+        result = (NavigableSet) converter.convert("123", NavigableSet.class, String.class);
 
         assertTrue(CollectionUtils.equals(values, result));
 
@@ -115,6 +112,6 @@ public class StringToDequeConverterTest {
 
     @Test
     public void testGetPriority() {
-        assertEquals(Integer.MAX_VALUE - 3, converter.getPriority());
+        assertEquals(Integer.MAX_VALUE - 4, converter.getPriority());
     }
 }

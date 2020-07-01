@@ -890,4 +890,11 @@ public class URLTest {
         assertEquals(1, parameters.size());
         assertEquals("1.0.0", version);
     }
+
+    @Test
+    public void testGetParameter() {
+        URL url = URL.valueOf("http://127.0.0.1:8080/path?i=1&b=false");
+        assertEquals(Integer.valueOf(1), url.getParameter("i", Integer.class));
+        assertEquals(Boolean.FALSE, url.getParameter("b", Boolean.class));
+    }
 }

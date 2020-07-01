@@ -14,45 +14,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.convert;
-
-import org.apache.dubbo.common.convert.Converter;
-import org.apache.dubbo.common.convert.StringToBooleanConverter;
+package org.apache.dubbo.common.convert;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * {@link StringToBooleanConverter} Test
+ * {@link StringToDoubleConverter} Test
  *
  * @since 2.7.6
  */
-public class StringToBooleanConverterTest {
+public class StringToDoubleConverterTest {
 
-    private StringToBooleanConverter converter;
+    private StringToDoubleConverter converter;
 
     @BeforeEach
     public void init() {
-        converter = (StringToBooleanConverter) getExtensionLoader(Converter.class).getExtension("string-to-boolean");
+        converter = (StringToDoubleConverter) getExtensionLoader(Converter.class).getExtension("string-to-double");
     }
 
     @Test
     public void testAccept() {
-        assertTrue(converter.accept(String.class, Boolean.class));
+        assertTrue(converter.accept(String.class, Double.class));
     }
 
     @Test
     public void testConvert() {
-        assertTrue(converter.convert("true"));
-        assertTrue(converter.convert("true"));
-        assertTrue(converter.convert("True"));
-        assertFalse(converter.convert("a"));
-        assertNull(converter.convert(""));
+        assertEquals(Double.valueOf("1.0"), converter.convert("1.0"));
         assertNull(converter.convert(null));
+        assertThrows(NumberFormatException.class, () -> {
+            converter.convert("ttt");
+        });
     }
 }

@@ -14,10 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.convert;
-
-import org.apache.dubbo.common.convert.Converter;
-import org.apache.dubbo.common.convert.StringToIntegerConverter;
+package org.apache.dubbo.common.convert;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,27 +26,27 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * {@link StringToIntegerConverter} Test
+ * {@link StringToShortConverter} Test
  *
  * @since 2.7.6
  */
-public class StringToIntegerConverterTest {
+public class StringToShortConverterTest {
 
-    private StringToIntegerConverter converter;
+    private StringToShortConverter converter;
 
     @BeforeEach
     public void init() {
-        converter = (StringToIntegerConverter) getExtensionLoader(Converter.class).getExtension("string-to-integer");
+        converter = (StringToShortConverter) getExtensionLoader(Converter.class).getExtension("string-to-short");
     }
 
     @Test
     public void testAccept() {
-        assertTrue(converter.accept(String.class, Integer.class));
+        assertTrue(converter.accept(String.class, Short.class));
     }
 
     @Test
     public void testConvert() {
-        assertEquals(Integer.valueOf("1"), converter.convert("1"));
+        assertEquals(Short.valueOf("1"), converter.convert("1"));
         assertNull(converter.convert(null));
         assertThrows(NumberFormatException.class, () -> {
             converter.convert("ttt");

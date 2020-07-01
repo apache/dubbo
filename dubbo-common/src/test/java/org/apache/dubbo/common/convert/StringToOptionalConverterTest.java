@@ -14,45 +14,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.convert;
-
-import org.apache.dubbo.common.convert.Converter;
-import org.apache.dubbo.common.convert.StringToDoubleConverter;
+package org.apache.dubbo.common.convert;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Optional;
+
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * {@link StringToDoubleConverter} Test
+ * {@link StringToOptionalConverter} Test
  *
  * @since 2.7.6
  */
-public class StringToDoubleConverterTest {
+public class StringToOptionalConverterTest {
 
-    private StringToDoubleConverter converter;
+    private StringToOptionalConverter converter;
 
     @BeforeEach
     public void init() {
-        converter = (StringToDoubleConverter) getExtensionLoader(Converter.class).getExtension("string-to-double");
+        converter = (StringToOptionalConverter) getExtensionLoader(Converter.class).getExtension("string-to-optional");
     }
 
     @Test
     public void testAccept() {
-        assertTrue(converter.accept(String.class, Double.class));
+        assertTrue(converter.accept(String.class, Optional.class));
     }
 
     @Test
     public void testConvert() {
-        assertEquals(Double.valueOf("1.0"), converter.convert("1.0"));
-        assertNull(converter.convert(null));
-        assertThrows(NumberFormatException.class, () -> {
-            converter.convert("ttt");
-        });
+        assertEquals(Optional.of("1"), converter.convert("1"));
+        assertEquals(Optional.empty(), converter.convert(null));
     }
 }

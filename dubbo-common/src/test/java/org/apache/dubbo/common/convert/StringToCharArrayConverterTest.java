@@ -14,45 +14,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.convert;
-
-import org.apache.dubbo.common.convert.Converter;
-import org.apache.dubbo.common.convert.StringToCharacterConverter;
+package org.apache.dubbo.common.convert;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * {@link StringToCharacterConverter} Test
+ * {@link StringToCharArrayConverter} Test
  *
  * @since 2.7.6
  */
-public class StringToCharacterConverterTest {
+public class StringToCharArrayConverterTest {
 
-    private StringToCharacterConverter converter;
+    private StringToCharArrayConverter converter;
 
     @BeforeEach
     public void init() {
-        converter = (StringToCharacterConverter) getExtensionLoader(Converter.class).getExtension("string-to-character");
+        converter =  (StringToCharArrayConverter) getExtensionLoader(Converter.class).getExtension("string-to-char-array");
     }
 
     @Test
     public void testAccept() {
-        assertTrue(converter.accept(String.class, Character.class));
+        assertTrue(converter.accept(String.class, char[].class));
     }
 
     @Test
     public void testConvert() {
-        assertEquals('t', converter.convert("t"));
+        assertArrayEquals(new char[]{'1', '2', '3'}, converter.convert("123"));
         assertNull(converter.convert(null));
-        assertThrows(IllegalArgumentException.class, () -> {
-            converter.convert("ttt");
-        });
     }
 }

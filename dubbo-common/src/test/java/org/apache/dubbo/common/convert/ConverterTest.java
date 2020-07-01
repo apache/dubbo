@@ -14,45 +14,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.convert;
+package org.apache.dubbo.common.convert;
 
-import org.apache.dubbo.common.convert.Converter;
-import org.apache.dubbo.common.convert.StringToShortConverter;
-
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.apache.dubbo.common.convert.Converter.convertIfPossible;
+import static org.apache.dubbo.common.convert.Converter.getConverter;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 /**
- * {@link StringToShortConverter} Test
+ * {@link Converter} Test-Cases
  *
- * @since 2.7.6
+ * @since 2.7.8
  */
-public class StringToShortConverterTest {
+public class ConverterTest {
 
-    private StringToShortConverter converter;
-
-    @BeforeEach
-    public void init() {
-        converter = (StringToShortConverter) getExtensionLoader(Converter.class).getExtension("string-to-short");
+    @Test
+    public void testGetConverter() {
+        getExtensionLoader(Converter.class)
+                .getSupportedExtensionInstances()
+                .forEach(converter -> {
+                    assertSame(converter, getConverter(converter.getSourceType(), converter.getTargetType()));
+                });
     }
 
     @Test
-    public void testAccept() {
-        assertTrue(converter.accept(String.class, Short.class));
-    }
-
-    @Test
-    public void testConvert() {
-        assertEquals(Short.valueOf("1"), converter.convert("1"));
-        assertNull(converter.convert(null));
-        assertThrows(NumberFormatException.class, () -> {
-            converter.convert("ttt");
-        });
+    public void testConvertIfPossible() {
+        assertEquals(Integer.valueOf(2), convertIfPossible("2", Integer.class));
+        assertEquals(Boolean.FALSE, convertIfPossible("false", Boolean.class));
+        assertEquals(Double.valueOf(1), convertIfPossible("1", Double.class));
     }
 }
