@@ -112,7 +112,7 @@ public interface CommonConstants {
 
     // used by invocation attachments to transfer timeout from Consumer to Provider.
     // works as a replacement of TIMEOUT_KEY on wire, which seems to be totally useless in previous releases).
-    String TIMEOUT_ATTACHENT_KEY = "_TO";
+    String TIMEOUT_ATTACHMENT_KEY = "_TO";
 
     String TIME_COUNTDOWN_KEY = "timeout-countdown";
 
@@ -120,13 +120,13 @@ public interface CommonConstants {
 
     String REMOVE_VALUE_PREFIX = "-";
 
-    String PROPERTIES_CHAR_SEPERATOR = "-";
+    String PROPERTIES_CHAR_SEPARATOR = "-";
 
     String UNDERLINE_SEPARATOR = "_";
 
     String SEPARATOR_REGEX = "_|-";
 
-    String GROUP_CHAR_SEPERATOR = ":";
+    String GROUP_CHAR_SEPARATOR = ":";
 
     String HIDE_KEY_PREFIX = ".";
 
