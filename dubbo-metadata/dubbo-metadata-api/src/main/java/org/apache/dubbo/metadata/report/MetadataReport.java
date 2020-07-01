@@ -17,15 +17,15 @@
 package org.apache.dubbo.metadata.report;
 
 
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  *

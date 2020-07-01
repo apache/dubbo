@@ -154,8 +154,6 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         setInterface(interfaceClass);
     }
 
-
-
     public void setInterface(Class<?> interfaceClass) {
         if (interfaceClass != null && !interfaceClass.isInterface()) {
             throw new IllegalStateException("The interface class " + interfaceClass + " is not a interface!");

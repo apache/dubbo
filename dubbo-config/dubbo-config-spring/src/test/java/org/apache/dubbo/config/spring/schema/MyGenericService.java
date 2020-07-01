@@ -14,29 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.definition.builder;
+package org.apache.dubbo.config.spring.schema;
 
-import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.common.lang.Prioritized;
-import org.apache.dubbo.metadata.definition.model.TypeDefinition;
+import org.apache.dubbo.rpc.service.GenericException;
+import org.apache.dubbo.rpc.service.GenericService;
 
-import java.lang.reflect.Type;
-import java.util.Map;
+public class MyGenericService implements GenericService {
 
-/**
- * 2015/1/27.
- */
-@SPI
-public interface TypeBuilder extends Prioritized {
-
-    /**
-     * Whether the build accept the type or class passed in.
-     */
-    boolean accept(Type type, Class<?> clazz);
-
-    /**
-     * Build type definition with the type or class.
-     */
-    TypeDefinition build(Type type, Class<?> clazz, Map<Class<?>, TypeDefinition> typeCache);
-
+    public Object $invoke(String methodName, String[] parameterTypes, Object[] args) throws GenericException {
+        if ("sayHello".equals(methodName)) {
+            return "Welcome " + args[0];
+        }
+        return null;
+    }
 }

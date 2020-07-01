@@ -14,29 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.definition.builder;
-
-import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.common.lang.Prioritized;
-import org.apache.dubbo.metadata.definition.model.TypeDefinition;
-
-import java.lang.reflect.Type;
-import java.util.Map;
+package org.apache.dubbo.common.extension;
 
 /**
- * 2015/1/27.
+ * The annotated class will only work as a wrapper when the condition matches.
  */
-@SPI
-public interface TypeBuilder extends Prioritized {
+public @interface Wrapper {
 
     /**
-     * Whether the build accept the type or class passed in.
+     * the extension names that need to be wrapped.
      */
-    boolean accept(Type type, Class<?> clazz);
+    String[] matches() default {};
 
     /**
-     * Build type definition with the type or class.
+     * the extension names that need to be excluded.
      */
-    TypeDefinition build(Type type, Class<?> clazz, Map<Class<?>, TypeDefinition> typeCache);
-
+    String[] mismatches() default {};
 }

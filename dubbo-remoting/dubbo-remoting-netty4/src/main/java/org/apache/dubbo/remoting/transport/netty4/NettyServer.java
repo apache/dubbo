@@ -149,8 +149,8 @@ public class NettyServer extends AbstractServer implements RemotingServer {
         }
         try {
             if (bootstrap != null) {
-                bossGroup.shutdownGracefully();
-                workerGroup.shutdownGracefully();
+                bossGroup.shutdownGracefully().syncUninterruptibly();
+                workerGroup.shutdownGracefully().syncUninterruptibly();
             }
         } catch (Throwable e) {
             logger.warn(e.getMessage(), e);
