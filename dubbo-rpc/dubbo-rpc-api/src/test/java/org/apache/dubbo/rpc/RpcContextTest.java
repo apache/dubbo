@@ -157,6 +157,7 @@ public class RpcContextTest {
 
         rpcContext.stopAsync();
         Assertions.assertTrue(rpcContext.isAsyncStarted());
+        RpcContext.removeContext();
     }
 
     @Test
