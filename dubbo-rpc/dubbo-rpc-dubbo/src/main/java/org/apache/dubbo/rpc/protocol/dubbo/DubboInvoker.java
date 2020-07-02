@@ -18,7 +18,6 @@ package org.apache.dubbo.rpc.protocol.dubbo;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.TimeoutException;
@@ -67,7 +66,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
 
     private final ExchangeClientChooser exchangeClientChooser;
 
-    private static final ExchangeClientChooserFactory EXCHANGE_CLIENT_CHOOSER_FACTORY = ExtensionLoader.getExtensionLoader(ExchangeClientChooserFactory.class).getDefaultExtension();
+    private static final ExchangeClientChooserFactory EXCHANGE_CLIENT_CHOOSER_FACTORY = new DefaultExchangeClientChooserFactory();
 
     public DubboInvoker(Class<T> serviceType, URL url, ExchangeClient[] clients) {
         this(serviceType, url, clients, null);

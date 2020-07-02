@@ -23,7 +23,6 @@ import org.apache.dubbo.remoting.exchange.ExchangeClient;
  * ExchangeClientChooserFactory
  */
 
-@SPI("default")
 public interface ExchangeClientChooserFactory {
 
     /**
