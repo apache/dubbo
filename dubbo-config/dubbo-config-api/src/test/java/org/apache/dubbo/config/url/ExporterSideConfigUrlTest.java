@@ -43,8 +43,8 @@ public class ExporterSideConfigUrlTest extends UrlTestBase {
 
     @BeforeEach
     public void setUp() {
-        initServConf();
         ApplicationModel.reset();
+        initServConf();
     }
 
     @AfterEach()
