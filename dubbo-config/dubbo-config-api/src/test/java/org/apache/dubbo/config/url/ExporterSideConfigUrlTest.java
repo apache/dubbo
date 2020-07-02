@@ -19,6 +19,7 @@ package org.apache.dubbo.config.url;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -43,12 +44,12 @@ public class ExporterSideConfigUrlTest extends UrlTestBase {
     @BeforeEach
     public void setUp() {
         initServConf();
-//        ApplicationModel.getConfigManager().clear();
+        ApplicationModel.reset();
     }
 
     @AfterEach()
     public void teardown() {
-//        ApplicationModel.getConfigManager().clear();
+        ApplicationModel.reset();
     }
 
     @Test
