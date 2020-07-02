@@ -17,15 +17,20 @@
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
 
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.spring.ReferenceBean;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.core.annotation.AnnotationAttributes;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -33,6 +38,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.apache.dubbo.common.utils.CollectionUtils.ofSet;
 import static org.springframework.core.annotation.AnnotationUtils.findAnnotation;
 import static org.springframework.util.ReflectionUtils.findField;
 
@@ -40,6 +46,7 @@ import static org.springframework.util.ReflectionUtils.findField;
  * {@link ReferenceBeanBuilder} Test
  *
  * @see ReferenceBeanBuilder
+ * @see DubboReference
  * @see Reference
  * @since 2.6.4
  */
@@ -47,7 +54,7 @@ import static org.springframework.util.ReflectionUtils.findField;
 @ContextConfiguration(classes = ReferenceBeanBuilderTest.class)
 public class ReferenceBeanBuilderTest {
 
-    @Reference(
+    @DubboReference(
             interfaceClass = CharSequence.class,
             interfaceName = "java.lang.CharSequence",
             version = "1.0.0", group = "TEST_GROUP", url = "dubbo://localhost:12345",
@@ -62,17 +69,27 @@ public class ReferenceBeanBuilderTest {
             timeout = 3, cache = "cache", filter = {"echo", "generic", "accesslog"},
             listener = {"deprecated"}, parameters = {"n1=v1  ", "n2 = v2 ", "  n3 =   v3  "},
             application = "application",
-            module = "module", consumer = "consumer", monitor = "monitor", registry = {"registry"}
+            module = "module", consumer = "consumer", monitor = "monitor", registry = {"registry"},
+            // @since 2.7.3
+            id = "reference",
+            // @since 2.7.8
+            services = {"service1", "service2", "service3", "service2", "service1"}
     )
     private static final Object TEST_FIELD = new Object();
 
     @Autowired
     private ApplicationContext context;
 
+    @Before
+    public void init() {
+        ApplicationModel.reset();
+    }
+
     @Test
     public void testBuild() throws Exception {
-        Reference reference = findAnnotation(findField(getClass(), "TEST_FIELD"), Reference.class);
-        ReferenceBeanBuilder beanBuilder = ReferenceBeanBuilder.create(reference, context.getClassLoader(), context);
+        DubboReference reference = findAnnotation(findField(getClass(), "TEST_FIELD"), DubboReference.class);
+        AnnotationAttributes attributes = AnnotationUtils.getAnnotationAttributes(reference, false, false);
+        ReferenceBeanBuilder beanBuilder = ReferenceBeanBuilder.create(attributes, context);
         beanBuilder.interfaceClass(CharSequence.class);
         ReferenceBean referenceBean = beanBuilder.build();
         Assert.assertEquals(CharSequence.class, referenceBean.getInterfaceClass());
@@ -81,7 +98,7 @@ public class ReferenceBeanBuilderTest {
         Assert.assertEquals("dubbo://localhost:12345", referenceBean.getUrl());
         Assert.assertEquals("client", referenceBean.getClient());
         Assert.assertEquals(true, referenceBean.isGeneric());
-        Assert.assertNull(referenceBean.isInjvm());
+        Assert.assertTrue(referenceBean.isInjvm());
         Assert.assertEquals(false, referenceBean.isCheck());
         Assert.assertFalse(referenceBean.isInit());
         Assert.assertEquals(true, referenceBean.getLazy());
@@ -108,6 +125,8 @@ public class ReferenceBeanBuilderTest {
         Assert.assertEquals("cache", referenceBean.getCache());
         Assert.assertEquals("echo,generic,accesslog", referenceBean.getFilter());
         Assert.assertEquals("deprecated", referenceBean.getListener());
+        Assert.assertEquals("reference", referenceBean.getId());
+        Assert.assertEquals(ofSet("service1", "service2", "service3"), referenceBean.getSubscribedServices());
 
         // parameters
         Map<String, String> parameters = new HashMap<String, String>();

@@ -28,9 +28,9 @@ import com.alibaba.fastjson.JSON;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -65,7 +65,7 @@ public class AbstractMetadataReportFactoryTest {
 
                 @Override
                 public void saveSubscribedData(SubscriberMetadataIdentifier subscriberMetadataIdentifier,
-                                               Set<String> urls) {
+                                               Collection<String> urls) {
 
                 }
 
@@ -82,6 +82,11 @@ public class AbstractMetadataReportFactoryTest {
                 @Override
                 public void storeConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, Map serviceParameterMap) {
                     store.put(consumerMetadataIdentifier.getIdentifierKey(), JSON.toJSONString(serviceParameterMap));
+                }
+
+                @Override
+                public void close() throws Exception {
+
                 }
 
                 Map<String, String> store = new ConcurrentHashMap<>();

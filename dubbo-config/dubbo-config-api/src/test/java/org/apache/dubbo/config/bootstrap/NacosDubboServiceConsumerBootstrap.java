@@ -17,8 +17,9 @@
 package org.apache.dubbo.config.bootstrap;
 
 import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.bootstrap.rest.UserService;
+
+import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 
 /**
  * Dubbo Provider Bootstrap
@@ -30,21 +31,25 @@ public class NacosDubboServiceConsumerBootstrap {
     public static void main(String[] args) throws Exception {
 
         ApplicationConfig applicationConfig = new ApplicationConfig("dubbo-nacos-consumer-demo");
-//        applicationConfig.setMetadataType("remote");
+        applicationConfig.setMetadataType(REMOTE_METADATA_STORAGE_TYPE);
         DubboBootstrap bootstrap = DubboBootstrap.getInstance()
                 .application(applicationConfig)
-                // Zookeeper
-//                .registry("nacos", builder -> builder.address("nacos://127.0.0.1:8848?registry.type=service&subscribed.services=dubbo-nacos-provider-demo"))
-//                .registry("nacos", builder -> builder.address("nacos://127.0.0.1:8848?registry-type=service&subscribed-services=dubbo-nacos-provider-demo"))
-                .registry("nacos", builder -> builder.address("nacos://127.0.0.1:8848?registry-type=service&subscribed-services=dubbo-nacos-provider-demo"))
-                .metadataReport(new MetadataReportConfig("nacos://127.0.0.1:8848"))
+                // Nacos in service registry type
+                .registry("nacos", builder -> builder.address("nacos://127.0.0.1:8848?registry-type=service")
+                        .useAsConfigCenter(true)
+                        .useAsMetadataCenter(true))
+                // Nacos in traditional registry type
+//                .registry("nacos-traditional", builder -> builder.address("nacos://127.0.0.1:8848"))
+                .reference("echo", builder -> builder.interfaceClass(EchoService.class).protocol("dubbo"))
                 .reference("user", builder -> builder.interfaceClass(UserService.class).protocol("rest"))
                 .start();
 
+        EchoService echoService = bootstrap.getCache().get(EchoService.class);
         UserService userService = bootstrap.getCache().get(UserService.class);
 
-        for (int i = 0; i < 500; i++) {
+        for (int i = 0; i < 5; i++) {
             Thread.sleep(2000L);
+            System.out.println(echoService.echo("Hello,World"));
             System.out.println(userService.getUser(i * 1L));
         }
     }
