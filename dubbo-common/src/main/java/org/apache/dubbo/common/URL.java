@@ -130,6 +130,7 @@ class URL implements Serializable {
     private volatile transient String string;
 
     private transient String serviceKey;
+    private transient String protocolServiceKey;
 
     private transient String address;
 
@@ -444,7 +445,7 @@ class URL implements Serializable {
     }
 
     public URL setUsername(String username) {
-        return new URL(protocol, username, password, host, port, path, getParameters());
+        return new URL(getProtocol(), username, password, host, port, path, getParameters());
     }
 
     public String getPassword() {
@@ -452,7 +453,7 @@ class URL implements Serializable {
     }
 
     public URL setPassword(String password) {
-        return new URL(protocol, username, password, host, port, path, getParameters());
+        return new URL(getProtocol(), username, password, host, port, path, getParameters());
     }
 
     public String getAuthority() {
@@ -469,7 +470,7 @@ class URL implements Serializable {
     }
 
     public URL setHost(String host) {
-        return new URL(protocol, username, password, host, port, path, getParameters());
+        return new URL(getProtocol(), username, password, host, port, path, getParameters());
     }
 
     /**
@@ -492,7 +493,7 @@ class URL implements Serializable {
     }
 
     public URL setPort(int port) {
-        return new URL(protocol, username, password, host, port, path, getParameters());
+        return new URL(getProtocol(), username, password, host, port, path, getParameters());
     }
 
     public int getPort(int defaultPort) {
@@ -516,7 +517,7 @@ class URL implements Serializable {
         } else {
             host = address;
         }
-        return new URL(protocol, username, password, host, port, path, getParameters());
+        return new URL(getProtocol(), username, password, host, port, path, getParameters());
     }
 
     public String getBackupAddress() {
@@ -552,7 +553,7 @@ class URL implements Serializable {
     }
 
     public URL setPath(String path) {
-        return new URL(protocol, username, password, host, port, path, getParameters());
+        return new URL(getProtocol(), username, password, host, port, path, getParameters());
     }
 
     public String getAbsolutePath() {
@@ -1085,7 +1086,7 @@ class URL implements Serializable {
         Map<String, String> map = new HashMap<>(getParameters());
         map.put(key, value);
 
-        return new URL(protocol, username, password, host, port, path, map);
+        return new URL(getProtocol(), username, password, host, port, path, map);
     }
 
     public URL addParameterIfAbsent(String key, String value) {
@@ -1099,7 +1100,7 @@ class URL implements Serializable {
         Map<String, String> map = new HashMap<>(getParameters());
         map.put(key, value);
 
-        return new URL(protocol, username, password, host, port, path, map);
+        return new URL(getProtocol(), username, password, host, port, path, map);
     }
 
     public URL addMethodParameter(String method, String key, String value) {
@@ -1114,7 +1115,7 @@ class URL implements Serializable {
         Map<String, Map<String, String>> methodMap = toMethodParameters(map);
         URL.putMethodParameter(method, key, value, methodMap);
 
-        return new URL(protocol, username, password, host, port, path, map, methodMap);
+        return new URL(getProtocol(), username, password, host, port, path, map, methodMap);
     }
 
     public URL addMethodParameterIfAbsent(String method, String key, String value) {
@@ -1132,7 +1133,7 @@ class URL implements Serializable {
         Map<String, Map<String, String>> methodMap = toMethodParameters(map);
         URL.putMethodParameter(method, key, value, methodMap);
 
-        return new URL(protocol, username, password, host, port, path, map, methodMap);
+        return new URL(getProtocol(), username, password, host, port, path, map, methodMap);
     }
 
     /**
@@ -1168,7 +1169,7 @@ class URL implements Serializable {
 
         Map<String, String> map = new HashMap<>(getParameters());
         map.putAll(parameters);
-        return new URL(protocol, username, password, host, port, path, map);
+        return new URL(getProtocol(), username, password, host, port, path, map);
     }
 
     public URL addParametersIfAbsent(Map<String, String> parameters) {
@@ -1177,7 +1178,7 @@ class URL implements Serializable {
         }
         Map<String, String> map = new HashMap<>(parameters);
         map.putAll(getParameters());
-        return new URL(protocol, username, password, host, port, path, map);
+        return new URL(getProtocol(), username, password, host, port, path, map);
     }
 
     public URL addParameters(String... pairs) {
@@ -1227,11 +1228,11 @@ class URL implements Serializable {
         if (map.size() == getParameters().size()) {
             return this;
         }
-        return new URL(protocol, username, password, host, port, path, map);
+        return new URL(getProtocol(), username, password, host, port, path, map);
     }
 
     public URL clearParameters() {
-        return new URL(protocol, username, password, host, port, path, new HashMap<>());
+        return new URL(getProtocol(), username, password, host, port, path, new HashMap<>());
     }
 
     public String getRawParameter(String key) {
@@ -1468,6 +1469,14 @@ class URL implements Serializable {
         return BaseServiceMetadata.buildServiceKey(path, group, version);
     }
 
+    public String getProtocolServiceKey() {
+        if (protocolServiceKey != null) {
+            return protocolServiceKey;
+        }
+        this.protocolServiceKey = getServiceKey() + ":" + getProtocol();
+        return protocolServiceKey;
+    }
+
     public String toServiceStringWithoutResolving() {
         return buildString(true, false, false, true);
     }
@@ -1643,5 +1652,17 @@ class URL implements Serializable {
         Map<String, String> subParameter = methodParameters.computeIfAbsent(method, k -> new HashMap<>());
         subParameter.put(key, value);
     }
+
+//    public String getServiceParameter(String service, String key) {
+//        return getParameter(key);
+//    }
+//
+//    public String getServiceMethodParameter(String service, String key) {
+//        return getParameter(key);
+//    }
+//
+//    public String getServiceParameter(String service, String key) {
+//        return getParameter(key);
+//    }
 
 }

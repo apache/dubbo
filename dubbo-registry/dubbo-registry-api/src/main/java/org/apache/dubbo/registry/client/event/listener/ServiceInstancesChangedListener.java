@@ -19,13 +19,14 @@ package org.apache.dubbo.registry.client.event.listener;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.event.ConditionalEventListener;
 import org.apache.dubbo.event.EventListener;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataInfo.ServiceInfo;
 import org.apache.dubbo.metadata.MetadataService;
+import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
+import org.apache.dubbo.registry.client.RegistryClusterIdentifier;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
@@ -34,15 +35,15 @@ import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeSet;
 
+import static org.apache.dubbo.common.constants.CommonConstants.REGISTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getExportedServicesRevision;
 
@@ -52,28 +53,28 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
  * @see ServiceInstancesChangedEvent
  * @since 2.7.5
  */
-public abstract class ServiceInstancesChangedListener implements ConditionalEventListener<ServiceInstancesChangedEvent> {
+public class ServiceInstancesChangedListener implements ConditionalEventListener<ServiceInstancesChangedEvent> {
 
     private static final Logger logger = LoggerFactory.getLogger(ServiceInstancesChangedListener.class);
 
-    private final String serviceName;
+    private final Set<String> serviceNames;
     private final ServiceDiscovery serviceDiscovery;
     private URL url;
+    private Map<String, NotifyListener> listeners;
 
-    private List<ServiceInstance> instances;
+    private Map<String, List<ServiceInstance>> allInstances;
 
-    private Map<String, List<ServiceInstance>> revisionToInstances;
+    private Map<String, List<URL>> serviceUrls;
 
     private Map<String, MetadataInfo> revisionToMetadata;
 
-    private Map<String, Set<String>> serviceToRevisions;
-
-    private Map<String, List<ServiceInstance>> serviceToInstances;
-
-    protected ServiceInstancesChangedListener(String serviceName, ServiceDiscovery serviceDiscovery, URL url) {
-        this.serviceName = serviceName;
+    public ServiceInstancesChangedListener(Set<String> serviceNames, ServiceDiscovery serviceDiscovery) {
+        this.serviceNames = serviceNames;
         this.serviceDiscovery = serviceDiscovery;
-        this.url = url;
+        this.listeners = new HashMap<>();
+        this.allInstances = new HashMap<>();
+        this.serviceUrls = new HashMap<>();
+        this.revisionToMetadata = new HashMap<>();
     }
 
     /**
@@ -81,69 +82,66 @@ public abstract class ServiceInstancesChangedListener implements ConditionalEven
      *
      * @param event {@link ServiceInstancesChangedEvent}
      */
-    public void onEvent(ServiceInstancesChangedEvent event) {
-        instances = event.getServiceInstances();
+    public synchronized void onEvent(ServiceInstancesChangedEvent event) {
+        String appName = event.getServiceName();
+        allInstances.put(appName, event.getServiceInstances());
 
-        Map<String, List<ServiceInstance>> localRevisionToInstances = new HashMap<>();
-        Map<String, MetadataInfo> localRevisionToMetadata = new HashMap<>();
-        Map<String, Set<String>> localServiceToRevisions = new HashMap<>();
-        for (ServiceInstance instance : instances) {
-            String revision = getExportedServicesRevision(instance);
-            Collection<ServiceInstance> rInstances = localRevisionToInstances.computeIfAbsent(revision, r -> new ArrayList<>());
-            rInstances.add(instance);
+        for (Map.Entry<String, List<ServiceInstance>> entry : allInstances.entrySet()) {
+            List<ServiceInstance> instances = entry.getValue();
+            for (ServiceInstance instance : instances) {
+                String revision = getExportedServicesRevision(instance);
+                Map<String, List<ServiceInstance>> revisionToInstances = new HashMap<>();
+                List<ServiceInstance> subInstances = revisionToInstances.computeIfAbsent(revision, r -> new LinkedList<>());
+                subInstances.add(instance);
 
-            MetadataInfo metadata = null;
-            if (revisionToMetadata != null && ((metadata = revisionToMetadata.get(revision)) != null)) {
-                localRevisionToMetadata.put(revision, metadata);
-            } else {
-                metadata = getMetadataInfo(instance);
-                if (metadata != null) {
-                    localRevisionToMetadata.put(revision, getMetadataInfo(instance));
+                MetadataInfo metadata = revisionToMetadata.get(revision);
+                if (metadata == null) {
+                    metadata = getMetadataInfo(instance);
+                    if (metadata != null) {
+                        revisionToMetadata.put(revision, getMetadataInfo(instance));
+                    } else {
+
+                    }
                 }
-            }
 
-            if (metadata != null) {
-                parse(revision, metadata, localServiceToRevisions);
-                ((DefaultServiceInstance) instance).setServiceMetadata(metadata);
-            } else {
-                logger.error("Failed to load service metadata for instance " + instance);
-                Set<String> set = localServiceToRevisions.computeIfAbsent(url.getServiceKey(), k -> new HashSet<>());
-                set.add(revision);
+                Map<String, Set<String>> localServiceToRevisions = new HashMap<>();
+                if (metadata != null) {
+                    parseMetadata(revision, metadata, localServiceToRevisions);
+                    ((DefaultServiceInstance) instance).setServiceMetadata(metadata);
+                }
+//                else {
+//                    logger.error("Failed to load service metadata for instance " + instance);
+//                    Set<String> set = localServiceToRevisions.computeIfAbsent(url.getServiceKey(), k -> new TreeSet<>());
+//                    set.add(revision);
+//                }
+
+                Map<Set<String>, List<URL>> revisionsToUrls = new HashMap();
+                localServiceToRevisions.forEach((serviceKey, revisions) -> {
+                    List<URL> urls = revisionsToUrls.get(revisions);
+                    if (urls != null) {
+                        serviceUrls.put(serviceKey, urls);
+                    } else {
+                        urls = new ArrayList<>();
+                        for (String r : revisions) {
+                            for (ServiceInstance i : revisionToInstances.get(r)) {
+                                urls.add(i.toURL());
+                            }
+                        }
+                        revisionsToUrls.put(revisions, urls);
+                        serviceUrls.put(serviceKey, urls);
+                    }
+                });
             }
         }
 
-        this.revisionToInstances = localRevisionToInstances;
-        this.revisionToMetadata = localRevisionToMetadata;
-        this.serviceToRevisions = localServiceToRevisions;
-
-        Map<String, List<ServiceInstance>> localServiceToInstances = new HashMap<>();
-        for (String serviceKey : localServiceToRevisions.keySet()) {
-            if (CollectionUtils.equals(localRevisionToInstances.keySet(), localServiceToRevisions.get(serviceKey))) {
-                localServiceToInstances.put(serviceKey, instances);
-            }
-        }
-
-        this.serviceToInstances = localServiceToInstances;
+        this.notifyAddressChanged();
     }
 
-    public List<ServiceInstance> getInstances(String serviceKey) {
-        if (serviceToInstances.containsKey(serviceKey)) {
-            return serviceToInstances.get(serviceKey);
-        }
-
-        Set<String> revisions = serviceToRevisions.get(serviceKey);
-        List<ServiceInstance> allInstances = new LinkedList<>();
-        for (String r : revisions) {
-            allInstances.addAll(revisionToInstances.get(r));
-        }
-        return allInstances;
-    }
-
-    private Map<String, Set<String>> parse(String revision, MetadataInfo metadata, Map<String, Set<String>> localServiceToRevisions) {
+    private Map<String, Set<String>> parseMetadata(String revision, MetadataInfo metadata, Map<String, Set<String>> localServiceToRevisions) {
         Map<String, ServiceInfo> serviceInfos = metadata.getServices();
         for (Map.Entry<String, ServiceInfo> entry : serviceInfos.entrySet()) {
             String serviceKey = entry.getValue().getServiceKey();
-            Set<String> set = localServiceToRevisions.computeIfAbsent(serviceKey, k -> new HashSet<>());
+            Set<String> set = localServiceToRevisions.computeIfAbsent(serviceKey, k -> new TreeSet<>());
             set.add(revision);
         }
 
@@ -152,7 +150,7 @@ public abstract class ServiceInstancesChangedListener implements ConditionalEven
 
     private MetadataInfo getMetadataInfo(ServiceInstance instance) {
         String metadataType = ServiceInstanceMetadataUtils.getMetadataStorageType(instance);
-
+        instance.getExtendParams().putIfAbsent(REGISTER_KEY, RegistryClusterIdentifier.getExtension().consumerKey(url));
         MetadataInfo metadataInfo;
         try {
             if (REMOTE_METADATA_STORAGE_TYPE.equals(metadataType)) {
@@ -160,7 +158,7 @@ public abstract class ServiceInstancesChangedListener implements ConditionalEven
                 metadataInfo = remoteMetadataService.getMetadata(instance);
             } else {
                 MetadataService metadataServiceProxy = MetadataUtils.getMetadataServiceProxy(instance);
-                metadataInfo = metadataServiceProxy.getMetadataInfo();
+                metadataInfo = metadataServiceProxy.getMetadataInfo(ServiceInstanceMetadataUtils.getExportedServicesRevision(instance));
             }
         } catch (Exception e) {
             // TODO, load metadata backup
@@ -169,15 +167,32 @@ public abstract class ServiceInstancesChangedListener implements ConditionalEven
         return metadataInfo;
     }
 
-    protected abstract void notifyAddresses();
+    private void notifyAddressChanged() {
+        listeners.forEach((key, notifyListener) -> {
+            //FIXME, group wildcard match
+            notifyListener.notify(serviceUrls.get(key));
+        });
+    }
+
+    public void addListener(String serviceKey, NotifyListener listener) {
+        this.listeners.put(serviceKey, listener);
+    }
+
+    public void removeListener(String serviceKey) {
+        this.listeners.remove(serviceKey);
+    }
+
+    public List<URL> getUrls(String serviceKey) {
+        return serviceUrls.get(serviceKey);
+    }
 
     /**
      * Get the correlative service name
      *
      * @return the correlative service name
      */
-    public final String getServiceName() {
-        return serviceName;
+    public final Set<String> getServiceNames() {
+        return serviceNames;
     }
 
     public void setUrl(URL url) {
@@ -193,7 +208,7 @@ public abstract class ServiceInstancesChangedListener implements ConditionalEven
      * @return If service name matches, return <code>true</code>, or <code>false</code>
      */
     public final boolean accept(ServiceInstancesChangedEvent event) {
-        return Objects.equals(serviceName, event.getServiceName());
+        return serviceNames.contains(event.getServiceName());
     }
 
     @Override
@@ -201,11 +216,11 @@ public abstract class ServiceInstancesChangedListener implements ConditionalEven
         if (this == o) return true;
         if (!(o instanceof ServiceInstancesChangedListener)) return false;
         ServiceInstancesChangedListener that = (ServiceInstancesChangedListener) o;
-        return Objects.equals(getServiceName(), that.getServiceName());
+        return Objects.equals(getServiceNames(), that.getServiceNames());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getClass(), getServiceName());
+        return Objects.hash(getClass(), getServiceNames());
     }
 }

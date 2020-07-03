@@ -261,6 +261,12 @@ public interface ServiceDiscovery extends Prioritized {
 
     // ==================================================================================== //
 
+//    String getKey(URL exportedURL);
+
+    default URL getUrl() {
+        return null;
+    }
+
     /**
      * A human-readable description of the implementation
      *

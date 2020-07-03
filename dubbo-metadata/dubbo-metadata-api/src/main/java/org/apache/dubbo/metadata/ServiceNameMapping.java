@@ -44,7 +44,7 @@ public interface ServiceNameMapping {
      *
      * @return
      */
-    Set<String> get(URL url);
+    Set<String> get(URL url, MappingListener mappingListener);
 
 
     /**

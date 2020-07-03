@@ -24,10 +24,8 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.DefaultPage;
 import org.apache.dubbo.common.utils.Page;
 import org.apache.dubbo.event.EventDispatcher;
-import org.apache.dubbo.event.EventListener;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
-import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 
 import org.apache.curator.framework.CuratorFramework;
@@ -52,9 +50,11 @@ import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkUtils.bui
  * Zookeeper {@link ServiceDiscovery} implementation based on
  * <a href="https://curator.apache.org/curator-x-discovery/index.html">Apache Curator X Discovery</a>
  */
-public class ZookeeperServiceDiscovery implements ServiceDiscovery, EventListener<ServiceInstancesChangedEvent> {
+public class ZookeeperServiceDiscovery implements ServiceDiscovery {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
+
+    private URL registryURL;
 
     private EventDispatcher dispatcher;
 
@@ -71,12 +71,16 @@ public class ZookeeperServiceDiscovery implements ServiceDiscovery, EventListene
 
     @Override
     public void initialize(URL registryURL) throws Exception {
-        this.dispatcher = EventDispatcher.getDefaultExtension();
-        this.dispatcher.addEventListener(this);
+        this.registryURL = registryURL;
         this.curatorFramework = buildCuratorFramework(registryURL);
         this.rootPath = ROOT_PATH.getParameterValue(registryURL);
         this.serviceDiscovery = buildServiceDiscovery(curatorFramework, rootPath);
         this.serviceDiscovery.start();
+    }
+
+    @Override
+    public URL getUrl() {
+        return registryURL;
     }
 
     public void destroy() throws Exception {
@@ -147,7 +151,7 @@ public class ZookeeperServiceDiscovery implements ServiceDiscovery, EventListene
     @Override
     public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener)
             throws NullPointerException, IllegalArgumentException {
-        registerServiceWatcher(listener.getServiceName());
+        listener.getServiceNames().forEach(serviceName -> registerServiceWatcher(serviceName, listener));
     }
 
     private void doInServiceRegistry(ThrowableConsumer<org.apache.curator.x.discovery.ServiceDiscovery> consumer) {
@@ -160,10 +164,10 @@ public class ZookeeperServiceDiscovery implements ServiceDiscovery, EventListene
         return execute(serviceDiscovery, function);
     }
 
-    protected void registerServiceWatcher(String serviceName) {
+    protected void registerServiceWatcher(String serviceName, ServiceInstancesChangedListener listener) {
         String path = buildServicePath(serviceName);
         CuratorWatcher watcher = watcherCaches.computeIfAbsent(path, key ->
-                new ZookeeperServiceDiscoveryChangeWatcher(this, serviceName));
+                new ZookeeperServiceDiscoveryChangeWatcher(this, serviceName, listener));
         try {
             curatorFramework.getChildren().usingWatcher(watcher).forPath(path);
         } catch (KeeperException.NoNodeException e) {
@@ -178,12 +182,5 @@ public class ZookeeperServiceDiscovery implements ServiceDiscovery, EventListene
 
     private String buildServicePath(String serviceName) {
         return rootPath + "/" + serviceName;
-    }
-
-    @Override
-    public void onEvent(ServiceInstancesChangedEvent event) {
-        String serviceName = event.getServiceName();
-        // re-register again
-        registerServiceWatcher(serviceName);
     }
 }

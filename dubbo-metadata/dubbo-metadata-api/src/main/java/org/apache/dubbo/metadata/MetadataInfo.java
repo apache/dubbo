@@ -42,15 +42,17 @@ public class MetadataInfo implements Serializable {
     private String revision;
     private Map<String, ServiceInfo> services;
 
+    private transient Map<String, String> extendParams;
+
     public MetadataInfo(String app) {
-        this.app = app;
-        this.services = new HashMap<>();
+        this(app, null, null);
     }
 
     public MetadataInfo(String app, String revision, Map<String, ServiceInfo> services) {
         this.app = app;
         this.revision = revision;
         this.services = services == null ? new HashMap<>() : services;
+        this.extendParams = new HashMap<>();
     }
 
     public void addService(ServiceInfo serviceInfo) {
@@ -111,6 +113,10 @@ public class MetadataInfo implements Serializable {
         return services.get(serviceKey);
     }
 
+    public Map<String, String> getExtendParams() {
+        return extendParams;
+    }
+
     public String getParameter(String key, String serviceKey) {
         ServiceInfo serviceInfo = services.get(serviceKey);
         if (serviceInfo == null) {
@@ -133,7 +139,6 @@ public class MetadataInfo implements Serializable {
         private String group;
         private String version;
         private String protocol;
-        private String registry;
         private Map<String, String> params;
 
         private transient Map<String, Map<String, String>> methodParams;
@@ -150,7 +155,6 @@ public class MetadataInfo implements Serializable {
                     url.getParameter(GROUP_KEY),
                     url.getParameter(VERSION_KEY),
                     url.getProtocol(),
-                    "",
                     null
             );
 
@@ -179,12 +183,11 @@ public class MetadataInfo implements Serializable {
             this.params = params;
         }
 
-        public ServiceInfo(String name, String group, String version, String protocol, String registry, Map<String, String> params) {
+        public ServiceInfo(String name, String group, String version, String protocol, Map<String, String> params) {
             this.name = name;
             this.group = group;
             this.version = version;
             this.protocol = protocol;
-            this.registry = registry;
             this.params = params == null ? new HashMap<>() : params;
 
             this.serviceKey = URL.buildKey(name, group, version);
@@ -203,9 +206,6 @@ public class MetadataInfo implements Serializable {
             matchKey = getServiceKey();
             if (StringUtils.isNotEmpty(protocol)) {
                 matchKey = getServiceKey() + GROUP_CHAR_SEPERATOR + protocol;
-            }
-            if (StringUtils.isNotEmpty(registry)) {
-                matchKey = getServiceKey() + GROUP_CHAR_SEPERATOR + registry;
             }
             return matchKey;
         }
@@ -242,22 +242,6 @@ public class MetadataInfo implements Serializable {
             this.version = version;
         }
 
-        public String getProtocol() {
-            return protocol;
-        }
-
-        public void setProtocol(String protocol) {
-            this.protocol = protocol;
-        }
-
-        public String getRegistry() {
-            return registry;
-        }
-
-        public void setRegistry(String registry) {
-            this.registry = registry;
-        }
-
         public Map<String, String> getParams() {
             if (params == null) {
                 return Collections.emptyMap();
@@ -282,6 +266,9 @@ public class MetadataInfo implements Serializable {
             String value = null;
             if (keyMap != null) {
                 value = keyMap.get(key);
+            }
+            if (StringUtils.isEmpty(value)) {
+                value = getParameter(key);
             }
             return value == null ? defaultValue : value;
         }

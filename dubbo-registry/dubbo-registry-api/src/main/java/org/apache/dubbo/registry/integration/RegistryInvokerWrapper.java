@@ -24,12 +24,12 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Cluster;
 
 class RegistryInvokerWrapper<T> implements Invoker<T> {
-    private RegistryDirectory<T> directory;
+    private DynamicDirectory<T> directory;
     private Cluster cluster;
     private Invoker<T> invoker;
     private URL url;
 
-    public RegistryInvokerWrapper(RegistryDirectory<T> directory, Cluster cluster, Invoker<T> invoker, URL url) {
+    public RegistryInvokerWrapper(DynamicDirectory<T> directory, Cluster cluster, Invoker<T> invoker, URL url) {
         this.directory = directory;
         this.cluster = cluster;
         this.invoker = invoker;
@@ -59,7 +59,7 @@ class RegistryInvokerWrapper<T> implements Invoker<T> {
         this.invoker = invoker;
     }
 
-    public RegistryDirectory<T> getDirectory() {
+    public DynamicDirectory<T> getDirectory() {
         return directory;
     }
 

@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.registry.client;
 
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.metadata.MetadataInfo;
 
 import java.util.HashMap;
@@ -46,7 +45,9 @@ public class DefaultServiceInstance implements ServiceInstance {
 
     private Map<String, String> metadata = new HashMap<>();
 
+    private transient String address;
     private transient MetadataInfo serviceMetadata;
+    private transient Map<String, String> extendParams = new HashMap<>();
 
     public DefaultServiceInstance() {
     }
@@ -104,6 +105,18 @@ public class DefaultServiceInstance implements ServiceInstance {
     }
 
     @Override
+    public String getAddress() {
+        if (address == null) {
+            address = getAddress(host, port);
+        }
+        return address;
+    }
+
+    private static String getAddress(String host, int port) {
+        return port <= 0 ? host : host + ':' + port;
+    }
+
+    @Override
     public boolean isEnabled() {
         return enabled;
     }
@@ -126,6 +139,11 @@ public class DefaultServiceInstance implements ServiceInstance {
         return metadata;
     }
 
+    @Override
+    public Map<String, String> getExtendParams() {
+        return extendParams;
+    }
+
     public void setMetadata(Map<String, String> metadata) {
         this.metadata = metadata;
     }
@@ -139,10 +157,8 @@ public class DefaultServiceInstance implements ServiceInstance {
     }
 
     @Override
-    public URL toURL(String protocol, String path, String interfaceName, String group, String version, String serviceKey) {
-        InstanceAddressURL url = new InstanceAddressURL(protocol, host, port, path, interfaceName, group, version, serviceKey);
-        url.setMetadata(this.getServiceMetadata());
-        return url;
+    public InstanceAddressURL toURL() {
+        return new InstanceAddressURL(this, serviceMetadata);
     }
 
     @Override

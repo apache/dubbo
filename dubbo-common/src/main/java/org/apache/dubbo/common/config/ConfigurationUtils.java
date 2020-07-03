@@ -97,7 +97,7 @@ public class ConfigurationUtils {
     }
 
     public static String getProperty(String property, String defaultValue) {
-        return StringUtils.trim(ApplicationModel.getEnvironment().getConfiguration().getString(property, defaultValue));
+        return StringUtils.trim(getGlobalConfiguration().getString(property, defaultValue));
     }
 
     public static Map<String, String> parseProperties(String content) throws IOException {
