@@ -19,6 +19,7 @@ package org.apache.dubbo.metadata.store.zookeeper;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.PathUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.report.identifier.BaseMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
@@ -26,6 +27,7 @@ import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 import org.apache.dubbo.metadata.report.support.AbstractMetadataReport;
+import org.apache.dubbo.metadata.report.support.ConfigCenterBasedMetadataReport;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 
@@ -36,10 +38,15 @@ import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
+import static org.apache.dubbo.metadata.MetadataConstants.DEFAULT_PATH_TAG;
+import static org.apache.dubbo.metadata.MetadataConstants.EXPORTED_URLS_TAG;
 
 /**
  * ZookeeperMetadataReport
+ *
+ * @deprecated 2.7.8 This class will be removed in the future, {@link ConfigCenterBasedMetadataReport} as a substitute.
  */
+@Deprecated
 public class ZookeeperMetadataReport extends AbstractMetadataReport {
 
     private final static Logger logger = LoggerFactory.getLogger(ZookeeperMetadataReport.class);
@@ -118,6 +125,28 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
 
     String getNodePath(BaseMetadataIdentifier metadataIdentifier) {
         return toRootDir() + metadataIdentifier.getUniqueKey(KeyTypeEnum.PATH);
+    }
+
+    @Override
+    public boolean saveExportedURLs(String serviceName, String exportedServicesRevision, String exportedURLsContent) {
+        String path = buildExportedURLsMetadataPath(serviceName, exportedServicesRevision);
+        zkClient.create(path, exportedURLsContent, false);
+        return true;
+    }
+
+    @Override
+    public String getExportedURLsContent(String serviceName, String exportedServicesRevision) {
+        String path = buildExportedURLsMetadataPath(serviceName, exportedServicesRevision);
+        String content = zkClient.getContent(path);
+        return content;
+    }
+
+    private String buildExportedURLsMetadataPath(String serviceName, String exportedServicesRevision) {
+        return buildPath(DEFAULT_PATH_TAG, EXPORTED_URLS_TAG, serviceName, exportedServicesRevision);
+    }
+
+    private String buildPath(String... paths) {
+        return PathUtils.buildPath(toRootDir(), paths);
     }
 
 }

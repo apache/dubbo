@@ -285,6 +285,16 @@ public class RegistryBuilder extends AbstractBuilder<RegistryConfig, RegistryBui
         return getThis();
     }
 
+    /**
+     * @param name   the parameter name
+     * @param value the parameter value
+     * @return {@link RegistryBuilder}
+     * @since 2.7.8
+     */
+    public RegistryBuilder parameter(String name, String value) {
+        return appendParameter(name, value);
+    }
+
     public RegistryBuilder appendParameters(Map<String, String> appendParameters) {
         this.parameters = appendParameters(parameters, appendParameters);
         return getThis();

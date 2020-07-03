@@ -20,8 +20,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static java.lang.String.valueOf;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.METADATA_SERVICE_URLS_PROPERTY_NAME;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -63,5 +66,11 @@ public class DefaultServiceInstanceTest {
         assertFalse(instance.isEnabled());
         assertFalse(instance.isHealthy());
         assertFalse(instance.getMetadata().isEmpty());
+    }
+
+    @Test
+    public void testGetMetadata() {
+        assertNotNull(instance.getMetadata(METADATA_SERVICE_URLS_PROPERTY_NAME));
+        assertNotNull(instance.getMetadata(METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME));
     }
 }

@@ -88,4 +88,21 @@ public interface Converter<S, T> extends Prioritized {
                 .findFirst()
                 .orElse(null);
     }
+
+    /**
+     * Convert the value of source to target-type value if possible
+     *
+     * @param source     the value of source
+     * @param targetType the target type
+     * @param <T>        the target type
+     * @return <code>null</code> if can't be converted
+     * @since 2.7.8
+     */
+    static <T> T convertIfPossible(Object source, Class<T> targetType) {
+        Converter converter = getConverter(source.getClass(), targetType);
+        if (converter != null) {
+            return (T) converter.convert(source);
+        }
+        return null;
+    }
 }

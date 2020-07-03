@@ -25,6 +25,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Predicate;
 
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -68,10 +69,10 @@ public class URLTest {
 
     private void assertURLStrDecoder(URL url) {
         String fullURLStr = url.toFullString();
-        URL newUrl =  URLStrParser.parseEncodedStr(URL.encode(fullURLStr));
+        URL newUrl = URLStrParser.parseEncodedStr(URL.encode(fullURLStr));
         assertEquals(URL.valueOf(fullURLStr), newUrl);
 
-        URL newUrl2 =  URLStrParser.parseDecodedStr(fullURLStr);
+        URL newUrl2 = URLStrParser.parseDecodedStr(fullURLStr);
         assertEquals(URL.valueOf(fullURLStr), newUrl2);
     }
 
@@ -873,5 +874,27 @@ public class URLTest {
 
         url = URL.valueOf("dubbo://10.20.130.230:20880/path");
         assertURLStrDecoder(url);
+    }
+
+
+    /**
+     * Test {@link URL#getParameters(Predicate)} method
+     *
+     * @since 2.7.8
+     */
+    @Test
+    public void testGetParameters() {
+        URL url = URL.valueOf("10.20.130.230:20880/context/path?interface=org.apache.dubbo.test.interfaceName&group=group&version=1.0.0");
+        Map<String, String> parameters = url.getParameters(i -> "version".equals(i));
+        String version = parameters.get("version");
+        assertEquals(1, parameters.size());
+        assertEquals("1.0.0", version);
+    }
+
+    @Test
+    public void testGetParameter() {
+        URL url = URL.valueOf("http://127.0.0.1:8080/path?i=1&b=false");
+        assertEquals(Integer.valueOf(1), url.getParameter("i", Integer.class));
+        assertEquals(Boolean.FALSE, url.getParameter("b", Boolean.class));
     }
 }

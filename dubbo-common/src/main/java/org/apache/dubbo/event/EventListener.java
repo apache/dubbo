@@ -56,7 +56,7 @@ public interface EventListener<E extends Event> extends java.util.EventListener,
      * The comparison rule , refer to {@link #compareTo}.
      */
     default int getPriority() {
-        return MIN_PRIORITY;
+        return NORMAL_PRIORITY;
     }
 
     /**
