@@ -22,17 +22,18 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Cluster;
-import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 
-class RegistryInvokerWrapper<T> implements ClusterInvoker<T> {
-    private RegistryDirectory<T> directory;
+class RegistryInvokerWrapper<T> implements Invoker<T> {
+    private DynamicDirectory<T> directory;
     private Cluster cluster;
     private Invoker<T> invoker;
+    private URL url;
 
-    public RegistryInvokerWrapper(RegistryDirectory<T> directory, Cluster cluster, Invoker<T> invoker) {
+    public RegistryInvokerWrapper(DynamicDirectory<T> directory, Cluster cluster, Invoker<T> invoker, URL url) {
         this.directory = directory;
         this.cluster = cluster;
         this.invoker = invoker;
+        this.url = url;
     }
 
     @Override
@@ -47,14 +48,18 @@ class RegistryInvokerWrapper<T> implements ClusterInvoker<T> {
 
     @Override
     public URL getUrl() {
-        return invoker.getUrl();
+        return url;
+    }
+
+    public void setUrl(URL url) {
+        this.url = url;
     }
 
     public void setInvoker(Invoker<T> invoker) {
         this.invoker = invoker;
     }
 
-    public RegistryDirectory<T> getDirectory() {
+    public DynamicDirectory<T> getDirectory() {
         return directory;
     }
 
@@ -70,10 +75,5 @@ class RegistryInvokerWrapper<T> implements ClusterInvoker<T> {
     @Override
     public void destroy() {
         invoker.destroy();
-    }
-
-    @Override
-    public URL getRegistryUrl() {
-        return directory.getUrl();
     }
 }

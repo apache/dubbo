@@ -23,6 +23,8 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.metadata.MappingChangedEvent;
+import org.apache.dubbo.metadata.MappingListener;
 import org.apache.dubbo.metadata.ServiceNameMapping;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.NotifyListener;
@@ -30,6 +32,7 @@ import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.registry.client.metadata.SubscribedURLsSynthesizer;
+import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 import org.apache.dubbo.registry.support.FailbackRegistry;
 
 import java.util.ArrayList;
@@ -41,6 +44,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
@@ -56,6 +60,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDED_BY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_TYPE;
 import static org.apache.dubbo.common.constants.RegistryConstants.SUBSCRIBED_SERVICE_NAMES_KEY;
@@ -63,6 +68,7 @@ import static org.apache.dubbo.common.function.ThrowableAction.execute;
 import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 import static org.apache.dubbo.registry.client.ServiceDiscoveryFactory.getExtension;
+import static org.apache.dubbo.rpc.Constants.ID_KEY;
 
 /**
  * Being different to the traditional registry, {@link ServiceDiscoveryRegistry} that is a new service-oriented
@@ -87,7 +93,7 @@ import static org.apache.dubbo.registry.client.ServiceDiscoveryFactory.getExtens
  * @see WritableMetadataService
  * @since 2.7.5
  */
-public class ServiceDiscoveryRegistry extends FailbackRegistry {
+public class ServiceDiscoveryRegistry implements Registry {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -101,8 +107,10 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
     private final Set<String> registeredListeners = new LinkedHashSet<>();
 
-    /* app - listener */
+    /* apps - listener */
     private final Map<String, ServiceInstancesChangedListener> serviceListeners = new HashMap<>();
+
+    private URL registryURL;
 
     /**
      * A cache for all URLs of services that the subscribed services exported
@@ -112,7 +120,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
     private final Map<String, Map<String, List<URL>>> serviceRevisionExportedURLsCache = new LinkedHashMap<>();
 
     public ServiceDiscoveryRegistry(URL registryURL) {
-        super(registryURL);
+        this.registryURL = registryURL;
         this.serviceDiscovery = createServiceDiscovery(registryURL);
         this.subscribedServices = parseServices(registryURL.getParameter(SUBSCRIBED_SERVICE_NAMES_KEY));
         this.serviceNameMapping = ServiceNameMapping.getExtension(registryURL.getParameter(MAPPING_KEY));
@@ -190,11 +198,14 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         if (!shouldRegister(url)) { // Should Not Register
             return;
         }
-        super.register(url);
+        doRegister(url);
     }
 
-    @Override
     public void doRegister(URL url) {
+        String registryCluster = serviceDiscovery.getUrl().getParameter(ID_KEY);
+        if (registryCluster != null) {
+            url = url.addParameter(REGISTRY_KEY, registryCluster);
+        }
         if (writableMetadataService.exportURL(url)) {
             if (logger.isInfoEnabled()) {
                 logger.info(format("The URL[%s] registered successfully.", url.toString()));
@@ -211,11 +222,14 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         if (!shouldRegister(url)) {
             return;
         }
-        super.unregister(url);
+        doUnregister(url);
     }
 
-    @Override
     public void doUnregister(URL url) {
+        String registryCluster = serviceDiscovery.getUrl().getParameter(ID_KEY);
+        if (registryCluster != null) {
+            url = url.addParameter(REGISTRY_KEY, registryCluster);
+        }
         if (writableMetadataService.unexportURL(url)) {
             if (logger.isInfoEnabled()) {
                 logger.info(format("The URL[%s] deregistered successfully.", url.toString()));
@@ -232,12 +246,22 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         if (!shouldSubscribe(url)) { // Should Not Subscribe
             return;
         }
-        super.subscribe(url, listener);
+        String registryCluster = serviceDiscovery.getUrl().getParameter(ID_KEY);
+        if (registryCluster != null) {
+            url = url.addParameter(REGISTRY_KEY, registryCluster);
+        }
+        doSubscribe(url, listener);
     }
 
-    @Override
     public void doSubscribe(URL url, NotifyListener listener) {
-        subscribeURLs(url, listener);
+        writableMetadataService.subscribeURL(url);
+
+        Set<String> serviceNames = getServices(url, listener);
+        if (CollectionUtils.isEmpty(serviceNames)) {
+            throw new IllegalStateException("Should has at least one way to know which services this interface belongs to, subscription url: " + url);
+        }
+
+        subscribeURLs(url, listener, serviceNames);
     }
 
     @Override
@@ -245,12 +269,25 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         if (!shouldSubscribe(url)) { // Should Not Subscribe
             return;
         }
-        super.unsubscribe(url, listener);
+        String registryCluster = serviceDiscovery.getUrl().getParameter(ID_KEY);
+        if (registryCluster != null) {
+            url = url.addParameter(REGISTRY_KEY, registryCluster);
+        }
+        doUnsubscribe(url, listener);
+    }
+
+    public void doUnsubscribe(URL url, NotifyListener listener) {
+        writableMetadataService.unsubscribeURL(url);
     }
 
     @Override
-    public void doUnsubscribe(URL url, NotifyListener listener) {
-        writableMetadataService.unsubscribeURL(url);
+    public List<URL> lookup(URL url) {
+        throw new UnsupportedOperationException("");
+    }
+
+    @Override
+    public URL getUrl() {
+        return registryURL;
     }
 
     @Override
@@ -260,42 +297,28 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
     @Override
     public void destroy() {
-        super.destroy();
+        AbstractRegistryFactory.removeDestroyedRegistry(this);
         execute(() -> {
             // stop ServiceDiscovery
             serviceDiscovery.destroy();
         });
     }
 
-    protected void subscribeURLs(URL url, NotifyListener listener) {
-
-        writableMetadataService.subscribeURL(url);
-
-        Set<String> serviceNames = getServices(url);
-        if (CollectionUtils.isEmpty(serviceNames)) {
-            throw new IllegalStateException("Should has at least one way to know which services this interface belongs to, subscription url: " + url);
-        }
-
-        serviceNames.forEach(serviceName -> subscribeURLs(url, listener, serviceName));
-    }
-
-    protected void subscribeURLs(URL url, NotifyListener listener, String serviceName) {
+    protected void subscribeURLs(URL url, NotifyListener listener, Set<String> serviceNames) {
+        String serviceNamesKey = serviceNames.toString();
         // register ServiceInstancesChangedListener
-        ServiceInstancesChangedListener serviceListener = serviceListeners.computeIfAbsent(serviceName,
-                k -> new ServiceInstancesChangedListener(serviceName, serviceDiscovery, url) {
-                    @Override
-                    protected void notifyAddresses() {
-                        listener.notifyServiceInstances();
-                    }
-                });
+        ServiceInstancesChangedListener serviceListener = serviceListeners.computeIfAbsent(serviceNamesKey,
+                k -> new ServiceInstancesChangedListener(serviceNames, serviceDiscovery));
         serviceListener.setUrl(url);
         listener.addServiceListener(serviceListener);
 
-        // FIXME, sync notification
-        List<ServiceInstance> serviceInstances = serviceDiscovery.getInstances(serviceName);
-        serviceListener.onEvent(new ServiceInstancesChangedEvent(serviceName, serviceInstances));
-        listener.notifyServiceInstances();
+        serviceNames.forEach(serviceName -> {
+            List<ServiceInstance> serviceInstances = serviceDiscovery.getInstances(serviceName);
+            serviceListener.onEvent(new ServiceInstancesChangedEvent(serviceName, serviceInstances));
+        });
+        listener.notify(serviceListener.getUrls(url.getProtocolServiceKey()));
 
+        serviceListener.addListener(url.getProtocolServiceKey(), listener);
         registerServiceInstancesChangedListener(url, serviceListener);
     }
 
@@ -313,27 +336,8 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
     }
 
     private String createListenerId(URL url, ServiceInstancesChangedListener listener) {
-        return listener.getServiceName() + ":" + url.toString(VERSION_KEY, GROUP_KEY, PROTOCOL_KEY);
+        return listener.getServiceNames() + ":" + url.toString(VERSION_KEY, GROUP_KEY, PROTOCOL_KEY);
     }
-
-    private Map<String, List<URL>> getRevisionExportedURLsMap(String serviceName) {
-        return serviceRevisionExportedURLsCache.computeIfAbsent(serviceName, s -> new LinkedHashMap());
-    }
-
-    /**
-     * Synthesize new subscribed {@link URL URLs} from old one
-     *
-     * @param subscribedURL
-     * @param serviceInstances
-     * @return non-null
-     */
-//    private Collection<? extends URL> synthesizeSubscribedURLs(URL subscribedURL, Collection<ServiceInstance> serviceInstances) {
-//        return subscribedURLsSynthesizers.stream()
-//                .filter(synthesizer -> synthesizer.supports(subscribedURL))
-//                .map(synthesizer -> synthesizer.synthesize(subscribedURL, serviceInstances))
-//                .flatMap(Collection::stream)
-//                .collect(Collectors.toList());
-//    }
 
     /**
      * 1.developer explicitly specifies the application name this interface belongs to
@@ -343,18 +347,18 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
      * @param subscribedURL
      * @return
      */
-    protected Set<String> getServices(URL subscribedURL) {
-        Set<String> subscribedServices = new LinkedHashSet<>();
+    protected Set<String> getServices(URL subscribedURL, final NotifyListener listener) {
+        Set<String> subscribedServices = new TreeSet<>();
 
         String serviceNames = subscribedURL.getParameter(PROVIDED_BY);
         if (StringUtils.isNotEmpty(serviceNames)) {
-            subscribedServices = parseServices(serviceNames);
+            subscribedServices.addAll(parseServices(serviceNames));
         }
 
         if (isEmpty(subscribedServices)) {
-            subscribedServices = findMappedServices(subscribedURL);
+            subscribedServices.addAll(findMappedServices(subscribedURL, new DefaultMappingListener(subscribedURL, subscribedServices, listener)));
             if (isEmpty(subscribedServices)) {
-                subscribedServices = getSubscribedServices();
+                subscribedServices.addAll(getSubscribedServices());
             }
         }
         return subscribedServices;
@@ -383,8 +387,8 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
      * @param subscribedURL
      * @return
      */
-    protected Set<String> findMappedServices(URL subscribedURL) {
-        return serviceNameMapping.get(subscribedURL);
+    protected Set<String> findMappedServices(URL subscribedURL, MappingListener listener) {
+        return serviceNameMapping.get(subscribedURL, listener);
     }
 
     /**
@@ -432,5 +436,28 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
     private static boolean isCompatibleProtocol(String protocol, URL targetURL) {
         return protocol == null || Objects.equals(protocol, targetURL.getParameter(PROTOCOL_KEY))
                 || Objects.equals(protocol, targetURL.getProtocol());
+    }
+
+    private class DefaultMappingListener implements MappingListener {
+        private URL url;
+        private Set<String> oldApps;
+        private NotifyListener listener;
+
+        public DefaultMappingListener(URL subscribedURL, Set<String> serviceNames, NotifyListener listener) {
+            this.url = subscribedURL;
+            this.oldApps = serviceNames;
+            this.listener = listener;
+        }
+
+        @Override
+        public void onEvent(MappingChangedEvent event) {
+            Set<String> newApps = event.getApps();
+            if (CollectionUtils.isEmpty(newApps)) {
+                return;
+            }
+            if (!CollectionUtils.equals(oldApps, newApps) && newApps.size() >= oldApps.size()) {
+                subscribeURLs(url, listener, newApps);
+            }
+        }
     }
 }

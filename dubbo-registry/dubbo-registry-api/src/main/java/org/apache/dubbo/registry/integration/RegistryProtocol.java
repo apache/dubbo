@@ -454,8 +454,9 @@ public class RegistryProtocol implements Protocol {
         return doRefer(cluster, registry, type, url);
     }
 
-    private <T> Invoker<T> doRefer(Cluster cluster, Registry registry, Class<T> type, URL url) {
-        RegistryDirectory<T> directory = new RegistryDirectory<T>(type, url);
+    protected <T> Invoker<T> doRefer(Cluster cluster, Registry registry, Class<T> type, URL url) {
+        // FIXME, SPI extension, support prototype instance
+        DynamicDirectory<T> directory = createDirectory(type, url);
         directory.setRegistry(registry);
         directory.setProtocol(protocol);
         // all attributes of REFER_KEY
@@ -481,6 +482,10 @@ public class RegistryProtocol implements Protocol {
         return registryInvokerWrapper;
     }
 
+    protected <T> DynamicDirectory<T> createDirectory(Class<T> type, URL url) {
+        return new RegistryDirectory<T>(type, url);
+    }
+
     public <T> void reRefer(Invoker<T> invoker, URL newSubscribeUrl) {
         if (!(invoker instanceof RegistryInvokerWrapper)) {
             return;
@@ -488,7 +493,7 @@ public class RegistryProtocol implements Protocol {
 
         RegistryInvokerWrapper<T> invokerWrapper = (RegistryInvokerWrapper<T>) invoker;
         URL oldSubscribeUrl = invokerWrapper.getUrl();
-        RegistryDirectory<T> directory = invokerWrapper.getDirectory();
+        DynamicDirectory<T> directory = invokerWrapper.getDirectory();
         Registry registry = directory.getRegistry();
         registry.unregister(directory.getRegisteredConsumerUrl());
         directory.unSubscribe(toSubscribeUrl(oldSubscribeUrl));

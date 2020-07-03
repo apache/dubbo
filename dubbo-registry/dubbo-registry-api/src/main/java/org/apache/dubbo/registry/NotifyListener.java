@@ -45,6 +45,4 @@ public interface NotifyListener {
     default void addServiceListener(ServiceInstancesChangedListener instanceListener) {
     }
 
-    default void notifyServiceInstances() {
-    }
 }

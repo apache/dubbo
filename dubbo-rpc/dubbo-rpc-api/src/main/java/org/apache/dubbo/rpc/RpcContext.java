@@ -34,8 +34,12 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.rpc.Constants.ASYNC_KEY;
 import static org.apache.dubbo.rpc.Constants.RETURN_KEY;
 
@@ -795,4 +799,79 @@ public class RpcContext {
         return asyncContext;
     }
 
+    // RPC service context updated before each service call.
+    private String group;
+    private String version;
+    private String interfaceName;
+    private String protocol;
+    private String serviceKey;
+    private String protocolServiceKey;
+    private URL consumerUrl;
+
+    public String getGroup() {
+        return group;
+    }
+
+    public void setGroup(String group) {
+        this.group = group;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+    public String getInterfaceName() {
+        return interfaceName;
+    }
+
+    public void setInterfaceName(String interfaceName) {
+        this.interfaceName = interfaceName;
+    }
+
+    public String getProtocol() {
+        return protocol;
+    }
+
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
+    }
+
+    public String getServiceKey() {
+        return serviceKey;
+    }
+
+    public void setServiceKey(String serviceKey) {
+        this.serviceKey = serviceKey;
+    }
+
+    public String getProtocolServiceKey() {
+        return protocolServiceKey;
+    }
+
+    public void setProtocolServiceKey(String protocolServiceKey) {
+        this.protocolServiceKey = protocolServiceKey;
+    }
+
+    public URL getConsumerUrl() {
+        return consumerUrl;
+    }
+
+    public void setConsumerUrl(URL consumerUrl) {
+        this.consumerUrl = consumerUrl;
+    }
+
+    public static void setRpcContext(URL url) {
+        RpcContext rpcContext = RpcContext.getContext();
+        rpcContext.setConsumerUrl(url);
+        rpcContext.setInterfaceName(url.getServiceInterface());
+        rpcContext.setVersion(url.getParameter(VERSION_KEY));
+        rpcContext.setGroup(url.getParameter(GROUP_KEY));
+        rpcContext.setProtocol(url.getParameter(PROTOCOL_KEY, DUBBO));
+        rpcContext.setServiceKey(url.getServiceKey());
+        rpcContext.setProtocolServiceKey(url.getProtocolServiceKey());
+    }
 }

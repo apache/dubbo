@@ -54,10 +54,13 @@ public class NacosServiceDiscovery implements ServiceDiscovery {
 
     private NamingService namingService;
 
+    private URL registryURL;
+
     @Override
     public void initialize(URL registryURL) throws Exception {
         this.namingService = createNamingService(registryURL);
         this.group = getGroup(registryURL);
+        this.registryURL = registryURL;
     }
 
     @Override
@@ -109,13 +112,18 @@ public class NacosServiceDiscovery implements ServiceDiscovery {
     public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener)
             throws NullPointerException, IllegalArgumentException {
         execute(namingService, service -> {
-            service.subscribe(listener.getServiceName(), e -> { // Register Nacos EventListener
+            service.subscribe(listener.getServiceNames(), e -> { // Register Nacos EventListener
                 if (e instanceof NamingEvent) {
                     NamingEvent event = (NamingEvent) e;
                     handleEvent(event, listener);
                 }
             });
         });
+    }
+
+    @Override
+    public URL getUrl() {
+        return registryURL;
     }
 
     private void handleEvent(NamingEvent event, ServiceInstancesChangedListener listener) {

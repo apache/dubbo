@@ -23,6 +23,7 @@ import org.apache.dubbo.metadata.report.MetadataReportInstance;
 
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static java.util.Arrays.asList;
@@ -44,23 +45,27 @@ public class MetadataServiceNameMapping implements ServiceNameMapping {
             return;
         }
 
-        List<MetadataReport> metadataReports = MetadataReportInstance.getMetadataReports(true);
-        metadataReports.forEach(reporter -> {
+        Map<String, MetadataReport> metadataReports = MetadataReportInstance.getMetadataReports(true);
+        metadataReports.forEach((key, reporter) -> {
             reporter.registerServiceAppMapping(ServiceNameMapping.buildGroup(serviceInterface, group, version, protocol), getName(), url);
         });
     }
 
     @Override
-    public Set<String> get(URL url) {
+    public Set<String> get(URL url, MappingListener mappingListener) {
         String serviceInterface = url.getServiceInterface();
         String group = url.getParameter(GROUP_KEY);
         String version = url.getParameter(VERSION_KEY);
         String protocol = url.getProtocol();
 
-        List<MetadataReport> metadataReports = MetadataReportInstance.getMetadataReports(true);
+        Map<String, MetadataReport> metadataReports = MetadataReportInstance.getMetadataReports(true);
         Set<String> serviceNames = new LinkedHashSet<>();
-        for (MetadataReport reporter : metadataReports) {
-            Set<String> apps = reporter.getServiceAppMapping(ServiceNameMapping.buildGroup(serviceInterface, group, version, protocol), url);
+        for (Map.Entry<String, MetadataReport> entry : metadataReports.entrySet()) {
+            MetadataReport reporter = entry.getValue();
+            Set<String> apps = reporter.getServiceAppMapping(
+                    ServiceNameMapping.buildGroup(serviceInterface, group, version, protocol),
+                    mappingListener,
+                    url);
             if (CollectionUtils.isNotEmpty(apps)) {
                 serviceNames.addAll(apps);
                 break;

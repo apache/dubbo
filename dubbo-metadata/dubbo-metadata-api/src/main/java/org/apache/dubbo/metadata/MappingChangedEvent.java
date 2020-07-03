@@ -14,10 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.config;
+package org.apache.dubbo.metadata;
 
-/**
- *
- */
-public class AbstractPrefixConfigurationTest {
+import java.util.Set;
+
+public class MappingChangedEvent {
+    private String serviceKey;
+    private Set<String> apps;
+
+    public String getServiceKey() {
+        return serviceKey;
+    }
+
+    public void setServiceKey(String serviceKey) {
+        this.serviceKey = serviceKey;
+    }
+
+    public Set<String> getApps() {
+        return apps;
+    }
+
+    public void setApps(Set<String> apps) {
+        this.apps = apps;
+    }
 }

@@ -18,6 +18,7 @@ package org.apache.dubbo.metadata.report;
 
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.metadata.MappingListener;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
@@ -30,7 +31,6 @@ import java.util.Map;
 import java.util.Set;
 
 public interface MetadataReport {
-
     /**
      * Service Definition -- START
      **/
@@ -51,7 +51,7 @@ public interface MetadataReport {
     /**
      * Service<-->Application Mapping -- START
      **/
-    default Set<String> getServiceAppMapping(String serviceKey, URL url) {
+    default Set<String> getServiceAppMapping(String serviceKey, MappingListener listener, URL url) {
         return Collections.emptySet();
     }
 

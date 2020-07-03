@@ -16,36 +16,24 @@
  */
 package org.apache.dubbo.registry.client;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.registry.integration.DynamicDirectory;
 import org.apache.dubbo.registry.integration.RegistryProtocol;
+import org.apache.dubbo.registry.integration.RegistryProtocolListener;
+import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 
-import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_PROTOCOL;
-
-/**
- * TODO, replace RegistryProtocol completely in the future.
- */
-public class ServiceDiscoveryRegistryProtocol extends RegistryProtocol {
+public class ServiceDiscoveryRegistryProtocolListener implements RegistryProtocolListener {
     @Override
-    protected URL getRegistryUrl(Invoker<?> originInvoker) {
-        URL registryUrl = originInvoker.getUrl();
-        if (SERVICE_REGISTRY_PROTOCOL.equals(registryUrl.getProtocol())) {
-            return registryUrl;
-        }
-        return super.getRegistryUrl(originInvoker);
+    public void onExport(RegistryProtocol registryProtocol, Exporter<?> exporter) {
+
     }
 
     @Override
-    protected URL getRegistryUrl(URL url) {
-        if (SERVICE_REGISTRY_PROTOCOL.equals(url.getProtocol())) {
-            return url;
-        }
-        return super.getRegistryUrl(url);
+    public void onRefer(RegistryProtocol registryProtocol, Invoker<?> invoker) {
+
     }
 
     @Override
-    protected <T> DynamicDirectory<T> createDirectory(Class<T> type, URL url) {
-        return new ServiceDiscoveryRegistryDirectory<>(type, url);
+    public void onDestroy() {
+
     }
 }

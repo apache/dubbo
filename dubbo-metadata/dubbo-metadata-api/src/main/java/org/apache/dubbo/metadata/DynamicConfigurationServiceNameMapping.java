@@ -72,7 +72,7 @@ public class DynamicConfigurationServiceNameMapping implements ServiceNameMappin
     }
 
     @Override
-    public Set<String> get(URL url) {
+    public Set<String> get(URL url, MappingListener mappingListener) {
         String serviceInterface = url.getServiceInterface();
         String group = url.getParameter(GROUP_KEY);
         String version = url.getParameter(VERSION_KEY);

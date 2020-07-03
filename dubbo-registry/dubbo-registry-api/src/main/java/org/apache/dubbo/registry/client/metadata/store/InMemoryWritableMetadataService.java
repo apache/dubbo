@@ -26,6 +26,7 @@ import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
+import org.apache.dubbo.registry.client.RegistryClusterIdentifier;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
@@ -36,6 +37,8 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.locks.Lock;
@@ -70,7 +73,7 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
      * and value is the {@link SortedSet sorted set} of the {@link URL URLs}
      */
     ConcurrentNavigableMap<String, SortedSet<URL>> exportedServiceURLs = new ConcurrentSkipListMap<>();
-    MetadataInfo metadataInfo;
+    ConcurrentMap<String, MetadataInfo> metadataInfos;
 
     // ==================================================================================== //
 
@@ -86,7 +89,7 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
     ConcurrentNavigableMap<String, String> serviceDefinitions = new ConcurrentSkipListMap<>();
 
     public InMemoryWritableMetadataService() {
-        this.metadataInfo = new MetadataInfo(ApplicationModel.getName());
+        this.metadataInfos = new ConcurrentHashMap<>();
     }
 
     @Override
@@ -120,15 +123,28 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
 
     @Override
     public boolean exportURL(URL url) {
-        ServiceInfo serviceInfo = new ServiceInfo(url);
-        metadataInfo.addService(serviceInfo);
+        String registryKey = RegistryClusterIdentifier.getExtension().providerKey(url);
+        String[] keys = registryKey.split(",");
+        for (String key : keys) {
+            MetadataInfo metadataInfo = metadataInfos.computeIfAbsent(key, k -> {
+                return new MetadataInfo(ApplicationModel.getName());
+            });
+            metadataInfo.addService(new ServiceInfo(url));
+        }
         return addURL(exportedServiceURLs, url);
     }
 
     @Override
     public boolean unexportURL(URL url) {
-        ServiceInfo serviceInfo = new ServiceInfo(url);
-        metadataInfo.removeService(serviceInfo);
+        String registryKey = RegistryClusterIdentifier.getExtension().providerKey(url);
+        String[] keys = registryKey.split(",");
+        for (String key : keys) {
+            MetadataInfo metadataInfo = metadataInfos.get(key);
+            metadataInfo.removeService(url.getProtocolServiceKey());
+            if (metadataInfo.getServices().isEmpty()) {
+                metadataInfos.remove(key);
+            }
+        }
         return removeURL(exportedServiceURLs, url);
     }
 
@@ -173,8 +189,21 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
     }
 
     @Override
-    public MetadataInfo getMetadataInfo() {
-        return metadataInfo;
+    public MetadataInfo getMetadataInfo(String revision) {
+        if (StringUtils.isEmpty(revision)) {
+            return null;
+        }
+        for (Map.Entry<String, MetadataInfo> entry : metadataInfos.entrySet()) {
+            MetadataInfo metadataInfo = entry.getValue();
+            if (revision.equals(metadataInfo.getRevision())) {
+                return metadataInfo;
+            }
+        }
+        return null;
+    }
+
+    public Map<String, MetadataInfo> getMetadataInfos() {
+        return metadataInfos;
     }
 
     boolean addURL(Map<String, SortedSet<URL>> serviceURLs, URL url) {

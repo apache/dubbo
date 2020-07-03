@@ -58,6 +58,7 @@ import org.apache.dubbo.config.utils.ReferenceConfigCache;
 import org.apache.dubbo.event.EventDispatcher;
 import org.apache.dubbo.event.EventListener;
 import org.apache.dubbo.event.GenericEventListener;
+import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.MetadataServiceExporter;
 import org.apache.dubbo.metadata.WritableMetadataService;
@@ -82,6 +83,7 @@ import java.util.SortedSet;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -98,8 +100,10 @@ import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_
 import static org.apache.dubbo.common.function.ThrowableAction.execute;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
 import static org.apache.dubbo.metadata.WritableMetadataService.getDefaultExtension;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.EXPORTED_SERVICES_REVISION_PROPERTY_NAME;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.setMetadataStorageType;
 import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
+import static org.apache.dubbo.rpc.Constants.ID_KEY;
 
 /**
  * See {@link ApplicationModel} and {@link ExtensionLoader} for why this class is designed to be singleton.
@@ -1020,15 +1024,39 @@ public class DubboBootstrap extends GenericEventListener {
 
         ServiceInstance serviceInstance = createServiceInstance(serviceName, host, port);
 
-        // register metadata
         publishMetadataToRemote(serviceInstance);
 
-        getServiceDiscoveries().forEach(serviceDiscovery -> serviceDiscovery.register(serviceInstance));
+        getServiceDiscoveries().forEach(serviceDiscovery ->
+        {
+            calInstanceRevision(serviceDiscovery, serviceInstance);
+            // register metadata
+            serviceDiscovery.register(serviceInstance);
+        });
+
+        // scheduled task for updating Metadata and ServiceInstance
+        executorRepository.nextScheduledExecutor().scheduleAtFixedRate(() -> {
+            publishMetadataToRemote(serviceInstance);
+
+            getServiceDiscoveries().forEach(serviceDiscovery ->
+            {
+                calInstanceRevision(serviceDiscovery, serviceInstance);
+                // register metadata
+                serviceDiscovery.register(serviceInstance);
+            });
+        }, 0, 5000, TimeUnit.MICROSECONDS);
     }
 
     private void publishMetadataToRemote(ServiceInstance serviceInstance) {
         RemoteMetadataServiceImpl remoteMetadataService = MetadataUtils.getRemoteMetadataService();
         remoteMetadataService.publishMetadata(serviceInstance);
+    }
+
+    private void calInstanceRevision(ServiceDiscovery serviceDiscovery, ServiceInstance instance) {
+        String registryCluster = serviceDiscovery.getUrl().getParameter(ID_KEY);
+        MetadataInfo metadataInfo = WritableMetadataService.getDefaultExtension().getMetadataInfos().get(registryCluster);
+        if (metadataInfo != null) {
+            instance.getMetadata().put(EXPORTED_SERVICES_REVISION_PROPERTY_NAME, metadataInfo.getRevision());
+        }
     }
 
     private URL selectMetadataServiceExportedURL() {
