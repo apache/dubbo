@@ -17,10 +17,36 @@
 package com.alibaba.dubbo.common.serialize.hessian2;
 
 import com.alibaba.com.caucho.hessian.io.SerializerFactory;
+import com.alibaba.dubbo.common.utils.ConfigUtils;
+import com.alibaba.dubbo.common.utils.StringUtils;
 
 public class Hessian2SerializerFactory extends SerializerFactory {
+    private static final String WHITELIST = "dubbo.application.hessian2.whitelist";
+    private static final String ALLOW = "dubbo.application.hessian2.allow";
+    private static final String DENY = "dubbo.application.hessian2.deny";
 
-    public static final SerializerFactory SERIALIZER_FACTORY = new Hessian2SerializerFactory();
+    public static final SerializerFactory SERIALIZER_FACTORY;
+
+    /**
+     * see https://github.com/ebourg/hessian/commit/cf851f5131707891e723f7f6a9718c2461aed826
+     */
+    static {
+        SERIALIZER_FACTORY = new Hessian2SerializerFactory();
+        String whiteList = ConfigUtils.getProperty(WHITELIST);
+        if ("true".equals(whiteList)) {
+            SERIALIZER_FACTORY.getClassFactory().setWhitelist(true);
+            String allowPattern = ConfigUtils.getProperty(ALLOW);
+            if (StringUtils.isNotEmpty(allowPattern)) {
+                SERIALIZER_FACTORY.getClassFactory().allow(allowPattern);
+            }
+        } else {
+            SERIALIZER_FACTORY.getClassFactory().setWhitelist(false);
+            String denyPattern = ConfigUtils.getProperty(DENY);
+            if (StringUtils.isNotEmpty(denyPattern)) {
+                SERIALIZER_FACTORY.getClassFactory().deny(denyPattern);
+            }
+        }
+    }
 
     private Hessian2SerializerFactory() {
     }
