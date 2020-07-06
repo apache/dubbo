@@ -18,6 +18,7 @@
 package org.apache.dubbo.metadata.store.nacos;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -27,16 +28,14 @@ import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 import org.apache.dubbo.metadata.report.support.AbstractMetadataReport;
+import org.apache.dubbo.metadata.report.support.ConfigCenterBasedMetadataReport;
 import org.apache.dubbo.rpc.RpcException;
-
-import com.alibaba.nacos.api.NacosFactory;
-import com.alibaba.nacos.api.config.ConfigService;
-import com.alibaba.nacos.api.exception.NacosException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
 import java.util.Properties;
 
 import static com.alibaba.nacos.api.PropertyKeyConst.ACCESS_KEY;
@@ -64,22 +63,27 @@ import static com.alibaba.nacos.client.naming.utils.UtilAndComs.NACOS_NAMING_LOG
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+
+
 /**
  * metadata report impl for nacos
+ *
+ * @deprecated 2.7.8 This class will be removed in the future, {@link ConfigCenterBasedMetadataReport} as a substitute.
  */
+@Deprecated
 public class NacosMetadataReport extends AbstractMetadataReport {
 
     private static final Logger logger = LoggerFactory.getLogger(NacosMetadataReport.class);
 
-    private ConfigService configService;
+    private final DynamicConfiguration dynamicConfiguration;
 
     /**
      * The group used to store metadata in Nacos
      */
     private String group;
 
-
-    public NacosMetadataReport(URL url) {
+    public NacosMetadataReport(URL url, DynamicConfiguration dynamicConfiguration) {
         super(url);
         this.configService = buildConfigService(url);
         group = url.getParameter(GROUP_KEY, DEFAULT_ROOT);
@@ -157,6 +161,7 @@ public class NacosMetadataReport extends AbstractMetadataReport {
         } else {
             properties.setProperty(propertyName, defaultValue);
         }
+        this.dynamicConfiguration = dynamicConfiguration;
     }
 
     @Override
@@ -203,9 +208,19 @@ public class NacosMetadataReport extends AbstractMetadataReport {
         return getConfig(metadataIdentifier);
     }
 
+    @Override
+    public boolean saveExportedURLs(String serviceName, String exportedServicesRevision, String exportedURLsContent) {
+        return dynamicConfiguration.publishConfig(serviceName, exportedServicesRevision, exportedURLsContent);
+    }
+
+    @Override
+    public String getExportedURLsContent(String serviceName, String exportedServicesRevision) {
+        return dynamicConfiguration.getConfig(serviceName, exportedServicesRevision, SECONDS.toMillis(3));
+    }
+
     private void storeMetadata(BaseMetadataIdentifier identifier, String value) {
         try {
-            boolean publishResult = configService.publishConfig(identifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), group, value);
+            boolean publishResult = dynamicConfiguration.publishConfig(identifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), group, value);
             if (!publishResult) {
                 throw new RuntimeException("publish nacos metadata failed");
             }
@@ -217,7 +232,7 @@ public class NacosMetadataReport extends AbstractMetadataReport {
 
     private void deleteMetadata(BaseMetadataIdentifier identifier) {
         try {
-            boolean publishResult = configService.removeConfig(identifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), group);
+            boolean publishResult = dynamicConfiguration.removeConfig(identifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), group);
             if (!publishResult) {
                 throw new RuntimeException("remove nacos metadata failed");
             }
@@ -229,7 +244,7 @@ public class NacosMetadataReport extends AbstractMetadataReport {
 
     private String getConfig(BaseMetadataIdentifier identifier) {
         try {
-            return configService.getConfig(identifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), group, 300);
+            return dynamicConfiguration.getConfig(identifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), group, 300);
         } catch (Throwable t) {
             logger.error("Failed to get " + identifier + " from nacos , cause: " + t.getMessage(), t);
             throw new RpcException("Failed to get " + identifier + " from nacos , cause: " + t.getMessage(), t);
