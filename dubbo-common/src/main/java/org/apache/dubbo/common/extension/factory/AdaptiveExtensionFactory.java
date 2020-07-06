@@ -20,7 +20,9 @@ import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.ExtensionFactory;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
