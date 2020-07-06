@@ -43,9 +43,9 @@ public class AdaptiveExtensionFactory implements ExtensionFactory {
     @Override
     public <T> T getExtension(Class<T> type, String name) {
         return factories.stream()
+                .map(extensionFactory -> extensionFactory.getExtension(type, name))
                 .filter(Objects::nonNull)
                 .findFirst()
-                .map(extensionFactory -> extensionFactory.getExtension(type, name))
                 .orElse(null);
     }
 }
