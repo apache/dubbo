@@ -62,14 +62,16 @@ public class RemoteMetadataServiceImpl {
     public void publishMetadata(ServiceInstance instance) {
         Map<String, MetadataInfo> metadataInfos = localMetadataService.getMetadataInfos();
         metadataInfos.forEach((registryKey, metadataInfo) -> {
-            SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(instance.getServiceName(), metadataInfo.getRevision());
-            metadataInfo.getRevision();
-            metadataInfo.getExtendParams().put(REGISTRY_KEY, registryKey);
-            MetadataReport metadataReport = getMetadataReports().get(registryKey);
-            if (metadataReport == null) {
-                metadataReport = getMetadataReports().entrySet().iterator().next().getValue();
+            if (!metadataInfo.hasReported()) {
+                SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(instance.getServiceName(), metadataInfo.getRevision());
+                metadataInfo.getRevision();
+                metadataInfo.getExtendParams().put(REGISTRY_KEY, registryKey);
+                MetadataReport metadataReport = getMetadataReports().get(registryKey);
+                if (metadataReport == null) {
+                    metadataReport = getMetadataReports().entrySet().iterator().next().getValue();
+                }
+                metadataReport.publishAppMetadata(identifier, metadataInfo);
             }
-            metadataReport.publishAppMetadata(identifier, metadataInfo);
         });
     }
 

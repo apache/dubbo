@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DOT_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_CHAR_SEPERATOR;
@@ -43,6 +44,7 @@ public class MetadataInfo implements Serializable {
     private Map<String, ServiceInfo> services;
 
     private transient Map<String, String> extendParams;
+    private transient AtomicBoolean reported = new AtomicBoolean(false);
 
     public MetadataInfo(String app) {
         this(app, null, null);
@@ -60,6 +62,7 @@ public class MetadataInfo implements Serializable {
             return;
         }
         this.services.put(serviceInfo.getMatchKey(), serviceInfo);
+        markChanged();
     }
 
     public void removeService(ServiceInfo serviceInfo) {
@@ -67,6 +70,7 @@ public class MetadataInfo implements Serializable {
             return;
         }
         this.services.remove(serviceInfo.getMatchKey());
+        markChanged();
     }
 
     public void removeService(String key) {
@@ -74,18 +78,11 @@ public class MetadataInfo implements Serializable {
             return;
         }
         this.services.remove(key);
-    }
-
-    public String getApp() {
-        return app;
-    }
-
-    public void setApp(String app) {
-        this.app = app;
+        markChanged();
     }
 
     public String getRevision() {
-        if (revision != null) {
+        if (revision != null && hasReported()) {
             return revision;
         }
         StringBuilder sb = new StringBuilder();
@@ -99,6 +96,26 @@ public class MetadataInfo implements Serializable {
 
     public void setRevision(String revision) {
         this.revision = revision;
+    }
+
+    public boolean hasReported() {
+        return reported.get();
+    }
+
+    public void markReported() {
+        reported.compareAndSet(false, true);
+    }
+
+    public void markChanged() {
+        reported.compareAndSet(true, false);
+    }
+
+    public String getApp() {
+        return app;
+    }
+
+    public void setApp(String app) {
+        this.app = app;
     }
 
     public Map<String, ServiceInfo> getServices() {
