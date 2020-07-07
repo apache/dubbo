@@ -17,6 +17,7 @@
 package org.apache.dubbo.metadata.definition.builder;
 
 import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.common.lang.Prioritized;
 import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 
 import java.lang.reflect.Type;
@@ -26,7 +27,7 @@ import java.util.Map;
  * 2015/1/27.
  */
 @SPI
-public interface TypeBuilder {
+public interface TypeBuilder extends Prioritized {
 
     /**
      * Whether the build accept the type or class passed in.

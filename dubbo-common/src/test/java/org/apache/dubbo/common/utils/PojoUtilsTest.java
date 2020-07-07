@@ -25,6 +25,7 @@ import org.apache.dubbo.common.model.person.PersonInfo;
 import org.apache.dubbo.common.model.person.PersonStatus;
 import org.apache.dubbo.common.model.person.Phone;
 
+import com.alibaba.fastjson.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -278,6 +279,41 @@ public class PojoUtilsTest {
         assertThat(message.getFrom(), equalTo("dubbo"));
         assertTrue(message.isUrgent());
     }
+
+    @Test
+    public void testJsonObjectToMap() throws Exception {
+        Method method = PojoUtilsTest.class.getMethod("setMap", Map.class);
+        assertNotNull(method);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("1", "test");
+        @SuppressWarnings("unchecked")
+        Map<Integer, Object> value = (Map<Integer, Object>)PojoUtils.realize(jsonObject,
+                method.getParameterTypes()[0],
+                method.getGenericParameterTypes()[0]);
+        method.invoke(new PojoUtilsTest(), value);
+        assertEquals("test", value.get(1));
+    }
+
+    @Test
+    public void testListJsonObjectToListMap() throws Exception {
+        Method method = PojoUtilsTest.class.getMethod("setListMap", List.class);
+        assertNotNull(method);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("1", "test");
+        List<JSONObject> list = new ArrayList<>(1);
+        list.add(jsonObject);
+        @SuppressWarnings("unchecked")
+        List<Map<Integer, Object>> result = (List<Map<Integer, Object>>)PojoUtils.realize(
+                list,
+                method.getParameterTypes()[0],
+                method.getGenericParameterTypes()[0]);
+        method.invoke(new PojoUtilsTest(), result);
+        assertEquals("test", result.get(0).get(1));
+    }
+
+    public void setMap(Map<Integer, Object> map) {}
+
+    public void setListMap(List<Map<Integer, Object>> list) {}
 
     @Test
     public void testException() throws Exception {
