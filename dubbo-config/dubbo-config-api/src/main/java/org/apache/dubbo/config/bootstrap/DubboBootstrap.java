@@ -127,7 +127,7 @@ public class DubboBootstrap extends GenericEventListener {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private static DubboBootstrap instance;
+    private static volatile DubboBootstrap instance;
 
     private final AtomicBoolean awaited = new AtomicBoolean(false);
 
@@ -176,9 +176,13 @@ public class DubboBootstrap extends GenericEventListener {
     /**
      * See {@link ApplicationModel} and {@link ExtensionLoader} for why DubboBootstrap is designed to be singleton.
      */
-    public static synchronized DubboBootstrap getInstance() {
+    public static DubboBootstrap getInstance() {
         if (instance == null) {
-            instance = new DubboBootstrap();
+            synchronized (DubboBootstrap.class) {
+                if (instance == null) {
+                    instance = new DubboBootstrap();
+                }
+            }
         }
         return instance;
     }
