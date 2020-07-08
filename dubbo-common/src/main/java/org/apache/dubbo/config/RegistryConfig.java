@@ -212,8 +212,8 @@ public class RegistryConfig extends AbstractConfig {
         if (address != null) {
             try {
                 URL url = URL.valueOf(address);
-                setUsername(url.getUsername());
-                setPassword(url.getPassword());
+                updateUsernameIfAbsent(url.getUsername());
+                updatePasswordIfAbsent(url.getPassword());
 //                updateIdIfAbsent(url.getProtocol());
                 updateProtocolIfAbsent(url.getProtocol());
                 updatePortIfAbsent(url.getPort());
@@ -221,6 +221,7 @@ public class RegistryConfig extends AbstractConfig {
                 params.remove(BACKUP_KEY);
                 updateParameters(params);
             } catch (Exception ignored) {
+                // ingore
             }
         }
     }
@@ -525,6 +526,19 @@ public class RegistryConfig extends AbstractConfig {
     protected void updateProtocolIfAbsent(String value) {
         if (StringUtils.isNotEmpty(value) && StringUtils.isEmpty(protocol)) {
             this.protocol = value;
+        }
+    }
+
+    protected void updateUsernameIfAbsent(String value) {
+        if (StringUtils.isNotEmpty(value) && StringUtils.isEmpty(username)) {
+            this.username = value;
+        }
+    }
+
+
+    protected void updatePasswordIfAbsent(String value) {
+        if (StringUtils.isNotEmpty(value) && StringUtils.isEmpty(password)) {
+            this.password = value;
         }
     }
 }
