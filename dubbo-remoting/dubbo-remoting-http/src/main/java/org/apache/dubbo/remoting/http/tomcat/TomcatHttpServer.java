@@ -51,14 +51,13 @@ public class TomcatHttpServer extends AbstractHttpServer {
         String baseDir = new File(System.getProperty("java.io.tmpdir")).getAbsolutePath();
         tomcat = new Tomcat();
 
-        Connector connector = new Connector("org.apache.coyote.http11.Http11NioProtocol");
+        Connector connector = tomcat.getConnector();
         connector.setPort(url.getPort());
         connector.setProperty("maxThreads", String.valueOf(url.getParameter(THREADS_KEY, DEFAULT_THREADS)));
         connector.setProperty("maxConnections", String.valueOf(url.getParameter(ACCEPTS_KEY, -1)));
         connector.setProperty("URIEncoding", "UTF-8");
         connector.setProperty("connectionTimeout", "60000");
         connector.setProperty("maxKeepAliveRequests", "-1");
-        tomcat.setConnector(connector);
 
         tomcat.setBaseDir(baseDir);
         tomcat.setPort(url.getPort());
