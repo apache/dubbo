@@ -58,6 +58,7 @@ public class TomcatHttpServer extends AbstractHttpServer {
         connector.setProperty("URIEncoding", "UTF-8");
         connector.setProperty("connectionTimeout", "60000");
         connector.setProperty("maxKeepAliveRequests", "-1");
+		tomcat.getConnector();
         tomcat.setConnector(connector);
 
         tomcat.setBaseDir(baseDir);
@@ -65,7 +66,7 @@ public class TomcatHttpServer extends AbstractHttpServer {
 
         Context context = tomcat.addContext("/", baseDir);
         Tomcat.addServlet(context, "dispatcher", new DispatcherServlet());
-        context.addServletMapping("/*", "dispatcher");
+        context.addServletMappingDecoded("/*", "dispatcher");
         ServletManager.getInstance().addServletContext(url.getPort(), context.getServletContext());
 
         // tell tomcat to fail on startup failures.
