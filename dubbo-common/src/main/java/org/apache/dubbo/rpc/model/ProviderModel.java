@@ -201,4 +201,8 @@ public class ProviderModel {
     public ServiceMetadata getServiceMetadata() {
         return serviceMetadata;
     }
+
+    public void setServiceMetadata(ServiceMetadata serviceMetadata) {
+        this.serviceMetadata = serviceMetadata;
+    }
 }

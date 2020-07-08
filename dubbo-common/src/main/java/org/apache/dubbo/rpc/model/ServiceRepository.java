@@ -93,14 +93,15 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt 
         services.remove(path);
     }
 
-    public void registerConsumer(String serviceKey,
-                                 ServiceDescriptor serviceDescriptor,
-                                 ReferenceConfigBase<?> rc,
-                                 Object proxy,
-                                 ServiceMetadata serviceMetadata) {
-        ConsumerModel consumerModel = new ConsumerModel(serviceMetadata.getServiceKey(), proxy, serviceDescriptor, rc,
-                serviceMetadata);
-        consumers.putIfAbsent(serviceKey, consumerModel);
+    public ConsumerModel registerConsumer(String serviceKey,
+                                          ServiceDescriptor serviceDescriptor,
+                                          ReferenceConfigBase<?> rc,
+                                          Object proxy,
+                                          ServiceMetadata serviceMetadata) {
+        ConsumerModel currentConsumerModel = consumers.computeIfAbsent(serviceKey, key ->
+                new ConsumerModel(serviceMetadata.getServiceKey(), proxy, serviceDescriptor, rc, serviceMetadata));
+        currentConsumerModel.setServiceMetadata(serviceMetadata);
+        return currentConsumerModel;
     }
 
     public void reRegisterConsumer(String newServiceKey, String serviceKey) {
@@ -116,10 +117,10 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt 
                                  ServiceDescriptor serviceModel,
                                  ServiceConfigBase<?> serviceConfig,
                                  ServiceMetadata serviceMetadata) {
-        ProviderModel providerModel = new ProviderModel(serviceKey, serviceInstance, serviceModel, serviceConfig,
-                serviceMetadata);
-        providers.putIfAbsent(serviceKey, providerModel);
-        providersWithoutGroup.putIfAbsent(keyWithoutGroup(serviceKey), providerModel);
+        ProviderModel currentProviderModel = providers.computeIfAbsent(serviceKey,
+                (key) -> new ProviderModel(serviceKey, serviceInstance, serviceModel, serviceConfig, serviceMetadata));
+        providersWithoutGroup.putIfAbsent(keyWithoutGroup(serviceKey), currentProviderModel);
+        currentProviderModel.setServiceMetadata(serviceMetadata);
     }
 
     private static String keyWithoutGroup(String serviceKey) {

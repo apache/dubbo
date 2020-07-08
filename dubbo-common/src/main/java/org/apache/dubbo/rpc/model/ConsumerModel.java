@@ -209,5 +209,7 @@ public class ConsumerModel {
         return this.serviceMetadata.getServiceKey();
     }
 
-
+    public void setServiceMetadata(ServiceMetadata serviceMetadata) {
+        this.serviceMetadata = serviceMetadata;
+    }
 }
