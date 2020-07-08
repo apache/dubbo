@@ -146,7 +146,7 @@
         <eureka.version>1.9.12</eureka.version>
 
         <!-- Alibaba -->
-        <alibaba_spring_context_support_version>1.0.6</alibaba_spring_context_support_version>
+        <alibaba_spring_context_support_version>1.0.7</alibaba_spring_context_support_version>
 
         <jaxb_version>2.2.7</jaxb_version>
         <activation_version>1.2.0</activation_version>
@@ -163,7 +163,7 @@
         <mortbay_jetty_version>6.1.26</mortbay_jetty_version>
         <portlet_version>2.0</portlet_version>
         <maven_flatten_version>1.1.0</maven_flatten_version>
-        <revision>2.7.8-SNAPSHOT</revision>
+        <revision>2.7.8</revision>
     </properties>
 
     <dependencyManagement>
