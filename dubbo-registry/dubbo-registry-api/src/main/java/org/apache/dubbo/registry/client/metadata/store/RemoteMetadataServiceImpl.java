@@ -47,7 +47,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 
 public class RemoteMetadataServiceImpl {
-
     protected final Logger logger = LoggerFactory.getLogger(getClass());
     private WritableMetadataService localMetadataService;
 
@@ -59,11 +58,11 @@ public class RemoteMetadataServiceImpl {
         return MetadataReportInstance.getMetadataReports(true);
     }
 
-    public void publishMetadata(ServiceInstance instance) {
+    public void publishMetadata(String serviceName) {
         Map<String, MetadataInfo> metadataInfos = localMetadataService.getMetadataInfos();
         metadataInfos.forEach((registryKey, metadataInfo) -> {
             if (!metadataInfo.hasReported()) {
-                SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(instance.getServiceName(), metadataInfo.getRevision());
+                SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(serviceName, metadataInfo.getRevision());
                 metadataInfo.getRevision();
                 metadataInfo.getExtendParams().put(REGISTRY_KEY, registryKey);
                 MetadataReport metadataReport = getMetadataReports().get(registryKey);
@@ -71,6 +70,7 @@ public class RemoteMetadataServiceImpl {
                     metadataReport = getMetadataReports().entrySet().iterator().next().getValue();
                 }
                 metadataReport.publishAppMetadata(identifier, metadataInfo);
+                metadataInfo.markReported();
             }
         });
     }

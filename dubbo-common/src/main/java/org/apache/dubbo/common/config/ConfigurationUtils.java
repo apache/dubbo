@@ -100,6 +100,10 @@ public class ConfigurationUtils {
         return StringUtils.trim(getGlobalConfiguration().getString(property, defaultValue));
     }
 
+    public static int get(String property, int defaultValue) {
+        return getGlobalConfiguration().getInt(property, defaultValue);
+    }
+
     public static Map<String, String> parseProperties(String content) throws IOException {
         Map<String, String> map = new HashMap<>();
         if (StringUtils.isEmpty(content)) {

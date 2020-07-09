@@ -64,7 +64,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
     }
 
     private void refreshInvoker(List<URL> invokerUrls) {
-        Assert.notNull(invokerUrls, "invokerUrls should not be null");
+        Assert.notNull(invokerUrls, "invokerUrls should not be null, use empty:// to clear address.");
 
         if (invokerUrls.size() == 1
                 && invokerUrls.get(0) != null
