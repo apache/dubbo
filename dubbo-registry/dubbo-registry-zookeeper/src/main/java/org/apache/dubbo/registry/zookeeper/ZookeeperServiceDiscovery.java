@@ -41,6 +41,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.dubbo.common.function.ThrowableFunction.execute;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.isInstanceUpdated;
 import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkParams.ROOT_PATH;
 import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkUtils.build;
 import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkUtils.buildCuratorFramework;
@@ -63,6 +64,8 @@ public class ZookeeperServiceDiscovery implements ServiceDiscovery {
     private String rootPath;
 
     private org.apache.curator.x.discovery.ServiceDiscovery<ZookeeperInstance> serviceDiscovery;
+
+    private ServiceInstance serviceInstance;
 
     /**
      * The Key is watched Zookeeper path, the value is an instance of {@link CuratorWatcher}
@@ -87,16 +90,25 @@ public class ZookeeperServiceDiscovery implements ServiceDiscovery {
         serviceDiscovery.close();
     }
 
+    @Override
+    public ServiceInstance getLocalInstance() {
+        return serviceInstance;
+    }
+
     public void register(ServiceInstance serviceInstance) throws RuntimeException {
+        this.serviceInstance = serviceInstance;
         doInServiceRegistry(serviceDiscovery -> {
             serviceDiscovery.registerService(build(serviceInstance));
         });
     }
 
     public void update(ServiceInstance serviceInstance) throws RuntimeException {
-        doInServiceRegistry(serviceDiscovery -> {
-            serviceDiscovery.updateService(build(serviceInstance));
-        });
+        this.serviceInstance = serviceInstance;
+        if (isInstanceUpdated(serviceInstance)) {
+            doInServiceRegistry(serviceDiscovery -> {
+                serviceDiscovery.updateService(build(serviceInstance));
+            });
+        }
     }
 
     public void unregister(ServiceInstance serviceInstance) throws RuntimeException {

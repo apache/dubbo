@@ -23,4 +23,6 @@ public class MetadataConstants {
     public static final String META_DATA_STORE_TAG = ".metaData";
     public static final String SERVICE_META_DATA_STORE_TAG = ".smd";
     public static final String CONSUMER_META_DATA_STORE_TAG = ".cmd";
+    public static final String METADATA_PUBLISH_DELAY_KEY = "dubbo.application.metadata.delay";
+    public static final int DEFAULT_METADATA_PUBLISH_DELAY = 5000;
 }

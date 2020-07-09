@@ -18,9 +18,14 @@ package org.apache.dubbo.registry.client.metadata;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.WritableMetadataService;
+import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
+import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl;
+import org.apache.dubbo.registry.support.AbstractRegistryFactory;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import com.alibaba.fastjson.JSON;
 
@@ -39,6 +44,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 import static org.apache.dubbo.registry.integration.RegistryProtocol.DEFAULT_REGISTER_PROVIDER_KEYS;
 import static org.apache.dubbo.rpc.Constants.DEPRECATED_KEY;
+import static org.apache.dubbo.rpc.Constants.ID_KEY;
 
 /**
  * The Utilities class for the {@link ServiceInstance#getMetadata() metadata of the service instance}
@@ -86,6 +92,8 @@ public class ServiceInstanceMetadataUtils {
     public static String METADATA_STORAGE_TYPE_PROPERTY_NAME = "dubbo.metadata.storage-type";
 
     public static String METADATA_CLUSTER_PROPERTY_NAME = "dubbo.metadata.cluster";
+
+    public static String INSTANCE_REVISION_UPDATED_KEY = "dubbo.instance.revision.updated";
 
     /**
      * Get the multiple {@link URL urls'} parameters of {@link MetadataService MetadataService's} Metadata
@@ -245,6 +253,35 @@ public class ServiceInstanceMetadataUtils {
             }
         }
         return null;
+    }
+
+    public static void calInstanceRevision(ServiceDiscovery serviceDiscovery, ServiceInstance instance) {
+        String registryCluster = serviceDiscovery.getUrl().getParameter(ID_KEY);
+        MetadataInfo metadataInfo = WritableMetadataService.getDefaultExtension().getMetadataInfos().get(registryCluster);
+        if (metadataInfo != null) {
+            String existingInstanceRevision = instance.getMetadata().get(EXPORTED_SERVICES_REVISION_PROPERTY_NAME);
+            if (!metadataInfo.getRevision().equals(existingInstanceRevision)) {
+                instance.getMetadata().put(EXPORTED_SERVICES_REVISION_PROPERTY_NAME, metadataInfo.getRevision());
+                if (existingInstanceRevision != null) {// skip the first registration.
+                    instance.getExtendParams().put(INSTANCE_REVISION_UPDATED_KEY, "true");
+                }
+            }
+        }
+    }
+
+    public static boolean isInstanceUpdated(ServiceInstance instance) {
+        return "true".equals(instance.getExtendParams().get(INSTANCE_REVISION_UPDATED_KEY));
+    }
+
+    public static void refreshMetadataAndInstance() {
+        RemoteMetadataServiceImpl remoteMetadataService = MetadataUtils.getRemoteMetadataService();
+        remoteMetadataService.publishMetadata(ApplicationModel.getName());
+
+        AbstractRegistryFactory.getServiceDiscoveries().forEach(serviceDiscovery -> {
+            calInstanceRevision(serviceDiscovery, serviceDiscovery.getLocalInstance());
+            // update service instance revision
+            serviceDiscovery.update(serviceDiscovery.getLocalInstance());
+        });
     }
 
     /**

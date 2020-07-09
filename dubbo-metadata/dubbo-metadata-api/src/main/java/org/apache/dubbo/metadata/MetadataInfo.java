@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.compiler.support.ClassUtils;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.ArrayUtils;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 
 import java.io.Serializable;
@@ -39,6 +40,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 
 public class MetadataInfo implements Serializable {
+    public static String DEFAULT_REVISION = "0";
     private String app;
     private String revision;
     private Map<String, ServiceInfo> services;
@@ -85,6 +87,11 @@ public class MetadataInfo implements Serializable {
         if (revision != null && hasReported()) {
             return revision;
         }
+
+        if (CollectionUtils.isEmptyMap(services)) {
+            return DEFAULT_REVISION;
+        }
+
         StringBuilder sb = new StringBuilder();
         sb.append(app);
         for (Map.Entry<String, ServiceInfo> entry : services.entrySet()) {

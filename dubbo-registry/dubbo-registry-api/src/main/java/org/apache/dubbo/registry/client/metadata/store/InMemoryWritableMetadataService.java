@@ -41,6 +41,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -74,6 +75,7 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
      */
     ConcurrentNavigableMap<String, SortedSet<URL>> exportedServiceURLs = new ConcurrentSkipListMap<>();
     ConcurrentMap<String, MetadataInfo> metadataInfos;
+    final Semaphore metadataSemaphore = new Semaphore(1);
 
     // ==================================================================================== //
 
@@ -131,6 +133,7 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
             });
             metadataInfo.addService(new ServiceInfo(url));
         }
+        metadataSemaphore.release();
         return addURL(exportedServiceURLs, url);
     }
 
@@ -145,6 +148,7 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
                 metadataInfos.remove(key);
             }
         }
+        metadataSemaphore.release();
         return removeURL(exportedServiceURLs, url);
     }
 
@@ -200,6 +204,14 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
             }
         }
         return null;
+    }
+
+    public void blockUntilUpdated() {
+        try {
+            metadataSemaphore.acquire();
+        } catch (InterruptedException e) {
+            logger.warn("metadata refresh thread has been interrupted unexpectedly while wating for update.", e);
+        }
     }
 
     public Map<String, MetadataInfo> getMetadataInfos() {
