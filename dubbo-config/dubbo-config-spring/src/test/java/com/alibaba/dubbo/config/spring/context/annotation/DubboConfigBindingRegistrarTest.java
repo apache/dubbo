@@ -69,7 +69,7 @@ public class DubboConfigBindingRegistrarTest {
 
     }
 
-    @EnableDubboConfigBinding(prefix = "${application.prefix}", type = ApplicationConfig.class, multiple = true)
+    @EnableDubboConfigBinding(prefix = "${application.prefixes}", type = ApplicationConfig.class, multiple = true)
     @PropertySource("META-INF/config.properties")
     private static class TestMultipleApplicationConfig {
 

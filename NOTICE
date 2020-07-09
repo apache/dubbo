@@ -1,11 +1,12 @@
-Copyright 1999-2012 Alibaba Group.
- 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
- 
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
      http://www.apache.org/licenses/LICENSE-2.0
- 
+
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -46,9 +47,9 @@ Mina:
 Grizzly:
 
   * LICENSE:
-    * http://www.gnu.org/licenses/gpl-2.0.html (General Public License 2.0)
+    * https://opensource.org/licenses/cddl-1.0 (CDDL 1.1)
   * HOMEPAGE:
-    * http://grizzly.java.net
+    * https://javaee.github.io/grizzly/
 
 HttpClient:
 
@@ -76,7 +77,7 @@ FastJson:
   * LICENSE:
     * http://www.apache.org/licenses/LICENSE-2.0 (Apache License 2.0)
   * HOMEPAGE:
-    * http://code.alibabatech.com/wiki/fastjson
+    * https://github.com/alibaba/fastjson
 
 Zookeeper:
 
@@ -88,9 +89,9 @@ Zookeeper:
 Jedis:
 
   * LICENSE:
-    * http://www.apache.org/licenses/LICENSE-2.0 (Apache License 2.0)
+    * https://opensource.org/licenses/MIT (MIT)
   * HOMEPAGE:
-    * http://code.google.com/p/jedis
+    * https://github.com/xetorthio/jedis
 
 XMemcached:
 
@@ -141,6 +142,13 @@ JFreeChart:
   * HOMEPAGE:
     * http://www.jfree.org
 
+validation-api:
+
+  * LICENSE:
+    * http://www.apache.org/licenses/LICENSE-2.0 (Apache License 2.0)
+  * HOMEPAGE:
+    *  http://beanvalidation.org
+
 HibernateValidator:
 
   * LICENSE:
@@ -168,3 +176,94 @@ Log4j:
     * http://www.apache.org/licenses/LICENSE-2.0 (Apache License 2.0)
   * HOMEPAGE:
     * http://log4j.apache.org
+
+Tomcat:
+
+  * LICENSE:
+    * http://www.apache.org/licenses/LICENSE-2.0 (Apache License 2.0)
+  * HOMEPAGE:
+    * http://tomcat.apache.org
+
+cache-api:
+
+  * LICENSE:
+    * http://www.apache.org/licenses/LICENSE-2.0 (Apache License 2.0)
+  * HOMEPAGE:
+    * https://github.com/jsr107/jsr107spec
+
+easymock
+
+  * LICENSE:
+    * http://www.apache.org/licenses/LICENSE-2.0 (Apache License 2.0)
+  * HOMEPAGE:
+    * http://easymock.org
+
+cglib-nodep
+
+  * LICENSE:
+    * http://www.apache.org/licenses/LICENSE-2.0 (Apache License 2.0)
+  * HOMEPAGE:
+    * https://sourceforge.net/projects/cglib/
+
+resteasy
+
+  * LICENSE:
+    * http://www.apache.org/licenses/LICENSE-2.0 (Apache License 2.0)
+  * HOMEPAGE:
+    * http://resteasy.jboss.org/
+
+fst
+
+  * LICENSE:
+    * http://www.apache.org/licenses/LICENSE-2.0 (Apache License 2.0)
+  * HOMEPAGE:
+    * http://ruedigermoeller.github.io/fast-serialization
+
+jmockit
+
+  * LICENSE:
+    * https://opensource.org/licenses/MIT (MIT)
+  * HOMEPAGE:
+    * http://www.jmockit.org
+
+jedis
+
+  * LICENSE:
+    * https://opensource.org/licenses/MIT (MIT)
+  * HOMEPAGE:
+    * http://www.jmockit.org
+
+javax.servlet-api:
+
+  * LICENSE:
+    * https://opensource.org/licenses/cddl-1.0 (CDDL 1.1)
+  * HOMEPAGE:
+    * http://servlet-spec.java.net
+
+javax.el:
+
+  * LICENSE:
+    * https://opensource.org/licenses/cddl-1.0 (CDDL 1.1)
+  * HOMEPAGE:
+    * https://javaee.github.io/uel-ri/
+
+logback-classic:
+
+  * LICENSE:
+    * http://www.eclipse.org/legal/epl-v10.html (EPL 1.0)
+  * HOMEPAGE:
+    * https://logback.qos.ch/
+
+junit:
+
+  * LICENSE:
+    * http://www.eclipse.org/legal/epl-v10.html (EPL 1.0)
+  * HOMEPAGE:
+    * http://www.junit.org
+
+kryo:
+
+  * LICENSE:
+    * https://opensource.org/licenses/BSD-3-Clause (BSD 3-clause)
+  * HOMEPAGE:
+    * https://github.com/EsotericSoftware/kryo

@@ -18,7 +18,6 @@ package com.alibaba.dubbo.examples.validation;
 
 import com.alibaba.dubbo.examples.validation.api.ValidationParameter;
 import com.alibaba.dubbo.examples.validation.api.ValidationService;
-import com.alibaba.dubbo.rpc.RpcException;
 
 import junit.framework.Assert;
 import org.junit.Test;
@@ -63,8 +62,7 @@ public class ValidationTest {
                     parameter.setExpiryDate(new Date(System.currentTimeMillis() + 1000000));
                     validationService.save(parameter);
                     Assert.fail();
-                } catch (RpcException e) {
-                    ConstraintViolationException ve = (ConstraintViolationException) e.getCause();
+                } catch (ConstraintViolationException ve) {
                     Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
                     Assert.assertNotNull(violations);
                 }
@@ -74,8 +72,7 @@ public class ValidationTest {
                     parameter = new ValidationParameter();
                     validationService.save(parameter);
                     Assert.fail();
-                } catch (RpcException e) {
-                    ConstraintViolationException ve = (ConstraintViolationException) e.getCause();
+                } catch (ConstraintViolationException ve) {
                     Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
                     Assert.assertNotNull(violations);
                 }
@@ -87,8 +84,7 @@ public class ValidationTest {
                 try {
                     validationService.delete(2, "a");
                     Assert.fail();
-                } catch (RpcException e) {
-                    ConstraintViolationException ve = (ConstraintViolationException) e.getCause();
+                } catch (ConstraintViolationException ve) {
                     Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
                     Assert.assertNotNull(violations);
                     Assert.assertEquals(1, violations.size());
@@ -98,8 +94,7 @@ public class ValidationTest {
                 try {
                     validationService.delete(0, "abc");
                     Assert.fail();
-                } catch (RpcException e) {
-                    ConstraintViolationException ve = (ConstraintViolationException) e.getCause();
+                } catch (ConstraintViolationException ve) {
                     Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
                     Assert.assertNotNull(violations);
                     Assert.assertEquals(1, violations.size());
@@ -107,8 +102,7 @@ public class ValidationTest {
                 try {
                     validationService.delete(2, null);
                     Assert.fail();
-                } catch (RpcException e) {
-                    ConstraintViolationException ve = (ConstraintViolationException) e.getCause();
+                } catch (ConstraintViolationException ve) {
                     Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
                     Assert.assertNotNull(violations);
                     Assert.assertEquals(1, violations.size());
@@ -116,8 +110,7 @@ public class ValidationTest {
                 try {
                     validationService.delete(0, null);
                     Assert.fail();
-                } catch (RpcException e) {
-                    ConstraintViolationException ve = (ConstraintViolationException) e.getCause();
+                } catch (ConstraintViolationException ve) {
                     Set<ConstraintViolation<?>> violations = ve.getConstraintViolations();
                     Assert.assertNotNull(violations);
                     Assert.assertEquals(2, violations.size());

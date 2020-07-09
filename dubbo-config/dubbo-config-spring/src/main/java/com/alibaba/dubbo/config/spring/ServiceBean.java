@@ -16,9 +16,16 @@
  */
 package com.alibaba.dubbo.config.spring;
 
-import com.alibaba.dubbo.config.*;
+import com.alibaba.dubbo.config.ApplicationConfig;
+import com.alibaba.dubbo.config.ModuleConfig;
+import com.alibaba.dubbo.config.MonitorConfig;
+import com.alibaba.dubbo.config.ProtocolConfig;
+import com.alibaba.dubbo.config.ProviderConfig;
+import com.alibaba.dubbo.config.RegistryConfig;
+import com.alibaba.dubbo.config.ServiceConfig;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.dubbo.config.spring.extension.SpringExtensionFactory;
+
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.DisposableBean;
@@ -255,7 +262,9 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
     }
 
     public void destroy() throws Exception {
-        unexport();
+        // This will only be called for singleton scope bean, and expected to be called by spring shutdown hook when BeanFactory/ApplicationContext destroys.
+        // We will guarantee dubbo related resources being released with dubbo shutdown hook.
+        //unexport();
     }
 
 }

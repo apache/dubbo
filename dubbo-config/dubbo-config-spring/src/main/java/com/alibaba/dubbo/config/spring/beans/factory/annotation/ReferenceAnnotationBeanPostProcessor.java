@@ -41,6 +41,7 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -256,6 +257,17 @@ public class ReferenceAnnotationBeanPostProcessor extends InstantiationAwareBean
     @Override
     public void setBeanClassLoader(ClassLoader classLoader) {
         this.classLoader = classLoader;
+    }
+
+
+    /**
+     * Gets all beans of {@link ReferenceBean}
+     *
+     * @return non-null {@link Collection}
+     * @since 2.5.9
+     */
+    public Collection<ReferenceBean<?>> getReferenceBeans() {
+        return this.referenceBeansCache.values();
     }
 
     /**

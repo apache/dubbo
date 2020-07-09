@@ -24,6 +24,7 @@ import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.serialize.Serialization;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -32,6 +33,7 @@ public class CodecSupport {
 
     private static final Logger logger = LoggerFactory.getLogger(CodecSupport.class);
     private static Map<Byte, Serialization> ID_SERIALIZATION_MAP = new HashMap<Byte, Serialization>();
+    private static Map<Byte, String> ID_SERIALIZATIONNAME_MAP = new HashMap<Byte, String>();
 
     static {
         Set<String> supportedExtensions = ExtensionLoader.getExtensionLoader(Serialization.class).getSupportedExtensions();
@@ -46,6 +48,7 @@ public class CodecSupport {
                 continue;
             }
             ID_SERIALIZATION_MAP.put(idByte, serialization);
+            ID_SERIALIZATIONNAME_MAP.put(idByte, name);
         }
     }
 
@@ -61,12 +64,15 @@ public class CodecSupport {
                 url.getParameter(Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION));
     }
 
-    public static Serialization getSerialization(URL url, Byte id) {
-        Serialization result = getSerializationById(id);
-        if (result == null) {
-            result = getSerialization(url);
+    public static Serialization getSerialization(URL url, Byte id) throws IOException {
+        Serialization serialization = getSerializationById(id);
+        String serializationName = url.getParameter(Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION);
+        // Check if "serialization id" passed from network matches the id on this side(only take effect for JDK serialization), for security purpose.
+        if (serialization == null
+                || ((id == 3 || id == 7 || id == 4) && !(serializationName.equals(ID_SERIALIZATIONNAME_MAP.get(id))))) {
+            throw new IOException("Unexpected serialization id:" + id + " received from network, please check if the peer send the right id.");
         }
-        return result;
+        return serialization;
     }
 
 }

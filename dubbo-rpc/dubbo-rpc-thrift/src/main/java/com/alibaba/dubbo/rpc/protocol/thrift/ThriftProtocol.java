@@ -19,6 +19,7 @@ package com.alibaba.dubbo.rpc.protocol.thrift;
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
+import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.Transporter;
@@ -137,7 +138,7 @@ public class ThriftProtocol extends AbstractProtocol {
                     if (logger.isInfoEnabled()) {
                         logger.info("Close dubbo server: " + server.getLocalAddress());
                     }
-                    server.close(getServerShutdownTimeout());
+                    server.close(ConfigUtils.getServerShutdownTimeout());
                 } catch (Throwable t) {
                     logger.warn(t.getMessage(), t);
                 }

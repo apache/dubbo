@@ -207,7 +207,7 @@ public class ApplicationConfig extends AbstractConfig {
         this.isDefault = isDefault;
     }
 
-    @Parameter(key = "dump.directory")
+    @Parameter(key = Constants.DUMP_DIRECTORY)
     public String getDumpDirectory() {
         return dumpDirectory;
     }
@@ -216,7 +216,7 @@ public class ApplicationConfig extends AbstractConfig {
         this.dumpDirectory = dumpDirectory;
     }
 
-    @Parameter(key = "qos.enable")
+    @Parameter(key = Constants.QOS_ENABLE)
     public Boolean getQosEnable() {
         return qosEnable;
     }
@@ -225,7 +225,7 @@ public class ApplicationConfig extends AbstractConfig {
         this.qosEnable = qosEnable;
     }
 
-    @Parameter(key = "qos.port")
+    @Parameter(key = Constants.QOS_PORT)
     public Integer getQosPort() {
         return qosPort;
     }
@@ -234,7 +234,7 @@ public class ApplicationConfig extends AbstractConfig {
         this.qosPort = qosPort;
     }
 
-    @Parameter(key = "qos.accept.foreign.ip")
+    @Parameter(key = Constants.ACCEPT_FOREIGN_IP)
     public Boolean getQosAcceptForeignIp() {
         return qosAcceptForeignIp;
     }
