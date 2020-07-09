@@ -68,8 +68,8 @@ public class InMemoryWritableMetadataServiceTest {
         URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.Test567Service?version=1.0.44&application=vicpubprovder&side=provider");
         inMemoryWritableMetadataService.exportURL(url);
 
-        Assertions.assertTrue(inMemoryWritableMetadataService.exportedServiceURLs.size() == 1);
-        Assertions.assertEquals(inMemoryWritableMetadataService.exportedServiceURLs.get(url.getServiceKey()).first(), url);
+        Assertions.assertTrue(inMemoryWritableMetadataService.getExportedServiceURLs().size() == 1);
+        Assertions.assertEquals(inMemoryWritableMetadataService.getExportedServiceURLs().get(url.getServiceKey()).first(), url);
     }
 
     @Test
@@ -78,8 +78,8 @@ public class InMemoryWritableMetadataServiceTest {
         URL url = URL.valueOf("subscriber://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.Test678Service?version=1.0.44&application=vicpubprovder&side=provider");
         inMemoryWritableMetadataService.subscribeURL(url);
 
-        Assertions.assertTrue(inMemoryWritableMetadataService.subscribedServiceURLs.size() == 1);
-        Assertions.assertEquals(inMemoryWritableMetadataService.subscribedServiceURLs.get(url.getServiceKey()).first(), url);
+        Assertions.assertTrue(inMemoryWritableMetadataService.getSubscribedServiceURLs().size() == 1);
+        Assertions.assertEquals(inMemoryWritableMetadataService.getSubscribedServiceURLs().get(url.getServiceKey()).first(), url);
     }
 
     @Test
@@ -88,11 +88,11 @@ public class InMemoryWritableMetadataServiceTest {
         URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.Test567Service?version=1.0.44&application=vicpubprovder&side=provider");
         inMemoryWritableMetadataService.exportURL(url);
 
-        Assertions.assertTrue(inMemoryWritableMetadataService.exportedServiceURLs.size() == 1);
-        Assertions.assertEquals(inMemoryWritableMetadataService.exportedServiceURLs.get(url.getServiceKey()).first(), url);
+        Assertions.assertTrue(inMemoryWritableMetadataService.getExportedServiceURLs().size() == 1);
+        Assertions.assertEquals(inMemoryWritableMetadataService.getExportedServiceURLs().get(url.getServiceKey()).first(), url);
 
         inMemoryWritableMetadataService.unexportURL(url);
-        Assertions.assertTrue(inMemoryWritableMetadataService.exportedServiceURLs.size() == 0);
+        Assertions.assertTrue(inMemoryWritableMetadataService.getExportedServiceURLs().size() == 0);
     }
 
     @Test
@@ -101,11 +101,11 @@ public class InMemoryWritableMetadataServiceTest {
         URL url = URL.valueOf("subscriber://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.Test678Service?version=1.0.44&application=vicpubprovder&side=provider");
         inMemoryWritableMetadataService.subscribeURL(url);
 
-        Assertions.assertTrue(inMemoryWritableMetadataService.subscribedServiceURLs.size() == 1);
-        Assertions.assertEquals(inMemoryWritableMetadataService.subscribedServiceURLs.get(url.getServiceKey()).first(), url);
+        Assertions.assertTrue(inMemoryWritableMetadataService.getSubscribedServiceURLs().size() == 1);
+        Assertions.assertEquals(inMemoryWritableMetadataService.getSubscribedServiceURLs().get(url.getServiceKey()).first(), url);
 
         inMemoryWritableMetadataService.unsubscribeURL(url);
-        Assertions.assertTrue(inMemoryWritableMetadataService.subscribedServiceURLs.size() == 0);
+        Assertions.assertTrue(inMemoryWritableMetadataService.getSubscribedServiceURLs().size() == 0);
     }
 
 }

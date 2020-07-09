@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.utils;
 
-import com.alibaba.fastjson.JSONObject;
 import org.apache.dubbo.common.model.Person;
 import org.apache.dubbo.common.model.SerializablePerson;
 import org.apache.dubbo.common.model.User;
@@ -26,6 +25,7 @@ import org.apache.dubbo.common.model.person.PersonInfo;
 import org.apache.dubbo.common.model.person.PersonStatus;
 import org.apache.dubbo.common.model.person.Phone;
 
+import com.alibaba.fastjson.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

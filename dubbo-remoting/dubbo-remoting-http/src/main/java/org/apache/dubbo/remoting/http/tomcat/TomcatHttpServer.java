@@ -31,8 +31,8 @@ import org.apache.catalina.startup.Tomcat;
 
 import java.io.File;
 
-import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_THREADS;
+import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 import static org.apache.dubbo.remoting.Constants.ACCEPTS_KEY;
 
 public class TomcatHttpServer extends AbstractHttpServer {
@@ -64,7 +64,10 @@ public class TomcatHttpServer extends AbstractHttpServer {
 
         Context context = tomcat.addContext("/", baseDir);
         Tomcat.addServlet(context, "dispatcher", new DispatcherServlet());
-        context.addServletMapping("/*", "dispatcher");
+        // Issue : https://github.com/apache/dubbo/issues/6418
+        // addServletMapping method will be removed since Tomcat 9
+        // context.addServletMapping("/*", "dispatcher");
+        context.addServletMappingDecoded("/*", "dispatcher");
         ServletManager.getInstance().addServletContext(url.getPort(), context.getServletContext());
 
         // tell tomcat to fail on startup failures.
