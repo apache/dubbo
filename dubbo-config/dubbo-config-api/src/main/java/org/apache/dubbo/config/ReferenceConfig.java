@@ -391,16 +391,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         if (logger.isInfoEnabled()) {
             logger.info("Refer dubbo service " + interfaceClass.getName() + " from url " + invoker.getUrl());
         }
-        /**
-         * @since 2.7.0
-         * ServiceData Store
-         */
-        String metadata = map.get(METADATA_KEY);
-        WritableMetadataService metadataService = WritableMetadataService.getExtension(metadata == null ? DEFAULT_METADATA_STORAGE_TYPE : metadata);
-        if (metadataService != null) {
-            URL consumerURL = new URL(CONSUMER_PROTOCOL, map.remove(REGISTER_IP_KEY), 0, map.get(INTERFACE_KEY), map);
-            metadataService.publishServiceDefinition(consumerURL);
-        }
         // create service proxy
         return (T) PROXY_FACTORY.getProxy(invoker, ProtocolUtils.isGeneric(generic));
     }
