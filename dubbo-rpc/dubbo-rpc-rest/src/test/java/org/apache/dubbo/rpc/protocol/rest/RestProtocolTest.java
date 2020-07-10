@@ -141,6 +141,23 @@ public class RestProtocolTest {
     }
 
     @Test
+    public void testUndertowServer() {
+        DemoService server = new DemoServiceImpl();
+
+        this.registerProvider(exportUrl, server, DemoService.class);
+
+        URL nettyUrl = exportUrl.addParameter(SERVER_KEY, "undertow");
+        Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(new DemoServiceImpl(), DemoService.class, nettyUrl));
+
+        DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));
+
+        Integer echoString = demoService.hello(10, 10);
+        assertThat(echoString, is(20));
+
+        exporter.unexport();
+    }
+
+    @Test
     public void testServletWithoutWebConfig() {
         Assertions.assertThrows(RpcException.class, () -> {
             DemoService server = new DemoServiceImpl();

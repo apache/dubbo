@@ -129,6 +129,8 @@
         <rs_api_version>2.0</rs_api_version>
         <resteasy_version>3.0.19.Final</resteasy_version>
         <tomcat_embed_version>8.5.31</tomcat_embed_version>
+        <undertow-servlet_version>2.1.3.Final</undertow-servlet_version>
+        <jboss_logging_version>3.4.1.Final</jboss_logging_version>
         <jetcd_version>0.4.1</jetcd_version>
         <nacos_version>1.1.1</nacos_version>
         <grpc.version>1.22.1</grpc.version>
@@ -452,6 +454,16 @@
                 <groupId>org.apache.tomcat.embed</groupId>
                 <artifactId>tomcat-embed-core</artifactId>
                 <version>${tomcat_embed_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.undertow</groupId>
+                <artifactId>undertow-servlet</artifactId>
+                <version>${undertow-servlet_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.logging</groupId>
+                <artifactId>jboss-logging</artifactId>
+                <version>${jboss_logging_version}</version>
             </dependency>
             <dependency>
                 <groupId>io.etcd</groupId>
