@@ -36,6 +36,7 @@ import static org.apache.dubbo.config.Constants.REGISTRIES_SUFFIX;
 public class RegistryConfig extends AbstractConfig {
 
     public static final String NO_AVAILABLE = "N/A";
+
     private static final long serialVersionUID = 5508512956753757169L;
 
     /**
@@ -146,6 +147,7 @@ public class RegistryConfig extends AbstractConfig {
      * @since 2.7.0
      */
     private Boolean simplified;
+
     /**
      * After simplify the registry, should add some parameter individually. just for provider.
      * <p>
@@ -534,7 +536,6 @@ public class RegistryConfig extends AbstractConfig {
             this.username = value;
         }
     }
-
 
     protected void updatePasswordIfAbsent(String value) {
         if (StringUtils.isNotEmpty(value) && StringUtils.isEmpty(password)) {

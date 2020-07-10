@@ -34,15 +34,16 @@ import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
 
 public class RegistryConfigTest {
+
     @Test
-    public void testProtocol() throws Exception {
+    public void testProtocol() {
         RegistryConfig registry = new RegistryConfig();
         registry.setProtocol("protocol");
         assertThat(registry.getProtocol(), equalTo(registry.getProtocol()));
     }
 
     @Test
-    public void testAddress() throws Exception {
+    public void testAddress() {
         RegistryConfig registry = new RegistryConfig();
         registry.setAddress("localhost");
         assertThat(registry.getAddress(), equalTo("localhost"));
@@ -52,21 +53,35 @@ public class RegistryConfigTest {
     }
 
     @Test
-    public void testUsername() throws Exception {
+    public void testSetAddress() {
+        RegistryConfig registry = new RegistryConfig();
+        registry.setAddress("test:123456@127.0.0.1:8080");
+        assertThat(registry.getUsername(), is("test"));
+        assertThat(registry.getPassword(), is("123456"));
+
+        registry.setUsername("username");
+        registry.setPassword("password");
+        registry.setAddress("127.0.0.1:8080");
+        assertThat(registry.getUsername(), is("username"));
+        assertThat(registry.getPassword(), is("password"));
+    }
+
+    @Test
+    public void testUsername() {
         RegistryConfig registry = new RegistryConfig();
         registry.setUsername("username");
         assertThat(registry.getUsername(), equalTo("username"));
     }
 
     @Test
-    public void testPassword() throws Exception {
+    public void testPassword() {
         RegistryConfig registry = new RegistryConfig();
         registry.setPassword("password");
         assertThat(registry.getPassword(), equalTo("password"));
     }
 
     @Test
-    public void testWait() throws Exception {
+    public void testWait() {
         try {
             RegistryConfig registry = new RegistryConfig();
             registry.setWait(10);
@@ -78,91 +93,91 @@ public class RegistryConfigTest {
     }
 
     @Test
-    public void testCheck() throws Exception {
+    public void testCheck() {
         RegistryConfig registry = new RegistryConfig();
         registry.setCheck(true);
         assertThat(registry.isCheck(), is(true));
     }
 
     @Test
-    public void testFile() throws Exception {
+    public void testFile() {
         RegistryConfig registry = new RegistryConfig();
         registry.setFile("file");
         assertThat(registry.getFile(), equalTo("file"));
     }
 
     @Test
-    public void testTransporter() throws Exception {
+    public void testTransporter() {
         RegistryConfig registry = new RegistryConfig();
         registry.setTransporter("transporter");
         assertThat(registry.getTransporter(), equalTo("transporter"));
     }
 
     @Test
-    public void testClient() throws Exception {
+    public void testClient() {
         RegistryConfig registry = new RegistryConfig();
         registry.setClient("client");
         assertThat(registry.getClient(), equalTo("client"));
     }
 
     @Test
-    public void testTimeout() throws Exception {
+    public void testTimeout() {
         RegistryConfig registry = new RegistryConfig();
         registry.setTimeout(10);
         assertThat(registry.getTimeout(), is(10));
     }
 
     @Test
-    public void testSession() throws Exception {
+    public void testSession() {
         RegistryConfig registry = new RegistryConfig();
         registry.setSession(10);
         assertThat(registry.getSession(), is(10));
     }
 
     @Test
-    public void testDynamic() throws Exception {
+    public void testDynamic() {
         RegistryConfig registry = new RegistryConfig();
         registry.setDynamic(true);
         assertThat(registry.isDynamic(), is(true));
     }
 
     @Test
-    public void testRegister() throws Exception {
+    public void testRegister() {
         RegistryConfig registry = new RegistryConfig();
         registry.setRegister(true);
         assertThat(registry.isRegister(), is(true));
     }
 
     @Test
-    public void testSubscribe() throws Exception {
+    public void testSubscribe() {
         RegistryConfig registry = new RegistryConfig();
         registry.setSubscribe(true);
         assertThat(registry.isSubscribe(), is(true));
     }
 
     @Test
-    public void testCluster() throws Exception {
+    public void testCluster() {
         RegistryConfig registry = new RegistryConfig();
         registry.setCluster("cluster");
         assertThat(registry.getCluster(), equalTo("cluster"));
     }
 
     @Test
-    public void testGroup() throws Exception {
+    public void testGroup() {
         RegistryConfig registry = new RegistryConfig();
         registry.setGroup("group");
         assertThat(registry.getGroup(), equalTo("group"));
     }
 
     @Test
-    public void testVersion() throws Exception {
+    public void testVersion() {
         RegistryConfig registry = new RegistryConfig();
         registry.setVersion("1.0.0");
         assertThat(registry.getVersion(), equalTo("1.0.0"));
     }
 
     @Test
-    public void testParameters() throws Exception {
+    public void testParameters() {
         RegistryConfig registry = new RegistryConfig();
         registry.setParameters(Collections.singletonMap("k1", "v1"));
         assertThat(registry.getParameters(), hasEntry("k1", "v1"));
@@ -172,14 +187,14 @@ public class RegistryConfigTest {
     }
 
     @Test
-    public void testDefault() throws Exception {
+    public void testDefault() {
         RegistryConfig registry = new RegistryConfig();
         registry.setDefault(true);
         assertThat(registry.isDefault(), is(true));
     }
 
     @Test
-    public void testEquals() throws Exception {
+    public void testEquals() {
         RegistryConfig registry1 = new RegistryConfig();
         RegistryConfig registry2 = new RegistryConfig();
         registry1.setAddress("zookeeper://127.0.0.1:2182");
