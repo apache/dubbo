@@ -392,12 +392,6 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         this.protocols = convertProviderToProtocol(providers);
     }
 
-    @Override
-    @Parameter(excluded = true)
-    public String getPrefix() {
-        return DUBBO + ".service." + interfaceName;
-    }
-
     @Parameter(excluded = true)
     public String getUniqueServiceName() {
         return URL.buildKey(interfaceName, getGroup(), getVersion());

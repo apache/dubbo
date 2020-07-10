@@ -217,12 +217,6 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         return serviceMetadata;
     }
 
-    @Override
-    @Parameter(excluded = true)
-    public String getPrefix() {
-        return DUBBO + ".reference." + interfaceName;
-    }
-
     public void resolveFile() {
         String resolve = System.getProperty(interfaceName);
         String resolveFile = null;
