@@ -25,8 +25,10 @@ import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.apache.dubbo.common.config.configcenter.TreePathDynamicConfiguration.CONFIG_BASE_PATH_PARAM_NAME;
-import static org.apache.dubbo.metadata.MetadataConstants.DEFAULT_PATH_TAG;
+import static org.apache.dubbo.common.config.configcenter.TreePathDynamicConfiguration.CONFIG_ROOT_PATH_PARAM_NAME;
+import static org.apache.dubbo.common.utils.StringUtils.SLASH;
+import static org.apache.dubbo.common.utils.StringUtils.isBlank;
+import static org.apache.dubbo.metadata.report.identifier.KeyTypeEnum.PATH;
 import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 
@@ -60,19 +62,21 @@ public abstract class ConfigCenterBasedMetadataReportFactory implements Metadata
 
     @Override
     public ConfigCenterBasedMetadataReport getMetadataReport(URL url) {
-
-        url = url.setPath(URL_PATH).removeParameters(EXPORT_KEY, REFER_KEY);
-
-        final URL actualURL;
-        if (url.getParameter(CONFIG_BASE_PATH_PARAM_NAME) == null) {
-            actualURL = url.addParameter(CONFIG_BASE_PATH_PARAM_NAME, DEFAULT_PATH_TAG);
-        } else {
-            actualURL = url;
-        }
-
+        url = url.setPath(URL_PATH);
+        final URL actualURL = resolveURLParameters(url);
         String key = actualURL.toServiceString();
         // Lock the metadata access process to ensure a single instance of the metadata instance
         return metadataReportCache.computeIfAbsent(key, k -> new ConfigCenterBasedMetadataReport(actualURL, keyType));
+    }
+
+    private URL resolveURLParameters(URL url) {
+        URL resolvedURL = url.removeParameters(EXPORT_KEY, REFER_KEY);
+        if (PATH.equals(getKeyType())) { // Only handles for "PATH" type
+            if (isBlank(resolvedURL.getParameter(CONFIG_ROOT_PATH_PARAM_NAME))) {
+                resolvedURL = resolvedURL.addParameter(CONFIG_ROOT_PATH_PARAM_NAME, SLASH);
+            }
+        }
+        return resolvedURL;
     }
 
     /**
