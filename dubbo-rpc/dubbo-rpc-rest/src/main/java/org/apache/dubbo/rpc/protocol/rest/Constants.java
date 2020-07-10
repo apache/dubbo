@@ -26,4 +26,14 @@ public interface Constants {
     boolean DEFAULT_KEEP_ALIVE = true;
 
     String EXTENSION_KEY = "extension";
+
+    String NETTY_SERVER_KEY = "netty";
+
+    String TOMCAT_SERVER_KEY = "tomcat";
+
+    String JETTY_SERVER_KEY = "jetty";
+
+    String UNDERTOW_SERVER_KEY = "undertow";
+
+    String SERVLET_SERVER_KEY = "servlet";
 }

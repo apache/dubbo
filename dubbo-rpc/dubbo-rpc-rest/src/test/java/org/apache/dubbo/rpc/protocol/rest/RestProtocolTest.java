@@ -129,7 +129,7 @@ public class RestProtocolTest {
 
         this.registerProvider(exportUrl, server, DemoService.class);
 
-        URL nettyUrl = exportUrl.addParameter(SERVER_KEY, "netty");
+        URL nettyUrl = exportUrl.addParameter(SERVER_KEY, Constants.NETTY_SERVER_KEY);
         Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(new DemoServiceImpl(), DemoService.class, nettyUrl));
 
         DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));
@@ -146,7 +146,7 @@ public class RestProtocolTest {
 
         this.registerProvider(exportUrl, server, DemoService.class);
 
-        URL nettyUrl = exportUrl.addParameter(SERVER_KEY, "undertow");
+        URL nettyUrl = exportUrl.addParameter(SERVER_KEY, Constants.UNDERTOW_SERVER_KEY);
         Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(new DemoServiceImpl(), DemoService.class, nettyUrl));
 
         DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));
@@ -164,7 +164,7 @@ public class RestProtocolTest {
 
             this.registerProvider(exportUrl, server, DemoService.class);
 
-            URL servletUrl = exportUrl.addParameter(SERVER_KEY, "servlet");
+            URL servletUrl = exportUrl.addParameter(SERVER_KEY, Constants.SERVLET_SERVER_KEY);
 
             protocol.export(proxy.getInvoker(server, DemoService.class, servletUrl));
         });
@@ -177,7 +177,7 @@ public class RestProtocolTest {
 
             this.registerProvider(exportUrl, server, DemoService.class);
 
-            URL nettyUrl = exportUrl.addParameter(SERVER_KEY, "netty");
+            URL nettyUrl = exportUrl.addParameter(SERVER_KEY, Constants.NETTY_SERVER_KEY);
             Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
 
             DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));
@@ -201,12 +201,28 @@ public class RestProtocolTest {
     }
 
     @Test
+    public void testUndertowInvoke() {
+        DemoService server = new DemoServiceImpl();
+
+        exportUrl.addParameter(SERVER_KEY, Constants.UNDERTOW_SERVER_KEY);
+
+        this.registerProvider(exportUrl, server, DemoService.class);
+
+        Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, exportUrl));
+
+        RpcInvocation rpcInvocation = new RpcInvocation("hello", DemoService.class.getName(), new Class[]{Integer.class, Integer.class}, new Integer[]{2, 3});
+
+        Result result = exporter.getInvoker().invoke(rpcInvocation);
+        assertThat(result.getValue(), CoreMatchers.<Object>is(5));
+    }
+
+    @Test
     public void testFilter() {
         DemoService server = new DemoServiceImpl();
 
         this.registerProvider(exportUrl, server, DemoService.class);
 
-        URL nettyUrl = exportUrl.addParameter(SERVER_KEY, "netty")
+        URL nettyUrl = exportUrl.addParameter(SERVER_KEY, Constants.NETTY_SERVER_KEY)
                 .addParameter(EXTENSION_KEY, "org.apache.dubbo.rpc.protocol.rest.support.LoggingFilter");
         Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
 
@@ -220,13 +236,58 @@ public class RestProtocolTest {
     }
 
     @Test
+    public void testUndertowFilter() {
+        DemoService server = new DemoServiceImpl();
+        this.registerProvider(exportUrl, server, DemoService.class);
+        URL nettyUrl = exportUrl.addParameter(SERVER_KEY, Constants.UNDERTOW_SERVER_KEY).addParameter(EXTENSION_KEY, "org.apache.dubbo.rpc.protocol.rest.support.LoggingFilter");
+        Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
+        DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));
+        Integer result = demoService.hello(1, 2);
+        assertThat(result, is(3));
+        exporter.unexport();
+    }
+
+    @Test
     public void testRpcContextFilter() {
         DemoService server = new DemoServiceImpl();
 
         this.registerProvider(exportUrl, server, DemoService.class);
 
         // use RpcContextFilter
-        URL nettyUrl = exportUrl.addParameter(SERVER_KEY, "netty")
+        URL nettyUrl = exportUrl.addParameter(SERVER_KEY, Constants.NETTY_SERVER_KEY)
+                .addParameter(EXTENSION_KEY, "org.apache.dubbo.rpc.protocol.rest.RpcContextFilter");
+        Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
+
+        DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));
+
+        // make sure null and base64 encoded string can work
+        RpcContext.getContext().setAttachment("key1", null);
+        RpcContext.getContext().setAttachment("key2", "value");
+        RpcContext.getContext().setAttachment("key3", "=value");
+        RpcContext.getContext().setAttachment("key4", "YWJjZGVmCg==");
+        RpcContext.getContext().setAttachment("key5", "val=ue");
+        Integer result = demoService.hello(1, 2);
+
+        assertThat(result, is(3));
+
+        Map<String, Object> attachment = DemoServiceImpl.getAttachments();
+        assertThat(attachment.get("key1"), nullValue());
+        assertThat(attachment.get("key2"), equalTo("value"));
+        assertThat(attachment.get("key3"), equalTo("=value"));
+        assertThat(attachment.get("key4"), equalTo("YWJjZGVmCg=="));
+        assertThat(attachment.get("key5"), equalTo("val=ue"));
+
+        exporter.unexport();
+    }
+
+    @Test
+    public void testUndertowRpcContextFilter() {
+        DemoService server = new DemoServiceImpl();
+
+        this.registerProvider(exportUrl, server, DemoService.class);
+
+        // use RpcContextFilter
+        URL nettyUrl = exportUrl.addParameter(SERVER_KEY, Constants.UNDERTOW_SERVER_KEY)
                 .addParameter(EXTENSION_KEY, "org.apache.dubbo.rpc.protocol.rest.RpcContextFilter");
         Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, nettyUrl));
 
