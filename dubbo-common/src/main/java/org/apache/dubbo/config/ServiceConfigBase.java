@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 
 /**
  * ServiceConfig
