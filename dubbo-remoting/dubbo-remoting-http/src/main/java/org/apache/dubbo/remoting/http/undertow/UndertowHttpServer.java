@@ -69,7 +69,7 @@ public class UndertowHttpServer extends AbstractHttpServer {
             ServletManager.getInstance().addServletContext(port, manager.getDeployment().getServletContext());
             server.start();
         } catch (ServletException e) {
-            e.printStackTrace();
+            throw new IllegalStateException("Failed to start undertow server on " + host + ":" + port + ", cause: " + e.getMessage(), e);
         }
         logger.info("Undertow started on port: " + port);
     }
