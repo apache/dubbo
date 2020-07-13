@@ -191,7 +191,7 @@ public class ThriftProtocol extends AbstractProtocol {
 
         ExchangeClient client;
 
-        url = url.addParameter(CODEC_KEY, ThriftCodec.NAME);
+//        url = url.addParameter(CODEC_KEY, ThriftCodec.NAME);
 
         try {
             client = Exchangers.connect(url);

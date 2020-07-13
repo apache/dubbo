@@ -28,6 +28,9 @@ import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 
+/**
+ * FIXME, replace RpcContext operations with explicitly defined APIs
+ */
 public class InstanceAddressURL extends URL {
     private ServiceInstance instance;
     private MetadataInfo metadataInfo;
@@ -36,10 +39,20 @@ public class InstanceAddressURL extends URL {
             ServiceInstance instance,
             MetadataInfo metadataInfo
     ) {
+//        super()
         this.instance = instance;
         this.metadataInfo = metadataInfo;
-        this.setHost(instance.getHost());
-        this.setPort(instance.getPort());
+        this.host = instance.getHost();
+        this.port = instance.getPort();
+    }
+
+
+    public ServiceInstance getInstance() {
+        return instance;
+    }
+
+    public MetadataInfo getMetadataInfo() {
+        return metadataInfo;
     }
 
     @Override
@@ -71,6 +84,12 @@ public class InstanceAddressURL extends URL {
     }
 
     @Override
+    public String getPath() {
+        MetadataInfo.ServiceInfo serviceInfo = metadataInfo.getServiceInfo(getProtocolServiceKey());
+        return serviceInfo.getPath();
+    }
+
+    @Override
     public String getParameter(String key) {
         if (VERSION_KEY.equals(key)) {
             return getVersion();
@@ -80,10 +99,7 @@ public class InstanceAddressURL extends URL {
             return getServiceInterface();
         }
 
-        String value = getConsumerParameters().get(key);
-        if (StringUtils.isEmpty(value)) {
-            value = getInstanceMetadata().get(key);
-        }
+        String value = getInstanceMetadata().get(key);
         if (StringUtils.isEmpty(value) && metadataInfo != null) {
             value = metadataInfo.getParameter(key, RpcContext.getContext().getProtocolServiceKey());
         }
@@ -109,14 +125,51 @@ public class InstanceAddressURL extends URL {
 
     @Override
     public String getMethodParameter(String method, String key) {
-        String value = getMethodParameter(method, key);
+        MetadataInfo.ServiceInfo serviceInfo = metadataInfo.getServiceInfo(getProtocolServiceKey());
+        String value = serviceInfo.getMethodParameter(method, key, null);
         if (StringUtils.isNotEmpty(value)) {
             return value;
         }
-        MetadataInfo.ServiceInfo serviceInfo = metadataInfo.getServiceInfo(getServiceKey());
-        return serviceInfo.getMethodParameter(method, key, null);
+        return getParameter(key);
     }
 
+    @Override
+    public boolean hasMethodParameter(String method, String key) {
+        MetadataInfo.ServiceInfo serviceInfo = metadataInfo.getServiceInfo(getProtocolServiceKey());
+
+        if (method == null) {
+            String suffix = "." + key;
+            for (String fullKey : getParameters().keySet()) {
+                if (fullKey.endsWith(suffix)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        if (key == null) {
+            String prefix = method + ".";
+            for (String fullKey : getParameters().keySet()) {
+                if (fullKey.startsWith(prefix)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        return serviceInfo.hasMethodParameter(method, key);
+    }
+
+    @Override
+    public boolean hasMethodParameter(String method) {
+        MetadataInfo.ServiceInfo serviceInfo = metadataInfo.getServiceInfo(getProtocolServiceKey());
+        return serviceInfo.hasMethodParameter(method);
+    }
+
+    /**
+     * Avoid calling this method in RPC call.
+     *
+     * @return
+     */
     @Override
     public Map<String, String> getParameters() {
         Map<String, String> instanceParams = getInstanceMetadata();
@@ -130,8 +183,6 @@ public class InstanceAddressURL extends URL {
         if (metadataParams != null) {
             params.putAll(metadataParams);
         }
-
-        params.putAll(getConsumerParameters());
         return params;
     }
 
@@ -139,32 +190,56 @@ public class InstanceAddressURL extends URL {
         return this.instance.getMetadata();
     }
 
-    private Map<String, String> getConsumerParameters() {
-        return RpcContext.getContext().getConsumerUrl().getParameters();
-    }
+    @Override
+    public URL addParameter(String key, String value) {
+        if (StringUtils.isEmpty(key) || StringUtils.isEmpty(value)) {
+            return this;
+        }
 
-    private String getConsumerParameter(String key) {
-        return RpcContext.getContext().getConsumerUrl().getParameter(key);
-    }
-
-    private String getConsumerMethodParameter(String method, String key) {
-        return RpcContext.getContext().getConsumerUrl().getMethodParameter(method, key);
+        String protocolServiceKey = RpcContext.getContext().getProtocolServiceKey();
+        getMetadataInfo().getServiceInfo(protocolServiceKey).addParameter(key, value);
+        return this;
     }
 
     @Override
-    public URL addParameter(String key, String value) {
-        throw new UnsupportedOperationException("");
+    public URL addParameterIfAbsent(String key, String value) {
+        if (StringUtils.isEmpty(key) || StringUtils.isEmpty(value)) {
+            return this;
+        }
+
+        String protocolServiceKey = RpcContext.getContext().getProtocolServiceKey();
+        getMetadataInfo().getServiceInfo(protocolServiceKey).addParameterIfAbsent(key, value);
+        return this;
+    }
+
+    public URL addConsumerParams(Map<String, String> params) {
+        String protocolServiceKey = RpcContext.getContext().getProtocolServiceKey();
+        getMetadataInfo().getServiceInfo(protocolServiceKey).addConsumerParams(params);
+        return this;
     }
 
     @Override
     public boolean equals(Object obj) {
         // instance metadata equals
-        // service metadata equals
-        return super.equals(obj);
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof InstanceAddressURL)) {
+            return false;
+        }
+
+        InstanceAddressURL that = (InstanceAddressURL) obj;
+
+        return this.getInstance().equals(that.getInstance());
     }
 
     @Override
     public int hashCode() {
-        return super.hashCode();
+        return getInstance().hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return super.toString();
     }
 }

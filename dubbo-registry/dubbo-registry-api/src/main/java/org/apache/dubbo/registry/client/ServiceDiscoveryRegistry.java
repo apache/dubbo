@@ -52,6 +52,8 @@ import static java.util.Collections.emptySet;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.of;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_CHAR_SEPERATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MAPPING_KEY;
@@ -316,7 +318,7 @@ public class ServiceDiscoveryRegistry implements Registry {
             List<ServiceInstance> serviceInstances = serviceDiscovery.getInstances(serviceName);
             serviceListener.onEvent(new ServiceInstancesChangedEvent(serviceName, serviceInstances));
         });
-        listener.notify(serviceListener.getUrls(url.getProtocolServiceKey()));
+        listener.notify(serviceListener.getUrls(url.getServiceKey() + GROUP_CHAR_SEPERATOR + url.getParameter(PROTOCOL_KEY, DUBBO)));
 
         serviceListener.addListener(url.getProtocolServiceKey(), listener);
         registerServiceInstancesChangedListener(url, serviceListener);

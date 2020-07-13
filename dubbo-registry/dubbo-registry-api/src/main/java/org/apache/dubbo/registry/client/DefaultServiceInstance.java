@@ -22,6 +22,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
+
 /**
  * The default implementation of {@link ServiceInstance}.
  *
@@ -166,18 +168,29 @@ public class DefaultServiceInstance implements ServiceInstance {
         if (this == o) return true;
         if (!(o instanceof DefaultServiceInstance)) return false;
         DefaultServiceInstance that = (DefaultServiceInstance) o;
-        return isEnabled() == that.isEnabled() &&
-                isHealthy() == that.isHealthy() &&
-                Objects.equals(getId(), that.getId()) &&
-                Objects.equals(getServiceName(), that.getServiceName()) &&
+        boolean equals = Objects.equals(getServiceName(), that.getServiceName()) &&
                 Objects.equals(getHost(), that.getHost()) &&
-                Objects.equals(getPort(), that.getPort()) &&
-                Objects.equals(getMetadata(), that.getMetadata());
+                Objects.equals(getPort(), that.getPort());
+        for (Map.Entry<String, String> entry : this.getMetadata().entrySet()) {
+            if (entry.getKey().equals(REVISION_KEY)) {
+                continue;
+            }
+            equals = equals && !entry.getValue().equals(that.getMetadata().get(entry.getKey()));
+        }
+
+        return equals;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), getServiceName(), getHost(), getPort(), isEnabled(), isHealthy(), getMetadata());
+        int result = Objects.hash(getServiceName(), getHost(), getPort());
+        for (Map.Entry<String, String> entry : this.getMetadata().entrySet()) {
+            if (entry.getKey().equals(REVISION_KEY)) {
+                continue;
+            }
+            result = 31 * result + (entry.getValue() == null ? 0 : entry.getValue().hashCode());
+        }
+        return result;
     }
 
     @Override

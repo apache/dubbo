@@ -79,12 +79,7 @@ public class ServiceInstanceMetadataUtils {
     /**
      * The property name of The revision for all exported Dubbo services.
      */
-    public static String EXPORTED_SERVICES_REVISION_PROPERTY_NAME = "dubbo.exported-services.revision";
-
-    /**
-     * The property name of The revision for all subscribed Dubbo services.
-     */
-    public static String SUBSCRIBER_SERVICES_REVISION_PROPERTY_NAME = "dubbo.subscribed-services.revision";
+    public static String EXPORTED_SERVICES_REVISION_PROPERTY_NAME = "dubbo.metadata.revision";
 
     /**
      * The property name of metadata storage type.
@@ -160,17 +155,6 @@ public class ServiceInstanceMetadataUtils {
     public static String getExportedServicesRevision(ServiceInstance serviceInstance) {
         Map<String, String> metadata = serviceInstance.getMetadata();
         return metadata.get(EXPORTED_SERVICES_REVISION_PROPERTY_NAME);
-    }
-
-    /**
-     * The revision for all subscribed Dubbo services from the specified {@link ServiceInstance}.
-     *
-     * @param serviceInstance the specified {@link ServiceInstance}
-     * @return <code>null</code> if not exits
-     */
-    public static String getSubscribedServicesRevision(ServiceInstance serviceInstance) {
-        Map<String, String> metadata = serviceInstance.getMetadata();
-        return metadata.get(SUBSCRIBER_SERVICES_REVISION_PROPERTY_NAME);
     }
 
     /**

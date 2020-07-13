@@ -93,19 +93,19 @@ class URL implements Serializable {
 
     private static final long serialVersionUID = -1985165475234910535L;
 
-    private final String protocol;
+    protected String protocol;
 
-    private final String username;
+    protected String username;
 
-    private final String password;
+    protected String password;
 
     // by default, host to registry
-    private final String host;
+    protected String host;
 
     // by default, port to registry
-    private final int port;
+    protected int port;
 
-    private final String path;
+    protected String path;
 
     private final Map<String, String> parameters;
 
