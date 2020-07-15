@@ -269,8 +269,8 @@ public class NetUtils {
         InetAddress localAddress = null;
 
         // @since 2.7.6, choose the {@link NetworkInterface} first
-        try {
-            NetworkInterface networkInterface = findNetworkInterface();
+        NetworkInterface networkInterface = findNetworkInterface();
+        if (networkInterface != null) {
             Enumeration<InetAddress> addresses = networkInterface.getInetAddresses();
             while (addresses.hasMoreElements()) {
                 Optional<InetAddress> addressOp = toValidAddress(addresses.nextElement());
@@ -284,8 +284,6 @@ public class NetUtils {
                     }
                 }
             }
-        } catch (Throwable e) {
-            logger.warn(e);
         }
 
         try {
