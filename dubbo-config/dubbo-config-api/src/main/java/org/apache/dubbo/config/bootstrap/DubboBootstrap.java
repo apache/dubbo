@@ -745,8 +745,7 @@ public class DubboBootstrap extends GenericEventListener {
             supported = configuredValue.booleanValue();
         } else {                       // Or check the extension existence
             String protocol = registryConfig.getProtocol();
-            ExtensionLoader extensionLoader = getExtensionLoader(extensionClass);
-            supported = extensionLoader.hasExtension(protocol);
+            supported = supportsExtension(extensionClass, protocol);
             if (logger.isInfoEnabled()) {
                 logger.info(format("No value is configured in the registry, the %s extension[name : %s] %s as the %s center"
                         , extensionClass.getSimpleName(), protocol, supported ? "supports" : "does not support", centerType));
@@ -758,6 +757,22 @@ public class DubboBootstrap extends GenericEventListener {
                     supported ? "used" : "not used", centerType));
         }
         return supported;
+    }
+
+    /**
+     * Supports the extension with the specified class and name
+     *
+     * @param extensionClass the {@link Class} of extension
+     * @param name           the name of extension
+     * @return if supports, return <code>true</code>, or <code>false</code>
+     * @since 2.7.8
+     */
+    private boolean supportsExtension(Class<?> extensionClass, String name) {
+        if (isNotEmpty(name)) {
+            ExtensionLoader extensionLoader = getExtensionLoader(extensionClass);
+            return extensionLoader.hasExtension(name);
+        }
+        return false;
     }
 
     private MetadataReportConfig registryAsMetadataCenter(RegistryConfig registryConfig) {
