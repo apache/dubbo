@@ -1,0 +1,5 @@
+metadata-url=org.apache.dubbo.registry.client.metadata.MetadataServiceURLParamsMetadataCustomizer
+exported-revision=org.apache.dubbo.registry.client.metadata.ExportedServicesRevisionMetadataCustomizer
+subscribed-revision=org.apache.dubbo.registry.client.metadata.SubscribedServicesRevisionMetadataCustomizer
+protocol-ports=org.apache.dubbo.registry.client.metadata.ProtocolPortsMetadataCustomizer
+instance-port=org.apache.dubbo.config.metadata.ServiceInstancePortCustomizer

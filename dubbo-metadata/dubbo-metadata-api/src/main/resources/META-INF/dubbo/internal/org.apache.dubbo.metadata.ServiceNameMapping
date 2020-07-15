@@ -1,0 +1,9 @@
+# "default" implementation has been changed since 2.7.8
+default=org.apache.dubbo.metadata.CompositeServiceNameMapping
+
+# "properties-file" and "parameterized" are introduced since 2.7.8
+properties-file = org.apache.dubbo.metadata.PropertiesFileServiceNameMapping
+parameterized  = org.apache.dubbo.metadata.ParameterizedServiceNameMapping
+
+# "dynamic-configuration" has been revised since 2.7.8
+dynamic-configuration = org.apache.dubbo.metadata.DynamicConfigurationServiceNameMapping
