@@ -200,7 +200,7 @@ public class RegistryConfig extends AbstractConfig {
 
     public void setProtocol(String protocol) {
         this.protocol = protocol;
-        this.updateIdIfAbsent(protocol);
+//        this.updateIdIfAbsent(protocol);
     }
 
     @Parameter(excluded = true)
