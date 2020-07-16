@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.cluster.support.registry;
 
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -85,8 +86,8 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
         }
 
 
-        // load balance among all registries, with registry weight count in.
-        Invoker<T> balancedInvoker = select(loadbalance, invocation, invokers, null);
+        // Use random load balance among all registries, with registry weight count in.
+        Invoker<T> balancedInvoker = select(ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension("random"), invocation, invokers, null);
         if (balancedInvoker.isAvailable()) {
             return balancedInvoker.invoke(invocation);
         }
