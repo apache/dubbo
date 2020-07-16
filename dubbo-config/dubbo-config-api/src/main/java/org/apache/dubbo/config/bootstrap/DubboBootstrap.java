@@ -813,7 +813,7 @@ public class DubboBootstrap extends GenericEventListener {
         if (isEmpty(protocolFromAddress)) {
             // If the protocol from address is missing, is like :
             // "dubbo.registry.address = 127.0.0.1:2181"
-            String protocolFromConfig = registryConfig.getAddress();
+            String protocolFromConfig = registryConfig.getProtocol();
             metadataAddressBuilder.append(protocolFromConfig).append("://");
         }
         metadataAddressBuilder.append(address);
