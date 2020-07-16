@@ -77,6 +77,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.CompletableFuture;
@@ -1075,10 +1076,10 @@ public class DubboBootstrap extends GenericEventListener {
     }
 
     private void unexportMetadataService() {
-        metadataServiceExporters
-                .stream()
-                .filter(this::supports)
-                .forEach(MetadataServiceExporter::unexport);
+        Optional.ofNullable(metadataServiceExporters)
+                .ifPresent(set -> set.stream()
+                        .filter(this::supports)
+                        .forEach(MetadataServiceExporter::unexport));
     }
 
     private boolean supports(MetadataServiceExporter exporter) {
