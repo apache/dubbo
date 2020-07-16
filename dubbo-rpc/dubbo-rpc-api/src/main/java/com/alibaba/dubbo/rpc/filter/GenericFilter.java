@@ -114,21 +114,24 @@ public class GenericFilter implements Filter {
                         && !(result.getException() instanceof GenericException)) {
                     return new RpcResult(new GenericException(result.getException()));
                 }
+                RpcResult rpcResult;
                 if (ProtocolUtils.isJavaGenericSerialization(generic)) {
                     try {
                         UnsafeByteArrayOutputStream os = new UnsafeByteArrayOutputStream(512);
                         ExtensionLoader.getExtensionLoader(Serialization.class)
                                 .getExtension(Constants.GENERIC_SERIALIZATION_NATIVE_JAVA)
                                 .serialize(null, os).writeObject(result.getValue());
-                        return new RpcResult(os.toByteArray());
+                        rpcResult = new RpcResult(os.toByteArray());
                     } catch (IOException e) {
                         throw new RpcException("Serialize result failed.", e);
                     }
                 } else if (ProtocolUtils.isBeanGenericSerialization(generic)) {
-                    return new RpcResult(JavaBeanSerializeUtil.serialize(result.getValue(), JavaBeanAccessor.METHOD));
+                    rpcResult = new RpcResult(JavaBeanSerializeUtil.serialize(result.getValue(), JavaBeanAccessor.METHOD));
                 } else {
-                    return new RpcResult(PojoUtils.generalize(result.getValue()));
+                    rpcResult = new RpcResult(PojoUtils.generalize(result.getValue()));
                 }
+                rpcResult.setAttachments(result.getAttachments());
+                return rpcResult;
             } catch (NoSuchMethodException e) {
                 throw new RpcException(e.getMessage(), e);
             } catch (ClassNotFoundException e) {

@@ -43,6 +43,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static com.alibaba.dubbo.common.Constants.SHARED_CONSUMER_EXECUTOR_PORT;
+import static com.alibaba.dubbo.common.Constants.SHARE_EXECUTOR_KEY;
+
 /**
  * AbstractClient
  */
@@ -105,10 +108,14 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
                             + " connect to the server " + getRemoteAddress() + ", cause: " + t.getMessage(), t);
         }
 
+        boolean shouldShareExecutor = url.getParameter(SHARE_EXECUTOR_KEY, false);
+        String portKey = shouldShareExecutor ? SHARED_CONSUMER_EXECUTOR_PORT : Integer.toString(url.getPort());
         executor = (ExecutorService) ExtensionLoader.getExtensionLoader(DataStore.class)
-                .getDefaultExtension().get(Constants.CONSUMER_SIDE, Integer.toString(url.getPort()));
-        ExtensionLoader.getExtensionLoader(DataStore.class)
-                .getDefaultExtension().remove(Constants.CONSUMER_SIDE, Integer.toString(url.getPort()));
+                .getDefaultExtension().get(Constants.CONSUMER_SIDE, portKey);
+        if (!shouldShareExecutor) {
+            ExtensionLoader.getExtensionLoader(DataStore.class)
+                    .getDefaultExtension().remove(Constants.CONSUMER_SIDE, portKey);
+        }
     }
 
     protected static ChannelHandler wrapChannelHandler(URL url, ChannelHandler handler) {

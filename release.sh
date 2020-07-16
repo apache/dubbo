@@ -150,8 +150,8 @@ git reset --hard $COMMIT_ID
 
 cd distribution/target
 echo "Start to shasum for bin/source.zip"
-shasum -b -a 512 apache-dubbo-incubating-${VERSION}-source-release.zip >> apache-dubbo-incubating-${VERSION}-source-release.zip.sha512
-shasum -b -a 512 apache-dubbo-incubating-${VERSION}-bin-release.zip >> apache-dubbo-incubating-${VERSION}-bin-release.zip.sha512
+shasum -b -a 512 apache-dubbo-${VERSION}-source-release.zip >> apache-dubbo-${VERSION}-source-release.zip.sha512
+shasum -b -a 512 apache-dubbo-${VERSION}-bin-release.zip >> apache-dubbo-${VERSION}-bin-release.zip.sha512
 
 read -p "Need to push bin/source.zip to Apache svn repo ? (y/n, default is n) " NEED_PUSH_APACHE
 
@@ -159,12 +159,12 @@ if [ "$NEED_PUSH_APACHE" = "y" ]; then
 	# Need to test
 	svn mkdir https://dist.apache.org/repos/dist/dev/incubator/dubbo/$VERSION -m "Create $VERSION directory"
 	svn co --force --depth=empty https://dist.apache.org/repos/dist/dev/incubator/dubbo/$VERSION .
-	svn add apache-dubbo-incubating-${VERSION}-source-release.zip
-	svn add apache-dubbo-incubating-${VERSION}-source-release.zip.asc
-	svn add apache-dubbo-incubating-${VERSION}-source-release.zip.sha512
-	svn add apache-dubbo-incubating-${VERSION}-bin-release.zip
-	svn add apache-dubbo-incubating-${VERSION}-bin-release.zip.asc
-	svn add apache-dubbo-incubating-${VERSION}-bin-release.zip.sha512
+	svn add apache-dubbo-${VERSION}-source-release.zip
+	svn add apache-dubbo-${VERSION}-source-release.zip.asc
+	svn add apache-dubbo-${VERSION}-source-release.zip.sha512
+	svn add apache-dubbo-${VERSION}-bin-release.zip
+	svn add apache-dubbo-${VERSION}-bin-release.zip.asc
+	svn add apache-dubbo-${VERSION}-bin-release.zip.sha512
 	svn commit -m "Upload dubbo-$VERSION"
 
 	echo "If this is your first release, make sure adding PUBLIC_KEY to KEYS manually."

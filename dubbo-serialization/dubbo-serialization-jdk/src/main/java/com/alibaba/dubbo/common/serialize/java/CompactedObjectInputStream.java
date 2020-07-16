@@ -16,11 +16,15 @@
  */
 package com.alibaba.dubbo.common.serialize.java;
 
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.ClassHelper;
+import com.alibaba.dubbo.common.utils.SerialDetector;
 
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InvalidClassException;
 import java.io.ObjectInputStream;
 import java.io.ObjectStreamClass;
 import java.io.StreamCorruptedException;
@@ -29,6 +33,7 @@ import java.io.StreamCorruptedException;
  * Compacted java object input stream.
  */
 public class CompactedObjectInputStream extends ObjectInputStream {
+    private static final Logger logger = LoggerFactory.getLogger(CompactedObjectInputStream.class);
     private ClassLoader mClassLoader;
 
     public CompactedObjectInputStream(InputStream in) throws IOException {
@@ -38,6 +43,21 @@ public class CompactedObjectInputStream extends ObjectInputStream {
     public CompactedObjectInputStream(InputStream in, ClassLoader cl) throws IOException {
         super(in);
         mClassLoader = cl == null ? ClassHelper.getClassLoader() : cl;
+    }
+
+    @Override
+    protected Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
+        if (SerialDetector.isClassInBlacklist(desc)) {
+            if (!SerialDetector.shouldCheck()) {
+                // Reporting mode
+                logger.info(String.format("Blacklist match: '%s'", desc.getName()));
+            } else {
+                // Blocking mode
+                logger.error(String.format("Blocked by blacklist'. Match found for '%s'", desc.getName()));
+                throw new InvalidClassException(desc.getName(), "Class blocked from deserialization (blacklist)");
+            }
+        }
+        return super.resolveClass(desc);
     }
 
     @Override

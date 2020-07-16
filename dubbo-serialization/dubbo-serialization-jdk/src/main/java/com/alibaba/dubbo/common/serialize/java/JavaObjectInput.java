@@ -17,10 +17,10 @@
 package com.alibaba.dubbo.common.serialize.java;
 
 import com.alibaba.dubbo.common.serialize.nativejava.NativeJavaObjectInput;
+import com.alibaba.dubbo.common.utils.SerialDetector;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
 import java.lang.reflect.Type;
 
 /**
@@ -30,11 +30,11 @@ public class JavaObjectInput extends NativeJavaObjectInput {
     public final static int MAX_BYTE_ARRAY_LENGTH = 8 * 1024 * 1024;
 
     public JavaObjectInput(InputStream is) throws IOException {
-        super(new ObjectInputStream(is));
+        super(new SerialDetector(is));
     }
 
     public JavaObjectInput(InputStream is, boolean compacted) throws IOException {
-        super(compacted ? new CompactedObjectInputStream(is) : new ObjectInputStream(is));
+        super(compacted ? new CompactedObjectInputStream(is) : new SerialDetector(is));
     }
 
     @Override

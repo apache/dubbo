@@ -21,12 +21,12 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.transport.dispatcher.WrappedChannelHandler;
-
 import junit.framework.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.lang.reflect.Field;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import static org.junit.Assert.fail;
 
@@ -103,6 +103,30 @@ public class WrappedChannelHandlerTest {
         } catch (Exception e) {
             Assert.assertEquals(BizException.class, e.getCause().getClass());
         }
+    }
+
+    @Test
+    public void testShareConsumerExecutor() {
+        URL url1 = URL.valueOf("dubbo://10.20.30.40:1234/DemoService?side=consumer&share.threadpool=true&threadpool=fixed");
+        WrappedChannelHandler handler1 = new WrappedChannelHandler(new BizChannelHander(true), url1);
+        WrappedChannelHandler handler2 = new WrappedChannelHandler(new BizChannelHander(true), url1);
+        Assert.assertEquals(200, ((ThreadPoolExecutor) (handler1.getExecutor())).getMaximumPoolSize());
+        Assert.assertSame(handler1.getExecutor(), handler2.getExecutor());
+
+        URL url2 = URL.valueOf("dubbo://10.20.30.40:1234/DemoService?side=consumer&share.threadpool=false");
+        WrappedChannelHandler handler3 = new WrappedChannelHandler(new BizChannelHander(true), url2);
+        WrappedChannelHandler handler4 = new WrappedChannelHandler(new BizChannelHander(true), url2);
+        Assert.assertNotSame(handler3.getExecutor(), handler4.getExecutor());
+        Assert.assertNotSame(handler3.getExecutor(), handler1.getExecutor());
+    }
+
+    @Test
+    public void testProviderExecutor() {
+        URL url1 = URL.valueOf("dubbo://10.20.30.40:1234/DemoService?side=provider");
+        URL url2 = URL.valueOf("dubbo://10.20.30.40:6789/DemoService?side=provider");
+        WrappedChannelHandler handler1 = new WrappedChannelHandler(new BizChannelHander(true), url1);
+        WrappedChannelHandler handler2 = new WrappedChannelHandler(new BizChannelHander(true), url2);
+        Assert.assertNotSame(handler1.getExecutor(), handler2.getExecutor());
     }
 
     class BizChannelHander extends MockedChannelHandler {
