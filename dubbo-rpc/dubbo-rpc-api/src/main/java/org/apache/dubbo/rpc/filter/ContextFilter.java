@@ -40,7 +40,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_APPLICATION_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_ATTACHENT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_ATTACHMENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIME_COUNTDOWN_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
@@ -71,7 +71,7 @@ public class ContextFilter implements Filter, Filter.Listener {
         UNLOADING_KEYS.add(DUBBO_VERSION_KEY);
         UNLOADING_KEYS.add(TOKEN_KEY);
         UNLOADING_KEYS.add(TIMEOUT_KEY);
-        UNLOADING_KEYS.add(TIMEOUT_ATTACHENT_KEY);
+        UNLOADING_KEYS.add(TIMEOUT_ATTACHMENT_KEY);
 
         // Remove async property to avoid being passed to the following invoke chain.
         UNLOADING_KEYS.add(ASYNC_KEY);

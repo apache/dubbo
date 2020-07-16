@@ -18,7 +18,10 @@ package org.apache.dubbo.config.spring.schema;
 
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.ServiceBean;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +36,16 @@ import static org.junit.Assert.assertNotNull;
 @ContextConfiguration(classes = GenericServiceTest.class)
 @ImportResource(locations = "classpath:/META-INF/spring/dubbo-generic-consumer.xml")
 public class GenericServiceTest {
+
+    @Before
+    public void setUp() {
+        ApplicationModel.reset();
+    }
+
+    @After
+    public void tearDown() {
+        ApplicationModel.reset();
+    }
 
     @Autowired
     @Qualifier("demoServiceRef")

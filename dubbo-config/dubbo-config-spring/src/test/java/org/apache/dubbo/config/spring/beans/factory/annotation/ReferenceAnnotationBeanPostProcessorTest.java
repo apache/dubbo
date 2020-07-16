@@ -22,11 +22,14 @@ import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.utils.ReferenceConfigCache;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,6 +69,16 @@ import static org.junit.Assert.assertTrue;
 })
 @EnableAspectJAutoProxy(proxyTargetClass = true, exposeProxy = true)
 public class ReferenceAnnotationBeanPostProcessorTest {
+
+    @Before
+    public void setUp() {
+        ApplicationModel.reset();
+    }
+
+    @After
+    public void tearDown() {
+        ApplicationModel.reset();
+    }
 
     private static final String AOP_SUFFIX = "(based on AOP)";
 

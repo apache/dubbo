@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.transport.netty4;
 
-import io.netty.channel.socket.SocketChannel;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -37,6 +36,7 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
 
 import java.net.InetSocketAddress;
@@ -149,8 +149,8 @@ public class NettyServer extends AbstractServer implements RemotingServer {
         }
         try {
             if (bootstrap != null) {
-                bossGroup.shutdownGracefully();
-                workerGroup.shutdownGracefully();
+                bossGroup.shutdownGracefully().syncUninterruptibly();
+                workerGroup.shutdownGracefully().syncUninterruptibly();
             }
         } catch (Throwable e) {
             logger.warn(e.getMessage(), e);
