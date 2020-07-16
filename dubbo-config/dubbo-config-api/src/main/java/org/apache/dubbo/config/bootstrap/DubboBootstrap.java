@@ -19,6 +19,7 @@ package org.apache.dubbo.config.bootstrap;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
+import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
 import org.apache.dubbo.common.config.configcenter.wrapper.CompositeDynamicConfiguration;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.lang.ShutdownHookCallback;
@@ -60,6 +61,7 @@ import org.apache.dubbo.event.GenericEventListener;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.MetadataServiceExporter;
 import org.apache.dubbo.metadata.WritableMetadataService;
+import org.apache.dubbo.metadata.report.MetadataReportFactory;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
@@ -85,8 +87,10 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static org.apache.dubbo.common.config.ConfigurationUtils.parseProperties;
@@ -669,8 +673,8 @@ public class DubboBootstrap extends GenericEventListener {
     }
 
     private boolean isUsedRegistryAsConfigCenter(RegistryConfig registryConfig) {
-        // TODO: confirm ? registryConfig.getUseAsConfigCenter() == null || registryConfig.getUseAsConfigCenter()
-        return Boolean.TRUE.equals(registryConfig.getUseAsConfigCenter());
+        return isUsedRegistryAsCenter(registryConfig, registryConfig::getUseAsConfigCenter, "config",
+                DynamicConfigurationFactory.class);
     }
 
     private ConfigCenterConfig registryAsConfigCenter(RegistryConfig registryConfig) {
@@ -718,8 +722,58 @@ public class DubboBootstrap extends GenericEventListener {
     }
 
     private boolean isUsedRegistryAsMetadataCenter(RegistryConfig registryConfig) {
-        // TODO: confirm ? registryConfig.getUseAsMetadataCenter() == null || registryConfig.getUseAsMetadataCenter()
-        return Boolean.TRUE.equals(registryConfig.getUseAsMetadataCenter());
+        return isUsedRegistryAsCenter(registryConfig, registryConfig::getUseAsMetadataCenter, "metadata",
+                MetadataReportFactory.class);
+    }
+
+    /**
+     * Is used the specified registry as a center infrastructure
+     *
+     * @param registryConfig       the {@link RegistryConfig}
+     * @param usedRegistryAsCenter the configured value on
+     * @param centerType           the type name of center
+     * @param extensionClass       an extension class of a center infrastructure
+     * @return
+     * @since 2.7.8
+     */
+    private boolean isUsedRegistryAsCenter(RegistryConfig registryConfig, Supplier<Boolean> usedRegistryAsCenter,
+                                           String centerType,
+                                           Class<?> extensionClass) {
+        final boolean supported;
+
+        Boolean configuredValue = usedRegistryAsCenter.get();
+        if (configuredValue != null) { // If configured, take its value.
+            supported = configuredValue.booleanValue();
+        } else {                       // Or check the extension existence
+            String protocol = registryConfig.getProtocol();
+            supported = supportsExtension(extensionClass, protocol);
+            if (logger.isInfoEnabled()) {
+                logger.info(format("No value is configured in the registry, the %s extension[name : %s] %s as the %s center"
+                        , extensionClass.getSimpleName(), protocol, supported ? "supports" : "does not support", centerType));
+            }
+        }
+
+        if (logger.isInfoEnabled()) {
+            logger.info(format("The registry[%s] will be %s as the %s center", registryConfig,
+                    supported ? "used" : "not used", centerType));
+        }
+        return supported;
+    }
+
+    /**
+     * Supports the extension with the specified class and name
+     *
+     * @param extensionClass the {@link Class} of extension
+     * @param name           the name of extension
+     * @return if supports, return <code>true</code>, or <code>false</code>
+     * @since 2.7.8
+     */
+    private boolean supportsExtension(Class<?> extensionClass, String name) {
+        if (isNotEmpty(name)) {
+            ExtensionLoader extensionLoader = getExtensionLoader(extensionClass);
+            return extensionLoader.hasExtension(name);
+        }
+        return false;
     }
 
     private MetadataReportConfig registryAsMetadataCenter(RegistryConfig registryConfig) {
