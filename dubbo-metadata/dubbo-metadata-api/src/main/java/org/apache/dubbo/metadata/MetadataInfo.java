@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DOT_SEPARATOR;
@@ -176,6 +177,8 @@ public class MetadataInfo implements Serializable {
         private transient Map<String, String> consumerParams;
         private transient Map<String, Map<String, String>> methodParams;
         private transient Map<String, Map<String, String>> consumerMethodParams;
+        private volatile transient Map<String, Number> numbers;
+        private volatile transient Map<String, Map<String, Number>> methodNumbers;
         private transient String serviceKey;
         private transient String matchKey;
 
@@ -380,6 +383,21 @@ public class MetadataInfo implements Serializable {
             if (consumerParams == null) {
                 consumerParams = new HashMap<>(params);
             }
+        }
+
+        public Map<String, Number> getNumbers() {
+            // concurrent initialization is tolerant
+            if (numbers == null) {
+                numbers = new ConcurrentHashMap<>();
+            }
+            return numbers;
+        }
+
+        public Map<String, Map<String, Number>> getMethodNumbers() {
+            if (methodNumbers == null) { // concurrent initialization is tolerant
+                methodNumbers = new ConcurrentHashMap<>();
+            }
+            return methodNumbers;
         }
 
         @Override

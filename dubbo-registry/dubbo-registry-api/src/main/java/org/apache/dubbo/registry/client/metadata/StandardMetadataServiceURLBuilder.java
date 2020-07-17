@@ -18,6 +18,7 @@ package org.apache.dubbo.registry.client.metadata;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.ServiceInstance;
 
@@ -28,6 +29,9 @@ import java.util.Map;
 import static java.lang.String.valueOf;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PORT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.metadata.MetadataConstants.DEFAULT_METADATA_TIMEOUT_VALUE;
+import static org.apache.dubbo.metadata.MetadataConstants.METADATA_PROXY_TIMEOUT_KEY;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getMetadataServiceURLsParams;
 
 /**
@@ -65,7 +69,8 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
                     .setHost(host)
                     .setPort(port)
                     .setProtocol(protocol)
-                    .setPath(MetadataService.class.getName());
+                    .setPath(MetadataService.class.getName())
+                    .addParameter(TIMEOUT_KEY, ConfigurationUtils.get(METADATA_PROXY_TIMEOUT_KEY, DEFAULT_METADATA_TIMEOUT_VALUE));
 
             // add parameters
             params.forEach((name, value) -> urlBuilder.addParameter(name, valueOf(value)));

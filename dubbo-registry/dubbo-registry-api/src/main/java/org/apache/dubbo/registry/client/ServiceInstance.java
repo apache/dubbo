@@ -86,6 +86,8 @@ public interface ServiceInstance extends Serializable {
 
     Map<String, String> getExtendParams();
 
+    Map<String, String> getAllParams();
+
     /**
      * Get the value of metadata by the specified name
      *

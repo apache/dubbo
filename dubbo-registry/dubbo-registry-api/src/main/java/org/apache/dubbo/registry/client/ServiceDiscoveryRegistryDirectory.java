@@ -57,49 +57,53 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
     public synchronized void notify(List<URL> instanceUrls) {
         // Set the context of the address notification thread.
         RpcContext.setRpcContext(getConsumerUrl());
-        if (CollectionUtils.isEmpty(instanceUrls)) {
-            // FIXME, empty protocol
-        }
         refreshInvoker(instanceUrls);
     }
 
     private void refreshInvoker(List<URL> invokerUrls) {
-        Assert.notNull(invokerUrls, "invokerUrls should not be null, use empty:// to clear address.");
+        Assert.notNull(invokerUrls, "invokerUrls should not be null, use empty InstanceAddressURL to clear address.");
 
-        if (invokerUrls.size() == 1
-                && invokerUrls.get(0) != null
-                && EMPTY_PROTOCOL.equals(invokerUrls.get(0).getProtocol())) {
-            this.forbidden = true; // Forbid to access
-            this.invokers = Collections.emptyList();
-            routerChain.setInvokers(this.invokers);
-            destroyAllInvokers(); // Close all invokers
-        } else {
-            this.forbidden = false; // Allow to access
-            Map<String, Invoker<T>> oldUrlInvokerMap = this.urlInvokerMap; // local reference
-            if (CollectionUtils.isEmpty(invokerUrls)) {
-                return;
-            }
-
-            Map<String, Invoker<T>> newUrlInvokerMap = toInvokers(invokerUrls);// Translate url list to Invoker map
-
-            if (CollectionUtils.isEmptyMap(newUrlInvokerMap)) {
-                logger.error(new IllegalStateException("Cannot create invokers from url address list (total " + invokerUrls.size() + ")"));
-                return;
-            }
-
-            List<Invoker<T>> newInvokers = Collections.unmodifiableList(new ArrayList<>(newUrlInvokerMap.values()));
-            // pre-route and build cache, notice that route cache should build on original Invoker list.
-            // toMergeMethodInvokerMap() will wrap some invokers having different groups, those wrapped invokers not should be routed.
-            routerChain.setInvokers(newInvokers);
-            this.invokers = multiGroup ? toMergeInvokerList(newInvokers) : newInvokers;
-            this.urlInvokerMap = newUrlInvokerMap;
-
-            if (oldUrlInvokerMap != null) {
-                try {
-                    destroyUnusedInvokers(oldUrlInvokerMap, newUrlInvokerMap); // Close the unused Invoker
-                } catch (Exception e) {
-                    logger.warn("destroyUnusedInvokers error. ", e);
+        if (invokerUrls.size() == 1) {
+            URL url = invokerUrls.get(0);
+            if (!(url instanceof InstanceAddressURL)) {
+                throw new IllegalStateException("use empty InstanceAddressURL to clear address");
+            } else {
+                InstanceAddressURL instanceAddressURL = (InstanceAddressURL) url;
+                if (instanceAddressURL.getInstance() == null) {
+                    this.forbidden = true; // Forbid to access
+                    this.invokers = Collections.emptyList();
+                    routerChain.setInvokers(this.invokers);
+                    destroyAllInvokers(); // Close all invokers
+                    return;
                 }
+            }
+        }
+
+        this.forbidden = false; // Allow to access
+        Map<String, Invoker<T>> oldUrlInvokerMap = this.urlInvokerMap; // local reference
+        if (CollectionUtils.isEmpty(invokerUrls)) {
+            return;
+        }
+
+        Map<String, Invoker<T>> newUrlInvokerMap = toInvokers(invokerUrls);// Translate url list to Invoker map
+
+        if (CollectionUtils.isEmptyMap(newUrlInvokerMap)) {
+            logger.error(new IllegalStateException("Cannot create invokers from url address list (total " + invokerUrls.size() + ")"));
+            return;
+        }
+
+        List<Invoker<T>> newInvokers = Collections.unmodifiableList(new ArrayList<>(newUrlInvokerMap.values()));
+        // pre-route and build cache, notice that route cache should build on original Invoker list.
+        // toMergeMethodInvokerMap() will wrap some invokers having different groups, those wrapped invokers not should be routed.
+        routerChain.setInvokers(newInvokers);
+        this.invokers = multiGroup ? toMergeInvokerList(newInvokers) : newInvokers;
+        this.urlInvokerMap = newUrlInvokerMap;
+
+        if (oldUrlInvokerMap != null) {
+            try {
+                destroyUnusedInvokers(oldUrlInvokerMap, newUrlInvokerMap); // Close the unused Invoker
+            } catch (Exception e) {
+                logger.warn("destroyUnusedInvokers error. ", e);
             }
         }
     }
@@ -129,7 +133,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
             }
 
             // FIXME, some keys may need to be removed.
-            instanceAddressURL.addConsumerParams(queryMap);
+            instanceAddressURL.addConsumerParams(getConsumerUrl().getProtocolServiceKey(), queryMap);
 
             Invoker<T> invoker = urlInvokerMap == null ? null : urlInvokerMap.get(instanceAddressURL.getAddress());
             if (invoker == null || urlChanged(invoker, instanceAddressURL)) { // Not in the cache, refer again
