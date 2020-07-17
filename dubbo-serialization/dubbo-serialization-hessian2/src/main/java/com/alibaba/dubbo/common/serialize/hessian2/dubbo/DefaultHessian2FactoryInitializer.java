@@ -14,18 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.common.serialize.hessian2;
+package com.alibaba.dubbo.common.serialize.hessian2.dubbo;
 
 import com.alibaba.com.caucho.hessian.io.SerializerFactory;
+import com.alibaba.dubbo.common.serialize.hessian2.Hessian2SerializerFactory;
 
-public class Hessian2SerializerFactory extends SerializerFactory {
-
-    public Hessian2SerializerFactory() {
-    }
-
+public class DefaultHessian2FactoryInitializer extends AbstractHessian2FactoryInitializer {
     @Override
-    public ClassLoader getClassLoader() {
-        return Thread.currentThread().getContextClassLoader();
+    protected SerializerFactory createSerializerFactory() {
+        return new Hessian2SerializerFactory();
     }
-
 }
