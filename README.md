@@ -1,7 +1,7 @@
 # Apache Dubbo Project
 
-[![Build Status](https://travis-ci.org/apache/incubator-dubbo.svg?branch=master)](https://travis-ci.org/apache/incubator-dubbo) 
-[![codecov](https://codecov.io/gh/apache/incubator-dubbo/branch/master/graph/badge.svg)](https://codecov.io/gh/apache/incubator-dubbo)
+[![Build Status](https://travis-ci.org/apache/dubbo.svg?branch=2.6.x)](https://travis-ci.org/apache/dubbo)
+[![codecov](https://codecov.io/gh/apache/dubbo/branch/2.6.x/graph/badge.svg)](https://codecov.io/gh/apache/dubbo)
 [![Gitter](https://badges.gitter.im/alibaba/dubbo.svg)](https://gitter.im/alibaba/dubbo?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 ![license](https://img.shields.io/github/license/alibaba/dubbo.svg)
 ![maven](https://img.shields.io/maven-central/v/com.alibaba/dubbo.svg)
