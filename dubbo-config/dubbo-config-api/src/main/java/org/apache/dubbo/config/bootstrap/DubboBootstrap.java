@@ -28,6 +28,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.concurrent.ScheduledCompletableFuture;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
+import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
@@ -100,6 +101,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_SPLIT_P
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 import static org.apache.dubbo.common.function.ThrowableAction.execute;
+import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.setMetadataStorageType;
 import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
@@ -693,7 +695,7 @@ public class DubboBootstrap extends GenericEventListener {
         cc.setProtocol(protocol);
         cc.setPort(port);
         cc.setGroup(registryConfig.getGroup());
-        cc.setAddress(getRegistryCompatibleAddress(registryConfig.getAddress()));
+        cc.setAddress(getRegistryCompatibleAddress(registryConfig));
         cc.setNamespace(registryConfig.getGroup());
         cc.setUsername(registryConfig.getUsername());
         cc.setPassword(registryConfig.getPassword());
@@ -790,19 +792,33 @@ public class DubboBootstrap extends GenericEventListener {
         }
         metadataReportConfig.getParameters().put(CLIENT_KEY, registryConfig.getClient());
         metadataReportConfig.setGroup(registryConfig.getGroup());
-        metadataReportConfig.setAddress(getRegistryCompatibleAddress(registryConfig.getAddress()));
+        metadataReportConfig.setAddress(getRegistryCompatibleAddress(registryConfig));
         metadataReportConfig.setUsername(registryConfig.getUsername());
         metadataReportConfig.setPassword(registryConfig.getPassword());
         metadataReportConfig.setTimeout(registryConfig.getTimeout());
         return metadataReportConfig;
     }
 
-    private String getRegistryCompatibleAddress(String registryAddress) {
+    private String getRegistryCompatibleAddress(RegistryConfig registryConfig) {
+        String registryAddress = registryConfig.getAddress();
         String[] addresses = REGISTRY_SPLIT_PATTERN.split(registryAddress);
-        if (addresses == null || addresses.length == 0) {
+        if (ArrayUtils.isEmpty(addresses)) {
             throw new IllegalStateException("Invalid registry address found.");
         }
-        return addresses[0];
+        String address = addresses[0];
+        // since 2.7.8
+        // Issue : https://github.com/apache/dubbo/issues/6476
+        StringBuilder metadataAddressBuilder = new StringBuilder();
+        URL url = URL.valueOf(address);
+        String protocolFromAddress = url.getProtocol();
+        if (isEmpty(protocolFromAddress)) {
+            // If the protocol from address is missing, is like :
+            // "dubbo.registry.address = 127.0.0.1:2181"
+            String protocolFromConfig = registryConfig.getProtocol();
+            metadataAddressBuilder.append(protocolFromConfig).append("://");
+        }
+        metadataAddressBuilder.append(address);
+        return metadataAddressBuilder.toString();
     }
 
     private void loadRemoteConfigs() {
