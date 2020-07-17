@@ -800,60 +800,48 @@ public class RpcContext {
     }
 
     // RPC service context updated before each service call.
-    private String group;
-    private String version;
-    private String interfaceName;
-    private String protocol;
-    private String serviceKey;
-    private String protocolServiceKey;
     private URL consumerUrl;
 
     public String getGroup() {
-        return group;
-    }
-
-    public void setGroup(String group) {
-        this.group = group;
+        if (consumerUrl == null) {
+            return null;
+        }
+        return consumerUrl.getParameter(GROUP_KEY);
     }
 
     public String getVersion() {
-        return version;
-    }
-
-    public void setVersion(String version) {
-        this.version = version;
+        if (consumerUrl == null) {
+            return null;
+        }
+        return consumerUrl.getParameter(VERSION_KEY);
     }
 
     public String getInterfaceName() {
-        return interfaceName;
-    }
-
-    public void setInterfaceName(String interfaceName) {
-        this.interfaceName = interfaceName;
+        if (consumerUrl == null) {
+            return null;
+        }
+        return consumerUrl.getServiceInterface();
     }
 
     public String getProtocol() {
-        return protocol;
-    }
-
-    public void setProtocol(String protocol) {
-        this.protocol = protocol;
+        if (consumerUrl == null) {
+            return null;
+        }
+        return consumerUrl.getParameter(PROTOCOL_KEY, DUBBO);
     }
 
     public String getServiceKey() {
-        return serviceKey;
-    }
-
-    public void setServiceKey(String serviceKey) {
-        this.serviceKey = serviceKey;
+        if (consumerUrl == null) {
+            return null;
+        }
+        return consumerUrl.getServiceKey();
     }
 
     public String getProtocolServiceKey() {
-        return protocolServiceKey;
-    }
-
-    public void setProtocolServiceKey(String protocolServiceKey) {
-        this.protocolServiceKey = protocolServiceKey;
+        if (consumerUrl == null) {
+            return null;
+        }
+        return consumerUrl.getProtocolServiceKey();
     }
 
     public URL getConsumerUrl() {
@@ -867,11 +855,5 @@ public class RpcContext {
     public static void setRpcContext(URL url) {
         RpcContext rpcContext = RpcContext.getContext();
         rpcContext.setConsumerUrl(url);
-        rpcContext.setInterfaceName(url.getServiceInterface());
-        rpcContext.setVersion(url.getParameter(VERSION_KEY));
-        rpcContext.setGroup(url.getParameter(GROUP_KEY));
-        rpcContext.setProtocol(url.getParameter(PROTOCOL_KEY, DUBBO));
-        rpcContext.setServiceKey(url.getServiceKey());
-        rpcContext.setProtocolServiceKey(url.getProtocolServiceKey());
     }
 }

@@ -22,6 +22,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.WritableMetadataService;
+import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl;
 import org.apache.dubbo.rpc.Invoker;
@@ -67,7 +68,7 @@ public class MetadataUtils {
         getRemoteMetadataService().publishServiceDefinition(url);
     }
 
-    public static MetadataService getMetadataServiceProxy(ServiceInstance instance) {
+    public static MetadataService getMetadataServiceProxy(ServiceInstance instance, ServiceDiscovery serviceDiscovery) {
         String key = instance.getServiceName() + "##" +
                 ServiceInstanceMetadataUtils.getExportedServicesRevision(instance);
         return metadataServiceProxies.computeIfAbsent(key, k -> {

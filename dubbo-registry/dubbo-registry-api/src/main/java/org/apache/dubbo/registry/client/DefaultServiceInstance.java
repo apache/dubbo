@@ -146,6 +146,14 @@ public class DefaultServiceInstance implements ServiceInstance {
         return extendParams;
     }
 
+    @Override
+    public Map<String, String> getAllParams() {
+        Map<String, String> allParams = new HashMap<>((int) ((metadata.size() + extendParams.size()) / 0.75f + 1));
+        allParams.putAll(metadata);
+        allParams.putAll(extendParams);
+        return allParams;
+    }
+
     public void setMetadata(Map<String, String> metadata) {
         this.metadata = metadata;
     }

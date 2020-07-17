@@ -19,6 +19,7 @@ package org.apache.dubbo.registry.client.event.listener;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.event.ConditionalEventListener;
 import org.apache.dubbo.event.EventListener;
 import org.apache.dubbo.metadata.MetadataInfo;
@@ -26,6 +27,7 @@ import org.apache.dubbo.metadata.MetadataInfo.ServiceInfo;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
+import org.apache.dubbo.registry.client.InstanceAddressURL;
 import org.apache.dubbo.registry.client.RegistryClusterIdentifier;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
@@ -161,12 +163,13 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
                 RemoteMetadataServiceImpl remoteMetadataService = MetadataUtils.getRemoteMetadataService();
                 metadataInfo = remoteMetadataService.getMetadata(instance);
             } else {
-                MetadataService metadataServiceProxy = MetadataUtils.getMetadataServiceProxy(instance);
+                MetadataService metadataServiceProxy = MetadataUtils.getMetadataServiceProxy(instance, serviceDiscovery);
                 metadataInfo = metadataServiceProxy.getMetadataInfo(ServiceInstanceMetadataUtils.getExportedServicesRevision(instance));
             }
         } catch (Exception e) {
-            // TODO, load metadata backup
+            logger.error("Failed to load service metadata, metadta type is " + metadataType, e);
             metadataInfo = null;
+            // TODO, load metadata backup. Stop getting metadata after x times of failure for one revision?
         }
         return metadataInfo;
     }
@@ -174,7 +177,12 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
     private void notifyAddressChanged() {
         listeners.forEach((key, notifyListener) -> {
             //FIXME, group wildcard match
-            notifyListener.notify(serviceUrls.get(key));
+            List<URL> urls = serviceUrls.get(key);
+            if (CollectionUtils.isEmpty(urls)) {
+                urls = new ArrayList<>();
+                urls.add(new InstanceAddressURL());
+            }
+            notifyListener.notify(urls);
         });
     }
 

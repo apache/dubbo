@@ -23,29 +23,30 @@ import org.apache.dubbo.rpc.RpcContext;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 
-/**
- * FIXME, replace RpcContext operations with explicitly defined APIs
- */
 public class InstanceAddressURL extends URL {
     private ServiceInstance instance;
     private MetadataInfo metadataInfo;
+    private volatile transient Map<String, Number> numbers;
+    private volatile transient Map<String, Map<String, Number>> methodNumbers;
+
+    public InstanceAddressURL() {
+    }
 
     public InstanceAddressURL(
             ServiceInstance instance,
             MetadataInfo metadataInfo
     ) {
-//        super()
         this.instance = instance;
         this.metadataInfo = metadataInfo;
         this.host = instance.getHost();
         this.port = instance.getPort();
     }
-
 
     public ServiceInstance getInstance() {
         return instance;
@@ -74,6 +75,11 @@ public class InstanceAddressURL extends URL {
     }
 
     @Override
+    public String getProtocolServiceKey() {
+        return RpcContext.getContext().getProtocolServiceKey();
+    }
+
+    @Override
     public String getServiceKey() {
         return RpcContext.getContext().getServiceKey();
     }
@@ -99,33 +105,32 @@ public class InstanceAddressURL extends URL {
             return getServiceInterface();
         }
 
-        String value = getInstanceMetadata().get(key);
+        String protocolServiceKey = getProtocolServiceKey();
+        if (protocolServiceKey == null) {
+            return getInstanceParameter(key);
+        }
+        return getServiceParameter(protocolServiceKey, key);
+    }
+
+    @Override
+    public String getServiceParameter(String service, String key) {
+        String value = getInstanceParameter(key);
         if (StringUtils.isEmpty(value) && metadataInfo != null) {
-            value = metadataInfo.getParameter(key, RpcContext.getContext().getProtocolServiceKey());
+            value = metadataInfo.getParameter(key, service);
         }
         return value;
     }
 
+    /**
+     * method parameter only exists in ServiceInfo
+     *
+     * @param method
+     * @param key
+     * @return
+     */
     @Override
-    public String getParameter(String key, String defaultValue) {
-        if (VERSION_KEY.equals(key)) {
-            return getVersion();
-        } else if (GROUP_KEY.equals(key)) {
-            return getGroup();
-        } else if (INTERFACE_KEY.equals(key)) {
-            return getServiceInterface();
-        }
-
-        String value = getParameter(key);
-        if (StringUtils.isEmpty(value)) {
-            return defaultValue;
-        }
-        return value;
-    }
-
-    @Override
-    public String getMethodParameter(String method, String key) {
-        MetadataInfo.ServiceInfo serviceInfo = metadataInfo.getServiceInfo(getProtocolServiceKey());
+    public String getServiceMethodParameter(String protocolServiceKey, String method, String key) {
+        MetadataInfo.ServiceInfo serviceInfo = metadataInfo.getServiceInfo(protocolServiceKey);
         String value = serviceInfo.getMethodParameter(method, key, null);
         if (StringUtils.isNotEmpty(value)) {
             return value;
@@ -134,8 +139,24 @@ public class InstanceAddressURL extends URL {
     }
 
     @Override
-    public boolean hasMethodParameter(String method, String key) {
-        MetadataInfo.ServiceInfo serviceInfo = metadataInfo.getServiceInfo(getProtocolServiceKey());
+    public String getMethodParameter(String method, String key) {
+        String protocolServiceKey = getProtocolServiceKey();
+        if (protocolServiceKey == null) {
+            return null;
+        }
+        return getServiceMethodParameter(protocolServiceKey, method, key);
+    }
+
+    /**
+     * method parameter only exists in ServiceInfo
+     *
+     * @param method
+     * @param key
+     * @return
+     */
+    @Override
+    public boolean hasServiceMethodParameter(String protocolServiceKey, String method, String key) {
+        MetadataInfo.ServiceInfo serviceInfo = metadataInfo.getServiceInfo(protocolServiceKey);
 
         if (method == null) {
             String suffix = "." + key;
@@ -160,9 +181,33 @@ public class InstanceAddressURL extends URL {
     }
 
     @Override
-    public boolean hasMethodParameter(String method) {
-        MetadataInfo.ServiceInfo serviceInfo = metadataInfo.getServiceInfo(getProtocolServiceKey());
+    public boolean hasMethodParameter(String method, String key) {
+        String protocolServiceKey = getProtocolServiceKey();
+        if (protocolServiceKey == null) {
+            return false;
+        }
+        return hasServiceMethodParameter(protocolServiceKey, method, key);
+    }
+
+    /**
+     * method parameter only exists in ServiceInfo
+     *
+     * @param method
+     * @return
+     */
+    @Override
+    public boolean hasServiceMethodParameter(String protocolServiceKey, String method) {
+        MetadataInfo.ServiceInfo serviceInfo = metadataInfo.getServiceInfo(protocolServiceKey);
         return serviceInfo.hasMethodParameter(method);
+    }
+
+    @Override
+    public boolean hasMethodParameter(String method) {
+        String protocolServiceKey = getProtocolServiceKey();
+        if (protocolServiceKey == null) {
+            return false;
+        }
+        return hasServiceMethodParameter(protocolServiceKey, method);
     }
 
     /**
@@ -171,9 +216,9 @@ public class InstanceAddressURL extends URL {
      * @return
      */
     @Override
-    public Map<String, String> getParameters() {
+    public Map<String, String> getServiceParameters(String protocolServiceKey) {
         Map<String, String> instanceParams = getInstanceMetadata();
-        Map<String, String> metadataParams = (metadataInfo == null ? new HashMap<>() : metadataInfo.getParameters(RpcContext.getContext().getProtocolServiceKey()));
+        Map<String, String> metadataParams = (metadataInfo == null ? new HashMap<>() : metadataInfo.getParameters(protocolServiceKey));
         int i = instanceParams == null ? 0 : instanceParams.size();
         int j = metadataParams == null ? 0 : metadataParams.size();
         Map<String, String> params = new HashMap<>((int) ((i + j) / 0.75) + 1);
@@ -186,8 +231,13 @@ public class InstanceAddressURL extends URL {
         return params;
     }
 
-    private Map<String, String> getInstanceMetadata() {
-        return this.instance.getMetadata();
+    @Override
+    public Map<String, String> getParameters() {
+        String protocolServiceKey = getProtocolServiceKey();
+        if (protocolServiceKey == null) {
+            return getInstance().getAllParams();
+        }
+        return getServiceParameters(protocolServiceKey);
     }
 
     @Override
@@ -196,8 +246,7 @@ public class InstanceAddressURL extends URL {
             return this;
         }
 
-        String protocolServiceKey = RpcContext.getContext().getProtocolServiceKey();
-        getMetadataInfo().getServiceInfo(protocolServiceKey).addParameter(key, value);
+        getInstance().getExtendParams().put(key, value);
         return this;
     }
 
@@ -207,15 +256,81 @@ public class InstanceAddressURL extends URL {
             return this;
         }
 
-        String protocolServiceKey = RpcContext.getContext().getProtocolServiceKey();
+        getInstance().getExtendParams().putIfAbsent(key, value);
+        return this;
+    }
+
+    public URL addServiceParameter(String protocolServiceKey, String key, String value) {
+        if (StringUtils.isEmpty(key) || StringUtils.isEmpty(value)) {
+            return this;
+        }
+
+        getMetadataInfo().getServiceInfo(protocolServiceKey).addParameter(key, value);
+        return this;
+    }
+
+    public URL addServiceParameterIfAbsent(String protocolServiceKey, String key, String value) {
+        if (StringUtils.isEmpty(key) || StringUtils.isEmpty(value)) {
+            return this;
+        }
+
         getMetadataInfo().getServiceInfo(protocolServiceKey).addParameterIfAbsent(key, value);
         return this;
     }
 
-    public URL addConsumerParams(Map<String, String> params) {
-        String protocolServiceKey = RpcContext.getContext().getProtocolServiceKey();
+    public URL addConsumerParams(String protocolServiceKey, Map<String, String> params) {
         getMetadataInfo().getServiceInfo(protocolServiceKey).addConsumerParams(params);
         return this;
+    }
+
+    @Override
+    protected Map<String, Number> getServiceNumbers(String protocolServiceKey) {
+        return getServiceInfo(protocolServiceKey).getNumbers();
+    }
+
+    @Override
+    protected Map<String, Number> getNumbers() {
+        String protocolServiceKey = getProtocolServiceKey();
+        if (protocolServiceKey == null) {
+            if (numbers == null) { // concurrent initialization is tolerant
+                numbers = new ConcurrentHashMap<>();
+            }
+            return numbers;
+        }
+        return getServiceNumbers(protocolServiceKey);
+    }
+
+    @Override
+    protected Map<String, Map<String, Number>> getServiceMethodNumbers(String protocolServiceKey) {
+        return getServiceInfo(protocolServiceKey).getMethodNumbers();
+    }
+
+    @Override
+    protected Map<String, Map<String, Number>> getMethodNumbers() {
+        String protocolServiceKey = getProtocolServiceKey();
+        if (protocolServiceKey == null) {
+            if (methodNumbers == null) { // concurrent initialization is tolerant
+                methodNumbers = new ConcurrentHashMap<>();
+            }
+            return methodNumbers;
+        }
+        return getServiceMethodNumbers(protocolServiceKey);
+    }
+
+    private MetadataInfo.ServiceInfo getServiceInfo(String protocolServiceKey) {
+        return metadataInfo.getServiceInfo(protocolServiceKey);
+    }
+
+    private String getInstanceParameter(String key) {
+        String value = this.instance.getMetadata().get(key);
+        if (StringUtils.isNotEmpty(value)) {
+            return value;
+        }
+        return this.instance.getExtendParams().get(key);
+    }
+
+    private Map<String, String> getInstanceMetadata() {
+        return this.instance.getMetadata();
     }
 
     @Override
