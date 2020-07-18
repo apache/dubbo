@@ -329,6 +329,8 @@ public interface CommonConstants {
 
     String SSL_ENABLED_KEY = "ssl-enabled";
 
+    String CONTAINER_CONTEXT_PATH = "container-context-path";
+
 
     /**
      * The parameter key for the class path of the ServiceNameMapping {@link Properties} file

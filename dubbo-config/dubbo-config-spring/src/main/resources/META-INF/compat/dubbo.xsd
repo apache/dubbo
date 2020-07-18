@@ -1201,7 +1201,7 @@
                 <xsd:documentation><![CDATA[ Is SSL enabled. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-        <xsd:attribute name="containerContextPath" type="xsd:string">
+        <xsd:attribute name="container-context-path" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The container protocol context path. ]]></xsd:documentation>
             </xsd:annotation>

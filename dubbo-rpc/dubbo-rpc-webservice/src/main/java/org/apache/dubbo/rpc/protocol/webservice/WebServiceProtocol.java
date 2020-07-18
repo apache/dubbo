@@ -57,6 +57,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.SocketTimeoutException;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CONTAINER_CONTEXT_PATH;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 
@@ -134,7 +135,7 @@ public class WebServiceProtocol extends AbstractProxyProtocol {
     @SuppressWarnings("unchecked")
     protected <T> T doRefer(final Class<T> serviceType, URL url) throws RpcException {
         ClientProxyFactoryBean proxyFactoryBean = new ClientProxyFactoryBean();
-        String containerContextPath = url.getParameter("containerContextPath");
+        String containerContextPath = url.getParameter(CONTAINER_CONTEXT_PATH);
         if (!StringUtils.isEmpty(containerContextPath)) {
             url = url.setPath(containerContextPath + "/" + url.getPath());
         }

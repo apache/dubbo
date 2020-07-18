@@ -21,6 +21,7 @@ import org.apache.dubbo.config.support.Parameter;
 
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CONTAINER_CONTEXT_PATH;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SSL_ENABLED_KEY;
 import static org.apache.dubbo.config.Constants.PROTOCOLS_SUFFIX;
@@ -525,6 +526,15 @@ public class ProtocolConfig extends AbstractConfig {
         this.extension = extension;
     }
 
+    @Parameter(key = CONTAINER_CONTEXT_PATH)
+    public String getContainerContextPath() {
+        return containerContextPath;
+    }
+
+    public void setContainerContextPath(String containerContextPath) {
+        this.containerContextPath = containerContextPath;
+    }
+
     @Override
     public void refresh() {
         if (StringUtils.isEmpty(this.getName())) {
@@ -543,11 +553,4 @@ public class ProtocolConfig extends AbstractConfig {
         return StringUtils.isNotEmpty(name);
     }
 
-    public String getContainerContextPath() {
-        return containerContextPath;
-    }
-
-    public void setContainerContextPath(String containerContextPath) {
-        this.containerContextPath = containerContextPath;
-    }
 }
