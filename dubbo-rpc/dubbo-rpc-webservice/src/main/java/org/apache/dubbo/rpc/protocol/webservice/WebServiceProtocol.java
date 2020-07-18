@@ -132,8 +132,12 @@ public class WebServiceProtocol extends AbstractProxyProtocol {
 
     @Override
     @SuppressWarnings("unchecked")
-    protected <T> T doRefer(final Class<T> serviceType, final URL url) throws RpcException {
+    protected <T> T doRefer(final Class<T> serviceType, URL url) throws RpcException {
         ClientProxyFactoryBean proxyFactoryBean = new ClientProxyFactoryBean();
+        String containerContextPath = url.getParameter("containerContextPath");
+        if (!StringUtils.isEmpty(containerContextPath)) {
+            url = url.setPath(containerContextPath + "/" + url.getPath());
+        }
         proxyFactoryBean.setAddress(url.setProtocol("http").toIdentityString());
         proxyFactoryBean.setServiceClass(serviceType);
         proxyFactoryBean.setBus(bus);

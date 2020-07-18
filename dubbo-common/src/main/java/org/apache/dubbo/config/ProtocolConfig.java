@@ -200,6 +200,8 @@ public class ProtocolConfig extends AbstractConfig {
 
     private Boolean sslEnabled;
 
+    private String containerContextPath;
+
     public ProtocolConfig() {
     }
 
@@ -539,5 +541,13 @@ public class ProtocolConfig extends AbstractConfig {
     @Parameter(excluded = true)
     public boolean isValid() {
         return StringUtils.isNotEmpty(name);
+    }
+
+    public String getContainerContextPath() {
+        return containerContextPath;
+    }
+
+    public void setContainerContextPath(String containerContextPath) {
+        this.containerContextPath = containerContextPath;
     }
 }
