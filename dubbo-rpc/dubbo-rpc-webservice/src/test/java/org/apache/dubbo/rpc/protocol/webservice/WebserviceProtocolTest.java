@@ -34,6 +34,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 
+import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_PATH_PREFIX;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
@@ -97,7 +98,7 @@ public class WebserviceProtocolTest {
                 .addParameter("server", "servlet")
                 .addParameter("bind.port", 55065)
                 .addParameter("contextpath", "dubbo-webservice2")
-                .addParameter("container-context-path", "dubbo-webservice/services")
+                .addParameter(SERVICE_PATH_PREFIX, "dubbo-webservice/services")
                 .addParameter("codec", "exchange")
                 .addParameter("timeout", 600000);
         URL url = builder.build();
@@ -138,7 +139,7 @@ public class WebserviceProtocolTest {
         tomcat.destroy();
     }
 
-    private Tomcat buildTomcat(String containerContextPath, String servletPattern, int port) {
+    private Tomcat buildTomcat(String servicePathPrefix, String servletPattern, int port) {
         String baseDir = new File(System.getProperty("java.io.tmpdir")).getAbsolutePath();
 
         Tomcat tomcat = new Tomcat();
@@ -153,7 +154,7 @@ public class WebserviceProtocolTest {
         tomcat.setBaseDir(baseDir);
         tomcat.setPort(port);
 
-        Context context = tomcat.addContext(containerContextPath, baseDir);
+        Context context = tomcat.addContext(servicePathPrefix, baseDir);
         Tomcat.addServlet(context, "dispatcher", new DispatcherServlet());
 
         context.addServletMappingDecoded(servletPattern, "dispatcher");
