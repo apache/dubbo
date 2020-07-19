@@ -331,6 +331,9 @@ public interface CommonConstants {
 
     String CONTAINER_CONTEXT_PATH = "container-context-path";
 
+    String PROTOCOL_SERVER_SERVLET = "servlet";
+
+    String PROTOCOL_SERVER = "server";
 
     /**
      * The parameter key for the class path of the ServiceNameMapping {@link Properties} file

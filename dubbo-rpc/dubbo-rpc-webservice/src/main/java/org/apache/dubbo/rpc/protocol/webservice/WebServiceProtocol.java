@@ -59,6 +59,8 @@ import java.net.SocketTimeoutException;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONTAINER_CONTEXT_PATH;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
+import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_SERVER;
+import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_SERVER_SERVLET;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 
 /**
@@ -136,7 +138,7 @@ public class WebServiceProtocol extends AbstractProxyProtocol {
     protected <T> T doRefer(final Class<T> serviceType, URL url) throws RpcException {
         ClientProxyFactoryBean proxyFactoryBean = new ClientProxyFactoryBean();
         String containerContextPath = url.getParameter(CONTAINER_CONTEXT_PATH);
-        if (!StringUtils.isEmpty(containerContextPath)) {
+        if (!StringUtils.isEmpty(containerContextPath) && PROTOCOL_SERVER_SERVLET.equals(url.getParameter(PROTOCOL_SERVER))) {
             url = url.setPath(containerContextPath + "/" + url.getPath());
         }
         proxyFactoryBean.setAddress(url.setProtocol("http").toIdentityString());
