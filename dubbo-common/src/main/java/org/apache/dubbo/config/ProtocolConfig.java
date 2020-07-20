@@ -21,7 +21,6 @@ import org.apache.dubbo.config.support.Parameter;
 
 import java.util.Map;
 
-import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_PATH_PREFIX;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SSL_ENABLED_KEY;
 import static org.apache.dubbo.config.Constants.PROTOCOLS_SUFFIX;
@@ -200,13 +199,6 @@ public class ProtocolConfig extends AbstractConfig {
     private Boolean isDefault;
 
     private Boolean sslEnabled;
-
-    /**
-     * For web service, it's the container context appended by servlet url pattern, just for servlet server.
-     * For example, if the container context path is dubbo-service, the servlet url pattern is /services/*,
-     * then the servicePathPrefix is dubbo-service/services
-     */
-    private String servicePathPrefix;
 
     public ProtocolConfig() {
     }
@@ -531,15 +523,6 @@ public class ProtocolConfig extends AbstractConfig {
         this.extension = extension;
     }
 
-    @Parameter(key = SERVICE_PATH_PREFIX)
-    public String getServicePathPrefix() {
-        return servicePathPrefix;
-    }
-
-    public void setServicePathPrefix(String servicePathPrefix) {
-        this.servicePathPrefix = servicePathPrefix;
-    }
-
     @Override
     public void refresh() {
         if (StringUtils.isEmpty(this.getName())) {
@@ -557,5 +540,4 @@ public class ProtocolConfig extends AbstractConfig {
     public boolean isValid() {
         return StringUtils.isNotEmpty(name);
     }
-
 }

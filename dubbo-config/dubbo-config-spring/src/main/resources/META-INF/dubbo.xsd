@@ -1212,11 +1212,6 @@
                 <xsd:documentation><![CDATA[ Is SSL enabled. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-        <xsd:attribute name="service-path-prefix" type="xsd:string">
-            <xsd:annotation>
-                <xsd:documentation><![CDATA[ The service path prefix. ]]></xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
         <xsd:anyAttribute namespace="##other" processContents="lax"/>
     </xsd:complexType>
 
