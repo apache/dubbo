@@ -17,6 +17,7 @@
 package org.apache.dubbo.registry.client;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.registry.integration.DynamicDirectory;
 import org.apache.dubbo.registry.integration.RegistryProtocol;
 import org.apache.dubbo.rpc.Invoker;
 
@@ -26,7 +27,6 @@ import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGIST
  * TODO, replace RegistryProtocol completely in the future.
  */
 public class ServiceDiscoveryRegistryProtocol extends RegistryProtocol {
-
     @Override
     protected URL getRegistryUrl(Invoker<?> originInvoker) {
         URL registryUrl = originInvoker.getUrl();
@@ -44,4 +44,8 @@ public class ServiceDiscoveryRegistryProtocol extends RegistryProtocol {
         return super.getRegistryUrl(url);
     }
 
+    @Override
+    protected <T> DynamicDirectory<T> createDirectory(Class<T> type, URL url) {
+        return new ServiceDiscoveryRegistryDirectory<>(type, url);
+    }
 }

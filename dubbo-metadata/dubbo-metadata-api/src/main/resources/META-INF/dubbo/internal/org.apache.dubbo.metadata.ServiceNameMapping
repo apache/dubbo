@@ -1,1 +1,2 @@
-default=org.apache.dubbo.metadata.DynamicConfigurationServiceNameMapping
+config=org.apache.dubbo.metadata.DynamicConfigurationServiceNameMapping
+metadata=org.apache.dubbo.metadata.MetadataServiceNameMapping

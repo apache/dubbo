@@ -192,6 +192,11 @@ public class RegistryConfig extends AbstractConfig {
         setProtocol(protocol);
     }
 
+    @Override
+    public String getId() {
+        return super.getId();
+    }
+
     public String getProtocol() {
         return protocol;
     }

@@ -19,6 +19,7 @@ package org.apache.dubbo.metadata;
 import org.apache.dubbo.common.URL;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -173,6 +174,10 @@ public interface MetadataService {
      * @return
      */
     String getServiceDefinition(String serviceKey);
+
+    MetadataInfo getMetadataInfo(String revision);
+
+    Map<String, MetadataInfo> getMetadataInfos();
 
     /**
      * Is the {@link URL} for the {@link MetadataService} or not?

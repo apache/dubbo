@@ -16,21 +16,25 @@
  */
 package org.apache.dubbo.metadata;
 
-import org.apache.dubbo.metadata.store.InMemoryWritableMetadataService;
+import java.util.Set;
 
-import org.junit.jupiter.api.Test;
+public class MappingChangedEvent {
+    private String serviceKey;
+    private Set<String> apps;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+    public String getServiceKey() {
+        return serviceKey;
+    }
 
-/**
- * {@link WritableMetadataService} Test
- *
- * @since 2.7.5
- */
-public class LocalMetadataServiceTest {
+    public void setServiceKey(String serviceKey) {
+        this.serviceKey = serviceKey;
+    }
 
-    @Test
-    public void testDefaultExtension() {
-        assertEquals(InMemoryWritableMetadataService.class, WritableMetadataService.getDefaultExtension().getClass());
+    public Set<String> getApps() {
+        return apps;
+    }
+
+    public void setApps(Set<String> apps) {
+        this.apps = apps;
     }
 }

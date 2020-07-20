@@ -14,16 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.store;
+package org.apache.dubbo.registry.client.metadata.store;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.metadata.MetadataInfo;
+import org.apache.dubbo.metadata.MetadataInfo.ServiceInfo;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
+import org.apache.dubbo.registry.client.RegistryClusterIdentifier;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import com.google.gson.Gson;
@@ -33,6 +37,8 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.locks.Lock;
@@ -67,6 +73,7 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
      * and value is the {@link SortedSet sorted set} of the {@link URL URLs}
      */
     ConcurrentNavigableMap<String, SortedSet<URL>> exportedServiceURLs = new ConcurrentSkipListMap<>();
+    ConcurrentMap<String, MetadataInfo> metadataInfos;
 
     // ==================================================================================== //
 
@@ -80,6 +87,10 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
     ConcurrentNavigableMap<String, SortedSet<URL>> subscribedServiceURLs = new ConcurrentSkipListMap<>();
 
     ConcurrentNavigableMap<String, String> serviceDefinitions = new ConcurrentSkipListMap<>();
+
+    public InMemoryWritableMetadataService() {
+        this.metadataInfos = new ConcurrentHashMap<>();
+    }
 
     @Override
     public SortedSet<String> getSubscribedURLs() {
@@ -112,11 +123,28 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
 
     @Override
     public boolean exportURL(URL url) {
+        String registryKey = RegistryClusterIdentifier.getExtension().providerKey(url);
+        String[] keys = registryKey.split(",");
+        for (String key : keys) {
+            MetadataInfo metadataInfo = metadataInfos.computeIfAbsent(key, k -> {
+                return new MetadataInfo(ApplicationModel.getName());
+            });
+            metadataInfo.addService(new ServiceInfo(url));
+        }
         return addURL(exportedServiceURLs, url);
     }
 
     @Override
     public boolean unexportURL(URL url) {
+        String registryKey = RegistryClusterIdentifier.getExtension().providerKey(url);
+        String[] keys = registryKey.split(",");
+        for (String key : keys) {
+            MetadataInfo metadataInfo = metadataInfos.get(key);
+            metadataInfo.removeService(url.getProtocolServiceKey());
+            if (metadataInfo.getServices().isEmpty()) {
+                metadataInfos.remove(key);
+            }
+        }
         return removeURL(exportedServiceURLs, url);
     }
 
@@ -158,6 +186,24 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
     @Override
     public String getServiceDefinition(String serviceKey) {
         return serviceDefinitions.get(serviceKey);
+    }
+
+    @Override
+    public MetadataInfo getMetadataInfo(String revision) {
+        if (StringUtils.isEmpty(revision)) {
+            return null;
+        }
+        for (Map.Entry<String, MetadataInfo> entry : metadataInfos.entrySet()) {
+            MetadataInfo metadataInfo = entry.getValue();
+            if (revision.equals(metadataInfo.getRevision())) {
+                return metadataInfo;
+            }
+        }
+        return null;
+    }
+
+    public Map<String, MetadataInfo> getMetadataInfos() {
+        return metadataInfos;
     }
 
     boolean addURL(Map<String, SortedSet<URL>> serviceURLs, URL url) {

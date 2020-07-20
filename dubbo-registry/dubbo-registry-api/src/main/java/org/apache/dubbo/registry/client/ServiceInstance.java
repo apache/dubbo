@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.registry.client;
 
-import org.apache.dubbo.common.URL;
-
 import java.io.Serializable;
 import java.util.Map;
 
@@ -57,6 +55,8 @@ public interface ServiceInstance extends Serializable {
      */
     Integer getPort();
 
+    String getAddress();
+
     /**
      * The enable status of the registered service instance.
      *
@@ -84,6 +84,8 @@ public interface ServiceInstance extends Serializable {
      */
     Map<String, String> getMetadata();
 
+    Map<String, String> getExtendParams();
+
     /**
      * @return the hash code of current instance.
      */
@@ -95,6 +97,6 @@ public interface ServiceInstance extends Serializable {
      */
     boolean equals(Object another);
 
-    URL toURL(String protocol, String path, String interfaceName, String group, String version, String serviceKey);
+    InstanceAddressURL toURL();
 
 }

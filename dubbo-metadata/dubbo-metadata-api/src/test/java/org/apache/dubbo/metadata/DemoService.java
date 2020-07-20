@@ -14,10 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.config;
+package org.apache.dubbo.metadata;
+
+import org.apache.dubbo.metadata.rest.User;
+
+import java.util.List;
+
 
 /**
- *
+ * DemoService
  */
-public class AbstractPrefixConfigurationTest {
+public interface DemoService {
+
+    String sayName(String name);
+
+    void throwRuntimeException() throws RuntimeException;
+
+    List<User> getUsers(List<User> users);
+
+    int echo(int i);
+
 }

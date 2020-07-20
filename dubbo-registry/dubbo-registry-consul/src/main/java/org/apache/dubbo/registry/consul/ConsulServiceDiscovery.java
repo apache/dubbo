@@ -99,6 +99,11 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
         this.registeringTags.addAll(getRegisteringTags(url));
     }
 
+    @Override
+    public URL getUrl() {
+        return url;
+    }
+
     private List<String> getRegisteringTags(URL url) {
         List<String> tags = new ArrayList<>();
         String rawTag = url.getParameter(REGISTER_TAG);
@@ -128,7 +133,7 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
     @Override
     public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener) throws NullPointerException, IllegalArgumentException {
         if (notifier == null) {
-            String serviceName = listener.getServiceName();
+            String serviceName = listener.getServiceNames();
             Response<List<HealthService>> response = getHealthServices(serviceName, -1, buildWatchTimeout());
             Long consulIndex = response.getConsulIndex();
             notifier = new ConsulNotifier(serviceName, consulIndex);

@@ -85,6 +85,8 @@ public class ServiceInstanceMetadataUtils {
      */
     public static String METADATA_STORAGE_TYPE_PROPERTY_NAME = "dubbo.metadata.storage-type";
 
+    public static String METADATA_CLUSTER_PROPERTY_NAME = "dubbo.metadata.cluster";
+
     /**
      * Get the multiple {@link URL urls'} parameters of {@link MetadataService MetadataService's} Metadata
      *
@@ -193,6 +195,11 @@ public class ServiceInstanceMetadataUtils {
     public static void setMetadataStorageType(ServiceInstance serviceInstance, String metadataType) {
         Map<String, String> metadata = serviceInstance.getMetadata();
         metadata.put(METADATA_STORAGE_TYPE_PROPERTY_NAME, metadataType);
+    }
+
+    public static String getRemoteCluster(ServiceInstance serviceInstance) {
+        Map<String, String> metadata = serviceInstance.getMetadata();
+        return metadata.get(METADATA_CLUSTER_PROPERTY_NAME);
     }
 
     /**

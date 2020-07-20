@@ -14,26 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.client.event.listener;
+package org.apache.dubbo.metadata;
 
-import org.apache.dubbo.registry.client.DefaultServiceInstanceTest;
-import org.apache.dubbo.registry.client.event.ServiceInstancePreRegisteredEvent;
+import org.apache.dubbo.common.extension.SPI;
 
-import org.junit.jupiter.api.Test;
-
-/**
- * {@link CustomizableServiceInstanceListener} Test
- *
- * @since 2.7.5
- */
-public class CustomizableServiceInstanceListenerTest {
-
-    private CustomizableServiceInstanceListener listener = new CustomizableServiceInstanceListener();
-
-    @Test
-    public void testOnEvent() {
-        ServiceInstancePreRegisteredEvent event = new ServiceInstancePreRegisteredEvent(this, DefaultServiceInstanceTest.createInstance());
-        // breaking test
-        listener.onEvent(event);
-    }
+@SPI
+public interface MetadataParamsFilter {
+   String[] include();
 }

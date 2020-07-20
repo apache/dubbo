@@ -129,6 +129,11 @@ public class FileSystemServiceDiscovery implements ServiceDiscovery, EventListen
     }
 
     @Override
+    public URL getUrl() {
+        return null;
+    }
+
+    @Override
     public void register(ServiceInstance serviceInstance) throws RuntimeException {
         String serviceInstanceId = getServiceInstanceId(serviceInstance);
         String serviceName = getServiceName(serviceInstance);

@@ -14,21 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.client.metadata.proxy;
+package org.apache.dubbo.registry.zookeeper;
 
-import org.apache.dubbo.metadata.MetadataService;
-import org.apache.dubbo.registry.client.ServiceInstance;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.registry.client.AbstractServiceDiscoveryFactory;
+import org.apache.dubbo.registry.client.ServiceDiscovery;
 
-/**
- * Works on Consumer side, useful when using remote metadata mode. Also see {@link DefaultMetadataServiceProxyFactory}
- *
- * Provider will not expose the embedded {@link MetadataService}, instead, each provider register its metadata info to a
- * remote Metadata Center. So the Consumer side need to connect to the same Metadata Center to get one instance's metadata.
- */
-public class RemoteMetadataServiceProxyFactory extends BaseMetadataServiceProxyFactory implements MetadataServiceProxyFactory {
+public class ZookeeperServiceDiscoveryFactory extends AbstractServiceDiscoveryFactory {
 
     @Override
-    public MetadataService createProxy(ServiceInstance serviceInstance) {
-        return new RemoteMetadataServiceProxy(serviceInstance);
+    protected ServiceDiscovery createDiscovery(URL registryURL) {
+        return new ZookeeperServiceDiscovery();
     }
 }
