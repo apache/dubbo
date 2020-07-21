@@ -329,7 +329,7 @@ public interface CommonConstants {
 
     String SSL_ENABLED_KEY = "ssl-enabled";
 
-    String SERVICE_PATH_PREFIX = "service.path.prefix";
+    String SERVICE_PATH_PREFIX = "service-path-prefix";
 
     String PROTOCOL_SERVER_SERVLET = "servlet";
 
