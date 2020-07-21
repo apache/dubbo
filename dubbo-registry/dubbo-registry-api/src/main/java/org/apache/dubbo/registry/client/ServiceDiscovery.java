@@ -267,6 +267,8 @@ public interface ServiceDiscovery extends Prioritized {
         return null;
     }
 
+    ServiceInstance getLocalInstance();
+
     /**
      * A human-readable description of the implementation
      *

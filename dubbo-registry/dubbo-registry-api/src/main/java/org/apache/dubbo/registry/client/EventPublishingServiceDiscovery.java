@@ -229,6 +229,11 @@ final class EventPublishingServiceDiscovery implements ServiceDiscovery {
     }
 
     @Override
+    public ServiceInstance getLocalInstance() {
+        return serviceDiscovery.getLocalInstance();
+    }
+
+    @Override
     public void initialize(URL registryURL) {
 
         assertInitialized(INITIALIZE_ACTION);

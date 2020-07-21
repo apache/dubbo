@@ -19,6 +19,7 @@ package org.apache.dubbo.registry.client.event.listener;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.event.ConditionalEventListener;
 import org.apache.dubbo.event.EventListener;
 import org.apache.dubbo.metadata.MetadataInfo;
@@ -26,6 +27,7 @@ import org.apache.dubbo.metadata.MetadataInfo.ServiceInfo;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
+import org.apache.dubbo.registry.client.InstanceAddressURL;
 import org.apache.dubbo.registry.client.RegistryClusterIdentifier;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
@@ -45,6 +47,7 @@ import java.util.TreeSet;
 
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
+import static org.apache.dubbo.metadata.MetadataInfo.DEFAULT_REVISION;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getExportedServicesRevision;
 
 /**
@@ -86,11 +89,17 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
         String appName = event.getServiceName();
         allInstances.put(appName, event.getServiceInstances());
 
+        Map<String, List<ServiceInstance>> revisionToInstances = new HashMap<>();
+        Map<String, Set<String>> localServiceToRevisions = new HashMap<>();
+        Map<Set<String>, List<URL>> revisionsToUrls = new HashMap();
         for (Map.Entry<String, List<ServiceInstance>> entry : allInstances.entrySet()) {
             List<ServiceInstance> instances = entry.getValue();
             for (ServiceInstance instance : instances) {
                 String revision = getExportedServicesRevision(instance);
-                Map<String, List<ServiceInstance>> revisionToInstances = new HashMap<>();
+                if (DEFAULT_REVISION.equals(revision)) {
+                    logger.info("Find instance without valid service metadata: " + instance.getAddress());
+                    continue;
+                }
                 List<ServiceInstance> subInstances = revisionToInstances.computeIfAbsent(revision, r -> new LinkedList<>());
                 subInstances.add(instance);
 
@@ -104,7 +113,6 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
                     }
                 }
 
-                Map<String, Set<String>> localServiceToRevisions = new HashMap<>();
                 if (metadata != null) {
                     parseMetadata(revision, metadata, localServiceToRevisions);
                     ((DefaultServiceInstance) instance).setServiceMetadata(metadata);
@@ -115,7 +123,6 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
 //                    set.add(revision);
 //                }
 
-                Map<Set<String>, List<URL>> revisionsToUrls = new HashMap();
                 localServiceToRevisions.forEach((serviceKey, revisions) -> {
                     List<URL> urls = revisionsToUrls.get(revisions);
                     if (urls != null) {
@@ -140,8 +147,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
     private Map<String, Set<String>> parseMetadata(String revision, MetadataInfo metadata, Map<String, Set<String>> localServiceToRevisions) {
         Map<String, ServiceInfo> serviceInfos = metadata.getServices();
         for (Map.Entry<String, ServiceInfo> entry : serviceInfos.entrySet()) {
-            String serviceKey = entry.getValue().getServiceKey();
-            Set<String> set = localServiceToRevisions.computeIfAbsent(serviceKey, k -> new TreeSet<>());
+            Set<String> set = localServiceToRevisions.computeIfAbsent(entry.getKey(), k -> new TreeSet<>());
             set.add(revision);
         }
 
@@ -157,12 +163,13 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
                 RemoteMetadataServiceImpl remoteMetadataService = MetadataUtils.getRemoteMetadataService();
                 metadataInfo = remoteMetadataService.getMetadata(instance);
             } else {
-                MetadataService metadataServiceProxy = MetadataUtils.getMetadataServiceProxy(instance);
+                MetadataService metadataServiceProxy = MetadataUtils.getMetadataServiceProxy(instance, serviceDiscovery);
                 metadataInfo = metadataServiceProxy.getMetadataInfo(ServiceInstanceMetadataUtils.getExportedServicesRevision(instance));
             }
         } catch (Exception e) {
-            // TODO, load metadata backup
+            logger.error("Failed to load service metadata, metadta type is " + metadataType, e);
             metadataInfo = null;
+            // TODO, load metadata backup. Stop getting metadata after x times of failure for one revision?
         }
         return metadataInfo;
     }
@@ -170,7 +177,12 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
     private void notifyAddressChanged() {
         listeners.forEach((key, notifyListener) -> {
             //FIXME, group wildcard match
-            notifyListener.notify(serviceUrls.get(key));
+            List<URL> urls = serviceUrls.get(key);
+            if (CollectionUtils.isEmpty(urls)) {
+                urls = new ArrayList<>();
+                urls.add(new InstanceAddressURL());
+            }
+            notifyListener.notify(urls);
         });
     }
 

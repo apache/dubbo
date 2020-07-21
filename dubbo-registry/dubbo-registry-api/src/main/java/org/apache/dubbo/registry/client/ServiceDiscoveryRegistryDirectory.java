@@ -45,7 +45,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
     private static final Logger logger = LoggerFactory.getLogger(ServiceDiscoveryRegistryDirectory.class);
 
     // Map<url, Invoker> cache service url to invoker mapping.
-    private volatile Map<URL, Invoker<T>> urlInvokerMap; // The initial value is null and the midway may be assigned to null, please use the local variable reference
+    private volatile Map<String, Invoker<T>> urlInvokerMap; // The initial value is null and the midway may be assigned to null, please use the local variable reference
 
     private ServiceInstancesChangedListener listener;
 
@@ -57,48 +57,53 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
     public synchronized void notify(List<URL> instanceUrls) {
         // Set the context of the address notification thread.
         RpcContext.setRpcContext(getConsumerUrl());
-        if (CollectionUtils.isEmpty(instanceUrls)) {
-            // FIXME, empty protocol
-        }
         refreshInvoker(instanceUrls);
     }
 
     private void refreshInvoker(List<URL> invokerUrls) {
-        Assert.notNull(invokerUrls, "invokerUrls should not be null");
+        Assert.notNull(invokerUrls, "invokerUrls should not be null, use empty InstanceAddressURL to clear address.");
 
-        if (invokerUrls.size() == 1
-                && invokerUrls.get(0) != null
-                && EMPTY_PROTOCOL.equals(invokerUrls.get(0).getProtocol())) {
-            this.forbidden = true; // Forbid to access
-            this.invokers = Collections.emptyList();
-            routerChain.setInvokers(this.invokers);
-            destroyAllInvokers(); // Close all invokers
-        } else {
-            this.forbidden = false; // Allow to access
-            Map<URL, Invoker<T>> oldUrlInvokerMap = this.urlInvokerMap; // local reference
-            if (CollectionUtils.isEmpty(invokerUrls)) {
-                return;
-            }
-            Map<URL, Invoker<T>> newUrlInvokerMap = toInvokers(invokerUrls);// Translate url list to Invoker map
-
-            if (CollectionUtils.isEmptyMap(newUrlInvokerMap)) {
-                logger.error(new IllegalStateException("Cannot create invokers from url address list (total " + invokerUrls.size() + ")"));
-                return;
-            }
-
-            List<Invoker<T>> newInvokers = Collections.unmodifiableList(new ArrayList<>(newUrlInvokerMap.values()));
-            // pre-route and build cache, notice that route cache should build on original Invoker list.
-            // toMergeMethodInvokerMap() will wrap some invokers having different groups, those wrapped invokers not should be routed.
-            routerChain.setInvokers(newInvokers);
-            this.invokers = multiGroup ? toMergeInvokerList(newInvokers) : newInvokers;
-            this.urlInvokerMap = newUrlInvokerMap;
-
-            if (oldUrlInvokerMap != null) {
-                try {
-                    destroyUnusedInvokers(oldUrlInvokerMap, newUrlInvokerMap); // Close the unused Invoker
-                } catch (Exception e) {
-                    logger.warn("destroyUnusedInvokers error. ", e);
+        if (invokerUrls.size() == 1) {
+            URL url = invokerUrls.get(0);
+            if (!(url instanceof InstanceAddressURL)) {
+                throw new IllegalStateException("use empty InstanceAddressURL to clear address");
+            } else {
+                InstanceAddressURL instanceAddressURL = (InstanceAddressURL) url;
+                if (instanceAddressURL.getInstance() == null) {
+                    this.forbidden = true; // Forbid to access
+                    this.invokers = Collections.emptyList();
+                    routerChain.setInvokers(this.invokers);
+                    destroyAllInvokers(); // Close all invokers
+                    return;
                 }
+            }
+        }
+
+        this.forbidden = false; // Allow to access
+        Map<String, Invoker<T>> oldUrlInvokerMap = this.urlInvokerMap; // local reference
+        if (CollectionUtils.isEmpty(invokerUrls)) {
+            return;
+        }
+
+        Map<String, Invoker<T>> newUrlInvokerMap = toInvokers(invokerUrls);// Translate url list to Invoker map
+
+        if (CollectionUtils.isEmptyMap(newUrlInvokerMap)) {
+            logger.error(new IllegalStateException("Cannot create invokers from url address list (total " + invokerUrls.size() + ")"));
+            return;
+        }
+
+        List<Invoker<T>> newInvokers = Collections.unmodifiableList(new ArrayList<>(newUrlInvokerMap.values()));
+        // pre-route and build cache, notice that route cache should build on original Invoker list.
+        // toMergeMethodInvokerMap() will wrap some invokers having different groups, those wrapped invokers not should be routed.
+        routerChain.setInvokers(newInvokers);
+        this.invokers = multiGroup ? toMergeInvokerList(newInvokers) : newInvokers;
+        this.urlInvokerMap = newUrlInvokerMap;
+
+        if (oldUrlInvokerMap != null) {
+            try {
+                destroyUnusedInvokers(oldUrlInvokerMap, newUrlInvokerMap); // Close the unused Invoker
+            } catch (Exception e) {
+                logger.warn("destroyUnusedInvokers error. ", e);
             }
         }
     }
@@ -109,49 +114,61 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
      * @param urls
      * @return invokers
      */
-    private Map<URL, Invoker<T>> toInvokers(List<URL> urls) {
-        Map<URL, Invoker<T>> newUrlInvokerMap = new HashMap<>();
+    private Map<String, Invoker<T>> toInvokers(List<URL> urls) {
+        Map<String, Invoker<T>> newUrlInvokerMap = new HashMap<>();
         if (urls == null || urls.isEmpty()) {
             return newUrlInvokerMap;
         }
         for (URL url : urls) {
-            if (EMPTY_PROTOCOL.equals(url.getProtocol())) {
+            InstanceAddressURL instanceAddressURL = (InstanceAddressURL) url;
+            if (EMPTY_PROTOCOL.equals(instanceAddressURL.getProtocol())) {
                 continue;
             }
-            if (!ExtensionLoader.getExtensionLoader(Protocol.class).hasExtension(url.getProtocol())) {
-                logger.error(new IllegalStateException("Unsupported protocol " + url.getProtocol() +
-                        " in notified url: " + url + " from registry " + getUrl().getAddress() +
+            if (!ExtensionLoader.getExtensionLoader(Protocol.class).hasExtension(instanceAddressURL.getProtocol())) {
+                logger.error(new IllegalStateException("Unsupported protocol " + instanceAddressURL.getProtocol() +
+                        " in notified url: " + instanceAddressURL + " from registry " + getUrl().getAddress() +
                         " to consumer " + NetUtils.getLocalHost() + ", supported protocol: " +
                         ExtensionLoader.getExtensionLoader(Protocol.class).getSupportedExtensions()));
                 continue;
             }
 
-            if (urlInvokerMap != null && urlInvokerMap.containsKey(url)) { // Repeated url
-                continue;
-            }
-            Invoker<T> invoker = urlInvokerMap == null ? null : urlInvokerMap.get(url);
-            if (invoker == null) { // Not in the cache, refer again
+            // FIXME, some keys may need to be removed.
+            instanceAddressURL.addConsumerParams(getConsumerUrl().getProtocolServiceKey(), queryMap);
+
+            Invoker<T> invoker = urlInvokerMap == null ? null : urlInvokerMap.get(instanceAddressURL.getAddress());
+            if (invoker == null || urlChanged(invoker, instanceAddressURL)) { // Not in the cache, refer again
                 try {
                     boolean enabled = true;
-                    if (url.hasParameter(DISABLED_KEY)) {
-                        enabled = !url.getParameter(DISABLED_KEY, false);
+                    if (instanceAddressURL.hasParameter(DISABLED_KEY)) {
+                        enabled = !instanceAddressURL.getParameter(DISABLED_KEY, false);
                     } else {
-                        enabled = url.getParameter(ENABLED_KEY, true);
+                        enabled = instanceAddressURL.getParameter(ENABLED_KEY, true);
                     }
                     if (enabled) {
-                        invoker = protocol.refer(serviceType, url);
+                        invoker = protocol.refer(serviceType, instanceAddressURL);
                     }
                 } catch (Throwable t) {
-                    logger.error("Failed to refer invoker for interface:" + serviceType + ",url:(" + url + ")" + t.getMessage(), t);
+                    logger.error("Failed to refer invoker for interface:" + serviceType + ",url:(" + instanceAddressURL + ")" + t.getMessage(), t);
                 }
                 if (invoker != null) { // Put new invoker in cache
-                    newUrlInvokerMap.put(url, invoker);
+                    newUrlInvokerMap.put(instanceAddressURL.getAddress(), invoker);
                 }
             } else {
-                newUrlInvokerMap.put(url, invoker);
+                newUrlInvokerMap.put(instanceAddressURL.getAddress(), invoker);
             }
         }
         return newUrlInvokerMap;
+    }
+
+    private boolean urlChanged(Invoker<T> invoker, InstanceAddressURL newURL) {
+        InstanceAddressURL oldURL = (InstanceAddressURL) invoker.getUrl();
+
+        if (!newURL.getInstance().equals(oldURL.getInstance())) {
+            return true;
+        }
+
+        return !oldURL.getMetadataInfo().getServiceInfo(getConsumerUrl().getProtocolServiceKey())
+                .equals(newURL.getMetadataInfo().getServiceInfo(getConsumerUrl().getProtocolServiceKey()));
     }
 
     private List<Invoker<T>> toMergeInvokerList(List<Invoker<T>> invokers) {
@@ -162,7 +179,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
      * Close all invokers
      */
     private void destroyAllInvokers() {
-        Map<URL, Invoker<T>> localUrlInvokerMap = this.urlInvokerMap; // local reference
+        Map<String, Invoker<T>> localUrlInvokerMap = this.urlInvokerMap; // local reference
         if (localUrlInvokerMap != null) {
             for (Invoker<T> invoker : new ArrayList<>(localUrlInvokerMap.values())) {
                 try {
@@ -183,16 +200,16 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
      * @param oldUrlInvokerMap
      * @param newUrlInvokerMap
      */
-    private void destroyUnusedInvokers(Map<URL, Invoker<T>> oldUrlInvokerMap, Map<URL, Invoker<T>> newUrlInvokerMap) {
+    private void destroyUnusedInvokers(Map<String, Invoker<T>> oldUrlInvokerMap, Map<String, Invoker<T>> newUrlInvokerMap) {
         if (newUrlInvokerMap == null || newUrlInvokerMap.size() == 0) {
             destroyAllInvokers();
             return;
         }
         // check deleted invoker
-        List<URL> deleted = null;
+        List<String> deleted = null;
         if (oldUrlInvokerMap != null) {
             Collection<Invoker<T>> newInvokers = newUrlInvokerMap.values();
-            for (Map.Entry<URL, Invoker<T>> entry : oldUrlInvokerMap.entrySet()) {
+            for (Map.Entry<String, Invoker<T>> entry : oldUrlInvokerMap.entrySet()) {
                 if (!newInvokers.contains(entry.getValue())) {
                     if (deleted == null) {
                         deleted = new ArrayList<>();
@@ -203,9 +220,9 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
         }
 
         if (deleted != null) {
-            for (URL url : deleted) {
-                if (url != null) {
-                    Invoker<T> invoker = oldUrlInvokerMap.remove(url);
+            for (String addressKey : deleted) {
+                if (addressKey != null) {
+                    Invoker<T> invoker = oldUrlInvokerMap.remove(addressKey);
                     if (invoker != null) {
                         try {
                             invoker.destroy();

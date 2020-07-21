@@ -86,6 +86,8 @@ public interface ServiceInstance extends Serializable {
 
     Map<String, String> getExtendParams();
 
+    Map<String, String> getAllParams();
+
     /**
      * @return the hash code of current instance.
      */
