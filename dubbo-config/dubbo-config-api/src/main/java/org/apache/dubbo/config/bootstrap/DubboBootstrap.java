@@ -19,6 +19,7 @@ package org.apache.dubbo.config.bootstrap;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
+import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
 import org.apache.dubbo.common.config.configcenter.wrapper.CompositeDynamicConfiguration;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.lang.ShutdownHookCallback;
@@ -27,6 +28,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.concurrent.ScheduledCompletableFuture;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
+import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
@@ -60,6 +62,7 @@ import org.apache.dubbo.event.GenericEventListener;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.MetadataServiceExporter;
 import org.apache.dubbo.metadata.WritableMetadataService;
+import org.apache.dubbo.metadata.report.MetadataReportFactory;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
@@ -74,6 +77,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.CompletableFuture;
@@ -84,8 +88,10 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static org.apache.dubbo.common.config.ConfigurationUtils.parseProperties;
@@ -95,6 +101,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_SPLIT_P
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 import static org.apache.dubbo.common.function.ThrowableAction.execute;
+import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.setMetadataStorageType;
 import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
@@ -668,8 +675,8 @@ public class DubboBootstrap extends GenericEventListener {
     }
 
     private boolean isUsedRegistryAsConfigCenter(RegistryConfig registryConfig) {
-        // TODO: confirm ? registryConfig.getUseAsConfigCenter() == null || registryConfig.getUseAsConfigCenter()
-        return Boolean.TRUE.equals(registryConfig.getUseAsConfigCenter());
+        return isUsedRegistryAsCenter(registryConfig, registryConfig::getUseAsConfigCenter, "config",
+                DynamicConfigurationFactory.class);
     }
 
     private ConfigCenterConfig registryAsConfigCenter(RegistryConfig registryConfig) {
@@ -688,7 +695,7 @@ public class DubboBootstrap extends GenericEventListener {
         cc.setProtocol(protocol);
         cc.setPort(port);
         cc.setGroup(registryConfig.getGroup());
-        cc.setAddress(getRegistryCompatibleAddress(registryConfig.getAddress()));
+        cc.setAddress(getRegistryCompatibleAddress(registryConfig));
         cc.setNamespace(registryConfig.getGroup());
         cc.setUsername(registryConfig.getUsername());
         cc.setPassword(registryConfig.getPassword());
@@ -717,8 +724,58 @@ public class DubboBootstrap extends GenericEventListener {
     }
 
     private boolean isUsedRegistryAsMetadataCenter(RegistryConfig registryConfig) {
-        // TODO: confirm ? registryConfig.getUseAsMetadataCenter() == null || registryConfig.getUseAsMetadataCenter()
-        return Boolean.TRUE.equals(registryConfig.getUseAsMetadataCenter());
+        return isUsedRegistryAsCenter(registryConfig, registryConfig::getUseAsMetadataCenter, "metadata",
+                MetadataReportFactory.class);
+    }
+
+    /**
+     * Is used the specified registry as a center infrastructure
+     *
+     * @param registryConfig       the {@link RegistryConfig}
+     * @param usedRegistryAsCenter the configured value on
+     * @param centerType           the type name of center
+     * @param extensionClass       an extension class of a center infrastructure
+     * @return
+     * @since 2.7.8
+     */
+    private boolean isUsedRegistryAsCenter(RegistryConfig registryConfig, Supplier<Boolean> usedRegistryAsCenter,
+                                           String centerType,
+                                           Class<?> extensionClass) {
+        final boolean supported;
+
+        Boolean configuredValue = usedRegistryAsCenter.get();
+        if (configuredValue != null) { // If configured, take its value.
+            supported = configuredValue.booleanValue();
+        } else {                       // Or check the extension existence
+            String protocol = registryConfig.getProtocol();
+            supported = supportsExtension(extensionClass, protocol);
+            if (logger.isInfoEnabled()) {
+                logger.info(format("No value is configured in the registry, the %s extension[name : %s] %s as the %s center"
+                        , extensionClass.getSimpleName(), protocol, supported ? "supports" : "does not support", centerType));
+            }
+        }
+
+        if (logger.isInfoEnabled()) {
+            logger.info(format("The registry[%s] will be %s as the %s center", registryConfig,
+                    supported ? "used" : "not used", centerType));
+        }
+        return supported;
+    }
+
+    /**
+     * Supports the extension with the specified class and name
+     *
+     * @param extensionClass the {@link Class} of extension
+     * @param name           the name of extension
+     * @return if supports, return <code>true</code>, or <code>false</code>
+     * @since 2.7.8
+     */
+    private boolean supportsExtension(Class<?> extensionClass, String name) {
+        if (isNotEmpty(name)) {
+            ExtensionLoader extensionLoader = getExtensionLoader(extensionClass);
+            return extensionLoader.hasExtension(name);
+        }
+        return false;
     }
 
     private MetadataReportConfig registryAsMetadataCenter(RegistryConfig registryConfig) {
@@ -735,19 +792,33 @@ public class DubboBootstrap extends GenericEventListener {
         }
         metadataReportConfig.getParameters().put(CLIENT_KEY, registryConfig.getClient());
         metadataReportConfig.setGroup(registryConfig.getGroup());
-        metadataReportConfig.setAddress(getRegistryCompatibleAddress(registryConfig.getAddress()));
+        metadataReportConfig.setAddress(getRegistryCompatibleAddress(registryConfig));
         metadataReportConfig.setUsername(registryConfig.getUsername());
         metadataReportConfig.setPassword(registryConfig.getPassword());
         metadataReportConfig.setTimeout(registryConfig.getTimeout());
         return metadataReportConfig;
     }
 
-    private String getRegistryCompatibleAddress(String registryAddress) {
+    private String getRegistryCompatibleAddress(RegistryConfig registryConfig) {
+        String registryAddress = registryConfig.getAddress();
         String[] addresses = REGISTRY_SPLIT_PATTERN.split(registryAddress);
-        if (addresses == null || addresses.length == 0) {
+        if (ArrayUtils.isEmpty(addresses)) {
             throw new IllegalStateException("Invalid registry address found.");
         }
-        return addresses[0];
+        String address = addresses[0];
+        // since 2.7.8
+        // Issue : https://github.com/apache/dubbo/issues/6476
+        StringBuilder metadataAddressBuilder = new StringBuilder();
+        URL url = URL.valueOf(address);
+        String protocolFromAddress = url.getProtocol();
+        if (isEmpty(protocolFromAddress)) {
+            // If the protocol from address is missing, is like :
+            // "dubbo.registry.address = 127.0.0.1:2181"
+            String protocolFromConfig = registryConfig.getProtocol();
+            metadataAddressBuilder.append(protocolFromConfig).append("://");
+        }
+        metadataAddressBuilder.append(address);
+        return metadataAddressBuilder.toString();
     }
 
     private void loadRemoteConfigs() {
@@ -1005,10 +1076,10 @@ public class DubboBootstrap extends GenericEventListener {
     }
 
     private void unexportMetadataService() {
-        metadataServiceExporters
-                .stream()
-                .filter(this::supports)
-                .forEach(MetadataServiceExporter::unexport);
+        Optional.ofNullable(metadataServiceExporters)
+                .ifPresent(set -> set.stream()
+                        .filter(this::supports)
+                        .forEach(MetadataServiceExporter::unexport));
     }
 
     private boolean supports(MetadataServiceExporter exporter) {
