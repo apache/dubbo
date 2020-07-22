@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 
 /**
  * ServiceConfig
@@ -390,12 +389,6 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
     @Deprecated
     public void setProviders(List<ProviderConfig> providers) {
         this.protocols = convertProviderToProtocol(providers);
-    }
-
-    @Override
-    @Parameter(excluded = true)
-    public String getPrefix() {
-        return DUBBO + ".service." + interfaceName;
     }
 
     @Parameter(excluded = true)

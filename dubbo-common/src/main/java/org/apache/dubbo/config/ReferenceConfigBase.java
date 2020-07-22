@@ -31,7 +31,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 
 /**
  * ReferenceConfig
@@ -215,12 +214,6 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
 
     public ServiceMetadata getServiceMetadata() {
         return serviceMetadata;
-    }
-
-    @Override
-    @Parameter(excluded = true)
-    public String getPrefix() {
-        return DUBBO + ".reference." + interfaceName;
     }
 
     public void resolveFile() {
