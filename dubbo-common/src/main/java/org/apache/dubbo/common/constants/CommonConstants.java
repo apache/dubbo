@@ -329,6 +329,11 @@ public interface CommonConstants {
 
     String SSL_ENABLED_KEY = "ssl-enabled";
 
+    String SERVICE_PATH_PREFIX = "service.path.prefix";
+
+    String PROTOCOL_SERVER_SERVLET = "servlet";
+
+    String PROTOCOL_SERVER = "server";
 
     /**
      * The parameter key for the class path of the ServiceNameMapping {@link Properties} file
