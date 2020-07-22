@@ -89,6 +89,28 @@ public interface ServiceInstance extends Serializable {
     Map<String, String> getAllParams();
 
     /**
+     * Get the value of metadata by the specified name
+     *
+     * @param name the specified name
+     * @return the value of metadata if found, or <code>null</code>
+     * @since 2.7.8
+     */
+    default String getMetadata(String name) {
+        return getMetadata(name, null);
+    }
+
+    /**
+     * Get the value of metadata by the specified name
+     *
+     * @param name the specified name
+     * @return the value of metadata if found, or <code>defaultValue</code>
+     * @since 2.7.8
+     */
+    default String getMetadata(String name, String defaultValue) {
+        return getMetadata().getOrDefault(name, defaultValue);
+    }
+
+    /**
      * @return the hash code of current instance.
      */
     int hashCode();

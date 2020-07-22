@@ -28,15 +28,17 @@ import java.util.concurrent.TimeUnit;
 import static org.apache.dubbo.common.config.configcenter.AbstractDynamicConfiguration.DEFAULT_THREAD_POOL_KEEP_ALIVE_TIME;
 import static org.apache.dubbo.common.config.configcenter.AbstractDynamicConfiguration.DEFAULT_THREAD_POOL_PREFIX;
 import static org.apache.dubbo.common.config.configcenter.AbstractDynamicConfiguration.DEFAULT_THREAD_POOL_SIZE;
+import static org.apache.dubbo.common.config.configcenter.AbstractDynamicConfiguration.GROUP_PARAM_NAME;
 import static org.apache.dubbo.common.config.configcenter.AbstractDynamicConfiguration.PARAM_NAME_PREFIX;
 import static org.apache.dubbo.common.config.configcenter.AbstractDynamicConfiguration.THREAD_POOL_KEEP_ALIVE_TIME_PARAM_NAME;
 import static org.apache.dubbo.common.config.configcenter.AbstractDynamicConfiguration.THREAD_POOL_PREFIX_PARAM_NAME;
 import static org.apache.dubbo.common.config.configcenter.AbstractDynamicConfiguration.THREAD_POOL_SIZE_PARAM_NAME;
+import static org.apache.dubbo.common.config.configcenter.AbstractDynamicConfiguration.TIMEOUT_PARAM_NAME;
+import static org.apache.dubbo.common.config.configcenter.DynamicConfiguration.DEFAULT_GROUP;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * {@link AbstractDynamicConfiguration} Test
@@ -49,7 +51,7 @@ public class AbstractDynamicConfigurationTest {
 
     @BeforeEach
     public void init() {
-        configuration = new AbstractDynamicConfiguration() {
+        configuration = new AbstractDynamicConfiguration(null) {
             @Override
             protected String doGetConfig(String key, String group) throws Exception {
                 return null;
@@ -58,6 +60,11 @@ public class AbstractDynamicConfigurationTest {
             @Override
             protected void doClose() throws Exception {
 
+            }
+
+            @Override
+            protected boolean doRemoveConfig(String key, String group) throws Exception {
+                return false;
             }
         };
     }
@@ -71,6 +78,10 @@ public class AbstractDynamicConfigurationTest {
         assertEquals("dubbo.config-center.thread-pool.keep-alive-time", THREAD_POOL_KEEP_ALIVE_TIME_PARAM_NAME);
         assertEquals(1, DEFAULT_THREAD_POOL_SIZE);
         assertEquals(60 * 1000, DEFAULT_THREAD_POOL_KEEP_ALIVE_TIME);
+
+        // @since 2.7.8
+        assertEquals("dubbo.config-center.group", GROUP_PARAM_NAME);
+        assertEquals("dubbo.config-center.timeout", TIMEOUT_PARAM_NAME);
     }
 
     @Test
@@ -90,6 +101,11 @@ public class AbstractDynamicConfigurationTest {
             @Override
             protected void doClose() throws Exception {
 
+            }
+
+            @Override
+            protected boolean doRemoveConfig(String key, String group) throws Exception {
+                return false;
             }
         };
 
@@ -148,5 +164,43 @@ public class AbstractDynamicConfigurationTest {
     @Test
     public void testClose() throws Exception {
         configuration.close();
+    }
+
+    /**
+     * Test {@link AbstractDynamicConfiguration#getGroup()} and
+     * {@link AbstractDynamicConfiguration#getDefaultGroup()} methods
+     *
+     * @since 2.7.8
+     */
+    @Test
+    public void testGetGroupAndGetDefaultGroup() {
+        assertEquals(configuration.getGroup(), configuration.getDefaultGroup());
+        assertEquals(DEFAULT_GROUP, configuration.getDefaultGroup());
+    }
+
+    /**
+     * Test {@link AbstractDynamicConfiguration#getTimeout()} and
+     * {@link AbstractDynamicConfiguration#getDefaultTimeout()} methods
+     *
+     * @since 2.7.8
+     */
+    @Test
+    public void testGetTimeoutAndGetDefaultTimeout() {
+        assertEquals(configuration.getTimeout(), configuration.getDefaultTimeout());
+        assertEquals(-1L, configuration.getDefaultTimeout());
+    }
+
+    /**
+     * Test {@link AbstractDynamicConfiguration#removeConfig(String, String)} and
+     * {@link AbstractDynamicConfiguration#doRemoveConfig(String, String)} methods
+     *
+     * @since 2.7.8
+     */
+    @Test
+    public void testRemoveConfigAndDoRemoveConfig() throws Exception {
+        String key = null;
+        String group = null;
+        assertEquals(configuration.removeConfig(key, group), configuration.doRemoveConfig(key, group));
+        assertFalse(configuration.removeConfig(key, group));
     }
 }
