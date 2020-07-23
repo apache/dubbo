@@ -39,11 +39,17 @@ import static org.apache.dubbo.rpc.cluster.Constants.WEIGHT_KEY;
 @Activate
 public class DefaultMetadataParamsFilter implements MetadataParamsFilter {
     @Override
-    public String[] include() {
+    public String[] serviceParamsIncluded() {
         return new String[]{
                 CODEC_KEY, EXCHANGER_KEY, SERIALIZATION_KEY, CLUSTER_KEY, CONNECTIONS_KEY, DEPRECATED_KEY,
                 GROUP_KEY, LOADBALANCE_KEY, MOCK_KEY, PATH_KEY, TIMEOUT_KEY, TOKEN_KEY, VERSION_KEY, WARMUP_KEY,
                 WEIGHT_KEY, DUBBO_VERSION_KEY, RELEASE_KEY
         };
+    }
+
+
+    @Override
+    public String[] instanceParamsIncluded() {
+        return new String[0];
     }
 }

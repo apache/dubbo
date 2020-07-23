@@ -191,7 +191,7 @@ public class MetadataInfo implements Serializable {
             Map<String, String> params = new HashMap<>();
             List<MetadataParamsFilter> filters = loader.getActivateExtension(url, "params-filter");
             for (MetadataParamsFilter filter : filters) {
-                String[] paramsIncluded = filter.include();
+                String[] paramsIncluded = filter.serviceParamsIncluded();
                 if (ArrayUtils.isNotEmpty(paramsIncluded)) {
                     for (String p : paramsIncluded) {
                         String value = url.getParameter(p);
