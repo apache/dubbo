@@ -59,7 +59,7 @@ public class PublishingServiceDefinitionListenerTest {
         ApplicationConfig applicationConfig = new ApplicationConfig("dubbo-demo-provider");
         applicationConfig.setMetadataType(metadataType);
         configManager.setApplication(applicationConfig);
-        this.writableMetadataService = WritableMetadataService.getExtension(metadataType);
+        this.writableMetadataService = WritableMetadataService.getDefaultExtension();
     }
 
     @AfterEach
