@@ -55,6 +55,7 @@ import org.apache.dubbo.config.bootstrap.builders.ReferenceBuilder;
 import org.apache.dubbo.config.bootstrap.builders.RegistryBuilder;
 import org.apache.dubbo.config.bootstrap.builders.ServiceBuilder;
 import org.apache.dubbo.config.context.ConfigManager;
+import org.apache.dubbo.config.metadata.ConfigurableMetadataServiceExporter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.config.utils.ReferenceConfigCache;
 import org.apache.dubbo.event.EventDispatcher;
@@ -80,7 +81,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.CompletableFuture;
@@ -93,7 +93,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
@@ -868,7 +867,7 @@ public class DubboBootstrap extends GenericEventListener {
      * Initialize {@link MetadataService} from {@link WritableMetadataService}'s extension
      */
     private void initMetadataService() {
-        startMetadataReport();
+        startMetadataCenter();
         this.metadataService = getDefaultExtension();
         this.metadataServiceExporter = new ConfigurableMetadataServiceExporter(metadataService);
     }
