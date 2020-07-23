@@ -134,7 +134,7 @@ public interface CommonConstants {
 
     String GROUP_CHAR_SEPARATOR = ":";
 
-    String HIDE_KEY_PREFIX = ".";
+    String HIDDEN_KEY_PREFIX = ".";
 
     String DOT_REGEX = "\\.";
 
