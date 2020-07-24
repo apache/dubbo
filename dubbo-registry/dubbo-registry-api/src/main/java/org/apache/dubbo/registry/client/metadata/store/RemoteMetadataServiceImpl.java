@@ -44,6 +44,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 
 public class RemoteMetadataServiceImpl {
@@ -79,7 +80,7 @@ public class RemoteMetadataServiceImpl {
         SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(instance.getServiceName(),
                 ServiceInstanceMetadataUtils.getExportedServicesRevision(instance));
 
-        String registryCluster = instance.getExtendParams().get(REGISTRY_KEY);
+        String registryCluster = instance.getExtendParams().get(REGISTRY_CLUSTER);
 
         MetadataReport metadataReport = getMetadataReports().get(registryCluster);
         if (metadataReport == null) {
