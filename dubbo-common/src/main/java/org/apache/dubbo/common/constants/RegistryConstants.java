@@ -21,6 +21,8 @@ public interface RegistryConstants {
 
     String REGISTRY_KEY = "registry";
 
+    String REGISTRY_CLUSTER = "REGISTRY_CLUSTER";
+
     String REGISTRY_PROTOCOL = "registry";
 
     String DYNAMIC_KEY = "dynamic";

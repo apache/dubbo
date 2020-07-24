@@ -18,19 +18,16 @@ package org.apache.dubbo.registry.client;
 
 import org.apache.dubbo.common.URL;
 
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER;
 
 public class DefaultRegistryClusterIdentifier implements RegistryClusterIdentifier {
     @Override
     public String providerKey(URL url) {
-        // url.getParameter("registry_cluster");
-        // ServiceMetadata.get("registry_cluster");
-        // return;
-        return url.getParameter(REGISTRY_KEY);
+        return url.getParameter(REGISTRY_CLUSTER);
     }
 
     @Override
     public String consumerKey(URL url) {
-        return url.getParameter(REGISTRY_KEY);
+        return url.getParameter(REGISTRY_CLUSTER);
     }
 }
