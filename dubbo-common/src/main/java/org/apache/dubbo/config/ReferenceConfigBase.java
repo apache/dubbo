@@ -166,9 +166,10 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
 
     public void setInterface(String interfaceName) {
         this.interfaceName = interfaceName;
-        if (StringUtils.isEmpty(id)) {
-            id = interfaceName;
-        }
+        // FIXME, add id strategy in ConfigManager
+//        if (StringUtils.isEmpty(id)) {
+//            id = interfaceName;
+//        }
     }
 
     public void setInterface(Class<?> interfaceClass) {

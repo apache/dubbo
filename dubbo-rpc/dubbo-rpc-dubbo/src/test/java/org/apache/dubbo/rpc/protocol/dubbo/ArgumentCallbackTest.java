@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.dubbo;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
@@ -103,6 +104,27 @@ public class ArgumentCallbackTest {
             if (reference != null) reference.destroy();
         } catch (Exception e) {
         }
+    }
+    
+    @Test
+    public void TestCallbackNormalWithBindPort() throws Exception {
+        initOrResetUrl(1, 10000000);
+        consumerUrl = serviceURL.addParameter(Constants.BIND_PORT_KEY,"7653");
+        initOrResetService();
+       
+        final AtomicInteger count = new AtomicInteger(0);
+
+        demoProxy.xxx(new IDemoCallback() {
+            public String yyy(String msg) {
+                System.out.println("Recived callback: " + msg);
+                count.incrementAndGet();
+                return "ok";
+            }
+        }, "other custom args", 10, 100);
+        System.out.println("Async...");
+        assertCallbackCount(10, 100, count);
+        destroyService();
+
     }
 
     @Test

@@ -30,6 +30,7 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 import org.apache.dubbo.rpc.support.RpcUtils;
@@ -49,7 +50,7 @@ import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_CLUSTER_STICKY;
 /**
  * AbstractClusterInvoker
  */
-public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
+public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractClusterInvoker.class);
 

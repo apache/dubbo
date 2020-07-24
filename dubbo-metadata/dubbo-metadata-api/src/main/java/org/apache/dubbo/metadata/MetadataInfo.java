@@ -36,7 +36,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DOT_SEPARATOR;
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_CHAR_SEPERATOR;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_CHAR_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
@@ -191,7 +191,7 @@ public class MetadataInfo implements Serializable {
             Map<String, String> params = new HashMap<>();
             List<MetadataParamsFilter> filters = loader.getActivateExtension(url, "params-filter");
             for (MetadataParamsFilter filter : filters) {
-                String[] paramsIncluded = filter.include();
+                String[] paramsIncluded = filter.serviceParamsIncluded();
                 if (ArrayUtils.isNotEmpty(paramsIncluded)) {
                     for (String p : paramsIncluded) {
                         String value = url.getParameter(p);
@@ -236,7 +236,7 @@ public class MetadataInfo implements Serializable {
         private String buildMatchKey() {
             matchKey = getServiceKey();
             if (StringUtils.isNotEmpty(protocol)) {
-                matchKey = getServiceKey() + GROUP_CHAR_SEPERATOR + protocol;
+                matchKey = getServiceKey() + GROUP_CHAR_SEPARATOR + protocol;
             }
             return matchKey;
         }

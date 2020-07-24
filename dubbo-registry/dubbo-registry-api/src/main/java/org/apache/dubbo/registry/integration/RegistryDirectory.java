@@ -660,7 +660,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
         @Override
         protected void notifyOverrides() {
             // to notify configurator/router changes
-            directory.refreshInvoker(Collections.emptyList());
+            directory.refreshOverrideAndInvoker(Collections.emptyList());
         }
     }
 
@@ -681,7 +681,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
 
         @Override
         protected void notifyOverrides() {
-            listeners.forEach(listener -> listener.refreshInvoker(Collections.emptyList()));
+            listeners.forEach(listener -> listener.refreshOverrideAndInvoker(Collections.emptyList()));
         }
     }
 

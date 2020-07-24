@@ -227,7 +227,7 @@ public class AbstractClusterInvokerTest {
     public void testCloseAvailablecheck() {
         LoadBalance lb = mock(LoadBalance.class);
         Map<String, String> queryMap = StringUtils.parseQueryString(url.getParameterAndDecoded(REFER_KEY));
-        URL tmpUrl = url.addParameters(queryMap).removeParameter(MONITOR_KEY);
+        URL tmpUrl = url.addParameters(queryMap).removeParameter(REFER_KEY).removeParameter(MONITOR_KEY);
         given(lb.select(invokers, tmpUrl, invocation)).willReturn(invoker1);
         initlistsize5();
 

@@ -768,7 +768,7 @@ public class RegistryDirectoryTest {
         List<Invoker<?>> invokers = registryDirectory.list(invocation);
         Invoker<?> aInvoker = invokers.get(0);
         //Need to be restored to the original providerUrl
-        Assertions.assertEquals("1", aInvoker.getUrl().getParameter("timeout"));
+        Assertions.assertEquals("3", aInvoker.getUrl().getParameter("timeout"));
     }
 
     /**
