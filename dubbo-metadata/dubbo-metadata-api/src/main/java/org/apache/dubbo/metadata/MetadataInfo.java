@@ -47,6 +47,7 @@ public class MetadataInfo implements Serializable {
     private String revision;
     private Map<String, ServiceInfo> services;
 
+    // used at runtime
     private transient Map<String, String> extendParams;
     private transient AtomicBoolean reported = new AtomicBoolean(false);
 
@@ -85,7 +86,7 @@ public class MetadataInfo implements Serializable {
         markChanged();
     }
 
-    public String getRevision() {
+    public String calAndGetRevision() {
         if (revision != null && hasReported()) {
             return revision;
         }
@@ -161,8 +162,11 @@ public class MetadataInfo implements Serializable {
 
     @Override
     public String toString() {
-        // FIXME
-        return super.toString();
+        return "metadata{" +
+                "app='" + app + "'," +
+                "revision='" + revision + "'," +
+                "services=" + services +
+                "}";
     }
 
     public static class ServiceInfo implements Serializable {
@@ -174,12 +178,17 @@ public class MetadataInfo implements Serializable {
         private String path; // most of the time, path is the same with the interface name.
         private Map<String, String> params;
 
+        // params configuried on consumer side,
         private transient Map<String, String> consumerParams;
+        // cached method params
         private transient Map<String, Map<String, String>> methodParams;
         private transient Map<String, Map<String, String>> consumerMethodParams;
-        private volatile transient Map<String, Number> numbers;
-        private volatile transient Map<String, Map<String, Number>> methodNumbers;
+        // cached numbers
+        private transient Map<String, Number> numbers;
+        private transient Map<String, Map<String, Number>> methodNumbers;
+        // service + group + version
         private transient String serviceKey;
+        // service + group + version + protocol
         private transient String matchKey;
 
         public ServiceInfo() {
@@ -420,7 +429,14 @@ public class MetadataInfo implements Serializable {
 
         @Override
         public String toString() {
-            return super.toString();
+            return "service{" +
+                    "name='" + name + "'," +
+                    "group='" + group + "'," +
+                    "version='" + version + "'," +
+                    "protocol='" + protocol + "'," +
+                    "params=" + params + "," +
+                    "consumerParams=" + consumerParams +
+                    "}";
         }
     }
 }

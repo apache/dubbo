@@ -45,8 +45,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 
-import static org.apache.dubbo.common.constants.CommonConstants.REGISTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
 import static org.apache.dubbo.metadata.MetadataInfo.DEFAULT_REVISION;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getExportedServicesRevision;
 
@@ -156,7 +156,8 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
 
     private MetadataInfo getMetadataInfo(ServiceInstance instance) {
         String metadataType = ServiceInstanceMetadataUtils.getMetadataStorageType(instance);
-        instance.getExtendParams().putIfAbsent(REGISTER_KEY, RegistryClusterIdentifier.getExtension().consumerKey(url));
+        // FIXME, check "REGISTRY_CLUSTER_KEY" must be set by every registry implementation.
+        instance.getExtendParams().putIfAbsent(REGISTRY_CLUSTER_KEY, RegistryClusterIdentifier.getExtension(url).consumerKey(url));
         MetadataInfo metadataInfo;
         try {
             if (REMOTE_METADATA_STORAGE_TYPE.equals(metadataType)) {

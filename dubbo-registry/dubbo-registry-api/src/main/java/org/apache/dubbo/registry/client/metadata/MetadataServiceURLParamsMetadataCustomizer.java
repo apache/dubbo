@@ -41,7 +41,7 @@ public class MetadataServiceURLParamsMetadataCustomizer implements ServiceInstan
         String propertyValue = resolveMetadataPropertyValue(serviceInstance);
 
         if (!isBlank(propertyName) && !isBlank(propertyValue)) {
-            metadata.put(propertyName, metadata.get(propertyName));
+            metadata.put(propertyName, propertyValue);
         }
     }
 

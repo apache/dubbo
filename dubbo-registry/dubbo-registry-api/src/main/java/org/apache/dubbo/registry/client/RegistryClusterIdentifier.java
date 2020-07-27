@@ -20,16 +20,17 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.SPI;
 
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_TYPE_KEY;
+
 @SPI
 public interface RegistryClusterIdentifier {
     String providerKey(URL url);
 
     String consumerKey(URL url);
 
-    static RegistryClusterIdentifier getExtension() {
+    static RegistryClusterIdentifier getExtension(URL url) {
         ExtensionLoader<RegistryClusterIdentifier> loader
                 = ExtensionLoader.getExtensionLoader(RegistryClusterIdentifier.class);
-//        return loader.getExtension(ConfigurationUtils.getProperty("dubbo.application.sd.type", "default"));
-        return loader.getExtension("default");
+        return loader.getExtension(url.getParameter(REGISTRY_CLUSTER_TYPE_KEY, "default"));
     }
 }

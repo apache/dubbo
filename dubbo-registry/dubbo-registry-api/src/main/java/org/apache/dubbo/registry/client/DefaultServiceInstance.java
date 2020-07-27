@@ -49,6 +49,7 @@ public class DefaultServiceInstance implements ServiceInstance {
 
     private transient String address;
     private transient MetadataInfo serviceMetadata;
+    // used at runtime
     private transient Map<String, String> extendParams = new HashMap<>();
 
     public DefaultServiceInstance() {
