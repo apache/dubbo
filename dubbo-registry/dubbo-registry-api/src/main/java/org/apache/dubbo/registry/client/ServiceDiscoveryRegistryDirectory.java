@@ -44,13 +44,29 @@ import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL
 public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> implements NotifyListener {
     private static final Logger logger = LoggerFactory.getLogger(ServiceDiscoveryRegistryDirectory.class);
 
-    // Map<url, Invoker> cache service url to invoker mapping.
+    // instance address to invoker mapping.
     private volatile Map<String, Invoker<T>> urlInvokerMap; // The initial value is null and the midway may be assigned to null, please use the local variable reference
 
     private ServiceInstancesChangedListener listener;
 
     public ServiceDiscoveryRegistryDirectory(Class<T> serviceType, URL url) {
         super(serviceType, url);
+    }
+
+    @Override
+    public boolean isAvailable() {
+        if (isDestroyed()) {
+            return false;
+        }
+        Map<String, Invoker<T>> localUrlInvokerMap = urlInvokerMap;
+        if (localUrlInvokerMap != null && localUrlInvokerMap.size() > 0) {
+            for (Invoker<T> invoker : new ArrayList<>(localUrlInvokerMap.values())) {
+                if (invoker.isAvailable()) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     @Override
