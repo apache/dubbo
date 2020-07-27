@@ -33,4 +33,7 @@
     <dubbo:reference provided-by="demo-provider" id="demoService" check="false"
                      interface="org.apache.dubbo.demo.DemoService"/>
 
+    <dubbo:reference provided-by="demo-provider" version="1.0.0" group="greeting" id="greetingService" check="false"
+                     interface="org.apache.dubbo.demo.GreetingService"/>
+
 </beans>
