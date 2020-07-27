@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.rpc.Exporter;
@@ -38,6 +39,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_FILTER_K
 /**
  * ListenerProtocol
  */
+@Activate(order = 100)
 public class ProtocolFilterWrapper implements Protocol {
 
     private final Protocol protocol;

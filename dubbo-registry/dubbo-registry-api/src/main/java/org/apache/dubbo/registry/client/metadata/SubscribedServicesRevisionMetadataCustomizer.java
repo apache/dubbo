@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.registry.client.metadata;
 
+import org.apache.dubbo.metadata.URLRevisionResolver;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstanceMetadataCustomizer;

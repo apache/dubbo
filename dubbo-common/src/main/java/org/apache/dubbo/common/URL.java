@@ -35,10 +35,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
@@ -55,6 +57,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.PORT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.USERNAME_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.convert.Converter.convertIfPossible;
+import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 
 /**
  * URL - Uniform Resource Locator (Immutable, ThreadSafe)
@@ -566,6 +570,24 @@ class URL implements Serializable {
         return parameters;
     }
 
+    /**
+     * Get the parameters to be selected(filtered)
+     *
+     * @param nameToSelect the {@link Predicate} to select the parameter name
+     * @return non-null {@link Map}
+     * @since 2.7.8
+     */
+    public Map<String, String> getParameters(Predicate<String> nameToSelect) {
+        Map<String, String> selectedParameters = new LinkedHashMap<>();
+        for (Map.Entry<String, String> entry : getParameters().entrySet()) {
+            String name = entry.getKey();
+            if (nameToSelect.test(name)) {
+                selectedParameters.put(name, entry.getValue());
+            }
+        }
+        return Collections.unmodifiableMap(selectedParameters);
+    }
+
     public Map<String, Map<String, String>> getMethodParameters() {
         return methodParameters;
     }
@@ -599,6 +621,41 @@ class URL implements Serializable {
         }
         String[] strArray = COMMA_SPLIT_PATTERN.split(value);
         return Arrays.asList(strArray);
+    }
+
+    /**
+     * Get parameter
+     *
+     * @param key       the key of parameter
+     * @param valueType the type of parameter value
+     * @param <T>       the type of parameter value
+     * @return get the parameter if present, or <code>null</code>
+     * @since 2.7.8
+     */
+    public <T> T getParameter(String key, Class<T> valueType) {
+        return getParameter(key, valueType, null);
+    }
+
+    /**
+     * Get parameter
+     *
+     * @param key          the key of parameter
+     * @param valueType    the type of parameter value
+     * @param defaultValue the default value if parameter is absent
+     * @param <T>          the type of parameter value
+     * @return get the parameter if present, or <code>defaultValue</code> will be used.
+     * @since 2.7.8
+     */
+    public <T> T getParameter(String key, Class<T> valueType, T defaultValue) {
+        String value = getParameter(key);
+        T result = null;
+        if (!isBlank(value)) {
+            result = convertIfPossible(value, valueType);
+        }
+        if (result == null) {
+            result = defaultValue;
+        }
+        return result;
     }
 
     private Map<String, Number> getNumbers() {
@@ -1415,7 +1472,7 @@ class URL implements Serializable {
 
     private void append(StringBuilder target, String parameterName, boolean first) {
         String parameterValue = this.getParameter(parameterName);
-        if (!StringUtils.isBlank(parameterValue)) {
+        if (!isBlank(parameterValue)) {
             if (!first) {
                 target.append(":");
             }
