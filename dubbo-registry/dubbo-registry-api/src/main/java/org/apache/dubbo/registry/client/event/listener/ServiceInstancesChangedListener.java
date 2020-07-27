@@ -178,13 +178,16 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
     private void notifyAddressChanged() {
         listeners.forEach((key, notifyListener) -> {
             //FIXME, group wildcard match
-            List<URL> urls = serviceUrls.get(key);
-            if (CollectionUtils.isEmpty(urls)) {
-                urls = new ArrayList<>();
-                urls.add(new InstanceAddressURL());
-            }
-            notifyListener.notify(urls);
+            notifyListener.notify(toUrlsWithEmpty(serviceUrls.get(key)));
         });
+    }
+
+    private List<URL> toUrlsWithEmpty(List<URL> urls) {
+        if (CollectionUtils.isEmpty(urls)) {
+            urls = new ArrayList<>();
+            urls.add(new InstanceAddressURL());
+        }
+        return urls;
     }
 
     public void addListener(String serviceKey, NotifyListener listener) {
@@ -196,7 +199,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
     }
 
     public List<URL> getUrls(String serviceKey) {
-        return serviceUrls.get(serviceKey);
+        return toUrlsWithEmpty(serviceUrls.get(serviceKey));
     }
 
     /**

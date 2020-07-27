@@ -241,6 +241,9 @@ public class ServiceInstanceMetadataUtils {
 
     public static void calInstanceRevision(ServiceDiscovery serviceDiscovery, ServiceInstance instance) {
         String registryCluster = serviceDiscovery.getUrl().getParameter(ID_KEY);
+        if (registryCluster == null) {
+            return;
+        }
         MetadataInfo metadataInfo = WritableMetadataService.getDefaultExtension().getMetadataInfos().get(registryCluster);
         if (metadataInfo != null) {
             String existingInstanceRevision = instance.getMetadata().get(EXPORTED_SERVICES_REVISION_PROPERTY_NAME);

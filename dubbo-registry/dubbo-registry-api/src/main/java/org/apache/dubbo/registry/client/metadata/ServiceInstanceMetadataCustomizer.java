@@ -78,7 +78,9 @@ public class ServiceInstanceMetadataCustomizer implements ServiceInstanceCustomi
                 serviceInstance.getMetadata().putAll(allParams);
             } else {
                 for (String p : included) {
-                    serviceInstance.getMetadata().put(p, allParams.get(p));
+                    if (allParams.get(p) != null) {
+                        serviceInstance.getMetadata().put(p, allParams.get(p));
+                    }
                 }
             }
         });
