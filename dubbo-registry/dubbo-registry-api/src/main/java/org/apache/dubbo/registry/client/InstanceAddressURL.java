@@ -32,6 +32,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 public class InstanceAddressURL extends URL {
     private ServiceInstance instance;
     private MetadataInfo metadataInfo;
+
+    // cached numbers
     private volatile transient Map<String, Number> numbers;
     private volatile transient Map<String, Map<String, Number>> methodNumbers;
 
@@ -353,8 +355,16 @@ public class InstanceAddressURL extends URL {
         return getInstance().hashCode();
     }
 
+    public String getServiceString(String service) {
+        MetadataInfo.ServiceInfo serviceInfo = metadataInfo.getServiceInfo(service);
+        if (serviceInfo == null) {
+            return instance.toString();
+        }
+        return instance.toString() + serviceInfo.toString();
+    }
+
     @Override
     public String toString() {
-        return super.toString();
+        return instance.toString() + metadataInfo.toString();
     }
 }

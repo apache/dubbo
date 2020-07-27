@@ -44,8 +44,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
 
 public class RemoteMetadataServiceImpl {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
@@ -61,12 +60,12 @@ public class RemoteMetadataServiceImpl {
 
     public void publishMetadata(String serviceName) {
         Map<String, MetadataInfo> metadataInfos = localMetadataService.getMetadataInfos();
-        metadataInfos.forEach((registryKey, metadataInfo) -> {
+        metadataInfos.forEach((registryCluster, metadataInfo) -> {
             if (!metadataInfo.hasReported()) {
-                SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(serviceName, metadataInfo.getRevision());
-                metadataInfo.getRevision();
-                metadataInfo.getExtendParams().put(REGISTRY_KEY, registryKey);
-                MetadataReport metadataReport = getMetadataReports().get(registryKey);
+                SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(serviceName, metadataInfo.calAndGetRevision());
+                metadataInfo.calAndGetRevision();
+                metadataInfo.getExtendParams().put(REGISTRY_CLUSTER_KEY, registryCluster);
+                MetadataReport metadataReport = getMetadataReports().get(registryCluster);
                 if (metadataReport == null) {
                     metadataReport = getMetadataReports().entrySet().iterator().next().getValue();
                 }
@@ -80,7 +79,7 @@ public class RemoteMetadataServiceImpl {
         SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(instance.getServiceName(),
                 ServiceInstanceMetadataUtils.getExportedServicesRevision(instance));
 
-        String registryCluster = instance.getExtendParams().get(REGISTRY_CLUSTER);
+        String registryCluster = instance.getExtendParams().get(REGISTRY_CLUSTER_KEY);
 
         MetadataReport metadataReport = getMetadataReports().get(registryCluster);
         if (metadataReport == null) {

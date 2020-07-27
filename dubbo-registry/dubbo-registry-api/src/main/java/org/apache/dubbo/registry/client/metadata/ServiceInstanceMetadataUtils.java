@@ -244,8 +244,8 @@ public class ServiceInstanceMetadataUtils {
         MetadataInfo metadataInfo = WritableMetadataService.getDefaultExtension().getMetadataInfos().get(registryCluster);
         if (metadataInfo != null) {
             String existingInstanceRevision = instance.getMetadata().get(EXPORTED_SERVICES_REVISION_PROPERTY_NAME);
-            if (!metadataInfo.getRevision().equals(existingInstanceRevision)) {
-                instance.getMetadata().put(EXPORTED_SERVICES_REVISION_PROPERTY_NAME, metadataInfo.getRevision());
+            if (!metadataInfo.calAndGetRevision().equals(existingInstanceRevision)) {
+                instance.getMetadata().put(EXPORTED_SERVICES_REVISION_PROPERTY_NAME, metadataInfo.calAndGetRevision());
                 if (existingInstanceRevision != null) {// skip the first registration.
                     instance.getExtendParams().put(INSTANCE_REVISION_UPDATED_KEY, "true");
                 }

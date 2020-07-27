@@ -125,10 +125,10 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
 
     @Override
     public boolean exportURL(URL url) {
-        String registryKey = RegistryClusterIdentifier.getExtension().providerKey(url);
-        String[] keys = registryKey.split(",");
-        for (String key : keys) {
-            MetadataInfo metadataInfo = metadataInfos.computeIfAbsent(key, k -> {
+        String registryCluster = RegistryClusterIdentifier.getExtension().providerKey(url);
+        String[] clusters = registryCluster.split(",");
+        for (String cluster : clusters) {
+            MetadataInfo metadataInfo = metadataInfos.computeIfAbsent(cluster, k -> {
                 return new MetadataInfo(ApplicationModel.getName());
             });
             metadataInfo.addService(new ServiceInfo(url));
@@ -139,13 +139,13 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
 
     @Override
     public boolean unexportURL(URL url) {
-        String registryKey = RegistryClusterIdentifier.getExtension().providerKey(url);
-        String[] keys = registryKey.split(",");
-        for (String key : keys) {
-            MetadataInfo metadataInfo = metadataInfos.get(key);
+        String registryCluster = RegistryClusterIdentifier.getExtension().providerKey(url);
+        String[] clusters = registryCluster.split(",");
+        for (String cluster : clusters) {
+            MetadataInfo metadataInfo = metadataInfos.get(cluster);
             metadataInfo.removeService(url.getProtocolServiceKey());
             if (metadataInfo.getServices().isEmpty()) {
-                metadataInfos.remove(key);
+                metadataInfos.remove(cluster);
             }
         }
         metadataSemaphore.release();
@@ -199,7 +199,7 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
         }
         for (Map.Entry<String, MetadataInfo> entry : metadataInfos.entrySet()) {
             MetadataInfo metadataInfo = entry.getValue();
-            if (revision.equals(metadataInfo.getRevision())) {
+            if (revision.equals(metadataInfo.calAndGetRevision())) {
                 return metadataInfo;
             }
         }
