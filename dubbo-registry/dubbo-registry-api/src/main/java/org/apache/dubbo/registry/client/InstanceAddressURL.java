@@ -365,6 +365,12 @@ public class InstanceAddressURL extends URL {
 
     @Override
     public String toString() {
+        if (instance == null) {
+            return "{}";
+        }
+        if (metadataInfo == null) {
+            return instance.toString();
+        }
         return instance.toString() + metadataInfo.toString();
     }
 }
