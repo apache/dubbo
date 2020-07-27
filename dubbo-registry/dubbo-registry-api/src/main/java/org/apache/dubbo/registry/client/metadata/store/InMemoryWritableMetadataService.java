@@ -125,7 +125,7 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
 
     @Override
     public boolean exportURL(URL url) {
-        String registryCluster = RegistryClusterIdentifier.getExtension().providerKey(url);
+        String registryCluster = RegistryClusterIdentifier.getExtension(url).providerKey(url);
         String[] clusters = registryCluster.split(",");
         for (String cluster : clusters) {
             MetadataInfo metadataInfo = metadataInfos.computeIfAbsent(cluster, k -> {
@@ -139,7 +139,7 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
 
     @Override
     public boolean unexportURL(URL url) {
-        String registryCluster = RegistryClusterIdentifier.getExtension().providerKey(url);
+        String registryCluster = RegistryClusterIdentifier.getExtension(url).providerKey(url);
         String[] clusters = registryCluster.split(",");
         for (String cluster : clusters) {
             MetadataInfo metadataInfo = metadataInfos.get(cluster);
