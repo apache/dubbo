@@ -60,6 +60,17 @@ public class ExecutionException extends RemotingException {
         this.request = request;
     }
 
+    /**
+     * support fastjson Serialization, see  ThrowableDeserializer.createException
+     * @param message
+     * @param cause
+     */
+    public ExecutionException(String message,
+                            Throwable cause) {
+        super(message, cause);
+        this.request = null;
+    }
+
 
     public Object getRequest() {
         return request;

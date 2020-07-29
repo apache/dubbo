@@ -42,6 +42,17 @@ public class TimeoutException extends RemotingException {
         this.phase = serverSide ? SERVER_SIDE : CLIENT_SIDE;
     }
 
+    /**
+     * support fastjson Serialization, see  ThrowableDeserializer.createException
+     * @param message
+     * @param cause
+     */
+    public TimeoutException(String message,
+                             Throwable cause) {
+        super(message, cause);
+        this.phase = SERVER_SIDE;
+    }
+
     public int getPhase() {
         return phase;
     }
