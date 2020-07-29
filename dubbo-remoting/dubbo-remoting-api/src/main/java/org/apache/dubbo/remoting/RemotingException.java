@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.remoting;
 
+import com.alibaba.fastjson.annotation.JSONField;
+
 import java.net.InetSocketAddress;
 
 /**
@@ -33,8 +35,10 @@ public class RemotingException extends Exception {
 
     private static final long serialVersionUID = -3160452149606778709L;
 
+    @JSONField(serialize = false, deserialize = false)
     private InetSocketAddress localAddress;
 
+    @JSONField(serialize = false, deserialize = false)
     private InetSocketAddress remoteAddress;
 
     public RemotingException(Channel channel, String msg) {
@@ -72,6 +76,16 @@ public class RemotingException extends Exception {
 
         this.localAddress = localAddress;
         this.remoteAddress = remoteAddress;
+    }
+
+    /**
+     * support fastjson Serialization, see  ThrowableDeserializer.createException
+     * @param message
+     * @param cause
+     */
+    public RemotingException(String message,
+                             Throwable cause) {
+        super(message, cause);
     }
 
     public InetSocketAddress getLocalAddress() {
