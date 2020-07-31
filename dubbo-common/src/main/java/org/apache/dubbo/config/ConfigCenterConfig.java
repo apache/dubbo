@@ -32,6 +32,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.CONFIG_CONFIGFIL
 import static org.apache.dubbo.common.constants.CommonConstants.CONFIG_ENABLE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.utils.PojoUtils.updatePropertyIfAbsent;
 import static org.apache.dubbo.config.Constants.CONFIG_APP_CONFIGFILE_KEY;
 import static org.apache.dubbo.config.Constants.ZOOKEEPER_PROTOCOL;
 
@@ -39,10 +40,13 @@ import static org.apache.dubbo.config.Constants.ZOOKEEPER_PROTOCOL;
  * ConfigCenterConfig
  */
 public class ConfigCenterConfig extends AbstractConfig {
+
     private AtomicBoolean inited = new AtomicBoolean(false);
 
     private String protocol;
+
     private String address;
+
     private Integer port;
 
     /* The config center cluster, it's real meaning may very on different Config Center products. */
@@ -53,12 +57,16 @@ public class ConfigCenterConfig extends AbstractConfig {
     */
 
     private String namespace = CommonConstants.DUBBO;
+
     /* The group of the config center, generally it's used to identify an isolated space for a batch of config items,
     but it's real meaning depends on the actual Config Center you use.
     */
     private String group = CommonConstants.DUBBO;
+
     private String username;
+
     private String password;
+
     private Long timeout = 3000L;
 
     // If the Config Center is given the highest priority, it will override all the other configurations
@@ -73,7 +81,7 @@ public class ConfigCenterConfig extends AbstractConfig {
     private String configFile = CommonConstants.DEFAULT_DUBBO_PROPERTIES;
 
     /* the .properties file under 'configFile' is global shared while .properties under this one is limited only to this application
-    */
+     */
     private String appConfigFile;
 
     /* If the Config Center product you use have some special parameters that is not covered by this class, you can add it to here.
@@ -143,13 +151,19 @@ public class ConfigCenterConfig extends AbstractConfig {
         if (address != null) {
             try {
                 URL url = URL.valueOf(address);
-                setUsername(url.getUsername());
-                setPassword(url.getPassword());
-                updateIdIfAbsent(url.getProtocol());
-                updateProtocolIfAbsent(url.getProtocol());
-                updatePortIfAbsent(url.getPort());
+                updatePropertyIfAbsent(this::getUsername, this::setUsername, url.getUsername());
+                updatePropertyIfAbsent(this::getPassword, this::setPassword, url.getPassword());
+                updatePropertyIfAbsent(this::getId, this::setId, url.getProtocol());
+                updatePropertyIfAbsent(this::getProtocol, this::setProtocol, url.getProtocol());
+                updatePropertyIfAbsent(this::getPort, this::setPort, url.getPort());
+//                setUsername(url.getUsername());
+//                setPassword(url.getPassword());
+//                updateIdIfAbsent(url.getProtocol());
+//                updateProtocolIfAbsent(url.getProtocol());
+//                updatePortIfAbsent(url.getPort());
                 updateParameters(url.getParameters());
             } catch (Exception ignored) {
+                // ignore
             }
         }
     }
@@ -261,18 +275,6 @@ public class ConfigCenterConfig extends AbstractConfig {
         }
 
         return address.contains("://") || StringUtils.isNotEmpty(protocol);
-    }
-
-    protected void updatePortIfAbsent(Integer value) {
-        if (value != null && value > 0 && port == null) {
-            this.port = value;
-        }
-    }
-
-    protected void updateProtocolIfAbsent(String value) {
-        if (StringUtils.isNotEmpty(value) && StringUtils.isEmpty(protocol)) {
-            this.protocol = value;
-        }
     }
 
     public void updateParameters(Map<String, String> parameters) {
