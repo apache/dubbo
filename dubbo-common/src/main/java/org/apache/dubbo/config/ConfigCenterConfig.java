@@ -156,6 +156,7 @@ public class ConfigCenterConfig extends AbstractConfig {
                 updatePropertyIfAbsent(this::getId, this::setId, url.getProtocol());
                 updatePropertyIfAbsent(this::getProtocol, this::setProtocol, url.getProtocol());
                 updatePropertyIfAbsent(this::getPort, this::setPort, url.getPort());
+
 //                setUsername(url.getUsername());
 //                setPassword(url.getPassword());
 //                updateIdIfAbsent(url.getProtocol());
