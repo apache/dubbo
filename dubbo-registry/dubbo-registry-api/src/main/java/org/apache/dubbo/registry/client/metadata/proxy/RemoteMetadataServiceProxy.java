@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.registry.client.metadata.proxy;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.UrlUtils;
@@ -23,30 +24,36 @@ import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
-import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.registry.client.ServiceInstance;
-import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 
-import java.util.Collection;
-import java.util.Collections;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import static java.util.Collections.unmodifiableSortedSet;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
-import static org.apache.dubbo.registry.client.metadata.URLRevisionResolver.NO_REVISION;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.metadata.URLRevisionResolver.UNKNOWN_REVISION;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.EXPORTED_SERVICES_REVISION_PROPERTY_NAME;
 
+/**
+ * The proxy of {@link MetadataService} is based on {@link MetadataReport}
+ *
+ * @since 2.7.5
+ */
 public class RemoteMetadataServiceProxy implements MetadataService {
+
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private String serviceName;
-    private String revision;
+    private final String serviceName;
 
+    private final String revision;
 
     public RemoteMetadataServiceProxy(ServiceInstance serviceInstance) {
         this.serviceName = serviceInstance.getServiceName();
         // this is ServiceInstance of registry(Provider)
-        this.revision = serviceInstance.getMetadata()
-                .getOrDefault(ServiceInstanceMetadataUtils.EXPORTED_SERVICES_REVISION_PROPERTY_NAME, NO_REVISION);
+        this.revision = serviceInstance.getMetadata(EXPORTED_SERVICES_REVISION_PROPERTY_NAME, UNKNOWN_REVISION);
     }
 
     @Override
@@ -56,12 +63,23 @@ public class RemoteMetadataServiceProxy implements MetadataService {
 
     @Override
     public SortedSet<String> getExportedURLs(String serviceInterface, String group, String version, String protocol) {
-        return toSortedStrings(getMetadataReport().getExportedURLs(
-                new ServiceMetadataIdentifier(serviceInterface, group, version, PROVIDER_SIDE, revision, protocol)));
-    }
 
-    private static SortedSet<String> toSortedStrings(Collection<String> values) {
-        return Collections.unmodifiableSortedSet(new TreeSet<>(values));
+        SortedSet<String> exportedURLs = getMetadataReport().getExportedURLs(serviceName, revision);
+        if (ALL_SERVICE_INTERFACES.equals(serviceInterface)) {
+            return exportedURLs;
+        }
+
+        return unmodifiableSortedSet(
+                exportedURLs
+                        .stream()
+                        .map(URL::valueOf)
+                        .filter(url -> serviceInterface == null || serviceInterface.equals(url.getServiceInterface()))
+                        .filter(url -> group == null || group.equals(url.getParameter(GROUP_KEY)))
+                        .filter(url -> version == null || version.equals(url.getParameter(VERSION_KEY)))
+                        .filter(url -> protocol == null || protocol.equals(url.getProtocol()))
+                        .map(URL::toFullString)
+                        .collect(TreeSet::new, Set::add, Set::addAll)
+        );
     }
 
     @Override
@@ -71,8 +89,8 @@ public class RemoteMetadataServiceProxy implements MetadataService {
     }
 
     @Override
-    public String getServiceDefinition(String serviceKey) {
-        String[] services = UrlUtils.parseServiceKey(serviceKey);
+    public String getServiceDefinition(String serviceDefinitionKey) {
+        String[] services = UrlUtils.parseServiceKey(serviceDefinitionKey);
         String serviceInterface = services[0];
         // if version or group is not exist
         String version = null;
@@ -90,6 +108,4 @@ public class RemoteMetadataServiceProxy implements MetadataService {
     MetadataReport getMetadataReport() {
         return MetadataReportInstance.getMetadataReport(true);
     }
-
-
 }

@@ -20,9 +20,7 @@ import com.alibaba.com.caucho.hessian.io.SerializerFactory;
 
 public class Hessian2SerializerFactory extends SerializerFactory {
 
-    public static final SerializerFactory SERIALIZER_FACTORY = new Hessian2SerializerFactory();
-
-    private Hessian2SerializerFactory() {
+    public Hessian2SerializerFactory() {
     }
 
     @Override
