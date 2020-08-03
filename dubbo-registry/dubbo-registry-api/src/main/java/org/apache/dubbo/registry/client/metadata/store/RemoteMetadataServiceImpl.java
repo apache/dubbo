@@ -55,7 +55,7 @@ public class RemoteMetadataServiceImpl {
     }
 
     public Map<String, MetadataReport> getMetadataReports() {
-        return MetadataReportInstance.getMetadataReports(true);
+        return MetadataReportInstance.getMetadataReports(false);
     }
 
     public void publishMetadata(String serviceName) {

@@ -65,6 +65,16 @@ public class MetadataReportInstance {
         return metadataReports;
     }
 
+    public static MetadataReport getMetadataReport(String registryKey) {
+        checkInit();
+        MetadataReport metadataReport = metadataReports.get(registryKey);
+        if (metadataReport == null) {
+            metadataReport = metadataReports.values().iterator().next();
+        }
+        return metadataReport;
+    }
+
+
     private static void checkInit() {
         if (!init.get()) {
             throw new IllegalStateException("the metadata report was not inited.");

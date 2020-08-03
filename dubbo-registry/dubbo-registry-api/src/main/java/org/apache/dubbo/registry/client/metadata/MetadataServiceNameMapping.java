@@ -14,19 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata;
+package org.apache.dubbo.registry.client.metadata;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.metadata.MappingListener;
+import org.apache.dubbo.metadata.MetadataService;
+import org.apache.dubbo.metadata.ServiceNameMapping;
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
+import org.apache.dubbo.registry.client.RegistryClusterIdentifier;
 
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import static java.util.Arrays.asList;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.rpc.model.ApplicationModel.getName;
@@ -44,33 +48,42 @@ public class MetadataServiceNameMapping implements ServiceNameMapping {
         if (IGNORED_SERVICE_INTERFACES.contains(serviceInterface)) {
             return;
         }
-
-        Map<String, MetadataReport> metadataReports = MetadataReportInstance.getMetadataReports(true);
-        metadataReports.forEach((key, reporter) -> {
-            reporter.registerServiceAppMapping(ServiceNameMapping.buildGroup(serviceInterface, group, version, protocol), getName(), url);
-        });
+        String registryCluster = getRegistryCluster(url);
+        MetadataReport metadataReport = MetadataReportInstance.getMetadataReport(registryCluster);
+        metadataReport.registerServiceAppMapping(ServiceNameMapping.buildGroup(serviceInterface, group, version, protocol), getName(), url);
     }
 
     @Override
-    public Set<String> get(URL url, MappingListener mappingListener) {
+    public Set<String> getAndListen(URL url, MappingListener mappingListener) {
         String serviceInterface = url.getServiceInterface();
         String group = url.getParameter(GROUP_KEY);
         String version = url.getParameter(VERSION_KEY);
         String protocol = url.getProtocol();
 
-        Map<String, MetadataReport> metadataReports = MetadataReportInstance.getMetadataReports(true);
+        String mappingKey = ServiceNameMapping.buildGroup(serviceInterface, group, version, protocol);
         Set<String> serviceNames = new LinkedHashSet<>();
-        for (Map.Entry<String, MetadataReport> entry : metadataReports.entrySet()) {
-            MetadataReport reporter = entry.getValue();
-            Set<String> apps = reporter.getServiceAppMapping(
-                    ServiceNameMapping.buildGroup(serviceInterface, group, version, protocol),
-                    mappingListener,
-                    url);
-            if (CollectionUtils.isNotEmpty(apps)) {
-                serviceNames.addAll(apps);
-                break;
-            }
+        String registryCluster = getRegistryCluster(url);
+        MetadataReport metadataReport = MetadataReportInstance.getMetadataReport(registryCluster);
+        Set<String> apps = metadataReport.getServiceAppMapping(
+                mappingKey,
+                mappingListener,
+                url);
+        if (CollectionUtils.isNotEmpty(apps)) {
+            serviceNames.addAll(apps);
         }
+
         return serviceNames;
+    }
+
+    protected String getRegistryCluster(URL url) {
+        String registryCluster = RegistryClusterIdentifier.getExtension(url).providerKey(url);
+        if (registryCluster == null) {
+            registryCluster = DEFAULT_KEY;
+        }
+        int i = registryCluster.indexOf(",");
+        if (i > 0) {
+            registryCluster = registryCluster.substring(0, i);
+        }
+        return registryCluster;
     }
 }

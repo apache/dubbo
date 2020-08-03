@@ -194,10 +194,6 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
         this.listeners.put(serviceKey, listener);
     }
 
-    public void removeListener(String serviceKey) {
-        this.listeners.remove(serviceKey);
-    }
-
     public List<URL> getUrls(String serviceKey) {
         return toUrlsWithEmpty(serviceUrls.get(serviceKey));
     }
