@@ -392,7 +392,7 @@ public class ServiceDiscoveryRegistry implements Registry {
      * @return
      */
     protected Set<String> findMappedServices(URL subscribedURL, MappingListener listener) {
-        return serviceNameMapping.get(subscribedURL, listener);
+        return serviceNameMapping.getAndListen(subscribedURL, listener);
     }
 
     /**

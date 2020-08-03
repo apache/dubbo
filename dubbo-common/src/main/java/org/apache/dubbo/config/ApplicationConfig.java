@@ -464,7 +464,13 @@ public class ApplicationConfig extends AbstractConfig {
             for (InfraAdapter adapter : adapters) {
                 Map<String, String> extraParameters = adapter.getExtraAttributes(inputParameters);
                 if (CollectionUtils.isNotEmptyMap(extraParameters)) {
-                    parameters.putAll(extraParameters);
+                    extraParameters.forEach((key, value) -> {
+                        String prefix = this.getPrefix() + ".";
+                        if (key.startsWith(prefix)) {
+                            key = key.substring(prefix.length());
+                        }
+                        parameters.put(key, value);
+                    });
                 }
             }
         }

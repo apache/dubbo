@@ -191,12 +191,15 @@ public class MetadataInfo implements Serializable {
         // service + group + version + protocol
         private transient String matchKey;
 
+        private URL url;
+
         public ServiceInfo() {
         }
 
         public ServiceInfo(URL url) {
             this(url.getServiceInterface(), url.getParameter(GROUP_KEY), url.getParameter(VERSION_KEY), url.getProtocol(), url.getPath(), null);
 
+            this.url = url;
             Map<String, String> params = new HashMap<>();
             List<MetadataParamsFilter> filters = loader.getActivateExtension(url, "params-filter");
             for (MetadataParamsFilter filter : filters) {
@@ -407,6 +410,10 @@ public class MetadataInfo implements Serializable {
                 methodNumbers = new ConcurrentHashMap<>();
             }
             return methodNumbers;
+        }
+
+        public URL getUrl() {
+            return url;
         }
 
         @Override
