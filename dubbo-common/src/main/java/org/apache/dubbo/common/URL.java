@@ -589,41 +589,6 @@ class URL implements Serializable {
         return Collections.unmodifiableMap(selectedParameters);
     }
 
-    public Map<String, Map<String, String>> getMethodParameters() {
-        return methodParameters;
-    }
-
-    public String getParameterAndDecoded(String key) {
-        return getParameterAndDecoded(key, null);
-    }
-
-    public String getParameterAndDecoded(String key, String defaultValue) {
-        return decode(getParameter(key, defaultValue));
-    }
-
-    public String getParameter(String key) {
-        return parameters.get(key);
-    }
-
-    public String getParameter(String key, String defaultValue) {
-        String value = getParameter(key);
-        return StringUtils.isEmpty(value) ? defaultValue : value;
-    }
-
-    public String[] getParameter(String key, String[] defaultValue) {
-        String value = getParameter(key);
-        return StringUtils.isEmpty(value) ? defaultValue : COMMA_SPLIT_PATTERN.split(value);
-    }
-
-    public List<String> getParameter(String key, List<String> defaultValue) {
-        String value = getParameter(key);
-        if (StringUtils.isEmpty(value)) {
-            return defaultValue;
-        }
-        String[] strArray = COMMA_SPLIT_PATTERN.split(value);
-        return Arrays.asList(strArray);
-    }
-
     /**
      * Get parameter
      *
@@ -659,6 +624,41 @@ class URL implements Serializable {
         return result;
     }
 
+
+    public Map<String, Map<String, String>> getMethodParameters() {
+        return methodParameters;
+    }
+
+    public String getParameterAndDecoded(String key) {
+        return getParameterAndDecoded(key, null);
+    }
+
+    public String getParameterAndDecoded(String key, String defaultValue) {
+        return decode(getParameter(key, defaultValue));
+    }
+
+    public String getParameter(String key) {
+        return parameters.get(key);
+    }
+
+    public String getParameter(String key, String defaultValue) {
+        String value = getParameter(key);
+        return StringUtils.isEmpty(value) ? defaultValue : value;
+    }
+
+    public String[] getParameter(String key, String[] defaultValue) {
+        String value = getParameter(key);
+        return StringUtils.isEmpty(value) ? defaultValue : COMMA_SPLIT_PATTERN.split(value);
+    }
+
+    public List<String> getParameter(String key, List<String> defaultValue) {
+        String value = getParameter(key);
+        if (StringUtils.isEmpty(value)) {
+            return defaultValue;
+        }
+        String[] strArray = COMMA_SPLIT_PATTERN.split(value);
+        return Arrays.asList(strArray);
+    }
 
     protected Map<String, Number> getNumbers() {
         // concurrent initialization is tolerant
