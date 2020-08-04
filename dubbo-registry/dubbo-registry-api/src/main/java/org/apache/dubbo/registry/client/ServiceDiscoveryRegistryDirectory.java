@@ -23,6 +23,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.registry.AddressListener;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.registry.integration.DynamicDirectory;
@@ -73,26 +74,30 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
     public synchronized void notify(List<URL> instanceUrls) {
         // Set the context of the address notification thread.
         RpcContext.setRpcContext(getConsumerUrl());
+
+        /**
+         * 3.x added for extend URL address
+         */
+        ExtensionLoader<AddressListener> addressListenerExtensionLoader = ExtensionLoader.getExtensionLoader(AddressListener.class);
+        List<AddressListener> supportedListeners = addressListenerExtensionLoader.getActivateExtension(getUrl(), (String[]) null);
+        if (supportedListeners != null && !supportedListeners.isEmpty()) {
+            for (AddressListener addressListener : supportedListeners) {
+                instanceUrls = addressListener.notify(instanceUrls, getConsumerUrl(), this);
+            }
+        }
+
         refreshInvoker(instanceUrls);
     }
 
     private void refreshInvoker(List<URL> invokerUrls) {
-        Assert.notNull(invokerUrls, "invokerUrls should not be null, use empty InstanceAddressURL to clear address.");
+        Assert.notNull(invokerUrls, "invokerUrls should not be null, use empty url list to clear address.");
 
-        if (invokerUrls.size() == 1) {
-            URL url = invokerUrls.get(0);
-            if (!(url instanceof InstanceAddressURL)) {
-                throw new IllegalStateException("use empty InstanceAddressURL to clear address");
-            } else {
-                InstanceAddressURL instanceAddressURL = (InstanceAddressURL) url;
-                if (instanceAddressURL.getInstance() == null) {
-                    this.forbidden = true; // Forbid to access
-                    this.invokers = Collections.emptyList();
-                    routerChain.setInvokers(this.invokers);
-                    destroyAllInvokers(); // Close all invokers
-                    return;
-                }
-            }
+        if (invokerUrls.size() == 0) {
+            this.forbidden = true; // Forbid to access
+            this.invokers = Collections.emptyList();
+            routerChain.setInvokers(this.invokers);
+            destroyAllInvokers(); // Close all invokers
+            return;
         }
 
         this.forbidden = false; // Allow to access

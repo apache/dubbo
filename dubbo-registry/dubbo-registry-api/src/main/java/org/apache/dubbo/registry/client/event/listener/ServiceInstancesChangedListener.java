@@ -19,7 +19,6 @@ package org.apache.dubbo.registry.client.event.listener;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.event.ConditionalEventListener;
 import org.apache.dubbo.event.EventListener;
 import org.apache.dubbo.metadata.MetadataInfo;
@@ -27,7 +26,6 @@ import org.apache.dubbo.metadata.MetadataInfo.ServiceInfo;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
-import org.apache.dubbo.registry.client.InstanceAddressURL;
 import org.apache.dubbo.registry.client.RegistryClusterIdentifier;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
@@ -37,6 +35,7 @@ import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -86,6 +85,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
      * @param event {@link ServiceInstancesChangedEvent}
      */
     public synchronized void onEvent(ServiceInstancesChangedEvent event) {
+        logger.info("Received instance notification, serviceName: " + event.getServiceName() + ", instances: " + event.getServiceInstances().size());
         String appName = event.getServiceName();
         allInstances.put(appName, event.getServiceInstances());
 
@@ -106,6 +106,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
                 MetadataInfo metadata = revisionToMetadata.get(revision);
                 if (metadata == null) {
                     metadata = getMetadataInfo(instance);
+                    logger.info("MetadataInfo for instance " + instance.getAddress() + "?revision=" + revision + " is " + metadata);
                     if (metadata != null) {
                         revisionToMetadata.put(revision, getMetadataInfo(instance));
                     } else {
@@ -183,9 +184,8 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
     }
 
     private List<URL> toUrlsWithEmpty(List<URL> urls) {
-        if (CollectionUtils.isEmpty(urls)) {
-            urls = new ArrayList<>();
-            urls.add(new InstanceAddressURL());
+        if (urls == null) {
+            urls = Collections.emptyList();
         }
         return urls;
     }
