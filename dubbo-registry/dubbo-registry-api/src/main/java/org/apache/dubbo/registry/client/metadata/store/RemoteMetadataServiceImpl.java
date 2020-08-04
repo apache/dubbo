@@ -85,7 +85,7 @@ public class RemoteMetadataServiceImpl {
         if (metadataReport == null) {
             metadataReport = getMetadataReports().entrySet().iterator().next().getValue();
         }
-        return metadataReport.getAppMetadata(identifier, instance.getMetadata());
+        return metadataReport.getAppMetadata(identifier, instance.getExtendParams());
     }
 
     public void publishServiceDefinition(URL url) {

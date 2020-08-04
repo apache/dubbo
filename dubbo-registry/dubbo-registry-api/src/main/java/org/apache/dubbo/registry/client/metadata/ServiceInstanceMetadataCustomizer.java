@@ -51,7 +51,7 @@ public class ServiceInstanceMetadataCustomizer implements ServiceInstanceCustomi
         // FIXME, check the same key in different urls has the same value
         MetadataInfo metadataInfo = localMetadataService.getMetadataInfos().values().iterator().next();
         MetadataInfo.ServiceInfo serviceInfo = metadataInfo.getServices().values().iterator().next();
-        Map<String, String> allParams = new HashMap<>(serviceInfo.getParams());
+        Map<String, String> allParams = new HashMap<>(serviceInfo.getUrl().getParameters());
 
         // load instance params users want to load.
         // TODO, duplicate logic with that in ApplicationConfig
