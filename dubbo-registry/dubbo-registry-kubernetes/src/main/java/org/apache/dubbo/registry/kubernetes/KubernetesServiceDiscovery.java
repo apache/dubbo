@@ -288,7 +288,7 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
                 .stream()
                 .collect(
                         Collectors.toMap(
-                                pod -> pod.getSpec().getHostname(),
+                                pod -> pod.getMetadata().getName(),
                                 pod -> pod));
 
         List<ServiceInstance> instances = new LinkedList<>();
@@ -296,7 +296,7 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
         for (EndpointSubset endpointSubset : endpoints.getSubsets()) {
             for (EndpointAddress address : endpointSubset.getAddresses()) {
                 instances.add(JSONObject.parseObject(
-                        pods.get(address.getHostname())
+                        pods.get(address.getTargetRef().getName())
                                 .getMetadata()
                                 .getAnnotations()
                                 .get(KUBERNETES_PROPERTIES_KEY),
