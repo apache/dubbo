@@ -23,7 +23,6 @@
 
     <dubbo:application name="demo-service-consumer" metadata-type="remote">
         <dubbo:parameter key="mapping-type" value="metadata"/>
-        <dubbo:parameter key="enable-auto-migration" value="true"/>
     </dubbo:application>
 
     <dubbo:metadata-report address="zookeeper://127.0.0.1:2181"/>
