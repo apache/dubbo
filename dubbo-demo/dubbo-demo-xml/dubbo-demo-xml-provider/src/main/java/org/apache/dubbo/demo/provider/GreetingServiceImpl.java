@@ -14,36 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata;
+package org.apache.dubbo.demo.provider;
 
-import java.util.Set;
+import org.apache.dubbo.demo.GreetingService;
 
-public class MappingChangedEvent {
-    private String serviceKey;
-    private Set<String> apps;
-    private Set<String> oldApps;
-
-    public String getServiceKey() {
-        return serviceKey;
-    }
-
-    public void setServiceKey(String serviceKey) {
-        this.serviceKey = serviceKey;
-    }
-
-    public Set<String> getApps() {
-        return apps;
-    }
-
-    public void setApps(Set<String> apps) {
-        this.apps = apps;
-    }
-
-    public Set<String> getOldApps() {
-        return oldApps;
-    }
-
-    public void setOldApps(Set<String> oldApps) {
-        this.oldApps = oldApps;
+/**
+ *
+ */
+public class GreetingServiceImpl implements GreetingService {
+    @Override
+    public String hello() {
+        return "Greetings!";
     }
 }

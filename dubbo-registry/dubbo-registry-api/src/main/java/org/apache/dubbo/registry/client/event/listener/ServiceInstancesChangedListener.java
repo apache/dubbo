@@ -19,7 +19,6 @@ package org.apache.dubbo.registry.client.event.listener;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.event.ConditionalEventListener;
 import org.apache.dubbo.event.EventListener;
 import org.apache.dubbo.metadata.MetadataInfo;
@@ -27,7 +26,6 @@ import org.apache.dubbo.metadata.MetadataInfo.ServiceInfo;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
-import org.apache.dubbo.registry.client.InstanceAddressURL;
 import org.apache.dubbo.registry.client.RegistryClusterIdentifier;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
@@ -37,6 +35,7 @@ import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -45,8 +44,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 
-import static org.apache.dubbo.common.constants.CommonConstants.REGISTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
 import static org.apache.dubbo.metadata.MetadataInfo.DEFAULT_REVISION;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getExportedServicesRevision;
 
@@ -86,6 +85,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
      * @param event {@link ServiceInstancesChangedEvent}
      */
     public synchronized void onEvent(ServiceInstancesChangedEvent event) {
+        logger.info("Received instance notification, serviceName: " + event.getServiceName() + ", instances: " + event.getServiceInstances().size());
         String appName = event.getServiceName();
         allInstances.put(appName, event.getServiceInstances());
 
@@ -106,6 +106,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
                 MetadataInfo metadata = revisionToMetadata.get(revision);
                 if (metadata == null) {
                     metadata = getMetadataInfo(instance);
+                    logger.info("MetadataInfo for instance " + instance.getAddress() + "?revision=" + revision + " is " + metadata);
                     if (metadata != null) {
                         revisionToMetadata.put(revision, getMetadataInfo(instance));
                     } else {
@@ -156,7 +157,8 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
 
     private MetadataInfo getMetadataInfo(ServiceInstance instance) {
         String metadataType = ServiceInstanceMetadataUtils.getMetadataStorageType(instance);
-        instance.getExtendParams().putIfAbsent(REGISTER_KEY, RegistryClusterIdentifier.getExtension().consumerKey(url));
+        // FIXME, check "REGISTRY_CLUSTER_KEY" must be set by every registry implementation.
+        instance.getExtendParams().putIfAbsent(REGISTRY_CLUSTER_KEY, RegistryClusterIdentifier.getExtension(url).consumerKey(url));
         MetadataInfo metadataInfo;
         try {
             if (REMOTE_METADATA_STORAGE_TYPE.equals(metadataType)) {
@@ -177,25 +179,23 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
     private void notifyAddressChanged() {
         listeners.forEach((key, notifyListener) -> {
             //FIXME, group wildcard match
-            List<URL> urls = serviceUrls.get(key);
-            if (CollectionUtils.isEmpty(urls)) {
-                urls = new ArrayList<>();
-                urls.add(new InstanceAddressURL());
-            }
-            notifyListener.notify(urls);
+            notifyListener.notify(toUrlsWithEmpty(serviceUrls.get(key)));
         });
+    }
+
+    private List<URL> toUrlsWithEmpty(List<URL> urls) {
+        if (urls == null) {
+            urls = Collections.emptyList();
+        }
+        return urls;
     }
 
     public void addListener(String serviceKey, NotifyListener listener) {
         this.listeners.put(serviceKey, listener);
     }
 
-    public void removeListener(String serviceKey) {
-        this.listeners.remove(serviceKey);
-    }
-
     public List<URL> getUrls(String serviceKey) {
-        return serviceUrls.get(serviceKey);
+        return toUrlsWithEmpty(serviceUrls.get(serviceKey));
     }
 
     /**

@@ -31,6 +31,6 @@ public class MetadataInfoTest {
         metadataInfo.addService(serviceInfo);
 
         System.out.println(serviceInfo.toDescString());
-        System.out.println(metadataInfo.getRevision());
+        System.out.println(metadataInfo.calAndGetRevision());
     }
 }

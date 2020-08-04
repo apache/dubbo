@@ -113,6 +113,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         this.consumerUrl = consumerUrl;
     }
 
+    @Override
     public boolean isDestroyed() {
         return destroyed;
     }

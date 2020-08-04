@@ -62,7 +62,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDED_BY;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_TYPE;
 import static org.apache.dubbo.common.constants.RegistryConstants.SUBSCRIBED_SERVICE_NAMES_KEY;
@@ -205,8 +205,8 @@ public class ServiceDiscoveryRegistry implements Registry {
 
     public void doRegister(URL url) {
         String registryCluster = serviceDiscovery.getUrl().getParameter(ID_KEY);
-        if (registryCluster != null) {
-            url = url.addParameter(REGISTRY_KEY, registryCluster);
+        if (registryCluster != null && url.getParameter(REGISTRY_CLUSTER_KEY) == null) {
+            url = url.addParameter(REGISTRY_CLUSTER_KEY, registryCluster);
         }
         if (writableMetadataService.exportURL(url)) {
             if (logger.isInfoEnabled()) {
@@ -229,8 +229,8 @@ public class ServiceDiscoveryRegistry implements Registry {
 
     public void doUnregister(URL url) {
         String registryCluster = serviceDiscovery.getUrl().getParameter(ID_KEY);
-        if (registryCluster != null) {
-            url = url.addParameter(REGISTRY_KEY, registryCluster);
+        if (registryCluster != null && url.getParameter(REGISTRY_CLUSTER_KEY) == null) {
+            url = url.addParameter(REGISTRY_CLUSTER_KEY, registryCluster);
         }
         if (writableMetadataService.unexportURL(url)) {
             if (logger.isInfoEnabled()) {
@@ -249,8 +249,8 @@ public class ServiceDiscoveryRegistry implements Registry {
             return;
         }
         String registryCluster = serviceDiscovery.getUrl().getParameter(ID_KEY);
-        if (registryCluster != null) {
-            url = url.addParameter(REGISTRY_KEY, registryCluster);
+        if (registryCluster != null && url.getParameter(REGISTRY_CLUSTER_KEY) == null) {
+            url = url.addParameter(REGISTRY_CLUSTER_KEY, registryCluster);
         }
         doSubscribe(url, listener);
     }
@@ -272,8 +272,8 @@ public class ServiceDiscoveryRegistry implements Registry {
             return;
         }
         String registryCluster = serviceDiscovery.getUrl().getParameter(ID_KEY);
-        if (registryCluster != null) {
-            url = url.addParameter(REGISTRY_KEY, registryCluster);
+        if (registryCluster != null && url.getParameter(REGISTRY_CLUSTER_KEY) == null) {
+            url = url.addParameter(REGISTRY_CLUSTER_KEY, registryCluster);
         }
         doUnsubscribe(url, listener);
     }
@@ -318,9 +318,11 @@ public class ServiceDiscoveryRegistry implements Registry {
             List<ServiceInstance> serviceInstances = serviceDiscovery.getInstances(serviceName);
             serviceListener.onEvent(new ServiceInstancesChangedEvent(serviceName, serviceInstances));
         });
-        listener.notify(serviceListener.getUrls(url.getServiceKey() + GROUP_CHAR_SEPARATOR + url.getParameter(PROTOCOL_KEY, DUBBO)));
+        String protocolServiceKey = url.getServiceKey() + GROUP_CHAR_SEPARATOR + url.getParameter(PROTOCOL_KEY, DUBBO);
 
-        serviceListener.addListener(url.getProtocolServiceKey(), listener);
+        listener.notify(serviceListener.getUrls(protocolServiceKey));
+
+        serviceListener.addListener(protocolServiceKey, listener);
         registerServiceInstancesChangedListener(url, serviceListener);
     }
 
@@ -390,7 +392,7 @@ public class ServiceDiscoveryRegistry implements Registry {
      * @return
      */
     protected Set<String> findMappedServices(URL subscribedURL, MappingListener listener) {
-        return serviceNameMapping.get(subscribedURL, listener);
+        return serviceNameMapping.getAndListen(subscribedURL, listener);
     }
 
     /**
