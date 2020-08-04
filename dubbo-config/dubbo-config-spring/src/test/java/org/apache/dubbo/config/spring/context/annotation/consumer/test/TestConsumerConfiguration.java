@@ -38,7 +38,10 @@ public class TestConsumerConfiguration {
 
     private static final String remoteURL = "dubbo://127.0.0.1:12345?version=2.5.7";
 
-    @Reference(version = "2.5.7", url = remoteURL, application = "dubbo-demo-application")
+    @Reference(version = "2.5.7",
+            url = remoteURL,
+            application = "dubbo-demo-application",
+            filter = "mymock")
     private DemoService demoService;
 
     @Autowired

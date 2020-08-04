@@ -43,6 +43,7 @@ import java.lang.reflect.Type;
 
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE_ASYNC;
+import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_PARAMETER_DESC;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 
 /**
@@ -54,8 +55,6 @@ public class GenericImplFilter implements Filter, Filter.Listener {
     private static final Logger logger = LoggerFactory.getLogger(GenericImplFilter.class);
 
     private static final Class<?>[] GENERIC_PARAMETER_TYPES = new Class<?>[]{String.class, String[].class, Object[].class};
-
-    private static final String GENERIC_PARAMETER_DESC = "Ljava/lang/String;[Ljava/lang/String;[Ljava/lang/Object;";
 
     private static final String GENERIC_IMPL_MARKER = "GENERIC_IMPL";
 

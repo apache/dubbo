@@ -22,18 +22,17 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Cluster;
+import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 
-class RegistryInvokerWrapper<T> implements Invoker<T> {
+class RegistryInvokerWrapper<T> implements ClusterInvoker<T> {
     private RegistryDirectory<T> directory;
     private Cluster cluster;
     private Invoker<T> invoker;
-    private URL url;
 
-    public RegistryInvokerWrapper(RegistryDirectory<T> directory, Cluster cluster, Invoker<T> invoker, URL url) {
+    public RegistryInvokerWrapper(RegistryDirectory<T> directory, Cluster cluster, Invoker<T> invoker) {
         this.directory = directory;
         this.cluster = cluster;
         this.invoker = invoker;
-        this.url = url;
     }
 
     @Override
@@ -48,11 +47,7 @@ class RegistryInvokerWrapper<T> implements Invoker<T> {
 
     @Override
     public URL getUrl() {
-        return url;
-    }
-
-    public void setUrl(URL url) {
-        this.url = url;
+        return invoker.getUrl();
     }
 
     public void setInvoker(Invoker<T> invoker) {
@@ -75,5 +70,10 @@ class RegistryInvokerWrapper<T> implements Invoker<T> {
     @Override
     public void destroy() {
         invoker.destroy();
+    }
+
+    @Override
+    public URL getRegistryUrl() {
+        return directory.getUrl();
     }
 }
