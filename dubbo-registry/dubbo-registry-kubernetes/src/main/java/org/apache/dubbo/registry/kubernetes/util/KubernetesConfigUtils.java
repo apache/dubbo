@@ -78,6 +78,8 @@ public class KubernetesConfigUtils {
 
                 .withTrustCerts(url.getParameter(KubernetesClientConst.TRUST_CERTS,
                         base.isTrustCerts()))
+                .withHttp2Disable(url.getParameter(KubernetesClientConst.HTTP2_DISABLE,
+                        base.isTrustCerts()))
 
                 .withHttpProxy(url.getParameter(KubernetesClientConst.HTTP_PROXY,
                         base.getHttpProxy()))

@@ -24,6 +24,8 @@ public class KubernetesClientConst {
 
     public final static String USE_HTTPS = "useHttps";
 
+    public static final String HTTP2_DISABLE = "http2Disable";
+
     public final static String NAMESPACE = "namespace";
 
     public final static String API_VERSION = "apiVersion";

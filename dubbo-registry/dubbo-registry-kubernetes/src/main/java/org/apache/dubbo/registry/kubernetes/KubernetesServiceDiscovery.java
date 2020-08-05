@@ -44,7 +44,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
@@ -201,7 +200,7 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
                                     ". Current pod name: " + currentHostname);
                         }
 
-                        notifyEndpointsChanged(resource, serviceName, listener);
+                        notifyServiceChanged(serviceName, listener);
                     }
 
                     @Override
@@ -231,7 +230,7 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
                                 logger.debug("Received Pods Update Event. Current pod name: " + currentHostname);
                             }
 
-                            notifyPodsChanged(serviceName, listener);
+                            notifyServiceChanged(serviceName, listener);
                         }
                     }
 
@@ -275,25 +274,12 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
         SERVICE_WATCHER.put(serviceName, watch);
     }
 
-    private void notifyEndpointsChanged(Endpoints endpoints, String serviceName, ServiceInstancesChangedListener listener) {
-        notifyServiceChanged(serviceName, listener, () -> toServiceInstance(endpoints, serviceName));
-    }
-
-    private void notifyPodsChanged(String serviceName, ServiceInstancesChangedListener listener) {
-        notifyServiceChanged(serviceName, listener, () -> getInstances(serviceName));
-    }
-
-    private void notifyServiceChanged(String serviceName, ServiceInstancesChangedListener listener, Callable<List<ServiceInstance>> instances) {
+    private void notifyServiceChanged(String serviceName, ServiceInstancesChangedListener listener) {
         long receivedTime = System.nanoTime();
 
         ServiceInstancesChangedEvent event;
 
-        try {
-            event = new ServiceInstancesChangedEvent(serviceName, instances.call());
-        } catch (Exception e) {
-            logger.error("Convert changed event to Service Instance Faild. Cause: " + e.getLocalizedMessage());
-            return;
-        }
+        event = new ServiceInstancesChangedEvent(serviceName, getInstances(serviceName));
 
         AtomicLong updateTime = SERVICE_UPDATE_TIME.get(serviceName);
         long lastUpdateTime = updateTime.get();
@@ -308,7 +294,7 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
         if (logger.isInfoEnabled()) {
             logger.info("Discard Service Instance Data. " +
                     "Possible Cause: Newer message has been processed or Failed to update time record by CAS. " +
-                    "Current Data received time: "+receivedTime + ". " +
+                    "Current Data received time: " + receivedTime + ". " +
                     "Newer Data received time: " + lastUpdateTime + ".");
         }
     }
@@ -347,9 +333,14 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
 
         for (EndpointSubset endpointSubset : endpoints.getSubsets()) {
             for (EndpointAddress address : endpointSubset.getAddresses()) {
+                Pod pod = pods.get(address.getTargetRef().getName());
+                if (pod == null) {
+                    logger.warn("Enable to match Kubernetes Endpoint address with Pod. " +
+                            "EndpointAddress Hostname: " + address.getTargetRef().getName());
+                    continue;
+                }
                 instances.add(JSONObject.parseObject(
-                        pods.get(address.getTargetRef().getName())
-                                .getMetadata()
+                        pod.getMetadata()
                                 .getAnnotations()
                                 .get(KUBERNETES_PROPERTIES_KEY),
                         DefaultServiceInstance.class));
@@ -357,5 +348,18 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
         }
 
         return instances;
+    }
+
+    /**
+     * UT used only
+     */
+    @Deprecated
+    public void setCurrentHostname(String currentHostname) {
+        this.currentHostname = currentHostname;
+    }
+
+    @Deprecated
+    public void setKubernetesClient(KubernetesClient kubernetesClient) {
+        this.kubernetesClient = kubernetesClient;
     }
 }
