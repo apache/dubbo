@@ -30,12 +30,13 @@ public class Application {
      * In order to make sure multicast registry works, need to specify '-Djava.net.preferIPv4Stack=true' before
      * launch the application
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ConsumerConfiguration.class);
         context.start();
         DemoService service = context.getBean("demoServiceComponent", DemoServiceComponent.class);
         String hello = service.sayHello("world");
-        System.out.println("result :" + hello);
+        System.out.println("-------------------result :" + hello);
+        Thread.sleep(Integer.MAX_VALUE);
     }
 
     @Configuration

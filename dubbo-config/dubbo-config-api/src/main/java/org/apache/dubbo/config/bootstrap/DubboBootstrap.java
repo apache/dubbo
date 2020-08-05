@@ -180,6 +180,7 @@ public class DubboBootstrap extends GenericEventListener {
 
     /**
      * See {@link ApplicationModel} and {@link ExtensionLoader} for why DubboBootstrap is designed to be singleton.
+     * 单例模式
      */
     public static DubboBootstrap getInstance() {
         if (instance == null) {
@@ -192,10 +193,19 @@ public class DubboBootstrap extends GenericEventListener {
         return instance;
     }
 
+    /**
+     * 构造方法私有
+     */
     private DubboBootstrap() {
+        /**
+         * spi  创建config和environment
+         */
         configManager = ApplicationModel.getConfigManager();
         environment = ApplicationModel.getEnvironment();
 
+        /**
+         * 注册DubboShutdownHook
+         */
         DubboShutdownHook.getDubboShutdownHook().register();
         ShutdownHookCallbacks.INSTANCE.addCallback(new ShutdownHookCallback() {
             @Override
