@@ -314,16 +314,16 @@ public class ServiceDiscoveryRegistry implements Registry {
         serviceListener.setUrl(url);
         listener.addServiceListener(serviceListener);
 
+        String protocolServiceKey = url.getServiceKey() + GROUP_CHAR_SEPARATOR + url.getParameter(PROTOCOL_KEY, DUBBO);
+        serviceListener.addListener(protocolServiceKey, listener);
+        registerServiceInstancesChangedListener(url, serviceListener);
+
         serviceNames.forEach(serviceName -> {
             List<ServiceInstance> serviceInstances = serviceDiscovery.getInstances(serviceName);
             serviceListener.onEvent(new ServiceInstancesChangedEvent(serviceName, serviceInstances));
         });
-        String protocolServiceKey = url.getServiceKey() + GROUP_CHAR_SEPARATOR + url.getParameter(PROTOCOL_KEY, DUBBO);
 
         listener.notify(serviceListener.getUrls(protocolServiceKey));
-
-        serviceListener.addListener(protocolServiceKey, listener);
-        registerServiceInstancesChangedListener(url, serviceListener);
     }
 
     /**

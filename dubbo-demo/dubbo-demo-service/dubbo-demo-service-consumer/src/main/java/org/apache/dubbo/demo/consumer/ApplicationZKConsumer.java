@@ -36,10 +36,14 @@ public class ApplicationZKConsumer {
 
         new Thread(() -> {
             while (true) {
-                String greetings = greetingService.hello();
-                System.out.println(greetings + " from separated thread.");
                 try {
-                    Thread.sleep(100);
+                    String greetings = greetingService.hello();
+                    System.out.println(greetings + " from separated thread.");
+                } catch (Exception e) {
+                    e.printStackTrace();;
+                }
+                try {
+                    Thread.sleep(1000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -47,13 +51,19 @@ public class ApplicationZKConsumer {
         }).start();
 
         while (true) {
-            CompletableFuture<String> hello = demoService.sayHelloAsync("world");
-            System.out.println("result: " + hello.get());
+            try {
+                CompletableFuture<String> hello = demoService.sayHelloAsync("world");
+                System.out.println("result: " + hello.get());
 
-            String greetings = greetingService.hello();
-            System.out.println("result: " + greetings);
+                String greetings = greetingService.hello();
+                System.out.println("result: " + greetings);
 
-            Thread.sleep(500);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            Thread.sleep(1000);
         }
     }
 }
