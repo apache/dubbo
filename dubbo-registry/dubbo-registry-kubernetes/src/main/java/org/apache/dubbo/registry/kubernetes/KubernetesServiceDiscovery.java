@@ -195,7 +195,7 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
                                     ". Current pod name: " + currentHostname);
                         }
 
-                        listener.accept(
+                        listener.onEvent(
                                 new ServiceInstancesChangedEvent(serviceName,
                                         toServiceInstance(resource, serviceName)));
                     }
@@ -227,7 +227,7 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
                                 logger.debug("Received Pods Update Event. Current pod name: " + currentHostname);
                             }
 
-                            listener.accept(
+                            listener.onEvent(
                                     new ServiceInstancesChangedEvent(serviceName, getInstances(serviceName)));
                         }
                     }
