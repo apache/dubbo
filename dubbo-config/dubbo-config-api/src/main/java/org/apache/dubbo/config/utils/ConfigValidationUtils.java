@@ -214,7 +214,7 @@ public class ConfigValidationUtils {
             if (provider) {
                 // for registries enabled service discovery, automatically register interface compatible addresses.
                 if (SERVICE_REGISTRY_PROTOCOL.equals(registryURL.getProtocol())
-                        && registryURL.getParameter(REGISTRY_DUPLICATE_KEY, true)
+                        && registryURL.getParameter(REGISTRY_DUPLICATE_KEY, false)
                         && registryNotExists(registryURL, registryList, REGISTRY_PROTOCOL)) {
                     URL interfaceCompatibleRegistryURL = URLBuilder.from(registryURL)
                             .setProtocol(REGISTRY_PROTOCOL)
