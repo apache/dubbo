@@ -44,7 +44,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 public class KubernetesServiceDiscovery implements ServiceDiscovery {
@@ -69,6 +71,8 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
     private final static ConcurrentHashMap<String, Watch> PODS_WATCHER = new ConcurrentHashMap<>(64);
 
     private final static ConcurrentHashMap<String, Watch> ENDPOINTS_WATCHER = new ConcurrentHashMap<>(64);
+
+    private final static ConcurrentHashMap<String, AtomicLong> SERVICE_UPDATE_TIME = new ConcurrentHashMap<>(64);
 
     @Override
     public void initialize(URL registryURL) throws Exception {
@@ -171,6 +175,8 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
     @Override
     public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener) throws NullPointerException, IllegalArgumentException {
         listener.getServiceNames().forEach(serviceName -> {
+            SERVICE_UPDATE_TIME.put(serviceName, new AtomicLong(0L));
+
             // Watch Service Endpoint Modification
             watchEndpoints(listener, serviceName);
 
@@ -195,9 +201,7 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
                                     ". Current pod name: " + currentHostname);
                         }
 
-                        listener.onEvent(
-                                new ServiceInstancesChangedEvent(serviceName,
-                                        toServiceInstance(resource, serviceName)));
+                        notifyEndpointsChanged(resource, serviceName, listener);
                     }
 
                     @Override
@@ -227,8 +231,7 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
                                 logger.debug("Received Pods Update Event. Current pod name: " + currentHostname);
                             }
 
-                            listener.onEvent(
-                                    new ServiceInstancesChangedEvent(serviceName, getInstances(serviceName)));
+                            notifyPodsChanged(serviceName, listener);
                         }
                     }
 
@@ -270,6 +273,44 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
                 });
 
         SERVICE_WATCHER.put(serviceName, watch);
+    }
+
+    private void notifyEndpointsChanged(Endpoints endpoints, String serviceName, ServiceInstancesChangedListener listener) {
+        notifyServiceChanged(serviceName, listener, () -> toServiceInstance(endpoints, serviceName));
+    }
+
+    private void notifyPodsChanged(String serviceName, ServiceInstancesChangedListener listener) {
+        notifyServiceChanged(serviceName, listener, () -> getInstances(serviceName));
+    }
+
+    private void notifyServiceChanged(String serviceName, ServiceInstancesChangedListener listener, Callable<List<ServiceInstance>> instances) {
+        long receivedTime = System.nanoTime();
+
+        ServiceInstancesChangedEvent event;
+
+        try {
+            event = new ServiceInstancesChangedEvent(serviceName, instances.call());
+        } catch (Exception e) {
+            logger.error("Convert changed event to Service Instance Faild. Cause: " + e.getLocalizedMessage());
+            return;
+        }
+
+        AtomicLong updateTime = SERVICE_UPDATE_TIME.get(serviceName);
+        long lastUpdateTime = updateTime.get();
+
+        if (lastUpdateTime <= receivedTime) {
+            if (updateTime.compareAndSet(lastUpdateTime, receivedTime)) {
+                listener.onEvent(event);
+                return;
+            }
+        }
+
+        if (logger.isInfoEnabled()) {
+            logger.info("Discard Service Instance Data. " +
+                    "Possible Cause: Newer message has been processed or Failed to update time record by CAS. " +
+                    "Current Data received time: "+receivedTime + ". " +
+                    "Newer Data received time: " + lastUpdateTime + ".");
+        }
     }
 
     @Override
