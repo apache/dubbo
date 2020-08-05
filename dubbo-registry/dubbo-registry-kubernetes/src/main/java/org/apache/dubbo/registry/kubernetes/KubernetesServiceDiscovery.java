@@ -50,8 +50,6 @@ import java.util.stream.Collectors;
 public class KubernetesServiceDiscovery implements ServiceDiscovery {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private Config config;
-
     private KubernetesClient kubernetesClient;
 
     private String currentHostname;
@@ -74,7 +72,7 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
 
     @Override
     public void initialize(URL registryURL) throws Exception {
-        this.config = KubernetesConfigUtils.createKubernetesConfig(registryURL);
+        Config config = KubernetesConfigUtils.createKubernetesConfig(registryURL);
         this.kubernetesClient = new DefaultKubernetesClient(config);
         this.currentHostname = System.getenv("HOSTNAME");
         this.registryURL = registryURL;
@@ -176,7 +174,6 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
             // Watch Service Endpoint Modification
             watchEndpoints(listener, serviceName);
 
-
             // Watch Pods Modification, happens when ServiceInstance updated
             watchPods(listener, serviceName);
 
@@ -193,6 +190,11 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
                 .watch(new Watcher<Endpoints>() {
                     @Override
                     public void eventReceived(Action action, Endpoints resource) {
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("Received Endpoint Event. Event type: " + action.name() +
+                                    ". Current pod name: " + currentHostname);
+                        }
+
                         listener.accept(
                                 new ServiceInstancesChangedEvent(serviceName,
                                         toServiceInstance(resource, serviceName)));
@@ -200,7 +202,7 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
 
                     @Override
                     public void onClose(KubernetesClientException cause) {
-
+                        // ignore
                     }
                 });
 
@@ -221,6 +223,10 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
                     @Override
                     public void eventReceived(Action action, Pod resource) {
                         if (Action.MODIFIED.equals(action)) {
+                            if (logger.isDebugEnabled()) {
+                                logger.debug("Received Pods Update Event. Current pod name: " + currentHostname);
+                            }
+
                             listener.accept(
                                     new ServiceInstancesChangedEvent(serviceName, getInstances(serviceName)));
                         }
@@ -228,7 +234,7 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
 
                     @Override
                     public void onClose(KubernetesClientException cause) {
-
+                        // ignore
                     }
                 });
 
@@ -244,6 +250,11 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
                     @Override
                     public void eventReceived(Action action, Service resource) {
                         if (Action.MODIFIED.equals(action)) {
+                            if (logger.isDebugEnabled()) {
+                                logger.debug("Received Service Update Event. Update Pods Watcher. " +
+                                        "Current pod name: " + currentHostname);
+                            }
+
                             if (PODS_WATCHER.containsKey(serviceName)) {
                                 PODS_WATCHER.get(serviceName).close();
                                 PODS_WATCHER.remove(serviceName);
@@ -254,7 +265,7 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
 
                     @Override
                     public void onClose(KubernetesClientException cause) {
-
+                        // ignore
                     }
                 });
 
