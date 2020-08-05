@@ -21,6 +21,7 @@ import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
+import org.apache.dubbo.rpc.RpcException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,7 +33,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.registry.sofa.SofaRegistryConstants.ADDRESS_WAIT_TIME_KEY;
-import static org.apache.dubbo.registry.sofa.SofaRegistryConstants.DEFAULT_GROUP;
 import static org.apache.dubbo.registry.sofa.SofaRegistryConstants.LOCAL_DATA_CENTER;
 import static org.apache.dubbo.registry.sofa.SofaRegistryConstants.LOCAL_REGION;
 
@@ -43,7 +43,7 @@ import static org.apache.dubbo.registry.sofa.SofaRegistryConstants.LOCAL_REGION;
 public class SofaRegistryServiceDiscovery implements ServiceDiscovery {
     private static final Logger LOGGER = LoggerFactory.getLogger(SofaRegistryServiceDiscovery.class);
 
-    private static  final String DATAID_SUBFIX = "@dubbo";
+    private static  final String DEFAULT_GROUP = "dubbo";
 
     private URL registryURL;
 
@@ -56,6 +56,8 @@ public class SofaRegistryServiceDiscovery implements ServiceDiscovery {
     private Map<String, SubscriberRegistration> subscriberRegistrationCaches = new HashMap<>();
 
     private final Map<String, Subscriber> subscribers = new ConcurrentHashMap<>();
+
+    private ServiceInstance serviceInstance;
 
     private Gson gson = new Gson();
 
@@ -86,12 +88,11 @@ public class SofaRegistryServiceDiscovery implements ServiceDiscovery {
 
     @Override
     public void register(ServiceInstance serviceInstance) throws RuntimeException {
-
-        String serviceName = buildDataId(serviceInstance.getServiceName());
+        this.serviceInstance = serviceInstance;
         Map<String, String> metadata = serviceInstance.getMetadata();
-        SofaRegistryInstance sofaRegistryInstance = new SofaRegistryInstance(serviceInstance.getId(), serviceInstance.getHost(), serviceInstance.getPort(),serviceName, metadata);
+        SofaRegistryInstance sofaRegistryInstance = new SofaRegistryInstance(serviceInstance.getId(), serviceInstance.getHost(), serviceInstance.getPort(),serviceInstance.getServiceName(), metadata);
 
-        PublisherRegistration registration = new PublisherRegistration(serviceName);
+        PublisherRegistration registration = new PublisherRegistration(serviceInstance.getServiceName());
         registration.setGroup(DEFAULT_GROUP);
 
         registryClient.register(registration, gson.toJson(sofaRegistryInstance));
@@ -99,12 +100,12 @@ public class SofaRegistryServiceDiscovery implements ServiceDiscovery {
 
     @Override
     public void update(ServiceInstance serviceInstance) throws RuntimeException {
-        throw new UnsupportedOperationException("update是什么场景的回调");
+        register(serviceInstance);
     }
 
     @Override
     public void unregister(ServiceInstance serviceInstance) throws RuntimeException {
-        registryClient.unregister(buildDataId(serviceInstance.getServiceName()), DEFAULT_GROUP, RegistryType.PUBLISHER);
+        registryClient.unregister(serviceInstance.getServiceName(), DEFAULT_GROUP, RegistryType.PUBLISHER);
     }
 
     @Override
@@ -113,22 +114,19 @@ public class SofaRegistryServiceDiscovery implements ServiceDiscovery {
     }
 
     protected void registerServiceWatcher(String serviceName, ServiceInstancesChangedListener listener) {
-
-        String path = buildDataId(serviceName);
-
-        Subscriber subscriber = subscribers.get(path);
+        Subscriber subscriber = subscribers.get(serviceName);
 
         if (null == subscriber) {
             final CountDownLatch latch = new CountDownLatch(1);
-            SubscriberRegistration subscriberRegistration = subscriberRegistrationCaches.computeIfAbsent(path,
-                    key -> new SubscriberRegistration(path, (dataId, data) -> {
-                        handleRegistryData(dataId, serviceName, data, listener, latch);
+            SubscriberRegistration subscriberRegistration = subscriberRegistrationCaches.computeIfAbsent(serviceName,
+                    key -> new SubscriberRegistration(serviceName, (dataId, data) -> {
+                        handleRegistryData(dataId, data, listener, latch);
                     }));
             subscriberRegistration.setGroup(DEFAULT_GROUP);
             subscriberRegistration.setScopeEnum(ScopeEnum.global);
 
             subscriber = registryClient.register(subscriberRegistration);
-            subscribers.put(path, subscriber);
+            subscribers.put(serviceName, subscriber);
             waitAddress(serviceName, latch);
         }
     }
@@ -136,18 +134,17 @@ public class SofaRegistryServiceDiscovery implements ServiceDiscovery {
     @Override
     public Page<ServiceInstance> getInstances(String serviceName, int offset, int pageSize, boolean healthyOnly)
             throws NullPointerException, IllegalArgumentException, UnsupportedOperationException {
-        String dataId = buildDataId(serviceName);
-        Subscriber subscriber = subscribers.get(dataId);
+        Subscriber subscriber = subscribers.get(serviceName);
 
         if (null != subscriber) {
-            List<ServiceInstance> serviceInstanceList = handleRegistryData(dataId, serviceName, subscriber.peekData(), null, null);
+            List<ServiceInstance> serviceInstanceList = handleRegistryData(serviceName, subscriber.peekData(), null, null);
             return new DefaultPage<>(offset, pageSize, serviceInstanceList, serviceInstanceList.size());
         }
 
-        throw new RuntimeException("getInstances error!");
+        throw new RpcException("getInstances error!");
     }
 
-    private List<ServiceInstance> handleRegistryData(String  dataId, String serviceName, UserData userData, ServiceInstancesChangedListener listener, CountDownLatch latch) {
+    private List<ServiceInstance> handleRegistryData(String dataId, UserData userData, ServiceInstancesChangedListener listener, CountDownLatch latch) {
         try {
             List<String> datas = getUserData(dataId, userData);
             List<ServiceInstance> serviceInstances = new ArrayList<>(datas.size());
@@ -155,13 +152,13 @@ public class SofaRegistryServiceDiscovery implements ServiceDiscovery {
             for (String  serviceData : datas) {
                 SofaRegistryInstance sri = gson.fromJson(serviceData, SofaRegistryInstance.class);
 
-                DefaultServiceInstance serviceInstance = new DefaultServiceInstance(sri.getId(), serviceName, sri.getHost(), sri.getPort());
+                DefaultServiceInstance serviceInstance = new DefaultServiceInstance(sri.getId(), dataId, sri.getHost(), sri.getPort());
                 serviceInstance.setMetadata(sri.getMetadata());
                 serviceInstances.add(serviceInstance);
             }
 
             if (null != listener) {
-                listener.onEvent(new ServiceInstancesChangedEvent(serviceName, serviceInstances));
+                listener.onEvent(new ServiceInstancesChangedEvent(dataId, serviceInstances));
             }
 
             return serviceInstances;
@@ -227,17 +224,14 @@ public class SofaRegistryServiceDiscovery implements ServiceDiscovery {
         return result;
     }
 
-    private String buildDataId(String name) {
-        return name + DATAID_SUBFIX;
-    }
-
     @Override
     public ServiceInstance getLocalInstance() {
-        return null;
+        return serviceInstance;
     }
 
     @Override
     public Set<String> getServices() {
         return null;
     }
+
 }
