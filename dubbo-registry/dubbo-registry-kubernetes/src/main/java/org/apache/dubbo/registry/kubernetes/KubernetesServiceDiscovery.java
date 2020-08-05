@@ -304,7 +304,7 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
         return registryURL;
     }
 
-    public Map<String, String> getServiceSelector(String serviceName) {
+    private Map<String, String> getServiceSelector(String serviceName) {
         Service service = kubernetesClient.services().inNamespace(namespace).withName(serviceName).get();
         if (service == null) {
             return null;
@@ -312,7 +312,7 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
         return service.getSpec().getSelector();
     }
 
-    public List<ServiceInstance> toServiceInstance(Endpoints endpoints, String serviceName) {
+    private List<ServiceInstance> toServiceInstance(Endpoints endpoints, String serviceName) {
         Map<String, String> serviceSelector = getServiceSelector(serviceName);
         if (serviceSelector == null) {
             return new LinkedList<>();
@@ -358,6 +358,9 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
         this.currentHostname = currentHostname;
     }
 
+    /**
+     * UT used only
+     */
     @Deprecated
     public void setKubernetesClient(KubernetesClient kubernetesClient) {
         this.kubernetesClient = kubernetesClient;
