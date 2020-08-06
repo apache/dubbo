@@ -80,6 +80,17 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
     }
 
     /**
+     * Overrides {@link ReferenceConfig#checkAndUpdateSubConfigs()}
+     *
+     * @since 2.7.9
+     */
+    @Override
+    public void checkAndUpdateSubConfigs() {
+        prepareDubboConfigBeans();
+        super.checkAndUpdateSubConfigs();
+    }
+
+    /**
      * Initializes there Dubbo's Config Beans before @Reference bean autowiring
      */
     private void prepareDubboConfigBeans() {
@@ -99,9 +110,6 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
     @Override
     @SuppressWarnings({"unchecked"})
     public void afterPropertiesSet() throws Exception {
-
-        // Initializes Dubbo's Config Beans before @Reference bean autowiring
-        prepareDubboConfigBeans();
 
         // lazy init by default.
         if (init == null) {
