@@ -29,6 +29,7 @@ import org.apache.dubbo.registry.kubernetes.util.KubernetesConfigUtils;
 
 import com.alibaba.fastjson.JSONObject;
 import io.fabric8.kubernetes.api.model.EndpointAddress;
+import io.fabric8.kubernetes.api.model.EndpointPort;
 import io.fabric8.kubernetes.api.model.EndpointSubset;
 import io.fabric8.kubernetes.api.model.Endpoints;
 import io.fabric8.kubernetes.api.model.Pod;
@@ -40,6 +41,7 @@ import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.Watcher;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -108,7 +110,7 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
                     .withName(currentHostname)
                     .edit()
                     .editOrNewMetadata()
-                    .addToAnnotations(KUBERNETES_PROPERTIES_KEY, JSONObject.toJSONString(serviceInstance))
+                    .addToAnnotations(KUBERNETES_PROPERTIES_KEY, JSONObject.toJSONString(serviceInstance.getMetadata()))
                     .endMetadata()
                     .done();
             if (logger.isInfoEnabled()) {
@@ -330,20 +332,34 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
                                 pod -> pod));
 
         List<ServiceInstance> instances = new LinkedList<>();
+        Set<Integer> instancePorts = new HashSet<>();
+
+        for (EndpointSubset endpointSubset : endpoints.getSubsets()) {
+            instancePorts.addAll(
+                    endpointSubset.getPorts()
+                            .stream().map(EndpointPort::getPort)
+                            .collect(Collectors.toSet()));
+        }
 
         for (EndpointSubset endpointSubset : endpoints.getSubsets()) {
             for (EndpointAddress address : endpointSubset.getAddresses()) {
                 Pod pod = pods.get(address.getTargetRef().getName());
+                String ip = address.getIp();
                 if (pod == null) {
                     logger.warn("Enable to match Kubernetes Endpoint address with Pod. " +
                             "EndpointAddress Hostname: " + address.getTargetRef().getName());
                     continue;
                 }
-                instances.add(JSONObject.parseObject(
-                        pod.getMetadata()
-                                .getAnnotations()
-                                .get(KUBERNETES_PROPERTIES_KEY),
-                        DefaultServiceInstance.class));
+
+                instancePorts.forEach(port -> {
+                    ServiceInstance serviceInstance = new DefaultServiceInstance(serviceName, ip, port);
+                    serviceInstance.getMetadata().putAll(
+                            JSONObject.parseObject(pod.getMetadata()
+                                            .getAnnotations()
+                                            .get(KUBERNETES_PROPERTIES_KEY),
+                                    Map.class));
+                    instances.add(serviceInstance);
+                });
             }
         }
 
