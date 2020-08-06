@@ -20,6 +20,8 @@ import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 
 import com.alibaba.spring.beans.factory.config.GenericBeanPostProcessorAdapter;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -46,6 +48,8 @@ import javax.annotation.PostConstruct;
 public class DubboConfigEarlyInitializationPostProcessor extends GenericBeanPostProcessorAdapter<AbstractConfig>
         implements BeanDefinitionRegistryPostProcessor, PriorityOrdered {
 
+    private static final Log logger = LogFactory.getLog(DubboConfigEarlyInitializationPostProcessor.class.getName());
+
     public static final String BEAN_NAME = "dubboConfigEarlyInitializationPostProcessor";
 
     private DefaultListableBeanFactory beanFactory;
@@ -65,9 +69,21 @@ public class DubboConfigEarlyInitializationPostProcessor extends GenericBeanPost
     }
 
     protected void processBeforeInitialization(AbstractConfig config, String beanName) throws BeansException {
-        // If CommonAnnotationBeanPostProcessor is not registered yet, invoke method addIntoConfigManager() directly.
-        // Or, using CommonAnnotationBeanPostProcessor invokes addIntoConfigManager() in Bean life cycle.
+
+        if (this.beanFactory == null) {
+            if (logger.isErrorEnabled()) {
+                logger.error("Current Processor is not running in Spring container, next action will be skipped!");
+            }
+            return;
+        }
+
+        // If CommonAnnotationBeanPostProcessor is already registered,  the method addIntoConfigManager()
+        // will be invoked in Bean life cycle.
         if (!hasRegisteredCommonAnnotationBeanPostProcessor()) {
+            if (logger.isWarnEnabled()) {
+                logger.warn("CommonAnnotationBeanPostProcessor is not registered yet, " +
+                        "the method addIntoConfigManager() will be invoked directly");
+            }
             config.addIntoConfigManager();
         }
     }
@@ -82,6 +98,10 @@ public class DubboConfigEarlyInitializationPostProcessor extends GenericBeanPost
     private void initBeanFactory() {
         if (beanFactory != null) {
             // Register itself
+            if (logger.isInfoEnabled()) {
+                logger.info("BeanFactory is about to be initialized, trying to resolve the Dubbo Config Beans early " +
+                        "initialization");
+            }
             beanFactory.addBeanPostProcessor(this);
         }
     }
@@ -92,9 +112,6 @@ public class DubboConfigEarlyInitializationPostProcessor extends GenericBeanPost
      * @return if registered, return <code>true</code>, or <code>false</code>
      */
     private boolean hasRegisteredCommonAnnotationBeanPostProcessor() {
-        if (beanFactory == null) {
-            return true;
-        }
         for (BeanPostProcessor beanPostProcessor : beanFactory.getBeanPostProcessors()) {
             if (CommonAnnotationBeanPostProcessor.class.equals(beanPostProcessor.getClass())) {
                 return true;
