@@ -1,5 +1,6 @@
 package org.apache.dubbo.registry.sofa;
 
+import com.alipay.sofa.registry.client.api.Publisher;
 import com.alipay.sofa.registry.client.api.RegistryClientConfig;
 import com.alipay.sofa.registry.client.api.Subscriber;
 import com.alipay.sofa.registry.client.api.model.RegistryType;
@@ -24,7 +25,6 @@ import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedLi
 import org.apache.dubbo.rpc.RpcException;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,9 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.dubbo.registry.sofa.SofaRegistryConstants.ADDRESS_WAIT_TIME_KEY;
-import static org.apache.dubbo.registry.sofa.SofaRegistryConstants.LOCAL_DATA_CENTER;
-import static org.apache.dubbo.registry.sofa.SofaRegistryConstants.LOCAL_REGION;
+import static org.apache.dubbo.registry.sofa.SofaRegistryConstants.*;
 
 /**
  * @author: hongwei.quhw
@@ -53,7 +51,7 @@ public class SofaRegistryServiceDiscovery implements ServiceDiscovery {
 
     private RegistryClientConfig registryClientConfig;
 
-    private Map<String, SubscriberRegistration> subscriberRegistrationCaches = new HashMap<>();
+    private final Map<String, Publisher> publishers = new ConcurrentHashMap<>();
 
     private final Map<String, Subscriber> subscribers = new ConcurrentHashMap<>();
 
@@ -88,14 +86,18 @@ public class SofaRegistryServiceDiscovery implements ServiceDiscovery {
 
     @Override
     public void register(ServiceInstance serviceInstance) throws RuntimeException {
-        this.serviceInstance = serviceInstance;
-        Map<String, String> metadata = serviceInstance.getMetadata();
-        SofaRegistryInstance sofaRegistryInstance = new SofaRegistryInstance(serviceInstance.getId(), serviceInstance.getHost(), serviceInstance.getPort(),serviceInstance.getServiceName(), metadata);
+        SofaRegistryInstance sofaRegistryInstance = new SofaRegistryInstance(serviceInstance.getId(), serviceInstance.getHost(), serviceInstance.getPort(), serviceInstance.getServiceName(), serviceInstance.getMetadata());
+        Publisher publisher = publishers.get(serviceInstance.getServiceName());
+        if (null == publisher) {
+            this.serviceInstance = serviceInstance;
+            PublisherRegistration registration = new PublisherRegistration(serviceInstance.getServiceName());
+            registration.setGroup(DEFAULT_GROUP);
+            publisher = registryClient.register(registration, gson.toJson(sofaRegistryInstance));
 
-        PublisherRegistration registration = new PublisherRegistration(serviceInstance.getServiceName());
-        registration.setGroup(DEFAULT_GROUP);
-
-        registryClient.register(registration, gson.toJson(sofaRegistryInstance));
+            publishers.put(serviceInstance.getServiceName(), publisher);
+        } else {
+            publisher.republish(gson.toJson(sofaRegistryInstance));
+        }
     }
 
     @Override
@@ -118,10 +120,9 @@ public class SofaRegistryServiceDiscovery implements ServiceDiscovery {
 
         if (null == subscriber) {
             final CountDownLatch latch = new CountDownLatch(1);
-            SubscriberRegistration subscriberRegistration = subscriberRegistrationCaches.computeIfAbsent(serviceName,
-                    key -> new SubscriberRegistration(serviceName, (dataId, data) -> {
-                        handleRegistryData(dataId, data, listener, latch);
-                    }));
+            SubscriberRegistration subscriberRegistration = new SubscriberRegistration(serviceName, (dataId, data) -> {
+                handleRegistryData(dataId, data, listener, latch);
+            });
             subscriberRegistration.setGroup(DEFAULT_GROUP);
             subscriberRegistration.setScopeEnum(ScopeEnum.global);
 
@@ -231,7 +232,7 @@ public class SofaRegistryServiceDiscovery implements ServiceDiscovery {
 
     @Override
     public Set<String> getServices() {
-        return null;
+        return subscribers.keySet();
     }
 
 }

@@ -11,6 +11,6 @@ import org.apache.dubbo.registry.client.ServiceDiscovery;
 public class SofaRegistryServiceDiscoveryFactory extends AbstractServiceDiscoveryFactory {
     @Override
     protected ServiceDiscovery createDiscovery(URL registryURL) {
-        return null;
+        return new SofaRegistryServiceDiscovery();
     }
 }
