@@ -19,6 +19,7 @@ package org.apache.dubbo.registry.kubernetes;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
@@ -114,7 +115,8 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
                     .endMetadata()
                     .done();
             if (logger.isInfoEnabled()) {
-                logger.info("Write Current Service Instance to Kubernetes pod. Current pod name: " + currentHostname);
+                logger.info("Write Current Service Instance Metadata to Kubernetes pod. " +
+                        "Current pod name: " + currentHostname);
             }
         }
     }
@@ -346,19 +348,23 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
                 Pod pod = pods.get(address.getTargetRef().getName());
                 String ip = address.getIp();
                 if (pod == null) {
-                    logger.warn("Enable to match Kubernetes Endpoint address with Pod. " +
+                    logger.warn("Unable to match Kubernetes Endpoint address with Pod. " +
                             "EndpointAddress Hostname: " + address.getTargetRef().getName());
                     continue;
                 }
 
                 instancePorts.forEach(port -> {
                     ServiceInstance serviceInstance = new DefaultServiceInstance(serviceName, ip, port);
-                    serviceInstance.getMetadata().putAll(
-                            JSONObject.parseObject(pod.getMetadata()
-                                            .getAnnotations()
-                                            .get(KUBERNETES_PROPERTIES_KEY),
-                                    Map.class));
-                    instances.add(serviceInstance);
+
+                    String properties = pod.getMetadata().getAnnotations().get(KUBERNETES_PROPERTIES_KEY);
+                    if (StringUtils.isNotEmpty(properties)) {
+                        serviceInstance.getMetadata().putAll(JSONObject.parseObject(properties, Map.class));
+                        instances.add(serviceInstance);
+                    } else {
+                        logger.warn("Unable to find Service Instance metadata in Pod Annotations. " +
+                                "Possibly cause: provider has not been initialized successfully. " +
+                                "EndpointAddress Hostname: " + address.getTargetRef().getName());
+                    }
                 });
             }
         }
