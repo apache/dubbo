@@ -14,12 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.common.extension;
+package org.apache.dubbo.common.serialize.hessian2.dubbo;
 
-import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.common.serialize.hessian2.Hessian2SerializerFactory;
 
-@Deprecated
-@SPI
-public interface ExtensionFactory extends org.apache.dubbo.common.extension.ExtensionFactory {
+import com.alibaba.com.caucho.hessian.io.SerializerFactory;
 
+public class DefaultHessian2FactoryInitializer extends AbstractHessian2FactoryInitializer {
+    @Override
+    protected SerializerFactory createSerializerFactory() {
+        return new Hessian2SerializerFactory();
+    }
 }
