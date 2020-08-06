@@ -25,14 +25,14 @@ import org.springframework.context.ConfigurableApplicationContext;
 import static org.springframework.util.TypeUtils.isAssignable;
 
 /**
- * Dubbo {@link ApplicationListener ApplicationListeners} Register
+ * Dubbo {@link ApplicationListener ApplicationListeners} Registrar
  *
  * @since 2.7.9
  */
-public class DubboApplicationListenerRegister implements ApplicationContextAware {
+public class DubboApplicationListenerRegistrar implements ApplicationContextAware {
 
     /**
-     * The bean name of {@link DubboApplicationListenerRegister}
+     * The bean name of {@link DubboApplicationListenerRegistrar}
      */
     public static final String BEAN_NAME = "dubboApplicationListenerRegister";
 
