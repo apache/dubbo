@@ -230,6 +230,10 @@ public class SofaRegistryServiceDiscovery implements ServiceDiscovery {
         return serviceInstance;
     }
 
+    /**
+     * @TODO 后续确认下
+     * @return
+     */
     @Override
     public Set<String> getServices() {
         return subscribers.keySet();
