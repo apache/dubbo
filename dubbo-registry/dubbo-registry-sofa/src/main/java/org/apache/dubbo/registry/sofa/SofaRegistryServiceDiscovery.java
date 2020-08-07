@@ -88,8 +88,8 @@ public class SofaRegistryServiceDiscovery implements ServiceDiscovery {
     public void register(ServiceInstance serviceInstance) throws RuntimeException {
         SofaRegistryInstance sofaRegistryInstance = new SofaRegistryInstance(serviceInstance.getId(), serviceInstance.getHost(), serviceInstance.getPort(), serviceInstance.getServiceName(), serviceInstance.getMetadata());
         Publisher publisher = publishers.get(serviceInstance.getServiceName());
+        this.serviceInstance = serviceInstance;
         if (null == publisher) {
-            this.serviceInstance = serviceInstance;
             PublisherRegistration registration = new PublisherRegistration(serviceInstance.getServiceName());
             registration.setGroup(DEFAULT_GROUP);
             publisher = registryClient.register(registration, gson.toJson(sofaRegistryInstance));
