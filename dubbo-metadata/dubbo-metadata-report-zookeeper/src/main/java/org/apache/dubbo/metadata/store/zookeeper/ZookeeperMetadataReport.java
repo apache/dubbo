@@ -132,8 +132,10 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
 
     @Override
     public void publishAppMetadata(SubscriberMetadataIdentifier identifier, MetadataInfo metadataInfo) {
-        zkClient.create(getNodePath(identifier), gson.toJson(metadataInfo), false);
-
+        String path = getNodePath(identifier);
+        if (StringUtils.isBlank(zkClient.getContent(path))) {
+            zkClient.create(path, gson.toJson(metadataInfo), false);
+        }
     }
 
     @Override

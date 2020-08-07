@@ -23,12 +23,13 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.util.concurrent.CompletableFuture;
 
-public class ApplicationZKConsumer {
+public class ApplicationConsumer {
     /**
      * In order to make sure multicast registry works, need to specify '-Djava.net.preferIPv4Stack=true' before
      * launch the application
      */
     public static void main(String[] args) throws Exception {
+        //ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("spring/dubbo-consumer-sofaregistry.xml");
         ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("spring/dubbo-consumer-zk.xml");
         context.start();
         DemoService demoService = context.getBean("demoService", DemoService.class);
