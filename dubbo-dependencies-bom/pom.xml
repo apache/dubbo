@@ -145,6 +145,9 @@
         <!-- Eureka -->
         <eureka.version>1.9.12</eureka.version>
 
+        <!-- Fabric8 for Kubernetes -->
+        <fabric8_kubernetes_version>4.10.3</fabric8_kubernetes_version>
+
         <!-- Alibaba -->
         <alibaba_spring_context_support_version>1.0.8</alibaba_spring_context_support_version>
 
@@ -702,6 +705,17 @@
                 <groupId>io.grpc</groupId>
                 <artifactId>grpc-grpclb</artifactId>
                 <version>${grpc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.fabric8</groupId>
+                <artifactId>kubernetes-client</artifactId>
+                <version>${fabric8_kubernetes_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.fabric8</groupId>
+                <artifactId>kubernetes-server-mock</artifactId>
+                <scope>test</scope>
+                <version>${fabric8_kubernetes_version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
