@@ -162,7 +162,6 @@ public class ApplicationConfig extends AbstractConfig {
     /**
      * Metadata Service, used in Service Discovery
      */
-
     private Integer metadataServicePort;
 
     public ApplicationConfig() {
