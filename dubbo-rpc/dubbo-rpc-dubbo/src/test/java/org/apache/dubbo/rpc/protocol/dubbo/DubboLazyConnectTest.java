@@ -51,21 +51,24 @@ public class DubboLazyConnectTest {
     @Test
     public void testSticky1() {
         Assertions.assertThrows(RpcException.class, () -> {
-            URL url = URL.valueOf("dubbo://127.0.0.1:9090/org.apache.dubbo.rpc.protocol.dubbo.IDemoService");
+            int port = NetUtils.getAvailablePort();
+            URL url = URL.valueOf("dubbo://127.0.0.1:" + port + "/org.apache.dubbo.rpc.protocol.dubbo.IDemoService");
             ProtocolUtils.refer(IDemoService.class, url);
         });
     }
 
     @Test
     public void testSticky2() {
-        URL url = URL.valueOf("dubbo://127.0.0.1:9090/org.apache.dubbo.rpc.protocol.dubbo.IDemoService?" + LAZY_CONNECT_KEY + "=true");
+        int port = NetUtils.getAvailablePort();
+        URL url = URL.valueOf("dubbo://127.0.0.1:" + port + "/org.apache.dubbo.rpc.protocol.dubbo.IDemoService?" + LAZY_CONNECT_KEY + "=true");
         ProtocolUtils.refer(IDemoService.class, url);
     }
 
     @Test
     public void testSticky3() {
         Assertions.assertThrows(RpcException.class, () -> {
-            URL url = URL.valueOf("dubbo://127.0.0.1:9090/org.apache.dubbo.rpc.protocol.dubbo.IDemoService?" + LAZY_CONNECT_KEY + "=true");
+            int port = NetUtils.getAvailablePort();
+            URL url = URL.valueOf("dubbo://127.0.0.1:" + port + "/org.apache.dubbo.rpc.protocol.dubbo.IDemoService?" + LAZY_CONNECT_KEY + "=true");
             IDemoService service = (IDemoService) ProtocolUtils.refer(IDemoService.class, url);
             service.get();
         });

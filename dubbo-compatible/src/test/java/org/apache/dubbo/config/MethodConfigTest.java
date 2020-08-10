@@ -17,7 +17,7 @@
 
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.rpc.model.ConsumerModel;
+import org.apache.dubbo.rpc.model.AsyncMethodInfo;
 import org.apache.dubbo.service.Person;
 
 import com.alibaba.dubbo.config.ArgumentConfig;
@@ -112,7 +112,7 @@ public class MethodConfigTest {
         methodConfig.setOninvokeMethod("setName");
         methodConfig.setOninvoke(new Person());
 
-        ConsumerModel.AsyncMethodInfo methodInfo = org.apache.dubbo.config.MethodConfig.convertMethodConfig2AsyncInfo(methodConfig);
+        AsyncMethodInfo methodInfo = org.apache.dubbo.config.MethodConfig.convertMethodConfig2AsyncInfo(methodConfig);
 
         assertEquals(methodInfo.getOninvokeMethod(), Person.class.getMethod("setName", String.class));
     }

@@ -130,14 +130,7 @@ public class CountTelnetHandler implements TelnetHandler {
         if (method == null || method.length() == 0) {
             for (Method m : invoker.getInterface().getMethods()) {
                 RpcStatus count = RpcStatus.getStatus(url, m.getName());
-                List<String> row = new ArrayList<String>();
-                row.add(m.getName());
-                row.add(String.valueOf(count.getTotal()));
-                row.add(String.valueOf(count.getFailed()));
-                row.add(String.valueOf(count.getActive()));
-                row.add(String.valueOf(count.getSucceededAverageElapsed()) + "ms");
-                row.add(String.valueOf(count.getSucceededMaxElapsed()) + "ms");
-                table.add(row);
+                table.add(createRow(m.getName(),count));
             }
         } else {
             boolean found = false;
@@ -149,14 +142,7 @@ public class CountTelnetHandler implements TelnetHandler {
             }
             if (found) {
                 RpcStatus count = RpcStatus.getStatus(url, method);
-                List<String> row = new ArrayList<String>();
-                row.add(method);
-                row.add(String.valueOf(count.getTotal()));
-                row.add(String.valueOf(count.getFailed()));
-                row.add(String.valueOf(count.getActive()));
-                row.add(String.valueOf(count.getSucceededAverageElapsed()) + "ms");
-                row.add(String.valueOf(count.getSucceededMaxElapsed()) + "ms");
-                table.add(row);
+                table.add(createRow(method,count));
             } else {
                 return "No such method " + method + " in class " + invoker.getInterface().getName();
             }
@@ -164,4 +150,14 @@ public class CountTelnetHandler implements TelnetHandler {
         return TelnetUtils.toTable(header, table);
     }
 
+    private List<String> createRow(String methodName,RpcStatus count) {
+        List<String> row = new ArrayList<String>();
+        row.add(methodName);
+        row.add(String.valueOf(count.getTotal()));
+        row.add(String.valueOf(count.getFailed()));
+        row.add(String.valueOf(count.getActive()));
+        row.add(count.getSucceededAverageElapsed() + "ms");
+        row.add(count.getSucceededMaxElapsed() + "ms");
+        return row;
+    }
 }

@@ -37,11 +37,40 @@ import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_SE
 public class ConfigurationUtils {
     private static final Logger logger = LoggerFactory.getLogger(ConfigurationUtils.class);
 
+    /**
+     * Used to get properties from the jvm
+     *
+     * @return
+     */
+    public static Configuration getSystemConfiguration() {
+        return ApplicationModel.getEnvironment().getSystemConfiguration();
+    }
+
+    /**
+     * Used to get properties from the os environment
+     *
+     * @return
+     */
+    public static Configuration getEnvConfiguration() {
+        return ApplicationModel.getEnvironment().getEnvironmentConfiguration();
+    }
+
+    /**
+     * Used to get an composite property value.
+     * <p>
+     * Also see {@link Environment#getConfiguration()}
+     *
+     * @return
+     */
+    public static Configuration getGlobalConfiguration() {
+        return ApplicationModel.getEnvironment().getConfiguration();
+    }
+
     // FIXME
     @SuppressWarnings("deprecation")
     public static int getServerShutdownTimeout() {
         int timeout = DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
-        Configuration configuration = ApplicationModel.getEnvironment().getConfiguration();
+        Configuration configuration = getGlobalConfiguration();
         String value = StringUtils.trim(configuration.getString(SHUTDOWN_WAIT_KEY));
 
         if (value != null && value.length() > 0) {
@@ -74,7 +103,7 @@ public class ConfigurationUtils {
     public static Map<String, String> parseProperties(String content) throws IOException {
         Map<String, String> map = new HashMap<>();
         if (StringUtils.isEmpty(content)) {
-            logger.warn("You specified the config centre, but there's not even one single config item in it.");
+            logger.warn("You specified the config center, but there's not even one single config item in it.");
         } else {
             Properties properties = new Properties();
             properties.load(new StringReader(content));

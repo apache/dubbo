@@ -66,4 +66,6 @@ public interface Constants {
 
     String ON_DISCONNECT_KEY = "ondisconnect";
 
+    String ASYNC_METHOD_INFO = "async-method-info";
+
 }

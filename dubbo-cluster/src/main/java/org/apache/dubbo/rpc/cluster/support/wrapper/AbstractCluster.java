@@ -105,7 +105,7 @@ public abstract class AbstractCluster implements Cluster {
                 if (interceptor instanceof ClusterInterceptor.Listener) {
                     ClusterInterceptor.Listener listener = (ClusterInterceptor.Listener) interceptor;
                     if (t == null) {
-                        listener.onResponse(r, clusterInvoker, invocation);
+                        listener.onMessage(r, clusterInvoker, invocation);
                     } else {
                         listener.onError(t, clusterInvoker, invocation);
                     }

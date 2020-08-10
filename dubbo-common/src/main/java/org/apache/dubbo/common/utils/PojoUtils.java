@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
@@ -46,6 +47,8 @@ import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * PojoUtils. Travel object deeply, and convert complex type to simple type.
@@ -64,6 +67,7 @@ public class PojoUtils {
     private static final Logger logger = LoggerFactory.getLogger(PojoUtils.class);
     private static final ConcurrentMap<String, Method> NAME_METHODS_CACHE = new ConcurrentHashMap<String, Method>();
     private static final ConcurrentMap<Class<?>, ConcurrentMap<String, Field>> CLASS_FIELD_CACHE = new ConcurrentHashMap<Class<?>, ConcurrentMap<String, Field>>();
+    private static final boolean GENERIC_WITH_CLZ = Boolean.parseBoolean(ConfigUtils.getProperty(CommonConstants.GENERIC_WITH_CLZ_KEY, "true"));
 
     public static Object[] generalize(Object[] objs) {
         Object[] dests = new Object[objs.length];
@@ -164,7 +168,9 @@ public class PojoUtils {
         }
         Map<String, Object> map = new HashMap<String, Object>();
         history.put(pojo, map);
-        map.put("class", pojo.getClass().getName());
+        if (GENERIC_WITH_CLZ) {
+            map.put("class", pojo.getClass().getName());
+        }
         for (Method method : pojo.getClass().getMethods()) {
             if (ReflectUtils.isBeanPropertyReadMethod(method)) {
                 try {
@@ -401,7 +407,9 @@ public class PojoUtils {
                     map = (Map<Object, Object>) type.newInstance();
                     Map<Object, Object> mapPojo = (Map<Object, Object>) pojo;
                     map.putAll(mapPojo);
-                    map.remove("class");
+                    if (GENERIC_WITH_CLZ) {
+                        map.remove("class");
+                    }
                 } catch (Exception e) {
                     //ignore error
                     map = (Map<Object, Object>) pojo;
@@ -411,7 +419,19 @@ public class PojoUtils {
             }
 
             if (Map.class.isAssignableFrom(type) || type == Object.class) {
-                final Map<Object, Object> result = createMap(map);
+                final Map<Object, Object> result;
+                // fix issue#5939
+                Type mapKeyType = getKeyTypeForMap(map.getClass());
+                Type typeKeyType = getGenericClassByIndex(genericType, 0);
+                boolean typeMismatch = mapKeyType instanceof Class
+                        && typeKeyType instanceof Class
+                        && !typeKeyType.getTypeName().equals(mapKeyType.getTypeName());
+                if (typeMismatch) {
+                    result = createMap(new HashMap(0));
+                } else {
+                    result = createMap(map);
+                }
+
                 history.put(pojo, result);
                 for (Map.Entry<Object, Object> entry : map.entrySet()) {
                     Type keyType = getGenericClassByIndex(genericType, 0);
@@ -498,6 +518,28 @@ public class PojoUtils {
     }
 
     /**
+     * Get key type for {@link Map} directly implemented by {@code clazz}.
+     * If {@code clazz} does not implement {@link Map} directly, return {@code null}.
+     *
+     * @param clazz {@link Class}
+     * @return Return String.class for {@link com.alibaba.fastjson.JSONObject}
+     */
+    private static Type getKeyTypeForMap(Class<?> clazz) {
+        Type[] interfaces = clazz.getGenericInterfaces();
+        if (!ArrayUtils.isEmpty(interfaces)) {
+            for (Type type : interfaces) {
+                if (type instanceof ParameterizedType) {
+                    ParameterizedType t = (ParameterizedType) type;
+                    if ("java.util.Map".equals(t.getRawType().getTypeName())) {
+                        return t.getActualTypeArguments()[0];
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
      * Get parameterized type
      *
      * @param genericType generic type
@@ -557,6 +599,7 @@ public class PojoUtils {
 
     /**
      * return init value
+     *
      * @param parameterType
      * @return
      */
@@ -608,12 +651,7 @@ public class PojoUtils {
             }
         }
         if (result != null) {
-            ConcurrentMap<String, Field> fields = CLASS_FIELD_CACHE.get(cls);
-            if (fields == null) {
-                fields = new ConcurrentHashMap<String, Field>();
-                CLASS_FIELD_CACHE.putIfAbsent(cls, fields);
-            }
-            fields = CLASS_FIELD_CACHE.get(cls);
+            ConcurrentMap<String, Field> fields = CLASS_FIELD_CACHE.computeIfAbsent(cls, k -> new ConcurrentHashMap<>());
             fields.putIfAbsent(fieldName, result);
         }
         return result;
@@ -623,6 +661,21 @@ public class PojoUtils {
         return !ReflectUtils.isPrimitives(cls)
                 && !Collection.class.isAssignableFrom(cls)
                 && !Map.class.isAssignableFrom(cls);
+    }
+
+    /**
+     * Update the property if absent
+     *
+     * @param getterMethod the getter method
+     * @param setterMethod the setter method
+     * @param newValue     the new value
+     * @param <T>          the value type
+     * @since 2.7.8
+     */
+    public static <T> void updatePropertyIfAbsent(Supplier<T> getterMethod, Consumer<T> setterMethod, T newValue) {
+        if (newValue != null && getterMethod.get() == null) {
+            setterMethod.accept(newValue);
+        }
     }
 
 }

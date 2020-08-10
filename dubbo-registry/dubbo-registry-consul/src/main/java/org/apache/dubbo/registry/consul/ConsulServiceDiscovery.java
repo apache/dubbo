@@ -29,10 +29,12 @@ import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 
+import com.ecwid.consul.v1.ConsistencyMode;
 import com.ecwid.consul.v1.ConsulClient;
 import com.ecwid.consul.v1.QueryParams;
 import com.ecwid.consul.v1.Response;
 import com.ecwid.consul.v1.agent.model.NewService;
+import com.ecwid.consul.v1.catalog.CatalogServicesRequest;
 import com.ecwid.consul.v1.health.HealthServicesRequest;
 import com.ecwid.consul.v1.health.model.HealthService;
 
@@ -41,6 +43,7 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -53,6 +56,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static java.util.concurrent.Executors.newCachedThreadPool;
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR_CHAR;
 import static org.apache.dubbo.common.constants.CommonConstants.SEMICOLON_SPLIT_PATTERN;
 import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.CHECK_PASS_INTERVAL;
 import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.DEFAULT_CHECK_PASS_INTERVAL;
@@ -61,6 +65,12 @@ import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.DEFAULT_PO
 import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.DEFAULT_WATCH_TIMEOUT;
 import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.DEREGISTER_AFTER;
 import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.WATCH_TIMEOUT;
+import static org.apache.dubbo.registry.consul.ConsulParameter.ACL_TOKEN;
+import static org.apache.dubbo.registry.consul.ConsulParameter.CONSISTENCY_MODE;
+import static org.apache.dubbo.registry.consul.ConsulParameter.DEFAULT_ZONE_METADATA_NAME;
+import static org.apache.dubbo.registry.consul.ConsulParameter.INSTANCE_GROUP;
+import static org.apache.dubbo.registry.consul.ConsulParameter.INSTANCE_ZONE;
+import static org.apache.dubbo.registry.consul.ConsulParameter.TAGS;
 
 /**
  * 2019-07-31
@@ -82,6 +92,25 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
     private long checkPassInterval;
     private URL url;
 
+    private String aclToken;
+
+    private List<String> tags;
+
+    private ConsistencyMode consistencyMode;
+
+    private String defaultZoneMetadataName;
+
+    /**
+     * Service instance zone.
+     */
+    private String instanceZone;
+
+    /**
+     * Service instance group.
+     */
+    private String instanceGroup;
+
+
     @Override
     public void onEvent(ServiceInstancesChangedEvent event) {
 
@@ -97,6 +126,39 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
         ttlScheduler = new TtlScheduler(checkPassInterval, client);
         this.tag = registryURL.getParameter(QUERY_TAG);
         this.registeringTags.addAll(getRegisteringTags(url));
+        this.aclToken = ACL_TOKEN.getValue(registryURL);
+        this.tags = getTags(registryURL);
+        this.consistencyMode = getConsistencyMode(registryURL);
+        this.defaultZoneMetadataName = DEFAULT_ZONE_METADATA_NAME.getValue(registryURL);
+        this.instanceZone = INSTANCE_ZONE.getValue(registryURL);
+        this.instanceGroup = INSTANCE_GROUP.getValue(registryURL);
+    }
+
+    /**
+     * Get the {@link ConsistencyMode}
+     *
+     * @param registryURL the {@link URL} of registry
+     * @return non-null, {@link ConsistencyMode#DEFAULT} as default
+     * @sine 2.7.8
+     */
+    private ConsistencyMode getConsistencyMode(URL registryURL) {
+        String value = CONSISTENCY_MODE.getValue(registryURL);
+        if (StringUtils.isNotEmpty(value)) {
+            return ConsistencyMode.valueOf(value);
+        }
+        return ConsistencyMode.DEFAULT;
+    }
+
+    /**
+     * Get the "tags" from the {@link URL} of registry
+     *
+     * @param registryURL the {@link URL} of registry
+     * @return non-null
+     * @sine 2.7.8
+     */
+    private List<String> getTags(URL registryURL) {
+        String value = TAGS.getValue(registryURL);
+        return StringUtils.splitToList(value, COMMA_SEPARATOR_CHAR);
     }
 
     private List<String> getRegisteringTags(URL url) {
@@ -110,7 +172,9 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
 
     @Override
     public void destroy() {
-        notifier.stop();
+        if (notifier != null) {
+            notifier.stop();
+        }
         notifier = null;
         notifierExecutor.shutdownNow();
         ttlScheduler.stop();
@@ -120,7 +184,7 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
     public void register(ServiceInstance serviceInstance) throws RuntimeException {
         NewService consulService = buildService(serviceInstance);
         ttlScheduler.add(consulService.getId());
-        client.agentServiceRegister(consulService);
+        client.agentServiceRegister(consulService, aclToken);
     }
 
     @Override
@@ -144,12 +208,16 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
     public void unregister(ServiceInstance serviceInstance) throws RuntimeException {
         String id = buildId(serviceInstance);
         ttlScheduler.remove(id);
-        client.agentServiceDeregister(id);
+        client.agentServiceDeregister(id, aclToken);
     }
 
     @Override
     public Set<String> getServices() {
-        return null;
+        CatalogServicesRequest request = CatalogServicesRequest.newBuilder()
+                .setQueryParams(QueryParams.DEFAULT)
+                .setToken(aclToken)
+                .build();
+        return this.client.getCatalogServices(request).getValue().keySet();
     }
 
     @Override
@@ -229,7 +297,6 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
         service.setName(serviceInstance.getServiceName());
         service.setCheck(buildCheck(serviceInstance));
         service.setTags(buildTags(serviceInstance));
-//        service.setMeta(buildMetadata(serviceInstance));
         return service;
     }
 
@@ -238,10 +305,21 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
     }
 
     private List<String> buildTags(ServiceInstance serviceInstance) {
+        List<String> tags = new LinkedList<>(this.tags);
+
+        if (StringUtils.isNotEmpty(instanceZone)) {
+            tags.add(defaultZoneMetadataName + "=" + instanceZone);
+        }
+
+        if (StringUtils.isNotEmpty(instanceGroup)) {
+            tags.add("group=" + instanceGroup);
+        }
+
         Map<String, String> params = serviceInstance.getMetadata();
-        List<String> tags = params.keySet().stream()
+        params.keySet().stream()
                 .map(k -> k + "=" + params.get(k))
-                .collect(Collectors.toList());
+                .forEach(tags::add);
+
         tags.addAll(registeringTags);
         return tags;
     }
@@ -279,7 +357,6 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
         check.setTtl((checkPassInterval / 1000) + "s");
         String deregister = serviceInstance.getMetadata().get(DEREGISTER_AFTER);
         check.setDeregisterCriticalServiceAfter(deregister == null ? DEFAULT_DEREGISTER_TIME : deregister);
-
         return check;
     }
 

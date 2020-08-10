@@ -76,6 +76,8 @@ public interface RegistryConstants {
 
     /**
      * The parameter key of the subscribed service names for Service-Oriented Registry
+     * <p>
+     * If there is a multiple-values, the  "comma" is the separator.
      *
      * @since 2.7.5
      */
@@ -100,4 +102,6 @@ public interface RegistryConstants {
     String REGISTRY_ZONE = "registry_zone";
     String REGISTRY_ZONE_FORCE = "registry_zone_force";
     String ZONE_KEY = "zone";
+
+    String REGISTRY_SERVICE_REFERENCE_PATH = "org.apache.dubbo.registry.RegistryService";
 }

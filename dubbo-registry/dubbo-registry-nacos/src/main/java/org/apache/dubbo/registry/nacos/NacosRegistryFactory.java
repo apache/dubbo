@@ -31,6 +31,11 @@ import static org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils.creat
 public class NacosRegistryFactory extends AbstractRegistryFactory {
 
     @Override
+    protected String createRegistryCacheKey(URL url) {
+        return url.toFullString();
+    }
+
+    @Override
     protected Registry createRegistry(URL url) {
         return new NacosRegistry(url, createNamingService(url));
     }

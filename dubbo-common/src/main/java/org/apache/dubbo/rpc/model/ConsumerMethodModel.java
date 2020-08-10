@@ -17,7 +17,6 @@
 package org.apache.dubbo.rpc.model;
 
 import java.lang.reflect.Method;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -37,25 +36,16 @@ public class ConsumerMethodModel {
     private final String methodName;
     private final boolean generic;
 
-    private final AsyncMethodInfo asyncInfo;
     private final ConcurrentMap<String, Object> attributeMap = new ConcurrentHashMap<>();
 
 
-    public ConsumerMethodModel(Method method, Map<String, Object> attributes) {
+    public ConsumerMethodModel(Method method) {
         this.method = method;
         this.parameterClasses = method.getParameterTypes();
         this.returnClass = method.getReturnType();
         this.parameterTypes = this.createParamSignature(parameterClasses);
         this.methodName = method.getName();
         this.generic = methodName.equals($INVOKE) && parameterTypes != null && parameterTypes.length == 3;
-
-        if (attributes != null) {
-            ConsumerModel.AsyncMethodInfo consumerAsyncInfo = (ConsumerModel.AsyncMethodInfo) attributes.get(methodName);
-            this.asyncInfo = new AsyncMethodInfo(consumerAsyncInfo);
-        } else {
-            asyncInfo = null;
-        }
-
     }
 
     public Method getMethod() {
@@ -77,10 +67,6 @@ public class ConsumerMethodModel {
 
     public Class<?> getReturnClass() {
         return returnClass;
-    }
-
-    public AsyncMethodInfo getAsyncInfo() {
-        return asyncInfo;
     }
 
     public String getMethodName() {
@@ -112,36 +98,4 @@ public class ConsumerMethodModel {
     }
 
 
-    public static class AsyncMethodInfo {
-        private ConsumerModel.AsyncMethodInfo delegate;
-
-        public AsyncMethodInfo(ConsumerModel.AsyncMethodInfo methodInfo) {
-            this.delegate = methodInfo;
-        }
-
-        public Object getOninvokeInstance() {
-            return delegate.getOninvokeInstance();
-        }
-
-
-        public Method getOninvokeMethod() {
-            return delegate.getOninvokeMethod();
-        }
-
-        public Object getOnreturnInstance() {
-            return delegate.getOnreturnInstance();
-        }
-
-        public Method getOnreturnMethod() {
-            return delegate.getOnreturnMethod();
-        }
-
-        public Object getOnthrowInstance() {
-            return delegate.getOnthrowInstance();
-        }
-
-        public Method getOnthrowMethod() {
-            return delegate.getOnthrowMethod();
-        }
-    }
 }

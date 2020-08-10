@@ -34,6 +34,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceRepository;
+import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -129,6 +130,9 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
                     }
                 }
                 if (pts == DubboCodec.EMPTY_CLASS_ARRAY) {
+                    if (!RpcUtils.isGenericCall(desc, getMethodName()) && !RpcUtils.isEcho(desc, getMethodName())) {
+                        throw new IllegalArgumentException("Service not found:" + path + ", " + getMethodName());
+                    }
                     pts = ReflectUtils.desc2classArray(desc);
                 }
 //                }
@@ -148,12 +152,12 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
 
             Map<String, Object> map = in.readAttachments();
             if (map != null && map.size() > 0) {
-                Map<String, Object> attachment = getAttachments();
+                Map<String, Object> attachment = getObjectAttachments();
                 if (attachment == null) {
-                    attachment = new HashMap<String, Object>();
+                    attachment = new HashMap<>();
                 }
                 attachment.putAll(map);
-                setAttachments(attachment);
+                setObjectAttachments(attachment);
             }
 
             //decode argument ,may be callback
@@ -163,8 +167,8 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
 
             setArguments(args);
             String targetServiceName = buildKey((String) getAttachment(PATH_KEY),
-                    (String) getAttachment(GROUP_KEY),
-                    (String) getAttachment(VERSION_KEY));
+                    getAttachment(GROUP_KEY),
+                    getAttachment(VERSION_KEY));
             setTargetServiceUniqueName(targetServiceName);
         } catch (ClassNotFoundException e) {
             throw new IOException(StringUtils.toString("Read invocation data failed.", e));

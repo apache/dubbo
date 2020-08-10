@@ -25,6 +25,11 @@ import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Map;
 
+import static org.apache.dubbo.common.utils.StringUtils.replace;
+import static org.apache.dubbo.common.utils.TypeUtils.getRawClass;
+import static org.apache.dubbo.common.utils.TypeUtils.isClass;
+import static org.apache.dubbo.common.utils.TypeUtils.isParameterizedType;
+
 /**
  * 2015/1/27.
  */
@@ -46,23 +51,37 @@ public class MapTypeBuilder implements TypeBuilder {
 
         ParameterizedType parameterizedType = (ParameterizedType) type;
         Type[] actualTypeArgs = parameterizedType.getActualTypeArguments();
-        if (actualTypeArgs == null || actualTypeArgs.length != 2) {
+        int actualTypeArgsLength = actualTypeArgs == null ? 0 : actualTypeArgs.length;
+
+        if (actualTypeArgsLength != 2) {
             throw new IllegalArgumentException(MessageFormat.format(
                     "[ServiceDefinitionBuilder] Map type [{0}] with unexpected amount of arguments [{1}]."
                             + Arrays.toString(actualTypeArgs), type, actualTypeArgs));
         }
 
-        for (Type actualType : actualTypeArgs) {
-            if (actualType instanceof ParameterizedType) {
+        // Change since 2.7.6
+        /**
+         * Replacing <code>", "</code> to <code>","</code> will not change the semantic of
+         * {@link ParameterizedType#toString()}
+         * @see sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl
+         */
+        String mapType = replace(type.toString(), ", ", ",");
+
+        TypeDefinition typeDefinition = new TypeDefinition(mapType);
+
+        for (int i = 0; i < actualTypeArgsLength; i++) {
+            Type actualType = actualTypeArgs[i];
+            TypeDefinition item = null;
+            Class<?> rawType = getRawClass(actualType);
+            if (isParameterizedType(actualType)) {
                 // Nested collection or map.
-                Class<?> rawType = (Class<?>) ((ParameterizedType) actualType).getRawType();
-                TypeDefinitionBuilder.build(actualType, rawType, typeCache);
-            } else if (actualType instanceof Class<?>) {
-                Class<?> actualClass = (Class<?>) actualType;
-                TypeDefinitionBuilder.build(null, actualClass, typeCache);
+                item = TypeDefinitionBuilder.build(actualType, rawType, typeCache);
+            } else if (isClass(actualType)) {
+                item = TypeDefinitionBuilder.build(null, rawType, typeCache);
             }
+            typeDefinition.getItems().add(item);
         }
 
-        return new TypeDefinition(type.toString());
+        return typeDefinition;
     }
 }

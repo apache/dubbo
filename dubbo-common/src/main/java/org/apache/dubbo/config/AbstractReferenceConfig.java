@@ -59,7 +59,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
     /**
      * Lazy create connection
      */
-    protected Boolean lazy = false;
+    protected Boolean lazy;
 
     protected String reconnect;
 
@@ -85,6 +85,8 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
      * declares which app or service this interface belongs to
      */
     protected String providedBy;
+
+    protected String router;
 
     public Boolean isCheck() {
         return check;
@@ -233,5 +235,14 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
 
     public void setProvidedBy(String providedBy) {
         this.providedBy = providedBy;
+    }
+
+    @Parameter(key = "router", append = true)
+    public String getRouter() {
+        return router;
+    }
+
+    public void setRouter(String router) {
+        this.router = router;
     }
 }

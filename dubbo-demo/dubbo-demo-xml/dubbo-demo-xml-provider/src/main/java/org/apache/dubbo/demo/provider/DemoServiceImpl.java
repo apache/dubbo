@@ -31,7 +31,7 @@ public class DemoServiceImpl implements DemoService {
     public String sayHello(String name) {
         logger.info("Hello " + name + ", request from consumer: " + RpcContext.getContext().getRemoteAddress());
         try {
-            Thread.sleep(10000);
+            Thread.sleep(1000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

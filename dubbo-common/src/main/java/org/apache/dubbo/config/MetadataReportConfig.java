@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
-import static org.apache.dubbo.common.constants.CommonConstants.PROPERTIES_CHAR_SEPERATOR;
+import static org.apache.dubbo.common.constants.CommonConstants.PROPERTIES_CHAR_SEPARATOR;
 
 /**
  * MetadataReportConfig
@@ -38,7 +38,7 @@ public class MetadataReportConfig extends AbstractConfig {
      * the value is : metadata-report
      */
     private static final String PREFIX_TAG = StringUtils.camelToSplitName(
-            MetadataReportConfig.class.getSimpleName().substring(0, MetadataReportConfig.class.getSimpleName().length() - 6), PROPERTIES_CHAR_SEPERATOR);
+            MetadataReportConfig.class.getSimpleName().substring(0, MetadataReportConfig.class.getSimpleName().length() - 6), PROPERTIES_CHAR_SEPARATOR);
 
     // Register center address
     private String address;
@@ -64,7 +64,7 @@ public class MetadataReportConfig extends AbstractConfig {
 
     private Integer retryPeriod;
     /**
-     * By default the metadatastore will store full metadata repeatly every day .
+     * By default the metadatastore will store full metadata repeatedly every day .
      */
     private Boolean cycleReport;
 

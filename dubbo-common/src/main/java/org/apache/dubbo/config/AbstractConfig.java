@@ -18,7 +18,6 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.CompositeConfiguration;
-import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
@@ -28,11 +27,10 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.MethodUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.config.context.ConfigConfigurationAdapter;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ConsumerModel;
+import org.apache.dubbo.rpc.model.AsyncMethodInfo;
 
 import javax.annotation.PostConstruct;
 import java.io.Serializable;
@@ -201,7 +199,7 @@ public abstract class AbstractConfig implements Serializable {
         }
     }
 
-    public static ConsumerModel.AsyncMethodInfo convertMethodConfig2AsyncInfo(MethodConfig methodConfig) {
+    protected static AsyncMethodInfo convertMethodConfig2AsyncInfo(MethodConfig methodConfig) {
         if (methodConfig == null || (methodConfig.getOninvoke() == null && methodConfig.getOnreturn() == null && methodConfig.getOnthrow() == null)) {
             return null;
         }
@@ -211,7 +209,7 @@ public abstract class AbstractConfig implements Serializable {
             throw new IllegalStateException("method config error : return attribute must be set true when onreturn or onthrow has been set.");
         }
 
-        ConsumerModel.AsyncMethodInfo asyncMethodInfo = new ConsumerModel.AsyncMethodInfo();
+        AsyncMethodInfo asyncMethodInfo = new AsyncMethodInfo();
 
         asyncMethodInfo.setOninvokeInstance(methodConfig.getOninvoke());
         asyncMethodInfo.setOnreturnInstance(methodConfig.getOnreturn());
@@ -459,16 +457,7 @@ public abstract class AbstractConfig implements Serializable {
     public void refresh() {
         Environment env = ApplicationModel.getEnvironment();
         try {
-            CompositeConfiguration compositeConfiguration = env.getConfiguration(getPrefix(), getId());
-            Configuration config = new ConfigConfigurationAdapter(this);
-            if (env.isConfigCenterFirst()) {
-                // The sequence would be: SystemConfiguration -> AppExternalConfiguration -> ExternalConfiguration -> AbstractConfig -> PropertiesConfiguration
-                compositeConfiguration.addConfiguration(4, config);
-            } else {
-                // The sequence would be: SystemConfiguration -> AbstractConfig -> AppExternalConfiguration -> ExternalConfiguration -> PropertiesConfiguration
-                compositeConfiguration.addConfiguration(2, config);
-            }
-
+            CompositeConfiguration compositeConfiguration = env.getPrefixedConfiguration(this);
             // loop methods, get override value and set the new value back to method
             Method[] methods = getClass().getMethods();
             for (Method method : methods) {
@@ -511,6 +500,14 @@ public abstract class AbstractConfig implements Serializable {
                     if (MethodUtils.isGetter(method)) {
                         String name = method.getName();
                         String key = calculateAttributeFromGetter(name);
+
+                        try {
+                            getClass().getDeclaredField(key);
+                        } catch (NoSuchFieldException e) {
+                            // ignore
+                            continue;
+                        }
+
                         Object value = method.invoke(this);
                         if (value != null) {
                             buf.append(" ");
@@ -580,5 +577,32 @@ public abstract class AbstractConfig implements Serializable {
     @PostConstruct
     public void addIntoConfigManager() {
         ApplicationModel.getConfigManager().addConfig(this);
+    }
+
+    @Override
+    public int hashCode() {
+        int hashCode = 1;
+
+        Method[] methods = this.getClass().getMethods();
+        for (Method method : methods) {
+            if (MethodUtils.isGetter(method)) {
+                Parameter parameter = method.getAnnotation(Parameter.class);
+                if (parameter != null && parameter.excluded()) {
+                    continue;
+                }
+                try {
+                    Object value = method.invoke(this, new Object[]{});
+                    hashCode = 31 * hashCode + value.hashCode();
+                } catch (Exception ignored) {
+                    //ignored
+                }
+            }
+        }
+
+        if (hashCode == 0) {
+            hashCode = 1;
+        }
+
+        return hashCode;
     }
 }

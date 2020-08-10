@@ -29,7 +29,9 @@ import java.util.concurrent.ThreadPoolExecutor;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadpool.event.ThreadPoolExhaustedEvent;
 import org.apache.dubbo.common.utils.JVMUtil;
+import org.apache.dubbo.event.EventDispatcher;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUMP_DIRECTORY;
 
@@ -76,7 +78,16 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
             url.getProtocol(), url.getIp(), url.getPort());
         logger.warn(msg);
         dumpJStack();
+        dispatchThreadPoolExhaustedEvent(msg);
         throw new RejectedExecutionException(msg);
+    }
+
+    /**
+     * dispatch ThreadPoolExhaustedEvent
+     * @param msg
+     */
+    public void dispatchThreadPoolExhaustedEvent(String msg) {
+        EventDispatcher.getDefaultExtension().dispatch(new ThreadPoolExhaustedEvent(this, msg));
     }
 
     private void dumpJStack() {

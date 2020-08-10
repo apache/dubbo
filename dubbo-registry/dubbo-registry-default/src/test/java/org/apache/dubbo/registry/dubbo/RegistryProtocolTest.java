@@ -21,6 +21,7 @@ import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.RegistryFactory;
+import org.apache.dubbo.registry.RegistryService;
 import org.apache.dubbo.registry.integration.RegistryProtocol;
 import org.apache.dubbo.registry.support.AbstractRegistry;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
@@ -29,7 +30,6 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.cluster.support.FailfastCluster;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
@@ -72,6 +72,7 @@ public class RegistryProtocolTest {
     @BeforeEach
     public void setUp() {
         ApplicationModel.setApplication("RegistryProtocolTest");
+        ApplicationModel.getServiceRepository().registerService(RegistryService.class);
     }
 
     @Test
@@ -84,7 +85,7 @@ public class RegistryProtocolTest {
     public void testExportUrlNull() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             RegistryProtocol registryProtocol = getRegistryProtocol();
-            registryProtocol.setCluster(new FailfastCluster());
+//            registryProtocol.setCluster(new FailfastCluster());
 
             Protocol dubboProtocol = DubboProtocol.getDubboProtocol();
             registryProtocol.setProtocol(dubboProtocol);
@@ -97,7 +98,7 @@ public class RegistryProtocolTest {
     @Test
     public void testExport() {
         RegistryProtocol registryProtocol = getRegistryProtocol();
-        registryProtocol.setCluster(new FailfastCluster());
+//        registryProtocol.setCluster(new FailfastCluster());
         registryProtocol.setRegistryFactory(ExtensionLoader.getExtensionLoader(RegistryFactory.class).getAdaptiveExtension());
 
         Protocol dubboProtocol = DubboProtocol.getDubboProtocol();

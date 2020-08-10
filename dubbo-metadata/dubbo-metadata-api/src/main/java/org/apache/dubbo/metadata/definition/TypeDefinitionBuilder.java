@@ -28,21 +28,21 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import static org.apache.dubbo.common.utils.ClassUtils.isSimpleType;
 
 /**
  * 2015/1/27.
  */
 public class TypeDefinitionBuilder {
     private static final Logger logger = LoggerFactory.getLogger(TypeDefinitionBuilder.class);
-    private static final List<TypeBuilder> BUILDERS;
+    static final List<TypeBuilder> BUILDERS;
 
     static {
-        List<TypeBuilder> builders = new ArrayList<>();
         ExtensionLoader<TypeBuilder> extensionLoader = ExtensionLoader.getExtensionLoader(TypeBuilder.class);
-        for (String extensionName : extensionLoader.getSupportedExtensions()) {
-            builders.add(extensionLoader.getExtension(extensionName));
-        }
-        BUILDERS = builders;
+        Set<TypeBuilder> tbs = extensionLoader.getSupportedExtensionInstances();
+        BUILDERS = new ArrayList<>(tbs);
     }
 
     public static TypeDefinition build(Type type, Class<?> clazz, Map<Class<?>, TypeDefinition> typeCache) {
@@ -55,7 +55,7 @@ public class TypeDefinitionBuilder {
             td = DefaultTypeBuilder.build(clazz, typeCache);
             td.setTypeBuilderName(DefaultTypeBuilder.class.getName());
         }
-        if (clazz.equals(String.class)) {
+        if (isSimpleType(clazz)) { // changed since 2.7.6
             td.setProperties(null);
         }
         return td;

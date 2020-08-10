@@ -39,6 +39,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class NetUtilsTest {
+
     @Test
     public void testGetRandomPort() throws Exception {
         assertThat(NetUtils.getRandomPort(), greaterThanOrEqualTo(30000));
@@ -50,7 +51,7 @@ public class NetUtilsTest {
     public void testGetAvailablePort() throws Exception {
         assertThat(NetUtils.getAvailablePort(), greaterThan(0));
         assertThat(NetUtils.getAvailablePort(12345), greaterThanOrEqualTo(12345));
-        assertThat(NetUtils.getAvailablePort(-1), greaterThanOrEqualTo(30000));
+        assertThat(NetUtils.getAvailablePort(-1), greaterThanOrEqualTo(0));
     }
 
     @Test
@@ -87,11 +88,14 @@ public class NetUtilsTest {
         assertTrue(NetUtils.isInvalidLocalHost("localhost"));
         assertTrue(NetUtils.isInvalidLocalHost("0.0.0.0"));
         assertTrue(NetUtils.isInvalidLocalHost("127.1.2.3"));
+        assertTrue(NetUtils.isInvalidLocalHost("127.0.0.1"));
+        assertFalse(NetUtils.isInvalidLocalHost("128.0.0.1"));
     }
 
     @Test
     public void testIsValidLocalHost() throws Exception {
         assertTrue(NetUtils.isValidLocalHost("1.2.3.4"));
+        assertTrue(NetUtils.isValidLocalHost("128.0.0.1"));
     }
 
     @Test
@@ -243,7 +247,7 @@ public class NetUtilsTest {
         assertTrue(thrown.getMessage().contains("If you config ip expression that contains '*'"));
 
         thrown = assertThrows(IllegalArgumentException.class, () ->
-                        NetUtils.matchIpRange("234e:0:4567:3d", "234e:0:4567::3d:ff", 90));
+                NetUtils.matchIpRange("234e:0:4567:3d", "234e:0:4567::3d:ff", 90));
         assertTrue(thrown.getMessage().contains("The host is ipv6, but the pattern is not ipv6 pattern"));
 
         thrown =
@@ -282,7 +286,7 @@ public class NetUtilsTest {
     @Test
     public void testMatchIpv4WithIpPort() throws UnknownHostException {
         NumberFormatException thrown =
-                assertThrows(NumberFormatException.class, () ->NetUtils.matchIpExpression("192.168.1.192/26:90", "192.168.1.199", 90));
+                assertThrows(NumberFormatException.class, () -> NetUtils.matchIpExpression("192.168.1.192/26:90", "192.168.1.199", 90));
         assertTrue(thrown instanceof NumberFormatException);
 
         assertTrue(NetUtils.matchIpRange("*.*.*.*:90", "192.168.1.63", 90));
@@ -299,5 +303,18 @@ public class NetUtilsTest {
 
         assertFalse(NetUtils.matchIpRange("192.168.1.1-61:90", "192.168.1.62", 90));
         assertFalse(NetUtils.matchIpRange("192.168.1.62:90", "192.168.1.63", 90));
+    }
+
+    @Test
+    public void testLocalHost() {
+        assertEquals(NetUtils.getLocalHost(), NetUtils.getLocalAddress().getHostAddress());
+        assertTrue(NetUtils.isValidLocalHost(NetUtils.getLocalHost()));
+        assertFalse(NetUtils.isInvalidLocalHost(NetUtils.getLocalHost()));
+    }
+
+    @Test
+    public void testIsMulticastAddress() {
+        assertTrue(NetUtils.isMulticastAddress("224.0.0.1"));
+        assertFalse(NetUtils.isMulticastAddress("127.0.0.1"));
     }
 }

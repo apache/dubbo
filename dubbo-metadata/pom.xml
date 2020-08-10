@@ -35,6 +35,7 @@
         <module>dubbo-metadata-report-consul</module>
         <module>dubbo-metadata-report-etcd</module>
         <module>dubbo-metadata-report-nacos</module>
+        <module>dubbo-metadata-processor</module>
     </modules>
 
 </project>

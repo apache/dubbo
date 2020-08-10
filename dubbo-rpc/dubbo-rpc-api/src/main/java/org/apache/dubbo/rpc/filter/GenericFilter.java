@@ -70,10 +70,14 @@ public class GenericFilter implements Filter, Filter.Listener {
                 if (args == null) {
                     args = new Object[params.length];
                 }
-                String generic = (String) inv.getAttachment(GENERIC_KEY);
+
+                if (args.length != types.length) {
+                    throw new RpcException("args.length != types.length");
+                }
+                String generic = inv.getAttachment(GENERIC_KEY);
 
                 if (StringUtils.isBlank(generic)) {
-                    generic = (String) RpcContext.getContext().getAttachment(GENERIC_KEY);
+                    generic = RpcContext.getContext().getAttachment(GENERIC_KEY);
                 }
 
                 if (StringUtils.isEmpty(generic)
@@ -120,7 +124,7 @@ public class GenericFilter implements Filter, Filter.Listener {
                         try (UnsafeByteArrayInputStream is =
                                      new UnsafeByteArrayInputStream(((String) args[0]).getBytes())) {
                             args[0] = ExtensionLoader.getExtensionLoader(Serialization.class)
-                                    .getExtension("" + GENERIC_SERIALIZATION_PROTOBUF)
+                                    .getExtension(GENERIC_SERIALIZATION_PROTOBUF)
                                     .deserialize(null, is).readObject(method.getParameterTypes()[0]);
                         } catch (Exception e) {
                             throw new RpcException("Deserialize argument failed.", e);
@@ -129,20 +133,19 @@ public class GenericFilter implements Filter, Filter.Listener {
                         throw new RpcException(
                                 "Generic serialization [" +
                                         GENERIC_SERIALIZATION_PROTOBUF +
-                                        "] only support one" + String.class.getName() +
+                                        "] only support one " + String.class.getName() +
                                         " argument and your message size is " +
                                         args.length + " and type is" +
                                         args[0].getClass().getName());
                     }
                 }
-                RpcInvocation rpcInvocation = new RpcInvocation(method, invoker.getInterface().getName(), args, inv.getAttachments(), inv.getAttributes());
+
+                RpcInvocation rpcInvocation = new RpcInvocation(method, invoker.getInterface().getName(), args, inv.getObjectAttachments(), inv.getAttributes());
                 rpcInvocation.setInvoker(inv.getInvoker());
                 rpcInvocation.setTargetServiceUniqueName(inv.getTargetServiceUniqueName());
 
                 return invoker.invoke(rpcInvocation);
-            } catch (NoSuchMethodException e) {
-                throw new RpcException(e.getMessage(), e);
-            } catch (ClassNotFoundException e) {
+            } catch (NoSuchMethodException | ClassNotFoundException e) {
                 throw new RpcException(e.getMessage(), e);
             }
         }
@@ -150,19 +153,27 @@ public class GenericFilter implements Filter, Filter.Listener {
     }
 
     @Override
-    public void onMessage(Result appResponse, Invoker<?> invoker, Invocation inv) {
+    public void onResponse(Result appResponse, Invoker<?> invoker, Invocation inv) {
         if ((inv.getMethodName().equals($INVOKE) || inv.getMethodName().equals($INVOKE_ASYNC))
                 && inv.getArguments() != null
                 && inv.getArguments().length == 3
                 && !GenericService.class.isAssignableFrom(invoker.getInterface())) {
 
-            String generic = (String) inv.getAttachment(GENERIC_KEY);
+            String generic = inv.getAttachment(GENERIC_KEY);
             if (StringUtils.isBlank(generic)) {
-                generic = (String) RpcContext.getContext().getAttachment(GENERIC_KEY);
+                generic = RpcContext.getContext().getAttachment(GENERIC_KEY);
             }
 
-            if (appResponse.hasException() && !(appResponse.getException() instanceof GenericException)) {
-                appResponse.setException(new GenericException(appResponse.getException()));
+            if (appResponse.hasException()) {
+                Throwable appException = appResponse.getException();
+                if (appException instanceof GenericException) {
+                    GenericException tmp = (GenericException) appException;
+                    appException = new com.alibaba.dubbo.rpc.service.GenericException(tmp.getExceptionClass(), tmp.getExceptionMessage());
+                }
+                if (!(appException instanceof com.alibaba.dubbo.rpc.service.GenericException)) {
+                    appException = new com.alibaba.dubbo.rpc.service.GenericException(appException);
+                }
+                appResponse.setException(appException);
             }
             if (ProtocolUtils.isJavaGenericSerialization(generic)) {
                 try {

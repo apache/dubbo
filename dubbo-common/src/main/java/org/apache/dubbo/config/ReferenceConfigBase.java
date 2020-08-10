@@ -111,47 +111,11 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         return shouldInit;
     }
 
-    public void checkDefault() {
-        if (consumer != null) {
-            return;
-        }
-        setConsumer(ApplicationModel.getConfigManager().getDefaultConsumer().orElseGet(() -> {
-            ConsumerConfig consumerConfig = new ConsumerConfig();
-            consumerConfig.refresh();
-            return consumerConfig;
-        }));
-    }
-
-    public void completeCompoundConfigs() {
-        if (consumer != null) {
-            if (application == null) {
-                setApplication(consumer.getApplication());
-            }
-            if (module == null) {
-                setModule(consumer.getModule());
-            }
-            if (registries == null) {
-                setRegistries(consumer.getRegistries());
-            }
-            if (monitor == null) {
-                setMonitor(consumer.getMonitor());
-            }
-        }
-        if (module != null) {
-            if (registries == null) {
-                setRegistries(module.getRegistries());
-            }
-            if (monitor == null) {
-                setMonitor(module.getMonitor());
-            }
-        }
-        if (application != null) {
-            if (registries == null) {
-                setRegistries(application.getRegistries());
-            }
-            if (monitor == null) {
-                setMonitor(application.getMonitor());
-            }
+    public void checkDefault() throws IllegalStateException {
+        if (consumer == null) {
+            consumer = ApplicationModel.getConfigManager()
+                    .getDefaultConsumer()
+                    .orElse(new ConsumerConfig());
         }
     }
 
@@ -202,9 +166,10 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
 
     public void setInterface(String interfaceName) {
         this.interfaceName = interfaceName;
-        if (StringUtils.isEmpty(id)) {
-            id = interfaceName;
-        }
+        // FIXME, add id strategy in ConfigManager
+//        if (StringUtils.isEmpty(id)) {
+//            id = interfaceName;
+//        }
     }
 
     public void setInterface(Class<?> interfaceClass) {
@@ -304,7 +269,17 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
 
     @Parameter(excluded = true)
     public String getUniqueServiceName() {
-        return URL.buildKey(interfaceName, group, version);
+        return URL.buildKey(interfaceName, getGroup(), getVersion());
+    }
+
+    @Override
+    public String getVersion() {
+        return StringUtils.isEmpty(this.version) ? (consumer != null ? consumer.getVersion() : this.version) : this.version;
+    }
+
+    @Override
+    public String getGroup() {
+        return StringUtils.isEmpty(this.group) ? (consumer != null ? consumer.getGroup() : this.group) : this.group;
     }
 
     public abstract T get();

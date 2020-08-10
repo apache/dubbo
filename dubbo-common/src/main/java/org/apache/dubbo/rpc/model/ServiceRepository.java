@@ -26,10 +26,12 @@ import org.apache.dubbo.config.ServiceConfigBase;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
+import static org.apache.dubbo.common.BaseServiceMetadata.interfaceFromServiceKey;
+import static org.apache.dubbo.common.BaseServiceMetadata.versionFromServiceKey;
 
 public class ServiceRepository extends LifecycleAdapter implements FrameworkExt {
 
@@ -43,6 +45,9 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt 
 
     // providers
     private ConcurrentMap<String, ProviderModel> providers = new ConcurrentHashMap<>();
+
+    // useful to find a provider model quickly with serviceInterfaceName:version
+    private ConcurrentMap<String, ProviderModel> providersWithoutGroup = new ConcurrentHashMap<>();
 
     public ServiceRepository() {
         Set<BuiltinServiceDetector> builtinServices
@@ -80,23 +85,30 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt 
         return serviceDescriptor;
     }
 
+    public void unregisterService(Class<?> interfaceClazz) {
+        unregisterService(interfaceClazz.getName());
+    }
+
+    public void unregisterService(String path) {
+        services.remove(path);
+    }
+
     public void registerConsumer(String serviceKey,
-                                 Map<String, Object> attributes,
-                                 ServiceDescriptor serviceModel,
+                                 ServiceDescriptor serviceDescriptor,
                                  ReferenceConfigBase<?> rc,
                                  Object proxy,
                                  ServiceMetadata serviceMetadata) {
-        consumers.computeIfAbsent(
-                serviceKey,
-                _k -> new ConsumerModel(
-                        serviceMetadata.getServiceKey(),
-                        proxy,
-                        serviceModel,
-                        rc,
-                        attributes,
-                        serviceMetadata
-                )
-        );
+        ConsumerModel consumerModel = new ConsumerModel(serviceMetadata.getServiceKey(), proxy, serviceDescriptor, rc,
+                serviceMetadata);
+        consumers.putIfAbsent(serviceKey, consumerModel);
+    }
+
+    public void reRegisterConsumer(String newServiceKey, String serviceKey) {
+        ConsumerModel consumerModel = consumers.get(serviceKey);
+        consumerModel.setServiceKey(newServiceKey);
+        consumers.putIfAbsent(newServiceKey, consumerModel);
+        consumers.remove(serviceKey);
+
     }
 
     public void registerProvider(String serviceKey,
@@ -104,16 +116,21 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt 
                                  ServiceDescriptor serviceModel,
                                  ServiceConfigBase<?> serviceConfig,
                                  ServiceMetadata serviceMetadata) {
-        providers.computeIfAbsent(
-                serviceKey,
-                _k -> new ProviderModel(
-                        serviceKey,
-                        serviceInstance,
-                        serviceModel,
-                        serviceConfig,
-                        serviceMetadata
-                )
-        );
+        ProviderModel providerModel = new ProviderModel(serviceKey, serviceInstance, serviceModel, serviceConfig,
+                serviceMetadata);
+        providers.putIfAbsent(serviceKey, providerModel);
+        providersWithoutGroup.putIfAbsent(keyWithoutGroup(serviceKey), providerModel);
+    }
+
+    private static String keyWithoutGroup(String serviceKey) {
+        return interfaceFromServiceKey(serviceKey) + ":" + versionFromServiceKey(serviceKey);
+    }
+
+    public void reRegisterProvider(String newServiceKey, String serviceKey) {
+        ProviderModel providerModel = providers.get(serviceKey);
+        providerModel.setServiceKey(newServiceKey);
+        providers.putIfAbsent(newServiceKey, providerModel);
+        providers.remove(serviceKey);
     }
 
     public List<ServiceDescriptor> getAllServices() {
@@ -129,7 +146,8 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt 
         if (serviceDescriptor == null) {
             return null;
         }
-        Set<MethodDescriptor> methods = serviceDescriptor.getMethods(methodName);
+
+        List<MethodDescriptor> methods = serviceDescriptor.getMethods(methodName);
         if (CollectionUtils.isEmpty(methods)) {
             return null;
         }
@@ -142,6 +160,10 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt 
 
     public ProviderModel lookupExportedService(String serviceKey) {
         return providers.get(serviceKey);
+    }
+
+    public ProviderModel lookupExportedServiceWithoutGroup(String key) {
+        return providersWithoutGroup.get(key);
     }
 
     public List<ConsumerModel> getReferredServices() {
@@ -158,5 +180,6 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt 
         services.clear();
         consumers.clear();
         providers.clear();
+        providersWithoutGroup.clear();
     }
 }

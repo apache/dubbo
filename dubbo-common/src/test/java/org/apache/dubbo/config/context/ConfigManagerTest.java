@@ -49,7 +49,12 @@ public class ConfigManagerTest {
 
     @BeforeEach
     public void init() {
-        configManager.clear();
+        configManager.destroy();
+    }
+
+    @Test
+    public void testDestroy() {
+        assertTrue(configManager.configsCache.isEmpty());
     }
 
     @Test
@@ -132,7 +137,7 @@ public class ConfigManagerTest {
         Collection<ProviderConfig> configs = configManager.getProviders();
         assertEquals(1, configs.size());
         assertEquals(config, configs.iterator().next());
-        assertFalse(configManager.getDefaultProvider().isPresent());
+        assertTrue(configManager.getDefaultProvider().isPresent());
 
         config.setId(DEFAULT_KEY);
         configManager.addProvider(config);
@@ -149,7 +154,7 @@ public class ConfigManagerTest {
         Collection<ConsumerConfig> configs = configManager.getConsumers();
         assertEquals(1, configs.size());
         assertEquals(config, configs.iterator().next());
-        assertFalse(configManager.getDefaultConsumer().isPresent());
+        assertTrue(configManager.getDefaultConsumer().isPresent());
 
         config.setId(DEFAULT_KEY);
         configManager.addConsumer(config);
@@ -204,5 +209,23 @@ public class ConfigManagerTest {
     @Test
     public void testRefreshAll() {
         configManager.refreshAll();
+    }
+
+    @Test
+    public void testDefaultConfig() {
+        ProviderConfig providerConfig = new ProviderConfig();
+        providerConfig.setDefault(false);
+        assertFalse(ConfigManager.isDefaultConfig(providerConfig));
+
+        ProviderConfig providerConfig1 = new ProviderConfig();
+        assertTrue(ConfigManager.isDefaultConfig(providerConfig1));
+
+        ProviderConfig providerConfig3 = new ProviderConfig();
+        providerConfig.setDefault(true);
+        assertTrue(ConfigManager.isDefaultConfig(providerConfig3));
+
+        ProtocolConfig protocolConfig = new ProtocolConfig();
+        protocolConfig.setDefault(false);
+        assertFalse(ConfigManager.isDefaultConfig(protocolConfig));
     }
 }

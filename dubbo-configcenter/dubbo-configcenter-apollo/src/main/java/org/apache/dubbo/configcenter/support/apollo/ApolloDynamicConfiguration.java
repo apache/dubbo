@@ -69,6 +69,7 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
     private static final String APOLLO_CLUSTER_KEY = "apollo.cluster";
     private static final String APOLLO_PROTOCOL_PREFIX = "http://";
     private static final String APOLLO_APPLICATION_KEY = "application";
+    private static final String APOLLO_APPID_KEY = "app.id";
 
     private URL url;
     private Config dubboConfig;
@@ -81,14 +82,18 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
         String configEnv = url.getParameter(APOLLO_ENV_KEY);
         String configAddr = getAddressWithProtocolPrefix(url);
         String configCluster = url.getParameter(CLUSTER_KEY);
-        if (configEnv != null) {
+        String configAppId = url.getParameter(APOLLO_APPID_KEY);
+        if (StringUtils.isEmpty(System.getProperty(APOLLO_ENV_KEY)) && configEnv != null) {
             System.setProperty(APOLLO_ENV_KEY, configEnv);
         }
-        if (StringUtils.isEmpty(System.getProperty(APOLLO_ENV_KEY)) && !ANYHOST_VALUE.equals(configAddr)) {
+        if (StringUtils.isEmpty(System.getProperty(APOLLO_ADDR_KEY)) && !ANYHOST_VALUE.equals(url.getHost())) {
             System.setProperty(APOLLO_ADDR_KEY, configAddr);
         }
-        if (configCluster != null) {
+        if (StringUtils.isEmpty(System.getProperty(APOLLO_CLUSTER_KEY)) && configCluster != null) {
             System.setProperty(APOLLO_CLUSTER_KEY, configCluster);
+        }
+        if (StringUtils.isEmpty(System.getProperty(APOLLO_APPID_KEY)) && configAppId != null) {
+            System.setProperty(APOLLO_APPID_KEY, configAppId);
         }
 
         String namespace = url.getParameter(CONFIG_NAMESPACE_KEY, DEFAULT_GROUP);

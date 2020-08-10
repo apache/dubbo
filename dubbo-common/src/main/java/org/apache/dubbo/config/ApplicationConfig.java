@@ -36,6 +36,7 @@ import java.util.Set;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUMP_DIRECTORY;
 import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METADATA_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
@@ -419,6 +420,7 @@ public class ApplicationConfig extends AbstractConfig {
         return !StringUtils.isEmpty(name);
     }
 
+    @Parameter(key = METADATA_KEY)
     public String getMetadataType() {
         return metadataType;
     }

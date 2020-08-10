@@ -23,11 +23,11 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.service.GenericException;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.DemoService;
 import org.apache.dubbo.rpc.support.Person;
 
+import com.alibaba.dubbo.rpc.service.GenericException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -67,7 +67,7 @@ public class GenericImplFilterTest {
 
         Result asyncResult = genericImplFilter.invoke(invoker, invocation);
         Result result = asyncResult.get();
-        genericImplFilter.onMessage(result, invoker, invocation);
+        genericImplFilter.onResponse(result, invoker, invocation);
 
         Assertions.assertEquals(Person.class, result.getValue().getClass());
         Assertions.assertEquals(10, ((Person) result.getValue()).getAge());
@@ -90,7 +90,7 @@ public class GenericImplFilterTest {
 
         Result asyncResult = genericImplFilter.invoke(invoker, invocation);
         Result result = asyncResult.get();
-        genericImplFilter.onMessage(result, invoker, invocation);
+        genericImplFilter.onResponse(result, invoker, invocation);
         Assertions.assertEquals(RuntimeException.class, result.getException().getClass());
 
     }

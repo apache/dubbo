@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.rpc.Exporter;
@@ -38,6 +39,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_FILTER_K
 /**
  * ListenerProtocol
  */
+@Activate(order = 100)
 public class ProtocolFilterWrapper implements Protocol {
 
     private final Protocol protocol;
@@ -80,10 +82,15 @@ public class ProtocolFilterWrapper implements Protocol {
                         try {
                             asyncResult = filter.invoke(next, invocation);
                         } catch (Exception e) {
-                            if (filter instanceof ListenableFilter) {// Deprecated!
-                                Filter.Listener listener = ((ListenableFilter) filter).listener();
-                                if (listener != null) {
-                                    listener.onError(e, invoker, invocation);
+                            if (filter instanceof ListenableFilter) {
+                                ListenableFilter listenableFilter = ((ListenableFilter) filter);
+                                try {
+                                    Filter.Listener listener = listenableFilter.listener(invocation);
+                                    if (listener != null) {
+                                        listener.onError(e, invoker, invocation);
+                                    }
+                                } finally {
+                                    listenableFilter.removeListener(invocation);
                                 }
                             } else if (filter instanceof Filter.Listener) {
                                 Filter.Listener listener = (Filter.Listener) filter;
@@ -94,19 +101,24 @@ public class ProtocolFilterWrapper implements Protocol {
 
                         }
                         return asyncResult.whenCompleteWithContext((r, t) -> {
-                            if (filter instanceof ListenableFilter) {// Deprecated!
-                                Filter.Listener listener = ((ListenableFilter) filter).listener();
-                                if (listener != null) {
-                                    if (t == null) {
-                                        listener.onMessage(r, invoker, invocation);
-                                    } else {
-                                        listener.onError(t, invoker, invocation);
+                            if (filter instanceof ListenableFilter) {
+                                ListenableFilter listenableFilter = ((ListenableFilter) filter);
+                                Filter.Listener listener = listenableFilter.listener(invocation);
+                                try {
+                                    if (listener != null) {
+                                        if (t == null) {
+                                            listener.onResponse(r, invoker, invocation);
+                                        } else {
+                                            listener.onError(t, invoker, invocation);
+                                        }
                                     }
+                                } finally {
+                                    listenableFilter.removeListener(invocation);
                                 }
                             } else if (filter instanceof Filter.Listener) {
                                 Filter.Listener listener = (Filter.Listener) filter;
                                 if (t == null) {
-                                    listener.onMessage(r, invoker, invocation);
+                                    listener.onResponse(r, invoker, invocation);
                                 } else {
                                     listener.onError(t, invoker, invocation);
                                 }

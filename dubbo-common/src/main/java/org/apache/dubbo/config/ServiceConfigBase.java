@@ -92,10 +92,6 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         setMethods(MethodConfig.constructMethodConfig(service.methods()));
     }
 
-    public void exported() {
-
-    }
-
     @Deprecated
     private static List<ProtocolConfig> convertProviderToProtocol(List<ProviderConfig> providers) {
         if (CollectionUtils.isEmpty(providers)) {
@@ -197,62 +193,12 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         return ref.getClass();
     }
 
-    public void completeCompoundConfigs() {
-        if (provider != null) {
-            if (application == null) {
-                setApplication(provider.getApplication());
-            }
-            if (module == null) {
-                setModule(provider.getModule());
-            }
-            if (registries == null) {
-                setRegistries(provider.getRegistries());
-            }
-            if (monitor == null) {
-                setMonitor(provider.getMonitor());
-            }
-            if (protocols == null) {
-                setProtocols(provider.getProtocols());
-            }
-            if (configCenter == null) {
-                setConfigCenter(provider.getConfigCenter());
-            }
+    public void checkDefault() throws IllegalStateException {
+        if (provider == null) {
+            provider = ApplicationModel.getConfigManager()
+                    .getDefaultProvider()
+                    .orElse(new ProviderConfig());
         }
-        if (module != null) {
-            if (registries == null) {
-                setRegistries(module.getRegistries());
-            }
-            if (monitor == null) {
-                setMonitor(module.getMonitor());
-            }
-        }
-        if (application != null) {
-            if (registries == null) {
-                setRegistries(application.getRegistries());
-            }
-            if (monitor == null) {
-                setMonitor(application.getMonitor());
-            }
-        }
-    }
-
-    public void checkDefault() {
-        createProviderIfAbsent();
-    }
-
-    private void createProviderIfAbsent() {
-        if (provider != null) {
-            return;
-        }
-        setProvider(
-                ApplicationModel.getConfigManager()
-                        .getDefaultProvider()
-                        .orElseGet(() -> {
-                            ProviderConfig providerConfig = new ProviderConfig();
-                            providerConfig.refresh();
-                            return providerConfig;
-                        })
-        );
     }
 
     public void checkProtocol() {
@@ -260,6 +206,24 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
             setProtocols(provider.getProtocols());
         }
         convertProtocolIdsToProtocols();
+    }
+
+    public void completeCompoundConfigs() {
+        super.completeCompoundConfigs(provider);
+        if (provider != null) {
+            if (protocols == null) {
+                setProtocols(provider.getProtocols());
+            }
+            if (configCenter == null) {
+                setConfigCenter(provider.getConfigCenter());
+            }
+            if (StringUtils.isEmpty(registryIds)) {
+                setRegistryIds(provider.getRegistryIds());
+            }
+            if (StringUtils.isEmpty(protocolIds)) {
+                setProtocolIds(provider.getProtocolIds());
+            }
+        }
     }
 
     private void convertProtocolIdsToProtocols() {
@@ -270,14 +234,16 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
                 if (protocolConfigs.isEmpty()) {
                     protocolConfigs = new ArrayList<>(1);
                     ProtocolConfig protocolConfig = new ProtocolConfig();
+                    protocolConfig.setDefault(true);
                     protocolConfig.refresh();
                     protocolConfigs.add(protocolConfig);
+                    ApplicationModel.getConfigManager().addProtocol(protocolConfig);
                 }
                 setProtocols(protocolConfigs);
             }
         } else {
             String[] arr = COMMA_SPLIT_PATTERN.split(protocolIds);
-            List<ProtocolConfig> tmpProtocols = CollectionUtils.isNotEmpty(protocols) ? protocols : new ArrayList<>();
+            List<ProtocolConfig> tmpProtocols = new ArrayList<>();
             Arrays.stream(arr).forEach(id -> {
                 if (tmpProtocols.stream().noneMatch(prot -> prot.getId().equals(id))) {
                     Optional<ProtocolConfig> globalProtocol = ApplicationModel.getConfigManager().getProtocol(id);
@@ -340,9 +306,10 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
 
     public void setInterface(String interfaceName) {
         this.interfaceName = interfaceName;
-        if (StringUtils.isEmpty(id)) {
-            id = interfaceName;
-        }
+        // FIXME, add id strategy in ConfigManager
+//        if (StringUtils.isEmpty(id)) {
+//            id = interfaceName;
+//        }
     }
 
     public T getRef() {
@@ -395,15 +362,15 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         }
     }
 
-    @Override
-    public void setMock(Boolean mock) {
-        throw new IllegalArgumentException("mock doesn't support on provider side");
-    }
-
-    @Override
-    public void setMock(String mock) {
-        throw new IllegalArgumentException("mock doesn't support on provider side");
-    }
+//    @Override
+//    public void setMock(String mock) {
+//        throw new IllegalArgumentException("mock doesn't support on provider side");
+//    }
+//
+//    @Override
+//    public void setMock(Object mock) {
+//        throw new IllegalArgumentException("mock doesn't support on provider side");
+//    }
 
     public ServiceMetadata getServiceMetadata() {
         return serviceMetadata;
@@ -433,7 +400,17 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
 
     @Parameter(excluded = true)
     public String getUniqueServiceName() {
-        return URL.buildKey(interfaceName, group, version);
+        return URL.buildKey(interfaceName, getGroup(), getVersion());
+    }
+
+    @Override
+    public String getGroup() {
+        return StringUtils.isEmpty(this.group) ? (provider != null ? provider.getGroup() : this.group) : this.group;
+    }
+
+    @Override
+    public String getVersion() {
+        return StringUtils.isEmpty(this.version) ? (provider != null ? provider.getVersion() : this.version) : this.version;
     }
 
     private void computeValidProtocolIds() {

@@ -55,6 +55,11 @@ public class ProviderConfig extends AbstractServiceConfig {
     private String threadpool;
 
     /**
+     * Thread pool name
+     */
+    private String threadname;
+
+    /**
      * Thread pool size (fixed size)
      */
     private Integer threads;
@@ -209,6 +214,14 @@ public class ProviderConfig extends AbstractServiceConfig {
 
     public void setThreadpool(String threadpool) {
         this.threadpool = threadpool;
+    }
+
+    public String getThreadname() {
+        return threadname;
+    }
+
+    public void setThreadname(String threadname) {
+        this.threadname = threadname;
     }
 
     public Integer getThreads() {
