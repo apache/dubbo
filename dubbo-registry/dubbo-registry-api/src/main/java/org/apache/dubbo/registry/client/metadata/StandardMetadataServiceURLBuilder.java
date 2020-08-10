@@ -19,6 +19,8 @@ package org.apache.dubbo.registry.client.metadata;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -46,6 +48,8 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
  * @since 2.7.5
  */
 public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuilder {
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     public static final String NAME = "standard";
 
@@ -103,8 +107,13 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
         Integer port = ApplicationModel.getApplicationConfig().getMetadataServicePort();
 
         if (port == null || port < 1) {
-            throw new IllegalStateException("Metadata Service Port should be specified. " +
-                    "Please set dubbo.application.metadataServicePort and sync with provider side.");
+            String message = "Metadata Service Port should be specified for consumer. " +
+                    "Please set dubbo.application.metadataServicePort and " +
+                    "make sure it has been set in provider side. " +
+                    "ServiceName: " + serviceName + " Host: " + host;
+
+            logger.error(message);
+            throw new IllegalStateException(message);
         }
 
         URLBuilder urlBuilder = new URLBuilder()
