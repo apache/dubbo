@@ -1,4 +1,0 @@
-index=com.alibaba.dubbo.container.page.pages.HomePageHandler
-status=com.alibaba.dubbo.container.page.pages.StatusPageHandler
-log=com.alibaba.dubbo.container.page.pages.LogPageHandler
-system=com.alibaba.dubbo.container.page.pages.SystemPageHandler
