@@ -23,6 +23,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.ServiceInstance;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
@@ -122,6 +123,7 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
                 .setProtocol(DUBBO_PROTOCOL)
                 .setPath(MetadataService.class.getName())
                 .addParameter(TIMEOUT_KEY, ConfigurationUtils.get(METADATA_PROXY_TIMEOUT_KEY, DEFAULT_METADATA_TIMEOUT_VALUE))
+                .addParameter(Constants.RECONNECT_KEY, false)
                 .addParameter(SIDE_KEY, CONSUMER)
                 .addParameter(GROUP_KEY, serviceName)
                 .addParameter(VERSION_KEY, MetadataService.VERSION);
