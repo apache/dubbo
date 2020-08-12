@@ -21,8 +21,8 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 public class ApplicationProvider {
     public static void main(String[] args) throws Exception {
         //ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("spring/dubbo-provider-sofaregistry.xml");
-        //ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("spring/dubbo-provider-zk.xml");
-        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("spring/dubbo-provider-zk-apollo.xml");
+        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("spring/dubbo-provider-zk.xml");
+        //ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("spring/dubbo-provider-zk-apollo.xml");
         context.start();
         System.in.read();
     }
