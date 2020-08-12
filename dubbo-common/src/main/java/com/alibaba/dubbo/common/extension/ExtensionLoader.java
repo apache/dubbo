@@ -190,10 +190,10 @@ public class ExtensionLoader<T> {
                 String name = entry.getKey();
                 Activate activate = entry.getValue();
                 if (isMatchGroup(group, activate.group())) {
-                    T ext = getExtension(name);
                     if (!names.contains(name)
                             && !names.contains(Constants.REMOVE_VALUE_PREFIX + name)
                             && isActive(activate, url)) {
+                        T ext = getExtension(name);
                         exts.add(ext);
                     }
                 }
