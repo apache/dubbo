@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -133,15 +134,22 @@ public class MulticastRegistryTest {
     public void testSubscribe() {
         // verify listener
         registry.register(serviceUrl);
-        registry.subscribe(consumerUrl, new NotifyListener() {
-            @Override
-            public void notify(List<URL> urls) {
-                assertEquals(serviceUrl.toFullString(), urls.get(0).toFullString());
+        final URL[] notifyUrl = new URL[1];
+        for (int i = 0; i < 5; i++) {
+            registry.subscribe(consumerUrl, new NotifyListener() {
+                @Override
+                public void notify(List<URL> urls) {
+                    notifyUrl[0] = urls.get(0);
 
-                Map<URL, Set<NotifyListener>> subscribed = registry.getSubscribed();
-                assertEquals(consumerUrl, subscribed.keySet().iterator().next());
+                    Map<URL, Set<NotifyListener>> subscribed = registry.getSubscribed();
+                    assertEquals(consumerUrl, subscribed.keySet().iterator().next());
+                }
+            });
+            if (EMPTY_PROTOCOL.equalsIgnoreCase(notifyUrl[0].getProtocol())) {
+                break;
             }
-        });
+        }
+        assertEquals(serviceUrl.toFullString(), notifyUrl[0].toFullString());
     }
 
     /**
