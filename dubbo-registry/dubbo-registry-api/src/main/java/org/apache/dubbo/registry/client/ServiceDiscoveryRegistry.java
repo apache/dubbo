@@ -456,22 +456,24 @@ public class ServiceDiscoveryRegistry implements Registry {
         @Override
         public void onEvent(MappingChangedEvent event) {
             Set<String> newApps = event.getApps();
+            Set<String> tempOldApps = oldApps;
+            oldApps = newApps;
+
             if (CollectionUtils.isEmpty(newApps)) {
                 return;
             }
 
-            if (CollectionUtils.isEmpty(oldApps) && newApps.size() > 0) {
+            if (CollectionUtils.isEmpty(tempOldApps) && newApps.size() > 0) {
                 subscribeURLs(url, listener, newApps);
+                return;
             }
 
             for (String newAppName : newApps) {
-                if (!oldApps.contains(newAppName)) {
+                if (!tempOldApps.contains(newAppName)) {
                     subscribeURLs(url, listener, newApps);
-                    break;
+                    return;
                 }
             }
-
-            oldApps = newApps;
         }
     }
 }
