@@ -35,14 +35,17 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY_PREFIX;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
@@ -54,6 +57,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.PORT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.USERNAME_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.convert.Converter.convertIfPossible;
+import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 
 /**
  * URL - Uniform Resource Locator (Immutable, ThreadSafe)
@@ -224,6 +229,8 @@ class URL implements Serializable {
     }
 
     /**
+     * NOTICE: This method allocate too much objects, we can use {@link URLStrParser#parseDecodedStr(String)} instead.
+     * <p>
      * Parse url string
      *
      * @param url URL string
@@ -250,7 +257,13 @@ class URL implements Serializable {
                 if (part.length() > 0) {
                     int j = part.indexOf('=');
                     if (j >= 0) {
-                        parameters.put(part.substring(0, j), part.substring(j + 1));
+                        String key = part.substring(0, j);
+                        String value = part.substring(j + 1);
+                        parameters.put(key, value);
+                        // compatible with lower versions registering "default." keys
+                        if (key.startsWith(DEFAULT_KEY_PREFIX)) {
+                            parameters.putIfAbsent(key.substring(DEFAULT_KEY_PREFIX.length()), value);
+                        }
                     } else {
                         parameters.put(part, part);
                     }
@@ -319,13 +332,16 @@ class URL implements Serializable {
 
         String methodsString = parameters.get(METHODS_KEY);
         if (StringUtils.isNotEmpty(methodsString)) {
-            String[] methods = methodsString.split(",");
+            List<String> methods = StringUtils.splitToList(methodsString, ',');
             for (Map.Entry<String, String> entry : parameters.entrySet()) {
                 String key = entry.getKey();
-                for (String method : methods) {
-                    String methodPrefix = method + '.';
-                    if (key.startsWith(methodPrefix)) {
-                        String realKey = key.substring(methodPrefix.length());
+                for (int i = 0; i < methods.size(); i++) {
+                    String method = methods.get(i);
+                    int methodLen = method.length();
+                    if (key.length() > methodLen
+                            && key.startsWith(method)
+                            && key.charAt(methodLen) == '.') {//equals to: key.startsWith(method + '.')
+                        String realKey = key.substring(methodLen + 1);
                         URL.putMethodParameter(method, realKey, entry.getValue(), methodParameters);
                     }
                 }
@@ -554,6 +570,24 @@ class URL implements Serializable {
         return parameters;
     }
 
+    /**
+     * Get the parameters to be selected(filtered)
+     *
+     * @param nameToSelect the {@link Predicate} to select the parameter name
+     * @return non-null {@link Map}
+     * @since 2.7.8
+     */
+    public Map<String, String> getParameters(Predicate<String> nameToSelect) {
+        Map<String, String> selectedParameters = new LinkedHashMap<>();
+        for (Map.Entry<String, String> entry : getParameters().entrySet()) {
+            String name = entry.getKey();
+            if (nameToSelect.test(name)) {
+                selectedParameters.put(name, entry.getValue());
+            }
+        }
+        return Collections.unmodifiableMap(selectedParameters);
+    }
+
     public Map<String, Map<String, String>> getMethodParameters() {
         return methodParameters;
     }
@@ -589,9 +623,47 @@ class URL implements Serializable {
         return Arrays.asList(strArray);
     }
 
+    /**
+     * Get parameter
+     *
+     * @param key       the key of parameter
+     * @param valueType the type of parameter value
+     * @param <T>       the type of parameter value
+     * @return get the parameter if present, or <code>null</code>
+     * @since 2.7.8
+     */
+    public <T> T getParameter(String key, Class<T> valueType) {
+        return getParameter(key, valueType, null);
+    }
+
+    /**
+     * Get parameter
+     *
+     * @param key          the key of parameter
+     * @param valueType    the type of parameter value
+     * @param defaultValue the default value if parameter is absent
+     * @param <T>          the type of parameter value
+     * @return get the parameter if present, or <code>defaultValue</code> will be used.
+     * @since 2.7.8
+     */
+    public <T> T getParameter(String key, Class<T> valueType, T defaultValue) {
+        String value = getParameter(key);
+        T result = null;
+        if (!isBlank(value)) {
+            result = convertIfPossible(value, valueType);
+        }
+        if (result == null) {
+            result = defaultValue;
+        }
+        return result;
+    }
+
     private Map<String, Number> getNumbers() {
         // concurrent initialization is tolerant
-        return numbers == null ? new ConcurrentHashMap<>() : numbers;
+        if (numbers == null) {
+            numbers = new ConcurrentHashMap<>();
+        }
+        return numbers;
     }
 
     private Map<String, Map<String, Number>> getMethodNumbers() {
@@ -603,7 +675,10 @@ class URL implements Serializable {
 
     private Map<String, URL> getUrls() {
         // concurrent initialization is tolerant
-        return urls == null ? new ConcurrentHashMap<>() : urls;
+        if (urls == null) {
+            urls = new ConcurrentHashMap<>();
+        }
+        return urls;
     }
 
     public URL getUrlParameter(String key) {
@@ -1389,7 +1464,7 @@ class URL implements Serializable {
      */
     public String getColonSeparatedKey() {
         StringBuilder serviceNameBuilder = new StringBuilder();
-        append(serviceNameBuilder, INTERFACE_KEY, true);
+        serviceNameBuilder.append(this.getServiceInterface());
         append(serviceNameBuilder, VERSION_KEY, false);
         append(serviceNameBuilder, GROUP_KEY, false);
         return serviceNameBuilder.toString();
@@ -1397,7 +1472,7 @@ class URL implements Serializable {
 
     private void append(StringBuilder target, String parameterName, boolean first) {
         String parameterValue = this.getParameter(parameterName);
-        if (!StringUtils.isBlank(parameterValue)) {
+        if (!isBlank(parameterValue)) {
             if (!first) {
                 target.append(":");
             }

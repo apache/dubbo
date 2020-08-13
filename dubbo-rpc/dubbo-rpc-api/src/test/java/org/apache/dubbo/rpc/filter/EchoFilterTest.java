@@ -41,7 +41,7 @@ public class EchoFilterTest {
         given(invocation.getMethodName()).willReturn("$echo");
         given(invocation.getParameterTypes()).willReturn(new Class<?>[]{Enum.class});
         given(invocation.getArguments()).willReturn(new Object[]{"hello"});
-        given(invocation.getAttachments()).willReturn(null);
+        given(invocation.getObjectAttachments()).willReturn(null);
 
         Invoker<DemoService> invoker = mock(Invoker.class);
         given(invoker.isAvailable()).willReturn(true);
@@ -63,7 +63,7 @@ public class EchoFilterTest {
         given(invocation.getMethodName()).willReturn("echo");
         given(invocation.getParameterTypes()).willReturn(new Class<?>[]{Enum.class});
         given(invocation.getArguments()).willReturn(new Object[]{"hello"});
-        given(invocation.getAttachments()).willReturn(null);
+        given(invocation.getObjectAttachments()).willReturn(null);
 
         Invoker<DemoService> invoker = mock(Invoker.class);
         given(invoker.isAvailable()).willReturn(true);

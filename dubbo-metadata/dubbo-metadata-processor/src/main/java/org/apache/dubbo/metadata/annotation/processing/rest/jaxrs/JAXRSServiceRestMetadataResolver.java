@@ -28,7 +28,7 @@ import javax.lang.model.element.TypeElement;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import static org.apache.dubbo.common.utils.HttpUtils.buildPath;
+import static org.apache.dubbo.common.utils.PathUtils.buildPath;
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.findAnnotation;
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.findMetaAnnotation;
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.getAnnotation;

@@ -53,7 +53,7 @@ import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
  * GenericInvokerFilter.
  */
 @Activate(group = CommonConstants.PROVIDER, order = -20000)
-public class GenericFilter implements Filter, Filter.Listener2 {
+public class GenericFilter implements Filter, Filter.Listener {
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation inv) throws RpcException {
@@ -74,10 +74,10 @@ public class GenericFilter implements Filter, Filter.Listener2 {
                 if (args.length != types.length) {
                     throw new RpcException("args.length != types.length");
                 }
-                String generic = (String) inv.getAttachment(GENERIC_KEY);
-              
+                String generic = inv.getAttachment(GENERIC_KEY);
+
                 if (StringUtils.isBlank(generic)) {
-                    generic = (String) RpcContext.getContext().getAttachment(GENERIC_KEY);
+                    generic = RpcContext.getContext().getAttachment(GENERIC_KEY);
                 }
 
                 if (StringUtils.isEmpty(generic)
@@ -139,8 +139,8 @@ public class GenericFilter implements Filter, Filter.Listener2 {
                                         args[0].getClass().getName());
                     }
                 }
-              
-                RpcInvocation rpcInvocation = new RpcInvocation(method, invoker.getInterface().getName(), args, inv.getAttachments(), inv.getAttributes());
+
+                RpcInvocation rpcInvocation = new RpcInvocation(method, invoker.getInterface().getName(), args, inv.getObjectAttachments(), inv.getAttributes());
                 rpcInvocation.setInvoker(inv.getInvoker());
                 rpcInvocation.setTargetServiceUniqueName(inv.getTargetServiceUniqueName());
 
@@ -153,19 +153,27 @@ public class GenericFilter implements Filter, Filter.Listener2 {
     }
 
     @Override
-    public void onMessage(Result appResponse, Invoker<?> invoker, Invocation inv) {
+    public void onResponse(Result appResponse, Invoker<?> invoker, Invocation inv) {
         if ((inv.getMethodName().equals($INVOKE) || inv.getMethodName().equals($INVOKE_ASYNC))
                 && inv.getArguments() != null
                 && inv.getArguments().length == 3
                 && !GenericService.class.isAssignableFrom(invoker.getInterface())) {
 
-            String generic = (String) inv.getAttachment(GENERIC_KEY);
+            String generic = inv.getAttachment(GENERIC_KEY);
             if (StringUtils.isBlank(generic)) {
-                generic = (String) RpcContext.getContext().getAttachment(GENERIC_KEY);
+                generic = RpcContext.getContext().getAttachment(GENERIC_KEY);
             }
 
-            if (appResponse.hasException() && !(appResponse.getException() instanceof GenericException)) {
-                appResponse.setException(new GenericException(appResponse.getException()));
+            if (appResponse.hasException()) {
+                Throwable appException = appResponse.getException();
+                if (appException instanceof GenericException) {
+                    GenericException tmp = (GenericException) appException;
+                    appException = new com.alibaba.dubbo.rpc.service.GenericException(tmp.getExceptionClass(), tmp.getExceptionMessage());
+                }
+                if (!(appException instanceof com.alibaba.dubbo.rpc.service.GenericException)) {
+                    appException = new com.alibaba.dubbo.rpc.service.GenericException(appException);
+                }
+                appResponse.setException(appException);
             }
             if (ProtocolUtils.isJavaGenericSerialization(generic)) {
                 try {

@@ -97,8 +97,8 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
         }
 
         List<Invoker<T>> result = invokers;
-        String tag = StringUtils.isEmpty((String) invocation.getAttachment(TAG_KEY)) ? url.getParameter(TAG_KEY) :
-                (String) invocation.getAttachment(TAG_KEY);
+        String tag = StringUtils.isEmpty(invocation.getAttachment(TAG_KEY)) ? url.getParameter(TAG_KEY) :
+                invocation.getAttachment(TAG_KEY);
 
         // if we are requesting for a Provider with a specific tag
         if (StringUtils.isNotEmpty(tag)) {
@@ -163,8 +163,8 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
     private <T> List<Invoker<T>> filterUsingStaticTag(List<Invoker<T>> invokers, URL url, Invocation invocation) {
         List<Invoker<T>> result = invokers;
         // Dynamic param
-        String tag = StringUtils.isEmpty((String) invocation.getAttachment(TAG_KEY)) ? url.getParameter(TAG_KEY) :
-                (String) invocation.getAttachment(TAG_KEY);
+        String tag = StringUtils.isEmpty(invocation.getAttachment(TAG_KEY)) ? url.getParameter(TAG_KEY) :
+                invocation.getAttachment(TAG_KEY);
         // Tag request
         if (!StringUtils.isEmpty(tag)) {
             result = filterInvoker(invokers, invoker -> tag.equals(invoker.getUrl().getParameter(TAG_KEY)));
@@ -189,10 +189,22 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
     }
 
     private boolean isForceUseTag(Invocation invocation) {
-        return Boolean.valueOf((String) invocation.getAttachment(FORCE_USE_TAG, url.getParameter(FORCE_USE_TAG, "false")));
+        return Boolean.valueOf(invocation.getAttachment(FORCE_USE_TAG, url.getParameter(FORCE_USE_TAG, "false")));
     }
 
     private <T> List<Invoker<T>> filterInvoker(List<Invoker<T>> invokers, Predicate<Invoker<T>> predicate) {
+        boolean filter = false;
+        for (int i = 0; i < invokers.size(); ++i) {
+            Invoker<T> invoker = invokers.get(i);
+            if (!predicate.test(invoker)) {
+                filter = true;
+                break;
+            }
+        }
+        if (!filter) {
+            return invokers;
+        }
+
         return invokers.stream()
                 .filter(predicate)
                 .collect(Collectors.toList());

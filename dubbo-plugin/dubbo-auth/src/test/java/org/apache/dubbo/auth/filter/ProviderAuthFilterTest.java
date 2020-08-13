@@ -24,6 +24,7 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
+
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -107,10 +108,10 @@ class ProviderAuthFilterTest {
                 .addParameter(Constants.SERVICE_AUTH, true);
         Invoker invoker = mock(Invoker.class);
         Invocation invocation = mock(Invocation.class);
-        when(invocation.getAttachment(Constants.REQUEST_SIGNATURE_KEY)).thenReturn("dubbo");
-        when(invocation.getAttachment(Constants.AK_KEY)).thenReturn("ak");
-        when(invocation.getAttachment(CommonConstants.CONSUMER)).thenReturn("test-consumer");
-        when(invocation.getAttachment(Constants.REQUEST_TIMESTAMP_KEY)).thenReturn(System.currentTimeMillis());
+        when(invocation.getObjectAttachment(Constants.REQUEST_SIGNATURE_KEY)).thenReturn("dubbo");
+        when(invocation.getObjectAttachment(Constants.AK_KEY)).thenReturn("ak");
+        when(invocation.getObjectAttachment(CommonConstants.CONSUMER)).thenReturn("test-consumer");
+        when(invocation.getObjectAttachment(Constants.REQUEST_TIMESTAMP_KEY)).thenReturn(System.currentTimeMillis());
         when(invoker.getUrl()).thenReturn(url);
 
         ProviderAuthFilter providerAuthFilter = new ProviderAuthFilter();
@@ -130,14 +131,14 @@ class ProviderAuthFilterTest {
                 .addParameter(Constants.ACCESS_KEY_ID_KEY, "ak")
                 .addParameter(Constants.SECRET_ACCESS_KEY_KEY, "sk")
                 .addParameter(CommonConstants.APPLICATION_KEY, "test-provider")
-                .addParameter(Constants.PARAMTER_SIGNATURE_ENABLE_KEY, true)
+                .addParameter(Constants.PARAMETER_SIGNATURE_ENABLE_KEY, true)
                 .addParameter(Constants.SERVICE_AUTH, true);
 
         Invoker invoker = mock(Invoker.class);
         Invocation invocation = mock(Invocation.class);
-        when(invocation.getAttachment(Constants.AK_KEY)).thenReturn("ak");
-        when(invocation.getAttachment(CommonConstants.CONSUMER)).thenReturn("test-consumer");
-        when(invocation.getAttachment(Constants.REQUEST_TIMESTAMP_KEY)).thenReturn(currentTimeMillis);
+        when(invocation.getObjectAttachment(Constants.AK_KEY)).thenReturn("ak");
+        when(invocation.getObjectAttachment(CommonConstants.CONSUMER)).thenReturn("test-consumer");
+        when(invocation.getObjectAttachment(Constants.REQUEST_TIMESTAMP_KEY)).thenReturn(currentTimeMillis);
         when(invocation.getMethodName()).thenReturn(method);
         Object[] fakeParams = new Object[]{"dubbo1", "dubbo3"};
         when(invocation.getArguments()).thenReturn(fakeParams);
@@ -147,7 +148,7 @@ class ProviderAuthFilterTest {
         String requestString = String.format(Constants.SIGNATURE_STRING_FORMAT,
                 url.getColonSeparatedKey(), invocation.getMethodName(), "sk", currentTimeMillis);
         String sign = SignatureUtils.sign(originalParams, requestString, "sk");
-        when(invocation.getAttachment(Constants.REQUEST_SIGNATURE_KEY)).thenReturn(sign);
+        when(invocation.getObjectAttachment(Constants.REQUEST_SIGNATURE_KEY)).thenReturn(sign);
 
         ProviderAuthFilter providerAuthFilter = new ProviderAuthFilter();
         Result result = providerAuthFilter.invoke(invoker, invocation);
@@ -170,7 +171,7 @@ class ProviderAuthFilterTest {
         Invocation invocation = mock(Invocation.class);
         when(invocation.getAttachment(Constants.AK_KEY)).thenReturn("ak");
         when(invocation.getAttachment(CommonConstants.CONSUMER)).thenReturn("test-consumer");
-        when(invocation.getAttachment(Constants.REQUEST_TIMESTAMP_KEY)).thenReturn(currentTimeMillis);
+        when(invocation.getAttachment(Constants.REQUEST_TIMESTAMP_KEY)).thenReturn(String.valueOf(currentTimeMillis));
         when(invocation.getMethodName()).thenReturn(method);
         when(invoker.getUrl()).thenReturn(url);
 

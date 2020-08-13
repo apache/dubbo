@@ -42,7 +42,7 @@ There's a [README](https://github.com/apache/dubbo-samples/tree/master/java/dubb
 
 ```xml
 <properties>
-    <dubbo.version>2.7.5</dubbo.version>
+    <dubbo.version>2.7.8</dubbo.version>
 </properties>
     
 <dependencies>
@@ -65,12 +65,12 @@ There's a [README](https://github.com/apache/dubbo-samples/tree/master/java/dubb
 ```java
 package org.apache.dubbo.samples.api;
 
-public interface GreetingService {
+public interface GreetingsService {
     String sayHi(String name);
 }
 ```
 
-*See [api/GreetingService.java](https://github.com/apache/dubbo-samples/blob/master/dubbo-samples-api/src/main/java/org/apache/dubbo/samples/api/GreetingsService.java) on GitHub.*
+*See [api/GreetingsService.java](https://github.com/apache/dubbo-samples/blob/master/java/dubbo-samples-api/src/main/java/org/apache/dubbo/samples/api/GreetingsService.java) on GitHub.*
 
 ### Implement service interface for the provider
 
@@ -87,7 +87,7 @@ public class GreetingsServiceImpl implements GreetingsService {
 }
 ```
 
-*See [provider/GreetingServiceImpl.java](https://github.com/apache/dubbo-samples/blob/master/dubbo-samples-api/src/main/java/org/apache/dubbo/samples/provider/GreetingsServiceImpl.java) on GitHub.*
+*See [provider/GreetingsServiceImpl.java](https://github.com/apache/dubbo-samples/blob/master/java/dubbo-samples-api/src/main/java/org/apache/dubbo/samples/provider/GreetingsServiceImpl.java) on GitHub.*
 
 ### Start service provider
 
@@ -119,7 +119,7 @@ public class Application {
 }
 ```
 
-*See [provider/Application.java](https://github.com/apache/dubbo-samples/blob/master/dubbo-samples-api/src/main/java/org/apache/dubbo/samples/provider/Application.java) on GitHub.*
+*See [provider/Application.java](https://github.com/apache/dubbo-samples/blob/master/java/dubbo-samples-api/src/main/java/org/apache/dubbo/samples/provider/Application.java) on GitHub.*
 
 ### Build and run the provider
 
@@ -153,7 +153,7 @@ public class Application {
     }
 }
 ```
-*See [consumer/Application.java](https://github.com/apache/dubbo-samples/blob/master/dubbo-samples-api/src/main/java/org/apache/dubbo/samples/client/Application.java) on GitHub.*
+*See [consumer/Application.java](https://github.com/apache/dubbo-samples/blob/master/java/dubbo-samples-api/src/main/java/org/apache/dubbo/samples/client/Application.java) on GitHub.*
 
 ### Build and run the consumer
 

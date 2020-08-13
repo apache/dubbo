@@ -59,6 +59,11 @@ public interface Constants {
     String REGISTRY_FILESAVE_SYNC_KEY = "save.file";
 
     /**
+     * Whether to cache locally, default is true
+     */
+    String REGISTRY__LOCAL_FILE_CACHE_ENABLED = "file.cache";
+
+    /**
      * Reconnection period in milliseconds for register center
      */
     String REGISTRY_RECONNECT_PERIOD_KEY = "reconnect.period";

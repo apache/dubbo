@@ -27,7 +27,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * The inteface to synthesize the subscribed {@link URL URLs}
+ * The interface to synthesize the subscribed {@link URL URLs}
  *
  * @since 2.7.5
  */

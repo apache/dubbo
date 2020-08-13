@@ -16,11 +16,22 @@
  */
 package org.apache.dubbo.metadata;
 
-public class MetadataConstants {
-    public static final String KEY_SEPARATOR = ":";
-    public static final String DEFAULT_PATH_TAG = "metadata";
-    public static final String KEY_REVISON_PREFIX = "revision";
-    public static final String META_DATA_STORE_TAG = ".metaData";
-    public static final String SERVICE_META_DATA_STORE_TAG = ".smd";
-    public static final String CONSUMER_META_DATA_STORE_TAG = ".cmd";
+public interface MetadataConstants {
+    String KEY_SEPARATOR = ":";
+    String DEFAULT_PATH_TAG = "metadata";
+    String KEY_REVISON_PREFIX = "revision";
+    String META_DATA_STORE_TAG = ".metaData";
+    String SERVICE_META_DATA_STORE_TAG = ".smd";
+    String CONSUMER_META_DATA_STORE_TAG = ".cmd";
+
+    /**
+     * @since 2.7.8
+     */
+    String EXPORTED_URLS_TAG = "exported-urls";
+
+    /**
+     * @since 2.7.8
+     */
+    String SUBSCRIBED_URLS_TAG = "subscribed-urls";
+
 }

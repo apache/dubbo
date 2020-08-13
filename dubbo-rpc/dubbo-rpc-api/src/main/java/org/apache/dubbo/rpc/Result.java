@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.rpc;
 
+import org.apache.dubbo.common.Experimental;
+
 import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -90,37 +92,83 @@ public interface Result extends Serializable {
      *
      * @return attachments.
      */
-    Map<String, Object> getAttachments();
+    Map<String, String> getAttachments();
+
+    /**
+     * get attachments.
+     *
+     * @return attachments.
+     */
+    @Experimental("Experiment api for supporting Object transmission")
+    Map<String, Object> getObjectAttachments();
 
     /**
      * Add the specified map to existing attachments in this instance.
      *
      * @param map
      */
-    void addAttachments(Map<String, Object> map);
+    void addAttachments(Map<String, String> map);
+
+    /**
+     * Add the specified map to existing attachments in this instance.
+     *
+     * @param map
+     */
+    @Experimental("Experiment api for supporting Object transmission")
+    void addObjectAttachments(Map<String, Object> map);
 
     /**
      * Replace the existing attachments with the specified param.
      *
      * @param map
      */
-    void setAttachments(Map<String, Object> map);
+    void setAttachments(Map<String, String> map);
+
+    /**
+     * Replace the existing attachments with the specified param.
+     *
+     * @param map
+     */
+    @Experimental("Experiment api for supporting Object transmission")
+    void setObjectAttachments(Map<String, Object> map);
 
     /**
      * get attachment by key.
      *
      * @return attachment value.
      */
-    Object getAttachment(String key);
+    String getAttachment(String key);
+
+    /**
+     * get attachment by key.
+     *
+     * @return attachment value.
+     */
+    @Experimental("Experiment api for supporting Object transmission")
+    Object getObjectAttachment(String key);
 
     /**
      * get attachment by key with default value.
      *
      * @return attachment value.
      */
-    Object getAttachment(String key, Object defaultValue);
+    String getAttachment(String key, String defaultValue);
 
+    /**
+     * get attachment by key with default value.
+     *
+     * @return attachment value.
+     */
+    @Experimental("Experiment api for supporting Object transmission")
+    Object getObjectAttachment(String key, Object defaultValue);
+
+    void setAttachment(String key, String value);
+
+    @Experimental("Experiment api for supporting Object transmission")
     void setAttachment(String key, Object value);
+
+    @Experimental("Experiment api for supporting Object transmission")
+    void setObjectAttachment(String key, Object value);
 
     /**
      * Add a callback which can be triggered when the RPC call finishes.

@@ -84,7 +84,7 @@ public class DemoServiceImpl implements DemoService {
         return arg1.toString();
     }
 
-    public byte getbyte(byte arg) {
+    public int getInt(int arg) {
         return arg;
     }
 

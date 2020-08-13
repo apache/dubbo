@@ -17,6 +17,8 @@
 package org.apache.dubbo.registry.nacos;
 
 
+import com.alibaba.nacos.api.common.Constants;
+import com.google.common.collect.Lists;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.logger.Logger;
@@ -25,6 +27,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
+import org.apache.dubbo.registry.nacos.util.NacosInstanceManageUtil;
 import org.apache.dubbo.registry.support.FailbackRegistry;
 
 import com.alibaba.nacos.api.exception.NacosException;
@@ -136,7 +139,8 @@ public class NacosRegistry extends FailbackRegistry {
         execute(namingService -> {
             Set<String> serviceNames = getServiceNames(url, null);
             for (String serviceName : serviceNames) {
-                List<Instance> instances = namingService.getAllInstances(serviceName);
+                List<Instance> instances = namingService.getAllInstances(serviceName,
+                        getUrl().getParameter(GROUP_KEY, Constants.DEFAULT_GROUP));
                 urls.addAll(buildURLs(url, instances));
             }
         });
@@ -147,7 +151,14 @@ public class NacosRegistry extends FailbackRegistry {
     public void doRegister(URL url) {
         final String serviceName = getServiceName(url);
         final Instance instance = createInstance(url);
-        execute(namingService -> namingService.registerInstance(serviceName, instance));
+        /**
+         *  namingService.registerInstance with {@link org.apache.dubbo.registry.support.AbstractRegistry#registryUrl}
+         *  default {@link DEFAULT_GROUP}
+         *
+         * in https://github.com/apache/dubbo/issues/5978
+         */
+        execute(namingService -> namingService.registerInstance(serviceName,
+                getUrl().getParameter(GROUP_KEY, Constants.DEFAULT_GROUP), instance));
     }
 
     @Override
@@ -155,24 +166,77 @@ public class NacosRegistry extends FailbackRegistry {
         execute(namingService -> {
             String serviceName = getServiceName(url);
             Instance instance = createInstance(url);
-            namingService.deregisterInstance(serviceName, instance.getIp(), instance.getPort());
+            namingService.deregisterInstance(serviceName,
+                    getUrl().getParameter(GROUP_KEY, Constants.DEFAULT_GROUP),
+                    instance.getIp()
+                    , instance.getPort());
         });
     }
 
     @Override
     public void doSubscribe(final URL url, final NotifyListener listener) {
         Set<String> serviceNames = getServiceNames(url, listener);
+
+        //Set corresponding serviceNames for easy search later
+        if (isServiceNamesWithCompatibleMode(url)) {
+            for (String serviceName : serviceNames) {
+                NacosInstanceManageUtil.setCorrespondingServiceNames(serviceName, serviceNames);
+            }
+        }
+
         doSubscribe(url, listener, serviceNames);
     }
 
     private void doSubscribe(final URL url, final NotifyListener listener, final Set<String> serviceNames) {
         execute(namingService -> {
-            for (String serviceName : serviceNames) {
-                List<Instance> instances = namingService.getAllInstances(serviceName);
-                notifySubscriber(url, listener, instances);
-                subscribeEventListener(serviceName, url, listener);
+            if (isServiceNamesWithCompatibleMode(url)) {
+                List<Instance> allCorrespondingInstanceList = Lists.newArrayList();
+
+                /**
+                 * Get all instances with serviceNames to avoid instance overwrite and but with empty instance mentioned
+                 * in https://github.com/apache/dubbo/issues/5885 and https://github.com/apache/dubbo/issues/5899
+                 *
+                 * namingService.getAllInstances with {@link org.apache.dubbo.registry.support.AbstractRegistry#registryUrl}
+                 * default {@link DEFAULT_GROUP}
+                 *
+                 * in https://github.com/apache/dubbo/issues/5978
+                 */
+                for (String serviceName : serviceNames) {
+                    List<Instance> instances = namingService.getAllInstances(serviceName,
+                            getUrl().getParameter(GROUP_KEY, Constants.DEFAULT_GROUP));
+                    NacosInstanceManageUtil.initOrRefreshServiceInstanceList(serviceName, instances);
+                    allCorrespondingInstanceList.addAll(instances);
+                }
+                notifySubscriber(url, listener, allCorrespondingInstanceList);
+                for (String serviceName : serviceNames) {
+                    subscribeEventListener(serviceName, url, listener);
+                }
+            } else {
+                List<Instance> instances = new LinkedList<>();
+                for (String serviceName : serviceNames) {
+                    instances.addAll(namingService.getAllInstances(serviceName
+                            , getUrl().getParameter(GROUP_KEY, Constants.DEFAULT_GROUP)));
+                    notifySubscriber(url, listener, instances);
+                    subscribeEventListener(serviceName, url, listener);
+                }
             }
+
         });
+    }
+
+    /**
+     * Since 2.7.6 the legacy service name will be added to serviceNames
+     * to fix bug with https://github.com/apache/dubbo/issues/5442
+     *
+     * @param url
+     * @return
+     */
+    private boolean isServiceNamesWithCompatibleMode(final URL url) {
+        if (!isAdminProtocol(url) && createServiceName(url).isConcrete()) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @Override
@@ -213,7 +277,11 @@ public class NacosRegistry extends FailbackRegistry {
             serviceNames = new LinkedHashSet<>();
             serviceNames.add(serviceName.toString());
             // Add the legacy service name since 2.7.6
-            serviceNames.add(getLegacySubscribedServiceName(url));
+            String legacySubscribedServiceName = getLegacySubscribedServiceName(url);
+            if (!serviceName.toString().equals(legacySubscribedServiceName)) {
+                //avoid duplicated service names
+                serviceNames.add(legacySubscribedServiceName);
+            }
         } else {
             serviceNames = filterServiceNames(serviceName);
         }
@@ -226,7 +294,8 @@ public class NacosRegistry extends FailbackRegistry {
 
         execute(namingService -> {
 
-            serviceNames.addAll(namingService.getServicesOfServer(1, Integer.MAX_VALUE).getData()
+            serviceNames.addAll(namingService.getServicesOfServer(1, Integer.MAX_VALUE,
+                    getUrl().getParameter(GROUP_KEY, Constants.DEFAULT_GROUP)).getData()
                     .stream()
                     .map(NacosServiceName::new)
                     .filter(serviceName::isCompatible)
@@ -305,7 +374,8 @@ public class NacosRegistry extends FailbackRegistry {
         execute(namingService -> {
 
             int pageIndex = 1;
-            ListView<String> listView = namingService.getServicesOfServer(pageIndex, PAGINATION_SIZE);
+            ListView<String> listView = namingService.getServicesOfServer(pageIndex, PAGINATION_SIZE,
+                    getUrl().getParameter(GROUP_KEY, Constants.DEFAULT_GROUP));
             // First page data
             List<String> firstPageData = listView.getData();
             // Append first page into list
@@ -321,7 +391,8 @@ public class NacosRegistry extends FailbackRegistry {
             }
             // If more than 1 page
             while (pageIndex < pageNumbers) {
-                listView = namingService.getServicesOfServer(++pageIndex, PAGINATION_SIZE);
+                listView = namingService.getServicesOfServer(++pageIndex, PAGINATION_SIZE,
+                        getUrl().getParameter(GROUP_KEY, Constants.DEFAULT_GROUP));
                 serviceNames.addAll(listView.getData());
             }
 
@@ -421,10 +492,24 @@ public class NacosRegistry extends FailbackRegistry {
         EventListener eventListener = event -> {
             if (event instanceof NamingEvent) {
                 NamingEvent e = (NamingEvent) event;
-                notifySubscriber(url, listener, e.getInstances());
+                List<Instance> instances = e.getInstances();
+
+
+                if (isServiceNamesWithCompatibleMode(url)) {
+                    /**
+                     * Get all instances with corresponding serviceNames to avoid instance overwrite and but with empty instance mentioned
+                     * in https://github.com/apache/dubbo/issues/5885 and https://github.com/apache/dubbo/issues/5899
+                     */
+                    NacosInstanceManageUtil.initOrRefreshServiceInstanceList(serviceName, instances);
+                    instances = NacosInstanceManageUtil.getAllCorrespondingServiceInstanceList(serviceName);
+                }
+
+                notifySubscriber(url, listener, instances);
             }
         };
-        namingService.subscribe(serviceName, eventListener);
+        namingService.subscribe(serviceName,
+                getUrl().getParameter(GROUP_KEY, Constants.DEFAULT_GROUP),
+                eventListener);
     }
 
     /**

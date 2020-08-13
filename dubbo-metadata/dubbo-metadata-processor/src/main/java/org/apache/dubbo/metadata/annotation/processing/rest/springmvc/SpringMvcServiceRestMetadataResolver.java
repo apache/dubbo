@@ -34,7 +34,7 @@ import static java.util.stream.Stream.of;
 import static org.apache.dubbo.common.function.Streams.filterFirst;
 import static org.apache.dubbo.common.utils.ArrayUtils.isEmpty;
 import static org.apache.dubbo.common.utils.ArrayUtils.isNotEmpty;
-import static org.apache.dubbo.common.utils.HttpUtils.buildPath;
+import static org.apache.dubbo.common.utils.PathUtils.buildPath;
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.findAnnotation;
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.findMetaAnnotation;
 import static org.apache.dubbo.metadata.annotation.processing.util.AnnotationUtils.getAllAnnotations;

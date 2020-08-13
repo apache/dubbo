@@ -51,7 +51,7 @@ public class NetUtilsTest {
     public void testGetAvailablePort() throws Exception {
         assertThat(NetUtils.getAvailablePort(), greaterThan(0));
         assertThat(NetUtils.getAvailablePort(12345), greaterThanOrEqualTo(12345));
-        assertThat(NetUtils.getAvailablePort(-1), greaterThanOrEqualTo(30000));
+        assertThat(NetUtils.getAvailablePort(-1), greaterThanOrEqualTo(0));
     }
 
     @Test
@@ -310,5 +310,11 @@ public class NetUtilsTest {
         assertEquals(NetUtils.getLocalHost(), NetUtils.getLocalAddress().getHostAddress());
         assertTrue(NetUtils.isValidLocalHost(NetUtils.getLocalHost()));
         assertFalse(NetUtils.isInvalidLocalHost(NetUtils.getLocalHost()));
+    }
+
+    @Test
+    public void testIsMulticastAddress() {
+        assertTrue(NetUtils.isMulticastAddress("224.0.0.1"));
+        assertFalse(NetUtils.isMulticastAddress("127.0.0.1"));
     }
 }

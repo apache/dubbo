@@ -17,38 +17,23 @@
 package org.apache.dubbo.metadata.store;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.metadata.URLRevisionResolver;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
-import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
-import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
-import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
-import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.support.ProtocolUtils;
 
-import java.util.Iterator;
-import java.util.Set;
 import java.util.SortedSet;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.PID_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
-import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 
 /**
  * The {@link WritableMetadataService} implementation stores the metadata of Dubbo services in metadata center when they
@@ -57,15 +42,15 @@ import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
  *
  * @since 2.7.5
  */
-public class RemoteWritableMetadataService implements WritableMetadataService {
+public class RemoteWritableMetadataService extends AbstractAbstractWritableMetadataService {
 
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
-    private volatile String exportedRevision;
-    private volatile String subscribedRevision;
-    private InMemoryWritableMetadataService writableMetadataService;
+    private final InMemoryWritableMetadataService writableMetadataServiceDelegate;
 
-    public RemoteWritableMetadataService(InMemoryWritableMetadataService writableMetadataService) {
-        this.writableMetadataService = writableMetadataService;
+    private final URLRevisionResolver urlRevisionResolver;
+
+    public RemoteWritableMetadataService() {
+        this.writableMetadataServiceDelegate = (InMemoryWritableMetadataService) WritableMetadataService.getDefaultExtension();
+        urlRevisionResolver = URLRevisionResolver.INSTANCE;
     }
 
     public MetadataReport getMetadataReport() {
@@ -73,173 +58,65 @@ public class RemoteWritableMetadataService implements WritableMetadataService {
     }
 
     @Override
-    public void publishServiceDefinition(URL providerUrl) {
-        try {
-            String interfaceName = providerUrl.getParameter(INTERFACE_KEY);
-            if (StringUtils.isNotEmpty(interfaceName)
-                    && !ProtocolUtils.isGeneric(providerUrl.getParameter(GENERIC_KEY))) {
-                Class interfaceClass = Class.forName(interfaceName);
-                ServiceDefinition serviceDefinition = ServiceDefinitionBuilder.build(interfaceClass);
-                getMetadataReport().storeProviderMetadata(new MetadataIdentifier(providerUrl.getServiceInterface(),
-                        providerUrl.getParameter(VERSION_KEY), providerUrl.getParameter(GROUP_KEY),
-                        null, null), serviceDefinition);
-                return;
-            }
-            logger.error("publishProvider interfaceName is empty . providerUrl: " + providerUrl.toFullString());
-        } catch (ClassNotFoundException e) {
-            //ignore error
-            logger.error("publishProvider getServiceDescriptor error. providerUrl: " + providerUrl.toFullString(), e);
-        }
-
-        // backward compatibility
-        publishProvider(providerUrl);
-    }
-
-    @Deprecated
-    public void publishProvider(URL providerUrl) throws RpcException {
-        //first add into the list
-        // remove the individul param
-        providerUrl = providerUrl.removeParameters(PID_KEY, TIMESTAMP_KEY, Constants.BIND_IP_KEY,
-                Constants.BIND_PORT_KEY, TIMESTAMP_KEY);
-
-        try {
-            String interfaceName = providerUrl.getParameter(INTERFACE_KEY);
-            if (StringUtils.isNotEmpty(interfaceName)) {
-                Class interfaceClass = Class.forName(interfaceName);
-                FullServiceDefinition fullServiceDefinition = ServiceDefinitionBuilder.buildFullDefinition(interfaceClass,
-                        providerUrl.getParameters());
-                getMetadataReport().storeProviderMetadata(new MetadataIdentifier(providerUrl.getServiceInterface(),
-                        providerUrl.getParameter(VERSION_KEY), providerUrl.getParameter(GROUP_KEY),
-                        PROVIDER_SIDE, providerUrl.getParameter(APPLICATION_KEY)), fullServiceDefinition);
-                return;
-            }
-            logger.error("publishProvider interfaceName is empty . providerUrl: " + providerUrl.toFullString());
-        } catch (ClassNotFoundException e) {
-            //ignore error
-            logger.error("publishProvider getServiceDescriptor error. providerUrl: " + providerUrl.toFullString(), e);
-        }
-    }
-
-    @Deprecated
-    public void publishConsumer(URL consumerURL) throws RpcException {
-        consumerURL = consumerURL.removeParameters(PID_KEY, TIMESTAMP_KEY, Constants.BIND_IP_KEY,
-                Constants.BIND_PORT_KEY, TIMESTAMP_KEY);
+    protected void publishConsumerParameters(URL consumerURL) {
         getMetadataReport().storeConsumerMetadata(new MetadataIdentifier(consumerURL.getServiceInterface(),
                 consumerURL.getParameter(VERSION_KEY), consumerURL.getParameter(GROUP_KEY), CONSUMER_SIDE,
                 consumerURL.getParameter(APPLICATION_KEY)), consumerURL.getParameters());
     }
 
     @Override
+    protected void publishProviderServiceDefinition(URL providerURL) {
+        try {
+            String interfaceName = providerURL.getParameter(INTERFACE_KEY);
+            if (StringUtils.isNotEmpty(interfaceName)) {
+                Class interfaceClass = Class.forName(interfaceName);
+                FullServiceDefinition fullServiceDefinition = ServiceDefinitionBuilder.buildFullDefinition(interfaceClass,
+                        providerURL.getParameters());
+                getMetadataReport().storeProviderMetadata(new MetadataIdentifier(providerURL.getServiceInterface(),
+                        providerURL.getParameter(VERSION_KEY), providerURL.getParameter(GROUP_KEY),
+                        PROVIDER_SIDE, providerURL.getParameter(APPLICATION_KEY)), fullServiceDefinition);
+                return;
+            }
+            logger.error("publishProvider interfaceName is empty . url: " + providerURL.toFullString());
+        } catch (ClassNotFoundException e) {
+            //ignore error
+            logger.error("publishProvider getServiceDescriptor error. url: " + providerURL.toFullString(), e);
+        }
+    }
+
+    @Override
     public boolean exportURL(URL url) {
-        return true;
+        return writableMetadataServiceDelegate.exportURL(url);
     }
 
     @Override
     public boolean unexportURL(URL url) {
-        ServiceMetadataIdentifier metadataIdentifier = new ServiceMetadataIdentifier(url);
-        metadataIdentifier.setRevision(exportedRevision);
-        metadataIdentifier.setProtocol(url.getProtocol());
-        return throwableAction(getMetadataReport()::removeServiceMetadata, metadataIdentifier);
+        return writableMetadataServiceDelegate.unexportURL(url);
     }
 
     @Override
     public boolean subscribeURL(URL url) {
-        return true;
+        return writableMetadataServiceDelegate.subscribeURL(url);
     }
 
     @Override
     public boolean unsubscribeURL(URL url) {
-        return true;
+        return writableMetadataServiceDelegate.unsubscribeURL(url);
     }
-
-    @Override
-    public boolean refreshMetadata(String exportedRevision, String subscribedRevision) {
-        boolean result = true;
-        if (!StringUtils.isEmpty(exportedRevision) && !exportedRevision.equals(this.exportedRevision)) {
-            this.exportedRevision = exportedRevision;
-            boolean executeResult = saveServiceMetadata();
-            if (!executeResult) {
-                result = false;
-            }
-        }
-        if (!StringUtils.isEmpty(subscribedRevision) && !subscribedRevision.equals(this.subscribedRevision)
-                && CollectionUtils.isNotEmpty(writableMetadataService.getSubscribedURLs())) {
-            this.subscribedRevision = subscribedRevision;
-            SubscriberMetadataIdentifier metadataIdentifier = new SubscriberMetadataIdentifier();
-            metadataIdentifier.setApplication(serviceName());
-            metadataIdentifier.setRevision(subscribedRevision);
-            boolean executeResult = throwableAction(getMetadataReport()::saveSubscribedData, metadataIdentifier,
-                    writableMetadataService.getSubscribedURLs());
-            if (!executeResult) {
-                result = false;
-            }
-        }
-        return result;
-    }
-
-    private boolean saveServiceMetadata() {
-        boolean result = true;
-        for (SortedSet<URL> urls : writableMetadataService.exportedServiceURLs.values()) {
-            Iterator<URL> iterator = urls.iterator();
-            while (iterator.hasNext()) {
-                URL url = iterator.next();
-                // refresh revision in urls
-                ServiceMetadataIdentifier metadataIdentifier = new ServiceMetadataIdentifier(url);
-                metadataIdentifier.setRevision(exportedRevision);
-                metadataIdentifier.setProtocol(url.getProtocol());
-
-                boolean tmpResult = throwableAction(getMetadataReport()::saveServiceMetadata, metadataIdentifier, url);
-                if (!tmpResult) result = tmpResult;
-            }
-        }
-        return result;
-    }
-
 
     @Override
     public SortedSet<String> getExportedURLs(String serviceInterface, String group, String version, String protocol) {
-        return null;
-    }
-
-    @Override
-    public String getServiceDefinition(String interfaceName, String version, String group) {
-        return null;
+        return writableMetadataServiceDelegate.getExportedURLs(serviceInterface, group, version, protocol);
     }
 
     @Override
     public String getServiceDefinition(String serviceKey) {
-        return null;
+        return writableMetadataServiceDelegate.getServiceDefinition(serviceKey);
     }
 
-    boolean throwableAction(BiConsumer<ServiceMetadataIdentifier, URL> consumer,
-                            ServiceMetadataIdentifier metadataIdentifier, URL url) {
-        try {
-            consumer.accept(metadataIdentifier, url);
-        } catch (Exception e) {
-            logger.error("Failed to execute consumer, url is: " + url);
-            return false;
-        }
-        return true;
+    @Override
+    public SortedSet<String> getSubscribedURLs() {
+        return writableMetadataServiceDelegate.getSubscribedURLs();
     }
 
-    boolean throwableAction(BiConsumer<SubscriberMetadataIdentifier, Set<String>> consumer,
-                            SubscriberMetadataIdentifier metadataIdentifier, Set<String> urls) {
-        try {
-            consumer.accept(metadataIdentifier, urls);
-        } catch (Exception e) {
-            logger.error("Failed to execute consumer, url is: " + urls);
-            return false;
-        }
-        return true;
-    }
-
-    boolean throwableAction(Consumer<ServiceMetadataIdentifier> consumer, ServiceMetadataIdentifier metadataIdentifier) {
-        try {
-            consumer.accept(metadataIdentifier);
-        } catch (Exception e) {
-            logger.error("Failed to remove url metadata to remote center, metadataIdentifier is: " + metadataIdentifier);
-            return false;
-        }
-        return true;
-    }
 }

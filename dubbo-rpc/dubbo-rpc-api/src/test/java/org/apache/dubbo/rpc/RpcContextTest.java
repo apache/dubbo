@@ -88,13 +88,13 @@ public class RpcContextTest {
     public void testAttachments() {
 
         RpcContext context = RpcContext.getContext();
-        Map<String, Object> map = new HashMap<String, Object>();
+        Map<String, Object> map = new HashMap<>();
         map.put("_11", "1111");
         map.put("_22", "2222");
         map.put(".33", "3333");
 
-        context.setAttachments(map);
-        Assertions.assertEquals(map, context.getAttachments());
+        context.setObjectAttachments(map);
+        Assertions.assertEquals(map, context.getObjectAttachments());
 
         Assertions.assertEquals("1111", context.getAttachment("_11"));
         context.setAttachment("_11", "11.11");
@@ -155,6 +155,7 @@ public class RpcContextTest {
 
         rpcContext.stopAsync();
         Assertions.assertTrue(rpcContext.isAsyncStarted());
+        RpcContext.removeContext();
     }
 
     @Test
@@ -175,5 +176,29 @@ public class RpcContextTest {
         rpcFuture = rpcFuture.exceptionally(throwable -> "mock success");
 
         Assertions.assertEquals("mock success", rpcFuture.join());
+    }
+
+    @Test
+    public void testObjectAttachment() {
+        RpcContext rpcContext = RpcContext.getContext();
+
+        rpcContext.setAttachment("objectKey1", "value1");
+        rpcContext.setAttachment("objectKey2", "value2");
+        rpcContext.setAttachment("objectKey3", 1); // object
+
+        Assertions.assertEquals("value1", rpcContext.getObjectAttachment("objectKey1"));
+        Assertions.assertEquals("value2", rpcContext.getAttachment("objectKey2"));
+        Assertions.assertNull(rpcContext.getAttachment("objectKey3"));
+        Assertions.assertEquals(1, rpcContext.getObjectAttachment("objectKey3"));
+        Assertions.assertEquals(3, rpcContext.getObjectAttachments().size());
+
+        rpcContext.clearAttachments();
+        Assertions.assertEquals(0, rpcContext.getObjectAttachments().size());
+
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("mapKey1", 1);
+        map.put("mapKey2", "mapValue2");
+        rpcContext.setObjectAttachments(map);
+        Assertions.assertEquals(map, rpcContext.getObjectAttachments());
     }
 }

@@ -17,6 +17,7 @@
 package org.apache.dubbo.remoting.transport.netty;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
@@ -42,7 +43,7 @@ public class ThreadNameTest {
 
     @BeforeEach
     public void before() throws Exception {
-        int port = 55555;
+        int port = NetUtils.getAvailablePort();
         serverURL = URL.valueOf("netty://localhost?side=provider").setPort(port);
         clientURL = URL.valueOf("netty://localhost?side=consumer").setPort(port);
 

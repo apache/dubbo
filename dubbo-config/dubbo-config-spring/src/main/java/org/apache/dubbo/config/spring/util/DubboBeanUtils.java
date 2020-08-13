@@ -61,7 +61,7 @@ public interface DubboBeanUtils {
         registerInfrastructureBean(registry, DubboBootstrapApplicationListener.BEAN_NAME,
                 DubboBootstrapApplicationListener.class);
 
-        // ince 2.7.6 Register DubboConfigDefaultPropertyValueBeanPostProcessor as an infrastructure Bean
+        // Since 2.7.6 Register DubboConfigDefaultPropertyValueBeanPostProcessor as an infrastructure Bean
         registerInfrastructureBean(registry, DubboConfigDefaultPropertyValueBeanPostProcessor.BEAN_NAME,
                 DubboConfigDefaultPropertyValueBeanPostProcessor.class);
     }

@@ -141,7 +141,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         }
 
         shouldRegister = !ANY_VALUE.equals(url.getServiceInterface()) && url.getParameter(REGISTER_KEY, true);
-        shouldSimplified = !url.getParameter(SIMPLIFIED_KEY, false);
+        shouldSimplified = url.getParameter(SIMPLIFIED_KEY, false);
         if (url.getServiceKey() == null || url.getServiceKey().length() == 0) {
             throw new IllegalArgumentException("registry serviceKey is null.");
         }
@@ -748,7 +748,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         @Override
         protected void notifyOverrides() {
             // to notify configurator/router changes
-            directory.refreshInvoker(Collections.emptyList());
+            directory.refreshOverrideAndInvoker(Collections.emptyList());
         }
     }
 
@@ -769,7 +769,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
         @Override
         protected void notifyOverrides() {
-            listeners.forEach(listener -> listener.refreshInvoker(Collections.emptyList()));
+            listeners.forEach(listener -> listener.refreshOverrideAndInvoker(Collections.emptyList()));
         }
     }
 

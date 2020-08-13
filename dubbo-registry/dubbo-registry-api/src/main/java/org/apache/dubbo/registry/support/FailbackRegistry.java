@@ -261,6 +261,25 @@ public abstract class FailbackRegistry extends AbstractRegistry {
     }
 
     @Override
+    public void reExportRegister(URL url) {
+        if (!acceptable(url)) {
+            logger.info("URL " + url + " will not be registered to Registry. Registry " + url + " does not accept service of this protocol type.");
+            return;
+        }
+        super.register(url);
+        removeFailedRegistered(url);
+        removeFailedUnregistered(url);
+        try {
+            // Sending a registration request to the server side
+            doRegister(url);
+        } catch (Exception e) {
+            if (!(e instanceof SkipFailbackWrapperException)) {
+                throw new IllegalStateException("Failed to register (re-export) " + url + " to registry " + getUrl().getAddress() + ", cause: " + e.getMessage(), e);
+            }
+        }
+    }
+
+    @Override
     public void unregister(URL url) {
         super.unregister(url);
         removeFailedRegistered(url);
@@ -287,6 +306,21 @@ public abstract class FailbackRegistry extends AbstractRegistry {
 
             // Record a failed registration request to a failed list, retry regularly
             addFailedUnregistered(url);
+        }
+    }
+
+    @Override
+    public void reExportUnregister(URL url) {
+        super.unregister(url);
+        removeFailedRegistered(url);
+        removeFailedUnregistered(url);
+        try {
+            // Sending a cancellation request to the server side
+            doUnregister(url);
+        } catch (Exception e) {
+            if (!(e instanceof SkipFailbackWrapperException)) {
+                throw new IllegalStateException("Failed to unregister(re-export) " + url + " to registry " + getUrl().getAddress() + ", cause: " + e.getMessage(), e);
+            }
         }
     }
 
