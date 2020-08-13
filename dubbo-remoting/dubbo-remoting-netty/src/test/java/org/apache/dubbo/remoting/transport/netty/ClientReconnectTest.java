@@ -47,7 +47,7 @@ public class ClientReconnectTest {
             Client client = startClient(port, 200);
             Assertions.assertFalse(client.isConnected());
             RemotingServer server = startServer(port);
-            for (int i = 0; i < 100 && !client.isConnected(); i++) {
+            for (int i = 0; i < 1000 && !client.isConnected(); i++) {
                 Thread.sleep(10);
             }
             Assertions.assertTrue(client.isConnected());
