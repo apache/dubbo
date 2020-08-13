@@ -16,20 +16,21 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.command.annotation.Cmd;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ServiceRepository;
 
-@Cmd(name = "ready", summary = "Judge if service is ready to work? ")
-public class Ready implements BaseCommand {
-
+@Cmd(name = "startup", summary = "Judge if service has started? ")
+public class Startup implements BaseCommand {
     @Override
     public String execute(CommandContext commandContext, String[] args) {
-        ServiceRepository serviceRepository = ApplicationModel.getServiceRepository();
-
-        return "true";
+        if (DubboBootstrap.getInstance().getStartup()) {
+            commandContext.setHttpCode(200);
+            return "true";
+        } else {
+            commandContext.setHttpCode(503);
+            return "false";
+        }
     }
-
 }

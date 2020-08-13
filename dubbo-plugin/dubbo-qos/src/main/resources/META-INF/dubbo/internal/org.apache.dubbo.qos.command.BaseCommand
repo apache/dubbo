@@ -4,5 +4,6 @@ quit=org.apache.dubbo.qos.command.impl.Quit
 ls=org.apache.dubbo.qos.command.impl.Ls
 offline=org.apache.dubbo.qos.command.impl.Offline
 ready=org.apache.dubbo.qos.command.impl.Ready
+startup=org.apache.dubbo.qos.command.impl.Startup
 version=org.apache.dubbo.qos.command.impl.Version
 publish-metadata=org.apache.dubbo.qos.command.impl.PublishMetadata
