@@ -484,7 +484,7 @@ public class RegistryDirectoryTest {
         registryDirectory.notify(serviceUrls);
 
         // Object $invoke(String method, String[] parameterTypes, Object[] args) throws GenericException;
-        invocation = new RpcInvocation($INVOKE, GenericService.class.getName(), new Class[]{String.class, String[].class, Object[].class},
+        invocation = new RpcInvocation($INVOKE, GenericService.class.getName(), "", new Class[]{String.class, String[].class, Object[].class},
                 new Object[]{"getXXX1", "", new Object[]{}});
 
         List<Invoker> invokers = registryDirectory.list(invocation);
@@ -511,7 +511,7 @@ public class RegistryDirectoryTest {
 
         registryDirectory.notify(serviceUrls);
 
-        invocation = new RpcInvocation($INVOKE, GenericService.class.getName(),
+        invocation = new RpcInvocation($INVOKE, GenericService.class.getName(), "",
                 new Class[]{String.class, String[].class, Object[].class},
                 new Object[]{"getXXX1", new String[]{"Enum"}, new Object[]{Param.MORGAN}});
 
