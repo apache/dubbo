@@ -35,16 +35,7 @@ import org.apache.dubbo.registry.client.metadata.SubscribedURLsSynthesizer;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 import org.apache.dubbo.registry.support.FailbackRegistry;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
@@ -459,9 +450,19 @@ public class ServiceDiscoveryRegistry implements Registry {
             if (CollectionUtils.isEmpty(newApps)) {
                 return;
             }
-            if (!CollectionUtils.equals(oldApps, newApps) && newApps.size() >= oldApps.size()) {
+
+            if (CollectionUtils.isEmpty(oldApps) && newApps.size() > 0) {
                 subscribeURLs(url, listener, newApps);
             }
+
+            for (String newAppName : newApps) {
+                if (!oldApps.contains(newAppName)) {
+                    subscribeURLs(url, listener, newApps);
+                    break;
+                }
+            }
+
+            oldApps = newApps;
         }
     }
 }

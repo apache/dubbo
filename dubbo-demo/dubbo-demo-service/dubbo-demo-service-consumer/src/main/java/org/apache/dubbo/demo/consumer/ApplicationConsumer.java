@@ -52,6 +52,7 @@ public class ApplicationConsumer {
             }
         }).start();
 
+/*
         while (true) {
             try {
                 CompletableFuture<String> hello = demoService.sayHelloAsync("world");
@@ -66,6 +67,6 @@ public class ApplicationConsumer {
             }
 
             Thread.sleep(1000);
-        }
+        }*/
     }
 }

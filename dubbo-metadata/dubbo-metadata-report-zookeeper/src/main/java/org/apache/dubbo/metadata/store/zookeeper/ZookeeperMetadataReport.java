@@ -163,14 +163,11 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
 
         if (null == listenerMap.get(path)) {
             ChildListener zkListener = new ChildListener() {
-                private Set<String> oldApps;
                 @Override
                 public void childChanged(String path, List<String> children) {
                     MappingChangedEvent event = new MappingChangedEvent();
                     event.setServiceKey(serviceKey);
-                    event.setOldApps(this.oldApps);
                     event.setApps(null != children ? new HashSet<>(children): null);
-                    this.oldApps = event.getApps();
                     listener.onEvent(event);
                 }
             };
