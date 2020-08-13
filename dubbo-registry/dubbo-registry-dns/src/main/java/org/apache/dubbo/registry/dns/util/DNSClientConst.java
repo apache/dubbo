@@ -14,22 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata;
+package org.apache.dubbo.registry.dns.util;
 
-public interface MetadataChangeListener {
-    /**
-     * Call when metadata in provider side update <p/>
-     * Used to notify consumer to update metadata of ServiceInstance
-     *
-     * @param metadata latest metadata
-     */
-    void onEvent(String metadata);
+public class DNSClientConst {
 
-    /**
-     * Echo test
-     * Used to check consumer still online
-     */
-    default String echo(String msg) {
-        return msg;
-    }
+    public final static String ADDRESS_PREFIX = "addressPrefix";
+
+    public final static String ADDRESS_SUFFIX = "addressSuffix";
+
+    public final static String POLLING_CYCLE = "pollingCycle";
+
+    public final static String ECHO_POLLING_CYCLE = "echoPollingCycle";
+
+    public final static String SCHEDULED_THREAD_POOL_SIZE = "scheduledThreadPoolSize";
+
 }
