@@ -65,21 +65,56 @@ import java.util.concurrent.TimeUnit;
 
 public class DNSServiceDiscovery implements ServiceDiscovery {
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private final ConcurrentHashMap<String, String> metadataMap = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<String, String> serviceInstanceRevisionMap = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<String, ScheduledFuture<?>> pollingExecutorMap = new ConcurrentHashMap<>();
+
+    /**
+     * Echo check if consumer is still work
+     * echo task may take a lot of time when consumer offline, create a new ScheduledThreadPool
+     */
     private final ScheduledExecutorService echoCheckExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-DNS-EchoCheck"));
+
+    // =================================== Provider side =================================== //
+    /**
+     * Local Cache of {@link ServiceInstance} Metadata
+     * <p>
+     * Key - {@link ServiceInstance} ID ( usually ip + port )
+     * Value - Json processed metadata string
+     */
+    private final ConcurrentHashMap<String, String> metadataMap = new ConcurrentHashMap<>();
+    /**
+     * Local Cache of Service's {@link ServiceInstance} list revision,
+     * used to check if {@link ServiceInstance} list has been updated
+     * <p>
+     * Key - ServiceName
+     * Value - a revision calculate from {@link List} of {@link ServiceInstance}
+     */
+    private final ConcurrentHashMap<String, String> serviceInstanceRevisionMap = new ConcurrentHashMap<>();
+    /**
+     * Polling task ScheduledFuture, used to stop task when destroy
+     */
+    private final ConcurrentHashMap<String, ScheduledFuture<?>> pollingExecutorMap = new ConcurrentHashMap<>();
+
+    // =================================== Consumer side =================================== //
     private URL registryURL;
-    private String addressPrefix;
     private String addressSuffix;
-    private long pollingCycle;
-    private Resolver resolver;
-    private boolean upgradeToTCP = false;
-    private ScheduledExecutorService pollingExecutorService;
-
     private ServiceInstance serviceInstance;
-
+    private long pollingCycle;
+    /**
+     * Local {@link ServiceInstance} Metadata's revision
+     */
     private String lastMetadataRevision;
+    /**
+     * DNS properties
+     */
+    private String addressPrefix;
+    private Resolver resolver;
+    /**
+     * mark if already upgrade to TCP protocol of resolver
+     */
+    private boolean upgradeToTCP = false;
+    /**
+     * Polling check provider ExecutorService
+     */
+    private ScheduledExecutorService pollingExecutorService;
 
     @Override
     public void initialize(URL registryURL) throws Exception {
@@ -91,9 +126,11 @@ public class DNSServiceDiscovery implements ServiceDiscovery {
         int scheduledThreadPoolSize = registryURL.getParameter(DNSClientConst.SCHEDULED_THREAD_POOL_SIZE, 1);
 
         String nameserver = registryURL.getHost();
+        // if nameserver is empty, use system default nameserver
         this.resolver = StringUtils.isEmpty(nameserver) ?
                 new ExtendedResolver() : new SimpleResolver(nameserver);
 
+        // polling task may take a lot of time, create a new ScheduledThreadPool
         pollingExecutorService = Executors.newScheduledThreadPool(scheduledThreadPoolSize, new NamedThreadFactory("Dubbo-DNS-EchoCheck"));
 
         // Echo check: test if consumer is offline, remove MetadataChangeListener,
@@ -146,6 +183,7 @@ public class DNSServiceDiscovery implements ServiceDiscovery {
     public void unregister(ServiceInstance serviceInstance) throws RuntimeException {
         this.serviceInstance = null;
 
+        // notify empty message to consumer
         WritableMetadataService metadataService = WritableMetadataService.getDefaultExtension();
         metadataService.exportServiceDiscoveryMetadata("");
         metadataService.getMetadataChangeListenerMap().forEach((consumerId, listener) -> listener.onEvent(""));
