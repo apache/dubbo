@@ -39,7 +39,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class MulticastRegistryTest {
 
     private String service = "org.apache.dubbo.test.injvmServie";
-    private URL registryUrl = URL.valueOf("multicast://246.255.255.255/");
+    private URL registryUrl = URL.valueOf("multicast://239.239.239.239/");
     private URL serviceUrl = URL.valueOf("dubbo://" + NetUtils.getLocalHost() + "/" + service
             + "?methods=test1,test2");
     private URL adminUrl = URL.valueOf("dubbo://" + NetUtils.getLocalHost() + "/*");
@@ -79,7 +79,7 @@ public class MulticastRegistryTest {
     @Test
     public void testGetCustomPort() {
         int port = NetUtils.getAvailablePort();
-        URL customPortUrl = URL.valueOf("multicast://239.255.255.255:" + port);
+        URL customPortUrl = URL.valueOf("multicast://239.239.239.239:" + port);
         MulticastRegistry multicastRegistry = new MulticastRegistry(customPortUrl);
         assertThat(multicastRegistry.getUrl().getPort(), is(port));
     }
@@ -132,6 +132,7 @@ public class MulticastRegistryTest {
     @Test
     public void testSubscribe() {
         // verify listener
+        registry.register(serviceUrl);
         registry.subscribe(consumerUrl, new NotifyListener() {
             @Override
             public void notify(List<URL> urls) {
