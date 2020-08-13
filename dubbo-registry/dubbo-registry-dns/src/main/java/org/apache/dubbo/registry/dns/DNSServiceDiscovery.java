@@ -64,7 +64,12 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 public class DNSServiceDiscovery implements ServiceDiscovery {
+
     private final Logger logger = LoggerFactory.getLogger(getClass());
+
+    private URL registryURL;
+
+    // =================================== Provider side =================================== //
 
     /**
      * Echo check if consumer is still work
@@ -72,7 +77,29 @@ public class DNSServiceDiscovery implements ServiceDiscovery {
      */
     private final ScheduledExecutorService echoCheckExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-DNS-EchoCheck"));
 
-    // =================================== Provider side =================================== //
+    private ServiceInstance serviceInstance;
+
+    /**
+     * Local {@link ServiceInstance} Metadata's revision
+     */
+    private String lastMetadataRevision;
+
+    // =================================== Consumer side =================================== //
+
+    /**
+     * DNS properties
+     */
+
+    private String addressPrefix;
+    private String addressSuffix;
+    private long pollingCycle;
+    private Resolver resolver;
+
+    /**
+     * mark if already upgrade to TCP protocol of resolver
+     */
+    private boolean upgradeToTCP = false;
+
     /**
      * Local Cache of {@link ServiceInstance} Metadata
      * <p>
@@ -80,6 +107,7 @@ public class DNSServiceDiscovery implements ServiceDiscovery {
      * Value - Json processed metadata string
      */
     private final ConcurrentHashMap<String, String> metadataMap = new ConcurrentHashMap<>();
+
     /**
      * Local Cache of Service's {@link ServiceInstance} list revision,
      * used to check if {@link ServiceInstance} list has been updated
@@ -88,29 +116,12 @@ public class DNSServiceDiscovery implements ServiceDiscovery {
      * Value - a revision calculate from {@link List} of {@link ServiceInstance}
      */
     private final ConcurrentHashMap<String, String> serviceInstanceRevisionMap = new ConcurrentHashMap<>();
+
     /**
      * Polling task ScheduledFuture, used to stop task when destroy
      */
     private final ConcurrentHashMap<String, ScheduledFuture<?>> pollingExecutorMap = new ConcurrentHashMap<>();
 
-    // =================================== Consumer side =================================== //
-    private URL registryURL;
-    private String addressSuffix;
-    private ServiceInstance serviceInstance;
-    private long pollingCycle;
-    /**
-     * Local {@link ServiceInstance} Metadata's revision
-     */
-    private String lastMetadataRevision;
-    /**
-     * DNS properties
-     */
-    private String addressPrefix;
-    private Resolver resolver;
-    /**
-     * mark if already upgrade to TCP protocol of resolver
-     */
-    private boolean upgradeToTCP = false;
     /**
      * Polling check provider ExecutorService
      */
