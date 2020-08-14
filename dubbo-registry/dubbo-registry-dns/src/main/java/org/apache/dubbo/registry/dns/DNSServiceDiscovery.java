@@ -34,6 +34,7 @@ import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.registry.dns.util.DNSClientConst;
+import org.apache.dubbo.registry.dns.util.DNSResolver;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
@@ -41,15 +42,11 @@ import com.alibaba.fastjson.JSONObject;
 import org.xbill.DNS.AAAARecord;
 import org.xbill.DNS.ARecord;
 import org.xbill.DNS.ExtendedResolver;
-import org.xbill.DNS.Lookup;
 import org.xbill.DNS.Record;
 import org.xbill.DNS.Resolver;
 import org.xbill.DNS.SRVRecord;
 import org.xbill.DNS.SimpleResolver;
-import org.xbill.DNS.TextParseException;
-import org.xbill.DNS.Type;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -93,12 +90,7 @@ public class DNSServiceDiscovery implements ServiceDiscovery {
     private String addressPrefix;
     private String addressSuffix;
     private long pollingCycle;
-    private Resolver resolver;
-
-    /**
-     * mark if already upgrade to TCP protocol of resolver
-     */
-    private boolean upgradeToTCP = false;
+    private DNSResolver dnsResolver;
 
     /**
      * Local Cache of {@link ServiceInstance} Metadata
@@ -138,8 +130,9 @@ public class DNSServiceDiscovery implements ServiceDiscovery {
 
         String nameserver = registryURL.getHost();
         // if nameserver is empty, use system default nameserver
-        this.resolver = StringUtils.isEmpty(nameserver) ?
+        Resolver resolver = StringUtils.isEmpty(nameserver) ?
                 new ExtendedResolver() : new SimpleResolver(nameserver);
+        this.dnsResolver = new DNSResolver(resolver);
 
         // polling task may take a lot of time, create a new ScheduledThreadPool
         pollingExecutorService = Executors.newScheduledThreadPool(scheduledThreadPoolSize, new NamedThreadFactory("Dubbo-DNS-EchoCheck"));
@@ -212,52 +205,7 @@ public class DNSServiceDiscovery implements ServiceDiscovery {
 
         String serviceAddress = addressPrefix + serviceName + addressSuffix;
 
-        List<Record> recordList = new LinkedList<>();
-
-        try {
-            Lookup aRecordLookup = new Lookup(serviceAddress, Type.A);
-            Lookup aaaaRecordLookup = new Lookup(serviceAddress, Type.AAAA);
-            Lookup srvRecordLookup = new Lookup(serviceAddress, Type.SRV);
-
-            aRecordLookup.setResolver(resolver);
-            aaaaRecordLookup.setResolver(resolver);
-            srvRecordLookup.setResolver(resolver);
-
-            Record[] aRecords = aRecordLookup.run();
-            Record[] aaaaRecords = aaaaRecordLookup.run();
-            Record[] srvRecords = srvRecordLookup.run();
-
-            // UDP protocol may cause message buffer error in some platform
-            boolean networkError = (aaaaRecordLookup.getResult() == Lookup.TRY_AGAIN) ||
-                    (aaaaRecordLookup.getResult() == Lookup.TRY_AGAIN) ||
-                    (srvRecordLookup.getResult() == Lookup.TRY_AGAIN);
-
-            if (networkError && !upgradeToTCP) {
-                if (logger.isInfoEnabled()) {
-                    logger.info("DNS lookup failed due to network error. " +
-                            "Try use TCP to resolve.");
-                }
-
-                resolver.setTCP(true);
-                upgradeToTCP = true;
-                return getInstances(serviceName);
-            }
-
-            if (aRecords != null) {
-                recordList.addAll(Arrays.asList(aRecords));
-            }
-            if (aaaaRecords != null) {
-                recordList.addAll(Arrays.asList(aaaaRecords));
-            }
-            if (srvRecords != null) {
-                recordList.addAll(Arrays.asList(srvRecords));
-            }
-
-        } catch (TextParseException e) {
-            String message = "Parse DNS host error! " + e.getLocalizedMessage();
-            logger.error(message);
-            throw new IllegalStateException(message);
-        }
+        List<Record> recordList = dnsResolver.resolve(serviceAddress);
 
         return toServiceInstance(serviceName, recordList);
     }
