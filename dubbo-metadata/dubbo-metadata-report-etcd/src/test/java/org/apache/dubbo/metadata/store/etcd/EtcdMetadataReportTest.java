@@ -33,7 +33,6 @@ import io.etcd.jetcd.launcher.EtcdCluster;
 import io.etcd.jetcd.launcher.EtcdClusterFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -62,8 +61,7 @@ public class EtcdMetadataReportTest {
     private URL registryUrl;
     private EtcdMetadataReportFactory etcdMetadataReportFactory;
 
-    @BeforeAll
-    public static void init() {
+    static {
         try {
             etcdCluster = EtcdClusterFactory.buildCluster(EtcdMetadataReportTest.class.getSimpleName(), 1, false, false);
         } catch (IllegalStateException e) {
