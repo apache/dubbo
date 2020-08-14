@@ -18,8 +18,6 @@ package org.apache.dubbo.registry.dns.util;
 
 public class DNSClientConst {
 
-    public final static int DEFAULT_PORT = 53;
-
     public final static String ADDRESS_PREFIX = "addressPrefix";
 
     public final static String ADDRESS_SUFFIX = "addressSuffix";

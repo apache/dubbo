@@ -123,7 +123,7 @@ public class DNSServiceDiscovery implements ServiceDiscovery {
         int scheduledThreadPoolSize = registryURL.getParameter(DNSClientConst.SCHEDULED_THREAD_POOL_SIZE, 1);
 
         String nameserver = registryURL.getHost();
-        int port = registryURL.getPort(DNSClientConst.DEFAULT_PORT);
+        int port = registryURL.getPort();
         int maxQueriesPerResolve = registryURL.getParameter(DNSClientConst.MAX_QUERIES_PER_RESOLVE, 10);
         this.dnsResolver = new DNSResolver(nameserver, port, maxQueriesPerResolve);
 
