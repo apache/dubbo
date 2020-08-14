@@ -128,6 +128,7 @@ public class EtcdServiceDiscovery implements ServiceDiscovery, EventListener<Ser
     @Override
     public void update(ServiceInstance serviceInstance) throws RuntimeException {
         try {
+            this.serviceInstance = serviceInstance;
             String path = toPath(serviceInstance);
             etcdClient.putEphemeral(path, new Gson().toJson(serviceInstance));
             services.add(serviceInstance.getServiceName());
@@ -158,7 +159,12 @@ public class EtcdServiceDiscovery implements ServiceDiscovery, EventListener<Ser
 
     @Override
     public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener) throws NullPointerException, IllegalArgumentException {
-        registerServiceWatcher(listener.getServiceNames());
+        listener.getServiceNames().forEach(this::registerServiceWatcher);
+    }
+
+    @Override
+    public ServiceInstance getLocalInstance() {
+        return serviceInstance;
     }
 
     @Override

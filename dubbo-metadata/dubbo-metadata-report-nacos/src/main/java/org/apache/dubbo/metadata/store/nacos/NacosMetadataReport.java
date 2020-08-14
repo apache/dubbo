@@ -28,15 +28,12 @@ import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 import org.apache.dubbo.metadata.report.support.AbstractMetadataReport;
-import org.apache.dubbo.metadata.report.support.ConfigCenterBasedMetadataReport;
 import org.apache.dubbo.rpc.RpcException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
-import static java.util.concurrent.TimeUnit.SECONDS;
 
 /**
  * metadata report impl for nacos
@@ -102,16 +99,6 @@ public class NacosMetadataReport extends AbstractMetadataReport {
     @Override
     public String getServiceDefinition(MetadataIdentifier metadataIdentifier) {
         return getConfig(metadataIdentifier);
-    }
-
-    @Override
-    public boolean saveExportedURLs(String serviceName, String exportedServicesRevision, String exportedURLsContent) {
-        return dynamicConfiguration.publishConfig(serviceName, exportedServicesRevision, exportedURLsContent);
-    }
-
-    @Override
-    public String getExportedURLsContent(String serviceName, String exportedServicesRevision) {
-        return dynamicConfiguration.getConfig(serviceName, exportedServicesRevision, SECONDS.toMillis(3));
     }
 
     private void storeMetadata(BaseMetadataIdentifier identifier, String value) {

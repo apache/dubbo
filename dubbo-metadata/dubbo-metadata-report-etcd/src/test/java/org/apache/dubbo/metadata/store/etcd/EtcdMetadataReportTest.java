@@ -33,6 +33,7 @@ import io.etcd.jetcd.launcher.EtcdCluster;
 import io.etcd.jetcd.launcher.EtcdClusterFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -52,17 +53,30 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
  * Unit test for etcd metadata report
  */
 public class EtcdMetadataReportTest {
-
     private static final String TEST_SERVICE = "org.apache.dubbo.metadata.store.etcd.EtcdMetadata4TstService";
 
-    private EtcdCluster etcdCluster = EtcdClusterFactory.buildCluster(getClass().getSimpleName(), 1, false, false);
+    private static EtcdCluster etcdCluster;
+    private static boolean disable = false;
     private Client etcdClientForTest;
     private EtcdMetadataReport etcdMetadataReport;
     private URL registryUrl;
     private EtcdMetadataReportFactory etcdMetadataReportFactory;
 
+    @BeforeAll
+    public static void init() {
+        try {
+            etcdCluster = EtcdClusterFactory.buildCluster(EtcdMetadataReportTest.class.getSimpleName(), 1, false, false);
+        } catch (IllegalStateException e) {
+            // throw if docker init failed
+            disable = true;
+        }
+    }
+
     @BeforeEach
     public void setUp() {
+        if (disable) {
+            return;
+        }
         etcdCluster.start();
         etcdClientForTest = Client.builder().endpoints(etcdCluster.getClientEndpoints()).build();
         List<URI> clientEndPoints = etcdCluster.getClientEndpoints();
@@ -73,11 +87,17 @@ public class EtcdMetadataReportTest {
 
     @AfterEach
     public void tearDown() throws Exception {
+        if (disable) {
+            return;
+        }
         etcdCluster.close();
     }
 
     @Test
     public void testStoreProvider() throws Exception {
+        if (disable) {
+            return;
+        }
         String version = "1.0.0";
         String group = null;
         String application = "etcd-metdata-report-test";
@@ -102,6 +122,9 @@ public class EtcdMetadataReportTest {
 
     @Test
     public void testStoreConsumer() throws Exception {
+        if (disable) {
+            return;
+        }
         String version = "1.0.0";
         String group = null;
         String application = "etc-metadata-report-consumer-test";
@@ -116,6 +139,9 @@ public class EtcdMetadataReportTest {
 
     @Test
     public void testDoSaveMetadata() throws ExecutionException, InterruptedException {
+        if (disable) {
+            return;
+        }
         String version = "1.0.0";
         String group = null;
         String application = "etc-metadata-report-consumer-test";
@@ -136,6 +162,9 @@ public class EtcdMetadataReportTest {
 
     @Test
     public void testDoRemoveMetadata() throws ExecutionException, InterruptedException {
+        if (disable) {
+            return;
+        }
         String version = "1.0.0";
         String group = null;
         String application = "etc-metadata-report-consumer-test";
@@ -160,6 +189,9 @@ public class EtcdMetadataReportTest {
 
     @Test
     public void testDoGetExportedURLs() throws ExecutionException, InterruptedException {
+        if (disable) {
+            return;
+        }
         String version = "1.0.0";
         String group = null;
         String application = "etc-metadata-report-consumer-test";
@@ -181,6 +213,9 @@ public class EtcdMetadataReportTest {
 
     @Test
     public void testDoSaveSubscriberData() throws ExecutionException, InterruptedException {
+        if (disable) {
+            return;
+        }
         String version = "1.0.0";
         String group = null;
         String application = "etc-metadata-report-consumer-test";
@@ -202,6 +237,9 @@ public class EtcdMetadataReportTest {
 
     @Test
     public void testDoGetSubscribedURLs() throws ExecutionException, InterruptedException {
+        if (disable) {
+            return;
+        }
         String version = "1.0.0";
         String group = null;
         String application = "etc-metadata-report-consumer-test";
