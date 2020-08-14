@@ -49,6 +49,7 @@ public class MetadataServiceExporterTest {
     @AfterAll
     public static void destroy() {
         ApplicationModel.getConfigManager().setApplication(null);
+        ApplicationModel.reset();
     }
 
     @Test
