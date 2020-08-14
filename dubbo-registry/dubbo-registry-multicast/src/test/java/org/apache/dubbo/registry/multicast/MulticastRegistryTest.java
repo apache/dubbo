@@ -136,14 +136,11 @@ public class MulticastRegistryTest {
         final URL[] notifyUrl = new URL[1];
         for (int i = 0; i < 10; i++) {
             registry.register(serviceUrl);
-            registry.subscribe(consumerUrl, new NotifyListener() {
-                @Override
-                public void notify(List<URL> urls) {
-                    notifyUrl[0] = urls.get(0);
+            registry.subscribe(consumerUrl, urls -> {
+                notifyUrl[0] = urls.get(0);
 
-                    Map<URL, Set<NotifyListener>> subscribed = registry.getSubscribed();
-                    assertEquals(consumerUrl, subscribed.keySet().iterator().next());
-                }
+                Map<URL, Set<NotifyListener>> subscribed = registry.getSubscribed();
+                assertEquals(consumerUrl, subscribed.keySet().iterator().next());
             });
             if (!EMPTY_PROTOCOL.equalsIgnoreCase(notifyUrl[0].getProtocol())) {
                 break;
