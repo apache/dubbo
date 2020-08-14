@@ -157,6 +157,7 @@ public class MockClusterInvokerTest {
         URL url = URL.valueOf("remote://1.2.3.4/" + IHelloService.class.getName());
         url = url.addParameter(MOCK_KEY, "force")
                 .addParameter(REFER_KEY, URL.encode(PATH_KEY + "=" + IHelloService.class.getName()));
+
         Invoker<IHelloService> cluster = getClusterInvoker(url);
         URL mockUrl = URL.valueOf("mock://localhost/" + IHelloService.class.getName()
                 + "?getSomething.mock=return aa&getSomething3xx.mock=return xx&sayHello.mock=return ")
