@@ -246,12 +246,19 @@ public class DNSServiceDiscovery implements ServiceDiscovery {
         return registryURL;
     }
 
+    /**
+     * UT used only
+     */
+    @Deprecated
+    public void setDnsResolver(DNSResolver dnsResolver) {
+        this.dnsResolver = dnsResolver;
+    }
+
     @SuppressWarnings("unchecked")
     private List<ServiceInstance> toServiceInstance(String serviceName, List<Record> recordList) {
 
         List<String> hostList = new LinkedList<>();
 
-        // default port
         int port = -1;
 
         for (Record record : recordList) {
@@ -268,6 +275,11 @@ public class DNSServiceDiscovery implements ServiceDiscovery {
                     port = srvRecord.getPort();
                 }
             }
+        }
+
+        if (port == -1) {
+            // not support SRV record
+            port = 20880;
         }
 
         List<ServiceInstance> instanceList = new LinkedList<>();
