@@ -63,6 +63,7 @@ public class RegistryStatusCheckerTest {
         ExtensionLoader.getExtensionLoader(RegistryFactory.class).getAdaptiveExtension().getRegistry(registryUrl);
         ExtensionLoader.getExtensionLoader(RegistryFactory.class).getAdaptiveExtension().getRegistry(registryUrl2);
         assertEquals(Status.Level.OK, new RegistryStatusChecker().check().getLevel());
+
         String message = new RegistryStatusChecker().check().getMessage();
         Assertions.assertTrue(message.contains(URLBuilder.from(registryUrl).setPort(0).build().getAddress() + "(connected)"));
         Assertions.assertTrue(message.contains(URLBuilder.from(registryUrl2).setPort(0).build().getAddress() + "(connected)"));
