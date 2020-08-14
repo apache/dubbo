@@ -62,9 +62,9 @@ public class GrizzlyServer extends AbstractServer {
     protected void doOpen() throws Throwable {
         FilterChainBuilder filterChainBuilder = FilterChainBuilder.stateless();
         filterChainBuilder.add(new TransportFilter());
-
         filterChainBuilder.add(new GrizzlyCodecAdapter(getCodec(), getUrl(), this));
         filterChainBuilder.add(new GrizzlyHandler(getUrl(), this));
+
         TCPNIOTransportBuilder builder = TCPNIOTransportBuilder.newInstance();
         ThreadPoolConfig config = ThreadPoolConfig.defaultConfig();
         config.setPoolName(SERVER_THREAD_POOL_NAME).setQueueLimit(-1);
