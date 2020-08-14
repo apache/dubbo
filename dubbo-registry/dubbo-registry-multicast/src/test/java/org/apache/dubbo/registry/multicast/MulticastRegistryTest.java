@@ -133,9 +133,9 @@ public class MulticastRegistryTest {
     @Test
     public void testSubscribe() {
         // verify listener
-        registry.register(serviceUrl);
         final URL[] notifyUrl = new URL[1];
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 10; i++) {
+            registry.register(serviceUrl);
             registry.subscribe(consumerUrl, new NotifyListener() {
                 @Override
                 public void notify(List<URL> urls) {
