@@ -141,8 +141,7 @@ public class RegistryDirectoryTest {
 
     @Test
     public void test_Constructor_CheckStatus() throws Exception {
-        URL url = URL.valueOf("notsupported://10.20.30.40/" + service + "?a=b").addParameterAndEncoded(REFER_KEY,
-                "foo=bar");
+        URL url = URL.valueOf("notsupported://10.20.30.40/" + service + "?a=b").addParameterAndEncoded(REFER_KEY, "foo=bar");
         RegistryDirectory reg = getRegistryDirectory(url);
         Field field = reg.getClass().getSuperclass().getSuperclass().getDeclaredField("queryMap");
         field.setAccessible(true);
