@@ -145,7 +145,7 @@ public class MulticastRegistryTest {
                     assertEquals(consumerUrl, subscribed.keySet().iterator().next());
                 }
             });
-            if (EMPTY_PROTOCOL.equalsIgnoreCase(notifyUrl[0].getProtocol())) {
+            if (!EMPTY_PROTOCOL.equalsIgnoreCase(notifyUrl[0].getProtocol())) {
                 break;
             }
         }
