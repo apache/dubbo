@@ -144,9 +144,12 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
 
     @Override
     public void registerServiceAppMapping(String serviceKey, String application, URL url) {
-        Map<String, String> value = new HashMap<>();
-        value.put("timestamp", String.valueOf(System.currentTimeMillis()));
-        zkClient.create(toRootDir() + serviceKey + PATH_SEPARATOR + application, gson.toJson(value), false);
+        String path = toRootDir() + serviceKey + PATH_SEPARATOR + application;
+        if (StringUtils.isBlank(zkClient.getContent(path))) {
+            Map<String, String> value = new HashMap<>();
+            value.put("timestamp", String.valueOf(System.currentTimeMillis()));
+            zkClient.create(path, gson.toJson(value), false);
+        }
     }
 
     @Override

@@ -33,7 +33,7 @@ public class ApplicationConsumer {
         ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("spring/dubbo-consumer-zk.xml");
         //ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("spring/dubbo-consumer-zk-apollo.xml");
         context.start();
-        DemoService demoService = context.getBean("demoService", DemoService.class);
+        //DemoService demoService = context.getBean("demoService", DemoService.class);
         GreetingService greetingService = context.getBean("greetingService", GreetingService.class);
 
         new Thread(() -> {
