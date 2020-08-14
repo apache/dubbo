@@ -27,6 +27,7 @@ import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 import org.apache.dubbo.metadata.report.support.AbstractMetadataReport;
+import org.apache.dubbo.metadata.report.support.ConfigCenterBasedMetadataReport;
 import org.apache.dubbo.rpc.RpcException;
 
 import com.ecwid.consul.v1.ConsulClient;

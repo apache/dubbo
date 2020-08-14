@@ -20,7 +20,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.event.EventListener;
@@ -88,7 +87,6 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
     private ConsulClient client;
     private ExecutorService notifierExecutor = newCachedThreadPool(
             new NamedThreadFactory("dubbo-service-discovery-consul-notifier", true));
-    private Set<String> listenedService = new ConcurrentHashSet<>();
     private ConsulNotifier notifier;
     private TtlScheduler ttlScheduler;
     private long checkPassInterval;
@@ -111,8 +109,6 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
      * Service instance group.
      */
     private String instanceGroup;
-
-    private ServiceInstance serviceInstance;
 
 
     @Override
@@ -191,7 +187,6 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
 
     @Override
     public void register(ServiceInstance serviceInstance) throws RuntimeException {
-        this.serviceInstance = serviceInstance;
         NewService consulService = buildService(serviceInstance);
         ttlScheduler.add(consulService.getId());
         client.agentServiceRegister(consulService, aclToken);
@@ -199,27 +194,23 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
 
     @Override
     public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener) throws NullPointerException, IllegalArgumentException {
-        listener.getServiceNames().forEach(serviceName -> {
-            if (!listenedService.contains(serviceName)) {
-                Response<List<HealthService>> response = getHealthServices(serviceName, -1, buildWatchTimeout());
-                Long consulIndex = response.getConsulIndex();
-                notifier = new ConsulNotifier(serviceName, consulIndex);
-                notifierExecutor.execute(notifier);
-                listenedService.add(serviceName);
-            }
-        });
+        if (notifier == null) {
+            String serviceName = listener.getServiceNames();
+            Response<List<HealthService>> response = getHealthServices(serviceName, -1, buildWatchTimeout());
+            Long consulIndex = response.getConsulIndex();
+            notifier = new ConsulNotifier(serviceName, consulIndex);
+        }
+        notifierExecutor.execute(notifier);
     }
 
     @Override
     public void update(ServiceInstance serviceInstance) throws RuntimeException {
-        this.serviceInstance = serviceInstance;
         // TODO
         // client.catalogRegister(buildCatalogService(serviceInstance));
     }
 
     @Override
     public void unregister(ServiceInstance serviceInstance) throws RuntimeException {
-        this.serviceInstance = null;
         String id = buildId(serviceInstance);
         ttlScheduler.remove(id);
         client.agentServiceDeregister(id, aclToken);
@@ -242,11 +233,6 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
             notifier = new ConsulNotifier(serviceName, consulIndex);
         }
         return convert(response.getValue());
-    }
-
-    @Override
-    public ServiceInstance getLocalInstance() {
-        return serviceInstance;
     }
 
     private List<ServiceInstance> convert(List<HealthService> services) {

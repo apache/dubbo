@@ -22,7 +22,6 @@ import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
-import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.EurekaInstanceConfig;
@@ -39,7 +38,6 @@ import com.netflix.discovery.shared.Applications;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +47,7 @@ import java.util.Set;
 
 import static java.util.Collections.emptyList;
 import static org.apache.dubbo.event.EventDispatcher.getDefaultExtension;
+import static org.apache.dubbo.registry.client.ServiceDiscoveryRegistry.getSubscribedServices;
 
 /**
  * Eureka {@link ServiceDiscovery} implementation based on Eureka API
@@ -100,12 +99,7 @@ public class EurekaServiceDiscovery implements ServiceDiscovery {
      * @param registryURL the {@link URL url} to connect Eureka
      */
     private void initSubscribedServices(URL registryURL) {
-        this.subscribedServices = new HashSet<>();
-    }
-
-    @Override
-    public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener) throws NullPointerException, IllegalArgumentException {
-        this.subscribedServices.addAll(listener.getServiceNames());
+        this.subscribedServices = getSubscribedServices(registryURL);
     }
 
     private boolean filterEurekaProperty(Map.Entry<String, String> propertyEntry) {
@@ -262,11 +256,6 @@ public class EurekaServiceDiscovery implements ServiceDiscovery {
             instances.add(buildServiceInstance(info));
         }
         return instances;
-    }
-
-    @Override
-    public ServiceInstance getLocalInstance() {
-        return null;
     }
 
     private ServiceInstance buildServiceInstance(InstanceInfo instance) {
