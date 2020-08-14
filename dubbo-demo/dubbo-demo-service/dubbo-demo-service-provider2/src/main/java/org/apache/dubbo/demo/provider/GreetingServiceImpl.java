@@ -24,6 +24,6 @@ import org.apache.dubbo.demo.GreetingService;
 public class GreetingServiceImpl implements GreetingService {
     @Override
     public String hello() {
-        return "Greetings from provider1!";
+        return "Greetings from provider2!";
     }
 }

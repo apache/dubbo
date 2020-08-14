@@ -37,6 +37,7 @@
 
     <modules>
         <module>dubbo-demo-service-provider</module>
+        <module>dubbo-demo-service-provider2</module>
         <module>dubbo-demo-service-consumer</module>
     </modules>
 

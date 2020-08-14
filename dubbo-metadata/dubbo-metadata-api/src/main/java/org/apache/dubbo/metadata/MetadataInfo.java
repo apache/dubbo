@@ -191,7 +191,7 @@ public class MetadataInfo implements Serializable {
         // service + group + version + protocol
         private transient String matchKey;
 
-        private URL url;
+        private transient URL url;
 
         public ServiceInfo() {
         }

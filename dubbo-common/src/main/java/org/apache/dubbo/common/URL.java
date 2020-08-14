@@ -1316,7 +1316,8 @@ class URL implements Serializable {
     }
 
     public Map<String, String> toMap() {
-        Map<String, String> map = new HashMap<>(parameters);
+        Map<String, String> map = null == parameters ? new HashMap<>() : new HashMap<>(parameters);
+
         if (protocol != null) {
             map.put(PROTOCOL_KEY, protocol);
         }
