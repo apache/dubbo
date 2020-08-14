@@ -34,6 +34,7 @@ import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.registry.dns.util.DNSClientConst;
 import org.apache.dubbo.registry.dns.util.DNSResolver;
+import org.apache.dubbo.registry.dns.util.ResolveResult;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import com.alibaba.fastjson.JSONObject;
@@ -42,11 +43,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
-import org.xbill.DNS.ARecord;
-import org.xbill.DNS.DClass;
-import org.xbill.DNS.Name;
 
-import java.net.InetAddress;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -124,8 +121,9 @@ public class DNSServiceDiscoveryTest {
         ServiceConfig<MetadataService> serviceConfig = exportMockMetadataService(metadataService, port);
 
         DNSResolver dnsResolver = Mockito.mock(DNSResolver.class);
-        ARecord aRecord = new ARecord(new Name("Test.Service."), DClass.IN, 10, InetAddress.getByName("127.0.0.1"));
-        Mockito.when(dnsResolver.resolve("Test.Service.")).thenReturn(Collections.singletonList(aRecord));
+        ResolveResult resolveResult = new ResolveResult();
+        resolveResult.getHostnameList().add("127.0.0.1");
+        Mockito.when(dnsResolver.resolve("Test.Service.")).thenReturn(resolveResult);
         dnsServiceDiscovery.setDnsResolver(dnsResolver);
 
         List<ServiceInstance> serviceInstances = dnsServiceDiscovery.getInstances("Test.Service.");

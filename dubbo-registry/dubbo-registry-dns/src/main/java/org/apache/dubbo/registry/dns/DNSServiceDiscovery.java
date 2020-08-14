@@ -35,17 +35,11 @@ import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedLi
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.registry.dns.util.DNSClientConst;
 import org.apache.dubbo.registry.dns.util.DNSResolver;
+import org.apache.dubbo.registry.dns.util.ResolveResult;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import com.alibaba.fastjson.JSONObject;
-import org.xbill.DNS.AAAARecord;
-import org.xbill.DNS.ARecord;
-import org.xbill.DNS.ExtendedResolver;
-import org.xbill.DNS.Record;
-import org.xbill.DNS.Resolver;
-import org.xbill.DNS.SRVRecord;
-import org.xbill.DNS.SimpleResolver;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -129,10 +123,9 @@ public class DNSServiceDiscovery implements ServiceDiscovery {
         int scheduledThreadPoolSize = registryURL.getParameter(DNSClientConst.SCHEDULED_THREAD_POOL_SIZE, 1);
 
         String nameserver = registryURL.getHost();
-        // if nameserver is empty, use system default nameserver
-        Resolver resolver = StringUtils.isEmpty(nameserver) ?
-                new ExtendedResolver() : new SimpleResolver(nameserver);
-        this.dnsResolver = new DNSResolver(resolver);
+        int port = registryURL.getPort(DNSClientConst.DEFAULT_PORT);
+        int maxQueriesPerResolve = registryURL.getParameter(DNSClientConst.MAX_QUERIES_PER_RESOLVE, 10);
+        this.dnsResolver = new DNSResolver(nameserver, port, maxQueriesPerResolve);
 
         // polling task may take a lot of time, create a new ScheduledThreadPool
         pollingExecutorService = Executors.newScheduledThreadPool(scheduledThreadPoolSize, new NamedThreadFactory("Dubbo-DNS-EchoCheck"));
@@ -167,6 +160,7 @@ public class DNSServiceDiscovery implements ServiceDiscovery {
         pollingExecutorMap.clear();
         echoCheckExecutor.shutdown();
         pollingExecutorService.shutdown();
+        dnsResolver.destroy();
     }
 
     @Override
@@ -205,9 +199,9 @@ public class DNSServiceDiscovery implements ServiceDiscovery {
 
         String serviceAddress = addressPrefix + serviceName + addressSuffix;
 
-        List<Record> recordList = dnsResolver.resolve(serviceAddress);
+        ResolveResult resolveResult = dnsResolver.resolve(serviceAddress);
 
-        return toServiceInstance(serviceName, recordList);
+        return toServiceInstance(serviceName, resolveResult);
     }
 
     @Override
@@ -255,36 +249,21 @@ public class DNSServiceDiscovery implements ServiceDiscovery {
     }
 
     @SuppressWarnings("unchecked")
-    private List<ServiceInstance> toServiceInstance(String serviceName, List<Record> recordList) {
+    private List<ServiceInstance> toServiceInstance(String serviceName, ResolveResult resolveResult) {
 
-        List<String> hostList = new LinkedList<>();
+        int port;
 
-        int port = -1;
-
-        for (Record record : recordList) {
-            if (record instanceof ARecord) {
-                ARecord aRecord = (ARecord) record;
-                hostList.add(aRecord.getAddress().getHostAddress());
-            } else if (record instanceof AAAARecord) {
-                AAAARecord aaaaRecord = (AAAARecord) record;
-                hostList.add(aaaaRecord.getAddress().getHostAddress());
-            } else if (record instanceof SRVRecord) {
-                SRVRecord srvRecord = (SRVRecord) record;
-                if (port == -1) {
-                    // use the first result
-                    port = srvRecord.getPort();
-                }
-            }
-        }
-
-        if (port == -1) {
+        if (resolveResult.getPort().size() > 0) {
+            // use first as default
+            port = resolveResult.getPort().get(0);
+        } else {
             // not support SRV record
             port = 20880;
         }
 
         List<ServiceInstance> instanceList = new LinkedList<>();
 
-        for (String host : hostList) {
+        for (String host : resolveResult.getHostnameList()) {
             DefaultServiceInstance serviceInstance = new DefaultServiceInstance(serviceName, host, port);
             String hostId = serviceInstance.getId();
             if (metadataMap.containsKey(hostId)) {

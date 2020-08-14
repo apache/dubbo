@@ -18,19 +18,13 @@ package org.apache.dubbo.registry.dns.util;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.xbill.DNS.ExtendedResolver;
-import org.xbill.DNS.Record;
-import org.xbill.DNS.Resolver;
-
-import java.util.List;
 
 public class DNSResolverTest {
 
     @Test
     public void testResolve() {
-        Resolver resolver = new ExtendedResolver();
-        DNSResolver dnsResolver = new DNSResolver(resolver);
-        List<Record> records = dnsResolver.resolve("aliyun.com");
-        Assertions.assertTrue(records.size() > 0);
+        DNSResolver dnsResolver = new DNSResolver("8.8.8.8", 53, 1);
+        ResolveResult resolve = dnsResolver.resolve("aliyun.com");
+        Assertions.assertTrue(resolve.getHostnameList().size() > 0);
     }
 }

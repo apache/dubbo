@@ -19,78 +19,90 @@ package org.apache.dubbo.registry.dns.util;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
-import org.xbill.DNS.Lookup;
-import org.xbill.DNS.Record;
-import org.xbill.DNS.Resolver;
-import org.xbill.DNS.TextParseException;
-import org.xbill.DNS.Type;
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.AddressedEnvelope;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioDatagramChannel;
+import io.netty.handler.codec.dns.DefaultDnsQuestion;
+import io.netty.handler.codec.dns.DnsRawRecord;
+import io.netty.handler.codec.dns.DnsRecordType;
+import io.netty.handler.codec.dns.DnsResponse;
+import io.netty.handler.codec.dns.DnsSection;
+import io.netty.resolver.ResolvedAddressTypes;
+import io.netty.resolver.dns.DnsNameResolver;
+import io.netty.resolver.dns.DnsNameResolverBuilder;
+import io.netty.util.concurrent.Future;
 
-import java.util.Arrays;
-import java.util.LinkedList;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static io.netty.resolver.dns.DnsServerAddresses.sequential;
 
 public class DNSResolver {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final Resolver resolver;
+    private final DnsNameResolver resolver;
 
-    /**
-     * mark if already upgrade to TCP protocol of resolver
-     */
-    private boolean upgradeToTCP = false;
+    private static final EventLoopGroup GROUP = new NioEventLoopGroup(1);
 
-    public DNSResolver(Resolver resolver) {
-        this.resolver = resolver;
+    public DNSResolver(String nameserver, int port, int maxQueriesPerResolve) {
+        this.resolver = newResolver(nameserver, port, maxQueriesPerResolve);
     }
 
-    public List<Record> resolve(String path) {
-        List<Record> recordList = new LinkedList<>();
+    public ResolveResult resolve(String path) {
+        ResolveResult recordList = new ResolveResult();
+
+        Future<List<InetAddress>> hostFuture = resolver.resolveAll(path);
+        Future<AddressedEnvelope<DnsResponse, InetSocketAddress>> srvFuture =
+                resolver.query(new DefaultDnsQuestion(path, DnsRecordType.SRV));
+
         try {
-            Lookup aRecordLookup = new Lookup(path, Type.A);
-            Lookup aaaaRecordLookup = new Lookup(path, Type.AAAA);
-            Lookup srvRecordLookup = new Lookup(path, Type.SRV);
+            recordList.getHostnameList()
+                    .addAll(hostFuture
+                            .sync().getNow()
+                            .stream()
+                            .map(InetAddress::getHostAddress)
+                            .collect(Collectors.toList()));
 
-            aRecordLookup.setResolver(resolver);
-            aaaaRecordLookup.setResolver(resolver);
-            srvRecordLookup.setResolver(resolver);
-
-            Record[] aRecords = aRecordLookup.run();
-            Record[] aaaaRecords = aaaaRecordLookup.run();
-            Record[] srvRecords = srvRecordLookup.run();
-
-            // UDP protocol may cause message buffer error in some platform
-            boolean networkError = (aaaaRecordLookup.getResult() == Lookup.TRY_AGAIN) ||
-                    (aaaaRecordLookup.getResult() == Lookup.TRY_AGAIN) ||
-                    (srvRecordLookup.getResult() == Lookup.TRY_AGAIN);
-
-            if (networkError && !upgradeToTCP) {
-                if (logger.isInfoEnabled()) {
-                    logger.info("DNS lookup failed due to network error. " +
-                            "Try use TCP to resolve.");
-                }
-
-                resolver.setTCP(true);
-                upgradeToTCP = true;
-                return resolve(path);
+            DnsResponse srvResponse = srvFuture.sync().getNow().content();
+            for (int i = 0; i < srvResponse.count(DnsSection.ANSWER); i++) {
+                DnsRawRecord record = srvResponse.recordAt(DnsSection.ANSWER, i);
+                ByteBuf buf = record.content();
+                // Priority
+                buf.readUnsignedShort();
+                // Weight
+                buf.readUnsignedShort();
+                // Port
+                int port = buf.readUnsignedShort();
+                recordList.getPort().add(port);
             }
 
-            if (aRecords != null) {
-                recordList.addAll(Arrays.asList(aRecords));
-            }
-            if (aaaaRecords != null) {
-                recordList.addAll(Arrays.asList(aaaaRecords));
-            }
-            if (srvRecords != null) {
-                recordList.addAll(Arrays.asList(srvRecords));
-            }
-
-        } catch (TextParseException e) {
-            String message = "Parse DNS host error! " + e.getLocalizedMessage();
-            logger.error(message);
-            throw new IllegalStateException(message);
+        } catch (InterruptedException e) {
+            logger.warn("Waiting DNS resolve interrupted. " + e.getLocalizedMessage());
         }
 
         return recordList;
+    }
+
+    public void destroy() {
+        resolver.close();
+    }
+
+    private static DnsNameResolver newResolver(String nameserver, int port, int maxQueriesPerResolve) {
+        return new DnsNameResolverBuilder(GROUP.next())
+                .channelType(NioDatagramChannel.class)
+                .maxQueriesPerResolve(maxQueriesPerResolve)
+                .decodeIdn(true)
+                .optResourceEnabled(false)
+                .ndots(1)
+                .resolvedAddressTypes(ResolvedAddressTypes.IPV4_PREFERRED)
+                // ignore cache
+                .ttl(0, 1)
+                .nameServerProvider((hostname) -> sequential(new InetSocketAddress(nameserver, port)).stream())
+                .build();
     }
 }
