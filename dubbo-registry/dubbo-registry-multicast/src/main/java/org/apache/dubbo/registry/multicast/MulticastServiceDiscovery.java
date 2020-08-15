@@ -20,7 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
 
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -57,7 +57,7 @@ public class MulticastServiceDiscovery implements ServiceDiscovery {
 
     @Override
     public Set<String> getServices() {
-        return new HashSet<>();
+        return Collections.singleton("Unsupported Operation");
     }
 
     @Override
