@@ -121,7 +121,7 @@ public class AbstractClusterInvokerTest {
         given(mockedInvoker1.getUrl()).willReturn(turl.setPort(999).setProtocol("mock"));
 
         invokers.add(invoker1);
-        dic = new StaticDirectory<IHelloService>(url, invokers, null);
+        dic = new StaticDirectory<>(url, invokers, null);
         dic.setConsumerUrl(consumerUrl);
         cluster = new AbstractClusterInvoker(dic) {
             @Override
