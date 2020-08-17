@@ -74,6 +74,8 @@ public interface CommonConstants {
 
     Pattern EQUAL_SPLIT_PATTERN = Pattern.compile("\\s*[=]+\\s*");
 
+    Pattern COLON_SPLIT_PATTERN = Pattern.compile("\\s*[:]+\\s*");
+
     String DEFAULT_PROXY = "javassist";
 
     String DEFAULT_DIRECTORY = "dubbo";
@@ -349,4 +351,11 @@ public interface CommonConstants {
      */
     String DEFAULT_SERVICE_NAME_MAPPING_PROPERTIES_PATH = "META-INF/dubbo/service-name-mapping.properties";
 
+    String REDIS_CLIENT_KEY = "redis-client";
+
+    String MONO_REDIS_CLIENT = "mono-jedis";
+
+    String SENTINEL_REDIS_CLIENT = "sentinel-jedis";
+
+    String CLUSTER_REDIS_CLIENT = "cluster-jedis";
 }
