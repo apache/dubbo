@@ -23,9 +23,9 @@
         <version>${revision}</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
-    <artifactId>dubbo-all</artifactId>
+    <artifactId>dubbo</artifactId>
     <packaging>jar</packaging>
-    <name>dubbo-all</name>
+    <name>dubbo</name>
     <description>The all in one project of dubbo</description>
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
