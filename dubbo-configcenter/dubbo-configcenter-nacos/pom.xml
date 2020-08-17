@@ -22,8 +22,7 @@
     <parent>
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-configcenter</artifactId>
-        <version>${revision}</version>
-        <relativePath>../pom.xml</relativePath>
+        <version>2.7.7-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 

@@ -33,8 +33,6 @@
     <modules>
         <module>dubbo-configcenter-zookeeper</module>
         <module>dubbo-configcenter-apollo</module>
-        <module>dubbo-configcenter-consul</module>
-        <module>dubbo-configcenter-etcd</module>
         <module>dubbo-configcenter-nacos</module>
     </modules>
 </project>
