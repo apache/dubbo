@@ -67,11 +67,12 @@ public class AppResponse implements Result {
     }
 
     @Override
-    public Object recreate() throws Throwable {
+    public Object recreate() {
         if (exception != null) {
             // fix issue#619
             try {
                 // get Throwable class
+                @SuppressWarnings("rawtypes")
                 Class clazz = exception.getClass();
                 while (!clazz.getName().equals(Throwable.class.getName())) {
                     clazz = clazz.getSuperclass();
@@ -86,7 +87,7 @@ public class AppResponse implements Result {
             } catch (Exception e) {
                 // ignore
             }
-            throw exception;
+            throw new RpcException(exception);
         }
         return result;
     }
