@@ -52,37 +52,6 @@ public class MonoRedisClient extends AbstractRedisClient implements RedisClient 
         return result;
     }
 
-//    @Override
-//    public void clean(String pattern) {
-//        Set<String> keys = scan(pattern);
-//        Jedis jedis = jedisPool.getResource();
-//        if (CollectionUtils.isNotEmpty(keys)) {
-//            for (String key : keys) {
-//                Map<String, String> values = jedis.hgetAll(key);
-//                if (CollectionUtils.isNotEmptyMap(values)) {
-//                    boolean delete = false;
-//                    long now = System.currentTimeMillis();
-//                    for (Map.Entry<String, String> entry : values.entrySet()) {
-//                        URL url = URL.valueOf(entry.getKey());
-//                        if (url.getParameter(DYNAMIC_KEY, true)) {
-//                            long expire = Long.parseLong(entry.getValue());
-//                            if (expire < now) {
-//                                jedis.hdel(key, entry.getKey());
-//                                delete = true;
-//                                if (logger.isWarnEnabled()) {
-//                                    logger.warn("Delete expired key: " + key + " -> value: " + entry.getKey() + ", expire: " + new Date(expire) + ", now: " + new Date(now));
-//                                }
-//                            }
-//                        }
-//                    }
-//                    if (delete) {
-//                        jedis.publish(key, UNREGISTER);
-//                    }
-//                }
-//            }
-//        }
-//    }
-
     @Override
     public boolean isConnected() {
         Jedis jedis = jedisPool.getResource();
