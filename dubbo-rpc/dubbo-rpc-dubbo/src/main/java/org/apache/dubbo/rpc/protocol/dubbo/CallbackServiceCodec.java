@@ -24,6 +24,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invocation;
@@ -63,11 +64,11 @@ class CallbackServiceCodec {
     private static final byte CALLBACK_DESTROY = 0x2;
     private static final String INV_ATT_CALLBACK_KEY = "sys_callback_arg-";
 
-    private static byte isCallBack(URL url, String methodName, int argIndex) {
+    private static byte isCallBack(URL url, String protocolServiceKey, String methodName, int argIndex) {
         // parameter callback rule: method-name.parameter-index(starting from 0).callback
         byte isCallback = CALLBACK_NONE;
-        if (url != null && url.hasMethodParameter(methodName)) {
-            String callback = url.getParameter(methodName + "." + argIndex + ".callback");
+        if (url != null && url.hasServiceMethodParameter(protocolServiceKey, methodName)) {
+            String callback = url.getServiceParameter(protocolServiceKey, methodName + "." + argIndex + ".callback");
             if (callback != null) {
                 if ("true".equalsIgnoreCase(callback)) {
                     isCallback = CALLBACK_CREATE;
@@ -113,7 +114,9 @@ class CallbackServiceCodec {
             }
         }
         tmpMap.putAll(params);
+        
         tmpMap.remove(VERSION_KEY);// doesn't need to distinguish version for callback
+        tmpMap.remove(Constants.BIND_PORT_KEY); //callback doesn't needs bind.port
         tmpMap.put(INTERFACE_KEY, clazz.getName());
         URL exportUrl = new URL(DubboProtocol.NAME, channel.getLocalAddress().getAddress().getHostAddress(), channel.getLocalAddress().getPort(), clazz.getName() + "." + instid, tmpMap);
 
@@ -266,7 +269,7 @@ class CallbackServiceCodec {
     public static Object encodeInvocationArgument(Channel channel, RpcInvocation inv, int paraIndex) throws IOException {
         // get URL directly
         URL url = inv.getInvoker() == null ? null : inv.getInvoker().getUrl();
-        byte callbackStatus = isCallBack(url, inv.getMethodName(), paraIndex);
+        byte callbackStatus = isCallBack(url, inv.getProtocolServiceKey(), inv.getMethodName(), paraIndex);
         Object[] args = inv.getArguments();
         Class<?>[] pts = inv.getParameterTypes();
         switch (callbackStatus) {
@@ -293,7 +296,7 @@ class CallbackServiceCodec {
             }
             return inObject;
         }
-        byte callbackstatus = isCallBack(url, inv.getMethodName(), paraIndex);
+        byte callbackstatus = isCallBack(url, inv.getProtocolServiceKey(), inv.getMethodName(), paraIndex);
         switch (callbackstatus) {
             case CallbackServiceCodec.CALLBACK_CREATE:
                 try {

@@ -19,6 +19,7 @@ package org.apache.dubbo.metadata;
 import org.apache.dubbo.common.URL;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -28,6 +29,7 @@ import java.util.stream.StreamSupport;
 
 import static java.util.Collections.unmodifiableSortedSet;
 import static java.util.stream.StreamSupport.stream;
+import static org.apache.dubbo.common.URL.buildKey;
 
 /**
  * A framework interface of Dubbo Metadata Service defines the contract of Dubbo Services registartion and subscription
@@ -90,7 +92,7 @@ public interface MetadataService {
      * @see #toSortedStrings(Stream)
      * @see URL#toFullString()
      */
-    default SortedSet<String> getSubscribedURLs(){
+    default SortedSet<String> getSubscribedURLs() {
         throw new UnsupportedOperationException("This operation is not supported for consumer.");
     }
 
@@ -165,7 +167,9 @@ public interface MetadataService {
      *
      * @return
      */
-    String getServiceDefinition(String interfaceName, String version, String group);
+    default String getServiceDefinition(String interfaceName, String version, String group) {
+        return getServiceDefinition(buildKey(interfaceName, group, version));
+    }
 
     /**
      * Interface definition.
@@ -173,6 +177,10 @@ public interface MetadataService {
      * @return
      */
     String getServiceDefinition(String serviceKey);
+
+    MetadataInfo getMetadataInfo(String revision);
+
+    Map<String, MetadataInfo> getMetadataInfos();
 
     /**
      * Is the {@link URL} for the {@link MetadataService} or not?

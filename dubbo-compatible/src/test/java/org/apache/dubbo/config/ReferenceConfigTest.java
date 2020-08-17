@@ -38,12 +38,12 @@ public class ReferenceConfigTest {
 
     @BeforeEach
     public void setUp() {
-        ApplicationModel.getConfigManager().clear();
+        ApplicationModel.reset();
     }
 
     @AfterEach
     public void tearDown() {
-        ApplicationModel.getConfigManager().clear();
+        ApplicationModel.reset();
     }
 
     @Test

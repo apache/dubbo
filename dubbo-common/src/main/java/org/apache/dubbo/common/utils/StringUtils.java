@@ -28,13 +28,17 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static java.lang.String.valueOf;
+import static java.util.Collections.emptySet;
+import static java.util.Collections.unmodifiableSet;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.DOT_REGEX;
@@ -700,6 +704,45 @@ public final class StringUtils {
     }
 
     /**
+     * Split the specified value to be a {@link Set}
+     *
+     * @param value         the content to be split
+     * @param separatorChar a char to separate
+     * @return non-null read-only {@link Set}
+     * @since 2.7.8
+     */
+    public static Set<String> splitToSet(String value, char separatorChar) {
+        return splitToSet(value, separatorChar, false);
+    }
+
+    /**
+     * Split the specified value to be a {@link Set}
+     *
+     * @param value         the content to be split
+     * @param separatorChar a char to separate
+     * @param trimElements  require to trim the elements or not
+     * @return non-null read-only {@link Set}
+     * @since 2.7.8
+     */
+    public static Set<String> splitToSet(String value, char separatorChar, boolean trimElements) {
+        List<String> values = splitToList(value, separatorChar);
+        int size = values.size();
+
+        if (size < 1) { // empty condition
+            return emptySet();
+        }
+
+        if (!trimElements) { // Do not require to trim the elements
+            return new LinkedHashSet(values);
+        }
+
+        return unmodifiableSet(values
+                .stream()
+                .map(String::trim)
+                .collect(LinkedHashSet::new, Set::add, Set::addAll));
+    }
+
+    /**
      * join string.
      *
      * @param array String array.
@@ -797,7 +840,7 @@ public final class StringUtils {
     }
 
     public static String getQueryStringValue(String qs, String key) {
-        Map<String, String> map = StringUtils.parseQueryString(qs);
+        Map<String, String> map = parseQueryString(qs);
         return map.get(key);
     }
 
@@ -1051,4 +1094,16 @@ public final class StringUtils {
         return (byte) ((hi << 4) + lo);
     }
 
+    /**
+     * Create the common-delimited {@link String} by one or more {@link String} members
+     *
+     * @param one    one {@link String}
+     * @param others others {@link String}
+     * @return <code>null</code> if <code>one</code> or <code>others</code> is <code>null</code>
+     * @since 2.7.8
+     */
+    public static String toCommaDelimitedString(String one, String... others) {
+        String another = arrayToDelimitedString(others, COMMA_SEPARATOR);
+        return isEmpty(another) ? one : one + COMMA_SEPARATOR + another;
+    }
 }

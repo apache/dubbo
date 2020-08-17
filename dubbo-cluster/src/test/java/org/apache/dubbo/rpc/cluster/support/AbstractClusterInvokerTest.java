@@ -227,7 +227,7 @@ public class AbstractClusterInvokerTest {
     public void testCloseAvailablecheck() {
         LoadBalance lb = mock(LoadBalance.class);
         Map<String, String> queryMap = StringUtils.parseQueryString(url.getParameterAndDecoded(REFER_KEY));
-        URL tmpUrl = url.addParameters(queryMap).removeParameter(MONITOR_KEY);
+        URL tmpUrl = url.addParameters(queryMap).removeParameter(REFER_KEY).removeParameter(MONITOR_KEY);
         given(lb.select(invokers, tmpUrl, invocation)).willReturn(invoker1);
         initlistsize5();
 
@@ -494,21 +494,21 @@ public class AbstractClusterInvokerTest {
         Directory<DemoService> directory = new StaticDirectory<DemoService>(invokers);
         FailoverClusterInvoker<DemoService> failoverClusterInvoker = new FailoverClusterInvoker<DemoService>(directory);
         try {
-            failoverClusterInvoker.invoke(new RpcInvocation("sayHello", DemoService.class.getName(), new Class<?>[0], new Object[0]));
+            failoverClusterInvoker.invoke(new RpcInvocation("sayHello", DemoService.class.getName(), "", new Class<?>[0], new Object[0]));
             Assertions.fail();
         } catch (RpcException e) {
             Assertions.assertEquals(RpcException.TIMEOUT_EXCEPTION, e.getCode());
         }
         ForkingClusterInvoker<DemoService> forkingClusterInvoker = new ForkingClusterInvoker<DemoService>(directory);
         try {
-            forkingClusterInvoker.invoke(new RpcInvocation("sayHello", DemoService.class.getName(), new Class<?>[0], new Object[0]));
+            forkingClusterInvoker.invoke(new RpcInvocation("sayHello", DemoService.class.getName(), "", new Class<?>[0], new Object[0]));
             Assertions.fail();
         } catch (RpcException e) {
             Assertions.assertEquals(RpcException.TIMEOUT_EXCEPTION, e.getCode());
         }
         FailfastClusterInvoker<DemoService> failfastClusterInvoker = new FailfastClusterInvoker<DemoService>(directory);
         try {
-            failfastClusterInvoker.invoke(new RpcInvocation("sayHello", DemoService.class.getName(), new Class<?>[0], new Object[0]));
+            failfastClusterInvoker.invoke(new RpcInvocation("sayHello", DemoService.class.getName(), "", new Class<?>[0], new Object[0]));
             Assertions.fail();
         } catch (RpcException e) {
             Assertions.assertEquals(RpcException.TIMEOUT_EXCEPTION, e.getCode());
