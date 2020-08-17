@@ -14,28 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.transport.grizzly;
+package org.apache.dubbo.registry.multicast;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.remoting.RemotingServer;
-import org.apache.dubbo.remoting.transport.ChannelHandlerAdapter;
+import org.apache.dubbo.registry.client.ServiceDiscovery;
+import org.apache.dubbo.registry.client.ServiceDiscoveryFactory;
 
-import org.junit.jupiter.api.Test;
-
-import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-
-public class GrizzlyTransporterTest {
-    @Test
-    public void shouldAbleToBindGrizzly() throws Exception {
-        int port = NetUtils.getAvailablePort();
-        URL url = new URL("telnet", "localhost", port,
-                new String[]{BIND_PORT_KEY, String.valueOf(port)});
-
-        RemotingServer server = new GrizzlyTransporter().bind(url, new ChannelHandlerAdapter());
-
-        assertThat(server.isBound(), is(true));
+public class MulticastServiceDiscoveryFactory implements ServiceDiscoveryFactory {
+    @Override
+    public ServiceDiscovery getServiceDiscovery(URL registryURL) {
+        return new MulticastServiceDiscovery();
     }
 }
