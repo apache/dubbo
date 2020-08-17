@@ -14,22 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata;
+package org.apache.dubbo.registry.dns.util;
 
-public interface MetadataChangeListener {
-    /**
-     * Call when metadata in provider side update <p/>
-     * Used to notify consumer to update metadata of ServiceInstance
-     *
-     * @param metadata latest metadata
-     */
-    void onEvent(String metadata);
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-    /**
-     * Echo test
-     * Used to check consumer still online
-     */
-    default String echo(String msg) {
-        return msg;
+public class DNSResolverTest {
+
+    @Test
+    public void testResolve() {
+        DNSResolver dnsResolver = new DNSResolver("8.8.8.8", 53, 1);
+        ResolveResult resolve = dnsResolver.resolve("aliyun.com");
+        Assertions.assertTrue(resolve.getHostnameList().size() > 0);
     }
 }

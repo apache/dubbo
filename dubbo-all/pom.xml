@@ -323,6 +323,13 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-registry-dns</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-monitor-api</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
@@ -662,6 +669,7 @@
                                     <include>org.apache.dubbo:dubbo-registry-sofa</include>
                                     <include>org.apache.dubbo:dubbo-registry-multiple</include>
                                     <include>org.apache.dubbo:dubbo-registry-kubernetes</include>
+                                    <include>org.apache.dubbo:dubbo-registry-dns</include>
                                     <include>org.apache.dubbo:dubbo-monitor-api</include>
                                     <include>org.apache.dubbo:dubbo-monitor-default</include>
                                     <include>org.apache.dubbo:dubbo-container-api</include>
