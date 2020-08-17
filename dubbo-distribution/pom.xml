@@ -50,7 +50,7 @@
         <profile>
             <id>dubbo-core-spi</id>
             <modules>
-                <module>dubbo-all</module>
+                <module>dubbo-core-spi</module>
             </modules>
         </profile>
     </profiles>
