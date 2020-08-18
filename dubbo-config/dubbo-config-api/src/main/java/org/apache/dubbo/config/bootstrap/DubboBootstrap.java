@@ -176,6 +176,8 @@ public class DubboBootstrap extends GenericEventListener {
 
     private AtomicBoolean destroyed = new AtomicBoolean(false);
 
+    private AtomicBoolean shutdown = new AtomicBoolean(false);
+
     private volatile ServiceInstance serviceInstance;
 
     private volatile MetadataService metadataService;
@@ -980,8 +982,12 @@ public class DubboBootstrap extends GenericEventListener {
         return started.get();
     }
 
-    public boolean getStartup() {
+    public boolean isStartup() {
         return startup.get();
+    }
+
+    public boolean isShutdown() {
+        return shutdown.get();
     }
 
     public DubboBootstrap stop() throws IllegalStateException {
@@ -1240,7 +1246,8 @@ public class DubboBootstrap extends GenericEventListener {
     }
 
     public void destroy() {
-        if (destroyLock.tryLock()) {
+        if (destroyLock.tryLock()
+                && shutdown.compareAndSet(false, true)) {
             try {
                 DubboShutdownHook.destroyAll();
 

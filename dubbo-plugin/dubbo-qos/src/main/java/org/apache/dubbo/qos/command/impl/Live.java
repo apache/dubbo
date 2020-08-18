@@ -20,20 +20,20 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.command.annotation.Cmd;
-import org.apache.dubbo.qos.probe.StartupProbe;
+import org.apache.dubbo.qos.probe.LivenessProbe;
 
 import java.util.Set;
 
-@Cmd(name = "startup", summary = "Judge if service has started? ")
-public class Startup implements BaseCommand {
+@Cmd(name = "live", summary = "Judge if service is alive? ")
+public class Live implements BaseCommand {
 
     @Override
     public String execute(CommandContext commandContext, String[] args) {
-        Set<StartupProbe> startupProbes = ExtensionLoader.getExtensionLoader(StartupProbe.class)
+        Set<LivenessProbe> livenessProbes = ExtensionLoader.getExtensionLoader(LivenessProbe.class)
                 .getSupportedExtensionInstances();
-        if (!startupProbes.isEmpty()) {
-            for (StartupProbe startupProbe : startupProbes) {
-                if (!startupProbe.check()) {
+        if (!livenessProbes.isEmpty()) {
+            for (LivenessProbe livenessProbe : livenessProbes) {
+                if (!livenessProbe.check()) {
                     // 503 Service Unavailable
                     commandContext.setHttpCode(503);
                     return "false";

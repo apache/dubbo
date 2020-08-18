@@ -16,19 +16,32 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.command.annotation.Cmd;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ServiceRepository;
+import org.apache.dubbo.qos.probe.ReadinessProbe;
+
+import java.util.Set;
 
 @Cmd(name = "ready", summary = "Judge if service is ready to work? ")
 public class Ready implements BaseCommand {
 
     @Override
     public String execute(CommandContext commandContext, String[] args) {
-        ServiceRepository serviceRepository = ApplicationModel.getServiceRepository();
-
+        Set<ReadinessProbe> readinessProbes = ExtensionLoader.getExtensionLoader(ReadinessProbe.class)
+                .getSupportedExtensionInstances();
+        if (!readinessProbes.isEmpty()) {
+            for (ReadinessProbe readinessProbe : readinessProbes) {
+                if (!readinessProbe.check()) {
+                    // 503 Service Unavailable
+                    commandContext.setHttpCode(503);
+                    return "false";
+                }
+            }
+        }
+        // 200 OK
+        commandContext.setHttpCode(200);
         return "true";
     }
 
