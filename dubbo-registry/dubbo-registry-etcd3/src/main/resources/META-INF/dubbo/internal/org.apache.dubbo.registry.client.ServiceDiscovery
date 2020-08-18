@@ -1,1 +1,0 @@
-etcd3=org.apache.dubbo.registry.etcd.EtcdServiceDiscovery
