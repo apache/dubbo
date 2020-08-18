@@ -44,6 +44,8 @@ public class InMemoryServiceDiscovery implements ServiceDiscovery {
 
     private ServiceInstance serviceInstance;
 
+    private URL registryURL;
+
     @Override
     public Set<String> getServices() {
         return repository.keySet();
@@ -68,6 +70,11 @@ public class InMemoryServiceDiscovery implements ServiceDiscovery {
             }
         }
         return new DefaultPage<>(offset, pageSize, data, totalSize);
+    }
+
+    @Override
+    public URL getUrl() {
+        return registryURL;
     }
 
     @Override
@@ -104,7 +111,7 @@ public class InMemoryServiceDiscovery implements ServiceDiscovery {
 
     @Override
     public void initialize(URL registryURL) throws Exception {
-
+        this.registryURL = registryURL;
     }
 
     @Override

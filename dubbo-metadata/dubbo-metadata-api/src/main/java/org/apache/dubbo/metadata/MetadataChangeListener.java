@@ -24,4 +24,12 @@ public interface MetadataChangeListener {
      * @param metadata latest metadata
      */
     void onEvent(String metadata);
+
+    /**
+     * Echo test
+     * Used to check consumer still online
+     */
+    default String echo(String msg) {
+        return msg;
+    }
 }
