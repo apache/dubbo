@@ -187,7 +187,7 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
         }
 
         for (ProtocolConfig protocolConfig : protocolConfigs) {
-            if (DUBBO_PROTOCOL.equals(protocolConfig.getName())) {
+            if (DUBBO_PROTOCOL.equalsIgnoreCase(protocolConfig.getName())) {
                 return protocolConfig;
             }
         }
