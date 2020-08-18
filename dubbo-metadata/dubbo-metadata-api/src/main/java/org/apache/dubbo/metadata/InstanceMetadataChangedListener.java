@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.metadata;
 
-public interface MetadataChangeListener {
+public interface InstanceMetadataChangedListener {
     /**
      * Call when metadata in provider side update <p/>
      * Used to notify consumer to update metadata of ServiceInstance

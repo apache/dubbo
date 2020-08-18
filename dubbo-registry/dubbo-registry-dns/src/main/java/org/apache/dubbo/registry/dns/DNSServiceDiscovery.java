@@ -23,7 +23,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.metadata.MetadataChangeListener;
+import org.apache.dubbo.metadata.InstanceMetadataChangedListener;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.RevisionResolver;
 import org.apache.dubbo.metadata.WritableMetadataService;
@@ -134,11 +134,11 @@ public class DNSServiceDiscovery implements ServiceDiscovery {
         // reduce the probability of failure when metadata update
         echoCheckExecutor.scheduleAtFixedRate(() -> {
             WritableMetadataService metadataService = WritableMetadataService.getDefaultExtension();
-            Map<String, MetadataChangeListener> listenerMap = metadataService.getMetadataChangeListenerMap();
-            Iterator<Map.Entry<String, MetadataChangeListener>> iterator = listenerMap.entrySet().iterator();
+            Map<String, InstanceMetadataChangedListener> listenerMap = metadataService.getInstanceMetadataChangedListenerMap();
+            Iterator<Map.Entry<String, InstanceMetadataChangedListener>> iterator = listenerMap.entrySet().iterator();
 
             while (iterator.hasNext()) {
-                Map.Entry<String, MetadataChangeListener> entry = iterator.next();
+                Map.Entry<String, InstanceMetadataChangedListener> entry = iterator.next();
                 try {
                     entry.getValue().echo(CommonConstants.DUBBO);
                 } catch (RpcException e) {
@@ -183,9 +183,9 @@ public class DNSServiceDiscovery implements ServiceDiscovery {
 
         // notify empty message to consumer
         WritableMetadataService metadataService = WritableMetadataService.getDefaultExtension();
-        metadataService.exportServiceDiscoveryMetadata("");
-        metadataService.getMetadataChangeListenerMap().forEach((consumerId, listener) -> listener.onEvent(""));
-        metadataService.getMetadataChangeListenerMap().clear();
+        metadataService.exportInstanceMetadata("");
+        metadataService.getInstanceMetadataChangedListenerMap().forEach((consumerId, listener) -> listener.onEvent(""));
+        metadataService.getInstanceMetadataChangedListenerMap().clear();
     }
 
     @Override
@@ -277,7 +277,7 @@ public class DNSServiceDiscovery implements ServiceDiscovery {
                 MetadataService metadataService = MetadataUtils.getMetadataServiceProxy(serviceInstance, this);
 
                 String consumerId = ApplicationModel.getName() + NetUtils.getLocalHost();
-                String metadata = metadataService.getAndListenServiceDiscoveryMetadata(
+                String metadata = metadataService.getAndListenInstanceMetadata(
                         consumerId, metadataString -> {
                             logger.info("Receive callback: " + metadataString + serviceInstance);
                             if (StringUtils.isEmpty(metadataString)) {
@@ -311,14 +311,14 @@ public class DNSServiceDiscovery implements ServiceDiscovery {
             lastMetadataRevision = metadataRevision;
 
             // save newest metadata to local
-            metadataService.exportServiceDiscoveryMetadata(metadataString);
+            metadataService.exportInstanceMetadata(metadataString);
 
             // notify to consumer
-            Map<String, MetadataChangeListener> listenerMap = metadataService.getMetadataChangeListenerMap();
-            Iterator<Map.Entry<String, MetadataChangeListener>> iterator = listenerMap.entrySet().iterator();
+            Map<String, InstanceMetadataChangedListener> listenerMap = metadataService.getInstanceMetadataChangedListenerMap();
+            Iterator<Map.Entry<String, InstanceMetadataChangedListener>> iterator = listenerMap.entrySet().iterator();
 
             while (iterator.hasNext()) {
-                Map.Entry<String, MetadataChangeListener> entry = iterator.next();
+                Map.Entry<String, InstanceMetadataChangedListener> entry = iterator.next();
                 try {
                     entry.getValue().onEvent(metadataString);
                 } catch (RpcException e) {

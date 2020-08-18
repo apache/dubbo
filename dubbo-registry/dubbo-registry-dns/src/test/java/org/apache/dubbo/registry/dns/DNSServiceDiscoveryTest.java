@@ -24,7 +24,7 @@ import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
-import org.apache.dubbo.metadata.MetadataChangeListener;
+import org.apache.dubbo.metadata.InstanceMetadataChangedListener;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
@@ -81,10 +81,10 @@ public class DNSServiceDiscoveryTest {
         dnsServiceDiscovery.register(serviceInstance);
 
         WritableMetadataService metadataService = WritableMetadataService.getDefaultExtension();
-        MetadataChangeListener changeListener = Mockito.mock(MetadataChangeListener.class);
+        InstanceMetadataChangedListener changeListener = Mockito.mock(InstanceMetadataChangedListener.class);
 
         String metadataString = metadataService
-                .getAndListenServiceDiscoveryMetadata("test", changeListener);
+                .getAndListenInstanceMetadata("test", changeListener);
 
         assertEquals(JSONObject.toJSONString(serviceInstance.getMetadata()), metadataString);
         assertEquals(serviceInstance, dnsServiceDiscovery.getLocalInstance());
@@ -93,8 +93,8 @@ public class DNSServiceDiscoveryTest {
 
         Mockito.verify(changeListener, Mockito.times(1)).onEvent(Mockito.any());
 
-        metadataService.getMetadataChangeListenerMap().clear();
-        metadataService.exportServiceDiscoveryMetadata(null);
+        metadataService.getInstanceMetadataChangedListenerMap().clear();
+        metadataService.exportInstanceMetadata(null);
 
         dnsServiceDiscovery.destroy();
 
@@ -146,8 +146,8 @@ public class DNSServiceDiscoveryTest {
         assertEquals("c", argument.getValue().getServiceInstances().get(0).getMetadata("a"));
 
 
-        metadataService.exportServiceDiscoveryMetadata(null);
-        metadataService.getMetadataChangeListenerMap().clear();
+        metadataService.exportInstanceMetadata(null);
+        metadataService.getInstanceMetadataChangedListenerMap().clear();
         serviceConfig.unexport();
 
         dnsServiceDiscovery.destroy();
@@ -162,7 +162,7 @@ public class DNSServiceDiscoveryTest {
         serviceConfig.setGroup("Test.Service.");
         serviceConfig.setVersion(MetadataService.VERSION);
         MethodConfig methodConfig = new MethodConfig();
-        methodConfig.setName("getAndListenServiceDiscoveryMetadata");
+        methodConfig.setName("getAndListenInstanceMetadata");
 
         ArgumentConfig argumentConfig = new ArgumentConfig();
         argumentConfig.setIndex(1);
