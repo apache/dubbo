@@ -151,7 +151,6 @@
         <module>dubbo-dependencies</module>
         <module>dubbo-metadata</module>
         <module>dubbo-build-tools</module>
-        <module>dubbo-remoting-redis</module>
     </modules>
 
     <dependencyManagement>
