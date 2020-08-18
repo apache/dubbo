@@ -270,4 +270,16 @@ public interface MetadataService {
     default String getAndListenServiceDiscoveryMetadata(String consumerId, MetadataChangeListener listener) {
         throw new UnsupportedOperationException("This operation is not supported for consumer.");
     }
+
+    /**
+     * Echo test
+     * Used to check provider still online
+     *
+     * @param msg msg
+     * @return msg
+     * @since 3.0
+     */
+    default String echo(String msg) {
+        return msg;
+    }
 }

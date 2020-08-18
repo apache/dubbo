@@ -60,13 +60,13 @@ public class DNSServiceDiscovery implements ServiceDiscovery {
 
     private URL registryURL;
 
-    // =================================== Provider side =================================== //
-
     /**
-     * Echo check if consumer is still work
-     * echo task may take a lot of time when consumer offline, create a new ScheduledThreadPool
+     * Echo check if consumer and provider is still work
+     * echo task may take a lot of time when consumer and provider offline, create a new ScheduledThreadPool
      */
-    private final ScheduledExecutorService echoCheckExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-DNS-EchoCheck"));
+    private final ScheduledExecutorService echoCheckExecutor = Executors.newScheduledThreadPool(1, new NamedThreadFactory("Dubbo-DNS-EchoCheck"));
+
+    // =================================== Provider side =================================== //
 
     private ServiceInstance serviceInstance;
 
@@ -93,6 +93,14 @@ public class DNSServiceDiscovery implements ServiceDiscovery {
      * Value - Json processed metadata string
      */
     private final ConcurrentHashMap<String, String> metadataMap = new ConcurrentHashMap<>();
+
+    /**
+     * Local Cache of {@link MetadataService} key
+     * <p>
+     * Key - {@link ServiceInstance} ID ( usually ip + port )
+     * Value - key of {@link MetadataService}
+     */
+    private final ConcurrentHashMap<String, String> metadataServiceKeyMap = new ConcurrentHashMap<>();
 
     /**
      * Local Cache of Service's {@link ServiceInstance} list revision,
@@ -135,17 +143,32 @@ public class DNSServiceDiscovery implements ServiceDiscovery {
         echoCheckExecutor.scheduleAtFixedRate(() -> {
             WritableMetadataService metadataService = WritableMetadataService.getDefaultExtension();
             Map<String, MetadataChangeListener> listenerMap = metadataService.getMetadataChangeListenerMap();
-            Iterator<Map.Entry<String, MetadataChangeListener>> iterator = listenerMap.entrySet().iterator();
+            Iterator<Map.Entry<String, MetadataChangeListener>> listenerIterator = listenerMap.entrySet().iterator();
 
-            while (iterator.hasNext()) {
-                Map.Entry<String, MetadataChangeListener> entry = iterator.next();
+            while (listenerIterator.hasNext()) {
+                Map.Entry<String, MetadataChangeListener> entry = listenerIterator.next();
                 try {
                     entry.getValue().echo(CommonConstants.DUBBO);
                 } catch (RpcException e) {
                     if (logger.isInfoEnabled()) {
                         logger.info("Send echo message to consumer error. Possible cause: consumer is offline.");
                     }
-                    iterator.remove();
+                    listenerIterator.remove();
+                }
+            }
+
+            Iterator<Map.Entry<String, String>> keyIterator = metadataServiceKeyMap.entrySet().iterator();
+            while (keyIterator.hasNext()) {
+                Map.Entry<String, String> entry = keyIterator.next();
+                try {
+                    MetadataUtils.getMetadataServiceProxy(entry.getValue()).echo(CommonConstants.DUBBO);
+                } catch (RpcException e) {
+                    if (logger.isInfoEnabled()) {
+                        logger.info("Send echo message to provider error. Possible cause: consumer is offline.");
+                    }
+                    metadataMap.remove(entry.getKey());
+                    MetadataUtils.destroyMetadataServiceProxy(entry.getValue());
+                    keyIterator.remove();
                 }
             }
         }, echoPollingCycle, echoPollingCycle, TimeUnit.MILLISECONDS);
@@ -248,6 +271,14 @@ public class DNSServiceDiscovery implements ServiceDiscovery {
         this.dnsResolver = dnsResolver;
     }
 
+    /**
+     * UT used only
+     */
+    @Deprecated
+    public ConcurrentHashMap<String, String> getMetadataServiceKeyMap() {
+        return metadataServiceKeyMap;
+    }
+
     @SuppressWarnings("unchecked")
     private List<ServiceInstance> toServiceInstance(String serviceName, ResolveResult resolveResult) {
 
@@ -275,6 +306,8 @@ public class DNSServiceDiscovery implements ServiceDiscovery {
             } else {
                 // refer from MetadataUtils, this proxy is different from the one used to refer exportedURL
                 MetadataService metadataService = MetadataUtils.getMetadataServiceProxy(serviceInstance, this);
+
+                metadataServiceKeyMap.put(hostId, MetadataUtils.computeKey(serviceInstance));
 
                 String consumerId = ApplicationModel.getName() + NetUtils.getLocalHost();
                 String metadata = metadataService.getAndListenServiceDiscoveryMetadata(

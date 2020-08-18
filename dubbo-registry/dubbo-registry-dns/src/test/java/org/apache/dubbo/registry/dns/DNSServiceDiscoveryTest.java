@@ -35,6 +35,7 @@ import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedLi
 import org.apache.dubbo.registry.dns.util.DNSClientConst;
 import org.apache.dubbo.registry.dns.util.DNSResolver;
 import org.apache.dubbo.registry.dns.util.ResolveResult;
+import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import com.alibaba.fastjson.JSONObject;
@@ -50,7 +51,9 @@ import java.util.List;
 import java.util.Set;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
+import static org.apache.dubbo.metadata.MetadataConstants.METADATA_PROXY_TIMEOUT_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class DNSServiceDiscoveryTest {
 
@@ -107,6 +110,8 @@ public class DNSServiceDiscoveryTest {
         URL registryURL = URL.valueOf("dns://")
                 .addParameter(DNSClientConst.POLLING_CYCLE, 100)
                 .addParameter(DNSClientConst.ECHO_POLLING_CYCLE, 100);
+        ApplicationModel.getEnvironment().getAppExternalConfigurationMap()
+                .put(METADATA_PROXY_TIMEOUT_KEY, String.valueOf(500));
         dnsServiceDiscovery.initialize(registryURL);
 
         WritableMetadataService metadataService = WritableMetadataService.getDefaultExtension();
@@ -118,7 +123,9 @@ public class DNSServiceDiscoveryTest {
         int port = NetUtils.getAvailablePort();
         ApplicationModel.getApplicationConfig().setMetadataServicePort(port);
 
-        ServiceConfig<MetadataService> serviceConfig = exportMockMetadataService(metadataService, port);
+        WritableMetadataService spiedMetadataService = Mockito.spy(metadataService);
+
+        ServiceConfig<MetadataService> serviceConfig = exportMockMetadataService(spiedMetadataService, port);
 
         DNSResolver dnsResolver = Mockito.mock(DNSResolver.class);
         ResolveResult resolveResult = new ResolveResult();
@@ -145,12 +152,20 @@ public class DNSServiceDiscoveryTest {
         Mockito.verify(changedListener, Mockito.timeout(1000)).onEvent(argument.capture());
         assertEquals("c", argument.getValue().getServiceInstances().get(0).getMetadata("a"));
 
+        Mockito.when(spiedMetadataService.echo(Mockito.anyString()))
+                .thenThrow(new RpcException("Mock Provider Shutdown"));
+        Mockito.when(dnsResolver.resolve("Test.Service.")).thenReturn(new ResolveResult());
+
+        Thread.sleep(1000);
+        assertTrue(dnsServiceDiscovery.getMetadataServiceKeyMap().isEmpty());
 
         metadataService.exportServiceDiscoveryMetadata(null);
         metadataService.getMetadataChangeListenerMap().clear();
         serviceConfig.unexport();
 
         dnsServiceDiscovery.destroy();
+        ApplicationModel.getEnvironment().getAppExternalConfigurationMap()
+                .remove(METADATA_PROXY_TIMEOUT_KEY, String.valueOf(100));
     }
 
     private ServiceConfig<MetadataService> exportMockMetadataService(MetadataService metadataService, int port) {
