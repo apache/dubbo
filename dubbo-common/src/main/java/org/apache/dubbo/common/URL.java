@@ -199,10 +199,6 @@ class URL implements Serializable {
                String path,
                Map<String, String> parameters,
                Map<String, Map<String, String>> methodParameters) {
-        if (StringUtils.isEmpty(username)
-                && StringUtils.isNotEmpty(password)) {
-            throw new IllegalArgumentException("Invalid url, password without username!");
-        }
         this.protocol = protocol;
         this.username = username;
         this.password = password;
