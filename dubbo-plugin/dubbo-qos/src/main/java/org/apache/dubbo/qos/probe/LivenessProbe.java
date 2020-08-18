@@ -19,6 +19,12 @@ package org.apache.dubbo.qos.probe;
 import org.apache.dubbo.common.extension.SPI;
 
 /**
+ * A probe to indicate whether program is alive
+ * </p>
+ * If one or more spi return false, 'live' command in dubbo-qos
+ * will return false. This can be extend with custom program and developers
+ * can implement this to customize life cycle.
+ *
  * @since 3.0
  */
 @SPI
