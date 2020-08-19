@@ -39,7 +39,7 @@ public class SentinelRedisClient extends AbstractRedisClient implements RedisCli
     public SentinelRedisClient(URL url) {
         super(url);
         String masterName = url.getParameter("master.name", "Sentinel-master");
-        String address = (new StringBuilder()).append(url.getAddress()).append(":").append(url.getPort()).toString();
+        String address = (new StringBuilder()).append(url.getAddress()).toString();
         String[] backupAddresses = url.getParameter(RemotingConstants.BACKUP_KEY, new String[0]);
         if (backupAddresses.length == 0) {
             throw new IllegalStateException("Sentinel addresses can not be empty");

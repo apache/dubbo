@@ -353,9 +353,9 @@ public interface CommonConstants {
 
     String REDIS_CLIENT_KEY = "redis-client";
 
-    String MONO_REDIS_CLIENT = "mono-jedis";
+    String MONO_REDIS = "mono";
 
-    String SENTINEL_REDIS_CLIENT = "sentinel-jedis";
+    String SENTINEL_REDIS = "sentinel";
 
-    String CLUSTER_REDIS_CLIENT = "cluster-jedis";
+    String CLUSTER_REDIS = "cluster";
 }

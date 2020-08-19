@@ -55,12 +55,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
-import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_REDIS_CLIENT;
-import static org.apache.dubbo.common.constants.CommonConstants.MONO_REDIS_CLIENT;
+import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_REDIS;
+import static org.apache.dubbo.common.constants.CommonConstants.MONO_REDIS;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.REDIS_CLIENT_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.SENTINEL_REDIS_CLIENT;
+import static org.apache.dubbo.common.constants.CommonConstants.SENTINEL_REDIS;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
@@ -105,10 +105,10 @@ public class RedisRegistry extends FailbackRegistry {
 
     public RedisRegistry(URL url) {
         super(url);
-        String type = url.getParameter(REDIS_CLIENT_KEY, MONO_REDIS_CLIENT);
-        if (SENTINEL_REDIS_CLIENT.equals(type)) {
+        String type = url.getParameter(REDIS_CLIENT_KEY, MONO_REDIS);
+        if (SENTINEL_REDIS.equals(type)) {
             redisClient = new SentinelRedisClient(url);
-        } else if (CLUSTER_REDIS_CLIENT.equals(type)) {
+        } else if (CLUSTER_REDIS.equals(type)) {
             redisClient = new ClusterRedisClient(url);
         } else {
             redisClient = new MonoRedisClient(url);
