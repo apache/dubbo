@@ -84,6 +84,20 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
         this.registryURL = registryURL;
         this.namespace = config.getNamespace();
         this.enableRegister = registryURL.getParameter(KubernetesClientConst.ENABLE_REGISTER, true);
+
+        boolean availableAccess;
+        try {
+            availableAccess = kubernetesClient.pods().withName(currentHostname).get() != null;
+        } catch (Throwable e) {
+            availableAccess = false;
+        }
+        if (!availableAccess) {
+            String message = "Unable to access api server. " +
+                    "Please check your url config." +
+                    " Master URL: " + config.getMasterUrl() +
+                    " Hostname: " + currentHostname;
+            logger.error(message);
+        }
     }
 
     @Override
