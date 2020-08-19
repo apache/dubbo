@@ -60,7 +60,7 @@ public class ClusterRedisClient extends AbstractRedisClient implements RedisClie
 
     @Override
     public Long hset(String key, String field, String value) {
-        return hset(key, field, value);
+        return jedisCluster.hset(key, field, value);
     }
 
     @Override
@@ -92,18 +92,22 @@ public class ClusterRedisClient extends AbstractRedisClient implements RedisClie
 
     @Override
     public Set<String> scan(String pattern) {
+        Map<String, JedisPool> nodes = jedisCluster.getClusterNodes();
         Set<String> result = new HashSet<>();
-        String cursor = ScanParams.SCAN_POINTER_START;
-        ScanParams params = new ScanParams();
-        params.match(pattern);
-        while (true) {
-            ScanResult<String> scanResult = jedisCluster.scan(cursor, params);
-            List<String> list = scanResult.getResult();
-            if (CollectionUtils.isNotEmpty(list)) {
-                result.addAll(list);
-            }
-            if (ScanParams.SCAN_POINTER_START.equals(scanResult.getCursor())) {
-                break;
+        for (JedisPool jedisPool : nodes.values()) {
+            String cursor = ScanParams.SCAN_POINTER_START;
+            ScanParams params = new ScanParams();
+            params.match(pattern);
+            while (true) {
+                Jedis jedis = jedisPool.getResource();
+                ScanResult<String> scanResult = jedis.scan(cursor, params);
+                List<String> list = scanResult.getResult();
+                if (CollectionUtils.isNotEmpty(list)) {
+                    result.addAll(list);
+                }
+                if (ScanParams.SCAN_POINTER_START.equals(scanResult.getCursor())) {
+                    break;
+                }
             }
         }
         return result;
