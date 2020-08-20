@@ -79,6 +79,7 @@ public abstract class AbstractRedisClient implements RedisClient {
             if (ScanParams.SCAN_POINTER_START.equals(scanResult.getCursor())) {
                 break;
             }
+            cursor = scanResult.getCursor();
         }
         return result;
     }

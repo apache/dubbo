@@ -95,20 +95,8 @@ public class ClusterRedisClient extends AbstractRedisClient implements RedisClie
         Map<String, JedisPool> nodes = jedisCluster.getClusterNodes();
         Set<String> result = new HashSet<>();
         for (JedisPool jedisPool : nodes.values()) {
-            String cursor = ScanParams.SCAN_POINTER_START;
-            ScanParams params = new ScanParams();
-            params.match(pattern);
-            while (true) {
-                Jedis jedis = jedisPool.getResource();
-                ScanResult<String> scanResult = jedis.scan(cursor, params);
-                List<String> list = scanResult.getResult();
-                if (CollectionUtils.isNotEmpty(list)) {
-                    result.addAll(list);
-                }
-                if (ScanParams.SCAN_POINTER_START.equals(scanResult.getCursor())) {
-                    break;
-                }
-            }
+            Jedis jedis = jedisPool.getResource();
+            result.addAll(scan(jedis, pattern));
         }
         return result;
     }
