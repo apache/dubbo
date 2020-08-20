@@ -96,14 +96,24 @@ public abstract class AbstractConfig implements Serializable {
         return value;
     }
 
+    /**
+     *
+     * @param cls
+     * @return
+     */
     public static String getTagName(Class<?> cls) {
         String tag = cls.getSimpleName();
         for (String suffix : SUFFIXES) {
+            //是否以suffix结尾
             if (tag.endsWith(suffix)) {
+                //获取suffix前的内容
                 tag = tag.substring(0, tag.length() - suffix.length());
                 break;
             }
         }
+        /**
+         * ConfigCenter ==》 config-center
+         */
         return StringUtils.camelToSplitName(tag, "-");
     }
 

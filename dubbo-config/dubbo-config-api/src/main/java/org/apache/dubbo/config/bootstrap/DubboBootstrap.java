@@ -275,6 +275,7 @@ public class DubboBootstrap extends GenericEventListener {
 
     /**
      * Set the {@link ApplicationConfig}
+     * 添加ApplicationConfig
      *
      * @param applicationConfig the {@link ApplicationConfig}
      * @return current {@link DubboBootstrap} instance
@@ -524,6 +525,9 @@ public class DubboBootstrap extends GenericEventListener {
             return;
         }
 
+        /**
+         *
+         */
         ApplicationModel.initFrameworkExts();
 
         startConfigCenter();
@@ -887,6 +891,9 @@ public class DubboBootstrap extends GenericEventListener {
     public DubboBootstrap start() {
         if (started.compareAndSet(false, true)) {
             ready.set(false);
+            /**
+             * 初始化
+             */
             initialize();
             if (logger.isInfoEnabled()) {
                 logger.info(NAME + " is starting...");

@@ -76,6 +76,10 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 
     // ApplicationConfig correlative methods
 
+    /**
+     * 添加ApplicationConfig
+     * @param application
+     */
     public void setApplication(ApplicationConfig application) {
         addConfig(application, true);
     }
@@ -135,6 +139,9 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     }
 
     public Optional<Collection<ConfigCenterConfig>> getDefaultConfigCenter() {
+        /**
+         * 获取
+         */
         Collection<ConfigCenterConfig> defaults = getDefaultConfigs(getConfigsMap(getTagName(ConfigCenterConfig.class)));
         if (CollectionUtils.isEmpty(defaults)) {
             defaults = getConfigCenters();
@@ -389,11 +396,19 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
         addConfig(config, false);
     }
 
+    /**
+     * 添加配置
+     * @param config
+     * @param unique
+     */
     protected void addConfig(AbstractConfig config, boolean unique) {
         if (config == null) {
             return;
         }
         write(() -> {
+            /**
+             * 在configsCache中获取config对应得配置信息
+             */
             Map<String, AbstractConfig> configsMap = configsCache.computeIfAbsent(getTagName(config.getClass()), type -> newMap());
             addIfAbsent(config, configsMap, unique);
         });
@@ -477,6 +492,14 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
         return new HashMap<>();
     }
 
+    /**
+     *
+     * @param config
+     * @param configsMap
+     * @param unique
+     * @param <C>
+     * @throws IllegalStateException
+     */
     static <C extends AbstractConfig> void addIfAbsent(C config, Map<String, C> configsMap, boolean unique)
             throws IllegalStateException {
 
@@ -484,6 +507,9 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
             return;
         }
 
+        /**
+         * 查重
+         */
         if (unique) { // check duplicate
             configsMap.values().forEach(c -> {
                 checkDuplicate(c, config);
@@ -494,6 +520,9 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 
         C existedConfig = configsMap.get(key);
 
+        /**
+         * 配置已存在  且与缓存中得数据不一致
+         */
         if (existedConfig != null && !config.equals(existedConfig)) {
             if (logger.isWarnEnabled()) {
                 String type = config.getClass().getSimpleName();
@@ -501,6 +530,9 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
                         "you can try to give each %s a different id : %s", type, type, type, type, config));
             }
         } else {
+            /**
+             * 添加配置
+             */
             configsMap.put(key, config);
         }
     }
