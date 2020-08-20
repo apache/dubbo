@@ -97,6 +97,7 @@ public class ClusterRedisClient extends AbstractRedisClient implements RedisClie
         for (JedisPool jedisPool : nodes.values()) {
             Jedis jedis = jedisPool.getResource();
             result.addAll(scan(jedis, pattern));
+            jedis.close();
         }
         return result;
     }
