@@ -18,8 +18,10 @@ package org.apache.dubbo.registry.integration;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.client.RegistryProtocol;
+import org.apache.dubbo.registry.client.ServiceDiscoveryRegistryDirectory;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
@@ -28,15 +30,13 @@ import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.cluster.Directory;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-import static org.apache.dubbo.common.constants.RegistryConstants.ENABLE_REGISTRY_DIRECTORY_AUTO_MIGRATION;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
-import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.DEFAULT_REGISTRY;
-import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
 
 /**
  * RegistryProtocol
@@ -61,48 +61,57 @@ public class InterfaceCompatibleRegistryProtocol extends RegistryProtocol {
                 .build();
     }
 
-    @Override
-    protected <T> DynamicDirectory<T> createDirectory(Class<T> type, URL url) {
-        return new RegistryDirectory<>(type, url);
+    protected <T> Invoker<T> doRefer(Cluster cluster, Registry registry, Class<T> type, URL url) {
+//        ClusterInvoker<T> invoker = getInvoker(cluster, registry, type, url);
+        ClusterInvoker<T> migrationInvoker = new MigrationInvoker<>(this, cluster, registry, type, url);
+        return interceptInvoker(migrationInvoker, url);
     }
 
-    protected <T> Invoker<T> doRefer(Cluster cluster, Registry registry, Class<T> type, URL url) {
-        ClusterInvoker<T> invoker = getInvoker(cluster, registry, type, url);
-        ClusterInvoker<T> serviceDiscoveryInvoker = getServiceDiscoveryInvoker(cluster, type, url);
-        ClusterInvoker<T> migrationInvoker = new MigrationInvoker<>(invoker, serviceDiscoveryInvoker);
-
-        return interceptInvoker(migrationInvoker, url);
+    protected <T> ClusterInvoker<T> getInvoker(Cluster cluster, Registry registry, Class<T> type, URL url) {
+        DynamicDirectory<T> directory = new RegistryDirectory<>(type, url);
+        return doCreateInvoker(directory, cluster, registry, type);
     }
 
     protected <T> ClusterInvoker<T> getServiceDiscoveryInvoker(Cluster cluster, Class<T> type, URL url) {
         Registry registry = registryFactory.getRegistry(super.getRegistryUrl(url));
-        ClusterInvoker<T> serviceDiscoveryInvoker = null;
-        // enable auto migration from interface address pool to instance address pool
-        boolean autoMigration = url.getParameter(ENABLE_REGISTRY_DIRECTORY_AUTO_MIGRATION, false);
-        if (autoMigration) {
-            DynamicDirectory<T> serviceDiscoveryDirectory = super.createDirectory(type, url);
-            serviceDiscoveryDirectory.setRegistry(registry);
-            serviceDiscoveryDirectory.setProtocol(protocol);
-            Map<String, String> parameters = new HashMap<String, String>(serviceDiscoveryDirectory.getConsumerUrl().getParameters());
-            URL urlToRegistry = new URL(CONSUMER_PROTOCOL, parameters.remove(REGISTER_IP_KEY), 0, type.getName(), parameters);
-            if (serviceDiscoveryDirectory.isShouldRegister()) {
-                serviceDiscoveryDirectory.setRegisteredConsumerUrl(urlToRegistry);
-                registry.register(serviceDiscoveryDirectory.getRegisteredConsumerUrl());
-            }
-            serviceDiscoveryDirectory.buildRouterChain(urlToRegistry);
-            serviceDiscoveryDirectory.subscribe(toSubscribeUrl(urlToRegistry));
-            serviceDiscoveryInvoker = (ClusterInvoker<T>) cluster.join(serviceDiscoveryDirectory);
-        }
-        return serviceDiscoveryInvoker;
+        DynamicDirectory<T> directory = new ServiceDiscoveryRegistryDirectory<>(type, url);
+        return doCreateInvoker(directory, cluster, registry, type);
     }
 
-    private static class MigrationInvoker<T> implements ClusterInvoker<T> {
+    public static class MigrationInvoker<T> implements ClusterInvoker<T> {
+        private static final ExecutorService executor = Executors.newSingleThreadExecutor();
+
+        private URL url;
+        private Cluster cluster;
+        private Registry registry;
+        private Class<T> type;
+        private InterfaceCompatibleRegistryProtocol registryProtocol;
+
         private ClusterInvoker<T> invoker;
         private ClusterInvoker<T> serviceDiscoveryInvoker;
 
-        public MigrationInvoker(ClusterInvoker<T> invoker, ClusterInvoker<T> serviceDiscoveryInvoker) {
+        public MigrationInvoker(InterfaceCompatibleRegistryProtocol registryProtocol,
+                                Cluster cluster,
+                                Registry registry,
+                                Class<T> type,
+                                URL url) {
+            this(null, null, registryProtocol, cluster, registry, type, url);
+        }
+
+        public MigrationInvoker(ClusterInvoker<T> invoker,
+                                ClusterInvoker<T> serviceDiscoveryInvoker,
+                                InterfaceCompatibleRegistryProtocol registryProtocol,
+                                Cluster cluster,
+                                Registry registry,
+                                Class<T> type,
+                                URL url) {
             this.invoker = invoker;
             this.serviceDiscoveryInvoker = serviceDiscoveryInvoker;
+            this.registryProtocol = registryProtocol;
+            this.cluster = cluster;
+            this.registry = registry;
+            this.type = type;
+            this.url = url;
         }
 
         public ClusterInvoker<T> getInvoker() {
@@ -126,19 +135,85 @@ public class InterfaceCompatibleRegistryProtocol extends RegistryProtocol {
             return invoker.getInterface();
         }
 
+        private long count;
+        private boolean forceMigrate;
+
+        public boolean isForceMigrate() {
+            return forceMigrate;
+        }
+
+        public void setForceMigrate(boolean forceMigrate) {
+            this.forceMigrate = forceMigrate;
+        }
+
+        public synchronized void migrateToServiceDiscoveryInvoker(boolean forceMigrate) {
+            setForceMigrate(forceMigrate);
+            if (!forceMigrate) {
+                refreshServiceDiscoveryInvoker();
+                refreshInterfaceInvoker();
+            } else {
+                refreshServiceDiscoveryInvoker();
+                destroyInterfaceInvoker();
+            }
+        }
+
+        public synchronized void fallbackToInterfaceInvoker() {
+            refreshInterfaceInvoker();
+
+            destroyServiceDiscoveryInvoker();
+        }
+
+        private synchronized void destroyServiceDiscoveryInvoker() {
+            if (serviceDiscoveryInvoker != null) {
+                serviceDiscoveryInvoker.destroy();
+                serviceDiscoveryInvoker = null;
+            }
+        }
+
+        private synchronized void refreshServiceDiscoveryInvoker() {
+            if (serviceDiscoveryInvoker == null || serviceDiscoveryInvoker.isDestroyed()) {
+                serviceDiscoveryInvoker = registryProtocol.getServiceDiscoveryInvoker(cluster, type, url);
+            }
+        }
+
+        private synchronized void refreshInterfaceInvoker() {
+            if (invoker == null || invoker.isDestroyed()) {
+                invoker = registryProtocol.getInvoker(cluster, registry, type, url);
+            }
+        }
+
+        private synchronized void destroyInterfaceInvoker() {
+            if (invoker != null) {
+                invoker.destroy();
+                invoker = null;
+            }
+        }
+
         @Override
         public Result invoke(Invocation invocation) throws RpcException {
-            if (serviceDiscoveryInvoker == null) {
+            if (serviceDiscoveryInvoker == null || serviceDiscoveryInvoker.isDestroyed()) {
                 return invoker.invoke(invocation);
             }
 
-            if (invoker.isDestroyed()) {
+            if (invoker == null || invoker.isDestroyed()) {
                 return serviceDiscoveryInvoker.invoke(invocation);
             }
-            if (serviceDiscoveryInvoker.isAvailable()) {
-                invoker.destroy(); // can be destroyed asynchronously
+
+            if (!isForceMigrate()) {
+                Set<MigrationDetector> detectors = ExtensionLoader.getExtensionLoader(MigrationDetector.class).getSupportedExtensionInstances();
+                if (detectors.stream().allMatch(migrationDetector -> migrationDetector.shouldMigrate(serviceDiscoveryInvoker, invoker))) {
+                    destroyInterfaceInvoker();
+                    // try to destroy asynchronously
+//                    executor.submit(() -> {
+//                        if ()
+//                        destroyInterfaceInvoker();
+//                    });
+                    return serviceDiscoveryInvoker.invoke(invocation);
+                }
+            } else {
                 return serviceDiscoveryInvoker.invoke(invocation);
             }
+
             return invoker.invoke(invocation);
         }
 

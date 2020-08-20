@@ -16,23 +16,73 @@
  */
 package org.apache.dubbo.registry.client;
 
+import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
+import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
+import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashSet;
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.registry.integration.InterfaceCompatibleRegistryProtocol;
+import org.apache.dubbo.registry.integration.MigrationRuleListener;
 import org.apache.dubbo.registry.integration.RegistryProtocolListener;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
-public class ServiceDiscoveryRegistryProtocolListener implements RegistryProtocolListener {
+import java.util.Set;
+
+public class ServiceDiscoveryRegistryProtocolListener implements RegistryProtocolListener, ConfigurationListener {
+    private static final Logger logger = LoggerFactory.getLogger(ServiceDiscoveryRegistryProtocolListener.class);
+    private static final String RULE_KEY = ApplicationModel.getName() + ".MIGRATION";
+    private static final String DUBBO_SERVICEDISCOVERY_MIGRATION = "DUBBO_SERVICEDISCOVERY_MIGRATION";
+
+    private Set<MigrationRuleListener> listeners = new ConcurrentHashSet<>();
+    private DynamicConfiguration configuration;
+
+    private volatile String rawRule;
+
+    public ServiceDiscoveryRegistryProtocolListener() {
+        this.configuration = ApplicationModel.getEnvironment().getDynamicConfiguration().orElseGet(null);
+
+        configuration.addListener(RULE_KEY, this);
+
+        String rawRule = configuration.getConfig(RULE_KEY, DUBBO_SERVICEDISCOVERY_MIGRATION);
+        process(new ConfigChangedEvent(RULE_KEY, DUBBO_SERVICEDISCOVERY_MIGRATION, rawRule));
+    }
+
     @Override
-    public void onExport(RegistryProtocol registryProtocol, Exporter<?> exporter) {
+    public synchronized void process(ConfigChangedEvent event) {
+        rawRule = event.getContent();
+        if (StringUtils.isEmpty(rawRule)) {
+            logger.warn("Received empty migration rule, will ignore.");
+            return;
+        }
+
+        if (CollectionUtils.isNotEmpty(listeners)) {
+            listeners.forEach(listener -> listener.doMigrate(rawRule));
+        }
+    }
+
+    @Override
+    public synchronized void onExport(RegistryProtocol registryProtocol, Exporter<?> exporter) {
 
     }
 
     @Override
-    public void onRefer(RegistryProtocol registryProtocol, Invoker<?> invoker) {
+    public synchronized <T> void onRefer(RegistryProtocol registryProtocol, Invoker<T> invoker) {
+        InterfaceCompatibleRegistryProtocol.MigrationInvoker<T> migrationInvoker
+                = (InterfaceCompatibleRegistryProtocol.MigrationInvoker<T>) invoker;
 
+        MigrationRuleListener<T> migrationListener = new MigrationRuleListener<T>(migrationInvoker);
+        listeners.add(migrationListener);
+
+        migrationListener.doMigrate(rawRule);
     }
 
     @Override
     public void onDestroy() {
-
+        configuration.removeListener(RULE_KEY, this);
     }
 }

@@ -21,13 +21,13 @@ import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
 import org.apache.dubbo.rpc.cluster.support.wrapper.AbstractCluster;
 
-public class ZoneAwareCluster extends AbstractCluster {
+public class MigrationCluster extends AbstractCluster {
 
-    public final static String NAME = "zone-aware";
+    public final static String NAME = "migration";
 
     @Override
     protected <T> AbstractClusterInvoker<T> doJoin(Directory<T> directory) throws RpcException {
-        return new ZoneAwareClusterInvoker<T>(directory);
+        return new MigrationClusterInvoker<>(directory);
     }
 
 }

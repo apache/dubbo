@@ -34,6 +34,7 @@ import org.apache.dubbo.registry.RegistryService;
 import org.apache.dubbo.registry.integration.AbstractConfiguratorListener;
 import org.apache.dubbo.registry.integration.DynamicDirectory;
 import org.apache.dubbo.registry.integration.InterfaceCompatibleRegistryProtocol;
+import org.apache.dubbo.registry.integration.RegistryDirectory;
 import org.apache.dubbo.registry.integration.RegistryProtocolListener;
 import org.apache.dubbo.registry.retry.ReExportTask;
 import org.apache.dubbo.registry.support.SkipFailbackWrapperException;
@@ -469,7 +470,16 @@ public class RegistryProtocol implements Protocol {
     }
 
     protected <T> ClusterInvoker<T> getInvoker(Cluster cluster, Registry registry, Class<T> type, URL url) {
-        DynamicDirectory<T> directory = createDirectory(type, url);
+        DynamicDirectory<T> directory = new ServiceDiscoveryRegistryDirectory<>(type, url);
+        return doCreateInvoker(directory, cluster, registry, type);
+    }
+
+    protected <T> ClusterInvoker<T> getInterfaceCompatibleInvoker(Cluster cluster, Registry registry, Class<T> type, URL url) {
+        DynamicDirectory<T> directory = new RegistryDirectory<>(type, url);
+        return doCreateInvoker(directory, cluster, registry, type);
+    }
+
+    protected <T> ClusterInvoker<T> doCreateInvoker(DynamicDirectory<T> directory, Cluster cluster, Registry registry, Class<T> type) {
         directory.setRegistry(registry);
         directory.setProtocol(protocol);
         // all attributes of REFER_KEY
@@ -483,10 +493,6 @@ public class RegistryProtocol implements Protocol {
         directory.subscribe(toSubscribeUrl(urlToRegistry));
 
         return (ClusterInvoker<T>) cluster.join(directory);
-    }
-
-    protected <T> DynamicDirectory<T> createDirectory(Class<T> type, URL url) {
-        return new ServiceDiscoveryRegistryDirectory<>(type, url);
     }
 
     public <T> void reRefer(DynamicDirectory<T> directory, URL newSubscribeUrl) {

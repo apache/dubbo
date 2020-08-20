@@ -123,6 +123,11 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         destroyed = true;
     }
 
+    @Override
+    public void discordAddresses() {
+        // do nothing by default
+    }
+
     protected abstract List<Invoker<T>> doList(Invocation invocation) throws RpcException;
 
 }
