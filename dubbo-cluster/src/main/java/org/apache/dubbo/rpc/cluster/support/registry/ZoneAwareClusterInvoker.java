@@ -23,6 +23,7 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
@@ -39,7 +40,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.ZONE_KEY;
 
 /**
  * When there're more than one registry for subscription.
- *
+ * <p>
  * This extension provides a strategy to decide how to distribute traffics among them:
  * 1. registry marked as 'preferred=true' has the highest priority.
  * 2. check the zone the current request belongs, pick the registry that has the same zone first.
@@ -59,24 +60,23 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
     public Result doInvoke(Invocation invocation, final List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
         // First, pick the invoker (XXXClusterInvoker) that comes from the local registry, distinguish by a 'preferred' key.
         for (Invoker<T> invoker : invokers) {
-            // FIXME, the invoker is a cluster invoker representing one Registry, so it will automatically wrapped by MockClusterInvoker.
-            MockClusterInvoker<T> mockClusterInvoker = (MockClusterInvoker<T>) invoker;
-            if (mockClusterInvoker.isAvailable() && mockClusterInvoker.getRegistryUrl()
+            ClusterInvoker<T> clusterInvoker = (ClusterInvoker<T>) invoker;
+            if (clusterInvoker.isAvailable() && clusterInvoker.getRegistryUrl()
                     .getParameter(REGISTRY_KEY + "." + PREFERRED_KEY, false)) {
-                return mockClusterInvoker.invoke(invocation);
+                return clusterInvoker.invoke(invocation);
             }
         }
 
         // providers in the registry with the same zone
-        String zone = (String) invocation.getAttachment(REGISTRY_ZONE);
+        String zone = invocation.getAttachment(REGISTRY_ZONE);
         if (StringUtils.isNotEmpty(zone)) {
             for (Invoker<T> invoker : invokers) {
-                MockClusterInvoker<T> mockClusterInvoker = (MockClusterInvoker<T>) invoker;
-                if (mockClusterInvoker.isAvailable() && zone.equals(mockClusterInvoker.getRegistryUrl().getParameter(REGISTRY_KEY + "." + ZONE_KEY))) {
-                    return mockClusterInvoker.invoke(invocation);
+                ClusterInvoker<T> clusterInvoker = (ClusterInvoker<T>) invoker;
+                if (clusterInvoker.isAvailable() && zone.equals(clusterInvoker.getRegistryUrl().getParameter(REGISTRY_KEY + "." + ZONE_KEY))) {
+                    return clusterInvoker.invoke(invocation);
                 }
             }
-            String force = (String) invocation.getAttachment(REGISTRY_ZONE_FORCE);
+            String force = invocation.getAttachment(REGISTRY_ZONE_FORCE);
             if (StringUtils.isNotEmpty(force) && "true".equalsIgnoreCase(force)) {
                 throw new IllegalStateException("No registry instance in zone or no available providers in the registry, zone: "
                         + zone
@@ -93,12 +93,14 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
         // If none of the invokers has a preferred signal or is picked by the loadbalancer, pick the first one available.
         for (Invoker<T> invoker : invokers) {
-            MockClusterInvoker<T> mockClusterInvoker = (MockClusterInvoker<T>) invoker;
-            if (mockClusterInvoker.isAvailable()) {
-                return mockClusterInvoker.invoke(invocation);
+            ClusterInvoker<T> clusterInvoker = (ClusterInvoker<T>) invoker;
+            if (clusterInvoker.isAvailable()) {
+                return clusterInvoker.invoke(invocation);
             }
         }
-        throw new RpcException("No provider available in " + invokers);
+
+        //if none available,just pick one
+        return invokers.get(0).invoke(invocation);
     }
 
 }

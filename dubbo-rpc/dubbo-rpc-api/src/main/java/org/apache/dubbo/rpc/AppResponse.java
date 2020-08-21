@@ -232,6 +232,12 @@ public class AppResponse implements Result {
         throw new UnsupportedOperationException("AppResponse represents an concrete business response, there will be no status changes, you should get internal values directly.");
     }
 
+    public void clear() {
+        this.result = null;
+        this.exception = null;
+        this.attachments.clear();
+    }
+
     @Override
     public String toString() {
         return "AppResponse [value=" + result + ", exception=" + exception + "]";

@@ -67,9 +67,9 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 
     public static final String NAME = "config";
 
-    private final Map<String, Map<String, AbstractConfig>> configsCache = newMap();
-
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
+
+    final Map<String, Map<String, AbstractConfig>> configsCache = newMap();
 
     public ConfigManager() {
     }
@@ -372,6 +372,15 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     }
 
     /**
+     * @throws IllegalStateException
+     * @since 2.7.8
+     */
+    @Override
+    public void destroy() throws IllegalStateException {
+        clear();
+    }
+
+    /**
      * Add the dubbo {@link AbstractConfig config}
      *
      * @param config the dubbo {@link AbstractConfig config}
@@ -503,7 +512,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     }
 
     static <C extends AbstractConfig> boolean isDefaultConfig(C config) {
-        Boolean isDefault = getProperty(config, "default");
+        Boolean isDefault = getProperty(config, "isDefault");
         return isDefault == null || TRUE.equals(isDefault);
     }
 

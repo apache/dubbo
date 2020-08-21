@@ -22,7 +22,8 @@ import org.apache.dubbo.qos.command.impl.Ls;
 import org.apache.dubbo.qos.command.impl.Offline;
 import org.apache.dubbo.qos.command.impl.Online;
 import org.apache.dubbo.qos.command.impl.Quit;
-
+import org.apache.dubbo.qos.command.impl.Ready;
+import org.apache.dubbo.qos.command.impl.Version;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -44,7 +45,9 @@ public class CommandHelperTest {
     @Test
     public void testGetAllCommandClass() throws Exception {
         List<Class<?>> classes = CommandHelper.getAllCommandClass();
-        assertThat(classes, containsInAnyOrder(GreetingCommand.class, Help.class, Ls.class, Offline.class, Online.class, Quit.class));
+        assertThat(classes,
+                containsInAnyOrder(GreetingCommand.class, Help.class, Ls.class, Offline.class, Online.class, Quit.class,
+                        Ready.class, Version.class));
     }
 
     @Test
