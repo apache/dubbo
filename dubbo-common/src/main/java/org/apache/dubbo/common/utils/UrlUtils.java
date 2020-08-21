@@ -131,9 +131,6 @@ public class UrlUtils {
             if (defaultPort > 0) {
                 changed = true;
                 port = defaultPort;
-            } else {
-                changed = true;
-                port = 9090;
             }
         }
         if (path == null || path.length() == 0) {
