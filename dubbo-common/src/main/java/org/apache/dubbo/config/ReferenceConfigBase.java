@@ -29,6 +29,7 @@ import org.apache.dubbo.rpc.support.ProtocolUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.List;
 import java.util.Properties;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
@@ -66,6 +67,11 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
      * The consumer config (default)
      */
     protected ConsumerConfig consumer;
+
+    /**
+     * The protocol config
+     */
+    protected ProtocolConfig _protocol;
 
     /**
      * Only the service provider of the specified protocol is invoked, and other protocols are ignored.
@@ -118,6 +124,27 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
                     .orElse(new ConsumerConfig());
         }
     }
+
+    public void checkProtocol() throws IllegalStateException {
+        if (_protocol == null) {
+            List<ProtocolConfig> protocolConfigs = ApplicationModel.getConfigManager().getDefaultProtocols();
+            if (protocolConfigs.isEmpty()) {
+                return;
+            }
+
+            if (protocolConfigs.size() > 1) {
+                throw new IllegalStateException("Consumer cannot support configure multiple protocols");
+            }
+
+            _protocol = protocolConfigs.get(0);
+
+            // 设置全局protocol
+            if (StringUtils.isBlank(protocol)) {
+                protocol = _protocol.getName();
+            }
+        }
+    }
+
 
     public Class<?> getActualInterface() {
         Class actualInterface = interfaceClass;

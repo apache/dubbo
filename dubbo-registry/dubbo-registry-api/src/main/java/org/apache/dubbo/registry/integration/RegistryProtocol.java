@@ -95,13 +95,7 @@ import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
 import static org.apache.dubbo.registry.Constants.REGISTER_KEY;
 import static org.apache.dubbo.registry.Constants.REGISTRY_RETRY_PERIOD_KEY;
 import static org.apache.dubbo.registry.Constants.SIMPLIFIED_KEY;
-import static org.apache.dubbo.remoting.Constants.BIND_IP_KEY;
-import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
-import static org.apache.dubbo.remoting.Constants.CHECK_KEY;
-import static org.apache.dubbo.remoting.Constants.CODEC_KEY;
-import static org.apache.dubbo.remoting.Constants.CONNECTIONS_KEY;
-import static org.apache.dubbo.remoting.Constants.EXCHANGER_KEY;
-import static org.apache.dubbo.remoting.Constants.SERIALIZATION_KEY;
+import static org.apache.dubbo.remoting.Constants.*;
 import static org.apache.dubbo.rpc.Constants.DEPRECATED_KEY;
 import static org.apache.dubbo.rpc.Constants.INTERFACES;
 import static org.apache.dubbo.rpc.Constants.MOCK_KEY;
@@ -118,7 +112,7 @@ public class RegistryProtocol implements Protocol {
     public static final String[] DEFAULT_REGISTER_PROVIDER_KEYS = {
             APPLICATION_KEY, CODEC_KEY, EXCHANGER_KEY, SERIALIZATION_KEY, CLUSTER_KEY, CONNECTIONS_KEY, DEPRECATED_KEY,
             GROUP_KEY, LOADBALANCE_KEY, MOCK_KEY, PATH_KEY, TIMEOUT_KEY, TOKEN_KEY, VERSION_KEY, WARMUP_KEY,
-            WEIGHT_KEY, TIMESTAMP_KEY, DUBBO_VERSION_KEY, RELEASE_KEY
+            WEIGHT_KEY, TIMESTAMP_KEY, DUBBO_VERSION_KEY, RELEASE_KEY,HEARTBEAT_KEY
     };
 
     public static final String[] DEFAULT_REGISTER_CONSUMER_KEYS = {

@@ -22,28 +22,7 @@ import org.apache.dubbo.common.URLBuilder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import static org.apache.dubbo.common.constants.CommonConstants.ALIVE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.CORE_THREADS_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY_PREFIX;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.LOADBALANCE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.PID_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.QUEUES_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_FILTER_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.RELEASE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_APPLICATION_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.TAG_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.*;
 
 public class ClusterUtilsTest {
 
@@ -72,6 +51,7 @@ public class ClusterUtilsTest {
                 .addParameter(DEFAULT_KEY_PREFIX + THREAD_NAME_KEY, "test")
                 .addParameter(APPLICATION_KEY, "provider")
                 .addParameter(REFERENCE_FILTER_KEY, "filter1,filter2")
+                .addParameter(HEARTBEAT, "3000")
                 .build();
 
         URL consumerURL = new URLBuilder(DUBBO_PROTOCOL, "localhost", 55555)
@@ -108,6 +88,7 @@ public class ClusterUtilsTest {
         Assertions.assertEquals(url.getParameter(APPLICATION_KEY), "consumer");
         Assertions.assertEquals(url.getParameter(REMOTE_APPLICATION_KEY), "provider");
         Assertions.assertEquals(url.getParameter(REFERENCE_FILTER_KEY), "filter1,filter2,filter3");
+        Assertions.assertEquals(url.getParameter(HEARTBEAT), "3000");
     }
 
     @Test

@@ -220,6 +220,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         // remove 'default.' prefix for configs from ConsumerConfig
         // appendParameters(map, consumer, Constants.DEFAULT_KEY);
         AbstractConfig.appendParameters(map, consumer);
+        AbstractConfig.appendParameters(map, _protocol);
         AbstractConfig.appendParameters(map, this);
         MetadataReportConfig metadataReportConfig = getMetadataReportConfig();
         if (metadataReportConfig != null && metadataReportConfig.isValid()) {
@@ -382,6 +383,8 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         }
         // get consumer's global configuration
         checkDefault();
+        // get protocol global configuration
+        checkProtocol();
         this.refresh();
         if (getGeneric() == null && getConsumer() != null) {
             setGeneric(getConsumer().getGeneric());

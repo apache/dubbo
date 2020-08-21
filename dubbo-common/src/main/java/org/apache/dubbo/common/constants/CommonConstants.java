@@ -209,6 +209,10 @@ public interface CommonConstants {
     String PORT_KEY = "port";
     String DUBBO_IP_TO_BIND = "DUBBO_IP_TO_BIND";
 
+    String HEARTBEAT="heartbeat";
+    String DEFAULT_HEARTBEAT="60000";
+
+
     /**
      * The property name for {@link NetworkInterface#getDisplayName() the name of network interface} that
      * the Dubbo application prefers
