@@ -68,9 +68,9 @@ public class UrlUtilsTest {
     public void testDefaultUrl() {
         String address = "127.0.0.1";
         URL url = UrlUtils.parseURL(address, null);
-        assertEquals(localAddress + ":9090", url.getAddress());
-        assertEquals(9090, url.getPort());
+        assertEquals(localAddress, url.getAddress());
         assertEquals("dubbo", url.getProtocol());
+        assertEquals(0, url.getPort());
         assertNull(url.getUsername());
         assertNull(url.getPassword());
         assertNull(url.getPath());
