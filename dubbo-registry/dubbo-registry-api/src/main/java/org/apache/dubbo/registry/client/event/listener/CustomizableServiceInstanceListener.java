@@ -26,7 +26,9 @@ import org.apache.dubbo.registry.client.event.ServiceInstancePreRegisteredEvent;
  * Customize the {@link ServiceInstance} before registering to Registry.
  *
  * @since 2.7.5
+ * @deprecated 2.7.8 Current class will be removed since 3.0.0
  */
+@Deprecated
 public class CustomizableServiceInstanceListener implements EventListener<ServiceInstancePreRegisteredEvent> {
 
     @Override

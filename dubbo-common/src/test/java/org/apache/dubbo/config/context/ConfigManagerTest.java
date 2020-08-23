@@ -49,7 +49,12 @@ public class ConfigManagerTest {
 
     @BeforeEach
     public void init() {
-        configManager.clear();
+        configManager.destroy();
+    }
+
+    @Test
+    public void testDestroy() {
+        assertTrue(configManager.configsCache.isEmpty());
     }
 
     @Test

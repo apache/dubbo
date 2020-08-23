@@ -16,12 +16,13 @@
  */
 package org.apache.dubbo.registry.consul;
 
-import com.pszymczyk.consul.ConsulProcess;
-import com.pszymczyk.consul.ConsulStarterBuilder;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
+
+import com.pszymczyk.consul.ConsulProcess;
+import com.pszymczyk.consul.ConsulStarterBuilder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,9 +37,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ConsulServiceDiscoveryTest {
 
-    private static ConsulProcess consul;
     private URL url;
-    static ConsulServiceDiscovery consulServiceDiscovery;
+    private ConsulServiceDiscovery consulServiceDiscovery;
+    private ConsulProcess consul;
     private static final String SERVICE_NAME = "A";
     private static final String LOCALHOST = "127.0.0.1";
 
@@ -49,7 +50,6 @@ public class ConsulServiceDiscoveryTest {
                 .start();
         url = URL.valueOf("consul://localhost:" + consul.getHttpPort());
         consulServiceDiscovery = new ConsulServiceDiscovery();
-        Assertions.assertNull(consulServiceDiscovery.getServices());
         consulServiceDiscovery.initialize(url);
     }
 
@@ -60,7 +60,7 @@ public class ConsulServiceDiscoveryTest {
     }
 
     @Test
-    public void testRegistration() throws InterruptedException{
+    public void testRegistration() throws InterruptedException {
         DefaultServiceInstance serviceInstance = createServiceInstance(SERVICE_NAME, LOCALHOST, NetUtils.getAvailablePort());
         consulServiceDiscovery.register(serviceInstance);
         Thread.sleep(5000);
@@ -94,8 +94,8 @@ public class ConsulServiceDiscoveryTest {
         Thread.sleep(5000);
         Assertions.assertFalse(consulServiceDiscovery.getInstances(serviceName).isEmpty());
         List<String> r = convertToIpPort(consulServiceDiscovery.getInstances(serviceName));
-        assertTrue(r.contains("127.0.0.1:"+portA));
-        assertTrue(r.contains("127.0.0.1:"+portB));
+        assertTrue(r.contains("127.0.0.1:" + portA));
+        assertTrue(r.contains("127.0.0.1:" + portB));
     }
 
     private List<String> convertToIpPort(List<ServiceInstance> serviceInstances) {
