@@ -28,7 +28,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.INIT;
 @Activate
 public class MigrationRuleListener<T> {
     private static final Logger logger = LoggerFactory.getLogger(MigrationRuleListener.class);
-    private static final String DUBBO_SERVICEDISCOVERY_MIGRATION = "dubbo.service-discovery.migration";
+    private static final String DUBBO_SERVICEDISCOVERY_MIGRATION = "dubbo.application.service-discovery.migration";
 
     private MigrationInvoker<T> migrationInvoker;
 

@@ -59,10 +59,9 @@ public interface RegistryConstants {
 
     String COMPATIBLE_CONFIG_KEY = "compatible_config";
 
-    String REGISTRY_DUPLICATE_KEY = "duplicate";
+    String REGISTRY_PUBLISH_INTERFACE_KEY = "publish-interface";
 
-    String ENABLE_REGISTRY_DIRECTORY_AUTO_MIGRATION = "enable-auto-migration";
-
+    String DUBBO_PUBLISH_INTERFACE_DEFAULT_KEY = "dubbo.application.registry.publish-interface";
     /**
      * The parameter key of Dubbo Registry type
      *
