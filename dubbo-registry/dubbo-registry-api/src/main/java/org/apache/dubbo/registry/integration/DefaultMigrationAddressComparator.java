@@ -21,6 +21,9 @@ import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 public class DefaultMigrationAddressComparator implements MigrationAddressComparator {
     @Override
     public <T> boolean shouldMigrate(ClusterInvoker<T> serviceDiscoveryInvoker, ClusterInvoker<T> invoker) {
-        return true;
+        if (serviceDiscoveryInvoker.isAvailable()) {
+            return true;
+        }
+        return false;
     }
 }
