@@ -199,7 +199,8 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
     /**
      * Close all invokers
      */
-    private void destroyAllInvokers() {
+    @Override
+    protected void destroyAllInvokers() {
         Map<String, Invoker<T>> localUrlInvokerMap = this.urlInvokerMap; // local reference
         if (localUrlInvokerMap != null) {
             for (Invoker<T> invoker : new ArrayList<>(localUrlInvokerMap.values())) {
@@ -256,36 +257,6 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
                     }
                 }
             }
-        }
-    }
-
-    @Override
-    public void destroy() {
-        if (isDestroyed()) {
-            return;
-        }
-
-        // unregister.
-        try {
-            if (getRegisteredConsumerUrl() != null && registry != null && registry.isAvailable()) {
-                registry.unregister(getRegisteredConsumerUrl());
-            }
-        } catch (Throwable t) {
-            logger.warn("unexpected error when unregister service " + serviceKey + "from registry" + registry.getUrl(), t);
-        }
-        // unsubscribe.
-        try {
-            if (getConsumerUrl() != null && registry != null && registry.isAvailable()) {
-                registry.unsubscribe(getConsumerUrl(), this);
-            }
-        } catch (Throwable t) {
-            logger.warn("unexpected error when unsubscribe service " + serviceKey + "from registry" + registry.getUrl(), t);
-        }
-        super.destroy(); // must be executed after unsubscribing
-        try {
-            destroyAllInvokers();
-        } catch (Throwable t) {
-            logger.warn("Failed to destroy service " + serviceKey, t);
         }
     }
 }

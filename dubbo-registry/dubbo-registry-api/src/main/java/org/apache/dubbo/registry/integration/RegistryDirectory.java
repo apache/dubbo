@@ -38,7 +38,6 @@ import org.apache.dubbo.rpc.cluster.Configurator;
 import org.apache.dubbo.rpc.cluster.Router;
 import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
-import org.apache.dubbo.rpc.cluster.governance.GovernanceRuleRepository;
 import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.protocol.InvokerWrapper;
@@ -87,6 +86,12 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
     private static final ConsumerConfigurationListener CONSUMER_CONFIGURATION_LISTENER = new ConsumerConfigurationListener();
     private ReferenceConfigurationListener referenceConfigurationListener;
 
+    // Map<url, Invoker> cache service url to invoker mapping.
+    // The initial value is null and the midway may be assigned to null, please use the local variable reference
+    protected volatile Map<URL, Invoker<T>> urlInvokerMap;
+    // The initial value is null and the midway may be assigned to null, please use the local variable reference
+    protected volatile Set<URL> cachedInvokerUrls;
+
     public RegistryDirectory(Class<T> serviceType, URL url) {
         super(serviceType, url);
     }
@@ -105,38 +110,6 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
         CONSUMER_CONFIGURATION_LISTENER.removeNotifyListener(this);
         referenceConfigurationListener.stop();
         registry.unsubscribe(url, this);
-    }
-
-    @Override
-    public void destroy() {
-        if (isDestroyed()) {
-            return;
-        }
-
-        // unregister.
-        try {
-            if (getRegisteredConsumerUrl() != null && registry != null && registry.isAvailable()) {
-                registry.unregister(getRegisteredConsumerUrl());
-            }
-        } catch (Throwable t) {
-            logger.warn("unexpected error when unregister service " + serviceKey + "from registry" + registry.getUrl(), t);
-        }
-        // unsubscribe.
-        try {
-            if (getConsumerUrl() != null && registry != null && registry.isAvailable()) {
-                registry.unsubscribe(getConsumerUrl(), this);
-            }
-            ExtensionLoader.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension()
-                    .removeListener(ApplicationModel.getApplication(), CONSUMER_CONFIGURATION_LISTENER);
-        } catch (Throwable t) {
-            logger.warn("unexpected error when unsubscribe service " + serviceKey + "from registry" + registry.getUrl(), t);
-        }
-        super.destroy(); // must be executed after unsubscribing
-        try {
-            destroyAllInvokers();
-        } catch (Throwable t) {
-            logger.warn("Failed to destroy service " + serviceKey, t);
-        }
     }
 
     @Override
@@ -251,6 +224,9 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
                 logger.warn("destroyUnusedInvokers error. ", e);
             }
         }
+
+        // notify invokers refreshed
+        this.invokersChanged();
     }
 
     private List<Invoker<T>> toMergeInvokerList(List<Invoker<T>> invokers) {
@@ -442,7 +418,8 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
     /**
      * Close all invokers
      */
-    private void destroyAllInvokers() {
+    @Override
+    protected void destroyAllInvokers() {
         Map<URL, Invoker<T>> localUrlInvokerMap = this.urlInvokerMap; // local reference
         if (localUrlInvokerMap != null) {
             for (Invoker<T> invoker : new ArrayList<>(localUrlInvokerMap.values())) {
@@ -455,6 +432,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
             localUrlInvokerMap.clear();
         }
         invokers = null;
+        cachedInvokerUrls = null;
     }
 
     /**
