@@ -14,20 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.support.registry;
+package org.apache.dubbo.registry.integration;
 
-import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.cluster.Directory;
-import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
-import org.apache.dubbo.rpc.cluster.support.wrapper.AbstractCluster;
-
-public class ZoneAwareCluster extends AbstractCluster {
-
-    public final static String NAME = "zone-aware";
-
-    @Override
-    protected <T> AbstractClusterInvoker<T> doJoin(Directory<T> directory) throws RpcException {
-        return new ZoneAwareClusterInvoker<T>(directory);
-    }
-
+public enum MigrationStep {
+    INTERFACE_FIRST,
+    APPLICATION_FIRST,
+    FORCE_APPLICATION
 }

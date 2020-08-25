@@ -14,20 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.support.registry;
+package org.apache.dubbo.registry.integration;
 
-import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.cluster.Directory;
-import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
-import org.apache.dubbo.rpc.cluster.support.wrapper.AbstractCluster;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.Constructor;
 
-public class ZoneAwareCluster extends AbstractCluster {
+public class MigrationRule {
+    private String key;
+    private MigrationStep step;
 
-    public final static String NAME = "zone-aware";
-
-    @Override
-    protected <T> AbstractClusterInvoker<T> doJoin(Directory<T> directory) throws RpcException {
-        return new ZoneAwareClusterInvoker<T>(directory);
+    public String getKey() {
+        return key;
     }
 
+    public void setKey(String key) {
+        this.key = key;
+    }
+
+    public MigrationStep getStep() {
+        return step;
+    }
+
+    public void setStep(MigrationStep step) {
+        this.step = step;
+    }
+
+    public static MigrationRule parse(String rawRule) {
+        Constructor constructor = new Constructor(MigrationRule.class);
+        Yaml yaml = new Yaml(constructor);
+        return yaml.load(rawRule);
+    }
 }
