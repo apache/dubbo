@@ -25,6 +25,7 @@
         <dubbo:parameter key="mapping-type" value="metadata"/>
     </dubbo:application>
 
+    <dubbo:config-center address="zookeeper://127.0.0.1:2181"/>
     <dubbo:metadata-report address="zookeeper://127.0.0.1:2181"/>
 
     <dubbo:registry address="sofa://100.88.142.124:9603?registry-type=service"/>

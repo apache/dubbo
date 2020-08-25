@@ -29,8 +29,8 @@ public class ApplicationConsumer {
      * launch the application
      */
     public static void main(String[] args) throws Exception {
-        //ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("spring/dubbo-consumer-sofaregistry.xml");
-        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("spring/dubbo-consumer-zk.xml");
+        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("spring/dubbo-consumer-sofaregistry.xml");
+        //ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("spring/dubbo-consumer-zk.xml");
         //ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("spring/dubbo-consumer-zk-apollo.xml");
         context.start();
         //DemoService demoService = context.getBean("demoService", DemoService.class);
