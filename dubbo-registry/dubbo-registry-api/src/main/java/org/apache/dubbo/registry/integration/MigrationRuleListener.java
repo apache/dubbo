@@ -17,11 +17,15 @@
 package org.apache.dubbo.registry.integration;
 
 import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.registry.integration.InterfaceCompatibleRegistryProtocol.MigrationInvoker;
+import org.apache.dubbo.registry.client.RegistryProtocol;
 
+import static org.apache.dubbo.common.constants.RegistryConstants.INIT;
+
+@Activate
 public class MigrationRuleListener<T> {
     private static final Logger logger = LoggerFactory.getLogger(MigrationRuleListener.class);
     private static final String DUBBO_SERVICEDISCOVERY_MIGRATION = "dubbo.service-discovery.migration";
@@ -33,10 +37,14 @@ public class MigrationRuleListener<T> {
     }
 
     public void doMigrate(String rawRule) {
-        MigrationStep step;
+        MigrationStep step = (migrationInvoker instanceof RegistryProtocol.ServiceDiscoveryMigrationInvoker)
+                ? MigrationStep.FORCE_APPLICATION
+                : MigrationStep.INTERFACE_FIRST;
         if (StringUtils.isEmpty(rawRule)) {
-            logger.warn("Find empty migration rule, will use default migration strategy.");
-            step = Enum.valueOf(MigrationStep.class, ConfigurationUtils.getProperty(DUBBO_SERVICEDISCOVERY_MIGRATION, MigrationStep.INTERFACE_FIRST.name()));
+            logger.error("Find empty migration rule, will ignore.");
+            return;
+        } else if (INIT.equals(rawRule)) {
+            step = Enum.valueOf(MigrationStep.class, ConfigurationUtils.getProperty(DUBBO_SERVICEDISCOVERY_MIGRATION, step.name()));
         } else {
             MigrationRule rule = MigrationRule.parse(rawRule);
             step = rule.getStep();

@@ -37,7 +37,9 @@ import org.apache.dubbo.rpc.cluster.RouterFactory;
 import org.apache.dubbo.rpc.cluster.directory.AbstractDirectory;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
@@ -245,6 +247,8 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
         } catch (Throwable t) {
             logger.warn("Failed to destroy service " + serviceKey, t);
         }
+
+        invokersChangedListeners.clear();
     }
 
     @Override
@@ -253,6 +257,18 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
             destroyAllInvokers();
         } catch (Throwable t) {
             logger.warn("Failed to destroy service " + serviceKey, t);
+        }
+    }
+
+    private Set<InvokersChangedListener> invokersChangedListeners = new HashSet<>();
+
+    public void addInvokersChangedListener(InvokersChangedListener listener) {
+        invokersChangedListeners.add(listener);
+    }
+
+    protected void invokersChanged() {
+        for (InvokersChangedListener l : invokersChangedListeners) {
+            l.onChange();
         }
     }
 

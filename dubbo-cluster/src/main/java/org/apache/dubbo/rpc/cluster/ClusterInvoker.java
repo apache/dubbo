@@ -32,6 +32,7 @@ import org.apache.dubbo.rpc.Invoker;
  * @param <T>
  */
 public interface ClusterInvoker<T> extends Invoker<T> {
+
     URL getRegistryUrl();
 
     Directory<T> getDirectory();

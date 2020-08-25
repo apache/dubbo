@@ -16,10 +16,6 @@
  */
 package org.apache.dubbo.registry.integration;
 
-import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.rpc.cluster.ClusterInvoker;
-
-@SPI
-public interface MigrationDetector {
-    <T> boolean shouldMigrate(ClusterInvoker<T> serviceDiscoveryInvoker, ClusterInvoker<T> invoker);
+public interface InvokersChangedListener {
+    void onChange();
 }

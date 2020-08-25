@@ -34,15 +34,18 @@ import org.apache.dubbo.registry.RegistryService;
 import org.apache.dubbo.registry.integration.AbstractConfiguratorListener;
 import org.apache.dubbo.registry.integration.DynamicDirectory;
 import org.apache.dubbo.registry.integration.InterfaceCompatibleRegistryProtocol;
+import org.apache.dubbo.registry.integration.MigrationInvoker;
 import org.apache.dubbo.registry.integration.RegistryDirectory;
 import org.apache.dubbo.registry.integration.RegistryProtocolListener;
 import org.apache.dubbo.registry.retry.ReExportTask;
 import org.apache.dubbo.registry.support.SkipFailbackWrapperException;
 import org.apache.dubbo.rpc.Exporter;
+import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.ProxyFactory;
+import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
@@ -454,7 +457,12 @@ public class RegistryProtocol implements Protocol {
     }
 
     protected <T> Invoker<T> doRefer(Cluster cluster, Registry registry, Class<T> type, URL url) {
-        return interceptInvoker(getInvoker(cluster, registry, type, url), url);
+        ClusterInvoker<T> migrationInvoker = getMigrationInvoker(this, cluster, registry, type, url);
+        return interceptInvoker(migrationInvoker, url);
+    }
+
+    protected <T> ClusterInvoker<T> getMigrationInvoker(RegistryProtocol registryProtocol, Cluster cluster, Registry registry, Class<T> type, URL url) {
+        return new ServiceDiscoveryMigrationInvoker<T>(registryProtocol, cluster, registry, type, url);
     }
 
     protected <T> Invoker<T> interceptInvoker(ClusterInvoker<T> invoker, URL url) {
@@ -469,12 +477,13 @@ public class RegistryProtocol implements Protocol {
         return invoker;
     }
 
-    protected <T> ClusterInvoker<T> getInvoker(Cluster cluster, Registry registry, Class<T> type, URL url) {
+    public <T> ClusterInvoker<T> getServiceDiscoveryInvoker(Cluster cluster, Registry registry, Class<T> type, URL url) {
         DynamicDirectory<T> directory = new ServiceDiscoveryRegistryDirectory<>(type, url);
         return doCreateInvoker(directory, cluster, registry, type);
     }
 
-    protected <T> ClusterInvoker<T> getInterfaceCompatibleInvoker(Cluster cluster, Registry registry, Class<T> type, URL url) {
+    public <T> ClusterInvoker<T> getInvoker(Cluster cluster, Registry registry, Class<T> type, URL url) {
+        // FIXME, this method is currently not used, create the right registry before enable.
         DynamicDirectory<T> directory = new RegistryDirectory<>(type, url);
         return doCreateInvoker(directory, cluster, registry, type);
     }
@@ -827,5 +836,31 @@ public class RegistryProtocol implements Protocol {
             ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(REGISTRY_PROTOCOL); // load
         }
         return INSTANCE;
+    }
+
+    public static class ServiceDiscoveryMigrationInvoker<T> extends MigrationInvoker<T> {
+
+        public ServiceDiscoveryMigrationInvoker(RegistryProtocol registryProtocol, Cluster cluster, Registry registry, Class<T> type, URL url) {
+            super(registryProtocol, cluster, registry, type, url);
+        }
+
+        @Override
+        public synchronized void fallbackToInterfaceInvoker() {
+            destroyServiceDiscoveryInvoker();
+        }
+
+        @Override
+        public synchronized void migrateToServiceDiscoveryInvoker(boolean forceMigrate) {
+            refreshServiceDiscoveryInvoker();
+        }
+
+        @Override
+        public Result invoke(Invocation invocation) throws RpcException {
+            ClusterInvoker<T> invoker = getServiceDiscoveryInvoker();
+            if (invoker == null) {
+                throw new IllegalStateException("There's no service discovery invoker available for service " + invocation.getServiceName());
+            }
+            return invoker.invoke(invocation);
+        }
     }
 }

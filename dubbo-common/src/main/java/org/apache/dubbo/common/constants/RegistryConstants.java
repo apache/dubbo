@@ -114,4 +114,5 @@ public interface RegistryConstants {
     String ZONE_KEY = "zone";
 
     String REGISTRY_SERVICE_REFERENCE_PATH = "org.apache.dubbo.registry.RegistryService";
+    String INIT = "INIT";
 }

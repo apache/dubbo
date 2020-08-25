@@ -224,6 +224,9 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
                 logger.warn("destroyUnusedInvokers error. ", e);
             }
         }
+
+        // notify invokers refreshed
+        this.invokersChanged();
     }
 
     private List<Invoker<T>> toMergeInvokerList(List<Invoker<T>> invokers) {
