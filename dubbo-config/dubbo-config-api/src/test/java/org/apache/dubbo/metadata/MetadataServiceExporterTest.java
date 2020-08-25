@@ -42,7 +42,7 @@ public class MetadataServiceExporterTest {
     @BeforeAll
     public static void init() {
         ApplicationModel.getConfigManager().setApplication(new ApplicationConfig("Test"));
-        ApplicationModel.getConfigManager().addRegistry(new RegistryConfig("test://1.2.3.4"));
+        ApplicationModel.getConfigManager().addRegistry(new RegistryConfig("multicast://224.5.6.7:1234"));
         ApplicationModel.getConfigManager().addProtocol(new ProtocolConfig("injvm"));
     }
 
