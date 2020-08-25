@@ -1,1 +1,1 @@
-default=org.apache.dubbo.registry.integration.DefaultMigrationAddressComparaton
+default=org.apache.dubbo.registry.integration.DefaultMigrationAddressComparator
