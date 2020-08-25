@@ -310,8 +310,11 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
      */
     protected LoadBalance initLoadBalance(List<Invoker<T>> invokers, Invocation invocation) {
         if (CollectionUtils.isNotEmpty(invokers)) {
-            return ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(invokers.get(0).getUrl()
-                    .getMethodParameter(RpcUtils.getMethodName(invocation), LOADBALANCE_KEY, DEFAULT_LOADBALANCE));
+            return ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(
+                    invokers.get(0).getUrl().getMethodParameter(
+                            RpcUtils.getMethodName(invocation), LOADBALANCE_KEY, DEFAULT_LOADBALANCE
+                    )
+            );
         } else {
             return ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(DEFAULT_LOADBALANCE);
         }

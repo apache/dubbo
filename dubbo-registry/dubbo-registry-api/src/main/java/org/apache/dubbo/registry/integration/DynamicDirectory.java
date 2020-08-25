@@ -36,10 +36,9 @@ import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.cluster.RouterFactory;
 import org.apache.dubbo.rpc.cluster.directory.AbstractDirectory;
 
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
@@ -91,12 +90,8 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
      */
     protected volatile List<Configurator> configurators; // The initial value is null and the midway may be assigned to null, please use the local variable reference
 
-    // Map<url, Invoker> cache service url to invoker mapping.
-    protected volatile Map<URL, Invoker<T>> urlInvokerMap; // The initial value is null and the midway may be assigned to null, please use the local variable reference
     protected volatile List<Invoker<T>> invokers;
-
     // Set<invokerUrls> cache invokeUrls to invokers mapping.
-    protected volatile Set<URL> cachedInvokerUrls; // The initial value is null and the midway may be assigned to null, please use the local variable reference
 
     protected ServiceInstancesChangedListener serviceListener;
 
@@ -216,35 +211,66 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
         }
     }
 
-    @Override
-    public boolean isAvailable() {
-        if (isDestroyed()) {
-            return false;
-        }
-        Map<URL, Invoker<T>> localUrlInvokerMap = urlInvokerMap;
-        if (localUrlInvokerMap != null && localUrlInvokerMap.size() > 0) {
-            for (Invoker<T> invoker : new ArrayList<>(localUrlInvokerMap.values())) {
-                if (invoker.isAvailable()) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
     public void buildRouterChain(URL url) {
         this.setRouterChain(RouterChain.buildChain(url));
-    }
-
-    /**
-     * Haomin: added for test purpose
-     */
-    public Map<URL, Invoker<T>> getUrlInvokerMap() {
-        return urlInvokerMap;
     }
 
     public List<Invoker<T>> getInvokers() {
         return invokers;
     }
 
+    @Override
+    public void destroy() {
+        if (isDestroyed()) {
+            return;
+        }
+
+        // unregister.
+        try {
+            if (getRegisteredConsumerUrl() != null && registry != null && registry.isAvailable()) {
+                registry.unregister(getRegisteredConsumerUrl());
+            }
+        } catch (Throwable t) {
+            logger.warn("unexpected error when unregister service " + serviceKey + "from registry" + registry.getUrl(), t);
+        }
+        // unsubscribe.
+        try {
+            if (getConsumerUrl() != null && registry != null && registry.isAvailable()) {
+                registry.unsubscribe(getConsumerUrl(), this);
+            }
+        } catch (Throwable t) {
+            logger.warn("unexpected error when unsubscribe service " + serviceKey + "from registry" + registry.getUrl(), t);
+        }
+        super.destroy(); // must be executed after unsubscribing
+        try {
+            destroyAllInvokers();
+        } catch (Throwable t) {
+            logger.warn("Failed to destroy service " + serviceKey, t);
+        }
+
+        invokersChangedListeners.clear();
+    }
+
+    @Override
+    public void discordAddresses() {
+        try {
+            destroyAllInvokers();
+        } catch (Throwable t) {
+            logger.warn("Failed to destroy service " + serviceKey, t);
+        }
+    }
+
+    private Set<InvokersChangedListener> invokersChangedListeners = new HashSet<>();
+
+    public void addInvokersChangedListener(InvokersChangedListener listener) {
+        invokersChangedListeners.add(listener);
+    }
+
+    protected void invokersChanged() {
+        for (InvokersChangedListener l : invokersChangedListeners) {
+            l.onChange();
+        }
+    }
+
+    protected abstract void destroyAllInvokers();
 }
