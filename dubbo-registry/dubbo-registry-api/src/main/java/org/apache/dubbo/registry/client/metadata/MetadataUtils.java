@@ -36,6 +36,8 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static org.apache.dubbo.common.constants.CommonConstants.METADATA_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.METADATA_SERVICE_URLS_PROPERTY_NAME;
 
 public class MetadataUtils {
@@ -71,9 +73,9 @@ public class MetadataUtils {
         // store in local
         WritableMetadataService.getDefaultExtension().publishServiceDefinition(url);
         // send to remote
-//        if (REMOTE_METADATA_STORAGE_TYPE.equals(url.getParameter(METADATA_KEY))) {
-        getRemoteMetadataService().publishServiceDefinition(url);
-//        }
+        if (REMOTE_METADATA_STORAGE_TYPE.equalsIgnoreCase(url.getParameter(METADATA_KEY))) {
+            getRemoteMetadataService().publishServiceDefinition(url);
+        }
     }
 
     public static String computeKey(ServiceInstance serviceInstance) {

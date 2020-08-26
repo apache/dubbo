@@ -65,11 +65,18 @@ public class RemoteMetadataServiceImpl {
                 SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(serviceName, metadataInfo.calAndGetRevision());
                 metadataInfo.calAndGetRevision();
                 metadataInfo.getExtendParams().put(REGISTRY_CLUSTER_KEY, registryCluster);
-                MetadataReport metadataReport = getMetadataReports().get(registryCluster);
-                if (metadataReport == null) {
-                    metadataReport = getMetadataReports().entrySet().iterator().next().getValue();
+                if (getMetadataReports().size() > 0) {
+                    MetadataReport metadataReport = getMetadataReports().get(registryCluster);
+                    if (metadataReport == null) {
+                        metadataReport = getMetadataReports().entrySet().iterator().next().getValue();
+                    }
+                    metadataReport.publishAppMetadata(identifier, metadataInfo);
+                } else {
+                    if (logger.isInfoEnabled()) {
+                        logger.info("Remote Metadata Report Server not hasn't been configured. " +
+                                "Only publish Metadata to local.");
+                    }
                 }
-                metadataReport.publishAppMetadata(identifier, metadataInfo);
                 metadataInfo.markReported();
             }
         });
@@ -81,6 +88,8 @@ public class RemoteMetadataServiceImpl {
 
         String registryCluster = instance.getExtendParams().get(REGISTRY_CLUSTER_KEY);
 
+        checkRemoteConfigured();
+
         MetadataReport metadataReport = getMetadataReports().get(registryCluster);
         if (metadataReport == null) {
             metadataReport = getMetadataReports().entrySet().iterator().next().getValue();
@@ -88,8 +97,20 @@ public class RemoteMetadataServiceImpl {
         return metadataReport.getAppMetadata(identifier, instance.getExtendParams());
     }
 
+    private void checkRemoteConfigured() {
+        if (getMetadataReports().size() == 0) {
+            String msg = "Remote Metadata Report Server not hasn't been configured. " +
+                    "Unable to get Metadata from remote!";
+            logger.error(msg);
+            throw new IllegalStateException(msg);
+        }
+    }
+
     public void publishServiceDefinition(URL url) {
         String side = url.getParameter(SIDE_KEY);
+
+        checkRemoteConfigured();
+
         if (PROVIDER_SIDE.equalsIgnoreCase(side)) {
             //TODO, the params part is duplicate with that stored by exportURL(url), can be further optimized in the future.
             publishProvider(url);
