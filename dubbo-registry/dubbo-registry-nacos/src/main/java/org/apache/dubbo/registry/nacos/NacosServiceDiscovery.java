@@ -25,6 +25,7 @@ import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils;
 
+import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.listener.NamingEvent;
 import com.alibaba.nacos.api.naming.pojo.Instance;
@@ -56,6 +57,8 @@ public class NacosServiceDiscovery implements ServiceDiscovery {
 
     private URL registryURL;
 
+    private ServiceInstance instance;
+
     @Override
     public void initialize(URL registryURL) throws Exception {
         this.namingService = createNamingService(registryURL);
@@ -70,6 +73,7 @@ public class NacosServiceDiscovery implements ServiceDiscovery {
 
     @Override
     public void register(ServiceInstance serviceInstance) throws RuntimeException {
+        this.instance = serviceInstance;
         execute(namingService, service -> {
             Instance instance = toInstance(serviceInstance);
             service.registerInstance(instance.getServiceName(), group, instance);
@@ -78,6 +82,7 @@ public class NacosServiceDiscovery implements ServiceDiscovery {
 
     @Override
     public void update(ServiceInstance serviceInstance) throws RuntimeException {
+        this.instance = serviceInstance;
         // TODO: Nacos should support
         unregister(serviceInstance);
         register(serviceInstance);
@@ -112,10 +117,16 @@ public class NacosServiceDiscovery implements ServiceDiscovery {
     public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener)
             throws NullPointerException, IllegalArgumentException {
         execute(namingService, service -> {
-            service.subscribe(listener.getServiceNames(), e -> { // Register Nacos EventListener
-                if (e instanceof NamingEvent) {
-                    NamingEvent event = (NamingEvent) e;
-                    handleEvent(event, listener);
+            listener.getServiceNames().forEach(serviceName -> {
+                try {
+                    service.subscribe(serviceName, e -> { // Register Nacos EventListener
+                        if (e instanceof NamingEvent) {
+                            NamingEvent event = (NamingEvent) e;
+                            handleEvent(event, listener);
+                        }
+                    });
+                } catch (NacosException e) {
+                    e.printStackTrace();
                 }
             });
         });
@@ -124,6 +135,11 @@ public class NacosServiceDiscovery implements ServiceDiscovery {
     @Override
     public URL getUrl() {
         return registryURL;
+    }
+
+    @Override
+    public ServiceInstance getLocalInstance() {
+        return instance;
     }
 
     private void handleEvent(NamingEvent event, ServiceInstancesChangedListener listener) {
