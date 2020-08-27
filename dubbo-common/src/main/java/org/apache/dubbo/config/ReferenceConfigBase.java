@@ -71,7 +71,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
     /**
      * The protocol config
      */
-    protected ProtocolConfig _protocol;
+    protected ProtocolConfig protocolConfig;
 
     /**
      * Only the service provider of the specified protocol is invoked, and other protocols are ignored.
@@ -126,7 +126,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
     }
 
     public void checkProtocol() throws IllegalStateException {
-        if (_protocol == null) {
+        if (protocolConfig == null) {
             List<ProtocolConfig> protocolConfigs = ApplicationModel.getConfigManager().getDefaultProtocols();
             if (protocolConfigs.isEmpty()) {
                 return;
@@ -136,11 +136,11 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
                 throw new IllegalStateException("Consumer cannot support configure multiple protocols");
             }
 
-            _protocol = protocolConfigs.get(0);
+            protocolConfig = protocolConfigs.get(0);
 
             // 设置全局protocol
             if (StringUtils.isBlank(protocol)) {
-                protocol = _protocol.getName();
+                protocol = protocolConfig.getName();
             }
         }
     }
