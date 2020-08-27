@@ -355,6 +355,10 @@ public interface CommonConstants {
      */
     String DEFAULT_SERVICE_NAME_MAPPING_PROPERTIES_PATH = "META-INF/dubbo/service-name-mapping.properties";
 
-    String QOS_PROBE_EXTENSION = "dubbo.application.probe";
+    String QOS_LIVE_PROBE_EXTENSION = "dubbo.application.liveness-probe";
+
+    String QOS_READY_PROBE_EXTENSION = "dubbo.application.readiness-probe";
+
+    String QOS_STARTUP_PROBE_EXTENSION = "dubbo.application.startup-probe";
 
 }

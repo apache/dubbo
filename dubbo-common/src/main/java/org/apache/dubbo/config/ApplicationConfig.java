@@ -167,7 +167,11 @@ public class ApplicationConfig extends AbstractConfig {
     /**
      * used to set extensions of probe in qos
      */
-    private String probe;
+    private String livenessProbe;
+
+    private String readinessProbe;
+
+    private String startupProbe;
 
     public ApplicationConfig() {
     }
@@ -464,13 +468,31 @@ public class ApplicationConfig extends AbstractConfig {
         this.metadataServicePort = metadataServicePort;
     }
 
-    @Parameter(key = "probe")
-    public String getProbe() {
-        return probe;
+    @Parameter(key = "liveness-probe")
+    public String getLivenessProbe() {
+        return livenessProbe;
     }
 
-    public void setProbe(String probe) {
-        this.probe = probe;
+    public void setLivenessProbe(String livenessProbe) {
+        this.livenessProbe = livenessProbe;
+    }
+
+    @Parameter(key = "readiness-probe")
+    public String getReadinessProbe() {
+        return readinessProbe;
+    }
+
+    public void setReadinessProbe(String readinessProbe) {
+        this.readinessProbe = readinessProbe;
+    }
+
+    @Parameter(key = "startup-probe")
+    public String getStartupProbe() {
+        return startupProbe;
+    }
+
+    public void setStartupProbe(String startupProbe) {
+        this.startupProbe = startupProbe;
     }
 
     @Override

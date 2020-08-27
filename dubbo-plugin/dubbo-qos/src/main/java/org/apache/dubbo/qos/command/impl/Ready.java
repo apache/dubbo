@@ -33,9 +33,9 @@ public class Ready implements BaseCommand {
     @Override
     public String execute(CommandContext commandContext, String[] args) {
         URL url = URL.valueOf("application://")
-                .addParameter(CommonConstants.QOS_PROBE_EXTENSION, ApplicationModel.getApplicationConfig().getProbe());
+                .addParameter(CommonConstants.QOS_READY_PROBE_EXTENSION, ApplicationModel.getApplicationConfig().getReadinessProbe());
         List<ReadinessProbe> readinessProbes = ExtensionLoader.getExtensionLoader(ReadinessProbe.class)
-                .getActivateExtension(url, CommonConstants.QOS_PROBE_EXTENSION);
+                .getActivateExtension(url, CommonConstants.QOS_READY_PROBE_EXTENSION);
         if (!readinessProbes.isEmpty()) {
             for (ReadinessProbe readinessProbe : readinessProbes) {
                 if (!readinessProbe.check()) {

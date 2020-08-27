@@ -221,10 +221,24 @@ class ApplicationBuilderTest {
     }
 
     @Test
-    void probe() {
+    void livenessProbe() {
         ApplicationBuilder builder = new ApplicationBuilder();
-        builder.probe("TestProbe");
-        Assertions.assertEquals("TestProbe", builder.build().getProbe());
+        builder.livenessProbe("TestProbe");
+        Assertions.assertEquals("TestProbe", builder.build().getLivenessProbe());
+    }
+
+    @Test
+    void readinessProbe() {
+        ApplicationBuilder builder = new ApplicationBuilder();
+        builder.readinessProbe("TestProbe");
+        Assertions.assertEquals("TestProbe", builder.build().getReadinessProbe());
+    }
+
+    @Test
+    void startupProbe() {
+        ApplicationBuilder builder = new ApplicationBuilder();
+        builder.startupProbe("TestProbe");
+        Assertions.assertEquals("TestProbe", builder.build().getStartupProbe());
     }
 
     @Test
@@ -237,7 +251,8 @@ class ApplicationBuilderTest {
                 .environment("develop").compiler("compiler").logger("log4j").monitor(monitor).isDefault(false)
                 .dumpDirectory("dumpDirectory").qosEnable(true).qosPort(8080).qosAcceptForeignIp(false)
                 .shutwait("shutwait").registryIds("registryIds").addRegistry(registry)
-                .appendParameter("default.num", "one").metadataServicePort(12345);
+                .appendParameter("default.num", "one").metadataServicePort(12345)
+                .livenessProbe("liveness").readinessProbe("readiness").startupProbe("startup");
 
         ApplicationConfig config = builder.build();
         ApplicationConfig config2 = builder.build();
@@ -264,6 +279,9 @@ class ApplicationBuilderTest {
         Assertions.assertTrue(config.getParameters().containsKey("default.num"));
         Assertions.assertEquals("one", config.getParameters().get("default.num"));
         Assertions.assertEquals(12345, config.getMetadataServicePort());
+        Assertions.assertEquals("liveness", config.getLivenessProbe());
+        Assertions.assertEquals("readiness", config.getReadinessProbe());
+        Assertions.assertEquals("startup", config.getStartupProbe());
 
         Assertions.assertNotSame(config, config2);
     }

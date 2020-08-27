@@ -25,7 +25,7 @@ import org.apache.dubbo.rpc.model.ServiceRepository;
 import java.util.Collection;
 import java.util.List;
 
-@Activate(value = "ProviderReadiness")
+@Activate
 public class ProviderReadinessProbe implements ReadinessProbe {
     private static ServiceRepository serviceRepository = ApplicationModel.getServiceRepository();
 

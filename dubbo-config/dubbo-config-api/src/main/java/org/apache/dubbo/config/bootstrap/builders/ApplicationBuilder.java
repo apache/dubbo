@@ -52,7 +52,9 @@ public class ApplicationBuilder extends AbstractBuilder<ApplicationConfig, Appli
     private Map<String, String> parameters;
     private String shutwait;
     private Integer metadataServicePort;
-    private String probe;
+    private String livenessProbe;
+    private String readinessProbe;
+    private String startupProbe;
 
     public static ApplicationBuilder newBuilder() {
         return new ApplicationBuilder();
@@ -179,8 +181,18 @@ public class ApplicationBuilder extends AbstractBuilder<ApplicationConfig, Appli
         return getThis();
     }
 
-    public ApplicationBuilder probe(String probe) {
-        this.probe = probe;
+    public ApplicationBuilder livenessProbe(String livenessProbe) {
+        this.livenessProbe = livenessProbe;
+        return getThis();
+    }
+
+    public ApplicationBuilder readinessProbe(String readinessProbe) {
+        this.readinessProbe = readinessProbe;
+        return getThis();
+    }
+
+    public ApplicationBuilder startupProbe(String startupProbe) {
+        this.startupProbe = startupProbe;
         return getThis();
     }
 
@@ -206,7 +218,9 @@ public class ApplicationBuilder extends AbstractBuilder<ApplicationConfig, Appli
         config.setQosPort(this.qosPort);
         config.setQosAcceptForeignIp(this.qosAcceptForeignIp);
         config.setMetadataServicePort(this.metadataServicePort);
-        config.setProbe(this.probe);
+        config.setLivenessProbe(this.livenessProbe);
+        config.setReadinessProbe(this.readinessProbe);
+        config.setStartupProbe(this.startupProbe);
         config.setParameters(this.parameters);
         if (!StringUtils.isEmpty(shutwait)) {
             config.setShutwait(shutwait);

@@ -33,9 +33,9 @@ public class Live implements BaseCommand {
     @Override
     public String execute(CommandContext commandContext, String[] args) {
         URL url = URL.valueOf("application://")
-                .addParameter(CommonConstants.QOS_PROBE_EXTENSION, ApplicationModel.getApplicationConfig().getProbe());
+                .addParameter(CommonConstants.QOS_LIVE_PROBE_EXTENSION, ApplicationModel.getApplicationConfig().getLivenessProbe());
         List<LivenessProbe> livenessProbes = ExtensionLoader.getExtensionLoader(LivenessProbe.class)
-                .getActivateExtension(url, CommonConstants.QOS_PROBE_EXTENSION);
+                .getActivateExtension(url, CommonConstants.QOS_LIVE_PROBE_EXTENSION);
         if (!livenessProbes.isEmpty()) {
             for (LivenessProbe livenessProbe : livenessProbes) {
                 if (!livenessProbe.check()) {
