@@ -145,7 +145,7 @@ public class DNSServiceDiscovery implements ServiceDiscovery {
             Map<String, InstanceMetadataChangedListener> listenerMap = metadataService.getInstanceMetadataChangedListenerMap();
             Iterator<Map.Entry<String, InstanceMetadataChangedListener>> listenerIterator = listenerMap.entrySet().iterator();
 
-            while (iterator.hasNext()) {
+            while (listenerIterator.hasNext()) {
                 Map.Entry<String, InstanceMetadataChangedListener> entry = listenerIterator.next();
                 try {
                     entry.getValue().echo(CommonConstants.DUBBO);
