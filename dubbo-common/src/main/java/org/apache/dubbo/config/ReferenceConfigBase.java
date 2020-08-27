@@ -138,7 +138,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
 
             protocolConfig = protocolConfigs.get(0);
 
-            // 设置全局protocol
+            // if the service does not specified  provider for the invocation protocol, protocolConfig configuration is used
             if (StringUtils.isBlank(protocol)) {
                 protocol = protocolConfig.getName();
             }
