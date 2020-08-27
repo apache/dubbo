@@ -19,6 +19,7 @@ package org.apache.dubbo.config.metadata;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ArgumentConfig;
 import org.apache.dubbo.config.MethodConfig;
@@ -108,7 +109,7 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
      */
     private List<MethodConfig> generateMethodConfig() {
         MethodConfig methodConfig = new MethodConfig();
-        methodConfig.setName("getAndListenServiceDiscoveryMetadata");
+        methodConfig.setName("getAndListenInstanceMetadata");
 
         ArgumentConfig argumentConfig = new ArgumentConfig();
         argumentConfig.setIndex(1);
@@ -144,22 +145,30 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
         return new ArrayList<>(ApplicationModel.getConfigManager().getRegistries());
     }
 
+    /**
+     * MetadataService will always being exported as a Dubbo protocol service. Some protocols have requirements on service definitions,
+     * trying to export MetadataService on those protocols may cause exception.
+     * <p>
+     * For registries that can carry metadata information, such as Zookeeper, Nacos, users need not to care about which Port MetadataService will work on.
+     * For registries that have limited information, typically DNS, we strongly recommend users specify the MetadataService Port using 'dubbo.application.metadata-service-port=xxx'
+     */
     private ProtocolConfig generateMetadataProtocol() {
         ProtocolConfig defaultProtocol = new ProtocolConfig();
         Integer port = getApplicationConfig().getMetadataServicePort();
 
         if (port == null || port < -1) {
             if (logger.isInfoEnabled()) {
-                logger.info("Metadata Service Port hasn't been set. " +
-                        "Use default protocol defined in protocols.");
+                logger.info("Metadata Service Port hasn't been set will use default protocol defined in protocols.");
             }
             List<ProtocolConfig> defaultProtocols = ApplicationModel.getConfigManager().getDefaultProtocols();
 
-            if (defaultProtocols.isEmpty()) {
+            ProtocolConfig dubboProtocol = findDubboProtocol(defaultProtocols);
+            if (dubboProtocol != null) {
+                logger.info("Using dubbo protocol " + dubboProtocol + " to export MetadataService.");
+                return dubboProtocol;
+            } else {
                 defaultProtocol.setName(DUBBO_PROTOCOL);
                 defaultProtocol.setPort(-1);
-            } else {
-                return defaultProtocols.get(0);
             }
 
         } else {
@@ -167,6 +176,22 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
             defaultProtocol.setPort(port);
         }
 
+        logger.info("Using dubbo protocol " + defaultProtocol + " to export MetadataService.");
+
         return defaultProtocol;
+    }
+
+    private ProtocolConfig findDubboProtocol(List<ProtocolConfig> protocolConfigs) {
+        if (CollectionUtils.isEmpty(protocolConfigs)) {
+            return null;
+        }
+
+        for (ProtocolConfig protocolConfig : protocolConfigs) {
+            if (DUBBO_PROTOCOL.equalsIgnoreCase(protocolConfig.getName())) {
+                return protocolConfig;
+            }
+        }
+
+        return null;
     }
 }

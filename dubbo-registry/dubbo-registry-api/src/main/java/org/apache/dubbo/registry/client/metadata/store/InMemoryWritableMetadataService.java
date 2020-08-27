@@ -20,7 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.metadata.MetadataChangeListener;
+import org.apache.dubbo.metadata.InstanceMetadataChangedListener;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataInfo.ServiceInfo;
 import org.apache.dubbo.metadata.MetadataService;
@@ -77,8 +77,8 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
     ConcurrentNavigableMap<String, SortedSet<URL>> exportedServiceURLs = new ConcurrentSkipListMap<>();
     ConcurrentMap<String, MetadataInfo> metadataInfos;
     final Semaphore metadataSemaphore = new Semaphore(1);
-    String serviceDiscoveryMetadata;
-    ConcurrentMap<String, MetadataChangeListener> metadataChangeListenerMap = new ConcurrentHashMap<>();
+    String instanceMetadata;
+    ConcurrentMap<String, InstanceMetadataChangedListener> instanceMetadataChangedListenerMap = new ConcurrentHashMap<>();
 
     // ==================================================================================== //
 
@@ -210,19 +210,19 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
     }
 
     @Override
-    public void exportServiceDiscoveryMetadata(String metadata) {
-        this.serviceDiscoveryMetadata = metadata;
+    public void exportInstanceMetadata(String metadata) {
+        this.instanceMetadata = metadata;
     }
 
     @Override
-    public Map<String, MetadataChangeListener> getMetadataChangeListenerMap() {
-        return metadataChangeListenerMap;
+    public Map<String, InstanceMetadataChangedListener> getInstanceMetadataChangedListenerMap() {
+        return instanceMetadataChangedListenerMap;
     }
 
     @Override
-    public String getAndListenServiceDiscoveryMetadata(String consumerId, MetadataChangeListener listener) {
-        metadataChangeListenerMap.put(consumerId, listener);
-        return serviceDiscoveryMetadata;
+    public String getAndListenInstanceMetadata(String consumerId, InstanceMetadataChangedListener listener) {
+        instanceMetadataChangedListenerMap.put(consumerId, listener);
+        return instanceMetadata;
     }
 
     public void blockUntilUpdated() {
