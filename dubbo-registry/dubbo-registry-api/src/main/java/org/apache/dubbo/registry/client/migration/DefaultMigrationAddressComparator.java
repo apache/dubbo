@@ -14,12 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.integration;
+package org.apache.dubbo.registry.client.migration;
 
-import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 
-@SPI
-public interface MigrationAddressComparator {
-    <T> boolean shouldMigrate(ClusterInvoker<T> serviceDiscoveryInvoker, ClusterInvoker<T> invoker);
+public class DefaultMigrationAddressComparator implements MigrationAddressComparator {
+    @Override
+    public <T> boolean shouldMigrate(ClusterInvoker<T> serviceDiscoveryInvoker, ClusterInvoker<T> invoker) {
+        if (serviceDiscoveryInvoker.isAvailable()) {
+            return true;
+        }
+        return false;
+    }
 }

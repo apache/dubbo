@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.client;
+package org.apache.dubbo.registry.client.migration;
 
 import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
@@ -25,8 +25,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.registry.integration.MigrationInvoker;
-import org.apache.dubbo.registry.integration.MigrationRuleListener;
+import org.apache.dubbo.registry.integration.RegistryProtocol;
 import org.apache.dubbo.registry.integration.RegistryProtocolListener;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
@@ -37,17 +36,17 @@ import java.util.Set;
 import static org.apache.dubbo.common.constants.RegistryConstants.INIT;
 
 @Activate
-public class ServiceDiscoveryRegistryProtocolListener implements RegistryProtocolListener, ConfigurationListener {
-    private static final Logger logger = LoggerFactory.getLogger(ServiceDiscoveryRegistryProtocolListener.class);
+public class MigrationRuleListener implements RegistryProtocolListener, ConfigurationListener {
+    private static final Logger logger = LoggerFactory.getLogger(MigrationRuleListener.class);
     private static final String RULE_KEY = ApplicationModel.getName() + ".migration";
     private static final String DUBBO_SERVICEDISCOVERY_MIGRATION = "DUBBO_SERVICEDISCOVERY_MIGRATION";
 
-    private Set<MigrationRuleListener> listeners = new ConcurrentHashSet<>();
+    private Set<MigrationRuleHandler> listeners = new ConcurrentHashSet<>();
     private DynamicConfiguration configuration;
 
     private volatile String rawRule;
 
-    public ServiceDiscoveryRegistryProtocolListener() {
+    public MigrationRuleListener() {
         this.configuration = ApplicationModel.getEnvironment().getDynamicConfiguration().orElseGet(null);
 
         configuration.addListener(RULE_KEY, DUBBO_SERVICEDISCOVERY_MIGRATION, this);
@@ -81,7 +80,7 @@ public class ServiceDiscoveryRegistryProtocolListener implements RegistryProtoco
     public synchronized <T> void onRefer(RegistryProtocol registryProtocol, Invoker<T> invoker) {
         MigrationInvoker<T> migrationInvoker = (MigrationInvoker<T>) invoker;
 
-        MigrationRuleListener<T> migrationListener = new MigrationRuleListener<>(migrationInvoker);
+        MigrationRuleHandler<T> migrationListener = new MigrationRuleHandler<>(migrationInvoker);
         listeners.add(migrationListener);
 
         migrationListener.doMigrate(rawRule);

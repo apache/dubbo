@@ -14,12 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.integration;
+package org.apache.dubbo.registry.client.migration;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.registry.Registry;
-import org.apache.dubbo.registry.client.RegistryProtocol;
+import org.apache.dubbo.registry.client.migration.model.MigrationStep;
+import org.apache.dubbo.registry.integration.DynamicDirectory;
+import org.apache.dubbo.registry.integration.RegistryProtocol;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
@@ -29,7 +31,7 @@ import org.apache.dubbo.rpc.cluster.Directory;
 
 import java.util.Set;
 
-public class MigrationInvoker<T> implements ClusterInvoker<T> {
+public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
 
     private URL url;
     private Cluster cluster;
@@ -85,18 +87,8 @@ public class MigrationInvoker<T> implements ClusterInvoker<T> {
         return type;
     }
 
-    private boolean forceMigrate;
-
-    public boolean isForceMigrate() {
-        return forceMigrate;
-    }
-
-    public void setForceMigrate(boolean forceMigrate) {
-        this.forceMigrate = forceMigrate;
-    }
-
+    @Override
     public synchronized void migrateToServiceDiscoveryInvoker(boolean forceMigrate) {
-        setForceMigrate(forceMigrate);
         if (!forceMigrate) {
             refreshServiceDiscoveryInvoker();
             refreshInterfaceInvoker();
@@ -110,61 +102,10 @@ public class MigrationInvoker<T> implements ClusterInvoker<T> {
         }
     }
 
-    private synchronized void checkAddresses() {
-        Set<MigrationAddressComparator> detectors = ExtensionLoader.getExtensionLoader(MigrationAddressComparator.class).getSupportedExtensionInstances();
-        if (detectors != null && detectors.stream().allMatch(migrationDetector -> migrationDetector.shouldMigrate(serviceDiscoveryInvoker, invoker))) {
-            discardInterfaceInvokerAddress();
-        } else {
-            discardServiceDiscoveryInvokerAddress();
-        }
-    }
-
+    @Override
     public synchronized void fallbackToInterfaceInvoker() {
         refreshInterfaceInvoker();
         destroyServiceDiscoveryInvoker();
-    }
-
-    protected synchronized void destroyServiceDiscoveryInvoker() {
-        if (serviceDiscoveryInvoker != null) {
-            serviceDiscoveryInvoker.destroy();
-            serviceDiscoveryInvoker = null;
-        }
-    }
-
-    protected synchronized void discardServiceDiscoveryInvokerAddress() {
-        if (serviceDiscoveryInvoker != null) {
-            serviceDiscoveryInvoker.getDirectory().discordAddresses();
-        }
-    }
-
-    protected synchronized void refreshServiceDiscoveryInvoker() {
-        if (needRefresh(serviceDiscoveryInvoker)) {
-            serviceDiscoveryInvoker = registryProtocol.getServiceDiscoveryInvoker(cluster, registry, type, url);
-        }
-    }
-
-    protected synchronized void refreshInterfaceInvoker() {
-        if (needRefresh(invoker)) {
-            // FIXME invoker.destroy();
-            invoker = registryProtocol.getInvoker(cluster, registry, type, url);
-        }
-    }
-
-    protected synchronized void destroyInterfaceInvoker() {
-        if (invoker != null) {
-            invoker.destroy();
-            invoker = null;
-        }
-    }
-
-    protected synchronized void discardInterfaceInvokerAddress() {
-        if (invoker != null) {
-            invoker.getDirectory().discordAddresses();
-        }
-    }
-
-    private boolean needRefresh(ClusterInvoker<T> invoker) {
-        return invoker == null || invoker.isDestroyed() || !invoker.isAvailable();
     }
 
     @Override
@@ -225,4 +166,73 @@ public class MigrationInvoker<T> implements ClusterInvoker<T> {
         return (invoker == null || invoker.isDestroyed())
                 && (serviceDiscoveryInvoker == null || serviceDiscoveryInvoker.isDestroyed());
     }
+
+    @Override
+    public boolean isServiceDiscovery() {
+        return false;
+    }
+
+    @Override
+    public MigrationStep getCurrentStep() {
+        return null;
+    }
+
+    @Override
+    public boolean invokersChanged() {
+        return false;
+    }
+
+
+    private synchronized void checkAddresses() {
+        Set<MigrationAddressComparator> detectors = ExtensionLoader.getExtensionLoader(MigrationAddressComparator.class).getSupportedExtensionInstances();
+        if (detectors != null && detectors.stream().allMatch(migrationDetector -> migrationDetector.shouldMigrate(serviceDiscoveryInvoker, invoker))) {
+            discardInterfaceInvokerAddress();
+        } else {
+            discardServiceDiscoveryInvokerAddress();
+        }
+    }
+
+    protected synchronized void destroyServiceDiscoveryInvoker() {
+        if (serviceDiscoveryInvoker != null) {
+            serviceDiscoveryInvoker.destroy();
+            serviceDiscoveryInvoker = null;
+        }
+    }
+
+    protected synchronized void discardServiceDiscoveryInvokerAddress() {
+        if (serviceDiscoveryInvoker != null) {
+            serviceDiscoveryInvoker.getDirectory().discordAddresses();
+        }
+    }
+
+    protected synchronized void refreshServiceDiscoveryInvoker() {
+        if (needRefresh(serviceDiscoveryInvoker)) {
+            serviceDiscoveryInvoker = registryProtocol.getServiceDiscoveryInvoker(cluster, registry, type, url);
+        }
+    }
+
+    protected synchronized void refreshInterfaceInvoker() {
+        if (needRefresh(invoker)) {
+            // FIXME invoker.destroy();
+            invoker = registryProtocol.getInvoker(cluster, registry, type, url);
+        }
+    }
+
+    protected synchronized void destroyInterfaceInvoker() {
+        if (invoker != null) {
+            invoker.destroy();
+            invoker = null;
+        }
+    }
+
+    protected synchronized void discardInterfaceInvokerAddress() {
+        if (invoker != null) {
+            invoker.getDirectory().discordAddresses();
+        }
+    }
+
+    private boolean needRefresh(ClusterInvoker<T> invoker) {
+        return invoker == null || invoker.isDestroyed() || !invoker.isAvailable();
+    }
+
 }

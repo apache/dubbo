@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.client;
+package org.apache.dubbo.registry.integration;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
@@ -31,21 +31,15 @@ import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.registry.RegistryService;
-import org.apache.dubbo.registry.integration.AbstractConfiguratorListener;
-import org.apache.dubbo.registry.integration.DynamicDirectory;
-import org.apache.dubbo.registry.integration.InterfaceCompatibleRegistryProtocol;
-import org.apache.dubbo.registry.integration.MigrationInvoker;
-import org.apache.dubbo.registry.integration.RegistryDirectory;
-import org.apache.dubbo.registry.integration.RegistryProtocolListener;
+import org.apache.dubbo.registry.client.ServiceDiscoveryRegistryDirectory;
+import org.apache.dubbo.registry.client.migration.ServiceDiscoveryMigrationInvoker;
 import org.apache.dubbo.registry.retry.ReExportTask;
 import org.apache.dubbo.registry.support.SkipFailbackWrapperException;
 import org.apache.dubbo.rpc.Exporter;
-import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.ProxyFactory;
-import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
@@ -836,31 +830,5 @@ public class RegistryProtocol implements Protocol {
             ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(REGISTRY_PROTOCOL); // load
         }
         return INSTANCE;
-    }
-
-    public static class ServiceDiscoveryMigrationInvoker<T> extends MigrationInvoker<T> {
-
-        public ServiceDiscoveryMigrationInvoker(RegistryProtocol registryProtocol, Cluster cluster, Registry registry, Class<T> type, URL url) {
-            super(registryProtocol, cluster, registry, type, url);
-        }
-
-        @Override
-        public synchronized void fallbackToInterfaceInvoker() {
-            destroyServiceDiscoveryInvoker();
-        }
-
-        @Override
-        public synchronized void migrateToServiceDiscoveryInvoker(boolean forceMigrate) {
-            refreshServiceDiscoveryInvoker();
-        }
-
-        @Override
-        public Result invoke(Invocation invocation) throws RpcException {
-            ClusterInvoker<T> invoker = getServiceDiscoveryInvoker();
-            if (invoker == null) {
-                throw new IllegalStateException("There's no service discovery invoker available for service " + invocation.getServiceName());
-            }
-            return invoker.invoke(invocation);
-        }
     }
 }

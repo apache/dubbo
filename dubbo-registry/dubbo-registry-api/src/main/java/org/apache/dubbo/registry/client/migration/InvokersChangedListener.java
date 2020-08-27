@@ -14,10 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.integration;
+package org.apache.dubbo.registry.client.migration;
 
-public enum MigrationStep {
-    INTERFACE_FIRST,
-    APPLICATION_FIRST,
-    FORCE_APPLICATION
+public interface InvokersChangedListener {
+    void onChange();
 }

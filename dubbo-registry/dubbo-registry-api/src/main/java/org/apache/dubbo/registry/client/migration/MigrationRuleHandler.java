@@ -14,30 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.integration;
+package org.apache.dubbo.registry.client.migration;
 
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.registry.client.RegistryProtocol;
+import org.apache.dubbo.registry.client.migration.model.MigrationRule;
+import org.apache.dubbo.registry.client.migration.model.MigrationStep;
 
 import static org.apache.dubbo.common.constants.RegistryConstants.INIT;
 
 @Activate
-public class MigrationRuleListener<T> {
-    private static final Logger logger = LoggerFactory.getLogger(MigrationRuleListener.class);
+public class MigrationRuleHandler<T> {
+    private static final Logger logger = LoggerFactory.getLogger(MigrationRuleHandler.class);
     private static final String DUBBO_SERVICEDISCOVERY_MIGRATION = "dubbo.application.service-discovery.migration";
 
     private MigrationInvoker<T> migrationInvoker;
 
-    public MigrationRuleListener(MigrationInvoker<T> invoker) {
+    public MigrationRuleHandler(MigrationInvoker<T> invoker) {
         this.migrationInvoker = invoker;
     }
 
     public void doMigrate(String rawRule) {
-        MigrationStep step = (migrationInvoker instanceof RegistryProtocol.ServiceDiscoveryMigrationInvoker)
+        MigrationStep step = (migrationInvoker instanceof ServiceDiscoveryMigrationInvoker)
                 ? MigrationStep.FORCE_APPLICATION
                 : MigrationStep.INTERFACE_FIRST;
         if (StringUtils.isEmpty(rawRule)) {

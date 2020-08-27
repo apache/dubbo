@@ -14,34 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.integration;
+package org.apache.dubbo.registry.client.migration.model;
 
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.Constructor;
-
-public class MigrationRule {
-    private String key;
-    private MigrationStep step;
-
-    public String getKey() {
-        return key;
-    }
-
-    public void setKey(String key) {
-        this.key = key;
-    }
-
-    public MigrationStep getStep() {
-        return step;
-    }
-
-    public void setStep(MigrationStep step) {
-        this.step = step;
-    }
-
-    public static MigrationRule parse(String rawRule) {
-        Constructor constructor = new Constructor(MigrationRule.class);
-        Yaml yaml = new Yaml(constructor);
-        return yaml.load(rawRule);
-    }
+public enum MigrationStep {
+    INTERFACE_FIRST,
+    APPLICATION_FIRST,
+    FORCE_APPLICATION
 }

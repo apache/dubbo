@@ -14,16 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.integration;
+package org.apache.dubbo.registry.client.migration;
 
+import org.apache.dubbo.registry.client.migration.model.MigrationStep;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 
-public class DefaultMigrationAddressComparator implements MigrationAddressComparator {
-    @Override
-    public <T> boolean shouldMigrate(ClusterInvoker<T> serviceDiscoveryInvoker, ClusterInvoker<T> invoker) {
-        if (serviceDiscoveryInvoker.isAvailable()) {
-            return true;
-        }
-        return false;
-    }
+/**
+ * FIXME, some methods need to be further optimized.
+ *
+ * @param <T>
+ */
+public interface MigrationClusterInvoker<T> extends ClusterInvoker<T> {
+
+    boolean isServiceDiscovery();
+
+    MigrationStep getCurrentStep();
+
+    boolean invokersChanged();
+
+    void fallbackToInterfaceInvoker();
+
+    void migrateToServiceDiscoveryInvoker(boolean forceMigrate);
 }
