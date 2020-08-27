@@ -529,7 +529,7 @@ public class RegistryProtocol implements Protocol {
             }
         }
 
-        List<Exporter<?>> exporters = new ArrayList<Exporter<?>>(bounds.values());
+        List<Exporter<?>> exporters = new ArrayList<>(bounds.values());
         for (Exporter<?> exporter : exporters) {
             exporter.unexport();
         }
