@@ -73,7 +73,7 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
 
         if (paramsMap.isEmpty()) {
             // ServiceInstance Metadata is empty. Happened when registry not support metadata write.
-            urls.add(generateUrlWithoutMetadata(serviceName, host));
+            urls.add(generateUrlWithoutMetadata(serviceName, host, serviceInstance.getPort()));
         } else {
             for (Map.Entry<String, Map<String, String>> entry : paramsMap.entrySet()) {
                 String protocol = entry.getKey();
@@ -104,16 +104,19 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
         return urlBuilder.build();
     }
 
-    private URL generateUrlWithoutMetadata(String serviceName, String host) {
+    private URL generateUrlWithoutMetadata(String serviceName, String host, Integer instancePort) {
         Integer port = ApplicationModel.getApplicationConfig().getMetadataServicePort();
+        if (port == null || port < 1) {
+            logger.warn("Metadata Service Port is not provided, since DNS is not able to negotiate the metadata port " +
+                    "between Provider and Consumer, will try to use instance port as the default metadata port.");
+            port = instancePort;
+        }
 
         if (port == null || port < 1) {
             String message = "Metadata Service Port should be specified for consumer. " +
                     "Please set dubbo.application.metadataServicePort and " +
-                    "make sure it has been set in provider side. " +
+                    "make sure it has been set on provider side. " +
                     "ServiceName: " + serviceName + " Host: " + host;
-
-            logger.error(message);
             throw new IllegalStateException(message);
         }
 
@@ -129,7 +132,7 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
                 .addParameter(VERSION_KEY, MetadataService.VERSION);
 
         // add ServiceInstance Metadata notify support
-        urlBuilder.addParameter("getAndListenServiceDiscoveryMetadata.1.callback", true);
+        urlBuilder.addParameter("getAndListenInstanceMetadata.1.callback", true);
 
         return urlBuilder.build();
     }

@@ -235,10 +235,10 @@ public interface MetadataService {
      * Used for consumer to get Service Instance Metadata
      * if Registry is unsupported with publishing metadata
      *
-     * @param metadata {@link Map} of provider Service Instance Metadata
+     * @param instanceMetadata {@link Map} of provider Service Instance Metadata
      * @since 3.0
      */
-    default void exportServiceDiscoveryMetadata(String metadata) {
+    default void exportInstanceMetadata(String instanceMetadata) {
         throw new UnsupportedOperationException("This operation is not supported for consumer.");
     }
 
@@ -248,10 +248,10 @@ public interface MetadataService {
      * Used for consumer to get Service Instance Metadata
      * if Registry is unsupported with publishing metadata
      *
-     * @return {@link Map} of {@link MetadataChangeListener}
+     * @return {@link Map} of {@link InstanceMetadataChangedListener}
      * @since 3.0
      */
-    default Map<String, MetadataChangeListener> getMetadataChangeListenerMap() {
+    default Map<String, InstanceMetadataChangedListener> getInstanceMetadataChangedListenerMap() {
         throw new UnsupportedOperationException("This operation is not supported for consumer.");
     }
 
@@ -263,11 +263,11 @@ public interface MetadataService {
      * if Registry is unsupported with publishing metadata
      *
      * @param consumerId consumerId
-     * @param listener   {@link MetadataChangeListener} used to notify event
+     * @param listener   {@link InstanceMetadataChangedListener} used to notify event
      * @return {@link Map} of provider Service Instance Metadata
      * @since 3.0
      */
-    default String getAndListenServiceDiscoveryMetadata(String consumerId, MetadataChangeListener listener) {
+    default String getAndListenInstanceMetadata(String consumerId, InstanceMetadataChangedListener listener) {
         throw new UnsupportedOperationException("This operation is not supported for consumer.");
     }
 
