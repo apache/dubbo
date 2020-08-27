@@ -359,6 +359,11 @@ public class ServiceDiscoveryRegistry implements Registry {
             subscribedServices.addAll(parseServices(serviceNames));
         }
 
+        serviceNames = subscribedURL.getParameter(SUBSCRIBED_SERVICE_NAMES_KEY);
+        if (StringUtils.isNotEmpty(serviceNames)) {
+            subscribedServices.addAll(parseServices(serviceNames));
+        }
+
         if (isEmpty(subscribedServices)) {
             subscribedServices.addAll(findMappedServices(subscribedURL, new DefaultMappingListener(subscribedURL, subscribedServices, listener)));
             if (isEmpty(subscribedServices)) {

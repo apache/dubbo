@@ -23,6 +23,7 @@ import org.apache.dubbo.remoting.p2p.Group;
 import org.apache.dubbo.remoting.p2p.Networkers;
 import org.apache.dubbo.remoting.p2p.Peer;
 import org.apache.dubbo.remoting.transport.ChannelHandlerAdapter;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.CountDownLatch;
@@ -38,7 +39,7 @@ public class MulticastNetworkerTest {
     @Test
     public void testJoin() throws RemotingException, InterruptedException {
         final String groupURL = "multicast://224.5.6.7:1234";
-        final String peerURL = "dubbo://0.0.0.0:" + NetUtils.getAvailablePort();
+        final String peerURL = "exchange://0.0.0.0:" + NetUtils.getAvailablePort() + "?exchanger=header";
 
         final CountDownLatch countDownLatch = new CountDownLatch(1);
         Peer peer1 = Networkers.join(groupURL, peerURL, new ChannelHandlerAdapter() {
@@ -47,7 +48,7 @@ public class MulticastNetworkerTest {
                 countDownLatch.countDown();
             }
         });
-        Peer peer2 = Networkers.join(groupURL, "dubbo://0.0.0.0:" + NetUtils.getAvailablePort(),
+        Peer peer2 = Networkers.join(groupURL, "exchange://0.0.0.0:" + NetUtils.getAvailablePort() + "?exchanger=header",
                 mock(ChannelHandlerAdapter.class));
 
         while (true) {

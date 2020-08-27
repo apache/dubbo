@@ -154,8 +154,12 @@ public class InterfaceCompatibleRegistryProtocol extends RegistryProtocol {
 
         @Override
         public void destroy() {
-            invoker.destroy();
-            serviceDiscoveryInvoker.destroy();
+            if (invoker != null) {
+                invoker.destroy();
+            }
+            if (serviceDiscoveryInvoker != null) {
+                serviceDiscoveryInvoker.destroy();
+            }
         }
 
         @Override

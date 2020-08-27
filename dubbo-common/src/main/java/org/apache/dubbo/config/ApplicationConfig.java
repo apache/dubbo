@@ -159,6 +159,11 @@ public class ApplicationConfig extends AbstractConfig {
 
     private String repository;
 
+    /**
+     * Metadata Service, used in Service Discovery
+     */
+    private Integer metadataServicePort;
+
     public ApplicationConfig() {
     }
 
@@ -443,6 +448,15 @@ public class ApplicationConfig extends AbstractConfig {
 
     public void setRepository(String repository) {
         this.repository = repository;
+    }
+
+    @Parameter(key = "metadata-service-port")
+    public Integer getMetadataServicePort() {
+        return metadataServicePort;
+    }
+
+    public void setMetadataServicePort(Integer metadataServicePort) {
+        this.metadataServicePort = metadataServicePort;
     }
 
     @Override
