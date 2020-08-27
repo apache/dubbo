@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.qos.probe.impl;
 
+import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.qos.probe.ReadinessProbe;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
@@ -24,6 +25,7 @@ import org.apache.dubbo.rpc.model.ServiceRepository;
 import java.util.Collection;
 import java.util.List;
 
+@Activate(value = "ProviderReadiness")
 public class ProviderReadinessProbe implements ReadinessProbe {
     private static ServiceRepository serviceRepository = ApplicationModel.getServiceRepository();
 

@@ -16,21 +16,26 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.command.annotation.Cmd;
 import org.apache.dubbo.qos.probe.StartupProbe;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import java.util.Set;
+import java.util.List;
 
 @Cmd(name = "startup", summary = "Judge if service has started? ")
 public class Startup implements BaseCommand {
 
     @Override
     public String execute(CommandContext commandContext, String[] args) {
-        Set<StartupProbe> startupProbes = ExtensionLoader.getExtensionLoader(StartupProbe.class)
-                .getSupportedExtensionInstances();
+        URL url = URL.valueOf("application://")
+                .addParameter(CommonConstants.QOS_PROBE_EXTENSION, ApplicationModel.getApplicationConfig().getProbe());
+        List<StartupProbe> startupProbes = ExtensionLoader.getExtensionLoader(StartupProbe.class)
+                .getActivateExtension(url, CommonConstants.QOS_PROBE_EXTENSION);
         if (!startupProbes.isEmpty()) {
             for (StartupProbe startupProbe : startupProbes) {
                 if (!startupProbe.check()) {

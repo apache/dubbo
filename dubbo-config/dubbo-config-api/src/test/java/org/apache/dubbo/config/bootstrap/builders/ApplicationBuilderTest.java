@@ -221,6 +221,13 @@ class ApplicationBuilderTest {
     }
 
     @Test
+    void probe() {
+        ApplicationBuilder builder = new ApplicationBuilder();
+        builder.probe("TestProbe");
+        Assertions.assertEquals("TestProbe", builder.build().getProbe());
+    }
+
+    @Test
     void build() {
         MonitorConfig monitor = new MonitorConfig("monitor-addr");
         RegistryConfig registry = new RegistryConfig();

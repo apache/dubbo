@@ -16,21 +16,26 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.command.annotation.Cmd;
 import org.apache.dubbo.qos.probe.ReadinessProbe;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import java.util.Set;
+import java.util.List;
 
 @Cmd(name = "ready", summary = "Judge if service is ready to work? ")
 public class Ready implements BaseCommand {
 
     @Override
     public String execute(CommandContext commandContext, String[] args) {
-        Set<ReadinessProbe> readinessProbes = ExtensionLoader.getExtensionLoader(ReadinessProbe.class)
-                .getSupportedExtensionInstances();
+        URL url = URL.valueOf("application://")
+                .addParameter(CommonConstants.QOS_PROBE_EXTENSION, ApplicationModel.getApplicationConfig().getProbe());
+        List<ReadinessProbe> readinessProbes = ExtensionLoader.getExtensionLoader(ReadinessProbe.class)
+                .getActivateExtension(url, CommonConstants.QOS_PROBE_EXTENSION);
         if (!readinessProbes.isEmpty()) {
             for (ReadinessProbe readinessProbe : readinessProbes) {
                 if (!readinessProbe.check()) {

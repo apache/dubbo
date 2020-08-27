@@ -16,9 +16,11 @@
  */
 package org.apache.dubbo.qos.probe.impl;
 
+import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.qos.probe.StartupProbe;
 
+@Activate(value = "BootstrapStartup")
 public class BootstrapStartupProbe implements StartupProbe {
 
     @Override

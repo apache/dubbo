@@ -164,6 +164,11 @@ public class ApplicationConfig extends AbstractConfig {
      */
     private Integer metadataServicePort;
 
+    /**
+     * used to set extensions of probe in qos
+     */
+    private String probe;
+
     public ApplicationConfig() {
     }
 
@@ -457,6 +462,15 @@ public class ApplicationConfig extends AbstractConfig {
 
     public void setMetadataServicePort(Integer metadataServicePort) {
         this.metadataServicePort = metadataServicePort;
+    }
+
+    @Parameter(key = "probe")
+    public String getProbe() {
+        return probe;
+    }
+
+    public void setProbe(String probe) {
+        this.probe = probe;
     }
 
     @Override

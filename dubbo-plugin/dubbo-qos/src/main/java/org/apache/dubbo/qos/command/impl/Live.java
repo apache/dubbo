@@ -16,21 +16,26 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.command.annotation.Cmd;
 import org.apache.dubbo.qos.probe.LivenessProbe;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import java.util.Set;
+import java.util.List;
 
 @Cmd(name = "live", summary = "Judge if service is alive? ")
 public class Live implements BaseCommand {
 
     @Override
     public String execute(CommandContext commandContext, String[] args) {
-        Set<LivenessProbe> livenessProbes = ExtensionLoader.getExtensionLoader(LivenessProbe.class)
-                .getSupportedExtensionInstances();
+        URL url = URL.valueOf("application://")
+                .addParameter(CommonConstants.QOS_PROBE_EXTENSION, ApplicationModel.getApplicationConfig().getProbe());
+        List<LivenessProbe> livenessProbes = ExtensionLoader.getExtensionLoader(LivenessProbe.class)
+                .getActivateExtension(url, CommonConstants.QOS_PROBE_EXTENSION);
         if (!livenessProbes.isEmpty()) {
             for (LivenessProbe livenessProbe : livenessProbes) {
                 if (!livenessProbe.check()) {

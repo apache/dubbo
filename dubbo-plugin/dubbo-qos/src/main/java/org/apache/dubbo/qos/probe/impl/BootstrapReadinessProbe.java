@@ -16,10 +16,12 @@
  */
 package org.apache.dubbo.qos.probe.impl;
 
+import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.qos.probe.LivenessProbe;
+import org.apache.dubbo.qos.probe.ReadinessProbe;
 
-public class BootstrapLivenessProbe implements LivenessProbe {
+@Activate(value = "BootstrapReadiness")
+public class BootstrapReadinessProbe implements ReadinessProbe {
     @Override
     public boolean check() {
         return !DubboBootstrap.getInstance().isShutdown();
