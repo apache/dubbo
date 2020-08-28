@@ -16,50 +16,48 @@
  */
 package org.apache.dubbo.registry.integration;
 
-import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.registry.client.RegistryProtocol;
-
-import static org.apache.dubbo.common.constants.RegistryConstants.INIT;
+import org.apache.dubbo.rpc.cluster.support.migration.MigrationRule;
 
 @Activate
 public class MigrationRuleListener<T> {
     private static final Logger logger = LoggerFactory.getLogger(MigrationRuleListener.class);
-    private static final String DUBBO_SERVICEDISCOVERY_MIGRATION = "dubbo.application.service-discovery.migration";
 
     private MigrationInvoker<T> migrationInvoker;
 
-    public MigrationRuleListener(MigrationInvoker<T> invoker) {
+    private boolean migrationMultiRegsitry;
+
+    public MigrationRuleListener(MigrationInvoker<T> invoker, boolean migrationMultiRegsitry) {
         this.migrationInvoker = invoker;
+        this.migrationMultiRegsitry = migrationMultiRegsitry;
     }
 
     public void doMigrate(String rawRule) {
-        MigrationStep step = (migrationInvoker instanceof RegistryProtocol.ServiceDiscoveryMigrationInvoker)
-                ? MigrationStep.FORCE_APPLICATION
-                : MigrationStep.INTERFACE_FIRST;
-        if (StringUtils.isEmpty(rawRule)) {
-            logger.error("Find empty migration rule, will ignore.");
-            return;
-        } else if (INIT.equals(rawRule)) {
-            step = Enum.valueOf(MigrationStep.class, ConfigurationUtils.getProperty(DUBBO_SERVICEDISCOVERY_MIGRATION, step.name()));
-        } else {
-            MigrationRule rule = MigrationRule.parse(rawRule);
-            step = rule.getStep();
-        }
+        MigrationRule rule = MigrationRule.parse(rawRule);
 
-        switch (step) {
-            case APPLICATION_FIRST:
-                migrationInvoker.migrateToServiceDiscoveryInvoker(false);
-                break;
-            case FORCE_APPLICATION:
-                migrationInvoker.migrateToServiceDiscoveryInvoker(true);
-                break;
-            case INTERFACE_FIRST:
-            default:
-                migrationInvoker.fallbackToInterfaceInvoker();
+        migrationInvoker.setMigrationRule(rule);
+
+        if (migrationMultiRegsitry) {
+            migrationInvoker.addressChanged().set(true);
+            if (migrationInvoker.isServiceInvoker()) {
+                migrationInvoker.refreshServiceDiscoveryInvoker();
+            } else {
+                migrationInvoker.refreshInterfaceInvoker();
+            }
+        } else {
+            switch (rule.getStep()) {
+                case APPLICATION_FIRST:
+                    migrationInvoker.migrateToServiceDiscoveryInvoker(false);
+                    break;
+                case FORCE_APPLICATION:
+                    migrationInvoker.migrateToServiceDiscoveryInvoker(true);
+                    break;
+                case INTERFACE_FIRST:
+                default:
+                    migrationInvoker.fallbackToInterfaceInvoker();
+            }
         }
     }
 }

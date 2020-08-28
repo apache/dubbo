@@ -862,5 +862,10 @@ public class RegistryProtocol implements Protocol {
             }
             return invoker.invoke(invocation);
         }
+
+        @Override
+        public boolean isServiceInvoker() {
+            return true;
+        }
     }
 }

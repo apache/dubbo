@@ -26,10 +26,13 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.cluster.Directory;
+import org.apache.dubbo.rpc.cluster.support.migration.MigrationCluserInvoker;
+import org.apache.dubbo.rpc.cluster.support.migration.MigrationRule;
 
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-public class MigrationInvoker<T> implements ClusterInvoker<T> {
+public class MigrationInvoker<T> implements MigrationCluserInvoker<T> {
 
     private URL url;
     private Cluster cluster;
@@ -39,6 +42,10 @@ public class MigrationInvoker<T> implements ClusterInvoker<T> {
 
     private ClusterInvoker<T> invoker;
     private ClusterInvoker<T> serviceDiscoveryInvoker;
+
+    private AtomicBoolean addressChanged = new AtomicBoolean(false);
+
+    private MigrationRule rule;
 
     public MigrationInvoker(RegistryProtocol registryProtocol,
                             Cluster cluster,
@@ -224,5 +231,24 @@ public class MigrationInvoker<T> implements ClusterInvoker<T> {
     public boolean isDestroyed() {
         return (invoker == null || invoker.isDestroyed())
                 && (serviceDiscoveryInvoker == null || serviceDiscoveryInvoker.isDestroyed());
+    }
+
+    public AtomicBoolean addressChanged() {
+        return addressChanged;
+    }
+
+    @Override
+    public boolean isServiceInvoker() {
+        return false;
+    }
+
+    @Override
+    public MigrationRule getMigrationRule() {
+        return rule;
+    }
+
+    @Override
+    public void setMigrationRule(MigrationRule rule) {
+        this.rule = rule;
     }
 }

@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.cluster.support.registry;
 
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -27,16 +28,18 @@ import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
+import org.apache.dubbo.rpc.cluster.support.migration.MigrationCluserInvoker;
+import org.apache.dubbo.rpc.cluster.support.migration.MigrationClusterComparator;
+import org.apache.dubbo.rpc.cluster.support.migration.MigrationRule;
+import org.apache.dubbo.rpc.cluster.support.migration.MigrationStep;
 import org.apache.dubbo.rpc.cluster.support.wrapper.MockClusterInvoker;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PREFERRED_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_ZONE;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_ZONE_FORCE;
-import static org.apache.dubbo.common.constants.RegistryConstants.ZONE_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.*;
 
 /**
  * When there're more than one registry for subscription.
@@ -103,4 +106,76 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
         return invokers.get(0).invoke(invocation);
     }
 
+    @Override
+    protected List<Invoker<T>> list(Invocation invocation) throws RpcException {
+        List<Invoker<T>> invokers = super.list(invocation);
+
+        if (null == invokers || invokers.size() < 2) {
+            return invokers;
+        }
+
+        // 开关
+        //
+
+        List<Invoker<T>>  interfaceInvokers = invokers.stream().filter( s -> !((MigrationCluserInvoker)s).isServiceInvoker()).collect(Collectors.toList());
+        List<Invoker<T>>  serviceInvokers = invokers.stream().filter( s -> ((MigrationCluserInvoker)s).isServiceInvoker()).collect(Collectors.toList());
+
+        if (serviceInvokers.isEmpty()) {
+            return invokers;
+        }
+
+        MigrationRule rule = null;
+
+        for (Invoker<T> invoker : serviceInvokers) {
+            MigrationCluserInvoker migrationCluserInvoker = (MigrationCluserInvoker) invoker;
+            if (null == rule) {
+                rule = migrationCluserInvoker.getMigrationRule();
+            } else {
+                // 不一致
+                if (!rule.equals(migrationCluserInvoker.getMigrationRule())) {
+                    rule = MigrationRule.queryRule();
+                    break;
+                }
+            }
+        }
+
+        MigrationStep step = rule.getStep();
+
+        // 地址比对
+        if (MigrationStep.APPLICATION_FIRST == step && invokers.stream().anyMatch(s -> ((MigrationCluserInvoker)s).addressChanged().get())) {
+
+        }
+
+        switch (step) {
+            case INTERFACE_FIRST:
+                return interfaceInvokers.isEmpty() ? serviceInvokers : interfaceInvokers;
+            case APPLICATION_FIRST:
+
+                if (serviceInvokers.isEmpty()) {
+                    return  interfaceInvokers;
+                }
+
+                List<Invoker<T>>  availableServiceInvokers = serviceInvokers.stream().filter( s -> ((MigrationCluserInvoker)s).isAvailable()).collect(Collectors.toList());
+                if (availableServiceInvokers.size() > 0) {
+                    return availableServiceInvokers;
+                } else {
+                    return interfaceInvokers.stream().filter( s -> ((MigrationCluserInvoker)s).isAvailable()).collect(Collectors.toList());
+                }
+
+
+            case FORCE_APPLICATION:
+                return serviceInvokers;
+        }
+
+        throw new UnsupportedOperationException(rule.getStep().name());
+    }
+
+
+    private synchronized boolean checkAddresses(ClusterInvoker<T> interfaceInvokers, ClusterInvoker<T> serviceInvokers) {
+        Set<MigrationClusterComparator> detectors = ExtensionLoader.getExtensionLoader(MigrationClusterComparator.class).getSupportedExtensionInstances();
+        if (null != detectors && detectors.stream().anyMatch( s -> s.compare((List<MigrationCluserInvoker<T>>)interfaceInvokers))) {
+            return true;
+        }
+        return false;
+    }
 }

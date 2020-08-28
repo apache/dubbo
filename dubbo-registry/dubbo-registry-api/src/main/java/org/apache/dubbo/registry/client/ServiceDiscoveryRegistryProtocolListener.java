@@ -30,6 +30,7 @@ import org.apache.dubbo.registry.integration.MigrationRuleListener;
 import org.apache.dubbo.registry.integration.RegistryProtocolListener;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.cluster.support.migration.MigrationRule;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Set;
@@ -39,8 +40,6 @@ import static org.apache.dubbo.common.constants.RegistryConstants.INIT;
 @Activate
 public class ServiceDiscoveryRegistryProtocolListener implements RegistryProtocolListener, ConfigurationListener {
     private static final Logger logger = LoggerFactory.getLogger(ServiceDiscoveryRegistryProtocolListener.class);
-    private static final String RULE_KEY = ApplicationModel.getName() + ".migration";
-    private static final String DUBBO_SERVICEDISCOVERY_MIGRATION = "DUBBO_SERVICEDISCOVERY_MIGRATION";
 
     private Set<MigrationRuleListener> listeners = new ConcurrentHashSet<>();
     private DynamicConfiguration configuration;
@@ -50,13 +49,13 @@ public class ServiceDiscoveryRegistryProtocolListener implements RegistryProtoco
     public ServiceDiscoveryRegistryProtocolListener() {
         this.configuration = ApplicationModel.getEnvironment().getDynamicConfiguration().orElseGet(null);
 
-        configuration.addListener(RULE_KEY, DUBBO_SERVICEDISCOVERY_MIGRATION, this);
+        configuration.addListener(MigrationRule.RULE_KEY, MigrationRule.DUBBO_SERVICEDISCOVERY_MIGRATION_GROUP, this);
 
-        String rawRule = configuration.getConfig(RULE_KEY, DUBBO_SERVICEDISCOVERY_MIGRATION);
+        String rawRule = configuration.getConfig(MigrationRule.RULE_KEY, MigrationRule.DUBBO_SERVICEDISCOVERY_MIGRATION_GROUP);
         if (StringUtils.isEmpty(rawRule)) {
             rawRule = INIT;
         }
-        process(new ConfigChangedEvent(RULE_KEY, DUBBO_SERVICEDISCOVERY_MIGRATION, rawRule));
+        process(new ConfigChangedEvent(MigrationRule.RULE_KEY, MigrationRule.DUBBO_SERVICEDISCOVERY_MIGRATION_GROUP, rawRule));
     }
 
     @Override
@@ -81,7 +80,7 @@ public class ServiceDiscoveryRegistryProtocolListener implements RegistryProtoco
     public synchronized <T> void onRefer(RegistryProtocol registryProtocol, Invoker<T> invoker) {
         MigrationInvoker<T> migrationInvoker = (MigrationInvoker<T>) invoker;
 
-        MigrationRuleListener<T> migrationListener = new MigrationRuleListener<>(migrationInvoker);
+        MigrationRuleListener<T> migrationListener = new MigrationRuleListener<>(migrationInvoker, true);
         listeners.add(migrationListener);
 
         migrationListener.doMigrate(rawRule);
@@ -89,6 +88,6 @@ public class ServiceDiscoveryRegistryProtocolListener implements RegistryProtoco
 
     @Override
     public void onDestroy() {
-        configuration.removeListener(RULE_KEY, this);
+        configuration.removeListener(MigrationRule.RULE_KEY, this);
     }
 }
