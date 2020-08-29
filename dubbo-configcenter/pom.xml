@@ -36,5 +36,6 @@
         <module>dubbo-configcenter-consul</module>
         <module>dubbo-configcenter-etcd</module>
         <module>dubbo-configcenter-nacos</module>
+        <module>dubbo-configcenter-redis</module>
     </modules>
 </project>

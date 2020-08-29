@@ -118,6 +118,21 @@ public class ClusterRedisClient extends AbstractRedisClient implements RedisClie
         jedisCluster.close();
     }
 
+    @Override
+    public String set(String key, String value) {
+        return jedisCluster.set(key, value);
+    }
+
+    @Override
+    public String get(String key) {
+        return jedisCluster.get(key);
+    }
+
+    @Override
+    public Long del(String key) {
+        return jedisCluster.del(key);
+    }
+
     private Set<HostAndPort> getNodes(URL url) {
         Set<HostAndPort> hostAndPorts = new HashSet<>();
         hostAndPorts.add(new HostAndPort(url.getHost(), url.getPort()));

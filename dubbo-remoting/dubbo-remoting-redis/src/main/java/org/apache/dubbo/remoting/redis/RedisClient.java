@@ -43,4 +43,15 @@ public interface RedisClient {
     void disconnect();
 
     void close();
+
+    String get(String key);
+
+    /**
+     * Delete key in redis
+     * @param key
+     * @return boolean if key exists and false if key does not exist
+     */
+    Long del(String key);
+
+    String set(String key, String value);
 }

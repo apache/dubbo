@@ -114,5 +114,27 @@ public class MonoRedisClient extends AbstractRedisClient implements RedisClient 
         jedisPool.close();
     }
 
+    @Override
+    public String set(String key, String value) {
+        Jedis jedis = jedisPool.getResource();
+        String result = jedis.set(key, value);
+        jedis.close();
+        return result;
+    }
 
+    @Override
+    public String get(String key) {
+        Jedis jedis = jedisPool.getResource();
+        String result = jedis.get(key);
+        jedis.close();
+        return result;
+    }
+
+    @Override
+    public Long del(String key) {
+        Jedis jedis = jedisPool.getResource();
+        long result = jedis.del(key);
+        jedis.close();
+        return result;
+    }
 }

@@ -118,4 +118,28 @@ public class SentinelRedisClient extends AbstractRedisClient implements RedisCli
     public void close() {
         sentinelPool.close();
     }
+
+    @Override
+    public String set(String key, String value) {
+        Jedis jedis = sentinelPool.getResource();
+        String result = jedis.set(key, value);
+        jedis.close();
+        return result;
+    }
+
+    @Override
+    public String get(String key) {
+        Jedis jedis = sentinelPool.getResource();
+        String result = jedis.get(key);
+        jedis.close();
+        return result;
+    }
+
+    @Override
+    public Long del(String key) {
+        Jedis jedis = sentinelPool.getResource();
+        long result = jedis.del(key);
+        jedis.close();
+        return result;
+    }
 }
