@@ -389,21 +389,6 @@ public class ExtensionLoader<T> {
         return instances;
     }
 
-    public Object getLoadedAdaptiveExtensionInstances() {
-        return cachedAdaptiveInstance.get();
-    }
-
-//    public T getPrioritizedExtensionInstance() {
-//        Set<String> supported = getSupportedExtensions();
-//
-//        Set<T> instances = new HashSet<>();
-//        Set<T> prioritized = new HashSet<>();
-//        for (String s : supported) {
-//
-//        }
-//
-//    }
-
     /**
      * Find the extension with the given name. If the specified name is not found, then {@link IllegalStateException}
      * will be thrown.
