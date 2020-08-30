@@ -145,7 +145,6 @@ public class RedisDynamicConfiguration extends TreePathDynamicConfiguration {
                 Integer hash = Integer.valueOf(value.hashCode());
                 Integer originHash = entry.getValue().getHash();
                 if (!hash.equals(originHash)) {
-                    System.out.println("-------------key: " + entry.getKey() + ", -----------value: " + entry.getValue());
                     configHashes.put(entry.getKey(), new HashHolder(hash));
                     ConfigurationListener listener = configListeners.get(entry.getKey());
                     listener.process(new ConfigChangedEvent(entry.getKey(), getGroup(), value, ConfigChangeType.MODIFIED));
