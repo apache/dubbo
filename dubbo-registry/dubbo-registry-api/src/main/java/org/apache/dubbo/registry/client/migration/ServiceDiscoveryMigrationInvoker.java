@@ -32,6 +32,11 @@ public class ServiceDiscoveryMigrationInvoker<T> extends MigrationInvoker<T> {
     }
 
     @Override
+    public boolean isServiceDiscovery() {
+        return true;
+    }
+
+    @Override
     public synchronized void fallbackToInterfaceInvoker() {
         destroyServiceDiscoveryInvoker();
     }

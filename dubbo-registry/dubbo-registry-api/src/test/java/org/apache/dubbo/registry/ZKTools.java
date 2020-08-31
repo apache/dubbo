@@ -71,7 +71,7 @@ public class ZKTools {
     public static void testMigrationRule() {
         String serviceStr = "---\n" +
                 "key: demo-consumer\n" +
-                "step: INTERFACE_FIRST\n" +
+                "step: APPLICATION_FIRST\n" +
                 "...";
         try {
             String servicePath = "/dubbo/config/DUBBO_SERVICEDISCOVERY_MIGRATION/demo-consumer.migration";

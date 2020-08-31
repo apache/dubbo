@@ -16,12 +16,53 @@
  */
 package org.apache.dubbo.registry.client.migration;
 
+import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 
+import java.util.List;
+
 public class DefaultMigrationAddressComparator implements MigrationAddressComparator {
+    private static final Logger logger = LoggerFactory.getLogger(DefaultMigrationAddressComparator.class);
+    private static final String MIGRATION_THRESHOLD = "dubbo.application.migration.threshold";
+    private static final String DEFAULT_THREAD_STRING = "0.8";
+    private static final float DEFAULT_THREAD = 0.8f;
+
     @Override
     public <T> boolean shouldMigrate(ClusterInvoker<T> serviceDiscoveryInvoker, ClusterInvoker<T> invoker) {
-        if (serviceDiscoveryInvoker.isAvailable()) {
+        if (!serviceDiscoveryInvoker.isAvailable()) {
+            return false;
+        }
+        if (!invoker.isAvailable()) {
+            return true;
+        }
+
+        List<Invoker<T>> invokers1 = serviceDiscoveryInvoker.getDirectory().getAllInvokers();
+        List<Invoker<T>> invokers2 = invoker.getDirectory().getAllInvokers();
+
+        int newAddressSize = CollectionUtils.isNotEmpty(invokers1) ? invokers1.size() : 0;
+        int oldAddressSize = CollectionUtils.isNotEmpty(invokers2) ? invokers2.size() : 0;
+
+        String rawThreshold = ConfigurationUtils.getProperty(MIGRATION_THRESHOLD, DEFAULT_THREAD_STRING);
+        float threshold;
+        try {
+            threshold = Float.parseFloat(rawThreshold);
+        } catch (Exception e) {
+            logger.error("Invalid migration threshold " + rawThreshold);
+            threshold = DEFAULT_THREAD;
+        }
+
+        if (newAddressSize != 0 && oldAddressSize == 0) {
+            return true;
+        }
+        if (newAddressSize == 0 && oldAddressSize == 0) {
+            return false;
+        }
+
+        if ((float) (newAddressSize / oldAddressSize) >= threshold) {
             return true;
         }
         return false;
