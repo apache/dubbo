@@ -5,6 +5,7 @@
 package org.apache.dubbo.rpc.cluster.support.migration;
 
 import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.rpc.Invoker;
 
 import java.util.List;
 
@@ -17,5 +18,5 @@ import java.util.List;
 @SPI
 public interface MigrationClusterComparator {
 
-    <T> boolean compare(List<MigrationCluserInvoker<T>> migrationCluserInvokers);
+    <T> boolean compare(List<Invoker<T>>  interfaceInvokers, List<Invoker<T>>  serviceInvokers);
 }

@@ -131,40 +131,40 @@ public class MigrationInvoker<T> implements MigrationCluserInvoker<T> {
         destroyServiceDiscoveryInvoker();
     }
 
-    protected synchronized void destroyServiceDiscoveryInvoker() {
+    public synchronized void destroyServiceDiscoveryInvoker() {
         if (serviceDiscoveryInvoker != null) {
             serviceDiscoveryInvoker.destroy();
             serviceDiscoveryInvoker = null;
         }
     }
 
-    protected synchronized void discardServiceDiscoveryInvokerAddress() {
+    public synchronized void discardServiceDiscoveryInvokerAddress() {
         if (serviceDiscoveryInvoker != null) {
             serviceDiscoveryInvoker.getDirectory().discordAddresses();
         }
     }
 
-    protected synchronized void refreshServiceDiscoveryInvoker() {
+    public synchronized void refreshServiceDiscoveryInvoker() {
         if (needRefresh(serviceDiscoveryInvoker)) {
             serviceDiscoveryInvoker = registryProtocol.getServiceDiscoveryInvoker(cluster, registry, type, url);
         }
     }
 
-    protected synchronized void refreshInterfaceInvoker() {
+    public synchronized void refreshInterfaceInvoker() {
         if (needRefresh(invoker)) {
             // FIXME invoker.destroy();
             invoker = registryProtocol.getInvoker(cluster, registry, type, url);
         }
     }
 
-    protected synchronized void destroyInterfaceInvoker() {
+    public synchronized void destroyInterfaceInvoker() {
         if (invoker != null) {
             invoker.destroy();
             invoker = null;
         }
     }
 
-    protected synchronized void discardInterfaceInvokerAddress() {
+    public synchronized void discardInterfaceInvokerAddress() {
         if (invoker != null) {
             invoker.getDirectory().discordAddresses();
         }

@@ -34,8 +34,10 @@ import org.apache.dubbo.rpc.cluster.support.migration.MigrationRule;
 import org.apache.dubbo.rpc.cluster.support.migration.MigrationStep;
 import org.apache.dubbo.rpc.cluster.support.wrapper.MockClusterInvoker;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PREFERRED_KEY;
@@ -117,10 +119,26 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
         // 开关
         //
 
-        List<Invoker<T>>  interfaceInvokers = invokers.stream().filter( s -> !((MigrationCluserInvoker)s).isServiceInvoker()).collect(Collectors.toList());
-        List<Invoker<T>>  serviceInvokers = invokers.stream().filter( s -> ((MigrationCluserInvoker)s).isServiceInvoker()).collect(Collectors.toList());
+        //List<Invoker<T>>  interfaceInvokers = invokers.stream().filter( s -> !((MigrationCluserInvoker)s).isServiceInvoker()).collect(Collectors.toList());
+        //List<Invoker<T>>  serviceInvokers = invokers.stream().filter( s -> ((MigrationCluserInvoker)s).isServiceInvoker()).collect(Collectors.toList());
 
-        if (serviceInvokers.isEmpty()) {
+        List<Invoker<T>>  interfaceInvokers = new ArrayList<>();
+        List<Invoker<T>>  serviceInvokers = new ArrayList<>();
+        boolean addreddChanged = false;
+        for (Invoker<T> invoker : invokers) {
+            MigrationCluserInvoker migrationCluserInvoker = (MigrationCluserInvoker) invoker;
+            if (migrationCluserInvoker.isServiceInvoker()) {
+                serviceInvokers.add(invoker);
+            } else {
+                interfaceInvokers.add(invoker);
+            }
+
+            if (migrationCluserInvoker.addressChanged().compareAndSet(false, true)) {
+                addreddChanged = true;
+            }
+        }
+
+        if (serviceInvokers.isEmpty() || interfaceInvokers.isEmpty()) {
             return invokers;
         }
 
@@ -142,28 +160,54 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
         MigrationStep step = rule.getStep();
 
         // 地址比对
-        if (MigrationStep.APPLICATION_FIRST == step && invokers.stream().anyMatch(s -> ((MigrationCluserInvoker)s).addressChanged().get())) {
-
+        if (MigrationStep.APPLICATION_FIRST == step && addreddChanged) {
+            Set<MigrationClusterComparator> detectors = ExtensionLoader.getExtensionLoader(MigrationClusterComparator.class).getSupportedExtensionInstances();
+            if (null != detectors) {
+                if (!detectors.stream().anyMatch(s -> s.compare(interfaceInvokers, serviceInvokers))) {
+                    step = MigrationStep.INTERFACE_FIRST;
+                }
+            }
         }
 
         switch (step) {
             case INTERFACE_FIRST:
-                return interfaceInvokers.isEmpty() ? serviceInvokers : interfaceInvokers;
+                if (interfaceInvokers.stream().filter(s -> s.isAvailable()).collect(Collectors.toList()).isEmpty()) {
+                    clusterRefresh(addreddChanged, interfaceInvokers);
+                }
+
+                if (interfaceInvokers.stream().filter(s -> s.isAvailable()).collect(Collectors.toList()).isEmpty()) {
+                    return serviceInvokers;
+                } else {
+                    clusterDestory(addreddChanged, serviceInvokers);
+                    clusterRefresh(addreddChanged, interfaceInvokers);
+                    return interfaceInvokers;
+                }
             case APPLICATION_FIRST:
 
                 if (serviceInvokers.isEmpty()) {
+                    clusterRefresh(addreddChanged, interfaceInvokers);
                     return  interfaceInvokers;
                 }
 
                 List<Invoker<T>>  availableServiceInvokers = serviceInvokers.stream().filter( s -> ((MigrationCluserInvoker)s).isAvailable()).collect(Collectors.toList());
+                if (availableServiceInvokers.isEmpty()) {
+                    clusterRefresh(addreddChanged, serviceInvokers);
+                    availableServiceInvokers = serviceInvokers.stream().filter( s -> ((MigrationCluserInvoker)s).isAvailable()).collect(Collectors.toList());
+                }
+
                 if (availableServiceInvokers.size() > 0) {
+                    clusterDestory(addreddChanged, interfaceInvokers);
                     return availableServiceInvokers;
                 } else {
+                    clusterRefresh(addreddChanged, interfaceInvokers);
                     return interfaceInvokers.stream().filter( s -> ((MigrationCluserInvoker)s).isAvailable()).collect(Collectors.toList());
                 }
 
 
             case FORCE_APPLICATION:
+                clusterRefresh(addreddChanged, serviceInvokers);
+                clusterDestory(addreddChanged, interfaceInvokers);
+
                 return serviceInvokers;
         }
 
@@ -171,11 +215,32 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
     }
 
 
-    private synchronized boolean checkAddresses(ClusterInvoker<T> interfaceInvokers, ClusterInvoker<T> serviceInvokers) {
-        Set<MigrationClusterComparator> detectors = ExtensionLoader.getExtensionLoader(MigrationClusterComparator.class).getSupportedExtensionInstances();
-        if (null != detectors && detectors.stream().anyMatch( s -> s.compare((List<MigrationCluserInvoker<T>>)interfaceInvokers))) {
-            return true;
+    private void clusterDestory(boolean addressChanged, List<Invoker<T>> invokers) {
+        if (addressChanged) {
+            invokers.forEach(s -> {
+                MigrationCluserInvoker invoker = (MigrationCluserInvoker)s;
+                if (invoker.isServiceInvoker()) {
+                    invoker.discardServiceDiscoveryInvokerAddress();
+                    invoker.destroyServiceDiscoveryInvoker();
+                } else {
+                    invoker.discardInterfaceInvokerAddress();
+                    invoker.destroyInterfaceInvoker();
+                }
+            });
         }
-        return false;
     }
+
+    private void clusterRefresh(boolean addressChanged, List<Invoker<T>> invokers) {
+        if (addressChanged) {
+            invokers.forEach( s -> {
+                MigrationCluserInvoker invoker = (MigrationCluserInvoker)s;
+                if (invoker.isServiceInvoker()) {
+                    invoker.refreshServiceDiscoveryInvoker();
+                } else {
+                    invoker.refreshInterfaceInvoker();
+                }
+            });
+        }
+    }
+
 }

@@ -23,4 +23,16 @@ public interface MigrationCluserInvoker<T> extends ClusterInvoker<T> {
     MigrationRule getMigrationRule();
 
     void setMigrationRule(MigrationRule rule);
+
+    void destroyServiceDiscoveryInvoker();
+
+    void discardServiceDiscoveryInvokerAddress();
+
+    void discardInterfaceInvokerAddress();
+
+    void refreshServiceDiscoveryInvoker();
+
+    void refreshInterfaceInvoker();
+
+    void destroyInterfaceInvoker();
 }
