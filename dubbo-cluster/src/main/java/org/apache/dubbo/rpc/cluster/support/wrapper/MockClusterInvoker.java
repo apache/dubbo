@@ -64,6 +64,11 @@ public class MockClusterInvoker<T> implements ClusterInvoker<T> {
     }
 
     @Override
+    public boolean isDestroyed() {
+        return directory.isDestroyed();
+    }
+
+    @Override
     public boolean isAvailable() {
         return directory.isAvailable();
     }
