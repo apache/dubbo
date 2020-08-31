@@ -701,7 +701,9 @@ public class DubboBootstrap extends GenericEventListener {
         cc.getParameters().put(CLIENT_KEY, registryConfig.getClient());
         cc.setProtocol(protocol);
         cc.setPort(port);
-        cc.setGroup(registryConfig.getGroup());
+        if (StringUtils.isNotEmpty(registryConfig.getGroup())) {
+            cc.setGroup(registryConfig.getGroup());
+        }
         cc.setAddress(getRegistryCompatibleAddress(registryConfig));
         cc.setNamespace(registryConfig.getGroup());
         cc.setUsername(registryConfig.getUsername());
