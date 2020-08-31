@@ -14,19 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.registry.client;
 
-package org.apache.dubbo.metadata.store.consul;
+public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.metadata.report.MetadataReport;
-import org.apache.dubbo.metadata.report.support.AbstractMetadataReportFactory;
+    protected ServiceInstance serviceInstance;
 
-/**
- * metadata report factory impl for consul
- */
-public class ConsulMetadataReportFactory extends AbstractMetadataReportFactory {
     @Override
-    protected MetadataReport createMetadataReport(URL url) {
-        return new ConsulMetadataReport(url);
+    public ServiceInstance getLocalInstance() {
+        return serviceInstance;
+    }
+
+    @Override
+    public void register(ServiceInstance serviceInstance) throws RuntimeException {
+    }
+
+    @Override
+    public void update(ServiceInstance serviceInstance) throws RuntimeException {
+        this.serviceInstance = serviceInstance;
     }
 }
