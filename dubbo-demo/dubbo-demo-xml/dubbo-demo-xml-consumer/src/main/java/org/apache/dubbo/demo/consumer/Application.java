@@ -36,22 +36,27 @@ public class Application {
 
         new Thread(() -> {
             while (true) {
-                String greetings = greetingService.hello();
-                System.out.println(greetings + " from separated thread.");
                 try {
+                    String greetings = greetingService.hello();
+                    System.out.println(greetings + " from separated thread.");
+
                     Thread.sleep(100);
-                } catch (InterruptedException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         }).start();
 
         while (true) {
-            CompletableFuture<String> hello = demoService.sayHelloAsync("world");
-            System.out.println("result: " + hello.get());
+            try {
+                CompletableFuture<String> hello = demoService.sayHelloAsync("world");
+                System.out.println("result: " + hello.get());
 
-            String greetings = greetingService.hello();
-            System.out.println("result: " + greetings);
+                String greetings = greetingService.hello();
+                System.out.println("result: " + greetings);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
             Thread.sleep(500);
         }

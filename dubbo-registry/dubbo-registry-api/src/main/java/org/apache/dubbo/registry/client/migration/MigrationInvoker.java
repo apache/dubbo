@@ -41,6 +41,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
 
     private ClusterInvoker<T> invoker;
     private ClusterInvoker<T> serviceDiscoveryInvoker;
+    private volatile ClusterInvoker<T> currentAvailableInvoker;
 
     public MigrationInvoker(RegistryProtocol registryProtocol,
                             Cluster cluster,
@@ -93,9 +94,9 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
             refreshServiceDiscoveryInvoker();
             refreshInterfaceInvoker();
             // any of the address list changes, compare these two lists.
-            ((DynamicDirectory) invoker.getDirectory()).addInvokersChangedListener(this::checkAddresses);
-            ((DynamicDirectory) serviceDiscoveryInvoker.getDirectory()).addInvokersChangedListener(this::checkAddresses);
-            this.checkAddresses();
+            ((DynamicDirectory) invoker.getDirectory()).addInvokersChangedListener(this::compareAddresses);
+            ((DynamicDirectory) serviceDiscoveryInvoker.getDirectory()).addInvokersChangedListener(this::compareAddresses);
+            this.compareAddresses();
         } else {
             refreshServiceDiscoveryInvoker();
             destroyInterfaceInvoker();
@@ -118,7 +119,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
             return serviceDiscoveryInvoker.invoke(invocation);
         }
 
-        throw new IllegalStateException("Service discovery invoker and Interface invoker should has at least one being available, " + invocation.getServiceName());
+        return currentAvailableInvoker.invoke(invocation);
     }
 
     @Override
@@ -179,11 +180,14 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
 
     @Override
     public boolean invokersChanged() {
-        return false;
+        return invokersChanged;
     }
 
+    private volatile boolean invokersChanged;
 
-    private synchronized void checkAddresses() {
+    private synchronized void compareAddresses() {
+        this.invokersChanged = true;
+
         Set<MigrationAddressComparator> detectors = ExtensionLoader.getExtensionLoader(MigrationAddressComparator.class).getSupportedExtensionInstances();
         if (detectors != null && detectors.stream().allMatch(migrationDetector -> migrationDetector.shouldMigrate(serviceDiscoveryInvoker, invoker))) {
             discardInterfaceInvokerAddress();
@@ -193,6 +197,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     }
 
     protected synchronized void destroyServiceDiscoveryInvoker() {
+        this.currentAvailableInvoker = invoker;
         if (serviceDiscoveryInvoker != null) {
             serviceDiscoveryInvoker.destroy();
             serviceDiscoveryInvoker = null;
@@ -200,6 +205,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     }
 
     protected synchronized void discardServiceDiscoveryInvokerAddress() {
+        this.currentAvailableInvoker = invoker;
         if (serviceDiscoveryInvoker != null) {
             serviceDiscoveryInvoker.getDirectory().discordAddresses();
         }
@@ -219,6 +225,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     }
 
     protected synchronized void destroyInterfaceInvoker() {
+        this.currentAvailableInvoker = serviceDiscoveryInvoker;
         if (invoker != null) {
             invoker.destroy();
             invoker = null;
@@ -226,6 +233,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     }
 
     protected synchronized void discardInterfaceInvokerAddress() {
+        this.currentAvailableInvoker = serviceDiscoveryInvoker;
         if (invoker != null) {
             invoker.getDirectory().discordAddresses();
         }
