@@ -17,7 +17,6 @@
 package org.apache.dubbo.registry.integration;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.extension.ExtensionLoader;
@@ -66,7 +65,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.APP_DYNAMIC_CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
@@ -103,7 +101,6 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     private final String serviceKey; // Initialization at construction time, assertion not null
     private final Class<T> serviceType; // Initialization at construction time, assertion not null
     private final Map<String, String> queryMap; // Initialization at construction time, assertion not null
-    private final URL directoryUrl; // Initialization at construction time, assertion not null, and always assign non null value
     private final boolean multiGroup;
     private Protocol protocol; // Initialization at the time of injection, the assertion is not null
     private Registry registry; // Initialization at the time of injection, the assertion is not null
@@ -111,7 +108,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     private boolean shouldRegister;
     private boolean shouldSimplified;
 
-    private volatile URL overrideDirectoryUrl; // Initialization at construction time, assertion not null, and always assign non null value
+    private volatile URL overrideConsumerUrl;
 
     private volatile URL registeredConsumerUrl;
 
@@ -148,18 +145,8 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         this.serviceType = serviceType;
         this.serviceKey = url.getServiceKey();
         this.queryMap = StringUtils.parseQueryString(url.getParameterAndDecoded(REFER_KEY));
-        this.overrideDirectoryUrl = this.directoryUrl = turnRegistryUrlToConsumerUrl(url);
-        String group = directoryUrl.getParameter(GROUP_KEY, "");
+        String group = queryMap.get(GROUP_KEY) != null ? queryMap.get(GROUP_KEY) : "";
         this.multiGroup = group != null && (ANY_VALUE.equals(group) || group.contains(","));
-    }
-
-    private URL turnRegistryUrlToConsumerUrl(URL url) {
-        return URLBuilder.from(url)
-                .setPath(url.getServiceInterface())
-                .clearParameters()
-                .addParameters(queryMap)
-                .removeParameter(MONITOR_KEY)
-                .build();
     }
 
     public void setProtocol(Protocol protocol) {
@@ -180,6 +167,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     public void subscribe(URL url) {
         setConsumerUrl(url);
+//        overrideConsumerUrl();
         CONSUMER_CONFIGURATION_LISTENER.addNotifyListener(this);
         serviceConfigurationListener = new ReferenceConfigurationListener(this, url);
         registry.subscribe(url, this);
@@ -192,6 +180,11 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         registry.unsubscribe(url, this);
     }
 
+    @Override
+    public void setConsumerUrl(URL consumerUrl) {
+        this.consumerUrl = consumerUrl;
+        this.overrideConsumerUrl = consumerUrl;
+    }
 
     @Override
     public void destroy() {
@@ -267,7 +260,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     private void refreshOverrideAndInvoker(List<URL> urls) {
         // mock zookeeper://xxx?mock=return null
-        overrideDirectoryUrl();
+        overrideConsumerUrl();
         refreshInvoker(urls);
     }
 
@@ -481,13 +474,10 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
         providerUrl = providerUrl.addParameter(Constants.CHECK_KEY, String.valueOf(false)); // Do not check whether the connection is successful or not, always create Invoker!
 
-        // The combination of directoryUrl and override is at the end of notify, which can't be handled here
-        this.overrideDirectoryUrl = this.overrideDirectoryUrl.addParametersIfAbsent(providerUrl.getParameters()); // Merge the provider side parameters
-
         if ((providerUrl.getPath() == null || providerUrl.getPath()
                 .length() == 0) && DUBBO_PROTOCOL.equals(providerUrl.getProtocol())) { // Compatible version 1.0
             //fix by tony.chenl DUBBO-44
-            String path = directoryUrl.getParameter(INTERFACE_KEY);
+            String path = getConsumerUrl().getParameter(INTERFACE_KEY);
             if (path != null) {
                 int i = path.indexOf('/');
                 if (i >= 0) {
@@ -625,11 +615,6 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         return invokers;
     }
 
-    @Override
-    public URL getConsumerUrl() {
-        return this.overrideDirectoryUrl;
-    }
-
     public URL getRegisteredConsumerUrl() {
         return registeredConsumerUrl;
     }
@@ -692,23 +677,25 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         return StringUtils.isEmpty(url.getParameter(COMPATIBLE_CONFIG_KEY));
     }
 
-    private void overrideDirectoryUrl() {
+    private void overrideConsumerUrl() {
         // merge override parameters
-        this.overrideDirectoryUrl = directoryUrl;
-        List<Configurator> localConfigurators = this.configurators; // local reference
-        doOverrideUrl(localConfigurators);
-        List<Configurator> localAppDynamicConfigurators = CONSUMER_CONFIGURATION_LISTENER.getConfigurators(); // local reference
-        doOverrideUrl(localAppDynamicConfigurators);
-        if (serviceConfigurationListener != null) {
-            List<Configurator> localDynamicConfigurators = serviceConfigurationListener.getConfigurators(); // local reference
-            doOverrideUrl(localDynamicConfigurators);
+        this.overrideConsumerUrl = getConsumerUrl();
+        if (overrideConsumerUrl != null) {
+            List<Configurator> localConfigurators = this.configurators; // local reference
+            doOverrideUrl(localConfigurators);
+            List<Configurator> localAppDynamicConfigurators = CONSUMER_CONFIGURATION_LISTENER.getConfigurators(); // local reference
+            doOverrideUrl(localAppDynamicConfigurators);
+            if (serviceConfigurationListener != null) {
+                List<Configurator> localDynamicConfigurators = serviceConfigurationListener.getConfigurators(); // local reference
+                doOverrideUrl(localDynamicConfigurators);
+            }
         }
     }
 
     private void doOverrideUrl(List<Configurator> configurators) {
         if (CollectionUtils.isNotEmpty(configurators)) {
             for (Configurator configurator : configurators) {
-                this.overrideDirectoryUrl = configurator.configure(overrideDirectoryUrl);
+                this.overrideConsumerUrl = configurator.configure(overrideConsumerUrl);
             }
         }
     }

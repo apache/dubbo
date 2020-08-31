@@ -46,7 +46,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
     private volatile boolean destroyed = false;
 
-    private volatile URL consumerUrl;
+    protected volatile URL consumerUrl;
 
     protected RouterChain<T> routerChain;
 
