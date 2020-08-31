@@ -24,6 +24,7 @@ import org.apache.dubbo.config.mock.GreetingLocal3;
 import org.apache.dubbo.config.mock.GreetingMock1;
 import org.apache.dubbo.config.mock.GreetingMock2;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -41,12 +42,14 @@ public class AbstractInterfaceConfigTest {
 
     @BeforeAll
     public static void setUp(@TempDir Path folder) {
+        ApplicationModel.reset();
         dubboProperties = folder.resolve(CommonConstants.DUBBO_PROPERTIES_KEY).toFile();
         System.setProperty(CommonConstants.DUBBO_PROPERTIES_KEY, dubboProperties.getAbsolutePath());
     }
 
     @AfterAll
     public static void tearDown() {
+        ApplicationModel.reset();
         System.clearProperty(CommonConstants.DUBBO_PROPERTIES_KEY);
     }
 
