@@ -168,8 +168,8 @@ public class NacosRegistry extends FailbackRegistry {
             Instance instance = createInstance(url);
             namingService.deregisterInstance(serviceName,
                     getUrl().getParameter(GROUP_KEY, Constants.DEFAULT_GROUP),
-                    instance.getIp()
-                    , instance.getPort());
+                    instance.getIp(),
+                    instance.getPort());
         });
     }
 
