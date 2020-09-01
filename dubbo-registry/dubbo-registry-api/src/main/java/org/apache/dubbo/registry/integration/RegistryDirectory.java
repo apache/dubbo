@@ -94,6 +94,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
     @Override
     public void subscribe(URL url) {
         setConsumerUrl(url);
+//        overrideConsumerUrl();
         CONSUMER_CONFIGURATION_LISTENER.addNotifyListener(this);
         referenceConfigurationListener = new ReferenceConfigurationListener(this, url);
         registry.subscribe(url, this);
@@ -181,7 +182,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
 
     private void refreshOverrideAndInvoker(List<URL> urls) {
         // mock zookeeper://xxx?mock=return null
-        overrideDirectoryUrl();
+        overrideConsumerUrl();
         refreshInvoker(urls);
     }
 
@@ -393,13 +394,10 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
 
         providerUrl = providerUrl.addParameter(Constants.CHECK_KEY, String.valueOf(false)); // Do not check whether the connection is successful or not, always create Invoker!
 
-        // The combination of directoryUrl and override is at the end of notify, which can't be handled here
-//        this.overrideDirectoryUrl = this.overrideDirectoryUrl.addParametersIfAbsent(providerUrl.getParameters()); // Merge the provider side parameters
-
         if ((providerUrl.getPath() == null || providerUrl.getPath()
                 .length() == 0) && DUBBO_PROTOCOL.equals(providerUrl.getProtocol())) { // Compatible version 1.0
             //fix by tony.chenl DUBBO-44
-            String path = directoryUrl.getParameter(INTERFACE_KEY);
+            String path = getConsumerUrl().getParameter(INTERFACE_KEY);
             if (path != null) {
                 int i = path.indexOf('/');
                 if (i >= 0) {
@@ -537,11 +535,6 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
         return invokers;
     }
 
-    @Override
-    public URL getConsumerUrl() {
-        return this.overrideDirectoryUrl;
-    }
-
     public URL getRegisteredConsumerUrl() {
         return registeredConsumerUrl;
     }
@@ -604,23 +597,25 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
         return StringUtils.isEmpty(url.getParameter(COMPATIBLE_CONFIG_KEY));
     }
 
-    private void overrideDirectoryUrl() {
+    private void overrideConsumerUrl() {
         // merge override parameters
-        this.overrideDirectoryUrl = directoryUrl;
-        List<Configurator> localConfigurators = this.configurators; // local reference
-        doOverrideUrl(localConfigurators);
-        List<Configurator> localAppDynamicConfigurators = CONSUMER_CONFIGURATION_LISTENER.getConfigurators(); // local reference
-        doOverrideUrl(localAppDynamicConfigurators);
-        if (referenceConfigurationListener != null) {
-            List<Configurator> localDynamicConfigurators = referenceConfigurationListener.getConfigurators(); // local reference
-            doOverrideUrl(localDynamicConfigurators);
+        this.overrideConsumerUrl = getConsumerUrl();
+        if (overrideConsumerUrl != null) {
+            List<Configurator> localConfigurators = this.configurators; // local reference
+            doOverrideUrl(localConfigurators);
+            List<Configurator> localAppDynamicConfigurators = CONSUMER_CONFIGURATION_LISTENER.getConfigurators(); // local reference
+            doOverrideUrl(localAppDynamicConfigurators);
+            if (referenceConfigurationListener != null) {
+                List<Configurator> localDynamicConfigurators = referenceConfigurationListener.getConfigurators(); // local reference
+                doOverrideUrl(localDynamicConfigurators);
+            }
         }
     }
 
     private void doOverrideUrl(List<Configurator> configurators) {
         if (CollectionUtils.isNotEmpty(configurators)) {
             for (Configurator configurator : configurators) {
-                this.overrideDirectoryUrl = configurator.configure(overrideDirectoryUrl);
+                this.overrideConsumerUrl = configurator.configure(overrideConsumerUrl);
             }
         }
     }

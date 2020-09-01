@@ -51,7 +51,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
     private volatile boolean destroyed = false;
 
-    private volatile URL consumerUrl;
+    protected volatile URL consumerUrl;
 
     protected final Map<String, String> queryMap; // Initialization at construction time, assertion not null
     protected final String consumedProtocol;
