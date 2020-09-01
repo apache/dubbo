@@ -35,7 +35,6 @@ import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedLi
 import org.apache.dubbo.registry.dns.util.DNSClientConst;
 import org.apache.dubbo.registry.dns.util.DNSResolver;
 import org.apache.dubbo.registry.dns.util.ResolveResult;
-import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import com.alibaba.fastjson.JSONObject;
@@ -152,12 +151,10 @@ public class DNSServiceDiscoveryTest {
         Mockito.verify(changedListener, Mockito.timeout(1000)).onEvent(argument.capture());
         assertEquals("c", argument.getValue().getServiceInstances().get(0).getMetadata("a"));
 
-        Mockito.when(spiedMetadataService.echo(Mockito.anyString()))
-                .thenThrow(new RpcException("Mock Provider Shutdown"));
         Mockito.when(dnsResolver.resolve("Test.Service.")).thenReturn(new ResolveResult());
 
         Thread.sleep(1000);
-        assertTrue(dnsServiceDiscovery.getMetadataServiceKeyMap().isEmpty());
+        assertTrue(dnsServiceDiscovery.getCachedServiceInstances().get("Test.Service.").isEmpty());
 
         metadataService.exportInstanceMetadata(null);
         metadataService.getInstanceMetadataChangedListenerMap().clear();

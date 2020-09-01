@@ -43,6 +43,7 @@ import com.alibaba.fastjson.JSONObject;
 
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -95,12 +96,12 @@ public class DNSServiceDiscovery implements ServiceDiscovery {
     private final ConcurrentHashMap<String, String> metadataMap = new ConcurrentHashMap<>();
 
     /**
-     * Local Cache of {@link MetadataService} key
+     * Local Cache of {@link ServiceInstance}
      * <p>
-     * Key - {@link ServiceInstance} ID ( usually ip + port )
-     * Value - key of {@link MetadataService}
+     * Key - Service Name
+     * Value - List {@link ServiceInstance}
      */
-    private final ConcurrentHashMap<String, String> metadataServiceKeyMap = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, List<ServiceInstance>> cachedServiceInstances = new ConcurrentHashMap<>();
 
     /**
      * Local Cache of Service's {@link ServiceInstance} list revision,
@@ -154,21 +155,6 @@ public class DNSServiceDiscovery implements ServiceDiscovery {
                         logger.info("Send echo message to consumer error. Possible cause: consumer is offline.");
                     }
                     listenerIterator.remove();
-                }
-            }
-
-            Iterator<Map.Entry<String, String>> keyIterator = metadataServiceKeyMap.entrySet().iterator();
-            while (keyIterator.hasNext()) {
-                Map.Entry<String, String> entry = keyIterator.next();
-                try {
-                    MetadataUtils.getMetadataServiceProxy(entry.getValue()).echo(CommonConstants.DUBBO);
-                } catch (RpcException e) {
-                    if (logger.isInfoEnabled()) {
-                        logger.info("Send echo message to provider error. Possible cause: consumer is offline.");
-                    }
-                    metadataMap.remove(entry.getKey());
-                    MetadataUtils.destroyMetadataServiceProxy(entry.getValue());
-                    keyIterator.remove();
                 }
             }
         }, echoPollingCycle, echoPollingCycle, TimeUnit.MILLISECONDS);
@@ -243,6 +229,20 @@ public class DNSServiceDiscovery implements ServiceDiscovery {
                         }
 
                         if (changed) {
+                            List<ServiceInstance> oldServiceInstances = cachedServiceInstances.getOrDefault(serviceName, new LinkedList<>());
+
+                            // remove expired invoker
+                            Set<ServiceInstance> allServiceInstances = new HashSet<>(oldServiceInstances.size() + instances.size());
+                            allServiceInstances.addAll(oldServiceInstances);
+                            allServiceInstances.addAll(instances);
+
+                            allServiceInstances.removeAll(oldServiceInstances);
+
+                            allServiceInstances.forEach(removedServiceInstance -> {
+                                MetadataUtils.destroyMetadataServiceProxy(removedServiceInstance, this);
+                            });
+
+                            cachedServiceInstances.put(serviceName, instances);
                             listener.onEvent(new ServiceInstancesChangedEvent(serviceName, instances));
                         }
 
@@ -275,8 +275,8 @@ public class DNSServiceDiscovery implements ServiceDiscovery {
      * UT used only
      */
     @Deprecated
-    public ConcurrentHashMap<String, String> getMetadataServiceKeyMap() {
-        return metadataServiceKeyMap;
+    public ConcurrentHashMap<String, List<ServiceInstance>> getCachedServiceInstances() {
+        return cachedServiceInstances;
     }
 
     @SuppressWarnings("unchecked")
@@ -306,8 +306,6 @@ public class DNSServiceDiscovery implements ServiceDiscovery {
             } else {
                 // refer from MetadataUtils, this proxy is different from the one used to refer exportedURL
                 MetadataService metadataService = MetadataUtils.getMetadataServiceProxy(serviceInstance, this);
-
-                metadataServiceKeyMap.put(hostId, MetadataUtils.computeKey(serviceInstance));
 
                 String consumerId = ApplicationModel.getName() + NetUtils.getLocalHost();
                 String metadata = metadataService.getAndListenInstanceMetadata(

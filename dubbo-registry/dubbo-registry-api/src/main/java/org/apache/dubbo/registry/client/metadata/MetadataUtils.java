@@ -95,26 +95,15 @@ public class MetadataUtils {
         }
     }
 
-    public static MetadataService getMetadataServiceProxy(String metadataServiceKey) {
-        Lock lock = metadataServiceLocks.computeIfAbsent(metadataServiceKey, k -> new ReentrantLock());
+    public static void destroyMetadataServiceProxy(ServiceInstance instance, ServiceDiscovery serviceDiscovery) {
+        String key = computeKey(instance);
+        Lock lock = metadataServiceLocks.computeIfAbsent(key, k -> new ReentrantLock());
 
         lock.lock();
         try {
-            return metadataServiceProxies.get(metadataServiceKey);
-        } finally {
-            lock.unlock();
-        }
-    }
-
-    public static void destroyMetadataServiceProxy(String metadataServiceKey) {
-
-        Lock lock = metadataServiceLocks.computeIfAbsent(metadataServiceKey, k -> new ReentrantLock());
-
-        lock.lock();
-        try {
-            if (metadataServiceProxies.containsKey(metadataServiceKey)) {
-                metadataServiceProxies.remove(metadataServiceKey);
-                Invoker<?> invoker = metadataServiceInvokers.remove(metadataServiceKey);
+            if (metadataServiceProxies.containsKey(key)) {
+                metadataServiceProxies.remove(key);
+                Invoker<?> invoker = metadataServiceInvokers.remove(key);
                 invoker.destroy();
             }
         } finally {
