@@ -62,8 +62,8 @@ public class DNSServiceDiscovery implements ServiceDiscovery {
     private URL registryURL;
 
     /**
-     * Echo check if consumer and provider is still work
-     * echo task may take a lot of time when consumer and provider offline, create a new ScheduledThreadPool
+     * Echo check if consumer is still work
+     * echo task may take a lot of time when consumer offline, create a new ScheduledThreadPool
      */
     private final ScheduledExecutorService echoCheckExecutor = Executors.newScheduledThreadPool(1, new NamedThreadFactory("Dubbo-DNS-EchoCheck"));
 
@@ -144,17 +144,17 @@ public class DNSServiceDiscovery implements ServiceDiscovery {
         echoCheckExecutor.scheduleAtFixedRate(() -> {
             WritableMetadataService metadataService = WritableMetadataService.getDefaultExtension();
             Map<String, InstanceMetadataChangedListener> listenerMap = metadataService.getInstanceMetadataChangedListenerMap();
-            Iterator<Map.Entry<String, InstanceMetadataChangedListener>> listenerIterator = listenerMap.entrySet().iterator();
+            Iterator<Map.Entry<String, InstanceMetadataChangedListener>> iterator = listenerMap.entrySet().iterator();
 
-            while (listenerIterator.hasNext()) {
-                Map.Entry<String, InstanceMetadataChangedListener> entry = listenerIterator.next();
+            while (iterator.hasNext()) {
+                Map.Entry<String, InstanceMetadataChangedListener> entry = iterator.next();
                 try {
                     entry.getValue().echo(CommonConstants.DUBBO);
                 } catch (RpcException e) {
                     if (logger.isInfoEnabled()) {
                         logger.info("Send echo message to consumer error. Possible cause: consumer is offline.");
                     }
-                    listenerIterator.remove();
+                    iterator.remove();
                 }
             }
         }, echoPollingCycle, echoPollingCycle, TimeUnit.MILLISECONDS);
