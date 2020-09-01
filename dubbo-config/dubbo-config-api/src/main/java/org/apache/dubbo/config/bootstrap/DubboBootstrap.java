@@ -551,12 +551,8 @@ public class DubboBootstrap extends GenericEventListener {
         // check Metadata
         Collection<MetadataReportConfig> metadatas = configManager.getMetadataConfigs();
         if (CollectionUtils.isEmpty(metadatas)) {
-            MetadataReportConfig metadataReportConfig = new MetadataReportConfig();
-            metadataReportConfig.refresh();
-            if (metadataReportConfig.isValid()) {
-                configManager.addMetadataReport(metadataReportConfig);
-                metadatas = configManager.getMetadataConfigs();
-            }
+            ConfigManager.tryAddDefaultConfigToManager(MetadataReportConfig.class, "setSsl", configManager);
+            metadatas = configManager.getMetadataConfigs();
         }
         if (CollectionUtils.isNotEmpty(metadatas)) {
             for (MetadataReportConfig metadataReportConfig : metadatas) {
@@ -568,12 +564,9 @@ public class DubboBootstrap extends GenericEventListener {
         // check Provider
         Collection<ProviderConfig> providers = configManager.getProviders();
         if (CollectionUtils.isEmpty(providers)) {
-            configManager.getDefaultProvider().orElseGet(() -> {
-                ProviderConfig providerConfig = new ProviderConfig();
-                configManager.addProvider(providerConfig);
-                providerConfig.refresh();
-                return providerConfig;
-            });
+            configManager.getDefaultProvider().orElseGet(
+                    () -> ConfigManager.tryAddDefaultConfigToManager(ProviderConfig.class, "addProvider", configManager)
+            );
         }
         for (ProviderConfig providerConfig : configManager.getProviders()) {
             ConfigValidationUtils.validateProviderConfig(providerConfig);
@@ -581,12 +574,9 @@ public class DubboBootstrap extends GenericEventListener {
         // check Consumer
         Collection<ConsumerConfig> consumers = configManager.getConsumers();
         if (CollectionUtils.isEmpty(consumers)) {
-            configManager.getDefaultConsumer().orElseGet(() -> {
-                ConsumerConfig consumerConfig = new ConsumerConfig();
-                configManager.addConsumer(consumerConfig);
-                consumerConfig.refresh();
-                return consumerConfig;
-            });
+            configManager.getDefaultConsumer().orElseGet(
+                    () -> ConfigManager.tryAddDefaultConfigToManager(ConsumerConfig.class, "addConsumer", configManager)
+            );
         }
         for (ConsumerConfig consumerConfig : configManager.getConsumers()) {
             ConfigValidationUtils.validateConsumerConfig(consumerConfig);
@@ -610,12 +600,8 @@ public class DubboBootstrap extends GenericEventListener {
 
         // check Config Center
         if (CollectionUtils.isEmpty(configCenters)) {
-            ConfigCenterConfig configCenterConfig = new ConfigCenterConfig();
-            configCenterConfig.refresh();
-            if (configCenterConfig.isValid()) {
-                configManager.addConfigCenter(configCenterConfig);
-                configCenters = configManager.getConfigCenters();
-            }
+            ConfigManager.tryAddDefaultConfigToManager(ConfigCenterConfig.class, "addConfigCenter", configManager);
+            configCenters = configManager.getConfigCenters();
         } else {
             for (ConfigCenterConfig configCenterConfig : configCenters) {
                 configCenterConfig.refresh();
@@ -1323,65 +1309,44 @@ public class DubboBootstrap extends GenericEventListener {
     }
 
     public ApplicationConfig getApplication() {
-        ApplicationConfig application = configManager
-                .getApplication()
-                .orElseGet(() -> {
-                    ApplicationConfig applicationConfig = new ApplicationConfig();
-                    configManager.setApplication(applicationConfig);
-                    return applicationConfig;
-                });
+        ApplicationConfig application = configManager.getApplication().orElseGet(
+                () -> ConfigManager.tryAddDefaultConfigToManager(ApplicationConfig.class, "setApplication", configManager)
+        );
 
         application.refresh();
         return application;
     }
 
     private MonitorConfig getMonitor() {
-        MonitorConfig monitor = configManager
-                .getMonitor()
-                .orElseGet(() -> {
-                    MonitorConfig monitorConfig = new MonitorConfig();
-                    configManager.setMonitor(monitorConfig);
-                    return monitorConfig;
-                });
+        MonitorConfig monitor = configManager.getMonitor().orElseGet(
+                () -> ConfigManager.tryAddDefaultConfigToManager(MonitorConfig.class, "setMonitor", configManager)
+        );
 
         monitor.refresh();
         return monitor;
     }
 
     private MetricsConfig getMetrics() {
-        MetricsConfig metrics = configManager
-                .getMetrics()
-                .orElseGet(() -> {
-                    MetricsConfig metricsConfig = new MetricsConfig();
-                    configManager.setMetrics(metricsConfig);
-                    return metricsConfig;
-                });
+        MetricsConfig metrics = configManager.getMetrics().orElseGet(
+                () -> ConfigManager.tryAddDefaultConfigToManager(MetricsConfig.class, "setMetrics", configManager)
+        );
         metrics.refresh();
         return metrics;
     }
 
     private ModuleConfig getModule() {
-        ModuleConfig module = configManager
-                .getModule()
-                .orElseGet(() -> {
-                    ModuleConfig moduleConfig = new ModuleConfig();
-                    configManager.setModule(moduleConfig);
-                    return moduleConfig;
-                });
+        ModuleConfig module = configManager.getModule().orElseGet(
+                () -> ConfigManager.tryAddDefaultConfigToManager(ModuleConfig.class, "setModule", configManager)
+        );
 
         module.refresh();
         return module;
     }
 
     private SslConfig getSsl() {
-        SslConfig ssl = configManager
-                .getSsl()
-                .orElseGet(() -> {
-                    SslConfig sslConfig = new SslConfig();
-                    configManager.setSsl(sslConfig);
-                    return sslConfig;
-                });
-
+        SslConfig ssl = configManager.getSsl().orElseGet(
+                () -> ConfigManager.tryAddDefaultConfigToManager(SslConfig.class, "setSsl", configManager)
+        );
         ssl.refresh();
         return ssl;
     }

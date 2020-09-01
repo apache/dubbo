@@ -37,6 +37,7 @@ import org.apache.dubbo.config.ServiceConfigBase;
 import org.apache.dubbo.config.SslConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -529,5 +530,22 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
                 .stream()
                 .filter(ConfigManager::isDefaultConfig)
                 .collect(Collectors.toList());
+    }
+
+    public static <C extends AbstractConfig> C tryAddDefaultConfigToManager(Class<C> configType, String methodName, ConfigManager configManager) {
+        try {
+            C config = configType.newInstance();
+            config.refresh();
+            if (config.isRefreshed() && config.isValid()) {
+                Method method = configManager.getClass().getMethod(methodName, configType);
+                method.setAccessible(true);
+                method.invoke(configManager, config);
+            }
+            return config;
+        } catch (Exception e) {
+            String msg = "Failed to create or add config of type " + configType.getName() + " to Config Manager";
+            logger.error(msg, e);
+            throw new IllegalStateException(msg, e);
+        }
     }
 }

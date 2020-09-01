@@ -473,6 +473,7 @@ public abstract class AbstractConfig implements Serializable {
                         // isTypeMatch() is called to avoid duplicate and incorrect update, for example, we have two 'setGeneric' methods in ReferenceConfig.
                         if (StringUtils.isNotEmpty(value) && ClassUtils.isTypeMatch(method.getParameterTypes()[0], value)) {
                             method.invoke(this, ClassUtils.convertPrimitive(method.getParameterTypes()[0], value));
+                            this.markRefreshed();
                         }
                     } catch (NoSuchMethodException e) {
                         logger.info("Failed to override the property " + method.getName() + " in " +
@@ -486,6 +487,7 @@ public abstract class AbstractConfig implements Serializable {
                         map = map == null ? new HashMap<>() : map;
                         map.putAll(convert(StringUtils.parseParameters(value), ""));
                         invokeSetParameters(getClass(), this, map);
+                        this.markRefreshed();
                     }
                 }
             }
@@ -583,6 +585,14 @@ public abstract class AbstractConfig implements Serializable {
     @PostConstruct
     public void addIntoConfigManager() {
         ApplicationModel.getConfigManager().addConfig(this);
+    }
+
+    public void markRefreshed() {
+        refreshed.compareAndSet(false, true);
+    }
+
+    public boolean isRefreshed() {
+        return refreshed.get();
     }
 
     @Override
