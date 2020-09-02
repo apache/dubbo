@@ -27,6 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 
 public class InstanceAddressURL extends URL {
@@ -105,6 +106,8 @@ public class InstanceAddressURL extends URL {
             return getGroup();
         } else if (INTERFACE_KEY.equals(key)) {
             return getServiceInterface();
+        } else if (REMOTE_APPLICATION_KEY.equals(key)) {
+            return instance.getServiceName();
         }
 
         String protocolServiceKey = getProtocolServiceKey();
@@ -243,7 +246,7 @@ public class InstanceAddressURL extends URL {
     }
 
     @Override
-    public URL addParameter(String key, String value) {
+    public InstanceAddressURL addParameter(String key, String value) {
         if (StringUtils.isEmpty(key) || StringUtils.isEmpty(value)) {
             return this;
         }
@@ -253,7 +256,7 @@ public class InstanceAddressURL extends URL {
     }
 
     @Override
-    public URL addParameterIfAbsent(String key, String value) {
+    public InstanceAddressURL addParameterIfAbsent(String key, String value) {
         if (StringUtils.isEmpty(key) || StringUtils.isEmpty(value)) {
             return this;
         }
@@ -262,7 +265,7 @@ public class InstanceAddressURL extends URL {
         return this;
     }
 
-    public URL addServiceParameter(String protocolServiceKey, String key, String value) {
+    public InstanceAddressURL addServiceParameter(String protocolServiceKey, String key, String value) {
         if (StringUtils.isEmpty(key) || StringUtils.isEmpty(value)) {
             return this;
         }
@@ -271,7 +274,7 @@ public class InstanceAddressURL extends URL {
         return this;
     }
 
-    public URL addServiceParameterIfAbsent(String protocolServiceKey, String key, String value) {
+    public InstanceAddressURL addServiceParameterIfAbsent(String protocolServiceKey, String key, String value) {
         if (StringUtils.isEmpty(key) || StringUtils.isEmpty(value)) {
             return this;
         }
@@ -280,7 +283,7 @@ public class InstanceAddressURL extends URL {
         return this;
     }
 
-    public URL addConsumerParams(String protocolServiceKey, Map<String, String> params) {
+    public InstanceAddressURL addConsumerParams(String protocolServiceKey, Map<String, String> params) {
         getMetadataInfo().getServiceInfo(protocolServiceKey).addConsumerParams(params);
         return this;
     }
