@@ -45,6 +45,7 @@
             </activation>
             <modules>
                 <module>dubbo-all</module>
+                <module>dubbo-bom</module>
             </modules>
         </profile>
         <profile>

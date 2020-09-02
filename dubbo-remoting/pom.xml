@@ -32,6 +32,7 @@
     </properties>
     <modules>
         <module>dubbo-remoting-api</module>
+        <module>dubbo-remoting-http</module>
         <module>dubbo-remoting-netty</module>
         <module>dubbo-remoting-zookeeper</module>
         <module>dubbo-remoting-netty4</module>
