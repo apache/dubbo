@@ -246,7 +246,7 @@ public class InstanceAddressURL extends URL {
     }
 
     @Override
-    public InstanceAddressURL addParameter(String key, String value) {
+    public URL addParameter(String key, String value) {
         if (StringUtils.isEmpty(key) || StringUtils.isEmpty(value)) {
             return this;
         }
@@ -256,7 +256,7 @@ public class InstanceAddressURL extends URL {
     }
 
     @Override
-    public InstanceAddressURL addParameterIfAbsent(String key, String value) {
+    public URL addParameterIfAbsent(String key, String value) {
         if (StringUtils.isEmpty(key) || StringUtils.isEmpty(value)) {
             return this;
         }
@@ -265,7 +265,7 @@ public class InstanceAddressURL extends URL {
         return this;
     }
 
-    public InstanceAddressURL addServiceParameter(String protocolServiceKey, String key, String value) {
+    public URL addServiceParameter(String protocolServiceKey, String key, String value) {
         if (StringUtils.isEmpty(key) || StringUtils.isEmpty(value)) {
             return this;
         }
@@ -274,7 +274,7 @@ public class InstanceAddressURL extends URL {
         return this;
     }
 
-    public InstanceAddressURL addServiceParameterIfAbsent(String protocolServiceKey, String key, String value) {
+    public URL addServiceParameterIfAbsent(String protocolServiceKey, String key, String value) {
         if (StringUtils.isEmpty(key) || StringUtils.isEmpty(value)) {
             return this;
         }
@@ -283,7 +283,7 @@ public class InstanceAddressURL extends URL {
         return this;
     }
 
-    public InstanceAddressURL addConsumerParams(String protocolServiceKey, Map<String, String> params) {
+    public URL addConsumerParams(String protocolServiceKey, Map<String, String> params) {
         getMetadataInfo().getServiceInfo(protocolServiceKey).addConsumerParams(params);
         return this;
     }
