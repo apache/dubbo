@@ -91,5 +91,9 @@
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-configcenter-apollo</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-cluster</artifactId>
+        </dependency>
     </dependencies>
 </project>
