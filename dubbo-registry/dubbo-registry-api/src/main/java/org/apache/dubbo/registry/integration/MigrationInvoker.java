@@ -21,14 +21,17 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.client.RegistryProtocol;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.support.migration.MigrationCluserInvoker;
+import org.apache.dubbo.rpc.cluster.support.migration.MigrationClusterComparator;
 import org.apache.dubbo.rpc.cluster.support.migration.MigrationRule;
 
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -118,8 +121,8 @@ public class MigrationInvoker<T> implements MigrationCluserInvoker<T> {
     }
 
     private synchronized void checkAddresses() {
-        Set<MigrationAddressComparator> detectors = ExtensionLoader.getExtensionLoader(MigrationAddressComparator.class).getSupportedExtensionInstances();
-        if (detectors != null && detectors.stream().allMatch(migrationDetector -> migrationDetector.shouldMigrate(serviceDiscoveryInvoker, invoker))) {
+        Set<MigrationClusterComparator> detectors = ExtensionLoader.getExtensionLoader(MigrationClusterComparator.class).getSupportedExtensionInstances();
+        if (detectors != null && detectors.stream().allMatch(migrationDetector -> migrationDetector.shouldMigrate((List<Invoker<T>>)serviceDiscoveryInvoker, (List<Invoker<T>>)invoker))) {
             discardInterfaceInvokerAddress();
         } else {
             discardServiceDiscoveryInvokerAddress();

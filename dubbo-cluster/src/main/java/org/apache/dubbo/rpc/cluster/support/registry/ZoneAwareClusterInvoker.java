@@ -163,7 +163,7 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
         if (MigrationStep.APPLICATION_FIRST == step && addreddChanged) {
             Set<MigrationClusterComparator> detectors = ExtensionLoader.getExtensionLoader(MigrationClusterComparator.class).getSupportedExtensionInstances();
             if (null != detectors) {
-                if (!detectors.stream().anyMatch(s -> s.compare(interfaceInvokers, serviceInvokers))) {
+                if (!detectors.stream().anyMatch(s -> s.shouldMigrate(interfaceInvokers, serviceInvokers))) {
                     step = MigrationStep.INTERFACE_FIRST;
                 }
             }

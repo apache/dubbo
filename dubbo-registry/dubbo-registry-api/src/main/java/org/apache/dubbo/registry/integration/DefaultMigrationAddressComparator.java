@@ -16,11 +16,15 @@
  */
 package org.apache.dubbo.registry.integration;
 
-import org.apache.dubbo.rpc.cluster.ClusterInvoker;
+import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.cluster.support.migration.MigrationClusterComparator;
 
-public class DefaultMigrationAddressComparator implements MigrationAddressComparator {
+import java.util.List;
+
+public class DefaultMigrationAddressComparator implements MigrationClusterComparator {
+
     @Override
-    public <T> boolean shouldMigrate(ClusterInvoker<T> serviceDiscoveryInvoker, ClusterInvoker<T> invoker) {
+    public <T> boolean shouldMigrate(List<Invoker<T>> interfaceInvokers, List<Invoker<T>> serviceInvokers) {
         return true;
     }
 }

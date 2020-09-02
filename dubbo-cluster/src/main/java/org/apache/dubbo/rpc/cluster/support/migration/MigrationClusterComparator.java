@@ -18,5 +18,5 @@ import java.util.List;
 @SPI
 public interface MigrationClusterComparator {
 
-    <T> boolean compare(List<Invoker<T>>  interfaceInvokers, List<Invoker<T>>  serviceInvokers);
+    <T> boolean shouldMigrate(List<Invoker<T>>  interfaceInvokers, List<Invoker<T>>  serviceInvokers);
 }
