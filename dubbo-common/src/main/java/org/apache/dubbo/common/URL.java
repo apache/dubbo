@@ -146,8 +146,8 @@ class URL implements Serializable {
         this.port = 0;
         this.address = null;
         this.path = null;
-        this.parameters = null;
-        this.methodParameters = null;
+        this.parameters = new HashMap<>();
+        this.methodParameters = new HashMap<>();
     }
 
     public URL(String protocol, String host, int port) {
