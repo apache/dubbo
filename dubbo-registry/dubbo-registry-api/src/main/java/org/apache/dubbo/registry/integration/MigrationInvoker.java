@@ -129,6 +129,14 @@ public class MigrationInvoker<T> implements MigrationCluserInvoker<T> {
         }
     }
 
+    public synchronized  void addAddressChangeListener() {
+        if (isServiceInvoker()) {
+            ((DynamicDirectory) serviceDiscoveryInvoker.getDirectory()).addInvokersChangedListener(this::setAddressChanged);
+        } else {
+            ((DynamicDirectory) invoker.getDirectory()).addInvokersChangedListener(this::setAddressChanged);
+        }
+    }
+
     public synchronized void fallbackToInterfaceInvoker() {
         refreshInterfaceInvoker();
         destroyServiceDiscoveryInvoker();
@@ -238,6 +246,10 @@ public class MigrationInvoker<T> implements MigrationCluserInvoker<T> {
 
     public AtomicBoolean addressChanged() {
         return addressChanged;
+    }
+
+    public void setAddressChanged() {
+        addressChanged.set(true);
     }
 
     @Override

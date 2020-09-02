@@ -40,12 +40,14 @@ public class MigrationRuleListener<T> {
         migrationInvoker.setMigrationRule(rule);
 
         if (migrationMultiRegsitry) {
-            migrationInvoker.addressChanged().set(true);
             if (migrationInvoker.isServiceInvoker()) {
                 migrationInvoker.refreshServiceDiscoveryInvoker();
             } else {
                 migrationInvoker.refreshInterfaceInvoker();
             }
+            // TODO 关注下会不会重复添加Listener？？？？
+            migrationInvoker.addAddressChangeListener();
+
         } else {
             switch (rule.getStep()) {
                 case APPLICATION_FIRST:
