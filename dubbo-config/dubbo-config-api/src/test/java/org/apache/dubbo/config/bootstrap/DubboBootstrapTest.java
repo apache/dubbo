@@ -25,6 +25,7 @@ import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.monitor.MonitorService;
 import org.apache.dubbo.registry.RegistryService;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -55,13 +56,14 @@ public class DubboBootstrapTest {
 
     @BeforeAll
     public static void setUp(@TempDir Path folder) {
+        ApplicationModel.reset();
         dubboProperties = folder.resolve(CommonConstants.DUBBO_PROPERTIES_KEY).toFile();
         System.setProperty(CommonConstants.DUBBO_PROPERTIES_KEY, dubboProperties.getAbsolutePath());
     }
 
     @AfterEach
     public void tearDown() throws IOException {
-
+        ApplicationModel.reset();
     }
 
     @Test
