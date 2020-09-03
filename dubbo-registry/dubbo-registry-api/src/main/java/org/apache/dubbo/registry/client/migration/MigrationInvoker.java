@@ -18,6 +18,7 @@ package org.apache.dubbo.registry.client.migration;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.client.migration.model.MigrationStep;
 import org.apache.dubbo.registry.integration.DynamicDirectory;
@@ -30,6 +31,8 @@ import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.cluster.Directory;
 
 import java.util.Set;
+
+import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 
 public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
 
@@ -101,6 +104,33 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
             refreshServiceDiscoveryInvoker();
             destroyInterfaceInvoker();
         }
+    }
+
+    @Override
+    public void reRefer(URL newSubscribeUrl) {
+        // update url to prepare for migration refresh
+        this.url = url.addParameter(REFER_KEY, StringUtils.toQueryString(newSubscribeUrl.getParameters()));
+
+        // re-subscribe immediately
+        if (invoker != null && !invoker.isDestroyed()) {
+            doReSubscribe(invoker, newSubscribeUrl);
+        }
+        if (serviceDiscoveryInvoker != null && !serviceDiscoveryInvoker.isDestroyed()) {
+            doReSubscribe(serviceDiscoveryInvoker, newSubscribeUrl);
+        }
+    }
+
+    private void doReSubscribe(ClusterInvoker<T> invoker, URL newSubscribeUrl) {
+        DynamicDirectory<T> directory = (DynamicDirectory<T>)invoker.getDirectory();
+        URL oldSubscribeUrl = directory.getRegisteredConsumerUrl();
+        Registry registry = directory.getRegistry();
+        registry.unregister(directory.getRegisteredConsumerUrl());
+        directory.unSubscribe(RegistryProtocol.toSubscribeUrl(oldSubscribeUrl));
+        registry.register(directory.getRegisteredConsumerUrl());
+
+        directory.setRegisteredConsumerUrl(newSubscribeUrl);
+        directory.buildRouterChain(newSubscribeUrl);
+        directory.subscribe(RegistryProtocol.toSubscribeUrl(newSubscribeUrl));
     }
 
     @Override

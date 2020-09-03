@@ -111,6 +111,7 @@ public class ServiceDiscoveryRegistry implements Registry {
 
     /* apps - listener */
     private final Map<String, ServiceInstancesChangedListener> serviceListeners = new HashMap<>();
+    private final Map<String, String> serviceToAppsMapping = new HashMap<>();
 
     private URL registryURL;
 
@@ -280,6 +281,10 @@ public class ServiceDiscoveryRegistry implements Registry {
 
     public void doUnsubscribe(URL url, NotifyListener listener) {
         writableMetadataService.unsubscribeURL(url);
+        String protocolServiceKey = url.getServiceKey() + GROUP_CHAR_SEPARATOR + url.getParameter(PROTOCOL_KEY, DUBBO);
+        String serviceNamesKey = serviceToAppsMapping.remove(protocolServiceKey);
+        ServiceInstancesChangedListener instancesChangedListener = serviceListeners.get(serviceNamesKey);
+        instancesChangedListener.removeListener(protocolServiceKey);
     }
 
     @Override
@@ -308,6 +313,9 @@ public class ServiceDiscoveryRegistry implements Registry {
 
     protected void subscribeURLs(URL url, NotifyListener listener, Set<String> serviceNames) {
         String serviceNamesKey = serviceNames.toString();
+        String protocolServiceKey = url.getServiceKey() + GROUP_CHAR_SEPARATOR + url.getParameter(PROTOCOL_KEY, DUBBO);
+        serviceToAppsMapping.put(protocolServiceKey, serviceNamesKey);
+
         // register ServiceInstancesChangedListener
         ServiceInstancesChangedListener serviceListener = serviceListeners.computeIfAbsent(serviceNamesKey,
                 k -> new ServiceInstancesChangedListener(serviceNames, serviceDiscovery));
@@ -318,7 +326,6 @@ public class ServiceDiscoveryRegistry implements Registry {
             List<ServiceInstance> serviceInstances = serviceDiscovery.getInstances(serviceName);
             serviceListener.onEvent(new ServiceInstancesChangedEvent(serviceName, serviceInstances));
         });
-        String protocolServiceKey = url.getServiceKey() + GROUP_CHAR_SEPARATOR + url.getParameter(PROTOCOL_KEY, DUBBO);
 
         listener.notify(serviceListener.getUrls(protocolServiceKey));
 
@@ -460,6 +467,7 @@ public class ServiceDiscoveryRegistry implements Registry {
                 return;
             }
             if (!CollectionUtils.equals(oldApps, newApps) && newApps.size() >= oldApps.size()) {
+                doUnsubscribe(url, listener);
                 subscribeURLs(url, listener, newApps);
             }
         }

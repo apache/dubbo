@@ -28,7 +28,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.integration.RegistryProtocol;
 import org.apache.dubbo.registry.integration.RegistryProtocolListener;
 import org.apache.dubbo.rpc.Exporter;
-import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Set;
@@ -77,10 +77,10 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
     }
 
     @Override
-    public synchronized <T> void onRefer(RegistryProtocol registryProtocol, Invoker<T> invoker) {
-        MigrationInvoker<T> migrationInvoker = (MigrationInvoker<T>) invoker;
+    public synchronized void onRefer(RegistryProtocol registryProtocol, ClusterInvoker<?> invoker) {
+        MigrationInvoker<?> migrationInvoker = (MigrationInvoker<?>) invoker;
 
-        MigrationRuleHandler<T> migrationListener = new MigrationRuleHandler<>(migrationInvoker);
+        MigrationRuleHandler<?> migrationListener = new MigrationRuleHandler<>(migrationInvoker);
         listeners.add(migrationListener);
 
         migrationListener.doMigrate(rawRule);

@@ -178,7 +178,7 @@ public class MetadataInfo implements Serializable {
         private String path; // most of the time, path is the same with the interface name.
         private Map<String, String> params;
 
-        // params configuried on consumer side,
+        // params configured on consumer side,
         private transient Map<String, String> consumerParams;
         // cached method params
         private transient Map<String, Map<String, String>> methodParams;
