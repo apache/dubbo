@@ -17,6 +17,7 @@
 package org.apache.dubbo.metadata.store.redis;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -72,8 +73,29 @@ public class RedisMetadataReport extends AbstractMetadataReport {
             }
         } else {
             int database = url.getParameter(REDIS_DATABASE_KEY, 0);
-            pool = new JedisPool(new JedisPoolConfig(), url.getHost(), url.getPort(), timeout, url.getPassword(), database);
+            String userName = getUserName(url);
+            if (StringUtils.isEmpty(userName)) {
+                pool = new JedisPool(new JedisPoolConfig(), url.getHost(), url.getPort(), timeout, getPassword(url), database);
+            } else {
+                pool = new JedisPool(new JedisPoolConfig(), url.getHost(), url.getPort(), timeout, userName, getPassword(url), database);
+            }
         }
+    }
+
+    private String getUserName(URL url){
+        String userName;
+        if ((userName =url.getUsername()) == null) {
+            userName = url.getParameter(CommonConstants.USERNAME_KEY);
+        }
+        return userName;
+    }
+
+    private String getPassword(URL url) {
+        String password;
+        if ((password =url.getPassword()) == null) {
+            password = url.getParameter(CommonConstants.PASSWORD_KEY);
+        }
+        return password;
     }
 
     @Override
