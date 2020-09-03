@@ -16,6 +16,9 @@
  */
 package org.apache.dubbo.common;
 
+
+import org.apache.dubbo.common.constants.CommonConstants;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -223,14 +226,19 @@ public final class URLStrParser {
             valueStart = valueEnd + 1;
         }
 
+        String name;
+        String value;
         if (isEncoded) {
-            String name = decodeComponent(str, nameStart, valueStart - 3, false, tempBuf);
-            String value = decodeComponent(str, valueStart, valueEnd, false, tempBuf);
-            params.put(name, value);
+            name = decodeComponent(str, nameStart, valueStart - 3, false, tempBuf);
+            value = decodeComponent(str, valueStart, valueEnd, false, tempBuf);
         } else {
-            String name = str.substring(nameStart, valueStart -1);
-            String value = str.substring(valueStart, valueEnd);
-            params.put(name, value);
+            name = str.substring(nameStart, valueStart -1);
+            value = str.substring(valueStart, valueEnd);
+        }
+        params.put(name, value);
+        // compatible with lower versions registering "default." keys
+        if (name.startsWith(CommonConstants.DEFAULT_KEY_PREFIX)) {
+            params.putIfAbsent(name.substring(CommonConstants.DEFAULT_KEY_PREFIX.length()), value);
         }
         return true;
     }
