@@ -17,6 +17,7 @@
 package org.apache.dubbo.config.bootstrap;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
@@ -54,6 +55,7 @@ import org.apache.dubbo.config.bootstrap.builders.ReferenceBuilder;
 import org.apache.dubbo.config.bootstrap.builders.RegistryBuilder;
 import org.apache.dubbo.config.bootstrap.builders.ServiceBuilder;
 import org.apache.dubbo.config.context.ConfigManager;
+import org.apache.dubbo.config.metadata.ConfigurableMetadataServiceExporter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.config.utils.ReferenceConfigCache;
 import org.apache.dubbo.event.EventDispatcher;
@@ -65,10 +67,12 @@ import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.metadata.report.MetadataReportFactory;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
-import org.apache.dubbo.registry.client.ServiceDiscovery;
-import org.apache.dubbo.registry.client.ServiceDiscoveryRegistry;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
+import org.apache.dubbo.registry.client.metadata.MetadataUtils;
+import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
+import org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataService;
+import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
@@ -77,19 +81,18 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
@@ -103,7 +106,12 @@ import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoad
 import static org.apache.dubbo.common.function.ThrowableAction.execute;
 import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
+import static org.apache.dubbo.metadata.MetadataConstants.DEFAULT_METADATA_PUBLISH_DELAY;
+import static org.apache.dubbo.metadata.MetadataConstants.METADATA_PUBLISH_DELAY_KEY;
+import static org.apache.dubbo.metadata.WritableMetadataService.getDefaultExtension;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.calInstanceRevision;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.setMetadataStorageType;
+import static org.apache.dubbo.registry.support.AbstractRegistryFactory.getServiceDiscoveries;
 import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
 
 /**
@@ -172,7 +180,7 @@ public class DubboBootstrap extends GenericEventListener {
 
     private volatile MetadataService metadataService;
 
-    private volatile Set<MetadataServiceExporter> metadataServiceExporters;
+    private volatile MetadataServiceExporter metadataServiceExporter;
 
     private List<ServiceConfigBase<?>> exportedServices = new ArrayList<>();
 
@@ -529,8 +537,6 @@ public class DubboBootstrap extends GenericEventListener {
 
         initMetadataService();
 
-        initMetadataServiceExports();
-
         initEventListener();
 
         if (logger.isInfoEnabled()) {
@@ -638,17 +644,18 @@ public class DubboBootstrap extends GenericEventListener {
         Collection<MetadataReportConfig> metadataReportConfigs = configManager.getMetadataConfigs();
         if (CollectionUtils.isEmpty(metadataReportConfigs)) {
             if (REMOTE_METADATA_STORAGE_TYPE.equals(metadataType)) {
-                throw new IllegalStateException("No MetadataConfig found, you must specify the remote Metadata Center address when 'metadata=remote' is enabled.");
+                throw new IllegalStateException("No MetadataConfig found, Metadata Center address is required when 'metadata=remote' is enabled.");
             }
             return;
         }
-        MetadataReportConfig metadataReportConfig = metadataReportConfigs.iterator().next();
-        ConfigValidationUtils.validateMetadataConfig(metadataReportConfig);
-        if (!metadataReportConfig.isValid()) {
-            return;
-        }
 
-        MetadataReportInstance.init(metadataReportConfig.toUrl());
+        for (MetadataReportConfig metadataReportConfig : metadataReportConfigs) {
+            ConfigValidationUtils.validateMetadataConfig(metadataReportConfig);
+            if (!metadataReportConfig.isValid()) {
+                return;
+            }
+            MetadataReportInstance.init(metadataReportConfig);
+        }
     }
 
     /**
@@ -694,7 +701,9 @@ public class DubboBootstrap extends GenericEventListener {
         cc.getParameters().put(CLIENT_KEY, registryConfig.getClient());
         cc.setProtocol(protocol);
         cc.setPort(port);
-        cc.setGroup(registryConfig.getGroup());
+        if (StringUtils.isNotEmpty(registryConfig.getGroup())) {
+            cc.setGroup(registryConfig.getGroup());
+        }
         cc.setAddress(getRegistryCompatibleAddress(registryConfig));
         cc.setNamespace(registryConfig.getGroup());
         cc.setUsername(registryConfig.getUsername());
@@ -857,17 +866,12 @@ public class DubboBootstrap extends GenericEventListener {
 
 
     /**
-     * Initialize {@link #metadataService WritableMetadataService} from {@link WritableMetadataService}'s extension
+     * Initialize {@link MetadataService} from {@link WritableMetadataService}'s extension
      */
     private void initMetadataService() {
-        this.metadataService = WritableMetadataService.getExtension(getMetadataType());
-    }
-
-    /**
-     * Initialize {@link #metadataServiceExporters MetadataServiceExporter}
-     */
-    private void initMetadataServiceExports() {
-        this.metadataServiceExporters = getExtensionLoader(MetadataServiceExporter.class).getSupportedExtensionInstances();
+        startMetadataCenter();
+        this.metadataService = getDefaultExtension();
+        this.metadataServiceExporter = new ConfigurableMetadataServiceExporter(metadataService);
     }
 
     /**
@@ -876,15 +880,6 @@ public class DubboBootstrap extends GenericEventListener {
     private void initEventListener() {
         // Add current instance into listeners
         addEventListener(this);
-    }
-
-    private List<ServiceDiscovery> getServiceDiscoveries() {
-        return AbstractRegistryFactory.getRegistries()
-                .stream()
-                .filter(registry -> registry instanceof ServiceDiscoveryRegistry)
-                .map(registry -> (ServiceDiscoveryRegistry) registry)
-                .map(ServiceDiscoveryRegistry::getServiceDiscovery)
-                .collect(Collectors.toList());
     }
 
     /**
@@ -1069,21 +1064,13 @@ public class DubboBootstrap extends GenericEventListener {
      * export {@link MetadataService}
      */
     private void exportMetadataService() {
-        metadataServiceExporters
-                .stream()
-                .filter(this::supports)
-                .forEach(MetadataServiceExporter::export);
+        metadataServiceExporter.export();
     }
 
     private void unexportMetadataService() {
-        Optional.ofNullable(metadataServiceExporters)
-                .ifPresent(set -> set.stream()
-                        .filter(this::supports)
-                        .forEach(MetadataServiceExporter::unexport));
-    }
-
-    private boolean supports(MetadataServiceExporter exporter) {
-        return exporter.supports(getMetadataType());
+        if (metadataServiceExporter != null && metadataServiceExporter.isExported()) {
+            metadataServiceExporter.unexport();
+        }
     }
 
     private void exportServices() {
@@ -1176,35 +1163,33 @@ public class DubboBootstrap extends GenericEventListener {
 
         ServiceInstance serviceInstance = createServiceInstance(serviceName, host, port);
 
-        preRegisterServiceInstance(serviceInstance);
+        doRegisterServiceInstance(serviceInstance);
 
-        getServiceDiscoveries().forEach(serviceDiscovery -> serviceDiscovery.register(serviceInstance));
+        // scheduled task for updating Metadata and ServiceInstance
+        executorRepository.nextScheduledExecutor().scheduleAtFixedRate(() -> {
+            InMemoryWritableMetadataService localMetadataService = (InMemoryWritableMetadataService) WritableMetadataService.getDefaultExtension();
+            localMetadataService.blockUntilUpdated();
+            ServiceInstanceMetadataUtils.refreshMetadataAndInstance();
+        }, 0, ConfigurationUtils.get(METADATA_PUBLISH_DELAY_KEY, DEFAULT_METADATA_PUBLISH_DELAY), TimeUnit.MICROSECONDS);
     }
 
-    /**
-     * Pre-register {@link ServiceInstance the service instance}
-     *
-     * @param serviceInstance {@link ServiceInstance the service instance}
-     * @since 2.7.8
-     */
-    private void preRegisterServiceInstance(ServiceInstance serviceInstance) {
-        customizeServiceInstance(serviceInstance);
-    }
+    private void doRegisterServiceInstance(ServiceInstance serviceInstance) {
+        //FIXME
+        publishMetadataToRemote(serviceInstance);
 
-    /**
-     * Customize {@link ServiceInstance the service instance}
-     *
-     * @param serviceInstance {@link ServiceInstance the service instance}
-     * @since 2.7.8
-     */
-    private void customizeServiceInstance(ServiceInstance serviceInstance) {
-        ExtensionLoader<ServiceInstanceCustomizer> loader =
-                getExtensionLoader(ServiceInstanceCustomizer.class);
-        // FIXME, sort customizer before apply
-        loader.getSupportedExtensionInstances().forEach(customizer -> {
-            // customizes
-            customizer.customize(serviceInstance);
+        getServiceDiscoveries().forEach(serviceDiscovery ->
+        {
+            calInstanceRevision(serviceDiscovery, serviceInstance);
+            // register metadata
+            serviceDiscovery.register(serviceInstance);
         });
+    }
+
+    private void publishMetadataToRemote(ServiceInstance serviceInstance) {
+//        InMemoryWritableMetadataService localMetadataService = (InMemoryWritableMetadataService)WritableMetadataService.getDefaultExtension();
+//        localMetadataService.blockUntilUpdated();
+        RemoteMetadataServiceImpl remoteMetadataService = MetadataUtils.getRemoteMetadataService();
+        remoteMetadataService.publishMetadata(serviceInstance.getServiceName());
     }
 
     private URL selectMetadataServiceExportedURL() {
@@ -1244,6 +1229,15 @@ public class DubboBootstrap extends GenericEventListener {
     private ServiceInstance createServiceInstance(String serviceName, String host, int port) {
         this.serviceInstance = new DefaultServiceInstance(serviceName, host, port);
         setMetadataStorageType(serviceInstance, getMetadataType());
+
+        ExtensionLoader<ServiceInstanceCustomizer> loader =
+                ExtensionLoader.getExtensionLoader(ServiceInstanceCustomizer.class);
+        // FIXME, sort customizer before apply
+        loader.getSupportedExtensionInstances().forEach(customizer -> {
+            // customizes
+            customizer.customize(this.serviceInstance);
+        });
+
         return this.serviceInstance;
     }
 

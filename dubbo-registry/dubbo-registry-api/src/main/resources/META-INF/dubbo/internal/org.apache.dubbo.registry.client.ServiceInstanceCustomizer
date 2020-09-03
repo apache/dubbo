@@ -3,3 +3,4 @@ exported-revision=org.apache.dubbo.registry.client.metadata.ExportedServicesRevi
 subscribed-revision=org.apache.dubbo.registry.client.metadata.SubscribedServicesRevisionMetadataCustomizer
 protocol-ports=org.apache.dubbo.registry.client.metadata.ProtocolPortsMetadataCustomizer
 instance-port=org.apache.dubbo.config.metadata.ServiceInstancePortCustomizer
+instance-metadata=org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataCustomizer

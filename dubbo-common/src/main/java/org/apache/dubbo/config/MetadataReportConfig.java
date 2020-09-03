@@ -79,6 +79,11 @@ public class MetadataReportConfig extends AbstractConfig {
      */
     private Boolean cluster;
 
+    /**
+     * registry id
+     */
+    private String registry;
+
     public MetadataReportConfig() {
     }
 
@@ -210,5 +215,13 @@ public class MetadataReportConfig extends AbstractConfig {
 
     public void setCluster(Boolean cluster) {
         this.cluster = cluster;
+    }
+
+    public String getRegistry() {
+        return registry;
+    }
+
+    public void setRegistry(String registry) {
+        this.registry = registry;
     }
 }

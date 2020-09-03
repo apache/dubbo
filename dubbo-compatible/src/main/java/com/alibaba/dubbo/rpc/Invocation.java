@@ -118,6 +118,11 @@ public interface Invocation extends org.apache.dubbo.rpc.Invocation {
         }
 
         @Override
+        public String getProtocolServiceKey() {
+            return delegate.getProtocolServiceKey();
+        }
+
+        @Override
         public String getMethodName() {
             return delegate.getMethodName();
         }
