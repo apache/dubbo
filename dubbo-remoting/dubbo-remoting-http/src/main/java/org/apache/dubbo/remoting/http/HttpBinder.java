@@ -14,23 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.consumer;
+package org.apache.dubbo.remoting.http;
 
-import org.apache.dubbo.config.api.DemoService;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.Adaptive;
+import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.remoting.Constants;
 
 /**
- * DemoAction
+ * HttpBinder
  */
-public class DemoActionBySetter {
+@SPI("jetty")
+public interface HttpBinder {
 
-    private DemoService demoService;
-
-    public DemoService getDemoService() {
-        return demoService;
-    }
-
-    public void setDemoService(DemoService demoService) {
-        this.demoService = demoService;
-    }
+    /**
+     * bind the server.
+     *
+     * @param url server url.
+     * @return server.
+     */
+    @Adaptive({Constants.SERVER_KEY})
+    HttpServer bind(URL url, HttpHandler handler);
 
 }

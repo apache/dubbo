@@ -14,9 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.remoting.http.tomcat;
 
-package com.alibaba.dubbo.remoting.p2p;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.http.HttpBinder;
+import org.apache.dubbo.remoting.http.HttpHandler;
+import org.apache.dubbo.remoting.http.HttpServer;
 
-@Deprecated
-public interface Networker extends org.apache.dubbo.remoting.p2p.Networker {
+public class TomcatHttpBinder implements HttpBinder {
+
+    @Override
+    public HttpServer bind(URL url, HttpHandler handler) {
+        return new TomcatHttpServer(url, handler);
+    }
+
 }

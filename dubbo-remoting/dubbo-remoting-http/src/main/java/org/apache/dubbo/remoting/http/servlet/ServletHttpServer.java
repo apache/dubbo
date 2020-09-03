@@ -14,22 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.consumer;
+package org.apache.dubbo.remoting.http.servlet;
 
-import org.apache.dubbo.config.api.DemoService;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.remoting.http.HttpHandler;
+import org.apache.dubbo.remoting.http.support.AbstractHttpServer;
 
-import org.springframework.beans.factory.annotation.Autowired;
+public class ServletHttpServer extends AbstractHttpServer {
 
-/**
- * DemoAction
- */
-public class DemoActionByAnnotation {
-
-    @Autowired
-    private DemoService demoService;
-
-    public DemoService getDemoService() {
-        return demoService;
+    public ServletHttpServer(URL url, HttpHandler handler) {
+        super(url, handler);
+        DispatcherServlet.addHttpHandler(url.getParameter(Constants.BIND_PORT_KEY, 8080), handler);
     }
 
 }

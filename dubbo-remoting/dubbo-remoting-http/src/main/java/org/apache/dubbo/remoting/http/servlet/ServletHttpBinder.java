@@ -14,18 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.consumer;
+package org.apache.dubbo.remoting.http.servlet;
 
-import org.aopalliance.intercept.MethodInterceptor;
-import org.aopalliance.intercept.MethodInvocation;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.http.HttpBinder;
+import org.apache.dubbo.remoting.http.HttpHandler;
+import org.apache.dubbo.remoting.http.HttpServer;
 
 /**
- * DemoInterceptor
+ * ServletHttpTransporter
  */
-public class DemoInterceptor implements MethodInterceptor {
+public class ServletHttpBinder implements HttpBinder {
 
-    public Object invoke(MethodInvocation invocation) throws Throwable {
-        return "aop:" + invocation.proceed();
+    @Override
+    public HttpServer bind(URL url, HttpHandler handler) {
+        return new ServletHttpServer(url, handler);
     }
 
 }
