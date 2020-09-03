@@ -32,6 +32,7 @@ import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.registry.RegistryService;
 import org.apache.dubbo.registry.client.ServiceDiscoveryRegistryDirectory;
+import org.apache.dubbo.registry.client.migration.MigrationClusterInvoker;
 import org.apache.dubbo.registry.client.migration.ServiceDiscoveryMigrationInvoker;
 import org.apache.dubbo.registry.retry.ReExportTask;
 import org.apache.dubbo.registry.support.SkipFailbackWrapperException;
@@ -498,19 +499,17 @@ public class RegistryProtocol implements Protocol {
         return (ClusterInvoker<T>) cluster.join(directory);
     }
 
-    public <T> void reRefer(DynamicDirectory<T> directory, URL newSubscribeUrl) {
-        URL oldSubscribeUrl = directory.getRegisteredConsumerUrl();
-        Registry registry = directory.getRegistry();
-        registry.unregister(directory.getRegisteredConsumerUrl());
-        directory.unSubscribe(toSubscribeUrl(oldSubscribeUrl));
-        registry.register(directory.getRegisteredConsumerUrl());
+    public <T> void reRefer(ClusterInvoker<?> invoker, URL newSubscribeUrl) {
+        if (!(invoker instanceof MigrationClusterInvoker)) {
+            logger.error("Only invoker type of MigrationClusterInvoker supports reRefer, current invoker is " + invoker.getClass());
+            return;
+        }
 
-        directory.setRegisteredConsumerUrl(newSubscribeUrl);
-        directory.buildRouterChain(newSubscribeUrl);
-        directory.subscribe(toSubscribeUrl(newSubscribeUrl));
+        MigrationClusterInvoker<?> migrationClusterInvoker = (MigrationClusterInvoker<?>)invoker;
+        migrationClusterInvoker.reRefer(newSubscribeUrl);
     }
 
-    protected static URL toSubscribeUrl(URL url) {
+    public static URL toSubscribeUrl(URL url) {
         return url.addParameter(CATEGORY_KEY, PROVIDERS_CATEGORY + "," + CONFIGURATORS_CATEGORY + "," + ROUTERS_CATEGORY);
     }
 
