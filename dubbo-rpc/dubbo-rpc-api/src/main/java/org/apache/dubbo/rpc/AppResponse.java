@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc;
 
-import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -67,27 +66,23 @@ public class AppResponse implements Result {
     }
 
     @Override
-    public Object recreate() {
+    public Object recreate() throws Throwable {
         if (exception != null) {
             // fix issue#619
             try {
-                // get Throwable class
-                @SuppressWarnings("rawtypes")
-                Class clazz = exception.getClass();
-                while (!clazz.getName().equals(Throwable.class.getName())) {
-                    clazz = clazz.getSuperclass();
+                StackTraceElement[] localStackTrace = new RpcException().getStackTrace();
+                StackTraceElement[] responseStackTrace = exception.getStackTrace();
+                if (responseStackTrace == null) {
+                    responseStackTrace = new StackTraceElement[0];
                 }
-                // get stackTrace value
-                Field stackTraceField = clazz.getDeclaredField("stackTrace");
-                stackTraceField.setAccessible(true);
-                Object stackTrace = stackTraceField.get(exception);
-                if (stackTrace == null) {
-                    exception.setStackTrace(new StackTraceElement[0]);
-                }
+                StackTraceElement[] mergedStackTraceElement = new StackTraceElement[localStackTrace.length + responseStackTrace.length];
+                System.arraycopy(localStackTrace, 0, mergedStackTraceElement, 0, localStackTrace.length);
+                System.arraycopy(responseStackTrace, 0, mergedStackTraceElement, localStackTrace.length, responseStackTrace.length);
+                exception.setStackTrace(mergedStackTraceElement);
             } catch (Exception e) {
                 // ignore
             }
-            throw new RpcException(exception);
+            throw exception;
         }
         return result;
     }
