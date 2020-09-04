@@ -374,9 +374,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     }
 
     public void clear() {
-        write(() -> {
-            this.configsCache.clear();
-        });
+        write(this.configsCache::clear);
     }
 
     /**
