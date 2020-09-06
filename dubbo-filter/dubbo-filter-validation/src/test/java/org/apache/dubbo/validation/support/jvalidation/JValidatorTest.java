@@ -23,10 +23,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import javax.validation.ConstraintViolationException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class JValidatorTest {
     @Test
@@ -72,7 +69,7 @@ public class JValidatorTest {
     public void testItWithCollectionArg() throws Exception {
         URL url = URL.valueOf("test://test:11/org.apache.dubbo.validation.support.jvalidation.mock.JValidatorTestTarget");
         JValidator jValidator = new JValidator(url);
-        jValidator.validate("someMethod4", new Class<?>[]{List.class}, new Object[]{Arrays.asList("parameter")});
+        jValidator.validate("someMethod4", new Class<?>[]{List.class}, new Object[]{Collections.singletonList("parameter")});
     }
 
     @Test

@@ -27,6 +27,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -82,7 +83,7 @@ public class ZookeeperServiceDiscoveryTest {
         List<ServiceInstance> serviceInstances = discovery.getInstances(SERVICE_NAME);
 
         assertTrue(serviceInstances.contains(serviceInstance));
-        assertEquals(asList(serviceInstance), serviceInstances);
+        assertEquals(Collections.singletonList(serviceInstance), serviceInstances);
 
         Map<String, String> metadata = new HashMap<>();
         metadata.put("message", "Hello,World");

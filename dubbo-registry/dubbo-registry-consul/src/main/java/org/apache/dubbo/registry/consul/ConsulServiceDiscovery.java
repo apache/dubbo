@@ -325,8 +325,7 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
     }
 
     private Map<String, String> buildMetadata(ServiceInstance serviceInstance) {
-        Map<String, String> metadata = new LinkedHashMap<>();
-        metadata.putAll(getScCompatibleMetadata(registeringTags));
+        Map<String, String> metadata = new LinkedHashMap<>(getScCompatibleMetadata(registeringTags));
         if (CollectionUtils.isNotEmptyMap(serviceInstance.getMetadata())) {
             metadata.putAll(serviceInstance.getMetadata());
         }
