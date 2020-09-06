@@ -86,8 +86,10 @@ import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_SE
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.USERNAME_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_DUPLICATE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
@@ -202,7 +204,33 @@ public class ConfigValidationUtils {
                 }
             }
         }
-        return registryList;
+        return genCompatibleRegistries(registryList, provider);
+    }
+
+    private static List<URL> genCompatibleRegistries(List<URL> registryList, boolean provider) {
+        List<URL> result = new ArrayList<>(registryList.size());
+        registryList.forEach(registryURL -> {
+            result.add(registryURL);
+            if (provider) {
+                // for registries enabled service discovery, automatically register interface compatible addresses.
+                if (SERVICE_REGISTRY_PROTOCOL.equals(registryURL.getProtocol())
+                        && registryURL.getParameter(REGISTRY_DUPLICATE_KEY, false)
+                        && registryNotExists(registryURL, registryList, REGISTRY_PROTOCOL)) {
+                    URL interfaceCompatibleRegistryURL = URLBuilder.from(registryURL)
+                            .setProtocol(REGISTRY_PROTOCOL)
+                            .removeParameter(REGISTRY_TYPE_KEY)
+                            .build();
+                    result.add(interfaceCompatibleRegistryURL);
+                }
+            }
+        });
+        return result;
+    }
+
+    private static boolean registryNotExists(URL registryURL, List<URL> registryList, String registryType) {
+        return registryList.stream().noneMatch(
+                url -> registryType.equals(url.getProtocol()) && registryURL.getBackupAddress().equals(url.getBackupAddress())
+        );
     }
 
     public static URL loadMonitor(AbstractInterfaceConfig interfaceConfig, URL registryURL) {
