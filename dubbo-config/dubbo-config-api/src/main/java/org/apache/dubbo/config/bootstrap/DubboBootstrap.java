@@ -530,6 +530,9 @@ public class DubboBootstrap extends GenericEventListener {
          */
         ApplicationModel.initFrameworkExts();
 
+        /**
+         * 启动配置中心
+         */
         startConfigCenter();
 
         loadRemoteConfigs();
@@ -608,8 +611,14 @@ public class DubboBootstrap extends GenericEventListener {
         ConfigValidationUtils.validateSslConfig(getSsl());
     }
 
+    /**
+     * 启动配置中心
+     */
     private void startConfigCenter() {
 
+        /**
+         * 没有显示指定配置中心时   将注册中心作为默认得配置中心
+         */
         useRegistryAsConfigCenterIfNecessary();
 
         Collection<ConfigCenterConfig> configCenters = configManager.getConfigCenters();
@@ -667,6 +676,9 @@ public class DubboBootstrap extends GenericEventListener {
      * For compatibility purpose, use registry as the default config center when
      * there's no config center specified explicitly and
      * useAsConfigCenter of registryConfig is null or true
+     *
+     * 没有显示指定配置中心时   将注册中心作为默认得配置中心
+     * registryConfig中对应得useAsConfigCenter设置为null或者为true
      */
     private void useRegistryAsConfigCenterIfNecessary() {
         // we use the loading status of DynamicConfiguration to decide whether ConfigCenter has been initiated.
@@ -678,6 +690,13 @@ public class DubboBootstrap extends GenericEventListener {
             return;
         }
 
+        /**
+         * 过滤所有的注册中心  获取对应的isDefault属性为null或者true的注册中心
+         * stream
+         * 再次过滤  是否允许当前注册中心做配置中心
+         * 将registryConfig转换为ConfigCenterConfig
+         * 缓存config配置信息
+         */
         configManager
                 .getDefaultRegistries()
                 .stream()
@@ -686,11 +705,26 @@ public class DubboBootstrap extends GenericEventListener {
                 .forEach(configManager::addConfigCenter);
     }
 
+    /**
+     * 是否使用注册中心为默认配置中心
+     * @param registryConfig
+     * @return
+     */
     private boolean isUsedRegistryAsConfigCenter(RegistryConfig registryConfig) {
+        /**
+         * 查看注册中心得usedRegistryAsCenter属性
+         * 如果没有则验证注册中心对应得protocol  是否有对于DynamicConfigurationFactory得扩展
+         * 举例：注册中心为nacos  则验证是否有DynamicConfigurationFactory对应得nacos实现
+         */
         return isUsedRegistryAsCenter(registryConfig, registryConfig::getUseAsConfigCenter, "config",
                 DynamicConfigurationFactory.class);
     }
 
+    /**
+     * 将RegistryConfig转换为ConfigCenterConfig
+     * @param registryConfig
+     * @return
+     */
     private ConfigCenterConfig registryAsConfigCenter(RegistryConfig registryConfig) {
         String protocol = registryConfig.getProtocol();
         Integer port = registryConfig.getPort();
@@ -755,10 +789,19 @@ public class DubboBootstrap extends GenericEventListener {
                                            Class<?> extensionClass) {
         final boolean supported;
 
+        /**
+         * 获取注册中心中 usedRegistryAsCenter对应的值
+         */
         Boolean configuredValue = usedRegistryAsCenter.get();
         if (configuredValue != null) { // If configured, take its value.
+            /**
+             * 不为null  则获取对应的value
+             */
             supported = configuredValue.booleanValue();
         } else {                       // Or check the extension existence
+            /**
+             * 否则检测extensionClass对应得拓展中  是否含有protocol对应得实现
+             */
             String protocol = registryConfig.getProtocol();
             supported = supportsExtension(extensionClass, protocol);
             if (logger.isInfoEnabled()) {
@@ -776,6 +819,7 @@ public class DubboBootstrap extends GenericEventListener {
 
     /**
      * Supports the extension with the specified class and name
+     * 指定的class和name是否有对应的扩展
      *
      * @param extensionClass the {@link Class} of extension
      * @param name           the name of extension
@@ -784,6 +828,9 @@ public class DubboBootstrap extends GenericEventListener {
      */
     private boolean supportsExtension(Class<?> extensionClass, String name) {
         if (isNotEmpty(name)) {
+            /**
+             * 获取extensionClass对应得扩展 以及扩展是否含有name对应得实现
+             */
             ExtensionLoader extensionLoader = getExtensionLoader(extensionClass);
             return extensionLoader.hasExtension(name);
         }

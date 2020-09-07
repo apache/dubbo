@@ -280,6 +280,10 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
         return ofNullable(getConfig(getTagName(RegistryConfig.class), id));
     }
 
+    /**
+     * 获取注册中心配置信息   筛选对应的isDefault属性为null或者true
+     * @return
+     */
     public List<RegistryConfig> getDefaultRegistries() {
         return getDefaultConfigs(getConfigsMap(getTagName(RegistryConfig.class)));
     }
@@ -537,13 +541,33 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
         }
     }
 
+    /**
+     * 获取config对应得id
+     * @param config
+     * @param <C>
+     * @return
+     */
     static <C extends AbstractConfig> String getId(C config) {
         String id = config.getId();
+        /**
+         * id不为空则取id
+         * 为空则判断config对应isDefault属性为null或者空
+         * 举例：
+         */
         return isNotEmpty(id) ? id : isDefaultConfig(config) ?
                 config.getClass().getSimpleName() + "#" + DEFAULT_KEY : null;
     }
 
+    /**
+     * 筛选配置信息中isDefault属性为null或者true
+     * @param config
+     * @param <C>
+     * @return
+     */
     static <C extends AbstractConfig> boolean isDefaultConfig(C config) {
+        /**
+         * 获取配置信息中   对应得isDefault属性
+         */
         Boolean isDefault = getProperty(config, "isDefault");
         return isDefault == null || TRUE.equals(isDefault);
     }
