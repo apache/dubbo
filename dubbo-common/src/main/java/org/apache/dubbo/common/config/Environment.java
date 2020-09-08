@@ -157,7 +157,7 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
             globalConfiguration.addConfiguration(propertiesConfiguration);
         } else {
             if (!globalConfiguration.isDynamicIncluded() && dynamicConfiguration != null) {
-                globalConfiguration.addConfiguration(dynamicConfiguration);
+                globalConfiguration.addConfigurationFirst(dynamicConfiguration);
                 globalConfiguration.setDynamicIncluded(true);
             }
         }
