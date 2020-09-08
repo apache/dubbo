@@ -112,12 +112,21 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
      * At present, there are many configuration sources, including AbstractConfig (API, XML, annotation), - D, config center, etc.
      * This method helps us to filter out the most priority values from various configuration sources.
      *
+     * 在启动时，Dubbo由各种配置驱动，如应用程序、注册表、协议等。所有配置都将聚合到一个数据总线URL中，然后驱动后续进程。
+     * 目前，有很多配置源，包括AbstractConfig（API、XML、annotation）、-D、configcenter等。
+     * 此方法帮助我们从各种配置源筛选出最优先的值。
      * @param config
      * @return
      */
     public synchronized CompositeConfiguration getPrefixedConfiguration(AbstractConfig config) {
         CompositeConfiguration prefixedConfiguration = new CompositeConfiguration(config.getPrefix(), config.getId());
+        /**
+         * 生成config对应的Configuration  并构建元数据
+         */
         Configuration configuration = new ConfigConfigurationAdapter(config);
+        /**
+         * 按顺序缓存配置信息
+         */
         if (this.isConfigCenterFirst()) {
             // The sequence would be: SystemConfiguration -> AppExternalConfiguration -> ExternalConfiguration -> AbstractConfig -> PropertiesConfiguration
             // Config center has the highest priority

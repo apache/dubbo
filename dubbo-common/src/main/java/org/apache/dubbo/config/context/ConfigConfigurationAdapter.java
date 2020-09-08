@@ -30,9 +30,19 @@ public class ConfigConfigurationAdapter implements Configuration {
 
     private Map<String, String> metaData;
 
+    /**
+     * 根据config包含的元数据  生成对应的metaDataMap
+     * @param config
+     */
     public ConfigConfigurationAdapter(AbstractConfig config) {
+        /**
+         * 获取config对应的metadata
+         */
         Map<String, String> configMetadata = config.getMetaData();
         metaData = new HashMap<>(configMetadata.size());
+        /**
+         * 将prefix和id加入configMetadata对应的key中
+         */
         for (Map.Entry<String, String> entry : configMetadata.entrySet()) {
             String prefix = config.getPrefix().endsWith(".") ? config.getPrefix() : config.getPrefix() + ".";
             String id = StringUtils.isEmpty(config.getId()) ? "" : config.getId() + ".";

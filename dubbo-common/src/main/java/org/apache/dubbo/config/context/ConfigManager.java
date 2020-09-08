@@ -153,6 +153,10 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
         return getConfig(getTagName(ConfigCenterConfig.class), id);
     }
 
+    /**
+     * 获取配置中心信息 config-center
+     * @return
+     */
     public Collection<ConfigCenterConfig> getConfigCenters() {
         return getConfigs(getTagName(ConfigCenterConfig.class));
     }
@@ -418,10 +422,22 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
         });
     }
 
+    /**
+     * 获取configType对应得配置信息
+     * @param configType
+     * @param <C>
+     * @return
+     */
     protected <C extends AbstractConfig> Map<String, C> getConfigsMap(String configType) {
         return (Map<String, C>) read(() -> configsCache.getOrDefault(configType, emptyMap()));
     }
 
+    /**
+     * 获取configType对应得配置信息
+     * @param configType
+     * @param <C>
+     * @return
+     */
     protected <C extends AbstractConfig> Collection<C> getConfigs(String configType) {
         return (Collection<C>) read(() -> getConfigsMap(configType).values());
     }

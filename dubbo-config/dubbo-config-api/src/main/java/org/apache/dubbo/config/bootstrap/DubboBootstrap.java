@@ -617,10 +617,13 @@ public class DubboBootstrap extends GenericEventListener {
     private void startConfigCenter() {
 
         /**
-         * 没有显示指定配置中心时   将注册中心作为默认得配置中心
+         * 没有显示指定配置中心时   是否可以将注册中心作为默认得配置中心
          */
         useRegistryAsConfigCenterIfNecessary();
 
+        /**
+         * 获取配置中心信息
+         */
         Collection<ConfigCenterConfig> configCenters = configManager.getConfigCenters();
 
         // check Config Center
@@ -633,6 +636,9 @@ public class DubboBootstrap extends GenericEventListener {
             }
         } else {
             for (ConfigCenterConfig configCenterConfig : configCenters) {
+                /**
+                 * 刷新
+                 */
                 configCenterConfig.refresh();
                 ConfigValidationUtils.validateConfigCenterConfig(configCenterConfig);
             }
@@ -677,7 +683,7 @@ public class DubboBootstrap extends GenericEventListener {
      * there's no config center specified explicitly and
      * useAsConfigCenter of registryConfig is null or true
      *
-     * 没有显示指定配置中心时   将注册中心作为默认得配置中心
+     * 没有显示指定配置中心时   是否可以将注册中心作为默认得配置中心
      * registryConfig中对应得useAsConfigCenter设置为null或者为true
      */
     private void useRegistryAsConfigCenterIfNecessary() {

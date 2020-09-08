@@ -58,6 +58,10 @@ public class CompositeConfiguration implements Configuration {
         }
     }
 
+    /**
+     * 缓存配置信息
+     * @param configuration
+     */
     public void addConfiguration(Configuration configuration) {
         if (configList.contains(configuration)) {
             return;
