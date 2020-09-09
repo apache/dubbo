@@ -141,11 +141,11 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
 
     @Override
     public Result invoke(Invocation invocation) throws RpcException {
-        if (needRefresh(serviceDiscoveryInvoker)) {
+        if (!checkInvokerAvailable(serviceDiscoveryInvoker)) {
             return invoker.invoke(invocation);
         }
 
-        if (needRefresh(invoker)) {
+        if (!checkInvokerAvailable(invoker)) {
             return serviceDiscoveryInvoker.invoke(invocation);
         }
 
@@ -270,7 +270,10 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     }
 
     private boolean needRefresh(ClusterInvoker<T> invoker) {
-        return invoker == null || invoker.isDestroyed() || !invoker.isAvailable();
+        return invoker == null || invoker.isDestroyed();
     }
 
+    public boolean checkInvokerAvailable(ClusterInvoker<T> invoker) {
+        return invoker != null && !invoker.isDestroyed() && invoker.isAvailable();
+    }
 }

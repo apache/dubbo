@@ -62,7 +62,7 @@ public class DefaultMigrationAddressComparator implements MigrationAddressCompar
             return false;
         }
 
-        if ((float) (newAddressSize / oldAddressSize) >= threshold) {
+        if (((float)newAddressSize / (float)oldAddressSize) >= threshold) {
             return true;
         }
         return false;

@@ -127,6 +127,9 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
                 logger.warn("destroyUnusedInvokers error. ", e);
             }
         }
+
+        // notify invokers refreshed
+        this.invokersChanged();
     }
 
     /**

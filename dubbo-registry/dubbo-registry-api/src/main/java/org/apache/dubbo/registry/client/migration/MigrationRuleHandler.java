@@ -32,6 +32,7 @@ public class MigrationRuleHandler<T> {
     private static final String DUBBO_SERVICEDISCOVERY_MIGRATION = "dubbo.application.service-discovery.migration";
 
     private MigrationInvoker<T> migrationInvoker;
+    private MigrationStep currentStep;
 
     public MigrationRuleHandler(MigrationInvoker<T> invoker) {
         this.migrationInvoker = invoker;
@@ -51,16 +52,19 @@ public class MigrationRuleHandler<T> {
             step = rule.getStep();
         }
 
-        switch (step) {
-            case APPLICATION_FIRST:
-                migrationInvoker.migrateToServiceDiscoveryInvoker(false);
-                break;
-            case FORCE_APPLICATION:
-                migrationInvoker.migrateToServiceDiscoveryInvoker(true);
-                break;
-            case INTERFACE_FIRST:
-            default:
-                migrationInvoker.fallbackToInterfaceInvoker();
+        if (currentStep == null || currentStep != step) {
+            currentStep = step;
+            switch (step) {
+                case APPLICATION_FIRST:
+                    migrationInvoker.migrateToServiceDiscoveryInvoker(false);
+                    break;
+                case FORCE_APPLICATION:
+                    migrationInvoker.migrateToServiceDiscoveryInvoker(true);
+                    break;
+                case INTERFACE_FIRST:
+                default:
+                    migrationInvoker.fallbackToInterfaceInvoker();
+            }
         }
     }
 }
