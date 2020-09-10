@@ -90,7 +90,8 @@ public abstract class AbstractExchangeGroup implements ExchangeGroup {
     @Override
     public ExchangePeer join(URL url, ExchangeHandler handler) throws RemotingException {
         ExchangeServer server = servers.get(url);
-        if (server == null) { // TODO exist concurrent gap
+		// TODO exist concurrent gap
+        if (server == null) {
             server = Exchangers.bind(url, handler);
             servers.put(url, server);
             dispatcher.addChannelHandler(handler);
@@ -111,7 +112,8 @@ public abstract class AbstractExchangeGroup implements ExchangeGroup {
             return null;
         }
         ExchangeClient client = clients.get(url);
-        if (client == null) { // TODO exist concurrent gap
+		// TODO exist concurrent gap
+        if (client == null) {
             client = Exchangers.connect(url, dispatcher);
             clients.put(url, client);
         }

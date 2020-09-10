@@ -197,7 +197,8 @@ public interface AnnotationUtils {
             if (Objects.equals(attributeName, attributeMethod.getSimpleName().toString())) {
                 TypeMirror attributeType = attributeMethod.getReturnType();
                 AnnotationValue value = entry.getValue();
-                if (attributeType instanceof ArrayType) { // array-typed attribute values
+				// array-typed attribute values
+                if (attributeType instanceof ArrayType) {
                     ArrayType arrayType = (ArrayType) attributeType;
                     String componentType = arrayType.getComponentType().toString();
                     ClassLoader classLoader = AnnotationUtils.class.getClassLoader();

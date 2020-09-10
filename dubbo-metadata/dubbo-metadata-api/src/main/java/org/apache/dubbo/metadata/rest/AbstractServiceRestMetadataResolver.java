@@ -195,14 +195,14 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
         if (!isRestCapableMethod(serviceMethod, serviceType, serviceInterfaceClass)) {
             return false;
         }
-
-        String requestPath = resolveRequestPath(serviceMethod, serviceType, serviceInterfaceClass); // requestPath is required
+		// requestPath is required
+        String requestPath = resolveRequestPath(serviceMethod, serviceType, serviceInterfaceClass);
 
         if (requestPath == null) {
             return false;
         }
-
-        String requestMethod = resolveRequestMethod(serviceMethod, serviceType, serviceInterfaceClass); // requestMethod is required
+		// requestMethod is required
+        String requestMethod = resolveRequestMethod(serviceMethod, serviceType, serviceInterfaceClass);
 
         if (requestMethod == null) {
             return false;

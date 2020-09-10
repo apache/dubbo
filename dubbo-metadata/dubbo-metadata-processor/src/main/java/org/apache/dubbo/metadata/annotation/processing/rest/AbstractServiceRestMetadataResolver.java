@@ -113,18 +113,18 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
                                                                      ExecutableElement serviceMethod) {
 
         ExecutableElement restCapableMethod = findRestCapableMethod(processingEnv, serviceType, serviceInterfaceType, serviceMethod);
-
-        if (restCapableMethod == null) { // if can't be found
+		// if can't be found
+        if (restCapableMethod == null) {
             return empty();
         }
-
-        String requestPath = resolveRequestPath(processingEnv, serviceType, restCapableMethod); // requestPath is required
+		// requestPath is required
+        String requestPath = resolveRequestPath(processingEnv, serviceType, restCapableMethod);
 
         if (requestPath == null) {
             return empty();
         }
-
-        String requestMethod = resolveRequestMethod(processingEnv, serviceType, restCapableMethod); // requestMethod is required
+		// requestMethod is required
+        String requestMethod = resolveRequestMethod(processingEnv, serviceType, restCapableMethod);
 
         if (requestMethod == null) {
             return empty();

@@ -16,6 +16,9 @@
  */
 package org.apache.dubbo.rpc.protocol.http;
 
+import static javax.servlet.http.HttpServletResponse.*;
+import static org.apache.dubbo.rpc.Constants.*;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.RemotingServer;
 import org.apache.dubbo.remoting.http.HttpBinder;
@@ -42,8 +45,6 @@ import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 
 public class HttpProtocol extends AbstractProxyProtocol {
     public static final String ACCESS_CONTROL_ALLOW_ORIGIN_HEADER = "Access-Control-Allow-Origin";
@@ -85,9 +86,9 @@ public class HttpProtocol extends AbstractProxyProtocol {
                 response.setHeader(ACCESS_CONTROL_ALLOW_METHODS_HEADER, "POST");
                 response.setHeader(ACCESS_CONTROL_ALLOW_HEADERS_HEADER, "*");
             }
-            if (request.getMethod().equalsIgnoreCase("OPTIONS")) {
-                response.setStatus(200);
-            } else if (request.getMethod().equalsIgnoreCase("POST")) {
+            if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+                response.setStatus(SC_OK);
+            } else if ("POST".equalsIgnoreCase(request.getMethod())) {
 
                 RpcContext.getContext().setRemoteAddress(request.getRemoteAddr(), request.getRemotePort());
                 try {
@@ -96,7 +97,7 @@ public class HttpProtocol extends AbstractProxyProtocol {
                     throw new ServletException(e);
                 }
             } else {
-                response.setStatus(500);
+                response.setStatus(SC_INTERNAL_SERVER_ERROR);
             }
         }
 

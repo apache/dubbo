@@ -203,8 +203,8 @@ public abstract class AbstractDynamicConfiguration implements DynamicConfigurati
     protected final <V> V execute(Callable<V> task, long timeout) {
         V value = null;
         try {
-
-            if (timeout < 1) { // less or equal 0
+			// less or equal 0
+            if (timeout < 1) {
                 value = task.call();
             } else {
                 Future<V> future = workersThreadPool.submit(task);

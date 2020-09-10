@@ -91,11 +91,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         if (shouldCheck == null && getConsumer() != null) {
             shouldCheck = getConsumer().isCheck();
         }
-        if (shouldCheck == null) {
-            // default true
-            shouldCheck = true;
-        }
-        return shouldCheck;
+		return shouldCheck == null ? true : shouldCheck;
     }
 
     public boolean shouldInit() {
@@ -103,12 +99,11 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         if (shouldInit == null && getConsumer() != null) {
             shouldInit = getConsumer().isInit();
         }
-        if (shouldInit == null) {
-            // default is true, spring will still init lazily by setting init's default value to false,
-            // the def default setting happens in {@link ReferenceBean#afterPropertiesSet}.
-            return true;
-        }
-        return shouldInit;
+		/**
+		 * default is true, spring will still init lazily by setting init's default value to false,
+		 * the def default setting happens in {@link ReferenceBean#afterPropertiesSet}.
+		 */
+		return shouldInit == null ? true : shouldInit;
     }
 
     public void checkDefault() throws IllegalStateException {

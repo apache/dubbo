@@ -49,7 +49,8 @@ public abstract class AbstractAbstractWritableMetadataService implements Writabl
 
     @Override
     public void publishServiceDefinition(URL url) {
-        if (SERVICE_INTERFACE_NAME.equals(url.getServiceInterface())) { // Ignore the interface "MetadataService"
+		// Ignore the interface "MetadataService"
+        if (SERVICE_INTERFACE_NAME.equals(url.getServiceInterface())) {
             return;
         }
 
@@ -82,7 +83,7 @@ public abstract class AbstractAbstractWritableMetadataService implements Writabl
                 json = gson.toJson(serviceDefinition);
             }
         } catch (ClassNotFoundException e) {
-            //ignore error
+            // ignore error
             if (logger.isErrorEnabled()) {
                 logger.error("The interface class[name : " + interfaceName + "] can't be found , providerUrl: "
                         + exportedURL.toFullString());

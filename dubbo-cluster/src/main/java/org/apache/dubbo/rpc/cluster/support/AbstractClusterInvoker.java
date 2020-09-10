@@ -145,11 +145,11 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
         boolean sticky = invokers.get(0).getUrl()
                 .getMethodParameter(methodName, CLUSTER_STICKY_KEY, DEFAULT_CLUSTER_STICKY);
 
-        //ignore overloaded method
+        // ignore overloaded method
         if (stickyInvoker != null && !invokers.contains(stickyInvoker)) {
             stickyInvoker = null;
         }
-        //ignore concurrency problem
+        // ignore concurrency problem
         if (sticky && stickyInvoker != null && (selected == null || !selected.contains(stickyInvoker))) {
             if (availablecheck && stickyInvoker.isAvailable()) {
                 return stickyInvoker;
@@ -236,7 +236,8 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
         // Just pick an available invoker using loadbalance policy
         if (selected != null) {
             for (Invoker<T> invoker : selected) {
-                if ((invoker.isAvailable()) // available first
+				// available first
+            	if ((invoker.isAvailable())
                         && !reselectInvokers.contains(invoker)) {
                     reselectInvokers.add(invoker);
                 }

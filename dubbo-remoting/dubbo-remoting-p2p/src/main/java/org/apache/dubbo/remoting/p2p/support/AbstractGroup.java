@@ -81,7 +81,8 @@ public abstract class AbstractGroup implements Group {
     @Override
     public Peer join(URL url, ChannelHandler handler) throws RemotingException {
         RemotingServer server = servers.get(url);
-        if (server == null) { // TODO exist concurrent gap
+		// TODO exist concurrent gap
+        if (server == null) {
             server = Transporters.bind(url, handler);
             servers.put(url, server);
             dispatcher.addChannelHandler(handler);
@@ -102,7 +103,8 @@ public abstract class AbstractGroup implements Group {
             return null;
         }
         Client client = clients.get(url);
-        if (client == null) { // TODO exist concurrent gap
+		// TODO exist concurrent gap
+        if (client == null) {
             client = Transporters.connect(url, dispatcher);
             clients.put(url, client);
         }

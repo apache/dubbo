@@ -35,7 +35,8 @@ import java.util.zip.InflaterInputStream;
  */
 
 public class Bytes {
-    private static final String C64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="; //default base64.
+	//default base64.
+    private static final String C64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
 
     private static final char[] BASE16 = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'}, BASE64 = C64.toCharArray();
 
@@ -537,8 +538,8 @@ public class Bytes {
         if (code.length < 64) {
             throw new IllegalArgumentException("Base64 code length < 64.");
         }
-
-        boolean pad = code.length > 64; // has pad char.
+		// has pad char.
+        boolean pad = code.length > 64;
         int num = len / 3, rem = len % 3, r = off, w = 0;
         char[] cs = new char[num * 4 + (rem == 0 ? 0 : pad ? 4 : rem + 1)];
 
@@ -892,7 +893,8 @@ public class Bytes {
             }
             // create new decode table.
             ret = new byte[128];
-            for (int i = 0; i < 128; i++) // init table.
+			// init table.
+            for (int i = 0; i < 128; i++)
             {
                 ret[i] = -1;
             }
