@@ -80,8 +80,14 @@ public class CompositeConfiguration implements Configuration {
     @Override
     public Object getInternalProperty(String key) {
         Configuration firstMatchingConfiguration = null;
+        /**
+         * 遍历configList
+         */
         for (Configuration config : configList) {
             try {
+                /**
+                 * 在所有得配置中查看key
+                 */
                 if (config.containsKey(key)) {
                     firstMatchingConfiguration = config;
                     break;
@@ -91,6 +97,9 @@ public class CompositeConfiguration implements Configuration {
             }
         }
         if (firstMatchingConfiguration != null) {
+            /**
+             * 取对应得config中获取key对应得值
+             */
             return firstMatchingConfiguration.getProperty(key);
         } else {
             return null;
@@ -102,6 +111,12 @@ public class CompositeConfiguration implements Configuration {
         return configList.stream().anyMatch(c -> c.containsKey(key));
     }
 
+    /**
+     * 获取key对应得value
+     * @param key property to retrieve
+     * @param defaultValue default value
+     * @return
+     */
     @Override
     public Object getProperty(String key, Object defaultValue) {
         Object value = null;

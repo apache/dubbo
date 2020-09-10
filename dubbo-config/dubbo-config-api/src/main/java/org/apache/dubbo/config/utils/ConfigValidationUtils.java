@@ -358,8 +358,15 @@ public class ConfigValidationUtils {
         }
     }
 
+    /**
+     * 校验configCenterConfig
+     * @param config
+     */
     public static void validateConfigCenterConfig(ConfigCenterConfig config) {
         if (config != null) {
+            /**
+             * 校验configCenterConfig对应得parameters
+             */
             checkParameterName(config.getParameters());
         }
     }
@@ -548,6 +555,11 @@ public class ConfigValidationUtils {
         checkProperty(property, value, MAX_LENGTH, PATTERN_NAME);
     }
 
+    /**
+     * 校验
+     * @param property
+     * @param value
+     */
     public static void checkNameHasSymbol(String property, String value) {
         checkProperty(property, value, MAX_LENGTH, PATTERN_NAME_HAS_SYMBOL);
     }
@@ -568,24 +580,47 @@ public class ConfigValidationUtils {
         checkProperty(property, value, MAX_LENGTH, PATTERN_METHOD_NAME);
     }
 
+    /**
+     * 校验parameters
+     * @param parameters
+     */
     public static void checkParameterName(Map<String, String> parameters) {
         if (CollectionUtils.isEmptyMap(parameters)) {
             return;
         }
         for (Map.Entry<String, String> entry : parameters.entrySet()) {
+            /**
+             * key不是backup
+             */
             if (!entry.getKey().equals(BACKUP_KEY)) {
                 checkNameHasSymbol(entry.getKey(), entry.getValue());
             }
         }
     }
 
+    /**
+     * 校验
+     * @param property
+     * @param value
+     * @param maxlength
+     * @param pattern
+     */
     public static void checkProperty(String property, String value, int maxlength, Pattern pattern) {
+        /**
+         * 不为空
+         */
         if (StringUtils.isEmpty(value)) {
             return;
         }
+        /**
+         * 长度
+         */
         if (value.length() > maxlength) {
             throw new IllegalStateException("Invalid " + property + "=\"" + value + "\" is longer than " + maxlength);
         }
+        /**
+         * 是否合法
+         */
         if (pattern != null) {
             Matcher matcher = pattern.matcher(value);
             if (!matcher.matches()) {

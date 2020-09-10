@@ -50,6 +50,11 @@ public class ConfigConfigurationAdapter implements Configuration {
         }
     }
 
+    /**
+     * 在metaData中获取key对应得value
+     * @param key
+     * @return
+     */
     @Override
     public Object getInternalProperty(String key) {
         return metaData.get(key);

@@ -550,7 +550,7 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     /**
-     * 刷新
+     * 刷新configCenterConfig
      */
     public void refresh() {
         Environment env = ApplicationModel.getEnvironment();
@@ -569,11 +569,14 @@ public abstract class AbstractConfig implements Serializable {
                 if (MethodUtils.isSetter(method)) {
                     try {
                         /**
-                         * 获取method对应得参数   在compositeConfiguration中得值  即缓存得元数据对应得值（ConfigConfigurationAdapter实现）
+                         * 获取method对应得参数   遍历compositeConfiguration中所有得配置项  获取对应得值
                          */
                         String value = StringUtils.trim(compositeConfiguration.getString(extractPropertyName(getClass(), method)));
                         // isTypeMatch() is called to avoid duplicate and incorrect update, for example, we have two 'setGeneric' methods in ReferenceConfig.
                         if (StringUtils.isNotEmpty(value) && ClassUtils.isTypeMatch(method.getParameterTypes()[0], value)) {
+                            /**
+                             * 将value按method.getParameterTypes()[0]得类型进行转换  并调用set方法  修改当前ConfigCenterConfig中得值
+                             */
                             method.invoke(this, ClassUtils.convertPrimitive(method.getParameterTypes()[0], value));
                         }
                     } catch (NoSuchMethodException e) {
@@ -586,11 +589,24 @@ public abstract class AbstractConfig implements Serializable {
                      * 方法为setParameters
                      * 名字为setParameters && public方法 && 仅一个参数  && 参数类型为map && 方法为void方法
                      */
+
+                    /**
+                     * 遍历compositeConfiguration中所有得配置项  获取key对应得值
+                     */
                     String value = StringUtils.trim(compositeConfiguration.getString(extractPropertyName(getClass(), method)));
                     if (StringUtils.isNotEmpty(value)) {
+                        /**
+                         * 获取当前对应得Parameters得值
+                         */
                         Map<String, String> map = invokeGetParameters(getClass(), this);
                         map = map == null ? new HashMap<>() : map;
+                        /**
+                         * 将value转换为map  并将prefix放入对应得key中  最后放入Parameters
+                         */
                         map.putAll(convert(StringUtils.parseParameters(value), ""));
+                        /**
+                         * 将map通过setParameters方法   存入当前对象中
+                         */
                         invokeSetParameters(getClass(), this, map);
                     }
                 }

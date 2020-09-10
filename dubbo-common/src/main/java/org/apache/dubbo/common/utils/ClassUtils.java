@@ -302,6 +302,12 @@ public class ClassUtils {
         return SIMPLE_TYPES.contains(type);
     }
 
+    /**
+     * 将value 按type类型进行转换
+     * @param type
+     * @param value
+     * @return
+     */
     public static Object convertPrimitive(Class<?> type, String value) {
         if (value == null) {
             return null;
@@ -339,6 +345,9 @@ public class ClassUtils {
      * @return
      */
     public static boolean isTypeMatch(Class<?> type, String value) {
+        /**
+         * type为boolean类型  但是value却不是true或false
+         */
         if ((type == boolean.class || type == Boolean.class)
                 && !("true".equals(value) || "false".equals(value))) {
             return false;

@@ -637,9 +637,12 @@ public class DubboBootstrap extends GenericEventListener {
         } else {
             for (ConfigCenterConfig configCenterConfig : configCenters) {
                 /**
-                 * 刷新
+                 * 刷新configCenterConfig
                  */
                 configCenterConfig.refresh();
+                /**
+                 * 校验configCenterConfig
+                 */
                 ConfigValidationUtils.validateConfigCenterConfig(configCenterConfig);
             }
         }
