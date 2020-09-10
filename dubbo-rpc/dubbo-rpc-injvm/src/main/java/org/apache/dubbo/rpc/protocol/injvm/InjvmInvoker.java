@@ -25,8 +25,6 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 import org.apache.dubbo.rpc.protocol.DelegateExporterMap;
 
-import java.util.Map;
-
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
 
 /**
