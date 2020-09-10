@@ -29,7 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @version : MultipleRegistryServiceDiscovery.java, v 0.1 2020年09月09日 11:24 quhongwei Exp $
  */
 public class MultipleRegistryServiceDiscovery implements ServiceDiscovery {
-    public static final String REGISTRY_PREFIX_KEY = "registry.";
+    public static final String REGISTRY_PREFIX_KEY = "child.";
     private final Map<String, ServiceDiscovery> serviceDiscoveries = new ConcurrentHashMap<>();
     private URL registryURL;
     private ServiceInstance serviceInstance;
@@ -45,7 +45,9 @@ public class MultipleRegistryServiceDiscovery implements ServiceDiscovery {
             if (key.startsWith(REGISTRY_PREFIX_KEY)) {
                 URL url = URL.valueOf(registryURL.getParameter(key)).addParameter(CommonConstants.APPLICATION_KEY, applicationName)
                         .addParameter("registry-type", "service");
-                serviceDiscoveries.put(key, ServiceDiscoveryFactory.getExtension(url).getServiceDiscovery(url));
+                ServiceDiscovery serviceDiscovery = ServiceDiscoveryFactory.getExtension(url).getServiceDiscovery(url);
+                serviceDiscovery.initialize(url);
+                serviceDiscoveries.put(key, serviceDiscovery);
             }
         }
     }
@@ -82,10 +84,10 @@ public class MultipleRegistryServiceDiscovery implements ServiceDiscovery {
     public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener) throws NullPointerException, IllegalArgumentException {
         MultiServiceInstancesChangedListener multiListener = new MultiServiceInstancesChangedListener(listener);
 
-        for (ServiceDiscovery serviceDiscovery : serviceDiscoveries.values()) {
-            SingleServiceInstancesChangedListener singleListener = new SingleServiceInstancesChangedListener(listener.getServiceNames(), serviceDiscovery, multiListener);
-            multiListener.putSingleListener(serviceDiscovery.getUrl(), singleListener);
-            serviceDiscovery.addServiceInstancesChangedListener(singleListener);
+        for (String registryKey : serviceDiscoveries.keySet()) {
+            SingleServiceInstancesChangedListener singleListener = new SingleServiceInstancesChangedListener(listener.getServiceNames(), serviceDiscoveries.get(registryKey), multiListener);
+            multiListener.putSingleListener(registryKey, singleListener);
+            serviceDiscoveries.get(registryKey).addServiceInstancesChangedListener(singleListener);
         }
     }
 
@@ -118,7 +120,7 @@ public class MultipleRegistryServiceDiscovery implements ServiceDiscovery {
 
     protected  static class MultiServiceInstancesChangedListener  implements ConditionalEventListener<ServiceInstancesChangedEvent> {
         private final ServiceInstancesChangedListener sourceListener;
-        private final Map<URL, SingleServiceInstancesChangedListener> singleListenerMap = new ConcurrentHashMap<>();
+        private final Map<String, SingleServiceInstancesChangedListener> singleListenerMap = new ConcurrentHashMap<>();
 
         public MultiServiceInstancesChangedListener(ServiceInstancesChangedListener sourceListener) {
             this.sourceListener = sourceListener;
@@ -140,8 +142,8 @@ public class MultipleRegistryServiceDiscovery implements ServiceDiscovery {
             sourceListener.onEvent(new ServiceInstancesChangedEvent(event.getServiceName(), serviceInstances));
         }
 
-        public void putSingleListener(URL url, SingleServiceInstancesChangedListener singleListener) {
-            singleListenerMap.put(url, singleListener);
+        public void putSingleListener(String registryKey, SingleServiceInstancesChangedListener singleListener) {
+            singleListenerMap.put(registryKey, singleListener);
         }
     }
 

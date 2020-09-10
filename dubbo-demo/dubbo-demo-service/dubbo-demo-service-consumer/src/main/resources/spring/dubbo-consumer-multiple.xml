@@ -29,7 +29,15 @@
     <dubbo:metadata-report address="zookeeper://localhost:2181"/>
 
     <!--<dubbo:registry address="zookeeper://localhost:2181?registry-type=service"/>-->
-    <dubbo:registry address="zookeeper://localhost:2181"/>
+    <!--<dubbo:registry address="zookeeper://localhost:2181"/>-->
+    <dubbo:registry id="mutipleRegistry" protocol="multiple" address="xxx?registry-type=service">
+        <!--
+        <dubbo:parameter key="zk1" value="zookeeper://localhost:2181?registry-type=service" />
+        <dubbo:parameter key="zk2" value="zookeeper://localhost:2182?registry-type=service" />
+        -->
+        <dubbo:parameter key="child.zk1" value="zookeeper://localhost:2181" />
+        <dubbo:parameter key="child.sofa1" value="sofa://100.88.142.124:9603" />
+    </dubbo:registry>
 
     <dubbo:reference id="demoService"  interface="org.apache.dubbo.demo.DemoService"/>
 
