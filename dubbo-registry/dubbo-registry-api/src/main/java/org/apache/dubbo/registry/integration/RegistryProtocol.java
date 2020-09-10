@@ -467,7 +467,7 @@ public class RegistryProtocol implements Protocol {
         }
 
         for (RegistryProtocolListener listener : listeners) {
-            listener.onRefer(this, invoker);
+            listener.onRefer(this, invoker, url);
         }
         return invoker;
     }

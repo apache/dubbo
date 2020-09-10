@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.registry.client.migration;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
@@ -77,7 +78,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
     }
 
     @Override
-    public synchronized void onRefer(RegistryProtocol registryProtocol, ClusterInvoker<?> invoker) {
+    public synchronized void onRefer(RegistryProtocol registryProtocol, ClusterInvoker<?> invoker, URL url) {
         MigrationInvoker<?> migrationInvoker = (MigrationInvoker<?>) invoker;
 
         MigrationRuleHandler<?> migrationListener = new MigrationRuleHandler<>(migrationInvoker);
