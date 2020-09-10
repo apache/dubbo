@@ -54,6 +54,11 @@ public class CacheTest {
         }
 
         @Override
+        public String getProtocolServiceKey() {
+            return null;
+        }
+
+        @Override
         public String getMethodName() {
             return null;
         }
