@@ -17,15 +17,16 @@
 
 package org.apache.dubbo.metadata.store.nacos;
 
-import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
-import org.apache.dubbo.metadata.report.support.ConfigCenterBasedMetadataReportFactory;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.metadata.report.MetadataReport;
+import org.apache.dubbo.metadata.report.support.AbstractMetadataReportFactory;
 
 /**
  * metadata report factory impl for nacos
  */
-public class NacosMetadataReportFactory extends ConfigCenterBasedMetadataReportFactory {
-
-    public NacosMetadataReportFactory() {
-        super(KeyTypeEnum.UNIQUE_KEY);
+public class NacosMetadataReportFactory extends AbstractMetadataReportFactory {
+    @Override
+    protected MetadataReport createMetadataReport(URL url) {
+        return new NacosMetadataReport(url);
     }
 }
