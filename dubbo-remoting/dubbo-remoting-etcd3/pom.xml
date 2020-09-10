@@ -31,8 +31,6 @@
     <name>${project.artifactId}</name>
     <description>The etcd3 remoting module of Dubbo project</description>
     <properties>
-        <testContainerModule.skip.tests>false</testContainerModule.skip.tests>
-        <skipTests>${testContainerModule.skip.tests}</skipTests>
         <skip_maven_deploy>false</skip_maven_deploy>
         <assertj.version>3.13.2</assertj.version>
         <skipIntegrationTests>true</skipIntegrationTests>
