@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.Exporter;
@@ -42,7 +43,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 /**
  * abstract ProtocolSupport.
  */
-public abstract class AbstractProtocol implements Protocol {
+public abstract class AbstractProtocol implements DelegateExporterMap, Protocol {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -110,7 +111,34 @@ public abstract class AbstractProtocol implements Protocol {
         return exporterMap;
     }
 
+    @Override
     public Collection<Exporter<?>> getExporters() {
         return Collections.unmodifiableCollection(exporterMap.values());
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return CollectionUtils.isEmptyMap(exporterMap);
+    }
+
+    @Override
+    public Exporter<?> getExport(String key) {
+        return exporterMap.get(key);
+    }
+
+    @Override
+    public void addExportMap(String key, Exporter<?> exporter) {
+        exporterMap.put(key, exporter);
+    }
+
+    /**
+     * mgr exporterMap self, don't give to DubboExporter or InjvmExporter
+     */
+    @Override
+    public void removeExportMap(String key, Exporter<?> exporter) {
+        Exporter<?> findExporter = exporterMap.get(key);
+        if(findExporter == exporter){
+            exporterMap.remove(key);
+        }
     }
 }

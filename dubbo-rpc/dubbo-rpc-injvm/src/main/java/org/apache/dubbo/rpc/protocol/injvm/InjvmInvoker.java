@@ -23,6 +23,7 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
+import org.apache.dubbo.rpc.protocol.DelegateExporterMap;
 
 import java.util.Map;
 
@@ -35,17 +36,17 @@ class InjvmInvoker<T> extends AbstractInvoker<T> {
 
     private final String key;
 
-    private final Map<String, Exporter<?>> exporterMap;
+    private final DelegateExporterMap delegateExporterMap;
 
-    InjvmInvoker(Class<T> type, URL url, String key, Map<String, Exporter<?>> exporterMap) {
+    InjvmInvoker(Class<T> type, URL url, String key, DelegateExporterMap delegateExporterMap) {
         super(type, url);
         this.key = key;
-        this.exporterMap = exporterMap;
+        this.delegateExporterMap = delegateExporterMap;
     }
 
     @Override
     public boolean isAvailable() {
-        InjvmExporter<?> exporter = (InjvmExporter<?>) exporterMap.get(key);
+        InjvmExporter<?> exporter = (InjvmExporter<?>) delegateExporterMap.getExport(key);
         if (exporter == null) {
             return false;
         } else {
@@ -55,7 +56,7 @@ class InjvmInvoker<T> extends AbstractInvoker<T> {
 
     @Override
     public Result doInvoke(Invocation invocation) throws Throwable {
-        Exporter<?> exporter = InjvmProtocol.getExporter(exporterMap, getUrl());
+        Exporter<?> exporter = InjvmProtocol.getExporter(delegateExporterMap, getUrl());
         if (exporter == null) {
             throw new RpcException("Service [" + key + "] not found.");
         }
