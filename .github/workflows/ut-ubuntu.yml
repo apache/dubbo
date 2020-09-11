@@ -15,9 +15,6 @@ jobs:
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
-          command: npm install
       - name: Test with Maven
         uses: nick-invision/retry@v1
         with:
@@ -38,8 +35,6 @@ jobs:
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
       - name: Test with Maven
         uses: nick-invision/retry@v1
         with:
