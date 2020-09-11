@@ -1,6 +1,6 @@
 name: Unit Test
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   ubuntu-jdk8:
