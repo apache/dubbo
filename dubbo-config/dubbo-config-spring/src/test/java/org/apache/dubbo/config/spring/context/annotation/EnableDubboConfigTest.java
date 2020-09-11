@@ -84,6 +84,8 @@ public class EnableDubboConfigTest {
         // asserts aliases
         assertFalse(hasAlias(context, "org.apache.dubbo.config.RegistryConfig#0", "zookeeper"));
         assertFalse(hasAlias(context, "org.apache.dubbo.config.MonitorConfig#0", "zookeeper"));
+
+        context.close();
     }
 
     @Test
@@ -114,6 +116,8 @@ public class EnableDubboConfigTest {
         // asserts aliases
         assertTrue(hasAlias(context, "applicationBean2", "dubbo-demo-application2"));
         assertTrue(hasAlias(context, "applicationBean3", "dubbo-demo-application3"));
+
+        context.close();
 
     }
 
