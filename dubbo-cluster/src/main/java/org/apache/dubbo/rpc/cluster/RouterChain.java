@@ -57,7 +57,7 @@ public class RouterChain<T> {
     private List<StateRouter> stateRouters = Collections.emptyList();
 
     protected URL url;
-    protected SateRouterChain stateChain;
+
     protected AtomicReference<AddrCache> cache;
     private Semaphore loopPermit = new Semaphore(1);
 
@@ -187,9 +187,9 @@ public class RouterChain<T> {
         }
         AddrCache origin = cache.get();
         List copyInvokers = new ArrayList<>(this.invokers);
-        CountDownLatch cdl = new CountDownLatch(stateChain.getSateRouters().size());
+        CountDownLatch cdl = new CountDownLatch(stateRouters.size());
         AddrCache newCache = new AddrCache();
-        for (StateRouter stateRouter : (List<StateRouter>)stateChain.getSateRouters()) {
+        for (StateRouter stateRouter : (List<StateRouter>)stateRouters) {
             executorService.execute(new Runnable() {
                 @Override
                 public void run() {
