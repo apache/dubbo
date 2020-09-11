@@ -109,9 +109,10 @@ public class ArgumentCallbackTest {
     @Test
     public void TestCallbackNormalWithBindPort() throws Exception {
         initOrResetUrl(1, 10000000);
-        consumerUrl = serviceURL.addParameter(Constants.BIND_PORT_KEY,"7653");
+        int port = NetUtils.getAvailablePort();
+        consumerUrl = serviceURL.addParameter(Constants.BIND_PORT_KEY, port);
         initOrResetService();
-       
+
         final AtomicInteger count = new AtomicInteger(0);
 
         demoProxy.xxx(new IDemoCallback() {
