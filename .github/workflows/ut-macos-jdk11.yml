@@ -19,6 +19,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
       - name: Test with Maven
-        run: ./mvnw --batch-mode --no-transfer-progress clean install -DskipTests=false -DskipIntegrationTests=true -Dcheckstyle.skip=false -Drat.skip=false -Dmaven.javadoc.skip=true
+        run: ./mvnw --batch-mode --no-transfer-progress clean install -DskipTests=false -DskipIntegrationTests=true -Dcheckstyle.skip=false -Drat.skip=false -Dmaven.javadoc.skip=true -T 12
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
