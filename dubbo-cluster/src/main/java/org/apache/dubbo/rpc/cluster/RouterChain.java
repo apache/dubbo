@@ -18,13 +18,25 @@ package org.apache.dubbo.rpc.cluster;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.utils.BitList;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.cluster.router.state.AddrCache;
+import org.apache.dubbo.rpc.cluster.router.state.RouterCache;
+import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
+import org.apache.dubbo.rpc.cluster.router.state.StateRouterFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -41,6 +53,23 @@ public class RouterChain<T> {
     // Fixed router instances: ConfigConditionRouter, TagRouter, e.g., the rule for each instance may change but the
     // instance will never delete or recreate.
     private List<Router> builtinRouters = Collections.emptyList();
+    private List<StateRouter> builtinStateRouters = Collections.emptyList();
+    private List<StateRouter> stateRouters = Collections.emptyList();
+
+    protected URL url;
+    protected SateRouterChain stateChain;
+    protected AtomicReference<AddrCache> cache;
+    private Semaphore loopPermit = new Semaphore(1);
+
+    private static ScheduledExecutorService executorService = new ScheduledThreadPoolExecutor(1, new ThreadFactory() {
+        @Override
+        public Thread newThread(Runnable r) {
+            Thread thread = new Thread(r);
+            thread.setDaemon(true);
+            thread.setName("dubbo.outlier.refresh-" + thread.getId());
+            return thread;
+        }
+    });
 
     public static <T> RouterChain<T> buildChain(URL url) {
         return new RouterChain<>(url);
@@ -55,6 +84,22 @@ public class RouterChain<T> {
                 .collect(Collectors.toList());
 
         initWithRouters(routers);
+
+        List<StateRouterFactory> extensionStateRouterFactories = ExtensionLoader.getExtensionLoader(StateRouterFactory.class)
+            .getActivateExtension(url, "stateRouter");
+
+        List<StateRouter> stateRouters = extensionStateRouterFactories.stream()
+            .map(factory -> factory.getRouter(url))
+            .collect(Collectors.toList());
+
+        // init state routers
+        initWithStateRouters(stateRouters);
+        executorService.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                loop();
+            }
+        }, 5, 5, TimeUnit.SECONDS);
     }
 
     /**
@@ -65,6 +110,16 @@ public class RouterChain<T> {
         this.builtinRouters = builtinRouters;
         this.routers = new ArrayList<>(builtinRouters);
         this.sort();
+    }
+
+    public void initWithStateRouters(List<StateRouter> builtinRouters) {
+        this.builtinStateRouters = builtinRouters;
+        this.stateRouters = new ArrayList<>(builtinRouters);
+        this.sortStateRouters();
+    }
+
+    private void sortStateRouters() {
+        Collections.sort(stateRouters);
     }
 
     /**
@@ -94,7 +149,16 @@ public class RouterChain<T> {
      * @return
      */
     public List<Invoker<T>> route(URL url, Invocation invocation) {
-        List<Invoker<T>> finalInvokers = invokers;
+
+        AddrCache cache = this.cache.get();
+
+        BitList<Invoker<T>> finalBitListInvokers = new BitList<Invoker<T>>(invokers, false);
+        for (StateRouter stateRouter : stateRouters) {
+            finalBitListInvokers = stateRouter.route(finalBitListInvokers, cache, url, invocation);
+        }
+
+        List<Invoker<T>> finalInvokers = finalBitListInvokers.getUnmodifiableList();
+
         for (Router router : routers) {
             finalInvokers = router.route(finalInvokers, url, invocation);
         }
@@ -107,6 +171,86 @@ public class RouterChain<T> {
      */
     public void setInvokers(List<Invoker<T>> invokers) {
         this.invokers = (invokers == null ? Collections.emptyList() : invokers);
+        stateRouters.forEach(router -> router.notify(this.invokers));
         routers.forEach(router -> router.notify(this.invokers));
+        loop();
     }
+
+
+    private void buildCache() {
+        if (invokers == null || invokers.size() <= 0) {
+            return;
+        }
+        AddrCache origin = cache.get();
+        List copyInvokers = new ArrayList<>(this.invokers);
+        CountDownLatch cdl = new CountDownLatch(stateChain.getSateRouters().size());
+        AddrCache newCache = new AddrCache();
+        for (StateRouter stateRouter : (List<StateRouter>)stateChain.getSateRouters()) {
+            executorService.execute(new Runnable() {
+                @Override
+                public void run() {
+                    RouterCache routerCache = poolRouter(stateRouter, origin, new ArrayList<>(copyInvokers));
+                    //file cache
+                    newCache.getCache().put(stateRouter.getName(), routerCache);
+                    cdl.countDown();
+                }
+            });
+        }
+        try {
+            cdl.wait();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        this.cache.set(newCache);
+    }
+
+    private RouterCache poolRouter(StateRouter router, AddrCache orign, List<Invoker> invokers) {
+        String routerName = router.getName();
+
+        if (isCacheMiss(orign, routerName) || router.shouldRePool() || isDiff(orign.getInvokers(), invokers)) {
+            return router.pool(invokers);
+
+        } else {
+            return orign.getCache().get(routerName);
+        }
+    }
+
+    // todo 是否完全一样？
+    private boolean isDiff(List<Invoker> left, List<Invoker> right) {
+        if (left.size() != right.size()) {
+            return false;
+        }
+
+        for (Invoker l : left) {
+
+            for (Invoker r : right) {
+                // todo ?
+                if (l.getUrl().equals(r.getUrl())) {
+
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean isCacheMiss(AddrCache cache, String routerName) {
+        if (cache == null || cache.getCache() == null || cache.getInvokers() == null || cache.getCache().get(routerName) == null) {
+            return true;
+        }
+        return false;
+    }
+
+    private void loop() {
+        if (loopPermit.tryAcquire()) {
+            executorService.submit(new Runnable() {
+                @Override
+                public void run() {
+                    loopPermit.release();
+                    buildCache();
+                }
+            });
+        }
+    }
+
 }
