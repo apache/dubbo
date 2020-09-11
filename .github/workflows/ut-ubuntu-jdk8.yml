@@ -1,4 +1,4 @@
-name: Unit Test On Ubuntu
+name: Unit Test On JDK 8
 
 on: [push, pull_request]
 
