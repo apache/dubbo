@@ -12,13 +12,17 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 11
-      - uses: actions/cache@v1
+      - uses: actions/cache@v2
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
       - name: Test with Maven
-        run: mvn --batch-mode --no-transfer-progress clean install
+        uses: nick-invision/retry@v1
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          command: mvn --batch-mode --no-transfer-progress clean install
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
