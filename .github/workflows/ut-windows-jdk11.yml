@@ -19,6 +19,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
       - name: Test with Maven
-        run: mvn --batch-mode --no-transfer-progress clean install -T 12
+        run: mvn --batch-mode --no-transfer-progress clean install
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
