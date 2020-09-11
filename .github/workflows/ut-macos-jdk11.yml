@@ -21,7 +21,7 @@ jobs:
       - name: Test with Maven
         uses: nick-invision/retry@v1
         with:
-          timeout_minutes: 10
+          timeout_minutes: 40
           max_attempts: 3
           command: ./mvnw --batch-mode --no-transfer-progress clean install -DskipTests=false -DskipIntegrationTests=true -Dcheckstyle.skip=false -Drat.skip=false -Dmaven.javadoc.skip=true
       - name: Upload coverage to Codecov
