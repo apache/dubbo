@@ -1,10 +1,10 @@
-name: Unit Test On JDK 11
+name: Unit Test On macOS
 
 on: [push]
 
 jobs:
-  ubuntu-jdk11:
-    runs-on: ubuntu-latest
+  ut-macOS-jdk11:
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK 11
@@ -22,6 +22,6 @@ jobs:
         with:
           timeout_minutes: 40
           max_attempts: 3
-          command: ./mvnw --batch-mode --no-transfer-progress clean install -DskipTests=false -DskipIntegrationTests=false -Dcheckstyle.skip=false -Drat.skip=false -Dmaven.javadoc.skip=true
+          command: ./mvnw --batch-mode --no-transfer-progress clean install -DskipTests=false -DskipIntegrationTests=true -Dcheckstyle.skip=false -Drat.skip=false -Dmaven.javadoc.skip=true
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1

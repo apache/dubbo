@@ -3,7 +3,7 @@ name: Unit Test On Windows
 on: [push]
 
 jobs:
-  windows-jdk11:
+  ut-windows-jdk11:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
