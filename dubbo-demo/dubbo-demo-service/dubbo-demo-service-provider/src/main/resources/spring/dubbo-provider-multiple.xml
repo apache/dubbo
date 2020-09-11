@@ -32,8 +32,8 @@
         <!--
         <dubbo:parameter key="zk1" value="zookeeper://localhost:2181?registry-type=service" />
         <dubbo:parameter key="zk2" value="zookeeper://localhost:2182?registry-type=service" />
-        -->
-        <dubbo:parameter key="child.zk1" value="zookeeper://localhost:2181" />
+-->
+       <!-- <dubbo:parameter key="child.zk1" value="zookeeper://localhost:2181" />-->
         <dubbo:parameter key="child.sofa1" value="sofa://100.88.142.124:9603" />
     </dubbo:registry>
 
