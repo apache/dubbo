@@ -70,6 +70,7 @@ public class DubboNamespaceHandlerTest {
         applicationContext.register(XmlConfiguration.class);
         applicationContext.refresh();
         testProviderXml(applicationContext);
+        applicationContext.close();
     }
 
     @Test
@@ -81,6 +82,7 @@ public class DubboNamespaceHandlerTest {
         ctx.start();
 
         testProviderXml(ctx);
+        ctx.close();
     }
 
     private void testProviderXml(ApplicationContext context) {
@@ -110,6 +112,7 @@ public class DubboNamespaceHandlerTest {
 
         ProtocolConfig dubboProtocolConfig = protocolConfigMap.get("dubbo");
         assertThat(dubboProtocolConfig.getPort(), is(20881));
+        ctx.close();
     }
 
     @Test
@@ -120,6 +123,7 @@ public class DubboNamespaceHandlerTest {
         ProtocolConfig protocolConfig = ctx.getBean(ProtocolConfig.class);
         protocolConfig.refresh();
         assertThat(protocolConfig.getName(), is("dubbo"));
+        ctx.close();
     }
 
     @Test
@@ -134,6 +138,7 @@ public class DubboNamespaceHandlerTest {
         ServiceBean serviceBean = ctx.getBean(ServiceBean.class);
         assertThat(serviceBean.getParameters().size(), is(1));
         assertThat(serviceBean.getParameters().get("service-paramA"), is("service-paramA"));
+        ctx.close();
     }
 
 
@@ -143,6 +148,7 @@ public class DubboNamespaceHandlerTest {
         ctx.start();
 
         assertThat(ctx.getBean(ServiceBean.class).getDelay(), is(300));
+        ctx.close();
     }
 
     @Test
@@ -153,6 +159,7 @@ public class DubboNamespaceHandlerTest {
         Map<String, ProviderConfig> providerConfigMap = ctx.getBeansOfType(ProviderConfig.class);
 
         assertThat(providerConfigMap.get("org.apache.dubbo.config.ProviderConfig").getTimeout(), is(2000));
+        ctx.close();
     }
 
     @Test
@@ -161,6 +168,7 @@ public class DubboNamespaceHandlerTest {
         ctx.start();
 
         assertThat(ctx.getBean(MonitorConfig.class), not(nullValue()));
+        ctx.close();
     }
 
 //    @Test
@@ -186,6 +194,7 @@ public class DubboNamespaceHandlerTest {
 
         ModuleConfig moduleConfig = ctx.getBean(ModuleConfig.class);
         assertThat(moduleConfig.getName(), is("test-module"));
+        ctx.close();
     }
 
     @Test
@@ -205,5 +214,6 @@ public class DubboNamespaceHandlerTest {
 
         String prefix = ((DemoServiceImpl) serviceBean.getRef()).getPrefix();
         assertThat(prefix, is("welcome:"));
+        ctx.close();
     }
 }
