@@ -1,11 +1,10 @@
 name: Unit Test On JDK 8
 
-on: [push, pull_request]
+on: [push]
 
 jobs:
   ubuntu-jdk8:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK 1.8

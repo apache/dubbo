@@ -1,11 +1,10 @@
 name: Unit Test On macOS
 
-on: [push, pull_request]
+on: [push]
 
 jobs:
   macOS-jdk11:
     runs-on: macos-latest
-    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK 11

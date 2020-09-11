@@ -1,11 +1,10 @@
 name: Unit Test On Windows
 
-on: [push, pull_request]
+on: [push]
 
 jobs:
   windows-jdk11:
     runs-on: windows-latest
-    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK 11
