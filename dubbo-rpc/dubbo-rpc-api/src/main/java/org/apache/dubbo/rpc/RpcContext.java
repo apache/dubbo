@@ -794,4 +794,61 @@ public class RpcContext {
         return asyncContext;
     }
 
+    // RPC service context updated before each service call.
+    private URL consumerUrl;
+
+    public String getGroup() {
+        if (consumerUrl == null) {
+            return null;
+        }
+        return consumerUrl.getParameter(GROUP_KEY);
+    }
+
+    public String getVersion() {
+        if (consumerUrl == null) {
+            return null;
+        }
+        return consumerUrl.getParameter(VERSION_KEY);
+    }
+
+    public String getInterfaceName() {
+        if (consumerUrl == null) {
+            return null;
+        }
+        return consumerUrl.getServiceInterface();
+    }
+
+    public String getProtocol() {
+        if (consumerUrl == null) {
+            return null;
+        }
+        return consumerUrl.getParameter(PROTOCOL_KEY, DUBBO);
+    }
+
+    public String getServiceKey() {
+        if (consumerUrl == null) {
+            return null;
+        }
+        return consumerUrl.getServiceKey();
+    }
+
+    public String getProtocolServiceKey() {
+        if (consumerUrl == null) {
+            return null;
+        }
+        return consumerUrl.getProtocolServiceKey();
+    }
+
+    public URL getConsumerUrl() {
+        return consumerUrl;
+    }
+
+    public void setConsumerUrl(URL consumerUrl) {
+        this.consumerUrl = consumerUrl;
+    }
+
+    public static void setRpcContext(URL url) {
+        RpcContext rpcContext = RpcContext.getContext();
+        rpcContext.setConsumerUrl(url);
+    }
 }

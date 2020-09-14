@@ -21,6 +21,12 @@ public interface RegistryConstants {
 
     String REGISTRY_KEY = "registry";
 
+    String REGISTRY_CLUSTER_KEY = "REGISTRY_CLUSTER";
+
+    String REGISTRY_CLUSTER = "REGISTRY_CLUSTER";
+
+    String REGISTRY_CLUSTER_TYPE_KEY = "registry-cluster-type";
+
     String REGISTRY_PROTOCOL = "registry";
 
     String DYNAMIC_KEY = "dynamic";
@@ -53,6 +59,10 @@ public interface RegistryConstants {
 
     String COMPATIBLE_CONFIG_KEY = "compatible_config";
 
+    String REGISTRY_DUPLICATE_KEY = "duplicate";
+
+    String ENABLE_REGISTRY_DIRECTORY_AUTO_MIGRATION = "enable-auto-migration";
+
     /**
      * The parameter key of Dubbo Registry type
      *
@@ -76,6 +86,8 @@ public interface RegistryConstants {
 
     /**
      * The parameter key of the subscribed service names for Service-Oriented Registry
+     * <p>
+     * If there is a multiple-values, the  "comma" is the separator.
      *
      * @since 2.7.5
      */

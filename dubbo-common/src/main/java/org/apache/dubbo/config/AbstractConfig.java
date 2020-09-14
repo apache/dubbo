@@ -318,7 +318,13 @@ public abstract class AbstractConfig implements Serializable {
                 && method.getReturnType() == void.class);
     }
 
-    private static Map<String, String> convert(Map<String, String> parameters, String prefix) {
+    /**
+     * @param parameters the raw parameters
+     * @param prefix     the prefix
+     * @return the parameters whose raw key will replace "-" to "."
+     * @revised 2.7.8 "private" to be "protected"
+     */
+    protected static Map<String, String> convert(Map<String, String> parameters, String prefix) {
         if (parameters == null || parameters.isEmpty()) {
             return Collections.emptyMap();
         }

@@ -51,10 +51,6 @@ public abstract class FailbackRegistry implements org.apache.dubbo.registry.Regi
         failbackRegistry.removeFailedUnsubscribedTask(url.getOriginalURL(), new NotifyListener.ReverseCompatibleNotifyListener(listener));
     }
 
-    public void removeFailedNotifiedTask(URL url, NotifyListener listener) {
-        failbackRegistry.removeFailedNotifiedTask(url.getOriginalURL(), new NotifyListener.ReverseCompatibleNotifyListener(listener));
-    }
-
     @Override
     public void register(URL url) {
         failbackRegistry.register(url.getOriginalURL());

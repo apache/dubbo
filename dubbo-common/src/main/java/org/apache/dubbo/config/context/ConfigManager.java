@@ -67,9 +67,9 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 
     public static final String NAME = "config";
 
-    private final Map<String, Map<String, AbstractConfig>> configsCache = newMap();
-
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
+
+    final Map<String, Map<String, AbstractConfig>> configsCache = newMap();
 
     public ConfigManager() {
     }
@@ -162,6 +162,14 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 
     public Collection<MetadataReportConfig> getMetadataConfigs() {
         return getConfigs(getTagName(MetadataReportConfig.class));
+    }
+
+    public Collection<MetadataReportConfig> getDefaultMetadataConfigs() {
+        Collection<MetadataReportConfig> defaults = getDefaultConfigs(getConfigsMap(getTagName(MetadataReportConfig.class)));
+        if (CollectionUtils.isEmpty(defaults)) {
+            return getMetadataConfigs();
+        }
+        return defaults;
     }
 
     // MetadataReportConfig correlative methods
@@ -366,9 +374,16 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     }
 
     public void clear() {
-        write(() -> {
-            this.configsCache.clear();
-        });
+        write(this.configsCache::clear);
+    }
+
+    /**
+     * @throws IllegalStateException
+     * @since 2.7.8
+     */
+    @Override
+    public void destroy() throws IllegalStateException {
+        clear();
     }
 
     /**

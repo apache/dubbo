@@ -82,9 +82,6 @@ public final class URLBuilder extends URL {
     }
 
     public URL build() {
-        if (StringUtils.isEmpty(username) && StringUtils.isNotEmpty(password)) {
-            throw new IllegalArgumentException("Invalid url, password without username!");
-        }
         port = port < 0 ? 0 : port;
         // trim the leading "/"
         int firstNonSlash = 0;

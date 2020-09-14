@@ -16,11 +16,13 @@
  */
 package org.apache.dubbo.common.convert.multiple;
 
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.lang.Prioritized;
 
 import java.util.Collection;
 
+import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 import static org.apache.dubbo.common.utils.TypeUtils.findActualTypeArgument;
 
 /**
@@ -61,4 +63,30 @@ public interface MultiValueConverter<S> extends Prioritized {
         return findActualTypeArgument(getClass(), MultiValueConverter.class, 0);
     }
 
+    /**
+     * Find the {@link MultiValueConverter} instance from {@link ExtensionLoader} with the specified source and target type
+     *
+     * @param sourceType the source type
+     * @param targetType the target type
+     * @return <code>null</code> if not found
+     * @see ExtensionLoader#getSupportedExtensionInstances()
+     * @since 2.7.8
+     */
+    static MultiValueConverter<?> find(Class<?> sourceType, Class<?> targetType) {
+        return getExtensionLoader(MultiValueConverter.class)
+                .getSupportedExtensionInstances()
+                .stream()
+                .filter(converter -> converter.accept(sourceType, targetType))
+                .findFirst()
+                .orElse(null);
+    }
+
+    static <T> T convertIfPossible(Object source, Class<?> multiValueType, Class<?> elementType) {
+        Class<?> sourceType = source.getClass();
+        MultiValueConverter converter = find(sourceType, multiValueType);
+        if (converter != null) {
+            return (T) converter.convert(source, multiValueType, elementType);
+        }
+        return null;
+    }
 }
